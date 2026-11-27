@@ -2,13 +2,12 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { featuresApi } from '@/api/features.api';
 import { DEFAULT_FEATURE_FLAGS, parseFeatureFlags } from '@/config/feature-flags';
-import { FeatureFlagsContext, type FeatureFlagsContextValue } from './feature-flags-context';
-
-const FEATURE_FLAGS_QUERY_KEY = ['feature-flags'] as const;
+import { FEATURE_FLAGS_QUERY_KEY, FeatureFlagsContext, type FeatureFlagsContextValue } from './feature-flags-context';
 
 /**
  * Loads the backend feature flags once per session. On error the flags stay off (fail closed): a hidden feature
- * never shows up because the flags could not be read.
+ * never shows up because the flags could not be read. A screen that decides something that cannot be undone reads them again when it opens
+ * (`useFeatureFlagsReadAgain`): the value of a tab opened before a flag was switched on is the old one.
  */
 export function FeatureFlagsProvider({ children }: { children: React.ReactNode }) {
   const query = useQuery({
@@ -22,8 +21,10 @@ export function FeatureFlagsProvider({ children }: { children: React.ReactNode }
     () => ({
       flags: query.data === undefined ? DEFAULT_FEATURE_FLAGS : parseFeatureFlags(query.data),
       isLoading: query.isLoading,
+      isError: query.isError && query.data === undefined,
+      live: true,
     }),
-    [query.data, query.isLoading],
+    [query.data, query.isError, query.isLoading],
   );
 
   return <FeatureFlagsContext.Provider value={value}>{children}</FeatureFlagsContext.Provider>;

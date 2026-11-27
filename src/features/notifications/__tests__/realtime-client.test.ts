@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PendingAlert } from '@/types/alert';
 import {
   createRealtimeClient,
   hubUrl,
+  parseAlert,
   parseChange,
   reconnectDelay,
   type HubConnectionLike,
@@ -52,6 +54,41 @@ describe('notifications real-time client', () => {
 
     expect(states).toEqual(['connecting', 'connected']);
     expect(changes).toEqual([{ unreadCount: 3, type: 'guest-message', entityId: 'b-1' }]);
+  });
+
+  it('connect_AlertReceived_DeliversItOnTheSameConnectionAndIgnoresNonsense', async () => {
+    const hub = new FakeHub();
+    const factory = vi.fn(async () => hub);
+    const client = createRealtimeClient(factory);
+    const alerts: PendingAlert[] = [];
+    const changes: NotificationsChange[] = [];
+    client.onAlert((alert) => alerts.push(alert));
+    client.onChange((change) => changes.push(change));
+
+    client.connect();
+    await flush();
+    const payload = { alertId: 'a-1', alertType: 'CheckInPending', entityType: 'Booking', entityId: 'b-1', urgency: 'Normal' };
+    hub.handlers.get('alertReceived')?.(payload);
+    hub.handlers.get('alertReceived')?.({ nonsense: true });
+
+    // One connection carries both methods; an alert is not a change and a change is not an alert.
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect(alerts).toEqual([payload]);
+    expect(changes).toEqual([]);
+  });
+
+  it('onAlert_Unsubscribed_IsNotCalledAnyMore', async () => {
+    const hub = new FakeHub();
+    const client = createRealtimeClient(async () => hub);
+    const listener = vi.fn();
+    const off = client.onAlert(listener);
+    client.connect();
+    await flush();
+
+    off();
+    hub.handlers.get('alertReceived')?.({ alertId: 'a-1', alertType: 'CheckInPending', entityType: 'Booking', entityId: 'b-1', urgency: 'Low' });
+
+    expect(listener).not.toHaveBeenCalled();
   });
 
   it('connect_CalledTwice_OpensOneConnection', async () => {
@@ -166,6 +203,46 @@ describe('parseChange', () => {
 
   it.each([null, undefined, 'x', {}, { unreadCount: 'a' }, { unreadCount: Number.NaN }])('parseChange_%j_ReturnsNull', (payload) => {
     expect(parseChange(payload)).toBeNull();
+  });
+});
+
+describe('parseAlert', () => {
+  const payload = { alertId: 'a-1', alertType: 'AlloggiatiDeadline', entityType: 'Booking', entityId: 'b-1', urgency: 'High' };
+
+  it('parseAlert_ValidPayload_ReturnsIt', () => {
+    expect(parseAlert(payload)).toEqual(payload);
+  });
+
+  it('parseAlert_PayloadWithMoreThanTheReferences_KeepsOnlyTheReferences', () => {
+    // ADR-025-R5: whatever a newer server adds, nothing but the five references reaches the queue and the screen.
+    const parsed = parseAlert({ ...payload, guestName: 'Mario Rossi', guestEmail: 'mario.rossi@example.com' });
+
+    expect(parsed).toEqual(payload);
+    expect(Object.keys(parsed ?? {}).sort()).toEqual(['alertId', 'alertType', 'entityId', 'entityType', 'urgency']);
+  });
+
+  it('parseAlert_TypeTheAppDoesNotKnow_IsKeptSoThatTheAlertIsNotLost', () => {
+    expect(parseAlert({ ...payload, alertType: 'SomethingNew' })?.alertType).toBe('SomethingNew');
+  });
+
+  it('parseAlert_UrgencyTheAppDoesNotKnow_CountsAsNormal', () => {
+    expect(parseAlert({ ...payload, urgency: 'Critical' })?.urgency).toBe('Normal');
+  });
+
+  it.each([
+    null,
+    undefined,
+    'x',
+    42,
+    {},
+    { ...payload, alertId: '' },
+    { ...payload, alertId: undefined },
+    { ...payload, alertType: 3 },
+    { ...payload, entityType: '  ' },
+    { ...payload, entityId: null },
+    { ...payload, urgency: undefined },
+  ])('parseAlert_%j_ReturnsNull', (notTheContract) => {
+    expect(parseAlert(notTheContract)).toBeNull();
   });
 });
 

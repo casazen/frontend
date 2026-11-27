@@ -1,3 +1,7 @@
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
+import { LONG_RENT_REQUESTS_PATH } from '../long-rent/paths';
 import { useTranslation } from 'react-i18next';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useLongRentServiceRequests } from '@/queries/use-service-requests';
@@ -12,6 +16,7 @@ export function LongRentServiceRequests({ propertyId }: { propertyId: string }) 
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const requests = useLongRentServiceRequests(propertyId);
+  const canOpenPath = useCommercialRouteAccess();
   const canRequest = hasPermission('long-rent', 'property.write');
 
   return (
@@ -22,7 +27,16 @@ export function LongRentServiceRequests({ propertyId }: { propertyId: string }) 
       canManage={canRequest}
       emptyText={t('serviceRequest.emptyForProperty')}
       testId="long-rent-service-requests"
-      action={canRequest ? <ServiceRequestForm propertyId={propertyId} context="long-rent" /> : undefined}
+      action={
+        <div className="flex flex-wrap gap-2">
+          {canOpenPath(LONG_RENT_REQUESTS_PATH) && (
+            <Button size="sm" variant="outline" asChild>
+              <Link to={LONG_RENT_REQUESTS_PATH}>{t('longRentProperties.detail.viewRequests')}</Link>
+            </Button>
+          )}
+          {canRequest && <ServiceRequestForm propertyId={propertyId} context="long-rent" />}
+        </div>
+      }
     />
   );
 }

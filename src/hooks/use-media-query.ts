@@ -9,6 +9,11 @@ export const PHONE_QUERY = '(width < 48rem)';
 export const FROM_TABLET_QUERY = '(width >= 48rem)';
 /** At or above `lg`: where the booking card of a property page is fixed beside the page and not a bar under it. */
 export const FROM_DESKTOP_QUERY = '(width >= 64rem)';
+/**
+ * At or above `2xl`: where the steps of a wizard are a column of their own beside the step. Not from `xl`: with the sidebar open
+ * the step would be narrower there (about 650 px) than the column it had before.
+ */
+export const FROM_WIDE_QUERY = '(width >= 96rem)';
 /** Between `md` and `lg`: the sidebar is a rail of icons. */
 export const TABLET_QUERY = '(width >= 48rem) and (width < 64rem)';
 

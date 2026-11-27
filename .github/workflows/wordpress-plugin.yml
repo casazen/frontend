@@ -1,0 +1,321 @@
+name: WordPress plugin
+
+# The delivery pipeline of the CasaZen WordPress plugin (integrations/wordpress/casazen): PHP syntax and WordPress coding standards,
+# PHPUnit, a smoke test on a real WordPress, Plugin Check, and the ZIP as a build artifact (14 days).
+#
+# Path filtered on purpose: it runs only when the plugin or this pipeline changes. A required check that does not run blocks the
+# pull request, so this workflow must NOT be made a required check in the branch protection: the required check stays
+# `CI / Lint, typecheck, unit tests, build` (ci.yml), which has no path filter.
+#
+# It reads no secret. On a pull request it publishes nothing. On a push to develop or main (never on a pull request or in a fork) the
+# job `publish` puts the ZIP that the job `package` built for that channel (with the address of the console of its environment inside) in
+# the rolling release wp-plugin-develop or wp-plugin-main (tools/publish-release.mjs): that is the only job with `contents: write`, and it
+# builds nothing. A release with a version (a GitHub release with the ZIP) is made by wordpress-plugin-release.yml, when a tag
+# wp-plugin-v<version> is pushed.
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'integrations/wordpress/**'
+      - '.github/workflows/wordpress-plugin*.yml'
+      - '.github/actions/build-wordpress-plugin/**'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'integrations/wordpress/**'
+      - '.github/workflows/wordpress-plugin*.yml'
+      - '.github/actions/build-wordpress-plugin/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wordpress-plugin-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: integrations/wordpress/casazen
+
+jobs:
+  # PHP syntax on the two ends of the supported range (php -l, and the Node syntax checker that also runs on a machine
+  # without PHP), then WordPress coding standards (WPCS 3) and PHP 7.4+ compatibility (phpcs.xml.dist).
+  lint:
+    name: Lint (PHP ${{ matrix.php }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: integrations/wordpress/casazen/package-lock.json
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+
+      # A second try of the same command: the packages come from api.github.com, and a timeout there is the network, not the plugin. A real
+      # error (a package that does not exist) fails both tries, and both are in the log.
+      - name: Install the PHP tools
+        run: composer install --no-interaction --prefer-dist --no-progress || composer install --no-interaction --prefer-dist --no-progress
+
+      - name: PHP syntax (php -l)
+        run: find . -name '*.php' -not -path './vendor/*' -not -path './node_modules/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Install the Node tools
+        run: npm ci
+
+      - name: PHP syntax (Node checker)
+        run: npm run lint:php-syntax
+
+      # The proof of the release rules: a tag that is not the plugin version is refused, and the ZIP holds no development file.
+      - name: Node tests of the packaging tools
+        run: npm run test:tools
+
+      - name: WordPress coding standards and PHP 7.4+ compatibility
+        run: vendor/bin/phpcs
+
+  # The tests of the plugin (tests/phpunit) in wp-env, with the WordPress test library of the environment. PHP 7.4 runs
+  # with the oldest WordPress the plugin supports, PHP 8.3 with the latest one.
+  phpunit:
+    name: PHPUnit (${{ matrix.label }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: 'php 7.4 · wp 6.4'
+            php: '7.4'
+            core: 'WordPress/WordPress#6.4'
+          - label: 'php 8.3 · wp latest'
+            php: '8.3'
+            core: ''
+    env:
+      # wp-env reads these two: an empty WP_ENV_CORE means the latest WordPress.
+      WP_ENV_PHP_VERSION: ${{ matrix.php }}
+      WP_ENV_CORE: ${{ matrix.core }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: integrations/wordpress/casazen/package-lock.json
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+
+      # PHPUnit 9.6 is resolved for PHP 7.4 through config.platform.php of composer.json, on both legs. A second try of the same command
+      # for the network (see the lint job): a real error fails both tries.
+      - name: Install the PHP tools
+        run: composer install --no-interaction --prefer-dist --no-progress || composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install the Node tools
+        run: npm ci
+
+      - name: Build the blocks
+        run: npm run build
+
+      # Up to three attempts (tests/start-wp-env.sh): the build of the images downloads PHPUnit from api.github.com inside Docker, where a
+      # timeout is the network of the runner and nothing the job can configure. A start that fails three times fails the job.
+      - name: Start wp-env
+        run: bash tests/start-wp-env.sh
+
+      - name: PHPUnit
+        run: npm exec --no -- wp-env run tests-cli --env-cwd=wp-content/plugins/casazen vendor/bin/phpunit
+
+      - name: Collect the logs of wp-env
+        if: failure()
+        run: |
+          mkdir -p "$RUNNER_TEMP/wp-env-logs"
+          npm exec --no -- wp-env logs all --no-watch > "$RUNNER_TEMP/wp-env-logs/containers.log" 2>&1 || true
+
+      - name: Upload the logs of wp-env
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-logs-php${{ matrix.php }}
+          path: ${{ runner.temp }}/wp-env-logs
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # A real WordPress with the plugin active (tests/smoke/smoke.sh). The mu-plugin tests/smoke/mu-plugins/casazen-mock-http.php, mapped
+  # into the site by .wp-env.json, answers the requests of the plugin with canned JSON and refuses every other: no outbound network.
+  smoke:
+    name: Smoke (${{ matrix.label }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: 'php 7.4 · wp 6.4'
+            php: '7.4'
+            core: 'WordPress/WordPress#6.4'
+          - label: 'php 8.3 · wp latest'
+            php: '8.3'
+            core: ''
+    env:
+      WP_ENV_PHP_VERSION: ${{ matrix.php }}
+      WP_ENV_CORE: ${{ matrix.core }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: integrations/wordpress/casazen/package-lock.json
+
+      - name: Install the Node tools
+        run: npm ci
+
+      - name: Build the blocks
+        run: npm run build
+
+      # Up to three attempts (tests/start-wp-env.sh): the build of the images downloads PHPUnit from api.github.com inside Docker, where a
+      # timeout is the network of the runner and nothing the job can configure. A start that fails three times fails the job.
+      - name: Start wp-env
+        run: bash tests/start-wp-env.sh
+
+      - name: Smoke test
+        run: bash tests/smoke/smoke.sh
+
+      - name: Collect the logs of wp-env
+        if: failure()
+        run: |
+          mkdir -p "$RUNNER_TEMP/wp-env-logs"
+          npm exec --no -- wp-env logs all --no-watch > "$RUNNER_TEMP/wp-env-logs/containers.log" 2>&1 || true
+          npm exec --no -- wp-env run cli sh -- -c 'test -f wp-content/debug.log && cat wp-content/debug.log || true' > "$RUNNER_TEMP/wp-env-logs/debug.log" 2>&1 || true
+
+      - name: Upload the logs of wp-env
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-logs-php${{ matrix.php }}
+          path: ${{ runner.temp }}/wp-env-logs
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # The checks of the WordPress.org team on the folder that people install (the unpacked ZIP, not the sources). The calls to the
+  # CasaZen service are the "External services" section of readme.txt. Warnings are shown and do not fail the job; errors do.
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the ZIP
+        id: build
+        uses: ./.github/actions/build-wordpress-plugin
+
+      - name: Unpack the ZIP
+        env:
+          ZIP: ${{ steps.build.outputs.zip }}
+        run: |
+          rm -rf dist/unpacked
+          mkdir -p dist/unpacked
+          unzip -q "$ZIP" -d dist/unpacked
+          ls dist/unpacked
+
+      - name: Plugin Check
+        uses: WordPress/plugin-check-action@v1
+        with:
+          build-dir: integrations/wordpress/casazen/dist/unpacked/casazen
+          ignore-warnings: true
+
+  # The ZIP, as a build artifact. It needs the three jobs above: a ZIP that did not pass them is not offered.
+  #
+  # On a push to develop or main this is the ZIP that the job `publish` puts in the rolling release of that channel, so it is built here, in a job
+  # that cannot write (the workflow is `contents: read`), for the channel: it carries the address of the console of that environment
+  # (includes/build-config.php; the addresses are in tools/publish-release.mjs and nowhere else). On a pull request or a manual run it is the
+  # development ZIP, with no such file, as before. `publish` only downloads this artifact: the code of third parties (npm ci, WP-CLI, the build
+  # of the blocks, the setup actions) never runs in the job that can write.
+  package:
+    name: ZIP package
+    needs: [lint, phpunit, smoke]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the ZIP
+        id: build
+        uses: ./.github/actions/build-wordpress-plugin
+        with:
+          channel: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && github.ref_name || '' }}
+
+      - name: Upload the ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: casazen-wordpress-plugin
+          path: integrations/wordpress/casazen/dist/casazen-${{ steps.build.outputs.version }}.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  # The ZIP of every push to develop or main, published as the asset casazen.zip of the rolling release wp-plugin-<branch>, so that the
+  # console links a stable address with no release step (tools/publish-release.mjs). It needs the job `package`, which needs lint, phpunit and
+  # smoke: a ZIP that did not pass them is not published. It never runs on a pull request, on a manual run or in a fork.
+  #
+  # This is the only job with `contents: write` (a release is written to the repository), and it builds NOTHING: no npm ci, no WP-CLI, no setup
+  # action, no local action. It checks the repository out (for tools/publish-release.mjs, which uses only Node), downloads the ZIP that the job
+  # `package` built for this channel (read only, with the address of the console of the channel inside) and runs that one script, which reads
+  # the address back from the ZIP and refuses a ZIP of another channel. So no code of third parties runs where a token can write.
+  #
+  # It uses no secret: the token is the one that GitHub gives to the run. The checkout does not keep it on disk (`persist-credentials: false`)
+  # and only the last step has it in its environment (GH_TOKEN).
+  publish:
+    name: Publish the ZIP (${{ github.ref_name }})
+    needs: [package]
+    if: github.event_name == 'push' && github.repository == 'casazen/frontend' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    # The publications of a channel never run together: a later one waits for the one that runs, and none is cancelled once it has started
+    # (`cancel-in-progress: false`), so two jobs never replace the asset at the same time. Whether a publication is still the one to make, when
+    # its turn comes, is decided by tools/publish-release.mjs (it reads the tip of the branch and steps aside for a newer commit).
+    concurrency:
+      group: wordpress-plugin-publish-${{ github.ref_name }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # The artifact of the job `package` of THIS run: the ZIP casazen-<version>.zip, built for the channel of the branch.
+      - name: Download the ZIP built by the job package
+        uses: actions/download-artifact@v4
+        with:
+          name: casazen-wordpress-plugin
+          path: ${{ runner.temp }}/casazen-zip
+
+      # The release wp-plugin-<channel> is created once; after that only its asset and its notes change. The tag is never moved or recreated.
+      - name: Publish the ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CHANNEL: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+          VERSION: ${{ needs.package.outputs.version }}
+          ZIP: ${{ runner.temp }}/casazen-zip/casazen-${{ needs.package.outputs.version }}.zip
+        run: node tools/publish-release.mjs --channel "$CHANNEL" --zip "$ZIP" --sha "$COMMIT" --version "$VERSION"

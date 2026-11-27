@@ -27,20 +27,21 @@ export interface TodayRows {
  * What the block of the days shows: the new requests first (at most three, the server puts the one to answer first on top), then
  * the jobs still to do or to be paid. A job already paid is over and says nothing to the supplier today.
  */
-export function todayRows(today: SupplierToday): TodayRows {
-  const requests = today.newRequests.slice(0, MAX_REQUESTS);
-  const jobs = today.jobs
+export function todayRows(today: SupplierToday, inboxToAnswer = 0): TodayRows {
+  // `?? []`: a day the server sends without one of its lists (a demo without that answer, an older server) is a day with none, not a crash of the Home.
+  const requests = (today.newRequests ?? []).slice(0, MAX_REQUESTS);
+  const jobs = (today.jobs ?? [])
     .filter((job) => {
       const phase = phaseOf(job);
       return phase === 'scheduled' || phase === 'inProgress' || phase === 'completed';
     })
     .slice(0, Math.max(MIN_JOBS, MAX_ROWS - requests.length));
-  return { requests, jobs, moreRequests: Math.max(0, today.newRequestsTotal - requests.length) };
+  return { requests, jobs, moreRequests: Math.max(0, Math.max(today.newRequestsTotal ?? 0, inboxToAnswer) - requests.length) };
 }
 
 /** How many jobs are still to do today (taken or in progress): the "1 lavoro oggi" of the line under the title. */
 export function jobsToDoToday(today: SupplierToday): number {
-  return today.jobs.filter((job) => {
+  return (today.jobs ?? []).filter((job) => {
     const phase = phaseOf(job);
     return (phase === 'scheduled' || phase === 'inProgress') && job.scheduledFor === today.date;
   }).length;

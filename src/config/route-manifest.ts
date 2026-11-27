@@ -1,5 +1,7 @@
-import { isFeatureEnabled, type FeatureFlagKey, type FeatureFlags } from './feature-flags';
+import { isFeatureRuleEnabled, type FeatureFlagRule, type FeatureFlags } from './feature-flags';
+import { ONBOARDING_ROUTES } from './onboarding-routes';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
+import { profilePathForContext } from '@/lib/profile-path';
 
 /**
  * The areas of the app. `account` is the customer's "Amministrazione" (decision D1): its context exists only for the people of
@@ -10,24 +12,43 @@ export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier' | 
 
 /**
  * Group of the main menu (UI-04a): a labelled set of primary entries. The groups of an area follow the order of their
- * entries (`navOrder`); the labels are `nav.group.<group>`. The entries of "Altro" have no group.
+ * entries (`navOrder`); the labels are `nav.group.<group>`. The entries of "Altro" and of the foot of the sidebar have no group.
  */
-export type NavGroup = 'everyday' | 'offer' | 'management' | 'portfolio' | 'work' | 'activity' | 'platform' | 'account';
+export type NavGroup =
+  | 'everyday'
+  | 'offer'
+  | 'management'
+  | 'portfolio'
+  | 'work'
+  | 'activity'
+  | 'platform'
+  | 'account'
+  | 'owners'
+  | 'support'
+  | 'content'
+  | 'system';
 
 /**
- * Where an entry shows: `primary` in the main menu (at most {@link MAX_PRIMARY_NAV_ENTRIES} per area), `secondary` in
- * "Altro". An entry with neither a placement nor a {@link RouteManifestEntry.navParent} is in no menu.
+ * Where an entry shows: `primary` in the main menu (at most {@link MAX_PRIMARY_NAV_ENTRIES} per area), `footer` pinned at the
+ * foot of the sidebar (the settings of the area and «Consiglia CasaZen»: what is set once, apart from the daily work), `secondary`
+ * in "Altro", which now only holds a page whose section the user cannot open. An entry with neither a placement nor a
+ * {@link RouteManifestEntry.navParent} is in no menu.
  */
-export type NavPlacement = 'primary' | 'secondary';
+export type NavPlacement = 'primary' | 'secondary' | 'footer';
 
 /**
  * The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. `compliance` is
  * the number of things that carry a risk of a sanction (the Alloggiati Web communications and the guest data they need), in red.
+ * `activities` is the number of the urgent items of the "To do" list (`GET api/me/activities/count`, ADR-026-R12), in red too.
+ * `messages` is the number of the guests' messages the host has not read, in all the conversations (`GET api/messages/unread?includeOta=true`).
  */
-export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance';
+export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities' | 'messages';
 
-/** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
-export const MAX_PRIMARY_NAV_ENTRIES = 8;
+/**
+ * The short-rent area has nine standard entries. Licensed workspaces may also show CRM and AI routines.
+ * Entries stay grouped by task and every phone keeps the same four main destinations.
+ */
+export const MAX_PRIMARY_NAV_ENTRIES = 11;
 
 /** The bottom bar of the phone has at most this many destinations, "Altro" apart (UI-04a/UI-04b). */
 export const MAX_BOTTOM_NAV_ENTRIES = 4;
@@ -36,7 +57,13 @@ export interface RouteManifestEntry {
   path: string;
   context: AppContextKey;
   requiredPermissions: string[];
+  permissionMode?: 'any';
   navKey?: string;
+  /**
+   * The name of the entry on its tab, when the menu names the whole section and the tab names the page (the menu says «Impostazioni»,
+   * the tab «Organizzazione»). Without it the tab has the name of the menu.
+   */
+  navTabKey?: string;
   /** Italian nav label when navKey i18n entry is not used */
   navLabel?: string;
   /** Group of a primary entry in the main menu. */
@@ -53,7 +80,9 @@ export interface RouteManifestEntry {
    * from is the highlighted one, and the entry and its pages are the tabs on top of each of them (`NavSectionTabs`, which
    * `PageHeader` draws in the rental areas; the other areas link to them from the page of the entry, `NavChildLinks`). This is how
    * the menu stays short: a section is one entry, its pages are tabs. A page that hangs from an entry the user cannot open takes
-   * a place in "Altro" itself, so no page the user may open is left without a way in.
+   * a place in "Altro" itself, so no page the user may open is left without a way in. The one other parent is the profile of the
+   * area (`profilePathForContext`), which is in no menu because the menu of the user leads to it and which anyone can open: its
+   * pages (Notifiche) are tabs of it and take no place in "Altro".
    */
   navParent?: string;
   /** Place (1..{@link MAX_BOTTOM_NAV_ENTRIES}) of a primary entry in the bottom bar of the phone (UI-04b draws the bar). */
@@ -64,7 +93,10 @@ export interface RouteManifestEntry {
    * its counter are read together).
    */
   navBarKey?: string;
-  /** Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). */
+  /**
+   * Counter shown next to the entry in the menu; read from a query the app already makes (`useNavCounts`). A page that hangs from an
+   * entry ({@link navParent}) is in no menu: its counter, if it has one (the messages not read yet), is on its tab (`NavSectionTabs`).
+   */
   navCount?: NavCountKey;
   isDefault?: boolean;
   /**
@@ -75,8 +107,11 @@ export interface RouteManifestEntry {
   homeWhenDenied?: boolean;
   component: () => Promise<{ default: React.ComponentType }>;
   legacyPaths?: string[];
-  /** Backend feature flag: while off the entry is in no menu and its route redirects to the context home. */
-  featureFlag?: FeatureFlagKey;
+  /**
+   * Backend feature flag: while off the entry is in no menu and its route redirects to the context home. A list of flags is met while ANY of them is on (a page that serves
+   * two sources, each behind a flag of its own).
+   */
+  featureFlag?: FeatureFlagRule;
   /**
    * Plan and billing of the org (backend policy `OrgBillingAdmin`, TN-3): the entry is in the menu only for the org
    * billing administrator ({@link ORG_BILLING_ADMIN_PERMISSION}). The route stays reachable: the page itself tells
@@ -109,7 +144,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 4,
     navBottom: 4,
-    icon: 'Home',
+    icon: 'Building2',
     component: async () => ({ default: (await import('@/features/properties/properties-page')).PropertiesPage }),
     legacyPaths: ['/properties'],
   },
@@ -159,6 +194,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['property.read'],
     component: async () => ({ default: (await import('@/features/pricing')).PricingDashboardPage }),
     legacyPaths: ['/properties/:id/pricing'],
+  },
+  {
+    // The printable QR of the entrance of a property (NF-13), opened from «Identificazione e accesso»: the page was built before and no
+    // route reached it. In no menu: that page leads to it. It asks what reading the property asks, and reads the id from `:propertyId`.
+    path: '/app/short-rent/properties/:propertyId/qr',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    component: async () => ({ default: (await import('@/pages/PropertyQrCode')).PropertyQrCodePage }),
   },
   {
     // Interventi (SR-08): what the host asked of the suppliers, from the request to the payment. A tab of the section Immobili: the page
@@ -226,11 +269,52 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // The wizard «Fatturazione» (E11/F02/US01/T01, NF-82, NF-118): the whole invoicing setup of the organization (who issues, the VAT, the numbering, the tourist tax, for an
+    // agency the commissions of the portals and the standard mandate, the issuing, the Italian reminders and the summary), a part of the onboarding guide. A guided flow opened
+    // from a card of the fiscal page and from the guide, in no menu and no tab. It is read by who reads the properties and the payments (`GET api/billing-setup` asks
+    // `payment.read`): a person who may not change it (no `property.write`, or an access to only some of the properties) sees it read-only, with the reason. It exists while the
+    // issuance of the fiscal documents is on: with it off the tab and the card are not there and the address leads to the home of the area, as the backend answers 404.
+    path: '/app/short-rent/fiscal/setup',
+    context: 'short-rent',
+    requiredPermissions: ['property.read', 'payment.read'],
+    featureFlag: 'fiscalDocumentIssuance',
+    component: async () => ({
+      default: (await import('@/features/fiscal/billing-wizard/billing-wizard-page')).BillingWizardPage,
+    }),
+  },
+  {
+    // The old wizard «Come emetti i documenti?» (E06/F02/US02/T03): CasaZen issues every document since 2026-11-14, so its address leads to the wizard «Fatturazione».
+    path: '/app/short-rent/fiscal/issuer',
+    context: 'short-rent',
+    requiredPermissions: [],
+    component: async () => ({
+      default: (await import('@/features/fiscal/billing-wizard/legacy-issuer-redirect')).LegacyIssuerRedirect,
+    }),
+  },
+  {
     path: '/app/short-rent/fiscal/reports',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     component: async () => ({
       default: (await import('@/features/fiscal/fiscal-reports-page')).FiscalReportsPage,
+    }),
+  },
+  {
+    // The fiscal documents (FIS-04, FIS-07, NF-84, NF-87, E06/F03/US04/T01): the list of the ones CasaZen issued for its direct bookings and of the ones imported read-only from the
+    // channel manager, with the state of each in simple words, the PDF and the XML, and the CSV and the Excel file. A tab of Incassi next to Regime fiscale. It asks what the backend asks:
+    // `payment.read` for the list, the downloads and the files (`FiscalDocumentsController`), plus `property.read` for the setting that tells who issues. It exists while either flag of the
+    // documents is on (CasaZen issues, or the channel manager's documents are imported): with both off the tab, the card of the fiscal page and the link of the payment ledger are not there
+    // and the address leads to the home of the area. The ledger of the payments (E06/F04/US01/T04) links to it only while this entry is here, its flags are on and the caller holds these.
+    path: '/app/short-rent/fiscal/documents',
+    context: 'short-rent',
+    requiredPermissions: ['property.read', 'payment.read'],
+    featureFlag: ['fiscalDocumentIssuance', 'octorateDocumentImport'],
+    navKey: 'nav.fiscalDocuments',
+    navParent: '/app/short-rent/payments',
+    navOrder: 3.5,
+    icon: 'FileText',
+    component: async () => ({
+      default: (await import('@/features/fiscal/documents/fiscal-documents-page')).FiscalDocumentsPage,
     }),
   },
   {
@@ -247,6 +331,73 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
   },
   {
+    // «Commercialista» (E15/F02/US01/T01, NF-101, NF-115): the summary of the agency for a month or a year, as compact tables, and the ZIP the accountant receives, from one page. A tab of
+    // Incassi next to Report (2.25: Documenti keeps its 2.5, Regime fiscale its 3). It asks what the API asks at its door, `payment.read` (the owner, the administrators, the property managers
+    // and the accountant hold it); the owner accounting inside it is shown only when the server says the caller may read it. It exists only while the flag `accountantPackage` is on: off, the
+    // tab is not there, the address leads to the home of the area and the backend answers 404 to both endpoints. For who may not read payments, there is no way in.
+    path: '/app/short-rent/accountant',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    featureFlag: 'accountantPackage',
+    navKey: 'nav.accountant',
+    navParent: '/app/short-rent/payments',
+    navOrder: 2.25,
+    icon: 'FileCheck',
+    component: async () => ({ default: (await import('@/features/accountant/accountant-package-page')).AccountantPackagePage }),
+  },
+  {
+    // The documents of the organization in one place (NF-99, REP-04): the property documents, the contracts, the tourist tax receipts and, as
+    // their tasks arrive, the compliance proofs and the fiscal documents; filtered by type, days and property, searched, downloaded one by one
+    // or as a ZIP of a period. A tab of Incassi right after Report (2.5: Regime fiscale keeps its 3). It asks what the API asks at its door,
+    // `property.read` (backend policy `SharedPropertyRead`); the server then opens each type with the permission of its own area, and the page
+    // offers only the types it sends. For who may not read payments, the page that hangs from Incassi takes a place in "Altro" (UI-04a).
+    path: '/app/short-rent/documents',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.documents',
+    navParent: '/app/short-rent/payments',
+    navOrder: 2.5,
+    icon: 'FolderOpen',
+    component: async () => ({ default: (await import('@/features/document-archive/documents-page')).DocumentsPage }),
+  },
+  {
+    // The tourist tax per comune and period (NF-100, REP-05): owed, paid and the receipts, where the host records a payment. A page of
+    // the list of reports (its row "Apri" leads here), in no menu and no tab; reading it asks for payments, and the buttons that write
+    // ask for `payment.write` inside the page.
+    path: '/app/short-rent/reports/tourist-tax',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    component: async () => ({ default: (await import('@/features/reports/tourist-tax/tourist-tax-summary-page')).TouristTaxSummaryPage }),
+  },
+  {
+    // The tourist tax at year end (E18/F01/US02/T03, NF-117): the year's figures of the Italian comuni and the three files an agency hands over (the declaration to the comuni, the account of the agent, the count of the nights
+    // of Ticino). A page of the list of reports (its row «Apri» leads here), in no menu and no tab. It asks what the API asks at its door, `payment.read`; the files need the whole organization and the server says so when
+    // they do not get it. It exists only while the flag `taxReportingExports` is on: off, there is no row in the list, the address leads to the home of the area and the backend answers 404 to every file.
+    path: '/app/short-rent/reports/tourist-tax/year-end',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    featureFlag: 'taxReportingExports',
+    component: async () => ({ default: (await import('@/features/reports/tourist-tax/tourist-tax-year-end-page')).TouristTaxYearEndPage }),
+  },
+  {
+    // What came in, what is still to collect and what reached the account (NF-97, REP-02): by date, payment method and channel, the balances
+    // of the stays and the credits. A page of the list of reports (its row "Apri" leads here), in no menu and no tab; money in aggregate, so
+    // it asks for `payment.read`, as the backend does for every read, and the server limits it to the properties the person reaches.
+    path: '/app/short-rent/reports/collections',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    component: async () => ({ default: (await import('@/features/reports/collections/collections-report-page')).CollectionsReportPage }),
+  },
+  {
+    // What each channel costs (NF-98, REP-03): gross, commission and net of each channel, the card fees of the direct stays and how each channel
+    // settles its commission. A page of the list of reports (its row "Apri" leads here), in no menu and no tab; it asks for `payment.read`, as
+    // the backend does, and the server limits it to the properties the person reaches.
+    path: '/app/short-rent/reports/channel-costs',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    component: async () => ({ default: (await import('@/features/reports/channel-costs/channel-costs-page')).ChannelCostsPage }),
+  },
+  {
     // The reviews of the host's properties (DB-12b): the guests' reviews of the stays booked on the site, newest first, with the one
     // answer of the host and the report to CasaZen. A tab of Prenotazioni, after the guests.
     path: '/app/short-rent/reviews',
@@ -257,6 +408,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navOrder: 3,
     icon: 'Star',
     component: async () => ({ default: (await import('@/features/reviews/host-reviews-page')).HostReviewsPage }),
+  },
+  {
+    // The steps of a booking (casazen/backend#978): which ones CasaZen does by itself (the check-in link, the arrival, the departure, the property ready) and which ones the
+    // host does. The last tab of Prenotazioni: whoever reads the bookings reads it, only the organization administrator changes it (the server checks it again).
+    path: '/app/short-rent/bookings/flow',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.bookingFlow',
+    navParent: '/app/short-rent/bookings',
+    navOrder: 4,
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/bookings/booking-flow-page')).BookingFlowPage }),
   },
   {
     // The calendars of all the properties in one list (SR-10b): the channel, when each was last read, what needs a look and "Sincronizza ora";
@@ -272,49 +435,102 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/channels/channels-page')).ChannelsPage }),
   },
   {
-    // Biometric verification queue (NF-12): operator verifications pending decision. A tab of "Da approvare", the other queue of decisions.
+    path: '/app/short-rent/activation',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.propertyActivation',
+    navParent: '/app/short-rent/properties',
+    navOrder: 4,
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/properties/property-activation-page')).PropertyActivationPage }),
+  },
+  {
+    // Identity verification console (NF-12, NF-50, NF-51): the verifications that wait for an operator, with why and the checks, and the figures.
+    // The last tab of the Cruscotto, after «Da approvare», the other queue of decisions. It asks the permission the API asks for every call of it,
+    // `verification.decision` (the owner, the administrators and the property managers; E03/F04/US02/T01): an entry the user opens must not end on a 403.
     path: '/app/short-rent/verifications',
     context: 'short-rent',
-    requiredPermissions: ['verification.decide'],
+    requiredPermissions: ['verification.decision'],
     navKey: 'nav.verifications',
-    navParent: '/app/short-rent/approval-queue',
-    navOrder: 1,
+    navParent: '/app/short-rent',
+    navOrder: 3,
     icon: 'ShieldCheck',
     component: async () => ({ default: (await import('@/pages/VerificationQueuePage')).VerificationQueuePage }),
   },
   {
-    // Approval queue (NF-06): items requiring human decision before execution. In "Altro", the entry of the queues of decisions:
-    // the verifications of the guests are its other tab.
+    // Approval queue (NF-06, NF-68): items requiring human decision before execution: the drafts of messages, the campaigns, the texts of the AI.
+    // A tab of the Cruscotto («Da approvare»), with the «Da fare» list and the verifications of the guests: what waits for the host is one section
+    // of the menu, not entries of "Altro". Deciding asks its own permission, `approval.decide` (the owner, the administrators and the property
+    // managers; not the collaborator or the accountant), the one the API asks for every call of the queue: an entry the user opens must not end on a 403.
     path: '/app/short-rent/approval-queue',
     context: 'short-rent',
-    requiredPermissions: ['property.write'],
+    requiredPermissions: ['approval.decide','marketing.manage'],
+    permissionMode: 'any',
     navKey: 'nav.approvalQueue',
-    navPlacement: 'secondary',
-    navOrder: 29,
+    navTabKey: 'nav.toApprove',
+    navParent: '/app/short-rent',
+    navOrder: 2,
     icon: 'CheckSquare',
     component: async () => ({ default: (await import('@/pages/ApprovalQueuePage')).ApprovalQueuePage }),
   },
   {
+    // «Da fare» (NF-07, ADR-026): everything the system asks of the host, the most urgent first, each with its «Fallo ora»; the counter
+    // is the number of the urgent ones, on its tab and on the «Guida» of the header. The first tab of the Cruscotto after the home itself,
+    // which carries the next items as a path (`TodoPath`). The server shows each user only the items its scope reaches (HostScope), so the
+    // page asks what reading the properties asks, held by every role of the area; each «Fallo ora» opens a page that asks its own permission
+    // (`ACTION_ROUTE_MAP`). Not the staff page `/app/admin/activities`.
+    path: '/app/short-rent/activities',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.todo',
+    navParent: '/app/short-rent',
+    navOrder: 1,
+    navCount: 'activities',
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/todo/todo-list')).TodoListPage }),
+  },
+  {
     // The domain of the booking site: the last tab of the section, after its look and its documents.
     path: '/app/short-rent/settings/domain',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.domain',
-    navParent: '/app/short-rent/vetrina',
-    navOrder: 3,
     icon: 'Globe',
+    navOrder: 40,
     component: async () => ({
       default: (await import('@/features/settings/domain/custom-domain-settings-page')).CustomDomainSettingsPage,
+    }),
+  },
+  {
+    // «Incorpora nel tuo sito» (E41/F03/US01, NF-147, NF-149): where the agency takes a booking widget to its own website (code to paste, preview, plugin for WordPress, tag manager). The tab
+    // right after the domain, which it extends and links to. Only with the flag `siteEmbed` (backend `SiteEmbed`, off by default): while it is off the tab is not there and the address leads to the
+    // home of the area. It is the page of the account administrator (`orgBillingAdmin`, as the tabs around it): the domain settings it reads are the administrator's to read, and a refused read would
+    // send the whole app to the page of no access, so anyone else who opens the address is told so and nothing is asked.
+    path: '/app/short-rent/settings/embed',
+    navParent: '/app/short-rent/settings',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'siteEmbed',
+    navKey: 'nav.embed',
+    icon: 'Store',
+    navOrder: 41,
+    component: async () => ({
+      default: (await import('@/features/settings/embed/embed-settings-page')).EmbedSettingsPage,
     }),
   },
   {
     // Plans and Stripe checkout; also the return page of the checkout and of the billing portal (backend PL-11). In no
     // menu since UI-04a: the org badge of the header leads here (`usePlanPagePath`) and the page links to the billing one.
     path: '/app/short-rent/settings/plan',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.plan',
+    icon: 'CreditCard',
+    navOrder: 70,
     component: async () => ({
       default: (await import('@/features/billing/plans-page')).PlansPage,
     }),
@@ -322,24 +538,38 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // In no menu since UI-04a: the plan page links to it (and the org badge to the plan page).
     path: '/app/short-rent/settings/billing',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.billing',
+    icon: 'Receipt',
+    navOrder: 80,
     component: async () => ({
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsPage,
     }),
   },
   {
-    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23).
+    path: '/app/short-rent/settings',
+    context: 'short-rent',
+    requiredPermissions: [],
+    navKey: 'nav.settings',
+    navPlacement: 'footer',
+    navOrder: 40,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/settings-index')).SettingsIndex }),
+  },
+  {
+    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23). «Impostazioni», pinned at the foot of the sidebar: the integration
+    // and the assistant are its tabs, and the menu calls it by the section while its tab keeps the name of the page («Organizzazione»).
     path: '/app/short-rent/settings/organization',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.organization',
-    navPlacement: 'secondary',
-    navOrder: 33,
     icon: 'Settings',
+    navOrder: 10,
     component: async () => ({
       default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsPage,
     }),
@@ -347,13 +577,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Public-site branding: logo, hero, color, tagline, theme (BK-12, A3-17). Short-rent only: it is the booking site.
     path: '/app/short-rent/settings/site-appearance',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.siteAppearance',
-    navParent: '/app/short-rent/vetrina',
-    navOrder: 1,
     icon: 'Palette',
+    navOrder: 30,
     component: async () => ({
       default: (await import('@/features/settings/site-appearance/site-appearance-page')).SiteAppearancePage,
     }),
@@ -361,13 +591,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // The host's own privacy notice and booking terms, shown on the public site (BK-14, A3-21). Short-rent only.
     path: '/app/short-rent/settings/site-documents',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.siteDocuments',
-    navParent: '/app/short-rent/vetrina',
-    navOrder: 2,
     icon: 'FileText',
+    navOrder: 50,
     component: async () => ({
       default: (await import('@/features/settings/site-documents/site-documents-page')).SiteDocumentsPage,
     }),
@@ -375,29 +605,80 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Where the host connects the account that the booking payments go to: the last tab of Incassi.
     path: '/app/short-rent/settings/payments',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.stripeConnect',
-    navParent: '/app/short-rent/payments',
-    navOrder: 4,
     icon: 'Wallet',
+    navOrder: 60,
     component: async () => ({
       default: (await import('@/features/settings/payments-page')).ConnectPaymentsPage,
     }),
   },
   {
     // A host recommends CasaZen to a friend: any member of a host org, whatever the role (backend policy `SharedPropertyRead`, held by every
-    // host role). Daily quota per org. No role is assigned: the invited person signs up as usual.
+    // host role). Daily quota per org. No role is assigned: the invited person signs up as usual. Pinned at the foot of the sidebar, under «Impostazioni».
     path: '/app/short-rent/settings/invitations',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navPlacement: 'secondary',
-    navOrder: 34,
-    icon: 'UserPlus',
+    icon: 'Gift',
+    navOrder: 20,
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesPage,
     }),
+  },
+  {
+    path: '/app/short-rent/settings/ai',
+    navParent: '/app/short-rent/settings',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navKey: 'aiSettings.title',
+    icon: 'Sparkles',
+    navOrder: 90,
+    component: async () => ({ default: (await import('@/features/settings/ai-settings-page')).AiSettingsPage }),
+  },
+  {
+    // The assistant of the guests' messages (E05/F05/US04/T02, NF-66): its rules, its properties and its situations, a tab of «Impostazioni». Only with the flag
+    // `messageAssistant` (backend `MessageAssistant`, off by default): while it is off the tab is not there, the address leads to the home of the area and the server
+    // answers 404 to every endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the
+    // rules, the situations and the answers of the organization are changed by the organization administrator alone, and the others read them with the reason in words.
+    // Who may not open «Impostazioni» (not the organization administrator) finds it in "Altro", as every page whose section is closed to its user.
+    path: '/app/short-rent/settings/guest-portal',
+    context: 'short-rent',
+    requiredPermissions: ['guestportal.manage', 'property.read'],
+    featureFlag: 'guestPortal',
+    navKey: 'guestPortal.host.title',
+    navParent: '/app/short-rent/settings',
+    navOrder: 82,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/guest-portal-settings-page')).GuestPortalSettingsPage }),
+  },
+  {
+    path: '/app/short-rent/settings/assistant',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    featureFlag: 'messageAssistant',
+    navKey: 'nav.assistant',
+    navParent: '/app/short-rent/settings/ai',
+    navOrder: 2,
+    icon: 'Sparkles',
+    component: async () => ({ default: (await import('@/features/assistant/assistant-settings-page')).AssistantSettingsPage }),
+  },
+  {
+    // Daily operations. AI settings also links to this page. The API requires organization-wide
+    // access to change routines and the menu observes the feature flag and commercial entitlement.
+    path: '/app/short-rent/automations',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    featureFlag: 'routines',
+    navKey: 'nav.routines',
+    navPlacement: 'primary',
+    navGroup: 'everyday',
+    navOrder: 3.75,
+    icon: 'Workflow',
+    component: async () => ({ default: (await import('@/pages/RoutinesPage')).RoutinesPage }),
   },
   {
     path: '/app/short-rent/bookings',
@@ -410,7 +691,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navBottom: 3,
     // "Pay at the property" requests waiting for the host's answer (the query of the requests panel of this page).
     navCount: 'bookingRequests',
-    icon: 'Calendar',
+    icon: 'BedDouble',
     component: async () => ({ default: (await import('@/features/bookings/bookings-page')).BookingsPage }),
     legacyPaths: ['/bookings'],
   },
@@ -435,6 +716,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/bookings/calendar'],
   },
   {
+    // A change of the price and the rules of many days of many properties, in a guided wizard with a summary before anything is sent (NF-78, NF-05). It is not in a menu: the
+    // calendar has the button that opens it, and it needs the right to write properties (the API checks it again for every property).
+    path: '/app/short-rent/bookings/calendar/bulk',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({ default: (await import('@/features/bookings/calendar-bulk-page')).CalendarBulkPage }),
+  },
+  {
     path: '/app/short-rent/bookings/:id/checkout',
     context: 'short-rent',
     requiredPermissions: ['booking.write'],
@@ -442,6 +731,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/compliance/checkout-wizard')).CheckoutWizardPage,
     }),
     legacyPaths: ['/bookings/:id/checkout'],
+  },
+  {
+    // The host wizard "Guest check-in" of a booking (NF-40): guests, documents, checks, tax and send. Opened from the "To do" item
+    // `StartCheckIn` and from the booking whose guest data are incomplete.
+    path: '/app/short-rent/bookings/:id/check-in',
+    context: 'short-rent',
+    requiredPermissions: ['booking.write'],
+    component: async () => ({
+      default: (await import('@/features/checkin/wizard/checkin-wizard')).CheckInWizardPage,
+    }),
   },
   {
     path: '/app/short-rent/marketplace',
@@ -488,12 +787,44 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/marketplace/supplier-page')).MarketplaceSupplierPage }),
   },
   {
-    // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan (`agencyTier`). Next to
-    // the interventions they are asked for: a tab of Immobili, there while the flag is on.
+    // The guided activation of a sales channel or a connected tool through the channel manager (E09/F02/US04/T01, MKT-03, NF-56): `channel` or `tool` and the
+    // code of the portal in the catalog. In no menu: the cards of the marketplace and the Active tab lead here, with the property and where to come back to
+    // in the query. It writes the connection, so it asks `ota.write` and the channel manager's flag, as the backend does.
+    path: '/app/short-rent/marketplace/activate/:kind/:code',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    featureFlag: 'octorateConnector',
+    component: async () => ({
+      default: (await import('@/features/marketplace/activation/activation-wizard-page')).ActivationWizardPage,
+    }),
+  },
+  {
+    // The guided request of a function of the channel manager's license (E09/F02/US04/T03, MKT-03, PO-12, D21): CasaZen cannot switch a module of the license on, so the
+    // wizard prepares the request and records it as Requested until the license shows the module. In no menu: the cards and the detail of the function lead here. Same
+    // permission and flag as the activation: the license is read from, and the request is recorded for, the connected channel manager.
+    path: '/app/short-rent/marketplace/request/:moduleCode',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    featureFlag: 'octorateConnector',
+    component: async () => ({
+      default: (await import('@/features/marketplace/functions/licensed-request-wizard-page')).LicensedRequestWizardPage,
+    }),
+  },
+  {
+    // The hand-off to a Partner Hub partner (E09/F02/US04/T04, MKT-03, S18, Q-006): the activation happens on the partner's own site, so the wizard prepares what the
+    // partner will ask, opens the site in the same tab and records what the person declares. In no menu: the cards of the Partners group lead here. The partners never
+    // depend on the channel manager, so there is no flag; the declaration is written (`ota.write`), as the backend asks.
+    path: '/app/short-rent/marketplace/partners/:code/activate',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    component: async () => ({
+      default: (await import('@/features/marketplace/partners/partner-wizard-page')).PartnerWizardPage,
+    }),
+  },
+  {
     path: '/app/short-rent/trusted-suppliers',
     context: 'short-rent',
-    requiredPermissions: ['property.read'],
-    featureFlag: 'agencyTier',
+    requiredPermissions: [ORG_BILLING_ADMIN_PERMISSION],
     navKey: 'nav.trustedSuppliers',
     navParent: '/app/short-rent/properties',
     navOrder: 2,
@@ -534,6 +865,44 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/cin')).CinCompliancePage,
     }),
     legacyPaths: ['/app/short-rent/cin', '/cin'],
+  },
+  {
+    // «Identificazione e accesso» (E03/F01/US03): the lock code of each property, write-only, and the way to the printable QR of its entrance. A
+    // tab of Adempimenti (the page links from there and from what is still to do: `?property=<id>` opens the code of one property). It asks what
+    // setting a code asks, `property.write` (the policy of `POST properties/{id}/access-code`); the list it reads asks `property.read`.
+    path: '/app/short-rent/compliance/identification',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navKey: 'nav.identification',
+    navParent: '/app/short-rent/compliance',
+    navOrder: 3,
+    icon: 'ShieldCheck',
+    component: async () => ({
+      default: (await import('@/features/compliance/identification/identification-page')).IdentificationPage,
+    }),
+  },
+  {
+    // «Attiva l'invio automatico alla Polizia» (E03/F01/US02/T02, NF-42): the wizard that sets who sends the guest data to the police and to ISTAT for one property
+    // (`?property=<id>`), with the passage on the panel of the channel manager and the connection test. In no menu: the panel «Invio a Polizia e ISTAT» of the property page
+    // (its «Attiva o ricollega» appears because this route exists), the cockpit of the adempimenti, the «Da fare» of the activation and the onboarding lead here. It asks what
+    // changing the sender asks, `property.write` (the endpoints it calls ask it); the property is read with `property.read`. No flag: the channel manager is offered only where
+    // the server says it can send, so with the connector off the wizard has only the other ways.
+    path: '/app/short-rent/compliance/sender',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    component: async () => ({
+      default: (await import('@/features/compliance/sender-wizard/sender-wizard')).SenderWizardPage,
+    }),
+  },
+  {
+    // «Notifica alla polizia (Ticino)» (casazen/backend#979): the guided notification of the guests of a property in canton Ticino to the cantonal police is a LAYER of the
+    // cockpit now (E30/F02/US03/T02: `?detail=ticino:<property>[:<day>]` over `/app/short-rent/compliance`, opened by the cockpit item `NotifyTicinoPolice`, the bell and the
+    // property page). This address is the old page, which stays only so that no link breaks (notifications, e-mails, bookmarks): `?property=<id>&date=yyyy-MM-dd` redirects to
+    // the cockpit with the layer open on that property and day, and the page draws nothing of its own. In no menu. The layer reads guest data (`booking.read`; the API also asks `guest.read`).
+    path: '/app/short-rent/compliance/ticino',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/pages/SwissCompliancePage')).SwissCompliancePage }),
   },
   {
     path: '/app/short-rent/bookings/:id',
@@ -609,6 +978,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     featureFlag: 'otaPartnerApi',
   },
   {
+    // «Collega i tuoi canali» (E02/F01/US01/T04, ADR-023): the guided connection of the inventory to the channel manager, behind its flag.
+    // In no menu: the onboarding, the list of the properties and the settings of the integrations lead here. It is also the callback page
+    // the channel manager sends the host back to after the consent (`Octorate__RedirectUri` of the backend is this address on the host of
+    // the web app), so it may open with a `code` and a `state` in the address. Writing the connection asks `ota.write`, as the backend does.
+    path: '/app/short-rent/integrations/octorate',
+    context: 'short-rent',
+    requiredPermissions: ['ota.write'],
+    component: async () => ({
+      default: (await import('@/features/integrations/octorate/connect-wizard')).OctorateConnectWizardPage,
+    }),
+    featureFlag: 'octorateConnector',
+  },
+  {
     path: '/app/short-rent/vetrina',
     context: 'short-rent',
     requiredPermissions: [],
@@ -628,6 +1010,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'User',
     component: async () => ({ default: (await import('@/features/profile/profile-page')).ProfilePage }),
     legacyPaths: ['/profile'],
+  },
+  {
+    // Notifiche (E05/F03/US02, NF-65): how the user wants to be alerted, kind of event by kind of event, and the quiet hours. The second tab of
+    // Profilo: the page hangs from the profile, which the menu of the user leads to (`resolveNavEntries`: it is in no menu and not in "Altro").
+    // The settings are the user's own, so it asks no permission, and the API takes the user from the token.
+    path: '/app/short-rent/profile/notifications',
+    context: 'short-rent',
+    requiredPermissions: [],
+    navKey: 'nav.notificationPreferences',
+    navParent: '/app/short-rent/profile',
+    navOrder: 1,
+    icon: 'Bell',
+    component: async () => ({
+      default: (await import('@/features/profile/notification-preferences-page')).NotificationPreferencesPage,
+    }),
   },
   {
     // Panoramica (LR-05): the home of the area, at its bare address. "Adesso" (the step of the landlord that cannot wait), the leases by
@@ -652,37 +1049,29 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/long-rent/leases',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
+    // Contracts are managed from the property's Contracts tab, not a separate menu entry.
+    // Old list addresses now lead back to the properties.
     navKey: 'nav.leases',
-    navGroup: 'everyday',
-    navPlacement: 'primary',
-    navOrder: 2,
-    navBottom: 2,
     icon: 'FileText',
-    component: async () => ({ default: (await import('@/features/leases')).LeasesPage }),
+    component: async () => ({ default: (await import('@/features/leases/legacy-leases-redirect')).LegacyLeasesRedirect }),
     legacyPaths: ['/leases'],
   },
   {
-    // Canoni (LR-04b): the rent register of the month, next to the leases it comes from. Reading it asks what the leases ask.
+    // Canoni (LR-04b): the rent register of the month. It is not a menu entry: a canone exists only inside a contract,
+    // and the sheet of that contract opens it. This address stays for the register of every contract, linked from there.
     path: '/app/long-rent/rents',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.rents',
-    navGroup: 'everyday',
-    navPlacement: 'primary',
-    navOrder: 3,
-    navBottom: 3,
     icon: 'Wallet',
     component: async () => ({ default: (await import('@/features/leases')).RentsPage }),
   },
   {
-    // Scadenze (LR-05): the agenda of the dates not to miss, month by month. A tab of Contratti, after the tenants; the overview links
-    // here too. Reading it asks what the leases ask.
+    // Compatibility address for the area agenda. Contract deadlines live on the contract sheet.
     path: '/app/long-rent/deadlines',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentDeadlines',
-    navParent: '/app/long-rent/leases',
-    navOrder: 2,
     icon: 'CalendarDays',
     component: async () => ({
       default: (await import('@/features/leases/deadlines/long-rent-deadlines-page')).LongRentDeadlinesPage,
@@ -690,14 +1079,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // Inquilini (LR-09): who lives in the properties let long term, since when, for how much and how punctually, with the copy of a
-    // person's data and the request to erase them. A tab of Contratti, before the deadlines. Reading it asks what the leases ask; the
+    // person's data and the request to erase them. Tenant data lives inside each contract. The compatibility address remains available; the
     // copy and the erasure ask `lease.create` too (the sheet hides them from who may not).
     path: '/app/long-rent/tenants',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentTenants',
-    navParent: '/app/long-rent/leases',
-    navOrder: 1,
     icon: 'Users',
     component: async () => ({ default: (await import('@/features/leases/tenants/tenants-page')).TenantsPage }),
   },
@@ -726,6 +1113,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['lease.read'],
     component: async () => ({ default: (await import('@/features/leases')).LeaseDetailPage }),
     legacyPaths: ['/leases/:id'],
+  },
+  {
+    // Maintenance requests of one lease: the landlord or the agency approves or rejects, and pays only after approval.
+    // The same list is the Manutenzione section of the property. The tenant uses /portale-conduttore/.../richiesta-manutenzione.
+    path: '/app/long-rent/leases/:id/manutenzione',
+    context: 'long-rent',
+    requiredPermissions: ['lease.read'],
+    component: async () => ({
+      default: (await import('@/features/maintenance-requests/landlord-page')).LandlordMaintenancePage,
+    }),
   },
   {
     // «Continua il contratto» (LR-06a): the wizard on a draft that exists on the server, the same from any device. It reads the rules
@@ -764,9 +1161,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.properties',
     navGroup: 'portfolio',
     navPlacement: 'primary',
-    navOrder: 4,
-    navBottom: 4,
-    icon: 'Home',
+    navOrder: 3,
+    navBottom: 2,
+    icon: 'Building2',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
     }),
@@ -807,15 +1204,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Interventi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the request to the
     // payment. Reading them asks what reading the properties asks; asking for one and acting on it ask `property.write` (the page
-    // hides the buttons from who may not). Fifth of the main menu: the bar of the phone holds four places, and since the Panoramica
-    // (LR-05) is the first of them, Interventi is behind "Altro" on the phone.
+    // hides the buttons from who may not). The entry point is the Interventi tab of each property.
     path: '/app/long-rent/service-requests',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.serviceRequests',
-    navGroup: 'portfolio',
-    navPlacement: 'primary',
-    navOrder: 5,
     icon: 'Wrench',
     component: async () => ({
       default: (await import('@/features/service-requests/long-rent')).LongRentRequestsPage,
@@ -831,15 +1224,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // The fiscal report of the area (LR-11b): per lease, an estimate for the accountant, with the file to download. For who may read
-    // the leases; the others find the reserved page. A tab of Canoni, the rents it is worked out from.
+    // the leases; the others find the reserved page. A standalone report, without contract-list tabs.
     path: '/app/long-rent/fiscal',
     context: 'long-rent',
     requiredPermissions: ['lease.read'],
     navKey: 'nav.longRentFiscal',
-    navParent: '/app/long-rent/rents',
-    navOrder: 1,
+    navPlacement: 'secondary',
+    navOrder: 3,
     icon: 'Receipt',
     component: async () => ({ default: (await import('@/features/leases/fiscal/long-rent-fiscal-page')).LongRentFiscalPage }),
+  },
+  {
+    // Condominium payments are made externally; this page lists reminders and records manual settlement.
+    path: '/app/long-rent/payments',
+    context: 'long-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.longRentPayments',
+    navPlacement: 'secondary',
+    navOrder: 35,
+    icon: 'CreditCard',
+    component: async () => ({
+      default: (await import('@/features/leases/landlord-payments-page')).LandlordPaymentsPage,
+    }),
   },
   {
     // In no menu: the menu of the user (header and phone sheet, `profilePathForContext`) leads here.
@@ -856,46 +1262,63 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   // UI-04a (the org badge of the header leads to the plan page, which links to the billing one).
   {
     path: '/app/long-rent/settings/plan',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.plan',
+    icon: 'CreditCard',
+    navOrder: 70,
     component: async () => ({
       default: (await import('@/features/billing/plans-page')).PlansPageContent,
     }),
   },
   {
     path: '/app/long-rent/settings/billing',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.billing',
+    icon: 'Receipt',
+    navOrder: 80,
     component: async () => ({
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
     }),
   },
-  // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell.
+  // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell. «Impostazioni» pinned at the foot of the sidebar, as in
+  // short-rent, so the two rental areas keep their settings in the same place.
+  {
+    path: '/app/long-rent/settings',
+    context: 'long-rent',
+    requiredPermissions: [],
+    navKey: 'nav.settings',
+    navPlacement: 'footer',
+    navOrder: 40,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/settings-index')).SettingsIndex }),
+  },
   {
     path: '/app/long-rent/settings/organization',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.organization',
-    navPlacement: 'secondary',
-    navOrder: 33,
     icon: 'Settings',
+    navOrder: 10,
     component: async () => ({
       default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsContent,
     }),
   },
   {
     path: '/app/long-rent/settings/invitations',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navPlacement: 'secondary',
-    navOrder: 34,
-    icon: 'UserPlus',
+    icon: 'Gift',
+    navOrder: 20,
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesContent,
     }),
@@ -963,75 +1386,195 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 3,
     navBottom: 3,
-    icon: 'Home',
+    icon: 'Building2',
     component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
   },
   {
-    // Withholding tax management (ADR-018): withholding summary by month/owner/apartment, F24 preview and download,
-    // and payment reconciliation. For org billing administrators who handle tax compliance. Agency plan only (`agencyTier`).
+    // «Proprietari» (E13/F02/US01/T01, NF-110, NF-115): the owners of the properties the agency manages, with their kind, their settlement currency and the mandate in force (the commission,
+    // or «manca il mandato»), and the way to the financial page of each, where the mandate and the billing address are written. It reads the endpoints of the owners (`agency.owner.view`) and
+    // writes with `agency.owner.financial.manage`, which only the owner and the administrators hold and which is not among the context permissions of `/me/contexts`: like the other pages of
+    // the agency's money, it is behind the plan (`agencyTier`) and for the org billing administrator, and the page checks the role and the plan of the organization before it reads anything.
+    // In the group «Il tuo account», after the people and the properties; its pages (the financial page of an owner) hang from its address.
+    path: '/app/account/owners',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.owners',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 4,
+    icon: 'UserRound',
+    component: async () => ({ default: (await import('@/features/owners/owners-list-page')).OwnersListPage }),
+  },
+  {
+    // «Rendiconti» (E06/F05/US01/T02, NF-25): the monthly statements of the agency's owners, with the real PDF and CSV. It reads and writes the agency
+    // endpoint `/statements` (ADR-010: only an org on the Agency plan, so behind `agencyTier`), which is the agency's own and not the platform console's:
+    // it was `/app/admin/statements` and that address stays as an old one that opens this page. The backend asks `agency.statement.view` for it (and
+    // `agency.statement.manage` to approve and publish), which the owner and the administrators hold from their role in the org and which is not among the
+    // context permissions of `/me/contexts` (so it cannot be a `requiredPermissions` entry): like the other pages of the agency's money, the entry is for
+    // the org billing administrator, who is that owner or administrator, and the page checks the role and the plan of the organization before it reads anything (the flag is the environment's, the plan is each organization's: the backend refuses any other plan with a bare 403).
+    path: '/app/account/statements',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.statements',
+    // The first tab of «Chiusura mensile»: the month of the owners is one section, in the order its steps follow (statements, withholding, transfers).
+    navParent: '/app/account/owner-close',
+    navOrder: 1,
+    icon: 'FileText',
+    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
+    legacyPaths: ['/app/admin/statements'],
+  },
+  {
+    // «Fatture ai proprietari» (E13/F02/US01/T03, NF-114): the invoices of the agency to its owners, made from their statements, with the filters of the month and of the owner and the PDF of
+    // each. A tab of «Chiusura mensile», right after the statements they are made from (the order asks for 1.5: the withholding and the transfers keep theirs). Behind the flag
+    // `ownerInvoicing` (the backend answers 404 while it is off, and the page is not in the menu); the page checks the role and the agency plan of the organization before it reads anything.
+    path: '/app/account/owner-invoices',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'ownerInvoicing',
+    navKey: 'nav.ownerInvoices',
+    navParent: '/app/account/owner-close',
+    navOrder: 1.5,
+    icon: 'Receipt',
+    component: async () => ({ default: (await import('@/features/owner-invoices/owner-invoices-page')).OwnerInvoicesPage }),
+  },
+  {
+    // «Autofatture (TD17)» (E17/F03/US01/T02, NF-116): the invoices CasaZen makes for an Italian account holder when a foreign portal charges it a commission with no VAT: the drafts of the month, their review and their issue.
+    // A tab of «Chiusura mensile» right after the invoices to the owners (the order asks for 1.6: the withholding and the transfers keep theirs): the drafts are made from the owner ledger of the month. It asks what the API asks at
+    // its door, `agency.invoice.manage` (the owner and the administrators of the organization, whole organization only, on the agency plan: the page checks the role and the plan before it reads anything), and it exists only
+    // while the issuance of fiscal documents is on (off: no entry, the address leads to the home of the area, and the backend answers 404).
+    path: '/app/account/self-billing',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'fiscalDocumentIssuance',
+    navKey: 'nav.selfBilling',
+    navParent: '/app/account/owner-close',
+    navOrder: 1.6,
+    icon: 'Receipt',
+    component: async () => ({ default: (await import('@/features/fiscal/self-billing/self-billing-page')).SelfBillingPage }),
+  },
+  {
+    // Withholding tax management (ADR-018): the withholding of the month by owner, the F24 with its PDF and the registration of its payment. For the
+    // org billing administrator, who holds `agency.withholding.manage` as the owner or an administrator. Agency plan only (`agencyTier`).
     path: '/app/account/withholding',
     context: 'account',
     requiredPermissions: [],
     orgBillingAdmin: true,
     featureFlag: 'agencyTier',
     navKey: 'nav.withholding',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 4,
+    navParent: '/app/account/owner-close',
+    navOrder: 2,
     icon: 'FileText',
     component: async () => ({ default: (await import('@/pages/WithholdingPage')).WithholdingPage }),
   },
   {
-    // Wire transfer batch management (ADR-017): Generate SEPA payment files to pay property owners.
-    // For org billing administrators who handle owner payments. Agency plan only (`agencyTier`).
+    // Wire transfer batch management (ADR-017): the payment files (SEPA for EUR, Swiss for CHF) that pay the owners' published statements. The backend asks
+    // `agency.wire.manage`, which only the owner and the administrators hold: the entry is for the org billing administrator, and the page checks the role
+    // before it reads anything, the plan of the organization too. Agency plan only (`agencyTier`).
     path: '/app/account/wire-transfers',
     context: 'account',
     requiredPermissions: [],
     orgBillingAdmin: true,
     featureFlag: 'agencyTier',
     navKey: 'nav.wireTransfers',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 4.5,
+    navParent: '/app/account/owner-close',
+    navOrder: 3,
     icon: 'Send',
     component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
   },
   {
+    // «Commissioni dei canali» (E13/F02/US03/T01, NF-115, ⚖ R2): what each portal keeps when its reservation carries no commission, the same editor as the step of the wizard «Fatturazione» for the
+    // changes made after the setup. It reads the rules of the owner ledger (`agency.statement.view`) and writes them (`agency.owner.financial.manage`, the whole organization), which only the
+    // owner and the administrators hold and which are not among the context permissions of `/me/contexts`: like the other pages of the agency's money, it is behind the plan (`agencyTier`) and for the org
+    // billing administrator, and the page checks the role and the plan before it reads anything. A tab of «Chiusura mensile», after the transfers: the stays held back for a missing commission are found there.
+    path: '/app/account/channel-commissions',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.channelCommissions',
+    navParent: '/app/account/owner-close',
+    navOrder: 4,
+    icon: 'Coins',
+    component: async () => ({ default: (await import('@/features/owner-accounting/channel-commission-rules-page')).ChannelCommissionRulesPage }),
+  },
+  {
+    // «Chiusura mensile» (E06/F05/US02/T04, NF-110): the month of the agency's owners in four groups (to prepare, to check, approved, published) with
+    // its readiness and the next step of each owner: check, approve, publish, pay, close. It reads the endpoints of the owner accounting, which need
+    // the finance permissions of the owner and the administrators and the whole reach of the org, so it is behind the plan (`agencyTier`) and for the
+    // org billing administrator like the other pages of the agency's money. The entry of the group «Proprietari»: the statements, the withholding and
+    // the transfers are its tabs, the steps of the same month.
+    path: '/app/account/owner-close',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.ownerClose',
+    navGroup: 'owners',
+    navPlacement: 'primary',
+    navOrder: 5,
+    icon: 'CalendarCheck',
+    component: async () => ({ default: (await import('@/features/owner-accounting/month-end-close-page')).MonthEndClosePage }),
+  },
+  {
+    // One version of the statement of an owner (E06/F05/US02/T04): the formula, every line with its source, what changed since the version before, the
+    // payouts and the withholding evidence, the invoices linked from the external fiscal system. In no menu: «Chiusura mensile» leads here.
+    path: '/app/account/owner-close/versions/:versionId',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    component: async () => ({ default: (await import('@/features/owner-accounting/statement-detail-page')).StatementDetailPage }),
+  },
+  {
+    // «Dati finanziari» of an owner (E06/F05/US02/T04, NF-109, E13/F02/US01/T01): the fiscal profile masked, the versions of the mandate and the billing address (written only by who manages the
+    // owners' finances), the rule set with the accountant's approval, what the activation still misses. In no menu: the list «Proprietari», the month-end close and its anomalies lead here.
+    path: '/app/account/owners/:ownerId/financial',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    component: async () => ({ default: (await import('@/features/owners/owner-financial-profile-page')).OwnerFinancialProfilePage }),
+  },
+  {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
     // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
-    // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
+    // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one. Pinned at the foot of the
+    // sidebar with «Impostazioni», as the settings of the rental areas are.
     path: '/app/account/billing',
     context: 'account',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.billing',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 5,
+    navPlacement: 'footer',
+    navOrder: 40,
     icon: 'CreditCard',
     component: async () => ({ default: (await import('@/features/account/billing/account-billing-page')).AccountBillingPage }),
   },
   {
+    // In no menu, as the profile of every area: the menu of the user (header, sheet of the phone) leads to it.
     path: '/app/account/profile',
     context: 'account',
     requiredPermissions: [],
     navKey: 'nav.profile',
-    navPlacement: 'secondary',
-    navOrder: 30,
     icon: 'User',
     component: async () => ({ default: (await import('@/features/account/account-profile-page')).AccountProfilePage }),
   },
   {
     // "Impostazioni" (AM-08b): the org's name, the address of its booking site, its contact email and its Stripe account in one page, for
     // the owner and the administrators (`org.settings.manage`; the endpoints are the ones of `OrgBillingAdmin`, which they pass too). The
-    // organization and payments pages of the rental areas stay where they are.
+    // organization and payments pages of the rental areas stay where they are. Pinned at the foot of the sidebar.
     path: '/app/account/settings',
     context: 'account',
     requiredPermissions: ['org.settings.manage'],
     navKey: 'nav.accountSettings',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 7,
+    navPlacement: 'footer',
+    navOrder: 41,
     icon: 'Settings',
     component: async () => ({ default: (await import('@/features/account/account-settings-page')).AccountSettingsPage }),
   },
@@ -1063,12 +1606,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/users'],
   },
   {
+    // In no menu, as the profile of every area: the menu of the user (header, sheet of the phone) leads to it.
     path: '/app/admin/profile',
     context: 'admin',
     requiredPermissions: ['admin.users.read'],
     navKey: 'nav.profile',
-    navPlacement: 'secondary',
-    navOrder: 30,
     icon: 'User',
     component: async () => ({ default: (await import('@/features/admin/admin-profile-page')).AdminProfilePage }),
   },
@@ -1088,10 +1630,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
-    // The one section of the invites (supplier and host); the address stays the one of the supplier invite.
+    // Staff invitations are visible alongside Users and Suppliers.
     navKey: 'nav.invites',
-    navPlacement: 'secondary',
-    navOrder: 21,
+    navGroup: 'platform',
+    navPlacement: 'primary',
+    navOrder: 4,
     icon: 'UserPlus',
     component: async () => ({ default: (await import('@/features/admin/admin-invites-page')).AdminInvitesPage }),
     legacyPaths: ['/admin/suppliers/invite'],
@@ -1100,71 +1643,108 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/invite-qr',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
-    navKey: 'nav.inviteQr',
-    navPlacement: 'secondary',
-    navOrder: 22,
     icon: 'QrCode',
     component: async () => ({ default: (await import('@/features/admin/admin-invite-qr-page')).AdminInviteQrPage }),
   },
   {
+    // «Processi», in the group «Sistema» of the staff: the background jobs, with the configuration of the AI and the demo environment as its tabs.
     path: '/app/admin/jobs',
     context: 'admin',
     requiredPermissions: ['admin.jobs.read'],
     navKey: 'nav.jobs',
-    navGroup: 'platform',
+    navGroup: 'system',
     navPlacement: 'primary',
-    navOrder: 4,
+    navOrder: 7,
     navBottom: 4,
-    icon: 'Settings',
+    icon: 'Workflow',
     component: async () => ({ default: (await import('@/features/admin/admin-jobs-page')).AdminJobsPage }),
     legacyPaths: ['/admin/jobs'],
+  },
+  {
+    path: '/app/admin/property-preparation',
+    context: 'admin',
+    requiredPermissions: ['admin.jobs.read'],
+    navKey: 'nav.propertyPreparation',
+    navParent: '/app/admin/jobs',
+    navOrder: 5,
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/admin/admin-property-preparation-page')).AdminPropertyPreparationPage }),
   },
   {
     path: '/app/admin/ai',
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
     navKey: 'nav.ai',
-    navPlacement: 'secondary',
-    navOrder: 23,
+    navParent: '/app/admin/jobs',
+    navOrder: 1,
     icon: 'Sparkles',
     component: async () => ({ default: (await import('@/features/admin/admin-ai-page')).AdminAiPage }),
     legacyPaths: ['/admin/ai'],
+  },
+  {
+    path: '/app/admin/ai/playground',
+    context: 'admin',
+    requiredPermissions: ['admin.seo.read'],
+    component: async () => ({ default: (await import('@/features/admin/agent-playground')).AgentPlaygroundPage }),
   },
   {
     path: '/app/admin/seo',
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
     navKey: 'nav.seo',
-    navGroup: 'platform',
+    navGroup: 'content',
     navPlacement: 'primary',
     navOrder: 5,
     icon: 'Globe',
     component: async () => ({ default: (await import('@/features/admin/seo-dashboard-page')).SeoDashboardPage }),
     legacyPaths: ['/admin/seo'],
   },
-  // Marketing section (SE-03): surfaces existing tracking data (signup attributions, top-converting comuni).
+  // Marketing section (SE-03): surfaces existing tracking data (signup attributions, top-converting comuni). A tab of «SEO & Contenuti».
   {
     path: '/app/admin/marketing',
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
     navKey: 'nav.marketing',
-    navGroup: 'platform',
-    navPlacement: 'primary',
-    navOrder: 6,
+    navParent: '/app/admin/seo',
+    navOrder: 1,
     icon: 'TrendingUp',
     component: async () => ({ default: (await import('@/features/admin/marketing-page')).MarketingPage }),
     legacyPaths: ['/admin/marketing'],
   },
+  // Messages (E05/F02/US03, NF-61)
+  {
+    // Direct and OTA conversations in the Short Rent menu. The unread count follows the caller's booking scope.
+    path: '/app/short-rent/messages',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.messages',
+    navGroup: 'everyday',
+    navPlacement: 'primary',
+    navOrder: 3.25,
+    navCount: 'messages',
+    icon: 'MessageSquare',
+    component: async () => ({ default: (await import('@/features/messages/inbox-page')).InboxPage }),
+  },
+  {
+    // One conversation (E05/F02/US03/T02, NF-61/63/64): the messages in the middle, the booking and the link to the guest beside them, the
+    // box that answers; from a very wide screen the inbox is the third column. In no menu: the rows of the list and of the Home lead
+    // here. It asks `booking.read`, like the list; answering asks `booking.write` inside the page. The key of the conversation is the one the
+    // server gave (`ota:…`, `direct:…`), escaped in the address.
+    path: '/app/short-rent/messages/:threadKey',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/features/messages/thread-page')).ThreadPage }),
+  },
   // Guests
   {
-    // Ospiti: the first tab of Prenotazioni after the bookings.
+    // Ospiti is a tab of Prenotazioni.
     path: '/app/short-rent/guests',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     navKey: 'nav.guests',
     navParent: '/app/short-rent/bookings',
-    navOrder: 1,
-    icon: 'Users',
+    navOrder: 2,
+    icon: 'ContactRound',
     component: async () => ({ default: (await import('@/features/guests/guests-page')).GuestsPage }),
   },
   {
@@ -1173,31 +1753,79 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['booking.read'],
     component: async () => ({ default: (await import('@/features/guests/guest-detail-page')).GuestDetailPage }),
   },
-  // CRM guest profiles (NF-23, ADR-021): aggregated guest data for marketing and segmentation, filtered by HostScope.
+  // The CRM and marketing module (NF-23, NF-95, ADR-021, E07): aggregated guest data for marketing and segmentation, filtered by HostScope.
+  // It is unfinished, so every page of it is behind the flag `crmMarketing` (backend `CrmMarketing`): while the flag is off the entry is in
+  // no menu and the addresses lead to the home of the area. The entry «CRM Ospiti» is in the group «Gestione» of the main menu, after Incassi;
+  // the pages of the epic hang from it as tabs (`navParent` set to its path), in
+  // this order: `nav.crmSegments`, `nav.crmCampaigns`, `nav.crmAutomations`, `nav.crmMerge`.
+  // Convention: each page task of the epic adds its own entry here with `featureFlag: 'crmMarketing'` and `navParent:
+  // '/app/short-rent/crm/guests'`, never a menu entry of its own. The pages the e-mails link to (`/unsubscribe`, `/marketing/confirm`, the
+  // consent and welcome pages) are public routes, not entries of this table, and are never behind the flag: an e-mail already sent keeps working.
+  // The pages ask `guest.read`, what the API behind them asks (`CrmController`): with `booking.read` the accountant, who has no `guest.read`,
+  // would see the entry and end on the no-access page.
   {
     path: '/app/short-rent/crm/guests',
     context: 'short-rent',
-    requiredPermissions: ['booking.read'],
+    requiredPermissions: ['guest.read'],
+    featureFlag: 'crmMarketing',
     navKey: 'nav.crm',
-    navParent: '/app/short-rent/bookings',
-    navOrder: 2,
+    navGroup: 'management',
+    navPlacement: 'primary',
+    navOrder: 8,
     icon: 'Users',
     component: async () => ({ default: (await import('@/pages/crm/GuestList')).default }),
   },
   {
     path: '/app/short-rent/crm/guests/:id',
     context: 'short-rent',
-    requiredPermissions: ['booking.read'],
+    requiredPermissions: ['guest.read'],
+    featureFlag: 'crmMarketing',
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
   },
+  {
+    path: '/app/short-rent/crm/segments',
+    context: 'short-rent',
+    requiredPermissions: ['marketing.manage'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmSegments',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 1,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/SegmentsPage')).SegmentsPage }),
+  },
+  {
+    path: '/app/short-rent/crm/campaigns',
+    context: 'short-rent',
+    requiredPermissions: ['marketing.manage'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmCampaigns',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 2,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/CampaignsPage')).CampaignsPage }),
+  },
+  {
+    // The merge proposals (E07/F01/US04/T03, NF-88): the pairs of profiles the matching thinks are one guest, which the host decides. The
+    // last tab of the CRM (after the audiences, the campaigns and the automations). The API lists them for `guest.read` but merges and
+    // dismisses for `guest.write`, and the page is for deciding, so it asks `guest.write`.
+    path: '/app/short-rent/crm/merge',
+    context: 'short-rent',
+    requiredPermissions: ['guest.write'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmMerge',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 4,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/features/crm/merge/merge-page')).MergePage }),
+  },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
-  // is "Conformità" (UI-04a): the tax rates and the LTR reference data hang from it and its page links to them.
+  // is "Conformità" (UI-04a), in the group «Sistema»: the tax rates and the LTR reference data are its tabs.
   {
     path: '/app/admin/cin',
     context: 'admin',
     requiredPermissions: ['admin.cin.read'],
     navKey: 'nav.complianceAudit',
-    navGroup: 'platform',
+    navGroup: 'system',
     navPlacement: 'primary',
     navOrder: 6,
     icon: 'BadgeCheck',
@@ -1230,39 +1858,40 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/admin/admin-ltr-reference-data-page')).AdminLtrReferenceDataPage,
     }),
   },
+  // Admin ISTAT regions (E21/F01/US02/T01, NF-44, NF-52): the table the staff keeps of the ISTAT communication of each region (its system, deadline, required guest fields, whether the channel
+  // manager sends it, the source and the day it was checked), which the hosts read from the sender wizard and the page of their property. The third tab of «Conformità», after the tax rates and the
+  // LTR reference data. The platform administrator's only: the endpoints answer 403 to anyone else, and no flag stands in front of it (it is platform data).
+  {
+    path: '/app/admin/compliance/istat-regions',
+    context: 'admin',
+    requiredPermissions: ['admin.cin.read'],
+    navKey: 'nav.istatRegions',
+    navParent: '/app/admin/cin',
+    navOrder: 3,
+    icon: 'FileCheck',
+    component: async () => ({ default: (await import('@/pages/admin/IstatRegionsPage')).IstatRegionsPage }),
+  },
   {
     path: '/app/admin/demo',
     context: 'admin',
     requiredPermissions: ['admin.cin.read'],
     navKey: 'nav.demoEnvironment',
-    navPlacement: 'secondary',
-    navOrder: 25,
+    navParent: '/app/admin/jobs',
+    navOrder: 2,
     icon: 'Shield',
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
   },
   {
-    // Reads the agency endpoint `/statements` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
-    path: '/app/admin/statements',
-    context: 'admin',
-    requiredPermissions: ['admin.statements.read'],
-    featureFlag: 'agencyTier',
-    navKey: 'nav.statements',
-    navGroup: 'platform',
-    navPlacement: 'primary',
-    navOrder: 7,
-    icon: 'FileText',
-    component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
-  },
-  {
-    // Reads the agency endpoint `/internal-activities` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
+    // Reads the agency endpoint `/internal-activities` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`. In the group
+    // «Supporto» of the staff, with the requests of help.
     path: '/app/admin/activities',
     context: 'admin',
     requiredPermissions: ['admin.users.read'],
     featureFlag: 'agencyTier',
     navKey: 'nav.staffActivities',
-    navGroup: 'platform',
-    navPlacement: 'secondary',
-    navOrder: 26,
+    navGroup: 'support',
+    navPlacement: 'primary',
+    navOrder: 4.5,
     icon: 'ClipboardCheck',
     component: async () => ({ default: (await import('@/pages/StaffActivitiesPage')).StaffActivitiesPage }),
   },
@@ -1455,13 +2084,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     featureFlag: 'supplierOnlinePayments',
     component: async () => ({ default: (await import('@/features/supplier/earnings/supplier-earnings-page')).SupplierEarningsPage }),
   },
+  // The pages of the activation with Octorate (epic E10), behind the flag `octorateOnboarding`: see `onboarding-routes.ts`.
+  ...ONBOARDING_ROUTES,
 ];
 
 export type PermissionPredicate = (contextKey: AppContextKey, permission: string) => boolean;
 
 /** Entries behind a feature flag need the flag on; without flags (not loaded) they are hidden. */
 export function isEntryFeatureEnabled(entry: RouteManifestEntry, features?: Partial<FeatureFlags>): boolean {
-  return !entry.featureFlag || isFeatureEnabled(features, entry.featureFlag);
+  return isFeatureRuleEnabled(features, entry.featureFlag);
 }
 
 /** True when the user passes every permission the entry asks (and the org billing administrator one when it needs it). */
@@ -1471,6 +2102,7 @@ export function hasEntryPermission(
 ): boolean {
   if (!hasPermission) return true;
   if (entry.orgBillingAdmin && !hasPermission(entry.context, ORG_BILLING_ADMIN_PERMISSION)) return false;
+  if (entry.permissionMode === 'any') return entry.requiredPermissions.some(permission => hasPermission(entry.context, permission));
   return entry.requiredPermissions.every((permission) =>
     hasPermission(entry.context, permission),
   );
@@ -1483,16 +2115,20 @@ export function getDefaultRoute(contextKey: AppContextKey): string {
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
 }
 
+/** Access to a product module for this account, in addition to the area's permissions and rollout flags. */
+type PathAccess = (path: string) => boolean;
+
 /** True when the user may open the page: permissions, and the feature flag when the page has one. */
 function isEntryAvailable(
   entry: RouteManifestEntry,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): boolean {
-  return hasEntryPermission(entry, hasPermission) && isEntryFeatureEnabled(entry, features);
+  return hasEntryPermission(entry, hasPermission) && isEntryFeatureEnabled(entry, features) && (canOpenPath?.(entry.path) ?? true);
 }
 
-const PLACEMENT_RANK: Record<NavPlacement, number> = { primary: 0, secondary: 1 };
+const PLACEMENT_RANK: Record<NavPlacement, number> = { primary: 0, secondary: 1, footer: 2 };
 
 function placementRank(entry: RouteManifestEntry): number {
   return PLACEMENT_RANK[entry.navPlacement ?? 'secondary'];
@@ -1502,7 +2138,7 @@ function byNavOrder(a: RouteManifestEntry, b: RouteManifestEntry): number {
   return (a.navOrder ?? 99) - (b.navOrder ?? 99);
 }
 
-/** Menu order: the main menu first, then "Altro"; inside each, by `navOrder`. */
+/** Menu order: the main menu first, then "Altro", then the foot of the sidebar; inside each, by `navOrder`. */
 function byMenuOrder(a: RouteManifestEntry, b: RouteManifestEntry): number {
   return placementRank(a) - placementRank(b) || byNavOrder(a, b);
 }
@@ -1523,20 +2159,28 @@ function resolveNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): ContextNavEntries {
   const available = ROUTE_MANIFEST.filter(
     (entry) =>
       entry.context === contextKey &&
       (entry.navPlacement !== undefined || entry.navParent !== undefined) &&
-      isEntryAvailable(entry, hasPermission, features),
+      isEntryAvailable(entry, hasPermission, features, canOpenPath),
   );
-  const menuPaths = new Set(available.filter((entry) => entry.navPlacement !== undefined).map((entry) => entry.path));
+  const availablePaths = new Set(available.map((entry) => entry.path));
+
+  // The profile of the area is no entry of a menu: the menu of the user leads to it, and nobody is without it (it asks no permission). The
+  // pages that hang from it (Notifiche) are its tabs, found from the profile itself, so they take no place in the menus or in "Altro".
+  const profilePath = profilePathForContext(contextKey);
 
   const menu: RouteManifestEntry[] = [];
   const hanging: RouteManifestEntry[] = [];
   for (const entry of available) {
+    const isRentalSettings = entry.path === '/app/short-rent/settings' || entry.path === '/app/long-rent/settings';
+    if (isRentalSettings && !available.some(child => child.navParent === entry.path)) continue;
     if (entry.navPlacement !== undefined) menu.push(entry);
-    else if (entry.navParent !== undefined && menuPaths.has(entry.navParent)) hanging.push(entry);
+    else if (entry.navParent === profilePath) continue;
+    else if (entry.navParent !== undefined && availablePaths.has(entry.navParent)) hanging.push(entry);
     else menu.push({ ...entry, navPlacement: 'secondary' });
   }
   return { menu: menu.sort(byMenuOrder), hanging: hanging.sort(byNavOrder) };
@@ -1547,8 +2191,9 @@ export function getVisibleNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
-  return resolveNavEntries(contextKey, hasPermission, features).menu;
+  return resolveNavEntries(contextKey, hasPermission, features, canOpenPath).menu;
 }
 
 export function getPrimaryNavEntries(
@@ -1572,13 +2217,23 @@ export function getSecondaryNavEntries(
   );
 }
 
+/** The entries pinned at the foot of the sidebar: the settings of the area and «Consiglia CasaZen». */
+export function getFooterNavEntries(
+  contextKey: AppContextKey,
+  hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
+): RouteManifestEntry[] {
+  return getVisibleNavEntries(contextKey, hasPermission, features).filter((entry) => entry.navPlacement === 'footer');
+}
+
 /** The destinations of the bottom bar of the phone, in bar order (at most {@link MAX_BOTTOM_NAV_ENTRIES}). */
 export function getBottomNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
-  return getVisibleNavEntries(contextKey, hasPermission, features)
+  return getVisibleNavEntries(contextKey, hasPermission, features, canOpenPath)
     .filter((entry) => entry.navBottom !== undefined)
     .sort((a, b) => (a.navBottom ?? 0) - (b.navBottom ?? 0));
 }
@@ -1591,9 +2246,10 @@ export function getNavChildren(
   parentPath: string,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
   return ROUTE_MANIFEST.filter(
-    (entry) => entry.navParent === parentPath && isEntryAvailable(entry, hasPermission, features),
+    (entry) => entry.navParent === parentPath && isEntryAvailable(entry, hasPermission, features, canOpenPath),
   ).sort(byNavOrder);
 }
 
@@ -1607,15 +2263,16 @@ export function getNavSection(
   pathname: string,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
   const place = pathname.replace(/\/+$/, '') || '/';
   const page = ROUTE_MANIFEST.find((entry) => entry.path === place);
   if (!page) return [];
 
   const head = page.navParent === undefined ? page : ROUTE_MANIFEST.find((entry) => entry.path === page.navParent);
-  if (!head || head.navParent !== undefined || !isEntryAvailable(head, hasPermission, features)) return [];
+  if (!head || !isEntryAvailable(head, hasPermission, features, canOpenPath)) return [];
 
-  const section = [head, ...getNavChildren(head.path, hasPermission, features)];
+  const section = [head, ...getNavChildren(head.path, hasPermission, features, canOpenPath)];
   return section.length > 1 && section.includes(page) ? section : [];
 }
 
@@ -1627,8 +2284,9 @@ export function getNavMatchEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
-  const { menu, hanging } = resolveNavEntries(contextKey, hasPermission, features);
+  const { menu, hanging } = resolveNavEntries(contextKey, hasPermission, features, canOpenPath);
   return [...menu, ...hanging];
 }
 
@@ -1640,8 +2298,10 @@ export interface NavSection {
 export interface ContextNav {
   /** The main menu: labelled groups of primary entries, in the order of their entries. */
   sections: NavSection[];
-  /** "Altro". */
+  /** "Altro": only the pages whose section the user cannot open (UI-04a). */
   more: RouteManifestEntry[];
+  /** Pinned at the foot of the sidebar: the settings of the area and «Consiglia CasaZen». */
+  footer: RouteManifestEntry[];
 }
 
 /**
@@ -1652,12 +2312,17 @@ export function getContextNav(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
-  options: { withoutBottom?: boolean } = {},
+  options: { withoutBottom?: boolean; canOpenPath?: PathAccess } = {},
 ): ContextNav {
   const sections: NavSection[] = [];
   const more: RouteManifestEntry[] = [];
-  for (const entry of getVisibleNavEntries(contextKey, hasPermission, features)) {
+  const footer: RouteManifestEntry[] = [];
+  for (const entry of getVisibleNavEntries(contextKey, hasPermission, features, options.canOpenPath)) {
     if (options.withoutBottom && entry.navBottom !== undefined) continue;
+    if (entry.navPlacement === 'footer') {
+      footer.push(entry);
+      continue;
+    }
     if (entry.navPlacement !== 'primary') {
       more.push(entry);
       continue;
@@ -1667,7 +2332,7 @@ export function getContextNav(
     if (section) section.entries.push(entry);
     else sections.push({ group, entries: [entry] });
   }
-  return { sections, more };
+  return { sections, more, footer };
 }
 
 export function getManifestEntry(path: string): RouteManifestEntry | undefined {

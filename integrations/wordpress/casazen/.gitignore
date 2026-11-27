@@ -1,0 +1,11 @@
+/node_modules/
+/vendor/
+/build/
+/blocks/build/
+/dist/
+*.zip
+# Written into the ZIP by tools/build-zip.mjs (--app-origin): never in the sources
+/includes/build-config.php
+/languages/*.mo
+/languages/*.json
+.phpunit.result.cache

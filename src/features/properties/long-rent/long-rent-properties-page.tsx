@@ -24,7 +24,8 @@ export function LongRentPropertiesPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const viewsScope = useListViewsScope();
-  const { rows, isLoading, isError, error, refetch, leasesKnown, leasesFailed, refetchLeases } = useLongRentPropertyRows({ fresh: true });
+  const canReadLease = hasPermission('long-rent', 'lease.read');
+  const { rows, isLoading, isError, error, refetch, leasesKnown, leasesFailed, refetchLeases } = useLongRentPropertyRows({ fresh: true, canReadLeases: canReadLease });
   const canWrite = hasPermission('long-rent', 'property.write');
   const navigate = useNavigate();
   // "Richiedi intervento" from the row of a property (LR-07b): the window of the request, opened on that property.
@@ -33,7 +34,7 @@ export function LongRentPropertiesPage() {
   const list = useLongRentPropertiesList({
     canWrite,
     canCreateLease: hasPermission('long-rent', 'lease.create'),
-    canReadLease: hasPermission('long-rent', 'lease.read'),
+    canReadLease,
     leasesKnown,
     onRequest: setRequestFor,
   });

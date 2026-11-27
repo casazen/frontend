@@ -16,6 +16,7 @@ import {
   Mail,
   ShieldCheck,
   Smartphone,
+  Sparkles,
   Store,
   Wallet,
   type LucideIcon,
@@ -26,6 +27,7 @@ import { SEO_FEATURED_GUIDES, SEO_FEATURED_TAX_PAGES, SEO_HUB_PATH, type SeoFeat
 import { sitePageById } from '../site-pages';
 import type { SiteLegal } from '../site-config';
 import { inviteHref } from '../site-links';
+import { TourEntry } from './demo-tour';
 import { HomeSearch } from './home-search';
 import { ChannelsCatalogue, ChannelsStrip, ProductShowcase, SiteExamples } from './home-showcase';
 import { HeroArt, ThemeSwatches } from './site-art';
@@ -50,7 +52,7 @@ import {
 /**
  * Content of the pages of the public site (SEO-VETRINA). Every claim matches a feature that exists today (inventory of
  * 2026-10-13): no channel-manager API, no automatic Alloggiati Web transmission, no Ross1000/CIR in the product, no team,
- * mobile app or AI features, which are not available. The figures of the strip under the hero are facts of the product, not
+ * mobile app. AI Agents are offered as a separate module. The figures of the strip under the hero are facts of the product, not
  * statistics: there are no customers, ratings or testimonials to quote, and none is invented.
  *
  * CasaZen is on private invitation (product owner, 2026-10-13): there is no sign-up button, no prices and no plans. The call
@@ -78,8 +80,9 @@ const COMPLIANCE: { key: string; icon: LucideIcon; tint: Tint }[] = [
   { key: 'wizard', icon: ListChecks, tint: 'ink' },
 ];
 
-/** The four cards of "Il lavoro di tutti i giorni": the accents are the ones of the areas of the app. */
+/** The cards of "Il lavoro di tutti i giorni": the accents are the ones of the areas of the app. */
 const OPERATIONS: { key: string; icon: LucideIcon; tint: Tint }[] = [
+  { key: 'agents', icon: Sparkles, tint: 'terra' },
   { key: 'calendar', icon: CalendarDays, tint: 'terra' },
   { key: 'suppliers', icon: Handshake, tint: 'salvia' },
   { key: 'fiscal', icon: Calculator, tint: 'ametista' },
@@ -124,22 +127,22 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-b from-terra-50 via-cream-50 to-cream-50">
+      <section className="relative overflow-hidden border-b border-ink-700/10 bg-cream-50">
         <CasaZenRing size={640} className="pointer-events-none absolute -left-44 -top-60 opacity-[0.06]" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 py-14 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-5 py-10 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12 lg:py-20">
           <div>
             <Eyebrow>{t('site.home.hero.eyebrow')}</Eyebrow>
-            <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.1] tracking-tight text-ink-800 sm:text-5xl">
+            <h1 className="mt-5 text-balance font-display text-4xl font-semibold leading-[1.03] tracking-tight text-ink-800 sm:text-5xl xl:text-6xl">
               <span className="block">{t('site.home.hero.title1')}</span>
               <span className="block">{t('site.home.hero.title2')}</span>
               <span className="block text-terra-700">{t('site.home.hero.title3')}</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-500">{t('site.home.hero.subtitle')}</p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <InviteCta legal={legal} />
-              <SecondaryLink href="#come-funziona">{t('site.home.hero.ctaHow')}</SecondaryLink>
+            <p className="mt-4 max-w-xl text-base text-ink-600">{t('site.tour.intro')}</p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <TourEntry area="short" />
+              <TourEntry area="long" secondary />
             </div>
-            {legal.email && <p className="mt-5 text-sm text-ink-500">{t('site.invite.notice')}</p>}
           </div>
           <HeroArt />
         </div>
@@ -232,7 +235,7 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
       </section>
 
       <Section title={t('site.home.operations.title')} intro={t('site.home.operations.intro')}>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {OPERATIONS.map(({ key, icon, tint }) => (
             <FeatureCard
               key={key}

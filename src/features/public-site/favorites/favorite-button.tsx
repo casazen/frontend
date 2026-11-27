@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
+import { useEmbed } from '@/features/embed/embed-context';
 import { cn } from '@/lib/utils';
 import { useFavorites } from './use-favorites';
 import '../components/public-site-chrome.css';
@@ -12,6 +13,8 @@ import '../components/public-site-chrome.css';
  * saved (none with `prefers-reduced-motion`). The first home a guest saves says where the list is ("la ritrovi dal cuore in alto")
  * and offers to undo, as the prototype does. Position it from outside (`className`): it sits on the photo of a card, or next to
  * the title of a page.
+ *
+ * Inside the frame of an embeddable widget (NF-144) there is no heart: the list lives in the storage of the browser, which those pages never touch.
  */
 export function FavoriteButton({
   site,
@@ -26,6 +29,7 @@ export function FavoriteButton({
   className?: string;
 }) {
   const { t } = useTranslation();
+  const embed = useEmbed();
   const { ids, toggle } = useFavorites(site);
   const saved = ids.includes(propertyId);
   const [popping, setPopping] = useState(false);
@@ -41,6 +45,8 @@ export function FavoriteButton({
       });
     }
   };
+
+  if (embed) return null;
 
   return (
     <button

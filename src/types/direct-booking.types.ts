@@ -15,7 +15,35 @@ export interface DirectBookingConsentPayload {
 
 export type PaymentOption = 'Immediate' | 'OnCancellationDeadline' | 'OnSite';
 
+/**
+ * Where the guest of a checkout came from (`attribution` of `POST /api/public/bookings`, E27/F01/US01/T01, NF-123): the `utm_*` of the link they followed and the
+ * host name of the site they came from (`referrer`, written with two r like the API: a name on the internet with a dot in it, never an IP address or a machine of a private
+ * network, and only with such a link or with the consent to statistics). Every field is optional, and only what is a lower-case token (or a host name) is sent: the API drops
+ * the rest without refusing the booking, and keeps nothing that is the guest's. No address of a page, no e-mail, no phone number.
+ */
+export interface DirectBookingAttributionPayload {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  referrer?: string;
+}
+
+export interface CheckoutExtraSelection {
+  id: string;
+  quantity: number;
+  expectedUnitPrice: number;
+}
+export interface CheckoutExtraOffer {
+  id: string;
+  name: string;
+  description: string;
+  unitPrice: number;
+  byQuantity: boolean;
+  requiresApproval: boolean;
+}
+
 export interface CreateDirectBookingPayload {
+  extras?: CheckoutExtraSelection[];
   propertyId: string;
   checkInDate: string;
   checkOutDate: string;
@@ -29,8 +57,23 @@ export interface CreateDirectBookingPayload {
   childrenAges?: number[];
   /** When the guest thinks they will arrive: `HH:mm` or `late`. Only a note for the host (DB-03b); left out when they do not say. */
   expectedArrivalTime?: string;
-  /** The guest ticked the optional «send me offers» box. Only sent when the site has a version of its text (`marketingConsentVersion`). */
-  marketingConsent?: boolean;
+  /**
+   * The guest ticked the optional «E-mail» box for offers (NF-90). Sent (`false` when left unticked) only when the site has a version of the
+   * consent text (`marketingConsentVersion`); the old single `marketingConsent` is no longer sent.
+   */
+  marketingConsentEmail?: boolean;
+  /** The guest ticked the optional «WhatsApp» box for offers; same rule as `marketingConsentEmail`, and it needs the phone number of the guest (422 without). */
+  marketingConsentWhatsApp?: boolean;
+  /**
+   * The version of the soft opt-in notice the page showed (the `softOptInNoticeVersion` of the public org): sent only when the site has one.
+   * It is a notice, not a consent: the guest ticks nothing for it.
+   */
+  softOptInNoticeVersion?: string;
+  /**
+   * Where the guest came from (E27/F01/US01/T01, NF-123): the source of the link of the address and the host of the site they came from, left out when there is none.
+   * With the source of the booking it tells the host the origin («Sito dell'agenzia» for a link the agency copied). It changes no price and no availability.
+   */
+  attribution?: DirectBookingAttributionPayload;
 }
 
 /** Body of `POST /public/bookings/quote`: the stay to price before booking. */
@@ -100,6 +143,7 @@ export interface StayCancellation {
 
 /** Price computed by the backend: the same numbers the booking records and charges. */
 export interface DirectBookingQuote {
+  extraOffers?: CheckoutExtraOffer[];
   propertyId: string;
   checkInDate: string;
   checkOutDate: string;
@@ -159,12 +203,26 @@ export interface OnSiteRequestConfirmation {
   bookingCode?: string | null;
 }
 
-/** Body of "Le mie prenotazioni" (BK-11): the booking site, the booking code of the confirmation email, the guest's email. */
-export interface GuestBookingLookupPayload {
+/** Body of "Le mie prenotazioni" (BK-11) with the guest's email: the booking site, the booking code of the confirmation email, the email the booking was made with. */
+export interface GuestBookingEmailLookup {
   orgSlug: string;
   bookingCode: string;
   email: string;
 }
+
+/**
+ * Body of "Le mie prenotazioni" with the last four digits of the phone instead of the email (NF-143, E40): the same site and code, and `phoneLast4`, exactly four digits. The key `email` is
+ * ABSENT from this body: the backend takes exactly one of the two proofs. The digits are personal data: they live in the memory of the form only, never in an address, in the storage of the
+ * browser, in a query key or in a log.
+ */
+export interface GuestBookingPhoneLookup {
+  orgSlug: string;
+  bookingCode: string;
+  phoneLast4: string;
+}
+
+/** What opens a guest session (`POST /api/public/guest/session`): the code with the email, or the code with the last four digits of the phone. */
+export type GuestBookingLookupPayload = GuestBookingEmailLookup | GuestBookingPhoneLookup;
 
 /**
  * A guest session with no account (DB-06a, `POST /api/public/guest/session`): the signed token the guest area expects as

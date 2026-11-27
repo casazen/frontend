@@ -15,5 +15,10 @@ Copre primi passi, immobili, prenotazioni, iCal, ospiti e privacy, Alloggiati, p
 | [Test e rilascio](technical/testing.md) | Vitest, Playwright, CI e verifica degli ambienti |
 | [Modalità demo](technical/demo-mode.md) | Dati dimostrativi e limiti |
 | [Guida prodotto](product/README.md) | Fonti dei contenuti e regole di aggiornamento |
+| [Navigazione operativa](product/navigazione-operativa.md) | Voci IT/EN, ruoli, collegamenti contestuali e posizione su telefono e desktop |
+| [Verifica dei percorsi](product/verifica-percorsi.md) | Confronti prima/dopo, accessibilità e risultati browser |
+| [Demo e conversione](product/demo-e-conversione.md) | Percorsi commerciali, eventi, coorti e backlog |
+| [Assistente operativo](technical/assistente-operativo.md) | Contratto, copertura per area e condizioni di integrazione |
+| [Plugin WordPress](technical/wordpress-plugin.md) | Struttura, build, CI, rilascio e checklist del pilota |
 
 L’[indice backend](https://github.com/casazen/backend/blob/develop/docs/index.md) raccoglie contratti API, dominio, infrastruttura e runbook operativi condivisi. I README accanto ai componenti restano nel codice perché descrivono le API locali dei componenti.

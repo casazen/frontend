@@ -1,0 +1,143 @@
+/* eslint-disable react-refresh/only-export-components -- A helper of the tests: it has a component of its own (the probe of the address) next to the functions the tests call. */
+import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { render, screen, waitFor } from '@testing-library/react';
+import { expect } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
+import i18n from '@/i18n/config';
+import { PROPERTIES_PATH, PROPERTY_CREATE_PATH } from '@/features/properties/properties-paths';
+import type { OctorateConnection, OctorateListing, Property } from '@/types';
+import { OctorateConnectWizardPage } from '../connect-wizard';
+import { OCTORATE_CONNECT_PATH } from '../octorate-callback';
+
+/** The user and the organization the draft of the wizard belongs to (the tests mock `useCurrentUser` with the same ones). */
+export const SCOPE = { userId: 'user-1', orgId: 'org-1' };
+
+/** The name the wizard keeps its draft under. */
+export const WIZARD_DRAFT_ID = 'octorate-connect';
+
+export const WAIT = { timeout: 5000 };
+
+/** The address of the consent page of the channel manager, as the API gives it (https). */
+export const CONSENT_URL = 'https://consent.example.test/oauth?client_id=client&state=state-of-the-consent';
+
+/** What `GET api/octorate/connection` answers. */
+export function connection(overrides: Partial<OctorateConnection> = {}): OctorateConnection {
+  return {
+    status: 'Disconnected',
+    environment: 'Test',
+    accountId: null,
+    lastSyncedAt: null,
+    quotaLimit: null,
+    quotaRemaining: null,
+    quotaWarning: false,
+    ...overrides,
+  };
+}
+
+/**
+ * A listing found on the channel manager, as `GET api/octorate/properties` gives it: proposed to one property, with one room and no
+ * channel. The server reads the channels of a listing only when a person confirms it or imports it, so a listing that is not confirmed
+ * never has any (`linkedListing` has them).
+ */
+export function listing(overrides: Partial<OctorateListing> = {}): OctorateListing {
+  return {
+    octorateAccommodationId: 'acc-1',
+    name: 'Villa Rosa',
+    address: 'Via Roma 12',
+    city: 'Milano',
+    maxGuests: 4,
+    status: 'Proposed',
+    score: 92,
+    proposedProperty: { id: 'prop-1', name: 'Casa Rosa', address: 'Via Roma 12', city: 'Milano' },
+    candidates: [],
+    channels: [],
+    rooms: [{ id: 'room-1', name: 'Doppia', maxGuests: 4 }],
+    octorateProductId: null,
+    offeredForImport: false,
+    confirmedAt: null,
+    ...overrides,
+  };
+}
+
+/** A listing no CasaZen property matches: offered for import. */
+export function newListing(overrides: Partial<OctorateListing> = {}): OctorateListing {
+  return listing({ octorateAccommodationId: 'acc-new', name: 'Casa Nuova', proposedProperty: null, offeredForImport: true, score: 0, ...overrides });
+}
+
+/** A listing already confirmed to a property: the server has read its channels (Booking.com and Airbnb) and its room. */
+export function linkedListing(overrides: Partial<OctorateListing> = {}): OctorateListing {
+  return listing({
+    status: 'Confirmed',
+    octorateProductId: 'room-1',
+    confirmedAt: '2026-11-05T10:00:00Z',
+    channels: [
+      { channelId: '142', externalId: 'booking-1', state: 'Connected' },
+      { channelId: '274', externalId: 'airbnb-1', state: 'Connected' },
+    ],
+    ...overrides,
+  });
+}
+
+/** A property of the host, as `GET api/properties` gives it (only what the steps read). */
+export function property(overrides: Partial<Property> = {}): Property {
+  return { id: 'prop-1', name: 'Casa Rosa', address: 'Via Roma 12', city: 'Milano', maxGuests: 4, ...overrides } as Property;
+}
+
+/** The error of a request the server refused, as axios builds it (the code is what the app translates). */
+export function axiosError(status: number, data: unknown): AxiosError {
+  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
+    status,
+    data,
+    statusText: '',
+    headers: {},
+    config,
+  });
+}
+
+const inventoryWorkspace: WorkspaceContextValue = {
+  contexts: [], activeContext: 'short-rent', isReady: true, setActiveContext: () => undefined,
+  hasPermission: () => true, getDefaultRoute: () => '/app/short-rent',
+};
+
+function LocationProbe() {
+  const location = useLocation();
+  return <div data-testid="location">{`${location.pathname}${location.search}${location.hash}`}</div>;
+}
+
+/** The wizard on its own route, with the pages it can lead to marked. */
+export function renderWizard(url: string = OCTORATE_CONNECT_PATH) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  client.setQueryData(['me'], { id: SCOPE.userId, org: { id: SCOPE.orgId } });
+  return render(
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={client}>
+        <WorkspaceContext.Provider value={inventoryWorkspace}>
+          <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true }, isLoading: false }}>
+            <MemoryRouter initialEntries={[url]}>
+          <LocationProbe />
+          <Routes>
+            <Route path={OCTORATE_CONNECT_PATH} element={<OctorateConnectWizardPage />} />
+            <Route path={PROPERTY_CREATE_PATH} element={<div data-testid="listing-wizard" />} />
+            <Route path={PROPERTIES_PATH} element={<div data-testid="properties-list" />} />
+            <Route path="/app/short-rent/onboarding" element={<div data-testid="plan-returned" />} />
+          </Routes>
+            </MemoryRouter>
+          </FeatureFlagsContext.Provider>
+        </WorkspaceContext.Provider>
+      </QueryClientProvider>
+    </I18nextProvider>,
+  );
+}
+
+/** The address the router is at now, path and query. */
+export const currentLocation = () => screen.getByTestId('location').textContent;
+
+export async function onStep(step: string) {
+  await waitFor(() => expect(screen.getByTestId('octorate-connect-wizard')).toHaveAttribute('data-step', step), WAIT);
+}

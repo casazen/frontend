@@ -1,8 +1,8 @@
 import { isAxiosError } from 'axios';
-import { SearchX } from 'lucide-react';
+import { ClipboardList, SearchX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusPipeline } from '@/components/shared/status/status-pipeline';
@@ -30,7 +30,7 @@ export function SupplierRequestDetailPage() {
   if (isLoading) {
     return (
       <div className="min-w-0 space-y-6" data-testid="supplier-request-loading" aria-busy="true">
-        <PageHeader title={t('supplier.requests.requestTitle')} crumbs="auto" />
+        <ServicePageHeader icon={ClipboardList} title={t('supplier.requests.requestTitle')} crumbs="auto" />
         <SkeletonLine lines={8} label={t('supplier.requests.loading')} />
       </div>
     );
@@ -40,9 +40,9 @@ export function SupplierRequestDetailPage() {
     const notFound = isAxiosError(error) && error.response?.status === 404;
     return (
       <div className="min-w-0 space-y-6">
-        <PageHeader title={t('supplier.requests.requestTitle')} crumbs="auto" />
+        <ServicePageHeader icon={ClipboardList} title={t('supplier.requests.requestTitle')} crumbs="auto" />
         {notFound ? (
-          <div className="rounded-xl bg-card p-2 shadow-sm ring-1 ring-inset ring-border" data-testid="supplier-request-not-found">
+          <div data-testid="supplier-request-not-found">
             <EmptyState
               icon={SearchX}
               title={t('supplier.requests.notFound.title')}
@@ -59,17 +59,24 @@ export function SupplierRequestDetailPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-request-detail">
-      <PageHeader
+      <ServicePageHeader
+        icon={ClipboardList}
         title={requestTitle(request, t)}
         description={[request.clientName, request.postalCode ? `${request.city} (${request.postalCode})` : request.city].filter(Boolean).join(' · ')}
         crumbs="auto"
       />
       <StatusPipeline kind="request" status={request.status} perspective="supplier" />
-      <RequestNow request={request} actions={actions} />
-      <RequestDispute request={request} suspended={actions.suspended} />
-      {isInquiry(request) ? <InquiryMessages request={request} actions={actions} /> : null}
-      <RequestFacts request={request} />
-      <RequestDetails request={request} />
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)] xl:items-start">
+        <div className="min-w-0 space-y-5">
+          <RequestNow request={request} actions={actions} />
+          <RequestDispute request={request} suspended={actions.suspended} />
+          {isInquiry(request) ? <InquiryMessages request={request} actions={actions} /> : null}
+        </div>
+        <div className="min-w-0 space-y-4">
+          <RequestFacts request={request} compact withDetails />
+          <RequestDetails request={request} />
+        </div>
+      </div>
       {actions.dialog}
     </div>
   );

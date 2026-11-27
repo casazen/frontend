@@ -1,5 +1,6 @@
 import { createPath } from 'react-router-dom';
 import { mergeBookingSearchParams, parseBookingSearchParams } from '@/lib/booking-url';
+import { carryLinkAttribution } from '@/lib/booking-link';
 
 /**
  * The stay of the public site as the address keeps it (DB-20): `checkin`, `checkout`, `guests` (all the people, children
@@ -92,4 +93,13 @@ export function writeStay(search: URLSearchParams, patch: Partial<StayState>): U
 /** A link to `path` that carries the stay (and the other parameters of `base`, if given). */
 export function stayHref(path: string, stay: Partial<StayState>, base: URLSearchParams = new URLSearchParams()): string {
   return createPath({ pathname: path, search: writeStay(base, stay).toString() });
+}
+
+/**
+ * A link to another page of the site (`path`) that carries the stay and where the guest came from: the `utm_*` of the address `search` follow the stay from the page of
+ * a home to its checkout (E27/F01/US02, NF-123), where they go to the booking as its attribution. They are in the address and nowhere else: nothing is stored on the device,
+ * and only the three parameters that are values the booking keeps are carried (`carryLinkAttribution`).
+ */
+export function siteLink(path: string, stay: Partial<StayState>, search: URLSearchParams): string {
+  return carryLinkAttribution(stayHref(path, stay), search);
 }

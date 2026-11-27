@@ -7,9 +7,13 @@ import {
 } from '@/features/properties/schemas/property.schema';
 import type { CreatePropertyDto, Property, UpdatePropertyDto } from '@/types';
 import type { ActivationBlocker, ComplianceWizardStep } from '@/types/compliance.types';
+import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 
-/** Steps of the activation wizard in display order (ids of `GET /properties/:id/compliance/activation`). */
-export const ACTIVATION_STEP_ORDER = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'] as const;
+/**
+ * Steps of the activation wizard in display order (ids of `GET /properties/:id/compliance/activation`). The last one is the step of a property in Switzerland, where the card of the
+ * regime of its canton is (E29/F02/US02/T01).
+ */
+export const ACTIVATION_STEP_ORDER = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical', GUEST_REGISTRATION_STEP_ID] as const;
 
 /**
  * Last step, only in the frontend: summary of every step, blockers, terms acceptance and "Completa". The terms are
@@ -124,7 +128,14 @@ export function changedPropertyFields(stored: CreatePropertyDto, submitted: Crea
   return changes as UpdatePropertyDto;
 }
 
-/** URL of an activation step, shared by progress and review links. */
-export function stepHref(stepId: string) {
-  return { search: `?step=${encodeURIComponent(stepId)}` };
+/** The query parameter that remembers the step the host came from when it opens the step of Switzerland, so that step can lead back to it. */
+export const ORIGIN_STEP_PARAM = 'from';
+
+/**
+ * URL of an activation step, shared by progress and review links. `from` is the step the link is on: it is kept only for the step of Switzerland (the card is a detour from
+ * what the host was doing, and its «Torna a» goes back to it); every other step has the plain address it always had.
+ */
+export function stepHref(stepId: string, from?: string) {
+  const origin = stepId === GUEST_REGISTRATION_STEP_ID && from && from !== stepId ? `&${ORIGIN_STEP_PARAM}=${encodeURIComponent(from)}` : '';
+  return { search: `?step=${encodeURIComponent(stepId)}${origin}` };
 }

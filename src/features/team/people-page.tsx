@@ -1,3 +1,4 @@
+import { useMe } from '@/queries/use-users';
 import { useTranslation } from 'react-i18next';
 import { UserPlus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
@@ -16,6 +17,8 @@ import { ACCOUNT_INVITE_PATH, ACCOUNT_ROLES_PATH } from './team-paths';
  */
 export function PeoplePage() {
   const { t } = useTranslation();
+  const { data: profile } = useMe();
+  const isPrivate = profile?.org?.isAgency === false;
   const viewsScope = useListViewsScope();
   const { rows, isLoading, isError, error, refetch, invitationsFailed, refetchInvitations } = usePeopleRows({ fresh: true });
   const list = usePeopleList();
@@ -26,13 +29,13 @@ export function PeoplePage() {
         title={t('team.title')}
         description={t('team.description')}
         crumbs="auto"
-        primary={{ label: t('team.invite.cta'), icon: UserPlus, to: ACCOUNT_INVITE_PATH, testId: 'people-invite' }}
+        primary={isPrivate ? undefined : { label: t('team.invite.cta'), icon: UserPlus, to: ACCOUNT_INVITE_PATH, testId: 'people-invite' }}
         secondary={[{ label: t('team.roles.title'), to: ACCOUNT_ROLES_PATH, testId: 'people-roles' }]}
       />
 
       {/* The members are there without their invitations: it is said, never guessed (nobody is "not invited" because a list failed). */}
       {invitationsFailed && !isError ? (
-        <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-foreground/70" data-testid="people-invitations-note">
+        <div role="status" className="flex flex-wrap items-center gap-3 rounded-xl border border-warning-border bg-warning-soft p-4 text-sm text-warning-foreground" data-testid="people-invitations-note">
           <p className="min-w-0 break-words">{t('team.invitationsUnavailable')}</p>
           <Button type="button" variant="outline" size="sm" onClick={refetchInvitations}>
             {t('team.retry')}

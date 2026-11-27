@@ -1,20 +1,33 @@
-import type { ReactNode } from 'react';
+import { ContextualHint } from '@/components/shared/calm/contextual-hint';
+import { useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FocusBlock, type CalmAction } from '@/components/shared/calm';
+import { CalmActionButton } from '@/components/shared/calm/calm-action';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
+import { ComplianceLines } from '@/features/compliance/components/compliance-lines';
+import { reasonText, periodName } from '@/features/compliance/lib/compliance-light';
+import { deadlineNote } from '@/features/compliance/lib/cockpit-model';
+import { hasLinesToShow, stayLinesOf, viewOfLines } from '@/features/compliance/lib/compliance-lines';
+import { ComplianceUnavailable } from '@/features/compliance/components/compliance-unavailable';
+import { lightsCouldNotBeRead, lightsOf, useComplianceLights } from '@/features/compliance/use-compliance';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
+import { addDays, formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { useBookingCheckInSession, useSendCheckInLink } from '@/queries/use-checkin';
 import type { Booking } from '@/types';
 import { BOOKINGS_PATH } from '../lib/booking-list-query';
-import { documentsNeeded, nextStepOf } from '../lib/booking-next-step';
+import { claimsAllInOrder, documentsNeeded, nextStepOf } from '../lib/booking-next-step';
 import { stayDateOf } from '../lib/booking-price';
-import { canOpenCheckOut } from '../lib/stay-actions';
+import { canOpenCheckOut, checkInWizardPath } from '../lib/stay-actions';
+import { useBookingFlowSettings } from '../use-booking-flow-settings';
 
 interface BookingNextStepProps {
   booking: Booking;
   /** The host may act on the booking (`booking.write`): without it the block says what is going on and leads back to the list. */
   canWrite: boolean;
+  viewingCheckIn?: boolean;
+  useGuestPortal?: boolean;
   onConfirm: () => void;
   onDecline: () => void;
   onArrival: () => void;
@@ -36,30 +49,63 @@ interface StepView {
  * not started, Alloggiati Web for one in progress or over. It says what is going on, whose turn it is, and gives the one
  * button that does it, with the actions and the permissions the page always had.
  */
-export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArrival }: BookingNextStepProps) {
+export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPortal = false, onConfirm, onDecline, onArrival }: BookingNextStepProps) {
   const { t, i18n } = useTranslation();
   const today = todayInRome();
   const needs = documentsNeeded(booking, today);
   const session = useBookingCheckInSession(needs === 'checkIn' ? booking.id : '');
   const alloggiati = useAlloggiatiStatus(booking.id, needs === 'alloggiati');
   const sendLink = useSendCheckInLink();
+  // Whether the guest data of a confirmed stay are complete: if not, the wizard "Guest check-in" is where the host completes them.
+  const guestData = useAlloggiatiStatus(booking.id, needs !== 'alloggiati' && booking.status === 'Confirmed' && canWrite);
+  // The compliance lights of the stay (identity, Alloggiati Web, the receipt: NF-52, AC-NF52-9) come from the summary of the adempimenti. Only
+  // whoever may read the bookings asks for it (the API asks that, and a bare 403 on a GET takes the user to «nessun accesso»), and only for a stay
+  // that can owe something. A stay the summary does not list has no lines: nothing is told, and nothing is told as green.
+  const { hasPermission } = useWorkspace();
+  const wantsLights = hasPermission('short-rent', 'booking.read') && (booking.status === 'Confirmed' || booking.status === 'CheckedIn' || booking.status === 'CheckedOut');
+  const lights = useComplianceLights(wantsLights);
+  const summary = lightsOf(lights);
+  const lightsFailed = wantsLights && lightsCouldNotBeRead(lights);
+  const lines = useMemo(() => (summary ? stayLinesOf(summary, booking.id) : []), [summary, booking.id]);
+  // casazen/backend#978: what the booking flow of the org does by itself (the link, the arrival, the departure) is said as CasaZen's turn, not the host's. Read once and
+  // kept for minutes; until it is read (or when it cannot be) the step is the host's, as it always was.
+  const wantsFlow = wantsLights && (booking.status === 'Confirmed' || booking.status === 'CheckedIn');
+  const flowSettings = useBookingFlowSettings(wantsFlow);
 
   // The documents change the step: wait for them rather than show a block that changes a moment later.
-  if ((needs === 'checkIn' && session.isLoading) || (needs === 'alloggiati' && alloggiati.isLoading)) {
-    return (
-      <div role="status" aria-busy="true" data-testid="booking-next-step-loading">
-        <span className="sr-only">{t('shared.loading.srOnly')}</span>
-        <Skeleton aria-hidden="true" className="h-36 w-full rounded-xl motion-reduce:animate-none" />
-      </div>
-    );
+  if (
+    (needs === 'checkIn' && session.isLoading) ||
+    (needs === 'alloggiati' && alloggiati.isLoading) ||
+    (booking.status === 'Confirmed' && canWrite && guestData.isLoading)
+  ) {
+    return <NextStepLoading />;
   }
 
   const link = needs === 'checkIn' ? session.data : undefined;
   const communication = needs === 'alloggiati' ? alloggiati.data : undefined;
-  const step = nextStepOf(booking, today, {
+  const flow = flowSettings.data;
+  const facts = {
     checkIn: link ? { status: link.status ?? null, canIssueLink: link.canIssueLink } : undefined,
     alloggiati: communication ? { status: communication.status, isOverdue: communication.isOverdue } : undefined,
-  });
+    guestData: guestData.data ? { complete: guestData.data.dataComplete } : undefined,
+    flow: flow
+      ? {
+          sendsLink: flow.checkInLinkMode === 'Automatic',
+          registersArrival: flow.arrivalMode === 'Automatic',
+          registersDeparture: flow.departureMode === 'Automatic',
+        }
+      : undefined,
+  };
+  // The lights can take back a step that says «tutto in ordine»: until they are read, that is not said (a step that asks something is said at once).
+  if (wantsLights && lights.isLoading && claimsAllInOrder(nextStepOf(booking, today, facts))) return <NextStepLoading />;
+  const step = nextStepOf(booking, today, { ...facts, compliance: lines });
+  // A read of the lights that failed (not a 404, which is the traffic light off) never lets the block say that all is well: it says it does not know, and
+  // offers to try again. A step that asks something is said as it is.
+  if (lightsFailed && claimsAllInOrder(step)) {
+    return (
+      <ComplianceUnavailable kicker={t('booking.next.heading')} testId="booking-next-step" onRetry={() => void lights.refetch()} retrying={lights.isFetching} />
+    );
+  }
 
   const language = i18n.language;
   const guest = `${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback');
@@ -75,9 +121,18 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
     canWrite && canOpenCheckOut(booking, today)
       ? { label: t('booking.list.actions.departure'), href: `${BOOKINGS_PATH}/${booking.id}/checkout`, testId: 'open-checkout-wizard' }
       : null;
+  // The host may fill the guest data in himself, whoever the link is waiting for: a stay whose data are incomplete leads to the wizard.
+  const completeInWizard: CalmAction | null =
+    canWrite && hasPermission('short-rent', 'alloggiati.submit') && booking.status === 'Confirmed' && guestData.data?.dataComplete === false
+      ? { label: t('booking.next.completeGuestData.action'), href: checkInWizardPath(booking.id, viewingCheckIn), testId: 'booking-next-check-in-wizard' }
+      : null;
   const sendCheckInLink: CalmAction | null =
     canWrite && link?.canIssueLink
-      ? { label: t('booking.list.actions.sendLink'), onClick: () => sendLink.mutate(booking.id), loading: sendLink.isPending, testId: 'booking-next-send-link' }
+      ? useGuestPortal
+        ? viewingCheckIn
+          ? { label: t('guestPortal.host.checkInAccess'), onClick: () => document.getElementById('booking-guest-checkin-link')?.focus() }
+          : { label: t('guestPortal.host.checkInAccess'), href: `${BOOKINGS_PATH}/${booking.id}?tab=guest` }
+        : { label: t('booking.list.actions.sendLink'), onClick: () => sendLink.mutate(booking.id), loading: sendLink.isPending, testId: 'booking-next-send-link' }
       : null;
 
   const viewOfStep = (): StepView => {
@@ -108,14 +163,62 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
           body: t('booking.next.registerArrival.body', { date: arrival }),
           who: myTurn,
           primary: canWrite ? { label: t('booking.arrival.action'), onClick: onArrival, testId: 'open-register-arrival' } : toBookings,
+          secondary: checkOut ?? (viewingCheckIn ? undefined : completeInWizard ?? undefined),
+        };
+      case 'arrivalAutomatic':
+        return {
+          title: t('booking.next.arrivalAutomatic.title', { guest }),
+          body: t('booking.next.arrivalAutomatic.body', { date: arrival }),
+          primary: toBookings,
+          secondary: canWrite ? { label: t('booking.arrival.action'), onClick: onArrival, testId: 'open-register-arrival' } : undefined,
+        };
+      case 'departureAutomatic':
+        return {
+          title: t('booking.next.departureAutomatic.title', { guest }),
+          body: t('booking.next.departureAutomatic.body'),
+          primary: toBookings,
           secondary: checkOut ?? undefined,
         };
+      case 'linkScheduled':
+        return {
+          title: t('booking.next.linkScheduled.title'),
+          body: t('booking.next.linkScheduled.body', {
+            date: formatStayDate(addDays(stayDateOf(booking.checkInDate), -(flow?.checkInLinkDaysBefore ?? 0)), language),
+          }),
+          primary: toBookings,
+          secondary: sendCheckInLink ? (useGuestPortal ? sendCheckInLink : { ...sendCheckInLink, label: t('booking.next.linkScheduled.action') }) : completeInWizard ?? undefined,
+        };
       case 'sendLink':
-        return { title: t('booking.next.sendLink.title'), body: t('booking.next.sendLink.body'), who: myTurn, primary: sendCheckInLink ?? toBookings };
+        return {
+          title: t('booking.next.sendLink.title'),
+          body: t('booking.next.sendLink.body'),
+          who: myTurn,
+          primary: sendCheckInLink ?? toBookings,
+          secondary: completeInWizard ?? undefined,
+        };
       case 'resendLink':
-        return { title: t('booking.next.resendLink.title'), body: t('booking.next.resendLink.body'), who: myTurn, primary: sendCheckInLink ?? toBookings };
+        return {
+          title: t('booking.next.resendLink.title'),
+          body: t('booking.next.resendLink.body'),
+          who: myTurn,
+          primary: sendCheckInLink ?? toBookings,
+          secondary: completeInWizard ?? undefined,
+        };
       case 'waitingDocuments':
-        return { title: t('booking.next.waitingDocuments.title'), body: t('booking.next.waitingDocuments.body'), who: guestTurn, primary: sendCheckInLink ?? toBookings };
+        return {
+          title: t('booking.next.waitingDocuments.title'),
+          body: t('booking.next.waitingDocuments.body'),
+          who: guestTurn,
+          primary: sendCheckInLink ?? toBookings,
+          secondary: completeInWizard ?? undefined,
+        };
+      case 'completeGuestData':
+        return {
+          title: t('booking.next.completeGuestData.title'),
+          body: t('booking.next.completeGuestData.body'),
+          who: myTurn,
+          primary: completeInWizard ?? toBookings,
+        };
       case 'stayInProgress':
         return {
           title: t('booking.next.stayInProgress.title', { guest }),
@@ -147,8 +250,79 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
         return { title: t('booking.next.cancelled.title'), body: t('status.booking.Cancelled.explain'), primary: toBookings };
       case 'allInOrder':
         return { title: t('booking.next.allInOrder.title'), body: t('booking.next.allInOrder.body', { guest, date: arrival }), primary: toBookings };
+      case 'compliance': {
+        // The worst compliance item of the stay when the step has nothing else to ask (NF-52): red is the host's to do, yellow is in hand.
+        const line = step.line;
+        if (!line) return { title: t('booking.next.compliance.waiting.title'), primary: toBookings };
+        const route = complianceActionRoute(line.item, hasPermission);
+        const mayAct = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS[line.action].write);
+        const action: CalmAction = route
+          ? { label: mayAct ? t(`dashboard.todo.${line.action}.cta`) : t('dashboard.todo.open'), href: route, testId: 'booking-next-compliance' }
+          : toBookings;
+        const reason = reasonText(line.reason, line.state, { t, exists: (key) => i18n.exists(key) });
+        const when = deadlineNote(line.dueAt, { t, locale: language })?.text;
+        return line.state === 'red'
+          ? {
+              title: t(`dashboard.todo.${line.action}.title`, { label: guest, period: periodName(line.period, language) || t('compliance.item.noPeriod') }),
+              body: reason,
+              who: myTurn,
+              when,
+              primary: action,
+            }
+          : { title: t('booking.next.compliance.waiting.title'), body: reason, when, primary: action };
+      }
     }
   };
 
-  return <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} kicker={t('booking.next.heading')} {...viewOfStep()} />;
+  // The lights of the other items of the stay, under what the block says: the same `ComplianceLight` and words as the page of the adempimenti.
+  const view = viewOfStep();
+  const lineView = viewOfLines(lines, { skip: step.line?.id });
+  const body = hasLinesToShow(lineView) ? (
+    <>
+      {view.body}
+      <ComplianceLines lines={lines} label={t('compliance.lines.ofStay')} hasPermission={hasPermission} skip={step.line?.id} greens="each" />
+    </>
+  ) : (
+    view.body
+  );
+
+  if (viewingCheckIn && !canWrite && step.kind === 'registerArrival') {
+    return (
+      <section className="space-y-1 text-sm" data-testid="booking-next-step" data-next-step={step.kind}>
+        <h2 className="font-semibold">{t('booking.next.heading')}</h2>
+        <p className="text-sm">{t('dashboard.today.readOnlyArrival')}</p>
+        {hasLinesToShow(lineView) && <ComplianceLines lines={lines} label={t('compliance.lines.ofStay')} hasPermission={hasPermission} greens="each" />}
+      </section>
+    );
+  }
+
+  const requiresComplianceAction = step.kind === 'sendAlloggiati' || (step.kind === 'compliance' && step.line?.state === 'red');
+  // The next action of the stay is a button in view, next to the title of the page (register the arrival, confirm, send the
+  // link…), not a step hidden behind the hint: the hint keeps the why, the who and the when, with the same button. Where there
+  // is nothing to do but wait, the action is the way back to the list: then the hint alone says what is going on.
+  const directAction = view.primary === toBookings ? null : view.primary;
+  return (
+    <>
+      {directAction && (
+        <CalmActionButton
+          action={{ ...directAction, testId: requiresComplianceAction ? 'booking-compliance-action' : 'booking-next-action' }}
+          size="sm"
+        />
+      )}
+      <ContextualHint testId="booking-guidance-trigger" label={view.title} tone={step.tone} iconOnly={directAction !== null}>
+        <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} {...view} body={body} />
+      </ContextualHint>
+    </>
+  );
+}
+
+/** Reserve room for the guidance control while its data loads. */
+function NextStepLoading() {
+  const { t } = useTranslation();
+  return (
+    <div role="status" aria-busy="true" data-testid="booking-next-step-loading">
+      <span className="sr-only">{t('shared.loading.srOnly')}</span>
+      <Skeleton aria-hidden="true" className="h-9 w-32 rounded-xl motion-reduce:animate-none" />
+    </div>
+  );
 }

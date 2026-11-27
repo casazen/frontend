@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useEmbed } from '@/features/embed/embed-context';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { siteLocale } from '@/lib/site-language';
 import { cn } from '@/lib/utils';
@@ -58,10 +59,15 @@ function FieldFace({ label, value, empty }: { label: string; value: string; empt
  * `SearchTrigger`, one field that opens a sheet with the three one under the other. The state is the page's (the address): this
  * only shows it and reports a change. Searching without dates does not search: a sentence says to choose them, and the
  * calendar opens.
+ *
+ * Inside the frame of an embeddable widget (NF-144) there is no sheet: the sheet of a phone is fixed to the window, and the window of a frame is as tall as
+ * its content. The bar of three fields is there at every width, the fields one under the other when the frame is narrow, each opening its popover.
  */
 export function SearchBar(props: SearchProps) {
   const fromTablet = useMediaQuery(FROM_TABLET_QUERY);
-  return fromTablet ? <DesktopSearchBar {...props} /> : <SearchTrigger {...props} />;
+  const embed = useEmbed();
+  if (fromTablet) return <DesktopSearchBar {...props} />;
+  return embed ? <DesktopSearchBar {...props} stacked /> : <SearchTrigger {...props} />;
 }
 
 function DesktopSearchBar({
@@ -75,7 +81,8 @@ function DesktopSearchBar({
   petsAllowed,
   showDestination = true,
   onSearch,
-}: SearchProps) {
+  stacked = false,
+}: SearchProps & { stacked?: boolean }) {
   const { t } = useTranslation();
   const portal = usePortalRootProps();
   const { place, when, who } = useSearchSummary({ destination, destinations, stay });
@@ -102,6 +109,7 @@ function DesktopSearchBar({
       aria-label={t('stayPickers.search.label')}
       className="stay-search"
       data-single={showDestination ? undefined : ''}
+      data-stacked={stacked ? '' : undefined}
       onSubmit={submit}
       noValidate
       data-testid="search-bar"

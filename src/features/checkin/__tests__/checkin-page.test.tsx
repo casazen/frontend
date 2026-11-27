@@ -1,17 +1,18 @@
-import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
-import { configure, render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach, beforeAll, beforeEach } from 'vitest';
+import { act, cleanup, configure, render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
+import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { CheckInPage } from '../checkin-page';
 import { publicCheckinApi } from '@/api/checkin.api';
 import type { PublicCheckInContextDto, PublicCheckInGuestPrefill } from '@/types/public-checkin.types';
 
 vi.mock('@/api/checkin.api', () => ({
-  publicCheckinApi: { getContext: vi.fn(), submit: vi.fn(), searchCodes: vi.fn() },
+  publicCheckinApi: { getContext: vi.fn(), requestInvoice: vi.fn(), readDocument: vi.fn(), submit: vi.fn(), searchCodes: vi.fn(), setLanguage: vi.fn() },
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -62,19 +63,20 @@ function httpError(status: number, data?: unknown): AxiosError {
   });
 }
 
-function renderPage() {
+function renderPage(search = '') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const view = render(
     createElement(
       QueryClientProvider,
       { client },
       createElement(
         MemoryRouter,
-        { initialEntries: [`/checkin/${TOKEN}`] },
+        { initialEntries: [`/checkin/${TOKEN}${search}`] },
         createElement(Routes, null, createElement(Route, { path: '/checkin/:token', element: createElement(CheckInPage) })),
       ),
     ),
   );
+  return { ...view, client };
 }
 
 function guestCard(index: number) {
@@ -95,6 +97,9 @@ interface GuestInput {
 }
 
 function fillGuest(index: number, guest: GuestInput) {
+  if (!screen.queryByTestId(`stay-guest-${index}`) && screen.queryByTestId('checkin-document-step')) {
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+  }
   const card = guestCard(index);
   change(card, /^Nome/, guest.firstName);
   change(card, /^Cognome/, guest.lastName ?? 'Bianchi');
@@ -108,6 +113,18 @@ function fillGuest(index: number, guest: GuestInput) {
     change(card, /^Stato di nascita/, guest.place ?? 'Francia');
   }
   change(card, /^Cittadinanza/, 'Italia');
+}
+
+/**
+ * The form is on screen AND the page has started it from the guests on file. That effect runs after the first render of the context and
+ * replaces the cards of the guests (new keys): a card taken before it is detached, and what is typed on it never reaches the form.
+ */
+async function formReady() {
+  await screen.findByTestId('checkin-page');
+  if (screen.queryByTestId('checkin-document-step')) {
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+  }
+  await waitFor(() => expect(guestCard(0).getByLabelText(/^Nome/)).toHaveValue('Mario'));
 }
 
 async function goToDocuments() {
@@ -125,12 +142,17 @@ function fillDocument(index: number) {
 /** Last step: the privacy notice is only shown (legal obligation, no checkbox to tick), then the form is sent. */
 async function acceptAndSubmit() {
   await goToConsents();
-  fireEvent.click(screen.getByTestId('checkin-submit'));
+  acknowledgePrivacy();
+    fireEvent.click(screen.getByTestId('checkin-submit'));
 }
 
 async function goToConsents() {
   fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
   await screen.findByTestId('checkin-privacy-notice');
+}
+
+function acknowledgePrivacy() {
+  fireEvent.click(within(screen.getByTestId('checkin-privacy-notice')).getByRole('checkbox'));
 }
 
 async function submitSingleGuest() {
@@ -145,6 +167,13 @@ beforeAll(async () => {
   await i18n.changeLanguage('it');
 });
 
+afterEach(async () => {
+  // The page changes the language of the app for as long as it is on screen and gives it back: a test never leaves it changed.
+  cleanup();
+  await i18n.changeLanguage('it');
+  document.documentElement.lang = 'it';
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(publicCheckinApi.getContext).mockResolvedValue(openContext);
@@ -152,7 +181,7 @@ beforeEach(() => {
 });
 
 describe('CheckInPage', () => {
-  it('consentStep_alloggiatiIsALegalObligation_showsTheNoticeWithoutAnyRequiredCheckbox', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+  it('consentStep_alloggiatiIsALegalObligation_requiresAcknowledgementBeforeSubmitting', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, privacyNoticeVersion: 'notice-2026-10' });
     vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
     renderPage();
@@ -166,9 +195,14 @@ describe('CheckInPage', () => {
     expect(notice).toHaveTextContent('obbligo di legge (art. 109 TULPS)');
     expect(notice).toHaveTextContent("art. 6, par. 1, lett. c) del GDPR e non richiede il tuo consenso");
     expect(notice).toHaveTextContent('Versione dell’informativa: notice-2026-10');
-    expect(within(notice).queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    expect(within(notice).getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByTestId('checkin-submit')).toBeDisabled();
+    // A disabled button says what it waits for, in a line under it (UX round 2026-11), which goes once the box is ticked.
+    expect(screen.getByTestId('checkin-submit-hint')).toHaveTextContent('spunta prima le caselle obbligatorie');
+    expect(screen.getByTestId('checkin-submit')).toHaveAttribute('aria-describedby', 'checkin-submit-hint');
 
+    acknowledgePrivacy();
+    expect(screen.queryByTestId('checkin-submit-hint')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('checkin-submit'));
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
@@ -198,6 +232,7 @@ describe('CheckInPage', () => {
     const emailInput = await screen.findByLabelText(/il tuo indirizzo email/i);
     fireEvent.change(emailInput, { target: { value: 'guest@example.com' } });
 
+    acknowledgePrivacy();
     fireEvent.click(screen.getByTestId('checkin-submit'));
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
@@ -218,6 +253,8 @@ describe('CheckInPage', () => {
 
   it('genderSelect_openSession_offersOnlyAlloggiatiValues', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
 
     const select = guestCard(0).getByLabelText(/^Sesso/) as HTMLSelectElement;
@@ -232,6 +269,8 @@ describe('CheckInPage', () => {
       guests: [{ ...booker, firstName: '', lastName: '' }],
     });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
 
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
@@ -249,6 +288,8 @@ describe('CheckInPage', () => {
 
   it('bornInItaly_conditionalFields_comuneAndProvinceInItalyStateAbroad', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
     const card = guestCard(0);
 
@@ -270,6 +311,8 @@ describe('CheckInPage', () => {
     });
     vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-2');
 
     // The form starts with the declared guests: the head and two family members.
@@ -307,16 +350,21 @@ describe('CheckInPage', () => {
   });
 
   it('addGuestAndStayKind_changesTheKindOfTheOtherGuests', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, declaredGuests: 2 });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
 
+    expect(screen.queryByTestId('checkin-add-guest')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('stay-guest-1-remove'));
     fireEvent.click(screen.getByTestId('checkin-add-guest'));
     expect(await screen.findByTestId('stay-guest-1-type')).toHaveTextContent('Ospite singolo');
 
     change(guestCard(0), /^Chi soggiorna/, 'HeadOfGroup');
     await waitFor(() => expect(screen.getByTestId('stay-guest-1-type')).toHaveTextContent('Membro del gruppo'));
     expect(screen.getByTestId('stay-guest-0-type')).toHaveTextContent('Capogruppo');
-    expect(screen.getByTestId('checkin-guest-count-mismatch')).toHaveTextContent('1 ospite');
+    expect(screen.queryByTestId('checkin-guest-count-mismatch')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('stay-guest-1-remove'));
     await waitFor(() => expect(screen.queryByTestId('stay-guest-1')).not.toBeInTheDocument());
@@ -324,6 +372,8 @@ describe('CheckInPage', () => {
 
   it('next_familyWithOnlyTheHead_showsTheCompositionErrorOnTheKind', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
     change(guestCard(0), /^Chi soggiorna/, 'HeadOfFamily');
     fillGuest(0, { firstName: 'Giulia' });
@@ -337,21 +387,29 @@ describe('CheckInPage', () => {
   it('codeTablesImported_choosingAnOfficialEntry_sendsItsCode', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, availableCodeTables: ['Comuni', 'Stati'] });
     // Synthetic entry (test data, not an official code).
-    vi.mocked(publicCheckinApi.searchCodes).mockResolvedValue([
-      { table: 'Comuni', code: '900000001', description: 'TEST Firenze', province: 'FI' },
-    ]);
+    vi.mocked(publicCheckinApi.searchCodes).mockImplementation(async (_token, list) => {
+      if (list === 'stati') return [{ table: 'Stati', code: '100000100', description: 'ITALIA', citizenshipLabel: 'Italiano' }];
+      if (list === 'comuni' || list === 'luoghi') return [{ table: 'Comuni', code: '900000001', description: 'TEST Firenze', province: 'FI' }];
+      return [];
+    });
     vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
     fillGuest(0, { firstName: 'Giulia', place: 'TE' });
 
     await waitFor(() => expect(publicCheckinApi.searchCodes).toHaveBeenCalledWith(TOKEN, 'comuni', 'TE'));
-    await screen.findByText((_, element) => element?.getAttribute('value') === 'TEST Firenze (FI)');
-    change(guestCard(0), /^Comune di nascita/, 'TEST Firenze (FI)');
+    fireEvent.focus(guestCard(0).getByLabelText(/^Comune di nascita/));
+    fireEvent.click(await screen.findByRole('option', { name: 'TEST Firenze (FI)' }));
     expect(await screen.findByTestId('guest-0-birthComuneName-code')).toHaveTextContent('900000001');
+    fireEvent.focus(guestCard(0).getByLabelText(/^Cittadinanza/));
+    fireEvent.click(await guestCard(0).findByRole('option', { name: 'Italiano' }));
 
     await goToDocuments();
     fillDocument(0);
+    fireEvent.focus(within(screen.getByTestId('stay-guest-0-document')).getByLabelText(/^Luogo di rilascio/));
+    fireEvent.click(await screen.findByRole('option', { name: 'TEST Firenze (FI)' }));
     await acceptAndSubmit();
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
@@ -443,6 +501,8 @@ describe('CheckInPage', () => {
       ],
     });
     renderPage();
+    await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
     await waitFor(() => expect(guestCard(0).getByLabelText(/^Sesso/)).toHaveValue('Male'));
 
@@ -452,5 +512,618 @@ describe('CheckInPage', () => {
     expect(document.getByLabelText(/^Numero documento/)).toHaveValue('');
     expect(screen.getByTestId('stay-guest-0-document-on-file')).toHaveTextContent('*****456');
     expect(document.getByLabelText(/^Tipo documento/)).toHaveValue('Passport');
+  });
+
+  describe('five languages (NF-40)', () => {
+    it('language_ApiResolvedGerman_OpensInGermanWithTheChoiceShown', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({
+        ...openContext,
+        language: 'de',
+        supportedLanguages: ['it', 'en', 'de', 'fr', 'es'],
+      });
+      renderPage();
+
+      expect(await screen.findByRole('heading', { name: 'Gäste-Check-in' })).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+      expect(screen.getByLabelText('Sprache')).toHaveValue('de');
+      expect(document.documentElement.lang).toBe('de');
+      expect(guestCard(0).getByLabelText(/^Vorname/)).toBeInTheDocument();
+      // Nothing is saved when the page only follows what the API resolved.
+      expect(publicCheckinApi.setLanguage).not.toHaveBeenCalled();
+    });
+
+    it('language_Switcher_OffersFiveLanguagesInTheirOwnNamesWithTheirLangAndFortyFourPixels', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      renderPage();
+      const select = (await screen.findByLabelText('Lingua')) as HTMLSelectElement;
+
+      expect(Array.from(select.options).map((option) => option.textContent)).toEqual([
+        'Italiano',
+        'English',
+        'Deutsch',
+        'Français',
+        'Español',
+      ]);
+      expect(Array.from(select.options).map((option) => option.lang)).toEqual(['it', 'en', 'de', 'fr', 'es']);
+      expect(select.className).toContain('h-11');
+    });
+
+    it('language_Choosing_SavesItChangesThePageAndLeavesTheLanguageOfTheAppStored', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      localStorage.removeItem('casazen.locale');
+      vi.mocked(publicCheckinApi.setLanguage).mockResolvedValue({ language: 'fr' });
+      const view = renderPage();
+      const select = await screen.findByLabelText('Lingua');
+
+      fireEvent.change(select, { target: { value: 'fr' } });
+
+      expect(await screen.findByRole('heading', { name: 'Check-in des invités' })).toBeInTheDocument();
+      expect(publicCheckinApi.setLanguage).toHaveBeenCalledWith(TOKEN, 'fr');
+      expect(document.documentElement.lang).toBe('fr');
+      // The guest locale lives for the page: the language chosen for the app (it or en) is not touched.
+      expect(localStorage.getItem('casazen.locale')).toBeNull();
+
+      view.unmount();
+      await waitFor(() => expect(i18n.language).toBe('it'));
+      expect(localStorage.getItem('casazen.locale')).toBeNull();
+    });
+
+    it('language_ChoiceCannotBeSaved_PageStaysInTheChosenLanguageAndSaysSo', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.setLanguage).mockRejectedValue(httpError(500));
+      renderPage();
+
+      fireEvent.change(await screen.findByLabelText('Lingua'), { target: { value: 'es' } });
+
+      expect(await screen.findByRole('heading', { name: 'Check-in de huéspedes' })).toBeInTheDocument();
+      expect(await screen.findByTestId('checkin-language-not-saved')).toHaveTextContent('No hemos podido guardar');
+    });
+
+    it('language_TextsCannotBeLoaded_GoBackToThePreviousLanguageAndSayWhy', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.setLanguage).mockResolvedValue({ language: 'de' });
+      // The file of the language is not there yet and the network gives out while it is added.
+      i18n.removeResourceBundle('de', 'translation');
+      const addBundle = vi.spyOn(i18n, 'addResourceBundle').mockImplementationOnce(() => {
+        throw new Error('chunk');
+      });
+      try {
+        renderPage();
+        const select = (await screen.findByLabelText('Lingua')) as HTMLSelectElement;
+
+        fireEvent.change(select, { target: { value: 'de' } });
+
+        expect(await screen.findByTestId('checkin-language-not-loaded')).toHaveTextContent('Non siamo riusciti a caricare questa lingua');
+        // The page is in the language it had, and the control, the voice of the screen reader and the texts agree on it.
+        expect(select.value).toBe('it');
+        expect(document.documentElement.lang).toBe('it');
+        expect(i18n.language).toBe('it');
+      } finally {
+        addBundle.mockRestore();
+      }
+    });
+
+    it('language_CompletedLink_StillChangesTheLanguageButSavesNothing', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo' });
+      renderPage();
+
+      fireEvent.change(await screen.findByLabelText('Lingua'), { target: { value: 'de' } });
+
+      expect(await screen.findByText('Check-in bereits abgeschlossen')).toBeInTheDocument();
+      expect(publicCheckinApi.setLanguage).not.toHaveBeenCalled();
+    });
+
+    it('language_Choosing_AfterTypingKeepsWhatTheGuestTyped', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      let saved: (answer: { language: string }) => void = () => undefined;
+      vi.mocked(publicCheckinApi.setLanguage).mockImplementationOnce(() => new Promise((resolve) => { saved = resolve; }));
+      renderPage();
+      await formReady();
+      fillGuest(0, { firstName: 'Giulia' });
+
+      fireEvent.change(screen.getByLabelText('Lingua'), { target: { value: 'fr' } });
+      expect(await screen.findByRole('heading', { name: 'Check-in des invités' })).toBeInTheDocument();
+      // The save answers: the page must not start the form again from what the server has on file.
+      await act(async () => {
+        saved({ language: 'fr' });
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(publicCheckinApi.setLanguage).toHaveBeenCalledWith(TOKEN, 'fr');
+      expect(guestCard(0).getByLabelText(/^Prénom/)).toHaveValue('Giulia');
+    });
+
+    it('prefill_ContextReadAgainWithTheSameGuests_KeepsWhatTheGuestTyped', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      const view = renderPage();
+      await formReady();
+      fillGuest(0, { firstName: 'Giulia' });
+
+      // The session moved on (another `status`): a new object, the same guests on file.
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, status: 'Inviato' });
+      await act(async () => {
+        await view.client.refetchQueries({ queryKey: ['checkin', TOKEN] });
+        // The query client tells its observers on the next tick: let the page render the new context and run its effects.
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+
+      expect(publicCheckinApi.getContext).toHaveBeenCalledTimes(2);
+      expect(guestCard(0).getByLabelText(/^Nome/)).toHaveValue('Giulia');
+    });
+
+    it('language_GermanKeyMissingFromTheSubsetFile_FallsBackToEnglish', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, language: 'de' });
+      renderPage();
+      await screen.findByRole('heading', { name: 'Gäste-Check-in' });
+
+      // A key of the host side is not in the German subset: the page never shows a raw key, English answers.
+      expect(i18n.t('checkin.link.copyTitle')).toBe('Check-in link');
+    });
+  });
+
+  describe('new fields (NF-40)', () => {
+    it('residence_Italy_AsksComuneAndProvinceAndSendsThemDocumentDatesToo', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
+      renderPage();
+      await screen.findByTestId('checkin-page');
+      fillGuest(0, { firstName: 'Giulia' });
+      const card = guestCard(0);
+      expect(card.queryByLabelText(/^Comune di residenza/)).not.toBeInTheDocument();
+      change(card, /^Residenza/, 'yes');
+      change(card, /^Comune di residenza/, 'Roma');
+      change(card, /^Provincia di residenza/, 'rm');
+      await goToDocuments();
+      fillDocument(0);
+      const documentCard = within(screen.getByTestId('stay-guest-0-document'));
+      change(documentCard, /^Data di rilascio/, '2020-05-10');
+      change(documentCard, /^Data di scadenza/, '2030-05-09');
+      await acceptAndSubmit();
+
+      await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
+      const [, payload] = vi.mocked(publicCheckinApi.submit).mock.calls[0];
+      expect(payload.guests[0]).toMatchObject({
+        residenceInItaly: true,
+        residenceComuneName: 'Roma',
+        residenceProvince: 'RM',
+        documentIssuedOn: '2020-05-10',
+        documentExpiresOn: '2030-05-09',
+      });
+      // What the region does not require is not shown and not sent; the exemption of the tourist tax is the host's alone.
+      expect(payload.guests[0]).not.toHaveProperty('tourismType');
+      expect(payload.guests[0]).not.toHaveProperty('taxExemptionCode');
+    });
+
+    it('statisticalFields_RegionDoesNotRequireThem_AreNotShown', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      renderPage();
+      await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+    await screen.findByTestId('stay-guest-0');
+
+      expect(guestCard(0).queryByLabelText(/^Motivo del viaggio/)).not.toBeInTheDocument();
+      expect(guestCard(0).queryByLabelText(/^Mezzo usato per arrivare/)).not.toBeInTheDocument();
+      expect(guestCard(0).queryByLabelText(/^Titolo di studio/)).not.toBeInTheDocument();
+    });
+
+    it('statisticalFields_RegionRequiresTwo_AreAskedMustBeChosenAndAreTheOnlyOnesSent', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, requiredGuestFields: ['TourismType', 'TravelWay'] });
+      vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
+      renderPage();
+      await screen.findByTestId('checkin-document-step');
+      fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+      const card = guestCard(0);
+      await waitFor(() => expect(card.getByLabelText(/^Motivo del viaggio/)).toBeInTheDocument());
+      expect(card.queryByLabelText(/^Titolo di studio/)).not.toBeInTheDocument();
+
+      fillGuest(0, { firstName: 'Giulia' });
+      fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
+      expect(await screen.findByText('Seleziona il motivo del viaggio')).toBeInTheDocument();
+      expect(screen.getByText('Seleziona il mezzo usato per arrivare')).toBeInTheDocument();
+      expect(screen.queryByTestId('stay-guest-0-document')).not.toBeInTheDocument();
+
+      change(card, /^Motivo del viaggio/, 'business');
+      change(card, /^Mezzo usato per arrivare/, 'train');
+      await goToDocuments();
+      fillDocument(0);
+      await acceptAndSubmit();
+
+      await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
+      const [, payload] = vi.mocked(publicCheckinApi.submit).mock.calls[0];
+      expect(payload.guests[0]).toMatchObject({ tourismType: 'business', travelWay: 'train' });
+      expect(payload.guests[0]).not.toHaveProperty('educationLevel');
+    });
+
+    it('prefill_NewFieldsOnFile_ArePutBackInTheForm', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({
+        ...openContext,
+        guests: [
+          {
+            ...booker,
+            residenceInItaly: false,
+            residenceCountryName: 'Francia',
+            documentIssuedOn: '2020-05-10',
+            documentExpiresOn: '2030-05-09',
+          },
+        ],
+      });
+      renderPage();
+      await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+    await screen.findByTestId('stay-guest-0');
+
+      await waitFor(() => expect(guestCard(0).getByLabelText(/^Residenza/)).toHaveValue('no'));
+      expect(guestCard(0).getByLabelText(/^Stato di residenza/)).toHaveValue('Francia');
+      fillGuest(0, { firstName: 'Giulia' });
+      await goToDocuments();
+      expect(within(screen.getByTestId('stay-guest-0-document')).getByLabelText(/^Data di rilascio/)).toHaveValue('2020-05-10');
+    });
+  });
+
+  describe('errors in the language of the page (NF-40, NF-11)', () => {
+    it('submit_ServerCodes_AreTranslatedWithTheGuestLocaleAndUnknownKeysKeepTheServerMessage', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, language: 'de' });
+      vi.mocked(publicCheckinApi.submit).mockRejectedValue(
+        httpError(400, {
+          code: 'validation_error',
+          errors: {
+            'Guests[0].DocumentNumber': ['Il numero del documento può avere solo lettere e cifre, al massimo 20.'],
+            'Guests[0].DocumentIssuePlaceName': ['Un messaggio che questa versione non conosce.'],
+          },
+          codes: {
+            'Guests[0].DocumentNumber': 'CheckInDocumentNumberInvalid',
+            'Guests[0].DocumentIssuePlaceName': 'CheckInSomethingNew',
+          },
+        }),
+      );
+      renderPage();
+      await screen.findByRole('heading', { name: 'Gäste-Check-in' });
+      fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+      await screen.findByLabelText(/^Vorname/);
+      const setField = (id: string, value: string) => fireEvent.change(window.document.getElementById(id)!, { target: { value } });
+      setField('guest-0-firstName', 'Giulia');
+      setField('guest-0-lastName', 'Bianchi');
+      setField('guest-0-gender', 'Female');
+      setField('guest-0-dateOfBirth', '1992-03-08');
+      setField('guest-0-bornInItaly', 'no');
+      setField('guest-0-birthCountryName', 'Francia');
+      setField('guest-0-citizenship', 'Italia');
+      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
+      await screen.findByTestId('stay-guest-0-document');
+      setField('guest-0-documentType', 'IdentityCard');
+      setField('guest-0-documentNumber', 'CA12345AB');
+      setField('guest-0-documentIssuePlaceName', 'Firenze');
+      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
+      await screen.findByTestId('checkin-privacy-notice');
+      acknowledgePrivacy();
+    fireEvent.click(screen.getByTestId('checkin-submit'));
+
+      // In the language of the page, from the key of the message.
+      expect(await screen.findByText('Die Dokumentnummer darf nur Buchstaben und Ziffern enthalten, höchstens 20.')).toBeInTheDocument();
+      // A key the page does not know: the message of the server.
+      expect(screen.getByText('Un messaggio che questa versione non conosce.')).toBeInTheDocument();
+    });
+
+    it('next_MissingFields_FocusGoesToTheFirstErrorAndTheCountIsAnnounced', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({
+        ...openContext,
+        guests: [{ ...booker, firstName: '', lastName: '' }],
+      });
+      renderPage();
+      await screen.findByTestId('checkin-document-step');
+    fireEvent.click(screen.getByTestId('checkin-enter-manually'));
+    await screen.findByTestId('stay-guest-0');
+
+      fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
+
+      await waitFor(() => expect(guestCard(0).getByLabelText(/^Nome/)).toHaveFocus());
+      expect(await screen.findByTestId('checkin-announcement')).toHaveTextContent(/campi da controllare/);
+      expect(screen.getByTestId('checkin-announcement')).toHaveAttribute('role', 'status');
+    });
+  });
+
+  /**
+   * «Ti serve la fattura?» (FIS-01, NF-81, E06/F02/US03/T02): an optional step between the document and the privacy notice. Only a «yes» sends
+   * the `invoice` block; the step never blocks the check-in; the page never shows what the booking holds.
+   */
+  describe('invoice step (FIS-01)', () => {
+    const FISCAL_CODE = 'RSSMRA80A01H501U';
+
+
+    async function toInvoiceStep() {
+      renderPage('?invoice=1');
+      await screen.findByTestId('checkin-invoice-step');
+    }
+
+    const field = (name: string) => screen.getByTestId(`checkin-invoice-${name}`) as HTMLInputElement;
+    const type = (name: string, value: string) => fireEvent.change(field(name), { target: { value } });
+    const next = () => fireEvent.click(screen.getByRole('button', { name: /Salva risposta/ }));
+
+    /** From the invoice step to the send, and the payload that went out. */
+    async function sendFromInvoiceStep() {
+      next();
+      await screen.findByText(i18n.t('checkin.invoiceFinished'));
+      expect(publicCheckinApi.submit).not.toHaveBeenCalled();
+      const invoice = vi.mocked(publicCheckinApi.requestInvoice).mock.lastCall?.[1];
+      return invoice ? { invoice } : {};
+    }
+
+    it('invoiceLink_AsksTheQuestionAndShowsNoFieldBeforeAnAnswer', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      expect(screen.getByRole('group', { name: 'Ti serve la fattura?' })).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-step')).toHaveTextContent('Facoltativo');
+      expect(screen.queryByTestId('checkin-progress')).not.toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-yes')).not.toBeChecked();
+      expect(screen.getByTestId('checkin-invoice-no')).not.toBeChecked();
+      // One step, one topic: nothing of the fields is there until the guest says yes.
+      expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Codice fiscale')).not.toBeInTheDocument();
+    });
+
+    it('invoiceStep_PassedWithNoAnswer_IsSkippedAndSendsNoDataAtAll', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      const payload = await sendFromInvoiceStep();
+
+      expect(payload).not.toHaveProperty('invoice');
+      expect(publicCheckinApi.requestInvoice).not.toHaveBeenCalled();
+    });
+
+    it('invoiceStep_ANo_SendsNoDataAtAllAndShowsNoField', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-no'));
+
+      expect(screen.getByTestId('checkin-invoice-no')).toBeChecked();
+      expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
+      expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
+    });
+
+    it('invoiceStep_AYesWithData_ShowsTheFieldsAndSendsTheBlockNormalizedWithTheKindAndTheCountry', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', '  Mario   Rossi ');
+      type('fiscalCode', ' rssmra80a01 h501u ');
+      type('city', 'Roma');
+
+      const payload = await sendFromInvoiceStep();
+
+      expect(payload.invoice).toEqual({
+        needInvoice: true,
+        recipientKind: 'Guest',
+        countryCode: 'IT',
+        name: 'Mario Rossi',
+        fiscalCode: FISCAL_CODE,
+        city: 'Roma',
+      });
+    });
+
+    it('invoiceStep_ACompany_SendsItsKindAndItsVatNumber', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      fireEvent.click(screen.getByTestId('checkin-invoice-kind-Company'));
+      type('name', 'Rossi S.r.l.');
+      type('vatNumber', '12345678903');
+      type('sdiRecipientCode', 'abc1234');
+
+      expect((await sendFromInvoiceStep()).invoice).toEqual({
+        needInvoice: true,
+        recipientKind: 'Company',
+        countryCode: 'IT',
+        name: 'Rossi S.r.l.',
+        vatNumber: 'IT12345678903',
+        sdiRecipientCode: 'ABC1234',
+      });
+    });
+
+    it('invoiceStep_AYesWithNothingWritten_SendsOnlyTheYesAndLeavesTheDataToTheHost', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      // The kind alone is no data: it would ask the server for an identification the guest never saw.
+      fireEvent.click(screen.getByTestId('checkin-invoice-kind-Company'));
+
+      expect((await sendFromInvoiceStep()).invoice).toEqual({ needInvoice: true });
+    });
+
+    it('invoiceStep_DataWithoutAFiscalCode_StopsOnTheFieldAndTheGuestCanAlwaysGoOnByAnsweringNo', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+
+      next();
+
+      expect(await screen.findByText('Scrivi il codice fiscale: serve per intestare la fattura.')).toBeInTheDocument();
+      expect(field('fiscalCode')).toHaveAttribute('aria-invalid', 'true');
+      await waitFor(() => expect(field('fiscalCode')).toHaveFocus());
+      expect(screen.getByTestId('checkin-invoice-step')).toBeInTheDocument();
+      expect(screen.queryByTestId('checkin-privacy-notice')).not.toBeInTheDocument();
+
+      // The step never blocks the check-in: the guest who does not want to say more answers no and goes on, with nothing sent.
+      fireEvent.click(screen.getByTestId('checkin-invoice-no'));
+      expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
+    });
+
+    // AC-NF04-1: about five fields at a time. The server asks no address (a «yes» with a name and a fiscal code is complete for it), so the step
+    // holds only what identifies the guest and the address is under «Altre opzioni».
+    it('invoiceStep_AYes_ShowsOnlyWhatIdentifiesTheGuestAndKeepsTheAddressUnderMoreOptions', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+
+      const more = screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement;
+      expect(more.open).toBe(false);
+      const inView = within(screen.getByTestId('checkin-invoice-fields'))
+        .getAllByRole('textbox')
+        .filter((box) => !more.contains(box))
+        .map((box) => box.id);
+      expect(inView).toEqual(['checkin-invoice-name', 'checkin-invoice-fiscalCode']);
+      for (const name of ['addressStreet', 'addressCivic', 'postalCode', 'city', 'province']) expect(more.contains(field(name)), name).toBe(true);
+    });
+
+    it('invoiceStep_NoAddress_IsAcceptedAndSentWithoutOneBecauseTheServerAsksNone', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+
+      const payload = await sendFromInvoiceStep();
+
+      expect(payload.invoice).toEqual({ needInvoice: true, recipientKind: 'Guest', countryCode: 'IT', name: 'Mario Rossi', fiscalCode: FISCAL_CODE });
+    });
+
+    it('invoiceStep_AnAddressProblem_OpensTheOptionsAndStopsOnTheField', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+      type('postalCode', '12');
+      expect((screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement).open).toBe(false);
+
+      next();
+
+      expect(await screen.findByText(/In Italia il CAP ha 5 cifre/)).toBeInTheDocument();
+      expect((screen.getByTestId('checkin-invoice-more') as HTMLDetailsElement).open).toBe(true);
+      expect(field('postalCode')).toHaveAttribute('aria-invalid', 'true');
+      await waitFor(() => expect(field('postalCode')).toHaveFocus());
+      expect(screen.queryByTestId('checkin-privacy-notice')).not.toBeInTheDocument();
+    });
+
+    it('invoiceStep_EveryFormatIsCheckedOnItsFieldWithTheSharedRules', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('fiscalCode', 'XYZ');
+      type('vatNumber', '123');
+      type('sdiRecipientCode', 'AB');
+      type('pec', 'no');
+
+      next();
+
+      expect(await screen.findByText(/Il codice fiscale non è valido/)).toBeInTheDocument();
+      expect(screen.getByText(/La partita IVA non è valida/)).toBeInTheDocument();
+      expect(screen.getByText('Il codice destinatario ha 7 lettere o cifre.')).toBeInTheDocument();
+      expect(screen.getByText(/L'indirizzo PEC non è valido/)).toBeInTheDocument();
+      expect(screen.queryByTestId('checkin-privacy-notice')).not.toBeInTheDocument();
+      expect(publicCheckinApi.submit).not.toHaveBeenCalled();
+    });
+
+    it('invoiceStep_AbroadWithoutAFiscalCodeOrAVatNumber_IsAccepted', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Hans Meier');
+      fireEvent.change(field('countryCode'), { target: { value: 'DE' } });
+
+      expect((await sendFromInvoiceStep()).invoice).toEqual({ needInvoice: true, recipientKind: 'Guest', countryCode: 'DE', name: 'Hans Meier' });
+    });
+
+    it('invoiceStep_ServerRefusesTheBlock_BringsTheGuestBackToTheStepWithTheDataKeptAndNoToast', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.requestInvoice)
+        .mockRejectedValueOnce(
+          httpError(422, {
+            code: 'invoice_data_fiscal_code_invalid',
+            field: 'fiscalCode',
+            errors: [{ field: 'fiscalCode', code: 'invoice_data_fiscal_code_invalid' }],
+          }),
+        )
+        .mockResolvedValueOnce(undefined);
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      type('name', 'Mario Rossi');
+      type('fiscalCode', FISCAL_CODE);
+      type('city', 'Roma');
+      next();
+
+
+      // Back on the invoice step, with the error on the field the server named and everything the guest typed still there.
+      expect(await screen.findByText(/Il codice fiscale non è valido/)).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-step')).toBeInTheDocument();
+      expect(field('fiscalCode')).toHaveAttribute('aria-invalid', 'true');
+      expect(field('name').value).toBe('Mario Rossi');
+      expect(field('fiscalCode').value).toBe(FISCAL_CODE);
+      expect(field('city').value).toBe('Roma');
+      expect(screen.getByTestId('checkin-submit-error')).toHaveTextContent('correggi i campi evidenziati');
+      expect(toast.error).not.toHaveBeenCalled();
+
+      // The guest corrects and sends again: the guests were never lost.
+      type('fiscalCode', 'rssmra80a01h501u');
+      const payload = await sendFromInvoiceStep();
+      expect(payload.invoice).toMatchObject({ needInvoice: true, name: 'Mario Rossi', fiscalCode: FISCAL_CODE, city: 'Roma' });
+      expect(publicCheckinApi.submit).not.toHaveBeenCalled();
+
+    });
+
+    it('invoiceStep_TheGuestSaidYesBefore_StartsAnsweredAndAsksForTheFields', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, invoiceRequested: true });
+      await toInvoiceStep();
+
+      expect(screen.getByTestId('checkin-invoice-yes')).toBeChecked();
+      expect(screen.getByTestId('checkin-invoice-data')).toBeInTheDocument();
+      expect(field('name').value).toBe('');
+    });
+
+    // Privacy (AC-E06-F02-US01-04): the link is anonymous, so the page is write-only for the invoice data. The context says that the booking has
+    // some, never what it is; the step says so, shows no field of it and offers to send others with the fields empty.
+    it('invoiceStep_TheBookingHasData_SaysSoShowsNothingOfItAndStartsTheNewFieldsEmpty', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      const leaked = { fiscalCode: FISCAL_CODE, vatNumber: 'IT12345678903', pec: 'segreto@pec.it', name: 'Nome Segreto' };
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true, invoiceRequested: true, ...leaked });
+      await toInvoiceStep();
+
+      const onFile = screen.getByTestId('checkin-invoice-on-file');
+      expect(onFile).toHaveTextContent('Abbiamo già i tuoi dati di fatturazione');
+      expect(screen.queryByTestId('checkin-invoice-yes')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
+      for (const value of Object.values(leaked)) expect(window.document.body.textContent).not.toContain(value);
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-replace'));
+
+      expect(screen.getByTestId('checkin-invoice-data')).toBeInTheDocument();
+      expect(field('name').value).toBe('');
+      expect(field('fiscalCode').value).toBe('');
+      for (const input of window.document.querySelectorAll<HTMLInputElement>('[data-testid^="checkin-invoice-"]')) {
+        for (const value of Object.values(leaked)) expect(input.value).not.toBe(value);
+      }
+    });
+
+    it('invoiceStep_TheBookingHasDataAndTheGuestKeepsIt_SendsNothing', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true });
+      await toInvoiceStep();
+
+      expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
+    });
+
+    it('invoiceStep_TheBookingHasDataAndTheGuestReplacesIt_SendsTheNewData', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true });
+      await toInvoiceStep();
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-replace'));
+      type('name', 'Mario Bianchi');
+      type('fiscalCode', FISCAL_CODE);
+
+      expect((await sendFromInvoiceStep()).invoice).toMatchObject({ needInvoice: true, name: 'Mario Bianchi', fiscalCode: FISCAL_CODE });
+    });
+
+    it('invoiceStep_TheBookingHasDataAndTheGuestChangesHerMind_KeepsWhatWasTypedButSendsNothing', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, hasInvoiceData: true });
+      await toInvoiceStep();
+      fireEvent.click(screen.getByTestId('checkin-invoice-replace'));
+      type('name', 'Mario Bianchi');
+
+      fireEvent.click(screen.getByTestId('checkin-invoice-replace'));
+      expect(screen.queryByTestId('checkin-invoice-data')).not.toBeInTheDocument();
+      expect(await sendFromInvoiceStep()).not.toHaveProperty('invoice');
+    });
+
+    it('invoiceStep_InTheLanguageOfThePage_AsksAndExplainsInGerman', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, language: 'de' });
+      await toInvoiceStep();
+      expect(screen.getByRole('group', { name: 'Benötigen Sie eine Rechnung?' })).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-step')).toHaveTextContent('Freiwillig');
+      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
+      expect(screen.getByLabelText(/Steuernummer \(codice fiscale\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Warum wir fragen: Der Vermieter braucht sie/)).toHaveTextContent('Beispiel: RSSMRA80A01H501U');
+      type('fiscalCode', 'XYZ');
+      fireEvent.click(screen.getByRole('button', { name: /Antwort speichern/ }));
+
+      // The error is in German too, and no word of Italian or English is on the step.
+      expect(await screen.findByText(/Die Steuernummer \(codice fiscale\) ist ungültig/)).toBeInTheDocument();
+      expect(screen.getByTestId('checkin-invoice-step')).not.toHaveTextContent(/Esempio|Example|Perché/);
+    });
   });
 });

@@ -83,7 +83,7 @@ describe('FocusBlock (UI-16)', () => {
       const region = container.querySelector('section')!;
 
       expect(region).toHaveAttribute('data-tone', tone);
-      for (const token of TONE_STYLES[tone].surface.split(' ')) expect(region).toHaveClass(token);
+      expect(region.querySelector('span[aria-hidden]')).toHaveClass(TONE_STYLES[tone].badge);
       const icon = region.querySelector('span[aria-hidden="true"] > svg');
       expect(icon, `${tone} has an icon`).not.toBeNull();
       icons.add(icon!.getAttribute('class')!.split(' ').find((name) => name.startsWith('lucide-'))!);
@@ -92,20 +92,29 @@ describe('FocusBlock (UI-16)', () => {
 
     // Five tones, five different icons and five different tints.
     expect(icons.size).toBe(CALM_TONES.length);
-    expect(new Set(CALM_TONES.map((tone) => TONE_STYLES[tone].surface)).size).toBe(CALM_TONES.length);
+    expect(new Set(CALM_TONES.map((tone) => TONE_STYLES[tone].badge)).size).toBe(CALM_TONES.length);
   });
 
-  it('FocusBlock_Edge_SurvivesForcedColorsWhichDropTheTintAndTheRing', () => {
+  it('FocusBlock_Icon_RemainsVisibleInForcedColors', () => {
     const { container } = renderBlock();
 
-    expect(container.querySelector('section')).toHaveClass('forced-colors:outline-1');
+    expect(container.querySelector('section > span')).toHaveClass('forced-colors:outline-1');
   });
 
   it('FocusBlock_NoTone_IsTheAccentOfTheArea', () => {
     const { container } = renderBlock();
 
     expect(container.querySelector('section')).toHaveAttribute('data-tone', 'neutral');
-    expect(container.querySelector('section')).toHaveClass('bg-primary-soft');
+    expect(container.querySelector('section')).not.toHaveClass('shadow-sm');
+    expect(container.querySelector('section > span.bg-primary-soft')).not.toBeNull();
+  });
+
+  it('FocusBlock_Danger_IsNotATintedBlock', () => {
+    const { container } = renderBlock({ tone: 'danger' });
+
+    const region = container.querySelector('section')!;
+    expect(region.className).not.toMatch(/\bbg-danger-soft\b/);
+    expect(region.querySelector('span.bg-danger-soft')).not.toBeNull();
   });
 
   it('FocusBlock_Icon_ReplacesTheIconOfTheTone', () => {

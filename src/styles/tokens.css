@@ -35,70 +35,6 @@
  * 1. Primitives: inert names (no component reads them directly; the semantic tokens below alias them).
  * ---------------------------------------------------------------------------------------------------------------- */
 :root {
-  /* Neutrals "Pietra" */
-  --stone-0: #ffffff;
-  --stone-25: #fbfaf8;
-  --stone-50: #f6f4f0;
-  --stone-100: #efece7;
-  --stone-200: #e4e0d9;
-  --stone-300: #cfc9bf;
-  --stone-400: #a39c91;
-  --stone-500: #8c857a;
-  --stone-600: #6f685e;
-  --stone-700: #5c564d;
-  --stone-800: #3a362f;
-  --stone-900: #1c1a17;
-
-  /* Short rent: Terracotta */
-  --terra-50: #fff7f2;
-  --terra-100: #fff1ea;
-  --terra-200: #ffe2d3;
-  --terra-300: #f6b898;
-  --terra-500: #e2622d;
-  --terra-600: #c2410c;
-  --terra-700: #a8380a;
-  --terra-800: #9a3412;
-  --terra-900: #7c2d12;
-
-  /* Long rent: Savoy blue */
-  --savoia-50: #f5f8ff;
-  --savoia-100: #eef3ff;
-  --savoia-200: #dce6ff;
-  --savoia-300: #a9bff5;
-  --savoia-500: #4a72e0;
-  --savoia-600: #2852c9;
-  --savoia-700: #2147af;
-  --savoia-800: #1e3f9e;
-  --savoia-900: #1b3477;
-
-  /* Suppliers: Sage green */
-  --salvia-50: #f3fbf8;
-  --salvia-100: #e8f6f1;
-  --salvia-200: #cdede2;
-  --salvia-300: #93d3be;
-  --salvia-500: #1a9a80;
-  --salvia-600: #0b7461;
-  --salvia-700: #09644f;
-  --salvia-800: #075d4e;
-  --salvia-900: #064a3e;
-
-  /* Administration: Amethyst */
-  --ametista-50: #f9f6ff;
-  --ametista-100: #f3eeff;
-  --ametista-200: #e6dcff;
-  --ametista-300: #c6b2f2;
-  --ametista-500: #8a63e0;
-  --ametista-600: #6a3fc7;
-  --ametista-700: #5b33b0;
-  --ametista-800: #52309c;
-  --ametista-900: #3f2578;
-
-  /* Brand: Ink (login, area picker, no area: decision D26) */
-  --ink-100: #e9f1f0;
-  --ink-600: #2b4f53;
-  --ink-700: #1f3a3d;
-  --ink-800: #172c2e;
-
   /* Semantic: text on a soft background, soft background, border, solid (icons and bars, not text: see the note below) */
   --green-text: #166534;
   --green-bg: #eaf7ee;
@@ -229,9 +165,9 @@ html[data-ui='v2'] {
      4xl only keep the scale increasing; nothing uses them today. */
   --radius-xs: 4px;
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-md: var(--cz-radius-control);
+  --radius-lg: var(--cz-radius-panel);
+  --radius-xl: var(--cz-radius-media);
   --radius-2xl: 28px;
   --radius-3xl: 32px;
   --radius-4xl: 40px;

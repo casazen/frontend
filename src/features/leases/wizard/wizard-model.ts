@@ -1,3 +1,4 @@
+import { parseEuroAmount } from '@/lib/euro-amount';
 import { addDays, nightsBetween } from '@/lib/stay-dates';
 import { normalizeFiscalCode } from '@/lib/fiscal-code';
 import type {
@@ -47,6 +48,7 @@ export interface PartyRow {
   citizenship: string;
   residence: string;
   contactEmail: string;
+  contactPhone: string;
 }
 
 /** What the form holds for the whole wizard. Numbers are the text of the field. */
@@ -82,6 +84,7 @@ export function newPartyRow(from: Partial<Omit<PartyRow, 'key'>> = {}): PartyRow
     citizenship: '',
     residence: '',
     contactEmail: '',
+    contactPhone: '',
     ...from,
   };
 }
@@ -95,6 +98,7 @@ function rowFromServer(party: LeaseDraftParty): PartyRow {
     citizenship: party.citizenship ?? '',
     residence: party.residence ?? '',
     contactEmail: party.contactEmail ?? '',
+    contactPhone: party.contactPhone ?? '',
   });
 }
 
@@ -144,17 +148,16 @@ export function toWizardValues(values: LeaseDraftValues, defaults?: LandlordDefa
 
 /** A row nobody typed anything in: the server does not keep it either. */
 export function isBlankRow(row: PartyRow): boolean {
-  return [row.firstName, row.lastName, row.fiscalCode, row.citizenship, row.residence, row.contactEmail].every(
+  return [row.firstName, row.lastName, row.fiscalCode, row.citizenship, row.residence, row.contactEmail, row.contactPhone].every(
     (text) => text.trim() === '',
   );
 }
 
-/** The number written in a field, or `null` for none; `undefined` when what is written is not a number (the field is left out). */
+/** The amount written in a field, or `null` for none; `undefined` when it is not an amount (the field is left out). */
 function numberOf(text: string): number | null | undefined {
-  const trimmed = text.trim().replace(',', '.');
-  if (trimmed === '') return null;
-  const value = Number(trimmed);
-  return Number.isFinite(value) ? value : undefined;
+  if (text.trim() === '') return null;
+  const value = parseEuroAmount(text);
+  return value === null ? undefined : value;
 }
 
 /** What went to the server for the parties of a save: the keys of the rows sent, in order, so the ids of the answer find their rows. */
@@ -175,6 +178,7 @@ function partyEntry(row: PartyRow): Record<string, unknown> {
     citizenship: row.citizenship.trim().toUpperCase(),
     residence: row.residence.trim(),
     contactEmail: row.contactEmail.trim(),
+    contactPhone: row.contactPhone.trim().replace(/[\s().-]/g, ''),
   };
 }
 

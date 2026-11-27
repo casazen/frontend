@@ -6,7 +6,9 @@ test('guide opens from the header and remains usable on a phone', async ({ page 
   await pinE2eLocale(page, 'it');
   await setDemoProfile(page, 'short-stay');
   await page.goto(demoUrl('/app/short-rent', 'short-stay'));
-  await page.getByRole('link', { name: 'Guida', exact: true }).click();
+  // The «Guida» of the header opens the panel of the guide; the manual is one link of it.
+  await page.getByTestId('guide-button').click();
+  await page.getByTestId('guide-panel').getByRole('link', { name: 'Apri il manuale di CasaZen' }).click();
   await expect(page).toHaveURL(/\/app\/short-rent\/help/);
   await expect(page.getByRole('heading', { name: 'Guida CasaZen' })).toBeVisible();
   await page.getByRole('searchbox', { name: 'Cerca nella guida' }).fill('ricevuta del portale');
@@ -15,7 +17,9 @@ test('guide opens from the header and remains usable on a phone', async ({ page 
   await expect(page).toHaveURL(/#guide-compliance$/);
   await expect(page.getByText(/Nel flusso attuale CasaZen prepara/)).toBeVisible();
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.getByRole('searchbox').fill('');
+  await page.getByRole('link', { name: 'Torna agli argomenti' }).click();
+  await expect(page.getByRole('searchbox', { name: 'Cerca nella guida' })).toHaveValue('ricevuta del portale');
+  await page.getByRole('searchbox', { name: 'Cerca nella guida' }).fill('');
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(11);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

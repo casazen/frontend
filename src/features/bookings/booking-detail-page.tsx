@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { Building2, Pencil, XCircle } from 'lucide-react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { Building2, CalendarDays, Settings2, History, Pencil, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { PlainSection } from '@/components/shared/calm';
+import { DemoTourContact } from '@/components/shared/demo-tour-contact';
+import { AskBookingDraftButton } from '@/features/assistant/ask/ask-trigger';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -17,6 +19,8 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useBooking } from '@/queries/use-bookings';
 import { useBookingThread } from '@/queries/use-booking-messages';
+import { BookingComplianceSection } from './booking-compliance-section';
+import { BookingGuestPortalPanel } from './components/booking-guest-portal-panel';
 import { BookingMessagesSection } from './components/booking-messages-section';
 import { BookingNextStep } from './components/booking-next-step';
 import { BookingPaymentTab } from './components/booking-payment-tab';
@@ -25,14 +29,16 @@ import { BookingTimelineSection } from './components/booking-timeline-section';
 import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { CheckInDialog } from './components/check-in-dialog';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
 import { DeclineBookingDialog } from './components/decline-booking-dialog';
 import { OtaReviewNotice } from './components/ota-review-notice';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { BOOKINGS_PATH } from './lib/booking-list-query';
 import { bookingHasMessages } from './lib/booking-messages';
+import { bookingCanCancel, bookingCanEdit } from './lib/booking-change';
 import { bookingPanelOf, type BookingPanel } from './lib/booking-tabs';
-import { canRegisterArrival } from './lib/stay-actions';
+import { canRegisterArrival, checkInWizardPath } from './lib/stay-actions';
 
 /** The page while the booking loads: the shape of the page, no spinner in the middle of nothing. */
 function BookingDetailSkeleton({ label }: { label: string }) {
@@ -55,17 +61,12 @@ function BookingDetailSkeleton({ label }: { label: string }) {
   );
 }
 
-/**
- * `/app/short-rent/bookings/:id`: one booking (SR-05). The header says whose stay it is, where and when, with its status and the
- * "⋯" menu of the other actions; under it the one highlighted block, "Cosa succede ora", and then the tabs Soggiorno, Messaggi (only for
- * a booking made through the booking site, SR-12, with the number of messages not read yet), Documenti, Pagamento and Cronologia
- * (SR-05c), each made of sections without a box. The tab is in the address (`?tab=`); `alloggiati`, the old fourth tab, opens
- * Documenti at its Alloggiati Web section.
- */
+/** The stay is the default view. History and portal access open from the booking menu or an existing deep link. */
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
+  const { state } = useLocation();
   const tabParam = searchParams.get('tab');
   const requestedTab = bookingPanelOf(tabParam);
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -73,11 +74,17 @@ export function BookingDetailPage() {
   const [declineOpen, setDeclineOpen] = useState(false);
   const [arrivalOpen, setArrivalOpen] = useState(false);
   const { hasPermission } = useWorkspace();
-  const { data: booking, isLoading, isError, error, refetch } = useBooking(id!);
+  const { flags } = useFeatureFlags();
+  // The page is read again whenever it opens: what the host may do with the booking (`changeOptions`) and what is tied to it change elsewhere (the guest, the channel manager).
+  const { data: booking, isLoading, isError, error, refetch } = useBooking(id!, { fresh: true });
   // Messages with the guest (SR-12): only a booking of the booking site has them; the same thread query feeds the tab and its number.
-  const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking);
+  const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking, flags.guestPortal);
   const unreadMessages = useBookingThread(id!, hasMessages).data?.unreadCount ?? 0;
-  const activeTab: BookingPanel = requestedTab === 'messages' && !hasMessages ? 'details' : requestedTab;
+  const hasPortal = flags.guestPortal && hasPermission('short-rent', 'booking.write')
+    && booking !== undefined && ['Confirmed', 'CheckedIn', 'CheckedOut'].includes(booking.status);
+  const hiddenTab = (requestedTab === 'messages' && !hasMessages) || (requestedTab === 'portal' && !hasPortal);
+  const activeTab: BookingPanel = hiddenTab ? 'details' : requestedTab;
+  const showMessages = activeTab === 'messages';
 
   // The links of the arrival and of the cockpit ask for Alloggiati Web (`?tab=alloggiati`): Documenti opens at its section.
   const alloggiatiRef = useRef<HTMLDivElement>(null);
@@ -90,8 +97,13 @@ export function BookingDetailPage() {
     return <BookingDetailSkeleton label={t('booking.detailPage.loading')} />;
   }
 
-  // An API error is never shown as "not found" (only a 404 is).
-  if (isError && getHttpStatus(error) !== 404) {
+  // An API error is never shown as "not found" (only a 404 is), and a 404 is "not found" whatever the cache still holds of the booking: the query keeps the old data
+  // when a read fails, and the page of a booking that is gone must not open on it. A read that fails when the page already shows the booking (the page is read again
+  // whenever it opens) leaves the page as it is: the error screen is for a page that has nothing to show.
+  const status = isError ? getHttpStatus(error) : undefined;
+  const gone = status === 404;
+  const accessLost = status === 401 || status === 403;
+  if (isError && !gone && (!booking || accessLost)) {
     return (
       <AppShell>
         <div className="min-w-0 space-y-6">
@@ -102,7 +114,7 @@ export function BookingDetailPage() {
     );
   }
 
-  if (!booking) {
+  if (gone || !booking) {
     return (
       <AppShell>
         <div className="min-w-0 space-y-6">
@@ -119,17 +131,20 @@ export function BookingDetailPage() {
   }
 
   const canWrite = hasPermission('short-rent', 'booking.write');
+  const canOpenCheckInWizard = canWrite && hasPermission('short-rent', 'alloggiati.submit')
+    && (booking.status === 'Confirmed' || booking.status === 'CheckedIn');
   // One confirmation for every pending booking the host can confirm (PC-07 with BK-06): the ones entered by hand and
   // left Pending by the old code, and the "pay at the property" requests waiting for the host's answer.
   const pendingManual = booking.status === 'Pending' && booking.source === 'Manual';
   const canConfirm = canWrite && (pendingManual || (booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval'));
   // The host can also decline the request that waits for the answer (BK-06, the same dialog as the list).
   const canDecline = canWrite && booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval';
-  // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves.
-  const canCancel = canWrite && (booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn');
-  // "Modifica" only where the API takes it (SR-05c): the server says so with `canEdit`, the page keeps no rule of its own. A booking
-  // from the booking site or a channel, one that has started and one that is cancelled answer 422 to a change of dates and guests.
-  const canEdit = canWrite && booking.canEdit?.allowed === true;
+  // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves. A booking of a channel is cancelled only where the channel lets the
+  // host do it (E08/F03/US02, NF-76): the server says so with `changeOptions`, and where it does not the page says how to ask the guest or the channel (the tab Soggiorno).
+  const canCancel = canWrite && bookingCanCancel(booking);
+  // "Modifica" only where the API takes it (SR-05c): the server says so with `changeOptions` (and `canEdit`), the page keeps no rule of its own. A request of the booking
+  // site, a booking of a channel, one that has started and one that is cancelled answer 422 to a change of dates and guests.
+  const canEdit = canWrite && bookingCanEdit(booking);
   // "Registra arrivo" (CO-08): a confirmed booking from its check-in day to its check-out day (Europe/Rome).
   const canCheckIn = canWrite && canRegisterArrival(booking);
 
@@ -144,7 +159,7 @@ export function BookingDetailPage() {
   // The line under the name: where, when, for how long, how many.
   const summary = [
     booking.propertyName,
-    `${day(booking.checkInDate)} → ${day(booking.checkOutDate)}`,
+    `${day(booking.checkInDate)} – ${day(booking.checkOutDate)}`,
     nights > 0 ? t('booking.list.nights', { count: nights }) : '',
     t('booking.list.guestCount', { count: booking.numberOfGuests }),
   ]
@@ -152,8 +167,11 @@ export function BookingDetailPage() {
     .join(' · ');
 
   const menu: PageHeaderMenuItem[] = [
+    ...(hasPortal ? [{ label: t('guestPortal.host.title'), icon: Settings2, to: `${BOOKINGS_PATH}/${booking.id}?tab=portal` }] : []),
+    { label: t('booking.detailPage.tabs.history'), icon: History, to: `${BOOKINGS_PATH}/${booking.id}?tab=history` },
     ...(canEdit ? [{ label: t('booking.detailPage.editBooking'), icon: Pencil, to: `${BOOKINGS_PATH}/${booking.id}/edit`, testId: 'edit-booking' }] : []),
-    { label: t('booking.detailPage.openProperty'), icon: Building2, to: `/app/short-rent/properties/${booking.propertyId}`, testId: 'booking-open-property' },
+    ...(hasPermission('short-rent', 'property.read') ? [{ label: t('booking.detailPage.openProperty'), icon: Building2, to: `/app/short-rent/properties/${booking.propertyId}`, testId: 'booking-open-property' }] : []),
+    { label: t('dashboard.today.free.cta'), icon: CalendarDays, to: `${BOOKINGS_PATH}/calendar?${new URLSearchParams({ view: 'timeline', from: stayDateOf(booking.checkInDate), propertyId: booking.propertyId })}` },
     ...(canCancel
       ? [{ separator: true as const }, { label: t('booking.cancel.action'), icon: XCircle, danger: true, onClick: () => setCancelOpen(true), testId: 'open-cancel-booking' }]
       : []),
@@ -174,65 +192,97 @@ export function BookingDetailPage() {
           },
         ]
       : []),
-    { value: 'guest', label: t('booking.detailPage.tabs.guest'), testId: 'booking-tab-guest' },
+    { value: 'guest', label: t('booking.detailPage.checkInOnline'), testId: 'booking-tab-guest' },
     { value: 'payment', label: t('booking.detailPage.tabs.payment'), testId: 'booking-tab-payment' },
-    { value: 'history', label: t('booking.detailPage.tabs.history'), testId: 'booking-tab-history' },
+    ...(activeTab === 'portal' ? [{ value: 'portal' as const, label: t('guestPortal.host.title'), testId: 'booking-tab-portal' }] : []),
+    ...(activeTab === 'history' ? [{ value: 'history' as const, label: t('booking.detailPage.tabs.history'), testId: 'booking-tab-history' }] : []),
   ];
+  const nextStep = (
+    <BookingNextStep
+      booking={booking}
+      canWrite={canWrite}
+      viewingCheckIn={activeTab === 'guest'}
+      useGuestPortal={flags.guestPortal}
+      onConfirm={() => setConfirmOpen(true)}
+      onDecline={() => setDeclineOpen(true)}
+      onArrival={() => setArrivalOpen(true)}
+    />
+  );
 
   return (
     <AppShell>
-      <div className="min-w-0 space-y-6">
+      <div
+        className={showMessages ? 'flex min-w-0 flex-1 flex-col gap-6 lg:min-h-0' : 'min-w-0 space-y-6'}
+        data-app-viewport={showMessages ? '' : undefined}
+      >
         {/* The trail (Affitti brevi › Prenotazioni › this booking) and, on a phone, the link back to the list as the user left it (UI-05). */}
         <PageHeader
-          crumbs="auto"
+          crumbs={typeof state?.arrivalsSearch === 'string'
+            ? [{ label: t('dashboard.today.arrivalsLabel'), to: `/app/short-rent?${new URLSearchParams(state.arrivalsSearch)}` }, { label: guestName }]
+            : 'auto'}
           title={guestName}
-          description={summary}
-          action={<StatusBadge kind="booking" status={booking.status} size="lg" data-testid="booking-detail-status" />}
+          // The state under the name; the facts of the stay (house, dates, guests) only where the card of the stay is not shown
+          // right below with the same facts; on the right, only the next action and its why (UX round 2026-11).
+          status={<StatusBadge kind="booking" status={booking.status} data-testid="booking-detail-status" />}
+          description={activeTab === 'details' ? undefined : summary}
+          action={activeTab === 'details' ? <div className="flex min-w-0 flex-wrap items-center gap-2">{nextStep}</div> : undefined}
           secondary={menu}
         />
 
         <OtaReviewNotice booking={booking} canWrite={canWrite} />
 
-        <BookingNextStep
-          booking={booking}
-          canWrite={canWrite}
-          onConfirm={() => setConfirmOpen(true)}
-          onDecline={() => setDeclineOpen(true)}
-          onArrival={() => setArrivalOpen(true)}
-        />
-
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
-        <Tabs label={t('booking.detailPage.tabsLabel')} items={tabs} defaultValue="details" value={activeTab} selectTestId="booking-tabs-select">
+        <Tabs
+          label={t('booking.detailPage.tabsLabel')}
+          items={tabs}
+          defaultValue="details"
+          value={activeTab}
+          selectTestId="booking-tabs-select"
+          className={showMessages ? 'lg:flex lg:min-h-[26rem] lg:flex-1 lg:flex-col' : undefined}
+          panelClassName={showMessages ? 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col' : undefined}
+        >
           {activeTab === 'details' && <BookingStayTab booking={booking} />}
 
-          {activeTab === 'messages' && (
-            <div className="max-w-xl">
-              <PlainSection title={t('booking.messages.title')}>
-                <BookingMessagesSection booking={booking} />
-              </PlainSection>
-            </div>
+          {showMessages && (
+            <PlainSection title={t('booking.messages.title')} className="lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
+              <BookingMessagesSection booking={booking} expanded />
+            </PlainSection>
           )}
 
           {activeTab === 'guest' && (
             <div className="space-y-8">
-              <PlainSection title={t('booking.detailPage.checkInOnline')}>
-                <CheckInLinkPanel bookingId={booking.id} canWrite={canWrite} />
+              <PlainSection
+                title={t('booking.detailPage.checkInOnline')}
+                actionTestId="booking-open-checkin-wizard"
+                {...(canOpenCheckInWizard ? {
+                  actionLabel: t('booking.detailPage.openCheckInWizard'),
+                  href: checkInWizardPath(booking.id, true),
+                } : { actionLabel: undefined })}
+              >
+                <CheckInLinkPanel key={booking.id} bookingId={booking.id} canWrite={canWrite} useGuestPortal={flags.guestPortal}>
+                  <AskBookingDraftButton />
+                  <DemoTourContact />
+                </CheckInLinkPanel>
               </PlainSection>
               <div ref={alloggiatiRef} className="scroll-mt-6">
                 <PlainSection title={t('booking.detailPage.alloggiatiWeb')}>
                   <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />
                 </PlainSection>
               </div>
+              <BookingComplianceSection booking={booking} />
             </div>
+          )}
+
+          {activeTab === 'portal' && (
+            <BookingGuestPortalPanel key={booking.id} bookingId={booking.id} propertyId={booking.propertyId}
+              canManage={hasPermission('short-rent', 'guestportal.manage')}
+              canConfigure={hasPermission('short-rent', 'guestportal.manage') && hasPermission('short-rent', 'property.read')}
+              onStayChanged={() => { void refetch(); }} />
           )}
 
           {activeTab === 'payment' && <BookingPaymentTab booking={booking} />}
 
-          {activeTab === 'history' && (
-            <div className="max-w-xl">
-              <BookingTimelineSection bookingId={booking.id} currency={booking.currency} />
-            </div>
-          )}
+          {activeTab === 'history' && <BookingTimelineSection bookingId={booking.id} currency={booking.currency} />}
         </Tabs>
       </div>
 

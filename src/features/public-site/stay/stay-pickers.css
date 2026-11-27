@@ -175,6 +175,22 @@
   display: none;
 }
 
+/* A night closed to arrival: free to sleep in and to leave on, but no stay starts on it. A small door in the corner, never only a color. */
+.stay-cal__x {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  color: var(--cz-public-muted);
+  pointer-events: none;
+}
+
+.stay-cal__day.is-start .stay-cal__x,
+.stay-cal__day.is-end .stay-cal__x {
+  color: var(--cz-public-on-primary);
+}
+
 .stay-cal__day.is-in,
 .stay-cal__day.is-pre {
   border-radius: 0;
@@ -265,6 +281,12 @@
 .stay-cal__key.is-sel {
   border-color: var(--cz-public-primary);
   background: var(--cz-public-primary);
+}
+
+.stay-cal__legend-x {
+  width: 16px;
+  height: 16px;
+  color: var(--cz-public-muted);
 }
 
 .stay-cal__link {
@@ -390,6 +412,13 @@
 .public-site-root.stay-pop[data-section='dates'] {
   --stay-pop-width: 860px;
   padding-top: 14px;
+}
+
+/* In a frame narrower than a tablet the popover is as wide as the frame allows: the days keep their room. */
+@media (max-width: 767.98px) {
+  .public-site-root.stay-pop[data-embed] {
+    padding-inline: 10px;
+  }
 }
 
 .public-site-root.stay-sheet {
@@ -564,6 +593,34 @@
     grid-column: 1 / -1;
     margin: 8px 0 0;
   }
+}
+
+/*
+ * The bar inside a frame narrower than a tablet (NF-144): a phone has the field that opens a sheet, and a frame has no sheet (it is fixed to a window as
+ * tall as the content of the frame). The three fields stay and go one under the other, each with its popover, and the button takes the width.
+ */
+.stay-search[data-stacked],
+.stay-search[data-stacked][data-single] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.stay-search[data-stacked] .stay-search__field {
+  min-height: 56px;
+  padding: 10px 18px;
+}
+
+.stay-search[data-stacked] .stay-search__field + .stay-search__field::before {
+  top: 0;
+  right: 18px;
+  bottom: auto;
+  left: 18px;
+  width: auto;
+  height: 1px;
+}
+
+.stay-search[data-stacked] .stay-search__go {
+  width: 100%;
+  margin: 8px 0 0;
 }
 
 /* A phone: one field that opens the sheet. */

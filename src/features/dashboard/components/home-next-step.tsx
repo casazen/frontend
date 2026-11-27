@@ -4,21 +4,52 @@ import { NextStepCard } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ActivationChecklist } from '@/features/onboarding/components/activation-checklist';
+import { OnboardingPathCard } from '@/features/onboarding/components/onboarding-path-card';
+import { planResumeHref } from '@/features/onboarding/plan-resume';
+import { usePlanResume } from '@/features/onboarding/use-plan-resume';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { partTitleKey } from '@/lib/onboarding-parts';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { activationStepDetail } from '@/lib/activation-labels';
 import { activationStepCtaKey, activationStepLinkState, activationStepRoute } from '@/lib/activation-routes';
 import { nextActionableStep, normalizeSteps } from '@/lib/activation-steps';
+import { useVisibleOnboardingPath } from '@/queries/use-onboarding-path';
 import { useOnboardingStatus } from '@/queries/use-onboarding-status';
 
 /**
  * "Il prossimo passo": the next step of the activation checklist, alone, with its button and how far the host is; the whole
  * list opens from "Tutti i passi". Once every step is done there is nothing left to say and the card is not there.
+ *
+ * While the activation with Octorate is on and its path "Inizia con CasaZen" is incomplete (UX-10), the path card is shown INSTEAD:
+ * the home tells the setup once, with `ChecklistCompact` or with `NextStepCard`, never both. While the path loads the home shows nothing
+ * of the two (it would swap one card for the other); with the flag off, for someone who is not an organization administrator, when the
+ * path cannot be read and once it is complete this is the component it always was.
  */
 export function HomeNextStep() {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
+  const profile = useCommercialProfile();
+  const resume = usePlanResume(profile?.id, profile?.org?.id);
   const status = useOnboardingStatus();
+  const path = useVisibleOnboardingPath({ enabled: !resume.step && !resume.pending });
   const [listOpen, setListOpen] = useState(false);
+
+  if (resume.step) return (
+    <NextStepCard
+      kicker={t('onboardingPlan.title')}
+      title={t(resume.step === 'mittente' ? 'orgComplianceSender.title' : partTitleKey(resume.step))}
+      cta={{ label: t('commercial.resume'), href: planResumeHref(resume.step), testId: 'home-resume-onboarding' }}
+      data-testid="home-next-step"
+    />
+  );
+  if (resume.pending || path.pending) return null;
+  if (path.path) {
+    return (
+      <div className="min-w-0" data-testid="home-next-step">
+        <OnboardingPathCard />
+      </div>
+    );
+  }
 
   const steps = normalizeSteps(status.data);
   const next = nextActionableStep(steps);

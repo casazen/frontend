@@ -1,0 +1,603 @@
+{
+  "checkin": {
+    "documentType": {
+      "Passport": "Reisepass",
+      "IdentityCard": "Personalausweis",
+      "DriversLicense": "Führerschein",
+      "Other": "Sonstiges"
+    },
+    "gender": {
+      "Male": "Männlich",
+      "Female": "Weiblich",
+      "Other": "Divers"
+    },
+    "validation": {
+      "firstName": {
+        "required": "Der Vorname ist erforderlich",
+        "maxLength": "Höchstens 30 Zeichen"
+      },
+      "lastName": {
+        "required": "Der Nachname ist erforderlich",
+        "maxLength": "Höchstens 50 Zeichen"
+      },
+      "dateOfBirth": {
+        "required": "Das Geburtsdatum ist erforderlich",
+        "future": "Das Geburtsdatum darf nicht in der Zukunft liegen"
+      },
+      "gender": {
+        "required": "Bitte das Geschlecht auswählen"
+      },
+      "documentType": {
+        "required": "Bitte die Dokumentart auswählen"
+      },
+      "documentNumber": {
+        "required": "Die Dokumentnummer ist erforderlich",
+        "invalid": "Nur Buchstaben und Ziffern, höchstens 20"
+      },
+      "invalidValue": "Ungültiger Wert",
+      "bornInItaly": {
+        "required": "Bitte angeben, ob der Gast in Italien oder im Ausland geboren wurde"
+      },
+      "birthComune": {
+        "required": "Die Geburtsgemeinde ist erforderlich",
+        "choose": "Wählen Sie die Geburtsgemeinde aus der Liste"
+      },
+      "birthProvince": {
+        "invalid": "Das ist kein italienisches Provinzkürzel (z. B. RM)"
+      },
+      "birthCountry": {
+        "required": "Das Geburtsland ist erforderlich",
+        "choose": "Wählen Sie das Geburtsland aus der Liste"
+      },
+      "citizenship": {
+        "required": "Die Staatsangehörigkeit ist erforderlich",
+        "choose": "Wählen Sie die Staatsangehörigkeit aus der Liste (zum Beispiel Italiano)"
+      },
+      "label": {
+        "maxLength": "Höchstens 100 Zeichen"
+      },
+      "documentIssuePlace": {
+        "required": "Der Ausstellungsort ist erforderlich",
+        "choose": "Wählen Sie den Ausstellungsort aus der Liste"
+      },
+      "residenceComune": {
+        "choose": "Wählen Sie die Wohngemeinde aus der Liste"
+      },
+      "residenceCountry": {
+        "choose": "Wählen Sie das Wohnsitzland aus der Liste"
+      },
+      "type": {
+        "memberWithoutHead": "Ein Familien- oder Gruppenmitglied muss auf das Familien- bzw. Gruppenoberhaupt folgen",
+        "headWithoutMembers": "Fügen Sie mindestens ein Familien- oder Gruppenmitglied hinzu oder wählen Sie „Einzelgäste“"
+      },
+      "guests": {
+        "count": "Bitte 1 bis 30 Gäste angeben"
+      },
+      "marketingEmail": {
+        "required": "Bitte die E-Mail-Adresse für Mitteilungen angeben",
+        "invalid": "Bitte eine gültige E-Mail-Adresse angeben (höchstens 255 Zeichen)"
+      },
+      "documentExpiresOn": {
+        "beforeIssue": "Das Ablaufdatum darf nicht vor dem Ausstellungsdatum liegen",
+        "invalid": "Bitte ein gültiges Ablaufdatum eingeben"
+      },
+      "documentIssuedOn": {
+        "future": "Das Ausstellungsdatum darf nicht in der Zukunft liegen",
+        "invalid": "Bitte ein gültiges Ausstellungsdatum eingeben (ab 1900)"
+      },
+      "educationLevel": {
+        "required": "Bitte den Bildungsabschluss auswählen"
+      },
+      "residencePostalCode": {
+        "maxLength": "Höchstens 20 Zeichen"
+      },
+      "residenceProvince": {
+        "invalid": "Bitte das Zwei-Buchstaben-Kürzel eingeben (z. B. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "Höchstens 200 Zeichen"
+      },
+      "tourismType": {
+        "required": "Bitte den Reisezweck auswählen"
+      },
+      "travelWay": {
+        "required": "Bitte das Verkehrsmittel auswählen"
+      },
+      "vehiclePlate": {
+        "invalid": "Bitte ein gültiges Kennzeichen eingeben: Buchstaben, Ziffern und Bindestriche, höchstens 20 Zeichen."
+      }
+    },
+    "loading": "Check-in wird geladen …",
+    "reopen": {
+      "loadTitle": "Check-in vorübergehend nicht verfügbar",
+      "loadHint": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut mit diesem Link.",
+      "retry": "Erneut versuchen",
+      "nextStep": "Danach · {{name}}",
+      "resumed": "Bereits von der Unterkunft erfasste Angaben sind vorausgefüllt. Bitte geben Sie noch nicht gesendete Änderungen erneut ein."
+    },
+    "invalidLink": "Ungültiger Link",
+    "invalidLinkDescription": "Der Link ist ungültig oder abgelaufen. Bitten Sie die Unterkunft über Ihre Buchung um einen neuen Link.",
+    "guestCheckIn": "Gäste-Check-in",
+    "birthDate": "Geburtsdatum *",
+    "genderLabel": "Geschlecht *",
+    "selectGender": "Auswählen",
+    "documentTypeLabel": "Dokumentart *",
+    "selectDocumentType": "Auswählen",
+    "documentNumber": "Dokumentnummer *",
+    "documentNumberOnFile": "Dokument hinterlegt: {{masked}}. Aus Sicherheitsgründen geben Sie die vollständige Nummer bitte erneut ein.",
+    "saving": "Wird gespeichert …",
+    "firstName": "Vorname *",
+    "lastName": "Nachname *",
+    "stepDocument": "Ausweisdokument",
+    "stepIdentity": "Identitätsprüfung",
+    "stepConsents": "Datenschutzhinweis und Einwilligungen",
+    "stepOf": "Schritt {{step}} von {{total}}",
+    "next": "Weiter",
+    "back": "Zurück",
+    "submit": "Check-in absenden",
+    "submitHint": "Zum Absenden kreuzen Sie bitte zuerst die Pflichtkästchen oben an.",
+    "fixHighlightedFields": "Einige Angaben sind ungültig: Bitte korrigieren Sie die markierten Felder und senden Sie erneut ab.",
+    "successTitle": "Check-in abgeschlossen!",
+    "successDescription": "Die Unterkunft hat Ihre Angaben zum Aufenthalt erhalten. Für Korrekturen kontaktieren Sie die Unterkunft über Ihre Buchung.",
+    "alreadyCompletedTitle": "Check-in bereits abgeschlossen",
+    "alreadyCompletedDescription": "Die Angaben zu diesem Aufenthalt wurden bereits übermittelt. Zum Schutz Ihrer Privatsphäre werden sie nicht mehr angezeigt. Für Korrekturen wenden Sie sich an den Vermieter.",
+    "marketingConsentVersion": "Freiwillig. Version des Textes: {{version}}",
+    "privacyNotice": {
+      "title": "Hinweis zur Verarbeitung personenbezogener Daten (Art. 13 DSGVO)",
+      "legalObligation": "Die Meldung jedes Gastes an die Polizei (Questura) über Alloggiati Web ist eine gesetzliche Pflicht (Art. 109 TULPS): Die Verarbeitung beruht auf Art. 6 Abs. 1 Buchst. c DSGVO und erfordert nicht Ihre Einwilligung. Ohne diese Daten kann der Aufenthalt nicht gemeldet werden.",
+      "body": "Die Unterkunft verwendet diese Angaben, um Ihren Aufenthalt zu registrieren und den zuständigen Behörden zu melden. Kontaktieren Sie die Unterkunft über Ihre Buchung, um die vollständigen Datenschutzhinweise zu erhalten oder Ihre Rechte auszuüben.",
+      "version": "Version des Hinweises: {{version}}"
+    },
+    "stepScan": "Dokument",
+    "scanIntro": "Übernehmen Sie die Angaben aus einem Dokumentenfoto oder geben Sie sie von Hand ein. Vor dem Senden an die Unterkunft können Sie alles prüfen.",
+    "scanHint": "JPG, PNG oder WebP, maximal 5 MB. Wenn Sie die Online-Verifizierung wählen und einwilligen, können Sie dasselbe Foto zur Prüfung Ihres Dokuments verwenden.",
+    "scanButton": "Foto aufnehmen oder hochladen",
+    "scanReading": "Dokument wird gelesen…",
+    "scanAnother": "Rückseite oder Dokument eines weiteren Gastes hochladen",
+    "scanManual": "Daten von Hand eingeben",
+    "scanReadOk": "Daten gelesen für {{name}}. Prüfen Sie sie vor dem Senden.",
+    "invoiceHostManaged": "Sie können fehlende Angaben ergänzen. Um bereits von Ihrem Gastgeber eingetragene Daten zu ändern, kontaktieren Sie ihn.",
+    "invoiceSave": "Antwort speichern",
+    "invoiceFinished": "Vorgang abgeschlossen.",
+    "scanMismatch": "Das Dokument lässt sich keinem namentlich gebuchten Gast zuordnen. Prüfen Sie das Foto oder kontaktieren Sie die Unterkunft, um einen Namen zu berichtigen.",
+    "scanConfirm": "Gelesen wurde „{{read}}“. Ist dies {{name}} aus der Buchung?",
+    "scanConfirmButton": "Gebuchten Namen bestätigen",
+    "privacyOpen": "Datenschutzhinweise der Unterkunft lesen",
+    "privacyRead": "Ich habe die Datenschutzhinweise gelesen.",
+    "marketingOptIn": "Ich möchte Werbenachrichten erhalten.",
+    "documentNumberPlausibility": "Prüfen Sie die aufgedruckte Dokumentnummer. Geben Sie mindestens vier Zeichen und eine Ziffer ein.",
+    "scanNotDocument": "Auf diesem Foto wurde kein Ausweisdokument erkannt. Laden Sie ein Foto eines Personalausweises, Reisepasses oder Führerscheins hoch.",
+    "scanUnread": "Das Dokument konnte nicht gelesen werden. Laden Sie ein anderes Foto hoch oder geben Sie die Daten von Hand ein.",
+    "scanUnavailable": "Das automatische Lesen ist gerade nicht verfügbar. Geben Sie die Daten von Hand ein.",
+    "stepGuests": "Gäste",
+    "guestsIntro": "Geben Sie alle Gäste an, die übernachten, auch Minderjährige: Das Gesetz (Art. 109 TULPS) verlangt die Daten jeder einzelnen Person. Ein Ausweisdokument wird nur vom Einzelgast, vom Familienoberhaupt oder vom Gruppenleiter benötigt.",
+    "guestCountMismatch_one": "Die Buchung nennt {{count}} Gast: Prüfen Sie, ob Sie alle Personen eingetragen haben, die übernachten.",
+    "guestCountMismatch_other": "Die Buchung nennt {{count}} Gäste: Prüfen Sie, ob Sie alle Personen eingetragen haben, die übernachten.",
+    "guestHeading": "Gast {{index}}",
+    "minor": "Minderjährig",
+    "stayKindLabel": "Wer übernachtet *",
+    "stayKind": {
+      "SingleGuest": "Einzelgäste (jeweils mit eigenem Dokument)",
+      "HeadOfFamily": "Familie: Familienoberhaupt und Familienmitglieder",
+      "HeadOfGroup": "Gruppe: Gruppenleiter und Gruppenmitglieder"
+    },
+    "stayKindHint": "Bei einer Familie oder Gruppe ist der erste Gast das Familienoberhaupt bzw. der Gruppenleiter: Nur diese Person benötigt ein Dokument.",
+    "bornInLabel": "Geburtsort *",
+    "selectBornIn": "Auswählen",
+    "bornIn": {
+      "yes": "In Italien",
+      "no": "Im Ausland"
+    },
+    "birthComune": "Geburtsgemeinde *",
+    "birthProvince": "Provinz (zwei Buchstaben) *",
+    "birthCountry": "Geburtsland *",
+    "citizenship": "Staatsangehörigkeit *",
+    "removeGuest": "Gast entfernen",
+    "addGuest": "Gast hinzufügen",
+    "biometric": {
+      "capture": {
+        "attemptsRemaining": "Verbleibende Versuche: {{count}}",
+        "neutral": "Schauen Sie für das erste Foto gerade in die Kamera. Folgen Sie anschließend der Aufforderung.",
+        "turnRight": "Halten Sie die Kamera ruhig. Drehen Sie den Kopf um etwa 30°. In der Vorschau zeigt die Nase nach rechts →.",
+        "turnLeft": "Halten Sie die Kamera ruhig. Drehen Sie den Kopf um etwa 30°. In der Vorschau zeigt die Nase nach links ←.",
+        "restartPose": "Neu beginnen",
+        "challengeFailed": "Prüfung nicht verfügbar. Versuchen Sie es erneut oder bitten Sie um Hilfe.",
+        "cameraDenied": "Der Browser hat die Kamera blockiert. Zum Erlauben tippen Sie auf das Schloss- oder Kamerasymbol neben der Webadresse, wählen Sie für die Kamera „Zulassen“ und drücken Sie „Erneut versuchen“.",
+        "cameraNotFound": "Auf diesem Gerät wurde keine Kamera gefunden.",
+        "cameraTitle": "Die Kamera ist nicht verfügbar",
+        "cameraUnknown": "Die Kamera konnte nicht gestartet werden.",
+        "cameraUnsupported": "Diese Seite kann in diesem Browser die Kamera nicht verwenden. Öffnen Sie den Link in Ihrem üblichen Browser oder bitten Sie eine Person, Sie zu überprüfen.",
+        "capturedLabel": "Das von Ihnen aufgenommene Selfie",
+        "instructions": "Schauen Sie an einem hellen Ort in die Kamera und halten Sie Ihr Gesicht im Bild. Wir vergleichen das Foto mit dem auf Ihrem Ausweis.",
+        "noFile": "Zu Ihrer Sicherheit muss das Selfie jetzt mit der Kamera aufgenommen werden: Es kann nicht aus Ihren Dateien oder der Galerie ausgewählt werden.",
+        "notPrepared": "Das Foto konnte nicht vorbereitet werden. Bitte nehmen Sie es erneut auf.",
+        "previewLabel": "Live-Ansicht Ihrer Kamera",
+        "retake": "Erneut aufnehmen",
+        "retryCamera": "Erneut versuchen",
+        "sending": "Wird geprüft...",
+        "submit": "Foto senden",
+        "takePhoto": "Foto aufnehmen",
+        "title": "Selfie aufnehmen"
+      },
+      "consent": {
+        "accept": "Ich stimme der Gesichtsprüfung zu",
+        "decline": "Ich lehne ab",
+        "draft": "Entwurf",
+        "loadFailed": "Wir können Ihnen den Text der Einwilligung gerade nicht anzeigen",
+        "loading": "Der Text der Einwilligung wird geladen ...",
+        "retry": "Erneut versuchen",
+        "servedIn": "Dieser Text ist auf {{language}} verfügbar.",
+        "title": "Identität mit dem Gesicht prüfen",
+        "unavailable": "Der Text der Einwilligung ist gerade nicht verfügbar, daher kann die Gesichtsprüfung nicht angeboten werden. Sie können darum bitten, dass eine Person Sie prüft.",
+        "version": "Version dieses Textes: {{version}}"
+      }
+    },
+    "consent": {
+      "title": "Einwilligung in Werbemitteilungen (freiwillig)",
+      "intro": "Möchten Sie Neuigkeiten, Angebote und Nachrichten der Unterkunft erhalten? Wählen Sie Ihre bevorzugten Kanäle. Das ist nicht verpflichtend: Sie können den Check-in auch ohne Einwilligung abschließen.",
+      "emailChannel": "Ich willige in den Erhalt von Werbemitteilungen per E-Mail ein",
+      "emailChannelDescription": "Sie erhalten Angebote, Neuigkeiten und Aktionen per E-Mail.",
+      "whatsappChannel": "Ich willige in den Erhalt von Werbemitteilungen per WhatsApp ein",
+      "whatsappChannelDescription": "Sie erhalten Angebote, Neuigkeiten und Aktionen per WhatsApp.",
+      "marketingEmail": "Ihre E-Mail-Adresse *",
+      "marketingEmailPlaceholder": "beispiel@email.com",
+      "marketingEmailHint": "Geben Sie Ihre persönliche E-Mail-Adresse ein. Verwenden Sie nicht die temporäre Buchungsadresse (z. B. von Booking.com).",
+      "skipAllowed": "Sie können diesen Schritt überspringen: Der Check-in wird trotzdem abgeschlossen."
+    },
+    "documentIntro": "Ausweisdokument des Einzelgastes bzw. des Familienoberhaupts oder Gruppenleiters. Familien- und Gruppenmitglieder benötigen keines.",
+    "documentOf": "Dokument von {{name}}",
+    "documentIssuePlace": "Ausstellungsort *",
+    "documentIssuePlaceHint": "Die Gemeinde, wenn das Dokument in Italien ausgestellt wurde, das Land, wenn es im Ausland ausgestellt wurde.",
+    "codeSelected": "Alloggiati-Code: {{code}}",
+    "codeSearchFailed": "Die offizielle Liste ist derzeit nicht verfügbar: Bitte den vollständigen Namen eingeben.",
+    "choose": "Auswählen",
+    "documentExpiresOn": {
+      "label": "Ablaufdatum (freiwillig)"
+    },
+    "documentIssuedOn": {
+      "label": "Ausstellungsdatum (freiwillig)"
+    },
+    "door": {
+      "arrivalHint": "Der Tag, an dem Ihr Aufenthalt beginnt.",
+      "arrivalLabel": "Anreisedatum",
+      "codeHint": "Sie finden ihn in der Bestätigungs-E-Mail Ihrer Buchung.",
+      "codeLabel": "Buchungscode",
+      "description": "Geben Sie die Daten Ihrer Buchung ein: Wir führen Sie zum Check-in und zur Identitätsprüfung.",
+      "errors": {
+        "arrivalInvalid": "Das Datum ist ungültig.",
+        "arrivalRequired": "Wählen Sie das Anreisedatum.",
+        "codeInvalid": "Der Code ist zu lang.",
+        "codeRequired": "Geben Sie den Buchungscode ein.",
+        "failed": "Etwas ist schiefgelaufen. Bitte versuchen Sie es gleich noch einmal.",
+        "network": "Wir erreichen den Server nicht. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "notFound": "Wir finden keinen Aufenthalt mit diesen Angaben. Prüfen Sie den Code (oder den Nachnamen) und das Anreisedatum und versuchen Sie es erneut.",
+        "surnameInvalid": "Der Nachname ist zu lang.",
+        "surnameRequired": "Geben Sie den Nachnamen ein.",
+        "tooManyRequests": "Zu viele Versuche in kurzer Zeit. Warten Sie eine Minute und versuchen Sie es erneut."
+      },
+      "modeCode": "Ich habe den Code",
+      "modeLabel": "So finden wir Ihren Aufenthalt",
+      "modeSurname": "Ich habe keinen Code",
+      "submit": "Weiter",
+      "submitting": "Ihr Aufenthalt wird gesucht ...",
+      "surnameHint": "Der Nachname der Person, die gebucht hat, oder des ersten Gastes.",
+      "surnameLabel": "Nachname des Hauptgastes",
+      "title": "Check-in am Eingang"
+    },
+    "educationLevel": {
+      "label": "Bildungsabschluss *",
+      "none": "Kein Abschluss",
+      "primary": "Grundschule",
+      "lower_secondary": "Sekundarstufe I (z. B. Haupt- oder Realschule)",
+      "upper_secondary": "Sekundarstufe II (z. B. Abitur)",
+      "degree": "Hochschulabschluss",
+      "postgraduate": "Postgradualer Abschluss"
+    },
+    "errors": {
+      "codeInvalid": "Der Code ist ungültig.",
+      "codeUnknown": "Der Code ist in den offiziellen Listen nicht enthalten.",
+      "dateOfBirthInFuture": "Das Geburtsdatum darf nicht in der Zukunft liegen.",
+      "documentExpiresBeforeIssue": "Das Dokument kann nicht vor seiner Ausstellung ablaufen.",
+      "documentIssuedOnInvalid": "Das Ausstellungsdatum darf weder in der Zukunft noch vor 1900 liegen.",
+      "documentNumberInvalid": "Die Dokumentnummer darf nur Buchstaben und Ziffern enthalten, höchstens 20.",
+      "documentTypeInvalid": "Diese Dokumentart wird nicht akzeptiert: Wählen Sie Reisepass, Personalausweis oder Führerschein.",
+      "fieldMaxLength": "Der Text ist zu lang.",
+      "fieldRequired": "Dieses Feld ist erforderlich.",
+      "genderInvalid": "Wählen Sie männlich oder weiblich: Nur diese Werte akzeptiert Alloggiati Web.",
+      "guestTypeInvalid": "Die Gästeart ist ungültig.",
+      "guestsCount": "Bitte 1 bis 30 Gäste angeben.",
+      "headWithoutMembers": "Fügen Sie mindestens ein Familien- oder Gruppenmitglied hinzu oder wählen Sie „Einzelgäste“.",
+      "marketingConsentMinor": "Minderjährige können nicht in Werbemitteilungen einwilligen.",
+      "marketingConsentUnavailable": "Die Einwilligung in Werbemitteilungen ist für diesen Aufenthalt nicht verfügbar.",
+      "marketingEmailInvalid": "Bitte eine gültige E-Mail-Adresse angeben (höchstens 255 Zeichen).",
+      "marketingEmailRequired": "Bitte die E-Mail-Adresse für Mitteilungen angeben.",
+      "memberWithoutHead": "Ein Familien- oder Gruppenmitglied muss auf das Familien- bzw. Gruppenoberhaupt folgen.",
+      "network": "Der Server ist nicht erreichbar: Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "provinceInvalid": "Bitte das Zwei-Buchstaben-Kürzel der Provinz eingeben (z. B. RM).",
+      "statisticalValueInvalid": "Der gewählte Wert gehört nicht zu den zulässigen.",
+      "summary_one": "1 Feld muss geprüft werden",
+      "summary_other": "{{count}} Felder müssen geprüft werden",
+      "tooManyRequests": "Zu viele Anfragen in kurzer Zeit: Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+      "vehiclePlateInvalid": "Das Kennzeichen ist ungültig: Bitte Buchstaben, Ziffern und Bindestriche verwenden, höchstens 20 Zeichen."
+    },
+    "guestKind": {
+      "FamilyMember": "Familienmitglied",
+      "GroupMember": "Gruppenmitglied",
+      "HeadOfFamily": "Familienoberhaupt",
+      "HeadOfGroup": "Gruppenleiter",
+      "SingleGuest": "Einzelgast"
+    },
+    "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "Eine Person prüft Ihre Identität, ganz ohne automatischen Gesichtsvergleich. Eine Einwilligung zur Gesichtsprüfung ist nicht nötig.",
+          "label": "Überprüfung durch eine Person",
+          "switch": "Zur Überprüfung durch eine Person wechseln"
+        },
+        "automatic": {
+          "hint": "Sie fotografieren Ihr Ausweisdokument und zeigen Ihr Gesicht in die Kamera. Dafür brauchen wir Ihre Einwilligung, die oben steht.",
+          "label": "Automatische Überprüfung"
+        },
+        "title": "Wie möchten Sie überprüft werden?"
+      },
+      "document": {
+        "back": {
+          "fileLabel": "Foto der Rückseite des Ausweisdokuments",
+          "illustration": "Die Rückseite einer Ausweiskarte: Die Zeilen mit Buchstaben und Zahlen sind unten, im Rahmen.",
+          "instructions": "Drehen Sie nun die Karte um und fotografieren Sie die Rückseite, auf der die Zeilen mit Buchstaben und Zahlen stehen (der Bereich, den eine Maschine liest). Zeigen Sie sie ganz, flach und ohne Spiegelungen.",
+          "pick": "Rückseite fotografieren",
+          "pickAgain": "Rückseite erneut fotografieren"
+        },
+        "fileLabel": "Foto des Ausweisdokuments",
+        "frontReceived": "Die Seite mit Ihrem Foto ist angekommen.",
+        "instructions": "Legen Sie das Dokument auf eine ebene, gut beleuchtete Fläche. Zeigen Sie die ganze Seite mit Ihrem Foto, ohne Spiegelungen. Ein Reisepass hat alles auf einer Seite: Zeigen Sie die Seite mit Ihrem Foto und den zwei Zeilen mit Buchstaben unten.",
+        "notAcceptable": "Das Foto ist noch nicht gut genug. Bitte nehmen Sie es erneut auf.",
+        "pick": "Dokument fotografieren",
+        "pickAgain": "Erneut fotografieren",
+        "sending": "Dokument wird gelesen...",
+        "sideProgress": "Foto {{current}} von {{total}}",
+        "title": "Ausweisdokument fotografieren"
+      },
+      "documentNotArchived": "Das Dokument wird nicht archiviert.",
+      "guidance": {
+        "avoid_glare": "Vermeiden Sie Spiegelungen: Neigen Sie das Dokument leicht oder gehen Sie vom Licht weg.",
+        "document_back_needed": "Fotografieren Sie jetzt die Rückseite der Karte, auf der die Zeilen mit Buchstaben stehen.",
+        "active_pose_retry": "Nehmen Sie beide Fotos erneut in der angegebenen Richtung auf.",
+        "document_not_recognized": "Auf diesem Foto wurde kein Ausweisdokument erkannt. Laden Sie ein Foto eines Personalausweises, Reisepasses oder Führerscheins hoch.",
+        "document_front_needed": "Fotografieren Sie die Seite der Karte mit Ihrem Foto.",
+        "hold_still": "Halten Sie das Handy ruhig: Das Foto ist unscharf.",
+        "less_light": "Es ist zu hell: Gehen Sie an einen Ort mit weicherem Licht.",
+        "more_light": "Es ist zu dunkel: Gehen Sie an einen helleren Ort.",
+        "move_closer": "Gehen Sie näher heran: Ihr Gesicht ist im Bild zu klein.",
+        "one_face_only": "Im Bild sollen nur Sie zu sehen sein.",
+        "other": "Bitte nehmen Sie das Foto erneut auf.",
+        "retake_picture": "Das Bild konnte nicht gelesen werden: Bitte nehmen Sie es erneut auf.",
+        "retake_selfie": "Nehmen Sie das Selfie erneut auf und schauen Sie direkt in die Kamera.",
+        "show_document_photo": "Zeigen Sie die Seite des Dokuments mit Ihrem Foto.",
+        "show_whole_document": "Zeigen Sie die gesamte Seite mit den Buchstaben- und Zahlenzeilen.",
+        "show_your_face": "Zeigen Sie Ihr Gesicht: Im Bild war es nicht zu sehen.",
+        "tip_remove_glasses": "Nehmen Sie Ihre Brille ab.",
+        "tip_remove_mask": "Nehmen Sie eine Maske oder alles ab, was das Gesicht verdeckt.",
+        "upload_document_again": "Fotografieren Sie das Dokument erneut: Es konnte nicht gelesen werden.",
+        "use_live_camera": "Nehmen Sie das Selfie jetzt mit der Kamera auf, nicht von einem Foto oder Bildschirm.",
+        "use_valid_document": "Das Dokument ist abgelaufen: Verwenden Sie ein gültiges."
+      },
+      "intro": "An diesem Schritt nimmt nur der Gast teil, der das Ausweisdokument hinterlegt. Die anderen Gäste müssen kein Selfie aufnehmen.",
+      "nextHint": "Schließen Sie die Prüfung ab, um fortzufahren.",
+      "operator": {
+        "ask": "Überprüfung durch eine Person anfordern",
+        "requested": "Wir haben die Unterkunft informiert. Sie prüft Ihre Identität, und der Zugangscode erreicht Sie nach ihrer Entscheidung."
+      },
+      "problem": {
+        "consent_required": "Wir brauchen zuerst Ihre Antwort zur Gesichtsprüfung.",
+        "consent_text_changed": "Der Text der Einwilligung wurde aktualisiert. Bitte lesen Sie ihn noch einmal, bevor Sie antworten.",
+        "document_photo": "Wir brauchen das Foto des Dokuments noch einmal: Bitte nehmen Sie es erneut auf.",
+        "document_required": "Bitte fotografieren Sie zuerst das Dokument.",
+        "failed": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+        "link_unavailable": "Dieser Link ist nicht mehr gültig oder der Check-in ist bereits abgeschlossen. Bitten Sie Ihren Gastgeber um einen neuen Link.",
+        "network": "Wir konnten den Server nicht erreichen. Es wurde nichts gespeichert: Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "processing": "Wir konnten das Foto nicht verarbeiten. Bitte versuchen Sie es erneut.",
+        "too_large": "Das Foto ist zu groß. Nehmen Sie es mit einer niedrigeren Auflösung erneut auf.",
+        "too_many_requests": "Zu viele Versuche in kurzer Zeit. Warten Sie einen Moment und versuchen Sie es erneut.",
+        "unsupported": "Dieser Dateityp wird nicht unterstützt. Verwenden Sie ein JPEG- oder PNG-Foto."
+      },
+      "result": {
+        "ok": {
+          "codeEmail": "Wenn Ihre Buchung eine E-Mail-Adresse hat, haben wir den Code auch dorthin gesendet.",
+          "codeHeldTouristTax": "Ihre Identität ist bestätigt. Den Zugangscode erhalten Sie, nachdem die Ortstaxe bezahlt ist.",
+          "codeLabel": "Ihr Zugangscode",
+          "noCode": "Ihre Identität ist bestätigt. Wenn Ihre Buchung eine E-Mail-Adresse hat, haben wir den Zugangscode dorthin gesendet; andernfalls teilt Ihr Gastgeber Ihnen die Zugangshinweise mit.",
+          "title": "Sie sind bestätigt"
+        },
+        "operator": {
+          "notOffered": "Für diesen Aufenthalt wird keine Gesichtsprüfung verwendet: Eine Person muss Ihre Identität prüfen. Fordern Sie es hier an, und der Gastgeber wird informiert. Der Zugangscode erreicht Sie nach seiner Entscheidung.",
+          "text": "Der Gastgeber prüft Ihre Identität. Der Zugangscode erreicht Sie nach seiner Entscheidung.",
+          "title": "Eine Person prüft Ihre Identität"
+        },
+        "retry": {
+          "again": "Selfie erneut aufnehmen",
+          "againDocument": "Dokument erneut fotografieren",
+          "attempts": "Verbleibende Versuche: {{count}}",
+          "intro": "Die Prüfung war diesmal nicht erfolgreich. Das sollten Sie ändern:",
+          "noReason": "Die Prüfung war diesmal nicht erfolgreich.",
+          "title": "Wir konnten Sie noch nicht bestätigen"
+        }
+      },
+      "unsupported": {
+        "text": "Diese Seite kann diesen Schritt der Überprüfung noch nicht durchführen. Sie können darum bitten, dass eine Person Ihre Identität prüft: Die Unterkunft wird benachrichtigt.",
+        "title": "Für diesen Schritt ist eine Person nötig"
+      }
+    },
+    "invoice": {
+      "fields": {
+        "address": {
+          "city": "Ort",
+          "civic": "Hausnummer",
+          "legend": "Adresse",
+          "postalCode": "Postleitzahl",
+          "province": "Provinz",
+          "street": "Straße"
+        },
+        "country": {
+          "label": "Land der Adresse",
+          "why": "Liegt die Adresse nicht in Italien, wählen Sie das Land: Dann werden Steuernummer und Umsatzsteuer-ID nicht benötigt."
+        },
+        "errors": {
+          "countryInvalid": "Wählen Sie ein Land aus der Liste.",
+          "fiscalCodeInvalid": "Die Steuernummer (codice fiscale) ist ungültig: Prüfen Sie die 16 Zeichen (Person) oder die 11 Ziffern (Firma).",
+          "fiscalCodeRequired": "Geben Sie die Steuernummer (codice fiscale) an: Sie wird für die Rechnung benötigt.",
+          "kindInvalid": "Wählen Sie, auf wen die Rechnung ausgestellt wird.",
+          "pecInvalid": "Die PEC-Adresse ist ungültig: Prüfen Sie das @-Zeichen und die Domain.",
+          "postalCodeInvalid": "In Italien hat die Postleitzahl 5 Ziffern. Liegt die Adresse im Ausland, wählen Sie das Land unter „Weitere Optionen“.",
+          "provinceInvalid": "Die Provinz wird mit 2 Buchstaben geschrieben, zum Beispiel RM.",
+          "recipientCodeInvalid": "Der Empfängercode hat 7 Buchstaben oder Ziffern.",
+          "tooLong": "Dieser Text ist zu lang.",
+          "vatNumberInvalid": "Die Umsatzsteuer-ID (partita IVA) ist ungültig: Prüfen Sie die 11 Ziffern.",
+          "vatNumberRequired": "Geben Sie die Umsatzsteuer-ID (partita IVA) oder die Steuernummer an."
+        },
+        "example": "Beispiel:",
+        "fiscalCode": {
+          "label": "Steuernummer (codice fiscale)",
+          "why": "Warum wir fragen: Der Vermieter braucht sie, um die Rechnung auszustellen. Für eine Firma genügt die Umsatzsteuer-ID."
+        },
+        "kind": {
+          "Company": {
+            "description": "Eine Firma oder ein Freiberufler mit Umsatzsteuer-ID.",
+            "title": "Eine Firma"
+          },
+          "Guest": {
+            "description": "Eine Privatperson, meist Sie selbst.",
+            "title": "Eine Person"
+          },
+          "legend": "Auf wen soll die Rechnung ausgestellt werden?"
+        },
+        "more": {
+          "hint": "Die Adresse ist freiwillig. Die übrigen Optionen werden meist nicht benötigt: Wenn Sie nicht wissen, was sie sind, lassen Sie sie leer.",
+          "label": "Weitere Optionen"
+        },
+        "name": {
+          "Company": "Firmenname",
+          "Guest": "Vor- und Nachname"
+        },
+        "pec": {
+          "label": "PEC",
+          "why": "Warum wir fragen: nur wenn die Rechnung an eine PEC-Adresse (zertifizierte E-Mail) gehen soll."
+        },
+        "sdiRecipientCode": {
+          "label": "Empfängercode",
+          "why": "Warum wir fragen: Mit diesem Code empfängt eine Firma elektronische Rechnungen. Er hat 7 Buchstaben oder Ziffern: Wenn Sie ihn nicht kennen, lassen Sie ihn leer."
+        },
+        "vatNumber": {
+          "label": "Umsatzsteuer-ID (partita IVA)",
+          "why": "Warum wir fragen: Sie wird benötigt, um die Rechnung auf eine Firma oder einen Freiberufler auszustellen."
+        }
+      },
+      "fieldsHint": "Wenn Sie Ihre Daten angeben, wird die Steuernummer benötigt (bei einer Firma die Umsatzsteuer-ID). Haben Sie sie gerade nicht, lassen Sie alles leer: Der Vermieter fragt später danach.",
+      "intro": "Freiwillig: Sie können diesen Schritt überspringen. Wenn Sie eine Rechnung benötigen, geben Sie an, auf wen sie ausgestellt werden soll: Der Vermieter braucht das, um das Dokument auszustellen.",
+      "no": {
+        "description": "Weiter: Der Check-in bleibt unverändert.",
+        "title": "Nein, danke"
+      },
+      "onFile": {
+        "body": "Der Vermieter hat sie schon. Hat sich etwas geändert, können Sie sie erneut senden: Der Vermieter prüft sie.",
+        "keep": "Vorhandene Daten behalten",
+        "replace": "Andere Daten senden",
+        "title": "Wir haben Ihre Rechnungsdaten bereits"
+      },
+      "question": "Benötigen Sie eine Rechnung?",
+      "title": "Benötigen Sie eine Rechnung?",
+      "yes": {
+        "description": "Geben Sie an, auf wen sie ausgestellt wird. Haben Sie die Daten gerade nicht, fragt der Vermieter später danach.",
+        "title": "Ja, ich benötige eine Rechnung"
+      }
+    },
+    "language": {
+      "label": "Sprache",
+      "loadFailed": "Diese Sprache konnte nicht geladen werden: Die Seite bleibt in der bisherigen Sprache.",
+      "names": {
+        "de": "Deutsch",
+        "en": "English",
+        "es": "Español",
+        "fr": "Français",
+        "it": "Italiano"
+      },
+      "notSaved": "Ihre Sprachauswahl konnte nicht gespeichert werden: Die Seite bleibt trotzdem in dieser Sprache."
+    },
+    "residence": {
+      "abroad": "Im Ausland",
+      "city": "Ort",
+      "comune": "Wohngemeinde",
+      "country": "Wohnsitzland",
+      "hint": "Freiwillig: Wo der Gast normalerweise wohnt.",
+      "homeHint": "Freiwillig: die Adresse, unter der der Gast wohnt. Sie gehört zur Meldung des Aufenthalts an die Polizei.",
+      "inItaly": "In Italien",
+      "label": "Wohnsitz",
+      "postalCode": "Postleitzahl",
+      "province": "Provinz des Wohnorts (zwei Buchstaben)",
+      "street": "Straße und Hausnummer"
+    },
+    "swiss": {
+      "documentIntro": "Art und Nummer des Ausweisdokuments jedes Erwachsenen. Das Familienoberhaupt bzw. der Gruppenleiter gibt zusätzlich den Ausstellungsort an.",
+      "guestsIntro": "Geben Sie alle Gäste an, die übernachten, auch Minderjährige. Jeder Erwachsene gibt im nächsten Schritt auch sein Ausweisdokument an.",
+      "stayKindHint": "Bei einer Familie oder Gruppe ist der erste Gast das Familienoberhaupt bzw. der Gruppenleiter. Das Ausweisdokument wird von jedem Erwachsenen verlangt (bei einer Gruppe ab sechs Personen nur vom Gruppenleiter)."
+    },
+    "toast": {
+      "saved": "Check-in-Daten gespeichert.",
+      "saveFailed": "Die Check-in-Daten konnten nicht gespeichert werden. Bitte versuchen Sie es erneut."
+    },
+    "tourismType": {
+      "business": "Geschäftlich",
+      "holiday": "Urlaub",
+      "label": "Reisezweck *",
+      "other": "Sonstiges"
+    },
+    "touristTax": {
+      "amountDue": "Ortstaxe für den Aufenthalt",
+      "atProperty": "Diese Taxe zahlen Sie vor Ort an Ihren Gastgeber.",
+      "channelCollects": "Die Ortstaxe wird von dem Portal eingezogen, über das Sie gebucht haben: Hier müssen Sie nichts bezahlen.",
+      "currencyMissing": "Der Betrag wird ohne Währung angezeigt, weil uns diese nicht mitgeteilt wurde.",
+      "exempt": "Befreit",
+      "guestLine_one": "Gast {{index}} · {{count}} Nacht",
+      "guestLine_other": "Gast {{index}} · {{count}} Nächte",
+      "hostWillTell": "Die Ortstaxe teilt Ihnen Ihr Gastgeber mit.",
+      "included": "Die Ortstaxe ist bereits in der Zahlung Ihrer Buchung enthalten: Hier müssen Sie nichts weiter bezahlen.",
+      "intro": "Das ist die Taxe, die die Gemeinde für jede Übernachtung erhebt. Sie können sie jetzt mit Karte bezahlen.",
+      "loadFailed": "Die Ortstaxe kann nicht geladen werden. Bitte versuchen Sie es erneut: Wenn Sie möchten, zahlen Sie sie vor Ort an Ihren Gastgeber.",
+      "nothingDue": "Für diesen Aufenthalt ist keine Ortstaxe zu zahlen.",
+      "paidAtProperty": "Ihr Gastgeber hat vermerkt, dass die Ortstaxe bereits vor Ort bezahlt wurde.",
+      "paidPartly": "Sie haben bereits {{amount}} online bezahlt. Den Rest der Taxe zahlen Sie vor Ort an Ihren Gastgeber.",
+      "paidText": "Wir haben Ihre Zahlung von {{amount}} erhalten. Vielen Dank!",
+      "paidTitle": "Ortstaxe bezahlt",
+      "partIncluded": "Ein Teil ist bereits in der Zahlung Ihrer Buchung enthalten.",
+      "payAmount": "{{amount}} bezahlen",
+      "payNowLabel": "Jetzt zu zahlen",
+      "paying": "Zahlung läuft …",
+      "paymentFailed": "Die Zahlung ist nicht durchgegangen. Prüfen Sie Ihre Kartendaten und versuchen Sie es erneut.",
+      "paymentUnavailable": "Die Online-Zahlung der Ortstaxe ist im Moment nicht verfügbar. Sie können fortfahren: Sie zahlen sie vor Ort an Ihren Gastgeber.",
+      "preparing": "Zahlung wird vorbereitet …",
+      "processingText": "Wir bestätigen die Zahlung, das dauert einen Moment. Sie müssen nicht erneut zahlen.",
+      "processingTitle": "Zahlung wird bestätigt",
+      "refresh": "Status aktualisieren",
+      "requiredBeforeCode": "Ihr Gastgeber gibt Ihnen den Zugangscode, nachdem Sie die Ortstaxe bezahlt haben: Um fortzufahren, zahlen Sie hier.",
+      "retry": "Erneut versuchen",
+      "sessionFailed": "Die Zahlung kann nicht geöffnet werden. Bitte versuchen Sie es gleich noch einmal.",
+      "stalledText": "Die Zahlung ist noch nicht bestätigt. Wenn Sie schon bezahlt haben, zahlen Sie nicht erneut: Aktualisieren Sie den Status in ein paar Minuten.",
+      "stalledTitle": "Zahlung noch nicht bestätigt",
+      "title": "Ortstaxe",
+      "total": "Gesamt"
+    },
+    "travelWay": {
+      "bus": "Bus",
+      "car": "Auto",
+      "label": "Anreise mit *",
+      "other": "Sonstiges",
+      "plane": "Flugzeug",
+      "ship": "Schiff",
+      "train": "Zug"
+    },
+    "vehiclePlate": {
+      "hint": "Ein Kennzeichen für den ganzen Aufenthalt, falls Sie mit dem Auto anreisen. Buchstaben, Ziffern und Bindestriche.",
+      "label": "Kennzeichen Ihres Autos (freiwillig)"
+    }
+  }
+}

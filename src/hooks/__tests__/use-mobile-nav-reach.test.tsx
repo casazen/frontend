@@ -33,6 +33,8 @@ const FLAGS_OFF: FeatureFlags = {
   concordatoFacile: false,
   supplierRequestBackups: false,
   agencyTier: false,
+  crmMarketing: false,
+  octorateOnboarding: false,
 };
 const FLAGS_ON: FeatureFlags = {
   otaPartnerApi: true,
@@ -44,6 +46,8 @@ const FLAGS_ON: FeatureFlags = {
   concordatoFacile: true,
   supplierRequestBackups: true,
   agencyTier: true,
+  crmMarketing: true,
+  octorateOnboarding: true,
 };
 
 function permissionsOf(context: AppContextKey): string[] {

@@ -54,8 +54,8 @@ describe('NavSectionTabs (UI-04a)', () => {
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['Prenotazioni', '/app/short-rent/bookings'],
       ['Ospiti', '/app/short-rent/guests'],
-      ['CRM Ospiti', '/app/short-rent/crm/guests'],
       ['Recensioni', '/app/short-rent/reviews'],
+      ['Flusso', '/app/short-rent/bookings/flow'],
     ]);
     expect(links[0]).toHaveAttribute('aria-current', 'page');
     expect(links.slice(1).every((link) => !link.hasAttribute('aria-current'))).toBe(true);
@@ -64,11 +64,10 @@ describe('NavSectionTabs (UI-04a)', () => {
   it.each([
     ['/app/short-rent/guests', 'Ospiti'],
     ['/app/short-rent/reviews', 'Recensioni'],
-    ['/app/short-rent/crm/guests', 'CRM Ospiti'],
   ])('NavSectionTabs_PageOfTheSection_%s_HasTheSameTabsAndMarksItself_%s', (path, current) => {
     renderAt(path);
 
-    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'CRM Ospiti', 'Recensioni']);
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni', 'Flusso']);
     const open = tabs('Sezioni di Prenotazioni').filter((link) => link.getAttribute('aria-current') === 'page');
     expect(open.map((link) => link.textContent)).toEqual([current]);
   });
@@ -76,44 +75,50 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_SectionOfThePayments_NamesTheSectionAfterItsEntry', () => {
     renderAt('/app/short-rent/fiscal');
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale']);
   });
 
-  it('NavSectionTabs_RentalAreaOfLongTerm_HasItsSectionsToo', () => {
-    renderAt('/app/long-rent/tenants');
-
-    expect(labelsOf('Sezioni di Contratti')).toEqual(['Contratti', 'Inquilini', 'Scadenze']);
+  it.each(['/app/long-rent/fiscal', '/app/long-rent/tenants', '/app/long-rent/deadlines', '/app/long-rent/leases'])('keeps %s free of the redundant contract-list tabs', (path) => {
+    renderAt(path);
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
   });
 
   it('NavSectionTabs_EnglishUi_UsesTheEnglishNames', async () => {
     await i18n.changeLanguage('en');
     renderAt('/app/short-rent/guests');
 
-    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Guests', 'Guest CRM', 'Reviews']);
+    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Guests', 'Reviews', 'Flow']);
   });
 
   it('NavSectionTabs_UserWhoMayNotOpenAPage_DoesNotSeeItsTab', () => {
     renderAt('/app/short-rent/payments', { hasPermission: (_ctx, permission) => permission !== 'property.write' });
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Regime fiscale']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale']);
   });
 
-  it('NavSectionTabs_OtaChannels_AreATabOnlyWhileTheirFlagIsOn', () => {
+  it('NavSectionTabs_OtaChannels_AppearInSectionNavigationOnlyWhileTheirFlagIsOn', () => {
     renderAt('/app/short-rent/channels', { flags: { otaPartnerApi: false } });
-    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Canali e calendari']);
+    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione']);
 
     cleanup();
     renderAt('/app/short-rent/channels', { flags: { otaPartnerApi: true } });
-    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Canali e calendari', 'OTA']);
+    const section = screen.getByRole('navigation', { name: 'Sezioni di Immobili' });
+    const select = within(section).getByRole('combobox', { name: 'Sezioni di Immobili' });
+    expect(within(select).getAllByRole('option').map(option => option.textContent))
+      .toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione', 'OTA']);
   });
 
-  it('NavSectionTabs_TrustedSuppliers_AreATabOnlyOnTheAgencyPlan', () => {
+  it('NavSectionTabs_TrustedSuppliers_RequireAnOrganizationAdministratorOnEveryPlan', () => {
     renderAt('/app/short-rent/channels', { flags: { agencyTier: false } });
+    expect(labelsOf('Sezioni di Immobili')).toContain('Fornitori fidati');
+
+    cleanup();
+    renderAt('/app/short-rent/channels', { hasPermission: (_, permission) => permission !== 'org.billing.admin', flags: { agencyTier: true } });
     expect(labelsOf('Sezioni di Immobili')).not.toContain('Fornitori fidati');
 
     cleanup();
     renderAt('/app/short-rent/channels', { flags: { agencyTier: true } });
-    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari']);
+    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione']);
   });
 
   it('NavSectionTabs_UserWhoMayNotOpenTheEntry_SeesNoTabs', () => {
@@ -123,7 +128,7 @@ describe('NavSectionTabs (UI-04a)', () => {
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
   });
 
-  it.each(['/app/short-rent', '/app/short-rent/bookings/calendar', '/app/short-rent/marketplace', '/app/short-rent/bookings/create'])(
+  it.each(['/app/short-rent/bookings/calendar', '/app/short-rent/marketplace', '/app/short-rent/bookings/create'])(
     'NavSectionTabs_PageOutsideAnySection_%s_DrawsNothing',
     (path) => {
       const { container } = renderAt(path);
@@ -132,10 +137,29 @@ describe('NavSectionTabs (UI-04a)', () => {
     },
   );
 
-  it('NavSectionTabs_StaffConsoleAndSupplierArea_KeepTheirLinksInTheHeaderOfThePage', () => {
-    // `/app/admin/cin` has two pages that hang from it, and `NavChildLinks` shows them: the strip would say it twice.
-    const { container } = renderAt('/app/admin/cin');
+  it('NavSectionTabs_Cruscotto_HasTheTabsOfWhatWaitsForTheHostWithTheNamesOfThePages', () => {
+    renderAt('/app/short-rent');
 
+    expect(labelsOf('Sezioni di Cruscotto')).toEqual(['Cruscotto', 'Da fare', 'Da approvare', 'Verifiche']);
+  });
+
+  it('NavSectionTabs_Impostazioni_NamesTheTabOfThePageNotTheSection', () => {
+    renderAt('/app/short-rent/settings/organization', { flags: { octorateOnboarding: true, messageAssistant: true } });
+
+    expect(screen.getByRole('link', { name: 'Impostazioni' })).toHaveAttribute('href', '/app/short-rent/settings');
+  });
+
+  it('NavSectionTabs_StaffConsoleAndAmministrazione_HaveTabsTooAndTheSupplierAreaKeepsItsLinks', () => {
+    renderAt('/app/admin/cin');
+    expect(labelsOf('Sezioni di Conformità')).toEqual(['Conformità', 'Tassa di Soggiorno', 'Dati normativi LTR', 'Regioni ISTAT']);
+    cleanup();
+
+    renderAt('/app/account/statements', { flags: { agencyTier: true } });
+    expect(labelsOf('Sezioni di Chiusura mensile')).toEqual(['Chiusura mensile', 'Rendiconti', "Ritenute d'acconto", 'Bonifici proprietari', 'Commissioni dei canali']);
+    cleanup();
+
+    // The supplier area keeps the links to its sub-pages in the header of the page of the entry (`NavChildLinks`).
+    const { container } = renderAt('/app/supplier/availability');
     expect(container).toBeEmptyDOMElement();
   });
 
@@ -143,7 +167,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_NoWorkspace_ShowsEveryPageOfTheSection', () => {
     renderAt('/app/short-rent/bookings', { withWorkspace: false });
 
-    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'CRM Ospiti', 'Recensioni']);
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni', 'Flusso']);
   });
 
   it('NavSectionTabs_NoRouter_ShowsNothingAndDoesNotFail', () => {
@@ -176,7 +200,7 @@ describe('PageHeader draws the tabs of its section (UI-04a)', () => {
     renderAt('/app/short-rent/properties', { children: <PageHeader title="Immobili" crumbs="auto" /> });
 
     expect(screen.getByTestId('page-header')).toBeInTheDocument();
-    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Canali e calendari']);
+    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione']);
   });
 
   it('PageHeader_PageOutsideAnySection_IsTheHeadItAlwaysWas', () => {
@@ -202,9 +226,10 @@ describe('every page of a section has the head that draws the tabs', () => {
     import: 'default',
     eager: true,
   });
+  // The manifest and the list it spreads (the pages of the activation, `onboarding-routes.ts`): a page of a section may be in either.
   const manifest = Object.values(
-    import.meta.glob<string>('/src/config/route-manifest.ts', { query: '?raw', import: 'default', eager: true }),
-  )[0];
+    import.meta.glob<string>(['/src/config/route-manifest.ts', '/src/config/onboarding-routes.ts'], { query: '?raw', import: 'default', eager: true }),
+  ).join('\n');
 
   /** The sources of the component of a page of the manifest: where the exported name it lazy-loads is defined. */
   function componentSources(path: string): string[] {
@@ -223,7 +248,7 @@ describe('every page of a section has the head that draws the tabs', () => {
 
   const sectionPages = [
     ...new Set(
-      ROUTE_MANIFEST.filter((entry) => entry.navParent && (entry.context === 'short-rent' || entry.context === 'long-rent')).flatMap(
+      ROUTE_MANIFEST.filter((entry) => entry.navParent && entry.context !== 'supplier').flatMap(
         (entry) => [entry.path, entry.navParent as string],
       ),
     ),
@@ -238,6 +263,7 @@ describe('every page of a section has the head that draws the tabs', () => {
     const files = componentSources(path);
 
     expect(files.length, `no component found for ${path}`).toBeGreaterThan(0);
-    expect(files.some((source) => source.includes('<PageHeader')), `${path} has no <PageHeader>: its section has no tabs there`).toBe(true);
+    expect(files.some((source) => /<(PageHeader|ServicePageHeader)\b/.test(source)),
+      `${path} has no page header that renders the section tabs`).toBe(true);
   });
 });

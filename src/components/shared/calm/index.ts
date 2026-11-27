@@ -5,6 +5,7 @@ export { CALM_TONES, type CalmTone } from './calm-tone';
 export { ChecklistCompact } from './checklist-compact';
 export { DayList, TodayList, type DayListItem, type TodayListItem } from './day-list';
 export { FocusBlock } from './focus-block';
+export { GuidePath, type GuidePathState, type GuidePathStep } from './guide-path';
 export { NextStepCard } from './next-step-card';
 export { PlainSection } from './plain-section';
 export { StatStrip, StatTile } from './stat-strip';

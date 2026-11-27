@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot, Slottable } from "@radix-ui/react-slot";
 import { Loader2 } from "lucide-react";
+import { PRESS_FEEDBACK } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -33,7 +34,7 @@ const SOFT_HOVER_BG = "hover:bg-[color:color-mix(in_oklab,var(--color-primary)_1
 const DANGER_TEXT = "text-[color:var(--color-danger-foreground,#b4232a)]";
 
 const variantStyles = {
-  default: "bg-primary text-primary-foreground hover:bg-primary/90",
+  default: "shadow-sm bg-primary text-primary-foreground hover:bg-primary/90",
   destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
   outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
   secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
@@ -67,8 +68,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    // `transition-[…scale]`: what `transition-colors` moved, and the press of the finger (`PRESS_FEEDBACK`), which a link-like button
+    // skips. `box-shadow` is not in the list on purpose: the focus ring is a shadow, and a ring that fades in is a ring that is late.
     const classes = cn(
-      "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-[color,background-color,border-color,text-decoration-color,fill,stroke,scale] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      variant !== "link" && PRESS_FEEDBACK,
       variantStyles[variant],
       sizeStyles[size],
       block && "w-full",

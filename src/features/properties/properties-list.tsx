@@ -7,7 +7,8 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { propertyStatus, type PropertyStatus } from '@/lib/status-dictionary';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
-import type { Property } from '@/types';
+import type { ListingPropertySummary, Property } from '@/types';
+import { ChannelsCell } from './components/multi-channel-status';
 import { PropertyThumb } from './components/property-thumb';
 // The drawer registers its kind when its module is loaded: the list is what opens it.
 import './components/property-drawer';
@@ -30,6 +31,10 @@ const needsAttention = (property: Property) => {
 
 /** The states in the order the host has to look at them: what is blocked first, what works last. */
 const STATUS_RANK: Record<PropertyStatus, number> = { Suspended: 0, Pending: 1, Paused: 2, Active: 3 };
+const MISSING_LABELS: Record<string, string> = {
+  base_data: 'baseData', cin: 'cin', documents: 'documents', safety: 'safety',
+  activation_not_confirmed: 'activationNotConfirmed', photos: 'photos', calendar: 'calendar',
+};
 
 export interface PropertiesListOptions {
   /** `property.write`: completing, reactivating, pausing, editing and deleting are for who may write the property. */
@@ -41,6 +46,16 @@ export interface PropertiesListOptions {
   onPause: (property: Property) => void;
   onActivate: (property: Property) => void;
   onDelete: (property: Property) => void;
+  /**
+   * The worst state of each property that has a channel, by property (`GET /properties/channel-status`): the column «Canali» and the line
+   * on the card. `null` or absent while the channel manager is not connected (the flag is off): then the list has no such column.
+   */
+  channelSummaries?: ReadonlyMap<string, ListingPropertySummary> | null;
+  /**
+   * The summary of the channels was read. While it loads, or when it could not be read, the column says nothing is known (a dash): a
+   * property that is missing from an unread summary is not a property that was never published. Default: read.
+   */
+  channelsKnown?: boolean;
 }
 
 /**
@@ -52,7 +67,7 @@ export interface PropertiesListOptions {
  * "on the site": they need what the property records do not carry (the list of what is missing for each property, the
  * bookings of the month, the host's own switch for the site), so they are not here and not made up.
  */
-export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, onActivate, onDelete }: PropertiesListOptions) {
+export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, onActivate, onDelete, channelSummaries = null, channelsKnown = true }: PropertiesListOptions) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
 
@@ -71,6 +86,11 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
     };
 
     const priceOf = (property: Property) => (property.nightlyRate > 0 ? formatCurrency(property.nightlyRate, property.currency) : null);
+
+    /** The listing on the channels: the worst state, «Sincronizzazione in ritardo» and «Correggi». A property that was never published has no channel; one whose summary is not read yet has none to tell. */
+    const channelsOf = (property: Property) => (
+      <ChannelsCell propertyId={property.id} summary={channelSummaries?.get(property.id)} known={channelsKnown} canWrite={canWrite} />
+    );
 
     /** The one thing to do about a property, by its state. */
     const primaryAction = (property: Property): ListRowAction | null => {
@@ -158,6 +178,14 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
               <div className="flex min-w-0 flex-col items-start gap-1">
                 <StatusBadge kind="property" status={propertyStatus(property)} />
                 {since ? <span className="text-sm font-normal text-foreground/70">{since}</span> : null}
+                {property.missing?.some((item) => item.blocking) ? (
+                  <span className="text-sm font-normal text-foreground/70">
+                    {t('accountProperties.list.missing', {
+                      items: property.missing.filter((item) => item.blocking)
+                        .map((item) => t(`accountProperties.missing.${MISSING_LABELS[item.code] ?? item.code}`, { defaultValue: item.code })).join(', '),
+                    })}
+                  </span>
+                ) : null}
               </div>
             );
           },
@@ -186,6 +214,7 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
             );
           },
         },
+        ...(channelSummaries ? [{ id: 'channels', label: t('property.list.columns.channels'), default: true, render: channelsOf }] : []),
       ],
       search: {
         label: t('property.list.search'),
@@ -234,7 +263,7 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
         const price = priceOf(property);
         const since = pausedSince(property);
         return {
-          lead: <PropertyThumb photoUrls={property.photoUrls} className="size-14" />,
+          lead: <PropertyThumb photoUrls={property.photoUrls} className="h-16 w-20" />,
           title: property.name,
           sub: formatPropertyLocation(property),
           status: <StatusBadge kind="property" status={propertyStatus(property)} />,
@@ -242,7 +271,13 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
             { icon: BedDouble, text: spacesOf(property), label: t('property.list.columns.spaces') },
             ...(price ? [{ icon: Euro, text: `${price} ${t('property.list.perNight')}`, label: t('property.list.columns.price') }] : []),
           ],
-          foot: since ? <p className="text-sm text-foreground/70">{since}</p> : undefined,
+          foot:
+            since || channelSummaries ? (
+              <div className="space-y-1">
+                {since ? <p className="text-sm text-foreground/70">{since}</p> : null}
+                {channelSummaries ? channelsOf(property) : null}
+              </div>
+            ) : undefined,
         };
       },
       // The name of the property opens its drawer; the page of the property is the first entry of "⋯" and the foot of the drawer.
@@ -259,5 +294,5 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
       noResults: { title: t('property.list.noResults.title'), description: t('property.list.noResults.description') },
       countLabel: (count) => t('property.list.count', { count }),
     });
-  }, [t, language, canWrite, canReadBookings, busy, onPause, onActivate, onDelete]);
+  }, [t, language, canWrite, canReadBookings, busy, onPause, onActivate, onDelete, channelSummaries, channelsKnown]);
 }

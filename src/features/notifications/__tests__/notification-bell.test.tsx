@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
@@ -8,14 +8,26 @@ import { AppShellContext } from '@/components/layout/app-shell-context';
 import type { AppContextKey } from '@/config/route-manifest';
 import { UNREAD_COUNT_KEY } from '@/queries/use-notifications';
 import { NotificationBell } from '../notification-bell';
+import type { NotificationsChange } from '../realtime-client';
 
 const auth = vi.hoisted(() => ({
   value: { isAuthenticated: true, kind: 'auth0', user: { sub: 'auth0|u1' }, getAccessToken: async () => 'token' } as Record<string, unknown>,
 }));
-const realtime = vi.hoisted(() => ({ state: 'connected' as 'connected' | 'connecting' | 'disconnected' }));
+const realtime = vi.hoisted(() => ({
+  state: 'connected' as 'connected' | 'connecting' | 'disconnected',
+  /** What the bell handed to the hook: the test plays the server by calling `onNewNotification`. */
+  options: undefined as { onNewNotification?: (change: NotificationsChange) => void } | undefined,
+}));
+const toastMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@/hooks/use-auth', () => ({ useAuth: () => auth.value }));
-vi.mock('../use-notifications-realtime', () => ({ useNotificationsRealtime: () => realtime.state }));
+vi.mock('../use-notifications-realtime', () => ({
+  useNotificationsRealtime: (options: { onNewNotification?: (change: NotificationsChange) => void }) => {
+    realtime.options = options;
+    return realtime.state;
+  },
+}));
+vi.mock('sonner', () => ({ toast: toastMock }));
 vi.mock('@/api/notifications.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/notifications.api')>()),
   notificationsApi: { list: vi.fn(), unreadCount: vi.fn(), markRead: vi.fn(), markAllRead: vi.fn() },
@@ -142,6 +154,20 @@ describe('NotificationBell (UI-12)', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/app/supplier/inbox/sr-1');
   });
 
+  it('NotificationBell_ClickOnATicinoNotification_MarksItReadAndOpensTheLayerOfThePropertyOverTheCockpit', async () => {
+    vi.mocked(notificationsApi.list).mockResolvedValue({ items: [note('t1', 'ticino-notification-overdue', 'p-1')], totalCount: 1, page: 1, pageSize: 20 });
+    renderBell();
+    fireEvent.click(await screen.findByTestId('notification-bell'));
+    const row = (await screen.findAllByTestId('notification-row'))[0];
+    expect(within(row).getByText('Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino.')).toBeInTheDocument();
+    fireEvent.click(row);
+
+    await waitFor(() => expect(notificationsApi.markRead).toHaveBeenCalledWith('t1'));
+    // The entity of the entry is the property: the layer opens on its first day to notify (no day in the address).
+    expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/compliance?detail=ticino:p-1');
+    expect(screen.queryByTestId('notification-panel')).not.toBeInTheDocument();
+  });
+
   it('NotificationBell_UnknownType_MarksItReadAndStaysWhereItIs', async () => {
     renderBell();
     fireEvent.click(await screen.findByTestId('notification-bell'));
@@ -228,6 +254,101 @@ describe('NotificationBell (UI-12)', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  describe('the pop-up of a new notification', () => {
+    /** The server tells the open session about a new notification: the hook calls what the bell gave it. */
+    const arrives = (change: NotificationsChange) => act(() => realtime.options?.onNewNotification?.(change));
+
+    type ToastOptions = { id: string; duration: number; action?: { label: string; onClick: () => void } };
+    const lastToast = () => {
+      const [message, options] = toastMock.mock.lastCall as [string, ToastOptions];
+      return { message, options };
+    };
+
+    it('NotificationBell_GuestCompletesTheCheckIn_ShowsAPopUpWithAnOpenButtonThatGoesToTheBooking', async () => {
+      renderBell();
+      await screen.findByTestId('notification-bell');
+
+      arrives({ unreadCount: 4, type: 'guest-checkin-completed', entityId: 'b-1' });
+
+      const { message, options } = lastToast();
+      expect(message).toBe('Un ospite ha completato il check-in online.');
+      expect(options.action?.label).toBe('Apri');
+      expect(options.duration).toBeGreaterThanOrEqual(5_000);
+      expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent');
+      act(() => options.action?.onClick());
+      expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/bookings/b-1?tab=guest');
+    });
+
+    // E30/F02/US03/T01 (NF-127): a Ticino alert or declaration is a pop-up that says what it is about and opens the layer of that property over the cockpit (the entity is the property, never the day).
+    it.each([
+      ['ticino-notification-due', 'Gli ospiti di un arrivo in Ticino vanno notificati alla polizia cantonale entro 24 ore.'],
+      ['ticino-notification-overdue', 'Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino.'],
+      ['ticino-notification-declared', 'Qualcuno del tuo team ha aggiornato la notifica alla polizia di un arrivo in Ticino.'],
+    ])('NotificationBell_%s_ShowsAPopUpWithAnOpenButtonThatOpensTheLayerOfTheProperty', async (type, sentence) => {
+      renderBell();
+      await screen.findByTestId('notification-bell');
+
+      arrives({ unreadCount: 4, type, entityId: 'p-1' });
+
+      expect(lastToast().message).toBe(sentence);
+      expect(lastToast().options.action?.label).toBe('Apri');
+      act(() => lastToast().options.action?.onClick());
+      expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/compliance?detail=ticino:p-1');
+    });
+
+    it('NotificationBell_English_TheSentenceAndTheButtonAreInEnglish', async () => {
+      await i18n.changeLanguage('en');
+      renderBell();
+      await screen.findByTestId('notification-bell');
+
+      arrives({ unreadCount: 1, type: 'guest-checkin-completed', entityId: 'b-1' });
+
+      expect(lastToast().message).toBe('A guest completed the online check-in.');
+      expect(lastToast().options.action?.label).toBe('Open');
+    });
+
+    it('NotificationBell_ASupplier_TheButtonOpensTheRequestInTheInbox', async () => {
+      renderBell('supplier');
+      await screen.findByTestId('notification-bell');
+
+      arrives({ unreadCount: 1, type: 'service-request-created', entityId: 'sr-9' });
+      act(() => lastToast().options.action?.onClick());
+
+      expect(screen.getByTestId('where')).toHaveTextContent('/app/supplier/inbox/sr-9');
+    });
+
+    it('NotificationBell_ATypeItDoesNotKnow_ShowsTheGenericSentenceWithNoButton', async () => {
+      renderBell();
+      await screen.findByTestId('notification-bell');
+
+      arrives({ unreadCount: 1, type: 'from-the-future', entityId: 'x-1' });
+
+      expect(lastToast().message).toBe('Hai una nuova notifica.');
+      expect(lastToast().options.action).toBeUndefined();
+    });
+
+    it('NotificationBell_TheSameEventTwice_IsOnePopUp_AnotherEventIsAnother', async () => {
+      renderBell();
+      await screen.findByTestId('notification-bell');
+
+      arrives({ unreadCount: 1, type: 'guest-message', entityId: 'b-1' });
+      const first = lastToast().options.id;
+      arrives({ unreadCount: 2, type: 'guest-message', entityId: 'b-1' });
+      expect(lastToast().options.id).toBe(first);
+      arrives({ unreadCount: 3, type: 'guest-message', entityId: 'b-2' });
+      expect(lastToast().options.id).not.toBe(first);
+    });
+
+    it('NotificationBell_AChangeWithNoType_ShowsNothing', async () => {
+      renderBell();
+      await screen.findByTestId('notification-bell');
+
+      arrives({ unreadCount: 0, type: null, entityId: null });
+
+      expect(toastMock).not.toHaveBeenCalled();
+    });
   });
 
   it('NotificationBell_Keyboard_OpensWithEnterAndClosesWithEscape', async () => {

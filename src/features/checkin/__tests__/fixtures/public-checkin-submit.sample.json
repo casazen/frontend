@@ -18,7 +18,15 @@
       "documentTypeCode": null,
       "documentNumber": "CA12345AB",
       "documentIssuePlaceName": "Firenze",
-      "documentIssuePlaceCode": null
+      "documentIssuePlaceCode": null,
+      "documentIssuedOn": null,
+      "documentExpiresOn": null,
+      "residenceInItaly": null,
+      "residenceComuneName": null,
+      "residenceComuneCode": null,
+      "residenceProvince": null,
+      "residenceCountryName": null,
+      "residenceCountryCode": null
     },
     {
       "type": "FamilyMember",
@@ -38,7 +46,15 @@
       "documentTypeCode": null,
       "documentNumber": null,
       "documentIssuePlaceName": null,
-      "documentIssuePlaceCode": null
+      "documentIssuePlaceCode": null,
+      "documentIssuedOn": null,
+      "documentExpiresOn": null,
+      "residenceInItaly": null,
+      "residenceComuneName": null,
+      "residenceComuneCode": null,
+      "residenceProvince": null,
+      "residenceCountryName": null,
+      "residenceCountryCode": null
     }
   ],
   "marketingConsentEmail": false,

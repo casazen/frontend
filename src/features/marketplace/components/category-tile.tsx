@@ -5,25 +5,24 @@ import { useTranslation } from 'react-i18next';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { cn } from '@/lib/utils';
 import { categoryIcon } from '../lib/category-icons';
-import { marketplaceCategoryPath, marketplaceHref } from '../lib/marketplace-paths';
+import { marketplaceCategoryPath } from '../lib/marketplace-paths';
 
 const ICON_CLASS = 'size-5';
 
 interface CategoryTileProps {
   category: string;
-  /** How many suppliers around the property offer it. */
+  /** How many suppliers in the account’s service areas offer it. */
   count: number;
-  propertyId: string;
 }
 
-/** A category of the page of the categories (MKT): its icon, its name, how many suppliers there are around the property, and a way in. */
-export function CategoryTile({ category, count, propertyId }: CategoryTileProps) {
+/** A category of the page of the categories (MKT): its icon, its name, how many suppliers there are in the account’s service areas, and a way in. */
+export function CategoryTile({ category, count }: CategoryTileProps) {
   const { t } = useTranslation();
 
   return (
     <Link
-      to={marketplaceHref(marketplaceCategoryPath(category), propertyId)}
-      className="flex min-h-16 min-w-0 items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      to={marketplaceCategoryPath(category)}
+      className="flex min-h-16 min-w-0 items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       data-testid={`marketplace-category-${category}`}
     >
       <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-text">

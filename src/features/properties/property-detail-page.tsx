@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, Pause, Pencil, Plus, Power, Trash2, Wrench } from 'lucide-react';
+import { Activity, Building2, Cable, FileText, Images, Pause, Pencil, Plus, Power, Trash2, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
@@ -11,6 +11,8 @@ import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
+import { ConnectionHealthPanel } from '@/features/compliance/components/connection-health-panel';
+import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -33,6 +35,7 @@ import { PropertyNextStep } from './components/property-next-step';
 import { PropertyOtaSummary } from './components/property-ota-summary';
 import { PropertyOverviewTab } from './components/property-overview-tab';
 import { PropertyPhotoManager } from './components/property-photo-manager';
+import { WelcomeQrCard } from './components/welcome-qr-card';
 import { PRICING_SECTION_ID, propertyPanelOf, type PropertyPanel } from './lib/property-sheet';
 import { longRentPropertyPath } from './long-rent/paths';
 import { ScheduledChangeNotice } from './mode/components/scheduled-change-notice';
@@ -73,6 +76,8 @@ export function PropertyDetailPage() {
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const panel = propertyPanelOf(tabParam);
+  // `?section=connection-health` (the button «Attiva l'invio» of the cockpit and of the To do for who may not open its wizard, and the way back from the wizard): the panel that tells the police and ISTAT send.
+  const scrollToHealth = searchParams.get('section') === CONNECTION_HEALTH_SECTION && panel === 'info';
   const [cinDialogOpen, setCinDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   // Read again whenever the page opens: the activation, the CIN or the pause change on other pages, where these are not watched.
@@ -85,7 +90,7 @@ export function PropertyDetailPage() {
   const activateProperty = useActivateProperty();
   const deleteProperty = useDeleteProperty();
   // OTA partner API in freeze (D10): the calendars tab keeps only the iCal calendars while the flag is off.
-  const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
+  const { otaPartnerApi: otaEnabled, crmMarketing: crmEnabled } = useFeatureFlags().flags;
   const { hasPermission } = useWorkspace();
   // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
   const modeChangeItems = useModeChangeMenuItems('short-rent', id);
@@ -96,6 +101,15 @@ export function PropertyDetailPage() {
   useEffect(() => {
     if (scrollToPricing) document.getElementById(PRICING_SECTION_ID)?.scrollIntoView?.({ block: 'start' });
   }, [scrollToPricing]);
+  // The section is there once the whole page is: the skeleton shows until the record is read as well as the detail, and an effect that ran on the skeleton
+  // would find nothing and never run again. So the scroll waits for both, and the focus goes to the section too (a region named by its title).
+  const scrollToConnectionHealth = scrollToHealth && property !== undefined && record.data !== undefined;
+  useEffect(() => {
+    if (!scrollToConnectionHealth) return;
+    const section = document.getElementById(CONNECTION_HEALTH_SECTION);
+    section?.scrollIntoView?.({ block: 'start' });
+    section?.focus?.({ preventScroll: true });
+  }, [scrollToConnectionHealth]);
 
   // The property is gone: leave at once. Its queries were removed with it, and reading them again would say "not found".
   if (deleteProperty.isSuccess) return <Navigate to={PROPERTIES_PATH} replace />;
@@ -183,11 +197,11 @@ export function PropertyDetailPage() {
 
   // The test ids are how the tests reach the tabs.
   const tabs: TabItem<PropertyPanel>[] = [
-    { value: 'info', label: t('property.detail.tabs.info'), testId: 'property-tab-info' },
-    { value: 'photos', label: t('property.detail.tabs.photos'), testId: 'property-tab-photos' },
-    { value: 'activity', label: t('property.detail.tabs.activity'), testId: 'property-tab-activity' },
-    { value: 'ical', label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical'), testId: 'property-tab-ical' },
-    { value: 'documents', label: t('property.detail.tabs.documents'), testId: 'property-tab-documents' },
+    { value: 'info', icon: Building2, label: t('property.detail.tabs.info'), testId: 'property-tab-info' },
+    { value: 'photos', icon: Images, label: t('property.detail.tabs.photos'), testId: 'property-tab-photos' },
+    { value: 'activity', icon: Activity, label: t('property.detail.tabs.activity'), testId: 'property-tab-activity' },
+    { value: 'ical', icon: Cable, label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical'), testId: 'property-tab-ical' },
+    { value: 'documents', icon: FileText, label: t('property.detail.tabs.documents'), testId: 'property-tab-documents' },
   ];
 
   // The backend decides whether it can go (409 with upcoming bookings or active leases): the toast of the mutation says why.
@@ -206,27 +220,32 @@ export function PropertyDetailPage() {
         <PageHeader
           crumbs="auto"
           title={property.name}
+          // The state at the start of the line of the facts (UX round 2026-11): on the right only the actions.
+          status={<StatusBadge kind="property" status={status} data-testid="property-status" />}
           description={summary}
-          action={<StatusBadge kind="property" status={status} size="lg" data-testid="property-status" />}
           secondary={menu}
         />
 
         <ScheduledChangeNotice area="short-rent" propertyId={property.id} />
 
-        <PropertyNextStep
-          property={property}
-          status={status}
-          canWrite={canWrite}
-          canReadBookings={canReadBookings}
-          onEditCin={() => setCinDialogOpen(true)}
-          onReactivate={() => activateProperty.mutate(property.id)}
-          reactivating={activateProperty.isPending}
-        />
-
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
-        <Tabs label={t('property.detail.tabsLabel')} items={tabs} defaultValue="info" value={panel} selectTestId="property-tabs-select">
+        <Tabs layout="sidebar" label={t('property.detail.tabsLabel')} items={tabs} defaultValue="info" value={panel} selectTestId="property-tabs-select">
           {panel === 'info' && (
-            <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} onEditCin={() => setCinDialogOpen(true)} />
+            <div className="space-y-8">
+              <PropertyNextStep
+                property={property}
+                status={status}
+                canWrite={canWrite}
+                canReadBookings={canReadBookings}
+                onReactivate={() => activateProperty.mutate(property.id)}
+                reactivating={activateProperty.isPending}
+              />
+              <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} />
+              {/* «Invio a Polizia e ISTAT» (CHK-12 point 7): who sends, whether it works. It asks `property.read` itself and shows nothing without it. */}
+              <ConnectionHealthPanel propertyId={property.id} timeZone={property.timezone} />
+              {/* The QR of the welcome page (CRM-03): only where the CRM module is on, and only for who may write the property (what its API asks). */}
+              {crmEnabled && canWrite ? <WelcomeQrCard propertyId={property.id} propertyName={property.name} /> : null}
+            </div>
           )}
           {panel === 'photos' && <PropertyPhotoManager propertyId={property.id} propertyName={property.name} canEdit={canWrite} />}
           {panel === 'activity' && (

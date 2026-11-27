@@ -31,15 +31,15 @@ export function IconTile({
   className?: string;
 }) {
   return (
-    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-2xl ${large ? 'size-14' : 'size-11'} ${TILE[tint]} ${className}`}>
-      <Icon className={large ? 'size-7' : 'size-5'} strokeWidth={1.9} />
+    <span aria-hidden="true" className={`cz-icon-tile ${large ? '[--cz-icon-tile-size:3.5rem] [--cz-icon-size:1.75rem]' : ''} ${TILE[tint]} ${className}`}>
+      <Icon strokeWidth={1.75} />
     </span>
   );
 }
 
 /** The small colored label above a heading. */
 export function Eyebrow({ children }: { children: ReactNode }) {
-  return <p className="inline-flex rounded-full bg-terra-100 px-3.5 py-1 text-sm font-semibold text-terra-800">{children}</p>;
+  return <p className="inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-terra-800 before:h-px before:w-8 before:bg-current">{children}</p>;
 }
 
 /** The band a section sits on: the page alternates paper tones, and one dark band gives it a center of gravity. */
@@ -70,15 +70,15 @@ export function Section({ title, intro, children, tone = 'plain', icon, tint = '
       {tone === 'ink' ? (
         <CasaZenRing size={420} color="#ff9b6b" className="pointer-events-none absolute -right-24 -top-28 opacity-[0.12]" />
       ) : null}
-      <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-20">
+      <div className="relative mx-auto max-w-6xl px-5 py-[var(--cz-section-gap)] sm:py-16">
         {icon ? (
           <div className="mb-6">
             <IconTile icon={icon} tint={tint} large />
           </div>
         ) : null}
-        <h2 className={`font-display text-3xl font-semibold tracking-tight sm:text-4xl ${style.title}`}>{title}</h2>
-        {intro && <p className={`mt-4 max-w-3xl text-base leading-relaxed sm:text-lg ${style.intro}`}>{intro}</p>}
-        {children && <div className="mt-10">{children}</div>}
+        <h2 className={`max-w-4xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl ${style.title}`}>{title}</h2>
+        {intro && <p className={`mt-4 max-w-[var(--cz-reading-width)] text-base leading-relaxed sm:text-lg ${style.intro}`}>{intro}</p>}
+        {children && <div className="mt-6 sm:mt-9">{children}</div>}
       </div>
     </section>
   );
@@ -113,7 +113,7 @@ export function FeatureCard({ title, text, icon, tint = 'terra', heading: Headin
   const hasExtra = extra || (children !== undefined && children !== null && children !== false);
   const rows = 1 + (icon ? 1 : 0) + (text ? 1 : 0) + (hasExtra ? 1 : 0);
   return (
-    <div className={`flex flex-col rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft sm:grid sm:grid-rows-subgrid sm:gap-y-0 ${FEATURE_ROW_SPANS[rows]}`}>
+    <div className={`flex flex-col rounded-[var(--cz-radius-panel)] border border-ink-700/15 bg-white p-[var(--cz-panel-padding)] sm:grid sm:grid-rows-subgrid sm:gap-y-0 ${FEATURE_ROW_SPANS[rows]}`}>
       {icon ? <IconTile icon={icon} tint={tint} className="mb-5" /> : null}
       <Heading className="text-lg font-semibold text-ink-800">{title}</Heading>
       {text && <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-500">{text}</p>}
@@ -148,37 +148,40 @@ export function BulletList({ items }: { items: string[] }) {
 const BUTTON = 'inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2';
 
 /** The call to action. `inverse` is the same button on a dark band. */
-export function PrimaryLink({ href, children, inverse = false }: { href: string; children: ReactNode; inverse?: boolean }) {
+export function PrimaryLink({ href, children, inverse = false, onClick }: { href: string; children: ReactNode; inverse?: boolean; onClick?: () => void }) {
   const colors = inverse
     ? 'bg-terra-400 text-ink-800 hover:bg-terra-300 focus-visible:outline-white'
     : 'bg-terra-600 text-white hover:bg-terra-800 focus-visible:outline-terra-700';
   return (
-    <a href={href} className={`${BUTTON} ${colors} shadow-sm`}>
+    <a href={href} onClick={onClick} className={`${BUTTON} ${colors} shadow-sm`}>
       {children}
     </a>
   );
 }
 
-export function SecondaryLink({ href, children, inverse = false }: { href: string; children: ReactNode; inverse?: boolean }) {
+export function SecondaryLink({ href, children, inverse = false, onClick }: { href: string; children: ReactNode; inverse?: boolean; onClick?: () => void }) {
   const colors = inverse
     ? 'border border-white/40 text-white hover:bg-white/10 focus-visible:outline-white'
     : 'border border-ink-700/25 bg-white/70 text-ink-800 hover:border-ink-700/60 hover:bg-white focus-visible:outline-terra-700';
   return (
-    <a href={href} className={`${BUTTON} ${colors}`}>
+    <a href={href} onClick={onClick} className={`${BUTTON} ${colors}`}>
       {children}
     </a>
   );
 }
 
 /** The top of a page that is not the home page: the title (the `h1`), a line under it and, optionally, the call to action. */
-export function PageHeader({ title, intro, children }: { title: string; intro: string; children?: ReactNode }) {
+export function PageHeader({ title, intro, children, preview }: { title: string; intro: string; children?: ReactNode; preview?: ReactNode }) {
   return (
     <section className="relative overflow-hidden border-b border-ink-700/10 bg-gradient-to-b from-terra-50 to-cream-50">
       <CasaZenRing size={360} className="pointer-events-none absolute -right-20 -top-24 opacity-[0.09]" />
-      <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-20">
-        <h1 className="max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink-800 sm:text-5xl">{title}</h1>
-        <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink-500">{intro}</p>
-        {children && <div className="mt-8 flex flex-wrap gap-3">{children}</div>}
+      <div className={`relative mx-auto max-w-6xl px-5 py-8 sm:py-20 ${preview ? 'grid gap-7 lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)] lg:items-start lg:gap-12' : ''}`}>
+        <div className="min-w-0">
+          <h1 className="max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink-800 sm:text-5xl">{title}</h1>
+          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink-500">{intro}</p>
+          {children && <div className="mt-5 flex flex-wrap gap-3 sm:mt-8">{children}</div>}
+        </div>
+        {preview}
       </div>
     </section>
   );
@@ -263,7 +266,7 @@ export function Steps({ items }: { items: { title?: string; text: string }[] }) 
       {items.map((item, index) => (
         <li
           key={item.text}
-          className={`flex flex-col rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft md:grid md:grid-rows-subgrid md:gap-y-0 ${titled ? 'md:row-span-3' : 'md:row-span-2'}`}
+          className={`flex flex-col rounded-2xl border border-ink-700/15 bg-white p-5 sm:p-6 md:grid md:grid-rows-subgrid md:gap-y-0 ${titled ? 'md:row-span-3' : 'md:row-span-2'}`}
         >
           <span className="grid size-10 place-items-center rounded-full bg-terra-100 font-display text-lg font-semibold text-terra-800 lining-nums">
             {index + 1}

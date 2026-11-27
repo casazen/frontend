@@ -23,7 +23,16 @@ describe('isPublicUnauthenticatedPath', () => {
     expect(isPublicUnauthenticatedPath('/checkin/token')).toBe(true);
     expect(isPublicUnauthenticatedPath('/rent/pay/11111111-1111-1111-1111-111111111111')).toBe(true);
     expect(isPublicUnauthenticatedPath('/service/pay/11111111-1111-1111-1111-111111111111')).toBe(true);
+    // The document a guest got by e-mail (E12/F02/US02): Auth0 is never loaded for a guest who only opens the link.
+    expect(isPublicUnauthenticatedPath('/documents/view/11111111-1111-1111-1111-111111111111')).toBe(true);
     expect(isPublicUnauthenticatedPath('/guided-form')).toBe(true);
+  });
+
+  it('matches the pages the marketing e-mails link to, which never load Auth0', () => {
+    expect(isPublicUnauthenticatedPath('/unsubscribe')).toBe(true);
+    expect(isPublicUnauthenticatedPath('/marketing/confirm')).toBe(true);
+    // The welcome page behind the QR code in a house (CRM-03): a guest who only scanned it is not asked for an account either.
+    expect(isPublicUnauthenticatedPath('/benvenuto/TEST-benvenuto-villa-lago')).toBe(true);
   });
 
   it('does not match host console routes', () => {

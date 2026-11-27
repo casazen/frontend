@@ -12,6 +12,7 @@ import { DAY_STATE_LABEL_KEYS, type DayEvent, type DayEventKind, type DayState }
 
 // Each kind of entry has its icon, its color and its name, so that none is told apart by color alone.
 const KINDS: Record<DayEventKind, { icon: LucideIcon; labelKey: string; tone: string }> = {
+  guestOrder: { icon: Wrench, labelKey: 'supplier.eventGuestOrder', tone: 'bg-primary-soft text-primary-text' },
   request: { icon: Wrench, labelKey: 'supplier.eventRequest', tone: 'bg-primary-soft text-primary-text' },
   calendar: { icon: CalendarClock, labelKey: 'supplier.eventFromCalendar', tone: 'bg-muted text-foreground' },
   block: { icon: Lock, labelKey: 'supplier.eventBlock', tone: 'bg-muted text-foreground' },
@@ -97,9 +98,10 @@ export function AgendaEventItem({ event, layout }: AgendaEventItemProps) {
         </span>
       </span>
     );
-  const content = event.requestId ? (
+  const target = event.guestOrderId ? `/app/supplier/inbox#guest-order-${event.guestOrderId}` : event.requestId ? requestPath(event.requestId) : null;
+  const content = target ? (
     <Link
-      to={requestPath(event.requestId)}
+      to={target}
       className="flex min-h-11 min-w-0 items-start gap-2 rounded-md py-1 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       {body}

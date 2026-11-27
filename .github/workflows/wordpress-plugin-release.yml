@@ -1,0 +1,64 @@
+name: WordPress plugin release
+
+# Publishes the ZIP of the CasaZen WordPress plugin as a GitHub release when a tag `wp-plugin-v<version>` is pushed. The prefix cannot
+# clash with the tags of the application. People install the plugin from this release (Plugins, Add New, Upload Plugin).
+#
+# To cut a release: set the same version in casazen.php (the Version header and CASAZEN_VERSION) and in readme.txt (Stable tag),
+# merge it, then, from the commit that passed the workflow "WordPress plugin":
+#
+#   git tag wp-plugin-v0.1.0 && git push origin wp-plugin-v0.1.0
+#
+# The run builds the ZIP, refuses a tag that is not `wp-plugin-v` plus the version of the plugin, and attaches casazen-<version>.zip to a
+# new release. Nothing here runs on a pull request or on a push to a branch, and nothing is sent to WordPress.org.
+#
+# A versioned release is a production ZIP: it is built for the channel `main`, so it carries the address of the production console (in
+# includes/build-config.php; the address is in tools/publish-release.mjs, the one place of the channels). The ZIPs of every push to
+# develop and main are published by the workflow "WordPress plugin" (job `publish`), as the rolling releases wp-plugin-develop and
+# wp-plugin-main: this workflow does not touch them.
+#
+# This workflow and the job `publish` of "WordPress plugin" are the only ones with `contents: write` (a release is written to the
+# repository). It uses no secret: the token is the one that GitHub gives to the run. Here the checkout does not keep it on disk
+# (`persist-credentials: false`) and only the last step has it in its environment (GH_TOKEN), so `npm ci` and the build of the blocks never
+# see it in theirs. (The job `publish` of the other workflow goes further: it builds nothing, it downloads the ZIP that a read-only job built.)
+
+on:
+  push:
+    tags:
+      - 'wp-plugin-v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wordpress-plugin-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release the ZIP
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Builds the blocks and the translations and runs tools/check-version.mjs against the tag: the build stops here when the
+      # tag is not `wp-plugin-v` plus the version of the plugin. The channel main puts the address of the production console in the ZIP.
+      - name: Build the ZIP
+        id: build
+        uses: ./.github/actions/build-wordpress-plugin
+        with:
+          tag: ${{ github.ref_name }}
+          channel: main
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.build.outputs.version }}
+        run: |
+          gh release create "$TAG" "integrations/wordpress/casazen/dist/casazen-${VERSION}.zip" \
+            --verify-tag \
+            --title "CasaZen for WordPress ${VERSION}" \
+            --generate-notes

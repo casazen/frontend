@@ -172,7 +172,7 @@ export async function recordOfflineServiceRequestPayment(id: string, reason?: st
 }
 
 export async function fetchSuppliersByProperty(propertyId: string, category?: string): Promise<SupplierListResponse> {
-  return ApiClient.get<SupplierListResponse>('/suppliers', { propertyId, category });
+  return ApiClient.get<SupplierListResponse>('/suppliers', { propertyId, category, includeTrusted: true });
 }
 
 /**
@@ -181,7 +181,9 @@ export async function fetchSuppliersByProperty(propertyId: string, category?: st
  * supplier comes with its services, "from" price, measured response time and «Verificato».
  */
 export async function fetchMarketplaceSuppliers(params: {
-  propertyId: string;
+  includeTrusted?: boolean;
+  propertyId?: string;
+  accountScope?: boolean;
   category?: string;
   q?: string;
   sort?: SupplierPickerSort;
@@ -192,12 +194,9 @@ export async function fetchMarketplaceSuppliers(params: {
   return ApiClient.get<SupplierListResponse>('/suppliers', sort && sort !== 'recommended' ? { ...rest, sort } : rest);
 }
 
-/**
- * One supplier of the area of a property, for its page in the marketplace (MKT): the same entry as in the list, with every
- * published service (the list carries three). 404 when it is not one the list shows for that property.
- */
-export async function fetchMarketplaceSupplier(params: { orgId: string; propertyId: string }): Promise<SupplierPicker> {
-  return ApiClient.get<SupplierPicker>(`/suppliers/${encodeURIComponent(params.orgId)}`, { propertyId: params.propertyId });
+/** A supplier in the account’s service areas, with all its published services. */
+export async function fetchMarketplaceSupplier(orgId: string): Promise<SupplierPicker> {
+  return ApiClient.get<SupplierPicker>(`/suppliers/${encodeURIComponent(orgId)}`, { accountScope: true });
 }
 
 // ─── Long-rent context (D2): requests for the property, `/long-rent/service-requests` ───

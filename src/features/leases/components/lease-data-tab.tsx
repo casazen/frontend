@@ -29,7 +29,7 @@ function Fact({ label, children, testId }: { label: string; children: ReactNode;
  * The people of the lease: name, role and, masked by the server, fiscal code and e-mail. Under the role, the day the landlord checked the
  * identity document when they did (LR-12): a date and nothing more, the document itself is not kept (decision LR-D3).
  */
-function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
+export function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
   const { t, i18n } = useTranslation();
 
   if (parties.length === 0) return <p className="text-sm text-foreground/70">{t('leases.noParties')}</p>;
@@ -64,7 +64,11 @@ function PartyList({ parties }: { parties: LeaseDetail['parties'] }) {
             </p>
             <p>
               <span className="text-foreground/70">{t('leases.contactEmailMasked')}: </span>
-              {party.contactEmailMasked}
+              {party.contactEmailMasked || '—'}
+            </p>
+            <p>
+              <span className="text-foreground/70">{t('leases.contactPhoneMasked')}: </span>
+              {party.contactPhoneMasked || '—'}
             </p>
           </div>
         </li>
@@ -106,7 +110,7 @@ export function LeaseDataTab({ lease, onRequestErasure }: { lease: LeaseDetail; 
   );
 
   return (
-    <div className="space-y-8">
+    <div className="grid min-w-0 items-start gap-5 xl:grid-cols-2 [&>section]:rounded-xl [&>section]:border [&>section]:bg-card [&>section]:p-4 sm:[&>section]:p-5">
       {onRequestErasure ? (
         <PlainSection
           title={t('leases.parties')}

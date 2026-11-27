@@ -161,12 +161,13 @@ function StandardRequestNow({ request, actions }: { request: SupplierServiceRequ
 
   const lines = (
     <>
-      <dl className="grid gap-x-4 gap-y-2 sm:grid-cols-[auto_1fr]">
-        <dt className="text-sm font-semibold text-foreground/70">{t('supplier.requests.now.label.you')}</dt>
-        <dd className="min-w-0 break-words">{t(online ? `${base}.youOnline` : quoteFirst ? `${base}.youQuote` : `${base}.you`, { time: until })}</dd>
-        <dt className="text-sm font-semibold text-foreground/70">{t('supplier.requests.now.label.client')}</dt>
-        <dd className="min-w-0 break-words">{t(`${base}.client`)}</dd>
-      </dl>
+      <p className="min-w-0 break-words">{t(online ? `${base}.youOnline` : quoteFirst ? `${base}.youQuote` : `${base}.you`, { time: until })}</p>
+      <details className="mt-1">
+        <summary className="w-fit cursor-pointer rounded py-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring">
+          {t('supplier.requests.now.label.client')}
+        </summary>
+        <p className="pb-2 text-sm text-muted-foreground">{t(`${base}.client`)}</p>
+      </details>
       {primaryHint ? (
         <p className="mt-2 break-words text-foreground/80" data-testid="supplier-request-backup-hint">
           {primaryHint}
@@ -258,8 +259,15 @@ function Fact({ label, value, note, testId }: { label: string; value: ReactNode;
   );
 }
 
-/** When, where, who and how much: four short facts, in two columns in a narrow place (the drawer). The street address is for after the take (decision D9). */
-export function RequestFacts({ request, compact = false }: { request: SupplierServiceRequest; compact?: boolean }) {
+/** The two boxes of the side of the request page share one look: the same corners and the same thin line, no shadow. */
+const SIDE_BOX = 'rounded-xl bg-card ring-1 ring-inset ring-border';
+
+/**
+ * When, where, who and how much: four short facts, in two columns in a narrow place (the drawer). The street address is for after the take (decision D9).
+ * `withDetails` is the request page, where «Indirizzo e contatti» sits right under the facts: the line under «Dove» (the address, or that it comes after
+ * you accept) is said there once, not twice (UX round 2026-11). The source is said only for a request of the supplier's own site, as the list does.
+ */
+export function RequestFacts({ request, compact = false, withDetails = false }: { request: SupplierServiceRequest; compact?: boolean; withDetails?: boolean }) {
   const { t, i18n } = useTranslation();
   const phase = phaseOf(request);
   const when = requestWhen(request, i18n.language, true);
@@ -272,7 +280,7 @@ export function RequestFacts({ request, compact = false }: { request: SupplierSe
   const showcase = request.source === 'showcase';
 
   return (
-    <dl className={cn('grid grid-cols-1 gap-x-6 gap-y-4 border-y py-4 sm:grid-cols-2', !compact && 'lg:grid-cols-4')} data-testid="supplier-request-facts">
+    <dl className={cn('grid grid-cols-1 gap-x-4 gap-y-4 p-4 sm:grid-cols-2', SIDE_BOX, !compact && 'lg:grid-cols-4')} data-testid="supplier-request-facts">
       <Fact
         testId="supplier-request-when"
         label={t('supplier.requests.facts.when')}
@@ -291,13 +299,13 @@ export function RequestFacts({ request, compact = false }: { request: SupplierSe
         testId="supplier-request-where"
         label={t('supplier.requests.facts.where')}
         value={place}
-        note={request.address ?? (request.contactDisclosed || over ? undefined : t('supplier.requests.facts.addressAfterTake'))}
+        note={withDetails ? undefined : (request.address ?? (request.contactDisclosed || over ? undefined : t('supplier.requests.facts.addressAfterTake')))}
       />
       <Fact
         testId="supplier-request-client"
         label={t('supplier.requests.facts.client')}
         value={request.clientName || t('supplier.requests.facts.clientUnknown')}
-        note={t(showcase ? 'supplier.requests.facts.fromShowcase' : 'supplier.requests.facts.fromHost')}
+        note={showcase ? t('supplier.requests.facts.fromShowcase') : undefined}
       />
       <Fact
         testId="supplier-request-price"
@@ -362,7 +370,7 @@ function JobGroup({ request, open }: { request: SupplierServiceRequest; open: bo
       <dl className="space-y-2">
         <Row label={t('supplier.requests.job.service')}>{requestTitle(request, t)}</Row>
         {request.propertyName ? <Row label={t('supplier.requests.job.property')}>{request.propertyName}</Row> : null}
-        <Row label={t('supplier.requests.job.urgency')}>{t(URGENCY_KEYS[request.urgency] ?? URGENCY_KEYS.Normal)}</Row>
+        {/* The urgency is said once, beside the day in «Quando», and only when it is not the normal one. */}
         {request.stay ? (
           <Row label={t('supplier.requests.job.stay')} testId="supplier-request-stay">
             {t('supplier.requests.job.stayDates', { from: formatStayDate(request.stay.checkIn, i18n.language), to: formatStayDate(request.stay.checkOut, i18n.language) })}
@@ -567,7 +575,7 @@ export function RequestDetails({ request }: { request: SupplierServiceRequestDet
   const { t } = useTranslation();
   const phase = phaseOf(request);
   return (
-    <div className="divide-y overflow-hidden rounded-xl bg-card ring-1 ring-inset ring-border" data-testid="supplier-request-details">
+    <div className={cn('divide-y overflow-hidden', SIDE_BOX)} data-testid="supplier-request-details">
       <JobGroup request={request} open={phase === 'toAnswer' || isBackup(request)} />
       <ContactGroup request={request} open={phase === 'scheduled' || phase === 'inProgress'} />
       <PaymentGroup request={request} />

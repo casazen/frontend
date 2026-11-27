@@ -3,9 +3,11 @@ import type { PermissionPredicate } from '@/config/route-manifest';
 import { translateErrorCode } from '@/lib/api-errors';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { getServiceCategoryLabel, getServiceRequestStatusLabel } from '@/lib/i18n-labels';
+import { messageThreadPath } from '@/lib/message-hub-routes';
 import { addDays, formatRomeDateTime, formatStayDate, romeDateOf, romeWallClock, todayInRome } from '@/lib/stay-dates';
 import { COMPLIANCE_COCKPIT_ACTIONS, type ComplianceCockpitAction } from '@/types/compliance.types';
 import type { HostThreadSummary } from '@/types/guest-message.types';
+import type { MessageHubThread } from '@/types/message-hub.types';
 import type {
   DashboardIcalFeed,
   DashboardToday,
@@ -22,11 +24,9 @@ export interface RowNote {
   tone: NoteTone;
 }
 
-/** What the one button of a row does: go somewhere, or take the action in place (register the arrival, send the link, answer a request). */
+/** A row opens its source or answers a booking request. */
 export type RowAction =
   | { kind: 'link'; label: string; to: string }
-  | { kind: 'registerArrival'; label: string; bookingId: string }
-  | { kind: 'sendLink'; label: string; bookingId: string }
   | { kind: 'respond'; label: string; bookingId: string };
 
 /** The kinds of row of "Oggi": the chips filter by these. Cleanings are interventions of the cleaning category, listed apart. */
@@ -75,34 +75,28 @@ function stayRange(from: string, to: string, locale: string): string {
 
 const SERVICE_TONES: Record<string, NoteTone> = { Richiesto: 'neutral', PresoInCarico: 'info', InCorso: 'info', Completato: 'success', Pagato: 'success', Rifiutato: 'danger' };
 
-function arrivalRow(stay: DashboardTodayStay, canWrite: boolean, { t }: Context): HomeRow {
-  const arrived = stay.status === 'CheckedIn' || stay.status === 'CheckedOut';
-  const state = stay.checkIn?.state;
-  const ready = stay.checkIn?.dataComplete === true || state === 'Completed';
-  const waiting = state === 'Sent' || state === 'InProgress';
-  const note: RowNote = arrived
-    ? { text: t('dashboard.today.note.arrived'), tone: 'success' }
-    : ready
-      ? { text: t('dashboard.today.note.docsOk'), tone: 'success' }
-      : waiting
-        ? { text: t('dashboard.today.note.linkSent'), tone: 'neutral' }
-        : { text: t('dashboard.today.note.linkNotSent'), tone: 'warning' };
-  let action: RowAction | undefined;
-  if (canWrite && !arrived) {
-    action = ready
-      ? { kind: 'registerArrival', label: t('dashboard.today.action.registerArrival'), bookingId: stay.bookingId }
-      : { kind: 'sendLink', label: t(waiting ? 'dashboard.today.action.resendLink' : 'dashboard.today.action.sendLink'), bookingId: stay.bookingId };
+function arrivalNote(stay: DashboardTodayStay, t: TFunction): RowNote {
+  if (stay.status === 'CheckedIn' || stay.status === 'CheckedOut') return { text: t('dashboard.today.note.arrived'), tone: 'success' };
+  if (stay.checkIn?.dataComplete) return { text: t('dashboard.today.note.docsOk'), tone: 'success' };
+  switch (stay.checkIn?.state) {
+    case 'Completed': return { text: t('dashboard.today.note.submittedIncomplete'), tone: 'warning' };
+    case 'Sent': return { text: t('dashboard.today.note.linkSent'), tone: 'neutral' };
+    case 'InProgress': return { text: t('dashboard.today.note.inProgress'), tone: 'info' };
+    case 'Expired': return { text: t('dashboard.today.note.expired'), tone: 'warning' };
+    case 'NotSent': return { text: t('dashboard.today.note.linkNotSent'), tone: 'warning' };
+    default: return { text: t('dashboard.today.note.unknown'), tone: 'neutral' };
   }
+}
+
+function arrivalRow(stay: DashboardTodayStay, { t, locale }: Context): HomeRow {
   return {
     id: `arrival-${stay.bookingId}`,
     kind: 'arrivals',
-    done: arrived,
-    title: stay.guestName,
-    sub: `${stay.propertyName} · ${t('dashboard.today.guests', { count: stay.numberOfGuests })}`,
-    note,
-    to: bookingPath(stay.bookingId),
-    bookingId: stay.bookingId,
-    action,
+    done: stay.status === 'CheckedIn' || stay.status === 'CheckedOut',
+    title: stay.guestName || t('compliance.checkout.guestFallback'),
+    sub: `${stay.propertyName} · ${stayRange(stay.checkInDate, stay.checkOutDate, locale)} · ${t('dashboard.today.guests', { count: stay.numberOfGuests })}`,
+    note: arrivalNote(stay, t),
+    to: `${bookingPath(stay.bookingId)}?tab=guest`,
   };
 }
 
@@ -147,7 +141,7 @@ function serviceRow(service: DashboardTodayService, { t }: Context): HomeRow {
 export function buildTodayRows(today: DashboardToday, options: { propertyId: string; canWrite: boolean }, context: Context): HomeRow[] {
   const inScope = (item: { propertyId: string }) => !options.propertyId || item.propertyId === options.propertyId;
   return [
-    ...today.arrivals.items.filter(inScope).map((stay) => arrivalRow(stay, options.canWrite, context)),
+    ...today.arrivals.items.filter(inScope).map((stay) => arrivalRow(stay, context)),
     ...today.departures.items.filter(inScope).map((stay) => departureRow(stay, options.canWrite, context)),
     ...today.services.items.filter(inScope).map((service) => serviceRow(service, context)),
   ];
@@ -241,24 +235,37 @@ function conflictNote(item: DashboardTodoItem, { t, locale }: Context, now?: Dat
   };
 }
 
+/**
+ * A conversation that waits for the host's answer: a row of the list of the direct threads (`GET api/messages`, SR-12) or of the hub
+ * (`GET api/messages?includeOta=true`, NF-61), which also lists the conversations of the channels.
+ */
+export type HomeThread = HostThreadSummary | MessageHubThread;
+
+function isHubThread(thread: HomeThread): thread is MessageHubThread {
+  return 'threadKey' in thread;
+}
+
 export interface TodoOptions {
   propertyId: string;
   canWrite: boolean;
   hasPermission: PermissionPredicate;
-  /** The open threads that wait for the host's answer (`GET api/messages?needsReply=true`, SR-12); none when the host cannot read them. */
-  threads?: readonly HostThreadSummary[];
+  /** The open threads that wait for the host's answer (`GET api/messages?needsReply=true&includeOta=true`, NF-61); none when the host cannot read them. */
+  threads?: readonly HomeThread[];
 }
 
 /**
  * «Rispondi a {ospite}»: a guest wrote and the host has not answered (SR-12). The title and the button go to the booking on its tab
- * Messaggi; the line under the title is the property and the start of what the guest wrote, which only the host reads.
+ * Messaggi; the line under the title is the property and the start of what the guest wrote, which only the host reads. A conversation
+ * of a channel, or one with no booking yet (a request), has no such tab: it is answered in the page of the messages (NF-61).
  */
-function messageRow(thread: HostThreadSummary, { t, locale }: Context): HomeRow {
-  const to = `${bookingPath(thread.bookingId)}?tab=messages`;
-  const preview = thread.lastGuestMessagePreview?.trim();
-  const guest = thread.guestName.trim() || t('dashboard.todo.RespondToGuest.guestFallback');
+function messageRow(thread: HomeThread, { t, locale }: Context): HomeRow {
+  const hub = isHubThread(thread);
+  const bookingId = thread.bookingId ?? undefined;
+  const to = hub && (thread.source === 'Ota' || bookingId === undefined) ? messageThreadPath(thread.threadKey) : `${bookingPath(bookingId ?? '')}?tab=messages`;
+  const preview = (hub ? thread.preview : thread.lastGuestMessagePreview)?.trim();
+  const guest = (thread.guestName ?? '').trim() || t('dashboard.todo.RespondToGuest.guestFallback');
   return {
-    id: `message-${thread.bookingId}`,
+    id: `message-${hub ? thread.threadKey : thread.bookingId}`,
     title: t('dashboard.todo.RespondToGuest.title', { label: guest }),
     subject: guest,
     sub: [thread.propertyName, preview ? `«${preview}»` : null].filter(Boolean).join(' · '),
@@ -269,7 +276,7 @@ function messageRow(thread: HostThreadSummary, { t, locale }: Context): HomeRow 
       tone: 'warning',
     },
     to,
-    bookingId: thread.bookingId,
+    bookingId,
     unread: thread.unreadCount,
     action: { kind: 'link', label: t('dashboard.todo.RespondToGuest.cta'), to },
   };
@@ -315,7 +322,7 @@ export function buildTodoRows(today: DashboardToday, feeds: readonly DashboardIc
       };
     });
 
-  const messages = (options.threads ?? []).filter((thread) => inScope(thread.propertyId)).map((thread) => messageRow(thread, context));
+  const messages = (options.threads ?? []).filter((thread) => inScope(thread.propertyId ?? null)).map((thread) => messageRow(thread, context));
 
   const failing = feeds
     .filter((feed) => feed.lastImportStatus === 'Failure' || feed.lastImportStatus === 'PartialFailure')

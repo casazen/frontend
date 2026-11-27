@@ -1,5 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { useLocation } from 'react-router-dom';
+import { fadeInPage } from '@/lib/motion';
 
 /** A new page is looked at for its heading this often, and for this long (a lazy chunk or a slow request may delay it). */
 const POLL_INTERVAL_MS = 100;
@@ -23,6 +24,9 @@ interface RouteFocusProps {
  * focus is not taken from the page when it has put it inside its content (autofocus), and a heading is waited for while
  * a modal (the mobile menu) still hides the page from assistive technology. That wait is not cut short by the timeout
  * for a missing heading, so the focus is not moved into content assistive technology cannot see.
+ *
+ * The new page also fades in (`fadeInPage`, `lib/motion.ts`): only the content region, only when the pathname changes (a tab
+ * or a filter in the query does not), and only where the entrances may run.
  */
 export function RouteFocus({ mainRef }: RouteFocusProps) {
   const { pathname } = useLocation();
@@ -35,6 +39,7 @@ export function RouteFocus({ mainRef }: RouteFocusProps) {
 
     const main = mainRef.current;
     if (!main) return;
+    fadeInPage(main);
 
     const timers = new Set<ReturnType<typeof setTimeout>>();
     let poll: ReturnType<typeof setInterval> | undefined;

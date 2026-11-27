@@ -50,7 +50,7 @@ function PlanRow({ plan, action, properties, showUnavailableHint, portal, onChoo
     <li
       data-testid={`plan-card-${plan.tier}`}
       aria-current={action === 'current' ? 'true' : undefined}
-      className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-start sm:gap-6"
+      className="flex min-w-0 flex-col justify-between gap-4 rounded-xl border bg-card p-4 aria-current:border-primary aria-current:bg-primary-soft"
     >
       <div className="min-w-0 space-y-1.5">
         <h3 className="flex flex-wrap items-center gap-x-2 break-words font-semibold">
@@ -62,8 +62,8 @@ function PlanRow({ plan, action, properties, showUnavailableHint, portal, onChoo
             </span>
           ) : null}
         </h3>
-        <p data-testid={`plan-price-${plan.tier}`} className="break-words text-sm">
-          {priceText}
+        <p data-testid={`plan-price-${plan.tier}`} className="break-words text-base font-semibold tabular-nums">
+          {priceText}{plan.billingUnit === 'room' ? t('commercial.roomUnit') : null}
         </p>
         <p className="break-words text-sm text-foreground/70">
           {plan.unitAllowance < 0
@@ -173,7 +173,7 @@ export function PlanCompare({ detailsRef, plansQuery, subscription, tier, usage,
       );
     }
     return (
-      <ul role="list" data-testid="billing-plans-grid" className="divide-y divide-border">
+      <ul role="list" data-testid="billing-plans-grid" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {plans.map((plan) => (
           <PlanRow
             key={plan.tier}
@@ -215,7 +215,7 @@ export function PlanCompare({ detailsRef, plansQuery, subscription, tier, usage,
 
       {renderPlans()}
 
-      <p className="break-words text-sm text-foreground/70">{t('accountBilling.compare.note')}</p>
+      <p className="break-words text-sm text-foreground/70">{t(plans?.some(plan => plan.pricesIncludeVat) ? 'commercial.compareNoteVatIncluded' : 'accountBilling.compare.note')}</p>
 
       <CheckoutDialog plan={checkoutPlan} subscription={subscription} onClose={() => setCheckoutPlan(null)} onAlreadySubscribed={handleAlreadySubscribed} />
     </BillingDisclosure>

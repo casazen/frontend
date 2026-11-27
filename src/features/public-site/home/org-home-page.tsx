@@ -9,7 +9,7 @@ import { FaqSection } from './faq-section';
 import { HomeHero } from './home-hero';
 import { siteRating, zonesOf } from './home-model';
 import { HomeReviews } from './home-reviews';
-import { isHomeSectionId, publishHomeSections, type HomeSectionId } from './home-sections';
+import { homeSectionIds, isHomeSectionId } from './home-sections';
 import { HomeEmpty, HomeError, HomeSkeleton } from './home-states';
 import { HousesSection } from './houses-section';
 import { WhyDirect } from './why-direct';
@@ -56,15 +56,8 @@ export function OrgHomePage() {
   const isHome = stays.isSuccess && cards.length > 1;
   const rating = siteRating(cards);
   const zones = zonesOf(cards, destinations.data);
-  const hasZones = zones.length >= 2;
+  const hasZones = homeSectionIds(cards.length, zones.length).includes('zone');
 
-  // The header links the sections that are on the page, no others; and the address `?sezione=…` scrolls to one.
-  const sections: HomeSectionId[] = isHome ? ['case', 'perche', ...(hasZones ? (['zone'] as const) : []), 'domande'] : [];
-  const sectionsKey = sections.join(',');
-  useEffect(() => {
-    publishHomeSections(sectionsKey ? (sectionsKey.split(',') as HomeSectionId[]) : []);
-    return () => publishHomeSections([]);
-  }, [sectionsKey]);
   const [searchParams] = useSearchParams();
   const wanted = searchParams.get('sezione');
   useEffect(() => {

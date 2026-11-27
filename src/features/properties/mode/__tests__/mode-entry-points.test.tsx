@@ -31,7 +31,6 @@ vi.mock('@/api/service-requests.api', () => ({
 // What the server adds to the page of a long-term property (LR-07a): nothing here, the page works without it.
 vi.mock('@/api/long-rent-properties.api', () => ({ longRentPropertiesApi: { getAll: vi.fn().mockResolvedValue([]) } }));
 vi.mock('@/queries/use-cin', () => ({ useUpdatePropertyCin: () => ({ mutateAsync: vi.fn(), isPending: false }) }));
-vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => false }) }));
 vi.mock('../../components/ical-settings', () => ({ IcalSettings: () => <div /> }));
 vi.mock('../../components/property-cadastral-card', () => ({ PropertyCadastralCard: () => <div /> }));
 vi.mock('../../components/property-documents-section', () => ({ PropertyDocumentsSection: () => <div /> }));
@@ -47,7 +46,8 @@ interface Setup {
 function providers({ writes = ['short-rent', 'long-rent'] }: Setup = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const workspace = {
-    hasPermission: (area: string, permission: string) => permission === 'property.write' && (writes as string[]).includes(area),
+    hasPermission: (area: string, permission: string) =>
+      permission === 'property.read' || (permission === 'property.write' && writes.some((writableArea) => writableArea === area)),
   } as unknown as WorkspaceContextValue;
   return function Providers({ children, path }: { children: ReactNode; path?: string }) {
     return (
@@ -87,9 +87,7 @@ describe('useModeChangeMenuItems (PM-03)', () => {
 
   it('useModeChangeMenuItems_WithPermission_IsTheWizardOfTheSectionOfThePage', () => {
     const short = renderHook(() => useModeChangeMenuItems('short-rent', PROPERTY_ID), { wrapper: providers() });
-    expect(short.result.current).toEqual([
-      expect.objectContaining({ label: 'Cambia modalità', to: `/app/short-rent/properties/${PROPERTY_ID}/mode`, testId: 'property-mode-change' }),
-    ]);
+    expect(short.result.current).toEqual([]);
     const long = renderHook(() => useModeChangeMenuItems('long-rent', PROPERTY_ID), { wrapper: providers() });
     expect(long.result.current[0]).toMatchObject({ to: `/app/long-rent/properties/${PROPERTY_ID}/mode` });
   });
@@ -171,17 +169,12 @@ describe('the pages of a property (PM-03)', () => {
     );
   }
 
-  async function openTheMenu() {
-    fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
-    return screen.findByRole('menu');
-  }
-
-  it('PropertyDetailPage_OffersTheChangeInTheMenuOfTheThreeDots', async () => {
+  it('PropertyDetailPage_DoesNotOfferShortToLongConversion', async () => {
     renderShort();
-
-    // The change is in the menu "⋯" of the page, with the other actions of the property.
-    const menu = await openTheMenu();
-    expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}/mode`);
+    fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).getByTestId('property-edit')).toBeInTheDocument();
+    expect(within(menu).queryByRole('menuitem', { name: i18n.t('propertyMode.entry.change') })).not.toBeInTheDocument();
   });
 
   it('PropertyDetailPage_WithoutTheWritePermission_HasNoEntry', () => {
@@ -195,11 +188,19 @@ describe('the pages of a property (PM-03)', () => {
 
     fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
     const menu = await screen.findByRole('menu');
-    expect(within(menu).getByRole('menuitem', { name: i18n.t('longRentProperties.detail.edit') })).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitem', { name: i18n.t('longRentProperties.detail.edit') })).toHaveAttribute(
+      'href',
+      `/app/long-rent/properties/${PROPERTY_ID}/edit`,
+    );
     expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute(
       'href',
       `/app/long-rent/properties/${PROPERTY_ID}/mode`,
     );
+  });
+
+  it('LongRentPropertyDetailPage_WithoutWriteInThisArea_OffersNeitherEditNorModeChange', () => {
+    renderLong({ writes: ['short-rent'] });
+    expect(screen.queryByRole('button', { name: i18n.t('pageHeader.moreActions') })).not.toBeInTheDocument();
   });
 
   it('thePages_AChangeWaits_ShowTheRowOfStatusInTheirOwnSection', async () => {

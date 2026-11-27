@@ -61,30 +61,14 @@ test.describe('Aligned cards', () => {
     await page.addInitScript(() => localStorage.setItem('casazen_cookie_consent', 'rejected'));
   });
 
-  test.describe('Onboarding: the three ways to start', () => {
+  test.describe('Onboarding: profile choices', () => {
     for (const width of [1060, 1900]) {
-      test(`the title, the text, the list and the button of the three cards line up at ${width} px`, async ({ page }) => {
+      test(`profile cards are aligned and accessible at ${width} px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(demoUrl('/onboarding', 'onboarding'));
-
-        const titles = page.getByRole('heading', { level: 3 });
-        await expect(titles).toHaveCount(3);
-        const cards = titles.locator('..');
-        const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
-
-        // At 1060 px "Locazioni di lungo periodo" wraps on two lines or fits on one, according to the font: the title is made long
-        // on purpose, because a title on more lines than the first is what used to push down the rest of its card.
-        if (width === 1060) {
-          await setText(titles.nth(1), 'Locazioni di lungo periodo, con contratto e canone');
-          expect(await linesOf(titles.nth(1))).toBeGreaterThan(await linesOf(titles.nth(0)));
-        }
-
-        await expectAligned(each('h3'), 'title');
-        await expectAligned(each('p'), 'text');
-        await expectAligned(each('ol'), 'list');
-        await expectAligned(each('button'), 'button');
-        await expectAligned(each('button'), 'button', 'bottom');
-        await expectAligned([0, 1, 2].map((index) => cards.nth(index)), 'card', 'bottom');
+        const cards = page.getByTestId(/^signup-profile-/);
+        await expect(cards).toHaveCount(3);
+        await expectAligned(await cards.all(), 'profile choices');
       });
     }
   });
@@ -358,7 +342,7 @@ test.describe('Aligned cards', () => {
       await page.goto(demoUrl('/app/admin', 'admin'));
 
       // The six numbers are the cards with a big number; the CIN and OTA cards under them are another grid.
-      const cards = page.locator('div.grid > div.rounded-lg').filter({ has: page.locator('.text-2xl') });
+      const cards = page.locator('div.grid > [data-ui-card]').filter({ has: page.locator('.text-2xl') });
       await expect(cards).toHaveCount(6);
       const row = (first: number) => [first, first + 1, first + 2].map((index) => cards.nth(index));
 
@@ -456,25 +440,6 @@ test.describe('Aligned cards', () => {
     });
   });
 
-  test.describe('Invite QR codes of the admin', () => {
-    test('the code, the address and the buttons of the two cards start at the same height', async ({ page }) => {
-      await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto(demoUrl('/app/admin/invite-qr', 'admin'));
-
-      const cards = [page.getByTestId('qr-supplier'), page.getByTestId('qr-host')];
-      await expect(cards[1].getByTestId('qr-host-image')).toBeVisible();
-      await expectAligned(cards.map((card) => card.locator('h3')), 'title');
-      await expectAligned(cards.map((card) => card.locator('img')), 'code');
-      await expectAligned(cards.map((card) => card.locator('p[data-testid$="-url"]')), 'address');
-      // The address of the host is on two lines (it carries the campaign, a long one here), the one of the supplier on one.
-      await page.getByTestId('qr-campaign-input').fill('campagna-di-autunno-per-i-nuovi-host-del-lago');
-      await expect(cards[1].getByTestId('qr-host-url')).toContainText('campagna-di-autunno');
-      expect(await linesOf(cards[1].getByTestId('qr-host-url'))).toBeGreaterThan(await linesOf(cards[0].getByTestId('qr-supplier-url')));
-      await expectAligned(cards.map((card) => card.getByRole('button').first()), 'buttons');
-      await expectAligned(cards, 'card', 'bottom');
-    });
-  });
-
   test.describe('OTA channels (behind the otaPartnerApi flag)', () => {
     test('the rows and the button of the cards line up whichever optional rows a channel has', async ({ page }) => {
       await page.route('**/api/public/features', async (route) => {
@@ -510,7 +475,7 @@ test.describe('Aligned cards', () => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(demoUrl('/app/short-rent/ota', 'short-stay'));
 
-      const cards = page.locator('div.grid > div.rounded-lg.border').filter({ has: page.getByRole('button') });
+      const cards = page.locator('div.grid > [data-ui-card].border').filter({ has: page.getByRole('button') });
       await expect(cards).toHaveCount(3);
       const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
       await expectAligned(each('h3'), 'name');
@@ -525,11 +490,10 @@ test.describe('Aligned cards', () => {
     });
   });
 
-  test.describe('Marketplace: the suppliers of a property', () => {
+  test.describe('Marketplace: the account supplier catalog', () => {
     const PROPERTY_ID = 'prop-marketplace-aligned';
 
     async function mockMarketplace(page: Page): Promise<void> {
-      // The suppliers are searched by the comune chosen from the official list (SR-09a): a property without one is asked to add it.
       await mockPropertiesApi(page, [
         buildCreatedProperty({ id: PROPERTY_ID, name: 'Casa Marketplace', city: 'H501', comuneIstatCode: '058091' }),
       ]);
@@ -553,7 +517,7 @@ test.describe('Aligned cards', () => {
           photoUrls: [],
         });
         const items =
-          url.searchParams.get('propertyId') === PROPERTY_ID
+          url.searchParams.get('accountScope') === 'true'
             ? [
                 supplier(1, 'Servizi Integrati di Pulizia e Manutenzione per Strutture Ricettive del Lago di Como S.r.l.', ['cleaning', 'maintenance', 'plumbing', 'laundry'], 'Pulizie professionali, manutenzione ordinaria e straordinaria.'),
                 supplier(2, 'Pulizie Express Srl', ['cleaning']),
@@ -563,53 +527,55 @@ test.describe('Aligned cards', () => {
       });
     }
 
-    test('the badges of two suppliers of a row start at the same height whatever the length of their names', async ({ page }) => {
+    test('the categories of two suppliers of a row start at the same height whatever the length of their names', async ({ page }) => {
       await mockMarketplace(page);
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto(demoUrl(`/app/short-rent/marketplace/categories/cleaning?propertyId=${PROPERTY_ID}`, 'short-stay'));
+      await page.goto(demoUrl('/app/short-rent/marketplace/categories/cleaning', 'short-stay'));
 
       const cards = page.getByTestId('marketplace-supplier-grid').locator('> div');
       await expect(cards).toHaveCount(2);
       // The suppliers have the whole width of the page now (SR-09a), so how many lines a name takes depends on the font even more:
       // the first name is made long on purpose (see `setText`), the second is one line; only the first supplier has a bio.
       await setText(
-        cards.nth(0).locator('.font-medium').first(),
+        cards.nth(0).getByTestId('supplier-name'),
         'Servizi Integrati di Pulizia e Manutenzione per Strutture Ricettive del Lago di Como e della Brianza, con Lavanderia Industriale, Giardinaggio, Assistenza Tecnica Specializzata e Gestione Completa degli Ospiti S.r.l.',
       );
-      expect(await linesOf(cards.nth(0).locator('.font-medium').first())).toBeGreaterThanOrEqual(3);
-      expect(await linesOf(cards.nth(1).locator('.font-medium').first())).toBe(1);
+      expect(await linesOf(cards.nth(0).getByTestId('supplier-name'))).toBeGreaterThanOrEqual(3);
+      expect(await linesOf(cards.nth(1).getByTestId('supplier-name'))).toBe(1);
 
-      await expectAligned([0, 1].map((index) => cards.nth(index).locator('.flex-wrap')), 'badges');
+      // The categories are one line of words («Pulizie · Manutenzione»), a row of the card like the others (UX round 2026-11).
+      await expectAligned([0, 1].map((index) => cards.nth(index).getByTestId('marketplace-supplier-categories')), 'categories');
       await expectAligned([0, 1].map((index) => cards.nth(index)), 'card', 'bottom');
-      // The badge of the second one keeps its own size (a flex line that grows with its row would stretch it).
-      const [tall, short] = await Promise.all([cards.nth(0).locator('.flex-wrap > *').first().boundingBox(), cards.nth(1).locator('.flex-wrap > *').first().boundingBox()]);
-      expect(Math.abs(short!.height - tall!.height)).toBeLessThanOrEqual(1);
+      // The first supplier has four categories and the second one: both are told, in words.
+      await expect(cards.nth(0).getByTestId('marketplace-supplier-categories')).toContainText('Pulizie');
+      await expect(cards.nth(1).getByTestId('marketplace-supplier-categories')).toHaveText('Pulizie');
     });
   });
 
   test.describe('Menu of the phone (the sheet "Altro")', () => {
-    test('the two tiles of a row are as tall as each other when a name takes two lines', async ({ page }) => {
-      // A narrow phone: "Sito di prenotazione" is on two lines, "Marketplace" next to it on one.
+    test('menu rows fit a narrow phone and paired links align when long names wrap', async ({ page }) => {
       await page.setViewportSize({ width: 320, height: 800 });
       await page.goto(demoUrl('/app/short-rent', 'short-stay'));
       await page.locator('[data-more-trigger]').click();
-      const sheet = page.getByRole('dialog', { name: 'Altro' });
-      await expect(sheet.getByRole('link', { name: 'Marketplace' })).toBeVisible();
+      const offer = page.getByRole('dialog', { name: 'Altro' }).getByTestId('nav-group-offer');
+      const links = offer.getByRole('link');
+      await expect(links).toHaveCount(2);
+      const layout = () => links.evaluateAll(nodes => nodes.map(node => {
+        const rect = node.getBoundingClientRect();
+        return { x: Math.round(rect.x), y: Math.round(rect.y), height: Math.round(rect.height) };
+      }));
+      const small = await layout();
+      expect(small[1].x).toBe(small[0].x);
+      expect(small[1].y).toBeGreaterThan(small[0].y);
 
-      // One pass in the page, because the sheet slides in while the boxes are read.
-      const tiles = await sheet.locator('ul > li > a').evaluateAll((nodes) => {
-        const top = nodes[0].getBoundingClientRect().top;
-        return nodes.map((node) => {
-          const box = node.getBoundingClientRect();
-          return { row: Math.round(box.top - top), height: Math.round(box.height), name: node.textContent ?? '' };
-        });
-      });
-      expect(new Set(tiles.map((tile) => tile.height)).size, 'some tile is taller than the others').toBeGreaterThan(1);
-      const rows = new Map<number, { height: number; name: string }[]>();
-      for (const tile of tiles) rows.set(tile.row, [...(rows.get(tile.row) ?? []), tile]);
-      for (const [row, inRow] of rows) {
-        expect(new Set(inRow.map((tile) => tile.height)).size, `row at ${row}: ${inRow.map((tile) => `${tile.name} ${tile.height}`).join(', ')}`).toBe(1);
-      }
+      await page.setViewportSize({ width: 390, height: 844 });
+      const name = links.first().locator('span').first();
+      await setText(name, 'Sito per le prenotazioni dirette della tua struttura');
+      expect(await linesOf(name)).toBeGreaterThan(1);
+      const medium = await layout();
+      expect(medium[1].x).toBeGreaterThan(medium[0].x);
+      expect(medium[0].y).toBe(medium[1].y);
+      expect(medium[0].height).toBe(medium[1].height);
     });
   });
 
@@ -644,7 +610,7 @@ test.describe('Aligned cards', () => {
       await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('.text-2xl')), 'number');
     });
 
-    test('the Home of Affitti brevi lines its numbers up beside the list of the next arrivals', async ({ page }) => {
+    test('opening analytics from the short-stay dashboard aligns its metrics beside the next arrivals', async ({ page }) => {
       const arrival = (bookingId: string, guestName: string, day: string) => ({
         bookingId,
         propertyId: 'p1',
@@ -677,6 +643,11 @@ test.describe('Aligned cards', () => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'));
 
       const numbers = page.getByTestId('home-numbers');
+      await expect(page.getByTestId('home-today')).toBeVisible();
+      await expect(numbers).toHaveCount(0);
+      await page.getByTestId('page-header-more').click();
+      await page.getByRole('menuitem', { name: 'I numeri essenziali' }).click();
+      await expect(page).toHaveURL(/[?&]view=analytics(?:&|$)/);
       const tiles = numbers.getByRole('listitem').filter({ has: page.locator('.text-2xl') });
       await expect(tiles).toHaveCount(3);
       await expect(numbers.getByTestId('home-next-arrivals')).toBeVisible();

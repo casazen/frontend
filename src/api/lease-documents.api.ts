@@ -3,7 +3,7 @@ import { ApiClient } from './client';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import type { LeaseDocumentSection } from '@/types';
 
-export type LeaseDocumentKind = 'Contract' | 'Attestation' | 'Registration' | 'Other';
+export type LeaseDocumentKind = 'Contract' | 'Attestation' | 'Registration' | 'Other' | 'RegistrationIdentity';
 export interface LeaseDocument {
   id: string; leaseId: string; kind: LeaseDocumentKind; fileName: string; sizeBytes: number; uploadedAt: string;
   /** A contract that was read: the sections its file is made of (the contract, its attestation, its calculation sheet). CF-DOCS-REAL. */
@@ -57,6 +57,15 @@ export const leaseDocumentsApi = {
   },
   download: async (leaseId: string, documentId: string): Promise<Blob> =>
     (await axios.get<Blob>(`/leases/${leaseId}/documents/${documentId}/download`, { responseType: 'blob' })).data,
+  /**
+   * Removes one uploaded original. The backend route this calls is not on develop yet:
+   * `DELETE /api/leases/{id}/documents/{documentId}`.
+   */
+  remove: async (leaseId: string, documentId: string): Promise<void> => {
+    await ApiClient.delete<void>(
+      `/leases/${encodeURIComponent(leaseId)}/documents/${encodeURIComponent(documentId)}`,
+    );
+  },
   /** The values of a receipt of the registration already uploaded, read from the PDF when asked: nothing is declared by reading it. */
   readReceipt: async (leaseId: string, documentId: string): Promise<LeaseDocumentReading> => {
     const data = await ApiClient.get<unknown>(`/leases/${leaseId}/documents/${documentId}/reading`);

@@ -15,7 +15,8 @@ export interface StayCalendarData {
   today: string;
   /** End of the loaded range (excluded). */
   end: string;
-  currency: string;
+  /** The currency of the prices of the nights, as the server says it; `null` while there is none (nothing is loaded, or the load failed): no price is drawn then. Never a default. */
+  currency: string | null;
   /** Why the days could not be loaded (a translated problem message), when `status` is `error`. */
   errorMessage?: string;
   onRetry: () => void;
@@ -25,8 +26,9 @@ export interface StayCalendarData {
 const DEFAULT_MONTHS_AHEAD = 12;
 
 /**
- * The public calendar of a property of a site (DB-03b): the price of every night and the nights that are taken, as the
- * stay pickers draw them. `property` is the slug or the id of the property. Read again when it is older than half a minute;
+ * The public calendar of a property of a site (DB-03b): the price of every night, the nights that are taken and the rules of the host
+ * on each day (minimum and maximum stay, closed arrival and departure, advance), as the stay pickers draw them. `property` is the
+ * slug or the id of the property. Read again when it is older than half a minute;
  * a failed read is tried again twice when it looks like the network and not like a wrong request. While the property or the site is
  * not known yet the status is `loading`.
  */
@@ -56,21 +58,27 @@ export function usePublicPropertyCalendar(
         days: [],
         today,
         end: addDays(today, DEFAULT_MONTHS_AHEAD * 31),
-        currency: 'EUR',
+        currency: null,
         errorMessage: getProblemMessage(error, t),
         onRetry: retry,
       };
     }
     if (!data) {
-      return { status: 'loading', days: [], today, end: today, currency: 'EUR', onRetry: retry };
+      return { status: 'loading', days: [], today, end: today, currency: null, onRetry: retry };
     }
     return {
       status: 'ready',
+      // The rules of the host on each day (NF-36): an older backend does not send them and the day then has none.
       days: data.days.map((day) => ({
         date: parseStayDate(day.date),
         available: day.available,
         priceCents: day.nightlyPriceCents,
         minNights: day.minNights,
+        maxNights: day.maxNights ?? null,
+        closedToArrival: day.closedToArrival ?? false,
+        closedToDeparture: day.closedToDeparture ?? false,
+        minAdvanceDays: day.minAdvanceDays ?? null,
+        maxAdvanceDays: day.maxAdvanceDays ?? null,
       })),
       today,
       end: parseStayDate(data.endDate) || addDays(today, DEFAULT_MONTHS_AHEAD * 31),

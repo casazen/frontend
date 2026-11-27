@@ -21,7 +21,7 @@ const TYPE_ICONS: Record<ReportType, LucideIcon> = {
 const typeCell = (type: ReportType, label: string) => {
   const Icon = TYPE_ICONS[type];
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold">
       <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
       {label}
     </span>
@@ -29,7 +29,7 @@ const typeCell = (type: ReportType, label: string) => {
 };
 
 /**
- * The eight reports of short rent (SR-10) as a unified list (UI-14) in `client` mode: fixed configuration, no call to the API.
+ * The nine reports of short rent (SR-10) as a unified list (UI-14) in `client` mode: fixed configuration, no call to the API.
  * Five columns at most: the report with its sentence, the period it suggests, the kind, the format. The action of a row is
  * "Scarica" (the dialog asks for the days and the format) or, for a report that already has its page (Alloggiati Web, the
  * payments statement), "Apri". The quick filters are the kinds: fiscal, operational, financial.
@@ -60,7 +60,7 @@ export function useReportsList({ onDownload }: ReportsListOptions) {
           sort: name,
           render: (report) => (
             <div className="min-w-0">
-              <span className="font-medium">{name(report)}</span>
+              <span className="font-semibold">{name(report)}</span>
               <span className="mt-0.5 block break-words text-sm text-foreground/70">{description(report)}</span>
             </div>
           ),
@@ -84,9 +84,9 @@ export function useReportsList({ onDownload }: ReportsListOptions) {
       },
       chips: [
         { id: 'all', label: t('reports.chips.all') },
-        { id: 'fiscal', label: t('reports.chips.fiscal'), test: (report) => report.type === 'fiscal' },
-        { id: 'operational', label: t('reports.chips.operational'), test: (report) => report.type === 'operational' },
-        { id: 'financial', label: t('reports.chips.financial'), test: (report) => report.type === 'financial' },
+        { id: 'fiscal', icon: Landmark, label: t('reports.chips.fiscal'), test: (report) => report.type === 'fiscal' },
+        { id: 'operational', icon: ClipboardList, label: t('reports.chips.operational'), test: (report) => report.type === 'operational' },
+        { id: 'financial', icon: Wallet, label: t('reports.chips.financial'), test: (report) => report.type === 'financial' },
       ],
       defaultChip: 'all',
 

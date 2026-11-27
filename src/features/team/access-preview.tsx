@@ -23,7 +23,7 @@ function PreviewGroup({ icon: Icon, label, children }: { icon: LucideIcon; label
  * the matrix the backend gives (nothing here is a list of permissions). Three small groups: the areas, what the person can manage,
  * what it can only look at, what it cannot do. A deactivated person enters nowhere.
  */
-export function AccessPreview({ role, areas, deactivated = false }: { role: OrgRoleInfo; areas: readonly string[]; deactivated?: boolean }) {
+export function AccessPreview({ role, areas, availableAreas, deactivated = false }: { role: OrgRoleInfo; areas: readonly string[]; availableAreas?: readonly string[]; deactivated?: boolean }) {
   const { t } = useTranslation();
 
   if (deactivated) {
@@ -50,7 +50,7 @@ export function AccessPreview({ role, areas, deactivated = false }: { role: OrgR
             {model.enters.map((area) => (
               <li key={area}>{areaName(area, t)}</li>
             ))}
-            {model.stays.map((area) => (
+            {model.stays.filter((area) => area === 'account' || !availableAreas || availableAreas.includes(area)).map((area) => (
               <li key={area} className="text-foreground/70">
                 {t('team.preview.cannotEnter', { area: areaName(area, t) })}
               </li>
@@ -61,17 +61,17 @@ export function AccessPreview({ role, areas, deactivated = false }: { role: OrgR
 
       {can.length > 0 ? (
         <PreviewGroup icon={Check} label={t('team.preview.can')}>
-          {can.join(', ')}
+          <ul role="list" className="grid gap-x-6 gap-y-2 sm:grid-cols-2">{can.map((name) => <li key={name} className="min-w-0 break-words">{name}</li>)}</ul>
         </PreviewGroup>
       ) : null}
       {read.length > 0 ? (
         <PreviewGroup icon={Eye} label={t('team.preview.read')}>
-          {read.join(', ')}
+          <ul role="list" className="grid gap-x-6 gap-y-2 sm:grid-cols-2">{read.map((name) => <li key={name} className="min-w-0 break-words">{name}</li>)}</ul>
         </PreviewGroup>
       ) : null}
       {cannot.length > 0 ? (
         <PreviewGroup icon={Minus} label={t('team.preview.cannot')}>
-          {cannot.join(', ')}
+          <ul role="list" className="grid gap-x-6 gap-y-2 sm:grid-cols-2">{cannot.map((name) => <li key={name} className="min-w-0 break-words">{name}</li>)}</ul>
         </PreviewGroup>
       ) : null}
     </div>

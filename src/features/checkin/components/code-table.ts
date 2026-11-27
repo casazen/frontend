@@ -21,8 +21,9 @@ export function isListAvailable(source: CodeTableSource, list: AlloggiatiCodeLis
   return LIST_TABLES[list].some((table) => source.availableTables.includes(table));
 }
 
-/** Text shown for an entry: description, plus the province for a comune. */
-export function codeEntryLabel(entry: AlloggiatiCodeEntryDto): string {
+/** Text shown for an entry. A citizenship uses the adjective (Italiano), a comune keeps its province. */
+export function codeEntryLabel(entry: AlloggiatiCodeEntryDto, purpose: 'place' | 'citizenship' = 'place'): string {
+  if (purpose === 'citizenship') return entry.citizenshipLabel || entry.description;
   return entry.province ? `${entry.description} (${entry.province})` : entry.description;
 }
 

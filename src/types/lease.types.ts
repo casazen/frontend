@@ -35,6 +35,7 @@ export const LEASE_EVENT_TYPES = [
   // LR-12: the draft reviewed, downloaded for the signature on paper, taken back; LR-13: a contract signed elsewhere brought in.
   'ReviewConfirmed',
   'ReviewReopened',
+  'CondominiumExpenseChosen',
   'SentForSignature',
   'SentRevoked',
   'Imported',
@@ -137,6 +138,7 @@ export interface LeaseParty {
   lastName: string;
   fiscalCodeMasked: string;
   contactEmailMasked: string;
+  contactPhoneMasked?: string;
   isExtraEU: boolean;
   /** The day the landlord checked the identity document (LR-12): a date and nothing else, the document is never kept (decision LR-D3). */
   documentsVerifiedOn?: string | null;

@@ -14,7 +14,7 @@ import { leaseSheetPath } from '../lib/lease-next-step';
 /**
  * The ways to somewhere else that the menu «⋯» of the sheet of a lease offers (LR-03c), before the actions that change the lease (which
  * `useLeaseActions` gives, delete or end last): read the contract, open the property, go to the documents. None of them changes the lease.
- * (The jobs asked of the suppliers are not here any more: they are followed in the area «Interventi».)
+ * (The jobs asked of the suppliers are not here any more: they are followed in the property's Interventi tab.)
  *
  * The contract is the one every party signed once there is one; before that, the preview marked BOZZA, which the server gives to who may
  * sign (it carries the full fiscal codes). A draft ConcordatoFacile prepares (`serviceDraft`), and a contract still to be imported, have no

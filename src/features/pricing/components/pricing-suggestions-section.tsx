@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { PlainSection } from '@/components/shared/calm';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
@@ -49,7 +50,7 @@ export function PricingSuggestionsSection({ data, applying, onApply }: PricingSu
     );
 
   return (
-    <PlainSection title={t('pricing.suggestions.chartTitle', { count: items.length })} data-testid="pricing-suggestions">
+    <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('pricing.suggestions.details')} data-testid="pricing-suggestions">
       <div className="space-y-6 pt-2">
         {data.computedAt && (
           <p className="text-sm text-foreground/70" data-testid="computed-at">
@@ -57,48 +58,10 @@ export function PricingSuggestionsSection({ data, applying, onApply }: PricingSu
           </p>
         )}
 
-        {/* The same prices are in the list below: the picture is not read out. */}
-        <div aria-hidden="true">
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={chartData} margin={{ top: 5, right: 8, left: 0, bottom: 5 }} accessibilityLayer={false}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={32} />
-              <YAxis tick={{ fontSize: 11 }} width={48} tickFormatter={(value: number) => AXIS_PRICE.format(value)} />
-              <Tooltip
-                formatter={(value, name) => [
-                  formatCurrency(typeof value === 'number' ? value : 0),
-                  name === 'suggested' ? t('pricing.suggestions.suggested') : t('pricing.suggestions.base'),
-                ]}
-                labelFormatter={(label) => `${t('pricing.suggestions.date')}: ${label}`}
-              />
-              <Line
-                type="monotone"
-                dataKey="suggested"
-                stroke="var(--color-primary)"
-                strokeWidth={2}
-                dot={false}
-                isAnimationActive={false}
-                name="suggested"
-              />
-              <Line
-                type="monotone"
-                dataKey="base"
-                stroke="var(--color-muted-foreground)"
-                strokeWidth={1.5}
-                strokeDasharray="4 4"
-                dot={false}
-                isAnimationActive={false}
-                name="base"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
         <div className="space-y-2">
-          <h3 className="text-base font-semibold">{t('pricing.suggestions.details')}</h3>
           {/* A table on a computer; on a phone each night is a block of its own (the header stays for screen readers). */}
           <table className="w-full text-sm max-md:block" data-testid="suggestions-table">
-            <thead className="max-md:sr-only">
+            <thead className="bg-muted max-md:sr-only">
               <tr className="text-left text-foreground/70">
                 <th scope="col" className="py-2 pr-4 font-medium">
                   {t('pricing.suggestions.date')}
@@ -120,7 +83,7 @@ export function PricingSuggestionsSection({ data, applying, onApply }: PricingSu
                 return (
                   <tr
                     key={s.date}
-                    className="border-t max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-4 max-md:gap-y-1 max-md:py-3"
+                    className="border-t focus-within:bg-primary/5 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-4 max-md:gap-y-1 max-md:py-3"
                   >
                     <td className="py-3 pr-4 text-foreground/70 max-md:col-start-1 max-md:row-start-1 max-md:p-0">{shortDay(s.date)}</td>
                     <td className="py-3 pr-4 text-right font-semibold tabular-nums max-md:col-start-2 max-md:row-start-1 max-md:p-0">
@@ -175,6 +138,48 @@ export function PricingSuggestionsSection({ data, applying, onApply }: PricingSu
             </Button>
           ) : null}
         </div>
+        <Accordion type="single" collapsible>
+          <AccordionItem value="trend">
+            <AccordionTrigger>{t('pricing.suggestions.chartTitle', { count: items.length })}</AccordionTrigger>
+            <AccordionContent>
+              <div aria-hidden="true">
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={chartData} margin={{ top: 5, right: 8, left: 0, bottom: 5 }} accessibilityLayer={false}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                    <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={32} />
+                    <YAxis tick={{ fontSize: 11 }} width={48} tickFormatter={(value: number) => AXIS_PRICE.format(value)} />
+                    <Tooltip
+                      formatter={(value, name) => [
+                        formatCurrency(typeof value === 'number' ? value : 0),
+                        name === 'suggested' ? t('pricing.suggestions.suggested') : t('pricing.suggestions.base'),
+                      ]}
+                      labelFormatter={(label) => `${t('pricing.suggestions.date')}: ${label}`}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="suggested"
+                      stroke="var(--color-primary)"
+                      strokeWidth={2}
+                      dot={false}
+                      isAnimationActive={false}
+                      name="suggested"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="base"
+                      stroke="var(--color-muted-foreground)"
+                      strokeWidth={1.5}
+                      strokeDasharray="4 4"
+                      dot={false}
+                      isAnimationActive={false}
+                      name="base"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </PlainSection>
   );

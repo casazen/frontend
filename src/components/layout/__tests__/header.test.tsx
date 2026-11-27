@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
+import { getArea } from '@/config/areas';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { stubViewportWidth } from '@/test/viewport';
@@ -10,7 +11,9 @@ import { Header } from '../header';
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 // The parts of the header that read the user and the organization have their own tests.
 vi.mock('@/components/auth/user-menu', () => ({ UserMenu: () => <button type="button" data-testid="user-menu-trigger" /> }));
-vi.mock('@/components/org/org-badge', () => ({ OrgBadge: () => <div data-testid="org-badge" /> }));
+vi.mock('@/components/org/org-badge', () => ({ OrgBadge: ({ area }: { area?: AppContextKey }) => (
+  <div data-testid="org-badge">{area && <span data-testid="header-area">{i18n.t(getArea(area).nameKey)}</span>}</div>
+) }));
 
 function renderHeader(props: React.ComponentProps<typeof Header> = {}, { contextKey }: { contextKey?: AppContextKey } = {}) {
   vi.mocked(useWorkspace).mockReturnValue({ isReady: true } as unknown as ReturnType<typeof useWorkspace>);

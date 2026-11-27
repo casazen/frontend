@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { publicBookingApi } from '@/api/public-booking.api';
 import { isTransientRequestError } from '@/lib/api-errors';
-import type { CreateDirectBookingPayload, DirectBookingQuotePayload, GuestBookingLookupPayload } from '@/types';
+import type { CreateDirectBookingPayload, DirectBookingQuotePayload, GuestBookingEmailLookup } from '@/types';
 
 /** Confirms the email of a "pay at the property" request (BK-06); errors are shown by the page. */
 export function useConfirmOnSiteRequestEmail() {
@@ -61,6 +61,6 @@ export function useResumeCheckoutPayment() {
  */
 export function useSendGuestCheckInLink() {
   return useMutation({
-    mutationFn: (payload: GuestBookingLookupPayload) => publicBookingApi.sendGuestCheckInLink(payload),
+    mutationFn: (payload: GuestBookingEmailLookup) => publicBookingApi.sendGuestCheckInLink(payload),
   });
 }

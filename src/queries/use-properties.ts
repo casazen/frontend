@@ -20,7 +20,7 @@ import { toastUndo } from '@/lib/toast-undo';
 import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import { isPlanLimitError } from '@/lib/entitlement-error';
 
-const PROPERTIES_KEY = 'properties';
+export const PROPERTIES_KEY = 'properties';
 /** The reading again of one APE: outside the key of the documents, so that refreshing them never runs the OCR again. */
 const APE_READ_KEY = 'ape-read';
 
@@ -36,11 +36,13 @@ export const SHORT_PROPERTIES_OVERVIEW = { mode: 'short', view: 'overview' } as 
  */
 export function useProperties(
   params?: Record<string, string | number | boolean | undefined>,
-  options: { fresh?: boolean } = {},
+  options: { fresh?: boolean; enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, params],
     queryFn: () => propertiesApi.getAll(params),
+    // `enabled: false`: a screen of a person who may not read the properties asks for nothing (the server would answer 403).
+    enabled: options.enabled ?? true,
     ...(options.fresh ? { refetchOnMount: 'always' as const } : {}),
   });
 }

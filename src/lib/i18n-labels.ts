@@ -42,10 +42,6 @@ export function getOtaConnectionStatusLabel(status: OtaConnectionStatus, t: Tran
   return t(`ota.status.${status}`);
 }
 
-export function getAmenityLabel(amenity: string, t: TranslateFn): string {
-  return t(`amenity.${amenity}`);
-}
-
 export function getAlloggiatiStatusLabel(status: string, t: TranslateFn): string {
   return t(`alloggiati.statusLabel.${status}`);
 }

@@ -16,12 +16,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { ZodType } from "zod";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Stepper } from "@/components/ui/stepper";
-import { useWizardDraft } from "@/hooks/use-wizard-draft";
+import { SaveIndicator } from "@/components/shared/save-indicator";
+import { WizardConflictDialog } from "@/components/shared/wizard-conflict-dialog";
+import { FROM_WIDE_QUERY, useMediaQuery } from "@/hooks/use-media-query";
+import { useWizardDraft, type UseWizardDraft, type WizardDraftServer } from "@/hooks/use-wizard-draft";
 import { translateValidationMessage } from "@/i18n/validation-message";
 import { getProblemMessage } from "@/lib/api-errors";
 import { formatRomeDateTime } from "@/lib/stay-dates";
+import { useAppShell } from "@/components/layout/app-shell-context";
 import { useUiStore } from "@/store/ui-store";
+import { useWizardOpenFlag } from "@/store/use-wizard-open-flag";
 import type { WizardDraft } from "@/lib/wizard-draft";
 import { cn } from "@/lib/utils";
 import { WizardContext, type WizardContextValue } from "./wizard-context";
@@ -101,6 +107,12 @@ export interface WizardShellProps<TValues extends FieldValues, TResult = void> {
   /** Name of the flow ("property-new"): the draft is kept under it. */
   id: string;
   steps: ReadonlyArray<WizardStep<TValues>>;
+  /**
+   * The steps as a function of the answers, for a flow whose path depends on them (a first question that sends the person down one road or
+   * another). It is asked again at every change of an answer, the step on screen is found by its id, and the next one is the one after it in the
+   * list the answers give now. `steps` stays the list for the answers a flow starts from (what is shown while nothing is answered).
+   */
+  stepsFor?: (values: TValues) => ReadonlyArray<WizardStep<TValues>>;
   /** What the answers are before the person types anything. A saved draft is laid over it. */
   defaultValues: DefaultValues<TValues>;
   /** The main button of the last step: it names what happens ("Create the property"), never "Send". */
@@ -119,15 +131,30 @@ export interface WizardShellProps<TValues extends FieldValues, TResult = void> {
   /**
    * The automatic draft. On by default. `exclude` lists the fields that are never saved because they are sensitive (fiscal
    * code, documents, IBAN, e-mail of third parties): `["fiscalCode", "guests.*.documentNumber"]`. `accept` can refuse a draft when
-   * the flow opens (a draft older than what the server already knows). `false` turns it off.
+   * the flow opens (a draft older than what the server already knows). `server` also keeps the draft on the server, to resume it on
+   * another device (ADR-024): the wizard shows a spinner until the draft of the server is read, shows where the saving stands
+   * (`SaveIndicator`) in place of the «Draft saved at» line, and asks which version to keep when two devices saved the same
+   * draft (`WizardConflictDialog`). `false` turns it off.
    */
-  draft?: false | { exclude?: readonly string[]; version?: number; accept?: (draft: WizardDraft) => boolean };
+  draft?: false | { exclude?: readonly string[]; version?: number; accept?: (draft: WizardDraft) => boolean; server?: WizardDraftServer };
   /** "Cancel" on the first step: the draft is deleted and this runs (it takes the person out of the flow). */
   onExit?: () => void;
   /** What to say when `onFinish` fails and the error has no message of its own (the API's message is shown when it has one). */
   finishFailedMessage?: string;
   /** Something to show right above the buttons (a note about a failed save). */
   aboveFooter?: React.ReactNode;
+  /**
+   * Something to show under the bar of the buttons, in the form's reach (`useFormContext`, `useOptionalWizard`) but outside the form: the way out of a flow ("Save and
+   * exit"). It follows the bar and is never put between the message of a refused finish and the bar: on a phone the page scrolls that message in, the toast comes up
+   * over the room of the bar, and whatever sits between the two would push the buttons down into the toast; what follows the bar also keeps the bar clear of the
+   * toast when the page is at its end.
+   */
+  belowFooter?: React.ReactNode;
+  /**
+   * The way between the steps is shut for now, because a request that must not meet the save of a change of step is on its way (the flow is leaving): "Back",
+   * "Skip" and the steps of the list take no press. The main button has `nextDisabled` for the same. Default: open.
+   */
+  navigationDisabled?: boolean;
   testIds?: Partial<WizardTestIds>;
   className?: string;
 }
@@ -167,36 +194,68 @@ function collectProblems(errors: FieldErrors, prefix = ""): FieldProblem[] {
 
 const TIME_ONLY: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" };
 
-// The buttons of a phone. They are the last child of the wizard (not of the form), so that they can stay in view for its
-// whole length: a sticky box never leaves its container, and the form starts low on the screen. They stick right above the
-// bottom bar and the home indicator of the phone, overlay only what scrolls beneath them, and the focus that goes to a field
-// is scrolled in above them (`scroll-mb`). From `md` there is no bottom bar and they are the end of the form, as usual.
+// The buttons of a phone. They are a child of the column of the step, which on a phone holds the whole wizard (not of the form),
+// so that they can stay in view for its whole length: a sticky box never leaves its container, and the form starts low on the
+// screen. They stick right above the bottom bar and the home indicator of the phone, overlay only what scrolls beneath them,
+// and the focus that goes to a field is scrolled in above them (`scroll-mb`). From `md` there is no bottom bar and they are the
+// end of the form, as usual.
 const FOOTER =
-  "sticky bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom,0px))] z-10 -mx-4 border-t bg-background px-4 py-3 md:static md:z-auto md:mx-0 md:border-t-0 md:bg-transparent md:p-0";
+  "sticky bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom,0px))] z-10 border-t bg-card px-3 py-3 md:static md:z-auto sm:px-6";
 // A name that does not fit goes to a second line instead of out of the screen (wide fonts, 360 px).
-const BUTTON = "h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leading-tight";
+const BUTTON = "rounded-full h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leading-tight";
+// From `2xl` the wizard is two columns: the step (title, purpose, fields, buttons) and, beside it, the steps one under the other.
+const WIDE_COLUMNS = "grid grid-cols-[minmax(0,1fr)_20rem] items-start gap-5";
+// The column of the steps stays in view under the header while a long step scrolls (`items-start` keeps it as tall as its content).
+const STEPS_COLUMN =
+  "sticky top-[calc(var(--header-height)+1.5rem)] max-h-[calc(100dvh-var(--header-height)-3rem)] min-w-0 overflow-y-auto rounded-2xl border bg-card p-5 shadow-sm";
 
 /**
- * A guided flow: the steps (a compact bar on a phone), a title and a line of purpose for each, validation step by step,
- * an automatic draft, a summary and the final screen "What happens now". One focal point per step: the title, the fields
- * and one main button.
+ * A guided flow: the steps (a compact bar on a phone, a column beside the step from `2xl`), a title and a line of purpose for
+ * each, validation step by step, an automatic draft, a summary and the final screen "What happens now". One focal point per
+ * step: the title, the fields and one main button.
  *
  * It owns the form (react-hook-form), so the answers survive going back and forth, and the address (`?step=`), so the
  * browser's back button, a reload and a link to a step work. The address is not rewritten when the page opens.
  * Going forward needs the step to be valid (the focus goes to the first problem and it is announced); going back never
  * does; the last button checks all the steps and opens the first one that is not valid.
  *
- * Put it in a block that has a width of its own: `FOCUS_COLUMN` (`@/components/layout/page-columns`: `w-full`, `max-w-4xl`, from the
- * left edge of the title above it), and not `mx-auto max-w-2xl` alone. In a flex column (the content of the shell is one) a
- * centered block takes the width of its content, and the buttons, which reach the edges of the screen on a phone, would stick
- * out of it.
+ * Put it in a block that has a width of its own: `FOCUS_COLUMN` (`@/components/layout/page-columns`: `w-full`, as wide as the page,
+ * from the left edge of the title above it), and not `mx-auto max-w-2xl` alone. In a flex column (the content of the shell is one)
+ * a centered block takes the width of its content, and the buttons, which reach the edges of the screen on a phone, would stick
+ * out of it. On a wide screen (`2xl`) the steps leave the bar above the title for a column of their own beside the step
+ * (`Stepper orientation="vertical"`), so that the fields do not run across the whole screen. Under `2xl` nothing changes but
+ * the width: the step is as wide as the page, with the bar of the steps above its title.
  *
  *     <WizardShell id="property-new" steps={steps} defaultValues={defaults} finishLabel={t("...")}
  *       onFinish={createProperty} renderDone={({ result }) => <WizardDone ... />} />
  */
-export function WizardShell<TValues extends FieldValues, TResult = void>({
-  id,
-  steps,
+export function WizardShell<TValues extends FieldValues, TResult = void>(props: WizardShellProps<TValues, TResult>) {
+  const { id, draft: draftOption, testIds, className } = props;
+  // The draft: laid over the defaults when the wizard opens.
+  const draft = useWizardDraft(id, {
+    enabled: draftOption !== false,
+    exclude: draftOption ? draftOption.exclude : undefined,
+    version: draftOption ? draftOption.version : undefined,
+    accept: draftOption ? draftOption.accept : undefined,
+    server: draftOption ? draftOption.server : undefined,
+  });
+
+  // The form takes its initial values once, from the draft: with a draft on the server it waits for the answer of the server before
+  // it builds the form (a flow without one is ready at once).
+  if (!draft.ready) {
+    return (
+      <div data-testid={testIds?.root ?? DEFAULT_TEST_IDS.root} aria-busy="true" className={cn("flex min-w-0 justify-center py-12", className)}>
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+  return <WizardShellBody {...props} draftState={draft} />;
+}
+
+/** The wizard once its draft is known: the form, the steps, the buttons. `draftState` is the draft of the flow (`useWizardDraft`). */
+function WizardShellBody<TValues extends FieldValues, TResult = void>({
+  steps: stepsOfFlow,
+  stepsFor,
   defaultValues,
   finishLabel,
   onFinish,
@@ -207,26 +266,40 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
   onExit,
   finishFailedMessage,
   aboveFooter,
+  belowFooter,
+  navigationDisabled,
   testIds,
   className,
-}: WizardShellProps<TValues, TResult>) {
+  draftState: draft,
+}: WizardShellProps<TValues, TResult> & { draftState: UseWizardDraft }) {
   const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const ids = { ...DEFAULT_TEST_IDS, ...testIds };
   const titleId = React.useId();
   const formId = React.useId();
 
-  // The draft: laid over the defaults when the wizard opens.
   const draftOn = draftOption !== false;
-  const draft = useWizardDraft(id, {
-    enabled: draftOn,
-    exclude: draftOption ? draftOption.exclude : undefined,
-    version: draftOption ? draftOption.version : undefined,
-    accept: draftOption ? draftOption.accept : undefined,
-  });
+  // A flow with a copy of the draft on the server saves on the blur of its form and when the step changes, and says where the saving stands.
+  const serverOn = draftOption ? Boolean(draftOption.server) : false;
   const [initialValues] = React.useState(
     () => ({ ...defaultValues, ...(draft.restored?.values ?? {}) }) as DefaultValues<TValues>
   );
+
+  // The rules of the step on screen. The resolver always reads the latest step, so one form serves every step.
+  const stepRef = React.useRef<WizardStep<TValues> | null>(null);
+  const stepIdRef = React.useRef("");
+  const resolver = React.useCallback<Resolver<TValues>>(async (values, context, options) => {
+    const schema = stepRef.current?.schema;
+    if (!schema) return { values, errors: {} };
+    return (zodResolver(schema) as unknown as Resolver<TValues>)(values, context, options);
+  }, []);
+  const form = useForm<TValues>({ defaultValues: initialValues, resolver, mode: "onTouched", shouldUnregister: false });
+  const problems = collectProblems(form.formState.errors);
+  // compute compares snapshots: validation notifications must not look like new answers
+  // (including steps whose fields use setValue without register).
+  const values = useWatch({ control: form.control, compute: (answers) => answers });
+  // The steps the answers give now: a flow whose path depends on them changes its list as they change.
+  const steps = React.useMemo(() => (stepsFor ? stepsFor(values as TValues) : stepsOfFlow), [stepsFor, stepsOfFlow, values]);
 
   // Where the wizard stands. The step the page opened on is remembered: "back" to an address without `?step` goes there.
   const [openingStepId] = React.useState(() => (steps.some((s) => s.id === initialStepId) ? initialStepId : steps[0]?.id));
@@ -242,23 +315,10 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
   const [failedStepId, setFailedStepId] = React.useState<string | null>(null);
   const [focusRequest, setFocusRequest] = React.useState(0);
 
-  // The rules of the step on screen. The resolver always reads the latest step, so one form serves every step.
-  const stepRef = React.useRef(step);
-  const stepIdRef = React.useRef(step.id);
   React.useEffect(() => {
     stepRef.current = step;
     stepIdRef.current = step.id;
   });
-  const resolver = React.useCallback<Resolver<TValues>>(async (values, context, options) => {
-    const schema = stepRef.current.schema;
-    if (!schema) return { values, errors: {} };
-    return (zodResolver(schema) as unknown as Resolver<TValues>)(values, context, options);
-  }, []);
-  const form = useForm<TValues>({ defaultValues: initialValues, resolver, mode: "onTouched", shouldUnregister: false });
-  const problems = collectProblems(form.formState.errors);
-  // compute compares snapshots: validation notifications must not look like new answers
-  // (including steps whose fields use setValue without register).
-  const values = useWatch({ control: form.control, compute: (answers) => answers });
 
   // Revalidate after React commits the changed answers, outside RHF's watch notification.
   // A summary can render before passive effects run: do not gate this on an effect-synced ref.
@@ -311,6 +371,18 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     return () => setMobilePrimaryVisible(false);
   }, [isDone, setMobilePrimaryVisible]);
 
+  // While a wizard is mounted (the confirmation included) the popup alerts wait in their queue and are not drawn (ADR-025-R7). The
+  // wizards do not share a path to test, so the shell says it: the popup reads the count in the store.
+  useWizardOpenFlag();
+
+  // From `2xl` the steps are a column beside the step. Decided here and not by two copies of them hidden by CSS: there is one list of
+  // steps on the page, for a screen reader as for a test. Only where the steps are drawn changes: the step, its form and its buttons
+  // keep their place in the tree, so a window that crosses `2xl` keeps what is typed and where the focus is.
+  const viewKey = useAppShell()?.viewKey;
+  const focusForms = useUiStore(state => Boolean(viewKey && state.workspaceViews[viewKey]?.focusForms));
+  const wideScreen = useMediaQuery(FROM_WIDE_QUERY);
+  const wide = wideScreen && !focusForms;
+
   // Every change of an answer is queued for the draft, with the step it was made on.
   const saveDraft = draft.save;
   React.useEffect(() => {
@@ -322,8 +394,10 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     return unsubscribe;
   }, [form, draftOn, saveDraft]);
 
-  // Landing on another step: progress is told to the page and kept in the draft, the old problems go away and the
-  // focus goes to the heading of the new step, which a screen reader reads. Not on the first render.
+  // Landing on another step: progress is told to the page and kept in the draft (sent to the server at once, when the draft is
+  // there too), the old problems go away and the focus goes to the heading of the new step, which a screen reader reads. Not on
+  // the first render.
+  const flushDraft = draft.flush;
   const previousStepId = React.useRef(step.id);
   React.useEffect(() => {
     if (previousStepId.current === step.id) return;
@@ -333,6 +407,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     const values = form.getValues();
     onStepChange?.({ from, to: step.id, values });
     saveDraft({ step: step.id, values: values as Record<string, unknown> });
+    if (serverOn) flushDraft();
     form.clearErrors();
     titleRef.current?.focus();
     if (revealProblemsOnArrival.current) {
@@ -344,7 +419,7 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
         }
       });
     }
-  }, [step.id, isDone, form, onStepChange, saveDraft]);
+  }, [step.id, isDone, form, onStepChange, saveDraft, serverOn, flushDraft]);
 
   // After a failed "Continue", once the problems are on screen: the focus goes to the first field in error, or to the summary.
   React.useEffect(() => {
@@ -445,158 +520,214 @@ export function WizardShell<TValues extends FieldValues, TResult = void>({
     );
   };
 
+  // The person chose the version of the server: its values and its step go back in the form (the draft already adopted its version).
+  const takeTheirs = () => {
+    const theirs = draft.takeTheirs();
+    if (!theirs) return;
+    form.reset({ ...defaultValues, ...theirs.values } as DefaultValues<TValues>);
+    if (steps.some((s) => s.id === theirs.step)) goTo(theirs.step);
+  };
+
   const showSummary = failedStepId === step.id && problems.length > 0;
   const finishMessage = finishError ? (getProblemMessage(finishError, t) ?? finishFailedMessage ?? t("wizard.errors.finishFailed")) : null;
+  const stepperSteps = steps.map(({ id: stepId, label }) => ({ id: stepId, label }));
+  const selectStep = navigationDisabled ? undefined : (index: number) => goTo(steps[index].id);
 
   return (
-    <div data-testid={ids.root} data-step={step.id} className={cn("min-w-0 space-y-6", className)}>
-      {showResume && draft.restored && (
-        <Alert
-          variant="info"
-          data-testid={ids.draftBanner}
-          title={t("wizard.draft.resumeTitle", { time: savedTime(draft.restored.savedAt) })}
-          action={
-            <>
-              <Button
-                type="button"
-                size="sm"
-                data-testid={ids.draftResume}
-                onClick={() => {
-                  setBannerDismissed(true);
-                  goTo(steps[restoredStepIndex].id);
-                }}
-              >
-                {t("wizard.draft.resume", { number: restoredStepIndex + 1 })}
-              </Button>
-              <Button type="button" size="sm" variant="ghost" data-testid={ids.draftRestart} onClick={restart}>
-                {t("wizard.draft.restart")}
-              </Button>
-            </>
-          }
-        >
-          {t("wizard.draft.resumeText", {
-            current: restoredStepIndex + 1,
-            total: steps.length,
-            step: steps[restoredStepIndex].label,
-          })}
-        </Alert>
-      )}
-
-      <Stepper
-        steps={steps.map(({ id: stepId, label }) => ({ id: stepId, label }))}
-        current={stepIndex}
-        onStepSelect={(index) => goTo(steps[index].id)}
-      />
-
-      <div className="min-w-0 space-y-1">
-        <h2 id={titleId} ref={titleRef} tabIndex={-1} className="break-words text-xl font-semibold tracking-tight outline-none">
-          {step.title}
-        </h2>
-        {step.purpose && <p className="break-words text-sm text-muted-foreground">{step.purpose}</p>}
-      </div>
-
-      <FormProvider {...form}>
-        <WizardContext.Provider value={context}>
-          <form
-            id={formId}
-            noValidate
-            aria-labelledby={titleId}
-            className="min-w-0 space-y-6 max-md:[&_[aria-invalid=true]]:scroll-mb-40"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void advance();
-            }}
+    <div data-testid={ids.root} data-step={step.id} className={cn("min-w-0", wide && WIDE_COLUMNS, className)}>
+      {/* The step. It is also the block in which the buttons of a phone stick (a sticky box never leaves its container): it holds the
+          whole wizard there, as the wizard itself did. */}
+      <div className="min-w-0 rounded-2xl border bg-card text-card-foreground shadow-sm">
+        {showResume && draft.restored && (
+          <Alert
+            variant="info"
+            className="m-3 sm:m-5"
+            data-testid={ids.draftBanner}
+            title={t("wizard.draft.resumeTitle", { time: savedTime(draft.restored.savedAt) })}
+            action={
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  data-testid={ids.draftResume}
+                  onClick={() => {
+                    setBannerDismissed(true);
+                    goTo(steps[restoredStepIndex].id);
+                  }}
+                >
+                  {t("wizard.draft.resume", { number: restoredStepIndex + 1 })}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" data-testid={ids.draftRestart} onClick={restart}>
+                  {t("wizard.draft.restart")}
+                </Button>
+              </>
+            }
           >
-            {/* `key`: a new panel at each step. Without it React reuses the inputs of one step for the next one and the form
-                library, which tells fields apart by their element, would not put the saved answers back when coming back. */}
-            <div key={step.id} ref={panelRef} className="min-w-0 space-y-6">
-              {step.render({ form, stepId: step.id, stepIndex, isLast, goTo })}
-            </div>
+            {t("wizard.draft.resumeText", {
+              current: restoredStepIndex + 1,
+              total: steps.length,
+              step: steps[restoredStepIndex].label,
+            })}
+          </Alert>
+        )}
 
-            {/* A new element each time, so a second failed attempt is announced again. */}
-            <p key={focusRequest} role="status" className="sr-only">
-              {showSummary ? t("wizard.errors.summary", { count: problems.length }) : null}
-            </p>
-            {showSummary && (
-              <Alert
-                ref={summaryRef}
-                variant="danger"
-                role="group"
-                tabIndex={-1}
-                aria-label={t("wizard.errors.summary", { count: problems.length })}
-                data-testid={ids.errorSummary}
-                title={t("wizard.errors.summary", { count: problems.length })}
-                className="outline-none max-md:scroll-mb-40"
-              >
-                <ul className="list-disc space-y-0.5 pl-5">
-                  {problems.map((problem) => (
-                    <li key={problem.path}>{translateValidationMessage(problem.message, t, i18n)}</li>
-                  ))}
-                </ul>
-              </Alert>
-            )}
-            {finishMessage && (
-              <Alert ref={finishErrorRef} variant="danger" tabIndex={-1} data-testid={ids.finishError} className="outline-none max-md:scroll-mb-40">
-                {finishMessage}
-              </Alert>
-            )}
-            {aboveFooter}
-          </form>
-        </WizardContext.Provider>
-      </FormProvider>
+        {focusForms ? (
+          <details key={step.id} className="rounded-t-2xl border-b px-4 py-2">
+            <summary className="min-h-11 cursor-pointer content-center text-sm font-medium focus-visible:outline-ring">
+              {t("ui.stepper.stepOf", { current: stepIndex + 1, total: steps.length })}
+            </summary>
+            <Stepper orientation="vertical" steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />
+          </details>
+        ) : wide ? null : <Stepper className="rounded-t-2xl border-b bg-muted/45 px-3 py-3 sm:px-6 sm:py-4" steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />}
 
-      <div className={FOOTER}>
-        <div className="flex flex-wrap items-center gap-2">
-          {stepIndex > 0 ? (
-            <Button
-              type="button"
-              variant="outline"
-              data-testid={ids.back}
-              className={BUTTON}
-              onClick={() => goTo(steps[stepIndex - 1].id)}
-            >
-              <ArrowLeft aria-hidden="true" className="size-4 shrink-0" />
-              {t("wizard.back")}
-            </Button>
-          ) : onExit ? (
-            <Button
-              type="button"
-              variant="ghost"
-              data-testid={ids.exit}
-              className={BUTTON}
-              onClick={() => {
-                draft.clear();
-                onExit();
+        <div className="min-w-0 space-y-2 px-3 pb-5 pt-6 sm:px-6 sm:pt-8">
+          <h2 id={titleId} ref={titleRef} tabIndex={-1} className="break-words text-2xl font-semibold leading-tight tracking-tight outline-none sm:text-3xl">
+            {step.title}
+          </h2>
+          {step.purpose && <p className="max-w-prose break-words text-base leading-relaxed text-muted-foreground">{step.purpose}</p>}
+        </div>
+
+        <FormProvider {...form}>
+          <WizardContext.Provider value={context}>
+            <form
+              id={formId}
+              noValidate
+              aria-labelledby={titleId}
+              className="mx-3 min-w-0 space-y-6 pb-6 sm:mx-6 max-md:[&_[aria-invalid=true]]:scroll-mb-40"
+              onBlur={serverOn ? draft.onBlur : undefined}
+              onSubmit={(event) => {
+                event.preventDefault();
+                void advance();
               }}
             >
-              {t("wizard.cancel")}
-            </Button>
-          ) : null}
-          <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
-            {step.optional && nextStep && (
-              <Button type="button" variant="ghost" data-testid={ids.skip} className={BUTTON} onClick={() => goTo(nextStep.id)}>
-                {t("wizard.skip")}
+              {/* `key`: a new panel at each step. Without it React reuses the inputs of one step for the next one and the form
+                  library, which tells fields apart by their element, would not put the saved answers back when coming back.
+                  The new panel rises into place (`cz-enter`, `styles/motion.css`), so the change of step is seen. */}
+              <div key={step.id} ref={panelRef} className="cz-enter min-w-0 space-y-6">
+                {step.render({ form, stepId: step.id, stepIndex, isLast, goTo })}
+              </div>
+
+              {/* A new element each time, so a second failed attempt is announced again. */}
+              <p key={focusRequest} role="status" className="sr-only">
+                {showSummary ? t("wizard.errors.summary", { count: problems.length }) : null}
+              </p>
+              {showSummary && (
+                <Alert
+                  ref={summaryRef}
+                  variant="danger"
+                  role="group"
+                  tabIndex={-1}
+                  aria-label={t("wizard.errors.summary", { count: problems.length })}
+                  data-testid={ids.errorSummary}
+                  title={t("wizard.errors.summary", { count: problems.length })}
+                  className="outline-none max-md:scroll-mb-40"
+                >
+                  <ul className="list-disc space-y-0.5 pl-5">
+                    {problems.map((problem) => (
+                      <li key={problem.path}>{translateValidationMessage(problem.message, t, i18n)}</li>
+                    ))}
+                  </ul>
+                </Alert>
+              )}
+              {finishMessage && (
+                <Alert ref={finishErrorRef} variant="danger" tabIndex={-1} data-testid={ids.finishError} className="outline-none max-md:scroll-mb-40">
+                  {finishMessage}
+                </Alert>
+              )}
+              {aboveFooter}
+            </form>
+          </WizardContext.Provider>
+        </FormProvider>
+
+        <div className={FOOTER}>
+          <div className="flex flex-wrap items-center gap-2">
+            {stepIndex > 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                data-testid={ids.back}
+                className={BUTTON}
+                disabled={navigationDisabled}
+                onClick={() => goTo(steps[stepIndex - 1].id)}
+              >
+                <ArrowLeft aria-hidden="true" className="size-4 shrink-0" />
+                {t("wizard.back")}
               </Button>
-            )}
-            <Button
-              type="submit"
-              form={formId}
-              loading={busy}
-              disabled={step.nextDisabled}
-              data-testid={isLast ? ids.finish : ids.next}
-              className={cn(BUTTON, "grow sm:grow-0")}
-              iconRight={isLast ? <Check /> : <ArrowRight />}
-            >
-              {isLast ? finishLabel : (step.nextLabel ?? t("wizard.continueTo", { step: nextStep?.label }))}
-            </Button>
+            ) : onExit ? (
+              <Button
+                type="button"
+                variant="ghost"
+                data-testid={ids.exit}
+                className={BUTTON}
+                onClick={() => {
+                  draft.clear();
+                  onExit();
+                }}
+              >
+                {t("wizard.cancel")}
+              </Button>
+            ) : null}
+            <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
+              {step.optional && nextStep && (
+                <Button type="button" variant="ghost" data-testid={ids.skip} className={BUTTON} disabled={navigationDisabled} onClick={() => goTo(nextStep.id)}>
+                  {t("wizard.skip")}
+                </Button>
+              )}
+              <Button
+                type="submit"
+                form={formId}
+                loading={busy}
+                disabled={step.nextDisabled}
+                data-testid={isLast ? ids.finish : ids.next}
+                className={cn(BUTTON, "grow px-5 sm:grow-0")}
+                iconRight={isLast ? <Check /> : <ArrowRight />}
+              >
+                {isLast ? finishLabel : (step.nextLabel ?? t("wizard.continueTo", { step: nextStep?.label }))}
+              </Button>
+            </div>
           </div>
+          {serverOn ? (
+            <SaveIndicator
+              status={draft.status}
+              savedAt={draft.serverSavedAt}
+              onRetry={draft.retry}
+              data-testid={ids.draftSaved}
+              className="mt-2 md:text-right"
+            />
+          ) : (
+            draft.savedAt && (
+              <p role="status" data-testid={ids.draftSaved} className="mt-2 text-xs text-muted-foreground md:text-right">
+                {t("wizard.draft.savedAt", { time: savedTime(draft.savedAt) })}
+              </p>
+            )
+          )}
         </div>
-        {draft.savedAt && (
-          <p role="status" data-testid={ids.draftSaved} className="mt-2 text-xs text-muted-foreground md:text-right">
-            {t("wizard.draft.savedAt", { time: savedTime(draft.savedAt) })}
-          </p>
-        )}
+
+        {belowFooter ? (
+          <FormProvider {...form}>
+            <WizardContext.Provider value={context}><div className="px-3 pb-4 sm:px-6">{belowFooter}</div></WizardContext.Provider>
+          </FormProvider>
+        ) : null}
       </div>
+
+      {/* The steps beside the step, from `2xl`: after it in the page, as they are read (left to right). A plain block and not an `aside`,
+          which inside the `main` of the shell would be a landmark out of place. */}
+      {wide ? (
+        <div className={STEPS_COLUMN}>
+          <Stepper orientation="vertical" steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />
+        </div>
+      ) : null}
+
+      {/* Outside the form: a dialog inside it would submit it. The conflict has to be answered, so it is up while the draft has one. */}
+      {draft.conflict ? (
+        <WizardConflictDialog
+          open
+          serverDraft={draft.conflict.serverDraft}
+          serverVersion={draft.conflict.serverVersion}
+          onKeepMine={draft.keepMine}
+          onTakeTheirs={takeTheirs}
+        />
+      ) : null}
     </div>
   );
 }

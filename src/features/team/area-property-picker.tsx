@@ -17,6 +17,7 @@ export interface AreaPropertyPickerProps {
   fullAccess: boolean;
   /** The role can be limited to some properties («Solo alcuni»): the collaborator only (AM-D16). */
   scopeSupported: boolean;
+  availableAreas?: readonly RentalArea[];
   areas: readonly string[];
   onAreasChange: (areas: string[]) => void;
   scope: OrgPropertyScope;
@@ -86,6 +87,7 @@ function PropertyChecks({
  */
 export function AreaPropertyPicker({
   fullAccess,
+  availableAreas = RENTAL_AREAS,
   scopeSupported,
   areas,
   onAreasChange,
@@ -101,14 +103,14 @@ export function AreaPropertyPicker({
   const { t } = useTranslation();
   const scopeName = useId();
 
-  const chosenAreas = fullAccess ? [...RENTAL_AREAS] : areas;
+  const chosenAreas = availableAreas.filter((area) => fullAccess || areas.includes(area));
   const selected = new Set(propertyIds);
   const visible = (properties ?? []).filter((property) => chosenAreas.includes(property.area));
 
   const toggleArea = (area: RentalArea, checked: boolean) => {
     const next = checked ? [...new Set([...areas, area])] : areas.filter((candidate) => candidate !== area);
     // Keep the areas in the order of the area switcher, whatever the order they were ticked in.
-    onAreasChange(RENTAL_AREAS.filter((candidate) => next.includes(candidate)));
+    onAreasChange(availableAreas.filter((candidate) => next.includes(candidate)));
   };
   const toggleProperty = (id: string, checked: boolean) =>
     onPropertyIdsChange(checked ? [...new Set([...propertyIds, id])] : propertyIds.filter((candidate) => candidate !== id));
@@ -121,7 +123,7 @@ export function AreaPropertyPicker({
         </Alert>
       ) : (
         <ChoiceGroup legend={t('team.picker.areasLegend')} legendVisible minCardWidth={14}>
-          {RENTAL_AREAS.map((area) => (
+          {availableAreas.map((area) => (
             <ChoiceCard
               key={area}
               type="checkbox"
@@ -181,7 +183,7 @@ export function AreaPropertyPicker({
             <p className="text-sm text-foreground/70">{t(chosenAreas.length === 0 ? 'team.picker.noAreaChosen' : 'team.picker.noProperties')}</p>
           ) : (
             <>
-              {RENTAL_AREAS.filter((area) => chosenAreas.includes(area) && visible.some((property) => property.area === area)).map((area) => (
+              {availableAreas.filter((area) => chosenAreas.includes(area) && visible.some((property) => property.area === area)).map((area) => (
                 <PropertyChecks
                   key={area}
                   area={area}

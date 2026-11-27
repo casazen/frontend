@@ -1,74 +1,193 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { GUEST_LOCALES } from '@/features/checkin/lib/guest-locale';
+import { sanitizeHtml } from '@/lib/sanitize-html';
+import type { CheckInLegalText } from '@/types/public-checkin.types';
 
-interface BiometricConsentProps {
-  onConsent: () => void;
-  onDecline: () => void;
-  isLoading?: boolean;
+interface LegalTextBlockProps {
+  text: CheckInLegalText;
+  testId: string;
+  /** The language the page is shown in: a text the registry has only in another language says so. */
+  pageLanguage: string;
 }
 
 /**
- * Biometric consent screen, separate from privacy notice and marketing consent per ADR-013-R9.
- * Decline option escalates to operator (non-blocking) per ADR-013-R9.
+ * One text of the registry as the guest reads it (E22/F02/US01/T01): the words are the registry's and come sanitized twice (by the server and here, with the same allowlist as the other
+ * legal pages), in the language of the file served; a draft (outside production only) says so with a badge, and a text that is not in the language of the page says which one it is in.
  */
-export function BiometricConsent({ onConsent, onDecline, isLoading = false }: BiometricConsentProps) {
+function LegalTextBlock({ text, testId, pageLanguage }: LegalTextBlockProps) {
   const { t } = useTranslation();
-  const consentVersion = '1.0';
-
-  const handleConsent = () => {
-    onConsent();
-  };
-
-  const handleDecline = () => {
-    onDecline();
-  };
+  const served = text.language.trim().toLowerCase();
+  const servedLocale = GUEST_LOCALES.find((locale) => locale === served);
+  // Only a language the page has a name for is named: the note is for the guest who reads English where the page is German, not for a file in a language nobody knows.
+  const inOtherLanguage = servedLocale !== undefined && servedLocale !== pageLanguage.trim().toLowerCase().split(/[-_]/)[0];
 
   return (
-    <Card className="mx-auto max-w-2xl">
-      <CardHeader>
-        <CardTitle>{t('checkin.biometric.consent.title')}</CardTitle>
-        <CardDescription>
-          {t('checkin.biometric.consent.description')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="rounded-lg bg-muted p-4">
-          <h3 className="mb-2 font-medium">{t('checkin.biometric.consent.purposeTitle')}</h3>
-          <p className="text-sm text-muted-foreground">
-            {t('checkin.biometric.consent.purpose')}
-          </p>
-        </div>
+    <div className="space-y-2 rounded-lg bg-muted p-4" data-testid={testId} data-version={text.version} data-draft={text.isDraft ? 'true' : 'false'}>
+      <article
+        lang={served || undefined}
+        className="prose prose-sm prose-neutral max-w-none dark:prose-invert prose-p:text-muted-foreground prose-li:text-muted-foreground"
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(text.contentHtml) }}
+      />
+      {inOtherLanguage && (
+        <p className="text-xs text-muted-foreground" data-testid={`${testId}-language`}>
+          {t('checkin.biometric.consent.servedIn', { language: t(`checkin.language.names.${servedLocale}`) })}
+        </p>
+      )}
+    </div>
+  );
+}
 
-        <div className="rounded-lg bg-muted p-4">
-          <h3 className="mb-2 font-medium">{t('checkin.biometric.consent.optionalTitle')}</h3>
-          <p className="text-sm text-muted-foreground">
-            {t('checkin.biometric.consent.optional')}
-          </p>
-        </div>
+interface BiometricConsentProps {
+  /** `loading` while the texts are asked, `error` when they could not be read, `ready` with what the registry served. */
+  status: 'loading' | 'error' | 'ready';
+  /**
+   * The text of the consent the registry served (in production only an approved one; none while there is none). The guest agrees to this text, and its `version` is what the consent
+   * posts back (ADR-013-R9): the page has no wording and no version of its own.
+   */
+  consent: CheckInLegalText | null;
+  /** The notice of a property that keeps no document (Ticino), when the registry served it for this stay. */
+  notice: CheckInLegalText | null;
+  /** The sentence that says why the texts are not there (`error` only), already in the words of the page. */
+  errorMessage?: string;
+  /** The guest asks to read the texts again. */
+  onRetry: () => void;
+  /** The guest agrees to the face check, to the text of this `version` that was on the screen. */
+  onConsent: (version: string) => void;
+  /** The guest refuses it: a person verifies the identity instead (never a dead end). */
+  onDecline: () => void;
+  /** An answer is being sent: both buttons stay disabled. */
+  isLoading?: boolean;
+  /** The texts are being read again (the registry published a new version, or the guest came back to the page): what is on the screen may be old, so only the way to a person stays open. */
+  refreshing?: boolean;
+  /** The language the page is shown in (`it`, `en`, `de`, `fr`, `es`). */
+  pageLanguage: string;
+  /**
+   * The answers are two ways to be verified, of equal weight (self-hosted verification, E70/F03/US01/T01): «Verifica automatica» (agreeing to the text) and «Verifica con una persona» (refusing it), side by side,
+   * the same size and the same look, with a line each, instead of the button that agrees with the one that refuses beside it. What each does and its test id are the same either way.
+   */
+  choices?: boolean;
+}
 
+/**
+ * The biometric consent (ADR-013-R9, NF-50): its own screen, separate from the privacy notice and from the marketing consent, explicit and refusable. The text is the registry's
+ * (E22/F01/US02/T02): what the guest agrees to is exactly what is on the screen, and it is the version of that text that is recorded with the answer. Refusing is as easy as agreeing and
+ * leads to a person who verifies the identity, never to a dead end; agreeing is possible only while a text is on the screen (a consent to words nobody could read is no consent).
+ */
+export function BiometricConsent({
+  status,
+  consent,
+  notice,
+  errorMessage,
+  onRetry,
+  onConsent,
+  onDecline,
+  isLoading = false,
+  refreshing = false,
+  pageLanguage,
+  choices = false,
+}: BiometricConsentProps) {
+  const { t } = useTranslation();
+  const choiceId = useId();
+  const agree = () => {
+    if (consent) onConsent(consent.version);
+  };
+  const mayAgree = !(isLoading || refreshing || status !== 'ready' || !consent);
+
+  return (
+    // The title of the text is the registry's own (its first heading); the section is named here so that a screen reader finds it by what it is for.
+    <section className="space-y-4" aria-label={t('checkin.biometric.consent.title')} data-testid="checkin-biometric-consent">
+      {status === 'loading' && (
+        <p role="status" className="text-sm text-muted-foreground" data-testid="checkin-consent-loading">
+          {t('checkin.biometric.consent.loading')}
+        </p>
+      )}
+
+      {status === 'error' && (
+        <Alert
+          variant="warning"
+          title={t('checkin.biometric.consent.loadFailed')}
+          data-testid="checkin-consent-error"
+          action={
+            <Button type="button" size="sm" variant="outline" onClick={onRetry} disabled={isLoading} data-testid="checkin-consent-retry">
+              {t('checkin.biometric.consent.retry')}
+            </Button>
+          }
+        >
+          {errorMessage}
+        </Alert>
+      )}
+
+      {status === 'ready' && !consent && (
+        <Alert variant="info" data-testid="checkin-consent-unavailable">
+          {t('checkin.biometric.consent.unavailable')}
+        </Alert>
+      )}
+
+      {status === 'ready' && consent && <LegalTextBlock text={consent} testId="checkin-consent-text" pageLanguage={pageLanguage} />}
+      {status === 'ready' && notice && <LegalTextBlock text={notice} testId="checkin-ticino-notice" pageLanguage={pageLanguage} />}
+
+      {choices ? (
+        // Two ways to be verified, neither one nudged: the same button for both (size, look, width), the same kind of line under each, the automatic one first because it is the one that needs the text above.
+        <div role="group" aria-labelledby={`${choiceId}-title`} className="space-y-3" data-testid="checkin-identity-choices">
+          <p id={`${choiceId}-title`} className="text-sm font-semibold">
+            {t('checkin.identity.choice.title')}
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                className="h-auto min-h-11 w-full whitespace-normal py-2 text-center"
+                onClick={agree}
+                disabled={!mayAgree}
+                aria-describedby={`${choiceId}-automatic`}
+                data-testid="checkin-biometric-accept"
+              >
+                {t('checkin.identity.choice.automatic.label')}
+              </Button>
+              <p id={`${choiceId}-automatic`} className="text-sm text-foreground/70">
+                {t('checkin.identity.choice.automatic.hint')}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                className="h-auto min-h-11 w-full whitespace-normal py-2 text-center"
+                onClick={onDecline}
+                disabled={isLoading}
+                aria-describedby={`${choiceId}-assisted`}
+                data-testid="checkin-biometric-decline"
+              >
+                {t('checkin.identity.choice.assisted.label')}
+              </Button>
+              <p id={`${choiceId}-assisted`} className="text-sm text-foreground/70">
+                {t('checkin.identity.choice.assisted.hint')}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
         <div className="flex flex-col gap-3 sm:flex-row-reverse sm:justify-start">
-          <Button
-            onClick={handleConsent}
-            disabled={isLoading}
-            className="sm:min-w-[160px]"
-          >
+          <Button type="button" size="lg" onClick={agree} disabled={!mayAgree} data-testid="checkin-biometric-accept">
             {t('checkin.biometric.consent.accept')}
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleDecline}
-            disabled={isLoading}
-            className="sm:min-w-[160px]"
-          >
+          <Button type="button" size="lg" variant="outline" onClick={onDecline} disabled={isLoading} data-testid="checkin-biometric-decline">
             {t('checkin.biometric.consent.decline')}
           </Button>
         </div>
+      )}
 
-        <p className="text-xs text-muted-foreground">
-          {t('checkin.biometric.consent.version', { version: consentVersion })}
+      {status === 'ready' && consent && (
+        <p className="text-xs text-muted-foreground" data-testid="checkin-consent-version">
+          {t('checkin.biometric.consent.version', { version: consent.version })}
         </p>
-      </CardContent>
-    </Card>
+      )}
+    </section>
   );
 }

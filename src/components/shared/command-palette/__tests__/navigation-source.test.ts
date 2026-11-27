@@ -43,7 +43,8 @@ function scenariosFor(area: AppContextKey): Scenario[] {
  */
 function reachableFromTheMenu(area: AppContextKey, scenario: Scenario): Set<string> {
   const nav = getContextNav(area, scenario.hasPermission, scenario.flags);
-  const inTheMenus = [...nav.sections.flatMap((section) => section.entries), ...nav.more];
+  // The main menu, "Altro" and the settings pinned at the foot of the sidebar.
+  const inTheMenus = [...nav.sections.flatMap((section) => section.entries), ...nav.more, ...nav.footer];
   const children = inTheMenus.flatMap((entry) => getNavChildren(entry.path, scenario.hasPermission, scenario.flags));
   return new Set([...inTheMenus, ...children].map((entry) => entry.path));
 }
@@ -75,10 +76,9 @@ describe('the pages of the palette are the pages of the menu (UI-06)', () => {
 
     const offered = pagesOf(context).map((entry) => entry.to);
 
-    // Plan and billing are reached from the badge of the header, and the detail pages from their lists.
-    for (const hidden of ['/app/short-rent/settings/plan', '/app/short-rent/settings/billing', '/app/short-rent/bookings/create']) {
-      expect(offered).not.toContain(hidden);
-    }
+    expect(offered).toContain('/app/short-rent/settings/plan');
+    expect(offered).toContain('/app/short-rent/settings/billing');
+    expect(offered).not.toContain('/app/short-rent/bookings/create');
     expect(offered).toContain('/app/short-rent/bookings');
   });
 
@@ -113,11 +113,10 @@ describe('the pages of the palette are the pages of the menu (UI-06)', () => {
     const italian = pagesOf(makeContext({ areas: ['long-rent'], locale: 'it' }));
     const english = pagesOf(makeContext({ areas: ['long-rent'], locale: 'en' }));
 
-    expect(italian.find((entry) => entry.to === '/app/long-rent/leases')?.label).toBe('Contratti');
-    expect(english.find((entry) => entry.to === '/app/long-rent/leases')?.label).toBe('Leases');
-    // The words that find a page are in the language too.
-    expect(italian.find((entry) => entry.to === '/app/long-rent/leases')?.keywords).toContain('inquilini');
-    expect(english.find((entry) => entry.to === '/app/long-rent/leases')?.keywords).toContain('tenants');
+    expect(italian.find((entry) => entry.to === '/app/long-rent/properties')?.label).toBe('Immobili');
+    expect(english.find((entry) => entry.to === '/app/long-rent/properties')?.label).toBe('Properties');
+    expect(italian.some((entry) => entry.to === '/app/long-rent/leases')).toBe(false);
+    expect(english.some((entry) => entry.to === '/app/long-rent/leases')).toBe(false);
   });
 
   it('NavigationSource_APageWithOtherWords_CarriesThemAsKeywordsNotAsLabel', () => {

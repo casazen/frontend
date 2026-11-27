@@ -72,7 +72,7 @@ describe('Dialog responsive (UI-07)', () => {
         'translate-y-[-50%]',
         'gap-4',
         'p-6',
-        'sm:rounded-lg',
+        'sm:rounded-xl',
       );
     });
 
@@ -86,15 +86,15 @@ describe('Dialog responsive (UI-07)', () => {
     it('Dialog_Default_AnimatesOnlyFromSmUpBecauseUnderSmItMovesAsASheet', () => {
       render(<Harness />);
 
-      expect(dialog()).toHaveClass('sm:data-[state=open]:animate-in', 'sm:data-[state=open]:zoom-in-95');
-      expect(dialog()).not.toHaveClass('data-[state=open]:animate-in');
+      expect(dialog()).toHaveClass('cz-dialog-from-sm');
+      expect(dialog()).not.toHaveClass('cz-dialog');
     });
 
     it('Dialog_SheetOnPhoneOff_AnimatesAtEveryWidthLikeBefore', () => {
       render(<Harness sheetOnPhone={false} />);
 
-      expect(dialog()).toHaveClass('data-[state=open]:animate-in', 'data-[state=open]:zoom-in-95');
-      expect(dialog()).not.toHaveClass('sm:data-[state=open]:animate-in');
+      expect(dialog()).toHaveClass('cz-dialog');
+      expect(dialog()).not.toHaveClass('cz-dialog-from-sm');
     });
   });
 

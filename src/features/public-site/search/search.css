@@ -91,8 +91,12 @@
 .sr-bar {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   margin-bottom: 28px;
+  padding: clamp(12px, 2vw, 24px);
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius-xl);
+  background: var(--cz-public-surface);
 }
 
 .sr-bar__stay {
@@ -660,4 +664,84 @@
   .sr-toggle {
     transition: none;
   }
+}
+
+/*
+ * The results inside the frame of an embeddable widget (NF-144, `.sr--embed`). The window of a frame is as tall as its content, so nothing here follows the
+ * height of the window (no `dvh`: a box as tall as the window of a frame that grows with its content never stops growing) and nothing is fixed or sticky to it
+ * (it would sit in the middle or at the bottom of a very tall frame, far from the guest): the map is a box of its own height beside or under the list, the
+ * button between the list and the map is a block in the flow, and the filters are a panel under the bar.
+ */
+.sr--embed .sr-body--map .sr-side {
+  position: static;
+  height: auto;
+  min-height: 0;
+}
+
+.sr--embed .sr-map__box {
+  flex: none;
+  height: clamp(22rem, 60vw, 34rem);
+  min-height: 0;
+}
+
+.sr--embed .sr-toggle {
+  position: static;
+  display: flex;
+  width: fit-content;
+  margin: 20px auto 0;
+  transform: none;
+}
+
+.sr--embed .sr-toggle:active {
+  transform: scale(0.96);
+}
+
+.sr--embed .sr-filters--panel {
+  padding: clamp(16px, 3vw, 24px);
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius-lg);
+  background: var(--cz-public-surface);
+  box-shadow: var(--cz-public-shadow-card);
+}
+
+.sr--embed .sr-filters__head {
+  margin-bottom: 12px;
+}
+
+.sr--embed .sr-filters__head h2 {
+  margin: 0;
+}
+
+.sr--embed .sr-ff {
+  max-height: none;
+  overflow: visible;
+}
+
+.sr--embed .sr-filters__foot--panel {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Without a map, compare media-led listings side by side. With a map, keep the compact rows. */
+@media (min-width: 56rem) {
+  .sr-body:not(.sr-body--map) .sr-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    align-items: stretch;
+  }
+  .sr-body:not(.sr-body--map) .hcard--row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+  }
+  .sr-body:not(.sr-body--map) .hcard__media {
+    width: 100%;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+  .sr-body:not(.sr-body--map) .hcard--row .hcard__body { padding: 1rem; }
 }

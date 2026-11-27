@@ -6,13 +6,12 @@ import { pinE2eLocale } from './helpers/locale';
 /**
  * Width of the pages on a wide screen. The content of the shell is a flex column, and in a flex column a block with `mx-auto` and
  * a `max-w-*` but no `w-full` takes the width of its content: the profile was 390 px wide on a 1600 px screen. So the check is on
- * the width a page really has, not on the classes it carries. A page uses the width of the shell (`PAGE_COLUMNS` puts its sections
- * side by side), a guided flow or a short form is a column that starts under the title and is `FOCUS_COLUMN` wide.
+ * the width a page really has, not on the classes it carries. Every page uses the whole width of the shell, a guided flow and a
+ * short form too (`FOCUS_COLUMN`), and spends it on columns: the sections side by side (`PAGE_COLUMNS`), the fields of a form two to
+ * a row (`FIELD_COLUMNS`), the steps of a wizard in a column of their own beside the step (`WizardShell`, from `2xl`).
  * Demo mode (L2): the API is mocked, no stack.
  */
 const VIEWPORT = { width: 1600, height: 900 };
-/** Width of `FOCUS_COLUMN` (`max-w-4xl`). */
-const FOCUS_WIDTH = 896;
 
 /** Width of the content region of the shell, without its padding, and the one of the block that holds the page. */
 async function widths(page: Page, selector: string) {
@@ -24,6 +23,29 @@ async function widths(page: Page, selector: string) {
     const box = root.getBoundingClientRect();
     return { room: Math.round(room), width: Math.round(box.width), left: Math.round(box.left - main.getBoundingClientRect().left - parseFloat(style.paddingLeft)) };
   }, selector);
+}
+
+/** The step of a wizard (its form, under the title of the step) and the list of its steps beside it, on the right. */
+async function expectStepsBesideTheStep(page: Page, pageSelector: string) {
+  const steps = page.getByRole('list', { name: 'Passaggi' });
+  await expect(steps).toBeVisible();
+  const list = (await steps.boundingBox())!;
+  const step = (await page.locator(`${pageSelector} form`).first().boundingBox())!;
+  expect(list.x, 'the steps are a column on the right of the step').toBeGreaterThanOrEqual(step.x + step.width);
+  expect(list.y, 'beside the step, not under it').toBeLessThan(step.y + step.height);
+  expect(step.width, 'the step keeps a comfortable width').toBeGreaterThan(700);
+}
+
+/** Under `2xl` (here between `xl` and `2xl`) the steps are the bar above the step again, as they always were. */
+async function expectStepsAboveTheStep(page: Page, pageSelector: string) {
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await expect
+    .poll(async () => {
+      const list = await page.getByRole('list', { name: 'Passaggi' }).boundingBox();
+      const step = await page.locator(`${pageSelector} form`).first().boundingBox();
+      return list !== null && step !== null && list.y + list.height <= step.y && list.width > step.width - 2;
+    })
+    .toBe(true);
 }
 
 test.describe('Page width', () => {
@@ -65,33 +87,36 @@ test.describe('Page width', () => {
     await expect.poll(async () => (await type.boundingBox())!.y).toBeGreaterThan((await info.boundingBox())!.y + 100);
   });
 
-  test('a short form is a column that starts at the left edge of its title, not a block in the middle of the page', async ({ page }) => {
+  test('a short form uses the whole width and starts at the left edge of its title', async ({ page }) => {
     await page.goto(demoUrl('/app/short-rent/fiscal/wizard', 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1, name: 'Profilo fiscale' })).toBeVisible();
 
     const column = await widths(page, '[data-testid="fiscal-wizard-page"]');
     expect(column.left).toBe(0);
-    expect(column.width).toBe(FOCUS_WIDTH);
+    expect(column.width).toBe(column.room);
     const title = (await page.getByRole('heading', { level: 1, name: 'Profilo fiscale' }).boundingBox())!;
     const form = (await page.getByTestId('fiscal-wizard-form').boundingBox())!;
     expect(Math.abs(form.x - title.x)).toBeLessThan(2);
   });
 
-  test('the wizard of a new property starts under its title', async ({ page }) => {
+  test('the wizard of a new property uses the whole width, with its steps in a column beside the step', async ({ page }) => {
     await page.goto(demoUrl('/app/short-rent/properties/create', 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1, name: 'Aggiungi immobile' })).toBeVisible();
 
     const column = await widths(page, '[data-testid="property-wizard-page"]');
     expect(column.left).toBe(0);
-    expect(column.width).toBe(FOCUS_WIDTH);
+    expect(column.width).toBe(column.room);
+    await expectStepsBesideTheStep(page, '[data-testid="property-wizard-page"]');
+    await expectStepsAboveTheStep(page, '[data-testid="property-wizard-page"]');
   });
 
-  test('the wizard of a new booking starts under its title', async ({ page }) => {
+  test('the wizard of a new booking uses the whole width, with its steps in a column beside the step', async ({ page }) => {
     await page.goto(demoUrl('/app/short-rent/bookings/create', 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1, name: 'Nuova prenotazione' })).toBeVisible();
 
     const column = await widths(page, '[data-testid="booking-create-page"] > div:last-child');
     expect(column.left).toBe(0);
-    expect(column.width).toBe(FOCUS_WIDTH);
+    expect(column.width).toBe(column.room);
+    await expectStepsBesideTheStep(page, '[data-testid="booking-create-page"]');
   });
 });

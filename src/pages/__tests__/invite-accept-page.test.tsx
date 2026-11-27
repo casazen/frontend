@@ -117,6 +117,26 @@ describe('InviteAcceptPage: the secret of the link', () => {
     expect(vi.mocked(axios.post).mock.calls[0][1]).toEqual({ token: TOKEN });
   });
 
+  it('offers to switch a mismatched account before consents, then returns to the same invitation', async () => {
+    mockAuth(true);
+    vi.mocked(axios.post).mockResolvedValue({ data: { ...LOOKUP, email: 'alt@example.org' } });
+    openAt('/invite/accept?token=' + TOKEN);
+    fireEvent.click(await screen.findByTestId('invite-accept-switch'));
+    expect(screen.queryByTestId('onboarding-consents-step')).not.toBeInTheDocument();
+    expect(login).toHaveBeenCalledWith({ returnTo: '/invite/accept', authorizationParams: { prompt: 'login' } });
+    expect(axios.post).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem(STORAGE_KEY)).toBe(TOKEN);
+  });
+
+  it('recovers a failed handoff without dropping the invitation', async () => {
+    login.mockRejectedValueOnce(new Error('offline'));
+    openAt('/invite/accept?token=' + TOKEN);
+    fireEvent.click(await screen.findByTestId('invite-accept-signup'));
+    expect(await screen.findByText(i18n.t('login.handoffFailed'))).toBeInTheDocument();
+    expect(screen.getByTestId('invite-accept-login')).toBeEnabled();
+    expect(sessionStorage.getItem(STORAGE_KEY)).toBe(TOKEN);
+  });
+
   it('InviteAcceptPage_ShowsTheInvitedAddressMaskedNeverWhole', async () => {
     openAt(`/invite/accept?token=${TOKEN}`);
     await screen.findByTestId('invite-accept-signup');
@@ -126,6 +146,7 @@ describe('InviteAcceptPage: the secret of the link', () => {
   });
 
   it('InviteAcceptPage_MalformedToken_ShowsTheLinkThatDoesNotWorkWithoutCallingTheApi', async () => {
+    sessionStorage.setItem(STORAGE_KEY, TOKEN);
     openAt('/invite/accept?token=not-a-token');
 
     expect(await screen.findByText('Questo link non funziona')).toBeInTheDocument();

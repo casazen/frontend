@@ -14,6 +14,11 @@ export function isAlloggiatiSent(status: AlloggiatiWebStatus): boolean {
   return status === 'Inviato' || status === 'InviatoManualmente';
 }
 
+/** A no-show: the guests never came, so no communication is due and there is no deadline to show. */
+export function isAlloggiatiNotDue(status: AlloggiatiWebStatus): boolean {
+  return status === 'NotDue';
+}
+
 /**
  * The host can declare a manual submission once the arrival day has come (the portal accepts only today or
  * yesterday as arrival date) and until the communication is sent.

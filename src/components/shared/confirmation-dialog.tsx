@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -20,7 +20,10 @@ interface ConfirmationDialogProps {
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: "default" | "destructive";
+  /** The look of the confirm button. `destructive` is the filled red; a confirmation that must not be the main button of the dialog takes `danger-outline`. */
+  variant?: ButtonProps["variant"];
+  /** The look of the cancel button (`outline` by default). A dialog that asks to keep what is there makes «keep it» the main button with `default`. */
+  cancelVariant?: ButtonProps["variant"];
   onConfirm: () => void | Promise<void>;
   isLoading?: boolean;
   /**
@@ -32,6 +35,11 @@ interface ConfirmationDialogProps {
   consequences?: readonly string[];
   /** What the confirmation needs to know (a date): fields between the description and the consequences, inside the form. */
   children?: ReactNode;
+  /**
+   * Classes of the box of the dialog. A confirmation that carries fields (a reason to choose, a note to write) can be taller than a short window, and a dialog in the middle of the screen does not scroll by itself:
+   * `sm:max-h-[90dvh] sm:overflow-y-auto` makes it scroll inside, as the other dialogs with a form do (under `sm` it is already a sheet that scrolls).
+   */
+  contentClassName?: string;
   /** Keeps the confirm button off, whatever was typed, while what `children` asks for is not valid (nor does Enter confirm). */
   confirmDisabled?: boolean;
   /**
@@ -48,7 +56,7 @@ function sameWord(typed: string, asked: string): boolean {
 
 type ConfirmationFormProps = Pick<
   ConfirmationDialogProps,
-  'title' | 'description' | 'variant' | 'isLoading' | 'requireText' | 'consequences' | 'children' | 'confirmDisabled'
+  'title' | 'description' | 'variant' | 'cancelVariant' | 'isLoading' | 'requireText' | 'consequences' | 'children' | 'confirmDisabled'
 > & {
   confirmLabel: string;
   cancelLabel: string;
@@ -64,6 +72,7 @@ function ConfirmationForm({
   title,
   description,
   variant,
+  cancelVariant = "outline",
   isLoading,
   requireText,
   consequences,
@@ -136,7 +145,7 @@ function ConfirmationForm({
       ) : null}
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+        <Button type="button" variant={cancelVariant} onClick={onCancel} disabled={isLoading}>
           {cancelLabel}
         </Button>
         <Button type="submit" variant={variant} disabled={isLoading || !mayConfirm}>
@@ -155,29 +164,37 @@ export function ConfirmationDialog({
   confirmLabel,
   cancelLabel,
   variant = "default",
+  cancelVariant,
   onConfirm,
   isLoading = false,
   requireText,
   consequences,
   children,
   confirmDisabled,
+  contentClassName,
   onCloseAutoFocus,
 }: ConfirmationDialogProps) {
   const { t } = useTranslation();
   const resolvedConfirmLabel = confirmLabel ?? t('shared.confirm');
   const resolvedCancelLabel = cancelLabel ?? t('shared.cancel');
   const handleConfirm = async () => {
-    await onConfirm();
+    try {
+      await onConfirm();
+    } catch {
+      // The action failed. The dialog stays open so the caller can show why.
+      return;
+    }
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
+      <DialogContent className={contentClassName} onCloseAutoFocus={onCloseAutoFocus}>
         <ConfirmationForm
           title={title}
           description={description}
           variant={variant}
+          cancelVariant={cancelVariant}
           isLoading={isLoading}
           requireText={requireText}
           consequences={consequences}

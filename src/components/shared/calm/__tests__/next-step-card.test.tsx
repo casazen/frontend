@@ -91,7 +91,9 @@ describe('NextStepCard (UI-16)', () => {
     const { container } = renderCard();
 
     const card = container.firstElementChild!;
-    expect(card).toHaveClass('rounded-lg', 'border', 'border-primary/30', 'bg-primary/5', 'p-4', 'text-left');
+    // A plain card with the accent on its left edge, not a tinted box: guidance must not read as a notice or an error.
+    expect(card).toHaveClass('rounded-lg', 'border', 'bg-card', 'p-4', 'text-left', 'before:bg-primary');
+    expect(card.className).not.toMatch(/\bbg-primary\/5\b/);
     // `foreground/70`, not `muted-foreground` (4.4:1 on white): the same choice as the other primitives.
     expect(screen.getByText('Servono pochi minuti.')).toHaveClass('text-foreground/70');
     expect(screen.getByText('Passo 3 di 7')).toHaveClass('text-foreground/70');

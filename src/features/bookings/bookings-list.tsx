@@ -1,16 +1,19 @@
 import { useMemo } from 'react';
-import { Building2, CalendarDays, Check, Clock, DoorClosed, DoorOpen, Globe, House, Pencil, Plug, Send, Users, X, XCircle, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Check, Clock, DoorClosed, DoorOpen, Send, Users, X, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListMenuEntry, ListRowAction } from '@/components/shared/list-view/list-types';
 import { StatusBadge } from '@/components/shared/status/status-badge';
-import { getBookingSourceLabel, getBookingStatusLabel } from '@/lib/i18n-labels';
+import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import { addDays, formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
-import type { BookingChannel, BookingListItem } from '@/types';
+import { BOOKING_ORIGINS, type BookingChannel, type BookingListItem } from '@/types';
+import { OtaBadge } from './components/booking-facts';
+import { BookingOriginBadge } from './components/booking-origin-badge';
+import { bookingCanCancel } from './lib/booking-change';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { BOOKINGS_PATH, CHECK_IN_CHOICES, DEFAULT_BOOKING_CHIP } from './lib/booking-list-query';
-import { bookingChannelText, needsOtaReview } from './lib/ota-stay';
+import { bookingChannelName, bookingChannelText, bookingSourceName, CHANNEL_ICONS, channelOf, needsOtaReview } from './lib/ota-stay';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
 
 /** What the actions of a row do. The page owns them: some open a dialog, some call the API. */
@@ -29,15 +32,15 @@ interface BookingsListOptions {
   handlers: BookingRowHandlers;
 }
 
-const CHANNELS: readonly BookingChannel[] = ['Direct', 'Manual', 'Airbnb', 'BookingCom', 'Other'];
-const CHANNEL_ICONS: Record<BookingChannel, LucideIcon> = { Direct: Globe, Manual: Pencil, Airbnb: House, BookingCom: Building2, Other: Plug };
+// The filter names the channels the API tells apart (`BookingChannel`): the four portals have a value of their own, and `Other` no longer
+// holds them. Their icons are the ones of `CHANNEL_ICONS` (`lib/ota-stay.ts`), the same the facts of a booking draw.
+const CHANNELS: readonly BookingChannel[] = ['Direct', 'Manual', 'Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda', 'Other'];
 
 const guestName = (booking: BookingListItem) => `${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim();
 const bookingPath = (booking: BookingListItem) => `${BOOKINGS_PATH}/${booking.id}`;
 const isAwaitingHost = (booking: BookingListItem) => booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval';
 /** A pending booking the host can accept: a request waiting for the answer, or one entered by hand and left pending. */
 const canAccept = (booking: BookingListItem) => isAwaitingHost(booking) || (booking.status === 'Pending' && booking.source === 'Manual');
-const canCancel = (booking: BookingListItem) => booking.status === 'Pending' || booking.status === 'Confirmed' || booking.status === 'CheckedIn';
 
 /**
  * The list of the bookings (SR-04): the unified list in `server` mode, in the words of the host. A server filters it, orders it
@@ -84,19 +87,25 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
       return null;
     };
 
+    /** The channel of a row: its icon and name and, for a booking the channel manager brought in (`otaSource`), the "OTA" badge (ADR-033-R9). */
     const channelCell = (booking: BookingListItem) => {
-      const Icon = CHANNEL_ICONS[booking.channel] ?? Plug;
+      const Icon = CHANNEL_ICONS[channelOf(booking.channel)];
       const detail = bookingChannelText(booking, t);
       return (
         <div className="flex min-w-0 items-start gap-2" data-testid="booking-source">
           <Icon className="mt-0.5 size-4 shrink-0 text-foreground/70" aria-hidden="true" />
           <div className="min-w-0">
-            <span className="break-words">{getBookingSourceLabel(booking.source, t)}</span>
+            <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="break-words">{bookingSourceName(booking, t)}</span>
+              {booking.otaSource ? <OtaBadge /> : null}
+            </span>
             {detail ? (
               <span className="block break-words text-xs text-foreground/70" data-testid="booking-channel">
                 {detail}
               </span>
             ) : null}
+            {/* Where it came from (NF-123): a portal, the site of the agency, CasaZen's site or the host; nothing for an answer that has no origin. */}
+            <BookingOriginBadge booking={booking} className="mt-1 flex w-fit" />
           </div>
         </div>
       );
@@ -134,7 +143,10 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           sort: guestName,
           render: (booking, cell) => (
             <div className="min-w-0">
-              {cell.open(<span>{guestName(booking) || t('compliance.checkout.guestFallback')}</span>)}
+              {cell.open(<span className="inline-flex items-center gap-2">
+                <Users aria-hidden="true" className="size-4 shrink-0 text-primary-text" />
+                {guestName(booking) || t('compliance.checkout.guestFallback')}
+              </span>)}
               <span className="mt-0.5 block break-words text-sm text-foreground/70">
                 {[booking.propertyName, t('booking.list.guestCount', { count: booking.numberOfGuests })].filter(Boolean).join(' · ')}
               </span>
@@ -155,7 +167,7 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           ),
           csv: (booking) => `${stayDateOf(booking.checkInDate)} → ${stayDateOf(booking.checkOutDate)}`,
         },
-        { id: 'channel', label: t('booking.list.columns.channel'), default: true, render: channelCell, csv: (booking) => getBookingSourceLabel(booking.source, t) },
+        { id: 'channel', label: t('booking.list.columns.channel'), default: true, render: channelCell, csv: (booking) => bookingSourceName(booking, t) },
         {
           id: 'status',
           label: t('booking.list.columns.status'),
@@ -220,7 +232,14 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           id: 'channel',
           type: 'multi',
           label: t('booking.list.filters.channel'),
-          options: CHANNELS.map((channel) => ({ value: channel, label: t(`booking.list.channels.${channel}`), icon: CHANNEL_ICONS[channel] })),
+          options: CHANNELS.map((channel) => ({ value: channel, label: bookingChannelName(channel, t), icon: CHANNEL_ICONS[channel] })),
+        },
+        {
+          // Where it came from (NF-123): the portals, the site of the agency, CasaZen's site, the host. The values are the words of the `origin` of the API.
+          id: 'origin',
+          type: 'multi',
+          label: t('booking.list.filters.origin'),
+          options: BOOKING_ORIGINS.map((origin) => ({ value: origin, label: t(`booking.origin.${origin}`) })),
         },
         { id: 'arrival', type: 'date', label: t('booking.list.filters.arrival') },
         {
@@ -248,7 +267,8 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
         if (isAwaitingHost(booking)) {
           entries.push({ id: 'decline', label: t('booking.list.actions.decline'), icon: X, onSelect: () => handlers.decline(booking) });
         }
-        if (canCancel(booking)) {
+        // "Annulla" where the API says the booking can be cancelled (`changeOptions`: a booking of a channel only where the channel lets the host do it, NF-76).
+        if (bookingCanCancel(booking)) {
           if (entries.length > 0) entries.push('separator');
           entries.push({ id: 'cancel', label: t('booking.cancel.action'), icon: XCircle, danger: true, onSelect: () => handlers.cancel(booking) });
         }

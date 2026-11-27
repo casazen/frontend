@@ -8,6 +8,7 @@ import * as compliance from '@/features/compliance/use-compliance';
 import * as properties from '@/queries/use-properties';
 import * as cin from '@/queries/use-cin';
 import { propertyFormPayload } from '@/features/compliance/activation-wizard-model';
+import { useUiStore } from '@/store/ui-store';
 import {
   SAFETY_ITEM_CODES,
   type ComplianceActivationResult,
@@ -564,5 +565,17 @@ describe('PropertyActivationWizard', () => {
 
     expect(screen.getByText('Caricamento wizard attivazione...')).toBeInTheDocument();
     expect(screen.queryByTestId('property-activation-wizard')).not.toBeInTheDocument();
+  });
+
+  it('popupAlerts_WizardOnScreen_AreHeldBackUntilTheHostLeavesIt', () => {
+    const { unmount } = renderWizard();
+
+    // ADR-025-R7: this wizard has no `WizardShell`, so the page itself tells the popup alerts to wait.
+    expect(screen.getByTestId('property-activation-wizard')).toBeInTheDocument();
+    expect(useUiStore.getState().openWizards).toBeGreaterThan(0);
+
+    unmount();
+
+    expect(useUiStore.getState().openWizards).toBe(0);
   });
 });

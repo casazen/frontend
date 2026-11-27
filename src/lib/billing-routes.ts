@@ -32,6 +32,7 @@ export function billingPagePath(context: BillingContextKey): string {
 const BILLING_RETURN_PATHS: ReadonlySet<string> = new Set([
   ...BILLING_CONTEXTS.flatMap((context) => [planPagePath(context), billingPagePath(context)]),
   ACCOUNT_BILLING_PATH,
+  "/onboarding",
 ]);
 
 /**

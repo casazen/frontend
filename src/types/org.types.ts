@@ -4,6 +4,7 @@ export type PlanTier = 'Starter' | 'Pro' | 'Scale' | 'Agency';
 
 /** Public projection of the caller's organization (AC9/AC11). Never carries Stripe/billing ids. */
 export interface Org {
+  isAgency?: boolean;
   id: string;
   name: string;
   slug: string;
@@ -71,6 +72,9 @@ export interface PublicOrgDto {
   themeColor: string | null;
   /** Only present when the org opted in to publish it (A1-22, A1-23) — off by default (GDPR). */
   contactEmail: string | null;
+  /** The host can receive messages through the site, even with a private email address. */
+  canContactHost?: boolean;
+  storefrontChatEnabled?: boolean;
   heroImageUrl?: string | null;
   tagline?: string | null;
   /** Always a supported theme id (see `src/lib/public-site-themes.ts`); older backends may send null. */
@@ -83,6 +87,12 @@ export interface PublicOrgDto {
    * version: the checkout then shows no box and the API refuses a `marketingConsent: true`. Absent on an older backend.
    */
   marketingConsentVersion?: string | null;
+  /**
+   * Version of the soft opt-in notice the checkout shows to the customer (`Gdpr:SoftOptInNoticeVersion`, art. 130 c. 4 Codice privacy, PO-07),
+   * or null while the product owner has not set one: the checkout then shows no notice and the booking does not send a version back.
+   * Absent on an older backend.
+   */
+  softOptInNoticeVersion?: string | null;
   /** Absolute URL of the landing page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
   /** Legal name, registered office and VAT number for the footer (DB-03b-a); null while the host entered none; absent on an older backend. */
@@ -104,8 +114,8 @@ export interface HostContactPayload {
   email: string;
   /** 5 to 2000 characters once trimmed. */
   message: string;
-  /** At most 100 characters; left out when the visitor gave none. */
-  name?: string;
+  /** The name the visitor gives to the host, at most 100 characters. */
+  name: string;
   /** The home the visitor was looking at: counts only if it is a published home of the site. */
   propertyId?: string;
   /** The language of the site the visitor was reading, so that the host answers in it. */

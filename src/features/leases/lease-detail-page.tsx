@@ -3,7 +3,7 @@ import { useId, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { ChevronDown, FileText } from 'lucide-react';
+import { BookOpen, CalendarDays, ChevronDown, ClipboardList, FileText, FolderOpen, Users, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { BackLink } from '@/components/shared/back-link';
@@ -19,6 +19,8 @@ import { getFiscalRegimeLabel, getLeaseContractTypeLabel } from '@/lib/i18n-labe
 import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import type { LeaseDetail, LeaseNextStep, LeaseStage, LeaseStatus } from '@/types';
+import { LeaseTenantsTab } from './components/lease-tenants-tab';
+import { LONG_RENT_PROPERTIES_PATH, longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import { LeaseDataTab } from './components/lease-data-tab';
 import { LeaseDeadlinesTab } from './components/lease-deadlines-tab';
 import { LeaseFiles } from './components/lease-files';
@@ -28,17 +30,17 @@ import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { useLeaseSheetMenu } from './components/use-lease-sheet-menu';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { LeaseGuide } from './guide/lease-guide';
-import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
+import { leasePropertyLine, leaseRentText, leaseTermText } from './lib/lease-list-format';
 import { useCfCompletion } from './lib/cf-completion';
 import { useCfDeliveredContract } from './lib/cf-import';
 import { describeLeaseStep } from './lib/lease-next-step';
 import { DEFAULT_LEASE_TAB, isServiceDraft, leaseTabOf, type LeaseTab } from './lib/lease-sheet';
+import { LEASE_OPERATION_PARAM, leaseOperationOf } from './operations/operation-ids';
 import { useLeaseActions } from './lifecycle/use-lease-actions';
 import { CfImportPanel } from './components/cf-import-panel';
 import { PartnerDraftNotice } from './components/partner-draft-notice';
 import { ContinueDraftNotice } from './components/continue-draft-notice';
 
-const LEASES_PATH = '/app/long-rent/leases';
 
 /** The tenants by name ("Giulia Verdi e Acme Srl"), or what stands in their place while there is none. */
 function leaseTitle(lease: LeaseDetail, language: string, t: TFunction): string {
@@ -50,10 +52,24 @@ function leaseTitle(lease: LeaseDetail, language: string, t: TFunction): string 
   return new Intl.ListFormat(language, { style: 'long', type: 'conjunction' }).format(names);
 }
 
-/** Under the title: "Casa Trastevere · Roma · Canone libero (4+4) · 950,00 €/mese". */
-function leasePurpose(lease: LeaseDetail, t: TFunction): string {
+function LeaseFacts({ lease }: { lease: LeaseDetail }) {
+  const { t, i18n } = useTranslation();
   const type = lease.contractType ? getLeaseContractTypeLabel(lease.contractType, t) : getFiscalRegimeLabel(lease.fiscalRegime, t);
-  return [leasePropertyLine(lease, t), type, leaseRentText(lease, t)].join(' · ');
+  const facts = [
+    [t('rent.focus.leaseType'), type],
+    [t('leaseList.columns.term'), leaseTermText(lease, t, i18n.language)],
+    [t('rent.focus.monthlyRent'), leaseRentText(lease, t)],
+  ];
+  return (
+    <dl data-testid="lease-facts" className="grid min-w-0 gap-2 sm:grid-cols-3">
+      {facts.map(([label, value]) => (
+        <div key={label} className="flex min-w-0 items-baseline justify-between gap-3 rounded-xl border bg-card px-4 py-3 sm:block">
+          <dt className="text-sm text-muted-foreground">{label}</dt>
+          <dd className="min-w-0 break-words text-right text-base font-semibold tabular-nums sm:mt-1 sm:text-left">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
 /** The state of the lease: a badge that is also the button that explains it. */
@@ -75,19 +91,7 @@ function StatusToggle({ status, open, controls, onToggle }: { status: LeaseStatu
   );
 }
 
-/**
- * The sheet of a lease (LR-03): who it is with and where, the state that explains itself, the one thing to do now, then five tabs
- * (Guida, Dati, Documenti, Pagamenti, Scadenze: `?tab=`) and the history of the lease beside them. The sheet opens on the guide
- * (LR-GUIDE-1): what to do about the contract, with the advice for its type and moment and the tools to decide; `Dati` is only the data.
- * The panels of the signature, the registration, the Questura communication and the rent are the ones that existed, moved here.
- * The menu «⋯» of the header (LR-03c) has first the ways to somewhere else (read the contract, open the property, go to the documents)
- * and then what can be done to the lease while it lives (delete the draft, record a notice, end it early…, LR-10), which opens from the
- * address too (`?azione=`). The jobs asked of the suppliers are followed in the area «Interventi», not here.
- *
- * The lease of the guided service (CF-DONE) follows its practice: the sheet shows the state of the practice and never asks for the data of
- * the contract, which are read from the documents the service delivers; as soon as the practice and the documents allow it the draft
- * becomes the signed and then the registered contract by itself (`useCfCompletion`), and its card is gone.
- */
+/** Contract details are the landing section; the guide and the history open on demand. */
 function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: LeaseNextStep | null; stage: LeaseStage | undefined }) {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
@@ -103,25 +107,24 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
   // the registration when the practice and the documents allow it, and asks the sheet to read the lease again when it changed.
   const completion = useCfCompletion(lease);
   const step = serviceDraft || cfContract ? null : nextStep;
-  // The sheet opens on the guide; the button of «Cosa devi fare ora» leads to the tab where its step is done (an address with `?tab=`
-  // is always obeyed, the old names of the tabs too).
-  const tab = leaseTabOf(searchParams.get('tab'), DEFAULT_LEASE_TAB);
+  const operation = leaseOperationOf(searchParams.get(LEASE_OPERATION_PARAM));
+  const tab = searchParams.get('registrationCheckout') === 'success'
+    ? 'scadenze'
+    : leaseTabOf(searchParams.get('tab'), operation ? 'guida' : DEFAULT_LEASE_TAB);
   const [explainOpen, setExplainOpen] = useState(false);
   const explainId = useId();
 
   const parties = lease.parties ?? [];
   const showQuestura = lease.hasExtraEUTenant || parties.some((party) => party.role === 'Tenant' && party.isExtraEU);
-  // «Cosa devi fare ora» (LR-03b): the step the server says the lease waits for (`nextStep`, read from its row in the list of leases) is
-  // the one colored block of the page, under the header. No step, no block: a lease the list has no step for is the sheet it was. A step
-  // that is there says what the draft notice says, so it gives way to it (one voice, not two); the guide does not repeat it either.
   const now = step ? describeLeaseStep(lease.id, step, { t, language: i18n.language, today: todayInRome() }) : null;
 
   const tabs: TabItem<LeaseTab>[] = [
-    { value: 'guida', label: t('leaseGuide.tab'), testId: 'lease-tab-guida' },
-    { value: 'dati', label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
-    { value: 'documenti', label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
-    { value: 'pagamenti', label: t('leaseSheet.tabs.payments'), testId: 'lease-tab-pagamenti' },
-    { value: 'scadenze', label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
+    { value: 'dati', icon: ClipboardList, label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
+    { value: 'inquilini', icon: Users, label: t('nav.longRentTenants'), testId: 'lease-tab-inquilini' },
+    { value: 'documenti', icon: FolderOpen, label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
+    { value: 'pagamenti', icon: Wallet, label: t('leaseSheet.tabs.canoni'), testId: 'lease-tab-pagamenti' },
+    { value: 'scadenze', icon: CalendarDays, label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
+    { value: 'guida', icon: BookOpen, label: t('leaseGuide.tab'), testId: 'lease-tab-guida' },
   ];
 
   const title = leaseTitle(lease, i18n.language, t);
@@ -133,41 +136,49 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
   return (
     <div className="min-w-0 space-y-6" data-testid="lease-sheet">
       <PageHeader
-        crumbs="auto"
+        crumbs={[
+          { label: t('nav.properties'), to: LONG_RENT_PROPERTIES_PATH },
+          { label: lease.property?.name ?? t('leaseList.property.unknown'), to: `${longRentPropertyPath(lease.propertyId)}?tab=contracts` },
+          { label: title },
+        ]}
         title={title}
-        description={leasePurpose(lease, t)}
+        description={leasePropertyLine(lease, t)}
         action={<StatusToggle status={lease.status} open={explainOpen} controls={explainId} onToggle={() => setExplainOpen((open) => !open)} />}
         secondary={menu}
       />
 
+      {tab === 'dati' && <LeaseFacts lease={lease} />}
       {explainOpen ? (
         <div id={explainId} data-testid="lease-status-explainer" className="border-s-2 border-border ps-4">
           <StatusExplainer kind="lease" status={lease.status} explain={serviceDraft ? t('leaseSheet.status.serviceDraft') : undefined} />
         </div>
       ) : null}
 
-      {now ? <LeaseNowBlock step={now} /> : null}
-
-      {cfContract ? (
+      {(tab === 'dati' || tab === 'guida') && (cfContract ? (
         <CfImportPanel leaseId={lease.id} reading={cfContract} syncState={completion.state} />
       ) : serviceDraft ? (
         <PartnerDraftNotice leaseId={lease.id} syncState={completion.state} />
-      ) : null}
-      {lease.status === 'Draft' && !serviceDraft && !cfContract && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
+      ) : null)}
+      {(tab === 'dati' || tab === 'guida') && lease.status === 'Draft' && !serviceDraft && !cfContract && !now ? <ContinueDraftNotice leaseId={lease.id} /> : null}
 
-      {/* One column under 780 px of room (measured on this box, not on the screen: the menu takes part of it). */}
-      <div className="@container min-w-0">
-        <div className="grid gap-8 @min-[780px]:grid-cols-[minmax(0,1fr)_17rem]">
-          <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={DEFAULT_LEASE_TAB}>
-            {tab === 'guida' && <LeaseGuide lease={lease} stage={stage} stepCode={step?.code ?? null} />}
-            {tab === 'dati' && <LeaseDataTab lease={lease} onRequestErasure={actions.requestErasure} />}
-            {tab === 'documenti' && <div className="space-y-6"><LeaseFiles lease={lease} /><LeaseDocumentsPanel leaseId={lease.id} />{serviceDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
-            {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} term={{ startDate: lease.startDate, endDate: lease.endDate }} />}
-            {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showQuestura} />}
-          </Tabs>
-          <LeaseHistory leaseId={lease.id} events={lease.events ?? []} />
-        </div>
-      </div>
+      <Tabs label={t('leaseSheet.tabs.label')} items={tabs} value={tab} defaultValue={DEFAULT_LEASE_TAB} selectTestId="lease-sheet-tabs">
+        {tab === 'guida' && (
+          <div className="min-w-0 space-y-5">
+            {now && <LeaseNowBlock step={now} />}
+            <LeaseGuide lease={lease} stage={stage} stepCode={step?.code ?? null} />
+          </div>
+        )}
+        {tab === 'inquilini' && <LeaseTenantsTab lease={lease} onRequestErasure={actions.requestErasure} />}
+        {tab === 'dati' && (
+          <div className="min-w-0 space-y-5">
+            <LeaseDataTab lease={lease} onRequestErasure={actions.requestErasure} />
+            <LeaseHistory key={searchParams.get('tab')} leaseId={lease.id} events={lease.events ?? []} initiallyOpen={searchParams.get('tab') === 'cronologia'} />
+          </div>
+        )}
+        {tab === 'documenti' && <div className="space-y-6"><LeaseFiles lease={lease} /><LeaseDocumentsPanel leaseId={lease.id} />{serviceDraft ? null : <LeaseSigningPanel lease={lease} />}</div>}
+        {tab === 'pagamenti' && <RentSchedulePanel leaseId={lease.id} leaseStatus={lease.status} term={{ startDate: lease.startDate, endDate: lease.endDate }} />}
+        {tab === 'scadenze' && <LeaseDeadlinesTab lease={lease} showQuestura={showQuestura} />}
+      </Tabs>
 
       {actions.dialogs}
     </div>
@@ -191,7 +202,7 @@ export function LeaseDetailPage() {
   if (isError && getHttpStatus(error) !== 404) {
     return (
       <div className="min-w-0 space-y-4">
-        <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+        <BackLink to={LONG_RENT_PROPERTIES_PATH} label={t('nav.properties')} className="md:inline-flex" />
         <ErrorState testId="lease-load-error" title={t('leases.detailLoadError')} error={error} onRetry={() => void refetch()} />
       </div>
     );
@@ -204,7 +215,7 @@ export function LeaseDetailPage() {
           icon={FileText}
           title={t('leases.notFound')}
           description={t('leases.notFoundDescription')}
-          action={{ label: t('leases.backToList'), href: LEASES_PATH }}
+          action={{ label: t('longRentProperties.detail.backToList'), href: LONG_RENT_PROPERTIES_PATH }}
         />
       </div>
     );

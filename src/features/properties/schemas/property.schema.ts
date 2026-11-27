@@ -1,3 +1,4 @@
+import { LISTING_DESCRIPTION_MAX } from '@/lib/listing-texts';
 import { z } from 'zod';
 import { optionalCinSchema } from '@/lib/cin-format';
 import type { CreatePropertyDto, Property } from '@/types';
@@ -11,13 +12,23 @@ export const DEFAULT_PROPERTY_TIMEZONE = 'Europe/Rome';
  */
 export const propertyFormSchema = z.object({
   name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
-  description: z.string().min(10, 'property.validation.description.minLength').max(1000, 'property.validation.description.maxLength'),
+  description: z.string().min(10, 'property.validation.description.minLength').max(LISTING_DESCRIPTION_MAX, 'property.validation.description.maxLength'),
   address: z.string().min(5, 'property.validation.address.required'),
   /** Interno / scala (PC-06): optional, the limit of the API. */
   unit: z.string().max(30, 'property.validation.unit.maxLength').optional(),
   city: z.string().min(2, 'property.validation.city.required'),
   /** ISTAT code of the comune chosen from the official list (SU-04); '' = none chosen. */
   comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'property.validation.comuneIstatCode.format').or(z.literal('')),
+  /**
+   * BFS number (one to four digits, text) of the Swiss municipality the host confirmed from the official directory (E29/F01/US02/T01);
+   * '' = none confirmed. Optional on purpose: a Swiss property whose place is not confirmed (old data, a directory that is not loaded)
+   * is saved all the same.
+   */
+  swissMunicipalityCode: z
+    .string()
+    .regex(/^[0-9]{1,4}$/, 'property.validation.swissMunicipalityCode.format')
+    .or(z.literal(''))
+    .optional(),
   postalCode: z.string().min(3, 'property.validation.postalCode.required'),
   /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
   country: z.enum(['IT', 'CH']),
@@ -125,6 +136,7 @@ export function propertyFormDefaults(
     return {
       ...shortStayDefaults,
       comuneIstatCode: '',
+      swissMunicipalityCode: '',
       country: 'IT' as const,
       currency: 'EUR' as const,
       // Long-term property: no short-stay rate nor guests until the owner lists it for short stays.
@@ -140,6 +152,7 @@ export function propertyFormDefaults(
     unit: property.unit ?? '',
     city: property.city,
     comuneIstatCode: property.comuneIstatCode ?? '',
+    swissMunicipalityCode: property.swissMunicipalityCode ?? '',
     postalCode: property.postalCode,
     latitude: property.latitude,
     longitude: property.longitude,
@@ -176,6 +189,10 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
     amenities: values.amenities,
     country: values.country,
     currency: values.currency,
+    // The municipality the host confirmed from the official Swiss directory (E29/F01/US02/T01), only for a property in Switzerland: null
+    // (nothing confirmed) clears the stored one on an update, and a create stores none. A property of Italy never sends it: the server
+    // clears it itself when an imported draft changes country, and a save of another field must not touch what it keeps.
+    ...(values.country === 'CH' ? { swissMunicipalityCode: values.swissMunicipalityCode || null } : {}),
   };
   if (variant === 'long-rent') return payload;
 
@@ -195,31 +212,5 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
   };
 }
 
-// Exact C# PropertyAmenity enum names — used as API values
-export const COMMON_AMENITIES = [
-  'WiFi',
-  'AirConditioning',
-  'Heating',
-  'Kitchen',
-  'Washer',
-  'Dryer',
-  'TV',
-  'FreeParking',
-  'Pool',
-  'HotTub',
-  'Gym',
-  'Elevator',
-  'Balcony',
-  'Terrace',
-  'Garden',
-  'BBQGrill',
-  'Fireplace',
-  'PetFriendly',
-  'SmokeDetector',
-  'FirstAidKit',
-  'FireExtinguisher',
-  'CarbonMonoxideDetector',
-];
-
-// Amenity labels are now resolved via getAmenityLabel() from @/lib/i18n-labels
-// See amenity.{key} entries in locale JSONs
+// The amenities a property can carry, and their labels and groups, are the catalog of `GET /api/public/amenities` (NF-33):
+// `useAmenityCatalog()` in `@/queries/use-amenity-catalog`, the one source of them.

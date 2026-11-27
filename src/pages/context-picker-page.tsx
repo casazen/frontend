@@ -1,3 +1,4 @@
+import { ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,14 +8,17 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { NavIcon } from '@/components/layout/nav-icon';
 import { getAccessibleAreas } from '@/config/areas';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useMe } from '@/queries/use-users';
 
 export function ContextPickerPage() {
   const { t } = useTranslation();
   const { contexts, isReady, setActiveContext } = useWorkspace();
+  const { data: profile, isLoading: profileLoading } = useMe();
   const isRecovering = useEmptyWorkspaceRecovery(contexts.length, isReady);
+  const showHostSetup = !!profile && (!profile.orgId || profile.onboardingRequired === true);
 
-  if (!isReady || isRecovering) {
+  if (!isReady || isRecovering || profileLoading) {
     return <LoadingScreen message={t('shared.contextPicker.loading')} />;
   }
 
@@ -22,7 +26,7 @@ export function ContextPickerPage() {
     return <Navigate to="/app/no-access" replace />;
   }
 
-  if (contexts.length === 1) {
+  if (contexts.length === 1 && !showHostSetup) {
     return <Navigate to={contexts[0].defaultRoute} replace />;
   }
 
@@ -33,20 +37,20 @@ export function ContextPickerPage() {
   return (
     // A screen of the signed-in app without a shell, where a user with several areas lands after the login: like the
     // header of the shells it carries the id that the e2e logins wait for (UI-00).
-    <div data-testid="app-ready" className="flex min-h-screen flex-col items-center justify-center gap-6 bg-muted/20 px-4">
-      <CasaZenLogo size={44} />
-      <Card className="w-full max-w-xl">
+    <div data-testid="app-ready" className="workspace-entry flex min-h-dvh flex-col items-center justify-center gap-6 px-4 py-10">
+      <CasaZenLogo size={44} tone="dark" />
+      <Card className="w-full max-w-3xl">
         <CardHeader>
           <CardTitle>{t('shared.contextPicker.title')}</CardTitle>
           <CardDescription>{t('shared.contextPicker.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="grid gap-3 sm:grid-cols-2">
           {areas.map((area) => (
             <Button
               key={area.key}
               variant="outline"
               data-testid={`context-option-${area.key}`}
-              className="h-auto w-full justify-start gap-3 whitespace-normal py-3 text-left"
+              className="relative h-auto w-full flex-col items-start justify-start gap-3 whitespace-normal rounded-xl p-4 text-left"
               onClick={() => setActiveContext(area.key)}
             >
               <span
@@ -55,12 +59,23 @@ export function ContextPickerPage() {
               >
                 <NavIcon name={area.icon} className="h-5 w-5" />
               </span>
+              <ArrowUpRight aria-hidden="true" className="absolute end-4 top-4 size-4 text-muted-foreground" />
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{t(area.nameKey)}</span>
                 <span className="block text-sm font-normal leading-snug text-muted-foreground">{t(area.descriptionKey)}</span>
               </span>
             </Button>
           ))}
+          {showHostSetup && (
+            <Button asChild variant="outline" className="h-auto w-full justify-start whitespace-normal py-3 text-left">
+              <Link to="/onboarding" state={{ completeStep: true }}>
+                <span>
+                  <span className="block font-semibold">{t('shared.contextPicker.setupHost')}</span>
+                  <span className="block text-sm font-normal text-muted-foreground">{t('shared.contextPicker.setupHostDescription')}</span>
+                </span>
+              </Link>
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>

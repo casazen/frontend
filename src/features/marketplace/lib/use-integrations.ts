@@ -25,6 +25,8 @@ export interface Integration {
   status: IntegrationStatus;
   /** How many calendars are linked (calendars only). */
   count?: number;
+  /** Reads its state again: what a page offers when the state is `unknown` (the read failed), so that it is never told as «nothing is on». */
+  reload?: () => void;
 }
 
 /**
@@ -52,6 +54,7 @@ export function useIntegrations(): Integration[] {
       href: CHANNELS_PATH,
       status: properties ? (linked > 0 ? 'active' : 'inactive') : calendars.isPending ? 'loading' : 'unknown',
       count: linked,
+      reload: () => void calendars.refetch(),
     });
   }
 
@@ -62,6 +65,7 @@ export function useIntegrations(): Integration[] {
       icon: CreditCard,
       href: PAYMENTS_PATH,
       status: connect === 'active' ? 'active' : connect === 'pending' ? 'pending' : connect ? 'inactive' : payments.isPending ? 'loading' : 'unknown',
+      reload: () => void payments.refetch(),
     });
   }
 

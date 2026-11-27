@@ -1,5 +1,7 @@
+import type { CheckoutExtraOffer, CheckoutExtraSelection } from '@/types/direct-booking.types';
+import { hasInternationalPrefix } from '@/features/public-booking/checkout/details-schema';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
-import type { CreateDirectBookingPayload, PaymentOption } from '@/types';
+import type { CreateDirectBookingPayload, DirectBookingAttributionPayload, PaymentOption } from '@/types';
 
 /**
  * The checkout in three steps (DB-05), without a screen: what the guest chose, the steps and the body of the booking that is sent.
@@ -23,12 +25,15 @@ export interface DetailsValues {
   country: string;
   /** `HH:mm`, `late` (after the check-in window) or empty (not said). Only a note for the host. */
   arrival: string;
-  /** The optional «send me offers» box: never ticked for the guest. */
-  offers: boolean;
+  /** The optional «E-mail» box for offers (NF-90): never ticked for the guest. */
+  offersEmail: boolean;
+  /** The optional «WhatsApp» box for offers (NF-90): never ticked for the guest, and it needs a phone number. */
+  offersWhatsApp: boolean;
 }
 
 /** Everything the guest has chosen and typed across the three steps, kept while they move between them. */
 export interface CheckoutDraft {
+  extras?: CheckoutExtraSelection[];
   mode: CheckoutMode;
   pay: PayChoice;
   requests: string;
@@ -39,7 +44,24 @@ export interface CheckoutDraft {
   consent: boolean;
 }
 
-export const EMPTY_DETAILS: DetailsValues = { firstName: '', lastName: '', email: '', phone: '', country: '', arrival: '', offers: false };
+export function checkoutExtraLines(offers: CheckoutExtraOffer[] = [], selections: CheckoutExtraSelection[] = [], mode: CheckoutMode) {
+  return offers.flatMap((offer) => {
+    const chosen = selections.find((selection) => selection.id === offer.id && selection.expectedUnitPrice === offer.unitPrice);
+    if (!chosen || mode === 'request' || offer.requiresApproval) return [];
+    return [{ id: offer.id, name: offer.name, quantity: chosen.quantity, cents: Math.round(offer.unitPrice * 100) * chosen.quantity }];
+  });
+}
+
+export const EMPTY_DETAILS: DetailsValues = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  country: '',
+  arrival: '',
+  offersEmail: false,
+  offersWhatsApp: false,
+};
 
 export const EMPTY_DRAFT: CheckoutDraft = {
   mode: 'instant',
@@ -134,14 +156,21 @@ interface BookingPayloadInput {
   /** The ages when every child has one and the tax asks for them; else nothing. */
   childrenAges?: number[];
   draft: CheckoutDraft;
-  /** The version of the offers consent the site carries: the box exists, and its answer is sent, only when there is one. */
+  /** The version of the offers consent the site carries: the two boxes exist, and their answers are sent, only when there is one. */
   marketingConsentVersion?: string | null;
+  /** The version of the soft opt-in notice the site carries: the notice is shown, and its version sent back, only when there is one. */
+  softOptInNoticeVersion?: string | null;
+  /** Where the guest came from (`bookingAttributionOf`): the `utm_*` of the address and the host of the site they came from; left out when there is none. */
+  attribution?: DirectBookingAttributionPayload;
 }
 
 /**
  * The body of the booking, as the API takes it. The stay and the amounts are not decided here: the server prices the same stay again
- * and charges its own total. The consent to the privacy notice is the one of the checkout (given in the last step); the one to the
- * offers is sent only when the site has a text for it, and is whatever the guest chose (never preselected).
+ * and charges its own total. The consent to the privacy notice is the one of the checkout (given in the last step); the ones to the
+ * offers, one per channel (NF-90), are sent only when the site has a text for them, and are whatever the guest chose (never preselected;
+ * WhatsApp never without the phone number it needs). The single `marketingConsent` of before is no longer sent. The soft opt-in notice
+ * (art. 130 c. 4) is not a consent: only the version the page showed goes back, and only when the site has one. Where the guest came from (E27/F01/US02, NF-123)
+ * goes with it as it is, when there is something to say: it is not the guest's data (a source, a campaign, the host of a site), and it changes no price.
  */
 export function buildBookingPayload({
   propertyId,
@@ -153,6 +182,8 @@ export function buildBookingPayload({
   childrenAges,
   draft,
   marketingConsentVersion,
+  softOptInNoticeVersion,
+  attribution,
 }: BookingPayloadInput): CreateDirectBookingPayload {
   const { details } = draft;
   const phone = details.phone.trim();
@@ -172,9 +203,18 @@ export function buildBookingPayload({
       country: details.country,
     },
     consent: { dataProcessing: true, consentVersion: DIRECT_CHECKOUT_CONSENT_VERSION },
+    ...(draft.extras?.length ? { extras: draft.extras } : {}),
     paymentOption: paymentOptionOf(draft.mode, draft.pay),
     ...(requests ? { specialRequests: requests.slice(0, SPECIAL_REQUESTS_MAX) } : {}),
     ...(details.arrival ? { expectedArrivalTime: details.arrival } : {}),
-    ...(marketingConsentVersion ? { marketingConsent: details.offers } : {}),
+    ...(marketingConsentVersion
+      ? {
+          marketingConsentEmail: details.offersEmail,
+          // WhatsApp only on a number that says its country: the server puts its own calling code in front of any other.
+          marketingConsentWhatsApp: details.offersWhatsApp && phone !== '' && hasInternationalPrefix(phone),
+        }
+      : {}),
+    ...(softOptInNoticeVersion ? { softOptInNoticeVersion } : {}),
+    ...(attribution ? { attribution } : {}),
   };
 }

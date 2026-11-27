@@ -20,4 +20,17 @@ describe('protected email destination', () => {
     expect(params.get('returnTo')).toBe(returnTo);
     expect(screen.queryByText('protected upload')).not.toBeInTheDocument();
   });
+
+  it('does not carry the code and the state of the channel manager to the login', () => {
+    // The login stays in the history and Auth0 keeps the `returnTo` while the user signs in: the single-use secrets do not go into it.
+    render(<MemoryRouter initialEntries={['/app/short-rent/integrations/octorate?code=the-code&state=the-state']}><Routes>
+      <Route path="/app/short-rent/integrations/octorate" element={<ProtectedRoute><p>protected wizard</p></ProtectedRoute>} />
+      <Route path="/login" element={<Location />} />
+    </Routes></MemoryRouter>);
+    const search = screen.getByTestId('login-query').textContent!;
+    expect(new URLSearchParams(search).get('returnTo')).toBe('/app/short-rent/integrations/octorate');
+    expect(search).not.toContain('the-code');
+    expect(search).not.toContain('the-state');
+    expect(screen.queryByText('protected wizard')).not.toBeInTheDocument();
+  });
 });

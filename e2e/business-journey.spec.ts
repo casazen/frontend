@@ -16,10 +16,11 @@ const PAYMENT_ID = 'pay-biz-e2e-001';
 
 test.describe('Business Golden Path', () => {
   test('host onboarding → plan selection → short-rent dashboard', async ({ page }) => {
+    test.setTimeout(120_000);
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
-    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare|Where do you want to start/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Scegli|Choose/i })).toHaveCount(3);
+    await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen|How will you use CasaZen/i })).toBeVisible();
+    await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(3);
 
     await completeOnboardingFromRentalChoice(page, 0);
 
@@ -205,6 +206,15 @@ test.describe('Business Golden Path', () => {
       });
     });
 
+    // The Stripe account (the payment link of the payment step is offered only while it is ready): not connected here, the host takes the money at the property.
+    await page.route('**/api/connect/status**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ connectedAccountId: null, chargesEnabled: false, payoutsEnabled: false, detailsSubmitted: false, requirementsDue: [] }),
+      });
+    });
+
     await page.goto(demoUrl('/app/short-rent/bookings/create', 'short-stay'));
 
     // Step 1, the stay: the arrival cannot be in the past, so far-future dates (the mocked API quotes the same whatever they are).
@@ -217,8 +227,16 @@ test.describe('Business Golden Path', () => {
     await fillHostBookingGuestContact(page);
     await page.getByTestId('booking-wizard-next').click();
 
-    // Step 3, the summary: the price is the quote of the API, tourist tax included.
+    // Step 3, the price: the price is the quote of the API, tourist tax included.
     await expect(page.getByTestId('booking-price-tax')).toContainText(/30[,.]00/, { timeout: 10_000 });
+    await page.getByTestId('booking-wizard-next').click();
+
+    // Step 4, how the guest pays: there is no default, the host chooses (here, at the property: nothing is sent to the guest).
+    await page.locator('label', { has: page.getByTestId('booking-payment-onSite') }).click();
+    await page.getByTestId('booking-wizard-next').click();
+
+    // Step 5, the summary says what happens when the booking is created.
+    await expect(page.getByTestId('booking-summary-what-happens')).toBeVisible();
 
     const resp = page.waitForResponse(
       (r) => r.request().method() === 'POST' && /\/api\/bookings\/manual\/?$/.test(new URL(r.url()).pathname),

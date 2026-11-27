@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
+import { FIELD_COLUMNS } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,12 +15,12 @@ import { DEFAULT_PROPERTY_TIMEZONE } from '../schemas/property.schema';
 import { isDuplicateAddressError } from '../property-errors';
 
 const baseShape = {
-  name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
-  address: z.string().min(5, 'property.validation.address.required'),
+  name: z.string().trim().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
+  address: z.string().trim().min(5, 'property.validation.address.required'),
   // The comune is the one thing a property cannot do without afterwards: regional rules, CIN check and tourist tax follow it.
   comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'property.quick.validation.comuneRequired'),
   city: z.string().min(2, 'property.validation.city.required'),
-  postalCode: z.string().min(3, 'property.validation.postalCode.required'),
+  postalCode: z.string().trim().min(3, 'property.validation.postalCode.required'),
 };
 
 const shortRentSchema = z.object({
@@ -78,77 +79,86 @@ export function QuickPropertyForm({ variant, onSubmit, isLoading, disabled, onFu
       });
     } catch (error) {
       if (isDuplicateAddressError(error)) {
-        setError('address', { type: 'server', message: 'property.quick.validation.duplicate' });
+        setError('address', { type: 'server', message: 'property.quick.validation.duplicate' }, { shouldFocus: true });
         return;
       }
-      throw error;
+      // The create mutation reports other failures. Keep the form and its values available for a retry.
     }
   };
 
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="space-y-6" data-testid="quick-property-form">
-      <Card>
-        <CardContent className="space-y-5 pt-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">{t('property.quick.name')}</Label>
-            <Input id="name" autoFocus {...register('name')} placeholder={t('property.quick.namePlaceholder')} disabled={disabled} />
-            <FormFieldError error={errors.name} />
-          </div>
-          <div className="space-y-2" data-testid="property-comune-field">
-            <Label htmlFor="comune">{t('property.form.comune.label')}</Label>
-            <ComunePicker
-              id="comune"
-              istatCode={comuneIstatCode}
-              disabled={disabled}
-              describedBy="comune-hint"
-              onChange={(comune) => {
-                setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldValidate: true });
-                if (comune) setValue('city', comune.name, { shouldValidate: true });
-              }}
-            />
-            <p id="comune-hint" className="text-xs text-muted-foreground">{t('property.form.comune.hint')}</p>
-            <FormFieldError error={errors.comuneIstatCode ?? errors.city} />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="address">{t('property.form.address')}</Label>
-              <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} disabled={disabled} />
-              <FormFieldError error={errors.address} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
-              <Input id="postalCode" inputMode="numeric" {...register('postalCode')} disabled={disabled} />
-              <FormFieldError error={errors.postalCode} />
-            </div>
-          </div>
-          {shortStay && (
-            <div className="grid gap-4 sm:grid-cols-2">
+      <Card className="rounded-2xl">
+        {/* The name and the comune, and beside them once the card is wide the address and the numbers (under each other when it is not). */}
+        <CardContent className="@container pt-6">
+          <div className={FIELD_COLUMNS}>
+            <div className="min-w-0 space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
-                <Input id="maxGuests" type="number" min={1} {...register('maxGuests', { valueAsNumber: true })} disabled={disabled} />
-                <FormFieldError error={errors.maxGuests} />
+                <Label htmlFor="name">{t('property.quick.name')}</Label>
+                <Input id="name" autoFocus {...register('name')} placeholder={t('property.quick.namePlaceholder')} disabled={disabled} />
+                <FormFieldError error={errors.name} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
-                <Input
-                  id="nightlyRate"
-                  type="number"
-                  min={1}
-                  step="0.01"
-                  {...register('nightlyRate', { valueAsNumber: true })}
-                  placeholder={t('property.form.placeholder.nightlyRate')}
+              <div className="space-y-2" data-testid="property-comune-field">
+                <Label htmlFor="comune">{t('property.form.comune.label')}</Label>
+                <ComunePicker
+                  id="comune"
+                  istatCode={comuneIstatCode}
                   disabled={disabled}
+                  describedBy={errors.comuneIstatCode || errors.city ? 'comune-hint comune-error' : 'comune-hint'}
+                  invalid={Boolean(errors.comuneIstatCode || errors.city)}
+                  onChange={(comune) => {
+                    setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldValidate: true });
+                    setValue('city', comune?.name ?? '', { shouldValidate: true });
+                  }}
                 />
-                <p className="text-xs text-muted-foreground">{t('property.quick.rateHint')}</p>
-                <FormFieldError error={errors.nightlyRate} />
+                <p id="comune-hint" className="text-xs text-muted-foreground">{t('property.form.comune.hint')}</p>
+                <FormFieldError id="comune-error" error={errors.comuneIstatCode ?? errors.city} />
               </div>
             </div>
-          )}
+            <div className="min-w-0 space-y-5">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="address">{t('property.form.address')}</Label>
+                  <Input id="address" autoComplete="street-address" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? 'address-error' : undefined}
+                    {...register('address')} placeholder={t('property.form.placeholder.address')} disabled={disabled} />
+                  <FormFieldError id="address-error" error={errors.address} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
+                  <Input id="postalCode" inputMode="numeric" autoComplete="postal-code" {...register('postalCode')} disabled={disabled} />
+                  <FormFieldError error={errors.postalCode} />
+                </div>
+              </div>
+              {shortStay && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="maxGuests">{t('property.form.maxGuests')}</Label>
+                    <Input id="maxGuests" type="number" min={1} {...register('maxGuests', { valueAsNumber: true })} disabled={disabled} />
+                    <FormFieldError error={errors.maxGuests} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nightlyRate">{t('property.form.nightlyRate')}</Label>
+                    <Input
+                      id="nightlyRate"
+                      type="number"
+                      min={1}
+                      step="0.01"
+                      {...register('nightlyRate', { valueAsNumber: true })}
+                      placeholder={t('property.form.placeholder.nightlyRate')}
+                      disabled={disabled}
+                    />
+                    <p className="text-xs text-muted-foreground">{t('property.quick.rateHint')}</p>
+                    <FormFieldError error={errors.nightlyRate} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button type="button" variant="link" className="h-auto p-0" onClick={onFullForm} data-testid="quick-property-full-form">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3">
+        <Button type="button" variant="link" className="h-auto min-h-11 px-2" onClick={onFullForm} data-testid="quick-property-full-form">
           {t('property.quick.fullForm')}
         </Button>
         <Button type="submit" size="lg" disabled={isLoading || disabled} data-testid="quick-property-submit">

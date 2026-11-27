@@ -10,10 +10,12 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { isDemoMode } from '@/config/demo.config';
 import type { SiteLegal } from '../site-config';
 import { sitePageById } from '../site-pages';
 import { BrowserFrame, ChannelsCatalogue, ChannelsStrip, ProductShowcase } from './home-showcase';
 import { BulletList, CardGrid, FeatureCard, PageHeader, Section, SecondaryLink, type Tint } from './site-blocks';
+import { TourEntry, PublicTour } from './demo-tour';
 import { InviteCta } from './site-pages-content';
 
 interface RentGroup {
@@ -45,8 +47,11 @@ export function ShortRentPage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
-      <PageHeader title={t('site.shortRent.title')} intro={t('site.shortRent.intro')}>
+      <PageHeader title={t('site.shortRent.title')} intro={t('site.shortRent.intro')}
+        preview={!isDemoMode && <PublicTour area="short" legal={legal} />}>
+        <TourEntry area="short" />
         <SecondaryLink href={sitePageById('longRent').path}>{t('site.shortRent.otherLink')}</SecondaryLink>
+        <p className="w-full text-ink-600">{t('site.tour.shortIntro')}</p>
       </PageHeader>
       <ChannelsStrip />
       <Section title={t('site.shortRent.featuresTitle')} intro={t('site.shortRent.featuresIntro')}>
@@ -86,8 +91,11 @@ export function LongRentPage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
-      <PageHeader title={t('site.longRent.title')} intro={t('site.longRent.intro')}>
+      <PageHeader title={t('site.longRent.title')} intro={t('site.longRent.intro')}
+        preview={!isDemoMode && <PublicTour area="long" legal={legal} />}>
+        <TourEntry area="long" />
         <SecondaryLink href={sitePageById('shortRent').path}>{t('site.longRent.otherLink')}</SecondaryLink>
+        <p className="w-full text-ink-600">{t('site.tour.longIntro')}</p>
       </PageHeader>
       <Section title={t('site.longRent.featuresTitle')} intro={t('site.longRent.featuresIntro')}>
         <CardGrid>

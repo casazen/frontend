@@ -4,7 +4,14 @@ import { fillHostBookingGuestContact } from './helpers/onboarding';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import { NEW_PROPERTY_ID, buildCreatedProperty } from './fixtures/properties.fixtures';
 import { mockCinComplianceApi } from './helpers/cin-mock';
-import { mockAlloggiatiApi, mockCheckInApi, mockBookingDetailApi, DEMO_CHECKIN_TOKEN, DEMO_BOOKING_ID } from './helpers/alloggiati-mock';
+import {
+  mockAlloggiatiApi,
+  mockCheckInApi,
+  mockBookingDetailApi,
+  DEMO_CHECKIN_TOKEN,
+  DEMO_BOOKING_ID,
+  demoSwissPublicCheckInContext,
+} from './helpers/alloggiati-mock';
 
 const TAX_RATE_ID = 'tax-e2e-001';
 const GUEST_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
@@ -374,6 +381,15 @@ test.describe('Italian Compliance Golden Path', () => {
         });
       });
 
+      // The Stripe account (the payment link of the payment step is offered only while it is ready): not connected here, the host takes the money at the property.
+      await page.route('**/api/connect/status**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ connectedAccountId: null, chargesEnabled: false, payoutsEnabled: false, detailsSubmitted: false, requirementsDue: [] }),
+        });
+      });
+
       await page.goto(demoUrl('/app/short-rent/bookings/create', 'short-stay'));
 
       // Step 1, the stay: the arrival cannot be in the past, so far-future dates (the mocked API quotes the same whatever they are).
@@ -386,8 +402,16 @@ test.describe('Italian Compliance Golden Path', () => {
       await fillHostBookingGuestContact(page);
       await page.getByTestId('booking-wizard-next').click();
 
-      // Step 3, the summary: the tourist tax is a line of the price.
+      // Step 3, the price: the tourist tax is a line of the price.
       await expect(page.getByTestId('booking-price-tax')).toContainText(/20[,.]00/);
+      await page.getByTestId('booking-wizard-next').click();
+
+      // Step 4, how the guest pays: there is no default, the host chooses (here, at the property).
+      await page.locator('label', { has: page.getByTestId('booking-payment-onSite') }).click();
+      await page.getByTestId('booking-wizard-next').click();
+
+      // Step 5, the summary: the button of the wizard creates the booking.
+      await expect(page.getByTestId('booking-summary-what-happens')).toBeVisible();
 
       const resp = page.waitForResponse(
         (r) => r.request().method() === 'POST' && /\/api\/bookings\/manual\/?$/.test(new URL(r.url()).pathname),
@@ -413,6 +437,8 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('checkin-page')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByRole('heading', { name: /Check-in ospite|Guest check-in/i })).toBeVisible();
       await expect(page.getByTestId('checkin-progress')).toBeVisible();
+      // The first step is the document photo. Typing the data skips it; Avanti appears on the next step.
+      await page.getByTestId('checkin-enter-manually').click();
 
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
       // CO-02: the document is asked again (the number on file is never sent back to the guest).
@@ -421,12 +447,62 @@ test.describe('Italian Compliance Golden Path', () => {
       await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
 
-      // The last step shows the privacy notice first: moving to it must not submit the form.
       await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
       await expect(page.getByTestId('checkin-success')).toHaveCount(0);
+      await page.locator('#privacy-read').check();
       await page.getByTestId('checkin-submit').click();
       await expect(page.getByTestId('checkin-success')).toBeVisible({ timeout: 10_000 });
       expect(authHeader).toBeUndefined();
+    });
+
+    test('public check-in form of a Ticino property asks the home and the plate instead of the Italian residence', async ({ page }) => {
+      await mockCheckInApi(page, demoSwissPublicCheckInContext);
+
+      const sent: { body?: { vehiclePlate?: string; guests?: Array<Record<string, unknown>> } } = {};
+      page.on('request', (request) => {
+        if (request.method() === 'POST' && request.url().includes(`/api/public/checkin/${DEMO_CHECKIN_TOKEN}`)) {
+          sent.body = request.postDataJSON() as typeof sent.body;
+        }
+      });
+
+      await page.goto(`/checkin/${DEMO_CHECKIN_TOKEN}`);
+
+      await expect(page.getByTestId('checkin-page')).toBeVisible({ timeout: 15_000 });
+      // No image of the document is kept for a Swiss property (D6): the optional photo step says so.
+      await expect(page.getByTestId('checkin-document-not-archived')).toBeVisible();
+      await page.getByTestId('checkin-enter-manually').click();
+
+      // Never an Italian-only question of a Swiss stay: the home replaces the residence, and the plate is asked once for the whole stay.
+      await expect(page.locator('#guest-0-residenceStreet')).toBeVisible();
+      await expect(page.locator('#guest-0-residenceInItaly')).toHaveCount(0);
+      await expect(page.locator('#guest-0-residenceStreet')).toHaveAttribute('autocomplete', 'street-address');
+      await expect(page.locator('#guest-0-residencePostalCode')).toHaveAttribute('autocomplete', 'postal-code');
+      await expect(page.locator('#guest-0-residenceCityName')).toHaveAttribute('autocomplete', 'address-level2');
+      await page.locator('#guest-0-residenceStreet').fill('Via Nassa 5');
+      await page.locator('#guest-0-residencePostalCode').fill('6900');
+      await page.locator('#guest-0-residenceCityName').fill('Lugano');
+      await page.locator('#guest-0-residenceCountryName').fill('Svizzera');
+      await page.locator('#stay-vehicle-plate-input').fill('ti 123 456');
+      await page.getByRole('button', { name: /Avanti|Next/i }).click();
+
+      await page.locator('#guest-0-documentType').selectOption('Passport');
+      await page.locator('#guest-0-documentNumber').fill('X1234567');
+      await page.locator('#guest-0-documentIssuePlaceName').fill('Zurigo');
+      await page.getByRole('button', { name: /Avanti|Next/i }).click();
+
+      await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
+      await page.locator('#privacy-read').check();
+      await page.getByTestId('checkin-submit').click();
+      await expect(page.getByTestId('checkin-success')).toBeVisible({ timeout: 10_000 });
+
+      expect(sent.body?.vehiclePlate).toBe('TI123456');
+      expect(sent.body?.guests?.[0]).toMatchObject({
+        residenceStreet: 'Via Nassa 5',
+        residencePostalCode: '6900',
+        residenceCityName: 'Lugano',
+        residenceCountryName: 'Svizzera',
+        documentNumber: 'X1234567',
+      });
     });
 
     test('dashboard shows Alloggiati to send manually with overdue badge', async ({ page }) => {

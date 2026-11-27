@@ -43,6 +43,30 @@ describe('AfterSignatureStep — the attestation of a canone concordato (CF-END)
     cleanup();
   });
 
+  it('offers Stripe payment before OpenAPI filing when the provider is available', async () => {
+    get.mockImplementation((url: string) => url === '/leases/lease-1/rli/checklist'
+      ? Promise.resolve({ data: { providerFilingAvailable: true, tosVersion: 'v1', attestationText: 'Delega' } })
+      : Promise.reject(httpError(404)));
+    renderStep(signed({ contractType: 'Libero' }));
+    expect(await screen.findByRole('button', { name: 'Paga e registra con OpenAPI' })).toBeEnabled();
+    expect(screen.getByTestId('lease-after-registration')).toHaveTextContent('Stripe');
+    expect(post).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lease-after-mark-registered')).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Paga e registra con OpenAPI' }));
+    expect(await screen.findByTestId('registration-preparation-dialog')).toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it('does not offer a second registration for contracts handled by the guided service', async () => {
+    get.mockImplementation((url: string) => url === '/leases/lease-1/rli/checklist'
+      ? Promise.resolve({ data: { providerFilingAvailable: true, tosVersion: 'v1', attestationText: 'Delega' } })
+      : Promise.reject(httpError(404)));
+    renderStep(signed({ isConcordatoFacileSource: true }));
+    await waitFor(() => expect(get).toHaveBeenCalledWith('/leases/lease-1/rli/checklist', { params: undefined }));
+    expect(screen.queryByRole('button', { name: 'Paga e registra con OpenAPI' })).not.toBeInTheDocument();
+  });
+
   it('render_ConcordatoWithoutAttestation_AsksForItWithTheReasonAndTheButton_AndStopsNothing', async () => {
     mockDocuments(() => []);
 

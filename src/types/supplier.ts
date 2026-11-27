@@ -207,6 +207,7 @@ export interface SupplierAgendaRequest {
 
 /** `GET api/supplier/calendar`: hours, closed days, time off, blocks and requests for a range. */
 export interface SupplierAgendaCalendar {
+  guestOrders?: { id: string; serviceName: string; requestedFor: string }[];
   from: string;
   to: string;
   timeZone: string;

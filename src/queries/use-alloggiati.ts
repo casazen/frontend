@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { alloggiatiApi } from '@/api/alloggiati.api';
 import { toast } from 'sonner';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { AlloggiatiReportFilters } from '@/types/alloggiati.types';
+import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
+import type { AlloggiatiStatusDto } from '@/types/alloggiati.types';
+import type { GuestsSave } from '@/types/checkin-wizard.types';
 import type { StayGuestSubmit } from '@/types/public-checkin.types';
 
-const ALLOGGIATI_KEY = 'alloggiati';
+export const ALLOGGIATI_KEY = 'alloggiati';
 
 export function useAlloggiatiSummary(propertyId?: string) {
   return useQuery({
@@ -15,19 +18,61 @@ export function useAlloggiatiSummary(propertyId?: string) {
   });
 }
 
-export function useAlloggiatiStatus(bookingId: string, enabled = true) {
+/**
+ * The Alloggiati Web status of a stay. A screen that edits the guests of the stay while it is open (the check-out wizard) asks `refetchOnMount: 'always'`:
+ * the client does not read an unobserved query again by default, and the status it holds may be older than the data the host has just completed. The page of the
+ * booking asks it too, with a short `staleTime`: the guests are written to the channel manager meanwhile, by the retry job or on their own (E20/F01).
+ */
+export function useAlloggiatiStatus(bookingId: string, enabled = true, options: { refetchOnMount?: boolean | 'always'; staleTime?: number } = {}) {
   return useQuery({
     queryKey: [ALLOGGIATI_KEY, 'status', bookingId],
     queryFn: () => alloggiatiApi.getStatus(bookingId),
     enabled: !!bookingId && enabled,
+    ...options,
   });
 }
 
-export function useAlloggiatiGuestSummary(bookingId: string) {
+/**
+ * The summary of the guests of a stay, as the record of the portal holds them: names, birth, citizenship, document (masked). A screen that shows it in a layer that
+ * goes away (the editor of the guests inside the check-out wizard) asks `gcTime: 0`, so that nothing of it stays in the cache once the layer is closed; the default
+ * keeps it for ten minutes after the last screen that used it.
+ */
+export function useAlloggiatiGuestSummary(bookingId: string, options: { gcTime?: number } = {}) {
   return useQuery({
     queryKey: [ALLOGGIATI_KEY, 'guest-summary', bookingId],
     queryFn: () => alloggiatiApi.getGuestSummary(bookingId),
     enabled: !!bookingId,
+    ...options,
+  });
+}
+
+/**
+ * The host asks to try again to write the guests of the stay to the channel manager (`POST`, needs `alloggiati.submit`). The answer is the status of the stay as it is
+ * afterwards plus what the retry did (`retry`, the message under the button): the status goes into the cache without that part, so it stays a status, and the other
+ * screens that show the stay (the proofs and the log of the booking, the cockpit) are read again. A refusal (409 while another send of the stay runs, 403, 404) leaves the
+ * status as it was and reads it again, so the screen shows what is true now. The request holds nothing of a guest, but the mutation is dropped as soon as nobody watches it
+ * (`gcTime: 0`) and keeps a failure without its request, as the other writes about guests do.
+ */
+export function useRetryOctorateWrite(bookingId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async (): Promise<AlloggiatiStatusDto> => {
+      try {
+        return await alloggiatiApi.retryOctorateWrite(bookingId);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSuccess: (answer) => {
+      queryClient.setQueryData<AlloggiatiStatusDto>([ALLOGGIATI_KEY, 'status', bookingId], { ...answer, retry: null });
+      void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY, 'booking', bookingId] });
+      void queryClient.invalidateQueries({ queryKey: ['compliance'] });
+    },
+    onError: () => {
+      void queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY, 'status', bookingId] });
+    },
   });
 }
 
@@ -50,41 +95,29 @@ export function useMarkAlloggiatiSentManually() {
 
 /**
  * Host entry of the guests of the stay (CO-12). Field errors (400) are shown on the form by the caller; other errors get
- * a toast with the problem message.
+ * a toast with the problem message. What it is given is the personal data of the guests (names, documents and, in Switzerland, the home): the mutation is dropped as
+ * soon as nothing observes it (`gcTime: 0`) and a refusal is kept without the request that was sent (`withoutRequest`: the status and the body of the answer stay,
+ * which is what the form turns into words on the fields). The guests alone, or with the plate of the stay where the regime asks it (`GuestsSave`).
  */
 export function useReplaceStayGuests(bookingId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (guests: StayGuestSubmit[]) => alloggiatiApi.replaceStayGuests(bookingId, guests),
+    gcTime: 0,
+    mutationFn: async (save: StayGuestSubmit[] | GuestsSave) => {
+      const { guests, vehiclePlate } = Array.isArray(save) ? { guests: save, vehiclePlate: undefined } : save;
+      try {
+        return await (vehiclePlate === undefined
+          ? alloggiatiApi.replaceStayGuests(bookingId, guests)
+          : alloggiatiApi.replaceStayGuests(bookingId, guests, vehiclePlate));
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
     onSuccess: (summary) => {
       queryClient.setQueryData([ALLOGGIATI_KEY, 'guest-summary', bookingId], summary);
       queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY] });
       toast.success(i18n.t('alloggiati.editGuests.saved'));
     },
-  });
-}
-
-/**
- * List of Alloggiati Web reports with filters (NF-14). The list changes as reports are sent or receive errors, so it
- * reads again when the page is opened.
- */
-export function useAlloggiatiReports(filters?: AlloggiatiReportFilters) {
-  return useQuery({
-    queryKey: [ALLOGGIATI_KEY, 'reports', filters],
-    queryFn: () => alloggiatiApi.getReports(filters),
-    refetchOnMount: true,
-  });
-}
-
-/**
- * Row-level errors for a specific Alloggiati report (AC-NF14-3). Errors are displayed with TipoErrore codes from the
- * Test operation.
- */
-export function useAlloggiatiErrors(reportId: string) {
-  return useQuery({
-    queryKey: [ALLOGGIATI_KEY, 'errors', reportId],
-    queryFn: () => alloggiatiApi.getReportErrors(reportId),
-    enabled: !!reportId,
   });
 }

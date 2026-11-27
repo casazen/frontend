@@ -1,5 +1,6 @@
 import type { FiscalReportKind } from '@/api/fiscal.api';
 import type { HostReportKind } from '@/api/reports.api';
+import { isFeatureRuleEnabled, type FeatureFlagKey, type FeatureFlags } from '@/config/feature-flags';
 import { PAYMENTS_PATH, previousMonthRange } from '@/features/payments/lib/payment-list';
 import type { PeriodPresetId } from '@/features/reports/report-period';
 
@@ -7,7 +8,11 @@ export type ReportId =
   | 'revenue'
   | 'occupancy'
   | 'channels'
+  | 'channelCosts'
+  | 'collections'
   | 'touristTax'
+  | 'touristTaxSummary'
+  | 'touristTaxYearEnd'
   | 'annual'
   | 'withholding'
   | 'alloggiati'
@@ -38,7 +43,7 @@ interface PageSource {
 
 export type ReportSource = HostSource | FiscalSource | PageSource;
 
-/** One row of the page "Report": fixed configuration, eight of them. The words of each are `reports.items.<id>.*`. */
+/** One row of the page "Report": fixed configuration, eleven of them and a twelfth behind a flag. The words of each are `reports.items.<id>.*`. */
 export interface ReportDefinition {
   id: ReportId;
   type: ReportType;
@@ -47,6 +52,8 @@ export interface ReportDefinition {
   source: ReportSource;
   /** The formats of the file, none for a row that leads to a page. */
   formats: readonly ReportFormat[];
+  /** The row of a page that exists only while a backend flag is on: while it is off the row is not in the list, as the page is not in the router (see `reportsFor`). */
+  featureFlag?: FeatureFlagKey;
 }
 
 /** A report the page can download (the dialog asks for the days and the format). */
@@ -57,12 +64,31 @@ export function isDownloadable(report: ReportDefinition): report is Downloadable
 }
 
 const ALLOGGIATI_PATH = '/app/short-rent/alloggiati';
+const TOURIST_TAX_SUMMARY_PATH = '/app/short-rent/reports/tourist-tax';
+const TOURIST_TAX_YEAR_END_PATH = '/app/short-rent/reports/tourist-tax/year-end';
+const COLLECTIONS_PATH = '/app/short-rent/reports/collections';
+const CHANNEL_COSTS_PATH = '/app/short-rent/reports/channel-costs';
 
 export const REPORTS: readonly ReportDefinition[] = [
   { id: 'revenue', type: 'financial', suggested: 'thisMonth', source: { kind: 'host', report: 'revenue-by-property' }, formats: ['csv'] },
   { id: 'occupancy', type: 'operational', suggested: 'thisMonth', source: { kind: 'host', report: 'occupancy-by-property' }, formats: ['csv'] },
   { id: 'channels', type: 'operational', suggested: 'last3Months', source: { kind: 'host', report: 'bookings-by-channel' }, formats: ['csv'] },
+  // What each channel costs, gross, commission and net (NF-98), and what came in, what is still to collect and what reached the account
+  // (NF-97): two pages of their own, where the files (CSV and Excel) are downloaded too.
+  { id: 'channelCosts', type: 'financial', suggested: null, source: { kind: 'page', href: () => CHANNEL_COSTS_PATH }, formats: [] },
+  { id: 'collections', type: 'financial', suggested: null, source: { kind: 'page', href: () => COLLECTIONS_PATH }, formats: [] },
   { id: 'touristTax', type: 'fiscal', suggested: 'last3Months', source: { kind: 'fiscal', report: 'touristTax' }, formats: ['csv', 'pdf'] },
+  // What is owed and what was paid, comune by comune, with the receipts: it has a page of its own, where the host also records a payment.
+  { id: 'touristTaxSummary', type: 'fiscal', suggested: null, source: { kind: 'page', href: () => TOURIST_TAX_SUMMARY_PATH }, formats: [] },
+  // The year-end files for the comuni and for Ticino (E18/F01/US02/T03): a page of its own, behind the flag of the tax exports like the endpoints it reads.
+  {
+    id: 'touristTaxYearEnd',
+    type: 'fiscal',
+    suggested: null,
+    source: { kind: 'page', href: () => TOURIST_TAX_YEAR_END_PATH },
+    formats: [],
+    featureFlag: 'taxReportingExports',
+  },
   { id: 'annual', type: 'fiscal', suggested: 'thisYear', source: { kind: 'fiscal', report: 'annual' }, formats: ['csv', 'pdf'] },
   { id: 'withholding', type: 'fiscal', suggested: 'thisYear', source: { kind: 'fiscal', report: 'withholding' }, formats: ['csv', 'pdf'] },
   { id: 'alloggiati', type: 'operational', suggested: null, source: { kind: 'page', href: () => ALLOGGIATI_PATH }, formats: [] },
@@ -76,3 +102,11 @@ export const REPORTS: readonly ReportDefinition[] = [
     formats: [],
   },
 ];
+
+/**
+ * The rows of the list for the flags the backend reports: a row of a page behind a flag is there only while the flag is on (the page is not in the router otherwise, and its endpoints answer 404), so with every flag off
+ * the list is the one it always was.
+ */
+export function reportsFor(flags: Partial<FeatureFlags> | undefined): readonly ReportDefinition[] {
+  return REPORTS.filter((report) => isFeatureRuleEnabled(flags, report.featureFlag));
+}

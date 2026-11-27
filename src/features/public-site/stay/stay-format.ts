@@ -1,11 +1,13 @@
 import type { TFunction } from 'i18next';
+import { currencyCodeOf, formatAmount, formatMoney, type MoneyDigits } from '@/lib/money-format';
 import { isStayDate } from '@/lib/stay-dates';
 
 /**
  * How the stay is written on the public site (DB-20): dates, the range of a stay, the price of a night and the guests, in the
  * language of the page. Dates are stay dates (`YYYY-MM-DD`), shown as written (never moved by a time zone). The formatters are
  * kept: a calendar writes hundreds of dates at every render and an `Intl.DateTimeFormat` is slow to make. The locale of the
- * language of the page is `siteLocale` of `lib/site-language.ts`.
+ * language of the page is `siteLocale` of `lib/site-language.ts`; the way an amount is written, and what is written when the data
+ * has no currency, is `formatMoney` of `lib/money-format.ts`.
  */
 
 const dateFormats = new Map<string, Intl.DateTimeFormat>();
@@ -65,23 +67,35 @@ export function weekdayName(index: number, locale: string): string {
   return capitalize(writeDate(`2026-10-${String(5 + index).padStart(2, '0')}`, locale, { weekday: 'long' }));
 }
 
-const priceFormats = new Map<string, Intl.NumberFormat>();
+/**
+ * `165 €` (or `€165`), with the cents only when there are some. The currency is the one of the data (`CHF` for a home in Switzerland): when the data
+ * gives none, or gives something that is not a code, nothing is guessed and nothing throws: the amount is written bare and the phrase says the
+ * currency is not available (`165 (valuta non disponibile)`).
+ */
+export function formatPrice(cents: number, currency: string | null | undefined, locale: string, t: TFunction): string {
+  return formatMoney(cents / 100, currency, locale, t, digitsOf(cents));
+}
 
-/** `165 €` (or `€165`), with the cents only when there are some. */
-export function formatPrice(cents: number, currency: string, locale: string): string {
-  const withCents = Math.round(cents) % 100 !== 0;
-  const key = `${locale}|${currency}|${withCents ? 2 : 0}`;
-  let format = priceFormats.get(key);
-  if (!format) {
-    format = new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: withCents ? 2 : 0,
-      maximumFractionDigits: withCents ? 2 : 0,
-    });
-    priceFormats.set(key, format);
-  }
-  return format.format(cents / 100);
+/** The cents are written only when there are some: `165`, but `165,50`. */
+function digitsOf(cents: number): MoneyDigits {
+  const digits = Math.round(cents) % 100 !== 0 ? 2 : 0;
+  return { minimumFractionDigits: digits, maximumFractionDigits: digits };
+}
+
+/**
+ * The price with nothing said about its currency: only the number (`165`, `165,50`), with the same rule of the cents. It is for where a slider spans homes of
+ * two currencies and there is no one currency to name; data that lacks a currency is written with the phrase (`formatPrice`).
+ */
+export function formatPriceAmount(cents: number, locale: string): string {
+  return formatAmount(cents / 100, locale, digitsOf(cents));
+}
+
+/**
+ * The price for a place too small for the phrase (a cell of the calendar): as `formatPrice` when the data say a currency, and only the number when they do
+ * not. The phrase that says the currency is not available is then in the name of the day and in the total of the stay, where there is room for it.
+ */
+export function formatPriceShort(cents: number, currency: string | null | undefined, locale: string, t: TFunction): string {
+  return currencyCodeOf(currency) ? formatPrice(cents, currency, locale, t) : formatPriceAmount(cents, locale);
 }
 
 /** `3 ospiti · con animale`: the guests in a field of the search bar. */

@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from 'axios';
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { isGuidedDemo } from '@/lib/guided-demo/session';
 import { apiConfig } from '@/config/api.config';
 import { ACCOUNT_INACTIVE_CODE, AuthTokenUnavailableError, getProblemCode } from '@/lib/api-errors';
 
@@ -11,6 +12,8 @@ declare module 'axios' {
      * requires a token and is not sent at all when none can be obtained.
      */
     public?: boolean;
+    /** The calling screen handles authentication failures without a global redirect. */
+    localAuthRecovery?: boolean;
     /** Internal: the request was already replayed once after a forced token refresh. */
     authRetried?: boolean;
   }
@@ -123,6 +126,10 @@ function auth0ErrorCode(error: unknown): string {
 }
 
 async function attachAccessToken(config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> {
+  if (isGuidedDemo()) {
+    config.adapter = (await import('@/lib/guided-demo/adapter')).guidedDemoAdapter;
+    return config;
+  }
   if (config.public) return config;
 
   const getAccessToken = authHandlers?.getAccessToken;
@@ -133,7 +140,7 @@ async function attachAccessToken(config: InternalAxiosRequestConfig): Promise<In
     token = await getAccessToken();
   } catch (error) {
     const reason = auth0ErrorCode(error);
-    if (INTERACTIVE_LOGIN_ERRORS.has(reason)) requestRelogin();
+    if (!config.localAuthRecovery && INTERACTIVE_LOGIN_ERRORS.has(reason)) requestRelogin();
     throw new AuthTokenUnavailableError(reason, { cause: error });
   }
 
@@ -151,6 +158,25 @@ function isAccessDenied(config: InternalAxiosRequestConfig, data: unknown): bool
 }
 
 /**
+ * The two 403 of an account that the app answers with a page of its own, whatever the method: the account that was deactivated (`account_inactive`, PL-03) and the host who
+ * has not finished the onboarding (`onboarding_required`, PL-02). Runs the handler of the one the body names and says whether it was one; `account_inactive` goes first, an
+ * inactive account takes precedence over every other 403 code. The response interceptor below calls it for a rejected 403. A read that takes a 403 as an answer
+ * (`validateStatus`) never reaches that interceptor, which only sees rejected responses: such a read calls this itself, before it tells the refusal in its own words.
+ */
+export function handleAccountStateForbidden(data: unknown): boolean {
+  const code = getProblemCode(data);
+  if (code === ACCOUNT_INACTIVE_CODE) {
+    accountInactiveHandler?.();
+    return true;
+  }
+  if (code === ONBOARDING_REQUIRED_CODE) {
+    onboardingRequiredHandler?.();
+    return true;
+  }
+  return false;
+}
+
+/**
  * Create axios instance with base configuration
  */
 const axiosInstance: AxiosInstance = axios.create({
@@ -159,10 +185,14 @@ const axiosInstance: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // The API takes a bearer token and never a cookie, so there is no XSRF token to look for. Left on, axios reads `document.cookie` for one on every request to the origin
+  // of the page (an API under the host of the page: the dev server, the L2 suite, the cross-origin proof of the widgets), and a page of `/embed/*` reads no cookie
+  // (NF-144, AC-NF144-3): where the browser refuses the cookie that read throws and takes every request with it, the widget never loads.
+  withXSRFToken: false,
 });
 
 async function handleResponseError(error: unknown): Promise<AxiosResponse> {
-  if (!isAxiosError(error) || !error.response || !error.config || error.config.public) {
+  if (!isAxiosError(error) || !error.response || !error.config || error.config.public || error.config.localAuthRecovery) {
     throw error;
   }
 
@@ -183,13 +213,8 @@ async function handleResponseError(error: unknown): Promise<AxiosResponse> {
       if (refreshed) return axiosInstance.request(config);
     }
     requestRelogin();
-  } else if (status === 403 && getProblemCode(data) === ACCOUNT_INACTIVE_CODE) {
-    // Deactivated account (PL-03): whatever the method, never the no-access page nor a re-login. Keep this branch
-    // before every other 403 code (onboarding_required included): an inactive account takes precedence.
-    accountInactiveHandler?.();
-  } else if (status === 403 && getProblemCode(data) === ONBOARDING_REQUIRED_CODE) {
-    onboardingRequiredHandler?.();
-  } else if (status === 403 && isAccessDenied(config, data)) {
+  } else if (status === 403 && !handleAccountStateForbidden(data) && isAccessDenied(config, data)) {
+    // A 403 of the account (deactivated, onboarding) has its own page and never the no-access page nor a re-login: it was handled just above, before the generic 403.
     forbiddenHandler?.();
   }
 

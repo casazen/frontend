@@ -127,9 +127,12 @@ describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
     expect(supplierApi.fetchSupplierInboxItem).toHaveBeenCalledWith(ID);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Pulizie');
     expect(screen.getByTestId('supplier-request-where')).toHaveTextContent('Roma (00184)');
-    expect(screen.getByTestId('supplier-request-where')).toHaveTextContent('Indirizzo dopo che accetti');
+    // «Indirizzo e contatti» right under the facts says that the address comes after the take: the facts do not say it twice (UX round 2026-11).
+    expect(screen.getByTestId('supplier-request-where')).not.toHaveTextContent('Indirizzo dopo che accetti');
     expect(screen.getByTestId('supplier-request-when')).toHaveTextContent('lunedì 12 ottobre 2026');
+    // The urgency is said once, beside the day: the job group has no row of its own for it.
     expect(screen.getByTestId('supplier-request-when')).toHaveTextContent('Urgenza: Alta');
+    expect(screen.getByTestId('supplier-request-job')).not.toHaveTextContent('Urgenza');
     expect(screen.getByTestId('supplier-request-stay')).toHaveTextContent('Dal 9 ottobre 2026 al 12 ottobre 2026');
     expect(screen.getByTestId('supplier-request-notes')).toHaveTextContent('Cambio biancheria per 4 persone');
     expect(screen.getByTestId('supplier-request-contact-hidden')).toHaveTextContent(
@@ -189,6 +192,16 @@ describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
     await waitFor(() => expect(requestsApi.takeServiceRequest).toHaveBeenCalledWith(ID));
     expect(await screen.findByTestId('supplier-request-host-name')).toHaveTextContent('Villa Rosa Affitti');
     expect(screen.getByTestId('supplier-request-now')).toHaveTextContent('Il lavoro è in programma');
+  });
+
+  it('closes a taken housekeeping job and removes the complete action after confirmation', async () => {
+    requestsApi.completeServiceRequest.mockResolvedValue({});
+    supplierApi.fetchSupplierInboxItem.mockResolvedValueOnce(TAKEN_REQUEST)
+      .mockResolvedValue({ ...TAKEN_REQUEST, status: 'Completato' });
+    renderPage();
+    fireEvent.click(await screen.findByTestId('supplier-request-complete'));
+    await waitFor(() => expect(requestsApi.completeServiceRequest).toHaveBeenCalledWith(ID, undefined));
+    await waitFor(() => expect(screen.queryByTestId('supplier-request-complete')).not.toBeInTheDocument());
   });
 
   it('SupplierRequestDetailPage_TakeConflict_ReloadsTheRequest', async () => {

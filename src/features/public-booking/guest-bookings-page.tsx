@@ -1,29 +1,29 @@
 import { useState, type ReactNode } from 'react';
 import { isAxiosError } from 'axios';
+import { useMutation } from '@tanstack/react-query';
+import { ApiClient } from '@/api/client';
 import { useOutletContext, useParams, useSearchParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CalendarCheck, Clock, Loader2, Mail, RefreshCw, SearchX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FormFieldError } from '@/components/shared/form-field-error';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useSendGuestCheckInLink } from '@/queries/use-public-booking';
 import { isGuestSessionRefused, useGuestBooking, useGuestSession } from '@/queries/use-guest-session';
 import { getProblemCode, getProblemMessage, getRetryAfterSeconds, isTransientRequestError } from '@/lib/api-errors';
-import { formatBookingCode, isValidBookingCode } from '@/lib/booking-code';
+import { formatBookingCode } from '@/lib/booking-code';
 import { formatRomeDateTime, formatStayDate, nightsBetween } from '@/lib/stay-dates';
 import { useSiteMoney } from '@/features/public-site/hooks/use-site-money';
 import type { GuestBookingDetails, GuestBookingLookupPayload, GuestBookingStatus, PublicOrgDto } from '@/types';
+import { GuestAccessForm } from './guest-access-form';
 import { GuestAreaSlot } from './guest-area-slot';
 
 interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
-/** 404 of the guest area: nothing matches code + email on this site (the same answer whatever does not match). */
+/** 404 of the guest area: nothing matches the code and the proof (email, or the last four digits of the phone) on this site (the same answer whatever does not match). */
 const NOT_FOUND_CODE = 'guest_booking_not_found';
 
 /** Nothing matches: an empty state, not an error. */
@@ -34,22 +34,6 @@ function isNotFound(error: unknown): boolean {
     getProblemCode(error.response.data) === NOT_FOUND_CODE
   );
 }
-
-// The messages are i18n keys: FormFieldError translates them when rendering.
-const lookupSchema = z.object({
-  bookingCode: z
-    .string()
-    .trim()
-    .min(1, 'publicBooking.guestBookings.codeRequired')
-    .refine(isValidBookingCode, 'publicBooking.guestBookings.codeInvalid'),
-  email: z
-    .string()
-    .trim()
-    .min(1, 'publicBooking.guestBookings.emailRequired')
-    .email('publicBooking.emailValidation'),
-});
-
-type LookupForm = z.infer<typeof lookupSchema>;
 
 const STATUS_LABEL_KEYS: Record<GuestBookingStatus, string> = {
   Confirmed: 'publicBooking.guestBookings.status.Confirmed',
@@ -122,6 +106,10 @@ function useFailureMessage() {
  * this site, with which the booking is read. "Esci" forgets it. The email stays in memory only. Nothing about the booking is shown
  * until the backend has matched both; "not found" is an empty state, distinct from an error; a session that has ended asks for the
  * email again, with the code already filled in. The features of the guest area (messages…) hook in at {@link GuestAreaSlot}.
+ *
+ * With the flag `whiteLabelHost` on, the guest may prove the booking with the last four digits of the phone instead of the email (NF-143,
+ * `GuestAccessForm`): the same page, the same session, one text for every failure to find a booking. The digits stay in memory only too, and a
+ * session opened with them does not know the email, so the online check-in link asks for it before it is sent.
  */
 export function GuestBookingsPage() {
   const { t } = useTranslation();
@@ -129,8 +117,19 @@ export function GuestBookingsPage() {
   const { orgSlug = '' } = useParams<{ orgSlug: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const [searchParams] = useSearchParams();
+  const { flags } = useFeatureFlags();
+  // The words of the page change with the flag, never what the page does with the flag off.
+  const proofChoice = flags.whiteLabelHost;
   const siteSlug = org?.slug || orgSlug;
   const { session, openSession, closeSession } = useGuestSession(siteSlug);
+  const recoverPortal = useMutation({
+    mutationFn: (payload: GuestBookingLookupPayload) =>
+      ApiClient.post<{ url: string }>('/public/guest-portal/recover', payload, { public: true }),
+    onSuccess: ({ url }) => window.location.assign(url),
+    onError: (error, payload) => {
+      if (isNotFound(error)) openSession.mutate(payload);
+    },
+  });
   // What the guest typed to open the session. The email is only here, in memory: the online check-in link asks for it again.
   const [credentials, setCredentials] = useState<GuestBookingLookupPayload | null>(null);
 
@@ -147,11 +146,18 @@ export function GuestBookingsPage() {
   const showForm = !showBooking && !showLoading && !showBookingError;
 
   const openNotFound = isNotFound(openSession.error);
-  const notFound = openNotFound || (showForm && bookingNotFound);
+  const notFound = !recoverPortal.isPending && (openNotFound || (showForm && bookingNotFound));
+  const sessionError = recoverPortal.isError && !isNotFound(recoverPortal.error) ? recoverPortal.error
+    : openSession.isError && !openNotFound ? openSession.error : null;
 
   const submit = (payload: GuestBookingLookupPayload) => {
     setCredentials(payload);
-    openSession.mutate(payload);
+    if (flags.guestPortal && 'email' in payload) {
+      openSession.reset();
+      recoverPortal.mutate(payload);
+    } else {
+      openSession.mutate(payload);
+    }
   };
 
   const signOut = () => {
@@ -163,12 +169,20 @@ export function GuestBookingsPage() {
     <div className="space-y-8">
       <section className="space-y-2">
         <h2 className="text-3xl font-bold">{t('publicBooking.myBookingsTitle')}</h2>
-        {!showBooking && <p className="text-muted-foreground">{t('publicBooking.myBookingsDescription')}</p>}
+        {!showBooking && (
+          <p className="text-muted-foreground">
+            {t(proofChoice ? 'publicBooking.guestBookings.proofDescription' : 'publicBooking.myBookingsDescription')}
+          </p>
+        )}
       </section>
 
       {showBooking && activeSession && booking.data && (
         <div className="max-w-2xl space-y-4">
-          <GuestBookingCard booking={booking.data} siteSlug={siteSlug} knownEmail={credentials?.email ?? null} />
+          <GuestBookingCard
+            booking={booking.data}
+            siteSlug={siteSlug}
+            knownEmail={credentials !== null && 'email' in credentials ? credentials.email : null}
+          />
           <GuestAreaSlot session={activeSession} booking={booking.data} />
           <div className="flex flex-wrap items-center gap-3">
             <Button variant="outline" onClick={signOut} data-testid="guest-bookings-search-another">
@@ -223,14 +237,8 @@ export function GuestBookingsPage() {
         <div className="max-w-md space-y-4">
           <GuestAccessForm
             initialCode={linkedCode ?? session?.bookingCode ?? ''}
-            pending={openSession.isPending}
-            onSubmit={(data) =>
-              submit({
-                orgSlug: siteSlug,
-                bookingCode: formatBookingCode(data.bookingCode) ?? data.bookingCode,
-                email: data.email,
-              })
-            }
+            pending={openSession.isPending || recoverPortal.isPending || recoverPortal.isSuccess}
+            onSubmit={(proof) => submit({ orgSlug: siteSlug, ...proof })}
           />
 
           {sessionEnded && !openSession.isError && (
@@ -242,7 +250,9 @@ export function GuestBookingsPage() {
               <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700" />
               <div>
                 <p className="font-medium text-amber-900">{t('publicBooking.guestBookings.sessionExpiredTitle')}</p>
-                <p className="text-sm text-amber-800">{t('publicBooking.guestBookings.sessionExpiredDescription')}</p>
+                <p className="text-sm text-amber-800">
+                  {t(proofChoice ? 'publicBooking.guestBookings.proofSessionExpiredDescription' : 'publicBooking.guestBookings.sessionExpiredDescription')}
+                </p>
               </div>
             </div>
           )}
@@ -256,12 +266,14 @@ export function GuestBookingsPage() {
               <SearchX className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-700" />
               <div>
                 <p className="font-medium text-amber-900">{t('publicBooking.guestBookings.notFoundTitle')}</p>
-                <p className="text-sm text-amber-800">{t('publicBooking.guestBookings.notFoundDescription')}</p>
+                <p className="text-sm text-amber-800">
+                  {t(proofChoice ? 'publicBooking.guestBookings.proofNotFoundDescription' : 'publicBooking.guestBookings.notFoundDescription')}
+                </p>
               </div>
             </div>
           )}
 
-          {openSession.isError && !openNotFound && (
+          {sessionError && (
             <div
               className="flex gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4"
               role="alert"
@@ -269,8 +281,8 @@ export function GuestBookingsPage() {
             >
               <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
               <div className="space-y-2">
-                <p className="text-sm text-destructive">{failureMessage(openSession.error)}</p>
-                {credentials && isTransientRequestError(openSession.error) && (
+                <p className="text-sm text-destructive">{failureMessage(sessionError)}</p>
+                {credentials && isTransientRequestError(sessionError) && (
                   <Button variant="outline" size="sm" onClick={() => submit(credentials)}>
                     <RefreshCw className="mr-2 h-4 w-4" />
                     {t('publicBooking.guestBookings.retry')}
@@ -282,71 +294,6 @@ export function GuestBookingsPage() {
         </div>
       )}
     </div>
-  );
-}
-
-/**
- * The form that opens the session: booking code and email. It is mounted only while it is shown, so the email is always empty when
- * it comes back (after "Esci" or when a session has ended) and the code starts as the one of the link or of the ended session.
- */
-function GuestAccessForm({
-  initialCode,
-  pending,
-  onSubmit,
-}: {
-  initialCode: string;
-  pending: boolean;
-  onSubmit: (data: LookupForm) => void;
-}) {
-  const { t } = useTranslation();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LookupForm>({
-    resolver: zodResolver(lookupSchema),
-    defaultValues: { bookingCode: initialCode, email: '' },
-  });
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate data-testid="guest-bookings-form">
-      <div className="space-y-2">
-        <Label htmlFor="guest-booking-code">{t('publicBooking.guestBookings.codeLabel')}</Label>
-        <Input
-          id="guest-booking-code"
-          placeholder={t('publicBooking.guestBookings.codePlaceholder')}
-          autoComplete="off"
-          autoCapitalize="characters"
-          spellCheck={false}
-          className="font-mono uppercase tracking-wider"
-          disabled={pending}
-          aria-invalid={errors.bookingCode ? true : undefined}
-          aria-describedby="guest-booking-code-hint"
-          {...register('bookingCode')}
-        />
-        <p id="guest-booking-code-hint" className="text-xs text-muted-foreground">
-          {t('publicBooking.guestBookings.codeHint')}
-        </p>
-        <FormFieldError error={errors.bookingCode} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="guest-booking-email">{t('publicBooking.guestBookings.emailLabel')}</Label>
-        <Input
-          id="guest-booking-email"
-          type="email"
-          autoComplete="email"
-          placeholder={t('publicBooking.emailPlaceholder')}
-          disabled={pending}
-          aria-invalid={errors.email ? true : undefined}
-          {...register('email')}
-        />
-        <FormFieldError error={errors.email} />
-      </div>
-      <Button type="submit" disabled={pending} className="w-full">
-        {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {pending ? t('publicBooking.guestBookings.searching') : t('publicBooking.guestBookings.submit')}
-      </Button>
-    </form>
   );
 }
 

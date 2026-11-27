@@ -3,40 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { FormFieldError } from '@/components/shared/form-field-error';
 import { formatDateTime } from '@/lib/utils';
 import {
   useQuesturaCredentialsStatus,
   useRemoveQuesturaCredentials,
   useSetQuesturaCredentials,
 } from '@/queries/use-questura-credentials';
-import {
-  QUESTURA_CREDENTIALS_MAX_LENGTH,
-  type SetQuesturaCredentialsRequest,
-} from '@/types/questura-credentials.types';
-
-type Field = keyof SetQuesturaCredentialsRequest;
-
-const FIELDS: { field: Field; type: 'text' | 'password'; autoComplete: string }[] = [
-  { field: 'username', type: 'text', autoComplete: 'off' },
-  { field: 'password', type: 'password', autoComplete: 'new-password' },
-  { field: 'wsKey', type: 'password', autoComplete: 'off' },
-];
-
-const EMPTY: SetQuesturaCredentialsRequest = { username: '', password: '', wsKey: '' };
-
-/** Client checks mirroring the API (required, maximum length); the API validates again. */
-function validate(values: SetQuesturaCredentialsRequest): Partial<Record<Field, string>> {
-  const errors: Partial<Record<Field, string>> = {};
-  for (const { field } of FIELDS) {
-    if (!values[field].trim()) errors[field] = `questuraCredentials.errors.${field}Required`;
-    else if (values[field].length > QUESTURA_CREDENTIALS_MAX_LENGTH[field])
-      errors[field] = `questuraCredentials.errors.${field}TooLong`;
-  }
-  return errors;
-}
+import type { SetQuesturaCredentialsRequest } from '@/types/questura-credentials.types';
+import { QuesturaCredentialsFields } from './questura-credentials-fields';
+import { EMPTY_QUESTURA_CREDENTIALS, validateQuesturaCredentials, type QuesturaCredentialsErrors } from './questura-credentials-form';
 
 interface QuesturaCredentialsCardProps {
   propertyId: string;
@@ -54,24 +29,40 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
   const status = useQuesturaCredentialsStatus(propertyId);
   const save = useSetQuesturaCredentials(propertyId);
   const remove = useRemoveQuesturaCredentials(propertyId);
-  const [values, setValues] = useState<SetQuesturaCredentialsRequest>(EMPTY);
-  const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
+  const [values, setValues] = useState<SetQuesturaCredentialsRequest>(EMPTY_QUESTURA_CREDENTIALS);
+  const [errors, setErrors] = useState<QuesturaCredentialsErrors>({});
+  const [profile, setProfile] = useState<'preserve' | 'single' | 'apartments'>('preserve');
+  const [apartmentId, setApartmentId] = useState('');
+  const [invalidApartment, setInvalidApartment] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
 
-  const configured = status.data?.configured === true;
+  const busy = save.isPending || remove.isPending;
+  const configured = status.isSuccess && status.data.configured;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const found = validate(values);
+    if (busy) return;
+    const found = validateQuesturaCredentials(values);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
-    save.mutate(values, {
+    const apartment = Number(apartmentId);
+    const invalid = profile === 'apartments' && (!/^\d+$/.test(apartmentId) || !Number.isSafeInteger(apartment) || apartment < 1 || apartment > 2147483647);
+    setInvalidApartment(invalid);
+    if (invalid) return;
+    const data = profile === 'preserve' ? values : { ...values, apartmentId: profile === 'single' ? 0 : apartment };
+    save.mutate(data, {
       // Write-only: the values leave the page as soon as the API has them.
-      onSuccess: () => setValues(EMPTY),
+      onSuccess: () => {
+        setValues(EMPTY_QUESTURA_CREDENTIALS);
+        setProfile('preserve');
+        setApartmentId('');
+      },
+      onSettled: () => save.reset(),
     });
   };
 
   const handleRemove = () => {
+    if (busy) return;
     remove.mutate(undefined, { onSettled: () => setConfirmRemove(false) });
   };
 
@@ -112,33 +103,33 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
 
         <p className="text-xs text-muted-foreground">{t('questuraCredentials.writeOnlyHint')}</p>
 
-        {canEdit && status.data && (
-          <form className="max-w-md space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
-            {FIELDS.map(({ field, type, autoComplete }) => {
-              const id = `questura-${field}`;
-              return (
-                <div key={field} className="space-y-1">
-                  <Label htmlFor={id}>{t(`questuraCredentials.fields.${field}`)}</Label>
-                  <Input
-                    id={id}
-                    type={type}
-                    autoComplete={autoComplete}
-                    spellCheck={false}
-                    value={values[field]}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setValues((current) => ({ ...current, [field]: next }));
-                      setErrors((current) => ({ ...current, [field]: undefined }));
-                    }}
-                    aria-invalid={!!errors[field]}
-                    aria-describedby={errors[field] ? `${id}-error` : undefined}
-                  />
-                  <FormFieldError id={`${id}-error`} message={errors[field]} />
-                </div>
-              );
-            })}
+        {canEdit && status.isSuccess && (
+          <form className="@container min-w-0 space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
+            <QuesturaCredentialsFields
+              values={values}
+              errors={errors}
+              onChange={(field, value) => {
+                setValues((current) => ({ ...current, [field]: value }));
+                setErrors((current) => ({ ...current, [field]: undefined }));
+              }}
+            />
+            <label className="grid gap-1 text-sm font-medium">
+              {t('institutionalPortals.accountProfile')}
+              <select className="rounded-md border bg-background p-2" value={profile}
+                onChange={(event) => { setProfile(event.target.value as typeof profile); setInvalidApartment(false); }}>
+                <option value="preserve">{t('institutionalPortals.preserve')}</option>
+                <option value="single">{t('institutionalPortals.single')}</option>
+                <option value="apartments">{t('institutionalPortals.apartments')}</option>
+              </select>
+            </label>
+            {profile === 'apartments' && <label className="grid gap-1 text-sm font-medium">
+              {t('institutionalPortals.apartmentId')}
+              <input inputMode="numeric" className="rounded-md border bg-background p-2" value={apartmentId}
+                aria-invalid={invalidApartment} onChange={(event) => { setApartmentId(event.target.value); setInvalidApartment(false); }} />
+              {invalidApartment && <span role="alert" className="text-destructive">{t('institutionalPortals.invalidApartment')}</span>}
+            </label>}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <Button type="submit" disabled={save.isPending} data-testid="questura-credentials-save">
+              <Button type="submit" disabled={busy} data-testid="questura-credentials-save">
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {configured ? t('questuraCredentials.replace') : t('questuraCredentials.save')}
               </Button>
@@ -149,7 +140,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
                       type="button"
                       variant="destructive"
                       onClick={handleRemove}
-                      disabled={remove.isPending}
+                      disabled={busy}
                       data-testid="questura-credentials-remove-confirm"
                     >
                       {remove.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -163,6 +154,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
                   <Button
                     type="button"
                     variant="outline"
+                    disabled={busy}
                     onClick={() => setConfirmRemove(true)}
                     data-testid="questura-credentials-remove"
                   >

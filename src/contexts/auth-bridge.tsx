@@ -13,6 +13,7 @@ import { setApiAuthHandlers } from '@/lib/axios';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
 import { clearAllWizardDrafts } from '@/lib/wizard-draft';
 import { currentReturnTo } from '@/lib/auth-return-to';
+import { isOctorateCallbackPath } from '@/features/integrations/octorate/octorate-callback';
 
 const AUTH_PARAMS = {
   audience: import.meta.env.VITE_AUTH0_AUDIENCE || 'https://casazen-api',
@@ -38,8 +39,13 @@ export type AuthBridgeValue = {
   kind: 'auth0' | 'anonymous' | 'demo';
   isLoading: boolean;
   isAuthenticated: boolean;
+  /**
+   * What the sign-in service reported when it could not complete the return from the login (`?error=…&state=…`): the person is not signed in and the app has to say so (E40/F02/US01/T02).
+   * Absent when there is nothing to report, and always where the service is not loaded.
+   */
+  error?: Error;
   user: ReturnType<typeof useAuth0>['user'] | ReturnType<typeof getDemoUser> | undefined;
-  login: (options?: LoginOptions) => void;
+  login: (options?: LoginOptions) => void | Promise<void>;
   logout: () => void;
   logoutToLogin: () => void;
   forceReauth: () => void;
@@ -124,6 +130,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
   const {
     isLoading,
     isAuthenticated,
+    error,
     user,
     loginWithRedirect,
     logout: auth0Logout,
@@ -146,7 +153,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
         ...options?.appState,
         ...(options?.returnTo ? { returnTo: options.returnTo } : {}),
       };
-      void loginWithRedirect({
+      return loginWithRedirect({
         authorizationParams: {
           ...AUTH_PARAMS,
           ...options?.authorizationParams,
@@ -193,6 +200,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
       kind: 'auth0',
       isLoading,
       isAuthenticated,
+      error,
       user,
       login,
       logout,
@@ -204,6 +212,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
     [
       isLoading,
       isAuthenticated,
+      error,
       user,
       login,
       logout,
@@ -230,7 +239,13 @@ export function AuthAppProviders({
   }
 
   return (
-    <Auth0Provider {...authConfig} onRedirectCallback={onRedirectCallback}>
+    <Auth0Provider
+      {...authConfig}
+      // The SDK takes any address with a `code` and a `state` for the end of its own login and would fail on these. The page the
+      // channel manager sends the host back to carries a code and a state of its own: they are not Auth0's, the SDK leaves them alone.
+      skipRedirectCallback={isOctorateCallbackPath(window.location.pathname)}
+      onRedirectCallback={onRedirectCallback}
+    >
       <Auth0AuthBridge>{children}</Auth0AuthBridge>
     </Auth0Provider>
   );

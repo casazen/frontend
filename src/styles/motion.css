@@ -1,0 +1,121 @@
+/*
+ * Motion and touch feedback (UX round of 2026-11, reference: the Airbnb host flows the product owner picked): pages that
+ * arrive softly, buttons and tiles that answer the finger, dialogs that rise on a spring, placeholders with a sweeping light.
+ *
+ * Two kinds, on purpose:
+ *  - Feedback (the press of a button or a tile, the lift of a card under the pointer, the underline of the open tab). Small,
+ *    on `scale`, `transform` and shadows only, it never hides anything: it runs whenever the user allows motion.
+ *  - Entrances (a page, a wizard step, the one highlighted block). They start transparent, so they run only where the app
+ *    says so: `html[data-motion]`, set at start by `lib/motion.ts`, and never under browser automation, where a contrast
+ *    check or a screenshot taken in the middle of a fade would read a half transparent page.
+ * Both stop when the user asks for less motion (and under the redesign the blanket rule of `tokens.css` stops them too).
+ */
+:root {
+  /* Arrivals decelerate hard (they land), exits are shorter than entrances (about 60%). */
+  --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-enter: 320ms;
+  --dur-exit: 190ms;
+  /* The shadow of a card that can be opened, under the pointer: the raised panel of the redesign, a little higher. */
+  --cz-shadow-hover: 0 2px 4px rgb(23 44 46 / 6%), 0 14px 32px rgb(23 44 46 / 12%);
+}
+
+@keyframes cz-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--cz-rise-distance, 10px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cz-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cz-dialog-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+}
+
+@keyframes cz-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes cz-shimmer {
+  from {
+    background-position: 160% 0;
+  }
+  to {
+    background-position: -60% 0;
+  }
+}
+
+@layer components {
+  /* A loading placeholder: a soft light that sweeps across it, instead of a blink. Still when the user asks for less motion. */
+  .cz-shimmer {
+    background-color: var(--color-muted);
+    background-image: linear-gradient(
+      100deg,
+      transparent 20%,
+      color-mix(in oklab, var(--color-card, #fff) 70%, transparent) 50%,
+      transparent 80%
+    );
+    background-repeat: no-repeat;
+    background-size: 200% 100%;
+    animation: cz-shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+/* A dialog in the middle of the screen rises a little on a spring and settles; it leaves faster than it came. `-from-sm`:
+   the same from `sm` up only, for the dialogs that are a sheet from the bottom on a phone (`styles/sheet-bottom.css`). */
+@media (prefers-reduced-motion: no-preference) {
+  .cz-dialog[data-state='open'] {
+    animation: cz-dialog-in var(--dur-enter) var(--ease-spring);
+  }
+  .cz-dialog[data-state='closed'] {
+    animation: cz-dialog-out var(--dur-exit) ease-in forwards;
+  }
+}
+
+@media (width >= 40rem) and (prefers-reduced-motion: no-preference) {
+  .cz-dialog-from-sm[data-state='open'] {
+    animation: cz-dialog-in var(--dur-enter) var(--ease-spring);
+  }
+  .cz-dialog-from-sm[data-state='closed'] {
+    animation: cz-dialog-out var(--dur-exit) ease-in forwards;
+  }
+}
+
+/* Entrances: only where the app allows them (see the note at the top). */
+@media (prefers-reduced-motion: no-preference) {
+  html[data-motion] .cz-enter {
+    animation: cz-rise var(--dur-enter) var(--ease-emphasized) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cz-shimmer {
+    animation: none;
+  }
+}

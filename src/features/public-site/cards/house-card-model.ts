@@ -1,4 +1,8 @@
+import { useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { TFunction } from 'i18next';
+import { useEmbed } from '@/features/embed/embed-context';
+import { embedCampaignOf, embedPropertyHref } from '@/features/embed/embed-urls';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { formatDayMonth } from '@/features/public-site/stay/stay-format';
 import { stayHref, type StayState } from '@/features/public-site/stay/stay-state';
@@ -92,6 +96,25 @@ export function cardLink(orgSlug: string, card: Pick<PublicStayCard, 'id' | 'slu
   return stay && stay.checkIn && stay.checkOut ? stayHref(path, stay) : path;
 }
 
+/** What `useCardLink` gives: the same arguments as `cardLink`. */
+export type CardLink = (orgSlug: string, card: Pick<PublicStayCard, 'id' | 'slug'>, stay: StayState | null) => string;
+
+/**
+ * Where the card of a home (and its pin, and its row in the list of the ones that are not free) leads. On the booking site it is `cardLink`, the page of
+ * the home on the site. Inside the frame of an embeddable widget (NF-144) the site is not there: it is the property widget in the same frame, with the
+ * stay, `from=booking` and the campaign of the page (`embedPropertyHref`), so that no link of the frame ever leaves it for `/book/…`.
+ */
+export function useCardLink(): CardLink {
+  const embed = useEmbed();
+  const { search } = useLocation();
+  // Only a frame carries the campaign of its page from card to card.
+  const campaign = embed ? embedCampaignOf(search) : null;
+
+  return useCallback<CardLink>(
+    (orgSlug, card, stay) => (embed ? embedPropertyHref(embed, card, { stay, campaign }) : cardLink(orgSlug, card, stay)),
+    [embed, campaign],
+  );
+}
 
 /** The home that costs least per night, for the examples that need one (the receipt of the home, the zones). */
 export function cheapestCard<T extends Pick<PublicStayCard, 'price'>>(cards: readonly T[]): T | undefined {
@@ -104,6 +127,8 @@ export function cheapestCard<T extends Pick<PublicStayCard, 'price'>>(cards: rea
 /**
  * Why a home is not free for the stay, in a sentence that also says what to do about it («Libera dal 12 novembre», «Soggiorno minimo
  * 3 notti»); `null` for a home that is free. The server gives the reason, the first free day and the minimum stay; nothing is guessed.
+ * The rules the host set on the nights have their own reasons (closed arrival or departure, the most nights, the advance; NF-36): a
+ * reason this page does not know is still said as «busy», never left out.
  */
 export function availabilityNote(
   card: Pick<PublicStayCard, 'availability' | 'maxGuests'>,
@@ -119,6 +144,14 @@ export function availabilityNote(
         : t('siteHome.card.busy');
     case 'min_nights':
       return t('siteHome.card.minNights', { count: minNights ?? 1 });
+    case 'arrival_closed':
+      return t('siteHome.card.arrivalClosed');
+    case 'departure_closed':
+      return t('siteHome.card.departureClosed');
+    case 'max_nights':
+      return t('siteHome.card.maxNights');
+    case 'advance':
+      return t('siteHome.card.advance');
     case 'guests':
       return t('siteHome.card.tooManyGuests', { count: card.maxGuests });
     case 'pets':

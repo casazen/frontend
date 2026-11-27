@@ -1,3 +1,4 @@
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -9,6 +10,7 @@ import { useNavCounts } from '@/hooks/use-nav-counts';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useUiStore } from '@/store/ui-store';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { MenuSearch } from './menu-search';
 import { AreaSwitcher } from './area-switcher';
 import { GroupedNavLinks } from './grouped-nav-links';
 import { SheetAccount } from './sheet-account';
@@ -42,9 +44,10 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
   const isWide = useMediaQuery(FROM_TABLET_QUERY);
 
   const permissionCheck = (ctx: AppContextKey, permission: string) => hasPermission(ctx, permission);
-  const nav = getContextNav(contextKey, permissionCheck, flags, { withoutBottom: true });
-  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
-  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags));
+  const canOpenPath = useCommercialRouteAccess();
+  const nav = getContextNav(contextKey, permissionCheck, flags, { withoutBottom: true, canOpenPath });
+  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags, canOpenPath);
+  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags, canOpenPath));
 
   // No sheet on a tablet or a computer: it would hide a page that has its own sidebar.
   useEffect(() => {
@@ -108,13 +111,15 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
             <AreaSwitcher contextKey={contextKey} organizationName={organizationName} />
           </div>
           <nav aria-label={t('nav.menuLabel', { area: t(getArea(contextKey).nameKey) })}>
-            <GroupedNavLinks
-              nav={nav}
-              matchEntries={matchEntries}
-              variant="sheet"
-              counts={counts}
-              onNavigate={() => setOpen(false)}
-            />
+            <MenuSearch key={contextKey} entries={matchEntries} onNavigate={() => setOpen(false)}>
+              <GroupedNavLinks
+                nav={nav}
+                matchEntries={matchEntries}
+                variant="sheet"
+                counts={counts}
+                onNavigate={() => setOpen(false)}
+              />
+            </MenuSearch>
           </nav>
           <SheetAccount onNavigate={() => setOpen(false)} />
         </div>

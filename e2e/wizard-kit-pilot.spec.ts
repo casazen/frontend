@@ -329,10 +329,13 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
       const bar = await page.getByTestId('checkout-complete-button').boundingBox();
       expect(notes, 'the notes are on the page').not.toBeNull();
       expect(notes!.y + notes!.height, 'the notes end above the buttons').toBeLessThanOrEqual(bar!.y + 1);
-      // What the page puts after the wizard (the link back to the booking) is not left under the buttons either: they stay above it.
-      const back = await page.getByRole('link', { name: 'Torna alla prenotazione' }).boundingBox();
-      expect(back, 'the link back to the booking is on the page').not.toBeNull();
-      expect(back!.y, 'and it starts below the buttons').toBeGreaterThanOrEqual(bar!.y + bar!.height - 1);
+      // What the page puts after the wizard (the way out, "Save and exit", where the link back to the booking was) is not left under the buttons either: they stay above it.
+      // It is a tap target of its own, and there is no link back to the booking under the wizard any more.
+      const exit = await page.getByTestId('checkout-save-exit').boundingBox();
+      expect(exit, '"Save and exit" is on the page').not.toBeNull();
+      expect(exit!.height, 'a tap target of 44 px').toBeGreaterThanOrEqual(44);
+      expect(exit!.y, 'and it starts below the buttons').toBeGreaterThanOrEqual(bar!.y + bar!.height - 1);
+      await expect(page.getByRole('link', { name: 'Torna alla prenotazione' })).toHaveCount(0);
 
       // The summary and its links fit too.
       await expect(page.getByTestId('checkout-summary').getByRole('link', { name: /^Modifica / }).first()).toBeVisible();

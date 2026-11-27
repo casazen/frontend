@@ -126,12 +126,16 @@ export function needsOnboarding(user: UserWithRoles, profile?: OnboardingProfile
 /**
  * Pages a host without properties must still reach: the creation of the property itself (the destination, so no loop),
  * and the pages that are not about the property (account settings and plan, profile, legal documents). The plan and billing page of
- * the account area (AM-08a) is one of them: the plan pages of the rental areas hand a billing administrator over to it.
+ * the account area (AM-08a) is one of them: the plan pages of the rental areas hand a billing administrator over to it. So is the
+ * connection of the channel manager (E02/F01/US01/T04): whoever has the listings there and none in CasaZen yet starts from it, and the
+ * page of the consent is also the one the channel manager sends the host back to (the callback), which must open as it is.
  */
 const FIRST_PROPERTY_EXEMPT_PATTERNS = [
   /^\/(?:app\/(?:short|long)-rent\/)?properties\/(?:create|new)(?:\/|$)/,
   /^\/app\/(?:short|long)-rent\/settings(?:\/|$)/,
   /^\/app\/account\/billing(?:\/|$)/,
+  /^\/app\/short-rent\/integrations\/octorate(?:\/|$)/,
+  /^\/app\/short-rent\/onboarding(?:\/|$)/,
   /^\/app\/(?:short|long)-rent\/profile(?:\/|$)/,
   /^\/profile(?:\/|$)/,
   /^\/legale(?:\/|$)/,
@@ -158,6 +162,29 @@ export function needsFirstProperty(
   return !FIRST_PROPERTY_EXEMPT_PATTERNS.some((pattern) => pattern.test(pathname));
 }
 
+/** What `GET /users/me` says about a host whose signup may be over (the fields of {@link OnboardingProfile} and two more). */
+export interface SetUpHostProfile extends OnboardingProfile {
+  isActive?: boolean;
+  /** True while the payment of a commercial signup is still pending: the workspace stays closed until it is confirmed. */
+  commercialSetupRequired?: boolean | null;
+}
+
+/**
+ * The rental type of a host the server has set up: an org, a finished onboarding, a rental type of its own, the current
+ * consents and no payment waiting. Such a host owns its workspace through the persisted memberships, whatever the access token
+ * says: the token is issued before the memberships exist and has no role claims until it is renewed, or never when the roles
+ * could not be synced (`rolesSynced: false`). Back from the payment, the missing claims must not keep it on the onboarding.
+ * `null` for anyone else (a supplier, an invited member with no rental type, a setup that is not finished or is withheld).
+ */
+export function getRentalTypeOfHostSetUpByServer(profile?: SetUpHostProfile | null): RentalType | null {
+  if (!profile?.orgId || !profile.onboardingCompletedAt || !profile.rentalType) return null;
+  if (profile.isActive === false || isLinkedSupplier(profile)) return null;
+  if (profile.onboardingRequired === true || profile.consentsAccepted === false || profile.commercialSetupRequired === true) {
+    return null;
+  }
+  return profile.rentalType;
+}
+
 const RENTAL_TYPE_CONTEXT_PREFIXES: Record<RentalType, string[]> = {
   ShortTerm: ['/app/short-rent'],
   LongTerm: ['/app/long-rent'],
@@ -174,14 +201,17 @@ export function getFirstPropertyRoute(rentalType: RentalType): string {
 
 /**
  * Where to go once the onboarding is done: a deep page the guard redirected from when it belongs to a context the chosen
- * rental type opens; otherwise, right after the org was created (`firstRun`), the creation of the first property;
+ * rental type opens; otherwise, right after the org was created (`firstRun`), guided setup when enabled or the first property;
  * otherwise the home of the rental type.
  */
 export function getPostOnboardingRoute(
   rentalType: RentalType,
   from?: string | null,
-  options?: { firstRun?: boolean },
+  options?: { firstRun?: boolean; guidedSetup?: boolean },
 ): string {
+  if (options?.firstRun && options.guidedSetup && rentalType !== 'LongTerm') {
+    return '/app/short-rent/onboarding';
+  }
   const prefixes = RENTAL_TYPE_CONTEXT_PREFIXES[rentalType] ?? [];
   if (from && prefixes.some((prefix) => from === prefix || from.startsWith(`${prefix}/`))) {
     // A new host sent from the bare home of an area is not "going somewhere": it starts with the first property.

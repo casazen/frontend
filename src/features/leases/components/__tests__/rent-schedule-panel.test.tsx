@@ -1,3 +1,4 @@
+import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -56,13 +57,18 @@ function ledger(overrides: Partial<RentLedger> = {}): RentLedger {
   };
 }
 
-function renderPanel() {
+const writer: WorkspaceContextValue = {
+  contexts: [], activeContext: 'long-rent', isReady: true, getDefaultRoute: () => '/app/long-rent', setActiveContext: () => {},
+  hasPermission: (_area, permission) => permission === 'lease.create',
+};
+
+function renderPanel(workspace = writer) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
         <MemoryRouter>
-          <RentSchedulePanel leaseId="lease-1" />
+          <WorkspaceContext.Provider value={workspace}><RentSchedulePanel leaseId="lease-1" /></WorkspaceContext.Provider>
         </MemoryRouter>
       </I18nextProvider>
     </QueryClientProvider>,
@@ -73,6 +79,22 @@ describe('RentSchedulePanel (LT-06)', () => {
   beforeEach(async () => {
     freezeClock('2026-10-10T08:00:00Z');
     await i18n.changeLanguage('it');
+  });
+
+  it('leads a reader to the oldest unresolved installment and hides write actions', async () => {
+    get.mockResolvedValue({ data: ledger({
+      installments: [
+        installment({ id: 'later', dueDate: '2026-11-07' }),
+        installment({ id: 'late', isOverdue: true, residual: 225 }),
+        installment({ id: 'paid', dueDate: '2026-08-01', status: 'Paid' }),
+      ],
+    }) });
+    renderPanel({ ...writer, hasPermission: () => false });
+    const focus = await screen.findByTestId('rent-focus');
+    expect(within(focus).getByRole('link')).toHaveAttribute('href', '#rent-installment-late');
+    expect(focus).toHaveTextContent(/225,00/);
+    expect(document.getElementById('rent-installment-late')).toHaveAttribute('tabindex', '-1');
+    expect(screen.queryByRole('button', { name: i18n.t('rent.edit') })).not.toBeInTheDocument();
   });
 
   afterEach(() => {
@@ -99,6 +121,10 @@ describe('RentSchedulePanel (LT-06)', () => {
 
     expect(await screen.findByTestId('rent-not-signed')).toHaveTextContent('firmato da tutte le parti');
     expect(screen.queryByTestId('rent-schedule-form')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('condominium-bank-link')).not.toBeInTheDocument();
+    expect(screen.getByTestId('rent-not-on-contract')).toHaveTextContent('registro delle spese condominiali');
+    expect(screen.getByRole('link', { name: 'Apri le spese condominiali' })).toHaveAttribute('href', '/app/long-rent/payments');
+    expect(screen.getByRole('link', { name: 'Registro di tutti i canoni' })).toHaveAttribute('href', '/app/long-rent/rents');
   });
 
   it('createSchedule_DefaultsLeftEmpty_SendsOnlyTheCadenceSoTheServerUsesTheLease', async () => {
@@ -126,6 +152,78 @@ describe('RentSchedulePanel (LT-06)', () => {
 
     expect(form.getByRole('alert')).toHaveTextContent('tra 1 e 28');
     expect(form.getByRole('button', { name: 'Genera lo scadenziario' })).toBeDisabled();
+  });
+
+  it('render_WithoutComponents_ShowsTheCurrentTotalAndBlankParts', async () => {
+    get.mockResolvedValue({ data: ledger() });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).getByTestId('rent-composition-total')).toHaveTextContent('950,00');
+    expect(within(row).getByTestId('rent-composition-rent')).toHaveTextContent('—');
+    expect(within(row).getByTestId('rent-composition-residual')).toHaveTextContent('950,00');
+  });
+
+  it('render_WithComponents_ShowsEachPartPaidAndResidual', async () => {
+    get.mockResolvedValue({
+      data: ledger({
+        installments: [
+          installment({
+            amount: 1050,
+            amountPaid: 0,
+            residual: 1050,
+            components: [
+              { kind: 'Rent', amount: 900 },
+              { kind: 'CondominiumAdvance', amount: 150 },
+              { kind: 'CondominiumSettlement', amount: 0 },
+              { kind: 'Other', amount: 0 },
+            ],
+          }),
+        ],
+      }),
+    });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).getByTestId('rent-composition-rent')).toHaveTextContent(/900,00/);
+    expect(within(row).getByTestId('rent-composition-condominiumAdvance')).toHaveTextContent(/150,00/);
+    expect(within(row).getByTestId('rent-composition-condominiumSettlement')).toHaveTextContent(/0,00/);
+    expect(within(row).getByTestId('rent-composition-other')).toHaveTextContent(/0,00/);
+    expect(within(row).getByTestId('rent-composition-total')).toHaveTextContent(/1\.?050,00/);
+    expect(within(row).getByTestId('rent-composition-paid')).toHaveTextContent(/0,00/);
+    expect(within(row).getByTestId('rent-composition-residual')).toHaveTextContent(/1\.?050,00/);
+  });
+
+  it('manualNotice_StaysUntilTheLandlordConfirmsAChannel', async () => {
+    get.mockResolvedValue({
+      data: ledger({
+        manualNotices: [{ id: 'notice-1', kind: 'Budget', title: 'Preventivo 2026', recipientName: 'Giulia Verdi' }],
+      }),
+    });
+    post.mockResolvedValue({ data: undefined });
+
+    renderPanel();
+
+    expect(await screen.findByTestId('rent-manual-notices')).toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('rent-notice-send-notice-1'));
+    const dialog = await screen.findByTestId('rent-notice-dialog');
+    expect(post).not.toHaveBeenCalled();
+    expect(within(dialog).getByTestId('rent-notice-confirm')).toBeDisabled();
+
+    fireEvent.click(within(dialog).getByLabelText('Email'));
+    fireEvent.click(within(dialog).getByTestId('rent-notice-confirm'));
+
+    await waitFor(() =>
+      expect(post).toHaveBeenCalledWith(
+        '/leases/lease-1/condominium-notices/notice-1/send',
+        { channels: ['Email'] },
+        undefined,
+      ),
+    );
   });
 
   it('render_Installments_ShowRealStatesOverdueAndHowTheyWerePaid', async () => {
@@ -163,12 +261,30 @@ describe('RentSchedulePanel (LT-06)', () => {
   it('render_WithoutStripeAccount_OffersOnlyTheOfflinePaymentAndLinksToPayments', async () => {
     get.mockResolvedValue({ data: ledger({ onlinePaymentsAvailable: false }) });
 
-    renderPanel();
+    renderPanel({
+      ...writer,
+      hasPermission: (area, permission) => writer.hasPermission(area, permission) || (area === 'short-rent' && permission === 'property.write'),
+    });
 
     const notice = await screen.findByTestId('rent-online-unavailable');
-    expect(within(notice).getByRole('link', { name: 'Vai a Pagamenti' })).toHaveAttribute('href', '/app/short-rent/settings/payments');
+    expect(within(notice).getByRole('link', { name: 'Impostazioni Stripe' })).toHaveAttribute('href', '/app/short-rent/settings/payments');
     const row = screen.getByTestId('rent-installment');
     expect(within(row).queryByRole('button', { name: 'Invia link di pagamento' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Bonifico con Stripe' })).not.toBeInTheDocument();
+    expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
+  });
+
+  it('openInstallment_DoesNotLinkABankAccountOnTheContract', async () => {
+    get.mockResolvedValue({ data: ledger({ installments: [installment({ currency: 'EUR' })] }) });
+
+    renderPanel();
+
+    const row = await screen.findByTestId('rent-installment');
+    expect(within(row).queryByTestId('rent-stripe-inst-1')).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Bonifico con Stripe' })).not.toBeInTheDocument();
+    expect(within(row).queryByRole('button', { name: 'Collega il conto' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('condominium-bank-link')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Apri le spese condominiali' })).toHaveAttribute('href', '/app/long-rent/payments');
     expect(within(row).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
   });
 
@@ -224,14 +340,19 @@ describe('RentSchedulePanel (LT-06)', () => {
   it('render_LeaseGetsSigned_ReadsTheLedgerAgainAndOffersTheSchedule', async () => {
     // A7-29 (found by the e2e): the panel was rendered while the lease was a draft and kept "not signed yet" after the
     // landlord uploaded the signed contract, until a reload.
-    get.mockResolvedValueOnce({ data: ledger({ canConfigure: false, schedule: null, installments: [] }) });
-    get.mockResolvedValue({ data: ledger({ canConfigure: true, schedule: null, installments: [] }) });
+    let signed = false;
+    get.mockImplementation((url: string) => {
+      if (String(url).includes('bank-links')) return Promise.resolve({ data: { linked: false } });
+      return Promise.resolve({
+        data: ledger({ canConfigure: signed, schedule: null, installments: [] }),
+      });
+    });
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     const tree = (status: string) => (
       <QueryClientProvider client={client}>
         <I18nextProvider i18n={i18n}>
           <MemoryRouter>
-            <RentSchedulePanel leaseId="lease-1" leaseStatus={status} />
+            <WorkspaceContext.Provider value={writer}><RentSchedulePanel leaseId="lease-1" leaseStatus={status} /></WorkspaceContext.Provider>
           </MemoryRouter>
         </I18nextProvider>
       </QueryClientProvider>
@@ -239,10 +360,11 @@ describe('RentSchedulePanel (LT-06)', () => {
     const view = render(tree('Draft'));
     expect(await screen.findByTestId('rent-not-signed')).toBeInTheDocument();
 
+    signed = true;
     view.rerender(tree('Signed'));
 
     expect(await screen.findByRole('button', { name: /Genera lo scadenziario/ })).toBeInTheDocument();
     expect(screen.queryByTestId('rent-not-signed')).not.toBeInTheDocument();
-    expect(get).toHaveBeenCalledTimes(2);
+    expect(get.mock.calls.filter(([url]) => url === RENT_URL)).toHaveLength(2);
   });
 });

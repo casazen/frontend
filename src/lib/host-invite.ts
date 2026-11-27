@@ -1,5 +1,6 @@
 import { acceptHostInvite } from '@/api/host-invites.api';
-import { isTransientRequestError } from '@/lib/api-errors';
+import { isAxiosError } from 'axios';
+import { getProblemCode, isTransientRequestError } from '@/lib/api-errors';
 
 /**
  * Link of a host invite (`/invito-host/:token`).
@@ -11,19 +12,9 @@ import { isTransientRequestError } from '@/lib/api-errors';
  * login also returns to the invite page, which carries the token in its address.
  */
 
-export const HOST_INVITE_PATH_PREFIX = '/invito-host/';
-
+export { HOST_INVITE_PATH_PREFIX, hostInvitePath, isWellFormedHostInviteToken } from './host-invite-path';
+import { isWellFormedHostInviteToken } from './host-invite-path';
 const STORAGE_KEY = 'cz-host-invite';
-/** Same shape as the other tokens of the platform: URL-safe, no separators. */
-const TOKEN_PATTERN = /^[\w.~%+=-]{8,512}$/;
-
-export function isWellFormedHostInviteToken(token: string): boolean {
-  return TOKEN_PATTERN.test(token);
-}
-
-export function hostInvitePath(token: string): string {
-  return `${HOST_INVITE_PATH_PREFIX}${encodeURIComponent(token)}`;
-}
 
 export function savePendingHostInvite(token: string): void {
   if (!isWellFormedHostInviteToken(token)) return;
@@ -51,6 +42,10 @@ export function clearPendingHostInvite(): void {
   }
 }
 
+export function hostInviteNeedsEmailVerification(error: unknown): boolean {
+  return isAxiosError(error) && getProblemCode(error.response?.data) === 'host_invite_email_not_verified';
+}
+
 export type HostInviteAcceptOutcome = { ok: true } | { ok: false; error: unknown };
 
 // Tokens being accepted in this page load: a second call for the same token (StrictMode, re-render) is never sent.
@@ -60,7 +55,7 @@ const accepted = new Set<string>();
 
 /**
  * Accepts the invite once. The stored token is removed before the call, so no other tab or render can send it again;
- * it is put back only when the failure is transient (no answer, 5xx) and worth another try.
+ * it is put back when the request can be retried or email verification is still required.
  */
 export function acceptHostInviteOnce(token: string): Promise<HostInviteAcceptOutcome> {
   if (accepted.has(token)) return Promise.resolve({ ok: true });
@@ -74,7 +69,7 @@ export function acceptHostInviteOnce(token: string): Promise<HostInviteAcceptOut
       return { ok: true };
     },
     (error: unknown): HostInviteAcceptOutcome => {
-      if (isTransientRequestError(error)) savePendingHostInvite(token);
+      if (isTransientRequestError(error) || hostInviteNeedsEmailVerification(error)) savePendingHostInvite(token);
       return { ok: false, error };
     },
   ).finally(() => {

@@ -23,6 +23,8 @@ vi.mock('@/config/demo.config', async (importOriginal) => {
 import { useAuth } from '@/hooks/use-auth';
 import { UsersApi } from '@/api/users.api';
 import { OnboardingGuard } from '../onboarding-guard';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 
 const ROLES_CLAIM = 'https://casazen.app/roles';
 const forceReauth = vi.fn();
@@ -83,28 +85,41 @@ function OnboardingProbe() {
 
 function WorkspaceProbe() {
   const location = useLocation();
-  return <p data-testid="workspace">workspace {location.pathname}</p>;
+  return (
+    <>
+      <p data-testid="workspace">workspace {location.pathname}</p>
+      <p data-testid="workspace-search">{location.search}</p>
+    </>
+  );
 }
 
-function renderGuard(path = '/app/short-rent/properties') {
+function renderGuard(path = '/app/short-rent/properties', guidedSetup = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/onboarding" element={<OnboardingProbe />} />
-          <Route path="/register/claim" element={<p data-testid="claim-page">claim</p>} />
-          <Route path="/account-inactive" element={<p data-testid="account-inactive-page">account disabled</p>} />
-          <Route element={<OnboardingGuard />}>
-            <Route path="/app/*" element={<WorkspaceProbe />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: guidedSetup }, isLoading: false }}>
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path="/onboarding" element={<OnboardingProbe />} />
+            <Route path="/register/claim" element={<p data-testid="claim-page">claim</p>} />
+            <Route path="/account-inactive" element={<p data-testid="account-inactive-page">account disabled</p>} />
+            <Route element={<OnboardingGuard />}>
+              <Route path="/app/*" element={<WorkspaceProbe />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
 }
 
 describe('OnboardingGuard (PL-01)', () => {
+  it('opens guided setup for a new short-term host and allows its pages to load', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', rentalType: 'ShortTerm', hasProperties: false }));
+    renderGuard('/app/short-rent', true);
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('/app/short-rent/onboarding');
+  });
   beforeEach(() => {
     demo.enabled = false;
     sessionStorage.clear();
@@ -161,6 +176,40 @@ describe('OnboardingGuard (PL-01)', () => {
     renderGuard('/app/short-rent/properties/create');
 
     expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/short-rent/properties/create');
+  });
+
+  it('OnboardingGuard_HostWithoutPropertiesOnTheConnectWizard_OpensItAndLeavesTheCallbackInTheAddress', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({
+        orgId: 'org-1',
+        rentalType: 'ShortTerm',
+        onboardingCompletedAt: '2026-06-16T12:00:00Z',
+        onboardingRequired: false,
+        consentsAccepted: true,
+        hasProperties: false,
+      }),
+    );
+
+    // Who has the listings on the channel manager and none in CasaZen yet: the wizard, and the page the consent leads back to.
+    renderGuard('/app/short-rent/integrations/octorate?code=the-code&state=the-state');
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/short-rent/integrations/octorate');
+    // The guard does not touch the answer of the channel manager: the wizard reads it and takes it out of the address.
+    expect(screen.getByTestId('workspace-search')).toHaveTextContent('?code=the-code&state=the-state');
+  });
+
+  it('OnboardingGuard_CallbackOfTheChannelManagerBeforeTheOnboarding_RemembersThePageWithoutTheCodeAndTheState', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ onboardingCompletedAt: '2026-06-16T12:00:00Z' }));
+
+    renderGuard('/app/short-rent/integrations/octorate?code=the-code&state=the-state&step=consent');
+
+    // The `from` stays in the history of the browser: the code and the state are single-use secrets and do not go along.
+    const onboarding = await screen.findByTestId('onboarding-page');
+    expect(onboarding).toHaveTextContent('onboarding from /app/short-rent/integrations/octorate?step=consent');
+    expect(onboarding).not.toHaveTextContent('the-code');
+    expect(onboarding).not.toHaveTextContent('the-state');
   });
 
   it('OnboardingGuard_AdminWithoutProperties_DoesNotOpenTheFirstPropertyCreation', async () => {

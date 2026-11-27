@@ -6,14 +6,19 @@ import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 import { CommandPaletteProvider } from '@/components/shared/command-palette/command-palette-provider';
 import { CommandPaletteTrigger } from '@/components/shared/command-palette/command-palette-trigger';
+import { AlertPopup } from '@/components/shared/alert-popup';
 import { DemoBanner } from '@/components/shared/demo-banner';
 import { DetailDrawerHost } from '@/components/shared/detail-drawer/detail-drawer-host';
+import { ComplianceDrawerReturn } from '@/features/compliance/compliance-drawer/compliance-drawer-welcome';
 import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier-suspended-banner';
 import { AppShellContext } from './app-shell-context';
 import { BottomNav } from './bottom-nav';
 import { ContextSidebar } from './context-sidebar';
-import { GuideLink } from '@/features/help/guide-link';
+import { FirstRunWizard } from '@/features/guide/first-run-wizard';
+import { GuideButton } from '@/features/guide/guide-panel';
 import { NotificationBell } from '@/features/notifications/notification-bell';
+import { AskProvider } from '@/features/assistant/ask/ask-provider';
+import { AskCasaZenButton } from '@/features/assistant/ask/ask-trigger';
 import { Header } from './header';
 import { LegalConsentsNotice } from './legal-consents-notice';
 import { MoreSheet } from './more-sheet';
@@ -40,14 +45,16 @@ interface AppShellLayoutProps {
  * the children, so the header and the menus are not mounted again.
  *
  * The window scrolls (not an inner region): the header and the sidebar are sticky, the bottom bar is fixed, and the
- * minimum height is dynamic (`dvh`) so that the browser bars of a phone do not leave a gap. A page that needs the whole
- * height under the header sizes itself (see `vetrina-page.tsx`).
+ * minimum height is dynamic (`dvh`) so that the browser bars of a phone do not leave a gap. On desktop, a direct child
+ * of `main` with `data-app-viewport` can use the remaining height under the header and scroll its own panes.
  */
 export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
   const mainRef = useRef<HTMLElement>(null);
   const { org, user } = useCurrentUser();
   const organizationName = org?.name ?? null;
-  const shell = useMemo(() => ({ contextKey }), [contextKey]);
+  const viewKey = user?.id ? JSON.stringify([user.id, org?.id ?? null, contextKey]) : undefined;
+  const compact = useUiStore(state => viewKey ? state.workspaceViews[viewKey]?.compact : false);
+  const shell = useMemo(() => ({ contextKey, viewKey }), [contextKey, viewKey]);
   // A page that fixes its primary action above the bottom bar of the phone (`PageHeader`, UI-05) needs room under its content.
   const mobilePrimaryVisible = useUiStore((state) => state.mobilePrimaryVisible);
 
@@ -64,37 +71,55 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
 
   return (
     <AppShellContext.Provider value={shell}>
-      {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
-      <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
-        <SkipLink targetId={MAIN_CONTENT_ID} />
-        <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
-          <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
-          <MoreSheet contextKey={contextKey} organizationName={organizationName} />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <DemoBanner />
-            {/* The notifications bell (UI-12) and the help (UI-08) are handed to the header here too, each only when its function exists. */}
-            <Header search={<CommandPaletteTrigger />} notifications={<NotificationBell />} help={<GuideLink contextKey={contextKey} />} />
-            <main
-              id={MAIN_CONTENT_ID}
-              ref={mainRef}
-              tabIndex={-1}
-              className={cn(
-                'flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6',
-                mobilePrimaryVisible &&
-                  'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',
-              )}
-            >
-              {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
-              <LegalConsentsNotice />
-              {children}
-            </main>
-            <BottomNav contextKey={contextKey} />
+      <AskProvider area={contextKey} userId={user?.id ?? null} orgId={org?.id ?? null} orgName={organizationName}>
+        {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
+        <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
+          <SkipLink targetId={MAIN_CONTENT_ID} />
+          <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey} data-density={compact ? 'compact' : undefined}>
+            <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
+            <MoreSheet contextKey={contextKey} organizationName={organizationName} />
+            <div className="flex min-w-0 flex-1 flex-col lg:has-[>main>[data-app-viewport]]:h-dvh">
+              <DemoBanner />
+              {/* The notifications bell (UI-12) and the guide (the help of UI-08 is inside it) are handed to the header here too, each only when its function exists. */}
+              <Header
+                search={(
+                  <div className="flex items-center gap-1 md:gap-3">
+                    <CommandPaletteTrigger className="min-w-0 md:flex-1" />
+                    <AskCasaZenButton />
+                  </div>
+                )}
+                notifications={<NotificationBell />}
+                help={<GuideButton contextKey={contextKey} />}
+              />
+              <main
+                id={MAIN_CONTENT_ID}
+                ref={mainRef}
+                tabIndex={-1}
+                className={cn(
+                  'flex min-w-0 flex-1 flex-col px-[var(--workspace-gutter)] pt-[var(--workspace-gutter)] pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-[var(--workspace-gutter)]',
+                  'lg:has-[>[data-app-viewport]]:min-h-0 lg:has-[>[data-app-viewport]]:overflow-y-auto',
+                  mobilePrimaryVisible &&
+                    'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',
+                )}
+              >
+                {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
+                <LegalConsentsNotice />
+                {/* The way back from the Cassetto Compliance (CHK-15): puts the host back where they left and says «Bentornato». Nothing on the page otherwise. */}
+                <ComplianceDrawerReturn />
+                {children}
+              </main>
+              <BottomNav contextKey={contextKey} />
+            </div>
           </div>
-        </div>
-        <RouteFocus mainRef={mainRef} />
-        {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
-        <DetailDrawerHost />
-      </CommandPaletteProvider>
+          <RouteFocus mainRef={mainRef} />
+          {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
+          <DetailDrawerHost />
+          {/* The popup alerts (ADR-025): one at a time, over the content, and not while a wizard is open. Only for a signed-in user of the real app (the bell's conditions). */}
+          <AlertPopup />
+          {/* «Inizia con CasaZen» as the first wizard of a new host: a layer of its own, once, at the first access to Affitti brevi. */}
+          {contextKey === 'short-rent' ? <FirstRunWizard /> : null}
+        </CommandPaletteProvider>
+      </AskProvider>
     </AppShellContext.Provider>
   );
 }

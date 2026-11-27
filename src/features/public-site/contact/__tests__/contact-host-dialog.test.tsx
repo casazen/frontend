@@ -25,7 +25,8 @@ function openDialog() {
   fireEvent.click(screen.getByRole('button', { name: 'Apri il modulo' }));
 }
 
-function fillTheForm() {
+function fillTheForm(name = 'Mario Rossi') {
+  fireEvent.change(screen.getByLabelText(i18n.t('hostContact.nameLabel')), { target: { value: name } });
   fireEvent.change(screen.getByLabelText(i18n.t('hostContact.emailLabel')), { target: { value: 'ospite@example.com' } });
   fireEvent.change(screen.getByLabelText(i18n.t('hostContact.messageLabel')), {
     target: { value: 'Siamo in quattro e arriviamo con un cane piccolo: si può?' },
@@ -51,6 +52,16 @@ describe('ContactHostDialog (DB-02b, privacy)', () => {
     expect(publicOrgApi.sendHostContact).not.toHaveBeenCalled();
   });
 
+  it('requires a name before sending a message', async () => {
+    openDialog();
+    fillTheForm('   ');
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('hostContact.send') }));
+
+    expect(await screen.findByText(i18n.t('validation.required'))).toBeInTheDocument();
+    expect(publicOrgApi.sendHostContact).not.toHaveBeenCalled();
+  });
+
   it('ContactHostDialog_ConsentGiven_SendsTheMessageWithTheLanguageAndTheHome', async () => {
     openDialog();
     fillTheForm();
@@ -60,6 +71,7 @@ describe('ContactHostDialog (DB-02b, privacy)', () => {
 
     await waitFor(() => expect(publicOrgApi.sendHostContact).toHaveBeenCalledTimes(1));
     expect(publicOrgApi.sendHostContact).toHaveBeenCalledWith('villa-mare', {
+      name: 'Mario Rossi',
       email: 'ospite@example.com',
       message: 'Siamo in quattro e arriviamo con un cane piccolo: si può?',
       propertyId: 'property-1',

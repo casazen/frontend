@@ -1,8 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LoadingScreen } from '@/components/shared/loading-screen';
-import { isFeatureEnabled, type FeatureFlagKey } from '@/config/feature-flags';
+import { isFeatureRuleEnabled, type FeatureFlagRule } from '@/config/feature-flags';
 import type { AppContextKey } from '@/config/route-manifest';
+import { searchWithoutOctorateCallback } from '@/features/integrations/octorate/octorate-callback';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getContextHomeRoute } from '@/routes/context-home';
@@ -11,8 +12,9 @@ import { ReservedPage } from './reserved-page';
 interface ContextRouteGuardProps {
   contextKey: AppContextKey;
   requiredPermissions?: string[];
-  /** Route behind a backend feature flag: redirects to the context home while the flag is off. */
-  featureFlag?: FeatureFlagKey;
+  permissionMode?: 'any';
+  /** Route behind a backend feature flag (or a list of them, met while any is on): redirects to the context home while the flag is off. */
+  featureFlag?: FeatureFlagRule;
   /**
    * The same page in other contexts (plan and billing, PL-16): a user without `contextKey` who works in one of them is
    * sent there, query string included (e.g. `?checkout=success` of an old Stripe return page), instead of to a home.
@@ -30,6 +32,7 @@ interface ContextRouteGuardProps {
 export function ContextRouteGuard({
   contextKey,
   requiredPermissions = [],
+  permissionMode,
   featureFlag,
   alternatePaths,
   homeWhenDenied = false,
@@ -56,18 +59,23 @@ export function ContextRouteGuard({
   }
 
   // A page behind a flag that is off does not exist yet, for anyone: back to the home of the area.
-  const featureEnabled = !featureFlag || isFeatureEnabled(flags, featureFlag);
+  const featureEnabled = isFeatureRuleEnabled(flags, featureFlag);
   if (!featureEnabled) {
     return <Navigate to={getDefaultRoute(current.contextKey)} replace />;
   }
 
   // The user is in the area but the role lacks the permission of this page (UI-03): say so, instead of a silent redirect.
-  const hasAllPermissions = requiredPermissions.every((permission) => current.permissions.includes(permission));
-  if (!hasAllPermissions) {
+  const hasRequiredPermission = (permission: string) => current.permissions.includes(permission);
+  const allowed = permissionMode === 'any' ? requiredPermissions.some(hasRequiredPermission) : requiredPermissions.every(hasRequiredPermission);
+  if (!allowed) {
     if (homeWhenDenied) {
       const home = getContextHomeRoute(current.contextKey, hasPermission, flags);
       if (home !== pathname) return <Navigate to={`${home}${search}${hash}`} replace />;
     }
+    // The reserved page stays on screen and in the history: on the callback page of the channel manager the code and the state, which this
+    // role can never use, do not stay in the address with it.
+    const kept = searchWithoutOctorateCallback(pathname, search);
+    if (kept !== search) return <Navigate to={{ pathname, search: kept, hash }} replace />;
     return <ReservedPage contextKey={current.contextKey} homePath={getDefaultRoute(current.contextKey)} />;
   }
 

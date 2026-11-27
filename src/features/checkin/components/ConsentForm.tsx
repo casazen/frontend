@@ -19,7 +19,15 @@ export function ConsentForm() {
     <div className="space-y-4" data-testid="consent-form">
       <p className="text-sm text-muted-foreground">{t('checkin.consent.intro')}</p>
 
-      <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        <Checkbox id="marketing-opt-in" checked={anyChannelTicked === true} onCheckedChange={value => {
+          setValue('marketingConsentEmail', value === true);
+          setValue('marketingConsentWhatsApp', value === true);
+          if (!value) setValue('marketingEmail', '', { shouldValidate: true });
+        }} />
+        <Label htmlFor="marketing-opt-in">{t('checkin.marketingOptIn')}</Label>
+      </div>
+      {anyChannelTicked && <div className="space-y-3">
         <div className="flex items-start gap-3 rounded-md border p-4" data-testid="consent-email-channel">
           <Checkbox
             id="marketingConsentEmail"
@@ -47,7 +55,7 @@ export function ConsentForm() {
             <p className="text-xs text-muted-foreground">{t('checkin.consent.whatsappChannelDescription')}</p>
           </div>
         </div>
-      </div>
+      </div>}
 
       {anyChannelTicked && (
         <div className="space-y-2" data-testid="consent-marketing-email">

@@ -4,6 +4,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
 import type { AppContextKey } from '@/config/route-manifest';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { useUiStore } from '@/store/ui-store';
 import { stubViewportWidth } from '@/test/viewport';
 import { MoreSheet } from '../more-sheet';
@@ -109,23 +110,38 @@ describe('MoreSheet (UI-04b)', () => {
         'nav-group-everyday',
         'nav-group-offer',
         'nav-group-management',
-        'nav-group-more',
+        'nav-group-footer',
       ]);
-      // The adempimenti are first on the phone too, with their counter: what the law dates is not tucked in "Altro".
       expect(groups[0]).toHaveAccessibleName('Ogni giorno');
-      expect(tiles(groups[0])).toEqual(['Adempimenti']);
+      expect(tiles(groups[0])).toEqual(['Messaggi', 'Adempimenti']);
       expect(groups[1]).toHaveAccessibleName('La tua offerta');
       expect(tiles(groups[1])).toEqual(['Sito di prenotazione', 'Marketplace']);
       expect(groups[2]).toHaveAccessibleName('Gestione');
       expect(tiles(groups[2])).toEqual(['Incassi']);
-      expect(groups[3]).toHaveAccessibleName('Altro');
-      // Three tiles where there were sixteen: the pages of a section are tabs on the page of their entry, and the profile is in the
-      // account row at the end of the sheet.
-      expect(tiles(groups[3])).toEqual(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen']);
+      // The settings close the sheet as they close the sidebar; the queues are tabs of the Cruscotto, the profile is in the account row
+      // at the end of the sheet: there is no "Altro" group left.
+      expect(groups[3]).toHaveAccessibleName('Impostazioni e inviti');
+      expect(tiles(groups[3])).toEqual(['Impostazioni']);
       // The destinations of the bar are not repeated.
       for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili']) {
         expect(within(sheet()).queryByRole('link', { name })).not.toBeInTheDocument();
       }
+    });
+
+    it('finds nested pages without suggesting pages outside the visible permissions', () => {
+      arrange(['short-rent'], (_context, permission) => permission !== 'booking.read');
+      renderSheet('short-rent');
+      open();
+      const search = within(sheet()).getByRole('searchbox', { name: 'Cerca nel menu' });
+      fireEvent.change(search, { target: { value: 'ospiti' } });
+      expect(within(sheet()).queryByRole('link', { name: /^Ospiti/ })).not.toBeInTheDocument();
+      fireEvent.change(search, { target: { value: 'incassi' } });
+      expect(within(sheet()).getByRole('link', { name: /^Incassi/ })).toHaveAttribute('href', '/app/short-rent/payments');
+      fireEvent.change(search, { target: { value: 'pagina-sconosciuta' } });
+      expect(within(sheet()).getByRole('status')).toHaveTextContent('Nessuna pagina trovata');
+      fireEvent.click(within(sheet()).getByRole('button', { name: 'Azzera la ricerca nel menu' }));
+      expect(search).toHaveFocus();
+      expect(within(sheet()).getByTestId('nav-group-management')).toBeInTheDocument();
     });
 
     it('MoreSheet_Tiles_LeadToTheRealRoutes', () => {
@@ -135,18 +151,18 @@ describe('MoreSheet (UI-04b)', () => {
       open();
 
       expect(within(sheet()).getByRole('link', { name: 'Incassi' })).toHaveAttribute('href', '/app/short-rent/payments');
-      expect(within(sheet()).getByRole('link', { name: 'Organizzazione' })).toHaveAttribute('href', '/app/short-rent/settings/organization');
+      expect(within(sheet()).getByRole('link', { name: 'Impostazioni' })).toHaveAttribute('href', '/app/short-rent/settings');
     });
 
     it('MoreSheet_AreaWithJustAltro_HasNoGroupHeadings', () => {
-      // A role that reads the leases and not the properties: the four places of the bar hold what it can open, so behind "Altro"
-      // there is only "Altro" (for the others, Interventi, which asks for the properties, is a main entry beyond the bar).
-      arrange(['long-rent'], (_ctx, permission) => permission !== 'property.read');
+      // A role that reads the leases and not the properties, and is not the organization administrator: the bar holds what it can open and
+      // nothing is at the foot, so behind "Altro" there is only "Altro". The condominium register needs property.read, so it is absent.
+      arrange(['long-rent'], (_ctx, permission) => permission !== 'property.read' && permission !== ORG_BILLING_ADMIN_PERMISSION);
       renderSheet('long-rent', '/app/long-rent/leases');
 
       open();
 
-      expect(tiles(sheet())).toEqual(['Organizzazione']);
+      expect(tiles(sheet())).toEqual(['Report fiscale']);
       // One group needs no name on the screen (the title says it), and still has one for a screen reader.
       expect(within(sheet()).getByRole('group', { name: 'Altro' })).toBeInTheDocument();
       expect(within(sheet()).queryByText('Altro', { selector: 'p' })).not.toBeInTheDocument();

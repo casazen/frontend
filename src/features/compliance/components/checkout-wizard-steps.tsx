@@ -1,6 +1,5 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -14,26 +13,27 @@ import {
   getServiceCategoryLabel,
   getServiceRequestStatusLabel,
 } from '@/lib/i18n-labels';
+import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { useServiceRequests, useSuppliersByProperty } from '@/queries/use-service-requests';
 import { ServiceCategorySelect } from '@/features/service-requests/components/service-category-picker';
-import { guestDataCompletionPath } from '@/features/bookings/lib/stay-actions';
 import {
   TOURIST_TAX_COLLECTIONS,
   type CheckoutWizardState,
   type TouristTaxCollection,
 } from '@/types/compliance.types';
 import type { CheckoutAnswers } from '../checkout-wizard-model';
+import { alloggiatiNow } from '../lib/checkout-result';
 
 const selectClass =
-  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 type DraftChange = (change: Partial<CheckoutAnswers>) => void;
 
 function SummaryRow({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
-    <div className="flex flex-wrap justify-between gap-2 py-1 text-sm">
+    <div className="grid min-w-0 gap-1 py-2 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium" data-testid={testId}>
+      <dd className="min-w-0 break-words font-semibold" data-testid={testId}>
         {value}
       </dd>
     </div>
@@ -55,7 +55,7 @@ export function StaySummaryStep({
 
   return (
     <div className="space-y-4" data-testid="checkout-step-panel-stay-summary">
-      <dl className="divide-y rounded-md border px-4 py-2">
+      <dl className="divide-y rounded-xl border bg-muted/30 px-4 py-2">
         <SummaryRow label={t('compliance.checkout.stay.guest')} value={stay.guestName || t('compliance.checkout.guestFallback')} />
         <SummaryRow label={t('compliance.checkout.stay.property')} value={stay.propertyName} testId="checkout-stay-property" />
         <SummaryRow
@@ -91,10 +91,15 @@ export function StaySummaryStep({
   );
 }
 
-/** Step 2: the Alloggiati Web communication of the stay; never blocking, with the link where the host sends it. */
-export function AlloggiatiStep({ state }: { state: CheckoutWizardState }) {
+/**
+ * Step 2: the Alloggiati Web communication of the stay; never blocking. The data of the guests are completed in a panel over the wizard (a sub-step that
+ * gives back this same step), never on another page. The status is the one the server holds now: it is read again when the step opens and after the
+ * guests were saved, over the one the wizard started with (a failed read leaves the wizard's own).
+ */
+export function AlloggiatiStep({ state, onCompleteGuestData }: { state: CheckoutWizardState; onCompleteGuestData: () => void }) {
   const { t, i18n } = useTranslation();
-  const { alloggiati } = state;
+  const live = useAlloggiatiStatus(state.bookingId, true, { refetchOnMount: 'always' });
+  const alloggiati = alloggiatiNow(state.alloggiati, live.isError ? undefined : live.data);
   const failed = alloggiati.status === 'Errore' || alloggiati.status === 'Rifiutato';
 
   return (
@@ -130,14 +135,10 @@ export function AlloggiatiStep({ state }: { state: CheckoutWizardState }) {
           {!alloggiati.dataComplete && <p>{t('compliance.checkout.alloggiati.dataIncomplete')}</p>}
         </div>
       )}
-      <Link
-        to={guestDataCompletionPath(state.bookingId)}
-        className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-        data-testid="checkout-alloggiati-link"
-      >
-        {t('compliance.checkout.alloggiati.open')}
-        <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-      </Link>
+      <Button type="button" variant="outline" onClick={onCompleteGuestData} data-testid="checkout-alloggiati-complete">
+        <Users aria-hidden className="mr-2 h-4 w-4" />
+        {t('compliance.checkout.guestData.open')}
+      </Button>
     </div>
   );
 }
@@ -172,9 +173,10 @@ export function CleaningStep({
             {t('serviceRequest.listLoading')}
           </p>
         ) : existing.isError ? (
-          <p role="alert" className="text-sm text-destructive" data-testid="checkout-cleaning-existing-error">
+          <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-destructive" data-testid="checkout-cleaning-existing-error">
             {getProblemMessage(existing.error, t) ?? t('serviceRequest.listLoadError')}
-          </p>
+            <Button type="button" size="sm" variant="outline" onClick={() => void existing.refetch()}>{t('serviceRequest.retry')}</Button>
+          </div>
         ) : (existing.data?.items.length ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground" data-testid="checkout-cleaning-existing-empty">
             {t('serviceRequest.emptyForStay')}
@@ -192,7 +194,7 @@ export function CleaningStep({
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t('compliance.checkout.cleaning.question')}</legend>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm has-checked:bg-primary/5 has-checked:ring-1 has-checked:ring-primary">
           <input
             type="radio"
             name="checkout-cleaning"
@@ -202,7 +204,7 @@ export function CleaningStep({
           />
           {t('compliance.checkout.cleaning.request')}
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm has-checked:bg-primary/5 has-checked:ring-1 has-checked:ring-primary">
           <input
             type="radio"
             name="checkout-cleaning"
@@ -254,7 +256,7 @@ export function CleaningStep({
                 <option value="">{t('serviceRequest.selectSupplier')}</option>
                 {supplierOptions.map((supplier) => (
                   <option key={supplier.orgId} value={supplier.orgId}>
-                    {supplier.legalName}
+                    {supplier.legalName}{supplier.hostOrigin !== undefined && ` · ${t(supplier.hostOrigin ? 'supplier.trusted.privateSupplier' : 'supplier.trusted.marketplace')}`}
                   </option>
                 ))}
               </select>
@@ -343,7 +345,7 @@ export function PropertyReadyStep({ draft, onChange }: { draft: CheckoutAnswers;
     <div className="space-y-4" data-testid="checkout-step-panel-property-ready">
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t('compliance.checkout.propertyReady.question')}</legend>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm has-checked:bg-primary/5 has-checked:ring-1 has-checked:ring-primary">
           <input
             type="radio"
             name="checkout-property-ready"
@@ -353,7 +355,7 @@ export function PropertyReadyStep({ draft, onChange }: { draft: CheckoutAnswers;
           />
           {t('compliance.checkout.propertyReady.yes')}
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm has-checked:bg-primary/5 has-checked:ring-1 has-checked:ring-primary">
           <input
             type="radio"
             name="checkout-property-ready"

@@ -3,10 +3,12 @@ import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { leaseDocumentsApi, type LeaseDocumentKind } from '@/api/lease-documents.api';
+import { leaseDocumentsApi, type LeaseDocument, type LeaseDocumentKind } from '@/api/lease-documents.api';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ErrorState } from '@/components/shared/error-state';
+import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 import { DocumentPages } from '@/components/documents/document-pages';
 import { EMPTY_DOCUMENT, documentReady, prepareDocument, type DocumentSelection } from '@/lib/document-pdf';
@@ -46,6 +48,16 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       const blob = await leaseDocumentsApi.download(leaseId, id); saveBlobAs(blob, fileName);
     },
   });
+  const [pendingDelete, setPendingDelete] = useState<LeaseDocument | null>(null);
+  const remove = useMutation({
+    mutationFn: (documentId: string) => leaseDocumentsApi.remove(leaseId, documentId),
+    onSuccess: async () => {
+      setPendingDelete(null);
+      await client.invalidateQueries({ queryKey: ['lease-documents', leaseId] });
+      void refreshReading();
+      void client.invalidateQueries({ queryKey: CF_SYNC_QUERY_KEY(leaseId) });
+    },
+  });
   const submit = async (event: FormEvent) => {
     event.preventDefault(); if (!documentReady(selection) || upload.isPending || preparing) return;
     setPreparing(true); setValidation(''); setSaved(false);
@@ -61,17 +73,45 @@ export function LeaseDocumentsPanel({ leaseId, canUpload = false }: { leaseId: s
       <h2 id={formId} className="text-lg font-semibold">{t('cfDocuments.documentsTitle')}</h2>
       {documents.isPending ? <p role="status">{t('cfDocuments.loading')}</p> : null}
       {documents.isError ? <ErrorState title={t('cfDocuments.documentsError')} error={documents.error} onRetry={() => void documents.refetch()} /> : null}
-      {documents.data?.length === 0 ? <p>{t('cfDocuments.empty')}</p> : null}
+      {documents.data?.length === 0 ? <p className="text-sm text-muted-foreground" data-testid="lease-documents-empty">{t('cfDocuments.empty')}</p> : null}
       <ul className="space-y-3">
-        {documents.data?.map((document) => <li key={document.id} className="flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0"><p className="break-all">{document.fileName}</p><p className="text-sm text-muted-foreground">{t(`cfDocuments.kinds.${document.kind}`)} · {formatDateTime(document.uploadedAt)}</p>
+        {documents.data?.map((document) => <li key={document.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3">
+          <div className="min-w-0"><p className="break-all font-medium">{document.fileName}</p><p className="text-sm text-muted-foreground">{t(`cfDocuments.kinds.${document.kind}`)} · {formatDateTime(document.uploadedAt)}</p>
             {document.kind === 'Contract' && (document.sections?.length ?? 0) > 1
               ? <p className="text-sm text-muted-foreground" data-testid="lease-document-contains">{t('leaseDocs.contains', { parts: recognizedParts(t, document.sections ?? []) })}</p>
               : null}
           </div>
-          <Button type="button" variant="outline" disabled={download.isPending} onClick={() => download.mutate(document)}>{t('cfDocuments.download')}</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" disabled={download.isPending} onClick={() => download.mutate(document)}>{t('cfDocuments.download')}</Button>
+            <Button
+              type="button"
+              variant="danger-outline"
+              disabled={remove.isPending}
+              aria-label={t('cfDocuments.deleteNamed', { name: document.fileName })}
+              data-testid={`lease-document-delete-${document.id}`}
+              onClick={() => { remove.reset(); setPendingDelete(document); }}
+            >
+              {t('cfDocuments.delete')}
+            </Button>
+          </div>
         </li>)}
       </ul>
+      <ConfirmationDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => { if (!open) setPendingDelete(null); }}
+        title={t('cfDocuments.deleteTitle')}
+        description={t('cfDocuments.deleteDescription', { name: pendingDelete?.fileName ?? '' })}
+        confirmLabel={t('cfDocuments.deleteConfirm')}
+        variant="destructive"
+        isLoading={remove.isPending}
+        onConfirm={async () => { if (pendingDelete) await remove.mutateAsync(pendingDelete.id); }}
+      >
+        {remove.isError ? (
+          <p role="alert" className="text-sm text-destructive" data-testid="lease-document-delete-error">
+            {getProblemMessage(remove.error, t) ?? t('cfDocuments.deleteError')}
+          </p>
+        ) : null}
+      </ConfirmationDialog>
       {download.isError ? <ErrorState title={t('cfDocuments.downloadError')} error={download.error} /> : null}
       {canUpload ? <form onSubmit={submit} className="space-y-3">
         <div className="space-y-2"><Label htmlFor={`${formId}-kind`}>{t('cfDocuments.kind')}</Label>

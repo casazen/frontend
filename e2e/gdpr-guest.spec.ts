@@ -12,7 +12,14 @@ test('guest Privacy exports the JSON returned by the GDPR API (#145)', async ({ 
     ...exported.guest, email: 'giulia@example.test', nationality: 'IT',
     isDeleted: false, erasureRequested: false, marketingConsent: false, hasDocumentScan: false,
   } }));
-  await page.route(/\/api\/bookings(?:[/?].*)?$/, (route) => route.fulfill({ json: { items: [], totalCount: 0, page: 1, pageSize: 20 } }));
+  let guestStayRequests = 0;
+  await page.route(/\/api\/bookings(?:[/?].*)?$/, (route) => {
+    if (new URL(route.request().url()).searchParams.get('guestId') === id) guestStayRequests++;
+    return route.fulfill({ json: { items: [{
+      id: 'stay-gdpr-e2e', propertyName: 'Casa al lago', status: 'CheckedIn', checkInDate: '2026-11-22',
+      checkOutDate: '2026-11-27', numberOfGuests: 2, totalPrice: 500, currency: 'EUR',
+    }], totalCount: 1, page: 1, pageSize: 20 } });
+  });
   await page.route(`**/api/gdpr/guests/${id}`, (route) => route.fulfill({ json: {
     guestId: id, marketing: { granted: false, version: '' }, privacyNotice: { version: '' },
     consentHistory: [], retention: [], isDeleted: false, hasDocumentScan: false, hasOpenBookings: false,
@@ -33,4 +40,12 @@ test('guest Privacy exports the JSON returned by the GDPR API (#145)', async ({ 
   for await (const chunk of stream!) chunks.push(Buffer.from(chunk));
   expect(JSON.parse(Buffer.concat(chunks).toString())).toEqual(exported);
   expect(exports).toBe(1);
+  expect(guestStayRequests).toBe(0);
+  await page.getByTestId('guest-tab-stays').click();
+  const row = page.getByTestId('guest-stay-stay-gdpr-e2e');
+  await expect(row).toHaveAttribute('href', '/app/short-rent/bookings/stay-gdpr-e2e');
+  await expect(page.getByText('Casa al lago')).toHaveCount(1);
+  await expect(row).toContainText('In casa ora');
+  await page.getByTestId('guest-tab-documents').click();
+  await expect(row).toHaveCount(0);
 });

@@ -300,7 +300,8 @@ function QuickEditor({ propertyId, checklist, hints, onSaved, onOpenFull }: Quic
       </section>
 
       <section className="space-y-3" aria-labelledby="safety-quick-floors">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* The question and its counter together (`max-w-xl`): on a wide screen the buttons do not end up at the far end of the step. */}
+        <div className="flex max-w-xl flex-wrap items-center justify-between gap-3">
           <h3 id="safety-quick-floors" className="font-semibold">
             {t(`${T}.floors.question`)}
           </h3>

@@ -1,0 +1,14 @@
+{
+  "propertyWizard": {
+    "owner": {
+      "label": "Owner",
+      "title": "Who owns this home?",
+      "purpose": "Assign the owner and ownership shares. Review the details before saving, without leaving this setup.",
+      "required": "Assign an owner and complete the ownership shares before finishing an agency-managed property.",
+      "adminRequired": "Ask your agency administrator to assign the owner and confirm the ownership shares before you continue.",
+      "ready": "The owner is assigned to this property. You can continue.",
+      "assign": "Assign owner",
+      "loadError": "We could not verify the owner. Try again before continuing."
+    }
+  }
+}

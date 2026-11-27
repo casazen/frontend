@@ -1,13 +1,18 @@
 import { z } from 'zod';
+import { addInvoiceDataIssues, emptyInvoiceDataForm, hasTypedInvoiceData, invoiceDataFormShape, normalizeInvoiceData } from '@/lib/invoice-data-schema';
 import { todayInRome } from '@/lib/stay-dates';
+import { isItalianProvince } from '../components/italian-provinces';
 import type {
   AlloggiatiDocumentKind,
   AlloggiatiGender,
+  PublicCheckInContextDto,
   PublicCheckInGuestPrefill,
+  PublicCheckInInvoiceRequest,
   PublicCheckInSubmitRequest,
   StayGuestSubmit,
   StayGuestType,
 } from '@/types/public-checkin.types';
+import type { InvoiceDataTextField } from '@/types/invoice-data.types';
 
 /** Genders offered to the guest: the only ones Alloggiati Web accepts (1 = male, 2 = female). */
 export const ALLOGGIATI_GENDERS = ['Male', 'Female'] as const satisfies readonly AlloggiatiGender[];
@@ -28,6 +33,57 @@ export type LeaderType = (typeof LEADER_TYPES)[number];
 /** Document kinds offered when the official document table is not imported (`Other` has no Alloggiati value). */
 export const DOCUMENT_KINDS = ['Passport', 'IdentityCard', 'DriversLicense'] as const satisfies readonly AlloggiatiDocumentKind[];
 
+/**
+ * The three statistical fields of a guest (NF-40), by the name the form and the API use. They are asked only where the region of the
+ * property requires them (`requiredGuestFields` of the public view): a field the region does not require is neither shown nor sent.
+ */
+export const STATISTICAL_GUEST_FIELDS = ['tourismType', 'travelWay', 'educationLevel'] as const;
+export type StatisticalGuestField = (typeof STATISTICAL_GUEST_FIELDS)[number];
+
+/**
+ * The closed lists of the three fields: CasaZen's own neutral codes (backend `IstatGuestFieldLists`), never the codes of a region. The
+ * labels are `checkin.<field>.<code>`; the keys are written out so that the i18n test finds a missing translation.
+ */
+export const STATISTICAL_FIELD_OPTIONS: Record<StatisticalGuestField, ReadonlyArray<{ code: string; labelKey: string }>> = {
+  tourismType: [
+    { code: 'holiday', labelKey: 'checkin.tourismType.holiday' },
+    { code: 'business', labelKey: 'checkin.tourismType.business' },
+    { code: 'other', labelKey: 'checkin.tourismType.other' },
+  ],
+  travelWay: [
+    { code: 'car', labelKey: 'checkin.travelWay.car' },
+    { code: 'train', labelKey: 'checkin.travelWay.train' },
+    { code: 'plane', labelKey: 'checkin.travelWay.plane' },
+    { code: 'bus', labelKey: 'checkin.travelWay.bus' },
+    { code: 'ship', labelKey: 'checkin.travelWay.ship' },
+    { code: 'other', labelKey: 'checkin.travelWay.other' },
+  ],
+  educationLevel: [
+    { code: 'none', labelKey: 'checkin.educationLevel.none' },
+    { code: 'primary', labelKey: 'checkin.educationLevel.primary' },
+    { code: 'lower_secondary', labelKey: 'checkin.educationLevel.lower_secondary' },
+    { code: 'upper_secondary', labelKey: 'checkin.educationLevel.upper_secondary' },
+    { code: 'degree', labelKey: 'checkin.educationLevel.degree' },
+    { code: 'postgraduate', labelKey: 'checkin.educationLevel.postgraduate' },
+  ],
+};
+
+/** The message of a required statistical field that was not chosen (an i18n key, written out for the i18n test). */
+const STATISTICAL_REQUIRED_MESSAGES: Record<StatisticalGuestField, string> = {
+  tourismType: 'checkin.validation.tourismType.required',
+  travelWay: 'checkin.validation.travelWay.required',
+  educationLevel: 'checkin.validation.educationLevel.required',
+};
+
+/**
+ * The statistical fields of the form that the API asks for, from its `requiredGuestFields` (`TourismType`, `TravelWay`,
+ * `EducationLevel`; the camelCase spelling is accepted too). A name the form does not know is ignored.
+ */
+export function requiredStatisticalFields(requiredGuestFields: readonly string[] | null | undefined): StatisticalGuestField[] {
+  const wanted = new Set((requiredGuestFields ?? []).map((name) => name.charAt(0).toLowerCase() + name.slice(1)));
+  return STATISTICAL_GUEST_FIELDS.filter((field) => wanted.has(field));
+}
+
 /** Limits of the Alloggiati record (surname 50, name 30, document number 20) and of CasaZen (guests, labels). */
 export const MAX_STAY_GUESTS = 30;
 export const MAX_FIRST_NAME_LENGTH = 30;
@@ -35,8 +91,17 @@ export const MAX_LAST_NAME_LENGTH = 50;
 export const MAX_DOCUMENT_NUMBER_LENGTH = 20;
 export const MAX_LABEL_LENGTH = 100;
 
-const PROVINCE_PATTERN = /^[A-Za-z]{2}$/;
+/** Limits of the home of a guest and of the plate of the car (NF-132): the ones of the API (`StayGuest`, `VehiclePlates`). */
+export const MAX_RESIDENCE_STREET_LENGTH = 200;
+export const MAX_RESIDENCE_POSTAL_CODE_LENGTH = 20;
+export const MAX_RESIDENCE_CITY_LENGTH = 100;
+export const MAX_VEHICLE_PLATE_LENGTH = 20;
+
+/** The oldest day a document can have been issued (the API refuses an earlier one). */
+const EARLIEST_DOCUMENT_DATE = '1900-01-01';
+
 const DOCUMENT_NUMBER_PATTERN = /^[A-Za-z0-9]+$/;
+const CALENDAR_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Single guests and heads of family or group carry the identity document; family and group members do not. */
 export function requiresDocument(type: StayGuestType): boolean {
@@ -44,6 +109,39 @@ export function requiresDocument(type: StayGuestType): boolean {
 }
 
 /** Kind of the guests added after the first one: members of the family or group, or other single guests. */
+/**
+ * When an official table is imported, a typed name without the chosen code is not accepted.
+ * Empty optional fields (the residence) stay empty.
+ */
+export function officialListIssues(
+  guests: readonly StayGuestFormValues[],
+  tables: readonly string[],
+): { index: number; field: 'citizenshipName' | 'birthComuneName' | 'birthCountryName' | 'documentIssuePlaceName' | 'residenceComuneName' | 'residenceCountryName'; message: string }[] {
+  const has = (table: string) => tables.includes(table);
+  const issues: { index: number; field: 'citizenshipName' | 'birthComuneName' | 'birthCountryName' | 'documentIssuePlaceName' | 'residenceComuneName' | 'residenceCountryName'; message: string }[] = [];
+  guests.forEach((guest, index) => {
+    if (has('Stati') && guest.citizenshipName.trim() && !guest.citizenshipCode) {
+      issues.push({ index, field: 'citizenshipName', message: 'checkin.validation.citizenship.choose' });
+    }
+    if (guest.bornInItaly === 'yes' && has('Comuni') && guest.birthComuneName.trim() && !guest.birthComuneCode) {
+      issues.push({ index, field: 'birthComuneName', message: 'checkin.validation.birthComune.choose' });
+    }
+    if (guest.bornInItaly === 'no' && has('Stati') && guest.birthCountryName.trim() && !guest.birthCountryCode) {
+      issues.push({ index, field: 'birthCountryName', message: 'checkin.validation.birthCountry.choose' });
+    }
+    if (requiresDocument(guest.type) && (has('Comuni') || has('Stati')) && guest.documentIssuePlaceName.trim() && !guest.documentIssuePlaceCode) {
+      issues.push({ index, field: 'documentIssuePlaceName', message: 'checkin.validation.documentIssuePlace.choose' });
+    }
+    if (guest.residenceInItaly === 'yes' && has('Comuni') && guest.residenceComuneName.trim() && !guest.residenceComuneCode) {
+      issues.push({ index, field: 'residenceComuneName', message: 'checkin.validation.residenceComune.choose' });
+    }
+    if (guest.residenceInItaly === 'no' && has('Stati') && guest.residenceCountryName.trim() && !guest.residenceCountryCode) {
+      issues.push({ index, field: 'residenceCountryName', message: 'checkin.validation.residenceCountry.choose' });
+    }
+  });
+  return issues;
+}
+
 export function followerTypeOf(leader: StayGuestType): StayGuestType {
   if (leader === 'HeadOfFamily') return 'FamilyMember';
   if (leader === 'HeadOfGroup') return 'GroupMember';
@@ -73,76 +171,270 @@ export function normalizeDocumentNumber(value: string): string {
 }
 
 /**
- * One guest of the form. Select values are plain strings (empty = not chosen) so that every conditional check below
+ * The guest fields a property in Switzerland asks on top of the Alloggiati record (NF-132, backend `TicinoCheckInFields`), by the name the form uses.
+ * The page asks exactly the ones its `requiredGuestFields` names: the document of every adult and the home (street, postal code, town and the
+ * state of residence, all optional).
+ */
+export const SWISS_GUEST_FIELDS = [
+  'documentType',
+  'documentNumber',
+  'residenceStreet',
+  'residencePostalCode',
+  'residenceCityName',
+  'residenceCountryName',
+] as const;
+export type SwissGuestField = (typeof SWISS_GUEST_FIELDS)[number];
+
+/** The fields of the home that have a box of their own (the state of residence is a field of the code table, as the citizenship). */
+export const SWISS_HOME_FIELDS = ['residenceStreet', 'residencePostalCode', 'residenceCityName'] as const satisfies readonly SwissGuestField[];
+export type SwissHomeField = (typeof SWISS_HOME_FIELDS)[number];
+
+/** What a stay asks of its guests on top of the Alloggiati record: the Swiss fields the regime names and the arrival day, which says who is an adult. */
+export interface SwissStayRules {
+  readonly asked: ReadonlySet<SwissGuestField>;
+  /** The arrival day of the stay (`YYYY-MM-DD`, or an instant): an adult is a guest of 18 or more on it. */
+  readonly arrivalDate?: string;
+}
+
+/** An Italian stay asks nothing more than the record: every rule below is then the one the form has always had. */
+export const NO_SWISS_RULES: SwissStayRules = { asked: new Set<SwissGuestField>() };
+
+/**
+ * The Swiss rules of a stay, from the `requiredGuestFields` of the public view or of the wizard (the API spelling, `DocumentNumber`, or the camel
+ * case one) and the arrival day. A name the form does not know is ignored; with none of the Swiss fields in the list the stay is not a Swiss one.
+ */
+export function swissRulesOf(requiredGuestFields: readonly string[] | null | undefined, arrivalDate?: string | null): SwissStayRules {
+  const wanted = new Set((requiredGuestFields ?? []).map((name) => name.charAt(0).toLowerCase() + name.slice(1)));
+  const asked = new Set(SWISS_GUEST_FIELDS.filter((field) => wanted.has(field)));
+  return asked.size === 0 ? NO_SWISS_RULES : { asked, arrivalDate: arrivalDate ?? undefined };
+}
+
+/** The document of every guest the police file notifies is asked, not only the one of the head (the type and the number). */
+export function asksSwissDocument(rules: SwissStayRules): boolean {
+  return rules.asked.has('documentType') || rules.asked.has('documentNumber');
+}
+
+/** The home replaces the Italian residence (the choice in Italy or abroad, the comune and the province): none of those is asked of a Swiss stay. */
+export function asksSwissResidence(rules: SwissStayRules): boolean {
+  return SWISS_HOME_FIELDS.some((field) => rules.asked.has(field)) || rules.asked.has('residenceCountryName');
+}
+
+/** The smallest group the Swiss police file counts on the row of its leader (decision D11 of the Swiss notification: the rule of the canton). */
+const GROUP_MIN_SIZE = 6;
+
+/**
+ * The position of the leader when the guests are a group of six or more (every guest a head of group or a member, and exactly one head): the
+ * file notifies only the leader, the others are counted on its row. `null` for any other stay. The rule of the police file of the API.
+ */
+function groupLeaderIndex(guests: readonly Pick<StayGuestFormValues, 'type'>[]): number | null {
+  if (guests.length < GROUP_MIN_SIZE || guests.some((guest) => guest.type !== 'HeadOfGroup' && guest.type !== 'GroupMember')) return null;
+  const leaders = guests.flatMap((guest, index) => (guest.type === 'HeadOfGroup' ? [index] : []));
+  return leaders.length === 1 ? leaders[0] : null;
+}
+
+/**
+ * The guests the Swiss police file notifies on their own row: every adult (18 or more on the arrival day, the members of a family or group
+ * included), or every minor when the stay has no adult, and in a group of six or more only its leader. A guest without a date of birth is not
+ * in it: nobody can tell yet whether they are a row. The same rule as the API, so the page asks the document of the guests the API wants it of.
+ */
+export function notifiedGuestIndexes(
+  guests: readonly Pick<StayGuestFormValues, 'type' | 'dateOfBirth'>[],
+  arrivalDate: string | undefined,
+): ReadonlySet<number> {
+  const leader = groupLeaderIndex(guests);
+  if (leader !== null) return new Set([leader]);
+
+  const aged = guests.flatMap((guest, index) => {
+    const minor = isMinorOn(guest.dateOfBirth, arrivalDate);
+    return minor === null ? [] : [{ index, adult: !minor }];
+  });
+  const adults = aged.filter((guest) => guest.adult);
+  return new Set((adults.length > 0 ? adults : aged).map((guest) => guest.index));
+}
+
+/** How much of the identity document a guest gives: everything (`full`), or only its type and number (`basic`). */
+export type DocumentLevel = 'full' | 'basic';
+
+/**
+ * What each guest of the list gives of the identity document: all of it (`full`: type, number, place of issue and dates) for a single guest or a
+ * head of family or group, as ever; only the type and the number (`basic`) for the other guests a Swiss police file notifies (the place of issue
+ * is not asked of them); nothing (`null`) for the rest. An Italian stay has `full` and `null` only.
+ */
+export function documentLevelsOf(
+  guests: readonly Pick<StayGuestFormValues, 'type' | 'dateOfBirth'>[],
+  swiss: SwissStayRules = NO_SWISS_RULES,
+): (DocumentLevel | null)[] {
+  const notified = asksSwissDocument(swiss) ? notifiedGuestIndexes(guests, swiss.arrivalDate) : null;
+  return guests.map((guest, index) => (requiresDocument(guest.type) ? 'full' : notified?.has(index) ? 'basic' : null));
+}
+
+/** The plate of the car as the API stores it (NF-132): no spaces, upper case. */
+export function normalizeVehiclePlate(value: string): string {
+  return value.replace(/\s+/g, '').toUpperCase();
+}
+
+/** True for no plate, or for one of at most 20 letters (accents included), digits and hyphens with at least one letter or digit: the rule of the API. */
+export function isValidVehiclePlate(value: string): boolean {
+  const plate = normalizeVehiclePlate(value);
+  return plate === '' || (plate.length <= MAX_VEHICLE_PLATE_LENGTH && /^[\p{L}\p{Nd}-]+$/u.test(plate) && /[\p{L}\p{Nd}]/u.test(plate));
+}
+
+/**
+ * Every field of one guest of the form. Select values are plain strings (empty = not chosen) so that every conditional check
  * runs in the same pass as the required fields.
  */
-export const stayGuestFormSchema = z
-  .object({
-    type: z.enum(STAY_GUEST_TYPES),
-    firstName: z
-      .string()
-      .trim()
-      .min(1, 'checkin.validation.firstName.required')
-      .max(MAX_FIRST_NAME_LENGTH, 'checkin.validation.firstName.maxLength'),
-    lastName: z
-      .string()
-      .trim()
-      .min(1, 'checkin.validation.lastName.required')
-      .max(MAX_LAST_NAME_LENGTH, 'checkin.validation.lastName.maxLength'),
-    gender: z.string().refine((value) => (ALLOGGIATI_GENDERS as readonly string[]).includes(value), {
-      message: 'checkin.validation.gender.required',
-    }),
-    dateOfBirth: z.string().min(1, 'checkin.validation.dateOfBirth.required'),
-    bornInItaly: z.string().refine((value) => value === 'yes' || value === 'no', {
-      message: 'checkin.validation.bornInItaly.required',
-    }),
-    birthComuneName: z.string().max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
-    birthComuneCode: z.string().nullable(),
-    birthProvince: z.string(),
-    birthCountryName: z.string().max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
-    birthCountryCode: z.string().nullable(),
-    citizenshipName: z
-      .string()
-      .trim()
-      .min(1, 'checkin.validation.citizenship.required')
-      .max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
-    citizenshipCode: z.string().nullable(),
-    documentType: z.string(),
-    documentTypeCode: z.string().nullable(),
-    /** Label of the chosen official document type (form only, not sent). */
-    documentTypeLabel: z.string(),
-    documentNumber: z.string(),
-    /** Masked number already on file (`*****567`), shown as a hint (form only, not sent). */
-    documentNumberOnFile: z.string().nullable(),
-    documentIssuePlaceName: z.string().max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
-    documentIssuePlaceCode: z.string().nullable(),
-  })
-  .superRefine((guest, ctx) => {
+const guestShape = {
+  type: z.enum(STAY_GUEST_TYPES),
+  firstName: z
+    .string()
+    .trim()
+    .min(1, 'checkin.validation.firstName.required')
+    .max(MAX_FIRST_NAME_LENGTH, 'checkin.validation.firstName.maxLength'),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, 'checkin.validation.lastName.required')
+    .max(MAX_LAST_NAME_LENGTH, 'checkin.validation.lastName.maxLength'),
+  gender: z.string().refine((value) => (ALLOGGIATI_GENDERS as readonly string[]).includes(value), {
+    message: 'checkin.validation.gender.required',
+  }),
+  dateOfBirth: z.string().min(1, 'checkin.validation.dateOfBirth.required'),
+  bornInItaly: z.string().refine((value) => value === 'yes' || value === 'no', {
+    message: 'checkin.validation.bornInItaly.required',
+  }),
+  birthComuneName: z.string().max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
+  birthComuneCode: z.string().nullable(),
+  birthProvince: z.string(),
+  birthCountryName: z.string().max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
+  birthCountryCode: z.string().nullable(),
+  citizenshipName: z
+    .string()
+    .trim()
+    .min(1, 'checkin.validation.citizenship.required')
+    .max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
+  citizenshipCode: z.string().nullable(),
+  /** Residence (NF-40, optional): `yes` in Italy (comune and province), `no` abroad (state), empty when not said. */
+  residenceInItaly: z.string(),
+  residenceComuneName: z.string().max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
+  residenceComuneCode: z.string().nullable(),
+  residenceProvince: z.string(),
+  residenceCountryName: z.string().max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
+  residenceCountryCode: z.string().nullable(),
+  /**
+   * The home of the guest (NF-132, optional), asked only where the regime names it: street and house number, postal code (as written, a foreign
+   * code may hold letters), town. The server takes the list of guests as the whole truth, so a save carries them as the form holds them.
+   */
+  residenceStreet: z.string().max(MAX_RESIDENCE_STREET_LENGTH, 'checkin.validation.residenceStreet.maxLength'),
+  residencePostalCode: z.string().max(MAX_RESIDENCE_POSTAL_CODE_LENGTH, 'checkin.validation.residencePostalCode.maxLength'),
+  residenceCityName: z.string().max(MAX_RESIDENCE_CITY_LENGTH, 'checkin.validation.label.maxLength'),
+  /** The statistical fields (NF-40): a code of the closed list, empty when not chosen. Asked only where the region requires them. */
+  tourismType: z.string(),
+  travelWay: z.string(),
+  educationLevel: z.string(),
+  documentType: z.string(),
+  documentTypeCode: z.string().nullable(),
+  /** Label of the chosen official document type (form only, not sent). */
+  documentTypeLabel: z.string(),
+  documentNumber: z.string(),
+  /** Masked number already on file (`*****567`), shown as a hint (form only, not sent). */
+  documentNumberOnFile: z.string().nullable(),
+  documentIssuePlaceName: z.string().max(MAX_LABEL_LENGTH, 'checkin.validation.label.maxLength'),
+  documentIssuePlaceCode: z.string().nullable(),
+  /** Issue and expiry days of the document (`YYYY-MM-DD`, NF-40, optional): empty when not given. */
+  documentIssuedOn: z.string(),
+  documentExpiresOn: z.string(),
+  /**
+   * The tourist tax exemption the host chose (a reason code, NF-46), empty for none. It is not a field of the form: the host's wizard
+   * holds it to send it back as it received it, because the server takes the list of guests as the whole truth. The guest portal
+   * never has it.
+   */
+  taxExemptionCode: z.string(),
+};
+
+/** Which rules a schema of a guest checks: everything, only the personal data, or only the identity document. */
+export type GuestSchemaScope = 'all' | 'personal' | 'document';
+
+type GuestValues = z.input<z.ZodObject<typeof guestShape>>;
+
+function isValidDay(value: string): boolean {
+  return CALENDAR_DAY_PATTERN.test(value);
+}
+
+function addPersonalIssues(
+  guest: GuestValues,
+  required: readonly StatisticalGuestField[],
+  issue: (path: string, message: string) => void,
+): void {
+  if (guest.dateOfBirth && guest.dateOfBirth.slice(0, 10) > todayInRome()) {
+    issue('dateOfBirth', 'checkin.validation.dateOfBirth.future');
+  }
+  if (guest.bornInItaly === 'yes') {
+    if (!guest.birthComuneName.trim() && !guest.birthComuneCode) issue('birthComuneName', 'checkin.validation.birthComune.required');
+    if (!isItalianProvince(guest.birthProvince)) issue('birthProvince', 'checkin.validation.birthProvince.invalid');
+  }
+  if (guest.bornInItaly === 'no' && !guest.birthCountryName.trim() && !guest.birthCountryCode) {
+    issue('birthCountryName', 'checkin.validation.birthCountry.required');
+  }
+  // The residence is optional: only its shape is checked (a province, when given, is two letters).
+  if (guest.residenceInItaly === 'yes' && guest.residenceProvince.trim() && !isItalianProvince(guest.residenceProvince)) {
+    issue('residenceProvince', 'checkin.validation.residenceProvince.invalid');
+  }
+  // A statistical field is asked only where the region requires it, and then it has to be chosen.
+  for (const field of required) {
+    if (!STATISTICAL_FIELD_OPTIONS[field].some((option) => option.code === guest[field])) {
+      issue(field, STATISTICAL_REQUIRED_MESSAGES[field]);
+    }
+  }
+}
+
+/** The kind and the number of the document: what the whole document and the basic one of a Swiss stay (type and number only) have in common. */
+function addDocumentKindAndNumberIssues(guest: GuestValues, issue: (path: string, message: string) => void): void {
+  if (!guest.documentType && !guest.documentTypeCode) issue('documentType', 'checkin.validation.documentType.required');
+  const number = normalizeDocumentNumber(guest.documentNumber);
+  if (!number) {
+    issue('documentNumber', 'checkin.validation.documentNumber.required');
+  } else if (number.length > MAX_DOCUMENT_NUMBER_LENGTH || !DOCUMENT_NUMBER_PATTERN.test(number)) {
+    issue('documentNumber', 'checkin.validation.documentNumber.invalid');
+  }
+}
+
+function addDocumentIssues(guest: GuestValues, issue: (path: string, message: string) => void): void {
+  if (!requiresDocument(guest.type)) return;
+
+  addDocumentKindAndNumberIssues(guest, issue);
+  if (!guest.documentIssuePlaceName.trim() && !guest.documentIssuePlaceCode) {
+    issue('documentIssuePlaceName', 'checkin.validation.documentIssuePlace.required');
+  }
+
+  // The dates are optional: the issue day is a real day, not in the future and not before 1900, the expiry is not before the issue.
+  const issued = guest.documentIssuedOn;
+  const expires = guest.documentExpiresOn;
+  if (issued && (!isValidDay(issued) || issued < EARLIEST_DOCUMENT_DATE)) {
+    issue('documentIssuedOn', 'checkin.validation.documentIssuedOn.invalid');
+  } else if (issued && issued > todayInRome()) {
+    issue('documentIssuedOn', 'checkin.validation.documentIssuedOn.future');
+  }
+  if (expires && !isValidDay(expires)) {
+    issue('documentExpiresOn', 'checkin.validation.documentExpiresOn.invalid');
+  } else if (issued && expires && isValidDay(issued) && expires < issued) {
+    issue('documentExpiresOn', 'checkin.validation.documentExpiresOn.beforeIssue');
+  }
+}
+
+/**
+ * The schema of one guest of the form. `required` lists the statistical fields the region requires (they have to be chosen; the others
+ * are not asked and nothing else becomes mandatory). `scope` lets a wizard check the personal data and the document one step at a time.
+ */
+export function createStayGuestFormSchema(required: readonly StatisticalGuestField[] = [], scope: GuestSchemaScope = 'all') {
+  return z.object(guestShape).superRefine((guest, ctx) => {
     const issue = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
-
-    if (guest.dateOfBirth && guest.dateOfBirth.slice(0, 10) > todayInRome()) {
-      issue('dateOfBirth', 'checkin.validation.dateOfBirth.future');
-    }
-    if (guest.bornInItaly === 'yes') {
-      if (!guest.birthComuneName.trim() && !guest.birthComuneCode) issue('birthComuneName', 'checkin.validation.birthComune.required');
-      if (!PROVINCE_PATTERN.test(guest.birthProvince.trim())) issue('birthProvince', 'checkin.validation.birthProvince.invalid');
-    }
-    if (guest.bornInItaly === 'no' && !guest.birthCountryName.trim() && !guest.birthCountryCode) {
-      issue('birthCountryName', 'checkin.validation.birthCountry.required');
-    }
-    if (!requiresDocument(guest.type)) return;
-
-    if (!guest.documentType && !guest.documentTypeCode) issue('documentType', 'checkin.validation.documentType.required');
-    const number = normalizeDocumentNumber(guest.documentNumber);
-    if (!number) {
-      issue('documentNumber', 'checkin.validation.documentNumber.required');
-    } else if (number.length > MAX_DOCUMENT_NUMBER_LENGTH || !DOCUMENT_NUMBER_PATTERN.test(number)) {
-      issue('documentNumber', 'checkin.validation.documentNumber.invalid');
-    }
-    if (!guest.documentIssuePlaceName.trim() && !guest.documentIssuePlaceCode) {
-      issue('documentIssuePlaceName', 'checkin.validation.documentIssuePlace.required');
-    }
+    if (scope !== 'document') addPersonalIssues(guest, required, issue);
+    if (scope !== 'personal') addDocumentIssues(guest, issue);
   });
+}
+
+/** One guest of the form, with no statistical field required. */
+export const stayGuestFormSchema = createStayGuestFormSchema();
 
 export type StayGuestFormValues = z.input<typeof stayGuestFormSchema>;
 
@@ -176,19 +468,45 @@ export function compositionIssues(types: readonly StayGuestType[]): { index: num
   return issues.sort((a, b) => a.index - b.index);
 }
 
-/** Every guest of the stay, in record order, with the order checked. */
-export const stayGuestListSchema = z
-  .array(stayGuestFormSchema)
-  .min(1, 'checkin.validation.guests.count')
-  .max(MAX_STAY_GUESTS, 'checkin.validation.guests.count')
-  .superRefine((guests, ctx) => {
-    for (const { index, message } of compositionIssues(guests.map((g) => g.type))) {
-      ctx.addIssue({ code: 'custom', path: [index, 'type'], message });
-    }
-  });
+/**
+ * Every guest of the stay, in record order, with the order checked. A Swiss stay (`swiss`, NF-132) also has the type and the number of the
+ * document of every guest the police file notifies, family and group members included: the same rule the API applies when it saves them.
+ */
+export function createStayGuestListSchema(
+  required: readonly StatisticalGuestField[] = [],
+  scope: GuestSchemaScope = 'all',
+  swiss: SwissStayRules = NO_SWISS_RULES,
+) {
+  return z
+    .array(createStayGuestFormSchema(required, scope))
+    .min(1, 'checkin.validation.guests.count')
+    .max(MAX_STAY_GUESTS, 'checkin.validation.guests.count')
+    .superRefine((guests, ctx) => {
+      if (scope !== 'personal') {
+        documentLevelsOf(guests, swiss).forEach((level, index) => {
+          if (level !== 'basic') return;
+          addDocumentKindAndNumberIssues(guests[index], (path, message) => ctx.addIssue({ code: 'custom', path: [index, path], message }));
+        });
+      }
+      if (scope === 'document') return;
+      for (const { index, message } of compositionIssues(guests.map((g) => g.type))) {
+        ctx.addIssue({ code: 'custom', path: [index, 'type'], message });
+      }
+    });
+}
 
-/** Host form of the guests of a stay (`PUT /alloggiati/{bookingId}/stay-guests`). */
-export const stayGuestsFormSchema = z.object({ guests: stayGuestListSchema });
+/**
+ * The plate of the car of the stay (NF-132): optional, and when typed a real plate. It is a field of the stay, not of a guest, so it is a key
+ * of the form next to the guests; a form that does not ask it never has it.
+ */
+export const stayVehiclePlateSchema = z.string().refine(isValidVehiclePlate, 'checkin.validation.vehiclePlate.invalid').optional();
+
+/** Host form of the guests of a stay (`PUT /alloggiati/{bookingId}/stay-guests`), with the plate where the regime asks it. */
+export function createStayGuestsFormSchema(required: readonly StatisticalGuestField[] = [], swiss: SwissStayRules = NO_SWISS_RULES) {
+  return z.object({ guests: createStayGuestListSchema(required, 'all', swiss), vehiclePlate: stayVehiclePlateSchema });
+}
+
+export const stayGuestsFormSchema = createStayGuestsFormSchema();
 
 export type StayGuestsFormValues = z.input<typeof stayGuestsFormSchema>;
 
@@ -197,6 +515,8 @@ const SERVER_FIELD_ALIASES: Record<string, keyof StayGuestFormValues> = {
   birthComuneCode: 'birthComuneName',
   birthCountryCode: 'birthCountryName',
   citizenshipCode: 'citizenshipName',
+  residenceComuneCode: 'residenceComuneName',
+  residenceCountryCode: 'residenceCountryName',
   documentTypeCode: 'documentType',
   documentIssuePlaceCode: 'documentIssuePlaceName',
 };
@@ -211,44 +531,124 @@ export function guestFormPathOf(serverPath: string, guestCount: number): `guests
   const index = Number(match[1]);
   if (index >= guestCount) return null;
   const field = SERVER_FIELD_ALIASES[match[2]] ?? match[2];
-  return field in stayGuestFormSchema.shape
-    ? `guests.${index}.${field as keyof StayGuestFormValues}`
-    : null;
+  return field in guestShape ? `guests.${index}.${field as keyof StayGuestFormValues}` : null;
+}
+
+/** The answers to «Ti serve la fattura?» (FIS-01): not answered yet (the step is skipped), yes, or no. */
+export const INVOICE_ANSWERS = ['', 'yes', 'no'] as const;
+
+export type InvoiceAnswer = (typeof INVOICE_ANSWERS)[number];
+
+/**
+ * The invoice step of the guest page (FIS-01, E06/F02/US03/T02): the answer and, for a «yes», the data of the shared schema
+ * (`@/lib/invoice-data-schema`, the same rules as the server). Only a «yes» is checked, and only when the guest wrote something: a «yes» with
+ * nothing written leaves the data to the host and never blocks the check-in, as the server accepts it. A «no», or no answer, is not checked at all.
+ */
+export const invoiceStepSchema = z.object({ answer: z.enum(INVOICE_ANSWERS), ...invoiceDataFormShape }).superRefine((values, context) => {
+  if (values.answer === 'yes') addInvoiceDataIssues(values, { requireIdentification: true, onlyWhenTyped: true }, context);
+});
+
+/** What the guest has answered and typed at the invoice step. */
+export type InvoiceStepValues = z.input<typeof invoiceStepSchema>;
+
+/** The invoice step with the given answer and nothing written: a private person in Italy. */
+export function emptyInvoiceStep(answer: InvoiceAnswer = ''): InvoiceStepValues {
+  return { answer, ...emptyInvoiceDataForm() };
+}
+
+/**
+ * The invoice step as the page starts it: «yes» is already answered when the guest said so before and the booking has no data yet (the fields are
+ * then asked); in any other case there is no answer, and the guest may go on without one.
+ */
+export function initialInvoiceStep(context: Pick<PublicCheckInContextDto, 'invoiceRequested' | 'hasInvoiceData'> | undefined): InvoiceStepValues {
+  return emptyInvoiceStep(context?.invoiceRequested === true && context.hasInvoiceData !== true ? 'yes' : '');
+}
+
+/** The texts of the invoice block, in the order of the form: the kind and the country go with them. */
+const INVOICE_BLOCK_TEXT_FIELDS = [
+  'name',
+  'fiscalCode',
+  'vatNumber',
+  'addressStreet',
+  'addressCivic',
+  'postalCode',
+  'city',
+  'province',
+  'sdiRecipientCode',
+  'pec',
+] as const satisfies readonly InvoiceDataTextField[];
+
+/**
+ * The `invoice` block of the request, or nothing. Only a «yes» sends one: a guest who skips the step or says no sends no data at all (and the
+ * server ignores a «no» anyway). A «yes» with nothing written is the block `{ needInvoice: true }`: the guest wants the invoice and leaves the data
+ * to the host. When something is written the block carries the texts that are not empty, normalized as the server stores them, with the kind of
+ * recipient and the country: those two alone would ask the server for an identification the guest never saw.
+ */
+export function toPublicCheckInInvoice(step: InvoiceStepValues | undefined): PublicCheckInInvoiceRequest | undefined {
+  if (!step || step.answer !== 'yes') return undefined;
+  if (!hasTypedInvoiceData(step)) return { needInvoice: true };
+
+  const data = normalizeInvoiceData(step);
+  const block: PublicCheckInInvoiceRequest = { needInvoice: true, recipientKind: data.recipientKind, countryCode: data.countryCode };
+  for (const field of INVOICE_BLOCK_TEXT_FIELDS) {
+    if (data[field] !== '') block[field] = data[field];
+  }
+  return block;
 }
 
 /**
  * The guest portal form. No consent is asked for the Alloggiati registration (CO-15, A5-15): it is a legal obligation
- * (art. 109 TULPS, art. 6.1.c GDPR) and the privacy notice is only shown. The marketing consent is optional (NF-05).
+ * (art. 109 TULPS, art. 6.1.c GDPR) and receipt of the privacy notice is acknowledged separately. The marketing consent is optional (NF-05).
+ * `required` lists the statistical fields the region requires (the `requiredGuestFields` of the public view); `swiss` what a property in Switzerland
+ * asks on top (NF-132): the document of every adult, whose number has to look like one too, and the plate of the car.
  */
-export const publicCheckInFormSchema = z.object({
-  guests: stayGuestListSchema,
-  /** Guest ticked the email marketing channel (NF-05). */
-  marketingConsentEmail: z.boolean().optional(),
-  /** Guest ticked the WhatsApp marketing channel (NF-05). */
-  marketingConsentWhatsApp: z.boolean().optional(),
-  /** Marketing email address (required when any channel is ticked, NF-05). */
-  marketingEmail: z.string().optional(),
-}).superRefine((data, ctx) => {
-  // Marketing email is required when any channel is ticked (NF-05).
-  if ((data.marketingConsentEmail || data.marketingConsentWhatsApp) && !data.marketingEmail?.trim()) {
-    ctx.addIssue({
-      code: 'custom',
-      path: ['marketingEmail'],
-      message: 'checkin.validation.marketingEmail.required',
-    });
-  }
-  // Validate email format when provided.
-  if (data.marketingEmail?.trim()) {
-    const email = data.marketingEmail.trim();
-    if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['marketingEmail'],
-        message: 'checkin.validation.marketingEmail.invalid',
+export function createPublicCheckInFormSchema(required: readonly StatisticalGuestField[] = [], swiss: SwissStayRules = NO_SWISS_RULES) {
+  return z
+    .object({
+      guests: createStayGuestListSchema(required, 'all', swiss),
+      /** The optional answer to «Ti serve la fattura?» and the data of a «yes» (FIS-01). */
+      invoice: invoiceStepSchema.optional(),
+      /** Guest ticked the email marketing channel (NF-05). */
+      marketingConsentEmail: z.boolean().optional(),
+      /** Guest ticked the WhatsApp marketing channel (NF-05). */
+      marketingConsentWhatsApp: z.boolean().optional(),
+      /** Marketing email address (required when any channel is ticked, NF-05). */
+      marketingEmail: z.string().optional(),
+      /** The plate of the car of the stay (NF-132): asked, optional, only where the context says `askVehiclePlate`. */
+      vehiclePlate: stayVehiclePlateSchema,
+    })
+    .superRefine((data, ctx) => {
+      const levels = documentLevelsOf(data.guests, swiss);
+      data.guests.forEach((guest, index) => {
+        const number = normalizeDocumentNumber(guest.documentNumber);
+        if (levels[index] !== null && number && (number.length < 4 || !/\d/.test(number))) {
+          ctx.addIssue({ code: 'custom', path: ['guests', index, 'documentNumber'], message: 'checkin.documentNumberPlausibility' });
+        }
       });
-    }
-  }
-});
+      // Marketing email is required when any channel is ticked (NF-05).
+      if ((data.marketingConsentEmail || data.marketingConsentWhatsApp) && !data.marketingEmail?.trim()) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['marketingEmail'],
+          message: 'checkin.validation.marketingEmail.required',
+        });
+      }
+      // Validate email format when provided.
+      if ((data.marketingConsentEmail || data.marketingConsentWhatsApp) && data.marketingEmail?.trim()) {
+        const email = data.marketingEmail.trim();
+        if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['marketingEmail'],
+            message: 'checkin.validation.marketingEmail.invalid',
+          });
+        }
+      }
+    });
+}
+
+/** The guest portal form of a region that requires no statistical field. */
+export const publicCheckInFormSchema = createPublicCheckInFormSchema();
 
 export type PublicCheckInFormValues = z.input<typeof publicCheckInFormSchema>;
 
@@ -269,6 +669,12 @@ export const STAY_GUEST_REQUIRED_FIELDS = [
   'type',
 ] as const satisfies readonly (keyof StayGuestSubmit)[];
 
+function residenceChoiceOf(prefill: PublicCheckInGuestPrefill | null | undefined): string {
+  if (prefill?.residenceInItaly === true) return 'yes';
+  if (prefill?.residenceInItaly === false) return 'no';
+  return '';
+}
+
 /** Form values of a guest: from the guest on file, or empty. The document number is never prefilled (masked by the API). */
 export function stayGuestDefaults(type: StayGuestType, prefill?: PublicCheckInGuestPrefill | null): StayGuestFormValues {
   const documentType = prefill?.documentType ?? '';
@@ -286,6 +692,18 @@ export function stayGuestDefaults(type: StayGuestType, prefill?: PublicCheckInGu
     birthCountryCode: prefill?.birthCountryCode ?? null,
     citizenshipName: prefill?.citizenshipName ?? '',
     citizenshipCode: prefill?.citizenshipCode ?? null,
+    residenceInItaly: residenceChoiceOf(prefill),
+    residenceComuneName: prefill?.residenceComuneName ?? '',
+    residenceComuneCode: prefill?.residenceComuneCode ?? null,
+    residenceProvince: prefill?.residenceProvince ?? '',
+    residenceCountryName: prefill?.residenceCountryName ?? '',
+    residenceCountryCode: prefill?.residenceCountryCode ?? null,
+    residenceStreet: prefill?.residenceStreet ?? '',
+    residencePostalCode: prefill?.residencePostalCode ?? '',
+    residenceCityName: prefill?.residenceCityName ?? '',
+    tourismType: prefill?.tourismType ?? '',
+    travelWay: prefill?.travelWay ?? '',
+    educationLevel: prefill?.educationLevel ?? '',
     documentType: (DOCUMENT_KINDS as readonly string[]).includes(documentType) ? documentType : '',
     documentTypeCode: prefill?.documentTypeCode ?? null,
     documentTypeLabel: prefill?.documentTypeCode ?? '',
@@ -293,6 +711,9 @@ export function stayGuestDefaults(type: StayGuestType, prefill?: PublicCheckInGu
     documentNumberOnFile: prefill?.documentNumberMasked ?? null,
     documentIssuePlaceName: prefill?.documentIssuePlaceName ?? '',
     documentIssuePlaceCode: prefill?.documentIssuePlaceCode ?? null,
+    documentIssuedOn: prefill?.documentIssuedOn?.slice(0, 10) ?? '',
+    documentExpiresOn: prefill?.documentExpiresOn?.slice(0, 10) ?? '',
+    taxExemptionCode: '',
   };
 }
 
@@ -305,17 +726,62 @@ export function initialStayGuests(
   declaredGuests: number | undefined,
 ): StayGuestFormValues[] {
   const declared = Math.min(MAX_STAY_GUESTS, Math.max(1, declaredGuests ?? 1));
-  const guests = (prefills ?? []).slice(0, MAX_STAY_GUESTS).map((prefill) => stayGuestDefaults(prefill.type, prefill));
+  const guests = (prefills ?? []).slice(0, declared).map((prefill) => stayGuestDefaults(prefill.type, prefill));
   if (guests.length === 0) guests.push(stayGuestDefaults(declared > 1 ? 'HeadOfFamily' : 'SingleGuest'));
   if (!isLeaderType(guests[0].type)) guests[0].type = declared > 1 ? 'HeadOfFamily' : 'SingleGuest';
   while (guests.length < declared) guests.push(stayGuestDefaults(followerTypeOf(guests[0].type)));
   return guests;
 }
 
+/** What a request to the API carries beyond the data every entry has. */
+export interface StayGuestSubmitOptions {
+  /** The statistical fields the region requires: only these are sent, the others are left out of the request. */
+  statisticalFields?: readonly StatisticalGuestField[];
+  /**
+   * The host's entries send the tourist tax exemption they received, because the server takes the list as the whole truth. The guest
+   * portal never sends it (it is the host's decision, and the server ignores it there).
+   */
+  withTaxExemption?: boolean;
+  /**
+   * The host's entries send back the statistical fields they received, even where the region does not require them, because the server
+   * takes the list as the whole truth and a save that left them out would erase them. The guest portal never has this: it sends only the
+   * fields the region requires.
+   */
+  keepStatistical?: boolean;
+  /**
+   * What a property in Switzerland asks (NF-132): the home (street, postal code, town) is sent, an empty one as `null`, wherever the regime names it,
+   * because the server takes the list as the whole truth and a save that left it out would erase it. An Italian stay never has it.
+   */
+  swiss?: SwissStayRules;
+  /**
+   * The host's entries send back the home they received, even where the regime does not name it (a property whose regime changed, a list of fields
+   * not read yet): a save never erases it. The guest portal never has this: it sends the home only where the regime asks it.
+   */
+  keepResidenceAddress?: boolean;
+  /**
+   * How much of the document this guest gives, as `documentLevelsOf` says it for the whole list: `null` sends none, `full` and `basic` send what the
+   * form holds. By default the document is the one of a single guest or a head, as it has always been.
+   */
+  documentLevel?: DocumentLevel | null;
+}
+
+function textOrNull(value: string): string | null {
+  const text = value.trim();
+  return text === '' ? null : text;
+}
+
 /** One guest of the request body, every key present. Place and document fields that do not apply are sent empty. */
-export function toStayGuestSubmit(values: StayGuestFormValues): StayGuestSubmit {
+export function toStayGuestSubmit(values: StayGuestFormValues, options: StayGuestSubmitOptions = {}): StayGuestSubmit {
   const bornInItaly = values.bornInItaly === 'yes';
-  const withDocument = requiresDocument(values.type);
+  const withDocument = options.documentLevel === undefined ? requiresDocument(values.type) : options.documentLevel !== null;
+  const residenceInItaly = values.residenceInItaly === 'yes' ? true : values.residenceInItaly === 'no' ? false : null;
+  const statistical = options.statisticalFields ?? [];
+  // A required field is always sent (empty as null); a held one only where the host's entry sends back what it received.
+  const sends = (field: StatisticalGuestField) =>
+    statistical.includes(field) || (options.keepStatistical === true && textOrNull(values[field]) !== null);
+  // The same for the home: sent where the regime names it, or where the host's entry holds it.
+  const sendsHome = (field: SwissHomeField) =>
+    options.swiss?.asked.has(field) === true || (options.keepResidenceAddress === true && textOrNull(values[field]) !== null);
   return {
     type: values.type,
     firstName: values.firstName.trim(),
@@ -335,15 +801,58 @@ export function toStayGuestSubmit(values: StayGuestFormValues): StayGuestSubmit 
     documentNumber: withDocument ? normalizeDocumentNumber(values.documentNumber) : null,
     documentIssuePlaceName: withDocument ? values.documentIssuePlaceName.trim() : null,
     documentIssuePlaceCode: withDocument ? values.documentIssuePlaceCode : null,
+    documentIssuedOn: withDocument && values.documentIssuedOn ? values.documentIssuedOn : null,
+    documentExpiresOn: withDocument && values.documentExpiresOn ? values.documentExpiresOn : null,
+    residenceInItaly,
+    residenceComuneName: residenceInItaly === true ? textOrNull(values.residenceComuneName) : null,
+    residenceComuneCode: residenceInItaly === true ? values.residenceComuneCode : null,
+    residenceProvince: residenceInItaly === true ? textOrNull(values.residenceProvince)?.toUpperCase() ?? null : null,
+    residenceCountryName: residenceInItaly === false ? textOrNull(values.residenceCountryName) : null,
+    residenceCountryCode: residenceInItaly === false ? values.residenceCountryCode : null,
+    ...(sendsHome('residenceStreet') ? { residenceStreet: textOrNull(values.residenceStreet) } : {}),
+    ...(sendsHome('residencePostalCode') ? { residencePostalCode: textOrNull(values.residencePostalCode) } : {}),
+    ...(sendsHome('residenceCityName') ? { residenceCityName: textOrNull(values.residenceCityName) } : {}),
+    ...(sends('tourismType') ? { tourismType: textOrNull(values.tourismType) } : {}),
+    ...(sends('travelWay') ? { travelWay: textOrNull(values.travelWay) } : {}),
+    ...(sends('educationLevel') ? { educationLevel: textOrNull(values.educationLevel) } : {}),
+    ...(options.withTaxExemption ? { taxExemptionCode: textOrNull(values.taxExemptionCode) } : {}),
   };
 }
 
-/** Request body sent by the guest portal for valid form values. */
-export function toPublicCheckInSubmitRequest(values: PublicCheckInFormValues): PublicCheckInSubmitRequest {
+/**
+ * Every guest of the list as the request body carries them. The document of each is decided on the whole list (`documentLevelsOf`): in Switzerland
+ * a member the police file notifies gives its type and number too, and the API keeps them. An Italian stay sends what it always has.
+ */
+export function toStayGuestSubmits(guests: readonly StayGuestFormValues[], options: StayGuestSubmitOptions = {}): StayGuestSubmit[] {
+  const levels = documentLevelsOf(guests, options.swiss);
+  return guests.map((guest, index) => toStayGuestSubmit(guest, { ...options, documentLevel: levels[index] }));
+}
+
+/**
+ * The plate a host's entry sends with the guests (NF-132): the plate as the API stores it, an empty one to clear it, and nothing (`undefined`)
+ * when the form does not ask for a plate, so that the stored one stays.
+ */
+export function hostVehiclePlateOf(values: { vehiclePlate?: string }): string | undefined {
+  return values.vehiclePlate === undefined ? undefined : normalizeVehiclePlate(values.vehiclePlate);
+}
+
+/**
+ * Request body sent by the guest portal for valid form values. The plate is sent only when the guest typed one (the page never reads it back,
+ * so an empty field means «nothing new», and the server keeps what it has).
+ */
+export function toPublicCheckInSubmitRequest(
+  values: PublicCheckInFormValues,
+  options: Pick<StayGuestSubmitOptions, 'statisticalFields' | 'swiss'> = {},
+): PublicCheckInSubmitRequest {
+  const invoice = toPublicCheckInInvoice(values.invoice);
+  const vehiclePlate = normalizeVehiclePlate(values.vehiclePlate ?? '');
   return {
-    guests: values.guests.map(toStayGuestSubmit),
+    guests: toStayGuestSubmits(values.guests, options),
     marketingConsentEmail: values.marketingConsentEmail ?? false,
     marketingConsentWhatsApp: values.marketingConsentWhatsApp ?? false,
     marketingEmail: values.marketingEmail?.trim() || null,
+    // The invoice block only for a «yes» (FIS-01): the key is not there for a guest who skipped the step or said no.
+    ...(invoice ? { invoice } : {}),
+    ...(vehiclePlate ? { vehiclePlate } : {}),
   };
 }

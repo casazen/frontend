@@ -6,6 +6,8 @@ import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspa
 import { ContextPickerPage } from '../context-picker-page';
 
 vi.mock('@/hooks/use-empty-workspace-recovery', () => ({ useEmptyWorkspaceRecovery: () => false }));
+const profile = vi.hoisted(() => ({ value: null as { orgId?: string | null; onboardingRequired?: boolean } | null }));
+vi.mock('@/queries/use-users', () => ({ useMe: () => ({ data: profile.value, isLoading: false }) }));
 
 function context(contextKey: ContextBootstrapDto['contextKey'], defaultRoute: string): ContextBootstrapDto {
   return { contextKey, displayName: `Area ${contextKey}`, roleKey: contextKey, permissions: [], defaultRoute };
@@ -37,6 +39,7 @@ function renderPicker(contexts: ContextBootstrapDto[], isReady = true, setActive
 describe('the area picker carries the app-ready test id (UI-00)', () => {
   afterEach(() => {
     cleanup();
+    profile.value = null;
   });
 
   it('ContextPicker_SeveralAreas_IsTheAppReadyScreen', () => {
@@ -58,6 +61,13 @@ describe('the area picker carries the app-ready test id (UI-00)', () => {
 
     expect(screen.getByTestId('home')).toBeInTheDocument();
     expect(screen.queryByTestId('app-ready')).not.toBeInTheDocument();
+  });
+
+  it('offers host setup to an admin with no organization', () => {
+    profile.value = { orgId: null, onboardingRequired: true };
+    renderPicker([context('admin', '/app/admin')]);
+    expect(screen.getByRole('link', { name: /Attiva affitti brevi e lunghi/ })).toHaveAttribute('href', '/onboarding');
+    expect(screen.getByRole('button', { name: /^Console staff/ })).toBeInTheDocument();
   });
 });
 

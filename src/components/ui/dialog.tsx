@@ -24,7 +24,8 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      // 60% and not 80%: the page stays readable behind the layer, as in the flows the product takes after (UX round 2026-11).
+      "fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -33,16 +34,14 @@ const DialogOverlay = React.forwardRef<
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 /**
- * The motion of a dialog in the middle of the screen: it fades and grows a little. (The slide that came with the classes of
- * shadcn is gone: Tailwind 4 centers with the `translate` property and the slide animates `transform`, so together they
- * threw the dialog in from the corner.)
+ * The motion of a dialog in the middle of the screen (`styles/motion.css`): it rises a little on a spring and fades in, and it
+ * leaves faster than it came. It moves `transform`, which adds to the `translate` property that centers it. (The slide that
+ * came with the classes of shadcn is gone: it started from the corner.)
  */
-const CENTERED_MOTION =
-  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95";
+const CENTERED_MOTION = "cz-dialog";
 
 /** The same, but only from `sm` up: under it the dialog is a sheet and moves as one (`styles/sheet-bottom.css`). */
-const CENTERED_MOTION_FROM_SM =
-  "sm:data-[state=open]:animate-in sm:data-[state=closed]:animate-out sm:data-[state=closed]:fade-out-0 sm:data-[state=open]:fade-in-0 sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95";
+const CENTERED_MOTION_FROM_SM = "cz-dialog-from-sm";
 
 /**
  * Under `sm` (a phone held upright) the dialog is a sheet that comes up from the bottom edge: the full width, rounded at
@@ -116,7 +115,7 @@ const DialogContent = React.forwardRef<
         ref={ref}
         data-dialog-sheet={sheetOnPhone ? "" : undefined}
         className={cn(
-          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg",
+          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-xl",
           sheetOnPhone ? CENTERED_MOTION_FROM_SM : CENTERED_MOTION,
           sheetOnPhone && SHEET_ON_PHONE,
           className

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Award, Check, MapPin, Star } from 'lucide-react';
 import { HelpTip } from '@/components/ui/help-tip';
+import { useEmbed } from '@/features/embed/embed-context';
 import { FavoriteButton } from '@/features/public-site/favorites/favorite-button';
 import { formatAverage } from '@/features/reviews/lib/review-format';
 import { formatDayMonth, formatPrice } from '@/features/public-site/stay/stay-format';
@@ -14,11 +15,11 @@ import type { PublicStayCard } from '@/types/public-stays.types';
 import {
   availabilityNote,
   cardFacts,
-  cardLink,
   cardPrice,
   freeCancellationUntil,
   isGuestFavourite,
   placeOfCard,
+  useCardLink,
 } from './house-card-model';
 import { PhotoCarousel } from './photo-carousel';
 import { SITE_TAG_ICONS, isSiteTag } from './site-tags';
@@ -58,15 +59,20 @@ export interface HouseCardProps {
 export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay = null, mapLink, eager = false }: HouseCardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const linkOf = useCardLink();
+  // Inside the frame of a widget nothing is fixed to the window (the explanation of the tax is a bubble at every width, not a sheet from the bottom of the frame).
+  const embed = useEmbed();
   const locale = siteLocale(i18n.language);
   // Across all the sites the home brings the slug of its own site; on a site it is the site's.
   const site = orgSlug ?? card.orgSlug ?? '';
   const ofAllSites = orgSlug === undefined;
   const host = ofAllSites ? card.hostName?.trim() : '';
-  const to = cardLink(site, card, stay);
+  // The page of the home on the site; inside the frame of a widget it is the property widget of the same frame.
+  const to = linkOf(site, card, stay);
   const facts = cardFacts(card);
   const price = cardPrice(card, nights);
-  const currency = card.price.currency || 'EUR';
+  // The currency is the one the home says; a home that says none is written with no symbol and the phrase that says so (`formatPrice`).
+  const currency = card.price.currency;
   const place = placeOfCard(card, i18n.language);
   const favourite = isGuestFavourite(card);
   const freeUntil = variant === 'row' ? freeCancellationUntil(card) : null;
@@ -183,15 +189,15 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
           ) : price.kind === 'total' ? (
             <>
               <p className="hcard__price" data-testid="house-card-price" data-kind="total">
-                <strong>{formatPrice(price.totalCents, currency, locale)}</strong>
+                <strong>{formatPrice(price.totalCents, currency, locale, t)}</strong>
                 <span>{t('siteHome.card.totalFor', { count: price.nights })}</span>
               </p>
               <p className="hcard__sub">
-                {t('siteHome.card.perNightAverage', { price: formatPrice(price.perNightCents, currency, locale) })}
+                {t('siteHome.card.perNightAverage', { price: formatPrice(price.perNightCents, currency, locale, t) })}
                 {' · '}
                 {t(`siteHome.card.tax.${price.tax}`)}
                 {price.tax === 'estimated' ? (
-                  <HelpTip title={t('siteHome.card.taxHelpTitle')} label={t('siteHome.card.taxHelpLabel')} className="hcard__help">
+                  <HelpTip title={t('siteHome.card.taxHelpTitle')} label={t('siteHome.card.taxHelpLabel')} sheetOnPhone={!embed} className="hcard__help">
                     {t('siteHome.card.taxHelp')}
                   </HelpTip>
                 ) : null}
@@ -200,7 +206,7 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
           ) : (
             <p className="hcard__price" data-testid="house-card-price" data-kind="from">
               <span>{t('publicSite.card.from')}</span>
-              <strong>{formatPrice(price.perNightCents, currency, locale)}</strong>
+              <strong>{formatPrice(price.perNightCents, currency, locale, t)}</strong>
               <span>/ {t('siteHome.card.night')}</span>
             </p>
           )}

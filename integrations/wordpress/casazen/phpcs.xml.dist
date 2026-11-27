@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<ruleset name="CasaZen WordPress plugin" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/squizlabs/PHP_CodeSniffer/master/phpcs.xsd">
+	<description>The WordPress coding standards (WPCS 3) and PHP 7.4+ compatibility for the CasaZen plugin. Run with `composer lint` (the CI job "lint" runs vendor/bin/phpcs).</description>
+
+	<!-- What is checked: every PHP file of the plugin, except what other tools install or build. -->
+	<file>.</file>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/blocks/build/*</exclude-pattern>
+	<exclude-pattern>*/dist/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="parallel" value="8"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+
+	<!-- A warning is printed and never fails the run: the run fails on an error. -->
+	<config name="ignore_warnings_on_exit" value="1"/>
+
+	<!-- The plugin runs on PHP 7.4 and later (the header Requires PHP, composer.json, readme.txt) and on WordPress 6.4 and later. -->
+	<config name="testVersion" value="7.4-"/>
+	<config name="minimum_supported_wp_version" value="6.4"/>
+
+	<rule ref="WordPress"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<!-- One text domain. -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="casazen"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Everything global starts with `casazen` (functions, variables, hooks) or lives in the namespace `Casazen`. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="casazen"/>
+				<element value="Casazen"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!--
+		The tests follow the rules of PHPUnit and of the WordPress test library, not the ones of the plugin code:
+		a test file is named `test-<thing>.php` (not `class-<thing>.php`) and a test class is global (`Test_Settings`).
+	-->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<exclude-pattern>*/tests/phpunit/*</exclude-pattern>
+	</rule>
+</ruleset>

@@ -6,7 +6,10 @@ import { addDays, endOfMonth, isStayDate, nightsBetween, startOfMonth, startOfWe
  * so a change of summer time or the end of a month moves nothing. "Today" is a value that the caller gives (Europe/Rome).
  */
 
-/** One night of the calendar of a property: the night that starts on `date`. */
+/**
+ * One night of the calendar of a property: the night that starts on `date`. The last five fields are the rules the host set on the day
+ * (E08/F05/US01, NF-36): a day without them (absent, `null` or `false`) has no rule and behaves as it always did.
+ */
 export interface CalendarDay {
   date: string;
   /** A stay can start this night: no booking, hold, request or block takes it. */
@@ -15,6 +18,16 @@ export interface CalendarDay {
   priceCents: number | null;
   /** The fewest nights of a stay that starts on this day (1 = no minimum). */
   minNights: number;
+  /** The most nights of a stay that starts on this day; no maximum when absent or null. */
+  maxNights?: number | null;
+  /** The night is free but no stay can start on it: it can still be slept in and left on. */
+  closedToArrival?: boolean;
+  /** No stay can end on this day (the day of the check-out). */
+  closedToDeparture?: boolean;
+  /** The fewest days from today to the arrival of a stay that starts on this day; no minimum when absent or null. */
+  minAdvanceDays?: number | null;
+  /** The most days from today to the arrival of a stay that starts on this day; no maximum when absent or null. */
+  maxAdvanceDays?: number | null;
 }
 
 /** The stay chosen: `checkOut` is empty while only the arrival is chosen, both are empty before. */
@@ -40,13 +53,22 @@ export interface CalendarIndex {
 /** What can be said of a day: over, not known, taken, or free for a stay to start. */
 export type DayState = 'past' | 'unknown' | 'busy' | 'free';
 
-/** Why a day or a range cannot be chosen (the screen turns it into a sentence). */
+/**
+ * Why a day or a range cannot be chosen (the screen turns it into a sentence). The last four are the rules of the host (NF-36):
+ * `arrivalClosed` and `departureClosed` say the day, `maxNights` the most nights of that arrival and the last day to leave on, and
+ * `advance` the limit in days that was not respected: `shorter` is a stay booked closer to its arrival than the minimum asks, `longer`
+ * one booked further ahead than the maximum allows.
+ */
 export type RangeProblem =
   | { kind: 'past' }
   | { kind: 'unknown' }
   | { kind: 'busyArrival'; date: string }
   | { kind: 'busyBetween'; date: string }
-  | { kind: 'minNights'; minNights: number; earliestCheckOut: string };
+  | { kind: 'arrivalClosed'; date: string }
+  | { kind: 'departureClosed'; date: string }
+  | { kind: 'minNights'; minNights: number; earliestCheckOut: string }
+  | { kind: 'maxNights'; maxNights: number; latestCheckOut: string }
+  | { kind: 'advance'; side: 'shorter' | 'longer'; days: number };
 
 /** The longest stay looked at: the calendar covers 13 months, so nothing above this is a stay it can offer. */
 const MAX_NIGHTS = 400;
@@ -67,18 +89,45 @@ export function minNightsAt(index: CalendarIndex, date: string): number {
   return Math.max(1, index.days.get(date)?.minNights ?? 1);
 }
 
-/** Why a stay cannot start on `date`, or null when it can. */
-export function arrivalProblem(index: CalendarIndex, date: string): RangeProblem | null {
-  const state = dayState(index, date);
-  if (state === 'free') return null;
-  if (state === 'busy') return { kind: 'busyArrival', date };
-  return { kind: state };
+/** The most nights of a stay that starts on `date`: null where nothing is said (no maximum). */
+export function maxNightsAt(index: CalendarIndex, date: string): number | null {
+  const maximum = index.days.get(date)?.maxNights;
+  return typeof maximum === 'number' && maximum >= 1 ? maximum : null;
 }
 
 /**
- * Why the stay from `checkIn` to `checkOut` cannot be had, or null when it can: the arrival must be free, every night in
- * between must be free (the day of the check-out itself may be taken: a guest leaves in the morning), and the stay must have the
- * fewest nights asked for the day it starts. A night the calendar does not know is not free.
+ * Whether a stay that starts on `date` is booked closer to it, or further ahead of it, than the rule of that day allows. The advance
+ * is the number of days from today (`index.today`) to the arrival, as the quote and the checkout count it; the server stays the
+ * authority, so a day the calendar does not know has no advance problem here.
+ */
+function advanceProblem(index: CalendarIndex, date: string): RangeProblem | null {
+  const day = index.days.get(date);
+  if (!day) return null;
+  const ahead = nightsBetween(index.today, date);
+  const { minAdvanceDays: shortest, maxAdvanceDays: longest } = day;
+  if (typeof shortest === 'number' && ahead < shortest) return { kind: 'advance', side: 'shorter', days: shortest };
+  if (typeof longest === 'number' && ahead > longest) return { kind: 'advance', side: 'longer', days: longest };
+  return null;
+}
+
+/**
+ * Why a stay cannot start on `date`, or null when it can. A free night can still be refused as an arrival by a rule of the host: it is
+ * closed to arrival, or the advance window of the day (days from today) does not hold. A day closed to arrival is still free to sleep
+ * in and to leave on.
+ */
+export function arrivalProblem(index: CalendarIndex, date: string): RangeProblem | null {
+  const state = dayState(index, date);
+  if (state === 'busy') return { kind: 'busyArrival', date };
+  if (state !== 'free') return { kind: state };
+  if (index.days.get(date)?.closedToArrival) return { kind: 'arrivalClosed', date };
+  return advanceProblem(index, date);
+}
+
+/**
+ * Why the stay from `checkIn` to `checkOut` cannot be had, or null when it can: the arrival must be free and open to arrival (and
+ * inside its advance window), every night in between must be free (the day of the check-out itself may be taken: a guest leaves in the
+ * morning), the day of the check-out must not be closed to departure, and the stay must have at least the nights asked for the day it
+ * starts and at most the nights that day allows. A night the calendar does not know is not free.
  */
 export function rangeProblem(index: CalendarIndex, checkIn: string, checkOut: string): RangeProblem | null {
   if (!isStayDate(checkIn) || !isStayDate(checkOut) || checkOut <= checkIn) return { kind: 'unknown' };
@@ -93,8 +142,14 @@ export function rangeProblem(index: CalendarIndex, checkIn: string, checkOut: st
     if (state !== 'free') return { kind: 'unknown' };
   }
 
+  if (index.days.get(checkOut)?.closedToDeparture) return { kind: 'departureClosed', date: checkOut };
+
   const minNights = minNightsAt(index, checkIn);
   if (nights < minNights) return { kind: 'minNights', minNights, earliestCheckOut: addDays(checkIn, minNights) };
+  const maxNights = maxNightsAt(index, checkIn);
+  if (maxNights !== null && nights > maxNights) {
+    return { kind: 'maxNights', maxNights, latestCheckOut: addDays(checkIn, maxNights) };
+  }
   return null;
 }
 

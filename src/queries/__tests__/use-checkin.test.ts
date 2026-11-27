@@ -6,14 +6,16 @@ import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
-import { useResendCheckInLink } from '../use-checkin';
+import { useResendCheckInLink, useSubmitGuestCheckIn } from '../use-checkin';
 import { bookingsApi } from '@/api/bookings.api';
+import { publicCheckinApi } from '@/api/checkin.api';
 
 vi.mock('@/api/bookings.api');
+vi.mock('@/api/checkin.api', () => ({ publicCheckinApi: { getContext: vi.fn(), submit: vi.fn(), setLanguage: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-function httpError(status: number, data?: unknown): AxiosError {
-  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+function httpError(status: number, data?: unknown, request: { public?: boolean } = {}): AxiosError {
+  const config = { headers: new AxiosHeaders(), ...request } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
     status,
     data,
@@ -56,6 +58,43 @@ describe('useResendCheckInLink onError (A9-09 FE)', () => {
     await resendAndFail(httpError(500, { detail: 'System.NullReferenceException at ...' }));
 
     expect(toast.error).toHaveBeenCalledWith(i18n.t('checkin.resendError'));
+  });
+});
+
+describe('useSubmitGuestCheckIn onError (FIS-01)', () => {
+  async function submitAndFail(error: unknown) {
+    vi.mocked(publicCheckinApi.submit).mockRejectedValueOnce(error);
+    const { result } = renderHook(() => useSubmitGuestCheckIn('tok-1'), { wrapper });
+    await act(async () => {
+      result.current.mutate({ guests: [], marketingConsentEmail: false, marketingConsentWhatsApp: false });
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  }
+
+  it('onError_invoiceBlockRefused_ShowsNoToastBecauseThePageShowsItOnTheFieldsInItsLanguage', async () => {
+    await submitAndFail(
+      httpError(422, {
+        code: 'invoice_data_pec_invalid',
+        field: 'pec',
+        errors: [{ field: 'pec', code: 'invoice_data_pec_invalid' }],
+      }),
+    );
+
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('onError_AnyOther422_IsStillShownToTheGuest', async () => {
+    await submitAndFail(httpError(422, { code: 'checkin_rule', detail: 'Questo soggiorno non accetta il check-in online.' }));
+
+    expect(toast.error).toHaveBeenCalledWith('Questo soggiorno non accetta il check-in online.');
+  });
+
+  it.each([401, 403])('onError_AnonymousGuestRefusedWith%i_GetsTheGenericMessageAndNeverASessionThatExpired', async (status) => {
+    // The submit of the page is an anonymous call (`public`): the guest has no session, so no refusal of it is one that expired or a missing permission.
+    await submitAndFail(httpError(status, undefined, { public: true }));
+
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith(i18n.t('checkin.toast.saveFailed'));
   });
 });
 

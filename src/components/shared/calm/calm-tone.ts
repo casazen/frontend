@@ -7,9 +7,9 @@ import { AlertCircle, AlertTriangle, CheckCircle2, Compass, Info, type LucideIco
 export type CalmTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
 interface ToneStyle {
-  /** The soft background and the hairline edge of a block painted in this tone (an inset ring: `border-*` colors are overridden by a global rule today). */
-  surface: string;
-  /** Text and icon of the tone on `surface` and on the page: `-foreground` on `-soft` and on the surfaces meets AA (`styles/__tests__/tokens.test.ts`). */
+  /** The round badge of the icon: the soft color of the tone. */
+  badge: string;
+  /** Text and icon of the tone on the page and on `badge`: `-foreground` on `-soft` and on the surfaces meets AA (`styles/__tests__/tokens.test.ts`). */
   accent: string;
   Icon: LucideIcon;
 }
@@ -17,11 +17,11 @@ interface ToneStyle {
 // The semantic tokens of the redesign (`--color-{info,success,warning,danger}-{soft,border,foreground}`, `--color-primary-soft`
 // and `--color-primary-text`), as `Alert` and `StatusBadge` read them. `neutral` follows the accent of the area.
 export const TONE_STYLES: Record<CalmTone, ToneStyle> = {
-  neutral: { surface: 'bg-primary-soft ring-primary/20', accent: 'text-primary-text', Icon: Compass },
-  info: { surface: 'bg-info-soft ring-info-border', accent: 'text-info-foreground', Icon: Info },
-  success: { surface: 'bg-success-soft ring-success-border', accent: 'text-success-foreground', Icon: CheckCircle2 },
-  warning: { surface: 'bg-warning-soft ring-warning-border', accent: 'text-warning-foreground', Icon: AlertTriangle },
-  danger: { surface: 'bg-danger-soft ring-danger-border', accent: 'text-danger-foreground', Icon: AlertCircle },
+  neutral: { badge: 'bg-primary-soft', accent: 'text-primary-text', Icon: Compass },
+  info: { badge: 'bg-info-soft', accent: 'text-info-foreground', Icon: Info },
+  success: { badge: 'bg-success-soft', accent: 'text-success-foreground', Icon: CheckCircle2 },
+  warning: { badge: 'bg-warning-soft', accent: 'text-warning-foreground', Icon: AlertTriangle },
+  danger: { badge: 'bg-danger-soft', accent: 'text-danger-foreground', Icon: AlertCircle },
 };
 
 /** Every tone, in the order of the table above (it cannot fall behind it: the keys are the tones). */

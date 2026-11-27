@@ -1,0 +1,614 @@
+# Copyright (C) 2026 CasaZen
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: CasaZen 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/casazen/frontend/issues\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-20T00:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"X-Domain: casazen\n"
+
+#: blocks/src/booking/block.json
+msgctxt "block title"
+msgid "CasaZen booking"
+msgstr ""
+
+#: blocks/src/booking/block.json
+msgctxt "block description"
+msgid "Shows the CasaZen booking engine: search, results and quote."
+msgstr ""
+
+#: blocks/src/guest-access/block.json
+msgctxt "block title"
+msgid "CasaZen guest access"
+msgstr ""
+
+#: blocks/src/guest-access/block.json
+msgctxt "block description"
+msgid "Lets your guests open and manage their booking."
+msgstr ""
+
+#: blocks/src/owner-login/block.json
+msgctxt "block title"
+msgid "CasaZen owner login"
+msgstr ""
+
+#: blocks/src/owner-login/block.json
+msgctxt "block description"
+msgid "Shows a link to the sign-in of the owner area. The owner area is never shown inside a frame."
+msgstr ""
+
+#: blocks/src/property/block.json
+msgctxt "block title"
+msgid "CasaZen property"
+msgstr ""
+
+#: blocks/src/property/block.json
+msgctxt "block description"
+msgid "Shows one property of your CasaZen site with its availability and quote."
+msgstr ""
+
+#: blocks/src/search/block.json
+msgctxt "block title"
+msgid "CasaZen search bar"
+msgstr ""
+
+#: blocks/src/search/block.json
+msgctxt "block description"
+msgid "Shows the search bar of CasaZen (place, dates and guests) and leads to the page with the booking engine."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Language"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "The default follows the language of the page and the language mapping of the plugin settings."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Default"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Italian"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "English"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Automatic (read from the page by the browser)"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Property slug"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "The last part of the address of the property on your CasaZen site, for example villa-rossa."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Check-in date"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Written as YYYY-MM-DD. Leave empty to let the guest choose."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Check-out date"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Guests"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "A number from 1 to 30. Leave empty to let the guest choose."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js includes/class-admin.php:459
+msgid "Booking page"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Where the search leads: a path of this site, an address of this site or an https address. Leave empty to use the page that holds the booking engine."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Places"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Offers the places of your properties in the search bar."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Yes"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "No"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Most guests"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "The most guests the search bar accepts, from 1 to 99."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Send events to the data layer"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Reports searches, views and the start of a checkout to the data layer of the page (Google Tag Manager)."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Keep the state in the address of the page"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Adds a cz parameter to the address of the page while the guest browses the widget."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Initial height (pixels)"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "A number from 100 to 2000. The widget then adapts its height to its content."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Main colour"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "A colour written as #rgb or #rrggbb, for example #2b4c7e."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Corner radius"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "A whole number with px (up to 32px) or rem (up to 2rem), for example 8px."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Font"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "One of the fonts of your CasaZen booking site."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Editorial"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Modern"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Classic"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Text of the link"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Leave empty to use the default text."
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js includes/class-admin.php:164 includes/class-admin.php:364
+msgid "Settings"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "Appearance"
+msgstr ""
+
+#: blocks/build/booking/index.js blocks/build/guest-access/index.js blocks/build/owner-login/index.js blocks/build/property/index.js blocks/build/search/index.js
+msgid "This is only a preview. The widget appears on the published page."
+msgstr ""
+
+#. Plugin Name of the plugin
+#: casazen.php:3 casazen.php:9
+msgid "CasaZen"
+msgstr ""
+
+#. Description of the plugin
+#: casazen.php:5
+msgid "Connects your WordPress site to CasaZen, so that your booking engine and your guest area appear on your own pages."
+msgstr ""
+
+#: includes/class-admin.php:111
+msgid "Connection"
+msgstr ""
+
+#: includes/class-admin.php:117
+msgid "CasaZen address"
+msgstr ""
+
+#: includes/class-admin.php:125
+msgid "Organisation slug"
+msgstr ""
+
+#: includes/class-admin.php:134
+msgid "Display"
+msgstr ""
+
+#: includes/class-admin.php:140
+msgid "Language mapping"
+msgstr ""
+
+#: includes/class-admin.php:148
+msgid "Script"
+msgstr ""
+
+#: includes/class-admin.php:187
+msgid "Set the CasaZen address to start using the plugin."
+msgstr ""
+
+#: includes/class-admin.php:199 includes/class-wizard.php:161 includes/class-wizard.php:171
+msgid "You do not have permission to do this."
+msgstr ""
+
+#: includes/class-admin.php:228
+msgid "You do not have permission to open this page."
+msgstr ""
+
+#: includes/class-admin.php:256
+msgid "The address where your CasaZen booking site lives. The widgets are loaded by the browser of your visitors straight from this address."
+msgstr ""
+
+#: includes/class-admin.php:273
+msgid "The address of your CasaZen booking site, for example https://prenota.example.com. Only the scheme, the host and the port are kept."
+msgstr ""
+
+#: includes/class-admin.php:292
+msgid "Only needed when the address above is the CasaZen domain. Lower-case letters, numbers and hyphens."
+msgstr ""
+
+#: includes/class-admin.php:310
+msgid "One line per language of your site, for example it_IT = it. The value is it, en or auto."
+msgstr ""
+
+#: includes/class-admin.php:325
+msgid "Load the CasaZen script on the pages that use it"
+msgstr ""
+
+#: includes/class-admin.php:365 includes/class-admin.php:417
+msgid "Guided setup"
+msgstr ""
+
+#: includes/class-admin.php:398 includes/class-admin.php:403
+msgid "Test connection"
+msgstr ""
+
+#: includes/class-admin.php:399
+msgid "Check now that this site can reach your CasaZen address."
+msgstr ""
+
+#: includes/class-admin.php:418
+msgid "Creates the pages of your booking site and adds them to a menu. A page that already exists is never changed, and nothing is deleted or moved."
+msgstr ""
+
+#. translators: %s: the date and time of the last run of the guided setup.
+#: includes/class-admin.php:427
+#, php-format
+msgid "Last run: %s."
+msgstr ""
+
+#: includes/class-admin.php:441 includes/class-admin.php:550
+msgid "Run the connection test first"
+msgstr ""
+
+#: includes/class-admin.php:442
+msgid "Open the Settings tab"
+msgstr ""
+
+#: includes/class-admin.php:460
+msgid "Guest access page"
+msgstr ""
+
+#: includes/class-admin.php:461
+msgid "Owner area page"
+msgstr ""
+
+#: includes/class-admin.php:478 includes/class-admin.php:481
+msgid "Pages"
+msgstr ""
+
+#: includes/class-admin.php:490
+msgid "Title"
+msgstr ""
+
+#. translators: %s: the title of the page that already exists, as a link.
+#: includes/class-admin.php:498
+#, php-format
+msgid "A page for this already exists: %s. It will not be changed."
+msgstr ""
+
+#: includes/class-admin.php:510
+msgid "Publication"
+msgstr ""
+
+#: includes/class-admin.php:514
+msgid "Publish the pages now"
+msgstr ""
+
+#: includes/class-admin.php:516
+msgid "Without the tick the pages are saved as drafts."
+msgstr ""
+
+#: includes/class-admin.php:520
+msgid "Menu"
+msgstr ""
+
+#: includes/class-admin.php:523
+msgid "Do not add menu entries"
+msgstr ""
+
+#: includes/class-admin.php:528
+msgid "The pages are added at the end of the menu. The entries that are already there are never moved, renamed or removed."
+msgstr ""
+
+#: includes/class-admin.php:530
+msgid "Your theme is a block theme: its menus are edited in the Site Editor. If you choose no menu here, the pages are listed so that you can add them there."
+msgstr ""
+
+#: includes/class-admin.php:535
+msgid "Create the pages"
+msgstr ""
+
+#: includes/class-admin.php:549
+msgid "The menu you chose does not exist. Nothing was created."
+msgstr ""
+
+#: includes/class-admin.php:563
+msgid "The setup is not complete."
+msgstr ""
+
+#: includes/class-admin.php:567
+msgid "Nothing was done: no page was ticked."
+msgstr ""
+
+#: includes/class-admin.php:571
+msgid "The setup is done, but a page is not published yet."
+msgstr ""
+
+#: includes/class-admin.php:575
+msgid "The setup is done."
+msgstr ""
+
+#: includes/class-admin.php:588
+msgid "What was made is kept and nothing is made twice: run the setup again when the problem is solved."
+msgstr ""
+
+#. translators: %s: the name of a menu.
+#: includes/class-admin.php:596
+#, php-format
+msgid "Menu: %s"
+msgstr ""
+
+#: includes/class-admin.php:602
+msgid "Your theme is a block theme, so no menu was changed. Add them to the Navigation block in the Site Editor."
+msgstr ""
+
+#: includes/class-admin.php:605
+msgid "The pages are in the default language. Translate the pages from the Polylang screen."
+msgstr ""
+
+#: includes/class-admin.php:674
+msgid "Skipped."
+msgstr ""
+
+#: includes/class-admin.php:677
+msgid "The page could not be created."
+msgstr ""
+
+#: includes/class-admin.php:685
+msgid "Page created."
+msgstr ""
+
+#: includes/class-admin.php:687
+msgid "It is a draft: publish it when you are ready."
+msgstr ""
+
+#. translators: 1: the address the title asked for, 2: the address the page got.
+#: includes/class-admin.php:692
+#, php-format
+msgid "The address \"%1$s\" belongs to another page, so this page uses \"%2$s\"."
+msgstr ""
+
+#: includes/class-admin.php:698
+msgid "The page already exists and was not changed."
+msgstr ""
+
+#: includes/class-admin.php:701
+msgid "It is not published, so your visitors do not see it: publish it from the page editor."
+msgstr ""
+
+#: includes/class-admin.php:706
+msgid "Added to the menu."
+msgstr ""
+
+#: includes/class-admin.php:708
+msgid "Already in the menu."
+msgstr ""
+
+#: includes/class-admin.php:710
+msgid "Could not be added to the menu."
+msgstr ""
+
+#: includes/class-admin.php:725
+msgid "Hero search bar"
+msgstr ""
+
+#. translators: 1: the shortcode of the search bar. 2: the title of the page that holds the booking engine.
+#: includes/class-admin.php:730
+#, php-format
+msgid "Add the shortcode %1$s to the home page (in Elementor, the Shortcode widget): it sends the guest to the page %2$s with the dates and the guests."
+msgstr ""
+
+#: includes/class-admin.php:795
+msgid "Connection status"
+msgstr ""
+
+#: includes/class-admin.php:797
+msgid "No check has been made yet. Use the Test connection button below."
+msgstr ""
+
+#: includes/class-admin.php:802
+msgid "Agency"
+msgstr ""
+
+#: includes/class-admin.php:806
+msgid "Embedding"
+msgstr ""
+
+#: includes/class-admin.php:810
+msgid "Owner sign-in"
+msgstr ""
+
+#: includes/class-admin.php:814
+msgid "Last check"
+msgstr ""
+
+#: includes/class-admin.php:820
+msgid "Script address"
+msgstr ""
+
+#: includes/class-admin.php:835
+msgid "On"
+msgstr ""
+
+#: includes/class-admin.php:838
+msgid "Off"
+msgstr ""
+
+#: includes/class-admin.php:840 includes/class-admin.php:856
+msgid "Unknown"
+msgstr ""
+
+#: includes/class-admin.php:851
+msgid "Ready"
+msgstr ""
+
+#: includes/class-admin.php:854
+msgid "Not ready yet"
+msgstr ""
+
+#: includes/class-connection.php:282
+msgid "The connection works."
+msgstr ""
+
+#: includes/class-connection.php:284
+msgid "The connection works, but embedding is not switched on for your agency yet. Ask your CasaZen contact to switch it on."
+msgstr ""
+
+#: includes/class-connection.php:286
+msgid "The address could not be reached. Check that it is correct and that the site is online."
+msgstr ""
+
+#: includes/class-connection.php:288
+msgid "The address answered, but it is not a CasaZen address that supports embedding. Check the address."
+msgstr ""
+
+#: includes/class-connection.php:290
+msgid "CasaZen did not answer the check as expected. Try again in a few minutes."
+msgstr ""
+
+#: includes/class-connection.php:292
+msgid "CasaZen does not know this address or this organisation slug. Check how they are written."
+msgstr ""
+
+#: includes/class-connection.php:294
+msgid "Set the CasaZen address to start."
+msgstr ""
+
+#: includes/class-renderer.php:198
+msgid "CasaZen: set the address in Settings → CasaZen"
+msgstr ""
+
+#: includes/class-renderer.php:209
+msgid "CasaZen: embedding is not enabled for this agency yet."
+msgstr ""
+
+#: includes/class-renderer.php:217
+msgid "CasaZen: the property widget needs the slug of a property, for example slug=\"villa-rossa\"."
+msgstr ""
+
+#: includes/class-renderer.php:231
+msgid "CasaZen — the booking engine appears on the published page"
+msgstr ""
+
+#. translators: %s: the host name of the CasaZen address, for example prenota.example.com.
+#: includes/class-renderer.php:533
+#, php-format
+msgid "Manage your booking on %s"
+msgstr ""
+
+#. translators: %s: the host name of the CasaZen address, for example prenota.example.com.
+#: includes/class-renderer.php:535
+#, php-format
+msgid "Book on %s"
+msgstr ""
+
+#: includes/class-renderer.php:552
+msgid "CasaZen: the owner portal is not enabled for this agency yet."
+msgstr ""
+
+#: includes/class-renderer.php:557 includes/class-wizard.php:95
+msgid "Owner area"
+msgstr ""
+
+#: includes/class-settings.php:202
+msgid "The organisation slug is not valid: use lower-case letters, numbers and single hyphens, up to 100 characters. The previous value was kept."
+msgstr ""
+
+#. translators: %s: the first lines of the language mapping that were ignored.
+#: includes/class-settings.php:221
+#, php-format
+msgid "Some lines of the language mapping were ignored because they are not valid: %s"
+msgstr ""
+
+#: includes/class-settings.php:443
+msgid "The CasaZen address must start with https://. The previous address was kept."
+msgstr ""
+
+#: includes/class-settings.php:445
+msgid "Only https addresses are accepted (http works only for local development hosts). The previous address was kept."
+msgstr ""
+
+#: includes/class-settings.php:447
+msgid "The CasaZen address must not contain a user name or a password. The previous address was kept."
+msgstr ""
+
+#: includes/class-settings.php:449
+msgid "The CasaZen address is not valid. Use the form https://prenota.example.com. The previous address was kept."
+msgstr ""
+
+#: includes/class-wizard.php:93
+msgid "Book"
+msgstr ""
+
+#: includes/class-wizard.php:94
+msgid "Online check-in"
+msgstr ""

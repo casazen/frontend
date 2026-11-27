@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react';
 import { CalendarDays, Euro, Send, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import type { TFunction } from 'i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListDefinition, ListMenuEntry } from '@/components/shared/list-view/list-types';
@@ -9,7 +10,9 @@ import { rentStatus, statusTextKey } from '@/lib/status-dictionary';
 import { todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { RentRegisterRow } from '@/types';
+import { RentComposition } from './components/rent-composition';
 import { leaseTenantName } from './lib/lease-list-format';
+import { rentBreakdown } from './lib/rent-breakdown';
 import {
   isOpenInstallment,
   lastReminderText,
@@ -55,7 +58,9 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
   const today = todayInRome();
   const { canManage, held, onRecord, onRemind } = options;
   const tenantOf = (row: RentRegisterRow) => leaseTenantName(row, t);
-  const amountOf = (row: RentRegisterRow) => formatCurrency(row.amount, row.currency);
+  const amountOf = (row: RentRegisterRow) => formatCurrency(rentBreakdown(row).total, row.currency);
+  const partOf = (row: RentRegisterRow, field: 'rent' | 'condominiumAdvance' | 'condominiumSettlement' | 'other' | 'paid' | 'residual') =>
+    rentBreakdown(row)[field];
   const stateOf = (row: RentRegisterRow) => t(statusTextKey('rent', rentStatus(row), 'label'));
   const noteOf = (row: RentRegisterRow) => rentStatusNote(row, t, language, today);
 
@@ -96,9 +101,22 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
         label: t('longRentRents.columns.amount'),
         default: true,
         align: 'end',
-        render: (row) => <span className="whitespace-nowrap font-medium">{amountOf(row)}</span>,
-        csv: (row) => row.amount,
+        render: (row) => <RentComposition row={row} currency={row.currency} />,
+        csv: (row) => rentBreakdown(row).total,
       },
+      ...(['rent', 'advance', 'settlement', 'other', 'paid', 'residual'] as const).map((id) => {
+        const field = id === 'advance' ? 'condominiumAdvance' : id === 'settlement' ? 'condominiumSettlement' : id;
+        return {
+          id,
+          label: t(`rent.composition.${id}`),
+          align: 'end' as const,
+          render: (row: RentRegisterRow) => {
+            const value = partOf(row, field);
+            return value === null ? '—' : formatCurrency(value, row.currency);
+          },
+          csv: (row: RentRegisterRow) => partOf(row, field) ?? '',
+        };
+      }),
       {
         id: 'status',
         label: t('longRentRents.columns.status'),
@@ -140,7 +158,7 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
         : { id: 'lease', label: t('longRentRents.actions.openLease'), href: rentLeasePath(row.leaseId) },
     menu: (row): readonly ListMenuEntry[] => {
       const entries: ListMenuEntry[] = [];
-      if (canManage && row.canRemind) {
+      if (canManage && (row.canRemind || row.canWhatsAppRemind)) {
         const waiting = held.has(reminderKey(row.id));
         entries.push({
           id: 'remind',
@@ -151,7 +169,6 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
           testId: `rent-remind-${row.id}`,
         });
       }
-      // The lease is the primary action of the rows that cannot be declared paid; for the others it is here.
       if (canManage && isOpenInstallment(row.status)) {
         entries.push({ id: 'lease', label: t('longRentRents.actions.openLease'), href: rentLeasePath(row.leaseId) });
       }
@@ -160,19 +177,37 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
     rowTone: (row) => (row.isOverdue && isOpenInstallment(row.status) ? 'urgent' : row.status === 'Paid' ? 'done' : undefined),
     card: (row) => {
       const note = noteOf(row);
+      const waiting = held.has(reminderKey(row.id));
       return {
         title: tenantOf(row),
         sub: row.propertyName,
         status: <StatusBadge kind="rent" status={rentStatus(row)} />,
         meta: [
           { icon: CalendarDays, label: t('longRentRents.columns.due'), text: shortDay(row.dueDate, language) },
-          { icon: Wallet, label: t('longRentRents.columns.amount'), text: amountOf(row) },
+          { icon: Wallet, label: t('rent.composition.total'), text: amountOf(row) },
         ],
-        foot: note ? (
-          <p className={note.late ? 'break-words text-sm font-medium text-danger-foreground' : 'break-words text-sm text-foreground/70'}>
-            {note.text}
-          </p>
-        ) : undefined,
+        foot: (
+          <div className="min-w-0 space-y-2">
+            {note ? (
+              <p className={note.late ? 'break-words text-sm font-medium text-danger-foreground' : 'break-words text-sm text-foreground/70'}>
+                {note.text}
+              </p>
+            ) : null}
+            <RentComposition row={row} currency={row.currency} />
+            {canManage && (row.canRemind || row.canWhatsAppRemind) ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-auto min-h-11 w-full whitespace-normal"
+                data-testid={`rent-remind-card-${row.id}`}
+                disabled={waiting}
+                onClick={() => onRemind(row)}
+              >
+                {waiting ? t('longRentRents.actions.reminding') : t('longRentRents.actions.remind')}
+              </Button>
+            ) : null}
+          </div>
+        ),
       };
     },
     // With the sidebar open (from `lg`) five columns and a button do not fit under 1280 px: cards until then.

@@ -42,6 +42,15 @@ export function useRentRegisterActions() {
       }
     },
 
+    /** Sends the approved WhatsApp template for one installment. Only the landlord's own action ever calls it. */
+    sendWhatsAppReminder: async (leaseId: string, installmentId: string, note?: string) => {
+      try {
+        return await rentRegisterApi.sendWhatsAppReminder(installmentId, note);
+      } finally {
+        refresh(leaseId);
+      }
+    },
+
     /** Declares an installment paid outside CasaZen (bank transfer, cheque, cash). */
     markPaid: async (leaseId: string, installmentId: string, input: MarkRentPaidInput) => {
       try {

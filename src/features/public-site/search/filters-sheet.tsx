@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { forwardRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Baby, Cigarette, KeyRound, PartyPopper, PawPrint, SlidersHorizontal, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,13 +12,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { usePortalRootProps } from '@/features/public-site/site-appearance-context';
-import { formatPrice } from '@/features/public-site/stay/stay-format';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { listAmenities } from '@/lib/public-amenities';
 import { siteLocale } from '@/lib/site-language';
 import { cn } from '@/lib/utils';
 import { PRICE_STEP, AREA_STEP, dropUnsupported, isUnsupported } from './filters-model';
-import type { SearchFacets } from './search-facets';
+import { writeFacetPrice, type SearchFacets } from './search-facets';
 import { useScopedStays, type SearchScope } from './search-scope';
 import {
   FILTER_AMENITIES,
@@ -59,7 +58,6 @@ interface FiltersSheetProps {
  * announced to a screen reader). Nothing is applied until that button is pressed.
  */
 export function FiltersSheet({ scope, state, facets }: FiltersSheetProps) {
-  const { t } = useTranslation();
   const portal = usePortalRootProps();
   const [open, setOpen] = useState(false);
   const count = activeFilterCount(state.search.filters);
@@ -67,15 +65,7 @@ export function FiltersSheet({ scope, state, facets }: FiltersSheetProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button type="button" className="sr-filter" data-testid="search-filters-open">
-          <SlidersHorizontal aria-hidden="true" />
-          <span>{t('siteSearch.filters.open')}</span>
-          {count > 0 ? (
-            <b className="sr-filter__n" aria-label={t('siteSearch.filters.active', { count })}>
-              {count}
-            </b>
-          ) : null}
-        </button>
+        <FiltersButton count={count} />
       </DialogTrigger>
       <DialogContent {...portal} className={cn(portal.className, 'sr-filters sm:max-w-2xl')}>
         {open ? <FiltersForm scope={scope} state={state} facets={facets} onClose={() => setOpen(false)} /> : null}
@@ -84,7 +74,47 @@ export function FiltersSheet({ scope, state, facets }: FiltersSheetProps) {
   );
 }
 
-function FiltersForm({ scope, state, facets, onClose }: FiltersSheetProps & { onClose: () => void }) {
+/** The button of the filters, with the number of the ones that are on: it opens the sheet, or (in a frame) the panel. */
+const FiltersButton = forwardRef<HTMLButtonElement, { count: number } & ButtonHTMLAttributes<HTMLButtonElement>>(function FiltersButton({ count, ...props }, ref) {
+  const { t } = useTranslation();
+  return (
+    <button ref={ref} type="button" className="sr-filter" data-testid="search-filters-open" {...props}>
+      <SlidersHorizontal aria-hidden="true" />
+      <span>{t('siteSearch.filters.open')}</span>
+      {count > 0 ? (
+        <b className="sr-filter__n" aria-label={t('siteSearch.filters.active', { count })}>
+          {count}
+        </b>
+      ) : null}
+    </button>
+  );
+});
+
+const FILTERS_PANEL_ID = 'sr-filters-panel';
+
+/**
+ * The filters inside the frame of an embeddable widget (NF-144) are not a dialog: a dialog is fixed to the window, and the window of a frame is as tall as its
+ * content, so it would open far from the guest. They are the same button and the same form, and the form is a panel in the flow of the page, under the bar.
+ * `FiltersPanelButton` goes with the other tools of the bar and opens and closes the panel (a disclosure: the focus stays on the button), `FiltersPanel` goes
+ * under them, and «Mostra N case» applies the draft and closes it.
+ */
+export const FiltersPanelButton = forwardRef<HTMLButtonElement, Pick<FiltersSheetProps, 'state'> & { open: boolean; onToggle: () => void }>(function FiltersPanelButton(
+  { state, open, onToggle },
+  ref,
+) {
+  return <FiltersButton ref={ref} count={activeFilterCount(state.search.filters)} aria-expanded={open} aria-controls={FILTERS_PANEL_ID} onClick={onToggle} />;
+});
+
+export function FiltersPanel({ scope, state, facets, open, onClose }: FiltersSheetProps & { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+  return (
+    <section id={FILTERS_PANEL_ID} className="sr-filters sr-filters--panel" aria-labelledby="sr-filters-title" data-testid="search-filters-panel">
+      <FiltersForm inline scope={scope} state={state} facets={facets} onClose={onClose} />
+    </section>
+  );
+}
+
+function FiltersForm({ scope, state, facets, onClose, inline = false }: FiltersSheetProps & { onClose: () => void; inline?: boolean }) {
   const { t, i18n } = useTranslation();
   const locale = siteLocale(i18n.language);
   const { stay, search, setSearch } = state;
@@ -105,8 +135,8 @@ function FiltersForm({ scope, state, facets, onClose }: FiltersSheetProps & { on
   const { prices, areas } = facets;
   const update = (patch: Partial<SearchFilters>) => setDraft((current) => ({ ...current, ...patch }));
   const toggle = <T extends string>(list: T[], value: T): T[] => (list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
-  // Written in the currency of the homes (francs in Switzerland).
-  const euros = (value: number) => formatPrice(value * 100, facets.currency, locale);
+  // Written in the currency of the homes (francs in Switzerland); with none, with no symbol and the phrase that says so; with homes of two currencies, the number alone.
+  const euros = (value: number) => writeFacetPrice(value, facets, locale, t);
   // The icon and the words of each service are the catalog of the site (the same as on the page of a home).
   // What the server could not apply is not offered.
   const amenityOptions = FILTER_AMENITIES.flatMap((name) => {
@@ -124,12 +154,49 @@ function FiltersForm({ scope, state, facets, onClose }: FiltersSheetProps & { on
           ? t('siteSearch.filters.priceUpTo', { price: euros(draft.maxPrice) })
           : t('siteSearch.filters.any');
 
+  // The title, the description and the foot are the parts of a dialog in the sheet; in a panel of the page they are a heading and plain blocks (the parts of
+  // a dialog cannot stand outside it).
+  const clear = (
+    <Button
+      type="button"
+      variant="ghost"
+      onClick={() => setDraft({ ...NO_FILTERS, tags: draft.tags })}
+      disabled={activeFilterCount(draft) === 0}
+      data-testid="search-filters-clear"
+    >
+      {t('siteSearch.filters.clear')}
+    </Button>
+  );
+  const apply = (
+    <Button
+      type="button"
+      className="public-site-cta border-0"
+      aria-busy={waiting || undefined}
+      onClick={() => {
+        setSearch({ filters: clean });
+        onClose();
+      }}
+      data-testid="search-filters-apply"
+    >
+      {button}
+    </Button>
+  );
+
   return (
     <>
-      <DialogHeader>
-        <DialogTitle className="public-display text-xl">{t('siteSearch.filters.title')}</DialogTitle>
-        <DialogDescription className="sr-only">{t('siteSearch.filters.description')}</DialogDescription>
-      </DialogHeader>
+      {inline ? (
+        <header className="sr-filters__head">
+          <h2 id="sr-filters-title" className="public-display text-xl">
+            {t('siteSearch.filters.title')}
+          </h2>
+          <p className="sr-only">{t('siteSearch.filters.description')}</p>
+        </header>
+      ) : (
+        <DialogHeader>
+          <DialogTitle className="public-display text-xl">{t('siteSearch.filters.title')}</DialogTitle>
+          <DialogDescription className="sr-only">{t('siteSearch.filters.description')}</DialogDescription>
+        </DialogHeader>
+      )}
 
       <form className="sr-ff" onSubmit={(event) => event.preventDefault()} noValidate data-testid="search-filters-form">
         {prices ? (
@@ -226,29 +293,17 @@ function FiltersForm({ scope, state, facets, onClose }: FiltersSheetProps & { on
       <p className="sr-only" role="status" aria-live="polite">
         {waiting ? '' : button}
       </p>
-      <DialogFooter className="sr-filters__foot">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => setDraft({ ...NO_FILTERS, tags: draft.tags })}
-          disabled={activeFilterCount(draft) === 0}
-          data-testid="search-filters-clear"
-        >
-          {t('siteSearch.filters.clear')}
-        </Button>
-        <Button
-          type="button"
-          className="public-site-cta border-0"
-          aria-busy={waiting || undefined}
-          onClick={() => {
-            setSearch({ filters: clean });
-            onClose();
-          }}
-          data-testid="search-filters-apply"
-        >
-          {button}
-        </Button>
-      </DialogFooter>
+      {inline ? (
+        <div className="sr-filters__foot sr-filters__foot--panel">
+          {clear}
+          {apply}
+        </div>
+      ) : (
+        <DialogFooter className="sr-filters__foot">
+          {clear}
+          {apply}
+        </DialogFooter>
+      )}
     </>
   );
 }

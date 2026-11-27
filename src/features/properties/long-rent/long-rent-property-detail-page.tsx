@@ -1,10 +1,13 @@
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, FilePlus2, Pencil } from 'lucide-react';
+import { Building2, FilePlus2, Pencil, Files, FileSignature, Wallet, Wrench, ClipboardList, Info } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
+import { PropertyPhotoCarousel } from '../components/property-photo-carousel';
+import { isDisplayableMediaUrl } from '@/lib/media-url';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
+import { DemoTourContact } from '@/components/shared/demo-tour-contact';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,10 +24,13 @@ import { useModeChangeMenuItems } from '../mode/use-mode-entry';
 import { formatPropertyLocation } from '../property-location';
 import { leaseOfRow } from './long-rent-property-format';
 import { LongRentPropertyNextStep } from './long-rent-property-next-step';
-import { ContractsPanel, DataPanel, DocumentsPanel } from './long-rent-property-panels';
+import { CondominiumManagement } from '@/features/condominium/condominium-management';
+import { ContractsPanel, DataPanel, DocumentsPanel, MaintenancePanel } from './long-rent-property-panels';
 import { longRentPropertyPanelOf, longRentPropertyPanels, type LongRentPropertyPanel } from './long-rent-property-sheet';
 import { longRentPropertyRows } from './long-rent-property-rows';
 import { LONG_RENT_PROPERTIES_PATH, longRentPropertyEditPath, newLeaseForPropertyPath } from './paths';
+
+const panelIcons = { contracts: FileSignature, expenses: Wallet, maintenance: Wrench, documents: Files, requests: ClipboardList, data: Info };
 
 /** The page while the property loads: the shape of the page, no spinner in the middle of nothing. */
 function PropertyDetailSkeleton({ label }: { label: string }) {
@@ -50,10 +56,10 @@ function PropertyDetailSkeleton({ label }: { label: string }) {
 /**
  * `/app/long-rent/properties/:id`: one long-term property (LR-07d). The header says what it is and where, with its state and the
  * menu "⋯" of the other actions; under it the one highlighted block, read from its leases (who lives there, for how much and until
- * when, or the lease to make), and then the tabs Contratti, Documenti (the APE the lease needs), Interventi (the requests to
- * suppliers) and Dati (the place and the cadastral ones), each made of sections without a box. The tab is in the address
- * (`?tab=`). The leases are asked of who may read them; without them the page works, has no tab of contracts and says nothing about
- * who lives there.
+ * when, or the lease to make), and then the sections of the sheet. Contratti, Spese condominiali and Manutenzione are the
+ * three of the property; Documenti (the APE), Interventi and Dati stay beside them. Canoni are not here: they open from the
+ * contract. The tab is in the address (`?tab=`). The leases are asked of who may read them; without that permission the page
+ * has none of the three sections that read them.
  */
 export function LongRentPropertyDetailPage() {
   const { t } = useTranslation();
@@ -67,7 +73,7 @@ export function LongRentPropertyDetailPage() {
   // The leases of this property only: the server narrows them (LR-01). Read again when the page opens, a lease is made elsewhere.
   const leases = useLeases({ propertyId: id }, { enabled: canReadLeases && id !== '', refetchOnMount: 'always' });
   // What the server says of the property that the two lists do not: the lease that holds it even when it renewed by itself (LR-07a).
-  const aggregate = useLongRentPropertyAggregate({ fresh: true });
+  const aggregate = useLongRentPropertyAggregate({ fresh: true, canReadLeases });
   // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
   const modeChangeItems = useModeChangeMenuItems('long-rent', id);
 
@@ -101,13 +107,16 @@ export function LongRentPropertyDetailPage() {
   if (property.rentalMode === 'Short') return <Navigate to={`/app/short-rent/properties/${property.id}`} replace />;
 
   // What the leases say of the property, with the rule of the list: let when a registered lease is in force, free otherwise.
-  const row = leases.data ? longRentPropertyRows([property], leases.data, todayInRome(), aggregate.data)[0] : null;
-  const leasesFailed = leases.isError && leases.data === undefined;
+  const visibleLeases = canReadLeases ? leases.data : undefined;
+  const row = visibleLeases ? longRentPropertyRows([property], visibleLeases, todayInRome(), aggregate.data)[0] : null;
+  const leasesFailed = canReadLeases && leases.isError && leases.data === undefined;
 
   // A free property without a lease has its "Crea contratto" in the highlighted block; any other has it here, for another tenant.
   const blockCreatesLease = row?.status === 'Free' && !leaseOfRow(row);
   const menu: PageHeaderMenuItem[] = [
-    { label: t('longRentProperties.detail.edit'), icon: Pencil, to: longRentPropertyEditPath(property.id), testId: 'long-rent-property-edit' },
+    ...(hasPermission('long-rent', 'property.write')
+      ? [{ label: t('longRentProperties.detail.edit'), icon: Pencil, to: longRentPropertyEditPath(property.id), testId: 'long-rent-property-edit' }]
+      : []),
     ...(canCreateLease && !blockCreatesLease
       ? [{ label: t('longRentProperties.detail.newLease'), icon: FilePlus2, to: newLeaseForPropertyPath(property.id), testId: 'long-rent-property-new-lease' }]
       : []),
@@ -118,6 +127,7 @@ export function LongRentPropertyDetailPage() {
   const panel = longRentPropertyPanelOf(searchParams.get('tab'), panels);
   const tabs: TabItem<LongRentPropertyPanel>[] = panels.map((value) => ({
     value,
+    icon: panelIcons[value],
     label: t(`longRentProperties.detail.tabs.${value}`),
     testId: `long-rent-property-tab-${value}`,
   }));
@@ -135,6 +145,8 @@ export function LongRentPropertyDetailPage() {
 
       <ScheduledChangeNotice area="long-rent" propertyId={property.id} />
 
+      <div className={property.photoUrls?.some(isDisplayableMediaUrl) ? 'grid items-start gap-4 lg:grid-cols-2' : undefined}>
+      {property.photoUrls?.some(isDisplayableMediaUrl) && <PropertyPhotoCarousel photoUrls={property.photoUrls} name={property.name} />}
       {leases.isLoading ? (
         <div role="status" aria-busy="true" data-testid="long-rent-property-next-step-loading">
           <span className="sr-only">{t('longRentProperties.detail.loading')}</span>
@@ -152,9 +164,15 @@ export function LongRentPropertyDetailPage() {
         <LongRentPropertyNextStep row={row} canCreateLease={canCreateLease} />
       ) : null}
 
+      </div>
+
+      {row && <DemoTourContact area="long" />}
+
       {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
       <Tabs label={t('longRentProperties.detail.tabsLabel')} items={tabs} value={panel} selectTestId="long-rent-property-tabs-select">
-        {panel === 'contracts' && <ContractsPanel leases={leases.data} />}
+        {panel === 'contracts' && <ContractsPanel leases={visibleLeases} propertyId={property.id} canCreateLease={canCreateLease} />}
+        {panel === 'expenses' && <CondominiumManagement propertyId={property.id} />}
+        {panel === 'maintenance' && <MaintenancePanel leases={visibleLeases} />}
         {panel === 'documents' && <DocumentsPanel propertyId={property.id} documents={documents} />}
         {panel === 'requests' && <LongRentServiceRequests propertyId={property.id} />}
         {panel === 'data' && <DataPanel property={property} />}

@@ -9,7 +9,7 @@ import { LEASES_KEY } from './use-leases';
 export const RENT_KEY = 'lease-rent';
 /** The rent register of the long-term area (LR-04b): a change to any rent invalidates it, and it is read again when its page opens. */
 export const RENT_REGISTER_KEY = 'long-rent-rents';
-const PUBLIC_RENT_KEY = 'public-rent-payment';
+export const PUBLIC_RENT_KEY = 'public-rent-payment';
 
 /**
  * Rent page of a lease (LT-06): schedule, installments and what the landlord can do. The lease status is part of the
@@ -75,6 +75,16 @@ export function useSendRentPaymentRequest(leaseId: string) {
     leaseId,
     (installmentId: string) => rentApi.sendPaymentRequest(leaseId, installmentId),
     'rent.paymentRequestSent',
+  );
+}
+
+/** Explicit send of one budget or settlement. The mutation runs only when the landlord confirms. */
+export function useSendCondominiumNotice(leaseId: string) {
+  return useRentMutation(
+    leaseId,
+    ({ noticeId, channels }: { noticeId: string; channels: Array<'Email' | 'WhatsApp'> }) =>
+      rentApi.sendCondominiumNotice(leaseId, noticeId, channels),
+    'rent.notices.sent',
   );
 }
 

@@ -251,6 +251,10 @@ export const leasesApi = {
   triggerRegistration: (id: string, body: { tosVersion: string; attestationAccepted: boolean }) =>
     ApiClient.post<TriggerRegistrationResult>(`/leases/${id}/registration`, body),
 
+  /** Opens the platform Stripe Checkout before the signed contract is sent to OpenAPI DocuEngine. */
+  createRegistrationCheckout: (id: string) =>
+    ApiClient.post<{ sessionId: string; sessionUrl: string }>(`/leases/${id}/registration/checkout`),
+
   /**
    * LT-01: the contract was registered (by the landlord on the official channel, or by the guided service) and the landlord declares number,
    * date and receipt. The receipt is the file sent now, or (CF-END) the id of the registration document already uploaded to the lease: it

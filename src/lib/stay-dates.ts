@@ -17,6 +17,19 @@ const ROME_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 });
 
+const ZURICH_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Europe/Zurich',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+function calendarDate(format: Intl.DateTimeFormat, now: Date): string {
+  const parts = format.formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((piece) => piece.type === type)?.value ?? '';
+  return `${part('year')}-${part('month')}-${part('day')}`;
+}
+
 function pad(value: number, length = 2): string {
   return String(value).padStart(length, '0');
 }
@@ -42,9 +55,15 @@ export function isStayDate(value: string): boolean {
 
 /** Calendar date (`YYYY-MM-DD`) of `now` in Europe/Rome. */
 export function todayInRome(now: Date = new Date()): string {
-  const parts = ROME_DATE_FORMAT.formatToParts(now);
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
-  return `${part('year')}-${part('month')}-${part('day')}`;
+  return calendarDate(ROME_DATE_FORMAT, now);
+}
+
+/**
+ * Calendar date (`YYYY-MM-DD`) of `now` in Europe/Zurich. A transfer date is this day, never the UTC day from
+ * `toISOString()`.
+ */
+export function todayInZurich(now: Date = new Date()): string {
+  return calendarDate(ZURICH_DATE_FORMAT, now);
 }
 
 /**
@@ -207,6 +226,22 @@ export function romeDateOf(instant: string | null | undefined): string {
   return Number.isNaN(date.getTime()) ? '' : todayInRome(date);
 }
 
+/**
+ * The formatters of the stay dates, made once for each language and each set of options: building one costs about a tenth of a millisecond, and the calendars write a date for
+ * every cell of every row (a Timeline of fifty properties for thirty days is fifteen hundred).
+ */
+const STAY_DATE_FORMATS = new Map<string, Intl.DateTimeFormat>();
+
+function stayDateFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let format = STAY_DATE_FORMATS.get(key);
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' });
+    STAY_DATE_FORMATS.set(key, format);
+  }
+  return format;
+}
+
 /** Stay date formatted for display (no time zone shift), or an empty string when invalid. */
 export function formatStayDate(
   date: string,
@@ -214,5 +249,5 @@ export function formatStayDate(
   options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' },
 ): string {
   const utc = toUtcDate(date);
-  return utc ? new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(utc) : '';
+  return utc ? stayDateFormat(locale, options).format(utc) : '';
 }

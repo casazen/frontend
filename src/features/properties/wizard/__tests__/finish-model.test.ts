@@ -59,6 +59,8 @@ describe('the last step of the wizard', () => {
     expect(fixTargetFor('cin', complete)).toEqual({ kind: 'section', section: 'cin' });
     expect(fixTargetFor('documents', complete)).toEqual({ kind: 'section', section: 'documents' });
     expect(fixTargetFor('ical', complete)).toEqual({ kind: 'section', section: 'calendars' });
+    // The notification of the guests of a property in Switzerland (E29/F02/US02/T01): its card is in the last step, so «Correggi» goes there.
+    expect(fixTargetFor('guest-registration', complete)).toEqual({ kind: 'section', section: 'guest-registration' });
     expect(fixTargetFor('tourist-tax', complete)).toBeNull();
   });
 });

@@ -1,0 +1,86 @@
+import { useId, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Camera } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface DocumentReadStepProps {
+  reading: boolean;
+  review: string | null;
+  onConfirm: () => void;
+  message: string | null;
+  readCount: number;
+  onFile: (file: File) => void;
+  onManual: () => void;
+  onContinue: () => void;
+  /** The property keeps no image of the document (canton Ticino, decision D6): the step says the photo is not stored. Nothing is said otherwise. */
+  notArchived?: boolean;
+}
+
+/** First step of check-in: a photo of the identity document, read before the guest confirms the fields. */
+export function DocumentReadStep({ review, onConfirm, reading, message, readCount, onFile, onManual, onContinue, notArchived = false }: DocumentReadStepProps) {
+  const { t } = useTranslation();
+  const inputId = useId();
+  const hintId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="space-y-4" data-testid="checkin-document-step">
+      <p className="text-sm text-muted-foreground">{t('checkin.scanIntro')}</p>
+      <div className="rounded-md border border-dashed p-6 text-center space-y-3">
+        <Camera className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden />
+        <input
+          ref={inputRef}
+          id={inputId}
+          disabled={reading}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="sr-only"
+          tabIndex={-1}
+          aria-label={t('checkin.scanButton')}
+          data-testid="checkin-document-file"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            if (file) onFile(file);
+          }}
+        />
+        {/* After a first read «Avanti» is the way on: the camera becomes the second choice. */}
+        <Button
+          type="button"
+          variant={readCount > 0 ? 'outline' : 'default'}
+          disabled={reading}
+          onClick={() => inputRef.current?.click()}
+          aria-describedby={hintId}
+          data-testid="checkin-document-pick"
+        >
+          {reading ? t('checkin.scanReading') : readCount > 0 ? t('checkin.scanAnother') : t('checkin.scanButton')}
+        </Button>
+        <p id={hintId} className="text-xs text-foreground/70" data-testid="checkin-document-hint">{t('checkin.scanHint')}</p>
+        {notArchived && (
+          <p className="text-xs font-medium" data-testid="checkin-document-not-archived">
+            {t('checkin.identity.documentNotArchived')}
+          </p>
+        )}
+      </div>
+      {review && <div role="status" className="space-y-2">
+        <p>{review}</p>
+        <Button type="button" onClick={onConfirm} disabled={reading}>{t('checkin.scanConfirmButton')}</Button>
+      </div>}
+      {message && (
+        <p className="text-sm" role="status" data-testid="checkin-document-message">
+          {message}
+        </p>
+      )}
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+        <Button type="button" variant="ghost" disabled={reading} onClick={onManual} data-testid="checkin-enter-manually">
+          {t('checkin.scanManual')}
+        </Button>
+        {readCount > 0 && (
+          <Button type="button" disabled={reading || !!review} onClick={onContinue} data-testid="checkin-scan-continue">
+            {t('checkin.next')}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}

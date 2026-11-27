@@ -26,7 +26,7 @@ import {
   type HomeItem,
   type Reach,
 } from './account-home-model';
-import { activityPhrase } from './activity-phrases';
+import { activityActor, activityPhrase } from './activity-phrases';
 
 /** The words of an item of the home: what it says and, when there is something to add, why or since when. */
 function describeItem(item: HomeItem, t: TFunction): { title: string; body?: string } {
@@ -81,17 +81,17 @@ function AttentionRow({ item, href }: { item: HomeItem; href: string | undefined
   );
 
   return (
-    <li>
+    <li className="rounded-lg border bg-card">
       {href !== undefined ? (
         <Link
           to={href}
-          className="flex min-h-11 items-center justify-between gap-3 py-3 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex min-h-11 items-center justify-between gap-3 rounded-lg p-3 outline-hidden hover:bg-primary-soft hover:underline focus-visible:ring-2 focus-visible:ring-ring"
         >
           {text}
           <ChevronRight aria-hidden="true" className="size-4 shrink-0" />
         </Link>
       ) : (
-        <div className="py-3">{text}</div>
+        <div className="p-3">{text}</div>
       )}
     </li>
   );
@@ -126,7 +126,7 @@ function RecentActivity({ entries, reach }: { entries: OrgActivityEntry[]; reach
           id: entry.id,
           at: asInstant(entry.when),
           text: activityPhrase(entry, { t, memberName }),
-          actor: entry.actorUserId ? (memberName(entry.actorUserId) ?? t('account.activity.formerMember')) : t('account.activity.system'),
+          actor: activityActor(entry, { t, memberName }),
         }))}
       />
     );
@@ -183,7 +183,7 @@ function HomeBody({ overview }: { overview: OrgOverview }) {
 
       {later.length > 0 ? (
         <PlainSection title={t('account.home.attention')} count={later.length}>
-          <ul role="list" className="divide-y divide-border border-y border-border">
+          <ul role="list" className="grid gap-2 sm:grid-cols-2">
             {later.map(({ item, action }) => (
               <AttentionRow key={item.kind} item={item} href={action?.href} />
             ))}

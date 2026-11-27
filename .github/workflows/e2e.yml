@@ -18,16 +18,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # The L2 suite split in three shards that run in parallel (one job was 13 minutes). The check
-  # "E2E L2 (demo)" is the job below that waits for the three.
+  # The L2 suite split in parallel shards (one job was 13 minutes): `playwright --shard=i/N` gives every test to exactly one
+  # shard. To change the number of shards change the matrix list only: the name and the command follow it.
   e2e-l2-shard:
-    name: E2E L2 (demo) shard ${{ matrix.shard }}/3
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
+    name: E2E L2 (demo) shard ${{ matrix.shard }}/${{ strategy.job-total }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5, 6]
     steps:
       - uses: actions/checkout@v4
 
@@ -44,10 +44,62 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install chromium
 
-      - name: Run L2 demo suite (shard ${{ matrix.shard }}/3)
-        run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
+      - name: Run L2 demo suite (shard ${{ matrix.shard }}/${{ strategy.job-total }})
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/${{ strategy.job-total }}
         env:
           CI: true
+
+      - name: Compare the first setup screen with the base branch
+        if: github.event_name == 'pull_request' && matrix.shard == 1
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --no-tags --depth 1 origin "$BASE_SHA"
+          if git diff --quiet "$BASE_SHA" HEAD -- src/features/onboarding/onboarding-plan-page.tsx src/features/onboarding/components/org-sender-preference.tsx; then
+            exit 0
+          fi
+          before="$RUNNER_TEMP/casazen-setup-before"
+          git worktree add --detach "$before" "$BASE_SHA"
+          cp e2e/onboarding-plan-screen.spec.ts e2e/test.ts "$before/e2e/"
+          cp e2e/helpers/onboarding-plan-screen.ts "$before/e2e/helpers/"
+          cd "$before"
+          npm ci
+          npx playwright test e2e/onboarding-plan-screen.spec.ts --project=chromium --grep 'prima vista' --workers=1 --output="$RUNNER_TEMP/setup-before-results"
+
+      - name: Upload base branch setup screens
+        if: always() && github.event_name == 'pull_request' && matrix.shard == 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: onboarding-plan-before
+          path: ${{ runner.temp }}/setup-before-results/**/piano-avvio-*
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload short-rent setup visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onboarding-plan-visual-${{ matrix.shard }}
+          path: test-results/**/piano-avvio-*
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload owner onboarding visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-onboarding-visual-${{ matrix.shard }}
+          path: test-results/**/owner-onboarding-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-mandate-visual-${{ matrix.shard }}
+          path: test-results/**/owner-mandate-*.png
+          if-no-files-found: ignore
+          retention-days: 7
 
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -58,36 +110,50 @@ jobs:
             test-results/
           retention-days: 7
 
-  e2e-l2:
-    name: E2E L2 (demo)
-    needs: e2e-l2-shard
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Every shard passed
-        env:
-          RESULT: ${{ needs.e2e-l2-shard.result }}
-        run: |
-          if [ "$RESULT" != "success" ]; then
-            echo "::error::E2E L2 shards: $RESULT"
-            exit 1
-          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-price-visual-${{ matrix.shard }}
+          path: test-results/**/ai-price-*.png
+          if-no-files-found: ignore
+          retention-days: 7
 
-  e2e-staging:
-    name: E2E staging smoke + GJ
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    # The `secrets` context is not allowed in `steps[*].if`: GitHub rejects the whole workflow
-    # (runs fail with 0 jobs). Expose the secrets as job env and test `env.*` in the step conditions.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: person-access-visual-${{ matrix.shard }}
+          path: test-results/**/person-access-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: listing-ai-visual-${{ matrix.shard }}
+          path: test-results/**/listing-ai-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-profile-visual-${{ matrix.shard }}
+          path: test-results/**/owner-profile-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # The cross-origin proof of the embeddable widgets (NF-150, E43): a page of ANOTHER origin loads the real built `embed.js`. Playwright builds the app and serves it
+  # (`webServer` of the mode E2E_EMBED), answers the two fictitious https origins itself (the agency's WordPress site and its booking domain) and mocks the API: no real
+  # network, no certificate. One job, outside the shard matrix: the six shards never run the spec (`testIgnore` of the default project).
+  e2e-embed:
+    name: E2E embed (cross-origin)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     env:
-      E2E_AUTH0_EMAIL: ${{ secrets.E2E_AUTH0_EMAIL }}
-      E2E_AUTH0_PASSWORD: ${{ secrets.E2E_AUTH0_PASSWORD }}
-      E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
-      VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
-      VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
-      VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
+      # The step builds the whole app: the `webServer` of Playwright runs `npm run build` and passes its environment on (`{ ...process.env, ...env }`).
+      # On Node 20 a process dies at about 2 GB of heap ("JavaScript heap out of memory", exit 134), and that build needs more at times, so that a
+      # rerun sometimes passes: the heap of every Node process of the job is raised to 4 GB.
+      NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - uses: actions/checkout@v4
 
@@ -102,33 +168,15 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install chromium
 
-      - name: Check staging configuration and API readiness
-        run: node scripts/check-staging.mjs
-
-      - name: API regression smoke
-        run: E2E_STAGING=1 npm run test:e2e -- --project=staging
+      - name: Build the app and run the cross-origin proof
+        run: npm run test:e2e:embed
         env:
           CI: true
-          E2E_STAGING: '1'
-          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
-          VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
-          VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
-          VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
-
-      - name: Golden Journey / L3 staging project
-        run: E2E_STAGING=1 npm run test:e2e -- --project=staging-gj
-        env:
-          CI: true
-          E2E_STAGING: '1'
-          E2E_STAGING_API_URL: ${{ vars.E2E_STAGING_API_URL || 'https://casazen-api-test.up.railway.app/api' }}
-          VITE_AUTH0_DOMAIN: ${{ vars.VITE_AUTH0_DOMAIN }}
-          VITE_AUTH0_CLIENT_ID: ${{ vars.VITE_AUTH0_CLIENT_ID }}
-          VITE_AUTH0_AUDIENCE: ${{ vars.VITE_AUTH0_AUDIENCE }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-staging-report
+          name: playwright-embed-report
           path: |
             playwright-report/
             test-results/

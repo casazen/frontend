@@ -22,7 +22,8 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await expect(page).toHaveURL(/\/app\/long-rent(?:\?.*)?$/, { timeout: 15_000 });
     // The area name of the sidebar (UI-04a: "Affitti lunghi"; the backend still sends "Affitti lungo termine").
     await expect(page.getByText(/affitti lunghi|long-term rental/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Immobili|Properties/i })).toBeVisible();
+    await expect(page.getByRole('complementary').getByRole('link', { name: /Contratti|Leases/i })).toHaveCount(0);
     await expect(page.getByRole('link', { name: /Prenotazioni|Bookings/i })).toHaveCount(0);
   });
 
@@ -45,12 +46,13 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await expect(page.getByText(/property manager|short-term rentals|affitti brevi/i).first()).toBeVisible();
   });
 
-  test('AC4 long-term layer renders leases list route', async ({ page }) => {
+  test('AC4 the old contracts list redirects to properties', async ({ page }) => {
     await mockLeasesApiEmpty(page);
     await page.goto(demoUrl('/leases', 'long-term'), { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByText(/affitti lunghi|long-term rental/i)).toBeVisible();
-    await expect(page.getByRole('heading', { level: 1, name: /^(Contratti|Leases)$/ })).toBeVisible({ timeout: 15_000 });
+    await expect(page).toHaveURL(/\/app\/long-rent\/properties/);
+    await expect(page.getByRole('heading', { level: 1, name: /^(Immobili|Properties)$/ })).toBeVisible({ timeout: 15_000 });
   });
 
   test('AC5 PropertyOwner-only is redirected away from /leases', async ({ page }) => {
@@ -65,7 +67,8 @@ test.describe('Long-term UI layer (#182 acceptance criteria)', () => {
     await page.goto(demoUrl('/leases', 'dual'), { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByText(/affitti lunghi|long-term rental/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: /Contratti|Leases/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Immobili|Properties/i })).toBeVisible();
+    await expect(page.getByRole('complementary').getByRole('link', { name: /Contratti|Leases/i })).toHaveCount(0);
     // The switcher names the area the user is in.
     await expect(page.getByTestId('area-switcher')).toHaveAttribute('aria-label', /Affitti lunghi|Long-term rentals/);
   });

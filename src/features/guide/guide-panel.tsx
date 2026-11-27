@@ -1,0 +1,223 @@
+import { useContext, useEffect, useId, useMemo, useRef } from 'react';
+import { QueryClientContext } from '@tanstack/react-query';
+import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ArrowRight, BookOpen, Compass, LifeBuoy } from 'lucide-react';
+import { GuidePath, type GuidePathStep } from '@/components/shared/calm';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import type { AppContextKey } from '@/config/route-manifest';
+import { supportConfig } from '@/config/support.config';
+import { currentReturnTo } from '@/lib/auth-return-to';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { useActivities, useActivityCount } from '@/queries/internalActivities';
+import { useProperties } from '@/queries/use-properties';
+import { useUiStore } from '@/store/ui-store';
+import { todoActionRoute } from '@/features/todo/activity-card';
+import { TODO_LIST_PATH, describeTodo } from '@/features/todo/lib/todo-model';
+import { useSetupJourney, type SetupJourney } from './use-setup-journey';
+
+/** How many items of «Da fare» the panel shows as a road: the one to do now and the next ones. */
+const PANEL_TODO_ITEMS = 5;
+
+/** Classes of a quiet link of the panel: the accent of the area, at least 44 px high. */
+const PANEL_LINK =
+  'inline-flex min-h-11 items-center gap-1.5 rounded-md text-sm font-medium text-primary-text outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring';
+
+/** The setup of the host as a road: how far it is, the steps, «Continua» on the one to do now and the page with every step. */
+function SetupSection({ journey }: { journey: SetupJourney }) {
+  const { t } = useTranslation();
+  const titleId = useId();
+  const steps: GuidePathStep[] = journey.steps.map((step) => ({
+    id: step.id,
+    title: step.title,
+    state: step.state,
+    ...(step.state === 'current' ? { kicker: t('guide.setup.now') } : {}),
+    ...(step.href && step.cta
+      ? { action: { label: step.cta, href: step.href, state: step.linkState, testId: step.state === 'current' ? 'guide-setup-continue' : undefined } }
+      : {}),
+  }));
+
+  return (
+    <section aria-labelledby={titleId} className="space-y-4 rounded-xl border bg-card p-4" data-testid="guide-setup">
+      <div>
+        <h3 id={titleId} className="text-base font-semibold">
+          {t(journey.source === 'path' ? 'guide.setup.titlePath' : 'guide.setup.titleChecklist')}
+        </h3>
+        <p className="text-sm text-foreground/70">{t('guide.setup.progress', { done: journey.done, total: journey.total })}</p>
+      </div>
+      {journey.total > 0 && <progress aria-label={t('guide.setup.label')} className="block h-2 w-full accent-primary" value={journey.done} max={journey.total} />}
+      <GuidePath label={t('guide.setup.label')} steps={steps} density="compact" />
+      {journey.allHref ? (
+        <Link to={journey.allHref} className={PANEL_LINK} data-testid="guide-setup-all">
+          {t('guide.setup.all')}
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      ) : null}
+    </section>
+  );
+}
+
+/** «Da fare» as a road: the item to do now and the next ones, each with its «Fallo ora», and the way to the whole list. */
+function TodoSection() {
+  const { t, i18n } = useTranslation();
+  const titleId = useId();
+  const { hasPermission } = useWorkspace();
+  const activities = useActivities();
+  const urgent = useActivityCount();
+  const properties = useProperties({ mode: 'short' });
+  const propertyNames = useMemo(
+    () => new Map((Array.isArray(properties.data) ? properties.data : []).map((property) => [property.id, property.name] as const)),
+    [properties.data],
+  );
+  const items = Array.isArray(activities.data) ? activities.data : [];
+  if (activities.isPending) return null;
+
+  const context = { t, exists: (key: string) => i18n.exists(key), locale: i18n.language, propertyNames };
+  const steps: GuidePathStep[] = items.slice(0, PANEL_TODO_ITEMS).map((activity, index) => {
+    const text = describeTodo(activity, context);
+    const route = todoActionRoute(activity, hasPermission);
+    return {
+      id: activity.id,
+      title: text.title,
+      detail: text.object,
+      note: text.deadline?.text,
+      noteTone: text.deadline?.overdue ? 'danger' : text.urgency === 'High' ? 'warning' : 'neutral',
+      kicker: index === 0 ? t('activity.todo.path.now') : undefined,
+      state: index === 0 ? 'current' : 'upcoming',
+      action: route
+        ? { label: t('activity.todo.actions.doNow'), href: route, ariaLabel: t('activity.todo.actions.doNowFor', { title: text.title }) }
+        : undefined,
+    };
+  });
+  const urgentCount = urgent.data?.count ?? 0;
+
+  return (
+    <section aria-labelledby={titleId} className="space-y-4 rounded-xl border bg-card p-4" data-testid="guide-todo">
+      <div>
+        <h3 id={titleId} className="text-base font-semibold">
+          {t('guide.todo.title')}
+        </h3>
+        <p className="text-sm text-foreground/70">
+          {items.length === 0
+            ? t('guide.todo.nothing')
+            : urgentCount > 0
+              ? t('guide.todo.countUrgent', { count: items.length, urgent: urgentCount })
+              : t('guide.todo.count', { count: items.length })}
+        </p>
+      </div>
+      <GuidePath label={t('guide.todo.title')} steps={steps} density="compact" />
+      {items.length > 0 ? (
+        <Link to={TODO_LIST_PATH} className={PANEL_LINK} data-testid="guide-todo-all">
+          {t('guide.todo.all')}
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      ) : null}
+    </section>
+  );
+}
+
+/** Where to find more help: the guide of the product, and CasaZen support when an address is set. */
+function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
+  const { t } = useTranslation();
+  const titleId = useId();
+  const helpEmail = supportConfig.email;
+  const location = useLocation();
+  const manual = `/app/${contextKey}/help`;
+  const returnState = location.pathname === manual ? location.state : { guideReturnTo: currentReturnTo(location) };
+
+  return (
+    <section aria-labelledby={titleId} className="space-y-2 rounded-xl border bg-card p-4" data-testid="guide-help">
+      <h3 id={titleId} className="text-base font-semibold">
+        {t('guide.help.title')}
+      </h3>
+      <p className="text-sm text-foreground/70">{t('guide.help.text')}</p>
+      <div className="flex flex-col items-start">
+        <Link to={manual} state={returnState} className={PANEL_LINK} data-testid="guide-help-manual">
+          <BookOpen aria-hidden="true" className="size-4" />
+          {t('guide.help.manual')}
+        </Link>
+        {helpEmail ? (
+          <a href={`mailto:${helpEmail}`} className={PANEL_LINK} data-testid="guide-help-support">
+            <LifeBuoy aria-hidden="true" className="size-4" />
+            {t('guide.help.support')}
+          </a>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+interface GuidePanelProps {
+  contextKey: AppContextKey;
+}
+
+/**
+ * «La tua guida» (the guide of CasaZen): a panel on the right, over the page, that tells the host where they are on the road and what comes
+ * next, so that nobody is left alone in front of a page. In Affitti brevi: the setup as a road (the path «Inizia con CasaZen» or the
+ * activation checklist, only while it is incomplete), the «Da fare» list as a road, and the help. In the other areas: the help.
+ *
+ * It is what replaces the notices that looked like errors: nothing here is tinted, the step to do now has its marker and its button. Every link
+ * closes it (the page changes under it); the button of the header opens it, and so does the end of the welcome of the first access.
+ */
+function GuidePanel({ contextKey }: GuidePanelProps) {
+  const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const setOpen = useUiStore((state) => state.setGuideOpen);
+  const { hasPermission } = useWorkspace();
+  const shortRent = contextKey === 'short-rent';
+  const { journey } = useSetupJourney({ enabled: shortRent });
+  const canReadTodo = shortRent && hasPermission('short-rent', 'property.read');
+
+  // A link of the panel changed the page: the panel has done its job and leaves the page to the person.
+  const lastPath = useRef(pathname);
+  useEffect(() => {
+    if (lastPath.current === pathname) return;
+    lastPath.current = pathname;
+    setOpen(false);
+  }, [pathname, setOpen]);
+
+  return (
+    <Sheet open onOpenChange={setOpen}>
+      <SheetContent side="right" className="w-full sm:max-w-md" data-testid="guide-panel">
+        <SheetHeader className="space-y-1 border-b bg-primary-soft px-6 pb-4 pr-14 pt-6 text-left">
+          <SheetTitle className="flex items-center gap-2">
+            <Compass aria-hidden="true" className="size-5 text-primary-text" />
+            {t('guide.title')}
+          </SheetTitle>
+          <SheetDescription>{t('guide.description')}</SheetDescription>
+        </SheetHeader>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-surface-2 p-4 sm:p-5">
+          {shortRent && journey ? <SetupSection journey={journey} /> : null}
+          {canReadTodo ? <TodoSection /> : null}
+          <HelpSection contextKey={contextKey} />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function GuideButtonView() {
+  const { t } = useTranslation();
+  const setOpen = useUiStore((state) => state.setGuideOpen);
+  const open = useUiStore((state) => state.guideOpen);
+  return (
+    <Button type="button" variant="ghost" size="sm" className="h-10 gap-2 px-2.5"
+      aria-haspopup="dialog" aria-expanded={open} aria-label={t('guide.open')} title={t('guide.open')}
+      onClick={() => setOpen(true)} data-testid="guide-button">
+      <Compass aria-hidden="true" className="size-5" />
+      <span className="hidden text-sm font-medium lg:inline">{t('guide.button')}</span>
+    </Button>
+  );
+}
+export function GuideButton({ contextKey }: GuidePanelProps) {
+  const open = useUiStore((state) => state.guideOpen);
+  const hasQueryClient = useContext(QueryClientContext) !== undefined;
+
+  return (
+    <>
+      <GuideButtonView />
+      {open && hasQueryClient ? <GuidePanel contextKey={contextKey} /> : null}
+    </>
+  );
+}

@@ -105,7 +105,7 @@ describe('Sheet from the bottom (UI-04b)', () => {
 
       const overlay = document.querySelector('[data-sheet-overlay="bottom"]');
       expect(overlay).toHaveClass('bg-black/50');
-      expect(overlay).not.toHaveClass('bg-black/80');
+      expect(overlay).not.toHaveClass('bg-black/60');
     });
 
     it.each(['left', 'right'] as const)('Sheet_%sSide_IsAsItWasWithNoHandle', (side) => {
@@ -115,7 +115,7 @@ describe('Sheet from the bottom (UI-04b)', () => {
       expect(dialog()).toHaveClass('h-full', 'inset-y-0');
       expect(screen.queryByTestId('sheet-handle')).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Chiudi' })).not.toHaveClass('h-11');
-      expect(document.querySelector('[data-sheet-overlay]')).toHaveClass('bg-black/80');
+      expect(document.querySelector('[data-sheet-overlay]')).toHaveClass('bg-black/60');
     });
   });
 

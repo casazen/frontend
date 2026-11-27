@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { isPdfFile, LEASE_MAX_SIGNED_CONTRACT_BYTES } from '@/lib/lease-signing';
 import { formatStayDate, isStayDate, todayInRome } from '@/lib/stay-dates';
+import { useLeaseDocuments, useReceiptReading } from '@/queries/use-lease-documents';
 import { useImportSignedLease } from '@/queries/use-lease-draft';
 import { WIZARD_BUTTON } from './lease-wizard-frame';
 import { conflictingLeasePath, periodConflictOf } from './period-conflict';
@@ -40,6 +41,9 @@ function isNotDraft(error: unknown): boolean {
  * Step ⑦ «Contratto firmato» of a contract that was signed elsewhere (LR-06b, LR-13): the PDF, the day it was signed, and whether it is
  * already registered. The import cannot be taken back, so it is not done until the person confirms what follows from it, and it is sent
  * once. The registration is declared afterwards, with the declaration that already exists (step ⑧ opens it when the answer was yes).
+ *
+ * A receipt of the registration already uploaded to the draft answers the question: a receipt the Agenzia accepted means the contract is
+ * registered, and its day and number fill the declaration; a discarded request means it is not. The person is not asked again.
  */
 export function ImportStep({ leaseId, contractType, flush, uploaded = null, stipulaRead = null }: ImportStepProps) {
   const { t, i18n } = useTranslation();
@@ -48,16 +52,40 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
   const today = todayInRome();
   const [file, setFile] = useState<File | null>(null);
   const [replacing, setReplacing] = useState(false);
-  // The day read from the contract until the person types another.
+  // The day read from the contract (or from the receipt) until the person types another.
   const [typedDate, setTypedDate] = useState<string | null>(null);
-  const stipulaDate = typedDate ?? stipulaRead ?? '';
-  const dateRead = typedDate === null && stipulaRead !== null && stipulaDate !== '';
   const kept = uploaded !== null && !replacing ? uploaded : null;
-  const [registered, setRegistered] = useState<Registered | null>(null);
+  const [chosen, setChosen] = useState<Registered | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [failure, setFailure] = useState<unknown>(null);
   const sending = useRef(false);
+
+  // The receipt already among the documents of the draft, the latest one: it says whether the contract is registered.
+  const documents = useLeaseDocuments(leaseId);
+  const receiptDoc = [...(documents.data ?? [])].reverse().find((document) => document.kind === 'Registration') ?? null;
+  const reading = useReceiptReading(leaseId, receiptDoc?.id ?? '');
+  const read = reading.data?.state === 'Read' ? reading.data.receipt : null;
+  const registeredByReceipt = read?.outcome === 'Registered';
+  const rejectedByReceipt = read?.outcome === 'Rejected';
+  const receiptUnreadable = receiptDoc !== null && reading.isSuccess && !registeredByReceipt && !rejectedByReceipt;
+  const awaitingReceipt = receiptDoc !== null && !reading.data && !reading.isError && (reading.isLoading || reading.isFetching);
+  const decidedByReceipt = registeredByReceipt || rejectedByReceipt || receiptUnreadable;
+  const registered: Registered | null = rejectedByReceipt ? 'no' : (chosen ?? (registeredByReceipt || receiptUnreadable ? 'yes' : null));
+
+  const stipulaFromReceipt = registeredByReceipt && read?.stipulationDate ? read.stipulationDate : null;
+  const stipulaDate = typedDate ?? (stipulaRead || null) ?? stipulaFromReceipt ?? '';
+  const dateFromReceipt = typedDate === null && !stipulaRead && stipulaFromReceipt !== null && stipulaDate !== '';
+  const dateRead = typedDate === null && !dateFromReceipt && !!stipulaRead && stipulaDate !== '';
+  const readCode = registeredByReceipt && read ? (read.code ?? [read.number, read.series].filter(Boolean).join(' ')) : '';
+  const readRegistrationDate = registeredByReceipt && read?.registrationDate ? formatStayDate(read.registrationDate, i18n.language) : '';
+  const receiptDetail = readRegistrationDate && readCode
+    ? t('leaseWizard.import.registered.fromReceiptDetail', { date: readRegistrationDate, code: readCode })
+    : readRegistrationDate
+      ? t('leaseWizard.import.registered.fromReceiptDate', { date: readRegistrationDate })
+      : readCode
+        ? t('leaseWizard.import.registered.fromReceiptCode', { code: readCode })
+        : '';
 
   const fileOk = kept !== null || isPdfFile(file, LEASE_MAX_SIGNED_CONTRACT_BYTES);
   const dateOk = isStayDate(stipulaDate) && stipulaDate <= today;
@@ -71,6 +99,7 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
     setSubmitted(true);
     setFailure(null);
     if (!fileOk) return focus('lw-signedFile');
+    if (awaitingReceipt) return;
     if (!dateOk) return focus('lw-stipulaDate');
     if (registered === null) return focus('lw-registered');
     if (!(await flush())) return;
@@ -134,42 +163,59 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
           data-testid="lease-import-date"
         />
       </Field>
-      {dateRead ? (
+      {dateRead || dateFromReceipt ? (
         <p className="-mt-4 flex items-start gap-1.5 text-xs text-muted-foreground" data-testid="lease-import-date-read">
           <FileSearch aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
-          {t('leaseWizard.documents.read.mark')}
+          {t(dateFromReceipt ? 'leaseDocs.receipt.check' : 'leaseWizard.documents.read.mark')}
         </p>
       ) : null}
 
-      <div className="space-y-2">
-        <ChoiceGroup legend={t('leaseWizard.import.registered.legend')} legendVisible minCardWidth={14}>
-          <ChoiceCard
-            id="lw-registered"
-            name="lease-registered"
-            value="yes"
-            checked={registered === 'yes'}
-            onChange={() => setRegistered('yes')}
-            title={t('leaseWizard.import.registered.yes.title')}
-            description={t('leaseWizard.import.registered.yes.description')}
-            data-testid="lease-registered-yes"
-          />
-          <ChoiceCard
-            name="lease-registered"
-            value="no"
-            checked={registered === 'no'}
-            onChange={() => setRegistered('no')}
-            title={t('leaseWizard.import.registered.no.title')}
-            description={t('leaseWizard.import.registered.no.description')}
-            data-testid="lease-registered-no"
-          />
-        </ChoiceGroup>
-        {submitted && registered === null ? (
-          <p role="alert" className="text-sm text-[color:var(--color-danger-foreground,#b4232a)]">
-            {t('leaseWizard.import.registered.required')}
-          </p>
-        ) : null}
-        {registered === 'no' ? <p className="text-sm text-muted-foreground">{t('leaseWizard.import.reminderNotice')}</p> : null}
-      </div>
+      {decidedByReceipt && receiptDoc ? (
+        <Alert variant={rejectedByReceipt ? 'danger' : 'info'} data-testid="lease-import-registered-read">
+          {rejectedByReceipt
+            ? t('leaseDocs.receipt.rejected')
+            : registeredByReceipt
+              ? t('leaseWizard.import.registered.fromReceipt', { name: receiptDoc.fileName, detail: receiptDetail })
+              : t('leaseWizard.import.registered.fromReceiptUnread', { name: receiptDoc.fileName })}
+        </Alert>
+      ) : awaitingReceipt ? (
+        <p role="status" className="text-sm text-muted-foreground" data-testid="lease-import-receipt-reading">
+          {t('leaseDocs.receipt.reading')}
+        </p>
+      ) : (
+        <div className="space-y-2">
+          <ChoiceGroup legend={t('leaseWizard.import.registered.legend')} legendVisible minCardWidth={14}>
+            <ChoiceCard
+              id="lw-registered"
+              name="lease-registered"
+              value="yes"
+              checked={registered === 'yes'}
+              onChange={() => setChosen('yes')}
+              title={t('leaseWizard.import.registered.yes.title')}
+              description={t('leaseWizard.import.registered.yes.description')}
+              data-testid="lease-registered-yes"
+            />
+            <ChoiceCard
+              name="lease-registered"
+              value="no"
+              checked={registered === 'no'}
+              onChange={() => setChosen('no')}
+              title={t('leaseWizard.import.registered.no.title')}
+              description={t('leaseWizard.import.registered.no.description')}
+              data-testid="lease-registered-no"
+            />
+          </ChoiceGroup>
+          {submitted && registered === null ? (
+            <p role="alert" className="text-sm text-[color:var(--color-danger-foreground,#b4232a)]">
+              {t('leaseWizard.import.registered.required')}
+            </p>
+          ) : null}
+          {registered === 'no' ? <p className="text-sm text-muted-foreground">{t('leaseWizard.import.reminderNotice')}</p> : null}
+        </div>
+      )}
+      {decidedByReceipt && registered === 'no' ? (
+        <p className="text-sm text-muted-foreground">{t('leaseWizard.import.reminderNotice')}</p>
+      ) : null}
 
       {contractType === 'Concordato' ? (
         <Alert variant="info" data-testid="lease-import-concordato">
@@ -217,7 +263,7 @@ export function ImportStep({ leaseId, contractType, flush, uploaded = null, stip
         consequences={[
           t('leaseWizard.import.confirm.signed'),
           t('leaseWizard.import.confirm.fixed'),
-          t(registered === 'yes' ? 'leaseWizard.import.confirm.yes' : 'leaseWizard.import.confirm.no'),
+          t(registeredByReceipt ? 'leaseWizard.import.confirm.fromReceipt' : registered === 'yes' ? 'leaseWizard.import.confirm.yes' : 'leaseWizard.import.confirm.no'),
         ]}
         confirmLabel={t('leaseWizard.import.confirm.submit')}
         onConfirm={confirm}

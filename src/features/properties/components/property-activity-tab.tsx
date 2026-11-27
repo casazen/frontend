@@ -5,10 +5,12 @@ import { PlainSection, StatStrip, StatTile } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { stayDateOf } from '@/features/bookings/lib/booking-price';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { formatStayDate } from '@/lib/stay-dates';
 import { useServiceRequests } from '@/queries/use-service-requests';
 import type { PropertyDetailDto } from '@/types';
 import { propertyBookingsPath, propertyNewBookingPath, propertyServiceRequestPath } from '../properties-paths';
+import { PropertyCleaningCard } from './property-cleaning-card';
 
 interface PropertyActivityTabProps {
   property: PropertyDetailDto;
@@ -29,6 +31,8 @@ export function PropertyActivityTab({ property, canReadBookings, canCreateBookin
   // The property's short-rent requests, each linked to its stay (D2): read only when this tab is open.
   const serviceRequests = useServiceRequests({ propertyId: property.id, pageSize: 50 });
   const summary = property.bookingsSummary;
+  // Who cleans at the check-out (E24/F01/US02/T01): only with the flag of the routines on (the cleaning is made by a routine) and for who may write the property (its API asks for it, as it holds a price).
+  const routinesOn = useFeatureFlags().flags.routines;
 
   const bookings = (
     <>
@@ -66,6 +70,8 @@ export function PropertyActivityTab({ property, canReadBookings, canCreateBookin
       ) : (
         <PlainSection title={t('property.bookings.title')}>{bookings}</PlainSection>
       )}
+
+      {routinesOn && canWrite ? <PropertyCleaningCard propertyId={property.id} /> : null}
 
       <ServiceRequestsCard
         plain

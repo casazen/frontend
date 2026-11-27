@@ -1,27 +1,24 @@
 import { useTranslation } from 'react-i18next';
+import { orgDocumentPath } from '@/lib/org-document-paths';
 import { ConsentForm } from './components/ConsentForm';
 
 interface ConsentStepProps {
+  privacyRead: boolean;
+  onPrivacyRead: (checked: boolean) => void;
   /** Privacy notice version shown to the guest. */
   privacyNoticeVersion?: string;
+  privacyNoticeOrgSlug?: string;
   /** Marketing consent version; when absent, no consent is offered. */
   marketingConsentVersion?: string;
 }
 
-/**
- * Consent step of the check-in flow (NF-05). Appears after mandatory check-in steps.
- * Shows the privacy notice (legal obligation, no checkbox) and the optional marketing consent
- * (email/WhatsApp channels with separate marketing email input). Checkboxes are unchecked by default.
- * Check-in can complete without consent (skip allowed).
- */
-export function ConsentStep({ privacyNoticeVersion, marketingConsentVersion }: ConsentStepProps) {
+export function ConsentStep({ privacyRead, onPrivacyRead, privacyNoticeVersion, privacyNoticeOrgSlug, marketingConsentVersion }: ConsentStepProps) {
   const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
-      {/* Privacy notice: legal obligation (CO-15, A5-15), no checkbox required */}
       <section
-        className="rounded-md border p-4 space-y-2 text-sm"
+        className="space-y-2 border-t pt-4 text-sm"
         aria-labelledby="checkin-privacy-notice-title"
         data-testid="checkin-privacy-notice"
       >
@@ -30,17 +27,26 @@ export function ConsentStep({ privacyNoticeVersion, marketingConsentVersion }: C
         </h2>
         <p>{t('checkin.privacyNotice.legalObligation')}</p>
         <p className="text-muted-foreground">{t('checkin.privacyNotice.body')}</p>
+        {privacyNoticeOrgSlug && (
+          <a href={orgDocumentPath(privacyNoticeOrgSlug, 'privacy')} target="_blank" rel="noopener noreferrer" className="block underline">
+            {t('checkin.privacyOpen')}
+          </a>
+        )}
         {privacyNoticeVersion && (
           <p className="text-xs text-muted-foreground">
             {t('checkin.privacyNotice.version', { version: privacyNoticeVersion })}
           </p>
         )}
+        <label className="flex items-center gap-2" htmlFor="privacy-read">
+          <input id="privacy-read" type="checkbox" checked={privacyRead} onChange={event => onPrivacyRead(event.target.checked)} />
+          {t('checkin.privacyRead')}
+        </label>
       </section>
 
       {/* Marketing consent: optional, offered only when context has marketingConsentVersion */}
       {marketingConsentVersion && (
         <section
-          className="rounded-md border p-4 space-y-4"
+          className="space-y-4 border-t pt-4"
           aria-labelledby="checkin-marketing-consent-title"
           data-testid="checkin-marketing-consent"
         >

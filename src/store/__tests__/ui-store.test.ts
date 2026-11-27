@@ -68,4 +68,41 @@ describe('ui store (UI-04a)', () => {
     expect(stored()?.state).toEqual({ sidebarCollapsed: true });
     useUiStore.getState().setMobilePrimaryVisible(false);
   });
+
+  it('UiStore_OpenWizards_CountsTheWizardsOnScreenSoThatOneLeavingDoesNotHideAnother', () => {
+    // The popup alerts wait while the count is above zero (ADR-025-R7).
+    const before = useUiStore.getState().openWizards;
+
+    useUiStore.getState().wizardOpened();
+    useUiStore.getState().wizardOpened();
+    useUiStore.getState().wizardClosed();
+    expect(useUiStore.getState().openWizards).toBe(before + 1);
+
+    useUiStore.getState().wizardClosed();
+    expect(useUiStore.getState().openWizards).toBe(before);
+  });
+
+  it('UiStore_OpenWizards_NeverGoesBelowZeroAndIsNeverKept', () => {
+    useUiStore.setState({ openWizards: 0 });
+
+    useUiStore.getState().wizardClosed();
+    expect(useUiStore.getState().openWizards).toBe(0);
+
+    useUiStore.getState().wizardOpened();
+    expect(stored()?.state).not.toHaveProperty('openWizards');
+    useUiStore.getState().wizardClosed();
+  });
+  it('keeps independent preferences for each profile, organization and area, including after a reset', () => {
+    const one = JSON.stringify(['host', 'agency-a', 'short-rent']);
+    const two = JSON.stringify(['host', 'agency-b', 'short-rent']);
+    const { updateWorkspaceView } = useUiStore.getState();
+    updateWorkspaceView(one, view => ({ ...view, compact: true }));
+    updateWorkspaceView(two, view => ({ ...view, secondaryPaths: ['/app/short-rent/marketplace'] }));
+    expect(useUiStore.getState().workspaceViews[two].compact).toBe(false);
+    updateWorkspaceView(one, () => ({ compact: false, secondaryPaths: [] }));
+    expect(useUiStore.getState().workspaceViews[one]).toBeUndefined();
+    expect(useUiStore.getState().workspaceViews[two].secondaryPaths).toHaveLength(1);
+    updateWorkspaceView(two, () => ({ compact: false, secondaryPaths: [] }));
+  });
+
 });

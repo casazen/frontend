@@ -1,17 +1,42 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, Loader2, MessageSquare, RefreshCw } from 'lucide-react';
 import { MessageComposer, MessageThread, type ThreadItem } from '@/components/shared/message-thread';
 import { Button } from '@/components/ui/button';
+import { DraftPanel } from '@/features/messages/components/draft-panel';
+import { useContactOptions } from '@/queries/use-message-thread';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { usePageVisible } from '@/hooks/use-page-visible';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage, getRetryAfterSeconds } from '@/lib/api-errors';
+import { messagesOfBookingPath } from '@/lib/message-hub-routes';
+import { cn } from '@/lib/utils';
 import { useBookingThread, useMarkThreadRead, useSendBookingMessage } from '@/queries/use-booking-messages';
 import { GUEST_MESSAGE_MAX_LENGTH, type Booking } from '@/types';
 
 interface BookingMessagesSectionProps {
   booking: Booking;
+  /** Fill the booking detail tab on desktop. The drawer keeps its compact history. */
+  expanded?: boolean;
+}
+
+/**
+ * The way to the page of the messages narrowed to this booking (NF-61, NF-63): its conversations on the channels and on the site, or, when
+ * it has none, how the guest can be written to (the conversation of the channel, an e-mail through CasaZen, or why there is no way). For
+ * a booking that came from a channel the tab alone cannot say it.
+ */
+function MessagesLink({ bookingId }: { bookingId: string }) {
+  const { t } = useTranslation();
+  return (
+    <Button asChild variant="outline" size="sm" className="w-fit">
+      <Link to={messagesOfBookingPath(bookingId)} data-testid="booking-messages-hub-link">
+        <MessageSquare className="size-4" aria-hidden="true" />
+        {t('messages.contact.title')}
+      </Link>
+    </Button>
+  );
 }
 
 /**
@@ -21,10 +46,15 @@ interface BookingMessagesSectionProps {
  * text and reads it in the area of its booking. A closed thread (the seventh day after the check-out) can be read and not written. The
  * text of the messages is the guest's personal data: shown as plain text, never kept anywhere but in the memory of the page.
  */
-export function BookingMessagesSection({ booking }: BookingMessagesSectionProps) {
+export function BookingMessagesSection({ booking, expanded = false }: BookingMessagesSectionProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const canWrite = hasPermission('short-rent', 'booking.write');
+  // The page of the messages asks `booking.read`: the link is for who may open it, never a link that ends on the page of no access.
+  const canOpenMessages = hasPermission('short-rent', 'booking.read');
+  const { flags } = useFeatureFlags();
+  const askAllowed = canWrite && flags.messageAssistant && hasPermission('short-rent', 'approval.decide');
+  const contact = useContactOptions(booking.id, askAllowed);
   const online = useOnlineStatus();
   const thread = useBookingThread(booking.id);
   const { mutate: markAsRead } = useMarkThreadRead(booking.id);
@@ -90,19 +120,23 @@ export function BookingMessagesSection({ booking }: BookingMessagesSectionProps)
 
   if (thread.data.state === 'Unavailable') {
     return (
-      <p className="text-sm text-muted-foreground" data-testid="booking-messages-unavailable">
-        {t('booking.messages.unavailable')}
-      </p>
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground" data-testid="booking-messages-unavailable">
+          {t('booking.messages.unavailable')}
+        </p>
+        {canOpenMessages ? <MessagesLink bookingId={booking.id} /> : null}
+      </div>
     );
   }
 
   return (
-    <div className="space-y-3" data-testid="booking-messages">
+    <div className={cn('space-y-3', expanded && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:gap-3 lg:space-y-0')} data-testid="booking-messages">
       <MessageThread
         items={items}
         label={t('booking.messages.logLabel', { name: guestName })}
         emptyText={t('booking.messages.empty', { name: firstName })}
         onRetry={retry}
+        className={expanded ? 'lg:min-h-0 lg:max-h-none lg:flex-1 lg:overscroll-contain' : undefined}
       />
 
       {sendProblem && (
@@ -117,7 +151,10 @@ export function BookingMessagesSection({ booking }: BookingMessagesSectionProps)
           <p className="text-sm text-muted-foreground">{t('booking.messages.closedDescription')}</p>
         </div>
       ) : canWrite ? (
-        <div className="space-y-1">
+        <div className={cn('space-y-1', expanded && 'lg:max-h-[55%] lg:shrink-0 lg:overflow-y-auto')}>
+          {askAllowed && contact.data?.channel === 'Direct' && contact.data.threadKey?.startsWith('direct:') && (
+            <DraftPanel threadKey={contact.data.threadKey} canAsk />
+          )}
           <MessageComposer
             label={t('booking.messages.composerLabel', { name: firstName })}
             placeholder={t('booking.messages.placeholder')}
@@ -132,6 +169,7 @@ export function BookingMessagesSection({ booking }: BookingMessagesSectionProps)
           {t('booking.messages.readOnly')}
         </p>
       )}
+      {canOpenMessages && booking.source !== 'Direct' && <MessagesLink bookingId={booking.id} />}
     </div>
   );
 }

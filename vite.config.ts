@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import { loadEnv, type Plugin, type PluginOption } from 'vite'
 import react from '@vitejs/plugin-react'
+import { devPublicSite } from './scripts/dev-public-site'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import path from 'path'
 import { assertDemoBuildAllowed } from './src/config/demo-build-guard'
@@ -41,6 +42,7 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
 
   // SE-02: computed before the build starts, so a production build without VITE_PUBLIC_SITE_URL fails right away.
   const plugins: PluginOption[] = useHttpsDev ? [react(), basicSsl()] : [react()];
+  if (command === 'serve' && demoMode) plugins.push(devPublicSite());
   // The SSR build only bundles the public site's renderer for the prerender (SEO-VETRINA): robots.txt belongs to dist/.
   if (command === 'build' && !isSsrBuild) {
     plugins.push(
@@ -98,8 +100,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       environment: 'jsdom',
       globals: true,
       setupFiles: ['./src/test/setup.ts'],
-      // Exclude Playwright E2E tests — they are run separately via `npm run test:e2e`
-      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', '**/.worktrees/**'],
+      // Exclude Playwright E2E tests — they are run separately via `npm run test:e2e`.
+      // `integrations/**` is the WordPress plugin: its tests (PHPUnit, and the Node tests of its tools) run in its own workflow.
+      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', 'integrations/**', '**/.worktrees/**'],
     },
   }
 })

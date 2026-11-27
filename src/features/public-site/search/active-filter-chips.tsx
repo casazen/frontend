@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
-import { formatPrice } from '@/features/public-site/stay/stay-format';
 import { listAmenities } from '@/lib/public-amenities';
 import { siteLocale } from '@/lib/site-language';
+import { writeFacetPrice, type FacetsCurrency } from './search-facets';
 import type { SearchFilters } from './search-state';
 
 /**
@@ -12,20 +12,24 @@ import type { SearchFilters } from './search-state';
  */
 export function ActiveFilterChips({
   filters,
-  currency = 'EUR',
+  facets,
   onChange,
 }: {
   filters: SearchFilters;
-  /** What the price of the chip is written in: the currency of the homes (francs in Switzerland). */
-  currency?: string;
+  /**
+   * What the price of the chip is written in: the currency of the homes (francs in Switzerland), as the facets say it. With none the chip writes the amount with no
+   * symbol and says so; with homes of two currencies, the number alone; and until the homes are in (`pending`) the chip of the price is not drawn at all.
+   */
+  facets: FacetsCurrency;
   onChange: (patch: Partial<SearchFilters>) => void;
 }) {
   const { t, i18n } = useTranslation();
   const locale = siteLocale(i18n.language);
-  const euros = (value: number) => formatPrice(value * 100, currency, locale);
+  const euros = (value: number) => writeFacetPrice(value, facets, locale, t);
 
   const chips: { id: string; label: string; remove: () => void }[] = [];
-  if (filters.minPrice || filters.maxPrice) {
+  // While the homes are not in, the currency is not known: that is not «no currency», so the chip waits for it instead of saying the currency is not available.
+  if ((filters.minPrice || filters.maxPrice) && facets.currencyState !== 'pending') {
     const label =
       filters.minPrice && filters.maxPrice
         ? t('siteSearch.filters.priceBetween', { from: euros(filters.minPrice), to: euros(filters.maxPrice) })

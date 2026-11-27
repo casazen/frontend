@@ -1,0 +1,88 @@
+/*
+ * The printed guest register (E31/F02/US02/T01, NF-130): the table of the guests of a period with an empty column for the signature, the name of the property and the period above it.
+ * The sheet is made of the data of the file when the host presses «Stampa», lives in the page only while the browser prints (`afterprint` takes it away) and is never seen on the screen: it
+ * is a child of `body` of its own, and while it is there printing shows nothing else (the drawer, the page behind it and the toasts are hidden). Every rule that reaches beyond the sheet
+ * is scoped by the sheet being there (`:has`), and its page is a named one: printing anything else of the app, before or after, is what it always was.
+ */
+.guest-register-sheet {
+  display: none;
+}
+
+@page guest-register {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  /* The scroll lock of the drawer leaves a fixed height and a hidden overflow on the page: the sheet runs over as many pages as it needs (`html body`: more specific than the lock). */
+  html:has(> body > .guest-register-sheet),
+  html body:has(> .guest-register-sheet) {
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  html body:has(> .guest-register-sheet) > *:not(.guest-register-sheet) {
+    display: none !important;
+  }
+
+  .guest-register-sheet {
+    display: block;
+    page: guest-register;
+    color: #000;
+    background: #fff;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-size: 8.5pt;
+    line-height: 1.3;
+  }
+
+  .guest-register-sheet h1 {
+    margin: 0 0 1.5mm;
+    font-size: 14pt;
+    font-weight: 700;
+  }
+
+  .guest-register-sheet p {
+    margin: 0 0 1mm;
+  }
+
+  .guest-register-sheet table {
+    width: 100%;
+    margin-top: 3mm;
+    border-collapse: collapse;
+  }
+
+  .guest-register-sheet thead {
+    display: table-header-group;
+  }
+
+  .guest-register-sheet tr {
+    break-inside: avoid;
+  }
+
+  .guest-register-sheet th,
+  .guest-register-sheet td {
+    border: 0.25mm solid #000;
+    padding: 1.5mm 1.8mm;
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+
+  .guest-register-sheet th {
+    background: #eee;
+    font-weight: 700;
+  }
+
+  /* The room for a signature: the column is as wide as a signature and each line as tall as one. */
+  .guest-register-sheet .guest-register-signature {
+    width: 38mm;
+    min-width: 38mm;
+  }
+
+  .guest-register-sheet td {
+    height: 9mm;
+  }
+}

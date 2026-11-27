@@ -80,6 +80,7 @@ describe('public site render (SEO-VETRINA)', () => {
       // Plain links with the words of the search, one click from the home page.
       expect(html, lng).toContain(`<a href="/p/affitti-brevi/lombardia/como"`);
       expect(html, lng).toContain(guide);
+      expect(html, lng).toContain('AI Agents');
       expect(html, lng).toContain(`<a href="/p/tassa-soggiorno/como"`);
       expect(html, lng).toContain(tax);
       for (const page of SEO_FEATURED_GUIDES) expect(html, `${lng} ${page.path}`).toContain(`href="${page.path}"`);
@@ -117,6 +118,34 @@ describe('public site render (SEO-VETRINA)', () => {
     const html = render('home', { ...LEGAL, email: null });
     expect(html).not.toContain('mailto:');
     expect(html).toContain("l&#x27;accesso è solo su invito");
+  });
+
+  it('opens independent, read-only rental examples from the normal public build', () => {
+    const home = render('home');
+    expect(home).toContain('href="/affitti-brevi#demo"');
+    expect(home).toContain('href="/affitti-lunghi#demo"');
+    for (const [page, detail, expectedFigures] of [
+      ['shortRent', 'Piet Jansen', ['2', '2']],
+      ['longRent', 'Casa dei Tigli', ['850 EUR', '0']],
+    ] as const) {
+      const doc = new DOMParser().parseFromString(render(page), 'text/html');
+      const sample = doc.querySelector('#demo details');
+      const figures = Array.from(doc.querySelectorAll('#demo > div dl dd'), value => value.textContent?.replace(/\s+/g, ' '));
+      expect(figures).toEqual(expectedFigures);
+      expect(sample?.querySelectorAll('time[datetime]')).toHaveLength(2);
+      expect(sample?.querySelector('summary')?.textContent).toContain(detail);
+      expect(sample?.querySelector('a')?.getAttribute('href')).toMatch(/^mailto:info@example.com/);
+      expect(sample?.querySelector('a[href^="/app/"]')).toBeNull();
+    }
+  });
+
+  it('offers a referral draft and an existing invitation without collecting or forwarding an invitation in a query', () => {
+    const doc = new DOMParser().parseFromString(render('shortRent', { ...LEGAL, email: null }), 'text/html');
+    const sample = doc.querySelector('#demo details');
+    expect(sample?.querySelector('a')?.getAttribute('href')).toMatch(/^mailto:\?subject=/);
+    const input = sample?.querySelector('input[type=url]');
+    expect(input).toBeTruthy();
+    expect(input?.hasAttribute('name')).toBe(false);
   });
 
   it('render_suppliers_offersAnInvitationNotARegistration', () => {

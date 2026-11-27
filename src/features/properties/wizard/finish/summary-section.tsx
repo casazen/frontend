@@ -1,18 +1,24 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { getAmenityLabel } from '@/lib/i18n-labels';
 import { formatCurrency } from '@/lib/utils';
+import { useAmenityLabels } from '@/queries/use-amenity-catalog';
 import { useCancellationPolicies } from '@/queries/use-properties';
+import { useSiteProfile } from '@/queries/use-site-profile';
 import type { Property } from '@/types';
 import type { ComplianceWizardStep } from '@/types/compliance.types';
 import type { WizardStepId } from '../property-wizard-model';
+import { ChannelsSummary } from './channels-summary';
 
 interface SummarySectionProps {
   /** The property as the server has it: what was saved at each step, not what the form shows. */
   property: Property | undefined;
   /** Steps of the activation, for the state of the safety sheet. */
   steps: ComplianceWizardStep[] | undefined;
+  /** The channel manager is connected to this CasaZen (its flag is on): the summary says what happens on each channel. */
+  showChannels?: boolean;
+  /** The channels the host chose not to publish to. */
+  leftOutChannels?: readonly string[];
 }
 
 interface Row {
@@ -32,10 +38,14 @@ const hourMinute = (time: string | null | undefined) => (time ? time.slice(0, 5)
  * «Riepilogo» (SR-07c): what the property has, section by section, with «Modifica» to the step that holds it. It reads the property from
  * the server — so a step that was skipped shows «Non indicato» instead of the default its form started from.
  */
-export function SummarySection({ property, steps }: SummarySectionProps) {
+export function SummarySection({ property, steps, showChannels = false, leftOutChannels = [] }: SummarySectionProps) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const policies = useCancellationPolicies(Boolean(property?.cancellationPolicyId));
+  const amenityLabel = useAmenityLabels();
+  // The English headline lives in the site profile, not in the property (NF-31).
+  const profile = useSiteProfile(property?.id);
+  const englishTitle = profile.data?.translations?.en?.title?.trim();
   if (!property) return null;
 
   const notSaid = t('propertyWizard.last.summary.notSaid');
@@ -73,18 +83,25 @@ export function SummarySection({ property, steps }: SummarySectionProps) {
           label: labels('photos'),
           value: property.photoUrls.length > 0 ? t('propertyWizard.last.summary.photosCount', { count: property.photoUrls.length }) : t('propertyWizard.last.summary.photosNone'),
         },
-        { label: labels('headline'), value: property.listingTitle?.trim() || notSaid },
       ],
     },
     {
       id: 'amenities',
       title: t('propertyWizard.last.summary.amenities'),
       rows: [
-        { label: labels('amenities'), value: property.amenities.length > 0 ? property.amenities.map((amenity) => getAmenityLabel(amenity, t)).join(', ') : notSaid },
+        { label: labels('amenities'), value: property.amenities.length > 0 ? property.amenities.map(amenityLabel).join(', ') : notSaid },
         {
           label: labels('safety'),
           value: !steps ? '…' : safety?.status === 'complete' ? t('propertyWizard.last.summary.safetyDone') : t('propertyWizard.last.summary.safetyOpen'),
         },
+      ],
+    },
+    {
+      id: 'descriptions',
+      title: t('propertyWizard.last.summary.descriptions'),
+      rows: [
+        { label: labels('headline'), value: property.listingTitle?.trim() || notSaid },
+        { label: labels('headlineEn'), value: englishTitle || notSaid },
       ],
     },
     {
@@ -98,8 +115,13 @@ export function SummarySection({ property, steps }: SummarySectionProps) {
         {
           label: labels('house'),
           value:
-            property.smokingPolicy || property.petsPolicy || property.partiesPolicy
-              ? [optionOf('smokingOptions', property.smokingPolicy), optionOf('petsOptions', property.petsPolicy), optionOf('partiesOptions', property.partiesPolicy)].join(' · ')
+            property.smokingPolicy || property.petsPolicy || property.partiesPolicy || property.childrenPolicy
+              ? [
+                  optionOf('smokingOptions', property.smokingPolicy),
+                  optionOf('petsOptions', property.petsPolicy),
+                  optionOf('partiesOptions', property.partiesPolicy),
+                  optionOf('childrenOptions', property.childrenPolicy),
+                ].join(' · ')
               : notSaid,
         },
         { label: labels('quiet'), value: quietFrom && quietTo ? t('propertyWizard.last.summary.range', { from: quietFrom, to: quietTo }) : notSaid },
@@ -150,6 +172,7 @@ export function SummarySection({ property, steps }: SummarySectionProps) {
             </dl>
           </div>
         ))}
+        {showChannels ? <ChannelsSummary propertyId={property.id} leftOut={leftOutChannels} /> : null}
       </div>
     </section>
   );

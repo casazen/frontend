@@ -1,152 +1,135 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, FileText, TrendingUp, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowUpRight, Building2, CalendarDays, ReceiptText } from 'lucide-react';
+import { FocusBlock } from '@/components/shared/calm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonCard } from '@/components/ui/skeleton';
-import { useOwnerProperties } from '@/queries/ownerPortal';
-import { formatCurrency } from '@/lib/utils';
+import { currentData } from '@/features/owner-portal/owner-portal-model';
+import { periodLabel, sortedStatements } from '@/features/owner-portal/owner-statement-model';
+import { PortalPageHeading, PortalReadProblem } from '@/features/owner-portal/portal-parts';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
+import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
+import { useOwnerProperties, useOwnerStatements } from '@/queries/ownerPortal';
+
+const PUBLISHED_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 
 /**
- * Owner portal dashboard (ADR-011-R8): overview with properties list, occupancy and revenue.
- * Guest data is masked per ADR-011-R3.
+ * The one thing an owner comes for (UX round 2026-11): the latest statement the agency published, with the way to open it. Nothing
+ * while the list loads, fails or is empty: the page has its properties anyway, and the accounting page says the rest.
+ */
+function LatestStatementFocus() {
+  const { t, i18n } = useTranslation();
+  const statements = currentData(useOwnerStatements());
+  const latest = statements ? sortedStatements(statements).find((statement) => !statement.superseded) : undefined;
+  if (!latest) return null;
+
+  const language = i18n.language;
+  const period = periodLabel(latest.year, latest.month, language);
+  const published = t('ownerPortal.accounting.publishedOn', { date: formatStayDate(romeDateOf(latest.publishedAt), language, PUBLISHED_DATE) });
+  return (
+    <FocusBlock
+      icon={ReceiptText}
+      title={t('ownerPortal.accounting.statementTitle', { period })}
+      body={latest.agencyName ? `${published} · ${latest.agencyName}` : published}
+      primary={{ label: t('ownerPortal.accounting.open'), href: ownerPortalPaths.statement(latest.statementId), testId: 'owner-home-latest-statement' }}
+      data-testid="owner-home-focus"
+    />
+  );
+}
+
+/**
+ * Owner portal overview (ADR-011-R8, E07/F07/US01/T03): the list of the owner's properties, each one a link to its page, with the number of its bookings.
+ *
+ * It draws NO number of occupancy, revenue, ADR or RevPAR and no trend, and no amount of money: the Home's service (`IHostDashboardService`) that works them out still reads under the
+ * tenant filter of the request and answers nothing for an owner (S101 follow-up), so the overview, the trend and the occupancy of a property are empty or zero for every owner, and the
+ * sums of a property are the whole price the guests paid, with no currency and no share of the owner. A zero in the place of a figure that is missing says what is not true, so the page
+ * says in words that the numbers are not available yet (`useOwnerOverview` and `useOwnerTrend` stay in the queries for the page that draws them once the service answers).
+ * A property is a link (a card that only listens to the pointer would be out of reach of the keyboard), and every part that cannot be read says so: it never reads as «nothing to show».
  */
 export function OwnerDashboard() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { data: properties, isLoading, error } = useOwnerProperties();
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto max-w-7xl p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-[#1f3a3d]">{t('ownerPortal.dashboard.title')}</h1>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto max-w-7xl p-6">
-        <ErrorState
-          title={t('ownerPortal.dashboard.error')}
-          error={error}
-        />
-      </div>
-    );
-  }
-
-  const totalRevenue = properties?.reduce((sum, p) => sum + p.totalRevenue, 0) ?? 0;
-  const totalBookings = properties?.reduce((sum, p) => sum + p.totalBookings, 0) ?? 0;
-  const avgOccupancy = properties && properties.length > 0
-    ? properties.reduce((sum, p) => sum + p.occupancyRate, 0) / properties.length
-    : 0;
+  const properties = useOwnerProperties();
+  const list = properties.data;
 
   return (
-    <div className="container mx-auto max-w-7xl p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-[#1f3a3d]">{t('ownerPortal.dashboard.title')}</h1>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/portale-proprietari/rendiconti')}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            {t('ownerPortal.dashboard.viewStatements')}
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PortalPageHeading icon={Building2} title={t('ownerPortal.dashboard.title')} description={t('ownerPortal.dashboard.description')} />
 
-      {/* Summary cards */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('ownerPortal.dashboard.totalRevenue')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalRevenue, 'EUR')}</div>
-            <p className="text-xs text-muted-foreground">{t('ownerPortal.dashboard.allProperties')}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('ownerPortal.dashboard.totalBookings')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalBookings}</div>
-            <p className="text-xs text-muted-foreground">{t('ownerPortal.dashboard.allProperties')}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('ownerPortal.dashboard.avgOccupancy')}</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{avgOccupancy.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">{t('ownerPortal.dashboard.acrossProperties')}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <LatestStatementFocus />
 
       {/* Properties list */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-[#1f3a3d]">{t('ownerPortal.dashboard.yourProperties')}</h2>
-        {!properties || properties.length === 0 ? (
+      <section className="space-y-4" aria-labelledby="owner-properties-title">
+        <h2 id="owner-properties-title" className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+          {t('ownerPortal.dashboard.yourProperties')}
+        </h2>
+        {properties.isLoading ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : properties.isError ? (
+          <PortalReadProblem
+            error={properties.error}
+            failedTitle={t('ownerPortal.dashboard.error')}
+            onRetry={() => void properties.refetch()}
+            testId="owner-properties-error"
+          />
+        ) : !list || list.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground">{t('ownerPortal.dashboard.noProperties')}</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {properties.map((property) => (
-              <Card
-                key={property.propertyId}
-                className="cursor-pointer transition-shadow hover:shadow-md"
-                onClick={() => navigate(`/portale-proprietari/immobili/${property.propertyId}`)}
-              >
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-[#1f3a3d]" />
-                    {property.propertyName}
-                  </CardTitle>
-                  <CardDescription>{property.address}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <dl className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <dt className="text-muted-foreground">{t('ownerPortal.dashboard.revenue')}</dt>
-                      <dd className="font-semibold">{formatCurrency(property.totalRevenue, 'EUR')}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">{t('ownerPortal.dashboard.bookings')}</dt>
-                      <dd className="font-semibold">{property.totalBookings}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">{t('ownerPortal.dashboard.occupancy')}</dt>
-                      <dd className="font-semibold">{property.occupancyRate.toFixed(1)}%</dd>
-                    </div>
-                    <div>
-                      <dt className="text-muted-foreground">{t('ownerPortal.dashboard.recentBookings')}</dt>
-                      <dd className="font-semibold">{property.recentBookings.length}</dd>
-                    </div>
-                  </dl>
-                </CardContent>
-              </Card>
+          <ul className="grid gap-4 md:grid-cols-2" data-testid="owner-properties">
+            {list.map((property) => (
+              <li key={property.propertyId} className="min-w-0">
+                <Card className="h-full overflow-hidden">
+                  <CardHeader>
+                    <CardTitle className="flex min-w-0 items-center gap-3 text-xl">
+                      <Building2 aria-hidden="true" className="size-9 shrink-0 rounded-lg bg-muted p-2 text-foreground" />
+                      <Link
+                        to={ownerPortalPaths.property(property.propertyId)}
+                        className="inline-flex min-h-11 min-w-0 items-center gap-1 break-words hover:underline"
+                      >
+                        {property.propertyName}<ArrowUpRight aria-hidden="true" className="size-4 shrink-0" />
+                      </Link>
+                    </CardTitle>
+                    <CardDescription className="break-words">{property.address}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <dl className="grid grid-cols-2 gap-4 border-t pt-4 text-sm">
+                      <div>
+                        <dt className="text-muted-foreground">{t('ownerPortal.dashboard.bookings')}</dt>
+                        <dd className="mt-1 text-xl font-semibold tabular-nums">{property.totalBookings}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">{t('ownerPortal.dashboard.recentBookings')}</dt>
+                        <dd className="mt-1 text-xl font-semibold tabular-nums">{property.recentBookings.length}</dd>
+                      </div>
+                    </dl>
+                    <Link to={ownerPortalPaths.calendar(property.propertyId)} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-muted px-3 text-sm font-semibold text-foreground hover:underline">
+                      <CalendarDays aria-hidden="true" className="size-4" />
+                      {t('ownerPortal.shell.nav.calendar')}
+                      <span className="sr-only"> · {property.propertyName}</span>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-      </div>
+      </section>
+
+      {/* The numbers of the period are not available for an owner yet: said, never a zero in their place */}
+      {list && list.length > 0 && !properties.isError && (
+        <details className="text-sm text-muted-foreground" data-testid="owner-numbers-unavailable">
+          <summary className="w-fit cursor-pointer rounded py-3 font-medium focus-visible:ring-2">
+            {t('ownerPortal.dashboard.numbersUnavailable.title')}
+          </summary>
+          <p className="max-w-prose pb-3">{t('ownerPortal.dashboard.numbersUnavailable.description')}</p>
+        </details>
+      )}
     </div>
   );
 }

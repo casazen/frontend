@@ -5,8 +5,21 @@ import type { RatingSummary } from './review.types';
  * site for a stay, in one call. The prices are the ones of the quote, to the cent (the server adds them up, the page never does).
  */
 
-/** Why a home is not free for the stay asked (the stable `reason` of the backend: never renamed). */
-export type PublicStayReason = 'busy' | 'min_nights' | 'guests' | 'pets' | 'past' | 'not_bookable';
+/**
+ * Why a home is not free for the stay asked (the stable `reason` of the backend: never renamed). `arrival_closed`, `departure_closed`,
+ * `max_nights` and `advance` are the rules of the nights the host set (E08/F05/US01, NF-36).
+ */
+export type PublicStayReason =
+  | 'busy'
+  | 'min_nights'
+  | 'arrival_closed'
+  | 'departure_closed'
+  | 'max_nights'
+  | 'advance'
+  | 'guests'
+  | 'pets'
+  | 'past'
+  | 'not_bookable';
 
 /** How much of the tourist tax a price includes: the tax worked out for this party, an estimate, or left out. */
 export type PublicStayTaxState = 'exact' | 'estimated' | 'notIncluded';
@@ -158,7 +171,13 @@ export interface PublicStaysQuery {
   pageSize?: number;
 }
 
-/** One night of the whole site: free when some home that sleeps the party is. */
+/**
+ * One night of the whole site. `anyAvailable` is true when some home that sleeps the party is free that night AND a stay can start on it
+ * (the backend decides with the rules of the nights, NF-36: `PublicStayPlanner.SiteDays`). A night closed to arrival, or outside the
+ * advance limits of its rule, is false although it can still be slept in and left on, so the pickers draw it like a taken night and
+ * refuse a stay that goes through it; the calendar of a single home does not work like this (its `available` stays «the night is free»).
+ * A separate «free to sleep in» flag of the site calendar is a backend follow-up.
+ */
 export interface PublicSiteCalendarDay {
   date: string;
   anyAvailable: boolean;

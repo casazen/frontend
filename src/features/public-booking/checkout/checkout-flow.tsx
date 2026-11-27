@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Lock } from 'lucide-react';
+import { useTrackBeginCheckout } from '@/features/host-tracking/use-track-ecommerce';
 import { useBooking } from '@/features/public-booking/booking/booking-context';
+import { quoteTotalCents } from '@/features/public-booking/booking/quote-helpers';
 import { CheckoutSteps } from '@/features/public-booking/checkout/checkout-steps';
 import { SummaryBar, StaySummary } from '@/features/public-booking/checkout/stay-summary';
 import { StepDetails } from '@/features/public-booking/checkout/step-details';
@@ -10,6 +12,7 @@ import { StepPayment } from '@/features/public-booking/checkout/step-payment';
 import { StepStay } from '@/features/public-booking/checkout/step-stay';
 import { parseStep, type CheckoutDraft, type CheckoutStep, type DetailsValues } from '@/features/public-booking/checkout/checkout-model';
 import { orgDocumentPath } from '@/lib/org-document-paths';
+import { carryLinkAttribution } from '@/lib/booking-link';
 import { buildPropertyPageUrl } from '@/lib/booking-url';
 import { resizeChildrenAges } from '@/lib/tourist-tax';
 import type { DirectBookingResponse, PublicOrgDto } from '@/types';
@@ -33,7 +36,21 @@ const shallowEqual = (a: DetailsValues, b: DetailsValues) => (Object.keys(a) as 
 export function CheckoutFlow({ org, orgSlug, draft, onDraft }: CheckoutFlowProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { property, stay, hostLabel } = useBooking();
+  const { property, stay, hostLabel, quote } = useBooking();
+  // On an agency's own domain, with the visitor's consent, the checkout of a stay goes to its analytics once its quote is ready (NF-149): once per home and stay, with the total of
+  // the server and the currency of the home.
+  useTrackBeginCheckout(
+    quote.status === 'ready'
+      ? {
+          propertyId: property.id,
+          propertyName: property.name,
+          place: property.city,
+          stay,
+          currency: quote.quote.currency || property.currency,
+          total: quoteTotalCents(quote.quote) / 100,
+        }
+      : null,
+  );
   // Once the booking exists the page is its payment: the stay and the data are fixed, and any step of the address shows the payment.
   const [booking, setBooking] = useState<DirectBookingResponse | null>(null);
   const booked = booking !== null;
@@ -72,12 +89,16 @@ export function CheckoutFlow({ org, orgSlug, draft, onDraft }: CheckoutFlowProps
   );
   const ages = resizeChildrenAges(draft.childrenAges, stay.children);
 
-  const backToProperty = buildPropertyPageUrl(orgSlug, property, {
-    checkIn: stay.checkIn,
-    checkOut: stay.checkOut,
-    guests: stay.adults + stay.children,
-    children: stay.children,
-  });
+  // The way back to the home keeps where the guest came from (`utm_*` of the address), so that booking again from there still says it (E27/F01/US02).
+  const backToProperty = carryLinkAttribution(
+    buildPropertyPageUrl(orgSlug, property, {
+      checkIn: stay.checkIn,
+      checkOut: stay.checkOut,
+      guests: stay.adults + stay.children,
+      children: stay.children,
+    }),
+    searchParams,
+  );
   const editStay = booked ? undefined : () => goTo(1);
 
   return (
@@ -110,6 +131,7 @@ export function CheckoutFlow({ org, orgSlug, draft, onDraft }: CheckoutFlowProps
               values={draft.details}
               onChange={setDetails}
               offersVersion={org.marketingConsentVersion}
+              softOptInNoticeVersion={org.softOptInNoticeVersion}
               siteName={org.displayName}
               onBack={() => goTo(1)}
               onNext={() => goTo(3)}
@@ -132,11 +154,11 @@ export function CheckoutFlow({ org, orgSlug, draft, onDraft }: CheckoutFlowProps
         </div>
 
         <aside className="co__aside" aria-label={t('publicCheckout.summary.title')}>
-          <StaySummary mode={draft.mode} onEdit={editStay} />
+          <StaySummary mode={draft.mode} extras={draft.extras} onEdit={editStay} />
         </aside>
       </div>
 
-      <SummaryBar mode={draft.mode} onEdit={editStay} />
+      <SummaryBar mode={draft.mode} extras={draft.extras} onEdit={editStay} />
 
       <footer className="co-foot" data-testid="checkout-footer">
         <span>

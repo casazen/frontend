@@ -1,8 +1,9 @@
+import { CalendarDays } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { FocusBlock } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
@@ -67,6 +68,7 @@ export function SupplierAvailabilityPage() {
             closedDays: agenda.closedDays,
             timeOff: agenda.timeOff,
             blocks: agenda.blocks,
+            guestOrders: agenda.guestOrders,
             requests: agenda.requests,
             conflicts: conflictMarks,
           })
@@ -125,7 +127,8 @@ export function SupplierAvailabilityPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-availability-page">
-      <PageHeader
+      <ServicePageHeader
+        icon={CalendarDays}
         title={t('supplier.agenda.title')}
         description={t('supplier.agenda.description')}
         crumbs="auto"
@@ -134,7 +137,7 @@ export function SupplierAvailabilityPage() {
 
       {notice}
 
-      <div className="space-y-4" data-testid="supplier-agenda">
+      <div className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-2 sm:p-5" data-testid="supplier-agenda">
         <AgendaToolbar
           view={view}
           date={date}

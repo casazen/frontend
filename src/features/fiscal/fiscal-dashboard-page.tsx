@@ -7,11 +7,15 @@ import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock, PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { getManifestEntry, hasEntryPermission, isEntryFeatureEnabled } from '@/config/route-manifest';
 import { NoteLine } from '@/features/dashboard/components/note-line';
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import { FiscalPropertyItem } from '@/features/fiscal/components/fiscal-property-item';
-import { fiscalFocus, fiscalRegimeSelectId, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
+import { FISCAL_DOCUMENTS_PATH } from '@/features/fiscal/documents/document-paths';
+import { fiscalFocus, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
 import { currentFiscalYear } from '@/features/fiscal/fiscal-format';
+import { BILLING_SETUP_PATH } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useFiscalRegime, useAssignFiscalRegime } from '@/queries/use-fiscal';
@@ -24,13 +28,10 @@ const PROPERTIES_PATH = '/app/short-rent/properties';
 interface FiscalFocusBlockProps {
   snapshot: FiscalRegimeSnapshot;
   focus: FiscalFocus;
-  /** A regime is being saved: the button of the block waits. */
-  pending: boolean;
-  onAssign: (propertyId: string, regime: StrFiscalRegime) => void;
 }
 
 /** The one highlighted block of the page: the next thing to do about the regime of the year, or that nothing is left. */
-function FiscalFocusBlock({ snapshot, focus, pending, onAssign }: FiscalFocusBlockProps) {
+function FiscalFocusBlock({ snapshot, focus }: FiscalFocusBlockProps) {
   const { t } = useTranslation();
   const reports = { label: t('fiscal.reports.link'), href: REPORTS_PATH, testId: 'fiscal-focus-cta' };
 
@@ -46,45 +47,8 @@ function FiscalFocusBlock({ snapshot, focus, pending, onAssign }: FiscalFocusBlo
           data-testid="fiscal-piva-alert"
         />
       );
-    case 'confirm': {
-      const label = t('fiscal.confirmRecommended');
-      return (
-        <FocusBlock
-          tone="warning"
-          kicker={t('compliance.cockpit.kicker.start')}
-          title={t('fiscal.focus.confirm.title', { name: focus.row.name })}
-          body={t('fiscal.focus.confirm.body', { regime: t(`fiscal.regime.${focus.regime}`) })}
-          then={focus.others > 0 ? t('compliance.cockpit.then', { count: focus.others }) : undefined}
-          primary={{
-            label,
-            ariaLabel: `${label}: ${focus.row.name}`,
-            onClick: () => onAssign(focus.row.propertyId, focus.regime),
-            loading: pending,
-            testId: 'fiscal-focus-cta',
-          }}
-          data-testid="fiscal-focus"
-        />
-      );
-    }
-    case 'choose': {
-      const label = t('fiscal.focus.choose.cta');
-      return (
-        <FocusBlock
-          tone="warning"
-          kicker={t('compliance.cockpit.kicker.start')}
-          title={t('fiscal.focus.choose.title', { name: focus.row.name })}
-          body={t('fiscal.taxNote.regimeNotAssigned')}
-          then={focus.others > 0 ? t('compliance.cockpit.then', { count: focus.others }) : undefined}
-          primary={{
-            label,
-            ariaLabel: `${label}: ${focus.row.name}`,
-            onClick: () => document.getElementById(fiscalRegimeSelectId(focus.row.propertyId))?.focus(),
-            testId: 'fiscal-focus-cta',
-          }}
-          data-testid="fiscal-focus"
-        />
-      );
-    }
+    case 'properties':
+      return null;
     case 'ok':
       return (
         <FocusBlock
@@ -131,7 +95,7 @@ function FiscalOverview({ snapshot, canWrite, pending, onAssign }: FiscalOvervie
 
   return (
     <>
-      <FiscalFocusBlock snapshot={snapshot} focus={focus} pending={pending} onAssign={onAssign} />
+      <FiscalFocusBlock snapshot={snapshot} focus={focus} />
 
       <PlainSection title={t('fiscal.list.title')} data-testid="fiscal-properties-section">
         {/* The block above already says it when the partita IVA is what is missing; otherwise it stays here as a note. */}
@@ -143,7 +107,7 @@ function FiscalOverview({ snapshot, canWrite, pending, onAssign }: FiscalOvervie
         <p data-testid="fiscal-str-count" className="text-sm text-foreground/70">
           {t('fiscal.count', { count: snapshot.strPropertyCount, year: snapshot.taxYear })}
         </p>
-        <ul role="list" className="divide-y divide-border border-y border-border">
+        <ul role="list" className="grid gap-3">
           {snapshot.properties.map((row) => (
             <FiscalPropertyItem
               key={row.propertyId}
@@ -170,6 +134,14 @@ export function FiscalDashboardPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const canWrite = hasPermission('short-rent', 'property.write');
+  // The page of the fiscal documents is offered only where it exists for this person: its route is in the manifest, its flags are on and the caller holds what it asks.
+  // With the flags off (the default) the page is as it was.
+  const { flags } = useFeatureFlags();
+  const documentsEntry = getManifestEntry(FISCAL_DOCUMENTS_PATH);
+  const canOpenDocuments = documentsEntry !== undefined && isEntryFeatureEnabled(documentsEntry, flags) && hasEntryPermission(documentsEntry, hasPermission);
+  // The same for the wizard «Fatturazione»: its card is for who may change the setup, and only where the wizard exists (the issuance of fiscal documents is on): a card never leads to the home of the area.
+  const billingEntry = getManifestEntry(BILLING_SETUP_PATH);
+  const canOpenBilling = canWrite && billingEntry !== undefined && isEntryFeatureEnabled(billingEntry, flags) && hasEntryPermission(billingEntry, hasPermission);
   const taxYear = useMemo(() => currentFiscalYear(), []);
   const { data, isLoading, isError, error, refetch } = useFiscalRegime(taxYear);
   const assign = useAssignFiscalRegime(taxYear);
@@ -206,6 +178,32 @@ export function FiscalDashboardPage() {
           </div>
         ) : data ? (
           <FiscalOverview snapshot={data} canWrite={canWrite} pending={assign.isPending} onAssign={assignRegime} />
+        ) : null}
+
+        {/* The fiscal documents (E06/F03/US04/T01): a quiet section that leads to the list of the documents CasaZen issued and of the ones of the channel manager. */}
+        {canOpenDocuments ? (
+          <PlainSection
+            title={t('fiscalDocuments.list.title')}
+            actionLabel={t('fiscalDocuments.list.card.action')}
+            href={FISCAL_DOCUMENTS_PATH}
+            actionTestId="fiscal-documents-card-cta"
+            data-testid="fiscal-documents-card"
+          >
+            <p className="text-sm text-foreground/70">{t('fiscalDocuments.list.description')}</p>
+          </PlainSection>
+        ) : null}
+
+        {/* The invoicing setup of the organization (the wizard «Fatturazione»): a quiet section, not a second highlighted block. Whoever may not change it has no button to it. */}
+        {canOpenBilling ? (
+          <PlainSection
+            title={t('billingWizard.card.title')}
+            actionLabel={t('billingWizard.card.action')}
+            href={BILLING_SETUP_PATH}
+            actionTestId="fiscal-billing-card-cta"
+            data-testid="fiscal-billing-card"
+          >
+            <p className="text-sm text-foreground/70">{t('billingWizard.card.description')}</p>
+          </PlainSection>
         ) : null}
 
         <FiscalDisclaimer />

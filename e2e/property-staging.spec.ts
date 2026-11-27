@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { requireE2eCredentials } from './helpers/env';
+import { isLocalApi, requireE2eCredentials } from './helpers/env';
 import { pinE2eLocale } from './helpers/locale';
 import { fillPropertyWizard } from './helpers/properties-api-mock';
 
@@ -53,6 +53,12 @@ test.describe('Property flow on staging API (live)', () => {
   });
 
   test('creates a property via UI and opens its detail page', async ({ page }) => {
+    // Nobody removes what it creates: on the shared test environment it left a property «E2E Staging <time>» at every push to develop (32 in
+    // the E2E org since June). It runs against a local API only (`E2E_STAGING_API_URL` pointing at it).
+    test.skip(
+      !isLocalApi(process.env.E2E_STAGING_API_URL),
+      'Creates a property that nobody removes: on the shared test environment it piles up at every push. Local API only.',
+    );
     const runId = Date.now();
     const uniqueName = `E2E Staging ${runId}`;
     // The staging org keeps every property the earlier runs created, and the API refuses a second active property at the same

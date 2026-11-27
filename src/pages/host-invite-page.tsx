@@ -1,15 +1,17 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
-import { Home, Loader2 } from 'lucide-react';
+import { MailOpen, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PublicAccessFrame, type AccessContent } from './public-access-frame';
+import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
 import { getProblemMessage, isTransientRequestError } from '@/lib/api-errors';
 import {
   acceptHostInviteOnce,
   clearPendingHostInvite,
+  hostInviteNeedsEmailVerification,
   hostInvitePath,
   isWellFormedHostInviteToken,
   savePendingHostInvite,
@@ -50,7 +52,8 @@ export function HostInvitePage() {
 
 function InviteFlow({ token }: { token: string }) {
   const { t } = useTranslation();
-  const { isLoading: authLoading, isAuthenticated, login } = useAuth();
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const handoff = useLoginHandoff();
   const lookup = useHostInviteLookup(token);
   const valid = lookup.data?.valid === true;
 
@@ -92,8 +95,8 @@ function InviteFlow({ token }: { token: string }) {
   const inviter = data.inviterName?.trim();
   return (
     <InviteLayout
-      title={inviter ? t('hostInvite.invitedBy', { name: inviter }) : t('hostInvite.invited')}
-      description={t('hostInvite.description')}
+      title={data.isAgency ? t('admin.staffInvite.qrTitle') : inviter ? t('hostInvite.invitedBy', { name: inviter }) : t('hostInvite.invited')}
+      description={t(data.isAgency ? 'admin.staffInvite.personalQr' : 'hostInvite.description')}
     >
       {data.maskedEmail && (
         <p className="rounded-md bg-muted p-3 text-sm" data-testid="host-invite-masked-email">
@@ -101,15 +104,17 @@ function InviteFlow({ token }: { token: string }) {
         </p>
       )}
       <p className="text-sm text-muted-foreground">{t('hostInvite.useSameEmail')}</p>
+      {handoff.busy && <p role="status" className="text-sm">{t('login.redirecting')}</p>}
+      {(handoff.status === 'failed' || handoff.status === 'delayed') && <p role="alert" className="text-sm">{t('login.handoffFailed')}</p>}
       <Button
         className="w-full"
         size="lg"
-        onClick={() => login({ returnTo, authorizationParams: { screen_hint: 'signup' } })}
+        disabled={handoff.busy} onClick={() => handoff.start({ returnTo, authorizationParams: { screen_hint: 'signup' } })}
         data-testid="host-invite-signup"
       >
         {t('hostInvite.signup')}
       </Button>
-      <Button className="w-full" variant="outline" onClick={() => login({ returnTo })} data-testid="host-invite-login">
+      <Button className="w-full" variant="outline" disabled={handoff.busy} onClick={() => handoff.start({ returnTo })} data-testid="host-invite-login">
         {t('hostInvite.login')}
       </Button>
     </InviteLayout>
@@ -120,6 +125,7 @@ function InviteFlow({ token }: { token: string }) {
 function AcceptInvite({ token, inviterName }: { token: string; inviterName?: string | null }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { login, refreshAccessToken } = useAuth();
   const started = useRef(false);
   const [status, setStatus] = useState<'pending' | 'done' | 'error'>('pending');
   const [error, setError] = useState<unknown>(null);
@@ -162,18 +168,40 @@ function AcceptInvite({ token, inviterName }: { token: string; inviterName?: str
     );
   }
 
+  const needsEmailVerification = hostInviteNeedsEmailVerification(error);
   const transient = isTransientRequestError(error);
+  const retry = async () => {
+    if (!needsEmailVerification) {
+      run();
+      return;
+    }
+
+    setStatus('pending');
+    try {
+      if (await refreshAccessToken()) {
+        run();
+        return;
+      }
+    } catch {
+      // An expired session needs a fresh login before another acceptance attempt.
+    }
+    setStatus('error');
+    login({ returnTo: hostInvitePath(token), authorizationParams: { prompt: 'login' } });
+  };
   return (
     <InviteLayout title={t('hostInvite.acceptErrorTitle')}>
       <p role="alert" className="text-sm text-destructive" data-testid="host-invite-accept-error">
         {getProblemMessage(error, t) ?? t('hostInvite.acceptErrorGeneric')}
       </p>
-      {transient && (
-        <Button className="w-full" variant="outline" onClick={run}>
+      {(transient || needsEmailVerification) && (
+        <Button className="w-full" variant="outline" onClick={() => void retry()}>
           {t('hostInvite.retry')}
         </Button>
       )}
-      <Button className="w-full" variant="ghost" onClick={() => navigate(AFTER_ACCEPT_PATH, { replace: true })}>
+      <Button className="w-full" variant="ghost" onClick={() => {
+        clearPendingHostInvite();
+        navigate(AFTER_ACCEPT_PATH, { replace: true });
+      }}>
         {t('hostInvite.continueWithout')}
       </Button>
     </InviteLayout>
@@ -195,47 +223,12 @@ function LoadingCard({ message }: { message: string }) {
   return (
     <InviteLayout title={message}>
       <div className="flex justify-center py-4" role="status" aria-label={message}>
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-7 animate-spin motion-reduce:animate-none text-muted-foreground" />
       </div>
     </InviteLayout>
   );
 }
 
-function InviteLayout({
-  title,
-  description,
-  success = false,
-  children,
-}: {
-  title: string;
-  description?: string;
-  success?: boolean;
-  children?: ReactNode;
-}) {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4" data-testid="host-invite-page">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div
-            className={
-              success
-                ? 'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700'
-                : 'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground'
-            }
-          >
-            {success ? (
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <Home className="h-8 w-8" />
-            )}
-          </div>
-          <CardTitle className="text-2xl">{title}</CardTitle>
-          {description && <CardDescription>{description}</CardDescription>}
-        </CardHeader>
-        {children && <CardContent className="space-y-4">{children}</CardContent>}
-      </Card>
-    </div>
-  );
+function InviteLayout(props: AccessContent) {
+  return <PublicAccessFrame icon={MailOpen} testId="host-invite-page" {...props} />;
 }

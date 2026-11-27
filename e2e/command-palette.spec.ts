@@ -388,16 +388,17 @@ test.describe('Command palette (UI-06)', () => {
       await openPage(page, '/app/short-rent', 'dual');
       await openFromKeyboard(page);
 
-      // With two areas the same page of each is told apart by the area in its second line. The pages of the section Immobili of Affitti
-      // brevi (the interventions, the calendars of the channels; the trusted suppliers too on the agency plan) hang from it, which their
-      // second line names, so the words of Immobili find them too.
+      // The broad search returns at most five pages across both rental areas.
+      // Search for each property subpage by name to verify its area independently of ranking.
       await search(page, 'immobili');
       const pages = group(page, 'Pagine').getByRole('option');
-      await expect(pages).toHaveCount(4);
-      await expect(pages.filter({ hasText: 'Affitti brevi' })).toHaveCount(3);
+      await expect(pages).toHaveCount(5);
+      await expect(pages.filter({ hasText: 'Affitti brevi' })).toHaveCount(4);
       await expect(pages.filter({ hasText: 'Affitti lunghi' })).toHaveCount(1);
-      await expect(pages.filter({ hasText: 'Interventi' })).toHaveCount(1);
-      await expect(pages.filter({ hasText: 'Canali e calendari' })).toHaveCount(1);
+      for (const name of ['Interventi', 'Canali e calendari', 'Attivazione', 'Fornitori fidati']) {
+        await search(page, name);
+        await expect(pages.filter({ hasText: name }).filter({ hasText: 'Affitti brevi' })).toHaveCount(1);
+      }
 
       await search(page, 'lunghi');
       await expect(group(page, 'Azioni').getByRole('option').first()).toContainText('Cambia area: Affitti lunghi');
@@ -422,15 +423,17 @@ test.describe('Command palette (UI-06)', () => {
   test.describe('Who may see what', () => {
     test.use({ viewport: { width: 1280, height: 800 } });
 
-    test('a landlord of long rentals finds the leases and not the pages and actions of the short rentals', async ({ page }) => {
+    test('a landlord finds properties and contract actions without a redundant contracts page', async ({ page }) => {
       await mockLeasesApiEmpty(page);
       await openPage(page, '/app/long-rent/leases', 'long-term');
       await openFromKeyboard(page);
 
-      await search(page, 'contratti');
-      await expect(group(page, 'Pagine').getByRole('option').first()).toContainText('Contratti');
+      await search(page, 'immobili');
+      await expect(group(page, 'Pagine').getByRole('option').first()).toContainText('Immobili');
       // One area only: the second line does not repeat its name.
       await expect(group(page, 'Pagine').getByRole('option').first()).not.toContainText('Affitti lunghi');
+      await search(page, 'contratti');
+      await expect(group(page, 'Pagine').getByRole('option')).toHaveCount(0);
       await expect(group(page, 'Azioni').getByRole('option').first()).toContainText('Nuovo contratto');
 
       for (const outside of ['prenotazioni', 'incassi', 'calendario', 'ospiti', 'fornitori']) {

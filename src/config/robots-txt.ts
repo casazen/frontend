@@ -31,8 +31,11 @@ export const SUPPLIER_SITEMAP_PATH = '/sitemap-supplier.xml';
 export const DISALLOWED_PATHS = [
   '/app/',
   '/checkin/',
+  '/s/',
   // The page where an invited person accepts (AM-04c): its address carries the secret of the invitation until the page takes it out.
   '/invite/',
+  // The welcome page behind the QR code a host prints for a house (CRM-03): its address carries the secret of the link, in the path.
+  '/benvenuto/',
   '/login',
   '/book/*/my-bookings',
   // The results of a booking site for a stay (DB-07c): every search is its own address, none is worth a place in the index.
@@ -51,6 +54,8 @@ export const DISALLOWED_PATHS = [
   '/fornitori/*/preventivo',
   // The payment page of a service (SP-15c-d): its address carries the secret of the payment link.
   '/service/pay/',
+  // The page of the document a guest got by e-mail (E12/F02/US02): its address carries the secret of the link until the page takes it out.
+  '/documents/view/',
   // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
   // not exist on the web app's own host, so one `robots.txt` serves both.
   '/my-bookings',

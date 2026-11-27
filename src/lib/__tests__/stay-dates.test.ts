@@ -13,6 +13,7 @@ import {
   stayDateToLocalDate,
   toStayDate,
   todayInRome,
+  todayInZurich,
   utcStayDate,
 } from '@/lib/stay-dates';
 import { LATE_EVENING_UTC, NOON_UTC, freezeClock, withBrowserTimeZone } from '@/test/clock';
@@ -30,6 +31,14 @@ describe('todayInRome', () => {
 
   it('todayInRome_EarlyEveningUtc_ReturnsSameCalendarDay', () => {
     expect(todayInRome(new Date('2026-09-23T21:30:00Z'))).toBe('2026-09-23');
+  });
+});
+
+describe('todayInZurich', () => {
+  it('uses the Zurich calendar date, which is the next day late in the UTC evening', () => {
+    // 23:30 UTC is 00:30 the next day in Zurich (CET, UTC+1). The UTC date is still the 15th.
+    expect(todayInZurich(new Date('2026-01-15T23:30:00Z'))).toBe('2026-01-16');
+    expect(new Date('2026-01-15T23:30:00Z').toISOString().slice(0, 10)).toBe('2026-01-15');
   });
 });
 
@@ -56,6 +65,26 @@ describe('stay date helpers', () => {
     expect(nightsBetween('', '2026-10-04')).toBe(0);
     expect(nightsBetween('2026-10-04', '2026-10-01')).toBe(0);
     expect(nightsBetween('2026-10-04', '2026-10-04')).toBe(0);
+  });
+
+  it('formatStayDate_ReusesItsFormatter_NotOneForEveryDate', () => {
+    // A Timeline writes the name of every day of every row: the formatter is made once for a language and its options.
+    const original = Intl.DateTimeFormat;
+    let made = 0;
+    Intl.DateTimeFormat = function (...args: ConstructorParameters<typeof Intl.DateTimeFormat>) {
+      made += 1;
+      return new original(...args);
+    } as unknown as typeof Intl.DateTimeFormat;
+    try {
+      for (let index = 0; index < 300; index += 1) formatStayDate(addDays('2026-09-01', index % 28), 'it', { day: 'numeric', month: 'long' });
+      expect(made).toBeLessThanOrEqual(1);
+      expect(formatStayDate('2026-09-12', 'it', { day: 'numeric', month: 'long' })).toBe('12 settembre');
+      expect(formatStayDate('2026-09-12', 'en', { day: 'numeric', month: 'long' })).toBe('September 12');
+      // Other options, other formatter: nothing is mixed up.
+      expect(formatStayDate('2026-09-12', 'it', { weekday: 'short' })).toBe('sab');
+    } finally {
+      Intl.DateTimeFormat = original;
+    }
   });
 
   it('formatStayDate_InvalidDate_ReturnsEmptyInsteadOfInvalidDate', () => {

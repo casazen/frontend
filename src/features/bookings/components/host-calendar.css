@@ -178,6 +178,20 @@
   white-space: nowrap;
 }
 
+/* Where the stay comes from (NF-78): the icon of its channel and its name, after the guest; the name goes first when the entry is narrow. */
+.host-calendar-event__channel {
+  display: inline-flex;
+  min-width: 0;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  font-weight: 500;
+  opacity: 0.85;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------
  * The card: the grid is the focal block of the page. It takes the height that is left on the screen (the page is a column
  * that fills the content region) and never less than a month needs to be readable.
@@ -325,4 +339,104 @@
 /* A day is one single column: tinting it as "today" would paint the whole card (the title of the period says the day). */
 .host-calendar--day .rbc-today {
   background: transparent;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------
+ * The day layer (E08/F05/US03/T01): what a night costs and which rules it has, in the cell of the day, on the Timeline and on the
+ * month, the week and the day. A closed arrival and a closed departure are an icon and a short name each, and a night with a rule of
+ * its own carries a small mark: none of them is told by color alone.
+ * ---------------------------------------------------------------------------------------------------------------- */
+.day-cell {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.0625rem;
+  overflow: hidden;
+  container-type: inline-size;
+  color: var(--color-foreground);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.day-cell__price {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.day-cell__min {
+  color: color-mix(in oklab, var(--color-foreground) 70%, transparent);
+  white-space: nowrap;
+}
+
+.day-cell__flag {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.125rem;
+  color: var(--color-warning-foreground);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.day-cell__flag svg,
+.day-cell__rule svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex: none;
+}
+
+/* The short name needs room: in a narrow cell the icon stays and the title and the label of the cell say the rest. */
+.day-cell__flag-name {
+  display: none;
+}
+
+@container (min-width: 3.25rem) {
+  .day-cell__flag-name {
+    display: inline;
+  }
+}
+
+.day-cell__rule {
+  display: inline-flex;
+  color: var(--color-primary-text);
+}
+
+/* In the month, the week and the day the text sits at the foot of the cell, under the number of the day and the entries. */
+.host-calendar .rbc-day-bg {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.25rem;
+}
+
+.host-calendar .rbc-day-bg.host-calendar-past {
+  background: repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in oklab, var(--color-border) 55%, transparent) 7px 8px);
+}
+
+/* The keyboard way to a day of the month, the week or the day: a button over the cell, named in words, that a pointer never meets (the library takes the clicks). */
+.host-calendar-daybutton {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.host-calendar-daybutton:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--color-ring);
+  outline-offset: -2px;
+}
+
+.host-calendar .rbc-day-bg {
+  position: relative;
+}
+
+.host-calendar .rbc-day-bg.is-selected {
+  box-shadow: inset 0 0 0 2px var(--color-primary);
 }

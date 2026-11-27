@@ -1,3 +1,4 @@
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
 import { useTranslation } from 'react-i18next';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { getArea } from '@/config/areas';
@@ -9,8 +10,9 @@ import { useNavCounts } from '@/hooks/use-nav-counts';
 import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
+import { MenuSearch } from './menu-search';
 import { AreaSwitcher } from './area-switcher';
-import { GroupedNavLinks } from './grouped-nav-links';
+import { FooterNavLinks, GroupedNavLinks } from './grouped-nav-links';
 import { useRailTooltip } from './rail-tooltip';
 
 interface ContextSidebarProps {
@@ -64,11 +66,11 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
 
   const area = getArea(contextKey);
   const permissionCheck = (ctx: AppContextKey, permission: string) => hasPermission(ctx, permission);
-  const nav = getContextNav(contextKey, permissionCheck, flags);
-  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
-  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags));
+  const canOpenPath = useCommercialRouteAccess();
+  const nav = getContextNav(contextKey, permissionCheck, flags, { canOpenPath });
+  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags, canOpenPath);
+  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags, canOpenPath));
 
-  const footerLabel = area.footerKey ? t(area.footerKey) : 'v1.0.0 · casazen.io';
 
   return (
     // Sticky to the window, as tall as the visible viewport (`dvh`), with the menu scrolling inside it: the window is
@@ -78,13 +80,13 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
       aria-label={t('shell.mainNavigation')}
       data-collapsed={collapsed}
       className={cn(
-        'sticky top-0 hidden h-dvh shrink-0 flex-col self-start border-r bg-card transition-[width] duration-200 motion-reduce:transition-none md:flex',
+        'workspace-rail sticky top-0 hidden h-dvh shrink-0 flex-col self-start border-r bg-card transition-[width] duration-200 motion-reduce:transition-none md:flex',
         collapsed ? 'w-[4.5rem]' : 'w-64',
       )}
     >
       {/* The brand, as tall as the header of the shell so that the two lines meet; the mark alone when reduced. */}
       <div className={cn('flex h-[var(--header-height)] shrink-0 items-center border-b', collapsed ? 'justify-center' : 'px-5')}>
-        <CasaZenLogo collapsed={collapsed} size={collapsed ? 32 : 34} />
+        <CasaZenLogo tone="dark" collapsed={collapsed} size={collapsed ? 32 : 34} />
       </div>
       <div className="border-b p-3">
         <AreaSwitcher contextKey={contextKey} organizationName={organizationName} collapsed={collapsed} />
@@ -93,8 +95,20 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
         aria-label={t('nav.menuLabel', { area: t(area.nameKey) })}
         className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4"
       >
-        <GroupedNavLinks nav={nav} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />
+        {collapsed ? (
+          <GroupedNavLinks nav={nav} matchEntries={matchEntries} collapsed counts={counts} />
+        ) : (
+          <MenuSearch key={contextKey} entries={matchEntries}>
+            <GroupedNavLinks nav={nav} matchEntries={matchEntries} counts={counts} />
+          </MenuSearch>
+        )}
       </nav>
+      {/* The settings of the area, pinned under the menu that scrolls (on the rail of a tablet too), then the button that reduces the sidebar. */}
+      {nav.footer.length > 0 ? (
+        <nav aria-label={t('nav.group.footer')} className="border-t px-3 py-2">
+          <FooterNavLinks entries={nav.footer} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />
+        </nav>
+      ) : null}
       {isTablet ? null : (
         <div className="flex flex-col gap-1 border-t p-3">
           <CollapseToggle
@@ -102,9 +116,7 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
             label={collapsed ? t('nav.expand') : t('nav.collapse')}
             onToggle={toggleCollapsed}
           />
-          {collapsed ? null : (
-            <p className="text-center text-[10px] tracking-wide text-muted-foreground">{footerLabel}</p>
-          )}
+
         </div>
       )}
     </aside>

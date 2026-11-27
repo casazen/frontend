@@ -12,6 +12,48 @@ export type RentInstallmentStatus = 'Scheduled' | 'Processing' | 'Paid' | 'Faile
 
 export type RentPaymentChannel = 'Stripe' | 'Offline';
 
+/** One part of a rent-ledger row (CondoLedger phase 1). `AmountDue` stays the total. */
+export type RentComponentKind = 'Rent' | 'CondominiumAdvance' | 'CondominiumSettlement' | 'Other';
+
+export interface RentLedgerComponent {
+  id?: string;
+  kind: RentComponentKind | string;
+  amount: number;
+  description?: string | null;
+  competenceStart?: string | null;
+  competenceEnd?: string | null;
+  /**
+   * Extraordinary lines stay off the tenant due until someone accepts them.
+   * Absent means the line is an ordinary charge.
+   */
+  accepted?: boolean;
+}
+
+/**
+ * Bank details for a transfer, when the API sends them with the installment. The amount and the due date stay on the row.
+ * Absent while the backend has not added them: the screen keeps working on the total alone.
+ */
+export interface RentTransferDetails {
+  accountHolder: string;
+  iban: string;
+  /** Unique payment reference (causale). */
+  reference: string;
+  /** Authenticated link to the tenant area, when the message should carry one. */
+  tenantAreaUrl?: string | null;
+}
+
+/**
+ * A budget or a settlement ready for the landlord to send. CasaZen never sends it by itself: the screen posts only after
+ * an explicit confirmation (`POST /leases/:id/condominium-notices/:id/send`).
+ */
+export interface RentManualNotice {
+  id: string;
+  kind: 'Budget' | 'Settlement';
+  title: string;
+  recipientName?: string | null;
+  summary?: string | null;
+}
+
 export interface RentInstallment {
   id: string;
   periodStart: string;
@@ -30,6 +72,16 @@ export interface RentInstallment {
   /** Stripe error code of the last failed online payment (e.g. `card_declined`). */
   failureCode: string | null;
   lastFailedAt: string | null;
+  /**
+   * Parts of the installment (rent, condominium advance, settlement, other). Absent while the API still sends only
+   * `amount`: the screen then shows that total and leaves the parts blank.
+   */
+  components?: RentLedgerComponent[] | null;
+  /** Collected so far. Absent: a `Paid` installment counts as fully paid, any other as nothing collected. */
+  amountPaid?: number | null;
+  /** Still due. Absent: `amount` (or the sum of the parts) minus what was collected. */
+  residual?: number | null;
+  transfer?: RentTransferDetails | null;
 }
 
 export interface RentSchedule {
@@ -62,6 +114,11 @@ export interface RentLedger {
   installments: RentInstallment[];
   /** Final period shorter than the cadence: no installment is generated for it (no pro rata rule assumed). */
   partialFinalPeriod: RentPeriod | null;
+  /**
+   * Budgets and settlements waiting for the landlord to send them. Absent or empty: nothing is offered, and nothing is
+   * sent on its own.
+   */
+  manualNotices?: RentManualNotice[] | null;
 }
 
 /**
@@ -131,6 +188,13 @@ export interface RentRegisterRow {
   lastReminderAt: string | null;
   reminderCount: number;
   canRemind: boolean;
+  /** Same optional parts as an installment. Absent: the row keeps showing `amount` as the total. */
+  components?: RentLedgerComponent[] | null;
+  amountPaid?: number | null;
+  residual?: number | null;
+  transfer?: RentTransferDetails | null;
+  hasTenantPhone?: boolean;
+  canWhatsAppRemind?: boolean;
 }
 
 /** `GET /long-rent/rents`. `month` is `yyyy-MM`. */
@@ -162,6 +226,13 @@ export interface RentReminderResult {
   reminderCount: number;
   recipientCount: number;
   includesPaymentLink: boolean;
+  nextReminderAllowedAt: string;
+}
+
+export interface RentWhatsAppReminder {
+  installmentId: string;
+  sentAt: string;
+  recipientCount: number;
   nextReminderAllowedAt: string;
 }
 
@@ -277,6 +348,9 @@ export type PublicRentPaymentState = 'Payable' | 'Processing' | 'Paid' | 'Unavai
 
 /** `POST /public/rent-payments/:id` with the token of the link: what the tenant sees, no personal data. */
 export interface PublicRentPayment {
+  components?: RentLedgerComponent[];
+  transactionFee?: number;
+  totalAmount?: number;
   installmentId: string;
   propertyName: string;
   landlordName: string;

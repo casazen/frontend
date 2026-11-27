@@ -36,6 +36,8 @@ export interface TabsProps<T extends string> {
   /** The content of the tab that is shown: what the page renders for it. It sits in the panel that the tabs control. */
   children?: React.ReactNode;
   className?: string;
+  layout?: 'row' | 'sidebar';
+  panelClassName?: string;
   /** Test ids for the panel and, on a phone, for the menu that replaces the tabs. */
   panelTestId?: string;
   selectTestId?: string;
@@ -65,10 +67,13 @@ export function Tabs<T extends string>({
   value,
   children,
   className,
+  layout = 'row',
+  panelClassName,
   panelTestId,
   selectTestId,
 }: TabsProps<T>) {
   const isPhone = useMediaQuery(PHONE_QUERY);
+  const sidebar = layout === 'sidebar' && !isPhone;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const baseId = React.useId();
@@ -100,12 +105,14 @@ export function Tabs<T extends string>({
       target.click();
       return;
     }
-    if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+    const forward = sidebar ? 'ArrowDown' : 'ArrowRight';
+    const back = sidebar ? 'ArrowUp' : 'ArrowLeft';
+    if (![forward, back, 'Home', 'End'].includes(event.key)) return;
     const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="tab"]'));
     const index = tabs.indexOf(target);
     let next = index;
-    if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
-    else if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+    if (event.key === forward) next = (index + 1) % tabs.length;
+    else if (event.key === back) next = (index - 1 + tabs.length) % tabs.length;
     else if (event.key === 'Home') next = 0;
     else next = tabs.length - 1;
     event.preventDefault();
@@ -113,7 +120,7 @@ export function Tabs<T extends string>({
   };
 
   return (
-    <div className={cn('min-w-0', className)}>
+    <div className={cn('min-w-0', sidebar && 'grid grid-cols-[minmax(10rem,13rem)_minmax(0,1fr)] items-start gap-5 xl:gap-8', className)}>
       {isPhone ? (
         <div className="mb-4">
           <label htmlFor={`${baseId}-select`} className="sr-only">
@@ -137,12 +144,12 @@ export function Tabs<T extends string>({
           </select>
         </div>
       ) : (
-        <div className="mb-6 border-b">
+        <div className={sidebar ? 'rounded-2xl border bg-card p-2' : 'mb-6 border-b'}>
           <div
             role="tablist"
             aria-label={label}
-            aria-orientation="horizontal"
-            className="-mb-px flex gap-1 overflow-x-auto [scrollbar-width:none]"
+            aria-orientation={sidebar ? 'vertical' : 'horizontal'}
+            className={sidebar ? 'grid gap-1' : '-mb-px flex gap-1 overflow-x-auto [scrollbar-width:none]'}
             onKeyDown={handleKeyDown}
           >
             {items.map((item) => {
@@ -160,7 +167,7 @@ export function Tabs<T extends string>({
                   replace
                   preventScrollReset
                   data-testid={item.testId}
-                  className={tabLinkClass(selected)}
+                  className={sidebar ? cn('flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring', selected ? 'bg-primary-soft text-primary-text' : 'hover:bg-muted') : tabLinkClass(selected)}
                 >
                   {Icon ? <Icon className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}
                   {item.label}
@@ -180,7 +187,7 @@ export function Tabs<T extends string>({
           role={isPhone ? undefined : 'tabpanel'}
           aria-labelledby={isPhone ? undefined : tabId(active)}
           data-testid={panelTestId}
-          className="min-w-0"
+          className={cn('min-w-0', panelClassName)}
         >
           {children}
         </div>

@@ -1,6 +1,8 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './test';
 import { addDays, todayInRome } from '../src/lib/stay-dates';
+import { wizardDraftKey } from '../src/lib/wizard-draft';
+import { DEMO_ORG } from './helpers/org-api-mock';
 import { demoUrl } from './helpers/demo-profile';
 import { mockLeasesApiEmpty } from './helpers/lease-api-mock';
 import { pinE2eLocale } from './helpers/locale';
@@ -10,7 +12,7 @@ import { WIDER_LETTERS, expectInsideTheScreen, expectNoAxeViolations, expectNoth
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
 /**
- * PM-03: the wizard that changes the rental mode of a property (short stays <-> long-term leases), its entries in the pages
+ * PM-03/#915: long-to-short conversion and management of historical scheduled mode changes, its entries in the pages
  * of the property and the row of status with "Annulla il passaggio". L2 (demo mode, mocked API: the four endpoints of PM-02).
  */
 const SHORT_ID = 'prop-mode-short-1';
@@ -67,69 +69,42 @@ test.describe('Change of rental mode (PM-03)', () => {
     await pinE2eLocale(page, 'it');
   });
 
-  test('PM-03: from short stays to long-term, the whole way, then withdrawn from the page of the property', async ({ page }) => {
+  test('#915: short rentals no longer offer conversion and direct URLs cannot reopen it', async ({ page }) => {
     const mock = await openShortProperty(page);
+    const previews: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes(`/properties/${SHORT_ID}/mode/preview`)) previews.push(request.url());
+    });
     await page.goto(demoUrl(SHORT_PAGE, 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1, name: 'Villa Aurora' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('property-mode-change')).toHaveCount(0);
+    await page.getByTestId('page-header-more').click();
+    const actions = page.getByRole('menu');
+    await expect(actions.getByRole('menuitem', { name: 'Modifica', exact: true })).toBeVisible();
+    await expect(actions.getByRole('menuitem', { name: 'Cambia modalità', exact: true })).toHaveCount(0);
+    await expect(actions.getByTestId('property-mode-change')).toHaveCount(0);
+    await page.keyboard.press('Escape');
 
-    // The entry is in the menu "⋯" of the page, not another button on it.
-    await page.getByRole('button', { name: 'Altre azioni' }).click();
-    await page.getByRole('menuitem', { name: 'Cambia modalità' }).click();
-    await expect(page).toHaveURL(new RegExp(`${SHORT_PAGE}/mode$`));
-
-    // 1. Choice: one thing, already chosen, with a line on what changes.
-    await expect(wizard(page)).toHaveAttribute('data-step', 'choice');
-    await expect(page.getByRole('heading', { level: 2, name: 'Cosa vuoi fare?' })).toBeVisible();
-    await expect(page.getByTestId('property-mode-choice')).toBeChecked();
-    await expect(page.getByText("Passa all'affitto lungo")).toBeVisible();
-    await next(page).click();
-
-    // 2. Date: from tomorrow, the first day there is nothing in the way.
-    await expect(wizard(page)).toHaveAttribute('data-step', 'date');
-    await expect(date(page)).toHaveValue(addDays(todayInRome(), 1));
-    await expect(page.getByTestId('property-mode-date-reason')).toContainText('puoi partire da domani');
-    const day = addDays(todayInRome(), 14);
-    await date(page).fill(day);
-    await next(page).click();
-
-    // 3. Checks: the server looks at the day and says yes.
-    await expect(wizard(page)).toHaveAttribute('data-step', 'checks');
-    await expect(page.getByTestId('property-mode-checks-result')).toContainText('Tutto a posto per il');
-    await next(page).click();
-
-    // 4. Confirm, then "What happens now".
-    await expect(wizard(page)).toHaveAttribute('data-step', 'confirm');
-    await expect(page.getByTestId('property-mode-confirm')).toContainText('Villa Aurora');
-    await expect(finish(page)).toHaveText("Programma il passaggio all'affitto lungo");
+    const draftKey = wizardDraftKey(`property-mode-${SHORT_ID}`, { userId: 'auth0|demo-e2e', orgId: DEMO_ORG.id });
+    await page.addInitScript(({ key, day }) => {
+      sessionStorage.setItem(key, JSON.stringify({ version: 1, savedAt: Date.now(), step: 'confirm', values: { effectiveDate: day, choice: true } }));
+    }, { key: draftKey, day: addDays(todayInRome(), 14) });
+    for (const search of ['', '?step=confirm', '?step=fatto']) {
+      await page.goto(demoUrl(`${SHORT_PAGE}/mode${search}`, 'short-stay'), { waitUntil: 'domcontentloaded' });
+      await expect(page).toHaveURL(new RegExp(`${SHORT_PAGE}$`));
+      await expect(wizard(page)).toHaveCount(0);
+    }
+    await page.goto(demoUrl(`${SHORT_PAGE}/mode?from=account&step=date`, 'short-stay'), { waitUntil: 'domcontentloaded' });
+    // The short-stay demo user has no Account grant; the protected route redirects to its workspace.
+    await expect(page).toHaveURL(/\/app\/short-rent$/);
+    expect(previews).toEqual([]);
     expect(mock.schedules).toEqual([]);
-    await finish(page).click();
-
-    await expect(page.getByRole('heading', { level: 2, name: 'Passaggio programmato' })).toBeVisible();
-    expect(mock.schedules).toEqual([{ to: 'Long', effectiveDate: day }]);
-    await expect(wizard(page)).toHaveAttribute('data-step', 'fatto');
-    await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/short-rent/properties');
-
-    // The page of the property says it, with the way to withdraw it, after asking what that leads to.
-    await page.getByTestId('wizard-done-primary').click();
-    await expect(page).toHaveURL(new RegExp(`${SHORT_PAGE}$`));
-    const notice = page.getByTestId('property-mode-notice');
-    await expect(notice).toContainText("Passaggio all'affitto lungo il");
-    await expect(notice).toContainText("Fino ad allora l'immobile resta in Affitti brevi.");
-    await page.getByTestId('property-mode-notice-cancel').click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toContainText("Annullare il passaggio all'affitto lungo?");
-    await expect(dialog.getByTestId('confirmation-consequences')).toContainText("L'immobile resta in Affitti brevi.");
-    expect(mock.cancels).toEqual([]);
-    await dialog.getByRole('button', { name: 'Annulla il passaggio' }).click();
-
-    await expect(notice).toHaveCount(0);
-    expect(mock.cancels).toEqual(['change-e2e-1']);
   });
 
-  test('PM-03: a stay in the way sets the first day, a new one comes in while reading, and the way to the free day is one click', async ({ page }) => {
-    const mock = await openShortProperty(page);
+  test('PM-03: a lease in the way sets the first day, a new one comes in while reading, and the way to the free day is one click', async ({ page }) => {
+    const mock = await openLongProperty(page);
     mock.busyUntil = addDays(todayInRome(), 5);
-    await page.goto(demoUrl(`${SHORT_PAGE}/mode`, 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await page.goto(demoUrl(`${LONG_PAGE}/mode`, 'long-term'), { waitUntil: 'domcontentloaded' });
     await expect(wizard(page)).toHaveAttribute('data-step', 'choice', { timeout: 20_000 });
     await next(page).click();
 
@@ -137,7 +112,7 @@ test.describe('Change of rental mode (PM-03)', () => {
     const earliest = addDays(todayInRome(), 6);
     await expect(date(page)).toHaveValue(earliest);
     await expect(date(page)).toHaveAttribute('min', earliest);
-    await expect(page.getByTestId('property-mode-date-reason')).toContainText("L'ultimo soggiorno finisce il");
+    await expect(page.getByTestId('property-mode-date-reason')).toContainText("Il contratto finisce il");
 
     // A day before it does not pass. The field says so as soon as it is left (the page moves under the pointer when it does, so the
     // button is pressed once that has settled), and "Continue" says it again in the summary and stays on the step.
@@ -150,14 +125,14 @@ test.describe('Change of rental mode (PM-03)', () => {
     await page.getByTestId('property-mode-use-earliest').click();
     await expect(date(page)).toHaveValue(earliest);
 
-    // A longer stay is booked while the host reads: the checks find it, list it with its action and do not let go.
+    // A longer lease is registered while the host reads: the checks find it, list it with its action and do not let go.
     mock.busyUntil = addDays(todayInRome(), 9);
     await next(page).click();
     await expect(wizard(page)).toHaveAttribute('data-step', 'checks');
     await expect(page.getByTestId('property-mode-checks-result')).toContainText('non è possibile');
-    const stay = page.getByTestId('property-mode-blocker-Stay');
-    await expect(stay).toContainText('Soggiorno');
-    await expect(stay.getByTestId('property-mode-blocker-open-Stay')).toHaveAttribute('href', '/app/short-rent/bookings/stay-e2e-1');
+    const lease = page.getByTestId('property-mode-blocker-Lease');
+    await expect(lease).toContainText('Contratto');
+    await expect(lease.getByTestId('property-mode-blocker-open-Lease')).toHaveAttribute('href', '/app/long-rent/leases/lease-e2e-1');
     await next(page).click();
     await expect(page.getByTestId('wizard-error-summary')).toContainText('Risolvi gli ostacoli');
     await expect(wizard(page)).toHaveAttribute('data-step', 'checks');
@@ -169,7 +144,7 @@ test.describe('Change of rental mode (PM-03)', () => {
     await expect(wizard(page)).toHaveAttribute('data-step', 'confirm');
     await finish(page).click();
     await expect(page.getByRole('heading', { level: 2, name: 'Passaggio programmato' })).toBeVisible();
-    expect(mock.schedules).toEqual([{ to: 'Long', effectiveDate: addDays(todayInRome(), 10) }]);
+    expect(mock.schedules).toEqual([{ to: 'Short', effectiveDate: addDays(todayInRome(), 10) }]);
   });
 
   test('PM-03: from long-term leases back to short stays, from the page of the long-term property', async ({ page }) => {
@@ -201,7 +176,7 @@ test.describe('Change of rental mode (PM-03)', () => {
     await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/long-rent/properties');
   });
 
-  test('PM-03: opened from the account, the way out and the way back lead to the list of the account', async ({ page }) => {
+  test('PM-03: a short-stay demo host without Account access can still withdraw a historical change', async ({ page }) => {
     const mock = await openShortProperty(page, { scheduledFor: addDays(todayInRome(), 20) });
     await page.goto(demoUrl(`${SHORT_PAGE}/mode?from=account`, 'short-stay'), { waitUntil: 'domcontentloaded' });
 
@@ -212,17 +187,17 @@ test.describe('Change of rental mode (PM-03)', () => {
     await page.getByTestId('property-mode-scheduled-cancel').click();
     await page.getByRole('dialog').getByRole('button', { name: 'Annulla il passaggio' }).click();
 
-    // Withdrawn: back to where the person began (the list of the account, which the area of the account will build).
-    await expect(page).toHaveURL(/\/app\/account\/properties$/, { timeout: 20_000 });
+    // The Account destination requires org.members.manage, which the demo does not grant.
+    await expect(page).toHaveURL(/\/app\/short-rent$/, { timeout: 20_000 });
     expect(mock.cancels).toEqual(['change-e2e-0']);
   });
 
   for (const width of [360, 390] as const) {
     test(`PM-03: on a phone of ${width} px every step fits, with wide letters, every control is 44 px and axe finds nothing`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
-      const mock = await openShortProperty(page);
+      const mock = await openLongProperty(page);
       mock.busyUntil = addDays(todayInRome(), 3);
-      await page.goto(demoUrl(`${SHORT_PAGE}/mode`, 'short-stay'), { waitUntil: 'domcontentloaded' });
+      await page.goto(demoUrl(`${LONG_PAGE}/mode`, 'long-term'), { waitUntil: 'domcontentloaded' });
       await expect(wizard(page)).toHaveAttribute('data-step', 'choice', { timeout: 20_000 });
       await page.addStyleTag({ content: WIDER_LETTERS });
 
@@ -240,10 +215,10 @@ test.describe('Change of rental mode (PM-03)', () => {
       await check('choice');
       await next(page).click();
       await check('date');
-      // A stay later than the first day: the checks list it with its link.
+      // A lease later than the first day: the checks list it with its link.
       mock.busyUntil = addDays(todayInRome(), 7);
       await next(page).click();
-      await expect(page.getByTestId('property-mode-blocker-Stay')).toBeVisible();
+      await expect(page.getByTestId('property-mode-blocker-Lease')).toBeVisible();
       await check('checks');
       await page.getByTestId('property-mode-pick-earliest').click();
       await expect(page.getByTestId('property-mode-checks-result')).toContainText('Tutto a posto per il');

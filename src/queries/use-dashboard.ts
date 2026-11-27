@@ -3,25 +3,27 @@ import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-quer
 import { dashboardApi } from '@/api/dashboard.api';
 import type { DashboardOverviewQuery } from '@/types/dashboard.types';
 
-const DASHBOARD_KEY = 'dashboard';
+export const DASHBOARD_KEY = 'dashboard';
 
 /**
  * The host's day (arrivals, departures, interventions, things to do), read again at every visit: bookings, check-ins and
  * the suppliers change it from other screens.
  */
-export function useDashboardToday() {
+export function useDashboardToday(enabled = true) {
   return useQuery({
     queryKey: [DASHBOARD_KEY, 'today'],
     queryFn: () => dashboardApi.getToday(),
+    enabled,
     refetchOnMount: 'always',
   });
 }
 
 /** The numbers of the Home for a period and, optionally, one property; the previous ones stay on screen while the next load. */
-export function useDashboardOverview(query: DashboardOverviewQuery) {
+export function useDashboardOverview(query: DashboardOverviewQuery, enabled = true) {
   return useQuery({
     queryKey: [DASHBOARD_KEY, 'overview', query],
     queryFn: () => dashboardApi.getOverview(query),
+    enabled,
     placeholderData: keepPreviousData,
     refetchOnMount: 'always',
   });

@@ -24,7 +24,7 @@ const sampleStay = {
   guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', phone: '', country: 'IT' },
 };
 
-// The suppliers are searched by the comune chosen from the official list: a property without one is asked to add it (SR-09a).
+// The property is used when scheduling a job from Interventions.
 const sampleProperty = buildCreatedProperty({
   id: PROPERTY_ID,
   name: 'Casa Marketplace',
@@ -65,7 +65,45 @@ async function mockMarketplaceApis(page: Page) {
   await mockEntitlement(page);
   await mockServiceCategoriesApi(page);
 
-  // «Altre integrazioni» of Scopri read the calendars and the Stripe account: nothing linked, nothing connected.
+  // The five groups of Scopri come from the catalog: the channel manager is not connected, and one partner (made up) is listed.
+  await page.route('**/api/marketplace/catalog**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        octorate: { enabled: true, connected: false },
+        groups: [
+          { id: 'salesChannels', unchangedFlow: false, entries: [] },
+          { id: 'connectedTools', unchangedFlow: false, entries: [] },
+          { id: 'channelManagerFunctions', unchangedFlow: false, entries: [] },
+          { id: 'homeServices', unchangedFlow: true, entries: [] },
+          {
+            id: 'partners',
+            unchangedFlow: false,
+            entries: [
+              {
+                kind: 'Partner',
+                code: 'test-partner',
+                name: 'TEST Partner',
+                logoUrl: null,
+                benefit: 'A made-up partner.',
+                cost: { text: null, invoicedBy: 'Unknown' },
+                status: 'NotActive',
+                statusScope: 'Org',
+                canActivate: true,
+                reason: null,
+                job: 'Cleaning',
+                websiteUrl: 'https://example.com/',
+                serviceCategories: ['cleaning'],
+                octoratePortalCode: null,
+              },
+            ],
+          },
+        ],
+      }),
+    }),
+  );
+  // The calendars and the card payments of CasaZen, shown among the groups, read the calendars and the Stripe account: nothing linked, nothing connected.
   await page.route('**/api/properties/calendar-overview', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ syncEveryMinutes: 15, staleAfterMinutes: 45, properties: [] }) }),
   );
@@ -84,7 +122,7 @@ async function mockMarketplaceApis(page: Page) {
     }
     const url = new URL(route.request().url());
     // The page of one supplier (MKT): the same entry, every service.
-    if (url.pathname === `/api/suppliers/${SUPPLIER_ORG_ID}` && url.searchParams.get('propertyId') === PROPERTY_ID) {
+    if (url.pathname === `/api/suppliers/${SUPPLIER_ORG_ID}` && url.searchParams.get('accountScope') === 'true') {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -92,7 +130,7 @@ async function mockMarketplaceApis(page: Page) {
       });
       return;
     }
-    if (url.searchParams.get('propertyId') === PROPERTY_ID) {
+    if (url.searchParams.get('accountScope') === 'true' || url.searchParams.get('propertyId') === PROPERTY_ID) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -213,14 +251,55 @@ async function mockMarketplaceApis(page: Page) {
 }
 
 test.describe('Marketplace suppliers (#340)', () => {
-  test('AC6: browse suppliers → guided request (a stay is only a link) → success', async ({ page }) => {
+  test('housekeeping from the stay rechecks availability on resume and sends the linked request once', async ({ page }) => {
     const { posted } = await mockMarketplaceApis(page);
-    await page.goto(demoUrl(`/app/short-rent/marketplace?propertyId=${PROPERTY_ID}`, 'short-stay'));
+    await page.route(`**/api/bookings/${STAY_ID}`, (route) => route.fulfill({ json: {
+      ...sampleStay, propertyName: sampleProperty.name, totalPrice: 0, currency: 'EUR',
+      createdAt: '2026-09-01T12:00:00Z', updatedAt: '2026-09-01T12:00:00Z',
+    } }));
+    await page.route('**/api/service-requests/sr-created-e2e', (route) => route.fulfill({ json: {
+      id: 'sr-created-e2e', propertyId: PROPERTY_ID, propertyName: sampleProperty.name, bookingId: STAY_ID,
+      supplierOrgId: SUPPLIER_ORG_ID, supplierName: sampleSuppliers.items[0].legalName, category: 'cleaning', urgency: 'Normal',
+      status: 'PresoInCarico', chargeToGuest: false, createdAt: '2026-09-01T12:00:00Z', updatedAt: '2026-09-01T12:30:00Z',
+    } }));
+    await page.goto(demoUrl(`/app/short-rent/bookings/${STAY_ID}`, 'short-stay'));
+    await page.getByTestId('booking-request-cleaning').click();
+    await expect(page.getByTestId('cleaning-brief')).toContainText(sampleProperty.name);
+    const chooseSupplier = async () => {
+      await page.getByTestId(`request-supplier-${SUPPLIER_ORG_ID}`).check({ force: true });
+      await page.getByTestId('request-next').click();
+      await expect(page.getByTestId('request-stay')).toHaveValue(STAY_ID);
+      await page.locator('[data-testid^="request-slot-"]').first().click();
+    };
+    await chooseSupplier();
+    await page.getByTestId('request-notes').fill('Private arrival instructions');
+    await page.getByTestId('request-next').click();
+    await expect(page.getByTestId('request-supplier-sees')).toBeVisible();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'proposals');
+    await chooseSupplier();
+    await expect(page.getByTestId('request-notes')).toHaveValue('');
+    await page.getByTestId('request-next').click();
+    expect(posted).toHaveLength(0);
+    await page.getByTestId('request-finish').click();
+    await expect(page.getByTestId('wizard-done-primary')).toHaveAttribute('href', '/app/short-rent/interventions/sr-created-e2e');
+    await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', `/app/short-rent/bookings/${STAY_ID}`);
+    expect(posted).toEqual([expect.objectContaining({ bookingId: STAY_ID, propertyId: PROPERTY_ID, category: 'cleaning' })]);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/interventions\/sr-created-e2e$/);
+    await expect(page.getByTestId('intervention-status')).toBeVisible();
+    expect(posted).toHaveLength(1);
+  });
+
+  test('AC6: browse account suppliers and request an intervention from Interventions', async ({ page }) => {
+    const { posted } = await mockMarketplaceApis(page);
+    await page.goto(demoUrl('/app/short-rent/marketplace', 'short-stay'));
 
     // Scopri: «Fornitori CasaZen» is a tile for each category (MKT: the categories are the first group of Scopri, then the partners).
-    await expect(page.getByTestId('marketplace-property-select')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('marketplace-category-cleaning')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('marketplace-partners-section')).toBeVisible();
+    await expect(page.getByTestId('marketplace-property-select')).toHaveCount(0);
+    await expect(page.getByTestId('marketplace-request-intervention')).toHaveCount(0);
 
     // A category → the suppliers that offer it.
     await page.getByTestId('marketplace-category-cleaning').click();
@@ -231,7 +310,7 @@ test.describe('Marketplace suppliers (#340)', () => {
     // The search: Enter on Scopri leads to the page of the search, which asks the suppliers with the words.
     await page.getByTestId('marketplace-section-discover').click();
     const searched = page.waitForRequest(
-      (request) => new URL(request.url()).pathname === '/api/suppliers' && new URL(request.url()).searchParams.get('q') === 'pulizie',
+      (request) => new URL(request.url()).pathname === '/api/suppliers' && new URL(request.url()).searchParams.get('q') === 'pulizie' && new URL(request.url()).searchParams.get('accountScope') === 'true',
     );
     await page.getByTestId('marketplace-search').fill('pulizie');
     await page.getByTestId('marketplace-search').press('Enter');
@@ -244,9 +323,17 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByTestId('marketplace-supplier-detail')).toBeVisible();
     await expect(page.getByRole('dialog').getByText('Pulizie Express Srl')).toBeVisible();
 
-    await page.getByTestId('marketplace-request-service-btn').click();
-    // «Richiedi fornitore» opens the guided request on its details: the property, the kind of work and the supplier are known.
-    await expect(page).toHaveURL(/\/interventions\/request\?.*supplierOrgId=/);
+    await expect(page.getByTestId('marketplace-request-service-btn')).toHaveCount(0);
+    await page.getByTestId('marketplace-open-page').click();
+    const supplierPage = page.getByTestId('marketplace-supplier-page');
+    await expect(supplierPage).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('marketplace-supplier-detail')).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(`/marketplace/suppliers/${SUPPLIER_ORG_ID}$`));
+    await expect(supplierPage.getByTestId(`marketplace-service-${SERVICE_ID}`)).toBeVisible();
+    await expect(supplierPage.getByTestId(`marketplace-request-service-${SERVICE_ID}`)).toHaveCount(0);
+
+    // Intervention requests still work from their own workflow.
+    await page.goto(demoUrl(`/app/short-rent/interventions/request?propertyId=${PROPERTY_ID}&type=cleaning&supplierOrgId=${SUPPLIER_ORG_ID}`, 'short-stay'));
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 15_000 });
     // The supplier has one service for the job: it is the one chosen.
     await expect(page.getByTestId(`request-service-${SERVICE_ID}`)).toBeChecked();
@@ -275,12 +362,6 @@ test.describe('Marketplace suppliers (#340)', () => {
     expect(body.scheduledStartUtc).toEqual(expect.any(String));
     expect(body.chargeToGuest).toBeUndefined();
 
-    // The page of the supplier (MKT), which can be shared: every service has its own «Richiedi», and the request starts with that service.
-    await page.goto(demoUrl(`/app/short-rent/marketplace/suppliers/${SUPPLIER_ORG_ID}?propertyId=${PROPERTY_ID}`, 'short-stay'));
-    await expect(page.getByTestId('marketplace-supplier-page')).toBeVisible({ timeout: 15_000 });
-    await page.getByTestId(`marketplace-request-service-${SERVICE_ID}`).click();
-    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 15_000 });
-    await expect(page.getByTestId(`request-service-${SERVICE_ID}`)).toBeChecked();
   });
 
   test('a job outside the catalog: the host gives the time and the length, and the request is for the house alone', async ({ page }) => {
@@ -328,7 +409,7 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByTestId('request-assist-result')).toBeVisible();
     expect(assisted).toEqual([{ propertyId: PROPERTY_ID, text: words }]);
     await expect(page.getByTestId('request-assist-category')).toHaveText('Pulizie');
-    await expect(page.getByTestId('request-assist-who')).toContainText('Un fornitore CasaZen');
+    await expect(page.getByTestId('request-assist-who')).toContainText('Un fornitore disponibile');
     await expect(page.getByTestId('ai-content-notice')).toBeVisible();
     // The host has decided nothing yet.
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');

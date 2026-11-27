@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { BadgeCheck, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
+import { FOCUS_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { useCompleteSupplierActivation, useSaveSupplierActivationStep, useSupplierActivation, useSupplierProfile } from '@/queries/supplier/use-profile';
+import { useWizardOpenFlag } from '@/store/use-wizard-open-flag';
 import type { ActivationStatus, ActivationStepId, SupplierProfile } from '@/types/supplier';
 import { ActivationTermsCard } from './components/activation-terms-card';
 import { IdentityStep, PresentationStep, ServicesStep } from './components/activation-steps';
@@ -83,42 +84,45 @@ function TermsStep({ activation, onGoToStep }: { activation: ActivationStatus; o
 
   return (
     <div className="space-y-6">
-      <ActivationTermsCard
-        version={activation.tos.currentVersion}
-        checked={tosAccepted}
-        onCheckedChange={setTosAccepted}
-        disabled={complete.isPending}
-      />
+      {/* The Terms and, beside them from `xl`, what is still missing (under each other on a narrower screen). */}
+      <div className={PAGE_COLUMNS}>
+        <ActivationTermsCard
+          version={activation.tos.currentVersion}
+          checked={tosAccepted}
+          onCheckedChange={setTosAccepted}
+          disabled={complete.isPending}
+        />
 
-      <Card data-testid="supplier-activation-summary">
-        <CardContent className="space-y-3 pt-6">
-          <h3 className="text-sm font-semibold">{t('supplier.activation.summary.title')}</h3>
-          {missing.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.ready')}</p>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.missing')}</p>
-              <ul className="space-y-1">
-                {missing.map(({ step, number }) => (
-                  <li key={step.id} className="flex items-center justify-between gap-3 text-sm">
-                    <span data-testid={`supplier-activation-blocker-${step.blocker}`}>
-                      {t(`supplier.activation.blockers.${step.blocker}`)}
-                    </span>
-                    <Button type="button" variant="link" size="sm" onClick={() => onGoToStep(number)}>
-                      {t('supplier.activation.summary.goTo', { step: number })}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </CardContent>
-      </Card>
+        <Card data-testid="supplier-activation-summary">
+          <CardContent className="space-y-3 pt-6">
+            <h3 className="text-sm font-semibold">{t('supplier.activation.summary.title')}</h3>
+            {missing.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.ready')}</p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.missing')}</p>
+                <ul className="space-y-1">
+                  {missing.map(({ step, number }) => (
+                    <li key={step.id} className="flex items-center justify-between gap-3 text-sm">
+                      <span data-testid={`supplier-activation-blocker-${step.blocker}`}>
+                        {t(`supplier.activation.blockers.${step.blocker}`)}
+                      </span>
+                      <Button type="button" variant="link" size="sm" onClick={() => onGoToStep(number)}>
+                        {t('supplier.activation.summary.goTo', { step: number })}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Button
         onClick={() => void handleActivate()}
         disabled={complete.isPending || !tosAccepted || missing.length > 0}
-        className="w-full"
+        className="w-full xl:w-auto"
       >
         {complete.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
         {complete.isPending ? t('supplier.activation.activating') : t('supplier.activation.activate')}
@@ -176,6 +180,8 @@ function StepNav({
 
 function ActivationWizard({ activation, profile }: { activation: ActivationStatus; profile: SupplierProfile }) {
   const { t } = useTranslation();
+  // The popup alerts wait in their queue while the steps are on screen (ADR-025-R7): this wizard has no `WizardShell`.
+  useWizardOpenFlag();
   const saveStep = useSaveSupplierActivationStep();
   // Fixed for the visit: a screen never disappears under the supplier's hands when its data is saved.
   const [screens] = useState(() => visibleScreens(activation));
@@ -199,7 +205,7 @@ function ActivationWizard({ activation, profile }: { activation: ActivationStatu
   const current = screens[index];
   return (
     <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="supplier-activation-page">
-      <PageHeader title={t('supplier.activation.title')} description={t('supplier.activation.description')} />
+      <ServicePageHeader icon={BadgeCheck} title={t('supplier.activation.title')} description={t('supplier.activation.description')} />
       <StepNav activation={activation} screens={screens} current={index} onGoToScreen={goToScreen} />
       <p className="text-sm text-muted-foreground" data-testid="supplier-activation-step-of">
         {t('supplier.activation.stepOf', { current: index + 1, total: screens.length })}
@@ -252,7 +258,7 @@ export function SupplierActivationPage() {
     // A suspended supplier cannot activate itself: only an admin reactivates it (SU-12).
     return (
       <div className={cn(FOCUS_COLUMN, 'space-y-4')} data-testid="supplier-activation-suspended">
-        <PageHeader title={t('supplier.statusSuspended')} description={t('supplier.suspendedHint')} />
+        <ServicePageHeader icon={BadgeCheck} title={t('supplier.statusSuspended')} description={t('supplier.suspendedHint')} />
       </div>
     );
   }

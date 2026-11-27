@@ -119,7 +119,8 @@ describe('CalendarPage: the nights closed by a change of mode (PM-03)', () => {
     await screen.findByRole('button', { name: 'Giorno' });
 
     fireEvent.click(screen.getByRole('button', { name: 'Blocca date' }));
-    const form = screen.getByRole('region', { name: 'Blocca date' });
+    // The form to close dates is the one of the panel of the days (E08/F05/US03/T02).
+    const form = screen.getByTestId('manual-block-form');
 
     const options = within(within(form).getByLabelText('Motivo')).getAllByRole('option').map((option) => (option as HTMLOptionElement).value);
     expect(options).toEqual(['', 'Owner', 'Maintenance', 'Other']);

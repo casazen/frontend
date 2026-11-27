@@ -1,7 +1,11 @@
 @import "tailwindcss";
 /* Redesign (UI-01): fonts and tokens. The values below stay the current look; the new ones sit under html[data-ui='v2']. */
+@import "./design-foundations.css";
 @import "./fonts.css";
 @import "./tokens.css";
+@import "./workspace.css";
+/* Motion and touch feedback of every area (press, lift, dialogs on a spring, entrances): see the file. */
+@import "./motion.css";
 /*
  * The animation utilities the shadcn components ask for (`animate-in`, `fade-in-0`, `zoom-in-95`, `slide-in-from-*`): until
  * UI-07 no plugin provided them and they did nothing. Dialog, sheet, menu and tip now move when they open and close.
@@ -170,5 +174,23 @@ body {
   }
   .prose-sm h3 {
     font-size: 1.1rem;
+  }
+}
+
+@layer components {
+  .workspace-title {
+    font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.375rem);
+    font-weight: 650;
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+  .workspace-description {
+    max-width: var(--cz-reading-width);
+    margin-block-start: 0.5rem;
+    color: var(--color-muted-foreground);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
   }
 }

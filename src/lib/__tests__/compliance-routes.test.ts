@@ -3,7 +3,7 @@ import { matchPath } from 'react-router-dom';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { BOOKING_TABS } from '@/features/bookings/lib/booking-tabs';
 import { guestDataCompletionPath } from '@/features/bookings/lib/stay-actions';
-import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
+import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute, isCurrentAddress } from '@/lib/compliance-routes';
 import {
   COMPLIANCE_COCKPIT_ACTIONS,
   type ComplianceCockpitAction,
@@ -44,6 +44,20 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
   SendAlloggiati: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
   ResolveAlloggiatiFailure: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
   ConfirmPropertyReady: `/app/short-rent/bookings/${BOOKING_ID}/checkout`,
+  // CHK-12 (NF-52): without a month the archive opens on the kind and the property only.
+  VerifyIdentity: `/app/short-rent/bookings/${BOOKING_ID}?tab=guest`,
+  UploadAlloggiatiReceipt: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
+  // The wizard that activates the police send of the property (E03/F01/US02/T02); who may only read the property is led to its section (E03/F03/US02/T01).
+  ActivateOctorateSend: `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`,
+  SendAlloggiatiManually: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
+  UploadIstatProof: `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}`,
+  EnterMunicipalityTaxRate: `/app/short-rent/properties/${PROPERTY_ID}`,
+  DeclareTouristTax: `/app/short-rent/alloggiati/reports?kind=TouristTaxDeclaration&property=${PROPERTY_ID}`,
+  RenewPoliceCredentials: '/app/short-rent/alloggiati',
+  // casazen/backend#979: the guided notification of a Ticino property to the cantonal police is a layer of the cockpit (E30/F02/US03/T02); without a day it opens on the first one to notify.
+  NotifyTicinoPolice: `/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}`,
+  // casazen/backend#979 (E31/F02/US02/T02): the assisted notification of a property in another canton is a layer of the cockpit too; without a day it opens on the first one to notify.
+  NotifyGuestsAuthority: `/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}`,
 };
 
 describe('complianceActionRoute (CO-04, A5-09)', () => {
@@ -112,6 +126,20 @@ describe('complianceActionRoute (CO-04, A5-09)', () => {
     expect(complianceActionRoute(bookingIdOnProperty)).toBeNull();
   });
 
+  it('complianceActionTargets_EveryAction_SaysWhichPermissionDoesWhatItAsks', () => {
+    // Whoever lacks it is led to the page and told "Apri" (the cockpit), never asked to do what the page will not let them do.
+    expect(COMPLIANCE_ACTION_TARGETS.ActivateProperty.write).toBe('property.write');
+    expect(COMPLIANCE_ACTION_TARGETS.SendAlloggiati.write).toBe('booking.write');
+    expect(COMPLIANCE_ACTION_TARGETS.EnterMunicipalityTaxRate.write).toBe('property.write');
+    // A tax receipt is a record of money.
+    expect(COMPLIANCE_ACTION_TARGETS.DeclareTouristTax.write).toBe('payment.write');
+    // The archive of the proofs lets only who may submit the Alloggiati upload one: reading the bookings opens the page, and no more (the notice of the ISTAT asks the same permission).
+    expect(COMPLIANCE_ACTION_TARGETS.UploadIstatProof.write).toBe('alloggiati.submit');
+    for (const action of COMPLIANCE_COCKPIT_ACTIONS) {
+      expect(['property.write', 'booking.write', 'payment.write', 'alloggiati.submit']).toContain(COMPLIANCE_ACTION_TARGETS[action].write);
+    }
+  });
+
   it('complianceActionRoute_OldBackendPaths_AreNotRoutesOfTheManifest', () => {
     // The links of the old API (A5-09): neither a page nor a legacy redirect, the router sent them to the dashboard.
     const known = ROUTE_MANIFEST.flatMap((entry) => [entry.path, ...(entry.legacyPaths ?? [])]);
@@ -123,5 +151,157 @@ describe('complianceActionRoute (CO-04, A5-09)', () => {
     ]) {
       expect(known.some((path) => matchPath({ path, end: true }, old))).toBe(false);
     }
+  });
+});
+
+describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', () => {
+  const periodItem = (action: ComplianceCockpitAction, period: string | null | undefined): ComplianceSummaryItem => ({ ...itemFor(action), period });
+
+  it.each([
+    ['UploadIstatProof', 'IstatProof'],
+    ['DeclareTouristTax', 'TouristTaxDeclaration'],
+  ] as const)('complianceActionRoute_%s_WithAMonth_OpensTheArchiveOnTheKindThePropertyAndTheMonth', (action, kind) => {
+    const url = complianceActionRoute(periodItem(action, '2026-09'));
+
+    expect(url).toBe(`/app/short-rent/alloggiati/reports?kind=${kind}&property=${PROPERTY_ID}&period=2026-09`);
+    // The archive is a page of the manifest, and the address carries what the page filters on.
+    const { entry } = manifestEntryOf(url!);
+    expect(entry?.path).toBe('/app/short-rent/alloggiati/reports');
+    const query = new URL(url!, 'https://app.test').searchParams;
+    expect(query.get('kind')).toBe(kind);
+    expect(query.get('property')).toBe(PROPERTY_ID);
+    expect(query.get('period')).toBe('2026-09');
+  });
+
+  it.each(['2026-13', '2026-9', '2026-09-01', '../x', '<script>', ''])('complianceActionRoute_PeriodThatIsNotAMonth_%s_IsLeftOutOfTheAddress', (period) => {
+    const url = complianceActionRoute(periodItem('UploadIstatProof', period));
+
+    expect(url).toBe(`/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}`);
+  });
+
+  it('complianceActionRoute_NotifyTicinoPolice_OpensTheLayerOfTheCockpitOnThePropertyAndTheArrivalDay', () => {
+    const url = complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'));
+
+    // A layer over the page of the cockpit, not a page of its own (E30/F02/US03/T02): the address is the cockpit with `?detail=ticino:<property>:<day>`.
+    expect(url).toBe(`/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}:2026-11-19`);
+    expect(manifestEntryOf(url!).entry?.path).toBe('/app/short-rent/compliance');
+    // A month, or anything that is not a day, is left out: the layer then opens on the first day to notify.
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11'))).toBe(EXPECTED.NotifyTicinoPolice);
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-02-31'))).toBe(EXPECTED.NotifyTicinoPolice);
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19/../x'))).toBe(EXPECTED.NotifyTicinoPolice);
+  });
+
+  it('complianceActionRoute_NotifyTicinoPolice_NeedsWhatTheCockpitNeeds_AndWhoMayNotDeclareIsStillLedToTheLayer', () => {
+    const reader = permissions(['property.read', 'booking.read']);
+
+    // The layer is on the cockpit, which asks both reads (its route does): the person who may only read is told «Apri» by the row (the permission to declare is `write`).
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'), reader)).toBe(`/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}:2026-11-19`);
+    expect(COMPLIANCE_ACTION_TARGETS.NotifyTicinoPolice.write).toBe('alloggiati.submit');
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'), permissions(['booking.read']))).toBeNull();
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'), permissions(['property.read']))).toBeNull();
+  });
+
+  // E31/F02/US02/T02 (NF-131): the item of the assisted notification names the property and, in `period`, the arrival day; its button opens the layer of the cockpit on that day.
+  it('complianceActionRoute_NotifyGuestsAuthority_OpensTheLayerOfTheCockpitOnThePropertyAndTheArrivalDay', () => {
+    const url = complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19'));
+
+    expect(url).toBe(`/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}:2026-11-19`);
+    expect(manifestEntryOf(url!).entry?.path).toBe('/app/short-rent/compliance');
+    // A month, or anything that is not a day, is left out: the layer then opens on the first day to notify, never on a date nobody asked for.
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11'))).toBe(EXPECTED.NotifyGuestsAuthority);
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-02-31'))).toBe(EXPECTED.NotifyGuestsAuthority);
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19/../x'))).toBe(EXPECTED.NotifyGuestsAuthority);
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', null))).toBe(EXPECTED.NotifyGuestsAuthority);
+  });
+
+  it('complianceActionRoute_NotifyGuestsAuthority_NeedsWhatTheCockpitNeeds_AndWhoMayNotDeclareIsStillLedToTheLayer', () => {
+    const reader = permissions(['property.read', 'booking.read']);
+
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19'), reader)).toBe(`/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}:2026-11-19`);
+    // Whoever lacks the permission to declare (`alloggiati.submit`) is told «Apri» by the row, never asked to declare what the layer will not let them.
+    expect(COMPLIANCE_ACTION_TARGETS.NotifyGuestsAuthority.write).toBe('alloggiati.submit');
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19'), permissions(['booking.read']))).toBeNull();
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19'), permissions(['property.read']))).toBeNull();
+  });
+
+  it('complianceActionRoute_PeriodOnAnActionThatTakesNone_IsNotInTheAddress', () => {
+    // Only the pages that open filtered take the month: the others are the same address whatever the item says.
+    expect(complianceActionRoute(periodItem('EnterMunicipalityTaxRate', '2026-09'))).toBe(EXPECTED.EnterMunicipalityTaxRate);
+    expect(complianceActionRoute(periodItem('SendAlloggiatiManually', '2026-09'))).toBe(EXPECTED.SendAlloggiatiManually);
+  });
+
+  it('complianceActionRoute_ArchiveWithoutBookingRead_IsNullNeverADeadButton', () => {
+    // The archive and the Alloggiati dashboard ask what the bookings ask; the property page asks `property.read`.
+    const propertyOnly = permissions(['property.read', 'property.write']);
+    const bookingOnly = permissions(['booking.read', 'booking.write']);
+
+    expect(complianceActionRoute(periodItem('UploadIstatProof', '2026-09'), propertyOnly)).toBeNull();
+    expect(complianceActionRoute(itemFor('RenewPoliceCredentials'), propertyOnly)).toBeNull();
+    expect(complianceActionRoute(itemFor('ActivateOctorateSend'), bookingOnly)).toBeNull();
+    expect(complianceActionRoute(itemFor('EnterMunicipalityTaxRate'), bookingOnly)).toBeNull();
+    expect(complianceActionRoute(periodItem('UploadIstatProof', '2026-09'), bookingOnly)).toBe(
+      `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}&period=2026-09`,
+    );
+    expect(complianceActionRoute(itemFor('ActivateOctorateSend'), propertyOnly)).toBe(EXPECTED.ActivateOctorateSend);
+    // The wizard changes the sender (`property.write`): who may only read the property finds the section that tells it, never a page that would refuse them.
+    expect(complianceActionRoute(itemFor('ActivateOctorateSend'), permissions(['property.read']))).toBe(`/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
+  });
+
+  it('complianceActionRoute_PropertyItemWithoutItsProperty_HasNoLink', () => {
+    // A property item without its property has no target at all: no link, never the archive of the whole organisation.
+    expect(complianceActionRoute({ ...periodItem('UploadIstatProof', '2026-09'), propertyId: null })).toBeNull();
+  });
+});
+
+// A card on the page of the property must not offer a button that opens the page it is on (the tourist tax rate leads there; the police send opens its wizard, or its section for who may only read).
+describe('isCurrentAddress', () => {
+  const propertyPage = `/app/short-rent/properties/${PROPERTY_ID}`;
+
+  it('isCurrentAddress_EnterMunicipalityTaxRate_IsThePageOfThePropertyWhateverTabItIsOn', () => {
+    const address = complianceActionRoute(itemFor('EnterMunicipalityTaxRate'))!;
+
+    expect(address).toBe(propertyPage);
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '' })).toBe(true);
+    // The tab is what a button may change, but the page of the property has no field for the rate in any tab: nothing to offer.
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?tab=documents' })).toBe(true);
+  });
+
+  it('isCurrentAddress_ActivateOctorateSend_IsTheWizardAndNeverThePageOfThePropertyTheCardIsOn', () => {
+    const address = complianceActionRoute(itemFor('ActivateOctorateSend'))!;
+
+    expect(address).toBe(`/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
+    // The card sits on the page of the property: the wizard is another page, so the button is offered whatever the tab is.
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?section=connection-health' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: '/app/short-rent/compliance/sender', search: `?property=${PROPERTY_ID}` })).toBe(true);
+  });
+
+  it('isCurrentAddress_ActivateOctorateSendForWhoMayOnlyRead_IsSomewhereToGoUntilTheSectionIsOpen', () => {
+    const address = complianceActionRoute(itemFor('ActivateOctorateSend'), permissions(['property.read']))!;
+
+    expect(address).toBe(`${propertyPage}?section=connection-health`);
+    // On the plain page the section is a place to go to: the button is offered. Once it is in the address there is nothing left to open.
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?tab=documents' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?section=connection-health' })).toBe(true);
+  });
+
+  it('isCurrentAddress_AnotherPageOrAnotherTab_IsNotTheCurrentAddress', () => {
+    expect(isCurrentAddress(propertyPage, { pathname: '/app/short-rent/properties', search: '' })).toBe(false);
+    expect(isCurrentAddress(propertyPage, { pathname: '/app/short-rent/bookings/b1', search: '' })).toBe(false);
+    // The same page on another tab is somewhere to go: the tab of the address is a parameter the person is not on yet.
+    const guestTab = complianceActionRoute(itemFor('VerifyIdentity'))!;
+    expect(isCurrentAddress(guestTab, { pathname: `/app/short-rent/bookings/${BOOKING_ID}`, search: '' })).toBe(false);
+    expect(isCurrentAddress(guestTab, { pathname: `/app/short-rent/bookings/${BOOKING_ID}`, search: '?tab=alloggiati' })).toBe(false);
+    expect(isCurrentAddress(guestTab, { pathname: `/app/short-rent/bookings/${BOOKING_ID}`, search: '?tab=guest' })).toBe(true);
+  });
+
+  it('isCurrentAddress_ArchiveOfAnotherMonthOrKind_IsNotTheCurrentAddress', () => {
+    const address = complianceActionRoute({ ...itemFor('UploadIstatProof'), period: '2026-08' })!;
+    const archive = '/app/short-rent/alloggiati/reports';
+
+    expect(isCurrentAddress(address, { pathname: archive, search: '' })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: archive, search: `?kind=IstatProof&property=${PROPERTY_ID}&period=2026-07` })).toBe(false);
+    expect(isCurrentAddress(address, { pathname: archive, search: `?kind=IstatProof&property=${PROPERTY_ID}&period=2026-08` })).toBe(true);
   });
 });

@@ -3,14 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { IcalSettings } from '@/features/properties/components/ical-settings';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useProperty } from '@/queries/use-properties';
 import type { ActivationBlocker, ComplianceActivationResult } from '@/types/compliance.types';
 import { ActivationSection } from '../finish/activation-section';
+import { requiresItalianCin } from '@/lib/cin-format';
+import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 import { CinSection } from '../finish/cin-section';
 import { DocumentsSection } from '../finish/documents-section';
 import { finishStage } from '../finish/finish-model';
 import { MissingSection } from '../finish/missing-section';
 import { SummarySection } from '../finish/summary-section';
+import { SwissSection } from '../finish/swiss-section';
 import type { PropertyWizardValues } from '../property-wizard-model';
 
 interface FinishStepProps {
@@ -51,6 +55,7 @@ export function FinishStep({
   const property = useProperty(propertyId, { fresh: true });
   const steps = activation?.steps;
   const stage = finishStage(activation);
+  const connectorOn = useFeatureFlags().flags.octorateConnector;
 
   return (
     <>
@@ -67,17 +72,17 @@ export function FinishStep({
         </div>
       </details>
 
-      <CinSection
+      {property.data && !requiresItalianCin(property.data.country) ? <SwissSection propertyId={propertyId} step={steps?.find((step) => step.id === GUEST_REGISTRATION_STEP_ID)} /> : <CinSection
         propertyId={propertyId}
         storedCin={property.data?.cinCode ?? null}
         guidanceUrl={steps?.find((step) => step.id === 'cin')?.linkUrl}
-      />
+      />}
 
       <DocumentsSection propertyId={propertyId} step={steps?.find((step) => step.id === 'documents')} />
 
       <MissingSection steps={steps} failed={activationFailed} onRetry={onRetryActivation} property={property.data} refused={refused} />
 
-      <SummarySection property={property.data} steps={steps} />
+      <SummarySection property={property.data} steps={steps} showChannels={connectorOn} leftOutChannels={form.watch('skipChannels')} />
 
       <ActivationSection
         form={form}

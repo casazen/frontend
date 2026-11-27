@@ -2,7 +2,7 @@
 
 ## Dove si trova
 
-Dopo il login, l’icona libro **Guida** nell’header apre `/app/<area>/help`. La guida resta nella shell corrente e richiede accesso a quell’area. È disponibile in italiano e inglese, con ricerca su titoli, parole chiave e istruzioni e con link ai singoli argomenti.
+Dopo il login, **Guida** nella testata apre il pannello. **Apri il manuale di CasaZen** porta all’indice in `/app/<area>/help`. Ogni argomento apre le proprie istruzioni. Tornando all’indice si ritrova la ricerca. Il collegamento alla pagina di partenza riapre il lavoro con i filtri e la scheda presenti nell’indirizzo. La guida resta nella shell corrente e richiede accesso a quell’area. È disponibile in italiano e inglese, con ricerca su titoli, parole chiave e istruzioni e con link ai singoli argomenti.
 
 Gli argomenti sono: primi passi, immobili, prenotazioni, calendari iCal, ospiti/privacy, Alloggiati/adempimenti, pagamenti/messaggi, organizzazione/permessi, contratti, fornitori, assistenza.
 

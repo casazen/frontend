@@ -31,6 +31,8 @@ export interface HostInviteRequest {
 }
 
 export interface HostInviteResult {
+  /** Personal link, returned only to platform staff. */
+  url?: string | null;
   inviteId: string;
   expiresAt: string;
 }
@@ -53,6 +55,7 @@ export interface HostInviteQuota {
 
 /** Answer of the anonymous lookup of an invite link; the email is only ever masked. */
 export interface HostInviteLookup {
+  isAgency?: boolean;
   valid: boolean;
   /** Why the link is not usable: Used, Expired, Revoked; anything else counts as invalid. */
   state?: string | null;

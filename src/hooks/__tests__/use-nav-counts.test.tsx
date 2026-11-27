@@ -4,12 +4,16 @@ import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { bookingsApi } from '@/api/bookings.api';
 import { fetchComplianceSummary } from '@/api/compliance.api';
+import { internalActivitiesApi } from '@/api/internal-activities.api';
+import { messageHubApi } from '@/api/message-hub.api';
 import { fetchSupplierInboxCounts } from '@/services/supplier-api';
 import { ROUTE_MANIFEST, type RouteManifestEntry } from '@/config/route-manifest';
 import { useNavCounts } from '../use-nav-counts';
 
 vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getApprovalRequests: vi.fn() } }));
 vi.mock('@/api/compliance.api', () => ({ fetchComplianceSummary: vi.fn() }));
+vi.mock('@/api/internal-activities.api', () => ({ internalActivitiesApi: { getUrgentCount: vi.fn() } }));
+vi.mock('@/api/message-hub.api', () => ({ messageHubApi: { unread: vi.fn() } }));
 vi.mock('@/services/supplier-api', () => ({ fetchSupplierInboxCounts: vi.fn() }));
 
 const entry = (path: string) => ROUTE_MANIFEST.find((candidate) => candidate.path === path) as RouteManifestEntry;
@@ -17,6 +21,8 @@ const bookings = entry('/app/short-rent/bookings');
 const inbox = entry('/app/supplier/inbox');
 const dashboard = entry('/app/short-rent');
 const compliance = entry('/app/short-rent/compliance');
+const activities = entry('/app/short-rent/activities');
+const messages = entry('/app/short-rent/messages');
 
 const section = (count: number) => ({ count, items: [] });
 /** The summary of the cockpit: what the law dates is the three sections of the Alloggiati Web, whatever else is pending. */
@@ -124,6 +130,82 @@ describe('useNavCounts (UI-04a)', () => {
     const { result, client } = render([compliance]);
 
     await waitFor(() => expect(client.getQueryState(['compliance', 'summary'])?.status).toBe('success'));
+    expect(result.current).toEqual({});
+  });
+
+  it('NavCounts_ActivitiesEntry_CountsTheUrgentItemsOfTheToDoList', async () => {
+    vi.mocked(internalActivitiesApi.getUrgentCount).mockResolvedValue({ count: 3 });
+    const { result } = render([dashboard, activities]);
+
+    // The number is the server's (ADR-026-R12): the hook adds nothing of its own and asks nothing else.
+    await waitFor(() => expect(result.current).toEqual({ activities: 3 }));
+    expect(internalActivitiesApi.getUrgentCount).toHaveBeenCalledTimes(1);
+    expect(bookingsApi.getApprovalRequests).not.toHaveBeenCalled();
+  });
+
+  it('NavCounts_MenuWithoutTheToDoEntry_DoesNotAskForTheCount', () => {
+    render([dashboard, bookings]);
+
+    expect(internalActivitiesApi.getUrgentCount).not.toHaveBeenCalled();
+  });
+
+  it('NavCounts_NoUrgentItem_IsAZeroTheEntryDoesNotShow', async () => {
+    vi.mocked(internalActivitiesApi.getUrgentCount).mockResolvedValue({ count: 0 });
+    const { result } = render([activities]);
+
+    await waitFor(() => expect(result.current).toEqual({ activities: 0 }));
+  });
+
+  it('NavCounts_ActivitiesFail_LeaveTheEntryWithoutACounterAndSayNothing', async () => {
+    vi.mocked(internalActivitiesApi.getUrgentCount).mockRejectedValue(new Error('boom'));
+    const { result, client } = render([activities]);
+
+    await waitFor(() => expect(client.getQueryState(['internal-activities', 'todo-count'])?.status).toBe('error'));
+    expect(result.current).toEqual({});
+  });
+
+  it('NavCounts_ActivitiesAnswerOfAnotherShape_IsNotACount', async () => {
+    vi.mocked(internalActivitiesApi.getUrgentCount).mockResolvedValue('<!doctype html><html></html>' as never);
+    const { result, client } = render([activities]);
+
+    await waitFor(() => expect(client.getQueryState(['internal-activities', 'todo-count'])?.status).toBe('success'));
+    expect(result.current).toEqual({});
+  });
+
+  it('NavCounts_MessagesTab_SumsTheMessagesOfTheGuestsNotReadInEveryConversation', async () => {
+    vi.mocked(messageHubApi.unread).mockResolvedValue({
+      items: [
+        { threadKey: 'ota:6f1c9a52-1111-4222-8333-944455556666', unreadCount: 2 },
+        { threadKey: 'direct:b-1', bookingId: 'b-1', unreadCount: 3 },
+      ],
+    });
+    const { result } = render([messages]);
+
+    // The channels' conversations and the direct ones are one number (counters only: no name, no text).
+    await waitFor(() => expect(result.current).toEqual({ messages: 5 }));
+    expect(messageHubApi.unread).toHaveBeenCalledTimes(1);
+    expect(bookingsApi.getApprovalRequests).not.toHaveBeenCalled();
+  });
+
+  it('NavCounts_MenuWithoutTheMessagesTab_DoesNotAskForThem', () => {
+    render([dashboard, bookings]);
+
+    expect(messageHubApi.unread).not.toHaveBeenCalled();
+  });
+
+  it('NavCounts_MessagesFail_LeaveTheTabWithoutACounterAndSayNothing', async () => {
+    vi.mocked(messageHubApi.unread).mockRejectedValue(new Error('boom'));
+    const { result, client } = render([messages]);
+
+    await waitFor(() => expect(client.getQueryState(['message-hub', 'unread'])?.status).toBe('error'));
+    expect(result.current).toEqual({});
+  });
+
+  it('NavCounts_MessagesAnswerOfAnotherShape_IsNotACount', async () => {
+    vi.mocked(messageHubApi.unread).mockResolvedValue('<!doctype html><html></html>' as never);
+    const { result, client } = render([messages]);
+
+    await waitFor(() => expect(client.getQueryState(['message-hub', 'unread'])?.status).toBe('success'));
     expect(result.current).toEqual({});
   });
 

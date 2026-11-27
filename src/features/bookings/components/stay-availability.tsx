@@ -3,9 +3,12 @@ import { Alert, type AlertProps } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { formatStayDate } from '@/lib/stay-dates';
 import type { BookingChannel, StayAvailability, StayAvailabilityConflict, StayAvailabilityWindow } from '@/types';
-import { portalName, type LinkedBlock } from '../lib/new-booking-model';
+import { channelManagerBlockedMessage, channelManagerConflict, portalName, type LinkedBlock } from '../lib/new-booking-model';
 
 const RANGE_DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+
+/** The states of the availability the host may go on from: free, free but under the minimum stay, a portal's reservation to link. A taken or impossible stay stops the step. */
+const STATES_THE_HOST_MAY_GO_ON_FROM: ReadonlySet<StayAvailability['state']> = new Set(['ok', 'belowMinimum', 'linkableBlock']);
 
 /** "10 nov – 13 nov": a stay as the notice says it. */
 function stayRange(from: string, to: string, language: string): string {
@@ -35,6 +38,12 @@ function ConflictLine({ conflict, language }: { conflict: StayAvailabilityConfli
   if (conflict.type === 'ical') {
     return <>{t('booking.create.availability.conflict.ical', { portal: portalName(conflict.channel, t), range })}</>;
   }
+  // The channel manager says the nights cannot be booked: it names the channel only when the API does (never invented here).
+  if (conflict.type === 'channelManager') {
+    return title
+      ? <>{t('booking.create.availability.conflict.channelManagerNamed', { channel: title, range })}</>
+      : <>{t('booking.create.availability.conflict.channelManager', { range })}</>;
+  }
   return (
     <>
       {title
@@ -59,11 +68,31 @@ interface StayAvailabilityNoticeProps {
 
 /**
  * Whether the dates are free (SR-06a), said under the dates as soon as they are known: free, free but under the minimum stay (the
- * host may go on), taken (what takes them and the nearest free dates), or a portal's reservation that only arrived as a block of its
+ * host may go on), taken (what takes them, the channel manager included, and the nearest free dates), or a portal's reservation that only arrived as a block of its
  * calendar (the host completes it instead of creating a second booking). It is advice: nothing is shown while the answer cannot be
- * had, and the API checks again when the booking is created.
+ * had, and the API checks again when the booking is created. When the channel manager could not be asked (`channelManagerChecked === false`) it is said under
+ * the answer, without blocking anything: the dates are CasaZen's own answer and the check on the channel manager is repeated when the booking is created. It is said
+ * only where the host may go on (`STATES_THE_HOST_MAY_GO_ON_FROM`): a taken stay stops the step whatever the channel manager could say, and "you can go on" would
+ * not be true.
  */
-export function StayAvailabilityNotice({ availability, isLoading, link, onUseWindow, onLink }: StayAvailabilityNoticeProps) {
+export function StayAvailabilityNotice(props: StayAvailabilityNoticeProps) {
+  const { t } = useTranslation();
+  const { availability } = props;
+  const state = <AvailabilityState {...props} />;
+
+  if (availability?.channelManagerChecked !== false || !STATES_THE_HOST_MAY_GO_ON_FROM.has(availability.state)) return state;
+  return (
+    <div className="space-y-3">
+      {state}
+      <Alert variant="warning" data-testid="booking-availability-unchecked">
+        {t('booking.create.availability.channelManagerUnchecked')}
+      </Alert>
+    </div>
+  );
+}
+
+/** The answer of the availability for the dates (without the line about a channel manager that could not be asked). */
+function AvailabilityState({ availability, isLoading, link, onUseWindow, onLink }: StayAvailabilityNoticeProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
 
@@ -88,6 +117,9 @@ export function StayAvailabilityNotice({ availability, isLoading, link, onUseWin
 
     case 'occupied': {
       const window = availability.nearestFreeWindow;
+      const channelManager = channelManagerConflict(availability);
+      // Taken only on the channel manager: CasaZen's own calendar is free, so there is no list of stays and no window to offer, only the reason.
+      const channelManagerOnly = channelManager !== undefined && availability.conflicts.every((conflict) => conflict.type === 'channelManager');
       return (
         <Notice
           state="occupied"
@@ -101,18 +133,25 @@ export function StayAvailabilityNotice({ availability, isLoading, link, onUseWin
             ) : undefined
           }
         >
-          <ul className="list-disc space-y-0.5 pl-5">
-            {availability.conflicts.map((conflict) => (
-              <li key={conflict.id}>
-                <ConflictLine conflict={conflict} language={language} />
-              </li>
-            ))}
-          </ul>
-          <p className="mt-1">
-            {window
-              ? t('booking.create.availability.occupied.window', { count: availability.nights, range: stayRange(window.from, window.to, language) })
-              : t('booking.create.availability.occupied.noWindow')}
-          </p>
+          {channelManagerOnly ? (
+            <p data-testid="booking-availability-channel-manager">{channelManagerBlockedMessage(channelManager, t)}</p>
+          ) : (
+            <>
+              <ul className="list-disc space-y-0.5 pl-5">
+                {availability.conflicts.map((conflict, index) => (
+                  // The conflict of the channel manager has no id of its own (the empty one): the position tells it apart.
+                  <li key={`${conflict.id}-${index}`}>
+                    <ConflictLine conflict={conflict} language={language} />
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1">
+                {window
+                  ? t('booking.create.availability.occupied.window', { count: availability.nights, range: stayRange(window.from, window.to, language) })
+                  : t('booking.create.availability.occupied.noWindow')}
+              </p>
+            </>
+          )}
         </Notice>
       );
     }

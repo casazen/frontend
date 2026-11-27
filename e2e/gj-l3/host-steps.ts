@@ -1,3 +1,4 @@
+import { completeCommercialSignup } from './commercial-signup';
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
@@ -26,14 +27,7 @@ export async function pickComune(page: Page, inputSelector: string, name: string
 
 /** Onboarding wizard as a new host sees it: operator type, then the consents (no plan step: the org starts on Starter). */
 export async function completeHostOnboarding(page: Page): Promise<void> {
-  await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
-  await page.getByRole('button', { name: 'Scegli' }).first().click(); // "Affitti brevi"
-  const consents = page.getByTestId('onboarding-consents-step');
-  await expect(consents).toBeVisible({ timeout: 20_000 });
-  for (const checkbox of await consents.getByRole('checkbox').all()) await checkbox.click();
-  await page.getByTestId('onboarding-consents-continue').click();
-  // Roles are granted through the (mock) Management API; the "roles pending" card must not stay on screen.
-  await expect(page.getByTestId('onboarding-roles-pending')).toHaveCount(0, { timeout: 20_000 });
+  await completeCommercialSignup(page, 'owner');
   await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 30_000 });
 }
 

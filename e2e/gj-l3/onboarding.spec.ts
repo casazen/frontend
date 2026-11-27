@@ -1,3 +1,4 @@
+import { completeCommercialSignup } from './commercial-signup';
 import { test, expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { PNG } from 'pngjs';
@@ -8,7 +9,7 @@ import { pickComune } from './host-steps';
 /**
  * Onboarding L3: a new host and a new supplier reach a working account through the UI only, against the ephemeral stack
  * (real backend, throw-away PostgreSQL, mock IdP). The entry points are the printed QR codes of the admin page: the test
- * decodes the image and opens exactly the address it holds. The API is only an oracle for assertions.
+ * decodes the image and opens exactly the address it holds. A signed simulated Stripe webhook confirms payment in the disposable stack; the API otherwise serves as an oracle.
  *
  * Every test runs on a phone viewport (the people scanning a QR are on a phone) unless it says otherwise, and fails on any
  * 5xx answer of the API and on horizontal overflow of the screens a new user sees.
@@ -69,60 +70,41 @@ async function decodeQr(page: Page, testId: string): Promise<string> {
   return (decoded as { data: string }).data;
 }
 
-/** The two entry addresses, as the admin page prints them (read from the QR images, not from the page text). */
-async function readPrintedEntryAddresses(browser: Browser, campaign: string): Promise<{ host: string; supplier: string }> {
+/** The agency founder receives a personal QR; public registration remains available to private owners and suppliers. */
+async function readPrintedEntryAddresses(browser: Browser): Promise<{ host: string; supplier: string; agency: string }> {
   const { page, context } = await newActor(browser, { width: 1280, height: 900 });
   try {
     await loginAs(page, stack, `gj-admin-${unique()}@example.test`);
     await page.goto('/app/admin/invite-qr');
-    await expect(page.getByTestId('qr-supplier-image')).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId('qr-host-image')).toBeVisible();
-    await page.getByTestId('qr-campaign-input').fill(campaign);
-    // The host code follows the campaign: wait for the image to be redrawn with it.
-    await expect(page.getByTestId('qr-host-url')).toContainText(`utm_campaign=${campaign}`);
-    await expect.poll(async () => decodeQr(page, 'qr-host')).toContain(`utm_campaign=${campaign}`);
-    const host = await decodeQr(page, 'qr-host');
-    const supplier = await decodeQr(page, 'qr-supplier');
-    // What is printed under the code is what the code holds.
-    await expect(page.getByTestId('qr-host-url')).toHaveText(host);
-    await expect(page.getByTestId('qr-supplier-url')).toHaveText(supplier);
+    await expect(page.getByTestId('host-invite-email')).toBeVisible({ timeout: 20_000 });
+    await page.getByTestId('host-invite-email').fill(`agency-${unique()}@example.test`);
+    await page.getByTestId('host-invite-submit').click();
+    await expect(page.getByTestId('qr-agency-image')).toBeVisible({ timeout: 20_000 });
+    const agency = await decodeQr(page, 'qr-agency');
+    await expect(page.getByTestId('qr-agency-url')).toHaveText(agency);
     await shot(page, 'admin-invite-qr');
-    return { host, supplier };
+    const origin = new URL(stack.feUrl).origin;
+    return { host: `${origin}/signup?role=host`, supplier: `${origin}/register`, agency };
   } finally {
     await context.close();
   }
-}
-
-/** Accepts every consent of the onboarding and continues (the last screen: no plan is asked). */
-async function acceptConsents(page: Page): Promise<void> {
-  const consents = page.getByTestId('onboarding-consents-step');
-  await expect(consents).toBeVisible({ timeout: 20_000 });
-  for (const checkbox of await consents.getByRole('checkbox').all()) {
-    if ((await checkbox.getAttribute('id')) !== 'marketing') await checkbox.click();
-  }
-  await page.getByTestId('onboarding-consents-continue').click();
 }
 
 // The CI config has a 30 s default per test: a whole onboarding (login, several screens, API) needs more on a shared runner.
 test.describe.configure({ mode: 'serial', timeout: 120_000 });
 
 test.describe('Onboarding L3 (real stack)', () => {
-  let entry: { host: string; supplier: string };
+  let entry: { host: string; supplier: string; agency: string };
 
   test.beforeAll(async ({ browser }) => {
-    entry = await readPrintedEntryAddresses(browser, `e2e-${unique()}`);
+    entry = await readPrintedEntryAddresses(browser);
   });
 
-  test('the admin prints two QR codes that hold the public entry addresses, without tokens', async () => {
-    const origin = new URL(stack.feUrl).origin;
-    expect(entry.supplier).toBe(`${origin}/register`);
-    const host = new URL(entry.host);
-    expect(host.origin + host.pathname).toBe(`${origin}/signup`);
-    expect(host.searchParams.get('role')).toBe('host');
-    expect(host.searchParams.get('utm_source')).toBe('qr');
-    expect(host.searchParams.get('utm_medium')).toBe('print');
-    // Nothing secret or personal in a code that anyone can photograph.
-    expect(entry.host + entry.supplier).not.toMatch(/token|email|@/i);
+  test('the admin prints a personal QR for a new agency', async () => {
+    const url = new URL(entry.agency);
+    expect(url.origin).toBe(new URL(stack.feUrl).origin);
+    expect(url.pathname).toMatch(/^\/invito-host\/[^/]+$/);
+    expect(entry.agency).not.toContain('@');
   });
 
   test('new host scans the code on a phone: type, consents, first property, then the checklist (short rent)', async ({ browser }) => {
@@ -135,18 +117,10 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.goto(entry.host);
       await signInAtIdp(page, email);
 
-      // Screen 1: only the choice of the host. The supplier is a quiet line, not a card that competes.
-      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
-      await expect(page.getByRole('button', { name: 'Scegli' })).toHaveCount(3);
-      await expect(page.getByRole('heading', { name: /Sono un fornitore/i })).toHaveCount(0);
+      await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(3);
       await expectNoHorizontalOverflow(page, 'onboarding choice');
       await shot(page, 'host-1-choice');
-      await page.getByRole('button', { name: 'Scegli' }).first().click();
-
-      // Screen 2: the consents, the last one. No plan is asked.
-      await acceptConsents(page);
-      await expect(page.getByTestId('plan-selection-grid')).toHaveCount(0);
-      await expect(page.getByTestId('onboarding-roles-pending')).toHaveCount(0, { timeout: 20_000 });
+      await completeCommercialSignup(page, 'owner');
 
       // Straight into the first property, in the short form.
       await expect(page).toHaveURL(/\/app\/short-rent\/properties\/create\?first=1/, { timeout: 30_000 });
@@ -162,26 +136,31 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.locator('#nightlyRate').fill('120');
       await page.getByTestId('quick-property-submit').click();
 
-      // The dashboard with the checklist: the property is done, the rest is asked one step at a time.
+      // After creating the property, the host can open the setup checklist from the guide on the dashboard.
       await expect(page).toHaveURL(/\/app\/short-rent$/, { timeout: 30_000 });
-      // The Home says the next step alone; the whole list opens from "Tutti i passi".
-      await expect(page.getByTestId('activation-next-step')).toBeVisible({ timeout: 30_000 });
-      await page.getByTestId('home-next-step-all').click();
-      const checklist = page.getByTestId('activation-checklist');
+      // «Inizia con CasaZen» as the first wizard: the welcome opens over the Home of a new host, once; «Più tardi» leaves the Home to the journey.
+      await expect(page.getByTestId('first-run-wizard')).toBeVisible({ timeout: 30_000 });
+      await page.getByTestId('first-run-later').click();
+      await expect(page.getByTestId('first-run-wizard')).toHaveCount(0);
+      await page.getByTestId('guide-button').click();
+      const checklist = page.getByTestId('guide-setup');
       await expect(checklist).toBeVisible({ timeout: 30_000 });
-      await expect(page.getByTestId('activation-step-property')).toHaveAttribute('data-state', 'done', { timeout: 20_000 });
-      await expectNoHorizontalOverflow(page, 'dashboard with the checklist');
-      // On a phone the text of a step keeps room to be read (it used to be squeezed to one word per line).
-      const orgStep = page.getByTestId('activation-step-organization');
-      await expect(orgStep).toBeVisible();
-      expect((await orgStep.getByText(/organizzazione/i).first().boundingBox())?.width ?? 0).toBeGreaterThan(200);
-      await shot(page, 'host-3-dashboard-checklist');
+      const propertyStep = checklist.getByRole('listitem').filter({ hasText: 'Primo immobile' });
+      await expect(propertyStep).toHaveAttribute('data-state', 'done');
+      await expect(checklist.locator('[aria-current="step"]')).toHaveCount(1);
+      await expect(checklist.getByTestId('guide-setup-continue')).toBeVisible();
+      await expectNoHorizontalOverflow(page, 'setup checklist in the guide');
+      // A long step title still has enough space to read comfortably on a phone.
+      const organizationTitle = checklist.getByText(/nome e indirizzo dell.organizzazione/i);
+      await expect(organizationTitle).toBeVisible();
+      expect((await organizationTitle.boundingBox())?.width ?? 0).toBeGreaterThan(200);
+      await shot(page, 'host-3-guide-checklist');
       console.log(`[onboarding-l3] short-rent host: QR -> property created in ${Math.round((Date.now() - t0) / 1000)}s`);
 
-      // The oracle: the org exists on Starter and the property is stored with its comune.
+      // The oracle: the org exists on Pro and the property is stored with its comune.
       const api = oracleFor(context.request, stack, await accessToken(page));
       const me = await api.get<{ org?: { planTier?: string }; rentalType?: string }>('/users/me');
-      expect(me.org?.planTier).toBe('Starter');
+      expect(me.org?.planTier).toBe('Pro');
       expect(me.rentalType).toBe('ShortTerm');
       const properties = await api.get<Array<{ name: string; city: string; comuneIstatCode?: string; maxGuests: number; nightlyRate: number }>>('/properties');
       const created = properties.find((p) => p.name === propertyName);
@@ -202,9 +181,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.goto(entry.host);
       await signInAtIdp(page, email);
 
-      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
-      await page.getByRole('button', { name: 'Scegli' }).nth(1).click(); // "Locazioni di lungo periodo"
-      await acceptConsents(page);
+      await completeCommercialSignup(page, 'long-rent');
 
       await expect(page).toHaveURL(/\/app\/long-rent\/properties\/new\?first=1/, { timeout: 30_000 });
       await expect(page.getByTestId('quick-property-form')).toBeVisible();
@@ -219,7 +196,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.getByTestId('quick-property-submit').click();
 
       // The guide of the area: property done, lease next.
-      await expect(page).toHaveURL(/\/app\/long-rent\/leases$/, { timeout: 30_000 });
+      await expect(page).toHaveURL(/\/app\/long-rent\/properties$/, { timeout: 30_000 });
       const guide = page.getByTestId('long-rent-guide');
       await expect(guide).toBeVisible({ timeout: 20_000 });
       await expect(page.getByTestId('long-rent-guide-property')).toHaveAttribute('data-state', 'done');
@@ -233,7 +210,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       const api = oracleFor(context.request, stack, await accessToken(page));
       const me = await api.get<{ org?: { planTier?: string }; rentalType?: string }>('/users/me');
       expect(me.rentalType).toBe('LongTerm');
-      expect(me.org?.planTier).toBe('Starter');
+      expect(me.org?.planTier).toBe('Pro');
       expect(errors5xx, '5xx answers of the API').toEqual([]);
     } finally {
       await context.close();
@@ -291,7 +268,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await shot(page, 'supplier-4-wizard-terms');
       await page.getByRole('button', { name: 'Attiva profilo' }).click();
       await expect(page).toHaveURL(/\/app\/supplier\/dashboard/, { timeout: 30_000 });
-      await expect(page.getByTestId('supplier-getting-started').or(page.getByTestId('supplier-kpis'))).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('supplier-home').getByTestId('supplier-kpis')).toBeVisible({ timeout: 20_000 });
       await shot(page, 'supplier-5-dashboard');
 
       const api = oracleFor(context.request, stack, await accessToken(page));
@@ -323,8 +300,8 @@ test.describe('Onboarding L3 (real stack)', () => {
     try {
       await page.goto('/login');
       await signInAtIdp(page, `lost-${unique()}@example.test`);
-      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
-      await page.getByTestId('onboarding-supplier-register').click();
+      await expect(page.getByTestId('signup-profile-supplier')).toBeVisible({ timeout: 30_000 });
+      await page.getByTestId('signup-profile-supplier').click();
       await expect(page).toHaveURL(/\/register$/);
       await expect(page.locator('#legalName')).toBeVisible();
     } finally {

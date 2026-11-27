@@ -4,6 +4,8 @@
     "api/*.ts",
     "middleware.ts",
     "src/site/entry-server.ts",
+    "src/embed/embed.ts",
+    "src/embed/search.ts",
     "scripts/*.mjs",
     "e2e/auth.setup.ts"
   ],
@@ -16,9 +18,17 @@
   ],
   "ignoreExportsUsedInFile": true,
   "ignoreBinaries": [
-    "psql"
+    "psql",
+    "wp-env"
   ],
   "ignoreIssues": {
+    "integrations/**": [
+      "unlisted",
+      "unresolved",
+      "binaries",
+      "exports",
+      "types"
+    ],
     "src/components/ui/**": [
       "exports",
       "types"
@@ -47,16 +57,7 @@
     "src/pages/CampaignsPage.tsx": [
       "exports"
     ],
-    "src/pages/RoutinesPage.tsx": [
-      "exports"
-    ],
     "src/pages/SegmentsPage.tsx": [
-      "exports"
-    ],
-    "src/pages/PropertyQrCode.tsx": [
-      "exports"
-    ],
-    "src/pages/SwissCompliancePage.tsx": [
       "exports"
     ]
   },

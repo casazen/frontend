@@ -3,11 +3,15 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { leaseDocumentsApi, type RegistrationReceiptReading } from '@/api/lease-documents.api';
 import { leasesApi } from '@/api/leases.api';
 import { httpError } from '../../__tests__/lease-test-utils';
 import { ImportStep } from '../import-step';
 
 vi.mock('@/api/leases.api', () => ({ leasesApi: { importSigned: vi.fn() } }));
+vi.mock('@/api/lease-documents.api', () => ({
+  leaseDocumentsApi: { list: vi.fn().mockResolvedValue([]), readReceipt: vi.fn() },
+}));
 
 /** Where the person is, and what the next screen was told: the declaration of the registration is asked for there. */
 function Where() {
@@ -40,6 +44,7 @@ describe('ImportStep (LR-06b): the import of a signed contract cannot be taken b
   beforeEach(async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-09-24T08:00:00Z'));
+    vi.mocked(leaseDocumentsApi.list).mockResolvedValue([]);
     await i18n.changeLanguage('it');
   });
 
@@ -83,5 +88,44 @@ describe('ImportStep (LR-06b): the import of a signed contract cannot be taken b
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('?step=8 {"declareRegistration":true}'));
     expect(leasesApi.importSigned).toHaveBeenCalledTimes(2);
     expect(leasesApi.importSigned).toHaveBeenLastCalledWith('lease-1', { stipulaDate: '2026-08-20', signedContract: pdf });
+  });
+
+  it('an uploaded registration receipt answers that the contract is registered and fills the day and the number', async () => {
+    const pdf = new File(['%PDF-1.4 firmato'], 'contratto-firmato.pdf', { type: 'application/pdf' });
+    const receipt: RegistrationReceiptReading = {
+      outcome: 'Registered',
+      code: 'TKM26T012345000AB',
+      number: '012345',
+      series: '3T',
+      registrationDate: '2026-09-21',
+      office: null,
+      annualRent: null,
+      start: null,
+      end: null,
+      stipulationDate: '2026-08-20',
+      typology: null,
+      cedolareSecca: null,
+      comune: null,
+      province: null,
+      warnings: [],
+    };
+    vi.mocked(leaseDocumentsApi.list).mockResolvedValue([
+      { id: 'doc-r', leaseId: 'lease-1', kind: 'Registration', fileName: 'ricevuta.pdf', sizeBytes: 1200, uploadedAt: '2026-09-21T10:00:00Z' },
+    ]);
+    vi.mocked(leaseDocumentsApi.readReceipt).mockResolvedValue({ documentId: 'doc-r', kind: 'Registration', state: 'Read', receipt });
+    vi.mocked(leasesApi.importSigned).mockResolvedValue({} as never);
+    renderStep();
+
+    fireEvent.change(screen.getByTestId('lease-import-file'), { target: { files: [pdf] } });
+    expect(await screen.findByTestId('lease-import-registered-read')).toHaveTextContent('TKM26T012345000AB');
+    expect(screen.queryByTestId('lease-registered-yes')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lease-import-date')).toHaveValue('2026-08-20');
+
+    fireEvent.click(screen.getByTestId('lease-import-submit'));
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText(/letti dalla ricevuta/)).toBeInTheDocument();
+    fireEvent.click(dialog.getByRole('button', { name: 'Inserisci il contratto' }));
+    await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('?step=8 {"declareRegistration":true}'));
+    expect(leasesApi.importSigned).toHaveBeenCalledWith('lease-1', { stipulaDate: '2026-08-20', signedContract: pdf });
   });
 });

@@ -56,7 +56,7 @@ const NO_UTC_DATE_PART_SYNTAX = [
 ]
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'integrations/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

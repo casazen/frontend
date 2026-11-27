@@ -14,6 +14,14 @@ const MAX_REPORT_MONTHS = 24;
 const FIRST_DAY = '2000-01-01';
 const LAST_DAY = '2100-12-31';
 
+/**
+ * `day` (`YYYY-MM-DD`) kept inside the days the backend supports, for a day that comes from a field with no limits of its own (the filter of a
+ * list): any other day is a 400, and a day before the first or after the last means no limit on that side, so it is kept at the edge.
+ */
+export function withinSupportedDays(day: string): string {
+  return day < FIRST_DAY ? FIRST_DAY : day > LAST_DAY ? LAST_DAY : day;
+}
+
 /** The tourist tax report covers a year at most (366 days, both ends included). */
 const MAX_TOURIST_TAX_NIGHTS = 365;
 
@@ -59,15 +67,27 @@ export function presetPeriod(preset: Exclude<PeriodPresetId, 'custom'>, today: s
 export type PeriodProblem = 'invalidDates' | 'tooLong' | 'fiscalYear' | 'fiscalSameYear' | 'fiscalTooLong';
 
 /**
+ * What is wrong with the days of any period that is asked of the backend, or null: they are not two days in order (and in the years the
+ * backend knows), or they cover more than 24 months. The reports and the export of the document archive share these two checks.
+ */
+export function basicPeriodProblem(period: ReportPeriod): Extract<PeriodProblem, 'invalidDates' | 'tooLong'> | null {
+  const { from, to } = period;
+  if (!isStayDate(from) || !isStayDate(to) || to < from || from < FIRST_DAY || to > LAST_DAY) return 'invalidDates';
+  if (to > addDays(addMonths(from, MAX_REPORT_MONTHS), -1)) return 'tooLong';
+  return null;
+}
+
+/**
  * Why the report cannot be asked for these days, or null: the days are not two days in order (and in the years the backend
  * knows), the period is longer than 24 months, and for the fiscal reports the rules of their endpoints (a tax year from 2026 and
  * one only for the summary and the withholdings, at most a year for the tourist tax). The backend says the same with a problem
  * body; this tells it before the call.
  */
 export function periodProblem(period: ReportPeriod, source: ReportSource): PeriodProblem | null {
+  const basic = basicPeriodProblem(period);
+  if (basic) return basic;
+
   const { from, to } = period;
-  if (!isStayDate(from) || !isStayDate(to) || to < from || from < FIRST_DAY || to > LAST_DAY) return 'invalidDates';
-  if (to > addDays(addMonths(from, MAX_REPORT_MONTHS), -1)) return 'tooLong';
 
   if (source.kind === 'fiscal') {
     if (source.report === 'touristTax') return nightsBetween(from, to) > MAX_TOURIST_TAX_NIGHTS ? 'fiscalTooLong' : null;

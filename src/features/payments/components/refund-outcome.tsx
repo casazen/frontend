@@ -17,8 +17,17 @@ export function RefundStatusBadge({ status }: { status: PaymentRefundStatus }) {
   return <Badge variant={STATUS_VARIANT[status]}>{t(`payment.refund.status.${status}`)}</Badge>;
 }
 
-/** What Stripe did with one refund, in words: confirmed, waiting for Stripe, or not done. */
-export function RefundOutcomeMessage({ refund, currency = 'EUR' }: { refund: PaymentRefund; currency?: string }) {
+/**
+ * What Stripe did with one refund, in words: confirmed, waiting for Stripe, or not done. It reads only what it says (the amount, the status and the reason of a refusal),
+ * so the refund an edit of a booking makes (`settlement` of `PUT /bookings/:id`, which has no id of its own) is told with the same words.
+ */
+export function RefundOutcomeMessage({
+  refund,
+  currency = 'EUR',
+}: {
+  refund: Pick<PaymentRefund, 'amount' | 'status' | 'failureReason'>;
+  currency?: string;
+}) {
   const { t } = useTranslation();
   const amount = formatCurrency(refund.amount, currency);
 

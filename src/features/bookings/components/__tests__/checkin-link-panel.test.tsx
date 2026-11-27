@@ -4,11 +4,15 @@ import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { ApiClient } from '@/api/client';
+import { alloggiatiApi } from '@/api/alloggiati.api';
 import { bookingsApi } from '@/api/bookings.api';
 import { copyTextToClipboard } from '@/lib/utils';
 import { CheckInLinkPanel } from '../checkin-link-panel';
 import type { CheckInSessionStatusDto } from '@/types/public-checkin.types';
 
+vi.mock('@/api/client', () => ({ ApiClient: { get: vi.fn(), post: vi.fn() } }));
+vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn().mockResolvedValue({ dataComplete: true }) } }));
 vi.mock('@/api/bookings.api', () => ({
   bookingsApi: { getCheckInSession: vi.fn(), resendCheckInLink: vi.fn(), createCheckInLink: vi.fn() },
 }));
@@ -35,9 +39,9 @@ const failedEmail: CheckInSessionStatusDto = {
   canIssueLink: true,
 };
 
-function renderPanel(canWrite = true) {
+function renderPanel(canWrite = true, useGuestPortal = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(createElement(QueryClientProvider, { client }, createElement(CheckInLinkPanel, { bookingId: BOOKING_ID, canWrite })));
+  return render(createElement(QueryClientProvider, { client }, createElement(CheckInLinkPanel, { bookingId: BOOKING_ID, canWrite, useGuestPortal })));
 }
 
 beforeAll(async () => {
@@ -57,6 +61,28 @@ describe('CheckInLinkPanel (CO-09, A5-26)', () => {
     expect(await screen.findByTestId('checkin-session-none')).toHaveTextContent('Nessun link di check-in generato');
     expect(screen.getByTestId('checkin-resend-button')).toHaveTextContent('Invia link via email');
     expect(screen.getByTestId('checkin-generate-button')).toHaveTextContent('Genera link da copiare');
+  });
+
+  it('prepares check-in and shares the portal section instead of the check-in token', async () => {
+    const url = 'https://casazen.test/s/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef';
+    vi.mocked(ApiClient.get).mockResolvedValue({ eligible: true, url: null });
+    vi.mocked(ApiClient.post).mockResolvedValue({ eligible: true, url });
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(noLink);
+    vi.mocked(bookingsApi.createCheckInLink).mockImplementation(async () => {
+      vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(failedEmail);
+      return { checkInLink: LINK, expiresAt: '2026-10-08T08:00:00Z', emailStatus: 'NotRequested' };
+    });
+    renderPanel(true, true);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Abilita il check-in nel portale' }));
+    const preview = await screen.findByRole('link', { name: 'Apri il portale' });
+    expect(preview).toHaveAttribute('href', `${url}?page=checkin`);
+    expect(ApiClient.post).toHaveBeenCalledWith(`/bookings/${BOOKING_ID}/guest-portal`);
+    expect(screen.queryByTestId('checkin-link-issued')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Invia email' }));
+    await waitFor(() => expect(ApiClient.post).toHaveBeenCalledWith(`/bookings/${BOOKING_ID}/guest-portal/resend`));
+    expect(bookingsApi.resendCheckInLink).not.toHaveBeenCalled();
   });
 
   it('panel_EmailFailed_ShowsTheRealReasonAndStillOffersTheReminder', async () => {
@@ -144,9 +170,17 @@ describe('CheckInLinkPanel (CO-09, A5-26)', () => {
     });
     renderPanel();
 
-    expect(await screen.findByText(/ha completato il check-in/)).toBeInTheDocument();
+    expect(await screen.findByText(i18n.t('checkin.link.completed'))).toBeInTheDocument();
     expect(screen.queryByTestId('checkin-resend-button')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkin-generate-button')).not.toBeInTheDocument();
+  });
+
+  it('reports a submitted form with missing guest details as incomplete', async () => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue({ status: 'Completo', canIssueLink: false });
+    vi.mocked(alloggiatiApi.getStatus).mockResolvedValueOnce({ dataComplete: false } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
+    renderPanel(false);
+    expect(await screen.findByText(i18n.t('dashboard.today.note.submittedIncomplete'))).toBeVisible();
+    expect(screen.queryByTestId('checkin-resend-button')).toBeNull();
   });
 
   it('panel_WithoutBookingWrite_ShowsStatusOnly', async () => {

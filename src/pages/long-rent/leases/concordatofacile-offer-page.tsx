@@ -258,9 +258,10 @@ function GuidedContract() {
 
       <BackLink to={`/app/long-rent/leases/${id}`} label={t('concordatofacile.offer.backToLease')} />
 
-      <div className={cn(FOCUS_COLUMN, 'space-y-6')}>
+      {/* The contract and, beside it from `xl`, the service with its price and its button (under each other on a narrower screen). */}
+      <div className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(14rem,1fr)_minmax(0,2fr)]">
         {/* Property and contract details */}
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle>{t('concordatofacile.offer.contractDetails')}</CardTitle>
           </CardHeader>
@@ -281,14 +282,14 @@ function GuidedContract() {
         </Card>
 
         {/* Service description and price (ADR-005-R11) */}
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle>{t('concordatofacile.offer.serviceTitle')}</CardTitle>
             <CardDescription>{t('concordatofacile.offer.serviceDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-lg font-semibold" data-testid="cf-offer-price">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
+              <p className="text-2xl font-semibold tracking-tight" data-testid="cf-offer-price">
                 {t('concordatofacile.offer.price')}
               </p>
               <p className="mt-1 text-sm text-muted-foreground" data-testid="cf-offer-taxes">
@@ -299,25 +300,25 @@ function GuidedContract() {
             {/* Five-step process (NF-02) */}
             <div>
               <h3 className="mb-3 text-sm font-semibold">{t('concordatofacile.offer.stepsTitle')}</h3>
-              <ol className="space-y-2 text-sm" data-testid="cf-offer-steps">
-                <li className="flex gap-2">
-                  <span className="font-medium">1.</span>
+              <ol className="space-y-3 text-sm" data-testid="cf-offer-steps">
+                <li className="flex items-baseline gap-3">
+                  <span aria-hidden="true" className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">1.</span>
                   <span>{giftOffered ? t('guidedContract.stepPayOrGift') : t('concordatofacile.offer.step1')}</span>
                 </li>
-                <li className="flex gap-2">
-                  <span className="font-medium">2.</span>
+                <li className="flex items-baseline gap-3">
+                  <span aria-hidden="true" className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">2.</span>
                   <span>{t('concordatofacile.offer.step2')}</span>
                 </li>
-                <li className="flex gap-2">
-                  <span className="font-medium">3.</span>
+                <li className="flex items-baseline gap-3">
+                  <span aria-hidden="true" className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">3.</span>
                   <span>{t('concordatofacile.offer.step3')}</span>
                 </li>
-                <li className="flex gap-2">
-                  <span className="font-medium">4.</span>
+                <li className="flex items-baseline gap-3">
+                  <span aria-hidden="true" className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">4.</span>
                   <span>{t('concordatofacile.offer.step4')}</span>
                 </li>
-                <li className="flex gap-2">
-                  <span className="font-medium">5.</span>
+                <li className="flex items-baseline gap-3">
+                  <span aria-hidden="true" className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">5.</span>
                   <span>{t('concordatofacile.offer.step5')}</span>
                 </li>
               </ol>

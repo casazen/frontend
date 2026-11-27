@@ -15,7 +15,10 @@ interface BottomNavProps {
   contextKey: AppContextKey;
 }
 
-/** The counter that "Altro" shows on its own: what carries a risk of a sanction is never hidden behind it. */
+/**
+ * The counter that "Altro" shows on its own: what carries a risk of a sanction is never hidden behind it. The urgent items of the "To do" list
+ * (ADR-026-R12) are not in "Altro" any more: they are a tab of the Cruscotto, and the «Guida» of the header carries their number on every page.
+ */
 const COMPLIANCE_COUNT: NavCountKey = 'compliance';
 
 // A column of the bar is a fifth of a 360 px screen (72 px) and the widest name ("Prenotazioni", "Disponibilità") is
@@ -79,7 +82,7 @@ export function BottomNav({ contextKey }: BottomNavProps) {
   return (
     <nav
       aria-label={t('shell.mobileNavigation')}
-      className="fixed bottom-0 inset-x-0 z-50 border-t bg-background md:hidden"
+      className="workspace-mobile-nav fixed bottom-0 inset-x-0 z-50 border-t bg-card md:hidden"
       style={{ height: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))' }}
     >
       <div className="flex h-full items-stretch pb-[env(safe-area-inset-bottom)]">
@@ -126,7 +129,11 @@ export function BottomNav({ contextKey }: BottomNavProps) {
               <Ellipsis className="h-6 w-6 shrink-0" aria-hidden="true" />
               {moreFines > 0 ? (
                 <>
-                  <span aria-hidden="true" data-testid="more-compliance-mark" className="absolute right-2 top-0.5 size-2.5 rounded-full bg-destructive ring-2 ring-background" />
+                  <span
+                    aria-hidden="true"
+                    data-testid="more-compliance-mark"
+                    className="absolute right-2 top-0.5 size-2.5 rounded-full bg-destructive ring-2 ring-background"
+                  />
                   <span className="sr-only">{`, ${getNavCountLabel(COMPLIANCE_COUNT, moreFines, t)}`}</span>
                 </>
               ) : null}

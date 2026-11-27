@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useEmbed } from '@/features/embed/embed-context';
 import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { usePortalRootProps } from '../site-appearance-context';
@@ -48,6 +49,9 @@ export interface StaySheetProps {
  * on a phone, with the same content and one "Fatto". It replaces the two forms with the same ids that the booking card drew
  * (one in the page, one in the sheet): every id here comes from `useId`. The popover and the sheet wear the theme of the site
  * (they are drawn outside its root) and the focus goes to the day that takes the tab stop of the calendar when they open.
+ *
+ * Inside the frame of an embeddable widget (NF-144) it is a popover at every width: the window of a frame is as tall as its content, so a sheet from
+ * the bottom of it would sit at the bottom of that content, far from the guest. The calendar still follows the width (one month, or two).
  */
 export function StaySheet({
   section,
@@ -69,6 +73,7 @@ export function StaySheet({
 }: StaySheetProps) {
   const { t } = useTranslation();
   const fromTablet = useMediaQuery(FROM_TABLET_QUERY);
+  const embed = useEmbed();
   const portal = usePortalRootProps();
   const [innerOpen, setInnerOpen] = useState(false);
   const open = openProp ?? innerOpen;
@@ -91,7 +96,8 @@ export function StaySheet({
           value={value}
           onChange={handleRange}
           data={calendar}
-          layout={fromTablet ? 'paged' : 'scroll'}
+          // The months one under the other are for the sheet of a phone; a popover (also a narrow one of a frame) pages through them.
+          layout={fromTablet || embed ? 'paged' : 'scroll'}
           months={fromTablet ? 2 : 1}
         />
       ) : null}
@@ -125,7 +131,7 @@ export function StaySheet({
     </Button>
   );
 
-  if (fromTablet) {
+  if (fromTablet || embed) {
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>{trigger}</PopoverTrigger>
@@ -134,6 +140,7 @@ export function StaySheet({
           ref={contentRef}
           className={cn(portal.className, 'stay-pop')}
           data-section={section}
+          data-embed={embed ? '' : undefined}
           data-testid="stay-popover"
           align="start"
           aria-label={title}

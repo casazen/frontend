@@ -1,12 +1,18 @@
+import { GuestLinkedSection } from '@/features/guest-portal/guest-linked-section';
+import { linkedStayPaths } from '@/features/guest-portal/linked-stay-paths';
 import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
+import { buildEmbedRoutes } from './embed-routes';
 import { buildHostSiteRoutes } from './host-site-routes';
 import { createHostSiteWindow } from './host-site-window';
 import { getHostSite } from '@/lib/host-site';
+import { MARKETING_CONFIRM_PATH, UNSUBSCRIBE_PATH, WELCOME_PATH } from '@/lib/marketing-link-paths';
 import { SupplierLegacyPathRedirect } from './supplier-legacy-redirect';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
 import { AuthProviderBoundary } from '@/components/auth/auth-provider-boundary';
 import { LoginPage } from '@/pages/login-page';
+import { AccountInvitationPage } from '@/pages/account-invitation-page';
+import { ACCOUNT_INVITATION_PATH } from '@/lib/account-invitation';
 import { SignupPage } from '@/pages/signup-page';
 import { EmailVerifiedPage } from '@/pages/email-verified-page';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
@@ -46,16 +52,23 @@ import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-reque
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
+import { DoorCheckInPage } from '@/pages/DoorCheckInPage';
+import { ConfirmPage } from '@/features/public-marketing/confirm-page';
+import { UnsubscribePage } from '@/features/public-marketing/unsubscribe-page';
+import { WelcomePage } from '@/features/public-marketing/welcome-page';
 import { RentPaymentPage } from '@/features/public-rent/rent-payment-page';
 import { ServicePaymentPage } from '@/features/public-service-payment/service-payment-page';
 import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
 import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
-import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { GuestAccountStaysPage, guestAccountStaysPath } from '@/features/guest-portal/guest-account-stays-page';
+import { GuestPortalEntry } from '@/features/guest-portal/guest-portal-page';
 import { SupplierAboutPage } from '@/pages/supplier-about';
 import { SupplierBookingConfirmPage } from '@/pages/supplier-booking-confirm';
 import { SupplierBookingPage } from '@/pages/supplier-booking';
 import { SupplierInquiryPage } from '@/pages/supplier-inquiry';
+import { PublicFiscalDocumentPage } from '@/pages/public/PublicFiscalDocumentPage';
 import { SupplierRequestPage } from '@/pages/supplier-request';
 import { SupplierServicePage } from '@/pages/supplier-service';
 import { SupplierServicesPage } from '@/pages/supplier-services';
@@ -71,6 +84,7 @@ import { IcalHelpPage } from '@/features/supplier/ical-help-page';
 import { ProductGuidePage } from '@/features/help/product-guide-page';
 import { devRoutes } from './dev-routes';
 import { ownerPortalRoutes } from './ownerPortalRoutes';
+import { tenantAreaRoutes } from './tenantAreaRoutes';
 
 function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
   const prefix = `/app/${contextKey}`;
@@ -84,6 +98,7 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
         <ContextRouteGuard
           contextKey={contextKey}
           requiredPermissions={entry.requiredPermissions}
+          permissionMode={entry.permissionMode}
           featureFlag={entry.featureFlag}
           alternatePaths={getOrgBillingPageAlternates(entry)}
           homeWhenDenied={entry.homeWhenDenied}
@@ -193,6 +208,10 @@ export const appRoutes: RouteObject[] = [
         element: <LoginPage />,
       },
       {
+        path: ACCOUNT_INVITATION_PATH,
+        element: <AccountInvitationPage />,
+      },
+      {
         path: '/register',
         element: <SupplierRegisterPage />,
       },
@@ -232,6 +251,7 @@ export const appRoutes: RouteObject[] = [
           </ProtectedRoute>
         ),
         children: [
+          { path: guestAccountStaysPath, element: <GuestAccountStaysPage /> },
           {
             path: '/onboarding',
             element: <OnboardingPage />,
@@ -270,15 +290,18 @@ export const appRoutes: RouteObject[] = [
       // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
       { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
       // The link in the email the host sends after a stay: the guest writes the review of the stay with the signed token (DB-12b).
-      { path: 'booking/:bookingId/review', element: <ReviewLinkPage /> },
+      { path: 'booking/:bookingId/review', element: <GuestLinkedSection action="review" legacy><ReviewLinkPage /></GuestLinkedSection> },
       // The link of the email that lets the guest cancel (DB-08a/b): what they get back today, and the cancellation, with the signed token.
-      { path: 'bookings/:bookingId/cancel', element: <GuestCancelLinkPage /> },
+      { path: 'bookings/:bookingId/cancel', element: <GuestLinkedSection action="cancellation" legacy><GuestCancelLinkPage /></GuestLinkedSection> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)
       { path: ':propertySlugOrId', element: <LegacyPropertyBookingRedirect /> },
     ],
   },
+  // The embeddable widgets of an org on the CasaZen domain (NF-144): `/embed/:orgSlug/booking`, `…/property/:propertySlugOrId`, `…/guest-access`. Frames of
+  // other sites with no app chrome, outside `PublicSiteShell`; an agency's own domain serves the same pages without the org in the address.
+  ...buildEmbedRoutes('platform'),
   {
     element: <PublicSiteShell mode="default" />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
@@ -319,14 +342,33 @@ export const appRoutes: RouteObject[] = [
     ],
   },
   {
-    // The first address of the showcase, which never worked (A4-16): kept as a redirect for links already shared.
+    path: '/s/action/org/:orgSlug',
+    element: <PublicSiteShell mode="org" />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+    children: [
+      { path: linkedStayPaths.review, element: <GuestLinkedSection action="review"><ReviewLinkPage /></GuestLinkedSection> },
+      { path: linkedStayPaths.cancellation, element: <GuestLinkedSection action="cancellation"><GuestCancelLinkPage /></GuestLinkedSection> },
+    ],
+  },
+  { path: linkedStayPaths.checkin, element: <GuestLinkedSection action="checkin"><CheckInPage /></GuestLinkedSection>, handle: NOT_REDESIGNED_ROUTE_HANDLE },
+  { path: linkedStayPaths.documents, element: <GuestLinkedSection action="documents"><PublicFiscalDocumentPage /></GuestLinkedSection>, handle: NOT_REDESIGNED_ROUTE_HANDLE },
+  {
+    // Stay tokens and legacy supplier slugs share this prefix.
     path: '/s/:slug',
-    element: <LegacySupplierShowcaseRedirect />,
+    element: <GuestPortalEntry />,
+  },
+  {
+    // The page the QR code at the door of a property opens (E22/F02/US01/T01): the guest who arrives types the booking code (or the surname) and the arrival date and goes on to the
+    // check-in of the stay at the identity step. No sign-in (`/checkin` is a public path), the frame of the check-in, not indexed (`robots.txt` keeps `/checkin/` out). It exists only while the
+    // flag `checkInIdentityVerification` is on; the page itself shows the public 404 otherwise.
+    path: '/checkin/porta/:doorToken',
+    element: <DoorCheckInPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
     // A guest's page, not the host's console: it keeps its look until it is redesigned (like the booking site).
     path: '/checkin/:token',
-    element: <CheckInPage />,
+    element: <GuestLinkedSection action="checkin" legacy><CheckInPage /></GuestLinkedSection>,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
@@ -341,6 +383,35 @@ export const appRoutes: RouteObject[] = [
     // not the console: it keeps its look until it is redesigned (like the rent payment).
     path: '/service/pay/:paymentId',
     element: <ServicePaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // Link of the e-mail that sends a guest the document of the stay (E12/F02/US02): `/documents/view/:documentId?token=…`. A guest's page, no sign-in (Auth0 is not
+    // loaded there, `isPublicUnauthenticatedPath`), not indexed, never behind a flag: an e-mail already sent must keep working. The token of the link is the only proof;
+    // the page takes it out of the address bar. It keeps its look until it is redesigned (like the pages above).
+    path: '/documents/view/:documentId',
+    element: <GuestLinkedSection action="documents" legacy><PublicFiscalDocumentPage /></GuestLinkedSection>,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // The unsubscribe link of a marketing e-mail (CRM-08, NF-95): `/unsubscribe#orgId=…&emailHash=…&expiresAt=…&signature=…`. A public page of
+    // a guest (no sign-in, no menu, not indexed, no analytics), never behind the `crmMarketing` flag: an e-mail already sent must keep
+    // working. The signed values are in the fragment, which no server receives; the page takes them out of the address bar.
+    path: UNSUBSCRIBE_PATH,
+    element: <UnsubscribePage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // The link of the double opt-in e-mail (CRM-03, NF-90): `/marketing/confirm#contactId=…&expiresAt=…&signature=…`. Public in the same way.
+    path: MARKETING_CONFIRM_PATH,
+    element: <ConfirmPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // The page behind the QR code a host prints for a house (CRM-03, NF-90): `/benvenuto/{token}`. A guest's page (no sign-in, no menu, not
+    // indexed, no analytics), never behind the `crmMarketing` flag: a code already printed must keep working. The random token is the only proof.
+    path: WELCOME_PATH,
+    element: <WelcomePage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
@@ -367,6 +438,11 @@ export const appRoutes: RouteObject[] = [
     element: <AuthProviderBoundary />,
     children: ownerPortalRoutes,
   },
+  // Tenant area (CondoLedger phase 1B): the signed-in tenant, not the landlord console.
+  {
+    element: <AuthProviderBoundary />,
+    children: tenantAreaRoutes,
+  },
   // Pages for the people who build the app: the dev server only, empty in a build (UI-07).
   ...devRoutes,
   {
@@ -382,14 +458,14 @@ let routerInstance: AppRouter | undefined;
 
 /**
  * The router of the app, created on first use: the start-up has found out by then whether the host is the app's own or an
- * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site and shows clean
- * addresses (`/`, `/property/…`); anywhere else it is the full app.
+ * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site (and, when `resolve-host` says they are on for it, the guest check-in
+ * and the owner portal, NF-140) and shows clean addresses (`/`, `/property/…`); anywhere else it is the full app.
  */
 export function getRouter(): AppRouter {
   if (!routerInstance) {
     const hostSite = getHostSite();
     routerInstance = hostSite
-      ? createBrowserRouter(buildHostSiteRoutes(appRoutes), { window: createHostSiteWindow(window, hostSite.slug) })
+      ? createBrowserRouter(buildHostSiteRoutes(appRoutes, hostSite), { window: createHostSiteWindow(window, hostSite.slug) })
       : createBrowserRouter(appRoutes);
   }
   return routerInstance;

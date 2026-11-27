@@ -72,6 +72,8 @@ export interface DashboardList<T> {
 /** A stay of the day (no money). Statuses and states are the names of the backend enums. */
 export interface DashboardTodayStay {
   bookingId: string;
+  /** Guest-facing reference when returned by the server. Older day payloads can omit it. */
+  bookingCode?: string;
   propertyId: string;
   propertyName: string;
   guestName: string;

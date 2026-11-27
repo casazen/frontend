@@ -19,7 +19,9 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Allow: /',
       'Disallow: /app/',
       'Disallow: /checkin/',
+      'Disallow: /s/',
       'Disallow: /invite/',
+      'Disallow: /benvenuto/',
       'Disallow: /login',
       'Disallow: /book/*/my-bookings',
       'Disallow: /book/*/search',
@@ -32,6 +34,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /fornitori/*/richiesta',
       'Disallow: /fornitori/*/preventivo',
       'Disallow: /service/pay/',
+      'Disallow: /documents/view/',
       'Disallow: /my-bookings',
       'Disallow: /booking/',
       'Disallow: /requests/',
@@ -84,6 +87,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
     for (const hidden of [
       '/app/short-rent/bookings',
       '/checkin/abc',
+      '/s/0123456789abcdefghijklmnopqrstuv',
       '/login',
       '/book/x/my-bookings',
       '/book/x/search',
@@ -98,6 +102,8 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/fornitori/pulizie-roma/preventivo',
       // The payment page of a service.
       '/service/pay/0f6c1c2e-7a4b-4d52-9d3e-2b1f6a8c9d10',
+      // The welcome page behind the QR code of a house: the token of the link is in the path.
+      '/benvenuto/TEST-benvenuto-villa-lago',
       '/my-bookings',
       '/booking/0f6c',
       '/requests/0f6c/confirm',

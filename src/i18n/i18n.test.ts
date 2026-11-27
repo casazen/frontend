@@ -1,8 +1,15 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { z } from 'zod';
 import i18n from '@/i18n/config';
-import it_ from '@/i18n/locales/it.json';
-import en from '@/i18n/locales/en.json';
+import { APP_RESOURCES } from '@/i18n/resources';
+import guestDe from '@/i18n/locales/guest-checkin.de.json';
+import guestFr from '@/i18n/locales/guest-checkin.fr.json';
+import guestEs from '@/i18n/locales/guest-checkin.es.json';
+import { GUEST_LOCALE_OPTIONS } from '@/features/checkin/lib/guest-locale';
+import { GUEST_ERROR_KEYS } from '@/features/checkin/lib/guest-errors';
+import { GUIDANCE_CODES, IDENTITY_PROBLEMS, guidanceKey, problemKey } from '@/features/checkin/lib/identity-model';
+import { STATISTICAL_FIELD_OPTIONS } from '@/features/checkin/schemas/checkin.schema';
+import { CHECKIN_WIZARD_STEPS, ISSUE_FIELD_LABEL_KEYS, ISSUE_TEXT_KEYS } from '@/features/checkin/wizard/lib/checkin-wizard-model';
 import {
   getBookingStatusLabel,
   getOtaConnectionStatusLabel,
@@ -13,10 +20,21 @@ import {
   persistLocale,
   readPersistedLocale,
 } from '@/lib/i18n-labels';
-import { COMMON_AMENITIES } from '@/features/properties/schemas/property.schema';
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
+import {
+  GUEST_REGISTRATION_CERTAINTIES,
+  GUEST_REGISTRATION_CHANNELS,
+  GUEST_REGISTRATION_DEADLINE_KINDS,
+  GUEST_REGISTRATION_MISSING_CODES,
+  GUEST_REGISTRATION_OBLIGATIONS,
+  GUEST_REGISTRATION_PRIVATE_RENTALS,
+  GUEST_REGISTRATION_SUPPORTS,
+} from '@/types/guest-registration.types';
 import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
+
+const it_ = APP_RESOURCES.it.translation;
+const en = APP_RESOURCES.en.translation;
 
 type LocaleTree = { [key: string]: string | string[] | LocaleTree };
 
@@ -64,7 +82,7 @@ const SOURCES = import.meta.glob<string>(['/src/**/*.{ts,tsx}', '!/src/**/*.test
  * - properties holding a key (`navKey: 'nav.x'`, `titleKey`, `descriptionKey`, ...);
  * - messages of Zod schemas (they are i18n keys translated by FormFieldError).
  */
-function collectUsedKeys(): Map<string, string> {
+function collectUsedKeys(sources: Record<string, string> = SOURCES): Map<string, string> {
   const used = new Map<string, string>();
   const namespaces = Object.keys(it_);
   const keyShape = /^[a-zA-Z][\w-]*(\.[\w-]+)+$/;
@@ -72,7 +90,7 @@ function collectUsedKeys(): Map<string, string> {
     if (keyShape.test(key)) used.set(key, file);
   };
 
-  for (const [file, source] of Object.entries(SOURCES)) {
+  for (const [file, source] of Object.entries(sources)) {
     for (const m of source.matchAll(/(?<![\w.])(?:i18n\.)?t\(\s*(['"`])([^'"`$\s]+)\1/g)) add(m[2], file);
     for (const m of source.matchAll(/i18nKey=["']([^"']+)["']/g)) add(m[1], file);
     for (const m of source.matchAll(/\b\w*Key:\s*['"]([^'"]+)['"]/g)) {
@@ -134,6 +152,16 @@ describe('i18n helpers', () => {
 });
 
 describe('locale files', () => {
+  it('resourceRegistry_MatchesTheCompleteRuntimeBundles', () => {
+    // A feature bundle registered outside the shared registry must not silently escape key/placeholder validation.
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('onboardingAccess.description')).toBe(true);
+    expect(enKeys.has('onboardingAccess.description')).toBe(true);
+    expect(itKeys.has('propertySetup.compliance.required')).toBe(true);
+    expect(enKeys.has('propertySetup.billing.required')).toBe(true);
+  });
+
   it('hasKey_ObjectTranslations_RecognisesParentsWithoutMatchingPartialNames', () => {
     const keys = flatten({ guide: { sections: { intro: 'Welcome' } } });
     expect(hasKey(keys, 'guide.sections')).toBe(true);
@@ -146,6 +174,13 @@ describe('locale files', () => {
     const missingInIt = [...enKeys.keys()].filter((k) => !itKeys.has(k));
     expect(missingInEn, 'keys present in it.json but missing in en.json').toEqual([]);
     expect(missingInIt, 'keys present in en.json but missing in it.json').toEqual([]);
+  });
+
+  it('includes the owner wizard translations in the complete runtime bundles', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('propertyWizard.owner.required')).toBe(true);
+    expect(enKeys.has('propertyWizard.owner.required')).toBe(true);
   });
 
   it('localeFiles_SameKey_UsesTheSamePlaceholdersInBothLanguages', () => {
@@ -197,6 +232,8 @@ describe('keys used in code', () => {
     expect(Object.keys(SOURCES).length).toBeGreaterThan(100);
     expect(used.size).toBeGreaterThan(1000);
     expect(used.has('property.validation.name.minLength')).toBe(true);
+    expect(used.has('userRemoval.failureTitle')).toBe(true);
+    expect(used.has('userRemoval.alternative')).toBe(true);
   });
 
   it('staticKeys_UsedInCode_ExistInItAndEn', () => {
@@ -208,7 +245,6 @@ describe('keys used in code', () => {
 
   it('enumLabels_ValuesShownToUsers_HaveKeysInBothLocales', () => {
     const expected = [
-      ...COMMON_AMENITIES.map((a) => `amenity.${a}`),
       // The explained states (UI-11): every state of the dictionary, typed against the enums, has its name and its sentence in both
       // languages, and its list of what is needed when it has a way forward (status.<kind>.<key>.*).
       ...Object.entries(STATUS_DICTIONARY).flatMap(([kind, states]) =>
@@ -229,7 +265,7 @@ describe('keys used in code', () => {
         (c) => `serviceRequest.categories.${c}`,
       ),
       ...['Inviato', 'InCompilazione', 'Completo', 'AlloggiatiInviato', 'Scaduto'].map((s) => `checkin.status.${s}`),
-      ...['DaInviare', 'DaInviareManualmente', 'InviatoManualmente', 'Inviato', 'Rifiutato', 'Errore'].map(
+      ...['DaInviare', 'DaInviareManualmente', 'InviatoManualmente', 'Inviato', 'NotDue', 'Rifiutato', 'Errore'].map(
         (s) => `alloggiati.statusLabel.${s}`,
       ),
       ...['Errore', 'Rifiutato'].map((s) => `alloggiati.failureNotice.${s}`),
@@ -263,7 +299,28 @@ describe('keys used in code', () => {
       ...['Landlord', 'Tenant'].map((r) => `leases.partyRole.${r}`),
       ...LEASE_STATUSES.map((s) => `leases.statusLabel.${s}`),
       ...LEASE_EVENT_TYPES.map((e) => `leases.eventType.${e}`),
-      ...['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'].map((s) => `compliance.activation.steps.${s}`),
+      ...['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical', 'guest-registration'].map((s) => `compliance.activation.steps.${s}`),
+      // The card of the regime of the canton (E29/F02/US02/T01, NF-125): every member of every enum the API writes has its sentence, and every reason of what is missing its text.
+      ...GUEST_REGISTRATION_OBLIGATIONS.map((v) => `guestRegistration.obligation.${v}`),
+      ...GUEST_REGISTRATION_CHANNELS.map((v) => `guestRegistration.channel.${v}`),
+      ...GUEST_REGISTRATION_DEADLINE_KINDS.map((v) => `guestRegistration.deadline.${v}`),
+      ...GUEST_REGISTRATION_PRIVATE_RENTALS.map((v) => `guestRegistration.privateRentals.${v}`),
+      ...GUEST_REGISTRATION_SUPPORTS.map((v) => `guestRegistration.support.${v}`),
+      ...GUEST_REGISTRATION_CERTAINTIES.flatMap((v) => [`guestRegistration.certainty.${v}.label`, `guestRegistration.certainty.${v}.text`]),
+      ...GUEST_REGISTRATION_MISSING_CODES.flatMap((code) => [
+        `guestRegistration.missing.${code}`,
+        `compliance.activation.blockerCodes.${code}`,
+        `onboardingPlan.reasons.${code}`,
+        `onboardingPlan.reasons.property.${code}`,
+      ]),
+      'onboardingPlan.reasons.no_swiss_property',
+      // The screen at the end of «Aggiungi immobile» says each open step in words, and what to do about it: the step of Switzerland is one of them.
+      ...['base-data', 'cin', 'documents', 'safety', 'guest-registration'].flatMap((s) => [`propertyWizard.done.open.${s}`, `propertyWizard.done.fix.${s}`]),
+      'guestRegistration.retention.years_one',
+      'guestRegistration.retention.years_other',
+      'guestRegistration.card.refreshFailed',
+      'apiErrors.codes.guestRegistrationCountryNotSupported',
+      'apiErrors.codes.guestRegistrationOverrideNotApplicable',
       // D.L. 145/2023 safety checklist (CO-07): items, facts and stable codes of the API.
       ...SAFETY_ITEM_CODES.flatMap((c) => [`compliance.safety.items.${c}.title`, `compliance.safety.items.${c}.reference`]),
       ...SAFETY_ITEM_CODES.filter((c) => c !== 'EmergencyInstructions').map((c) => `compliance.safety.items.${c}.dateLabel`),
@@ -292,6 +349,15 @@ describe('keys used in code', () => {
   });
 });
 
+describe('pricing translations', () => {
+  it('includes the timeout and currency mismatch messages in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('priceEstimate.timeout')).toBe(true);
+    expect(enKeys.has('priceEstimate.currencyMismatch')).toBe(true);
+  });
+});
+
 describe('plurals', () => {
   it('nightsBreakdown_OneAndManyNights_UsesGrammaticalPlural', () => {
     const tIt = i18n.getFixedT('it');
@@ -306,6 +372,15 @@ describe('plurals', () => {
     expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 ospite');
     expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 2 })).toBe('2 ospiti');
     expect(i18n.getFixedT('en')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 guest');
+  });
+});
+
+describe('listing AI translations', () => {
+  it('includes the listing fields and retry action in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('listingAi.fields.transport')).toBe(true);
+    expect(enKeys.has('listingAi.retry')).toBe(true);
   });
 });
 
@@ -337,5 +412,123 @@ describe('zod error map', () => {
     await i18n.changeLanguage('en');
     const tooSmall = z.number().min(2).safeParse(1);
     expect(tooSmall.error!.issues[0].message).toBe('The value must be at least 2');
+  });
+});
+
+/**
+ * The guest check-in page in five languages (NF-40, AC-NF40-4). Italian and English are in the app; German, French and Spanish are three
+ * subset files that hold only the keys of the `checkin` namespace the page uses and are loaded when the guest chooses them. The keys of the
+ * namespace that are not the page's are the host side (the link panel, the wizard) and the ones nothing uses any more.
+ */
+describe('guest check-in locales', () => {
+  const NOT_ON_THE_GUEST_PAGE_EXACT = new Set([
+    'copyLink', 'linkCopied', 'generateError', 'resendLink', 'resendError', 'sessionLabel', 'sessionLoading', 'saveData', 'checkInComplete',
+    'personalData', 'personalDataDescription', 'document', 'documentIdentity', 'documentHint', 'documentAlreadyUploaded', 'selectFile',
+    'uploading', 'unsupportedFormat', 'fileTooLarge', 'birthPlace', 'nationality', 'documentExpiry', 'documentIssuingCountry', 'address',
+    'city', 'postalCode', 'country', 'stepPersonal', 'marketingConsent', 'validation.documentNumber.maxLength',
+  ]);
+  // The biometric texts (consent, selfie) are on the guest page since the identity step (E03/F04/US03/T01): in the five languages.
+  const NOT_ON_THE_GUEST_PAGE_PREFIXES = [
+    'access.', 'link.', 'status.', 'wizard.',
+    'validation.placeOfBirth.', 'validation.nationality.', 'validation.documentIssuingCountry.',
+  ];
+
+  /** The keys of the `checkin` namespace of en.json that the guest page uses (they carry the `checkin.` prefix). */
+  const guestPageKeys = [...enKeys.keys()].filter((key) => {
+    if (!key.startsWith('checkin.')) return false;
+    const local = key.slice('checkin.'.length);
+    return !NOT_ON_THE_GUEST_PAGE_EXACT.has(local) && !NOT_ON_THE_GUEST_PAGE_PREFIXES.some((prefix) => local.startsWith(prefix));
+  });
+
+  const SUBSETS = [
+    ['de', guestDe],
+    ['fr', guestFr],
+    ['es', guestEs],
+  ] as const;
+
+  it('guestCheckinLocales_PageKeys_AreTheNamespaceOfEnglishWithoutTheHostSide', () => {
+    // Guard against a list that silently selects nothing.
+    expect(guestPageKeys.length).toBeGreaterThan(100);
+    expect(guestPageKeys).toContain('checkin.next');
+    expect(guestPageKeys).toContain('checkin.language.label');
+    expect(guestPageKeys).not.toContain('checkin.link.copyTitle');
+    expect(guestPageKeys.some((key) => key.startsWith('checkin.wizard.'))).toBe(false);
+  });
+
+  it.each(SUBSETS)('guestCheckinLocales_%s_HasExactlyTheKeysOfThePage', (_language, bundle) => {
+    const keys = flatten(bundle as LocaleTree);
+    const missing = guestPageKeys.filter((key) => !keys.has(key));
+    const extra = [...keys.keys()].filter((key) => !guestPageKeys.includes(key));
+
+    expect(missing, 'keys of the page missing from the subset file').toEqual([]);
+    expect(extra, 'keys of the subset file that are not keys of the page').toEqual([]);
+  });
+
+  it.each(SUBSETS)('guestCheckinLocales_%s_OnlyTheCheckinNamespace_NoEmptyTextsSamePlaceholdersAsEnglish', (_language, bundle) => {
+    expect(Object.keys(bundle)).toEqual(['checkin']);
+    const keys = flatten(bundle as LocaleTree);
+    const empty = [...keys.entries()].filter(([, value]) => String(value).trim() === '').map(([key]) => key);
+    const mismatched = [...keys.entries()]
+      .filter(([key]) => enKeys.has(key))
+      .filter(([key, value]) => placeholders(value).join() !== placeholders(enKeys.get(key)!).join())
+      .map(([key]) => key);
+
+    expect(empty).toEqual([]);
+    expect(mismatched).toEqual([]);
+  });
+
+  it('guestCheckinLocales_StaticKeysOfThePageSources_AreKeysOfThePageAndExistInItAndEn', () => {
+    const pageSources = import.meta.glob<string>(
+      ['/src/features/checkin/*.tsx', '/src/features/checkin/{components,schemas,lib}/*.{ts,tsx}'],
+      { query: '?raw', import: 'default', eager: true },
+    );
+    const used = [...collectUsedKeys(pageSources).keys()].filter((key) => key.startsWith('checkin.'));
+
+    expect(used.length).toBeGreaterThan(40);
+    // A key the page uses is in the subset files too, or a German guest reads English where the page has a German text.
+    expect(used.filter((key) => !guestPageKeys.some((candidate) => candidate === key || candidate === `${key}_other`))).toEqual([]);
+    expect(used.filter((key) => !hasKey(itKeys, key) || !hasKey(enKeys, key))).toEqual([]);
+  });
+
+  it('guestCheckinLocales_KeysWrittenOutInTheCode_ExistInItAndEn', () => {
+    const keys = [
+      ...GUEST_LOCALE_OPTIONS.map((option) => option.nameKey),
+      ...Object.values(GUEST_ERROR_KEYS),
+      // The identity step (E03/F04/US03/T01): the words of each guidance code of the API, of each problem and of each reason the camera is not there.
+      ...GUIDANCE_CODES.map((code) => guidanceKey(code)),
+      guidanceKey('a_code_of_the_future'),
+      ...IDENTITY_PROBLEMS.map((problem) => problemKey(problem)),
+      ...['cameraDenied', 'cameraNotFound', 'cameraUnsupported', 'cameraUnknown'].map((reason) => `checkin.biometric.capture.${reason}`),
+      ...Object.values(STATISTICAL_FIELD_OPTIONS).flatMap((options) => options.map((option) => option.labelKey)),
+      ...['tourismType', 'travelWay', 'educationLevel'].flatMap((field) => [`checkin.${field}.label`, `checkin.validation.${field}.required`]),
+      ...['SingleGuest', 'HeadOfFamily', 'HeadOfGroup', 'FamilyMember', 'GroupMember'].map((kind) => `checkin.guestKind.${kind}`),
+      ...Object.values(ISSUE_FIELD_LABEL_KEYS),
+      ...Object.values(ISSUE_TEXT_KEYS),
+      ...CHECKIN_WIZARD_STEPS.flatMap((step) => ['label', 'title', 'purpose', 'help'].map((part) => `checkin.wizard.steps.${step}.${part}`)),
+      ...['resident', 'health_care', 'disability_companion', 'public_service', 'host_family', 'other'].map((code) => `touristTax.exemption.${code}`),
+    ];
+
+    expect(keys.filter((key) => !hasKey(itKeys, key) || !hasKey(enKeys, key))).toEqual([]);
+    // The messages of the server the page can translate are in the subset files too.
+    expect(Object.values(GUEST_ERROR_KEYS).filter((key) => !guestPageKeys.includes(key))).toEqual([]);
+  });
+
+  it('guestCheckinLocales_NewKeys_FollowTheConventionAndNeverUseDefaultValue', () => {
+    const newKeys = guestPageKeys.filter((key) =>
+      /^checkin\.(errors|language|residence|toast|tourismType|travelWay|educationLevel|guestKind)\./.test(key),
+    );
+
+    expect(newKeys.length).toBeGreaterThan(40);
+    for (const key of newKeys) expect(key).toMatch(/^checkin\.[a-zA-Z]+\.[\w.]+$/);
+    const sources = import.meta.glob<string>(['/src/features/checkin/**/*.{ts,tsx}', '!/src/features/checkin/**/__tests__/**'], {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    });
+    expect(Object.values(sources).some((source) => /\bdefaultValue\b/.test(source))).toBe(false);
+  });
+
+  it('fallbackChain_GermanFrenchAndSpanish_FallBackToEnglishThenItalian', () => {
+    expect(i18n.options.fallbackLng).toEqual({ default: ['it'], de: ['en', 'it'], fr: ['en', 'it'], es: ['en', 'it'] });
   });
 });

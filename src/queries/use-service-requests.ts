@@ -77,6 +77,11 @@ function onSupplierActionError(queryClient: QueryClient, error: unknown) {
  * Short-rent requests (D2): `bookingId` for one stay, `propertyId` for a property, `listAll` for every request in
  * scope. Nothing is fetched without one of them.
  */
+/**
+ * Stay or property short-rent requests. Read again when the page opens: the host creates them in the
+ * intervention wizard (another screen) and the shared client keeps `refetchOnMount: false`, so without
+ * this the stay card would keep an empty list after the wizard returns (GJ L3 pay-at-property).
+ */
 export function useServiceRequests(params?: {
   propertyId?: string;
   bookingId?: string;
@@ -89,6 +94,7 @@ export function useServiceRequests(params?: {
     queryKey: [SERVICE_REQUESTS_KEY, params],
     queryFn: () => fetchServiceRequests(params),
     enabled: !!params?.listAll || !!params?.propertyId || !!params?.bookingId,
+    refetchOnMount: 'always',
   });
 }
 
@@ -333,11 +339,16 @@ export function useLongRentSuppliers(propertyId?: string, category?: string) {
   });
 }
 
-export function useSuppliersByProperty(propertyId?: string, category?: string) {
+/**
+ * `fresh`: the list is read again every time a screen asks for it, also when it was read a moment ago and also when the query is switched on after the screen is there (the cleaner of a property
+ * asks for it only once the person starts to choose): a supplier is suspended or covers another comune, and a picker must not offer what was true minutes ago.
+ */
+export function useSuppliersByProperty(propertyId?: string, category?: string, options: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: ['suppliers', 'property', propertyId, category],
     queryFn: () => fetchSuppliersByProperty(propertyId!, category),
     enabled: !!propertyId,
+    ...(options.fresh ? { refetchOnMount: 'always' as const, staleTime: 0 } : {}),
   });
 }
 
@@ -349,31 +360,30 @@ export function useSuppliersByProperty(propertyId?: string, category?: string) {
  * suppliers of a comune change when one is activated or changes its prices.
  */
 export function useMarketplaceSuppliers(params: {
+  includeTrusted?: boolean;
   propertyId?: string;
+  accountScope?: boolean;
   category?: string;
   q?: string;
   sort?: SupplierPickerSort;
 }) {
-  const { propertyId, category, q, sort } = params;
+  const { propertyId, accountScope, category, q, sort, includeTrusted } = params;
+  const scopeKey = accountScope ? 'account' : propertyId;
   return useQuery({
-    queryKey: ['suppliers', 'marketplace', propertyId, category ?? '', q ?? '', sort ?? 'name'],
-    queryFn: () => fetchMarketplaceSuppliers({ propertyId: propertyId!, category, q, sort }),
-    enabled: !!propertyId,
+    queryKey: ['suppliers', 'marketplace', scopeKey, category ?? '', q ?? '', sort ?? 'recommended', includeTrusted === true],
+    queryFn: () => fetchMarketplaceSuppliers({ ...(accountScope ? { accountScope } : { propertyId }), ...(includeTrusted ? { includeTrusted } : {}), category, q, sort }),
+    enabled: accountScope === true || !!propertyId,
     refetchOnMount: true,
     placeholderData: (previous, previousQuery) =>
-      previousQuery?.queryKey[2] === propertyId && previousQuery?.queryKey[3] === (category ?? '') ? previous : undefined,
+      previousQuery?.queryKey[2] === scopeKey && previousQuery?.queryKey[3] === (category ?? '') && previousQuery?.queryKey[6] === (includeTrusted === true) ? previous : undefined,
   });
 }
 
-/**
- * One supplier of the area of a property, for its page in the marketplace (MKT): every published service, the "from" price, the
- * measured response time and «Verificato». Read again when the page is opened (a supplier changes its services and prices).
- */
-export function useMarketplaceSupplier(propertyId: string | undefined, orgId: string) {
+export function useMarketplaceSupplier(orgId: string) {
   return useQuery({
-    queryKey: ['suppliers', 'marketplace-supplier', propertyId, orgId],
-    queryFn: () => fetchMarketplaceSupplier({ orgId, propertyId: propertyId! }),
-    enabled: !!propertyId && orgId !== '',
+    queryKey: ['suppliers', 'marketplace-supplier', 'account', orgId],
+    queryFn: () => fetchMarketplaceSupplier(orgId),
+    enabled: orgId !== '',
     refetchOnMount: true,
   });
 }

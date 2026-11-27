@@ -3,6 +3,10 @@ import { useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { List, Loader2, Map as MapIcon, Receipt, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { EmbedSearchResults } from '@/features/embed/booking/embed-search-results';
+import { useEmbedSearchEvents } from '@/features/embed/booking/use-embed-search-events';
+import { useEmbed } from '@/features/embed/embed-context';
+import { useTrackViewItemList } from '@/features/host-tracking/use-track-ecommerce';
 import { HouseCard } from '@/features/public-site/cards/house-card';
 import { useFavorites } from '@/features/public-site/favorites/use-favorites';
 import { formatStayRange } from '@/features/public-site/stay/stay-format';
@@ -11,9 +15,10 @@ import { WHERE_PARAM } from '@/features/public-site/stay/use-stay-state';
 import { useMapLink } from '@/features/site-maps';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { siteLocale } from '@/lib/site-language';
+import { cn } from '@/lib/utils';
 import { useOrgStays, usePlatformStays } from '@/queries/use-public-stays';
 import type { PublicOrgDto } from '@/types';
-import type { PublicStayAlternative } from '@/types/public-stays.types';
+import type { PublicStayAlternative, PublicStayCard } from '@/types/public-stays.types';
 import { ActiveFilterChips } from './active-filter-chips';
 import { NoResults, type NoResultsReason } from './no-results';
 import { ResultsMapPane } from './results-map-pane';
@@ -27,6 +32,9 @@ import './search.css';
 
 /** From here the list and the map are side by side; under it the page shows one of them and a button to change. */
 const FROM_DESKTOP_QUERY = '(width >= 64rem)';
+
+/** The homes of a site whose list could not be read: the same list every time, so the facets made from it do not change at every render. */
+const NO_HOMES: readonly PublicStayCard[] = [];
 
 interface PublicBookingContext {
   org: PublicOrgDto;
@@ -54,9 +62,15 @@ export function SiteSearchPage() {
  * same components; the scope decides where the data come from. Across all the sites only the free homes are listed (a page at a
  * time, «Mostra altre case»), each card names its host and leads to the home on that host's site with the dates chosen, and there
  * are no hearts and no one host to write to.
+ *
+ * It is also the results of the booking widget (NF-144), in the frame of another site (`useEmbed()`): the same bar, filters, cards, nearby dates and map, with
+ * what a frame is not: no hearts and nothing kept in the browser, the cards and pins lead to the property widget of the same frame, nothing is fixed to the
+ * window (the filters are a panel, the stay is a popover, the card of a pin is under the map), the list shows 24 homes and adds 24 at a time (the map and the
+ * count are those of the whole answer), and the search and the list are told to the page that frames it.
  */
 export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchScope }) {
   const { t, i18n } = useTranslation();
+  const embed = useEmbed();
   const platform = scope.kind === 'platform';
   const slug = scope.kind === 'org' ? scope.slug : '';
   const locale = siteLocale(i18n.language);
@@ -65,10 +79,14 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
 
   // What the controls offer, whatever else is asked: every home of the site, or the facets of the place asked across all the sites.
   // A guest with a pet is always asked, and the list says which homes take it (the server answers a home that does not with the reason `pets`).
-  const everyHome = useOrgStays(platform ? undefined : slug, {}).data?.items;
+  const everyHomeQuery = useOrgStays(platform ? undefined : slug, {});
   // (A page of one home: only its facets are wanted. The previous ones stay while the next place is asked, so the controls do not blink.)
-  const placeFacets = usePlatformStays({ where: placeAsked }, { enabled: platform, pageSize: 1, keepPrevious: true }).data?.facets;
-  const facets = useMemo(() => (platform ? facetsOfServer(placeFacets) : facetsOfCards(everyHome ?? [])), [platform, placeFacets, everyHome]);
+  const placeQuery = usePlatformStays({ where: placeAsked }, { enabled: platform, pageSize: 1, keepPrevious: true });
+  // `undefined` while the answer is on its way: nothing is known yet, and that is not «no currency» (a price chip waits for it, it does not say that the currency is
+  // not available). An answer that came without what the controls need, or failed, ends the wait: they then offer what is known (nothing) and the data say no currency.
+  const everyHome = everyHomeQuery.isPending ? undefined : (everyHomeQuery.data?.items ?? NO_HOMES);
+  const placeFacets = placeQuery.isPending ? undefined : (placeQuery.data?.facets ?? null);
+  const facets = useMemo(() => (platform ? facetsOfServer(placeFacets) : facetsOfCards(everyHome)), [platform, placeFacets, everyHome]);
   const destinations = useScopedDestinations(scope);
   const favorites = useFavorites(platform ? undefined : slug);
   const state = useSearchState({ maxGuests: facets.maxGuests });
@@ -79,12 +97,15 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
 
   const stays = useScopedStays(scope, state.query, { keepPrevious: true });
   const result = stays.data;
-  // The hearts belong to a site: across all of them there are none, and an address that asks for them (`favorites=1`) is not heard.
-  const onlyFavorites = !platform && search.onlyFavorites;
+  // The hearts belong to a site: across all of them there are none, and an address that asks for them (`favorites=1`) is not heard. Nor is it in a frame.
+  const onlyFavorites = !platform && !embed && search.onlyFavorites;
   const items = (result?.items ?? []).filter((card) => !onlyFavorites || favorites.ids.includes(card.id));
   // Across all the sites the server lists only the free homes; on a site the others follow, with the reason.
   const free = items.filter((card) => card.availability.available);
   const notFree = items.filter((card) => !card.availability.available);
+  // On an agency's own domain, with the visitor's consent, the homes of the list go to its analytics (NF-149): the booking site of an org only (not the search across all
+  // the sites), and not while the list on screen is still the previous answer.
+  useTrackViewItemList(!platform && result && !stays.isPlaceholderData ? free : null);
   const hasFilters = activeFilterCount(search.filters) > 0 || search.filters.tags.length > 0;
   // The map shows the same homes as the list (the ones free first, then the others) and is not loaded at all while a phone shows the list.
   const showMap = items.length > 0 && (desktop || search.view === 'map');
@@ -125,7 +146,28 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
     `?${writeStay(new URLSearchParams(searchParams), { checkIn: alternative.checkIn, checkOut: alternative.checkOut }).toString()}`;
   // Across all the sites the place is one of the things that can be taken off.
   const clearFilters = () => setSearch({ filters: NO_FILTERS, onlyFavorites: false, ...(platform ? { where: '' } : {}) });
-  const goToResults = () => document.getElementById('page-title')?.focus();
+  // In a frame the focus moves without scrolling: the page that frames the widget keeps its own place.
+  const goToResults = () => document.getElementById('page-title')?.focus(embed ? { preventScroll: true } : undefined);
+
+  // What a frame tells the page that frames it (nothing outside a frame): the list when the answer for the address is there, and the search when the bar is sent.
+  const { reportSearch } = useEmbedSearchEvents({ cards: free, settled: Boolean(result) && !stays.isPlaceholderData, destinations });
+  const onSearch = () => {
+    goToResults();
+    reportSearch({ stay, where: state.where });
+  };
+
+  const renderCard = (card: PublicStayCard, index: number) => (
+    <HouseCard
+      key={card.id}
+      card={card}
+      orgSlug={platform ? undefined : slug}
+      variant="row"
+      nights={result?.nights ?? null}
+      stay={hasDates ? stay : null}
+      mapLink={showMap ? link.bind(card.id) : undefined}
+      eager={index < 2}
+    />
+  );
 
   // What the totals include, said as the server knows it: the tourist tax is exact, an estimate until the ages of the children are
   // known, or not in the total when the comune has none on the list.
@@ -138,14 +180,14 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
   }
 
   return (
-    <div className="sr" data-testid={platform ? 'platform-search' : 'site-search'}>
+    <div className={cn('sr', embed && 'sr--embed')} data-testid={platform ? 'platform-search' : 'site-search'}>
       <SearchToolbar
         scope={scope}
         state={state}
         facets={facets}
         destinations={destinations}
         favoritesCount={favorites.ids.length}
-        onSearch={goToResults}
+        onSearch={onSearch}
       />
 
       <div className={showMap ? 'sr-body sr-body--map' : 'sr-body'}>
@@ -157,7 +199,7 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
               </h1>
               <p className="sr-head__sub">{sub}</p>
             </header>
-            <ActiveFilterChips filters={search.filters} currency={facets.currency} onChange={(filters) => setSearch({ filters })} />
+            <ActiveFilterChips filters={search.filters} facets={facets} onChange={(filters) => setSearch({ filters })} />
 
             {stays.isPending ? (
               <div role="status" aria-busy="true" data-testid="search-loading" className="sr-cards">
@@ -181,20 +223,13 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
             ) : result ? (
               <>
                 {free.length > 0 ? (
-                  <div className="sr-cards" data-testid="search-results">
-                    {free.map((card, index) => (
-                      <HouseCard
-                        key={card.id}
-                        card={card}
-                        orgSlug={platform ? undefined : slug}
-                        variant="row"
-                        nights={result.nights}
-                        stay={hasDates ? stay : null}
-                        mapLink={showMap ? link.bind(card.id) : undefined}
-                        eager={index < 2}
-                      />
-                    ))}
-                  </div>
+                  embed ? (
+                    <EmbedSearchResults cards={free} renderCard={renderCard} />
+                  ) : (
+                    <div className="sr-cards" data-testid="search-results">
+                      {free.map(renderCard)}
+                    </div>
+                  )
                 ) : (
                   <NoResults
                     reason={reasonOfNothing()}

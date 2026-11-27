@@ -1,11 +1,11 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, BadgeCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { FIELD_COLUMNS, FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,6 +16,7 @@ import { useFiscalTaxProfile, useUpdateFiscalTaxProfile } from '@/queries/use-fi
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
+import { useWizardOpenFlag } from '@/store/use-wizard-open-flag';
 import type { FiscalTaxProfile } from '@/api/fiscal.api';
 import { compactIdentifier, FISCAL_CODE, PARTITA_IVA, taxProfileChanges } from '@/features/fiscal/tax-profile-changes';
 
@@ -26,6 +27,8 @@ import { compactIdentifier, FISCAL_CODE, PARTITA_IVA, taxProfileChanges } from '
 export function FiscalWizardPage() {
   const { t } = useTranslation();
   const profile = useFiscalTaxProfile();
+  // The popup alerts wait in their queue while this page is on screen (ADR-025-R7): it has no `WizardShell`.
+  useWizardOpenFlag();
 
   return (
     <AppShell>
@@ -93,9 +96,10 @@ function TaxProfileForm({ saved }: { saved: FiscalTaxProfile }) {
   };
 
   return (
-    <form className="space-y-6" onSubmit={onSubmit} noValidate data-testid="fiscal-wizard-form">
+    // The two numbers side by side once the form is wide enough for them (under each other when it is not).
+    <form className="@container space-y-5 rounded-2xl border bg-card p-4 sm:p-6" onSubmit={onSubmit} noValidate data-testid="fiscal-wizard-form">
       <div className="space-y-5">
-        <label className="flex min-h-11 w-fit max-w-full cursor-pointer items-center gap-3 text-sm font-medium">
+        <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 font-medium">
           <Checkbox
             data-testid="fiscal-has-piva"
             checked={hasPartitaIva}
@@ -103,42 +107,44 @@ function TaxProfileForm({ saved }: { saved: FiscalTaxProfile }) {
           />
           <span className="min-w-0 break-words">{t('fiscal.wizard.hasPiva')}</span>
         </label>
-        {hasPartitaIva && (
-          <div className="space-y-2">
-            <Label htmlFor="piva">{t('fiscal.wizard.piva')}</Label>
+        <div className={FIELD_COLUMNS}>
+          {hasPartitaIva && (
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="piva">{t('fiscal.wizard.piva')}</Label>
+              <Input
+                id="piva"
+                data-testid="fiscal-piva-input"
+                inputMode="numeric"
+                maxLength={13}
+                value={partitaIvaNumber}
+                aria-invalid={submitted && !!pivaError}
+                aria-describedby={submitted && pivaError ? 'piva-error' : undefined}
+                onChange={(ev) => setPartitaIvaNumber(ev.target.value)}
+              />
+              {submitted && pivaError && (
+                <FieldProblem id="piva-error" testId="fiscal-piva-error">
+                  {pivaError}
+                </FieldProblem>
+              )}
+            </div>
+          )}
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor="cf">{t('fiscal.wizard.cf')}</Label>
             <Input
-              id="piva"
-              data-testid="fiscal-piva-input"
-              inputMode="numeric"
-              maxLength={13}
-              value={partitaIvaNumber}
-              aria-invalid={submitted && !!pivaError}
-              aria-describedby={submitted && pivaError ? 'piva-error' : undefined}
-              onChange={(ev) => setPartitaIvaNumber(ev.target.value)}
+              id="cf"
+              data-testid="fiscal-cf-input"
+              maxLength={20}
+              value={fiscalCode}
+              aria-invalid={submitted && !!cfError}
+              aria-describedby={submitted && cfError ? 'cf-error' : undefined}
+              onChange={(ev) => setFiscalCode(ev.target.value)}
             />
-            {submitted && pivaError && (
-              <FieldProblem id="piva-error" testId="fiscal-piva-error">
-                {pivaError}
+            {submitted && cfError && (
+              <FieldProblem id="cf-error" testId="fiscal-cf-error">
+                {cfError}
               </FieldProblem>
             )}
           </div>
-        )}
-        <div className="space-y-2">
-          <Label htmlFor="cf">{t('fiscal.wizard.cf')}</Label>
-          <Input
-            id="cf"
-            data-testid="fiscal-cf-input"
-            maxLength={20}
-            value={fiscalCode}
-            aria-invalid={submitted && !!cfError}
-            aria-describedby={submitted && cfError ? 'cf-error' : undefined}
-            onChange={(ev) => setFiscalCode(ev.target.value)}
-          />
-          {submitted && cfError && (
-            <FieldProblem id="cf-error" testId="fiscal-cf-error">
-              {cfError}
-            </FieldProblem>
-          )}
         </div>
       </div>
       {!hasChanges && (
@@ -153,6 +159,7 @@ function TaxProfileForm({ saved }: { saved: FiscalTaxProfile }) {
         loading={update.isPending}
         disabled={!hasChanges}
       >
+        <BadgeCheck aria-hidden="true" className="size-4" />
         {t('fiscal.wizard.save')}
       </Button>
     </form>

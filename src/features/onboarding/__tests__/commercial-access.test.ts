@@ -1,0 +1,37 @@
+import { describe, expect, it } from 'vitest';
+import { buildDemoProfile } from '@/lib/demo-profile';
+import { commercialModuleForPath, commercialPartAllowed, commercialRouteAllowed } from '../commercial-access';
+const profile = { ...buildDemoProfile('short-stay'), commercialSignup: { profile: 'owner' as const, planTier: 'Pro' as const, rooms: 1, addons: ['channels'] }, commercialEnabledAddons: ['channels'] };
+describe('purchased modules and guided setup', () => {
+  it('keeps the base workspace while exposing only purchased extra sections', () => {
+    expect(commercialRouteAllowed(profile, '/app/short-rent/properties')).toBe(true);
+    expect(commercialRouteAllowed(profile, '/app/short-rent/bookings')).toBe(true);
+    expect(commercialRouteAllowed(profile, '/app/short-rent/channels')).toBe(true);
+    expect(commercialRouteAllowed(profile, '/app/short-rent/interventions')).toBe(false);
+    expect(commercialRouteAllowed(profile, '/app/short-rent/fiscal')).toBe(false);
+    expect(commercialRouteAllowed(profile, '/app/short-rent/automations')).toBe(false);
+    expect(commercialRouteAllowed({ ...profile, commercialEnabledAddons: ['ai-agents'] }, '/app/short-rent/automations')).toBe(true);
+    expect(commercialRouteAllowed(profile, '/app/short-rent/settings/ai')).toBe(true);
+  });
+  it('does not recommend configuring extras the organization has not purchased', () => {
+    expect(commercialPartAllowed(profile, 'properties')).toBe(true);
+    expect(commercialPartAllowed(profile, 'octorateConnection')).toBe(true);
+    expect(commercialPartAllowed(profile, 'messagesAi')).toBe(false);
+    expect(commercialPartAllowed(profile, 'fiscalDocuments')).toBe(false);
+    // The notification of the guests in Switzerland is a compliance matter: it follows the module of the compliance.
+    expect(commercialPartAllowed(profile, 'guestRegistration')).toBe(false);
+    expect(commercialPartAllowed({ ...profile, commercialEnabledAddons: ['compliance'] }, 'guestRegistration')).toBe(true);
+  });
+  it('keeps the pages of the booking site in one module, the embeddable widgets included', () => {
+    const pages = ['domain', 'embed', 'site-appearance', 'site-documents', 'payments'].map((page) => `/app/short-rent/settings/${page}`);
+    for (const path of [...pages, '/app/short-rent/vetrina']) {
+      expect(commercialModuleForPath(path), path).toBe('direct-booking');
+      expect(commercialRouteAllowed(profile, path), path).toBe(false);
+      expect(commercialRouteAllowed({ ...profile, commercialEnabledAddons: ['direct-booking'] }, path), path).toBe(true);
+    }
+  });
+  it('preserves existing accounts rather than changing their contracted access', () => {
+    expect(commercialRouteAllowed(buildDemoProfile('short-stay'), '/app/short-rent/fiscal')).toBe(true);
+    expect(commercialRouteAllowed(buildDemoProfile('short-stay'), '/app/short-rent/settings/embed')).toBe(true);
+  });
+});

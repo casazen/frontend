@@ -301,7 +301,7 @@ export function ServiceRequestForm({
                   <option value="">{t('serviceRequest.selectSupplier')}</option>
                   {supplierOptions.map((s) => (
                     <option key={s.orgId} value={s.orgId}>
-                      {s.legalName}
+                      {s.legalName}{s.hostOrigin !== undefined && ` · ${t(s.hostOrigin ? 'supplier.trusted.privateSupplier' : 'supplier.trusted.marketplace')}`}
                     </option>
                   ))}
                 </select>

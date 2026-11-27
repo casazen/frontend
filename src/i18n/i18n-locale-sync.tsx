@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import i18n from '@/i18n/config';
+import { isEmbedPath } from '@/lib/embed-path';
 import { readPersistedLocale } from '@/lib/i18n-labels';
 
 /**
@@ -12,6 +13,8 @@ function applyHtmlLang(language: string) {
 
 export function I18nLocaleSync() {
   useEffect(() => {
+    // The widgets of the embeddable pages (NF-144) never read the storage: the shell sets their language from the address, in memory.
+    if (isEmbedPath(window.location.pathname)) return;
     const stored = readPersistedLocale();
     if (stored && stored !== i18n.language) {
       void i18n.changeLanguage(stored);

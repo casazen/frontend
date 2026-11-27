@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +24,11 @@ interface ManualBlockFormProps {
   initialEnd?: string;
   onCreated: () => void;
   onCancel: () => void;
+  /**
+   * Told when a request of the form starts and when it is over (and, with `false`, when the form goes away): the panel that holds the form keeps its other buttons and its
+   * close off while the request is on its way. Give it a stable function (a state setter).
+   */
+  onPendingChange?: (pending: boolean) => void;
 }
 
 type Field = 'startDate' | 'endDate' | 'reason' | 'note';
@@ -34,9 +40,24 @@ type FieldErrors = Partial<Record<Field, string>>;
  * day before "free from", like a stay from arrival to departure. API errors (a booking or another block on those nights)
  * stay in the form.
  */
-export function ManualBlockForm({ propertyId, initialStart, initialEnd, onCreated, onCancel }: ManualBlockFormProps) {
+export function ManualBlockForm({ propertyId, initialStart, initialEnd, onCreated, onCancel, onPendingChange }: ManualBlockFormProps) {
   const { t } = useTranslation();
   const createBlock = useCreateManualBlock();
+  const { isPending } = createBlock;
+  // The request goes on after the form is gone (the panel moved to other days): what it brings back is then said by a message and does not close what the host is doing now.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    onPendingChange?.(isPending);
+    return () => {
+      if (isPending) onPendingChange?.(false);
+    };
+  }, [isPending, onPendingChange]);
   const today = todayInRome();
   const firstNight = initialStart && initialStart >= today ? initialStart : today;
   const [startDate, setStartDate] = useState(firstNight);
@@ -75,7 +96,15 @@ export function ManualBlockForm({ propertyId, initialStart, initialEnd, onCreate
     const result = validate();
     setErrors(result.errors);
     if (!result.data) return;
-    createBlock.mutate({ propertyId, data: result.data }, { onSuccess: () => onCreated() });
+    createBlock.mutateAsync({ propertyId, data: result.data }).then(
+      () => {
+        if (mounted.current) onCreated();
+      },
+      (error: unknown) => {
+        // The form shows the refusal next to its fields; one that comes back when the form is gone is never lost: it is said as a message.
+        if (!mounted.current) toast.error(getProblemMessage(error, t) ?? t('booking.calendar.manualBlock.createFailed'));
+      },
+    );
   };
 
   // Error text of a field and the attributes that tie it to its input.

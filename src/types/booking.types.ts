@@ -71,10 +71,118 @@ export interface Booking {
   checkedOutAt?: string | null;
   /** Whether the host may change the dates and the guests, and if not why: the rule of `PUT /bookings/:id`, never guessed here. */
   canEdit?: BookingEditability;
+  /**
+   * What the host may do with the booking, to change it and to cancel it, and when not why and how to ask for it (E08/F03/US02, NF-75, NF-76): the answer of
+   * the API for every booking, the lists included, so no screen works it out. For a booking that came from a channel it carries the rule of that channel.
+   */
+  changeOptions?: BookingChangeOptions;
   /** Booking detail only (`GET /bookings/:id`): how much of the total came in. Missing on the booking an action answers with. */
   paymentState?: BookingPaymentState;
   /** Booking detail only: the money that came in; missing for who may not read payments (the collaborator). */
   paidAmount?: number | null;
+  /**
+   * The channel an imported booking comes from (the exact source: `Airbnb`, `Expedia`...); null for any other booking. The list and
+   * the facts mark such a booking with the "OTA" badge (ADR-033-R9). It is not an amount: whoever may not read payments gets it too.
+   */
+  otaSource?: string | null;
+  /**
+   * Where the booking came from, in the four words the host reads (E27/F01/US01/T01, NF-123): a portal of the channel manager, the site of the agency (a booking made from a
+   * link of the agency, or a reservation of the booking engine of the agency), the booking site of CasaZen, or the host's own entry. `source` is unchanged (the invoicing
+   * reasons per channel). Missing from an older answer: nothing is drawn then.
+   */
+  origin?: BookingOrigin;
+  /** The channel of a booking whose `origin` is `Portal` (the name of its source: `Airbnb`, `BookingCom`...); null for any other origin. */
+  originChannel?: string | null;
+  /**
+   * Booking detail only: the amounts the channel reported for an imported booking (ADR-033-R2). Missing for a booking that does not
+   * come from a channel and for who may not read payments, who gets the state without any amount.
+   */
+  otaAmounts?: BookingOtaAmounts | null;
+  /** Booking detail only, with `otaAmounts`: who collects the money of the booking. */
+  collection?: BookingCollection | null;
+  /** Booking detail only: where each figure comes from; a figure with no value has no entry. Missing for who may not read payments. */
+  amountSources?: BookingAmountSources | null;
+  /**
+   * Booking detail only (`GET /bookings/:id`): the mirror of the booking on the channel manager, where the last operation CasaZen sent for it stands
+   * (NF-74); `null` when the booking is not mirrored there. Missing on the booking an action answers with, the creation included: the result of
+   * the new-booking wizard reads the detail to know it.
+   */
+  octorateSync?: BookingOctorateSync | null;
+}
+
+/** Where the last operation CasaZen sent to the channel manager for a booking stands (`octorateSync.state`). `NotAllowedByChannel` is a change the channel does not allow. */
+export type OctorateSyncState = 'Pending' | 'Synced' | 'Failed' | 'Conflict' | 'NotAllowedByChannel';
+
+/** The last operation sent to the channel manager for a booking. */
+export type OctorateSyncOperation = 'Create' | 'Update' | 'Cancel' | 'Payment';
+
+/** The stay as the channel manager holds it after it refused a change (`Conflict` only); a member that was not kept is `null`. */
+export interface OctorateVersion {
+  checkIn: string | null;
+  checkOut: string | null;
+  guests: number | null;
+}
+
+/**
+ * The mirror of a booking on the channel manager (`octorateSync` of the booking detail, NF-74): a state, a stable code of CasaZen for a failure (never a text
+ * of the channel manager) and whether the caller may ask for the push again. No personal data.
+ */
+export interface BookingOctorateSync {
+  state: OctorateSyncState;
+  lastOperation: OctorateSyncOperation;
+  /** When the channel manager last confirmed an operation (UTC); null until it did. */
+  lastSyncedAt: string | null;
+  /** Why the last operation failed: `octorate_dates_unavailable`, `octorate_unavailable`...; null otherwise. */
+  errorCode: string | null;
+  /** The state is `Failed` or `Conflict` and the caller may write the booking: `POST /bookings/:id/octorate-sync/retry` is open to them. */
+  canRetry: boolean;
+  octorateVersion?: OctorateVersion | null;
+}
+
+/** The answer of `POST /bookings/:id/octorate-sync/retry` (202): the push is queued, the state `Pending`. */
+export interface OctorateSyncRetryResult {
+  bookingId: string;
+  state: OctorateSyncState;
+}
+
+/**
+ * The amounts a channel reported for an imported booking (ADR-033-R2). A figure the channel did not send is `null`, never 0: the
+ * commission, the net and the balance often are, until the channel fills the price breakdown.
+ */
+export interface BookingOtaAmounts {
+  commission: number | null;
+  /** What the host receives. */
+  net: number | null;
+  paid: number | null;
+  balance: number | null;
+  currency: string;
+}
+
+/** Who collects the money of a channel booking (NF-77); either flag is `null` when the channel did not say. */
+export interface BookingCollection {
+  /** True: the channel collects the payment. False: the host does. */
+  companyCollect: boolean | null;
+  /** True: the commission is already in the payments. */
+  commissionIncludedInPayments: boolean | null;
+}
+
+/**
+ * Where a figure of a booking comes from: Stripe for a direct booking, the channel manager for a channel booking, the host's own
+ * entry (cash and bank transfer) for a payment recorded by hand.
+ */
+export const BOOKING_AMOUNT_SOURCES = ['Stripe', 'ChannelManager', 'Manual'] as const;
+export type BookingAmountSource = (typeof BOOKING_AMOUNT_SOURCES)[number];
+
+/**
+ * `amountSources` of a booking: the source of the total, of what was paid, of the balance, of the commission and of the net; a figure
+ * that has no value has no entry (the API leaves it out), and a figure with no entry is drawn with no tag.
+ */
+export interface BookingAmountSources {
+  total?: BookingAmountSource;
+  commission?: BookingAmountSource;
+  net?: BookingAmountSource;
+  paid?: BookingAmountSource;
+  balance?: BookingAmountSource;
 }
 
 /**
@@ -89,11 +197,40 @@ export interface BookingEditability {
   reason: BookingEditLock | null;
 }
 
+/**
+ * `changeOptions` of a booking (E08/F03/US02): what the host may do with it. `reasonCode` and `guidanceKey` explain the first thing that is not allowed (the
+ * change, else the cancellation), `cancelReasonCode` and `cancelGuidanceKey` the cancellation whatever the change. A booking that came from a channel through
+ * the channel manager has a `channel` (`BookingCom`); the others have none. A code is one of the API (`ota_booking_change_not_allowed`,
+ * `ota_booking_cancel_not_allowed`, `booking_stay_locked`...); a key is one of its own sentences, which this client does not read: it says the same in its own words.
+ */
+export interface BookingChangeOptions {
+  /** The host may change the dates and the guests: what `PUT /bookings/:id` accepts. */
+  canEdit: boolean;
+  /** The host may cancel the booking from CasaZen. */
+  canCancel: boolean;
+  reasonCode?: string | null;
+  guidanceKey?: string | null;
+  /** The channel of a booking that came from one (`Airbnb`, `BookingCom`, `Expedia`, `Vrbo`, `TripAdvisor`, `Agoda`, `OtherChannel`); null otherwise. */
+  channel?: string | null;
+  cancelReasonCode?: string | null;
+  cancelGuidanceKey?: string | null;
+}
+
 /** The chip of the list of bookings, which is the `view` of `GET /api/bookings/search`: what the host is doing with them. */
 export type BookingListView = 'all' | 'toConfirm' | 'upcoming' | 'inProgress' | 'completed' | 'cancelled';
 
-/** Where a booking came from, in the words of the channel filter of the list; the exact source stays in `source`. */
-export type BookingChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Other';
+/**
+ * Where a booking came from, in the words of the channel filter of the list; the exact source stays in `source`. The four portals
+ * after `BookingCom` have a value of their own (they used to be `Other`), and `Other` is what no value names.
+ */
+export type BookingChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Expedia' | 'Vrbo' | 'TripAdvisor' | 'Agoda' | 'Other';
+
+/**
+ * Where a booking came from (`origin` of every booking answer, and the values of the `origin` filter of the list): a portal, the site of the agency, CasaZen's own
+ * booking site or the host. Worked out by the API from the source and the attribution of the booking, in the order of the API.
+ */
+export const BOOKING_ORIGINS = ['Portal', 'AgencySite', 'CasaZenSite', 'Manual'] as const;
+export type BookingOrigin = (typeof BOOKING_ORIGINS)[number];
 
 /** How much of the total of a booking has come in. */
 export type BookingPaymentState = 'None' | 'Partial' | 'Paid' | 'Refunded';
@@ -126,6 +263,8 @@ export interface BookingFilterParams {
   propertyId?: string;
   /** `Direct,Airbnb`: names of `BookingChannel`. */
   channel?: string;
+  /** `Portal,AgencySite`: names of `BookingOrigin`; left out for no filter. */
+  origin?: string;
   /** `Sent,InProgress`: the state of the online check-in link. */
   checkInStatus?: string;
   /** First and last arrival day (`yyyy-MM-dd`, both included). */
@@ -214,6 +353,14 @@ export interface CreateBookingDto {
 }
 
 /**
+ * How the guest of a booking the host enters is to pay it (NF-74): `paymentLink` (the guest is e-mailed a secure link to pay the balance online, on the
+ * host's Stripe account), `onSite` or `bankTransfer` (recorded only: the host records the income by hand with "Registra incasso", nothing is sent). The API
+ * also knows `none`, which the client never sends: the choice decides money, so it is always an explicit one.
+ */
+export const HOST_PAYMENT_ARRANGEMENTS = ['paymentLink', 'onSite', 'bankTransfer'] as const;
+export type HostPaymentArrangement = (typeof HOST_PAYMENT_ARRANGEMENTS)[number];
+
+/**
  * POST /bookings/manual: a booking entered by hand with only what it needs (SR-06a). Prices and tourist tax are never sent
  * (the API prices the stay); `totalPrice` is the total the host agreed when it is not the quote's.
  */
@@ -234,6 +381,11 @@ export interface CreateManualBookingDto {
   priceNote?: string;
   /** The block of a portal's calendar this booking completes (`linkableBlockId` of the availability). */
   blockId?: string;
+  /**
+   * How the guest pays (the payment step of the wizard, NF-74). `paymentLink` needs `payment.write` and a Stripe account ready (422 `payment_link_unavailable`
+   * otherwise). Never with `blockId`: the portal collects.
+   */
+  paymentArrangement?: HostPaymentArrangement;
 }
 
 /** The answer of POST /bookings/manual: the booking and what the host should know about it. */
@@ -243,6 +395,26 @@ export interface ManualBooking extends Booking {
   minNights: number | null;
   /** False: the guest gives the documents and the rest of the data with the online check-in. */
   guestDataComplete: boolean;
+  /**
+   * With `paymentArrangement: 'paymentLink'`: the link e-mailed to the guest, given this once for the host to copy (a credential: the token in it is never stored
+   * by the API, so it is shown on the result of the wizard only and kept nowhere). `null` for the other arrangements and when the link could not be made.
+   */
+  paymentLinkUrl?: string | null;
+  /** Why the link is missing although the booking was created (`payment_link_unavailable`, `payment_provider_error`): the host sends it again. `null` otherwise. */
+  paymentLinkError?: string | null;
+}
+
+/** The answer of POST /bookings/:id/payment-link: a new link of the balance, e-mailed to the guest; the previous link stops working. */
+export interface BookingPaymentLink {
+  bookingId: string;
+  /** The link, given this once for the host to copy (a credential). */
+  paymentLinkUrl: string;
+  /** The balance the guest pays. */
+  amount: number;
+  currency: string;
+  sentAt: string;
+  /** The e-mail to the guest was queued; false when the guest has no address (then the host sends the link another way). */
+  emailSent: boolean;
 }
 
 /** `state` of GET /properties/:id/availability (SR-06a). */
@@ -251,16 +423,19 @@ export type StayAvailabilityState = 'ok' | 'belowMinimum' | 'occupied' | 'linkab
 /** Why a stay is `invalid`. */
 export type StayAvailabilityInvalidReason = 'checkOutNotAfterCheckIn' | 'checkInInPast' | 'stayTooLong';
 
-/** A stay of CasaZen (`booking`), a portal's reservation that arrived as a block of its calendar (`ical`) or the host's own block (`block`). */
-export type StayAvailabilityConflictType = 'booking' | 'ical' | 'block';
+/**
+ * A stay of CasaZen (`booking`), a portal's reservation that arrived as a block of its calendar (`ical`), the host's own block (`block`) or the channel
+ * manager saying the nights cannot be booked (`channelManager`: no id of its own, the dates are the ones asked for).
+ */
+export type StayAvailabilityConflictType = 'booking' | 'ical' | 'block' | 'channelManager';
 
 /** Something that takes a night of the dates asked for. */
 export interface StayAvailabilityConflict {
   id: string;
   type: StayAvailabilityConflictType;
-  /** The guest's name (booking), the name of the calendar (portal) or the host's note (block); null when there is none. */
+  /** The guest's name (booking), the name of the calendar (portal), the host's note (block) or the channel the channel manager names; null when there is none. */
   title: string | null;
-  /** Where a booking came from or whose calendar the block is; null for the host's own block. */
+  /** Where a booking came from or whose calendar the block is; null for the host's own block and for the channel manager. */
   channel: BookingChannel | null;
   /** Arrival day and departure day (`YYYY-MM-DD`). */
   from: string;
@@ -287,6 +462,12 @@ export interface StayAvailability {
   nearestFreeWindow: StayAvailabilityWindow | null;
   /** With `linkableBlock`: the block to complete with POST /bookings/manual (`blockId`). */
   linkableBlockId: string | null;
+  /**
+   * Whether the channel manager was asked (NF-74, NF-80): `null` for a property that is not mirrored there (nothing to ask), `true` when it answered (its
+   * "not available" is `occupied` with a `channelManager` conflict), `false` when it could not be asked. `false` is advice only: it never blocks the host,
+   * the API asks again when the booking is created. Missing in the answer of an older API: read as `null`.
+   */
+  channelManagerChecked?: boolean | null;
 }
 
 /** The stay GET /properties/:id/availability is asked about. */
@@ -307,6 +488,44 @@ export interface UpdateBookingDto {
   numberOfChildren?: number;
   childrenAges?: number[];
   specialRequests?: string;
+}
+
+/** What an edit does with the difference between the new price and what the guest has paid. */
+export type BookingSettlementAction = 'refund' | 'chargeSavedCard' | 'paymentLink' | 'none';
+
+/** Where the money of a saved edit stands: `done` (confirmed by Stripe, or the link sent), `pending` (Stripe has not confirmed it yet) or `none`. */
+export type BookingSettlementState = 'done' | 'pending' | 'none';
+
+/**
+ * The money of an edit that was saved (`settlement` of `PUT /bookings/:id`, E08/F02/US01/T01, NF-75): what was done with the difference. `offlineRefundDue` is
+ * what the host still has to give back outside CasaZen (paid in cash or by transfer).
+ */
+export interface BookingEditSettlement {
+  action: BookingSettlementAction;
+  state: BookingSettlementState;
+  amount: number;
+  offlineRefundDue: number;
+  currency: string;
+}
+
+/**
+ * `POST /bookings/:id/edit-quote`: what the same edit would do with the money, worked out and not done. `difference` is `newTotal` minus `paidSoFar`; `amount` is
+ * the money that moves online (the refund, the charge or the payment link), zero for `none`. Needs `payment.read`.
+ */
+export interface BookingEditQuote {
+  currency: string;
+  previousTotal: number;
+  newTotal: number;
+  paidSoFar: number;
+  difference: number;
+  action: BookingSettlementAction;
+  amount: number;
+  offlineRefundDue: number;
+}
+
+/** The answer of `PUT /bookings/:id`: the booking as the edit left it, and what happened to the money. */
+export interface UpdatedBooking extends Booking {
+  settlement?: BookingEditSettlement;
 }
 
 /** POST /bookings/quote — price of a stay the host is entering or changing (tourist tax of BK-03 included). */
@@ -355,12 +574,16 @@ export interface BookingCancellationQuote {
   requiresRefundDecision: boolean;
 }
 
-/** POST /bookings/:id/cancel */
+/** POST /bookings/:id/cancel. For a booking of a channel only `reason` is read: no money moves from CasaZen. */
 export interface CancelBookingDto {
   refundAmount?: number;
   reason?: string;
 }
 
+/**
+ * The answer of POST /bookings/:id/cancel. A booking of a channel answers 200 only after the channel manager confirmed the cancellation, with no refund and
+ * no cancelled intent; a refusal (422 `octorate_cancel_failed`, 422 `ota_booking_cancel_not_allowed`, 503 `octorate_unavailable`) leaves the booking as it was.
+ */
 export interface CancelBookingResult {
   bookingId: string;
   status: BookingStatus;

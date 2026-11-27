@@ -1,0 +1,31 @@
+{
+	"name": "casazen/casazen-wordpress",
+	"description": "CasaZen plugin for WordPress: shows your CasaZen booking engine on your own site.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"homepage": "https://github.com/casazen/frontend/tree/develop/integrations/wordpress/casazen",
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "^1",
+		"phpcompatibility/phpcompatibility-wp": "^2",
+		"phpunit/phpunit": "^9.6",
+		"wp-coding-standards/wpcs": "^3",
+		"yoast/phpunit-polyfills": "^2"
+	},
+	"config": {
+		"platform": {
+			"php": "7.4.33"
+		},
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		},
+		"sort-packages": true
+	},
+	"scripts": {
+		"test": "phpunit",
+		"lint": "phpcs",
+		"lint:fix": "phpcbf"
+	}
+}

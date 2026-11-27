@@ -20,6 +20,18 @@ describe('openOnboardingAfterGate (PL-02)', () => {
     });
   });
 
+  it('openOnboardingAfterGate_CallbackPageOfTheChannelManager_RemembersThePageWithoutTheCodeAndTheState', () => {
+    const { router, queryClient } = setup('/app/short-rent/integrations/octorate', '?code=the-code&state=the-state');
+
+    expect(openOnboardingAfterGate(router, queryClient)).toBe(true);
+
+    // The `from` stays in the history of the browser: the single-use secrets of the callback do not go along.
+    expect(router.navigate).toHaveBeenCalledWith(ONBOARDING_PATH, {
+      replace: true,
+      state: { from: '/app/short-rent/integrations/octorate' },
+    });
+  });
+
   it('openOnboardingAfterGate_AlreadyOnOnboarding_StaysPut', () => {
     const { router, queryClient } = setup('/onboarding');
 

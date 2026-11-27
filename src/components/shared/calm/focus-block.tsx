@@ -28,15 +28,8 @@ export interface FocusBlockProps extends Omit<React.HTMLAttributes<HTMLElement>,
 }
 
 /**
- * The one highlighted block of a screen: what to do now, whose turn it is, how long it takes, what comes after, and the
- * button that does it. A page has at most one (the redesign conventions, §7bis, "un solo punto focale"): two colored blocks together
- * and the person does not know where to look.
- *
- * It is a `region` named by its title, so a screen reader finds it from the list of landmarks; the title is the `h2` of the
- * page area. The tone is told three ways, never by color alone: the tint, the icon, and the words you give it.
- *
- *     <FocusBlock tone="warning" kicker="Adesso" title="Il canone di ottobre non è arrivato" who="Tocca a te"
- *       when="Scaduto da 3 giorni" primary={{ label: 'Invia il sollecito', onClick: sendReminder }} />
+ * A named section for a current task, its owner and its actions. The tone is conveyed by the icon and the wording. It is the
+ * one focal point of a page, so it is also the one block that arrives with a short rise (`cz-enter`, `styles/motion.css`).
  */
 export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, primary, secondary, then, icon, className, ...props }: FocusBlockProps) {
   const titleId = React.useId();
@@ -48,18 +41,21 @@ export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, p
       {...props}
       aria-labelledby={titleId}
       data-tone={tone}
-      className={cn('flex min-w-0 flex-col gap-3 rounded-xl p-4 ring-1 ring-inset forced-colors:outline-1 sm:flex-row sm:gap-4 sm:p-6', style.surface, className)}
+      className={cn(
+        'cz-enter flex min-w-0 items-start gap-2.5',
+        className,
+      )}
     >
-      <span aria-hidden="true" className={cn('grid size-10 shrink-0 place-items-center rounded-full bg-background sm:size-12', style.accent)}>
-        <Icon className="size-5 sm:size-6" />
+      <span aria-hidden="true" className={cn('cz-icon-tile forced-colors:outline-1 [--cz-icon-tile-size:2rem] [--cz-icon-size:1rem]', style.badge, style.accent)}>
+        <Icon strokeWidth={1.75} />
       </span>
 
-      <div className="min-w-0 flex-1 space-y-2">
+      <div className="min-w-0 flex-1 space-y-1.5">
         {kicker ? <p className={cn('break-words text-xs font-semibold uppercase tracking-wide', style.accent)}>{kicker}</p> : null}
-        <h2 id={titleId} className="break-words text-lg font-semibold leading-snug sm:text-xl">
+        <h2 id={titleId} className="break-words text-base font-semibold leading-snug">
           {title}
         </h2>
-        {body ? <div className="break-words text-sm text-foreground/80 sm:text-base">{body}</div> : null}
+        {body ? <div className="break-words text-sm text-foreground/80">{body}</div> : null}
 
         {who || when ? (
           <ul role="list" className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-foreground/70">

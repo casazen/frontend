@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
 import { useDraftReading, useLandlordDefaults, useLeaseDraft, useLongRentRules } from '@/queries/use-lease-draft';
+import { LONG_RENT_PROPERTIES_PATH, longRentPropertyPath } from '@/features/properties/long-rent/paths';
 import { LeaseWizard } from './wizard/lease-wizard';
 import { SignedWizard } from './wizard/signed-wizard';
 import { AFTER_STEP, DONE_STEP } from './wizard/wizard-model';
@@ -35,13 +36,13 @@ function DraftWizard({ id }: { id: string }) {
     if (status === 404) {
       return (
         <div data-testid="lease-not-found">
-          <EmptyState icon={FileText} title={t('leases.notFound')} description={t('leases.notFoundDescription')} action={{ label: t('leases.backToList'), href: LEASES_PATH }} />
+          <EmptyState icon={FileText} title={t('leases.notFound')} description={t('leases.notFoundDescription')} action={{ label: t('longRentProperties.detail.backToList'), href: LONG_RENT_PROPERTIES_PATH }} />
         </div>
       );
     }
     return (
       <div className="min-w-0 space-y-4">
-        <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+        <BackLink to={LONG_RENT_PROPERTIES_PATH} label={t('nav.properties')} className="md:inline-flex" />
         <ErrorState testId="lease-load-error" title={t('leases.detailLoadError')} error={draft.error} onRetry={() => void draft.refetch()} />
       </div>
     );
@@ -54,7 +55,7 @@ function DraftWizard({ id }: { id: string }) {
   if (rules.isError || !rules.data || !draft.data) {
     return (
       <div className="min-w-0 space-y-4">
-        <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+        <BackLink to={LONG_RENT_PROPERTIES_PATH} label={t('nav.properties')} className="md:inline-flex" />
         <ErrorState testId="lease-wizard-error" title={t('leaseWizard.loadError')} error={rules.error} onRetry={() => void rules.refetch()} />
       </div>
     );
@@ -62,7 +63,7 @@ function DraftWizard({ id }: { id: string }) {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="lease-wizard-page">
-      <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+      <BackLink to={draft.data.values.propertyId ? `${longRentPropertyPath(draft.data.values.propertyId)}?tab=contracts` : LONG_RENT_PROPERTIES_PATH} label={t('nav.properties')} className="md:inline-flex" />
       <PageHeader title={t('leaseWizard.title')} />
       {/* A new key for each reading of the draft: after a conflict, reading it again gives a wizard that starts from what was saved. */}
       <LeaseWizard
@@ -93,7 +94,7 @@ export function LeaseWizardPage() {
   if (step === String(AFTER_STEP) || step === DONE_STEP) {
     return (
       <div className="min-w-0 space-y-6" data-testid="lease-signed-wizard-page">
-        <BackLink to={LEASES_PATH} label={t('nav.leases')} className="md:inline-flex" />
+        <BackLink to={LONG_RENT_PROPERTIES_PATH} label={t('nav.properties')} className="md:inline-flex" />
         <PageHeader title={t('leaseWizard.title')} />
         <SignedWizard leaseId={id} view={step === DONE_STEP ? 'done' : 'after'} />
       </div>

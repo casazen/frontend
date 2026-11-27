@@ -18,7 +18,8 @@ block in every variant, and a composed home at the bottom.
 
 | Block | Use it for | Not for |
 |---|---|---|
-| `FocusBlock` | The one thing to do now, with its button. The only colored block of a page | A list of things, a second highlight, a notice that needs no action (that is `Alert`) |
+| `FocusBlock` | The one thing to do now, with its button. The only highlighted block of a page: a card with the tone on its left edge and icon, never a tinted background (that read as an error) | A list of things, a second highlight, a notice that needs no action (that is `Alert`) |
+| `GuidePath` | Operations as one road: what is behind, the step to do now (marker, weight, button), what comes after, joined by a line. The guide of the Home («I tuoi prossimi passi»), of the «Guida» panel and of the welcome | A table, a list to sort; tinting a step to say it is late (a late deadline is said by the note) |
 | `StatStrip` / `StatTile` | Three or four numbers in a row, each with its name and, if useful, how it moves | Charts, more than four numbers (that is a report), a table |
 | `PlainSection` | A part of a page: title, one action for the whole part, content | A box around content: it has no border, background or shadow on purpose |
 | `DayList` | Rows with a date, a title, a line under it and a direct action: the deadlines, the to-do list | A table of many columns or a list to sort and filter (that is `ListView`) |

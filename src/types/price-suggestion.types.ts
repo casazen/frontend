@@ -31,8 +31,10 @@ export interface PriceSuggestionBasis {
  */
 export interface PriceSuggestion {
   aiUsed: boolean;
+  /** ISO currency from the saved property. Optional for older API deployments, which returned EUR. */
+  currency?: string;
   reason: PriceSuggestionReason | null;
-  /** Euros for a night, a multiple of 5. */
+  /** Property currency for a night, a multiple of 5. */
   nightlyRate: number | null;
   /** Low and high end of what homes like this ask in the area. */
   rangeMin: number | null;

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, CalendarDays, Phone, Wrench, XCircle } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { ClipboardCheck, Building2, CalendarDays, Phone, Wrench, XCircle } from 'lucide-react';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { PlainSection } from '@/components/shared/calm';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -11,6 +11,7 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { StatusPipeline } from '@/components/shared/status/status-pipeline';
 import { Alert } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CleaningVatQuestionHost } from '@/features/owner-accounting/components/cleaning-vat-dialog';
 import { propertyPath } from '@/features/properties/properties-paths';
 import { clientStatusFromRedirect } from '@/features/public-booking/checkout-outcome';
 import { requestTitle } from '@/features/supplier/requests/request-model';
@@ -85,11 +86,12 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
   return (
     <div className="min-w-0 space-y-6" data-testid="intervention-page">
       {/* The trail (Affitti brevi › Immobili › Interventi › this one) and, on a phone, the link back to the list (UI-05). */}
-      <PageHeader
+      <ServicePageHeader
+        icon={ClipboardCheck}
         crumbs="auto"
         title={title}
         description={[request.propertyName, request.propertyCity, when.day].filter(Boolean).join(' · ') || undefined}
-        action={<StatusBadge kind="request" status={request.status} size="lg" data-testid="intervention-status" />}
+        status={<StatusBadge kind="request" status={request.status} data-testid="intervention-status" />}
         secondary={menu}
       />
 
@@ -108,7 +110,7 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
 
       <InterventionNow request={request} steps={actions.steps} busy={actions.busy} permissions={permissions} paymentSent={paymentSent} />
 
-      <div className="space-y-8">
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-2">
         {request.group ? (
           <PlainSection title={t('interventions.group.title')} data-testid="intervention-group-section">
             <InterventionGroup group={request.group} />
@@ -144,11 +146,20 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
  * menu «⋯» (the property, the stay, a call to the supplier and «Annulla intervento» while it can still be cancelled); under it the way
  * it has gone, the one highlighted block «Prossimo passo», its details, the photos of the work, the supplier and the history. A request
  * outside the host's scope is not found, as on the server.
+ *
+ * The «Da fare» `StateCleaningVat` of a cleaning recharged to the owner opens this page with the question «La ditta di pulizie ha applicato
+ * l'IVA su questa fattura?» over it (`?cleaningVat=<request>`, FIX/FE-CLEANING-VAT-QUESTION), for who may write the properties.
  */
 export function InterventionDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   // One page per request: what was open (a window, a payment) is not carried over to the next one.
-  return <InterventionPage key={id} id={id} />;
+  return (
+    <>
+      <InterventionPage key={id} id={id} />
+      {/* The question does not depend on what the page says of the request: it is read by its own endpoint, which does not tell Affitti brevi from Affitti lunghi. */}
+      <CleaningVatQuestionHost />
+    </>
+  );
 }
 
 function InterventionPage({ id }: { id: string }) {
@@ -165,7 +176,7 @@ function InterventionPage({ id }: { id: string }) {
   if (isError && getHttpStatus(error) !== 404) {
     return (
       <div className="min-w-0 space-y-6">
-        <PageHeader crumbs="auto" title={t('interventions.detail.fallbackTitle')} />
+        <ServicePageHeader icon={ClipboardCheck} crumbs="auto" title={t('interventions.detail.fallbackTitle')} />
         <ErrorState testId="intervention-load-error" title={t('interventions.detail.loadError')} error={error} onRetry={() => void refetch()} />
       </div>
     );
@@ -174,7 +185,7 @@ function InterventionPage({ id }: { id: string }) {
   if (!request) {
     return (
       <div className="min-w-0 space-y-6">
-        <PageHeader crumbs="auto" title={t('interventions.detail.fallbackTitle')} />
+        <ServicePageHeader icon={ClipboardCheck} crumbs="auto" title={t('interventions.detail.fallbackTitle')} />
         <EmptyState
           icon={Wrench}
           title={t('interventions.detail.notFound')}

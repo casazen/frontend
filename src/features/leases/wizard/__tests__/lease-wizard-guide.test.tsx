@@ -10,6 +10,11 @@ import { ReviewStep } from '../review-step';
 import { toWizardValues } from '../wizard-model';
 
 vi.mock('@/api/leases.api', () => ({ leasesApi: { saveDraft: vi.fn(), getReview: vi.fn(), confirmReview: vi.fn() } }));
+vi.mock('@/api/condominium-proposal.api', () => ({
+  condominiumProposalApi: {
+    propose: vi.fn(async () => null),
+  },
+}));
 vi.mock('@/queries/use-properties', () => ({
   useProperties: vi.fn(() => ({ data: [], isLoading: false, isError: false, error: null, isFetching: false, refetch: vi.fn() })),
   useProperty: vi.fn(() => ({ data: { id: 'prop-1', name: 'Casa Rossi', address: 'Via Roma 10', city: 'Seveso', rentalMode: 'Long' } })),

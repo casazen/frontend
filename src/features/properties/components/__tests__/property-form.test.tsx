@@ -9,11 +9,33 @@ import { PropertyForm } from '../property-form';
 
 vi.mock('@/queries/use-properties', () => ({ useCancellationPolicies: vi.fn() }));
 
+// The amenities of the form come from the catalog (`useAmenityCatalog`): a small one here, the catalog is not under test.
+vi.mock('@/queries/use-amenity-catalog', () => ({
+  useAmenityCatalog: () => ({
+    data: {
+      groups: [{ id: 'comfort', label: { it: 'Comfort', en: 'Comfort' } }],
+      amenities: [
+        { name: 'WiFi', icon: 'wifi', group: 'comfort', label: { it: 'Wi-Fi', en: 'Wi-Fi' } },
+        { name: 'Kitchen', icon: 'utensils', group: 'comfort', label: { it: 'Cucina', en: 'Kitchen' } },
+      ],
+    },
+    isLoading: false,
+    isError: false,
+  }),
+  useAmenityLabels: () => (name: string) => ({ WiFi: 'Wi-Fi', Kitchen: 'Cucina' })[name] ?? name,
+}));
+
 // The comune picker reads the official ISTAT list: here it is not imported, the form keeps its free-text city (SU-04).
 vi.mock('@/queries/use-comuni', () => ({
   useComuneDatasetStatus: () => ({ data: { datasetAvailable: false }, isPending: false, isError: false, refetch: vi.fn() }),
   useComuneSearch: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
   useComune: () => ({ data: undefined, isError: false }),
+}));
+
+// The Swiss place picker of a house in Switzerland reads the official directory (E29/F01/US02/T01): its own suites test it, here it answers nothing.
+vi.mock('@/queries/swissPlaces', () => ({
+  useSwissLocalitySearch: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
+  useSwissMunicipality: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
 }));
 
 const POLICIES: CancellationPolicyOption[] = [
@@ -249,6 +271,16 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     expect(screen.getByLabelText(i18n.t('property.form.damageDeposit', { currency: 'CHF' }))).toHaveValue(300);
     expect(screen.getByText(i18n.t('property.form.amountsInFrancs'))).toBeInTheDocument();
     expect(screen.queryByText(i18n.t('property.form.amountsInEuro'))).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-comune-field')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-cin-input')).not.toBeInTheDocument();
+    // The place of a Swiss house is picked from the Swiss directory, in the place of the Italian comune.
+    expect(screen.getByTestId('property-swiss-place-field')).toBeInTheDocument();
+  });
+
+  it('PropertyForm_UnknownCountry_RequiresAChoice', () => {
+    renderForm({ property: { ...PROPERTY, country: '' as Property['country'] } });
+    expect(field('property.country')).toHaveValue('');
+    expect(screen.getByRole('option', { name: i18n.t('property.form.chooseCountry') })).toBeDisabled();
   });
 
   it('PropertyForm_PoliciesFailToLoad_ShowsTheErrorAndKeepsTheCurrentPolicy', async () => {

@@ -1,0 +1,41 @@
+{
+  "unspecifiedType": "Not specified",
+  "overview": { "noPhotos": "No photos uploaded." },
+  "resume": {
+    "listTitle": "Setup for {{name}}",
+    "lastStep": "Last step opened · {{step}}",
+    "action": "Resume setup",
+    "title": "Set up {{name}}",
+    "description": "Confirmed steps are saved on the property.",
+    "statusError": "Could not verify the property status."
+  },
+  "loading": "Checking the saved setup…",
+  "loadError": "The saved setup could not be loaded. Try again before continuing.",
+  "configure": "Set up now",
+  "review": "Review saved details",
+  "returnHint": "The guided setup saves each step. When finished, return here to continue with the property.",
+  "returnToProperty": "Continue with the property",
+  "compliance": {
+    "label": "Compliance",
+    "heading": "Prepare the stay reporting setup",
+    "purpose": "Choose who reports guest details. Requirements depend on the property's country.",
+    "title": "Who reports to Italian police and ISTAT?",
+    "text": "Choose whether to handle reporting manually or through your channel manager. The guided setup saves the choice along with any required credentials and delegation.",
+    "saved": "Your sender choice is saved. The guided setup shows verification status and any issues: a saved choice does not guarantee active reporting.",
+    "missing": "You still need to confirm how reporting is handled. The manual default is not your confirmation.",
+    "required": "Configure and save the reporting sender in the Compliance step before continuing.",
+    "localTitle": "Requirements follow the property's country",
+    "localText": "This property outside Italy does not require an Italian CIN, Alloggiati Web or ISTAT setup. Do not enter Italian credentials here.",
+    "localPending": "For a Swiss property, check guest registration, permits and tourist tax with the relevant canton and municipality. This step does not certify that local obligations have been completed."
+  },
+  "billing": {
+    "label": "Invoicing",
+    "heading": "Who issues the stay documents?",
+    "purpose": "Complete the issuer's identity and tax regime. Details already saved for the organization are reused.",
+    "title": "Issuer identity and tax regime",
+    "text": "Provide the issuer's name, address, country and VAT treatment in the Invoicing setup. CasaZen reuses these details for your organization's properties.",
+    "saved": "The issuer's identity and tax regime are complete. Review numbering, automation and any other outstanding setup details in the guided flow.",
+    "missing": "Some issuer identity or tax regime details are missing. Complete them before finishing the property.",
+    "required": "Complete the issuer's identity and tax regime in the Invoicing step before continuing."
+  }
+}

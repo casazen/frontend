@@ -1,6 +1,6 @@
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { FOCUS_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { FocusBlock } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -177,7 +177,7 @@ export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
           ) : null}
 
           {hasRequirements && needsAction ? (
-            <div className="space-y-0.5 text-sm" data-testid="connect-requirements-alert">
+            <div className="space-y-1 rounded-lg border-s-4 border-warning bg-warning-soft p-4 text-sm" data-testid="connect-requirements-alert">
               <p className="font-medium">{t('settings.verificationIncomplete')}</p>
               <p className="text-foreground/70">{t('settings.verificationIncompleteDescription')}</p>
             </div>
@@ -220,11 +220,13 @@ export function ConnectPaymentsPage() {
       <div className="space-y-6">
         <PageHeader title={t('settings.connectPaymentsTitle')} description={t('settings.connectDescription')} crumbs="auto" />
 
-        <div className={cn(FOCUS_COLUMN, 'space-y-6')}>
+        {/* The block that asks for Stripe, when it does, and beside it from `xl` where the account stands; then where the plan is
+            managed. With the account active, the state and the plan side by side. Under each other on a narrower screen. */}
+        <div className={cn(FOCUS_COLUMN, PAGE_COLUMNS)}>
           <PaymentsFocus payments={payments} />
           <PaymentsBody payments={payments} showAction={false} />
 
-          <p className="text-sm text-foreground/70">
+          <p className="min-w-0 text-sm text-foreground/70">
             {t('settings.managePlanIn')}{' '}
             <Link to="/app/short-rent/settings/plan" className="underline">
               {t('settings.planSettings')}

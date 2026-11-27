@@ -1,5 +1,11 @@
 import {
+  BedDouble,
+  Building2,
+  Workflow,
+  ContactRound,
+  FolderOpen,
   BadgeCheck,
+  Bell,
   Calendar,
   CalendarCheck,
   CalendarDays,
@@ -11,11 +17,14 @@ import {
   CreditCard,
   FileCheck,
   FileText,
+  Gift,
   Globe,
   HelpCircle,
   Home,
   Inbox,
   LayoutDashboard,
+  ListChecks,
+  MessageSquare,
   Palette,
   QrCode,
   Receipt,
@@ -32,6 +41,7 @@ import {
   TrendingUp,
   User,
   UserPlus,
+  UserRound,
   Users,
   Wallet,
   Wrench,
@@ -39,7 +49,13 @@ import {
 } from 'lucide-react';
 
 export const NAV_ICONS: Record<string, LucideIcon> = {
+  BedDouble,
+  Building2,
+  Workflow,
+  ContactRound,
+  FolderOpen,
   BadgeCheck,
+  Bell,
   LayoutDashboard,
   Home,
   Calendar,
@@ -54,6 +70,8 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   Globe,
   HelpCircle,
   Inbox,
+  ListChecks,
+  MessageSquare,
   Palette,
   QrCode,
   Receipt,
@@ -63,6 +81,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   Sun,
   User,
   UserPlus,
+  UserRound,
   Users,
   FileText,
   FileCheck,
@@ -75,6 +94,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   TrendingUp,
   Wallet,
   Wrench,
+  Gift,
 };
 
 export function getNavIcon(iconName?: string): LucideIcon {

@@ -1,7 +1,7 @@
-import { Download } from 'lucide-react';
+import { Wallet, Download } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { StatStrip, StatTile } from '@/components/shared/calm';
 import { ListView } from '@/components/shared/list-view/list-view';
 import { useListState } from '@/components/shared/list-view/use-list-state';
@@ -50,7 +50,8 @@ export function SupplierEarningsPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-earnings-page">
-      <PageHeader
+      <ServicePageHeader
+        icon={Wallet}
         title={t('supplier.earnings.title')}
         description={t('supplier.earnings.description')}
         crumbs="auto"
@@ -66,29 +67,29 @@ export function SupplierEarningsPage() {
       />
 
       {summary ? (
-        <>
-          <StatStrip label={t('supplier.earnings.numbers.label')}>
-            <StatTile
-              data-testid="supplier-earnings-to-collect"
-              label={t('supplier.earnings.numbers.toCollect')}
-              value={formatMoney(summary.toCollectNetCents, locale)}
-              delta={t('supplier.earnings.numbers.toCollectJobs', { count: summary.toCollectJobs })}
-            />
-            <StatTile data-testid="supplier-earnings-paid" label={t('supplier.earnings.numbers.paid')} value={formatMoney(summary.paidThisMonthNetCents, locale)} />
-            <StatTile
-              data-testid="supplier-earnings-commission"
-              label={t('supplier.earnings.numbers.commission')}
-              value={formatMoney(summary.commissionThisMonthCents, locale)}
-            />
-          </StatStrip>
-          <p className="text-sm text-foreground/70" data-testid="supplier-earnings-rate">
-            {freeEnds
-              ? t('supplier.earnings.rate.free', { day: formatRomeDateTime(freeEnds, locale, { day: 'numeric', month: 'long', year: 'numeric' }) })
-              : summary.commission.percent === 0
-                ? t('supplier.earnings.rate.none')
-                : t('supplier.earnings.rate.normal', { percent: new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(summary.commission.percent) })}
-          </p>
-        </>
+        // The numbers sit on the page, as on every home (UX round 2026-11): no box around the strip, and the rate of the commission is the
+        // line under its own number instead of a sentence of its own.
+        <StatStrip label={t('supplier.earnings.numbers.label')}>
+          <StatTile
+            data-testid="supplier-earnings-to-collect"
+            label={t('supplier.earnings.numbers.toCollect')}
+            value={formatMoney(summary.toCollectNetCents, locale)}
+            delta={t('supplier.earnings.numbers.toCollectJobs', { count: summary.toCollectJobs })}
+          />
+          <StatTile data-testid="supplier-earnings-paid" label={t('supplier.earnings.numbers.paid')} value={formatMoney(summary.paidThisMonthNetCents, locale)} />
+          <StatTile
+            data-testid="supplier-earnings-commission"
+            label={t('supplier.earnings.numbers.commission')}
+            value={formatMoney(summary.commissionThisMonthCents, locale)}
+            delta={
+              freeEnds
+                ? t('supplier.earnings.rate.free', { day: formatRomeDateTime(freeEnds, locale, { day: 'numeric', month: 'long', year: 'numeric' }) })
+                : summary.commission.percent === 0
+                  ? t('supplier.earnings.rate.none')
+                  : t('supplier.earnings.rate.normal', { percent: new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(summary.commission.percent) })
+            }
+          />
+        </StatStrip>
       ) : earnings.isLoading ? (
         <SkeletonLine lines={3} label={t('supplier.earnings.loading')} />
       ) : null}

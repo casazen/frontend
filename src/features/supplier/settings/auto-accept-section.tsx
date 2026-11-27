@@ -48,34 +48,39 @@ export function AutoAcceptSection() {
 
   return (
     <PlainSection title={t('supplier.settings.answers.title')} data-testid="supplier-settings-auto-accept">
-      <SwitchRow
-        checked={checked}
-        onCheckedChange={toggle}
-        disabled={save.isPending}
-        label={t('supplier.settings.autoAccept.label')}
-        hint={t('supplier.settings.autoAccept.hint')}
-        testId="supplier-auto-accept-switch"
-      />
-      <div aria-live="polite" className="min-h-5 text-sm">
-        {save.isError ? (
-          <p role="alert" className="font-medium text-destructive" data-testid="supplier-settings-save-error">
-            {getProblemMessage(save.error, t) ?? t('supplier.settings.saveError')}
-          </p>
-        ) : save.isSuccess ? (
-          <p role="status" className="text-foreground/70" data-testid="supplier-settings-saved">
-            {t('supplier.settings.saved')}
-          </p>
-        ) : null}
-      </div>
-      <div className="space-y-1 pt-2">
-        <h3 className="text-sm font-semibold">{t('supplier.settings.autoAccept.rules.title')}</h3>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-foreground/80" data-testid="supplier-auto-accept-rules">
-          {RULES.map((rule) => (
-            <li key={rule} className="break-words">
-              {t(`supplier.settings.autoAccept.rules.${rule}`)}
-            </li>
-          ))}
-        </ul>
+      {/* The switch and, beside it from `xl`, the rules it follows (under it on a narrower screen, as close as it always was). */}
+      <div className="grid grid-cols-1 gap-x-10 gap-y-2 xl:grid-cols-2 xl:items-start">
+        <div className="min-w-0 space-y-2">
+          <SwitchRow
+            checked={checked}
+            onCheckedChange={toggle}
+            disabled={save.isPending}
+            label={t('supplier.settings.autoAccept.label')}
+            hint={t('supplier.settings.autoAccept.hint')}
+            testId="supplier-auto-accept-switch"
+          />
+          <div aria-live="polite" className="min-h-5 text-sm">
+            {save.isError ? (
+              <p role="alert" className="font-medium text-destructive" data-testid="supplier-settings-save-error">
+                {getProblemMessage(save.error, t) ?? t('supplier.settings.saveError')}
+              </p>
+            ) : save.isSuccess ? (
+              <p role="status" className="text-foreground/70" data-testid="supplier-settings-saved">
+                {t('supplier.settings.saved')}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className="min-w-0 space-y-1 pt-2 xl:pt-0">
+          <h3 className="text-sm font-semibold">{t('supplier.settings.autoAccept.rules.title')}</h3>
+          <ul className="list-disc space-y-1 pl-5 text-sm text-foreground/80" data-testid="supplier-auto-accept-rules">
+            {RULES.map((rule) => (
+              <li key={rule} className="break-words">
+                {t(`supplier.settings.autoAccept.rules.${rule}`)}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </PlainSection>
   );

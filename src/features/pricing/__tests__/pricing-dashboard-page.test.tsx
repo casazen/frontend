@@ -15,7 +15,8 @@ vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'app-shell' }, children),
 }));
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
+  PageHeader: ({ title, action }: { title: string; action?: React.ReactNode }) =>
+    createElement('header', null, createElement('h1', null, title), action),
 }));
 vi.mock('@/queries/use-properties', () => ({
   useProperty: () => ({ data: { id: 'prop-test', name: 'Casa Test' } }),
@@ -150,6 +151,8 @@ describe('PricingDashboardPage', () => {
     expect(rows[1]).toHaveTextContent('Alta stagione ×1,30');
     expect(rows[2]).toHaveTextContent('Festività: Ferragosto ×1,50');
     expect(rows[3]).toHaveTextContent('Nessuna regola (prezzo base)');
+    expect(screen.queryByTestId('line-chart')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /3 notti/i }));
     expect(screen.getByTestId('line-chart')).toBeInTheDocument();
   });
 
@@ -174,7 +177,8 @@ describe('PricingDashboardPage', () => {
 
     renderPage();
 
-    expect(screen.getByText('Suggerimenti stagionali disattivati')).toBeInTheDocument();
+    expect(screen.getByRole('switch')).not.toBeChecked();
+    expect(screen.queryByTestId('pricing-rules')).not.toBeInTheDocument();
     expect(screen.queryByTestId('suggestions-table')).not.toBeInTheDocument();
     expect(screen.queryByTestId('recalculate-btn')).not.toBeInTheDocument();
   });
@@ -254,6 +258,7 @@ describe('PricingDashboardPage', () => {
     setupAllMocks({ saveMutate });
 
     renderPage();
+    fireEvent.click(screen.getByTestId('pricing-open-rules'));
     // September moves to the high season, August leaves it; +40% in high season.
     fireEvent.click(screen.getByTestId('high-month-9'));
     fireEvent.click(screen.getByTestId('high-month-8'));
@@ -278,6 +283,7 @@ describe('PricingDashboardPage', () => {
     setupAllMocks({ saveMutate });
 
     renderPage();
+    fireEvent.click(screen.getByTestId('pricing-open-rules'));
     fireEvent.click(screen.getByTestId('low-month-8'));
     fireEvent.click(screen.getByTestId('save-config-btn'));
 
@@ -291,6 +297,7 @@ describe('PricingDashboardPage', () => {
     setupAllMocks({ saveMutate });
 
     renderPage();
+    fireEvent.click(screen.getByTestId('pricing-open-rules'));
     fireEvent.change(screen.getByTestId('holiday-multiplier'), { target: { value: '9' } });
 
     expect(screen.getByText('Inserisci un moltiplicatore tra 0,1 e 5.')).toBeInTheDocument();
@@ -312,6 +319,7 @@ describe('PricingDashboardPage', () => {
 
     renderPage();
 
+    fireEvent.click(screen.getByTestId('pricing-open-rules'));
     expect(screen.getByTestId('next-run')).toHaveTextContent('08/07/2026');
   });
 

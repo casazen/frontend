@@ -1,0 +1,28 @@
+export const storefrontChatMessages = {
+  it: {
+    title: 'Chat con il gestore',
+    description: 'Puoi scrivere prima di prenotare. Per leggere le risposte, riapri la chat su questo browser.',
+    consent: 'Acconsento a condividere nome, email e messaggio con il gestore per questa conversazione.',
+    transcript: 'Conversazione con il gestore',
+    host: 'Gestore',
+    you: 'Tu',
+    loading: 'Caricamento della conversazione…',
+    loadFailed: 'La conversazione non si è caricata.',
+    sendFailed: 'Invio non riuscito. Il messaggio resta qui: riprova.',
+    retry: 'Riprova',
+    channel: 'Sito vetrina',
+  },
+  en: {
+    title: 'Chat with the host',
+    description: 'You can write before booking. To read replies, reopen the chat in this browser.',
+    consent: 'I agree to share my name, email and message with the host for this conversation.',
+    transcript: 'Conversation with the host',
+    host: 'Host',
+    you: 'You',
+    loading: 'Loading the conversation…',
+    loadFailed: 'The conversation did not load.',
+    sendFailed: 'The message could not be sent. Your text is still here: try again.',
+    retry: 'Try again',
+    channel: 'Booking site',
+  },
+};

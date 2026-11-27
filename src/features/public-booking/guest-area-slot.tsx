@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from 'react';
 import type { GuestBookingDetails, GuestSession } from '@/types';
 import { GuestCancellationSection } from './guest-cancellation-section';
+import { GuestMarketingSection } from './guest-marketing-section';
 import { GuestMessagesSection } from './guest-messages-section';
 
 /** What a section of the guest area works with: the session (its token goes in `guestSessionHeaders`) and the booking it reads. */
@@ -17,11 +18,13 @@ interface GuestAreaSection {
 
 /**
  * The sections of the guest area that come after the booking on "Le mie prenotazioni" (DB-06c). The messages with the host (DB-14b)
- * are the first: they show only for a confirmed booking that has a thread. The cancellation (DB-08b) comes last, as the least used: the
+ * are the first: they show only for a confirmed booking that has a thread. The marketing choices of the guest (NF-90: offers by e-mail and
+ * WhatsApp) come next, and show nothing for a booking whose choices answer 404. The cancellation (DB-08b) comes last, as the least used: the
  * refund the guest would get today and the button to cancel. Reviews and the other features of the area follow the same way, one entry each.
  */
 const guestAreaSections: readonly GuestAreaSection[] = [
   { id: 'messages', render: ({ session, booking }) => <GuestMessagesSection session={session} booking={booking} /> },
+  { id: 'marketing', render: ({ session, booking }) => <GuestMarketingSection session={session} booking={booking} /> },
   { id: 'cancellation', render: ({ session, booking }) => <GuestCancellationSection session={session} booking={booking} /> },
 ];
 

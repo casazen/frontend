@@ -74,6 +74,16 @@ describe('ContextSidebar (UI-04a)', () => {
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
   });
 
+  it('keeps contracts inside the property instead of a sidebar destination', () => {
+    arrange(['long-rent']);
+    renderSidebar('long-rent', '/app/long-rent/properties');
+
+    expect(screen.getByRole('link', { name: 'Immobili' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByRole('link', { name: 'Contratti' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
+    expect(screen.queryByRole('link', { name: 'Contratti' })).not.toBeInTheDocument();
+  });
+
   it('ContextSidebar_SeveralAreas_HasTheAreaSwitcherInsteadOfTheIconTabs', () => {
     arrange(['short-rent', 'long-rent', 'supplier']);
     renderSidebar('short-rent');
@@ -88,22 +98,23 @@ describe('ContextSidebar (UI-04a)', () => {
     renderSidebar('admin', '/app/admin');
 
     expect(within(screen.getByTestId('area-header')).getByText('Console staff')).toBeInTheDocument();
-    expect(screen.getByText('v1.0.0 · Admin')).toBeInTheDocument();
+    expect(screen.queryByText('v1.0.0 · Admin')).not.toBeInTheDocument();
   });
 
   it('ContextSidebar_OtherAreas_ShowTheVersionLine', () => {
     arrange(['short-rent']);
     renderSidebar('short-rent');
 
-    expect(screen.getByText('v1.0.0 · casazen.io')).toBeInTheDocument();
+    expect(screen.queryByText('v1.0.0 · casazen.io')).not.toBeInTheDocument();
   });
 
-  it('ContextSidebar_ShortRent_ShowsAtMostEightEntriesInGroupsAndMore', () => {
+  it('ContextSidebar_ShortRent_ShowsMessagesInTheMainMenuAndSettingsAtTheFoot', () => {
     arrange(['short-rent']);
     renderSidebar('short-rent');
 
     const nav = screen.getByRole('navigation', { name: 'Menu Affitti brevi' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(8);
+    expect(within(nav).getAllByRole('link')).toHaveLength(9);
+    expect(within(nav).getByRole('link', { name: 'Messaggi' })).toHaveAttribute('href', '/app/short-rent/messages');
     // The adempimenti are in the main menu, not tucked in "Altro".
     expect(within(within(nav).getByRole('group', { name: 'Ogni giorno' })).getByRole('link', { name: /Adempimenti/ })).toBeInTheDocument();
     const groups = within(nav).getAllByRole('group');
@@ -111,7 +122,10 @@ describe('ContextSidebar (UI-04a)', () => {
     expect(groups[0]).toHaveAccessibleName('Ogni giorno');
     expect(groups[1]).toHaveAccessibleName('La tua offerta');
     expect(groups[2]).toHaveAccessibleName('Gestione');
-    expect(within(nav).getByRole('button', { name: 'Altro' })).toBeInTheDocument();
+    // No "Altro": the queues are tabs of the Cruscotto and the settings are pinned under the menu.
+    expect(within(nav).queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
+    const foot = screen.getByRole('navigation', { name: 'Impostazioni e inviti' });
+    expect(within(foot).getAllByRole('link').map((link) => link.textContent)).toEqual(['Impostazioni']);
   });
 
   it('ContextSidebar_UserWithoutAPermission_DoesNotSeeTheEntryThatAsksForIt', () => {
@@ -189,7 +203,7 @@ describe('ContextSidebar (UI-04a)', () => {
 
       fireEvent.click(screen.getByTestId('sidebar-collapse-toggle'));
       expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'false');
-      expect(screen.getByText('v1.0.0 · casazen.io')).toBeInTheDocument();
+      expect(screen.queryByText('v1.0.0 · casazen.io')).not.toBeInTheDocument();
     });
 
     it('ContextSidebar_Collapsed_IsRememberedAndTheNextVisitStartsCollapsed', async () => {
@@ -247,7 +261,9 @@ describe('ContextSidebar (UI-04a)', () => {
       expect(screen.getByText('Cruscotto')).toHaveClass('sr-only');
       expect(screen.queryByText('Ogni giorno')).not.toBeInTheDocument();
       expect(within(aside).getByRole('link', { name: 'Cruscotto' })).toBeInTheDocument();
-      expect(within(aside).getByRole('button', { name: 'Altro' })).toBeInTheDocument();
+      // The settings pinned at the foot stay on the rail too, as icons with their names for screen readers.
+      expect(within(aside).getByRole('link', { name: 'Impostazioni' })).toBeInTheDocument();
+      expect(screen.getByText('Impostazioni')).toHaveClass('sr-only');
     });
 
     it('ContextSidebar_Tablet_HasNoCollapseButtonAndNoFooterLine', () => {

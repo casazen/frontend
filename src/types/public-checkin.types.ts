@@ -1,3 +1,5 @@
+import type { InvoiceDataText, InvoiceRecipientKind } from './invoice-data.types';
+
 export type GuestCheckInSessionStatus =
   | 'Inviato'
   | 'InCompilazione'
@@ -50,13 +52,37 @@ export interface PublicCheckInGuestPrefill {
   documentNumberMasked?: string | null;
   documentIssuePlaceCode?: string | null;
   documentIssuePlaceName: string;
+  /** Day the document was issued (`YYYY-MM-DD`), when on file (NF-40). */
+  documentIssuedOn?: string | null;
+  /** Day the document expires (`YYYY-MM-DD`), when on file (NF-40). */
+  documentExpiresOn?: string | null;
+  /** Residence (NF-40): in Italy the comune and the province, abroad the state. Null until the guest says. */
+  residenceInItaly?: boolean | null;
+  residenceComuneCode?: string | null;
+  residenceComuneName?: string | null;
+  residenceProvince?: string | null;
+  residenceCountryCode?: string | null;
+  residenceCountryName?: string | null;
+  /**
+   * The home of the guest (NF-132, E30/F01/US02): street and house number, postal code, town; null when not on file. Given back with the
+   * guest so that a page that sends the guests whole does not clear them: the server takes the list as the whole truth.
+   */
+  residenceStreet?: string | null;
+  residencePostalCode?: string | null;
+  residenceCityName?: string | null;
+  /** Statistical fields (NF-40), codes of the closed lists, asked only where the region requires them. */
+  tourismType?: string | null;
+  travelWay?: string | null;
+  educationLevel?: string | null;
 }
 
 /**
  * Context of `GET /public/checkin/{token}`. Once the guest has submitted (`completed`), the API returns only
- * `completed` and `status`: no booking data and no guest data.
+ * `completed`, `status` and `orgSlug` (public data): no booking data and no guest data.
  */
 export interface PublicCheckInContextDto {
+  houseRules?: string | null;
+  houseRulesVersion?: string | null;
   completed: boolean;
   status: GuestCheckInSessionStatus;
   sessionId?: string;
@@ -71,8 +97,53 @@ export interface PublicCheckInContextDto {
   availableCodeTables?: AlloggiatiCodeTable[];
   /** Version of the privacy notice shown (art. 13 GDPR); absent when not configured. */
   privacyNoticeVersion?: string;
+  privacyNoticeOrgSlug?: string;
+  /**
+   * Slug of the agency the link belongs to (NF-140): sent for every usable link, whether or not the agency has a published privacy notice. The check-in page of an agency's own domain is
+   * shown only for the agency of that domain. Optional so that an answer of a backend that does not send it yet still types; the guard then reads `privacyNoticeOrgSlug`.
+   */
+  orgSlug?: string;
   /** Version of the optional marketing consent text; absent when the consent is not offered. */
   marketingConsentVersion?: string;
+  /**
+   * The guest fields the regime of the property requires: the page asks these and no other (NF-40, data minimization), as names of the
+   * properties of a guest. The statistical fields the region requires (`TourismType`, `TravelWay`, `EducationLevel`; none when the region
+   * requires none) and, for a property in canton Ticino (NF-132), `DocumentType` and `DocumentNumber` (of every adult), `ResidenceStreet`,
+   * `ResidencePostalCode`, `ResidenceCityName` and `ResidenceCountryName` (the home and the state of residence: asked, optional).
+   */
+  requiredGuestFields?: string[];
+  /**
+   * The page asks the plate of the car, once for the stay and optional (NF-132): the property is in canton Ticino. Open session only; absent
+   * (false) everywhere else, and then nothing about a plate is shown or sent.
+   */
+  askVehiclePlate?: boolean;
+  /** The language to open the page in (`it`, `en`, `de`, `fr`, `es`): the guest's earlier choice, else the browser's, else `it`. Open session only. */
+  language?: string;
+  /** The languages the guest can choose. Open session only. */
+  supportedLanguages?: string[];
+  /**
+   * The answer to «Ti serve la fattura?» is already yes (FIS-01, E06/F02/US01/T03): the step starts with the question answered. Open session only.
+   * The invoice data itself is write-only from this page (the link is anonymous): the page never receives a fiscal code, a VAT number, an address or
+   * a PEC, only this flag and `hasInvoiceData`.
+   */
+  invoiceRequested?: boolean;
+  /** The booking already has the data of an invoice recipient (the host wrote it, or the channel manager had it); never its content. Open session only. */
+  hasInvoiceData?: boolean;
+  /**
+   * The property keeps no identity document (canton Ticino, ADR-013-R6, R15): the page says «Il documento non sarà archiviato» and the selfie
+   * step sends the photo of the document again. Sent with an open session while the identity verification is on (E03/F04/US02/T04).
+   */
+  documentNotArchived?: boolean;
+  /**
+   * Where the identity verification of the session stands. Sent with an open session only while the verification is on (the feature flag of
+   * the API): absent, the page has no identity step and nothing of it changes.
+   */
+  identityVerification?: IdentityVerificationState;
+}
+
+/** Answer of `PUT /public/checkin/{token}/language`: the language now saved on the session. */
+export interface PublicCheckInLanguageResponse {
+  language: string;
 }
 
 /**
@@ -98,6 +169,44 @@ export interface StayGuestSubmit {
   documentNumber: string | null;
   documentIssuePlaceName: string | null;
   documentIssuePlaceCode: string | null;
+  /** Optional (NF-40): sent with the document, `null` when not given. */
+  documentIssuedOn?: string | null;
+  documentExpiresOn?: string | null;
+  /** Optional residence (NF-40): in Italy comune and province, abroad the state; `null` when not said. */
+  residenceInItaly?: boolean | null;
+  residenceComuneName?: string | null;
+  residenceComuneCode?: string | null;
+  residenceProvince?: string | null;
+  residenceCountryName?: string | null;
+  residenceCountryCode?: string | null;
+  /**
+   * The home of the guest (NF-132): street and house number, postal code, town. Present only where the regime asks them (`requiredGuestFields`)
+   * or, on the host's entries, where the host holds a value, so that a save never erases it: the server takes the list as the whole truth.
+   * `null` is an empty field the guest left blank. Absent on every Italian request.
+   */
+  residenceStreet?: string | null;
+  residencePostalCode?: string | null;
+  residenceCityName?: string | null;
+  /** Statistical fields (NF-40): present only when the region requires them (absent otherwise, never sent empty). */
+  tourismType?: string | null;
+  travelWay?: string | null;
+  educationLevel?: string | null;
+  /**
+   * The tourist tax exemption the host chose (a reason code, NF-46): sent by the host's entries only. The guest portal never sends it, and the
+   * server ignores it there.
+   */
+  taxExemptionCode?: string | null;
+}
+
+/**
+ * The «Ti serve la fattura?» block of the check-in (API DTO `PublicCheckInInvoiceDto`, FIS-01, E06/F02/US01/T03): sent only for a «yes». Everything
+ * but `needInvoice` is optional and write-only, a text the guest left empty is not sent, and the server checks the formats as a whole (422
+ * `invoice_data_*` with the `field`, nothing saved, the check-in included). The kind of recipient and the country go with the texts, never
+ * alone: a block with only a kind would ask for an identification the guest was not asked for.
+ */
+export interface PublicCheckInInvoiceRequest extends InvoiceDataText {
+  needInvoice: boolean;
+  recipientKind?: InvoiceRecipientKind;
 }
 
 /**
@@ -106,6 +215,8 @@ export interface StayGuestSubmit {
  * NF-05 adds per-channel consent with a separate marketing email.
  */
 export interface PublicCheckInSubmitRequest {
+  houseRulesVersion?: string;
+  privacyNoticeAcknowledged?: boolean;
   guests: StayGuestSubmit[];
   /** Guest ticked the email marketing channel (NF-05). */
   marketingConsentEmail: boolean;
@@ -113,6 +224,16 @@ export interface PublicCheckInSubmitRequest {
   marketingConsentWhatsApp: boolean;
   /** Marketing email address (required when any channel is ticked, NF-05). */
   marketingEmail?: string | null;
+  /**
+   * The optional answer to «Ti serve la fattura?» (FIS-01): present only when the guest said yes. A guest who skips the step, or says no, sends no
+   * block at all, and the check-in is never blocked by it.
+   */
+  invoice?: PublicCheckInInvoiceRequest;
+  /**
+   * The plate of the car of the stay (NF-132), once for the stay: sent only when the guest typed one, where the context says `askVehiclePlate`.
+   * Absent keeps the plate the server holds (the page never reads it back); the text is as typed, the server removes the spaces and upper-cases it.
+   */
+  vehiclePlate?: string;
 }
 
 /** One entry of an official Alloggiati table. */
@@ -121,6 +242,38 @@ export interface AlloggiatiCodeEntryDto {
   code: string;
   description: string;
   province?: string | null;
+  /** Citizenship adjective (Italiano). Absent for a place. */
+  citizenshipLabel?: string | null;
+}
+
+/** Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. */
+export interface CheckInDocumentReadResult {
+  side?: 'front' | 'back' | 'single' | null;
+  guestPosition?: number | null;
+  confirmGuest?: boolean;
+  read: boolean;
+  reason?: string | null;
+  guest?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    gender?: string | null;
+    dateOfBirth?: string | null;
+    bornInItaly?: boolean | null;
+    birthPlace?: string | null;
+    residenceStreet?: string | null;
+    residencePostalCode?: string | null;
+    residenceCityName?: string | null;
+    residenceProvince?: string | null;
+    residenceCountryName?: string | null;
+    residenceInItaly?: boolean | null;
+    birthProvince?: string | null;
+    citizenship?: string | null;
+    documentKind?: string | null;
+    documentNumber?: string | null;
+    issuePlace?: string | null;
+    documentIssuedOn?: string | null;
+    documentExpiresOn?: string | null;
+  } | null;
 }
 
 /** Delivery of the check-in link by email (API enum `GuestCheckInLinkEmailStatus`, CO-09). */
@@ -167,23 +320,248 @@ export interface CheckInLinkResponse {
   emailError?: string | null;
 }
 
-/** Biometric verification outcome (API enum `BiometricOutcome`). */
-export type BiometricOutcome = 'Accept' | 'Escalate' | 'Reject';
+/**
+ * The steps of the identity verification as the API names them (`IdentityVerificationSteps`). `presence` is the step of the self-hosted flow (E70-E74): this page has no screen for it yet, so it shows the way to a person
+ * instead (and so does any step of the future that is not named here).
+ */
+export type IdentityVerificationStep = 'consent' | 'document' | 'selfie' | 'presence' | 'done' | 'operator';
+
+/** What the guest chose when the identity step opened (API `IdentityChoices`): the automatic verification, or a person (the assisted path). */
+export type IdentityChoice = 'automatic' | 'assisted';
+
+/** What the guest is told after an attempt (API `IdentityVerificationGuestResults`): passed, try again, or a person verifies. */
+export type IdentityVerificationResultKind = 'ok' | 'retry' | 'operator';
 
 /**
- * Response of `POST /api/public/checkin/{token}/selfie`. The backend processes the selfie
- * synchronously and returns the outcome within 3 seconds per ADR-013-R1.
+ * Where the identity verification of the session stands (E03/F04/US02/T04): only the guest who leaves the document (the single guest, the head of
+ * family or the head of group, at `verifyingGuestPosition`) is asked for a selfie; `operatorPathOpen` is always true (GDPR art. 22).
  */
-export interface BiometricVerificationResponse {
-  outcome: BiometricOutcome;
+export interface IdentityVerificationState {
+  step: IdentityVerificationStep;
+  result?: IdentityVerificationResultKind | null;
+  /** The face check is offered: not when the organization switched it off, the guest is a minor or refused the consent. */
+  biometricOffered: boolean;
+  consentRecorded: boolean;
+  consentRefused: boolean;
+  documentChecked: boolean;
   attemptsRemaining: number;
+  /** A person was asked to verify (the guest asked, the consent was refused, a review, the attempts are used). */
+  operatorRequested: boolean;
+  operatorPathOpen: boolean;
+  documentNotArchived: boolean;
+  verifyingGuestPosition: number;
+  /**
+   * The pictures of the document the server holds a read of (E22/F01/US01/T02): `['single']`, or `front` and `back` for those that were sent; empty before the first one. Add-only
+   * field: an older API omits it.
+   */
+  documentSides?: string[];
+  /** The side of a document of two sides still to photograph (`front` or `back`), so a page that is opened again asks for it; null (or absent) when none is missing. */
+  documentSideNeeded?: DocumentSide | null;
+  /**
+   * The session follows the self-hosted flow (E70/F02/US01/T01, NF-188; backend flag `CheckInIdentitySelfHosted`). False, or absent while the API is older, on the legacy path: every member below keeps its default
+   * and the page is the one it always was. Add-only field.
+   */
+  selfHosted?: boolean;
+  /** The identity step was opened and bound to one guest of the session. Add-only field. */
+  opened?: boolean;
+  /** The version of the notice (the text of the consent) recorded at the opening; null before it. Add-only field. */
+  noticeVersion?: string | null;
+  /** What the guest chose: `automatic` (a consent) or `assisted` (a refusal, or the request for a person); null before the choice. Add-only field. */
+  choice?: IdentityChoice | null;
+  /** The format of the registry the document was read as (the Italian electronic identity card first); null before it was recognised. Add-only field. */
+  formatId?: string | null;
+  /** The one guided retry of a correctable defect is still available. Add-only field. */
+  guidedRetryAvailable?: boolean;
+  /** The verification is closed: no document or presence step is accepted any more (409 `identity_already_closed`), and the request for a person stays open. Add-only field. */
+  closed?: boolean;
+  /** What the guest sees of a closed verification: `ok` (approved) or `operator` (a person has it); null before it is decided. Add-only field. */
+  outcome?: IdentityVerificationResultKind | null;
 }
 
+/** The side of an identity document a picture is of: a card has the face on the front and, on the Italian electronic identity card, the lines of letters (MRZ) on the back. */
+export type DocumentSide = 'front' | 'back';
+
 /**
- * Biometric consent request. Records the consent timestamp and version per ADR-013-R9.
+ * The guest's answer to the biometric consent (`POST /api/public/checkin/{token}/biometric-consent`, ADR-013-R9): explicit, separate from the
+ * privacy notice and refusable. `consentVersion` (the version of the text shown, at most 50 characters) is required with a consent.
  */
 export interface BiometricConsentRequest {
   consentGiven: boolean;
-  consentVersion: string;
-  consentTimestamp: string;
+  consentVersion?: string;
+}
+
+/** What the answer to the consent did: `consent_recorded` (go on with the document) or `operator` (refused, not offered, or already with a person). */
+export interface BiometricConsentResponse {
+  consentRecorded: boolean;
+  result: 'consent_recorded' | 'operator';
+  biometricOffered: boolean;
+  operatorPathOpen: boolean;
+  state: IdentityVerificationState;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/document` for the capture guidance: whether the photo can be compared and, when it cannot, the codes of
+ * what to change. The API also sends the fields it read (`fields`): the identity step never uses them, so they are not part of this type.
+ */
+export interface IdentityDocumentResponse {
+  success: boolean;
+  /** The MRZ was read and the agent found nothing to change: the photo can be compared. */
+  acceptable: boolean;
+  /** What to change in the photo (`show_whole_document`, `avoid_glare`, `hold_still`, `more_light`, ...): codes the page translates. */
+  guidanceCodes: string[];
+  documentStored: boolean;
+  /** The property keeps no document (Ticino): the selfie request carries the photo again (both sides of a document of two sides). */
+  documentNotArchived: boolean;
+  /** The side that was just read (`single`, `front` or `back`). Add-only field: an older API omits it. */
+  side?: string;
+  /** The pictures of the attempt the server has a read of (`['single']`, or `front` and `back`). Add-only field. */
+  sides?: string[];
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/selfie`: `ok`, `retry` or `operator`, the guidance codes, the attempts left and, only on `ok`, the lock
+ * code of the property (null or absent when it has none). Nothing of the picture comes back.
+ */
+export interface IdentitySelfieResponse {
+  result: IdentityVerificationResultKind;
+  guidanceCodes: string[];
+  attemptsRemaining: number;
+  operatorPathOpen: boolean;
+  lockCode?: string | null;
+  /**
+   * Why an `ok` came with no code although the property has one (E25/F01/US01/T01): `tourist_tax_due` while the organization asks for the tourist tax before the lock code and the
+   * stay still owes one the guest can pay online. Absent otherwise.
+   */
+  lockCodeHeld?: string | null;
+}
+
+/** Answer of `POST /api/public/checkin/{token}/request-operator`: the guest asked for a person and the operators are told. */
+export interface IdentityOperatorResponse {
+  result: string;
+  operatorPathOpen: boolean;
+  state: IdentityVerificationState;
+}
+
+/**
+ * What `POST /api/public/checkin/{token}/identity/open` is sent (E70/F02/US01/T01, NF-188): the version of the text of the consent the page shows, as `GET .../legal-texts` served it. Any other version is
+ * 422 `notice_version_unknown` and nothing is recorded.
+ */
+export interface IdentityOpenRequest {
+  noticeVersion: string;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/identity/open`: the state of the verification after the opening (`selfHosted`, `opened`, `noticeVersion`, `choice`, `closed`, `outcome` among the rest). The call is
+ * idempotent: later calls change nothing. A verification that is closed answers 409 `identity_already_closed` instead, with the same `state` in the body.
+ */
+export interface IdentityOpenResponse {
+  state: IdentityVerificationState;
+}
+
+/** What a legal text of the identity step is for (API `CheckInLegalTextKinds`): the consent to the face check, and the notice for a property that keeps no document (Ticino). */
+export type CheckInLegalTextKind = 'biometric-consent' | 'ticino-notice';
+
+/**
+ * One legal text of the identity step as the registry serves it (`GET /api/public/checkin/{token}/legal-texts`, E22/F01/US02/T02): its `version` is the id the consent posts back, `language`
+ * the one of the file served (the closest the registry has), `isDraft` that it is not approved yet (served outside production only), and `contentHtml` its text, already sanitized by the server.
+ */
+export interface CheckInLegalText {
+  kind: CheckInLegalTextKind | string;
+  version: string;
+  language: string;
+  isDraft: boolean;
+  contentHtml: string;
+}
+
+/** Answer of `GET /api/public/checkin/{token}/legal-texts?lang=`: the language asked for and the texts of the stay (the consent, and the Ticino notice where it applies). */
+export interface CheckInLegalTextsResponse {
+  language: string;
+  texts: CheckInLegalText[];
+}
+
+/**
+ * What the guest types at the door (`POST /api/public/checkin/door/{doorToken}`, E22/F01/US02/T01): the booking code or, without one, the surname of the main guest, and the day the stay
+ * begins (`yyyy-MM-dd`). The code wins when both are sent, so only one of them is ever sent.
+ */
+export interface DoorCheckInRequest {
+  bookingCode?: string;
+  surname?: string;
+  arrivalDate: string;
+}
+
+/** Answer of the door: the token of the check-in link of the stay, and nothing else. It opens `/checkin/{token}`. */
+export interface DoorCheckInResponse {
+  token: string;
+}
+
+/** The address behind the QR code of the door of a property (`GET api/properties/{id}/door-qr` and `POST .../rotate`). */
+export interface DoorQr {
+  url: string;
+}
+
+/**
+ * Where the collection of the tourist tax of a stay stands (`TouristTaxCollectionStatus` of the API, E25/F01/US01/T01, NF-119). The guest page and the host's view of the tax
+ * read the same states: what is still to collect, what the guest paid online, what the channel or the price of the booking already covers.
+ */
+export type TouristTaxCollectionStatus =
+  | 'ToCollect'
+  | 'PaidOnline'
+  | 'PaidAtProperty'
+  | 'CollectedByChannel'
+  | 'IncludedInBookingPayment'
+  | 'NotDue';
+
+/** Why nothing can be paid online now (`TouristTaxNotPayableReason` of the API); `None` when there is something to pay. */
+export type TouristTaxNotPayableReason =
+  | 'None'
+  | 'StayNotActive'
+  | 'PaidAtProperty'
+  | 'ChannelCollects'
+  | 'CollectorUnknown'
+  | 'NotComputable'
+  | 'AwaitingConfirmation'
+  | 'NothingDue'
+  | 'AlreadyPaidOnline';
+
+/** The tax of one guest as the guest page shows it: a position of the stay, never a person, and never the reason of an exemption. */
+export interface PublicTouristTaxGuest {
+  position: number;
+  taxableNights: number;
+  /** Null when the tax of the stay is not calculated. */
+  amount: number | null;
+  exempt: boolean;
+}
+
+/**
+ * Answer of `GET /api/public/checkin/{token}/tourist-tax` (flag `touristTaxOnlinePayment`): what the guest can pay online now, in the currency of the property, and where the
+ * collection stands. Every amount is the API's: the page adds up nothing. 404 while the flag is off or for a link that reaches no stay; 409 `tourist_tax_payment_not_available`
+ * while the organization does not offer the payment or its account does not take payments.
+ */
+export interface PublicTouristTax {
+  status: TouristTaxCollectionStatus;
+  reason: TouristTaxNotPayableReason;
+  /** What the guest can pay online now (0 when nothing). */
+  payable: number;
+  /** The tax of the stay the host collects; null when it cannot be calculated (the host tells the amount). */
+  amountDue: number | null;
+  /** What the guest already paid online. */
+  collectedAmount: number;
+  /** `EUR` or `CHF`; empty when the API does not say: the amounts are then shown with no symbol. */
+  currency: string;
+  guests: PublicTouristTaxGuest[];
+  /** The organization asks for the tax before the lock code: the step cannot be left until it is paid. */
+  requiredBeforeAccessCode: boolean;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/tourist-tax/payment-intent`: what the Payment Element needs. The intent is on the organization's connected account, so
+ * Stripe.js is opened with `stripeAccountId`. `amount` and `currency` are what will be charged (never a figure of the browser).
+ */
+export interface TouristTaxPaymentIntent {
+  paymentIntentId: string;
+  clientSecret: string;
+  publishableKey: string;
+  stripeAccountId: string;
+  amount: number;
+  currency: string;
 }

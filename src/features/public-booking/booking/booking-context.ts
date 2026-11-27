@@ -8,8 +8,8 @@ import type { DirectBookingQuote, PublicPropertyDetailDto } from '@/types';
 export type QuoteView =
   /** No stay to price yet: the dates are missing. */
   | { status: 'none' }
-  /** The stay cannot be had; `minNights` and `maxGuests` complete the sentence. */
-  | { status: 'problem'; problem: StayProblemKind; minNights?: number; maxGuests?: number }
+  /** The stay cannot be had; `minNights`, `maxNights` (the nights of the rule of the arrival) and `maxGuests` complete the sentence. */
+  | { status: 'problem'; problem: StayProblemKind; minNights?: number; maxNights?: number; maxGuests?: number }
   /** The quote is on its way; `stale` is the one of the previous stay, kept in sight but never offered for booking. */
   | { status: 'loading'; stale: DirectBookingQuote | null }
   /** The quote of this stay. `estimatedTax`: the ages of the children are not asked yet, the server worked the tax out for the oldest age. */

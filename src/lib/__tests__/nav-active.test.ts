@@ -103,7 +103,7 @@ describe('isNavEntryActive for pages that hang from an entry', () => {
 describe('isNavEntryActive on the route manifest', () => {
   const allowAll = () => true;
   const activePath = (contextKey: Parameters<typeof getNavMatchEntries>[0], pathname: string) =>
-    resolveActiveNavEntry(pathname, getNavMatchEntries(contextKey, allowAll, { otaPartnerApi: true, agencyTier: true }))?.path;
+    resolveActiveNavEntry(pathname, getNavMatchEntries(contextKey, allowAll, { otaPartnerApi: true, agencyTier: true, crmMarketing: true }))?.path;
 
   it.each([
     ['short-rent', '/app/short-rent', '/app/short-rent'],
@@ -115,35 +115,46 @@ describe('isNavEntryActive on the route manifest', () => {
     ['short-rent', '/app/short-rent/payments/revenue', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/payments/create', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/reports', '/app/short-rent/payments'],
-    ['short-rent', '/app/short-rent/settings/payments', '/app/short-rent/payments'],
+    ['short-rent', '/app/short-rent/documents', '/app/short-rent/payments'],
+    ['short-rent', '/app/short-rent/settings/payments', '/app/short-rent/settings'],
     ['short-rent', '/app/short-rent/alloggiati', '/app/short-rent/compliance'],
     ['short-rent', '/app/short-rent/compliance/cin', '/app/short-rent/compliance'],
-    ['short-rent', '/app/short-rent/settings/site-appearance', '/app/short-rent/vetrina'],
-    ['short-rent', '/app/short-rent/settings/site-documents', '/app/short-rent/vetrina'],
-    ['short-rent', '/app/short-rent/settings/domain', '/app/short-rent/vetrina'],
+    ['short-rent', '/app/short-rent/settings/site-appearance', '/app/short-rent/settings'],
+    ['short-rent', '/app/short-rent/settings/site-documents', '/app/short-rent/settings'],
+    ['short-rent', '/app/short-rent/settings/domain', '/app/short-rent/settings'],
+    ['short-rent', '/app/short-rent/messages', '/app/short-rent/messages'],
+    ['short-rent', '/app/short-rent/messages/ota%3A6f1c9a52-1111-4222-8333-944455556666', '/app/short-rent/messages'],
     ['short-rent', '/app/short-rent/guests', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/guests/g1', '/app/short-rent/bookings'],
-    ['short-rent', '/app/short-rent/crm/guests/c1', '/app/short-rent/bookings'],
+    // The CRM (behind its flag) is an entry of "Altro" of its own, not a tab of Prenotazioni.
+    ['short-rent', '/app/short-rent/crm/guests', '/app/short-rent/crm/guests'],
+    ['short-rent', '/app/short-rent/crm/guests/c1', '/app/short-rent/crm/guests'],
+    // The merge proposals are a tab of the CRM: the open page highlights the CRM entry.
+    ['short-rent', '/app/short-rent/crm/merge', '/app/short-rent/crm/guests'],
     ['short-rent', '/app/short-rent/reviews', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/trusted-suppliers', '/app/short-rent/properties'],
     ['short-rent', '/app/short-rent/channels', '/app/short-rent/properties'],
-    ['short-rent', '/app/short-rent/verifications', '/app/short-rent/approval-queue'],
+    // The queues of the host are tabs of the Cruscotto: the open page highlights it.
+    ['short-rent', '/app/short-rent/verifications', '/app/short-rent'],
+    ['short-rent', '/app/short-rent/approval-queue', '/app/short-rent'],
+    ['short-rent', '/app/short-rent/activities', '/app/short-rent'],
     ['short-rent', '/app/short-rent/fiscal/wizard', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/ota/create', '/app/short-rent/properties'],
-    // Plan, billing and the profile are in no menu: no entry stands for them.
-    ['short-rent', '/app/short-rent/settings/plan', undefined],
+    // Plan and billing belong to Settings. Profile is reached from the account menu.
+    ['short-rent', '/app/short-rent/settings/plan', '/app/short-rent/settings'],
     ['short-rent', '/app/short-rent/profile', undefined],
     // The Panoramica is the root page of its area (LR-05): highlighted on its own page, and not on every page of the area.
     ['long-rent', '/app/long-rent', '/app/long-rent'],
-    ['long-rent', '/app/long-rent/settings/billing', undefined],
+    ['long-rent', '/app/long-rent/settings/billing', '/app/long-rent/settings'],
     ['long-rent', '/app/long-rent/profile', undefined],
-    ['long-rent', '/app/long-rent/deadlines', '/app/long-rent/leases'],
-    ['long-rent', '/app/long-rent/tenants/t1', '/app/long-rent/leases'],
-    ['long-rent', '/app/long-rent/fiscal', '/app/long-rent/rents'],
-    ['long-rent', '/app/long-rent/leases', '/app/long-rent/leases'],
-    // Contratti stays highlighted on the pages of a contract (it was not, as an "exact" entry).
-    ['long-rent', '/app/long-rent/leases/new', '/app/long-rent/leases'],
-    ['long-rent', '/app/long-rent/leases/l1', '/app/long-rent/leases'],
+    ['long-rent', '/app/long-rent/deadlines', undefined],
+    ['long-rent', '/app/long-rent/tenants/t1', undefined],
+    ['long-rent', '/app/long-rent/fiscal', '/app/long-rent/fiscal'],
+    ['long-rent', '/app/long-rent/payments', '/app/long-rent/payments'],
+    ['long-rent', '/app/long-rent/leases', undefined],
+    // Contracts have no standalone menu destination.
+    ['long-rent', '/app/long-rent/leases/new', undefined],
+    ['long-rent', '/app/long-rent/leases/l1', undefined],
     ['long-rent', '/app/long-rent/properties/p1/edit', '/app/long-rent/properties'],
     ['supplier', '/app/supplier/calendar', '/app/supplier/availability'],
     ['supplier', '/app/supplier/inbox/r1', '/app/supplier/inbox'],
@@ -151,7 +162,10 @@ describe('isNavEntryActive on the route manifest', () => {
     ['admin', '/app/admin', '/app/admin'],
     ['admin', '/app/admin/compliance/tax-rates', '/app/admin/cin'],
     ['admin', '/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
+    ['admin', '/app/admin/compliance/istat-regions', '/app/admin/cin'],
+    // Staff invitations are a primary entry.
     ['admin', '/app/admin/suppliers/invite', '/app/admin/suppliers/invite'],
+    ['admin', '/app/admin/marketing', '/app/admin/seo'],
   ] as const)('%s %s highlights %s', (contextKey, pathname, expected) => {
     expect(activePath(contextKey, pathname)).toBe(expected);
   });

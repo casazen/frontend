@@ -3,9 +3,6 @@ import axios from '@/lib/axios';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type {
   AlloggiatiGuestSummaryDto,
-  AlloggiatiReportDto,
-  AlloggiatiReportFilters,
-  AlloggiatiRowErrorDto,
   AlloggiatiStatusDto,
   AlloggiatiSummaryDto,
   MarkAlloggiatiSentManuallyRequest,
@@ -14,11 +11,27 @@ import type {
 import type { AlloggiatiCodeEntryDto, AlloggiatiCodeList, StayGuestSubmit } from '@/types/public-checkin.types';
 
 export const alloggiatiApi = {
+  downloadDirectReceipt: async (bookingId: string): Promise<Blob> =>
+    (await axios.get<Blob>(`/alloggiati/${encodeURIComponent(bookingId)}/direct-receipt`, { responseType: 'blob' })).data,
+
   getSummary: (propertyId?: string) =>
     ApiClient.get<AlloggiatiSummaryDto[]>('/alloggiati/summary', propertyId ? { propertyId } : undefined),
 
+  /**
+   * GET /alloggiati/{bookingId}/status — the status of the communication of a stay. For a stay whose sender is the channel manager it knows where the guests are on it
+   * (`channelManager`: the sender, the state of each guest by position, the receipt coverage, the light and the action `RetryOctorateWrite`); the two derived states
+   * `EntrustedToChannelManager` and `ChannelManagerWriteFailed` come with it (E20/F01/US01/T02). A booking of another org, or one outside the caller's reach, answers 404.
+   */
   getStatus: (bookingId: string) =>
     ApiClient.get<AlloggiatiStatusDto>(`/alloggiati/${bookingId}/status`),
+
+  /**
+   * POST /alloggiati/{bookingId}/retry-octorate-write — the host asks to try again to write the guests of the stay to the channel manager (the action `RetryOctorateWrite`;
+   * needs `alloggiati.submit`). Answers the status as it is afterwards, with `retry`: what the retry did. 409 `alloggiati_write_in_progress` while another send of the stay
+   * runs (nothing was tried), 403 without the permission, 404 for a booking that is not the caller's.
+   */
+  retryOctorateWrite: (bookingId: string) =>
+    ApiClient.post<AlloggiatiStatusDto>(`/alloggiati/${encodeURIComponent(bookingId)}/retry-octorate-write`),
 
   /** Per-guest data to copy on the Questura portal, in the order of the Alloggiati record. */
   getGuestSummary: (bookingId: string) =>
@@ -49,9 +62,15 @@ export const alloggiatiApi = {
     }
   },
 
-  /** Replaces the guests of the stay (host entry); answers the updated per-guest summary. */
-  replaceStayGuests: (bookingId: string, guests: StayGuestSubmit[]) =>
-    ApiClient.put<AlloggiatiGuestSummaryDto>(`/alloggiati/${bookingId}/stay-guests`, { guests }),
+  /**
+   * Replaces the guests of the stay (host entry); answers the updated per-guest summary. The plate of the car of the stay (NF-132) goes with it
+   * where the regime asks it: not sent, the stored one stays; an empty text clears it.
+   */
+  replaceStayGuests: (bookingId: string, guests: StayGuestSubmit[], vehiclePlate?: string) =>
+    ApiClient.put<AlloggiatiGuestSummaryDto>(
+      `/alloggiati/${bookingId}/stay-guests`,
+      vehiclePlate === undefined ? { guests } : { guests, vehiclePlate },
+    ),
 
   /** Official Alloggiati codes matching `q` (empty until an admin imports the tables). */
   searchCodes: (list: AlloggiatiCodeList, q: string) =>
@@ -60,12 +79,4 @@ export const alloggiatiApi = {
   /** The host declares having sent the schedina on the portal (CasaZen does not transmit). */
   markSentManually: (bookingId: string, request: MarkAlloggiatiSentManuallyRequest) =>
     ApiClient.post<AlloggiatiStatusDto>(`/alloggiati/${bookingId}/mark-sent-manually`, request),
-
-  /** Get all alloggiati reports with optional filters. */
-  getReports: (filters?: AlloggiatiReportFilters) =>
-    ApiClient.get<AlloggiatiReportDto[]>('/alloggiati/reports', filters),
-
-  /** Get row-level errors for a specific report. */
-  getReportErrors: (reportId: string) =>
-    ApiClient.get<AlloggiatiRowErrorDto[]>(`/alloggiati/reports/${reportId}/errors`),
 };

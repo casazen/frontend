@@ -82,33 +82,9 @@ export function SeoDashboardPage() {
         }
       />
 
-      <SeoAiSettingsCard />
-
-      <Card data-testid="seo-ai-budget-card">
-        <CardHeader>
-          <CardTitle>{t('admin.seo.aiBudget')}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          {budget.isLoading ? (
-            t('admin.seo.budgetLoading')
-          ) : budget.isError || !budget.data ? (
-            <span className="text-destructive" data-testid="seo-ai-budget-error">
-              {t('admin.seo.budgetError')}
-            </span>
-          ) : (
-            t('admin.seo.budgetTokens', {
-              used: budget.data.tokensUsedThisMonth.toLocaleString(i18n.language),
-              cap: budget.data.monthlyTokenCap.toLocaleString(i18n.language),
-            })
-          )}
-        </CardContent>
-      </Card>
-
-      <SeoTopComuniWidget />
-
       <Card>
         <CardContent className="space-y-4 pt-6">
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex flex-wrap items-center gap-3 rounded-lg bg-surface-2 p-3 text-sm">
             <span>{t('admin.seo.filter.label')}</span>
             <select
               className="rounded-md border px-3 py-2 text-sm"
@@ -232,6 +208,34 @@ export function SeoDashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+      <SeoAiSettingsCard />
+
+      <Card data-testid="seo-ai-budget-card">
+        <CardHeader>
+          <CardTitle>{t('admin.seo.aiBudget')}</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          {budget.isLoading ? (
+            t('admin.seo.budgetLoading')
+          ) : budget.isError || !budget.data ? (
+            <span className="text-destructive" data-testid="seo-ai-budget-error">
+              {t('admin.seo.budgetError')}
+            </span>
+          ) : (
+            t('admin.seo.budgetTokens', {
+              used: budget.data.tokensUsedThisMonth.toLocaleString(i18n.language),
+              cap: budget.data.monthlyTokenCap.toLocaleString(i18n.language),
+            })
+          )}
+        </CardContent>
+      </Card>
+
+
+
+      </div>
+      <SeoTopComuniWidget />
 
       <SeoReviewDialog
         key={reviewPageId ?? 'none'}

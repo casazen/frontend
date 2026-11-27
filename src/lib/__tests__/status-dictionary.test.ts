@@ -49,9 +49,11 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   // No enum: the regime of a property for the tax year, as the interface works it out from what the host chose and confirmed (SR-FISC)
   fiscalRegime: ["Confirmed", "ToConfirm", "NotChosen"],
   // AlloggiatiWebStatus
-  alloggiati: ["DaInviare", "DaInviareManualmente", "SentReceiptPending", "InviatoManualmente", "Inviato", "Rifiutato", "Errore"],
+  alloggiati: ["Sending", "PartiallyAccepted", "ToVerify", "DaInviare", "DaInviareManualmente", "SentReceiptPending", "InviatoManualmente", "Inviato", "Rifiutato", "Errore", "NotDue", "EntrustedToChannelManager", "ChannelManagerWriteFailed"],
   // SupplierServiceListingStatus (SP-06)
   serviceListing: ["Draft", "Active", "Paused"],
+  // ChannelPublishStatus (E02/F03/US01): the state of the content of a property on a channel
+  channel: ["Draft", "Sending", "Accepted", "Published", "ToFix", "ManagedOnChannel"],
 };
 
 const kinds = Object.keys(STATUS_DICTIONARY) as StatusKind[];
@@ -279,6 +281,7 @@ describe("pipelines", () => {
 describe("states the interface works out", () => {
   it.each([
     [{ complianceStatus: "Active", isPaused: false }, "Active"],
+    [{ complianceStatus: "Active", isActive: false }, "Pending"],
     [{ complianceStatus: "Active", isPaused: true }, "Paused"],
     [{ complianceStatus: "Pending", isPaused: false }, "Pending"],
     [{ complianceStatus: "Pending", isPaused: true }, "Paused"],

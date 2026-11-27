@@ -3,11 +3,13 @@ import type { ReactNode } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { savePendingHostInvite } from '@/lib/host-invite';
 import { emailVerificationOutcome } from '../email-verification-outcome';
 
 const auth0 = vi.hoisted(() => ({
   isLoading: false,
   isAuthenticated: false,
+  verified: true,
   loginWithRedirect: vi.fn(async () => undefined),
 }));
 
@@ -16,7 +18,7 @@ vi.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
     isLoading: auth0.isLoading,
     isAuthenticated: auth0.isAuthenticated,
-    user: auth0.isAuthenticated ? { sub: 'auth0|host' } : undefined,
+    user: auth0.isAuthenticated ? { sub: 'auth0|host', email_verified: auth0.verified } : undefined,
     loginWithRedirect: auth0.loginWithRedirect,
     logout: vi.fn(),
     getAccessTokenSilently: vi.fn(async () => 'token'),
@@ -50,9 +52,12 @@ describe('emailVerificationOutcome', () => {
 
 describe('EmailVerifiedPage', () => {
   beforeEach(async () => {
+    sessionStorage.removeItem('cz-org-invite');
     auth0.isLoading = false;
     auth0.isAuthenticated = false;
+    auth0.verified = true;
     auth0.loginWithRedirect.mockClear();
+    sessionStorage.clear();
     await i18n.changeLanguage('it');
   });
 
@@ -63,6 +68,46 @@ describe('EmailVerifiedPage', () => {
     expect(screen.getByText('Email confermata')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('email-verified-sign-in'));
     expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1);
+  });
+
+  it('resumes a pending team invitation without passing its token to sign-in', () => {
+    sessionStorage.setItem('cz-org-invite', 'ab'.repeat(32));
+    renderPage('?success=true');
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('emailVerified.resumeInvite') }));
+    expect(auth0.loginWithRedirect).toHaveBeenCalledWith(expect.objectContaining({ appState: { returnTo: '/invite/accept' } }));
+    expect(JSON.stringify(auth0.loginWithRedirect.mock.calls)).not.toContain('ab'.repeat(32));
+  });
+
+  it('keeps the instructions visible when verification opens in a new tab with an existing session', () => {
+    auth0.isAuthenticated = true;
+    renderPage('?success=true');
+    expect(screen.getByText(i18n.t('emailVerified.inviteTab'))).toBeVisible();
+    expect(screen.getByRole('button', { name: i18n.t('invitation.unusable.goToApp') })).toBeEnabled();
+    expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
+  });
+
+  it('refreshes an explicitly unverified session before returning to the pending invite', () => {
+    sessionStorage.setItem('cz-org-invite', 'ab'.repeat(32));
+    auth0.isAuthenticated = true;
+    auth0.verified = false;
+    renderPage('?success=true');
+    fireEvent.click(screen.getByTestId('email-verified-sign-in'));
+    expect(auth0.loginWithRedirect).toHaveBeenCalledWith(expect.objectContaining({
+      appState: { returnTo: '/invite/accept' },
+      authorizationParams: expect.objectContaining({ prompt: 'login' }),
+    }));
+  });
+
+  it('resumes the pending host invitation after successful verification', () => {
+    const token = 'a'.repeat(64);
+    savePendingHostInvite(token);
+    renderPage('?success=true&code=success');
+
+    fireEvent.click(screen.getByTestId('email-verified-sign-in'));
+
+    expect(auth0.loginWithRedirect).toHaveBeenCalledWith(expect.objectContaining({
+      appState: expect.objectContaining({ returnTo: `/invito-host/${token}` }),
+    }));
   });
 
   it('explains a failed verification instead of the Auth0 English error', () => {

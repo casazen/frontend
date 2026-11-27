@@ -1,10 +1,13 @@
+import { UserRoundPlus } from 'lucide-react';
+import { useMe } from '@/queries/use-users';
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useOrgSettings } from '@/features/settings/organization/use-org-settings';
 import { ACCOUNT_BILLING_PATH } from '@/lib/billing-routes';
@@ -14,7 +17,7 @@ import type { OrgInvitationLanguage, OrgInvitationSent } from '@/types/org-team.
 import { ACCOUNT_PEOPLE_PATH } from '../../account/account-home-model';
 import { problemCodeOf, SEAT_LIMIT_CODE } from '../team-errors';
 import { assignableRoles } from '../team-roles';
-import { usePickerProperties } from '../team-properties';
+import { RENTAL_AREAS, usePickerProperties } from '../team-properties';
 import { InviteDone } from './invite-done';
 import {
   INVITE_DRAFT_EXCLUDE,
@@ -25,7 +28,7 @@ import {
   toInvitationRequest,
   type InviteValues,
 } from './invite-model';
-import { ReviewStep, RoleStep, WhereStep, WhoStep } from './invite-steps';
+import { BackToPeople, ReviewStep, RoleStep, WhereStep, WhoStep } from './invite-steps';
 
 /** The language of the emails the person starts from when the account has not chosen one (or it cannot be read): the one of the interface. */
 function interfaceLanguage(language: string): OrgInvitationLanguage {
@@ -46,8 +49,10 @@ function SeatLimitWay() {
 
 function InviteWizard() {
   const { t, i18n } = useTranslation();
+  const { data: profile } = useMe();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const assistantInvite = (useLocation().state as { invite?: { name?: unknown; email?: unknown } } | null)?.invite;
   const create = useCreateOrgInvitation();
   const members = useOrgMembers(true, { fresh: true });
   const invitations = useOrgInvitations({ fresh: true });
@@ -60,15 +65,19 @@ function InviteWizard() {
 
   // The checks of the steps know who is in the team and who is already invited, and which roles this person may give.
   const memberData = members.data?.items;
+  const ownerAreas = Array.isArray(memberData) ? memberData.find((member) => member.role === 'Owner' && member.status === 'Active')?.areas : undefined;
+  const availableAreas = useMemo(() => RENTAL_AREAS.filter((area) => ownerAreas?.includes(area)), [ownerAreas]);
   const invitationData = invitations.data;
   const roleData = roles.data?.roles;
+  const assignable = useMemo(() => assignableRoles(roleData).map((role) => role.role), [roleData]);
   const schemas = useMemo(
     () =>
       inviteStepSchemas(
         knownEmails(Array.isArray(memberData) ? memberData : undefined, Array.isArray(invitationData) ? invitationData : undefined),
-        roleData ? assignableRoles(roleData).map((role) => role.role) : undefined,
+        availableAreas,
+        assignable,
       ),
-    [memberData, invitationData, roleData],
+    [memberData, invitationData, assignable, availableAreas],
   );
 
   // `?property=` needs the properties to know the area of the one it names: the wizard opens when they are there (or failed).
@@ -77,10 +86,33 @@ function InviteWizard() {
   const waitingForSettings = settings.isPending;
   const accountLanguage = settings.data?.defaultLanguage;
   const defaults = useMemo(
-    () => inviteDefaults(searchParams, accountLanguage ?? interfaceLanguage(i18n.language), properties),
-    [searchParams, accountLanguage, i18n.language, properties],
+    () => {
+      const initial = inviteDefaults(searchParams, accountLanguage ?? interfaceLanguage(i18n.language), properties, availableAreas);
+      if (!assistantInvite) return initial;
+      const name = typeof assistantInvite.name === 'string' ? assistantInvite.name.slice(0, 100) : '';
+      const email = typeof assistantInvite.email === 'string' ? assistantInvite.email.slice(0, 254) : '';
+      return { values: { ...initial.values, name, email }, prefilled: true };
+    },
+    [searchParams, accountLanguage, i18n.language, properties, availableAreas, assistantInvite],
   );
-  if (waitingForProperties || waitingForSettings) return <LoadingScreen message={t('team.invite.loading')} className="h-auto flex-1" />;
+  if (profile?.org?.isAgency === false) {
+    return <Alert action={<BackToPeople />}>{t('admin.staffInvite.privateTeam')}</Alert>;
+  }
+  if (members.isPending || waitingForProperties || waitingForSettings) return <LoadingScreen message={t('team.invite.loading')} className="h-auto flex-1" />;
+
+  if (members.isError) {
+    return (
+      <Alert variant="danger" action={<>
+        <Button type="button" size="sm" className="min-h-11" onClick={() => void members.refetch()}>{t('team.retry')}</Button>
+        <BackToPeople />
+      </>}>
+        {t('team.invite.areasLoadError')}
+      </Alert>
+    );
+  }
+  if (!availableAreas.length) {
+    return <Alert variant="warning" action={<BackToPeople />}>{t('team.invite.areasUnavailable')}</Alert>;
+  }
 
   const steps: WizardStep<InviteValues>[] = [
     {
@@ -97,7 +129,8 @@ function InviteWizard() {
       title: t('team.invite.steps.role.title'),
       purpose: t('team.invite.steps.role.purpose'),
       schema: schemas.role,
-      render: () => <RoleStep />,
+      nextDisabled: roles.isError || assignable.length === 0,
+      render: () => <RoleStep availableAreas={availableAreas} />,
     },
     {
       id: 'where',
@@ -105,14 +138,14 @@ function InviteWizard() {
       title: t('team.invite.steps.where.title'),
       purpose: t('team.invite.steps.where.purpose'),
       schema: schemas.where,
-      render: () => <WhereStep />,
+      render: () => <WhereStep availableAreas={availableAreas} />,
     },
     {
       id: 'review',
       label: t('team.invite.steps.review.label'),
       title: t('team.invite.steps.review.title'),
       purpose: t('team.invite.steps.review.purpose'),
-      render: () => <ReviewStep />,
+      render: () => <ReviewStep availableAreas={availableAreas} />,
     },
   ];
 
@@ -125,16 +158,17 @@ function InviteWizard() {
       finishFailedMessage={t('team.invite.errors.sendFailed')}
       onFinish={async (values) => {
         try {
-          return await create.mutateAsync(toInvitationRequest(values, properties));
+          return await create.mutateAsync(toInvitationRequest(values, properties, availableAreas));
         } catch (error) {
           setSeatLimitHit(problemCodeOf(error) === SEAT_LIMIT_CODE);
           throw error;
         }
       }}
       // An address that asks for something (`?role=accountant`) is not given the answers of an older visit instead.
-      draft={{ exclude: INVITE_DRAFT_EXCLUDE, accept: () => !defaults.prefilled }}
+      draft={{ exclude: INVITE_DRAFT_EXCLUDE, accept: (draft) => !defaults.prefilled && Array.isArray(draft.values.areas)
+        && draft.values.areas.every((area) => availableAreas.includes(area)) }}
       onExit={() => navigate(ACCOUNT_PEOPLE_PATH)}
-      renderDone={({ result, values }) => <InviteDone sent={result} values={values} />}
+      renderDone={({ result }) => <InviteDone sent={result} />}
       aboveFooter={seatLimitHit ? <SeatLimitWay /> : null}
       testIds={{
         root: 'invite-wizard',
@@ -163,7 +197,10 @@ export function InvitePage() {
 
   return (
     <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="invite-page">
-      <PageHeader title={t('team.invite.title')} crumbs="auto" />
+      <div className="grid min-w-0 items-center gap-4 rounded-3xl border border-primary/20 bg-card p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:p-7">
+        <span aria-hidden="true" className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary-text"><UserRoundPlus className="size-6" /></span>
+        <PageHeader title={t('team.invite.title')} crumbs="auto" />
+      </div>
       <InviteWizard key={searchParams.get('n') ?? 'first'} />
     </div>
   );

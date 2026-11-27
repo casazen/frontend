@@ -19,7 +19,7 @@ function HeadBeforeUi05({ title, description, action }: { title: string; descrip
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
       <div className="min-w-0 grow basis-56">
-        <h1 className="break-words text-3xl font-bold tracking-tight">{title}</h1>
+        <h1 className="break-words text-3xl font-semibold tracking-tight text-balance">{title}</h1>
         {description && (
           <p className="text-muted-foreground mt-2 break-words">{description}</p>
         )}
@@ -168,7 +168,8 @@ describe('PageHeader with the trail (UI-05)', () => {
   it('PageHeader_EmptyCrumbs_DrawNoTrailAndNoBackLink', () => {
     render(inShell('short-rent', <PageHeader title="Cruscotto" crumbs={[]} />));
 
-    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    // The Cruscotto has the tabs of its section (Da fare, Da approvare…): no trail is drawn above them.
+    expect(screen.queryByRole('navigation', { name: 'Percorso di navigazione' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('back-link')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeInTheDocument();
   });

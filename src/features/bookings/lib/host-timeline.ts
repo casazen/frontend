@@ -12,6 +12,7 @@ import type {
 } from '@/types/host-calendar.types';
 import type { CalendarKind } from './calendar-kinds';
 import { HOST_CALENDAR_VIEWS, blockSourceLabel, toHostCalendarBlockEvent } from './host-calendar';
+import { bookingChannelName } from './ota-stay';
 
 /**
  * The Timeline of the host calendar (SR-02): every property is a row, every day a column, a stay is a bar and an intervention a
@@ -279,7 +280,7 @@ export function drawerKindOf(item: HostCalendarItem): 'booking' | 'ical' | 'bloc
 
 /* ----------------------------------------------------------------------------------------------------------------- Words */
 
-/** Where a stay came from, in words: the booking site, by hand, a portal. */
+/** Where a stay came from, in words: the booking site, by hand, a portal (each portal of the channel manager by its own name, `booking.channels.*`). */
 export function channelLabel(channel: HostCalendarItemChannel | undefined, t: TFunction): string {
   switch (channel) {
     case 'Direct':
@@ -290,6 +291,11 @@ export function channelLabel(channel: HostCalendarItemChannel | undefined, t: TF
       return t('ical.channels.Airbnb');
     case 'BookingCom':
       return t('ical.channels.BookingCom');
+    case 'Expedia':
+    case 'Vrbo':
+    case 'TripAdvisor':
+    case 'Agoda':
+      return bookingChannelName(channel, t);
     case 'Other':
       return t('ical.channels.Other');
     default:
