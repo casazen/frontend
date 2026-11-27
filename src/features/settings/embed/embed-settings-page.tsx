@@ -9,6 +9,7 @@ import { SkeletonLine } from '@/components/ui/skeleton';
 import { needsOrgSetup } from '@/lib/onboarding';
 import { useCurrentUser } from '@/queries/use-users';
 import { useOrgBookingSite } from '../domain/use-org-domain';
+import { EmbedConnectedSites } from './embed-connected-sites';
 import { EmbedDomainStatus } from './embed-domain-status';
 import { EmbedGtmField } from './embed-gtm-field';
 import { EmbedPluginSteps } from './embed-plugin-steps';
@@ -21,7 +22,8 @@ import { EmbedWidgetBlock } from './embed-widget-block';
  * for the account administrator, who is the only one that may read those settings (a refused read would send the whole app to the page of no access): anyone else is told so and
  * no request goes out. The code to paste names the agency's own domain when it has one that is served, else the address of CasaZen with the slug of the org.
  *
- * One block stands out (the choice of the widget, its code and its preview, together); the domain, the plugin for WordPress and the container of the tag manager are quiet rows.
+ * One block stands out (the choice of the widget, its code and its preview, together); the domain, the plugin for WordPress (always with its download, PLG-FE-CONSOLE, NF-200), the sites
+ * connected through it (NF-203) and the container of the tag manager are quiet rows.
  * While the settings are on their way, or could not be read, there is no code: it would name an address that is not confirmed.
  */
 export function EmbedSettingsPage() {
@@ -75,6 +77,7 @@ export function EmbedSettingsPage() {
         <EmbedDomainStatus site={bookingSite.site} config={bookingSite.config} />
         <EmbedWidgetBlock origin={origin} orgSlug={bookingSite.site.orgSlug} />
         <EmbedPluginSteps origin={origin} />
+        <EmbedConnectedSites orgId={org.id} />
         <EmbedGtmField orgId={org.id} config={bookingSite.config} />
       </div>
     );
