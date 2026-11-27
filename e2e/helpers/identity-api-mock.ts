@@ -32,6 +32,8 @@ type PresenceStep = 'ok' | 'retry' | 'operator' | 'abort';
 
 const TOKEN = 'identity-e2e-session';
 
+const IDEMPOTENCY_KEY = /^[A-Za-z0-9-]{8,64}$/;
+
 export interface IdentityMockOptions {
   startAt?: 'consent' | 'document' | 'presence';
   presence?: PresenceStep[];
@@ -328,12 +330,17 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
 
       if (method === 'POST' && endpoint === 'presence') {
         const step = script[Math.min(presenceCalls, script.length - 1)];
-        presenceCalls += 1;
         if (step === 'abort') {
+          presenceCalls += 1;
           // The connection breaks before the server sees the recording: nothing is decided.
           call.outcome = 'aborted';
           return route.abort('failed');
         }
+        // Refused before anything is decided, so a refusal does not use up a scripted answer.
+        if (!IDEMPOTENCY_KEY.test(call.headers['idempotency-key'] ?? '')) return problem(400, 'idempotency_key_required');
+        // Every challenge replaces the one before: the proof of an older one is no proof.
+        if (call.fields.challengeToken !== issued.at(-1)) return problem(409, 'presence_challenge_required');
+        presenceCalls += 1;
         if (step === 'retry') {
           // The server answers a retry with guidedRetryAvailable true (this answer offers it) while the state says the one retry is now used.
           change({ result: 'retry', guidedRetryAvailable: false });

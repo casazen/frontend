@@ -231,7 +231,7 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
     const uploads = identity.calls('presence');
     expect(uploads).toHaveLength(1);
     expectARecording(uploads[0]);
-    expect(identity.challenges()).toContain(uploads[0].fields.challengeToken);
+    expect(uploads[0].fields.challengeToken).toBe(identity.challenges().at(-1));
 
     expect(identity.calls('identity/open')).toHaveLength(1);
     expect(identity.calls('biometric-consent')).toHaveLength(1);
