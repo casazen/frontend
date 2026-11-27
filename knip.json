@@ -23,42 +23,16 @@
   ],
   "ignoreIssues": {
     "integrations/**": [
-      "unlisted",
-      "unresolved",
-      "binaries",
-      "exports",
+      "unlisted"
+    ],
+    "src/components/checkin/AccessCodeDisplay.tsx": [
+      "exports"
+    ],
+    "src/queries/ownerPortal.ts": [
+      "exports"
+    ],
+    "src/types/condition.ts": [
       "types"
-    ],
-    "src/components/ui/**": [
-      "exports",
-      "types"
-    ],
-    "src/components/checkin/**": [
-      "exports"
-    ],
-    "src/types/**": [
-      "types"
-    ],
-    "src/features/site-maps/index.ts": [
-      "types"
-    ],
-    "src/queries/**": [
-      "exports"
-    ],
-    "src/components/guards/**": [
-      "exports"
-    ],
-    "src/layouts/ConsoleLayout.tsx": [
-      "exports"
-    ],
-    "src/components/campaigns/CampaignEditor.tsx": [
-      "exports"
-    ],
-    "src/pages/CampaignsPage.tsx": [
-      "exports"
-    ],
-    "src/pages/SegmentsPage.tsx": [
-      "exports"
     ]
   },
   "compilers": {
