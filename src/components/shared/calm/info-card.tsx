@@ -24,7 +24,7 @@ export function InfoCard({ icon: Icon, title, titleAs: Title = 'h2', tone = 'neu
   return (
     <section {...props} aria-labelledby={titleId} className={cn('flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-card p-4', className)}>
       <header className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <div className="flex min-w-0 flex-[1_1_15rem] items-center gap-2">
+        <div className="flex min-w-0 flex-initial items-center gap-2">
           <span aria-hidden="true" className={cn('cz-icon-tile shrink-0 forced-colors:outline-1 [--cz-icon-tile-size:2rem] [--cz-icon-size:1rem]', style.badge, style.accent)}>
             <Icon strokeWidth={1.75} />
           </span>

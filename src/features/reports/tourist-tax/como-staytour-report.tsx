@@ -57,7 +57,7 @@ export function ComoStayTourReport({ propertyId, propertyName }: { propertyId: s
           {data.departuresToReview > 0 && <StatusPill tone="warning" icon={TriangleAlert} role="status">{t(key + 'departures', { count: data.departuresToReview })}</StatusPill>}
           {data.unconfirmedStays > 0 && <StatusPill tone="warning" icon={TriangleAlert} role="status">{t(key + 'missing', { count: data.unconfirmedStays })}</StatusPill>}
         </div>}
-        <Figures className="grid-cols-3">
+        <Figures className="grid-cols-3 items-end">
           <Figure icon={Users} label={t(key + 'taxable')}>{data.taxableGuests}</Figure>
           <Figure icon={Moon} label={t(key + 'nights')}>{data.taxableGuestNights}</Figure>
           <Figure icon={Banknote} label={t(key + 'amount')}>{money.format(data.hostTax)}</Figure>
