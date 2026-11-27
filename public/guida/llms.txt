@@ -16,7 +16,7 @@
 - [Prenotazioni e calendario](/guida/prenotazioni.html): Come lavorare una prenotazione dall'arrivo della richiesta alla partenza dell'ospite: elenco, calendario, nuova prenotazione a mano, richieste da accettare, modifiche, annullamenti, chiusura del soggiorno e passaggi che CasaZen fa da solo.
 - [Ospiti e check-in online](/guida/ospiti-checkin.html): L'anagrafica degli ospiti e il check-in online: come l'ospite compila i suoi dati e i documenti con un link, come segui lo stato, come completi tu i dati mancanti con il check-in guidato e cosa fa (e cosa non fa) «Conferma e invia» verso la Questura.
 - [Messaggi, assistente e recensioni](/guida/messaggi-recensioni.html): Tutte le conversazioni con gli ospiti in un solo posto, i modelli di messaggio, l'assistente che prepara le bozze (che parte solo se le approvi tu), i messaggi programmati e le recensioni da leggere, chiedere e rispondere.
-- [Routine AI, CRM e marketing](/guida/routine-ai-crm.html): Le routine fanno da sole cose ripetitive (messaggi, pulizie, promemoria, richieste di recensione) e le puoi provare in simulazione prima di attivarle. Il CRM raccoglie i profili degli ospiti, i duplicati, i pubblici e le campagne email. Entrambi i moduli sono spenti di partenza e si attivano su richiesta.
+- [Routine AI, ospiti e marketing](/guida/routine-ai-crm.html): Le routine fanno da sole cose ripetitive (messaggi, pulizie, promemoria, richieste di recensione) e le puoi provare in simulazione prima di attivarle. «Ospiti e marketing» raccoglie le schede degli ospiti, i gruppi di ospiti e le campagne e-mail, con procedure guidate e l'aiuto dell'AI. Entrambi i moduli sono spenti di partenza e si attivano su richiesta.
 
 ## Adempimenti
 
