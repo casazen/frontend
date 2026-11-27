@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
@@ -22,6 +22,13 @@ vi.mock('@/api/dashboard.api', () => ({
 const reads = vi.hoisted(() => ({ canReadBookings: true }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permission !== 'booking.read' || reads.canReadBookings }),
+}));
+// The routines of the host: how many run, read by the Home for the line of the menu «Routine AI» (the page of the routines has its own tests).
+const routinesOfHost = vi.hoisted(() => ({ list: [] as Array<{ active: boolean; testMode: boolean }> }));
+vi.mock('@/queries/routines', () => ({ useRoutines: () => ({ isSuccess: true, data: routinesOfHost.list }) }));
+vi.mock('@/hooks/use-commercial-profile', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/use-commercial-profile')>()),
+  useCommercialRouteAccess: () => () => true,
 }));
 vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => ({ user: null }) }));
 vi.mock('@/queries/use-properties', () => {
@@ -61,6 +68,29 @@ describe('daily workspace', () => {
     expect(screen.queryByTestId('home-compliance-line')).not.toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-period')).not.toBeInTheDocument();
     expect(screen.queryByTestId('home-filter')).not.toBeInTheDocument();
+  });
+
+  it('keeps the way to the routines in the menu of the header, not next to the main button', async () => {
+    routinesOfHost.list = [{ active: true, testMode: false }, { active: true, testMode: true }, { active: false, testMode: false }];
+    renderDashboard();
+    await screen.findByTestId('home-today');
+
+    // Next to the title there are the main button and the «⋯»: no link of its own for the routines.
+    expect(screen.queryByRole('link', { name: /routine/i })).not.toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Altre azioni' }), { key: 'Enter' });
+    const item = within(await screen.findByRole('menu')).getByRole('menuitem', { name: '1 routine AI attiva' });
+    expect(item).toHaveAttribute('href', '/app/short-rent/automations');
+    expect(item).toHaveAttribute('data-testid', 'home-routines');
+  });
+
+  it('says in the menu how to start with the routines when the host has none', async () => {
+    routinesOfHost.list = [];
+    renderDashboard();
+    await screen.findByTestId('home-today');
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Altre azioni' }), { key: 'Enter' });
+    const item = within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'Prova una routine AI' });
+    expect(item).toHaveAttribute('href', '/app/short-rent/automations?view=library');
   });
 
   it('shows the period selector only in analytics and keeps the daily queue off that view', () => {

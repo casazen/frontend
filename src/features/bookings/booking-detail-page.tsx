@@ -229,8 +229,6 @@ export function BookingDetailPage() {
           secondary={menu}
         />
 
-        <OtaReviewNotice booking={booking} canWrite={canWrite} />
-
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs
           label={t('booking.detailPage.tabsLabel')}
@@ -241,7 +239,13 @@ export function BookingDetailPage() {
           className={showMessages ? 'lg:flex lg:min-h-[26rem] lg:flex-1 lg:flex-col' : undefined}
           panelClassName={showMessages ? 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col' : undefined}
         >
-          {activeTab === 'details' && <BookingStayTab booking={booking} />}
+          {/* The "da verificare" notice has buttons that act on the stay: it lives with the stay (this tab), not above every tab. */}
+          {activeTab === 'details' && (
+            <div className="space-y-6">
+              <OtaReviewNotice booking={booking} canWrite={canWrite} />
+              <BookingStayTab booking={booking} />
+            </div>
+          )}
 
           {showMessages && (
             <PlainSection title={t('booking.messages.title')} className="lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">

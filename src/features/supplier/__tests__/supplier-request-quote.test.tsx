@@ -188,7 +188,8 @@ describe('the quote of the supplier (SP-04b, SP-08d): what is sent', () => {
 
   it('RequestPlan_EachPhase_OffersTheRightThingsAndPaymentActionsFollowTheServerAndTheFlag', () => {
     const unpriced = { phase: 'to_answer', status: 'Richiesto' as const, price: {} };
-    expect(actionsOf(unpriced)).toEqual({ primary: 'quote', secondary: 'take', more: ['reject'] });
+    // «Rifiuta» is the second action of a new request, with a price or without one: always in the same place (UX round 3).
+    expect(actionsOf(unpriced)).toEqual({ primary: 'quote', secondary: 'reject', more: ['take'] });
     expect(actionsOf({ ...unpriced, price: { amountCents: 5000 } })).toEqual({ primary: 'take', secondary: 'reject', more: ['quote'] });
     expect(actionsOf({ phase: 'quote_pending', status: 'Richiesto' })).toEqual({ more: ['editQuote', 'withdrawQuote'] });
 
@@ -217,8 +218,13 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     supplierApi.fetchSupplierInboxItem.mockResolvedValueOnce(NEW_REQUEST).mockResolvedValue(QUOTE_PENDING);
     renderPage();
 
-    // The quote comes first, and accepting without one stays one tap away.
-    fireEvent.click(await screen.findByTestId('supplier-request-quote'));
+    // The quote comes first, «Rifiuta» is where it always is (next to the main button), and accepting without a quote is one tap away among the quiet buttons.
+    const quote = await screen.findByTestId('supplier-request-quote');
+    const focus = screen.getByTestId('supplier-request-now');
+    expect(within(focus).getByTestId('supplier-request-reject')).toBeInTheDocument();
+    expect(within(screen.getByTestId('supplier-request-more-actions')).getByTestId('supplier-request-take')).toHaveTextContent('Accetta senza preventivo');
+    expect(within(screen.getByTestId('supplier-request-more-actions')).queryByTestId('supplier-request-reject')).not.toBeInTheDocument();
+    fireEvent.click(quote);
     expect(screen.getByTestId('supplier-request-take')).toHaveTextContent('Accetta senza preventivo');
     const sheet = await screen.findByTestId('quote-sheet');
 

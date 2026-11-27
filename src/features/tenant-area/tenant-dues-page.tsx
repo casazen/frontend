@@ -45,6 +45,11 @@ function dueStatusKey(status: string): string {
   return ['Scheduled', 'Processing', 'Paid', 'Failed', 'Cancelled'].includes(status) ? status : 'Scheduled';
 }
 
+/** Still to be paid: not closed and not in balance. */
+function openDue(due: TenantDue): boolean {
+  return !closedDue(due) && !settledDue(rentBreakdown(due));
+}
+
 export function TenantDuesPage() {
   const { t } = useTranslation();
   const { dueId } = useParams();
@@ -53,21 +58,20 @@ export function TenantDuesPage() {
   const area = page.area;
   const dues = area.dues.map(withoutUnacceptedExtraordinary);
   const selected = dueId ? dues.find((due) => due.id === dueId) : undefined;
-  const next = dues.find((due) => {
-    if (closedDue(due)) return false;
-    return !settledDue(rentBreakdown(due));
-  });
+  const open = dues.filter(openDue);
+  const next = open[0];
 
   return (
     <div className="space-y-4" data-testid="tenant-dues">
-      <PageHeader title={t('tenantArea.dues.title')} description={t('tenantArea.dues.lead')} />
+      <PageHeader title={t('tenantArea.dues.title')} />
       {(area.condominiumReports ?? []).map(report => <section key={report.id} className="space-y-2 rounded-md border p-4" data-testid="tenant-condominium-report">
         <h2 className="font-semibold">{t('condoBook.tenantReport', { year: report.periodLabel })}</h2>
         <p>{t('condoBook.tenantReportAmounts', { final: formatCurrency(report.recoverable, 'EUR'), advances: formatCurrency(report.advances, 'EUR'), prior: formatCurrency(report.prior, 'EUR'), balance: formatCurrency(report.balance, 'EUR') })}</p>
         <p className="text-sm">{t('condoBook.tenantAdjustment')}</p>
         {dues.filter(due => due.periodStart > report.periodEnd && due.components?.some(c => c.kind === 'CondominiumAdvance' && c.description?.includes('conguaglio esercizio precedente'))).slice(0, 1).map(due => <p key={due.id} className="font-medium">{t('condoBook.tenantNewAmount', { date: formatDate(due.periodStart), advance: formatCurrency(rentBreakdown(due).condominiumAdvance ?? 0, due.currency), total: formatCurrency(due.amount, due.currency) })}</p>)}
       </section>)}
-      {dues.length > 0 ? <PaymentReport dues={dues} /> : null}
+      {/* The totals say something only when there is more than one due open: with one, the due itself is the number. */}
+      {open.length > 1 ? <PaymentReport dues={dues} open={open} /> : null}
       {dueId && !selected ? (
         <p role="alert" data-testid="tenant-due-missing" className="text-sm">
           {t('tenantArea.dues.missing')}{' '}
@@ -78,7 +82,6 @@ export function TenantDuesPage() {
       ) : null}
       {!selected && next ? <NextDue leaseId={area.contract.id} due={next} /> : null}
       {selected ? <TenantDueDetail key={selected.id} leaseId={area.contract.id} due={selected} /> : null}
-      <TenantSepaSettings leaseId={area.contract.id} />
       {dues.length === 0 ? (
         <div data-testid="tenant-dues-empty">
           <EmptyState icon={Receipt} title={t('tenantArea.dues.emptyTitle')} description={t('tenantArea.dues.emptyDescription')} />
@@ -90,15 +93,15 @@ export function TenantDuesPage() {
           ))}
         </ul>
       )}
-
+      {/* How to pay by itself (the automatic debit) is set once, after the dues: it is not what the tenant came to do. */}
+      <TenantSepaSettings leaseId={area.contract.id} />
     </div>
   );
 }
 
-function PaymentReport({ dues }: { dues: TenantDue[] }) {
+function PaymentReport({ dues, open }: { dues: TenantDue[]; open: TenantDue[] }) {
   const { t } = useTranslation();
   const currency = dues[0]?.currency ?? 'EUR';
-  const open = dues.filter((due) => !closedDue(due) && !settledDue(rentBreakdown(due)));
   const paid = dues.filter((due) => due.status === 'Paid');
   const openSum = open.reduce((total, due) => total + rentBreakdown(due).residual, 0);
   const paidSum = paid.reduce((total, due) => total + rentBreakdown(due).paid, 0);
@@ -288,7 +291,9 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
             </p>
           ) : null}
           {canDeclare ? (
-            <DeclarationForm key={due.id} due={due} onSubmit={(input) => declare.mutate(input)} pending={declare.isPending} />
+            // One filled button per screen: «Paga con SEPA» is it when SEPA is offered; the declaration is the primary only when it is the
+            // one way left to pay (a due that is not in euro, or one the debit is not offered for).
+            <DeclarationForm key={due.id} due={due} primary={!showStripe} onSubmit={(input) => declare.mutate(input)} pending={declare.isPending} />
           ) : null}
           {canDeclare ? (
             <p className="text-sm text-muted-foreground" data-testid="tenant-declaration-note">
@@ -321,10 +326,13 @@ function DeclarationStatus({ declaration }: { declaration: TenantPaymentDeclarat
 
 function DeclarationForm({
   due,
+  primary,
   onSubmit,
   pending,
 }: {
   due: TenantDue;
+  /** The declaration is the screen's one filled button (no SEPA payment offered); otherwise it is an outline button. */
+  primary: boolean;
   onSubmit: (input: { amount: number; transferDate: string; bankReference?: string; note?: string; receipt?: File | null }) => void;
   pending: boolean;
 }) {
@@ -380,7 +388,7 @@ function DeclarationForm({
           onChange={(event) => setReceipt(event.target.files?.[0] ?? null)}
         />
       </div>
-      <Button type="submit" disabled={!valid || pending} className={PAY_BUTTON} data-testid="tenant-declare-transfer">
+      <Button type="submit" variant={primary ? 'default' : 'outline'} disabled={!valid || pending} className={PAY_BUTTON} data-testid="tenant-declare-transfer">
         {t('tenantArea.declaration.submit')}
       </Button>
     </form>

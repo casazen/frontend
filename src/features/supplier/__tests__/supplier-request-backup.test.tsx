@@ -116,7 +116,8 @@ describe('a request the supplier has as a backup (SP-BKP): the model', () => {
     expect(actionsOf({ ...priced, backup: backup('active') })).toEqual({ primary: 'take', secondary: 'reject', more: [] });
     // A request with no price puts the quote first for a supplier that was chosen, never for a backup.
     expect(actionsOf({ ...base, backup: backup('active') })).toEqual({ primary: 'take', secondary: 'reject', more: [] });
-    expect(actionsOf({ ...base })).toEqual({ primary: 'quote', secondary: 'take', more: ['reject'] });
+    // ...and «Rifiuta» is the second action there too, as for a backup and a priced request: always in the same place.
+    expect(actionsOf({ ...base })).toEqual({ primary: 'quote', secondary: 'reject', more: ['take'] });
   });
 
   it('respondByText_ABackup_SaysUntilWhenThePrimaryHasTheJob_OrByWhenTheJobIsFree', () => {

@@ -19994,7 +19994,6 @@
       "flaggedTitle": "Anomalies that flagged this version",
       "focusBody": "Closing balance {{balance}}. Version cut on {{cutoff}}.",
       "focusTitle": "Version {{version}} · {{status}}",
-      "formula": "Closing balance = opening balance {{opening}} + revenue {{revenue}} + commissions and costs {{costs}} + payments and withholdings {{paid}} + corrections {{corrections}} = {{closing}}.",
       "immutableBody": "The recorded lines no longer add up to the totals saved in this version. So that you are never shown wrong figures we do not show it, nor its files: trying again will not help. Write to support with the month and the owner.",
       "immutableTitle": "This statement cannot be shown",
       "kicker": "Statement of {{period}}",
@@ -20861,7 +20860,7 @@
         "signHint": "Positive amounts are in your favour, negative amounts are charged to you.",
         "summaryTitle": "Summary"
       },
-      "documentsTitle": "Accounting documents",
+      "emptyHint": "When the agency publishes a statement, you find it here with its amounts.",
       "error": "The statements could not be loaded",
       "invoiceOf": "Linked to the statement of {{period}}",
       "invoiceStatus": {
@@ -20870,7 +20869,6 @@
       },
       "invoiceTitle": "Invoice no. {{number}} of {{date}}",
       "invoicesError": "The linked invoices could not be loaded",
-      "invoicesNote": "These are invoices the agency issued outside CasaZen: here you find the link the agency recorded.",
       "invoicesTitle": "Linked invoices",
       "line": {
         "bookingCode": "Booking {{code}}",
@@ -20886,7 +20884,6 @@
         "share": "Share {{percent}}%"
       },
       "loading": "Loading the accounting",
-      "noDocuments": "The agency has not shared any accounting document with you.",
       "noInvoiceLink": "The link to this invoice is not available.",
       "noStatements": "The agency has not published any statement for you yet.",
       "open": "Open the statement",
@@ -20906,6 +20903,7 @@
         "creditedInFull": "Fully credited",
         "currencyMissing": "The currency of this document is not given: the amount is shown without a currency symbol.",
         "empty": "Your property manager has not issued any invoice to you yet.",
+        "emptyHint": "The invoices your property manager issues for your statements will appear here, each with its PDF.",
         "error": "The property manager invoices could not be loaded",
         "kind": {
           "CreditNote": "Credit note",
@@ -20913,7 +20911,6 @@
           "Other": "Document",
           "Receipt": "Receipt"
         },
-        "note": "The invoices your property manager has issued to you for the statements, each with its PDF.",
         "of": "For the statement of {{period}}",
         "title": "Property manager invoices",
         "total": "Total"
@@ -21080,14 +21077,9 @@
     },
     "dashboard": {
       "bookings": "Bookings",
-      "description": "Your properties and what you can do with your agency: calendar, accounting, documents and messages.",
+      "emptyHint": "When the agency links a property to you, you find it here with its calendar.",
       "error": "The properties could not be loaded",
       "noProperties": "There are no properties available",
-      "numbersUnavailable": {
-        "description": "Occupancy, revenue and the trend over time are not shown in the portal yet: here you only find your properties and their bookings. For the numbers, ask the agency in the messages.",
-        "title": "The numbers of your properties are not available yet"
-      },
-      "recentBookings": "Recent bookings",
       "title": "Owner Portal",
       "yourProperties": "Your properties"
     },
@@ -21099,6 +21091,7 @@
       "downloadFailed": "The file could not be downloaded. Try again.",
       "effectiveFrom": "In force from {{date}}",
       "empty": "The agency has not shared any document with you yet.",
+      "emptyHint": "When the agency shares a document with you, such as the mandate or the contract, you find it here.",
       "error": "The documents could not be loaded",
       "expiresOn": "Expires on {{date}}",
       "expiry": {
@@ -21268,7 +21261,6 @@
       "notFound": "Property not found",
       "openCalendar": "Calendar and stays",
       "recentBookings": "Recent bookings",
-      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and state are visible)",
       "summaryTitle": "Summary of the property",
       "totalBookings": "Total bookings",
       "writeToAgency": "Write to the agency"
@@ -28672,6 +28664,32 @@
         "label": "Paused"
       }
     },
+    "earning": {
+      "in_review": {
+        "explain": "CasaZen is checking this payment.",
+        "label": "Under review by CasaZen"
+      },
+      "late": {
+        "explain": "The payment was requested and has not arrived yet.",
+        "label": "Late"
+      },
+      "paid": {
+        "explain": "The payment for this job has arrived.",
+        "label": "Paid"
+      },
+      "partially_refunded": {
+        "explain": "Part of the payment was given back to the person who made it.",
+        "label": "Partly refunded"
+      },
+      "refunded": {
+        "explain": "The payment was given back in full to the person who made it.",
+        "label": "Refunded"
+      },
+      "to_collect": {
+        "explain": "The job is done and the payment has not arrived yet.",
+        "label": "To collect"
+      }
+    },
     "checkin": {
       "Inviato": {
         "label": "Link sent",
@@ -30212,6 +30230,7 @@
       },
       "empty": {
         "description": "You need a name, a price and a duration. We guide you through four steps.",
+        "how": "How it works",
         "steps": {
           "booking": "How long it takes and when you offer it",
           "photos": "The photos, then you publish",
@@ -33634,7 +33653,6 @@
     },
     "dues": {
       "title": "Payments",
-      "lead": "Here you see whether you have paid everything, and you pay the due. Rent, condominium advance and settlement are already added together.",
       "listLabel": "Dues",
       "emptyTitle": "No dues",
       "emptyDescription": "When the manager issues an installment, it appears here with the amount to pay.",
@@ -33705,6 +33723,7 @@
     "maintenance": {
       "new": "New request",
       "empty": "No requests.",
+      "emptyHint": "If something is wrong in the home, write a request: it goes to the contract manager and you follow its state here.",
       "category": "Category",
       "urgency": "Urgency",
       "description": "Description",

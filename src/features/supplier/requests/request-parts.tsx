@@ -3,8 +3,6 @@ import { ChevronDown, Lock, Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { FocusBlock, PlainSection, type CalmAction } from '@/components/shared/calm';
 import { StatusBadge } from '@/components/shared/status/status-badge';
-import { STATUS_ICONS } from '@/components/shared/status/status-icons';
-import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
 import { Timeline, type TimelineEvent, type TimelineTone } from '@/components/shared/timeline/timeline';
 import { Button } from '@/components/ui/button';
 import { isFeatureEnabled } from '@/config/feature-flags';
@@ -54,20 +52,19 @@ export function RequestStateBadge({ request, size }: { request: SupplierServiceR
   const status = PHASE_STATUS[phase];
   if (!status) return <StatusBadge kind="request" status={request.status} perspective="supplier" size={size} />;
 
-  const Icon = STATUS_ICONS.hourglass;
+  // A phase is not a state of the API, so the dictionary has no words for it: the badge is the shared one, with the words, the tone and the
+  // icon of the phase (waiting, and warning for the backup that became the supplier's turn), and the phase as its `data-status`.
   return (
-    <span
-      data-status-kind="request"
+    <StatusBadge
+      kind="request"
+      status={request.status}
+      perspective="supplier"
+      size={size}
+      label={t(`supplier.requests.phase.${phase}`)}
+      tone={phase === 'backupActive' ? 'warning' : 'info'}
+      icon="hourglass"
       data-status={status}
-      className={cn(
-        'inline-flex max-w-full items-center gap-1 rounded-full font-semibold ring-1 ring-inset',
-        size === 'lg' ? 'px-3 py-1 text-sm' : 'px-2.5 py-0.5 text-xs',
-        phase === 'backupActive' ? STATUS_TONE_CLASSES.warning : STATUS_TONE_CLASSES.info,
-      )}
-    >
-      <Icon aria-hidden="true" className={cn('shrink-0', size === 'lg' ? 'size-4' : 'size-3.5')} />
-      <span className="min-w-0 break-words">{t(`supplier.requests.phase.${phase}`)}</span>
-    </span>
+    />
   );
 }
 

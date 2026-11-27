@@ -2,8 +2,9 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Building2, Calendar, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ErrorState } from '@/components/shared/error-state';
+import { StatusBadge } from '@/components/shared/status/status-badge';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { PortalPageHeading, PortalReadProblem, TOUCH } from '@/features/owner-portal/portal-parts';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
@@ -94,25 +95,17 @@ export function OwnerProperties() {
         />
       </div>
 
-      {/* Property summary */}
+      {/* Property summary: one number, said as a line (a card for a single number is only a box around it) */}
       <h2 className="sr-only">{t('ownerPortal.properties.summaryTitle')}</h2>
-      <div className="flex min-w-0 flex-wrap">
-        <Card className="w-full bg-muted sm:w-auto">
-          <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('ownerPortal.properties.totalBookings')}</CardTitle>
-            <Calendar aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{property.totalBookings}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <p className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-sm" data-testid="owner-property-total-bookings">
+        <span className="text-muted-foreground">{t('ownerPortal.properties.totalBookings')}</span>
+        <span className="text-xl font-semibold tabular-nums">{property.totalBookings}</span>
+      </p>
 
       {/* Recent bookings: dates, channel and state only, never a guest and never an amount (the answer has no currency and no share of the owner) */}
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">{t('ownerPortal.properties.recentBookings')}</CardTitle>
-          <CardDescription>{t('ownerPortal.properties.recentBookingsDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           {property.recentBookings.length === 0 ? (
@@ -133,7 +126,7 @@ export function OwnerProperties() {
                       {t('ownerPortal.properties.channel')}: {booking.channel}
                     </div>
                   </div>
-                  <div className="text-sm text-muted-foreground sm:text-right">{t(`bookingStatus.${booking.status}`)}</div>
+                  <StatusBadge kind="booking" status={booking.status} className="w-fit sm:self-center" />
                 </li>
               ))}
             </ul>

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Download, MessageSquare } from 'lucide-react';
+import { Download, FolderOpen, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/shared/empty-state';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { formatStayDate } from '@/lib/stay-dates';
 import type { OwnerDocument, OwnerDocumentExpiryState, OwnerDocumentVersion, OwnerDocumentVersionState } from '@/types';
@@ -29,6 +30,8 @@ interface DocumentsListProps {
   documents: readonly OwnerDocument[];
   /** Said when there is none: the list is the server's, so an empty one is a fact («the agency shared nothing yet»), never a failure. */
   emptyText: string;
+  /** What to expect, in a line under `emptyText` (the empty state of the app). */
+  emptyHint: string;
   testId?: string;
   /** The level of the title of a document: one below the heading of the section it sits in (`h2` straight under the `h1` of a page, `h3` under an `h2`). */
   headingAs?: 'h2' | 'h3';
@@ -39,15 +42,15 @@ interface DocumentsListProps {
  * were, and a download for every version (the audit is the server's). Cards that stack on a phone, no table to scroll sideways; every button is at least 44 px and says
  * which document it is for. One download at a time: the other buttons wait.
  */
-export function DocumentsList({ documents, emptyText, testId = 'owner-documents', headingAs: Heading = 'h3' }: DocumentsListProps) {
+export function DocumentsList({ documents, emptyText, emptyHint, testId = 'owner-documents', headingAs: Heading = 'h3' }: DocumentsListProps) {
   const { t, i18n } = useTranslation();
   const { download, busyKey } = useOwnerDownload();
 
   if (documents.length === 0) {
     return (
-      <p className="rounded-md border border-dashed p-4 text-sm text-muted-foreground" data-testid={`${testId}-empty`}>
-        {emptyText}
-      </p>
+      <div data-testid={`${testId}-empty`}>
+        <EmptyState icon={FolderOpen} title={emptyText} titleAs={Heading} description={emptyHint} />
+      </div>
     );
   }
 
@@ -94,7 +97,12 @@ export function DocumentsList({ documents, emptyText, testId = 'owner-documents'
             {primary ? (
               <div className="mt-3 space-y-2">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <StatusPill tone={VERSION_TONE[primary.state]}>{t(`ownerPortal.documents.versionState.${primary.state}`)}</StatusPill>
+                  {/* The version in force is what a document is: «In vigore» on every card says nothing. Only a version that is not (yet or any more) says so. */}
+                  {primary.state !== 'current' ? (
+                    <StatusPill tone={VERSION_TONE[primary.state]} data-testid="owner-document-version-state">
+                      {t(`ownerPortal.documents.versionState.${primary.state}`)}
+                    </StatusPill>
+                  ) : null}
                   <span className="min-w-0 break-words text-muted-foreground">{versionLine(primary)}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -125,11 +133,12 @@ export function DocumentsList({ documents, emptyText, testId = 'owner-documents'
             )}
 
             {older.length > 0 ? (
-              <details className="mt-3 rounded-md border bg-background">
-                <summary className="flex min-h-11 cursor-pointer items-center rounded-md px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              // No box of its own: the card is the box (a bordered block inside a bordered card is a card in a card).
+              <details className="mt-3">
+                <summary className="flex min-h-11 w-fit cursor-pointer items-center rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   {t('ownerPortal.documents.olderVersions', { count: older.length })}
                 </summary>
-                <ul className="space-y-2 border-t p-3">
+                <ul className="space-y-2 pt-1">
                   {older.map((version) => (
                     <li key={version.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                       <span className="min-w-0 break-words">

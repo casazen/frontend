@@ -445,11 +445,6 @@
 .stay-section-link > span {
   display: grid;
   min-width: 0;
-  gap: 2px;
-}
-.stay-section-link small {
-  color: var(--stay-muted);
-  font-size: .8125rem;
 }
 .stay-section-link > svg:first-child {
   width: 34px;

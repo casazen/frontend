@@ -26,7 +26,7 @@ export function OwnerDocuments() {
           testId="owner-documents-error"
         />
       ) : documents.data ? (
-        <DocumentsList documents={documents.data.documents} emptyText={t('ownerPortal.documents.empty')} headingAs="h2" />
+        <DocumentsList documents={documents.data.documents} emptyText={t('ownerPortal.documents.empty')} emptyHint={t('ownerPortal.documents.emptyHint')} headingAs="h2" />
       ) : null}
     </div>
   );

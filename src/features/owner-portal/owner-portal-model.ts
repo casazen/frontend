@@ -203,11 +203,6 @@ export function visibleStatements(statements: readonly OwnerStatementReference[]
     );
 }
 
-/** The documents that are accounting ones (a statement, an invoice): they are listed with the accounting and need `accounting.read` for a contact. */
-export function isAccountingDocument(document: Pick<OwnerDocument, 'type'>): boolean {
-  return document.type === 'Statement' || document.type === 'Invoice';
-}
-
 /**
  * The link of an invoice, only when it is a plain `https` address: anything else (a script, a data address, a file) is not offered as a link. The text of
  * the link never says more than the address does.
