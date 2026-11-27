@@ -36,7 +36,7 @@ npm run dev:demo       # dati locali: non prova autenticazione, persistenza o in
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-La build esegue TypeScript, bundle browser, bundle SSR del sito, prerender e widget incorporabile. Un test mirato: `npx vitest run percorso/al/test.test.tsx`. Se vedi HTML al posto di JSON controlla `VITE_API_BASE_URL`; un `401` indica sessione/audience/tenant, un `403` autorizzazioni o organizzazione. Le variabili di deploy sono nella checklist del backend (`docs/runbooks/deploy-checklist.md`); `.env.example` e la checklist sono confrontati da un test.
+La build esegue TypeScript, bundle browser, bundle SSR del sito, prerender e widget incorporabile. Un test mirato: `npx vitest run percorso/al/test.test.tsx`. Se vedi HTML al posto di JSON controlla `VITE_API_BASE_URL`; un `401` indica sessione/audience/tenant, un `403` autorizzazioni o organizzazione. Le variabili di deploy sono nella checklist del backend (`documentazione/03-documenti-ai/runbook/backend/deploy-checklist.md`); `.env.example` e la checklist sono confrontati da un test.
 
 ## Test
 
@@ -48,7 +48,7 @@ La build esegue TypeScript, bundle browser, bundle SSR del sito, prerender e wid
 | `npm run test:e2e:staging`, `…:staging-gj` | smoke e Golden Journey sullo staging (servono configurazione e credenziali; mai quelle di produzione) |
 | `npm run test:e2e:embed` | widget incorporabile |
 
-I flussi L3 su stack effimero (`e2e/gj-l3/`, `e2e/stack/up.sh`) hanno il runbook condiviso `docs/runbooks/golden-journey-l3.md` del backend. Uno smoke saltato non prova lo staging reale. Prima di unire: controlli richiesti verdi e nessun conflitto (workflow in `.github/workflows/`).
+I flussi L3 su stack effimero (`e2e/gj-l3/`, `e2e/stack/up.sh`) hanno il runbook condiviso `documentazione/03-documenti-ai/runbook/backend/golden-journey-l3.md` (workspace). Uno smoke saltato non prova lo staging reale. Prima di unire: controlli richiesti verdi e nessun conflitto (workflow in `.github/workflows/`).
 
 ## Guida utente
 

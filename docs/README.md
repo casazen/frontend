@@ -10,6 +10,6 @@ La documentazione di progetto (requisiti, punti aperti, decisioni, ADR, integraz
 | `docs/product/README.md` (regole editoriali della guida) | `AGENTS.md`, sezione «Guida utente» |
 | `docs/product/demo-e-conversione.md` | `documentazione/03-documenti-ai/requisiti/specifiche/frontend-demo-e-conversione.md` |
 | `docs/product/{verifica,revisione}-*.md`, `evidenze-*` | rimossi (verifiche e screenshot di sessioni concluse: restano nella storia git, `git show 498fb224:<percorso>`) |
-| Runbook condivisi con il backend | repository `casazen/backend`, cartella `docs/runbooks/` |
+| Runbook condivisi con il backend | `documentazione/03-documenti-ai/runbook/backend/` (workspace; non più in `casazen/backend`) |
 
 Mappa completa dei vecchi percorsi: `documentazione/99-archivio/MAPPA-SPOSTAMENTI.md`. Guida utente: in-app (**Guida** nell'intestazione, testi `productGuide` in `src/i18n/locales/{it,en}.json`) e guida HTML (`guida/`, `public/guida/`, `npm run guida:build`).

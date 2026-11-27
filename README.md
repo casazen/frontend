@@ -7,7 +7,7 @@ Webapp per gestire immobili, prenotazioni, ospiti, adempimenti, affitti lunghi e
 - **Utenti:** dopo il login, aprire **Guida** (icona libro nell’intestazione di ogni area). La guida include ricerca, indice e istruzioni in italiano e inglese.
 - [AGENTS.md](AGENTS.md): struttura, comandi, convenzioni, flusso di consegna e regole per chi sviluppa (anche agenti AI).
 - [docs/README.md](docs/README.md): dove sono finiti gli altri documenti (cartella `documentazione/` del workspace, fuori dai repository).
-- [Runbook e API condivisi](https://github.com/casazen/backend/blob/develop/docs/runbooks/index.md) nel repository backend.
+- Runbook e riferimento API condivisi con il backend: nella cartella `documentazione/03-documenti-ai/runbook/backend/` del workspace (indice in `documentazione/03-documenti-ai/runbook/README.md`).
 
 ## Avvio rapido
 
