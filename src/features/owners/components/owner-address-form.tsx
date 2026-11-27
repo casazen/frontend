@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
+import { Lock, MapPin, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -12,6 +12,7 @@ import { useOwnerAddress, useSaveOwnerAddress } from '@/queries/use-owner-accoun
 import type { OwnerAddress, OwnerAddressCommand } from '@/types';
 import { OwnerAccountingError } from '@/features/owner-accounting/components/owner-accounting-error';
 import { failureText } from '@/features/owner-accounting/owner-accounting-model';
+import { OwnerCard, QuietNote } from './owner-ui';
 
 interface OwnerAddressSectionProps {
   ownerId: string;
@@ -19,56 +20,87 @@ interface OwnerAddressSectionProps {
   canManage: boolean;
 }
 
-/**
- * «Indirizzo di fatturazione» of an owner (E13/F02/US01/T01, NF-110): the structured address the invoice of the property manager, the QR-bill and the bank transfer file need (street,
- * building number, postal code, town, province, country). It is personal data: only who manages the finances of the owners reads and saves it, the answer is dropped as soon as the page
- * is left, and a refusal is told as such, never as an address that is empty. Saving replaces the whole address.
- */
+function AddressCard({ action, children }: { action?: ReactNode; children: ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <OwnerCard icon={MapPin} title={t('ownerAddress.title')} action={action} data-testid="owner-address-section">
+      {children}
+    </OwnerCard>
+  );
+}
+
 export function OwnerAddressSection({ ownerId, canManage }: OwnerAddressSectionProps) {
   const { t } = useTranslation();
   const address = useOwnerAddress(ownerId, canManage);
 
-  let content;
   if (!canManage || address.data === null) {
-    content = <p className="break-words text-sm text-foreground/70" data-testid="owner-address-read-only">{t('ownerAddress.notForYou')}</p>;
-  } else if (getHttpStatus(address.error) === 404) {
-    // A 404 is «not found» whatever the cache still holds (a failed read keeps the old data).
-    content = <p className="break-words text-sm text-foreground/70" data-testid="owner-address-not-found">{t('ownerAddress.notFound')}</p>;
-  } else if (address.isPending) {
-    content = (
-      <p role="status" className="text-sm text-foreground/70">
-        {t('ownerAddress.loading')}
-      </p>
+    return (
+      <AddressCard>
+        <QuietNote icon={Lock} data-testid="owner-address-read-only">
+          {t('ownerAddress.notForYou')}
+        </QuietNote>
+      </AddressCard>
     );
-  } else if (address.isError || !address.data) {
-    content = <OwnerAccountingError error={address.error} title={t('ownerAddress.loadError')} onRetry={() => void address.refetch()} />;
-  } else {
-    // The form starts from what the server holds and starts again when that is read again (after a save): no effect copies it into the state.
-    content = <AddressEditor key={ownerId} ownerId={ownerId} saved={address.data} />;
   }
-
-  return (
-    <PlainSection title={t('ownerAddress.title')} data-testid="owner-address-section">
-      {content}
-    </PlainSection>
-  );
+  if (getHttpStatus(address.error) === 404) {
+    return (
+      <AddressCard>
+        <p className="break-words text-sm text-foreground/70" data-testid="owner-address-not-found">{t('ownerAddress.notFound')}</p>
+      </AddressCard>
+    );
+  }
+  if (address.isPending) {
+    return (
+      <AddressCard>
+        <p role="status" className="text-sm text-foreground/70">
+          {t('ownerAddress.loading')}
+        </p>
+      </AddressCard>
+    );
+  }
+  if (address.isError || !address.data) {
+    return (
+      <AddressCard>
+        <OwnerAccountingError error={address.error} title={t('ownerAddress.loadError')} onRetry={() => void address.refetch()} />
+      </AddressCard>
+    );
+  }
+  return <AddressEditor key={ownerId} ownerId={ownerId} saved={address.data} />;
 }
 
 function AddressEditor({ ownerId, saved }: { ownerId: string; saved: OwnerAddress }) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const lines = [[saved.street, saved.buildingNumber].filter(Boolean).join(' '), [saved.postalCode, saved.town, saved.province].filter(Boolean).join(' '), saved.country].filter(Boolean);
-  return <div className="space-y-3">
-    <p className="max-w-2xl text-sm text-foreground/70">{t('ownerAddress.description')}</p>
-    {lines.length > 0 ? <address className="text-sm not-italic leading-relaxed" data-testid="owner-address-summary">{lines.map((line, index) => <p key={index}>{line}</p>)}</address> : <p className="text-sm text-foreground/60">{t('ownerProfile.facts.empty')}</p>}
-    <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)} data-testid="owner-address-edit">{t('ownerProfile.wizard.edit')}</Button>
-    <Dialog open={editing} onOpenChange={setEditing}>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{t('ownerAddress.title')}</DialogTitle><DialogDescription>{t('ownerAddress.description')}</DialogDescription></DialogHeader>
-        {editing ? <AddressForm ownerId={ownerId} saved={saved} onSaved={() => setEditing(false)} /> : null}
-      </DialogContent>
-    </Dialog>
-  </div>;
+  const edit = (
+    <Button type="button" variant="outline" size="sm" aria-label={`${t('ownerProfile.actions.edit')}: ${t('ownerAddress.title')}`} onClick={() => setEditing(true)} data-testid="owner-address-edit">
+      <Pencil aria-hidden="true" className="size-4" />
+      {t('ownerProfile.actions.edit')}
+    </Button>
+  );
+  return (
+    <AddressCard action={edit}>
+      {lines.length > 0 ? (
+        <address className="text-sm not-italic leading-relaxed" data-testid="owner-address-summary">
+          {lines.map((line, index) => (
+            <p key={index} className={index === 0 ? 'font-medium' : undefined}>{line}</p>
+          ))}
+        </address>
+      ) : (
+        <p className="text-sm text-foreground/60">{t('ownerProfile.facts.empty')}</p>
+      )}
+      <p className="text-sm text-foreground/70">{t('ownerAddress.caption')}</p>
+      <Dialog open={editing} onOpenChange={setEditing}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t('ownerAddress.title')}</DialogTitle>
+            <DialogDescription>{t('ownerAddress.description')}</DialogDescription>
+          </DialogHeader>
+          {editing ? <AddressForm ownerId={ownerId} saved={saved} onSaved={() => setEditing(false)} /> : null}
+        </DialogContent>
+      </Dialog>
+    </AddressCard>
+  );
 }
 
 interface FormState {

@@ -52,7 +52,11 @@ describe('the apartments an owner lets outside the agency', () => {
   it('OwnerUnits_WithinTheLimit_SaysSo_AndPastItTheOwnerIsPresumedABusiness', async () => {
     renderSection();
     expect(await screen.findByTestId('owner-units-status')).toHaveAttribute('data-presumed', 'false');
-    expect(screen.getByTestId('owner-units-count')).toHaveTextContent("2 gestiti dall'agenzia, 0 dichiarati fuori");
+    expect(screen.getByTestId('owner-units-managed')).toHaveTextContent('2');
+    expect(screen.getByTestId('owner-units-external')).toHaveTextContent('0');
+    expect(screen.getByTestId('owner-units-total')).toHaveTextContent('2');
+    expect(screen.getByTestId('owner-units-count')).toHaveTextContent(i18n.t('ownerProfile.units.limit', { max: 2 }));
+    expect(screen.getByText(i18n.t('ownerProfile.units.chip.within'))).toBeInTheDocument();
     cleanup();
 
     api.getUnitsCheck.mockResolvedValue(check({ externalUnits: 1, totalUnits: 3, presumedBusiness: true }));
@@ -60,6 +64,8 @@ describe('the apartments an owner lets outside the agency', () => {
     const status = await screen.findByTestId('owner-units-status');
     expect(status).toHaveAttribute('data-presumed', 'true');
     expect(status).toHaveTextContent('presunto un imprenditore');
+    expect(screen.getByTestId('owner-units-external')).toHaveTextContent('1');
+    expect(screen.getByText(i18n.t('ownerProfile.units.chip.past'))).toBeInTheDocument();
   });
 
   it('OwnerUnits_ANumberIsRequired_AnEmptyFieldOrAWrongOneIsRefusedAndNeverSavedAsNone', async () => {
