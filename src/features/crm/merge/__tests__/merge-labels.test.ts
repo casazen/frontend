@@ -39,7 +39,7 @@ describe('the words of a merge proposal (E07/F01/US04/T03)', () => {
   it('reasonLabel_TheSameNameAndBirthDate_SaysItWithoutAnyDate', () => {
     const t = i18n.getFixedT('it');
 
-    expect(reasonLabel(t, 'same_name_birth')).toBe('Hanno lo stesso nome e la stessa data di nascita.');
+    expect(reasonLabel(t, 'same_name_birth')).toBe('Stesso nome e stessa data di nascita');
     expect(reasonLabel(t, 'same_name_birth')).not.toMatch(/\d/);
   });
 });

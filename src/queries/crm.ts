@@ -1,9 +1,9 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CrmApi } from '@/api/crm.api';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { CrmProfileDetail, CrmProfileListParams } from '@/types/crm.types';
+import type { CrmProfileDetail, CrmProfileList, CrmProfileListParams } from '@/types/crm.types';
 
 /** Root of every query key of the CRM profiles. */
 export const CRM_KEY = 'crm';
@@ -33,6 +33,42 @@ export function useGuestCrmProfiles(params?: CrmProfileListParams) {
     queryFn: () => CrmApi.getGuests(params),
     placeholderData: keepPreviousData,
     refetchOnMount: 'always',
+  });
+}
+
+/** The guests the summary strip of the list counts, whatever the filters on the screen. */
+export interface CrmOverview {
+  guests: number;
+  reachableByEmail: number;
+  returned: number;
+  loyal: number;
+}
+
+const OVERVIEW_FILTERS: readonly CrmProfileListParams[] = [{}, { reachableByEmail: true }, { minStays: 2 }, { minStays: 3 }];
+const OVERVIEW_STALE_MS = 60_000;
+
+function combineOverview(results: ReadonlyArray<{ data: number | undefined }>): CrmOverview | undefined {
+  const counts = results.map((result) => result.data);
+  if (counts.some((count) => count === undefined)) return undefined;
+  const [guests, reachableByEmail, returned, loyal] = counts as number[];
+  return { guests, reachableByEmail, returned, loyal };
+}
+
+/**
+ * The four numbers of the strip over the list: all the guests, those who can be written to by e-mail, those who came back (two stays or
+ * more) and the loyal ones (three or more). Each is a list of one row read for its `totalCount`, under the same key as the list, so
+ * whatever refreshes the list (a merge, a tag) refreshes them too. `undefined` until all four are known and when one fails: the strip is
+ * then left out, never half drawn.
+ */
+export function useCrmOverview(): CrmOverview | undefined {
+  return useQueries({
+    queries: OVERVIEW_FILTERS.map((filters) => ({
+      queryKey: [...CRM_GUESTS_KEY, 'overview', filters],
+      queryFn: () => CrmApi.getGuests({ ...filters, page: 1, pageSize: 1 }),
+      select: (list: CrmProfileList) => list.totalCount,
+      staleTime: OVERVIEW_STALE_MS,
+    })),
+    combine: combineOverview,
   });
 }
 

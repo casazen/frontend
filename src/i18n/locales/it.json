@@ -9151,12 +9151,12 @@
       "withdrawalsLink": "Apri la scheda privacy"
     },
     "detail": {
-      "backToList": "Torna ai profili",
+      "backToList": "Torna agli ospiti",
       "channels": {
         "empty": "Ancora nessun soggiorno concluso.",
         "title": "Dove prenota"
       },
-      "fallbackTitle": "Profilo ospite",
+      "fallbackTitle": "Scheda ospite",
       "group": {
         "average": "In media {{adults}} adulti e {{children}} bambini per soggiorno.",
         "couple": "Di solito viaggia in coppia.",
@@ -9185,15 +9185,15 @@
         "title": "Storico dei soggiorni",
         "truncated": "Mostriamo gli ultimi {{count}} soggiorni: i totali li contano tutti."
       },
-      "loadError": "Non riusciamo a caricare il profilo",
-      "loading": "Caricamento del profilo…",
-      "mergeLink": "Rivedi i duplicati",
-      "mergeProposals_one": "Un possibile duplicato di questo ospite aspetta la tua decisione.",
-      "mergeProposals_other": "{{count}} possibili duplicati di questo ospite aspettano la tua decisione.",
+      "loadError": "Non riusciamo a caricare la scheda",
+      "loading": "Caricamento della scheda…",
+      "mergeLink": "Rivedi le schede doppie",
+      "mergeProposals_one": "Questo ospite potrebbe avere una scheda doppia: aspetta la tua decisione.",
+      "mergeProposals_other": "Questo ospite potrebbe avere {{count}} schede doppie: aspettano la tua decisione.",
       "noStayYet": "Ancora nessun soggiorno concluso",
       "notFound": {
-        "description": "Il profilo non esiste, oppure non è tra gli immobili a cui hai accesso.",
-        "title": "Profilo non trovato"
+        "description": "La scheda non esiste, oppure non è tra gli immobili a cui hai accesso.",
+        "title": "Scheda non trovata"
       },
       "properties": {
         "empty": "Ancora nessun immobile.",
@@ -9253,7 +9253,7 @@
         "button": "Filtri",
         "buttonActive": "Filtri ({{active}})"
       },
-      "region": "Cerca e filtra i profili",
+      "region": "Cerca e filtra gli ospiti",
       "search": {
         "hint": "Scrivi una parte del nome, oppure l'e-mail o il telefono per intero.",
         "label": "Cerca un ospite",
@@ -9272,130 +9272,158 @@
       }
     },
     "list": {
+      "actions": {
+        "campaign": "Scrivi una campagna",
+        "group": "Crea un gruppo",
+        "import": "Importa ospiti"
+      },
       "channels": "Canali di prenotazione",
       "columns": {
-        "channels": "Canali",
+        "channels": "Prenotato su",
         "email": "E-mail",
         "guest": "Ospite",
         "lastStay": "Ultimo soggiorno",
-        "spend": "Spesa",
-        "stays": "Soggiorni"
+        "stays": "Soggiorni e spesa"
       },
-      "count_one": "{{count}} profilo",
-      "count_other": "{{count}} profili",
-      "description": "I tuoi ospiti, con i loro soggiorni e la possibilità di scrivergli. Vedi solo chi ha soggiornato negli immobili a cui hai accesso.",
+      "count_one": "{{count}} ospite",
+      "count_other": "{{count}} ospiti",
+      "description": "Tutte le persone che hanno soggiornato da te. Da qui scegli a chi scrivere.",
       "empty": {
-        "description": "I profili arrivano con le prenotazioni: quando un ospite soggiorna da te, lo trovi qui.",
-        "title": "Ancora nessun ospite"
+        "description": "Gli ospiti arrivano da soli con le prenotazioni: appena qualcuno soggiorna da te, lo trovi qui. Se hai già un elenco, puoi anche caricarlo da un file.",
+        "help": "Come funziona",
+        "import": "Importa ospiti",
+        "title": "Qui compariranno i tuoi ospiti"
       },
-      "label": "Profili degli ospiti",
-      "lastStay": "ultimo soggiorno {{date}}",
-      "loadError": "Non riusciamo a caricare i profili degli ospiti",
-      "mergeProposal": "Possibile duplicato",
-      "mergeProposalHint": "Un altro profilo potrebbe essere la stessa persona: lo trovi tra i duplicati da rivedere.",
-      "mergeProposalHintReadOnly": "Un altro profilo potrebbe essere la stessa persona: a deciderlo è chi può modificare gli ospiti.",
+      "label": "Elenco degli ospiti",
+      "loadError": "Non riusciamo a caricare gli ospiti",
+      "mergeProposal": "Possibile scheda doppia",
+      "mergeProposalHint": "Forse questo ospite compare due volte: guarda le schede doppie per decidere.",
+      "mergeProposalHintReadOnly": "Forse questo ospite compare due volte: decide chi può modificare gli ospiti.",
       "moreTags_one": "+{{count}} altro",
       "moreTags_other": "+{{count}} altri",
       "noMatch": {
         "action": "Azzera i filtri",
         "description": "Prova con meno filtri o con un'altra ricerca.",
-        "title": "Nessun profilo corrisponde ai filtri"
+        "title": "Nessun ospite corrisponde ai filtri"
       },
       "noName": "Ospite senza nome",
+      "noStays": "Nessun soggiorno",
       "staysCount_one": "{{count}} soggiorno",
       "staysCount_other": "{{count}} soggiorni",
       "tags": "Tag",
-      "title": "CRM Ospiti"
+      "title": "Ospiti"
     },
     "merge": {
       "card": {
-        "label": "Possibile duplicato: {{a}} e {{b}}",
-        "merge": "Unisci",
-        "mergeAria": "Unisci {{a}} e {{b}}",
-        "notSame": "Non sono la stessa persona",
-        "notSameAria": "Non sono la stessa persona: {{a}} e {{b}}"
+        "label": "Possibile scheda doppia: {{a}} e {{b}}",
+        "merge": "Sono la stessa persona: unisci",
+        "mergeAria": "Sono la stessa persona: unisci {{a}} e {{b}}",
+        "notSame": "Sono persone diverse",
+        "notSameAria": "Sono persone diverse: {{a}} e {{b}}"
       },
-      "count_one": "{{count}} proposta da rivedere",
-      "count_other": "{{count}} proposte da rivedere",
-      "description": "CasaZen ha trovato ospiti che potrebbero essere la stessa persona. Non unisce mai nulla da solo: decidi tu.",
+      "count_one": "{{count}} scheda da controllare",
+      "count_other": "{{count}} schede da controllare",
+      "description": "A volte lo stesso ospite compare due volte, per esempio ha prenotato su Airbnb e poi sul tuo sito. Qui puoi unire le due schede: la cronologia e i contatti restano tutti insieme. CasaZen non unisce mai nulla da solo: decidi tu.",
       "dialog": {
-        "confirm": "Unisci i profili",
-        "consent": "Nessun consenso cambia: ogni contatto resta com'è, con la sua base e la sua conferma.",
-        "description": "Scegli il profilo da tenere: l'altro non comparirà più negli elenchi.",
+        "confirm": "Unisci le due schede",
+        "consent": "Le scelte sulle e-mail non cambiano: chi aveva detto sì o no resta com'era.",
+        "description": "Scegli la scheda da tenere: l'altra non comparirà più negli elenchi.",
         "final": "Non si può annullare.",
-        "history": "Lo storico e i contatti dell'altro profilo passano a quello che tieni.",
-        "legend": "Quale profilo vuoi tenere?",
+        "history": "La cronologia e i contatti dell'altra scheda passano a quella che tieni.",
+        "legend": "Quale scheda vuoi tenere?",
         "stays_one": "{{count}} soggiorno",
         "stays_other": "{{count}} soggiorni",
-        "title": "Unisci i due profili"
+        "title": "Unisci le due schede"
       },
       "dismiss": {
         "confirm": "Sì, sono persone diverse",
-        "description": "CasaZen non ti riproporrà più questa coppia. Nessun profilo cambia.",
+        "description": "CasaZen non ti riproporrà più questa coppia. Nessuna scheda cambia.",
         "title": "Sono due persone diverse?"
       },
       "dismissDone": "Fatto: questa coppia non ti verrà più riproposta.",
       "dismissError": "Non siamo riusciti a salvare la tua decisione. Riprova tra qualche istante.",
       "empty": {
-        "action": "Vai ai profili",
-        "description": "Quando CasaZen trova due ospiti che potrebbero essere la stessa persona, li vedi qui e decidi tu.",
-        "title": "Nessun duplicato da rivedere"
+        "action": "Vai agli ospiti",
+        "description": "Quando CasaZen trova due schede che potrebbero essere la stessa persona, le vedi qui e decidi tu.",
+        "title": "Nessuna scheda doppia: tutto in ordine"
       },
-      "label": "Possibili duplicati",
+      "label": "Schede doppie da controllare",
       "likelihood": {
         "likely": "Probabilmente la stessa persona",
         "possible": "Forse la stessa persona",
         "veryLikely": "Molto probabilmente la stessa persona"
       },
-      "loadError": "Non riusciamo a caricare i possibili duplicati",
-      "loading": "Caricamento dei possibili duplicati…",
-      "mergeDone": "Profili uniti.",
-      "mergeError": "Non siamo riusciti a unire i profili. Riprova tra qualche istante.",
+      "loadError": "Non riusciamo a caricare le schede doppie",
+      "loading": "Caricamento delle schede doppie…",
+      "mergeDone": "Schede unite.",
+      "mergeError": "Non siamo riusciti a unire le schede. Riprova tra qualche istante.",
       "profile": {
         "contacts": "Contatti",
         "country": "Paese",
         "lastStay": "Ultimo soggiorno",
+        "lastStayOn": "Ultimo soggiorno {{date}}",
         "noContacts": "Nessun contatto",
         "noName": "Ospite senza nome",
         "noStay": "Nessun soggiorno",
-        "position": "Profilo {{position}}",
         "properties": "Immobili",
-        "stays": "Soggiorni"
+        "stays": "Soggiorni",
+        "staysCount_one": "{{count}} soggiorno",
+        "staysCount_other": "{{count}} soggiorni"
       },
       "reasons": {
-        "sameEmail": "Hanno lo stesso indirizzo e-mail.",
-        "sameNameBirth": "Hanno lo stesso nome e la stessa data di nascita.",
-        "sameNameSameProperty": "Hanno lo stesso nome e hanno soggiornato nello stesso immobile.",
-        "samePhone": "Hanno lo stesso numero di telefono.",
-        "title": "Perché li abbiamo accostati",
-        "unknown": "Hanno altri elementi in comune."
+        "sameEmail": "Stesso indirizzo e-mail",
+        "sameNameBirth": "Stesso nome e stessa data di nascita",
+        "sameNameSameProperty": "Stesso nome e stesso immobile",
+        "samePhone": "Stesso numero di telefono",
+        "title": "Perché pensiamo che siano la stessa persona",
+        "unknown": "Hanno altro in comune"
       },
-      "title": "Possibili duplicati"
+      "title": "Schede doppie"
+    },
+    "nextStep": {
+      "campaign": {
+        "cta": "Scrivi la prima campagna",
+        "detail": "Scegli a chi scrivere e che cosa dire: ci vogliono pochi minuti.",
+        "title": "Scrivi la tua prima campagna"
+      },
+      "group": {
+        "cta": "Crea il primo gruppo",
+        "detail": "Un gruppo è un elenco di ospiti scelti per un motivo, per esempio chi è già tornato da te. Poi puoi scrivere solo a loro.",
+        "title": "Crea il tuo primo gruppo di ospiti"
+      },
+      "kicker": "Il prossimo passo"
+    },
+    "overview": {
+      "guests": "Ospiti",
+      "label": "I tuoi ospiti in numeri",
+      "loyal": "Fedeli (3+ soggiorni)",
+      "reachable": "Raggiungibili via e-mail",
+      "returning": "Tornati almeno una volta"
     },
     "state": {
       "consent": {
-        "hint": "L'ospite ha dato il consenso e ha confermato il suo indirizzo e-mail: puoi scrivergli per novità e offerte.",
-        "label": "Raggiungibile, con consenso"
+        "hint": "Ha accettato di ricevere e-mail da te e ha confermato l'indirizzo: puoi scrivergli per novità e offerte.",
+        "label": "Ha accettato le e-mail"
       },
       "noContact": {
         "hint": "Non c'è un indirizzo e-mail a cui scrivere: manca l'indirizzo, oppure è stato lasciato senza alcun permesso di usarlo.",
-        "label": "Nessun contatto"
+        "label": "Senza e-mail"
       },
       "serviceOnly": {
-        "hint": "Puoi scrivergli solo per il soggiorno (conferme, istruzioni di arrivo, fattura), non per novità e offerte. Succede con gli indirizzi dei portali e con chi non ha dato il consenso.",
-        "label": "Solo servizio"
+        "hint": "Puoi scrivergli solo per il soggiorno (conferme, istruzioni di arrivo, fattura), non per novità e offerte. Succede con gli indirizzi dei portali e con chi non ha accettato di ricevere e-mail.",
+        "label": "Solo messaggi sul soggiorno"
       },
       "softOptIn": {
         "hint": "Ha prenotato direttamente da te: puoi proporgli servizi simili a quelli già acquistati, e ogni messaggio ha il link per annullare l'iscrizione.",
-        "label": "Raggiungibile, cliente diretto"
+        "label": "Cliente diretto: puoi scrivergli"
       },
       "toConfirm": {
-        "hint": "Ha dato il consenso ma non ha ancora confermato il suo indirizzo e-mail (o ha chiesto di non riceverne più). Per ora non puoi scrivergli per novità e offerte: apri il profilo per vedere come stanno le cose.",
-        "label": "Da confermare"
+        "hint": "Ha accettato di ricevere e-mail ma non ha ancora confermato l'indirizzo (oppure ha chiesto di non riceverne più). Per ora non puoi scrivergli per novità e offerte: apri la scheda per vedere come stanno le cose.",
+        "label": "Deve confermare l'e-mail"
       },
       "unsubscribed": {
         "hint": "Ha chiesto di non ricevere più e-mail promozionali, quindi non puoi scrivergli per novità e offerte. I messaggi sul soggiorno possono comunque arrivare.",
-        "label": "Iscrizione annullata"
+        "label": "Non vuole più e-mail"
       }
     },
     "tags": {
@@ -17227,11 +17255,12 @@
     "supplierShowcase": "Vetrina",
     "compliance": "Adempimenti",
     "complianceAudit": "Conformità",
-    "crm": "CRM Ospiti",
+    "crm": "Ospiti e marketing",
     "crmAutomations": "Automazioni",
     "crmCampaigns": "Campagne",
-    "crmMerge": "Duplicati",
-    "crmSegments": "Pubblici",
+    "crmGuestsTab": "Ospiti",
+    "crmMerge": "Schede doppie",
+    "crmSegments": "Gruppi",
     "demoEnvironment": "Ambiente demo",
     "documents": "Documenti",
     "collapse": "Comprimi menu",

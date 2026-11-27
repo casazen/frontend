@@ -60,9 +60,9 @@ describe('ContactStateBadge', () => {
         <ContactStateBadge state="toConfirm" />
       </I18nextProvider>,
     );
-    expect(screen.getByText('Da confermare')).toBeInTheDocument();
+    expect(screen.getByText("Deve confermare l'e-mail")).toBeInTheDocument();
 
     await i18n.changeLanguage('en');
-    expect(await screen.findByText('To confirm')).toBeInTheDocument();
+    expect(await screen.findByText('Must confirm the e-mail')).toBeInTheDocument();
   });
 });
