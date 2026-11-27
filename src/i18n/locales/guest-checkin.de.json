@@ -327,6 +327,18 @@
       "SingleGuest": "Einzelgast"
     },
     "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "Eine Person prüft Ihre Identität, ganz ohne automatischen Gesichtsvergleich. Eine Einwilligung zur Gesichtsprüfung ist nicht nötig.",
+          "label": "Überprüfung durch eine Person",
+          "switch": "Zur Überprüfung durch eine Person wechseln"
+        },
+        "automatic": {
+          "hint": "Sie fotografieren Ihr Ausweisdokument und zeigen Ihr Gesicht in die Kamera. Dafür brauchen wir Ihre Einwilligung, die oben steht.",
+          "label": "Automatische Überprüfung"
+        },
+        "title": "Wie möchten Sie überprüft werden?"
+      },
       "document": {
         "back": {
           "fileLabel": "Foto der Rückseite des Ausweisdokuments",
@@ -409,6 +421,10 @@
           "noReason": "Die Prüfung war diesmal nicht erfolgreich.",
           "title": "Wir konnten Sie noch nicht bestätigen"
         }
+      },
+      "unsupported": {
+        "text": "Diese Seite kann diesen Schritt der Überprüfung noch nicht durchführen. Sie können darum bitten, dass eine Person Ihre Identität prüft: Die Unterkunft wird benachrichtigt.",
+        "title": "Für diesen Schritt ist eine Person nötig"
       }
     },
     "invoice": {

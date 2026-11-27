@@ -8,7 +8,9 @@ import type {
   IdentityDocumentResponse,
   IdentityOperatorResponse,
   IdentitySelfieResponse,
+  IdentityVerificationResultKind,
   IdentityVerificationState,
+  IdentityVerificationStep,
 } from '@/types/public-checkin.types';
 
 /**
@@ -78,8 +80,11 @@ export function retakeTargetOf(codes: readonly string[]): 'document' | 'selfie' 
   return codes.some((code) => DOCUMENT_GUIDANCE.has(code)) ? 'document' : 'selfie';
 }
 
-/** Where the guest is in the identity step. */
-export type IdentityStage = 'consent' | 'document' | 'selfie' | 'retry' | 'operator' | 'done';
+/**
+ * Where the guest is in the identity step. `unsupported` is a step of the API this page has no screen for (`presence` before the capture of the presence reaches the page, or a step of the future): the page shows the
+ * way to a person instead of a blank screen.
+ */
+export type IdentityStage = 'consent' | 'document' | 'selfie' | 'retry' | 'operator' | 'done' | 'unsupported';
 
 /**
  * Everything the identity step knows, in memory for the life of the page and never in a storage, a cache or a log: the stage, whether a person
@@ -108,12 +113,25 @@ export interface IdentityProgress {
   lockCode: string | null;
   /** Why an `ok` came with no lock code although the property has one (`LOCK_CODE_HELD_TOURIST_TAX`): the code is held back until the tourist tax is paid. */
   lockCodeHeld?: string | null;
+  /**
+   * The session follows the self-hosted flow (E70/F03/US01/T01): the page opens the step with the text it shows, offers the two ways to be verified side by side and keeps the way to a person on every
+   * step. False on the legacy path, where none of that is there and the page is the one it always was.
+   */
+  selfHosted: boolean;
 }
 
 /** `lockCodeHeld` of the selfie answer while the organization asks for the tourist tax before the lock code and the stay still owes it (E25/F01/US01/T01). */
 export const LOCK_CODE_HELD_TOURIST_TAX = 'tourist_tax_due';
 
+/** The verification is closed (self-hosted flow): no capture is offered any more, and the guest sees where it ended. */
+function isClosed(state: IdentityVerificationState): boolean {
+  return state.closed === true;
+}
+
 function stageOfState(state: IdentityVerificationState): IdentityStage {
+  // A closed verification is over, whatever step the state still names: an approval is a pass, anything else is a person who has it. Nothing here says «passed» without the server saying it.
+  if (isClosed(state)) return state.outcome === 'ok' ? 'done' : 'operator';
+
   switch (state.step) {
     case 'done':
       return 'done';
@@ -126,6 +144,9 @@ function stageOfState(state: IdentityVerificationState): IdentityStage {
     case 'selfie':
       // In Ticino nothing of the document is kept, and the page that was closed no longer has its photo: the selfie asks for it again.
       return state.documentNotArchived ? 'document' : 'selfie';
+    default:
+      // `presence`, or a step the page does not know yet: not a blank screen, the way to a person.
+      return 'unsupported';
   }
 }
 
@@ -161,8 +182,96 @@ export function progressFromState(state: IdentityVerificationState): IdentityPro
     guidanceCodes: [],
     documentRefused: false,
     lockCode: null,
+    selfHosted: state.selfHosted === true,
     ...documentFromState(state),
   };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function resultKindOf(value: unknown): IdentityVerificationResultKind | null {
+  return value === 'ok' || value === 'retry' || value === 'operator' ? value : null;
+}
+
+/**
+ * The state of the verification read from a body that came off the network (the answer of the opening, the body of a 409), or `null` when it is not one (it has no `step`). Each member is read for what it is: a flag
+ * that is not `true` is `false` (the prudent value: nothing offered, nothing approved), a text that is not a text is `null`, and a step the page does not know is kept as it is.
+ */
+export function identityStateOf(value: unknown): IdentityVerificationState | null {
+  if (!isRecord(value) || typeof value.step !== 'string') return null;
+  const flag = (member: string) => value[member] === true;
+  const text = (member: string) => (typeof value[member] === 'string' ? (value[member] as string) : null);
+  const count = (member: string) => (typeof value[member] === 'number' && Number.isFinite(value[member]) ? (value[member] as number) : 0);
+  const side = value.documentSideNeeded;
+  const choice = value.choice;
+
+  return {
+    step: value.step as IdentityVerificationStep,
+    result: resultKindOf(value.result),
+    biometricOffered: flag('biometricOffered'),
+    consentRecorded: flag('consentRecorded'),
+    consentRefused: flag('consentRefused'),
+    documentChecked: flag('documentChecked'),
+    attemptsRemaining: count('attemptsRemaining'),
+    operatorRequested: flag('operatorRequested'),
+    operatorPathOpen: value.operatorPathOpen !== false,
+    documentNotArchived: flag('documentNotArchived'),
+    verifyingGuestPosition: count('verifyingGuestPosition'),
+    documentSides: Array.isArray(value.documentSides) ? value.documentSides.filter((entry): entry is string => typeof entry === 'string') : [],
+    documentSideNeeded: side === 'front' || side === 'back' ? side : null,
+    selfHosted: flag('selfHosted'),
+    opened: flag('opened'),
+    noticeVersion: text('noticeVersion'),
+    choice: choice === 'automatic' || choice === 'assisted' ? choice : null,
+    formatId: text('formatId'),
+    guidedRetryAvailable: flag('guidedRetryAvailable'),
+    closed: flag('closed'),
+    outcome: resultKindOf(value.outcome),
+  };
+}
+
+/** The `code` of the 409 that refuses a step because the verification is over (API `IdentityApiErrors.IdentityAlreadyClosed`). */
+const IDENTITY_ALREADY_CLOSED = 'identity_already_closed';
+
+/** A verification that is closed with a person: what the page shows when the 409 says it is closed and says no more. It never says «passed». */
+const CLOSED_WITH_A_PERSON: IdentityVerificationState = {
+  step: 'operator',
+  result: 'operator',
+  biometricOffered: false,
+  consentRecorded: false,
+  consentRefused: false,
+  documentChecked: false,
+  attemptsRemaining: 0,
+  operatorRequested: true,
+  operatorPathOpen: true,
+  documentNotArchived: false,
+  verifyingGuestPosition: 0,
+  selfHosted: true,
+  closed: true,
+  outcome: 'operator',
+};
+
+/**
+ * The state the verification ended in, when `error` is the 409 `identity_already_closed` (a document, a selfie or a presence step sent after it was closed, from another tab or after a reload): the body carries
+ * the `state`, and that is what the page shows. A 409 that says it is closed and carries no state that can be read is a verification that ended with a person. `null` for any other failure.
+ */
+export function closedStateOf(error: unknown): IdentityVerificationState | null {
+  if (!isAxiosError(error) || error.response?.status !== 409) return null;
+  const body: unknown = error.response.data;
+  if (getProblemCode(body) !== IDENTITY_ALREADY_CLOSED) return null;
+
+  const state = identityStateOf(isRecord(body) ? body.state : undefined);
+  return state !== null && state.closed === true ? state : CLOSED_WITH_A_PERSON;
+}
+
+/**
+ * The 422 `notice_version_unknown` of the opening: the version the page named is not the text of the consent the registry serves now (a new one was published since the page read it). Nothing was recorded; the
+ * page reads the texts again.
+ */
+export function isNoticeVersionUnknown(error: unknown): boolean {
+  return isAxiosError(error) && error.response?.status === 422 && getProblemCode(error.response.data) === 'notice_version_unknown';
 }
 
 /** After the answer to the consent: a consent leads to the document, anything else is the way to a person. */

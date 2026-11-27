@@ -1,5 +1,13 @@
 import { ApiClient } from './client';
-import type { BiometricSettings, BiometricsStatus, UpdateBiometricSettingsRequest } from '@/types/biometric-settings.types';
+import type {
+  BiometricSettings,
+  BiometricsStatus,
+  CreateIdentitySegmentRequest,
+  IdentitySegment,
+  IdentitySegments,
+  UpdateBiometricSettingsRequest,
+  UpdateIdentitySegmentRequest,
+} from '@/types/biometric-settings.types';
 
 /**
  * The identity verification of the organization (E22/F02/US01/T02, ADR-013-R13). The settings are the organization's own (`OrgBillingAdmin`, no organization in the route) and sit behind the
@@ -20,4 +28,20 @@ export const biometricSettingsApi = {
 
   /** Per model: name, state and why it cannot be used. Platform administrators only (403 otherwise). */
   getModelsStatus: () => ApiClient.get<BiometricsStatus>('/admin/biometrics/status', undefined, { localAuthRecovery: true }),
+
+  /**
+   * The segments of the self-hosted verification of the organization (E70/F02/US01/T02, NF-194): what each lets the policy do now, the formats and channels a new one can name, the policy in force and whether the
+   * platform permission of the automatic approval is on. Also behind the flag `checkInIdentitySelfHosted` (404 while it is off). Kept on the card on a 403, like the settings.
+   */
+  getSegments: () => ApiClient.get<IdentitySegments>('/settings/biometrics/segments', undefined, { localAuthRecovery: true }),
+
+  /** A new segment, in observation; one that exists already is answered as it is. 422 `identity_segment_invalid` for a format, a channel or a property that is not one of the organization's. */
+  createSegment: (request: CreateIdentitySegmentRequest) => ApiClient.post<IdentitySegment>('/settings/biometrics/segments', request),
+
+  /**
+   * The mode of a segment: `automatic` only when it is qualified (422 `identity_segment_not_qualified`), `suspended` with a reason of 1 to 200 characters (422 `identity_segment_invalid`), `observation` always.
+   * 404 for a segment that is not the organization's. Qualification is done by platform administrators through the admin API: it is never sent from here.
+   */
+  updateSegment: (id: string, request: UpdateIdentitySegmentRequest) =>
+    ApiClient.put<IdentitySegment>(`/settings/biometrics/segments/${encodeURIComponent(id)}`, request),
 };
