@@ -308,8 +308,17 @@ function PhotoTile({
             <ArrowRight className="h-4 w-4" />
           </Button>
           {displayable && !isCover && (
-            <Button type="button" variant="outline" size="sm" onClick={onSetCover} disabled={busy}>
-              {t('property.photos.setCover')}
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onSetCover}
+              disabled={busy}
+              aria-label={t('property.photos.setCover')}
+              title={t('property.photos.setCover')}
+            >
+              <Star className="h-4 w-4" />
             </Button>
           )}
           <Button
