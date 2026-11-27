@@ -6,6 +6,7 @@ import {
   buildEmbedSnippet,
   embedAttributes,
   escapeAttribute,
+  pluginChannel,
   pluginDownloadUrl,
   publicDestinations,
   readSearchTarget,
@@ -214,15 +215,43 @@ describe('publicDestinations', () => {
   });
 });
 
-describe('pluginDownloadUrl', () => {
+describe('pluginDownloadUrl (PLG-FE-CONSOLE, NF-200)', () => {
+  const MAIN = 'https://github.com/casazen/frontend/releases/download/wp-plugin-main/casazen.zip';
+  const DEVELOP = 'https://github.com/casazen/frontend/releases/download/wp-plugin-develop/casazen.zip';
+
+  it('pluginDownloadUrl_ProductionBuildAndNoOverride_IsTheAssetOfTheMainChannel', () => {
+    expect(pluginDownloadUrl(undefined, 'production')).toBe(MAIN);
+  });
+
+  it.each(['preview', 'development', '', undefined, null, 'staging', 'Production'])('pluginDownloadUrl_Build_%s_IsTheAssetOfTheDevelopChannel', (deployEnv) => {
+    // Only a Vercel Production build is the main channel; a preview, a local or a CI build, or a name nobody knows, is develop.
+    expect(pluginDownloadUrl(undefined, deployEnv)).toBe(DEVELOP);
+  });
+
+  it.each([
+    ['production', 'main'],
+    ['preview', 'develop'],
+    ['', 'develop'],
+  ])('pluginChannel_%s_Is_%s', (deployEnv, channel) => {
+    expect(pluginChannel(deployEnv)).toBe(channel);
+  });
+
+  it.each(['production', 'preview'])('pluginDownloadUrl_OverrideOnHttps_%s_WinsOverTheChannel', (deployEnv) => {
+    expect(pluginDownloadUrl(' https://downloads.agenzia.test/casazen-1.0.0.zip ', deployEnv)).toBe('https://downloads.agenzia.test/casazen-1.0.0.zip');
+  });
+
   it.each([undefined, null, '', '   ', 42, 'not an address', 'http://agenzia.test/casazen.zip', 'ftp://agenzia.test/casazen.zip', 'https://user:pw@agenzia.test/casazen.zip', 'javascript:alert(1)'])(
-    'pluginDownloadUrl_%s_IsNoLink',
-    (raw) => {
-      expect(pluginDownloadUrl(raw)).toBeNull();
+    'pluginDownloadUrl_InvalidOverride_%s_IsIgnoredAndTheChannelStands',
+    (override) => {
+      // An override that is not an address on https is never shown: the link is the one of the channel, in a production build and in any other.
+      expect(pluginDownloadUrl(override, 'production')).toBe(MAIN);
+      expect(pluginDownloadUrl(override, 'preview')).toBe(DEVELOP);
     },
   );
 
-  it('pluginDownloadUrl_AddressOnHttps_IsTheLink', () => {
-    expect(pluginDownloadUrl(' https://downloads.agenzia.test/casazen-1.0.0.zip ')).toBe('https://downloads.agenzia.test/casazen-1.0.0.zip');
+  it('pluginDownloadUrl_Always_IsAnAddressOnHttps', () => {
+    for (const deployEnv of ['production', 'preview', undefined]) {
+      expect(new URL(pluginDownloadUrl(undefined, deployEnv)).protocol).toBe('https:');
+    }
   });
 });

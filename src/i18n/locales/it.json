@@ -2676,6 +2676,8 @@
       "showcaseSupplierNotActive": "Il tuo profilo non è ancora attivo: completa l'attivazione per pubblicare la vetrina.",
       "showcaseUndoUnavailable": "Il tempo per annullare la pubblicazione è scaduto.",
       "showcaseVersionConflict": "La vetrina è stata modificata altrove: ricarica la pagina per vedere l'ultima versione.",
+      "siteConnectionInvalidRequest": "La richiesta di collegamento del sito non è valida: torna al plugin e riprova.",
+      "siteConnectionNotFound": "Questo sito collegato non esiste più: l'elenco è stato aggiornato.",
       "servicePaymentInFlight": "C’è già un pagamento in corso per questo importo: aspetta qualche istante.",
       "servicePaymentLinkInvalid": "Questo link di pagamento non è valido o è scaduto.",
       "servicePaymentNotPayable": "Questo pagamento non si può più pagare: potrebbe essere già saldato o ritirato.",
@@ -9971,12 +9973,19 @@
         "label": "Cosa incorporare"
       },
       "plugin": {
-        "description": "Se il tuo sito è in WordPress non devi incollare nessun codice.",
+        "description": "Se il tuo sito è in WordPress non devi incollare nessun codice: il plugin si collega al tuo account con un pulsante.",
         "download": "Scarica il plugin",
-        "step1": "Installa e attiva il plugin CasaZen sul tuo sito WordPress.",
-        "step2Own": "Nelle impostazioni del plugin scrivi l'indirizzo CasaZen: {{address}}.",
-        "step2Slug": "Nelle impostazioni del plugin scrivi l'indirizzo CasaZen ({{address}}) e l'identificativo dell'organizzazione, lo slug ({{slug}}).",
-        "step3": "Apri la procedura guidata: crea le pagine «Prenota», «Check-in online» e «Area proprietari».",
+        "manual": {
+          "address": "Indirizzo di CasaZen: {{address}}",
+          "description": "Se preferisci non collegare il plugin, scrivi questi valori a mano nelle impostazioni avanzate del plugin.",
+          "slug": "Identificativo dell'organizzazione (slug): {{slug}}",
+          "slugNotNeeded": "Identificativo dell'organizzazione: non serve, il dominio della tua agenzia sa già chi sei.",
+          "title": "Configurazione manuale"
+        },
+        "step1": "Scarica il plugin e attivalo in WordPress: Plugin, Aggiungi nuovo, Carica plugin.",
+        "step2": "Nel plugin premi «Connetti a CasaZen» e conferma: indirizzo e identificativo si compilano da soli.",
+        "step3": "Sempre dal plugin scrivi il dominio e crea i due record DNS che ti mostra.",
+        "step4": "Crea le pagine «Prenota», «Check-in online» e «Area proprietari» con la procedura guidata.",
         "title": "Plugin per WordPress"
       },
       "preview": {
@@ -10009,6 +10018,25 @@
         "targetInvalid": "Scrivi un indirizzo completo che inizia con http:// o https://, senza nome utente né password.",
         "targetLabel": "Pagina del tuo sito con il motore di prenotazione",
         "targetPlaceholder": "https://www.example.com/prenota"
+      },
+      "sites": {
+        "description": "I siti WordPress collegati al tuo account con il plugin. Se ne scolleghi uno, il plugin smette di funzionare finché non lo colleghi di nuovo.",
+        "empty": "Nessun sito collegato",
+        "lastUsed": "Ultimo utilizzo: {{date}}",
+        "lastUsedNever": "Mai utilizzato",
+        "linked": "Collegato il {{date}}",
+        "loadError": "Non riusciamo a leggere i siti collegati.",
+        "loading": "Caricamento dei siti collegati…",
+        "revoke": "Scollega",
+        "revokeConfirm": {
+          "confirm": "Scollega",
+          "description": "Il plugin di questo sito smette di funzionare con il tuo account: per rimetterlo in funzione dovrai collegarlo di nuovo da WordPress. Le pagine e i widget già pubblicati restano dove sono.",
+          "title": "Scollegare {{site}}?"
+        },
+        "revokeFailed": "Non siamo riusciti a scollegare il sito. Riprova.",
+        "revokeLabel": "Scollega {{site}}",
+        "revoked": "Sito scollegato.",
+        "title": "Siti collegati"
       },
       "snippet": {
         "copied": "Copiato",
@@ -27701,6 +27729,46 @@
       "confirmedNamed": "Prenotazione confermata, {{name}}!",
       "email": "Ultimo passo: conferma la tua email",
       "wait": "Richiesta inviata a {{host}}"
+    }
+  },
+  "siteConnect": {
+    "wordpress": {
+      "adminOnly": {
+        "description": "Solo un amministratore dell'agenzia può collegare un sito. Accedi con l'account di un amministratore e riprova dal plugin.",
+        "title": "Collegamento non consentito"
+      },
+      "allowed": {
+        "domain": "vedere e cambiare il dominio del tuo sito di prenotazione",
+        "surfaces": "scegliere cosa passa dal dominio: area ospite, portale proprietari e link nelle e-mail",
+        "title": "Il plugin potrà:"
+      },
+      "cancelled": {
+        "description": "Puoi chiudere questa scheda e tornare su WordPress.",
+        "title": "Annullato"
+      },
+      "connect": "Collega",
+      "disconnectAnytime": "Puoi scollegare il sito in qualsiasi momento dal plugin o da «Incorpora nel tuo sito».",
+      "failed": "Non è stato possibile collegare il sito. Riprova tra poco.",
+      "invalid": {
+        "description": "Torna al plugin e riprova.",
+        "title": "Richiesta non valida"
+      },
+      "leaving": {
+        "description": "Il collegamento si completa su WordPress: attendi qualche istante.",
+        "title": "Ti riporto su WordPress"
+      },
+      "loading": "Preparo il collegamento…",
+      "notAllowed": {
+        "data": "vedere prenotazioni, ospiti o pagamenti",
+        "title": "Il plugin non potrà:"
+      },
+      "question": "Collegare il sito <strong>{{site}}</strong> a <strong>{{agency}}</strong>?",
+      "unavailable": {
+        "description": "Non riusciamo a verificare se il collegamento dei siti è disponibile. Riprova.",
+        "retry": "Riprova",
+        "title": "Collegamento non disponibile"
+      },
+      "verifySite": "Controlla che l'indirizzo sia quello del tuo sito. Se non lo riconosci, annulla."
     }
   },
   "siteDocuments": {

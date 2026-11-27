@@ -298,6 +298,19 @@ describe('first property pending', () => {
     // Only that page: a path that merely starts with the same letters still leads to the first property.
     expect(needsFirstProperty(host, profile, undefined, '/app/short-rent/integrations/octorate-other')).toBe(true);
   });
+
+  it('needsFirstProperty_PageOfThePluginForWordPress_ReturnsFalseSoTheConsentOpensWithItsParameters', () => {
+    // The plugin sends the administrator of the agency to `/app/connect/wordpress?site=…&return=…&state=…&challenge=…&method=S256` (PLG-FE-CONSOLE): an owner who has finished the
+    // onboarding and has no property yet must still reach that page, or the redirect to the first property drops the whole request of the plugin (the query is not part of the path).
+    const profile = { ...onboarded, hasProperties: false };
+    for (const path of ['/app/connect/wordpress', '/app/connect/wordpress/']) {
+      expect(needsFirstProperty(host, profile, undefined, path)).toBe(false);
+      expect(needsFirstProperty({ roles: ['LongTermLandlord'] }, { ...profile, rentalType: 'LongTerm' as const }, undefined, path)).toBe(false);
+    }
+    // Only that page: a path that merely starts with the same letters still leads to the first property.
+    expect(needsFirstProperty(host, profile, undefined, '/app/connected')).toBe(true);
+    expect(needsFirstProperty(host, profile, undefined, '/app/connect-other')).toBe(true);
+  });
 });
 
 describe('host set up by the server, access token without role claims', () => {
