@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { calendarChangesApi } from '@/api/calendar-changes.api';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
-import { useNow } from '@/hooks/use-now';
 import { retryTransientErrors } from '@/lib/query-client';
 import type { CalendarChange, CalendarChangeRequest } from '@/types/calendar-changes.types';
+import { useRestartOnNewWaiting, useWatchWindow } from './use-watch-window';
 
 /** The calendar views of the bookings: a change of price or rules, like a block, makes every one of them (and the list of the changes under them) stale. */
 const CALENDAR_KEY = ['bookings', 'calendar'] as const;
@@ -23,39 +22,12 @@ export const CHANGE_WATCH_MS = 180_000;
 export const isChangeWaiting = (change: Pick<CalendarChange, 'state'> | undefined): boolean => change?.state === 'Queued' || change?.state === 'Sending';
 
 /**
- * The window in which a screen follows a waiting change by itself: it opens when the screen does, again each time a change that was not waiting starts to wait
- * (`useRestartOnNewWaiting`: the change the host has just sent, a "Retry now": the screen may have been open for hours) and again at each "Check again". `now` is the time as of
- * the last tick, kept in the state of the screen so that nothing reads the clock while it renders.
- */
-function useWatchWindow() {
-  const [since, setSince] = useState(() => Date.now());
-  const now = useNow(CHANGE_POLL_MS);
-  return { since, now, setSince, over: now - since >= CHANGE_WATCH_MS, restart: () => setSince(Date.now()) };
-}
-
-/**
- * Opens the window again when a change that was not waiting starts to wait: a new one appears (the host sent it from the panel, the wizard or a block) or a failed one is sent again.
- * Without it the window would run from the opening of the page, and a change sent after more than three minutes would be told at once as "no answer yet" and never followed. The state
- * is adjusted while rendering, as React lets a value that follows from what the screen reads (here the ids that wait) be.
- */
-function useRestartOnNewWaiting(watch: Pick<ReturnType<typeof useWatchWindow>, 'now' | 'setSince'>, waitingIds: readonly string[]) {
-  const [known, setKnown] = useState<readonly string[]>([]);
-  const { now, setSince } = watch;
-  if (waitingIds.some((id) => !known.includes(id))) {
-    setKnown(waitingIds);
-    setSince(now);
-  } else if (waitingIds.length < known.length) {
-    setKnown(waitingIds);
-  }
-}
-
-/**
  * One change of the calendar with the state of each property (E08/F05/US02/T02). While it is `Queued` or `Sending` it is read again every five seconds, up to
  * `CHANGE_WATCH_MS` from when the screen opened, from the moment the change starts to wait again (a "Retry now") or from the last `checkAgain`: `watchOver` says the window is
  * over while the change is still waiting. A 404 is a change that is not there, whatever an earlier read left in the cache; `enabled: false` reads nothing.
  */
 export function useCalendarChange(id: string | undefined, options: { enabled?: boolean; initial?: CalendarChange } = {}) {
-  const watch = useWatchWindow();
+  const watch = useWatchWindow(CHANGE_POLL_MS, CHANGE_WATCH_MS);
   const query = useQuery({
     queryKey: [...CHANGES_KEY, 'detail', id],
     queryFn: () => calendarChangesApi.get(id!),
@@ -87,7 +59,7 @@ export function useCalendarChange(id: string | undefined, options: { enabled?: b
  * or sent again: the calendar may have been open for hours) or from the last `checkAgain` (then `watchOver`). `enabled: false` reads nothing: the list needs `property.read`.
  */
 export function useCalendarChanges(options: { enabled?: boolean } = {}) {
-  const watch = useWatchWindow();
+  const watch = useWatchWindow(CHANGE_POLL_MS, CHANGE_WATCH_MS);
   const query = useQuery({
     queryKey: [...CHANGES_KEY, 'list'],
     queryFn: () => calendarChangesApi.list(),

@@ -24,24 +24,11 @@ import { useSeoMeta } from '@/lib/seo-meta';
 import { InviteAcceptCard } from '@/pages/invite-accept-card';
 import { useAcceptOwnerInvitation } from '@/queries/use-owner-onboarding';
 import type { OwnerInvitationAccepted } from '@/types/owner-onboarding.types';
+import { useNoReferrer } from '@/hooks/use-no-referrer';
 
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 w-full whitespace-normal py-2 text-center leading-tight';
 const PORTAL_LOGIN_RETURN = `${OWNER_INVITATION_PATH}?resume=portal`;
-
-/**
- * `Referrer-Policy: no-referrer` for this page: a link that leaves it (the sign-in, the support address) says nothing of the page it was on. The secret is out
- * of the address bar by then, but the page never tells where a person came from.
- */
-function useNoReferrer() {
-  useEffect(() => {
-    const meta = document.createElement('meta');
-    meta.name = 'referrer';
-    meta.content = 'no-referrer';
-    document.head.appendChild(meta);
-    return () => meta.remove();
-  }, []);
-}
 
 function WaitingCard({ title }: { title: string }) {
   return (

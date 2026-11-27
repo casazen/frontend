@@ -5,6 +5,7 @@ import type { OwnerIssuerProfile, OwnerIssuerProfileRequest } from '@/types';
 import { acceptsRefusal } from './accept-refusal';
 import type { DownloadedFile } from './file.api';
 import { ReportAccessDeniedError } from './report-files';
+import { headerOf } from '@/api/response-helpers';
 
 const profilePath = (ownerId: string) => `/owners/${encodeURIComponent(ownerId)}/issuer-profile`;
 const exportPath = (ownerId: string) => `/owners/${encodeURIComponent(ownerId)}/issued-documents/export`;
@@ -26,16 +27,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 /** A member the API leaves out when it is empty: a text, or `null` for what is missing or empty. */
 const textOf = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null);
-
-/** The value of a header of an answer, whatever the case of its name, or `null` (a browser lets a page read only the headers that the API exposes). */
-function headerOf(headers: unknown, name: string): string | null {
-  if (!isRecord(headers)) return null;
-  const wanted = name.toLowerCase();
-  for (const [key, value] of Object.entries(headers)) {
-    if (key.toLowerCase() === wanted && typeof value === 'string') return value;
-  }
-  return null;
-}
 
 /** The VAT of the stay in the rule in force, in percent: the rate of the line type `Accommodation`, when the answer carries the rule. */
 function stayRateOf(rule: unknown): number | null {

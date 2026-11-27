@@ -31,20 +31,7 @@ import { useAcceptOrgInvitation, useOrgInvitationLookup } from '@/queries/use-or
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import type { OrgInvitationLookup } from '@/types/org-team.types';
 import { InviteAcceptCard } from './invite-accept-card';
-
-/**
- * `Referrer-Policy: no-referrer` for this page: a link that leaves it (the sign-in, the legal documents) says nothing of the page it was
- * on. The secret is out of the address bar by then, but the page never tells where a person came from.
- */
-function useNoReferrer() {
-  useEffect(() => {
-    const meta = document.createElement('meta');
-    meta.name = 'referrer';
-    meta.content = 'no-referrer';
-    document.head.appendChild(meta);
-    return () => meta.remove();
-  }, []);
-}
+import { useNoReferrer } from '@/hooks/use-no-referrer';
 
 function LoadingCard({ message }: { message: string }) {
   return (

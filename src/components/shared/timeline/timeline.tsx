@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { AlertCircle, AlertTriangle, CheckCircle2, Circle, Info, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { safeReturnTo } from '@/lib/auth-return-to';
 import type { StatusTone } from '@/lib/status-dictionary';
 import { cn } from '@/lib/utils';
 import { formatAbsolute, formatRelative } from './timeline-time';
+import { useNowDate } from '@/hooks/use-now';
 
 /** How an event weighs: the colors, the icon and the word of the status badges (`StatusBadge`), so that it is never only a color. */
 export type TimelineTone = StatusTone;
@@ -48,7 +49,6 @@ export interface TimelineProps {
 
 const DEFAULT_LIMIT = 5;
 const DEFAULT_TONE: TimelineTone = 'neutral';
-const TICK_MS = 60_000;
 
 const TONE_ICONS: Record<TimelineTone, LucideIcon> = {
   neutral: Circle,
@@ -57,16 +57,6 @@ const TONE_ICONS: Record<TimelineTone, LucideIcon> = {
   warning: AlertTriangle,
   danger: AlertCircle,
 };
-
-/** The time now, again every minute: "3 minutes ago" does not stay "now" in a drawer that is left open. */
-function useNow(): Date {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), TICK_MS);
-    return () => clearInterval(timer);
-  }, []);
-  return now;
-}
 
 interface SortedEvent {
   event: TimelineEvent;
@@ -100,7 +90,7 @@ function sortEvents(events: readonly TimelineEvent[], order: 'desc' | 'asc' | 'g
  */
 export function Timeline({ events, order = 'desc', limit = DEFAULT_LIMIT, label, emptyText, className, testId }: TimelineProps) {
   const { t, i18n } = useTranslation();
-  const now = useNow();
+  const now = useNowDate();
   const step = Math.max(1, limit);
   const [shownCount, setShownCount] = useState(step);
   // The event that takes the focus when "Mostra altri" adds some: the first of the new ones. A callback ref focuses it once, when it mounts.

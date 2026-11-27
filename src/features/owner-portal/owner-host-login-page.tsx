@@ -8,29 +8,10 @@ import { useAuth } from '@/hooks/use-auth';
 import { OWNER_PORTAL_HOME_PATH } from '@/lib/owner-invitation';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { isSignInFailedState } from './paths';
+import { startedRecently, rememberStart } from '@/lib/login-restart-guard';
 
 /** When this page last sent the visitor to the sign-in (`sessionStorage`, one tab). */
 const LAST_START_KEY = 'casazen.owner-host-login-started-at';
-
-/** A visitor who comes back to this page within this time is not sent to the sign-in a second time (see `OwnerHostLoginPage`). */
-const RESTART_WINDOW_MS = 15_000;
-
-function startedRecently(): boolean {
-  try {
-    const startedAt = Number(sessionStorage.getItem(LAST_START_KEY));
-    return Number.isFinite(startedAt) && startedAt > 0 && Date.now() - startedAt < RESTART_WINDOW_MS;
-  } catch {
-    return false;
-  }
-}
-
-function rememberStart(): void {
-  try {
-    sessionStorage.setItem(LAST_START_KEY, String(Date.now()));
-  } catch {
-    // No storage (private mode): the guard against a loop is lost, the redirect itself still works.
-  }
-}
 
 /**
  * `/portale-proprietari/accedi` on the own domain of an agency whose owners can sign in there (E40/F02/US01/T02, NF-141): the page sends the visitor straight to the sign-in and brings
@@ -51,7 +32,7 @@ export function OwnerHostLoginPage() {
   const navigate = useNavigate();
   const signInFailed = isSignInFailedState(useLocation().state);
   // Decided once, when the page opens.
-  const [redirect] = useState(() => !signInFailed && !startedRecently());
+  const [redirect] = useState(() => !signInFailed && !startedRecently(LAST_START_KEY));
   const started = useRef(false);
   useSeoMeta({ title: t('ownerPortal.hostLogin.title'), noindex: true });
 
@@ -62,7 +43,7 @@ export function OwnerHostLoginPage() {
     }
     if (!redirect || isLoading || isAuthenticated || started.current) return;
     started.current = true;
-    rememberStart();
+    rememberStart(LAST_START_KEY);
     login({ returnTo: OWNER_PORTAL_HOME_PATH });
   }, [redirect, isAuthenticated, isLoading, user, login, navigate]);
 

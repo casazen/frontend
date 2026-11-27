@@ -2,9 +2,9 @@ import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Lock } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
-import { Spinner } from '@/components/ui/spinner';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { OctorateConnect } from './use-octorate-connect';
+import { Working } from './working';
 
 /** What happens, in the order it happens. The keys are written out so that the i18n test finds a missing translation. */
 const WHAT_HAPPENS: readonly string[] = [
@@ -41,16 +41,6 @@ function Explanation() {
         <span className="min-w-0 break-words">{t('octorate.connect.consent.notes')}</span>
       </p>
     </section>
-  );
-}
-
-/** A line of work in progress: the state of the connection being read, or the code being exchanged. */
-function Working({ message, testId }: { message: string; testId: string }) {
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-lg bg-muted p-4 text-sm" data-testid={testId}>
-      <Spinner size="sm" />
-      <span className="min-w-0 break-words">{message}</span>
-    </div>
   );
 }
 

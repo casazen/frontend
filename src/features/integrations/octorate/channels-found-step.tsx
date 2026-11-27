@@ -3,23 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { RefreshCw } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useFoundListings, useRefreshListings, useShortRentProperties } from '@/queries/use-octorate-mapping';
 import { capacityText, detailsLine, listingAddress, listingName, listingStateHint } from './listing-labels';
 import { ChannelList, ListingStateBadge, StepNotice, StepProblem } from './listing-parts';
 import { forShortRent, shortRentIdsOf } from './mapping-model';
 import type { ConnectPhase } from './use-octorate-connect';
-
-/** A line of work in progress: the listings being read or shown (the spinner announces it). */
-function Working({ message, testId }: { message: string; testId: string }) {
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-lg bg-muted p-4 text-sm" data-testid={testId}>
-      <Spinner size="sm" />
-      <span className="min-w-0 break-words">{message}</span>
-    </div>
-  );
-}
+import { Working } from './working';
 
 interface ChannelsFoundStepProps {
   /** Where the consent stands: the listings are asked for only once the channel manager is connected. */

@@ -19,18 +19,9 @@ import {
   isPeriodDraft,
 } from './document-model';
 import { DocumentStateBadge } from './document-state-badge';
+import { MissingValue } from '@/components/shared/missing-value';
 
 const LINK = 'rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
-
-/** A figure the server did not give: a dash for the eye and the words for a screen reader. */
-function Missing({ label, testId }: { label: string; testId?: string }) {
-  return (
-    <span data-missing="true" data-testid={testId}>
-      <span aria-hidden="true">—</span>
-      <span className="sr-only">{label}</span>
-    </span>
-  );
-}
 
 /**
  * The drafts ticked for a bulk issue (E12/F02/US01/T01), as the list shows them: a box on every draft CasaZen issues and none on any other document. `disabled` while a bulk issue, or the search for
@@ -97,7 +88,7 @@ function RecipientCell({ document, canReadBookings }: { document: FiscalDocument
           {document.recipientName}
         </span>
       ) : (
-        <Missing label={t('fiscalDocuments.list.noRecipient')} testId="fiscal-document-recipient" />
+        <MissingValue label={t('fiscalDocuments.list.noRecipient')} testId="fiscal-document-recipient" />
       )}
       <div className="mt-0.5">
         <BookingCell document={document} canReadBookings={canReadBookings} />

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import type { OwnerLedgerEntry } from '@/types';
 import { attachmentUrlOf, isInformational, paymentPathOf, shortId, shownAmount, sourcePathOf, stepsOf } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
+import { DescriptionItem } from '@/components/shared/description-item';
 
 interface LedgerLineDrawerProps {
   /** The line to explain; `null` closes the drawer. */
@@ -116,14 +117,14 @@ function LineBody({ entry, propertyName, money, date, dateTime, percent, t }: Li
             {t('ownerAccounting.line.facts.title')}
           </h3>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            <Fact label={t('ownerAccounting.line.facts.service')} value={date(entry.serviceDate)} />
-            <Fact label={t('ownerAccounting.line.facts.recognition')} value={date(entry.recognitionDate)} />
-            {entry.paymentDate ? <Fact label={t('ownerAccounting.line.facts.payment')} value={date(entry.paymentDate)} /> : null}
-            <Fact label={t('ownerAccounting.line.facts.source')} value={t(`ownerAccounting.line.source.${entry.source}`)} />
-            {propertyName ? <Fact label={t('ownerAccounting.line.facts.property')} value={propertyName} /> : null}
-            {entry.ruleVersion ? <Fact label={t('ownerAccounting.line.facts.rule')} value={entry.ruleVersion} /> : null}
-            {entry.taxCode ? <Fact label={t('ownerAccounting.line.facts.taxCode')} value={entry.taxCode} /> : null}
-            <Fact label={t('ownerAccounting.line.facts.posted')} value={dateTime(entry.postedAt)} />
+            <DescriptionItem label={t('ownerAccounting.line.facts.service')} value={date(entry.serviceDate)} />
+            <DescriptionItem label={t('ownerAccounting.line.facts.recognition')} value={date(entry.recognitionDate)} />
+            {entry.paymentDate ? <DescriptionItem label={t('ownerAccounting.line.facts.payment')} value={date(entry.paymentDate)} /> : null}
+            <DescriptionItem label={t('ownerAccounting.line.facts.source')} value={t(`ownerAccounting.line.source.${entry.source}`)} />
+            {propertyName ? <DescriptionItem label={t('ownerAccounting.line.facts.property')} value={propertyName} /> : null}
+            {entry.ruleVersion ? <DescriptionItem label={t('ownerAccounting.line.facts.rule')} value={entry.ruleVersion} /> : null}
+            {entry.taxCode ? <DescriptionItem label={t('ownerAccounting.line.facts.taxCode')} value={entry.taxCode} /> : null}
+            <DescriptionItem label={t('ownerAccounting.line.facts.posted')} value={dateTime(entry.postedAt)} />
           </dl>
           {entry.description ? <p className="break-words text-sm" data-testid="line-description">{entry.description}</p> : null}
           {entry.reversesEntryId ? <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.line.reverses', { id: shortId(entry.reversesEntryId) })}</p> : null}
@@ -165,15 +166,6 @@ function LineBody({ entry, propertyName, money, date, dateTime, percent, t }: Li
           </section>
         ) : null}
       </div>
-    </div>
-  );
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-foreground/70">{label}</dt>
-      <dd className="break-words">{value}</dd>
     </div>
   );
 }

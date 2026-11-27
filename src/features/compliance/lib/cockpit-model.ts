@@ -29,6 +29,7 @@ import {
   type LightSummary,
   type SectionField,
 } from './compliance-light';
+import { dueTime } from './due-time';
 
 export type { CockpitTier } from './compliance-tiers';
 
@@ -185,11 +186,6 @@ export function missingDetail(item: Pick<ComplianceSummaryItem, 'missing'>, { t,
   }
   return parts.length > 0 ? t('compliance.cockpit.missing.lead', { what: parts.join(', ') }) : undefined;
 }
-
-const dueTime = (dueAt: string | null): number => {
-  const time = dueAt ? new Date(dueAt).getTime() : Number.NaN;
-  return Number.isNaN(time) ? Number.POSITIVE_INFINITY : time;
-};
 
 /**
  * How pressing a deadline of the law is, in words: «Scaduto da 3 giorni», «Entro oggi alle 14:00», «Entro domani». Red when it is

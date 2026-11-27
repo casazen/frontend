@@ -13,6 +13,7 @@ import { SWISS_NOTIFICATION_KEY, swissDayKey, useSwissDay } from '@/queries/swis
 import { useProperty } from '@/queries/use-properties';
 import { parseSwissLayerId } from './swiss-layer-address';
 import { SwissDayView } from './swiss-day-view';
+import { LayerNotice } from '@/features/compliance/components/layer-notice';
 
 /** The name of the layer: the property it is about, so that a host with two properties knows which one is on screen. Until the property arrives, the plain name. */
 export function SwissLayerTitle({ id }: DetailTitleProps) {
@@ -108,16 +109,6 @@ function SwissLayer({ propertyId, requestedDay, close }: SwissLayerProps) {
   );
 }
 
-/** A line the layer says in place of the day, with nothing asked of the server. */
-function SwissLayerNotice({ textKey, testId }: { textKey: string; testId: string }) {
-  const { t } = useTranslation();
-  return (
-    <p role="alert" className="text-sm text-foreground/70" data-testid={testId}>
-      {t(textKey)}
-    </p>
-  );
-}
-
 /**
  * The layer of the assisted notification of the guests (E31/F02/US02/T02, NF-131, casazen/backend#979): a kind of the detail drawer (`?detail=swiss-notification:<property>[:<day>]`),
  * opened over the cockpit by its row and by the bell, and over the page of the property by the card of the regime. It is hidden while `Features:GuestRegistrationRegimes` is off (the
@@ -128,11 +119,11 @@ export function SwissLayerContent({ id, close }: DetailContentProps) {
   const { hasPermission } = useWorkspace();
   const address = parseSwissLayerId(id);
 
-  if (!address) return <SwissLayerNotice textKey="swissNotification.layer.notFound" testId="swiss-layer-problem" />;
+  if (!address) return <LayerNotice textKey="swissNotification.layer.notFound" testId="swiss-layer-problem" />;
   if (isLoading) return <SkeletonLine lines={3} />;
-  if (!flags.guestRegistrationRegimes) return <SwissLayerNotice textKey="swissNotification.layer.unavailable" testId="swiss-layer-unavailable" />;
+  if (!flags.guestRegistrationRegimes) return <LayerNotice textKey="swissNotification.layer.unavailable" testId="swiss-layer-unavailable" />;
   if (!hasPermission('short-rent', 'guest.read') || !hasPermission('short-rent', 'booking.read')) {
-    return <SwissLayerNotice textKey="swissNotification.layer.forbidden" testId="swiss-layer-problem" />;
+    return <LayerNotice textKey="swissNotification.layer.forbidden" testId="swiss-layer-problem" />;
   }
   return <SwissLayer key={id} propertyId={address.propertyId} requestedDay={address.day} close={close} />;
 }

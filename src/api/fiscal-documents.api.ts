@@ -25,6 +25,7 @@ import type {
   SdiScope,
   SdiSubmitResult,
 } from '@/types';
+import { headerOf } from '@/api/response-helpers';
 
 const PATH = '/fiscal/documents';
 const SETTINGS_PATH = `${PATH}/settings`;
@@ -93,19 +94,6 @@ const isOptionalAmount = (value: unknown) => value === undefined || value === nu
 
 /** A whole number the API leaves out when it has none: anything else is read as none (a member this client does not need must never fail the whole answer). */
 const integerOf = (value: unknown): number | null => (typeof value === 'number' && Number.isInteger(value) ? value : null);
-
-/**
- * The value of a header of an answer, whatever the case of its name, or `null`. A browser lets a page read only the headers that the API exposes (CORS), so a header
- * that is not there is `null`: whoever reads it has a way on without it.
- */
-function headerOf(headers: unknown, name: string): string | null {
-  if (!isRecord(headers)) return null;
-  const wanted = name.toLowerCase();
-  for (const [key, value] of Object.entries(headers)) {
-    if (key.toLowerCase() === wanted && typeof value === 'string') return value;
-  }
-  return null;
-}
 
 /**
  * A document the screens can draw without guessing, reduced to what they show: the codes, the currency and the total are there and are of the right type. The fiscal code,
