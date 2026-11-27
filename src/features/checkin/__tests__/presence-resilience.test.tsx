@@ -1014,7 +1014,8 @@ describe('presence-resilience: the guest stops the upload and asks for a person 
 
     fireEvent.click(screen.getByTestId('checkin-presence-cancel'));
     await settle();
-    await advanceUntil(() => screen.queryByTestId('identity-result-operator') !== null);
+    // At once, not when the wait for the connection would have run out (30 s): the stop ends the wait.
+    await advanceUntil(() => screen.queryByTestId('identity-result-operator') !== null, 1, 20);
 
     // The connection that comes back later finds nothing to send: the upload is over.
     setOnline(true);
