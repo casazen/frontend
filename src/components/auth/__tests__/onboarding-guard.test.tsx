@@ -199,6 +199,38 @@ describe('OnboardingGuard (PL-01)', () => {
     expect(screen.getByTestId('workspace-search')).toHaveTextContent('?code=the-code&state=the-state');
   });
 
+  it.each([
+    ['ShortTerm', 'PropertyOwner'],
+    ['LongTerm', 'LongTermLandlord'],
+  ] as const)('OnboardingGuard_%sOwnerWithoutPropertiesOnThePageOfThePluginForWordPress_OpensItAndKeepsEveryParameter', async (rentalType, role) => {
+    mockAuth({ roles: [role] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(
+      profile({
+        orgId: 'org-1',
+        rentalType,
+        onboardingCompletedAt: '2026-06-16T12:00:00Z',
+        onboardingRequired: false,
+        consentsAccepted: true,
+        hasProperties: false,
+      }),
+    );
+    // Made-up values: none of them is a code, a state or a credential of anyone.
+    const search = new URLSearchParams({
+      site: 'https://www.quokka360.test',
+      return: 'https://www.quokka360.test/wp-admin/options-general.php?page=casazen',
+      state: 'test-state-0123456789',
+      challenge: 'A'.repeat(43),
+      method: 'S256',
+    }).toString();
+
+    // The plugin sends the administrator here (PLG-FE-CONSOLE): an owner with no property yet reaches the consent with the whole request in the address, and is not taken to the creation of the first property.
+    renderGuard(`/app/connect/wordpress?${search}`);
+
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/connect/wordpress');
+    expect(screen.getByTestId('workspace-search').textContent).toBe(`?${search}`);
+    expect(screen.queryByTestId('onboarding-page')).not.toBeInTheDocument();
+  });
+
   it('OnboardingGuard_CallbackOfTheChannelManagerBeforeTheOnboarding_RemembersThePageWithoutTheCodeAndTheState', async () => {
     mockAuth({ roles: ['PropertyOwner'] });
     vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ onboardingCompletedAt: '2026-06-16T12:00:00Z' }));

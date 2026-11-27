@@ -66,6 +66,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
 
   return {
     plugins,
+    // The deployment this bundle is for (`VERCEL_ENV`: production, preview, development), written into the code at build time: the console links the download of the plugin for
+    // WordPress of its own channel with it (`src/config/deploy-env.ts`), so nobody has to set a variable. Empty outside Vercel (a local or CI build).
+    define: { __CASAZEN_DEPLOY_ENV__: JSON.stringify(process.env.VERCEL_ENV ?? '') },
     server: {
       host: true,
       port: 5173,
