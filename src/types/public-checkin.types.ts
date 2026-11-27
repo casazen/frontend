@@ -503,7 +503,8 @@ export interface IdentityOpenResponse {
 }
 
 /**
- * The moves of the challenge of the presence (API `PresenceMoves`, E72/F01/US01/T01): the guest is asked for them one after the other, in the order the challenge names them. A move the page has no
+ * The moves of the challenge of the presence (API `PresenceMoves`, E72/F01/US01/T01): the guest is asked for them one after the other, in the order the challenge names them. The server names them by the picture it
+ * receives, as the camera gives it: `turn_right` is the nose going to the right of the frame (which is the guest's own left, in front of the camera) and `look_up` the nose going up. A move the page has no
  * words and no drawing for is not a move of the challenge: the challenge is not used.
  */
 export type PresenceMove = 'turn_left' | 'turn_right' | 'look_up' | 'look_down';

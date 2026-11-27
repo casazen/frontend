@@ -480,10 +480,10 @@
         },
         "leadIn": "Schauen Sie in die Kamera",
         "move": {
-          "look_down": "Schauen Sie nach unten",
-          "look_up": "Schauen Sie nach oben",
-          "turn_left": "Drehen Sie den Kopf nach links",
-          "turn_right": "Drehen Sie den Kopf nach rechts"
+          "lookDown": "Schauen Sie nach unten",
+          "lookUp": "Schauen Sie nach oben",
+          "turnToTheLeft": "Drehen Sie den Kopf nach links",
+          "turnToTheRight": "Drehen Sie den Kopf nach rechts"
         },
         "notice": {
           "expired": "Die Zeit für die Prüfung ist abgelaufen. Wir beginnen mit einer neuen Aufnahme von vorn: Drücken Sie „Start“.",

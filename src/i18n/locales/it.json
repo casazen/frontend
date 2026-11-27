@@ -6876,10 +6876,10 @@
         },
         "leadIn": "Guarda la fotocamera",
         "move": {
-          "look_down": "Abbassa lo sguardo",
-          "look_up": "Alza lo sguardo",
-          "turn_left": "Gira la testa a sinistra",
-          "turn_right": "Gira la testa a destra"
+          "lookDown": "Abbassa lo sguardo",
+          "lookUp": "Alza lo sguardo",
+          "turnToTheLeft": "Gira la testa a sinistra",
+          "turnToTheRight": "Gira la testa a destra"
         },
         "notice": {
           "expired": "Il tempo per la verifica è scaduto. Ricominciamo con una nuova ripresa: premi «Inizia».",

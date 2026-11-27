@@ -480,10 +480,10 @@
         },
         "leadIn": "Regardez la caméra",
         "move": {
-          "look_down": "Baissez les yeux",
-          "look_up": "Levez les yeux",
-          "turn_left": "Tournez la tête vers la gauche",
-          "turn_right": "Tournez la tête vers la droite"
+          "lookDown": "Baissez les yeux",
+          "lookUp": "Levez les yeux",
+          "turnToTheLeft": "Tournez la tête vers la gauche",
+          "turnToTheRight": "Tournez la tête vers la droite"
         },
         "notice": {
           "expired": "Le temps de la vérification est écoulé. Nous recommençons avec un nouvel enregistrement : appuyez sur « Commencer ».",

@@ -480,10 +480,10 @@
         },
         "leadIn": "Mire a la cámara",
         "move": {
-          "look_down": "Baje la mirada",
-          "look_up": "Suba la mirada",
-          "turn_left": "Gire la cabeza hacia la izquierda",
-          "turn_right": "Gire la cabeza hacia la derecha"
+          "lookDown": "Baje la mirada",
+          "lookUp": "Suba la mirada",
+          "turnToTheLeft": "Gire la cabeza hacia la izquierda",
+          "turnToTheRight": "Gire la cabeza hacia la derecha"
         },
         "notice": {
           "expired": "Se acabó el tiempo de la verificación. Empezamos de nuevo con una grabación nueva: pulse «Empezar».",

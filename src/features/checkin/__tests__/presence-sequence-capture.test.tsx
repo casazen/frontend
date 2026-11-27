@@ -293,7 +293,8 @@ describe('presence-sequence-capture: the prompts (AC2)', () => {
       await advance(100);
     }
 
-    expect(announced).toEqual([text('checkin.identity.presence.leadIn'), text('checkin.identity.presence.move.turn_left'), text('checkin.identity.presence.move.look_up')]);
+    // The moves of the challenge are the server's (`turn_left`, then `look_up`); the words are the ones the guest hears for them (see the mapping below).
+    expect(announced).toEqual([text('checkin.identity.presence.leadIn'), text('checkin.identity.presence.move.turnToTheRight'), text('checkin.identity.presence.move.lookUp')]);
     expect(arrows).toEqual(['lead-in', 'turn_left', 'look_up']);
     await advanceUntil(() => view.sendSequence.mock.calls.length > 0);
   });
@@ -346,6 +347,51 @@ describe('presence-sequence-capture: the prompts (AC2)', () => {
     expect(classes).not.toMatch(/(^|\s)animate-/);
     const wait = screen.queryByTestId('checkin-presence-wait');
     if (wait) expect(wait.innerHTML).not.toMatch(/(^|\s)animate-/);
+  });
+});
+
+describe('presence-sequence-capture: the moves are asked the way the guest turns in a mirror (AC2)', () => {
+  // The server names a move by the picture it receives, as the camera gives it (`turn_right`: the nose goes to the RIGHT of the frame); the frames are sent as the camera gives them, and the guest looks at a mirror:
+  // what goes to the right of the frame is the guest's LEFT, and the left of the screen they look at. So the move the server calls `turn_right` is asked as «turn your head to the left», with an arrow that points left.
+  it.each([
+    ['turn_left', 'turnToTheRight', 'arrow-right'],
+    ['turn_right', 'turnToTheLeft', 'arrow-left'],
+    ['look_up', 'lookUp', 'arrow-up'],
+    ['look_down', 'lookDown', 'arrow-down'],
+  ] as const)('PresenceSequenceCapture_TheMoveOfTheServer_%s_IsAskedAs_%s_WithAnArrowThatPoints_%s', async (move, words, arrow) => {
+    stubCamera();
+    const startChallenge = vi.fn<CaptureProps['startChallenge']>().mockResolvedValue({ kind: 'ready', challenge: challengeBody({ steps: [move], leadInMs: 0 }) });
+    renderCapture({ startChallenge });
+    await waitForTheStart();
+    fireEvent.click(startButton());
+    await settle();
+
+    expect(prompt()).toHaveTextContent(text(`checkin.identity.presence.move.${words}`));
+    expect(screen.getByTestId('checkin-presence-arrow')).toHaveAttribute('data-move', move);
+    expect(screen.getByTestId('checkin-presence-arrow').getAttribute('class')).toContain(`lucide-${arrow}`);
+  });
+
+  it('PresenceSequenceCapture_TheFramesThatAreSent_AreTheOnesOfTheCameraAndNeverFlippedLikeThePreview', async () => {
+    stubCamera();
+    const transforms: string[] = [];
+    vi.mocked(HTMLCanvasElement.prototype.getContext).mockImplementation(
+      () =>
+        ({
+          drawImage: vi.fn(),
+          setTransform: () => transforms.push('setTransform'),
+          transform: () => transforms.push('transform'),
+          scale: () => transforms.push('scale'),
+          translate: () => transforms.push('translate'),
+          rotate: () => transforms.push('rotate'),
+        }) as unknown as CanvasRenderingContext2D,
+    );
+    const view = renderCapture();
+    await recordTheWholeSequence(view.sendSequence);
+
+    // The preview is a mirror for the guest; the picture the server gets is the one of the camera.
+    expect(screen.getByTestId('checkin-presence-video').className).toContain('-scale-x-100');
+    expect(view.sent[0].frames.length).toBeGreaterThan(20);
+    expect(transforms).toEqual([]);
   });
 });
 
@@ -870,7 +916,7 @@ describe('the words of the presence in the five languages of the page', () => {
   it('theKeysTheScreensWriteOut_AreFoundInTheSources', () => {
     expect(writtenOut.length).toBeGreaterThan(12);
     expect(writtenOut).toContain('checkin.identity.presence.title');
-    expect(writtenOut).toContain('checkin.identity.presence.move.turn_left');
+    expect(writtenOut).toContain('checkin.identity.presence.move.turnToTheLeft');
     expect(writtenOut).toContain('checkin.identity.result.retry.againPresence');
   });
 

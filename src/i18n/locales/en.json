@@ -6876,10 +6876,10 @@
         },
         "leadIn": "Look at the camera",
         "move": {
-          "look_down": "Look down",
-          "look_up": "Look up",
-          "turn_left": "Turn your head to the left",
-          "turn_right": "Turn your head to the right"
+          "lookDown": "Look down",
+          "lookUp": "Look up",
+          "turnToTheLeft": "Turn your head to the left",
+          "turnToTheRight": "Turn your head to the right"
         },
         "notice": {
           "expired": "Time for the check ran out. We start again with a new recording: press “Start”.",

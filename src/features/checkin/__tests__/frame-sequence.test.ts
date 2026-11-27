@@ -182,6 +182,32 @@ describe('frame-sequence: the recorder takes timed frames (E72/F02/US01/T01, AC3
     expect(canvas.height).toBe(0);
   });
 
+  it('createSequenceRecorder_AFrame_IsDrawnAsTheCameraGivesItWithNoFlipOrOtherTransform', async () => {
+    const calls: string[] = [];
+    vi.mocked(HTMLCanvasElement.prototype.getContext).mockImplementation(
+      () =>
+        ({
+          drawImage: () => calls.push('drawImage'),
+          setTransform: () => calls.push('setTransform'),
+          transform: () => calls.push('transform'),
+          scale: () => calls.push('scale'),
+          translate: () => calls.push('translate'),
+          rotate: () => calls.push('rotate'),
+          save: () => calls.push('save'),
+          restore: () => calls.push('restore'),
+        }) as unknown as CanvasRenderingContext2D,
+    );
+    const { recorder } = recorderOf();
+
+    recorder.start();
+    await run(300);
+    await recorder.finish();
+
+    // The server names the moves by this picture: nothing is done to it between the camera and the JPEG.
+    expect(calls.length).toBeGreaterThan(1);
+    expect(new Set(calls)).toEqual(new Set(['drawImage']));
+  });
+
   it('createSequenceRecorder_AnUprightPicture_KeepsItsShapeWithTheLongSideAtTheLimit', async () => {
     const { video } = fakeVideo({ width: 480, height: 640 });
     const { recorder } = recorderOf({ video, maxFrameSide: 320 });
