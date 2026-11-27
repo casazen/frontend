@@ -28,7 +28,8 @@ function sendRouteOf(state: CheckInWizardState): SendRoute {
  * The summary before sending (NF-05): who stays, what is sent to Octorate and how, the tourist tax and the warnings, each block with an
  * "Edit" that goes back to its step. Nothing is sent by looking at it; the last button, "Confirm and send", does it. What leaves for
  * Octorate depends on the sender of the property: with the channel manager as sender, Octorate sends the data to the police; with CasaZen
- * or the host as sender nothing goes to Octorate for now and the communication to the police is made on the Alloggiati Web portal.
+ * or the host as sender nothing goes to Octorate. The host sends on the Alloggiati Web portal; with CasaZen as sender (the direct send, which is only on activation) CasaZen
+ * transmits with a process of its own, not from this button, and the host reads the state in Compliance.
  */
 export function SendStep({ bookingId, form, state }: SendStepProps) {
   const { t, i18n } = useTranslation();

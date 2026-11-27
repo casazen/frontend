@@ -188,6 +188,11 @@ export function TenantMaintenanceRequestPage() {
                 </label>
               ))}
             </div>
+            {urgency === 'urgente' ? (
+              <p className="text-sm leading-6 text-foreground/70" data-testid="maintenance-emergency-notice">
+                {t('shared.emergencyNotice')}
+              </p>
+            ) : null}
           </div>
         ) : null}
         {step === 'note' ? (

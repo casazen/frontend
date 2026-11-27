@@ -32,7 +32,7 @@ Il **CIN** (codice identificativo nazionale) è il codice che ogni alloggio in a
 ## Come funziona
 
 ### CIN: cosa è e cosa controlla CasaZen
-Il CIN è obbligatorio per ogni alloggio in affitto breve in Italia: va **esposto all'esterno dell'immobile** e **indicato in ogni annuncio**, come ricorda la pagina stessa. Si chiede sul portale ufficiale del Ministero del Turismo (BDSR, la banca dati delle strutture ricettive): nella pagina **Adempimenti › CIN** il pulsante «Richiedi il CIN sul portale» (con la dicitura «BDSR — Ministero del Turismo») apre il sito in una nuova scheda; nel riquadro di avviso lo stesso pulsante si chiama «Richiedi il CIN su BDSR». CasaZen non rilascia il CIN e non lo chiede al posto tuo: **chiedilo prima di attivare la casa** (vedi «Chiedere il CIN»).
+Il CIN è obbligatorio per ogni alloggio in affitto breve in Italia: va **esposto all'esterno dell'immobile** e **indicato in ogni annuncio**, come ricorda la pagina stessa. Si chiede sul portale ufficiale del Ministero del Turismo (BDSR, la banca dati delle strutture ricettive): nella pagina **Adempimenti › CIN** il pulsante «Richiedi il CIN sul portale» (con la dicitura «BDSR — Ministero del Turismo») apre il sito in una nuova scheda; lo stesso pulsante, con lo stesso nome, compare anche nel riquadro di avviso sul CIN. CasaZen non rilascia il CIN e non lo chiede al posto tuo: **chiedilo prima di attivare la casa** (vedi «Chiedere il CIN»).
 
 Cosa fa CasaZen:
 - **Controlla il formato.** Il CIN valido è «IT» seguito da 6 cifre (provincia e comune), da 2 caratteri (categoria) e da 1 a 8 caratteri finali, per esempio IT015146C2ABCDEFGH. Spazi e trattini li toglie da sola e mette tutto in maiuscolo. Il vecchio formato «IT» + 15 cifre non è valido.

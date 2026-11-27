@@ -146,9 +146,9 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
         if (!line) return { title: t('property.next.compliance.waiting.title'), primary: toProperties };
         const route = complianceActionRoute(line.item, hasPermission);
         const mayAct = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS[line.action].write);
-        // The tourist tax rate leads to the page of the property, which is the page this card is on (above every tab) and has no field for it yet: a
-        // button that opens the page you are on does nothing, so there is none. The block still says what is wrong and why, and leads back to the
-        // list; it is not the host's turn here until the page where it is done exists. The police send opens the wizard that activates it (E03/F01/US02/T02),
+        // The tourist tax rate has no page of its own (it is entered in the guided check-in of a stay, and this item names no stay): `complianceActionRoute` is null,
+        // so there is no button. The block still says what is wrong and why (the reason says where to enter it), and leads back to the
+        // list; it is not the host's turn here. The police send opens the wizard that activates it (E03/F01/US02/T02),
         // another page; for who may only read the property it opens the section of its connection health on this same page (`?section=connection-health`,
         // E03/F03/US02/T01), which is not the address the person is on until they have opened it.
         const opens = route !== null && !isCurrentAddress(route, location);

@@ -156,6 +156,12 @@ export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
           </div>
 
           {uiStatus === 'active' ? <p className="text-sm text-foreground/70">{t('settings.accountActiveMessage')}</p> : null}
+          {/* «Active» says that card payments are enabled (`chargesEnabled`). The transfers to the bank account are another permission of the Stripe account (`payoutsEnabled`): while it is off, the page says so. */}
+          {uiStatus === 'active' && status.payoutsEnabled === false ? (
+            <p className="text-sm text-foreground/70" data-testid="connect-payouts-pending">
+              {t('settings.accountPayoutsPending')}
+            </p>
+          ) : null}
 
           {/* The balance, the payouts and the bank details live on Stripe: the way there, once the account is verified (AM-08b-d). */}
           {uiStatus === 'active' && status.connectedAccountId ? (

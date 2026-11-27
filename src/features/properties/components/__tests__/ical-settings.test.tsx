@@ -363,12 +363,15 @@ describe('IcalSettings (PC-11, PC-13)', () => {
 
       expect(await within(exportSection).findByRole('button', { name: 'Copiato' })).toBeInTheDocument();
       expect(writeText).toHaveBeenCalledWith(EXPORT_URL);
-      // What the OTAs read (PC-12: no echo of the OTA bookings) and where to paste it on the two main ones.
+      // What the OTAs read (PC-12: no echo of the OTA bookings) and where to paste it on the two main ones: Airbnb with its path, Booking.com
+      // with one path in general words (the section «per sincronizzare i calendari»: its menu names change, see `locale-claims.test.ts`).
       expect(
         within(exportSection).getByText(/CasaZen esporta le prenotazioni dirette e manuali.*ogni OTA va collegata anche alle altre/),
       ).toBeInTheDocument();
       expect(within(exportSection).getByText(/Sincronizzazione calendari → Importa calendario/)).toBeInTheDocument();
-      expect(within(exportSection).getByText(/Tariffe e disponibilità → Sincronizza calendari/)).toBeInTheDocument();
+      expect(
+        within(exportSection).getByText(/Extranet apri Tariffe e disponibilità, nella sezione per sincronizzare i calendari/),
+      ).toBeInTheDocument();
     });
 
     it('copyExportUrl_clipboardRefused_ShowsAnErrorAndSelectsTheLink', async () => {

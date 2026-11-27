@@ -47,13 +47,13 @@ function renderAt(path: string, element: ReactNode) {
 async function fillWizard(what = 'Rubinetto del bagno') {
   fireEvent.change(await screen.findByTestId('maintenance-what'), { target: { value: what } });
   fireEvent.click(screen.getByTestId('maintenance-next'));
-  fireEvent.click(screen.getByRole('radio', { name: /Normale/ }));
+  fireEvent.click(screen.getByRole('radio', { name: /Alta/ }));
   fireEvent.click(screen.getByTestId('maintenance-next'));
   fireEvent.change(screen.getByTestId('maintenance-note'), { target: { value: 'Gocciola da ieri' } });
   fireEvent.click(screen.getByTestId('maintenance-next'));
   fireEvent.click(screen.getByTestId('maintenance-next'));
   expect(screen.getByTestId('maintenance-confirm-what')).toHaveTextContent(what);
-  expect(screen.getByTestId('maintenance-confirm-urgency')).toHaveTextContent('Normale');
+  expect(screen.getByTestId('maintenance-confirm-urgency')).toHaveTextContent('Alta');
   fireEvent.click(screen.getByTestId('maintenance-submit'));
 }
 
@@ -85,6 +85,22 @@ describe('tenant maintenance wizard', () => {
     const [url, body] = post.mock.calls[0];
     expect(url).toBe('/leases/lease-1/maintenance-requests');
     expect(body).toEqual({ what: 'Rubinetto del bagno', urgency: 'High', note: 'Gocciola da ieri' });
+  });
+
+  it('names the urgency like the rest of the app and says that «Emergenza» is not an emergency call', async () => {
+    renderAt('/portale-conduttore/contratti/lease-1/richiesta-manutenzione', <TenantMaintenanceRequestPage />);
+    fireEvent.change(await screen.findByTestId('maintenance-what'), { target: { value: 'Rubinetto del bagno' } });
+    fireEvent.click(screen.getByTestId('maintenance-next'));
+
+    // The values sent do not change (Normal, High, Emergency): only the words are the ones of the other screens.
+    expect(screen.getByRole('radio', { name: /Normale/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Alta/ })).toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /Bassa/ })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('maintenance-emergency-notice')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: /Emergenza/ }));
+
+    expect(screen.getByTestId('maintenance-emergency-notice')).toHaveTextContent(i18n.t('shared.emergencyNotice'));
   });
 
   it('does not offer a second send when the list cache is still empty', async () => {

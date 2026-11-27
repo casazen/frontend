@@ -129,7 +129,7 @@ Inviare la richiesta non addebita nulla: si paga a lavoro finito (stato «Comple
 ### Fornitori fidati
 I **fornitori fidati** sono i professionisti con cui lavori già: li inviti tu e, accettato l'invito, compaiono tra le proposte quando richiedi un intervento, accanto a quelli del Marketplace. Puoi assegnarli a tutte le tue case o solo ad alcune. Sotto il nome di ogni fornitore leggi da dove arriva: «Fornitore di fiducia · Commissione all'host» (lo hai invitato tu) oppure «Fornitore marketplace · Commissione a CasaZen».
 
-> **Su attivazione.** Questa voce compare solo se l'organizzazione è sul piano Agenzia e solo a chi amministra l'organizzazione ([[per-iniziare#cosa-significa-su-attivazione]]). Se non la vedi, chiedi l'attivazione all'assistenza di CasaZen: in alto premi **Guida** e scegli «Scrivi all'assistenza» ([[per-iniziare#assistenza-come-scrivere-a-casazen]]).
+> **Su attivazione.** Questa voce compare solo se l'organizzazione è sul piano Agency e solo a chi amministra l'organizzazione ([[per-iniziare#cosa-significa-su-attivazione]]). Se non la vedi, chiedi l'attivazione all'assistenza di CasaZen: in alto premi **Guida** e scegli «Scrivi all'assistenza» ([[per-iniziare#assistenza-come-scrivere-a-casazen]]).
 
 ### Link di pagamento per e-mail
 Quando un lavoro finito si paga dentro CasaZen, il cliente può ricevere per e-mail un **link di pagamento** (pagina «Pagamento di un servizio»). Il link vale **30 giorni** («Il link vale fino al…») ed è legato a quel solo pagamento: se ne ricevi uno più recente, usa quello. Nella pagina vedi professionista, servizio, immobile, voci e totale, e premi «Paga». Dopo il pagamento compare «Pagamento ricevuto. Grazie!»; se il link non è valido o il pagamento è già stato saldato, la pagina lo dice.
@@ -185,7 +185,7 @@ La richiesta parte **solo** quando premi «Invia la richiesta» all'ultimo passo
    - scegli il **servizio** del fornitore, oppure «Altro lavoro» se non è nell'elenco;
    - scegli il **giorno** (non può essere già passato);
    - scegli uno degli **orari liberi** (sono mostrati in base all'agenda del fornitore). Se quel giorno non ce ne sono, CasaZen suggerisce i giorni vicini. Per «Altro lavoro» scrivi tu l'ora di inizio e scegli la durata (da 5 minuti a 24 ore);
-   - indica l'**urgenza**: «Normale» (si può programmare), «Alta» (serve in tempi brevi) o «Emergenza» (serve subito);
+   - indica l'**urgenza**: «Normale» (si può programmare), «Alta» (serve in tempi brevi) o «Emergenza» (serve subito). Quando scegli «Emergenza» compare l'avviso «CasaZen non è un pronto intervento e non chiama nessuno: con un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi.»;
    - scrivi le **note** (facoltative, fino a 1000 caratteri): cosa deve fare il fornitore. Non scrivere dati degli ospiti;
    - se vuoi, collega un **soggiorno** («Collega a un soggiorno»; la scelta predefinita è «Nessun soggiorno: solo la casa»).
 7. Passo **«Riepilogo»** («Controlla e invia»): controlla le risposte (ognuna ha «Modifica»), il prezzo («Stima…», «Su preventivo» o «Da concordare con il fornitore») e il riquadro «Cosa vede il fornitore».
@@ -278,15 +278,15 @@ Cosa succede: annullare è **sempre gratuito**; il fornitore riceve subito un av
 ### Invitare un fornitore di fiducia
 > **Su attivazione** e solo per l'amministratore ([[per-iniziare#cosa-significa-su-attivazione]]).
 
-**Ti serve:** il piano Agenzia, l'e-mail del fornitore (la stessa con cui si registrerà) e, se vuoi, le case a cui assegnarlo.
+**Ti serve:** il piano Agency, l'e-mail del fornitore (la stessa con cui si registrerà) e, se vuoi, le case a cui assegnarlo.
 
 1. Apri **Affitti brevi › Immobili › Fornitori fidati** e premi «Invita fornitore».
 2. Scrivi l'«Email fornitore»: dev'essere quella con cui il fornitore si registrerà.
 3. Scegli le «Proprietà assegnate». Se non ne scegli nessuna, il fornitore lavora su tutte le tue proprietà.
-4. Premi «Invia invito». Compare «Richiesta registrata. Dopo la verifica il fornitore riceverà il link per accettare».
+4. Premi «Invia invito». Compare «Invito inviato: il fornitore riceve un'e-mail con il link per accettare.»
 5. Il rapporto inizia **quando il titolare del profilo accetta**: da quel momento il fornitore compare nell'elenco e tra le proposte delle tue richieste.
 
-Il messaggio dice «Dopo la verifica il fornitore riceverà il link»: di norma l'e-mail con il link parte subito. Se dopo qualche minuto il fornitore non l'ha ricevuta, controlla che l'indirizzo sia giusto e la cartella dello spam. Il fornitore apre il link, crea l'account (o accede) con **quella e-mail** e accetta: i suoi passi sono in [[area-fornitore#registrarsi-con-un-invito]]. Per scegliere un fornitore dal Marketplace usa invece «Cerca fornitori nel marketplace CasaZen».
+L'e-mail con il link parte subito. Se dopo qualche minuto il fornitore non l'ha ricevuta, controlla che l'indirizzo sia giusto e la cartella dello spam. Il fornitore apre il link, crea l'account (o accede) con **quella e-mail** e accetta: i suoi passi sono in [[area-fornitore#registrarsi-con-un-invito]]. Per scegliere un fornitore dal Marketplace usa invece «Cerca fornitori nel marketplace CasaZen».
 
 ### Rimuovere un fornitore di fiducia
 1. In **Fornitori fidati** premi «Rimuovi» sulla scheda del fornitore.
