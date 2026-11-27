@@ -108,7 +108,7 @@ Cosa devi sapere:
 - Se la tua installazione non ha la funzione attiva, il widget mostra «Questo widget non è disponibile»: la pagina «Incorpora nel tuo sito» non c'è nemmeno nel menu.
 
 ### Il plugin per WordPress
-Se il tuo sito è in WordPress (il programma con cui è fatto il sito di molti; un **plugin** è un componente aggiuntivo) non devi incollare codice: il plugin **«CasaZen per WordPress»** aggiunge blocchi e shortcode, crea per te le pagine e le voci di menu e funziona con Elementor, Polylang e WPML. Il plugin non è ancora nell'elenco di WordPress.org: lo installi da un file ZIP. Nella pagina «Incorpora nel tuo sito» trovi il link «Scarica il plugin» solo se il file è disponibile nella tua installazione; se non lo vedi, scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza») e chiedi il file ZIP.
+Se il tuo sito è in WordPress (il programma con cui è fatto il sito di molti; un **plugin** è un componente aggiuntivo) non devi incollare codice: il plugin **«CasaZen per WordPress»** aggiunge blocchi e shortcode, crea per te le pagine e le voci di menu e funziona con Elementor, Polylang e WPML. Il plugin non è ancora nell'elenco di WordPress.org: lo installi da un file ZIP. Nella pagina «Incorpora nel tuo sito», sotto «Plugin per WordPress», trovi sempre il pulsante «Scarica il plugin».
 
 **Requisiti**: WordPress 6.4 o successivo, PHP 7.4 o successivo, un indirizzo del tuo sito di prenotazione CasaZen (meglio il tuo dominio attivo) e la funzione «Incorpora» attiva ([[per-iniziare#cosa-significa-su-attivazione]]). Finché non lo è, il plugin non mostra nulla ai visitatori e avvisa solo gli amministratori del sito WordPress.
 
@@ -198,7 +198,7 @@ Finché la scelta non è completa (nessuna casa scelta, indirizzo mancante) non 
 
 ### Installare il plugin per WordPress
 **Ti serve:** la funzione «Incorpora nel tuo sito» attiva sulla tua installazione, un sito WordPress 6.4 o successivo (PHP 7.4 o successivo) di cui sei amministratore, il file ZIP del plugin e l'indirizzo del tuo sito di prenotazione CasaZen.
-1. In **Impostazioni › Incorpora nel tuo sito**, sotto **«Plugin per WordPress»**, premi **«Scarica il plugin»**. Se il link non c'è, il file non è ancora disponibile nella tua installazione: scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza») e chiedi il file ZIP.
+1. In **Impostazioni › Incorpora nel tuo sito**, sotto **«Plugin per WordPress»**, premi **«Scarica il plugin»**: il pulsante c'è sempre e scarica il file ZIP. Sotto la pagina riassume il percorso in quattro passi (scarichi e attivi il plugin; nel plugin premi «Connetti a CasaZen» e confermi, e indirizzo e identificativo si compilano da soli; scrivi il dominio e crei i due record DNS che il plugin mostra; crei le pagine con la procedura guidata) e, in «Configurazione manuale», indica l'indirizzo e l'identificativo da scrivere a mano nelle impostazioni avanzate del plugin se preferisci non collegarlo.
 2. In WordPress apri **Plugin › Aggiungi nuovo › Carica plugin**, scegli il file ZIP, premi **Installa ora** e poi **Attiva**.
 3. Apri **Impostazioni › CasaZen** e scrivi **«Indirizzo CasaZen»** (e lo slug se è l'indirizzo di CasaZen). Salva.
 4. Premi **«Prova la connessione»**. Quando leggi «La connessione funziona» puoi andare avanti. Se il test dice che l'incorporamento «non è ancora attivo per la tua agenzia», la funzione non è attiva: scrivi all'assistenza di CasaZen e chiedi di attivare «Incorpora nel tuo sito», poi riprova.

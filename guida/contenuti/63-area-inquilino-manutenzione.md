@@ -14,7 +14,7 @@ fonte_codice: [frontend/src/routes/tenantAreaRoutes.tsx, frontend/src/features/t
 ---
 
 ## In breve
-L'**area conduttore** è la pagina riservata dell'inquilino. Entra con un suo account CasaZen e vede solo i **suoi** contratti: le scadenze con gli importi da pagare, i documenti che il gestore condivide e le **richieste di manutenzione** che può mandare. Il proprietario (o l'agenzia) le riceve nel contratto e nella scheda della casa, le **approva o rifiuta** e, se approvate, le **paga**. L'inquilino non entra mai nell'organizzazione del proprietario e non vede altri contratti.
+L'**area conduttore** è la pagina riservata dell'inquilino. Entra con un suo account CasaZen e vede solo i **suoi** contratti (non le bozze): le scadenze con gli importi da pagare, i documenti che il gestore condivide e le **richieste di manutenzione** che può mandare. Il proprietario (o l'agenzia) le riceve nel contratto e nella scheda della casa, le **approva o rifiuta** e, se approvate, le **paga**. L'inquilino non entra mai nell'organizzazione del proprietario e non vede altri contratti.
 
 **Nessun invito parte da solo**: l'area ha un indirizzo proprio e sei tu (o l'agenzia) a comunicarlo all'inquilino. Per entrare l'inquilino deve usare un account con la **stessa e-mail** scritta nel contratto.
 
@@ -41,7 +41,8 @@ L'area conduttore non ha un invito separato e **non c'è nessun link nel menu de
 - usa un **account CasaZen con l'e-mail verificata**. Se non ha un account lo crea dalla pagina di accesso: la verifica avviene con un messaggio che riceve per e-mail;
 - **quell'e-mail deve essere la stessa scritta nel contratto** per quel conduttore (passo «Parti», senza distinguere maiuscole e minuscole), e il conduttore deve essere ancora attivo nel contratto (non anonimizzato);
 - se l'e-mail dell'account è verificata ma non coincide, il contratto non compare: l'inquilino vede «Non hai un contratto attivo da consultare. Il contratto compare qui quando il gestore ti aggiunge.»;
-- se l'e-mail dell'account non è ancora verificata, l'area non si carica («Non riesco a caricare la tua area.»): deve aprire il messaggio di conferma e riprovare.
+- se l'e-mail dell'account non è ancora verificata, l'area non si carica: l'inquilino vede «Non riesco a caricare la tua area.» e sotto «Per aprire l'area conduttore devi prima confermare il tuo indirizzo e-mail con il messaggio di verifica. Dopo averlo fatto, ricarica la pagina.»;
+- se il contratto è ancora una **bozza**, l'area non lo mostra e non si può aprire: l'inquilino vede lo stesso «Non hai un contratto attivo da consultare». Un contratto compare appena non è più una bozza, cioè quando parte la firma elettronica o quando viene caricata la copia firmata; un contratto scaricato da firmare a mano resta bozza finché non carichi la copia firmata. Restano visibili anche i contratti in attesa di firma o firmati in parte.
 
 L'inquilino **non deve usare «Registrati su CasaZen»** dalla pagina iniziale: è la registrazione di chi gestisce case, e porta alla scelta del profilo e del piano. Deve entrare sempre dall'indirizzo dell'area.
 
@@ -65,7 +66,7 @@ Una scadenza è la somma di più voci già sommate: il **canone**, l'**acconto c
 ### Come può pagare il conduttore
 Una scadenza risulta **pagata** solo quando il pagamento è confermato, mai in base a una semplice dichiarazione.
 1. **Con la carta, dal link dell'e-mail** (pagina «Pagamento del canone»): vede casa, periodo, scadenza e importo, preme «Paga [importo]» e paga con Stripe. Il denaro va direttamente sul conto Stripe del locatore. Se il link non è più valido o è stato sostituito dal gestore con uno più recente, vede «Il link di pagamento non è valido…». Se il pagamento non va a buon fine può riprovare, anche con un altro metodo.
-2. **Con bonifico**: gli estremi per il bonifico **non compaiono ancora nell'area**: nella scadenza il conduttore legge «Gli estremi del bonifico non sono ancora disponibili.». CasaZen non ha un campo dove scrivere il tuo IBAN per l'inquilino: l'IBAN è quello che hai concordato con lui, per esempio scritto a mano nella riga in bianco del contratto stampato, oppure da te comunicato nel messaggio del sollecito. Il conduttore fa il bonifico dalla sua banca e poi preme **«Ho effettuato il bonifico»** (importo, data, riferimento, nota e ricevuta facoltativi). **La dichiarazione avvisa il gestore ma non segna la scadenza come pagata**: il gestore la verifica e registra l'incasso. Una dichiarazione può essere «Inviata», «Verificata», «Respinta» o «Sostituita»; se è respinta se ne può mandare un'altra.
+2. **Con bonifico**: gli estremi per il bonifico **non compaiono nell'area**: nella scadenza, sotto «Bonifico manuale», il conduttore legge «Se non colleghi un conto, paga con bonifico come ti ha indicato il gestore e poi avvisalo.» e «CasaZen non mostra qui l'IBAN: usa quello che ti ha dato il gestore.». CasaZen non ha un campo dove scrivere il tuo IBAN per l'inquilino: l'IBAN è quello che hai concordato con lui, per esempio scritto a mano nella riga in bianco del contratto stampato, oppure da te comunicato nel messaggio del sollecito. Il conduttore fa il bonifico dalla sua banca e poi preme **«Ho effettuato il bonifico»** (importo, data, riferimento, nota e ricevuta facoltativi). **La dichiarazione avvisa il gestore ma non segna la scadenza come pagata**: il gestore la verifica e registra l'incasso. Una dichiarazione può essere «Inviata», «Verificata», «Respinta» o «Sostituita»; se è respinta se ne può mandare un'altra.
 3. **Con il conto collegato** (su attivazione, solo in euro): «Bonifico con Stripe» → «Collega il conto» → «Avvia il bonifico». La scadenza non risulta pagata finché Stripe non conferma il bonifico («Bonifico avviato. La scadenza non è segnata come pagata»).
 4. **Con addebito SEPA** (su attivazione, solo in euro): l'inquilino autorizza il mandato con Stripe («Autorizza mandato con Stripe») e sceglie «Attiva automatico mensile» oppure «Mantieni pagamento manuale». Prima di ogni addebito legge l'importo, la commissione indicata e il «Totale da addebitare». Non vengono addebitati gli arretrati precedenti all'attivazione. Si può spegnere con «Disattiva automatico».
 
@@ -74,11 +75,11 @@ Le funzioni «su attivazione» ([[per-iniziare#cosa-significa-su-attivazione]]) 
 ### Richieste di manutenzione
 Il conduttore può segnalare un guasto. **Cosa succede dopo l'invio**: la richiesta arriva al **gestore del contratto** (il proprietario o l'agenzia), non a un fornitore e non a CasaZen. Il conduttore non sceglie il fornitore e non può né approvarla né pagarla. Il gestore la legge, la approva o la rifiuta (con il motivo) e, se la approva, può pagarla. L'area lo ricorda: «La richiesta va al gestore del contratto. Non assegni tu un fornitore.»
 
-**Tempi e urgenze**: CasaZen non fissa un tempo di risposta: dipende dal gestore. L'urgenza («Normale», «Alta» o «Emergenza») serve solo a dire al gestore quanto è importante, e **non è un servizio di pronto intervento**: l'area stessa avverte «Aprire la richiesta non significa che qualcuno stia già intervenendo.» Per un'emergenza (perdita d'acqua, fuga di gas, corto circuito, pericolo per le persone) il conduttore deve **chiamare subito il proprietario o l'agenzia** e, se c'è pericolo, i soccorsi (112): la richiesta in CasaZen è in più, non al posto della telefonata.
+**Tempi e urgenze**: CasaZen non fissa un tempo di risposta: dipende dal gestore. L'urgenza («Normale», «Alta» o «Emergenza») serve solo a dire al gestore quanto è importante, e **non è un servizio di pronto intervento**: l'area stessa lo ricorda quando scegli «Emergenza»: «Aprire la richiesta non significa che qualcuno stia già intervenendo: CasaZen non è un pronto intervento e non chiama nessuno. Con un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi.» Per un'emergenza (perdita d'acqua, fuga di gas, corto circuito, pericolo per le persone) il conduttore deve **chiamare subito il proprietario o l'agenzia** e, se c'è pericolo, i soccorsi (112): la richiesta in CasaZen è in più, non al posto della telefonata.
 
 Ci sono due schermate per aprire la richiesta, che portano alla stessa richiesta del gestore:
 - dall'area, **Manutenzione › «Nuova richiesta»** (è la strada normale): sceglie la **Categoria**, l'**Urgenza** («Normale», «Alta» o «Emergenza»), scrive la **Descrizione** e può allegare foto («Allegati»), poi preme «Invia al gestore»;
-- da un link «richiesta di manutenzione» (indirizzo che finisce con `/richiesta-manutenzione`): una procedura a passi pensata per il telefono: «Cosa non funziona?» (il guasto in poche parole), «Quanto è urgente?» («Bassa», «Normale» o «Urgente»), «Aggiungi una nota», «Una foto, se ce l'hai» (facoltativa) e «Controlla e invia» con «Invia la richiesta». Nell'area non c'è un pulsante che porta a questa procedura: la raggiungi solo se qualcuno ti manda il link.
+- da un link «richiesta di manutenzione» (indirizzo che finisce con `/richiesta-manutenzione`): una procedura a passi pensata per il telefono: «Cosa non funziona?» (il guasto in poche parole), «Quanto è urgente?» («Normale», «Alta» o «Emergenza», le stesse parole dell'area; con «Emergenza» compare l'avviso «CasaZen non è un pronto intervento e non chiama nessuno: con un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi.»), «Aggiungi una nota», «Una foto, se ce l'hai» (facoltativa) e «Controlla e invia» con «Invia la richiesta». Nell'area non c'è un pulsante che porta a questa procedura: la raggiungi solo se qualcuno ti manda il link.
 
 Gli stati che vede il conduttore nell'area sono: «Inviata al gestore», «In valutazione», «Servono altre informazioni», «Presa in carico dal gestore», «In corso», «Chiusa», «Non accettata». Il proprietario vede invece «In attesa», «Approvata», «Rifiutata», «Pagata» (vedi sotto): i due elenchi non coincidono parola per parola.
 
@@ -101,7 +102,7 @@ Per l'inquilino.
 3. Apri il messaggio di conferma che ti arriva per e-mail e conferma l'indirizzo. Poi torna all'indirizzo della tua area.
 4. Vedi l'elenco dei tuoi contratti: premi «Apri il contratto».
 
-Se vedi «Non hai un contratto attivo da consultare», l'e-mail del tuo account non coincide con quella scritta nel contratto: chiedi al proprietario o all'agenzia quale e-mail hanno scritto. Se vedi «Non riesco a caricare la tua area», conferma prima l'e-mail con il messaggio che ti è arrivato e riprova.
+Se vedi «Non hai un contratto attivo da consultare», l'e-mail del tuo account non coincide con quella scritta nel contratto, oppure il contratto è ancora una bozza (le bozze non compaiono nell'area): chiedi al proprietario o all'agenzia quale e-mail hanno scritto e se il contratto è pronto. Se vedi «Non riesco a caricare la tua area», conferma prima l'e-mail con il messaggio di verifica che ti è arrivato, poi ricarica la pagina.
 
 > **Suggerimento:** per pagare un solo canone non serve entrare nell'area: basta il link che ti arriva per e-mail.
 
@@ -111,7 +112,7 @@ Serve poter creare i contratti.
 **Ti serve:** l'e-mail del conduttore (quella che userà per entrare), scritta nel contratto; un modo per scrivergli (e-mail o messaggio).
 1. Quando crei il contratto, nel passo «Parti» scrivi l'«Email» di ogni conduttore: è quella che userà per entrare ([[contratti#creare-un-contratto-con-casazen]]). Controllala bene: se è sbagliata il conduttore non vedrà il contratto. Scrivi anche il «Numero di telefono» con prefisso internazionale.
 2. Scrivi tu al conduttore, perché CasaZen non gli manda un invito. Puoi usare queste parole: «Nella tua area di CasaZen puoi vedere il contratto, le scadenze e i documenti e segnalarmi i guasti. Apri [l'indirizzo di CasaZen]/portale-conduttore, accedi o crea un account con questa stessa e-mail, conferma il messaggio che ti arriva e premi «Apri il contratto». Per pagare un solo canone ti basta il link che ricevi per e-mail.» Al posto di [l'indirizzo di CasaZen] scrivi l'indirizzo con cui apri tu CasaZen.
-3. Se non vede il contratto, controlla che l'e-mail dell'account sia la stessa del contratto e verificata, e che il conduttore sia ancora tra le parti del contratto. Se l'e-mail scritta nel contratto è sbagliata o non è più in uso, scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza») per sapere come correggerla.
+3. Se non vede il contratto, controlla che l'e-mail dell'account sia la stessa del contratto e verificata, che il conduttore sia ancora tra le parti del contratto e che il contratto non sia ancora una bozza (compare quando parte la firma elettronica o quando carichi la copia firmata). Se l'e-mail scritta nel contratto è sbagliata o non è più in uso, scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza») per sapere come correggerla.
 
 ### Vedere il contratto e le scadenze
 Per l'inquilino.
@@ -177,7 +178,7 @@ Per il proprietario o l'agenzia.
 4. Quando il pagamento è confermato la rata diventa «Pagata» per tutti e due.
 
 ## Regole e limiti
-- L'area è riservata a chi ha un account con **e-mail verificata uguale a quella di un conduttore attivo** del contratto. Il conduttore non diventa membro dell'organizzazione e non vede altri contratti.
+- L'area è riservata a chi ha un account con **e-mail verificata uguale a quella di un conduttore attivo** del contratto, e mostra solo i contratti che non sono più bozze. Il conduttore non diventa membro dell'organizzazione e non vede altri contratti.
 - CasaZen non manda un invito all'area e non mette un link nell'app: l'indirizzo lo comunica il proprietario.
 - Una scadenza risulta pagata solo con la conferma del pagamento (Stripe) o con l'incasso registrato dal gestore. La dichiarazione «Ho effettuato il bonifico» non la segna pagata.
 - Gli estremi del bonifico (IBAN del proprietario) non sono mostrati nell'area: vanno comunicati fuori da CasaZen.
@@ -192,7 +193,7 @@ Per il proprietario o l'agenzia.
 Apre l'indirizzo che gli comunichi tu (l'indirizzo di CasaZen che finisce con `/portale-conduttore`), accede o crea un account con la **stessa e-mail scritta nel contratto**, conferma l'e-mail e preme «Apri il contratto». CasaZen non manda un invito. Vedi [[area-inquilino#entrare-nella-tua-area]].
 
 ### Il conduttore non vede il suo contratto: perché?
-Quasi sempre l'e-mail del suo account è diversa da quella scritta nel contratto (vede «Non hai un contratto attivo da consultare»), oppure non è verificata (l'area non si carica). Verifica nel contratto (scheda «Inquilini») e fagli usare la stessa e-mail.
+Quasi sempre l'e-mail del suo account è diversa da quella scritta nel contratto (vede «Non hai un contratto attivo da consultare»), oppure non è verificata (l'area non si carica e chiede di confermare l'e-mail con il messaggio di verifica). Verifica nel contratto (scheda «Inquilini») e fagli usare la stessa e-mail. Una terza causa: il contratto è ancora una bozza, e le bozze non compaiono nell'area (vede lo stesso «Non hai un contratto attivo da consultare»). Il contratto compare quando parte la firma elettronica o quando carichi la copia firmata.
 
 ### Mi sono registrato da «Registrati su CasaZen» invece che dall'indirizzo dell'area: che faccio?
 Non serve completare la configurazione per chi gestisce case. Apri l'indirizzo dell'area che ti ha dato il proprietario e accedi con un account che abbia **la stessa e-mail scritta nel contratto**: se ti sei registrato con un'altra e-mail, l'area non mostrerà il contratto. Poi premi «Apri il contratto».
@@ -201,7 +202,7 @@ Non serve completare la configurazione per chi gestisce case. Apri l'indirizzo d
 No. La dichiarazione avvisa il gestore, che deve verificarla. La rata passa a «Pagata» solo quando il gestore registra l'incasso (o importa l'estratto conto) o il pagamento è confermato.
 
 ### Dove trova l'inquilino l'IBAN per il bonifico?
-Non nell'area: gli estremi del bonifico non vengono mostrati («Gli estremi del bonifico non sono ancora disponibili.»). L'IBAN glielo comunichi tu o lo scrivi a mano nel contratto stampato; puoi anche scriverlo nel messaggio di un sollecito.
+Non nell'area: gli estremi del bonifico non vengono mostrati («CasaZen non mostra qui l'IBAN: usa quello che ti ha dato il gestore.»). L'IBAN glielo comunichi tu o lo scrivi a mano nel contratto stampato; puoi anche scriverlo nel messaggio di un sollecito.
 
 ### Ho una perdita d'acqua: come segnalo il guasto?
 Chiama subito il proprietario o l'agenzia (e il 112 se c'è pericolo): la richiesta in CasaZen non è un pronto intervento. Poi apri **Manutenzione › «Nuova richiesta»** con urgenza «Emergenza» e scrivi cosa è successo, così il gestore lo ha per iscritto. Vedi [[area-inquilino#segnalare-un-guasto]].

@@ -7,7 +7,7 @@ ordine: 50
 riassunto: Come un'agenzia fa lavorare i proprietari in CasaZen, con l'elenco Proprietari, i dati finanziari e il mandato, gli inviti, il portale che il proprietario usa per rendiconti, documenti e calendario, e le commissioni dei canali.
 chi: [amministratore, proprietario]
 dove: Amministrazione › Proprietari
-parole_chiave: [agenzia, piano Agency, piano Agenzia, property manager, proprietario, proprietari, mandato, provvigione, quote, dati finanziari, IBAN, regola fiscale, ritenuta, commercialista, invito, portale proprietari, rendiconto, commissioni dei canali, soggiorno del proprietario, impresa presunta, importare proprietari, attivazione proprietari, Serve il piano Agenzia]
+parole_chiave: [agenzia, piano Agency, property manager, proprietario, proprietari, mandato, provvigione, quote, dati finanziari, IBAN, regola fiscale, ritenuta, commercialista, invito, portale proprietari, rendiconto, commissioni dei canali, soggiorno del proprietario, impresa presunta, importare proprietari, attivazione proprietari, Serve il piano Agency]
 copre: [/app/account/owners, /app/account/owners/:ownerId/financial, /app/account/channel-commissions, /app/short-rent/onboarding/owners, /portale-proprietari, /portale-proprietari/accedi, /portale-proprietari/accesso-negato, /portale-proprietari/invito, /portale-proprietari/contatto, /portale-proprietari/immobili/:propertyId, /portale-proprietari/calendario, /portale-proprietari/calendario/:propertyId, /portale-proprietari/contabilita, /portale-proprietari/contabilita/:statementId, /portale-proprietari/rendiconti, /portale-proprietari/documenti, /portale-proprietari/documenti-emessi, /portale-proprietari/messaggi, /portale-proprietari/messaggi/:conversationId, /portale-proprietari/contatti]
 stato: su-attivazione
 fonte_codice: [frontend/src/features/owners/owners-list-page.tsx, frontend/src/features/owners/owner-financial-profile-page.tsx, frontend/src/features/owners/components/owner-mandate-form.tsx, frontend/src/features/owners/components/owner-address-form.tsx, frontend/src/features/owners/components/owner-issuer-profile-form.tsx, frontend/src/features/owners/components/owner-tax-checks-section.tsx, frontend/src/features/owner-accounting/channel-commission-rules-page.tsx, frontend/src/features/onboarding/owner-onboarding-page.tsx, frontend/src/components/finance/agency-finance-gate.tsx, frontend/src/routes/ownerPortalRoutes.tsx, frontend/src/features/owner-portal/owner-portal-shell.tsx, frontend/src/features/owner-portal/paths.ts, frontend/src/pages/owner-portal/OwnerStatements.tsx, frontend/src/pages/owner-portal/OwnerCalendar.tsx, frontend/src/config/feature-flags.ts, frontend/src/config/route-manifest.ts, backend/Casazen.Core/Authorization/AgencyPermissions.cs, backend/Casazen.Core/Authorization/OrgRoleCatalog.cs, backend/Casazen.Web/Authorization/AgencyTierAuthorizationHandler.cs, backend/Casazen.Web/Controllers/OwnersController.cs, backend/Casazen.Web/Controllers/OwnerCollaborationController.cs, backend/Casazen.Web/Controllers/OwnerStaysController.cs, backend/Casazen.Web/Controllers/AdminOwnerLoginHostsController.cs, backend/Casazen.Core/Services/IOwnerCollaborationService.cs]
@@ -16,7 +16,7 @@ fonte_codice: [frontend/src/features/owners/owners-list-page.tsx, frontend/src/f
 ## In breve
 > **Sei un proprietario invitato da un'agenzia?** Vai a [[agenzie-proprietari#entrare-nel-portale-per-la-prima-volta-per-il-proprietario]]: il resto della pagina è per l'agenzia. Il portale si apre dal browser, anche del telefono. Il link dell'invito si usa una volta sola: salva tra i preferiti l'indirizzo del portale.
 
-Chi gestisce gli immobili di altre persone usa il **piano Agency** (in questo manuale si chiama sempre così; qualche schermata dice «piano Agenzia»: è lo stesso). Ogni immobile ha uno o più **proprietari**, ciascuno con la sua quota e il suo **mandato** (la provvigione dell'agenzia). Con questi dati CasaZen prepara ogni mese il **rendiconto** di ogni proprietario. Il proprietario lo trova nel suo **portale**, dove può anche leggere i documenti, guardare il calendario, chiedere un soggiorno e scrivere all'agenzia.
+Chi gestisce gli immobili di altre persone usa il **piano Agency** (così si chiama nel manuale e nell'app). Ogni immobile ha uno o più **proprietari**, ciascuno con la sua quota e il suo **mandato** (la provvigione dell'agenzia). Con questi dati CasaZen prepara ogni mese il **rendiconto** di ogni proprietario. Il proprietario lo trova nel suo **portale**, dove può anche leggere i documenti, guardare il calendario, chiedere un soggiorno e scrivere all'agenzia.
 
 In **Amministrazione › Proprietari** vedi l'elenco e, per ognuno, apri i **Dati finanziari**. Questa parte è **su attivazione** ([[per-iniziare#cosa-significa-su-attivazione]]): la accende CasaZen, per ambiente. Serve il **piano Agency** (si guarda in **Amministrazione › Fatturazione**) e il ruolo di titolare o di amministratore dell'organizzazione. Come si chiude il mese e come si pagano i proprietari lo trovi in [[chiusura-mensile]]; ruoli e piani sono spiegati in [[account-team-piano]].
 
@@ -41,7 +41,7 @@ In **Amministrazione › Proprietari** vedi l'elenco e, per ognuno, apri i **Dat
 ## Come funziona
 
 ### Chi ha il piano Agency e cosa sblocca
-Non è un ruolo: è il **piano Agency** dell'organizzazione, che si paga per camera. Nell'elenco dei piani si chiama «Agency»; il messaggio che compare a chi non lo ha dice «Serve il piano Agenzia»: è lo stesso piano. Lo scegli quando crei l'organizzazione con il profilo «Agenzia / Property manager» ([[per-iniziare]]): chi la crea ne è titolare e le altre persone entrano solo su invito. Il piano si guarda in **Amministrazione › Fatturazione**; piani, ruoli e persone sono in [[account-team-piano]]. Come si passa al piano Agency da un'organizzazione già esistente il manuale non lo descrive: se ti serve, scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza»).
+Non è un ruolo: è il **piano Agency** dell'organizzazione, che si paga per camera. Nell'elenco dei piani si chiama «Agency»; il messaggio che compare a chi non lo ha dice «Serve il piano Agency». Lo scegli quando crei l'organizzazione con il profilo «Agenzia / Property manager» ([[per-iniziare]]): chi la crea ne è titolare e le altre persone entrano solo su invito. Il piano si guarda in **Amministrazione › Fatturazione**; piani, ruoli e persone sono in [[account-team-piano]]. Come si passa al piano Agency da un'organizzazione già esistente il manuale non lo descrive: se ti serve, scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza»).
 
 Questa parte è **su attivazione**: la accende CasaZen per ambiente ([[per-iniziare#cosa-significa-su-attivazione]]). Quando è accesa, il titolare e gli amministratori trovano nell'area **Amministrazione** queste voci:
 - **Proprietari** (questa pagina);
@@ -49,7 +49,7 @@ Questa parte è **su attivazione**: la accende CasaZen per ambiente ([[per-inizi
 
 Cosa vedi se qualcosa manca:
 - Se la funzione non è accesa sul tuo ambiente, o se non sei titolare o amministratore, le due voci non ci sono nel menu.
-- Se la funzione è accesa e sei titolare o amministratore ma l'organizzazione non ha il piano Agency, le voci ci sono e, aprendole, vedi «Serve il piano Agenzia» con il pulsante «Vai al piano», che porta a **Amministrazione › Fatturazione**.
+- Se la funzione è accesa e sei titolare o amministratore ma l'organizzazione non ha il piano Agency, le voci ci sono e, aprendole, vedi «Serve il piano Agency» con il pulsante «Vai al piano», che porta a **Amministrazione › Fatturazione**.
 - Se apri una di queste pagine con un altro ruolo (gestore, collaboratore, contabile…), vedi «Serve l'amministratore dell'organizzazione».
 - «Questa pagina non è disponibile per il tuo accesso» vuol dire che il server ha rifiutato la pagina (ruolo o piano cambiati da poco): esci e rientra, o chiedi a un amministratore.
 
@@ -120,7 +120,7 @@ La regola vale in base al giorno di **partenza** (check-out) del soggiorno. I me
 **Ti serve:** essere titolare o amministratore dell'organizzazione.
 1. Apri **Amministrazione › Fatturazione** e, in «Il tuo piano», leggi il nome del piano. Se è «Agency», il piano c'è.
 2. Apri il menu dell'area **Amministrazione** e guarda se ci sono **Proprietari** e **Chiusura mensile**.
-3. Se le voci ci sono ma, aprendole, vedi «Serve il piano Agenzia», l'organizzazione non ha il piano Agency. Come passarci da un'organizzazione già esistente il manuale non lo descrive: scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza»).
+3. Se le voci ci sono ma, aprendole, vedi «Serve il piano Agency», l'organizzazione non ha il piano Agency. Come passarci da un'organizzazione già esistente il manuale non lo descrive: scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza»).
 4. Se il piano è Agency ma le voci non ci sono, la funzione non è ancora accesa sul tuo ambiente (o non sei titolare né amministratore): scrivi all'assistenza nello stesso modo e chiedi l'attivazione.
 
 ### Vedere a che punto è l'attivazione dei proprietari
@@ -336,7 +336,7 @@ Un proprietario può avere al massimo 10 contatti. Un invito scaduto conta ancor
 ## Domande frequenti
 
 ### Perché non vedo la voce «Proprietari»?
-Perché la funzione non è ancora accesa sul tuo ambiente, oppure perché non sei titolare o amministratore: in entrambi i casi la voce non è nel menu. Se la voce c'è ma aprendola vedi «Serve il piano Agenzia», l'organizzazione non ha il piano Agency: controllalo in **Amministrazione › Fatturazione**. In tutti i casi puoi scrivere all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza»).
+Perché la funzione non è ancora accesa sul tuo ambiente, oppure perché non sei titolare o amministratore: in entrambi i casi la voce non è nel menu. Se la voce c'è ma aprendola vedi «Serve il piano Agency», l'organizzazione non ha il piano Agency: controllalo in **Amministrazione › Fatturazione**. In tutti i casi puoi scrivere all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza»).
 
 ### Come aggiungo un proprietario quando ne ho già inseriti molti?
 L'elenco **Amministrazione › Proprietari** non ha un pulsante per aggiungerne. Apri **Guida** (in alto) › «Vedi tutti i passi», premi «Apri» sulla riga «Proprietari e rendiconti» e usa «Aggiungi a mano» oppure un nuovo file ([[agenzie-proprietari#aggiungere-i-proprietari-da-un-file]]).
@@ -378,7 +378,7 @@ Non ancora in una schermata dedicata. Il proprietario può scrivere e ricevere u
 Sono le percentuali che un portale trattiene quando la sua prenotazione non porta la commissione. Servono a calcolare il rendiconto del proprietario.
 
 ## Glossario
-- **Piano Agency** (detto anche «piano Agenzia»): il piano dell'organizzazione, a pagamento per camera, che sblocca i proprietari, i rendiconti, le ritenute e i bonifici. Non è un ruolo.
+- **Piano Agency**: il piano dell'organizzazione, a pagamento per camera, che sblocca i proprietari, i rendiconti, le ritenute e i bonifici. Non è un ruolo.
 - **Agenzia / Property manager**: chi gestisce immobili per conto di altri proprietari. Come profilo della registrazione è la scelta «Agenzia / Property manager»; come ruolo del team «Property manager» è un'altra cosa (vedi [[account-team-piano]]). «PM», nella «Fattura del PM», è l'agenzia.
 - **Proprietario**: il cliente dell'agenzia a cui appartiene un immobile. Non è il «Proprietario privato» della registrazione, cioè chi gestisce da solo le case sue.
 - **Immobile, struttura, unità**: in queste pagine sono la casa o l'appartamento che l'agenzia gestisce; la «camera» è l'unità su cui si calcola il piano Agency.

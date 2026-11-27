@@ -70,7 +70,7 @@ Dopo la registrazione la pagina si chiama «Come vuoi usare CasaZen?» e ha cinq
 5. Inizia. Quando il pagamento è confermato premi «Entra e inizia la configurazione». Se non hai ancora immobili vieni portato a «Aggiungi il tuo primo immobile».
 Agenzia. Scegli l'area, scrivi il nome dell'agenzia (obbligatorio) e le camere previste per avere una stima. L'addebito è a fine mese, sulle unità effettivamente attive per almeno un giorno nel mese, con un minimo mensile; oltre una certa soglia di unità c'è un preventivo personalizzato. Tu sei titolare e amministratore: le altre persone entrano solo su invito, da Amministrazione › Persone (vedi «Titolare, amministratore e gli altri ruoli»).
 Quanto paghi e quando. Prima di pagare vedi il riepilogo con piano, extra e «Totale mensile», e sotto la scritta «IVA esclusa» o «IVA inclusa». Il pagamento è con carta, su Stripe. Finché non confermi il pagamento non si attiva nulla. Nelle schermate della registrazione non c'è l'indicazione di un periodo di prova gratuito: l'importo che vedi nel riepilogo è quello del piano scelto. Dopo la registrazione piano, carta e fatture si gestiscono in Amministrazione › Fatturazione (Cambiare piano).
-Nota: se in Fatturazione e piano vedi l'avviso «Accesso aperto», l'app dice che per ora non addebita nulla e che le funzioni sono sbloccate, e che il piano scelto vale quando riprenderà la fatturazione (ti avvisano prima). Lo trovi spiegato in Piano, limiti e moduli.
+Nota: se in Fatturazione e piano vedi l'avviso «Accesso aperto», l'app dice che per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo, ma che i pagamenti non cambiano: un abbonamento già attivo continua a essere addebitato, un piano scelto ora si paga da subito e i moduli a pagamento restano quelli che hai acquistato. Quando l'accesso aperto finirà valgono i limiti del piano che paghi (ti avvisano prima). Lo trovi spiegato in Piano, limiti e moduli.
 
 #### La configurazione per chi ha già un account
 
@@ -176,11 +176,11 @@ Come si accende una funzione «su attivazione». Dipende dalla funzione; la pagi
 Non confonderla con altre «attivazioni»: l'attivazione di un immobile (stato «Attivo») è la conferma finale che rende la casa prenotabile; «Attiva» nel percorso «Inizia con CasaZen» accende i flussi pronti; «Cosa manca nell'attivazione» è l'elenco di ciò che manca a un proprietario. Le fai tu e non c'entrano con «Su attivazione».
 Come vedi se una funzione è accesa. Se la voce di menu o la scheda c'è, la funzione è accesa. Se manca, controlla se la riga del manuale dice «Su attivazione» e guarda lo «Stato dei moduli».
 A chi chiedere. Se la pagina dice «Aggiungi questo modulo al tuo piano»: a chi gestisce il piano (titolare o amministratore), con «Gestisci piano e moduli». Se la funzione non c'è e non c'è un modulo da aggiungere: scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»), dicendo quale funzione ti serve e il nome della tua organizzazione. L'app non indica i tempi di attivazione. Se è «In arrivo» non c'è nulla da chiedere.
-Nota: «Accesso aperto» (Amministrazione › Fatturazione) alza i limiti del piano per un periodo, ma non accende le funzioni che CasaZen non ha ancora attivato.
+Nota: «Accesso aperto» (Amministrazione › Fatturazione) fa seguire per un periodo a immobili, persone e dominio personalizzato un piano più alto del tuo, ma non cambia i pagamenti né i moduli a pagamento che hai acquistato, e non accende le funzioni che CasaZen non ha ancora attivato.
 
 #### Assistenza: come scrivere a CasaZen
 
-Il pulsante Guida (in alto a destra; su schermi stretti è l'icona della bussola) apre il pannello «La tua guida». In fondo, sotto «Ti serve una mano?», trovi «Apri il manuale di CasaZen» e, se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza». La stessa azione c'è in «Cerca»: scrivi «assistenza» o «aiuto».
+Il pulsante Guida (in alto a destra; su schermi stretti è l'icona della bussola) apre il pannello «La tua guida». In fondo, sotto «Ti serve una mano?», trovi «Apri il manuale di CasaZen» e, se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza». La stessa azione c'è in «Cerca»: scrivi «assistenza» o «aiuto». Sotto il titolo il pannello dice «Il manuale spiega ogni area con parole semplici.» e, solo se c'è l'indirizzo di assistenza, aggiunge «Se ti blocchi, scrivici: ti rispondiamo noi.»
 - Premendola si apre il programma di posta del computer o del telefono con un messaggio già indirizzato all'assistenza (da «Cerca» con oggetto «Richiesta di assistenza»). Serve quindi un programma di posta impostato. Non è una chat: non parte nulla finché non invii tu il messaggio.
 - Scrivi cosa stavi facendo, cosa ti aspettavi e cosa è successo, e il nome della tua organizzazione. Non scrivere password, dati di carte o documenti degli ospiti.
 - Se non vedi «Scrivi all'assistenza», la tua installazione non ha un indirizzo di assistenza: rivolgiti a chi ti ha dato accesso a CasaZen o a chi amministra il tuo account.
@@ -415,7 +415,7 @@ Leggi «Il primo giorno» in questa pagina oppure Inizia qui: account, prima cas
 
 #### Devo pagare per usare CasaZen? Quanto costa?
 
-I piani (Starter, Pro, Scale, Agency) e i prezzi li vedi prima di pagare, al passaggio «Piano e funzionalità», e poi in Amministrazione › Fatturazione. Si paga con carta su Stripe. Se in «Fatturazione e piano» leggi «Accesso aperto», l'app dice che per ora non addebita nulla. Vedi «Quanto paghi e quando».
+I piani (Starter, Pro, Scale, Agency) e i prezzi li vedi prima di pagare, al passaggio «Piano e funzionalità», e poi in Amministrazione › Fatturazione. Si paga con carta su Stripe. Se in «Fatturazione e piano» leggi «Accesso aperto», l'app dice che per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo, ma che i pagamenti non cambiano. Vedi «Quanto paghi e quando».
 
 #### Non ho un invito: come faccio a registrarmi?
 
@@ -454,7 +454,7 @@ Il titolare è uno solo (chi ha creato l'organizzazione), non si può togliere n
 - In arrivo: funzione che non c'è ancora; non si può chiedere né attivare.
 - Modulo: funzione extra del piano (per esempio «CRM e Marketing»); lo stato dei moduli sta in Amministrazione › Fatturazione.
 - Piano: l'abbonamento (Starter, Pro, Scale, Agency) che stabilisce quante case e persone puoi avere e quali funzioni usi.
-- Accesso aperto: avviso in «Fatturazione e piano» con cui l'app dice che per ora non addebita nulla e sblocca i limiti del piano.
+- Accesso aperto: avviso in «Fatturazione e piano» con cui l'app dice che per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo; i pagamenti non cambiano.
 - Stripe: il servizio di pagamento con carta usato da CasaZen; i dati della carta restano a Stripe.
 - CIN: codice nazionale che identifica ogni casa in affitto breve in Italia; va esposto fuori dalla casa e scritto negli annunci. Lo chiedi sul portale del Ministero del Turismo (BDSR).
 - Cruscotto / Home: la pagina iniziale di un'area; in Affitti brevi si chiama «Cruscotto».
@@ -1024,7 +1024,7 @@ Gli stati di un immobile. Ogni casa ha un solo stato, che vedi nell'elenco e nel
 - Sospeso: CasaZen ha trovato un punto obbligatorio non più a posto. La scheda dice «L'immobile è sospeso» e il pulsante «Risolvi i punti obbligatori» ti porta a correggerlo.
 Cosa serve per attivare una casa. Lo decide CasaZen, non il modulo: ad ogni salvataggio ricalcola cosa manca. I punti che possono bloccare l'attivazione sono:
 - i dati di base e il prezzo base per notte;
-- il CIN (per le case in Italia). Non ce l'hai? Chiedilo subito, perché la casa resta «Da completare» finché non lo inserisci. Il CIN si chiede sul portale del Ministero del Turismo (BDSR): in CasaZen apri Adempimenti › CIN e premi «Richiedi il CIN sul portale» (in un avviso sul CIN il pulsante si chiama «Richiedi il CIN su BDSR»). Nel frattempo compili foto, testi e prezzi. Come si chiede, passo per passo: Chiedere il CIN;
+- il CIN (per le case in Italia). Non ce l'hai? Chiedilo subito, perché la casa resta «Da completare» finché non lo inserisci. Il CIN si chiede sul portale del Ministero del Turismo (BDSR): in CasaZen apri Adempimenti › CIN e premi «Richiedi il CIN sul portale». Nel frattempo compili foto, testi e prezzi. Come si chiede, passo per passo: Chiedere il CIN;
 - i documenti richiesti dalla tua regione;
 - il comune e, in Ticino, il numero della struttura, che servono per notificare gli ospiti.
 La scheda di sicurezza (estintori e rilevatori) è un tuo obbligo di legge, ma non blocca l'attivazione: resta tra le cose da completare («Da completare (non blocca l'attivazione)»). Per l'attivazione serve anche accettare i Termini. Per il significato del CIN, della scheda di sicurezza e dell'invio dei dati degli ospiti vai a CIN, identificazione degli ospiti e notifiche in Svizzera e Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili.
@@ -1079,9 +1079,9 @@ Ti serve: il permesso di modifica degli immobili e l'indirizzo con numero civico
 9. Foto (facoltativo). Trascina le foto o premi «Scegli le foto»: fino a 20 per immobile, 10 alla volta, in formato JPEG, PNG o WebP, al massimo 10 MB ciascuna. La prima foto è la copertina. Sotto «Didascalie e camere» puoi scrivere una didascalia in italiano e in inglese (al massimo 200 caratteri; quella in inglese non basta da sola) e dire in quale camera è stata scattata.
 10. Dotazioni (facoltativo). Cerca con «Cerca una dotazione» (per esempio «lavatrice») e scegli solo ciò che c'è davvero: gli ospiti lo leggono prima di prenotare. Premi «Compila la scheda» per la scheda di sicurezza: poche risposte (gas o fiamme in casa, attività d'impresa, piani) e l'elenco di ciò che hai già in casa; CasaZen precompila quello che sa. CasaZen registra ciò che dichiari, non lo verifica né lo certifica.
 11. Testi. Scrivi «Titolo (Italiano)» (fino a 60 caratteri) e «Descrizione (Italiano)» (fino a 10.000), poi gli stessi in inglese. Le altre lingue sono facoltative. Con «Suggerisci con l'AI» l'AI scrive una bozza guardando fino a 6 foto, il comune (non l'indirizzo) e gli annunci simili della zona; «Rigenera» ne chiede un'altra, «Annulla» torna al testo di prima. Rileggi sempre il testo. Se l'AI non è disponibile CasaZen compone il testo con i dati inseriti.
-12. Regole. Scegli «Check-in dalle» e «Check-out entro le» (già impostati alle 15:00 e alle 10:00), le regole su «Fumare», «Animali», «Feste ed eventi» e «Bambini», gli «Orari di silenzio» (vanno indicati tutti e due o nessuno), il «Supplemento per ospite in più (€ a notte)» (lascia vuoto se non accetti ospiti in più), la politica «Se l'ospite cancella» (vedi Impostare la politica di cancellazione) e «Altre regole» (fino a 1000 caratteri).
+12. Regole. Scegli «Check-in dalle» e «Check-out entro le» (già impostati alle 15:00 e alle 10:00), le regole su «Fumare», «Animali», «Feste ed eventi» e «Bambini», gli «Orari di silenzio» (vanno indicati tutti e due o nessuno), il «Supplemento per ospite in più (€ a notte)» (lascia vuoto se non accetti ospiti in più), la politica «Se l'ospite cancella» (vedi Impostare la politica di cancellazione; se non ne scegli una, un ospite che cancella da solo riceve indietro soltanto l'imposta di soggiorno già pagata e il sito non promette nessuna cancellazione gratuita) e «Altre regole» (fino a 1000 caratteri).
 13. Prezzi. Scrivi il «Prezzo base per notte (€)». Senza prezzo la casa resta «Da completare». Il resto (weekend, pulizia, soggiorno minimo, sconti, calcolo con l'AI) è spiegato in Prezzi e tariffe.
-14. Canali, Adempimenti, Fatturazione. Compaiono solo dove la funzione è attiva. In «Adempimenti» devi confermare chi invia i dati degli ospiti a Polizia e ISTAT: per legge ogni ospite va comunicato alla Polizia con il portale Alloggiati Web, e i dati statistici vanno ai portali regionali. Alla domanda «Chi invia i dati alla Polizia?» le scelte sono tre: «Lo faccio io» (scarichi tu da CasaZen i file dei soggiorni e li carichi sul portale della Polizia; CasaZen ti ricorda le scadenze), il tuo channel manager (Octorate: invia lui, dopo il collegamento e la verifica di ogni immobile) e CasaZen, che compare nell'elenco ma per ora non si può scegliere da qui. La scelta di partenza è il channel manager se la casa è collegata a Octorate (annuncio abbinato e confermato), altrimenti «Lo faccio io»: una scelta di partenza non vale come conferma, quindi devi confermarla tu. Attenzione: anche con Octorate collegato l'invio automatico degli ospiti è spento di partenza, quindi non dare per scontato che Octorate comunichi gli ospiti alla Polizia: controlla «Chi invia» e lo stato dell'invio. Puoi cambiare scelta quando vuoi. Scadenze, cosa fa CasaZen e cosa resta a te: Comunicare gli ospiti alla Questura (Alloggiati Web).
+14. Canali, Adempimenti, Fatturazione. Compaiono solo dove la funzione è attiva. In «Adempimenti» devi confermare chi invia i dati degli ospiti a Polizia e ISTAT: per legge ogni ospite va comunicato alla Polizia con il portale Alloggiati Web, e i dati statistici vanno ai portali regionali. Alla domanda «Chi invia i dati alla Polizia?» le scelte sono tre: «Lo faccio io, con il file» (scarichi tu da CasaZen i file dei soggiorni e li carichi sul portale della Polizia; CasaZen ti ricorda le scadenze), «Il tuo channel manager» (Octorate: invia lui, dopo il collegamento e la verifica di ogni immobile) e «CasaZen», che compare nell'elenco ma non si sceglie da qui: la scheda dice «Non si sceglie da qui: dove è disponibile, l'invio diretto si attiva dalla scheda dell'immobile». La scelta di partenza è il channel manager se la casa è collegata a Octorate (annuncio abbinato e confermato), altrimenti «Lo faccio io»: una scelta di partenza non vale come conferma, quindi devi confermarla tu. Attenzione: anche con Octorate collegato l'invio automatico degli ospiti è spento di partenza, quindi non dare per scontato che Octorate comunichi gli ospiti alla Polizia: controlla «Chi invia» e lo stato dell'invio. Puoi cambiare scelta quando vuoi. Scadenze, cosa fa CasaZen e cosa resta a te: Comunicare gli ospiti alla Questura (Alloggiati Web).
 15. Attivazione. Nell'ultimo passo trovi: «Collega i calendari» (consigliato: le date prenotate su Airbnb o Booking.com risultano occupate anche da te, vedi Collegare un calendario iCal), «Codice CIN» con «Salva il CIN», i «Documenti richiesti», il «Riepilogo» (ogni sezione ha «Modifica») e «Cosa manca».
 16. Decidi «Mostra la casa sul sito»: di partenza è acceso. Acceso, gli ospiti possono prenotare dal tuo sito; spento, la casa sarà attiva ma non comparirà.
 17. Se non c'è nessun blocco, accetta i Termini (e conferma di sapere che documenti e scheda di sicurezza ancora aperti sono tuoi obblighi) e premi «Attiva l'immobile».
@@ -1330,7 +1330,7 @@ Chi può fare cosa. Vedere Canali e calendari richiede il permesso di lettura de
 #### Collegare un calendario iCal
 
 Importa in CasaZen le date occupate di un portale. Ti serve: il permesso di modifica degli immobili, la casa già creata in CasaZen e l'accesso al tuo account Airbnb, Booking.com (o all'altro portale) per copiare il link del calendario.
-1. Sul portale cerca la funzione che esporta il calendario dell'annuncio e copia il suo link iCal: un indirizzo che comincia con https. Ogni portale lo chiama in modo diverso: «Esporta calendario», «Sincronizza calendari», «Indirizzo segreto iCal». Secondo la guida dentro CasaZen, su Airbnb lo trovi nell'annuncio, in Disponibilità › Sincronizzazione calendari › «Esporta calendario»; su Booking.com, nell'Extranet, in Tariffe e disponibilità (Calendario › «Esporta»). I portali cambiano spesso nomi e posizioni: se non trovi la voce, cerca nel portale «esporta calendario» o «sincronizza calendari». Non usare il link dell'annuncio né quello di importazione.
+1. Sul portale cerca la funzione che esporta il calendario dell'annuncio e copia il suo link iCal: un indirizzo che comincia con https. Ogni portale lo chiama in modo diverso: «Esporta calendario», «Sincronizza calendari», «Indirizzo segreto iCal». Secondo la guida dentro CasaZen, su Airbnb lo trovi nell'annuncio, in Disponibilità › Sincronizzazione calendari › «Esporta calendario»; su Booking.com, nell'Extranet, in Tariffe e disponibilità, nella sezione per sincronizzare i calendari (i nomi delle voci possono cambiare): scegli di esportare il calendario e copia l'indirizzo iCal che compare. I portali cambiano spesso nomi e posizioni: se non trovi la voce, cerca nel portale «esporta calendario» o «sincronizza calendari». Non usare il link dell'annuncio né quello di importazione.
 2. In CasaZen apri Affitti brevi › Immobili › Canali e calendari e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda Calendari iCal. Se non sai dove trovare il link sul portale, sotto il campo «URL import (HTTPS)» premi «Come trovare il link iCal»: si apre la pagina «Come collegare il calendario via iCal» con i passi per Airbnb, Booking.com, VRBO, Google Calendar, Apple Calendar e Outlook (la stessa guida si apre dal «?» «Cos'è iCal» in Canali e calendari).
 3. Nel modulo «Collega un calendario» scegli il «Canale»: Airbnb, Booking.com o Altro.
 4. Se vuoi, scrivi un'«Etichetta (facoltativa)», fino a 60 caratteri, per esempio «Airbnb - camera 2». Serve se una casa ha più calendari.
@@ -1345,7 +1345,7 @@ Attenzione: questo passo porta le date del portale dentro CasaZen, non le porta 
 Serve perché i portali chiudano le date prese su CasaZen (prenotazioni del tuo sito, quelle che inserisci tu e i blocchi manuali). Ti serve: il permesso di leggere gli immobili e l'accesso ai portali.
 1. Apri la scheda Calendari iCal della casa e guarda «Link di esportazione per le OTA».
 2. Premi «Copia». Se la copia non riesce, seleziona il link e copialo a mano. In Canali e calendari puoi anche aprire il menu «⋯» di una riga e scegliere «Copia il link di CasaZen».
-3. Sul portale cerca la funzione che importa o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Secondo la guida dentro CasaZen, su Airbnb: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su Booking.com: nell'Extranet apri Tariffe e disponibilità › Sincronizza calendari e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
+3. Sul portale cerca la funzione che importa o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Secondo la guida dentro CasaZen, su Airbnb: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su Booking.com: nell'Extranet apri Tariffe e disponibilità, nella sezione per sincronizzare i calendari, e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
 4. I portali rileggono il link ogni tanto: le modifiche non compaiono subito.
 Attenzione: chi ha il link vede le date occupate. Incollalo solo sui portali che devono leggerle («Tienilo riservato»). Attenzione: il link di CasaZen porta ai portali solo ciò che si prenota su CasaZen. Non basta per allineare tra loro Airbnb e Booking.com: serve anche il compito seguente.
 
@@ -1943,10 +1943,10 @@ Se i soldi si muovono serve anche il permesso di gestire i pagamenti; per cambia
 
 Ti serve: il permesso di modificare «Prenotazioni e calendario»; se si muovono soldi (un rimborso o un pagamento non completato da annullare) anche il permesso di gestire i pagamenti. L'annullamento e il rimborso non si possono disfare.
 1. Dalla riga o dalla scheda scegli «Annulla prenotazione».
-2. Leggi cosa succede: CasaZen calcola quanto l'ospite ha pagato con carta, quanto è già stato rimborsato e se c'è un pagamento non completato (che viene annullato, così l'ospite non può più pagare). Nella finestra compare anche la scelta «Rimborso totale» / «Rimborso parziale» (con «Importo da rimborsare»): quando annulli tu, quella scelta non conta e il rimborso è sempre totale (vedi sotto).
+2. Leggi cosa succede: CasaZen calcola quanto l'ospite ha pagato con carta («Pagato con Stripe»), quanto è già stato rimborsato («Già rimborsato», «Rimborsi in attesa di Stripe») e se c'è un pagamento non completato (che viene annullato, così l'ospite non può più pagare). Se c'è qualcosa da rimborsare sulla carta («Rimborsabile ora»), sotto trovi «Rimborso totale» con l'importo che verrà restituito: non c'è niente da scegliere, perché quando annulli tu il rimborso è sempre totale (vedi sotto).
 3. Scrivi, se vuoi, il «Motivo (visibile solo a te)».
 4. Premi «Annulla prenotazione». L'ospite riceve un'email di annullamento, senza il motivo. Le date tornano disponibili.
-Attenzione: se annulli tu una prenotazione pagata online, CasaZen rimborsa all'ospite tutto ciò che ha pagato con carta, anche se nella finestra scegli «Rimborso parziale» e qualunque siano le condizioni di cancellazione dell'immobile: l'importo che scrivi viene ignorato. Il rimborso non si può ritirare. Se non vuoi rimborsare tutto, non annullare da qui.
+Attenzione: se annulli tu una prenotazione pagata online, CasaZen rimborsa all'ospite tutto ciò che ha pagato con carta, qualunque siano le condizioni di cancellazione dell'immobile: la finestra non ti lascia rimborsare meno. L'annullamento e il rimborso non si possono annullare né ritirare. Se non vuoi rimborsare tutto, non annullare da qui.
 Quando annulli tu una prenotazione pagata online, CasaZen rimborsa all'ospite tutto ciò che ha pagato con carta. Un rimborso risulta fatto solo quando lo conferma il servizio di pagamento: fino ad allora lo vedi «in attesa». Gli importi pagati fuori da CasaZen (contanti, bonifico) non vengono restituiti da CasaZen: ti dice quanto resta da rimborsare e lo gestisci tu. Per una prenotazione di un portale la finestra è diversa: «Chiedi al tuo channel manager di annullare questa prenotazione». Premi «Chiedi l'annullamento»: la prenotazione risulta annullata in CasaZen solo quando il channel manager conferma. Da CasaZen non si muove nessun pagamento. Se il portale non lo permette, trovi la frase che dice come fare (di solito: l'ospite annulla sul portale).
 
 #### Controllare un soggiorno da verificare
@@ -2029,7 +2029,7 @@ I passaggi che lasci in automatico non finiscono più nella tua lista «Da fare�
 - «L'ospite non è arrivato»: si segna solo dal giorno di arrivo, solo finché la prenotazione è «Confermata» (cioè prima che l'arrivo sia registrato) e solo se la comunicazione ad Alloggiati Web non risulta già inviata.
 - Check-out guidato: dal giorno di arrivo, su una prenotazione «Confermata» o «Check-in effettuato». Non è obbligatorio.
 - Modifica di date e ospiti: solo per le prenotazioni inserite da te e per quelle confermate del tuo sito, prima dell'arrivo. Non si cambiano una prenotazione già iniziata, una annullata, una richiesta in attesa e una arrivata da un portale (per quelle lo chiede l'ospite sul portale). Le note si cambiano comunque. Per una prenotazione senza modifica possibile la scheda ti dice cosa fare.
-- Annullamento: possibile per prenotazioni «In attesa», «Confermata» e «Check-in effettuato». Non per una già annullata o già conclusa. Quando annulli tu, il rimborso delle somme pagate con carta è sempre totale: l'importo scelto nella finestra («Rimborso parziale») e le condizioni di cancellazione dell'immobile non contano. Se si muovono soldi serve anche il permesso di gestire i pagamenti.
+- Annullamento: possibile per prenotazioni «In attesa», «Confermata» e «Check-in effettuato». Non per una già annullata o già conclusa. Quando annulli tu, il rimborso delle somme pagate con carta è sempre totale: la finestra non ti lascia scegliere un importo e le condizioni di cancellazione dell'immobile non contano. Se si muovono soldi serve anche il permesso di gestire i pagamenti.
 - Messaggi con l'ospite: la conversazione si chiude 7 giorni dopo la partenza.
 - Permessi: leggere prenotazioni e calendario è consentito anche a chi ha la sola lettura (per esempio il commercialista). Per accettare, modificare, annullare, registrare arrivo e partenza serve poter modificare «Prenotazioni e calendario». Bloccare date e cambiare prezzi dal calendario richiede il permesso di modifica degli immobili. I movimenti di denaro richiedono anche il permesso di gestire i pagamenti. Titolare e amministratori hanno tutti questi permessi.
 - Un collaboratore con accesso solo ad alcuni immobili vede solo le loro prenotazioni.
@@ -2066,7 +2066,7 @@ No. La partenza si registra anche da sola. Il check-out guidato serve per dichia
 
 #### Posso rimborsare solo una parte quando annullo una prenotazione?
 
-No. Se annulli tu, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, anche se la finestra mostra «Rimborso parziale» e anche se le condizioni di cancellazione dell'immobile prevederebbero meno. Il rimborso non si ritira. Se non vuoi rimborsare tutto, non annullare da qui. I pagamenti fatti fuori da CasaZen (contanti, bonifico) non li restituisce CasaZen: lo gestisci tu (Incassi e pagamenti).
+No. Se annulli tu, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, anche se le condizioni di cancellazione dell'immobile prevederebbero meno: la finestra mostra solo «Rimborso totale». Il rimborso non si ritira. Se non vuoi rimborsare tutto, non annullare da qui. I pagamenti fatti fuori da CasaZen (contanti, bonifico) non li restituisce CasaZen: lo gestisci tu (Incassi e pagamenti).
 
 #### Le date risultano occupate due volte. Cosa faccio?
 
@@ -2118,7 +2118,7 @@ Sezione: Affitti brevi · Si trova in: Affitti brevi › Prenotazioni › Ospiti
 ### In breve
 
 Il check-in online è un modulo che l'ospite compila dal telefono, con un link personale, prima di arrivare: i dati di tutte le persone che soggiornano, il documento di chi fa da capofamiglia o è ospite singolo e qualche consenso. Tu segui lo stato dalla prenotazione e, se mancano dati, li completi con il check-in guidato. Gli ospiti sono raccolti nell'elenco Ospiti, con una scheda per ognuno.
-Attenzione: il pulsante «Conferma e invia» del check-in guidato non invia nulla alla Questura. Se il mittente sei tu, la comunicazione la fai sul portale Alloggiati Web; se è il tuo channel manager, la fa lui. Lo stato vero della comunicazione lo leggi in Adempimenti › Alloggiati. Come funziona la comunicazione lo spiega Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili.
+Attenzione: il pulsante «Conferma e invia» del check-in guidato non invia nulla alla Questura. Se il mittente sei tu, la comunicazione la fai sul portale Alloggiati Web; se è il tuo channel manager, la fa lui; se è CasaZen con l'invio diretto attivo, la trasmette CasaZen con il suo processo automatico. Lo stato vero della comunicazione lo leggi in Adempimenti › Alloggiati. Come funziona la comunicazione lo spiega Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili.
 
 ### Funzionalità
 
@@ -2139,7 +2139,7 @@ Funzionalità: Esporta, anonimizza, cancella dati; Cosa fa: Diritti dell'ospite 
 #### Il check-in online dal lato del gestore
 
 Per ogni prenotazione confermata CasaZen prepara un link personale, con scadenza. L'ospite lo apre dal telefono, senza creare un account.
-Quando si apre. Il check-in online si apre alcuni giorni prima dell'arrivo (3, se non lo cambi in «Flusso») per le prenotazioni «Confermata» o «Check-in effettuato» non ancora concluse. Prima, l'ospite vede che l'host lo avviserà. Si chiude quando l'ospite ha inviato i dati o quando la comunicazione ad Alloggiati Web risulta già fatta. Attenzione: per CasaZen «risulta fatta» anche quando tu premi «Segna come inviato manualmente» in Alloggiati: se lo premi prima che l'ospite abbia compilato, per CasaZen il suo check-in risulta già concluso e il link non gli viene più mandato. Premilo solo dopo aver davvero comunicato l'ospite alla Questura.
+Quando si apre. Il check-in online si apre alcuni giorni prima dell'arrivo (3, se non lo cambi in «Flusso») per le prenotazioni «Confermata» o «Check-in effettuato» non ancora concluse. Prima, l'ospite vede che l'host lo avviserà. Si chiude quando l'ospite ha inviato i dati o quando la comunicazione ad Alloggiati Web risulta già fatta. Attenzione: per CasaZen «risulta fatta» anche quando tu premi «Segna come inviato manualmente» in Alloggiati: se lo premi prima che l'ospite abbia compilato, per CasaZen il suo check-in risulta già concluso e il link non gli viene più mandato (la finestra di conferma te lo dice prima). Premilo solo dopo aver davvero comunicato l'ospite alla Questura.
 Per quanto tempo vale il link. Il link del check-in vale 7 giorni dall'invio. Il link personale del portale ospite, se lo hai attivo, vale invece fino alla fine del 30° giorno dopo la partenza (Portale ospite).
 Come arriva il link all'ospite.
 - Se in «Flusso» il passaggio «Link del check-in online» è in automatico, CasaZen manda il link per email, ogni giorno, alle prenotazioni che entrano nella finestra. Se non riesce a raggiungere l'ospite, te lo dice.
@@ -2225,11 +2225,11 @@ Ti serve: il permesso di inviare i dati degli ospiti (lo stesso di Alloggiati We
 5. Invio: leggi «Cosa viene inviato e come». La schermata ti dice, per il mittente scelto per quell'immobile, cosa parte e cosa resta a te. Non parte nulla finché non premi «Conferma e invia». E nemmeno dopo arriva qualcosa alla Questura: il pulsante conferma l'imposta di soggiorno e, dove serve, passa gli ospiti a Octorate. I dati degli ospiti sono già salvati nei passi precedenti.
 6. Nella schermata «Check-in registrato» vedi, riga per riga, cosa è andato a buon fine e cosa resta da fare, compresa la riga sulla Questura. Da lì puoi premere «Registra arrivo», «Torna alla prenotazione» o «Vai agli adempimenti».
 Il riquadro «Incasso della tassa di soggiorno» (su attivazione). Se è attivo il pagamento online dell'imposta (Cosa significa «Su attivazione»?), nel passo «Imposta di soggiorno» compare un riquadro che dice a che punto è l'incasso: «Da incassare», «Pagata online» (anche «in parte»: ti dice quanto resta da incassare in struttura), «Pagata in struttura», «Incassata dal portale», «Compresa nel pagamento della prenotazione» oppure «Non dovuta». Finché è «Da incassare» l'ospite può ancora pagarla online dal suo check-in. Se te l'ha pagata in struttura, premi «Segna come pagata in struttura» (serve il permesso di gestire i pagamenti): da quel momento l'ospite non può più pagarla online, così non la paga due volte. Se risulta una somma da restituire all'ospite compare «Da restituire all'ospite»: CasaZen non rimborsa da sola, ti crea un'attività «Da fare» e la restituzione la fai tu. I calcoli e i rendiconti per comune sono in Imposta di soggiorno, archivio documenti e check-out.
-Cosa succede alla Questura dopo «Conferma e invia», secondo chi invia. Il mittente è quello scelto per l'immobile nella procedura «Chi invia» (Scegliere chi invia i dati degli ospiti). Di norma di partenza è «Lo faccio io, con il file»; per un immobile già collegato a Octorate può essere il channel manager. Cosa fa ogni pulsante dell'invio, uno per uno, è nella tabella «Cosa fanno davvero i pulsanti» di Comunicare gli ospiti alla Questura (Alloggiati Web).
+Cosa succede alla Questura dopo «Conferma e invia», secondo chi invia. Il mittente è quello scelto per l'immobile nella procedura «Chi invia» (Scegliere chi invia i dati degli ospiti). Di norma di partenza è «Lo faccio io, con il file»; per un immobile già collegato a Octorate può essere il channel manager; dove l'invio diretto è attivo è «CasaZen». Cosa fa ogni pulsante dell'invio, uno per uno, è nella tabella «Cosa fanno davvero i pulsanti» di Comunicare gli ospiti alla Questura (Alloggiati Web).
 Chi invia: «Lo faccio io, con il file»; Cosa fa «Conferma e invia»: Salva l'imposta di soggiorno. Non manda nulla a Octorate. Compare il collegamento «Apri la guida per la comunicazione sul portale Alloggiati Web»; Alla Questura: Non parte nulla. La schermata dice «La comunicazione alla Questura la fai tu sul portale Alloggiati Web». Poi la registri con «Segna come inviato manualmente» (non invia nulla: registra solo che l'hai fatto tu)
 Chi invia: «Il tuo channel manager», prenotazione collegata a Octorate; Cosa fa «Conferma e invia»: Passa gli ospiti a Octorate. Se qualcosa non arriva compare «Qualcosa non è arrivato a Octorate» con «Riprova adesso»; Alla Questura: Li invia Octorate, quando registri l'arrivo («Octorate invia la comunicazione alla Questura quando registri l'arrivo»). CasaZen non mostra il verde finché non c'è la ricevuta
 Chi invia: «Il tuo channel manager», ma prenotazione non collegata a Octorate; Cosa fa «Conferma e invia»: Non manda nulla (la schermata lo dice); Alla Questura: Non parte nulla: la comunicazione va fatta sul portale Alloggiati Web
-Chi invia: «CasaZen» (invio diretto, su attivazione); Cosa fa «Conferma e invia»: Non manda nulla a Octorate; Alla Questura: L'invio diretto non parte da questo pulsante: è un processo automatico di CasaZen, attivo solo per gli immobili in cui lo hai attivato. Per questo mittente la schermata dice ancora che la comunicazione si fa sul portale: finché in Adempimenti › Alloggiati non vedi «Inviato» con la ricevuta, consideralo ancora da fare
+Chi invia: «CasaZen» (invio diretto, su attivazione); Cosa fa «Conferma e invia»: Non manda nulla a Octorate: la schermata dice «Il mittente è CasaZen (invio diretto): non mandiamo nulla a Octorate e questo pulsante non invia nulla alla Questura»; Alla Questura: L'invio diretto non parte da questo pulsante: è un processo automatico di CasaZen, attivo solo per gli immobili in cui lo hai attivato (per i soggiorni dalla data di attivazione). In «Check-in registrato» la riga sulla Questura dice «Con l'invio diretto la comunicazione alla Questura la trasmette CasaZen, non questo pulsante: controlla lo stato in Adempimenti › Alloggiati», e non c'è il collegamento alla guida per il portale: finché lì non vedi «Inviato» con la ricevuta, consideralo ancora da fare
 Chi invia: Soggiorno che non richiede la comunicazione (per esempio ospite non arrivato) o immobile non in Italia; Cosa fa «Conferma e invia»: —; Alla Questura: La schermata dice «Per questo soggiorno non c'è nessuna comunicazione alla Questura da fare»
 Se la comunicazione era già stata inviata (la schermata dice «La comunicazione alla Questura è già stata fatta»), una correzione dei dati va fatta sul portale Alloggiati Web: compare l'avviso «I dati già inviati alla Questura potrebbero richiedere una correzione sul portale Alloggiati Web».
 Suggerimento: con «Salva ed esci» puoi interrompere e riprendere dopo, ma per salvare servono i dati completi degli ospiti e il documento dell'ospite singolo o del capofamiglia.
@@ -2292,11 +2292,11 @@ Lo «Storico di informativa e consensi» mostra tutto quello che è successo, co
 1. Apri la prenotazione › «Check-in online» e leggi il cartellino.
 2. Se è «Link inviato» o «In compilazione» premi «Invia sollecito». Se è «Scaduto» premi «Invia sollecito» o «Genera link da copiare». Se non c'è nessun link, premi «Invia link via email» (o «Genera link da copiare» se non ha un'e-mail e glielo mandi tu).
 3. Se l'ospite è già arrivato senza averlo fatto, fai tu il check-in guidato con i suoi documenti (Fare il check-in guidato al posto dell'ospite). I dati servono comunque per la comunicazione alla Questura, che va fatta entro 24 ore dall'arrivo (6 ore se il soggiorno non supera una notte).
-4. Non premere «Segna come inviato manualmente» per «sistemare» la voce: dice a CasaZen che hai già comunicato: il check-in dell'ospite risulta concluso e il link non gli viene più mandato.
+4. Non premere «Segna come inviato manualmente» per «sistemare» la voce: dice a CasaZen che hai già comunicato: CasaZen smette di avvisarti su quel soggiorno, il check-in online dell'ospite risulta concluso e il link non gli viene più mandato. Da lì la dichiarazione non si annulla.
 
 #### L'ospite ha fatto il check-in, ma alla Questura non risulta niente. Perché?
 
-Il check-in online raccoglie i dati: non li invia. La comunicazione alla Questura è un passaggio a parte: la fai tu sul portale Alloggiati Web o la fa il tuo channel manager. Controlla lo stato in Adempimenti › Alloggiati: Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili.
+Il check-in online raccoglie i dati: non li invia. La comunicazione alla Questura è un passaggio a parte: la fai tu sul portale Alloggiati Web, la fa il tuo channel manager o, dove è attivo l'invio diretto, la trasmette CasaZen con il suo processo automatico. Controlla lo stato in Adempimenti › Alloggiati: Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili.
 
 #### Dopo «Conferma e invia» è partito qualcosa verso la Questura?
 
@@ -2385,7 +2385,7 @@ Funzionalità: Richiesta di recensione; Cosa fa: Manda una email all'ospite con 
 - Quando non puoi rispondere. Puoi leggere ma non scrivere se la chat del portale non è ancora attiva per quell'annuncio, se l'annuncio non è ancora collegato a un tuo immobile, se la conversazione è chiusa, se non hai il permesso di rispondere, o se l'ospite ha chiesto la cancellazione dei suoi dati.
 - Regole dei portali. Prima della prenotazione molti portali non permettono link, indirizzi email o numeri di telefono: toglili dal messaggio. Il testo può avere al massimo 2000 caratteri. Se mandi molti messaggi in poco tempo, ti viene chiesto di aspettare qualche minuto.
 - Messaggi diretti. Se scrivi a un ospite del tuo sito, l'ospite riceve un'email che lo avvisa, senza il testo, e legge il messaggio nell'area della sua prenotazione. Non scrivere dati di pagamento. La conversazione di una prenotazione si chiude 7 giorni dopo la partenza.
-- Cosa non c'è. CasaZen non manda messaggi su WhatsApp né SMS e non telefona: le conversazioni sono quelle dei portali (tramite Octorate) e quelle del tuo sito.
+- Cosa non c'è. Nelle conversazioni con gli ospiti CasaZen non manda messaggi su WhatsApp né SMS e non telefona: le conversazioni sono quelle dei portali (tramite Octorate) e quelle del tuo sito.
 
 #### I modelli di messaggio
 
@@ -2541,7 +2541,7 @@ Si scrive una volta sola. Se il portale non conferma l'invio, compare «Da verif
 - Risposta a una recensione: una sola, pubblica, non modificabile né ritirabile. Segnalazione a CasaZen: una sola per recensione.
 - Invito a recensire: una volta per prenotazione, entro 14 giorni dalla partenza, solo per le prenotazioni del tuo sito.
 - Chi ha accesso solo ad alcuni immobili vede solo le conversazioni e le recensioni di quelli.
-- Non ci sono messaggi su WhatsApp né SMS: solo le conversazioni dei portali (tramite Octorate) e quelle del tuo sito.
+- Nelle conversazioni con gli ospiti non ci sono messaggi su WhatsApp né SMS: solo le conversazioni dei portali (tramite Octorate) e quelle del tuo sito.
 
 ### Domande frequenti
 
@@ -2893,15 +2893,15 @@ Per ogni ospite CasaZen tiene: tipo di ospite (ospite singolo, capofamiglia, cap
 #### Cosa ti serve per inviare: le credenziali di Alloggiati Web
 
 Per caricare il file sul portale servono le credenziali di Alloggiati Web (nome utente e password), che rilascia la Questura. CasaZen non le crea e non può chiederle per te. Se non le hai ancora, chiedile alla Questura prima del primo ospite: senza non puoi inviare e il termine corre lo stesso.
-In CasaZen i tre campi delle credenziali («Nome utente», «Password», «Chiave web service (WSKey)») servono solo a due cose, entrambe facoltative per l'invio a mano: scaricare in automatico le ricevute (consigliato con il channel manager) e l'invio diretto da CasaZen (su attivazione). La WSKey è una chiave del servizio web del portale, diversa dalla password. Dopo il salvataggio non si rivedono più.
+In CasaZen i tre campi delle credenziali («Nome utente», «Password», «Chiave web service (WSKey)») servono a due cose: scaricare in automatico le ricevute (consigliato con il channel manager) e, dove l'invio diretto è attivo (su attivazione), far trasmettere i dati ad Alloggiati Web da CasaZen. Per l'invio a mano non servono. La WSKey è una chiave del servizio web del portale, diversa dalla password. Dopo il salvataggio non si rivedono più.
 
 #### Chi invia i dati degli ospiti
 
 Chi trasmette si sceglie immobile per immobile, nella procedura «Chi invia»:
 - Lo faccio io, con il file (invio manuale). CasaZen prepara i dati e il file; lo carichi tu sul portale Alloggiati Web e poi premi «Segna come inviato manualmente». CasaZen non riceve la ricevuta: registra la tua dichiarazione. Lo stato è «Inviato manualmente».
 - Il tuo channel manager. Se l'immobile è collegato a Octorate, i dati degli ospiti passano al channel manager, che li invia alla Questura ogni giorno. Lo stato è «Affidato al channel manager, in attesa della ricevuta». Per CasaZen la comunicazione è fatta (verde) solo quando la ricevuta è archiviata. Su attivazione.
-- CasaZen (invio diretto). Su attivazione, solo per gli immobili per cui è stato predisposto. Nella procedura «Chi invia» la voce «CasaZen» compare ma non si può scegliere («Non ancora disponibile»): l'attivazione si fa solo dalla scheda immobile (vedi «Attivare l'invio diretto»).
-Cosa succede se non hai mai scelto. Per un immobile non collegato a Octorate vale «Lo faccio io, con il file». Per un immobile già collegato a Octorate (annuncio abbinato e confermato) CasaZen parte da «Il tuo channel manager»: aprilo in «Chi invia» e controlla che lo stato sia «Attivo». È «Attivo» solo se Octorate conferma che invia davvero. In ogni caso una prenotazione resta «Da inviare manualmente» dal giorno di arrivo finché gli ospiti non risultano passati al channel manager o tu non dichiari l'invio: CasaZen non considera mai fatta una comunicazione senza motivo.
+- CasaZen (invio diretto). Su attivazione, solo per gli immobili per cui è stato predisposto. Nella procedura «Chi invia» la voce «CasaZen» compare ma non si sceglie da lì: sotto la voce leggi «Non si sceglie da qui: dove è disponibile, l'invio diretto si attiva dalla scheda dell'immobile» (vedi «Attivare l'invio diretto»). Quando l'invio diretto è già attivo, nessuna delle tre voci si cambia da questa procedura: sotto ognuna leggi «Non si cambia da qui: con l'invio diretto attivo serve l'assistenza».
+Cosa succede se non hai mai scelto. Per un immobile non collegato a Octorate vale «Lo faccio io, con il file». Per un immobile già collegato a Octorate (annuncio abbinato e confermato) CasaZen parte da «Il tuo channel manager»: aprilo in «Chi invia» e controlla che lo stato sia «Attivo». È «Attivo» solo se Octorate conferma che invia davvero. Se l'invio automatico degli ospiti è spento, sotto «Adesso» la procedura aggiunge «Di partenza non parte nulla da solo: gli ospiti vanno al tuo channel manager solo quando confermi tu il check-in. Controlla lo stato in Adempimenti.» In ogni caso una prenotazione resta «Da inviare manualmente» dal giorno di arrivo finché gli ospiti non risultano passati al channel manager o tu non dichiari l'invio: CasaZen non considera mai fatta una comunicazione senza motivo.
 Nota: CasaZen non ti toglie la responsabilità della comunicazione: restano tue la correttezza dei dati e il rispetto della scadenza. Se scegli un invio automatico, lo dichiari in una delega che ti viene mostrata e che devi accettare.
 
 #### Cosa fanno davvero i pulsanti
@@ -2909,7 +2909,7 @@ Nota: CasaZen non ti toglie la responsabilità della comunicazione: restano tue 
 Nessun pulsante di CasaZen avvisa la Questura per te, tranne l'invio diretto attivato. Se il pulsante dice «invia» non vuol dire che la Questura sia stata avvisata.
 Pulsante: «Scarica il file» (scheda «Documenti» della prenotazione); Cosa fa: Prepara il file con i dati degli ospiti, da caricare sul portale; Cosa non fa: Non invia nulla e non cambia nessuno stato
 Pulsante: «Conferma e invia» (check-in guidato, vedi Ospiti e check-in online); Cosa fa: Salva i dati confermati in CasaZen. Se il mittente è il channel manager e la prenotazione è collegata a Octorate, manda gli ospiti a Octorate; Cosa non fa: Non avvisa la Questura: lo fa Octorate, con i suoi tempi. Se il mittente sei tu, non manda niente neanche a Octorate
-Pulsante: «Segna come inviato manualmente»; Cosa fa: Registra che hai già caricato i dati sul portale, con la data che scegli e il tuo nome utente. Spegne gli avvisi su quel soggiorno; Cosa non fa: Non trasmette nulla, non riceve la ricevuta e non rende verde la voce. Da questa schermata non si annulla
+Pulsante: «Segna come inviato manualmente»; Cosa fa: Registra che hai già caricato i dati sul portale, con la data che scegli e il tuo nome utente. Spegne gli avvisi su quel soggiorno e chiude il check-in online dell'ospite (il link non gli viene più mandato); Cosa non fa: Non trasmette nulla, non riceve la ricevuta e non rende verde la voce. Da questa schermata non si annulla
 Pulsante: «Carica la prova» (Report Alloggiati); Cosa fa: Archivia la ricevuta che hai scaricato dal portale; Cosa non fa: Non invia nulla
 Pulsante: «Gestisci con AI»; Cosa fa: Chiede i dati agli ospiti e chiude le partenze; Cosa non fa: Non invia nulla ad Alloggiati Web o all'ISTAT
 Pulsante: Check-in online dell'ospite; Cosa fa: L'ospite compila i suoi dati; Cosa non fa: Non comunica nulla alla Questura
@@ -2918,7 +2918,7 @@ Per sapere se la Questura ha ricevuto i dati serve la ricevuta del portale, disp
 #### Gli stati di una comunicazione
 
 - Da inviare: aspetta il giorno di arrivo.
-- Da inviare manualmente: è il giorno di arrivo (dalle 00:00 ora italiana) e la comunicazione è dovuta. Tocca a te, o al channel manager se gli ospiti non sono ancora passati da lui.
+- Da inviare manualmente: è il giorno di arrivo (dalle 00:00 ora italiana) e la comunicazione è dovuta. Tocca a te (se per l'immobile non è attivo l'invio diretto di CasaZen, CasaZen non la trasmette), o al channel manager se gli ospiti non sono ancora passati da lui.
 - Inviato manualmente: hai dichiarato tu l'invio, con la data. CasaZen non ha la ricevuta: conserva quella rilasciata dal portale.
 - Inviato (ricevuta): c'è la ricevuta vera. Con l'invio diretto compare anche il pulsante «Scarica ricevuta Questura».
 - Affidato al channel manager, in attesa della ricevuta: gli ospiti sono partiti verso il channel manager; mancano la ricevuta o l'esito.
@@ -2982,9 +2982,9 @@ Ti serve: il permesso di leggere i dati degli ospiti (per scaricare il file) e q
 3. Controlla le schede degli ospiti: ogni scheda mostra «Completo», «N dati mancanti» oppure «Codici da completare». Se manca qualcosa, vedi «Completare i dati degli ospiti».
 4. Premi «Scarica il file». È disponibile solo se i dati e i codici ufficiali sono completi e il soggiorno non supera 30 notti. Scaricarlo non invia nulla.
 5. Sul portale Alloggiati Web della Questura apri il menu File, scegli il file, premi «Elabora» e controlla le righe corrette, poi «Prosegui». Se usi il profilo «Gestione Appartamenti» (quello del portale per chi gestisce appartamenti), scegli prima l'appartamento sul portale. Con «Prosegui» la comunicazione è fatta: il portale accetta solo arrivi di oggi o di ieri.
-6. Torna in CasaZen e premi «Segna come inviato manualmente». Scegli la data di invio sul portale (da quella di arrivo a oggi), spunta la conferma e premi «Conferma invio».
+6. Torna in CasaZen e premi «Segna come inviato manualmente». Scegli la data di invio sul portale (da quella di arrivo a oggi), spunta la conferma e premi «Conferma invio». Prima di confermare la finestra ti dice che cosa succede: CasaZen smette di avvisarti su quel soggiorno e considera concluso il check-in online dell'ospite (il link non gli viene più mandato).
 7. Il giorno dopo scarica dal portale la ricevuta: è pronta dal giorno dopo l'invio e resta scaricabile per 30 giorni. Caricala in Report Alloggiati (vedi «Caricare una ricevuta o una prova»). Finché non lo fai la voce non diventa verde.
-Attenzione: premi «Segna come inviato manualmente» solo dopo aver caricato il file sul portale e controllato che le righe siano corrette. Da quel momento CasaZen non ti manda più avvisi su quel soggiorno e non controlla che l'invio sia avvenuto. Da questa schermata la dichiarazione non si annulla.
+Attenzione: premi «Segna come inviato manualmente» solo dopo aver caricato il file sul portale e controllato che le righe siano corrette. Da quel momento CasaZen non ti manda più avvisi su quel soggiorno, considera concluso il check-in online dell'ospite (il link non gli viene più mandato) e non controlla che l'invio sia avvenuto. Da questa schermata la dichiarazione non si annulla.
 Attenzione: il file contiene i dati dei documenti: conservalo con cura ed eliminalo dopo l'invio. Il limite «oggi o ieri» vale quando carichi il file sul portale: se lo carichi prima del giorno di arrivo o dopo il giorno successivo, il portale lo rifiuta.
 
 #### Completare i dati degli ospiti
@@ -3203,7 +3203,7 @@ Funzionalità: Avvisi sulle 24 ore del Ticino; Cosa fa: E-mail e notifiche prima
 
 #### CIN: cosa è e cosa controlla CasaZen
 
-Il CIN è obbligatorio per ogni alloggio in affitto breve in Italia: va esposto all'esterno dell'immobile e indicato in ogni annuncio, come ricorda la pagina stessa. Si chiede sul portale ufficiale del Ministero del Turismo (BDSR, la banca dati delle strutture ricettive): nella pagina Adempimenti › CIN il pulsante «Richiedi il CIN sul portale» (con la dicitura «BDSR — Ministero del Turismo») apre il sito in una nuova scheda; nel riquadro di avviso lo stesso pulsante si chiama «Richiedi il CIN su BDSR». CasaZen non rilascia il CIN e non lo chiede al posto tuo: chiedilo prima di attivare la casa (vedi «Chiedere il CIN»).
+Il CIN è obbligatorio per ogni alloggio in affitto breve in Italia: va esposto all'esterno dell'immobile e indicato in ogni annuncio, come ricorda la pagina stessa. Si chiede sul portale ufficiale del Ministero del Turismo (BDSR, la banca dati delle strutture ricettive): nella pagina Adempimenti › CIN il pulsante «Richiedi il CIN sul portale» (con la dicitura «BDSR — Ministero del Turismo») apre il sito in una nuova scheda; lo stesso pulsante, con lo stesso nome, compare anche nel riquadro di avviso sul CIN. CasaZen non rilascia il CIN e non lo chiede al posto tuo: chiedilo prima di attivare la casa (vedi «Chiedere il CIN»).
 Cosa fa CasaZen:
 - Controlla il formato. Il CIN valido è «IT» seguito da 6 cifre (provincia e comune), da 2 caratteri (categoria) e da 1 a 8 caratteri finali, per esempio IT015146C2ABCDEFGH. Spazi e trattini li toglie da sola e mette tutto in maiuscolo. Il vecchio formato «IT» + 15 cifre non è valido.
 - Non verifica che il CIN esista nella banca dati ufficiale. «Valido» vuol dire solo «nel formato corretto». La pagina scrive «Il CIN è nel formato corretto», non «registrato».
@@ -3457,7 +3457,7 @@ Nota: la tariffa registrata in CasaZen è un aiuto, non la fonte ufficiale. Nell
 
 #### Dove si configura
 
-- La tariffa del comune. Le tariffe ufficiali le mantiene CasaZen. Se il comune del tuo immobile non ne ha una, il passo «Imposta di soggiorno» dell'attivazione dice «Il comune di {città} non ha ancora una tariffa in CasaZen» e ti invita a verificare con il comune se l'imposta è dovuta e con quale tariffa. Quel passo è solo un avviso: puoi attivare comunque l'immobile. In Adempimenti la voce «Inserisci l'imposta di soggiorno del comune» resta finché la tariffa manca (non vale mai zero) e il suo pulsante «Inserisci l'imposta» ti porta alla scheda dell'immobile, che però non ha un campo per la tariffa. Dove la inserisci davvero: nel check-in guidato di una prenotazione, passo «Imposta di soggiorno», con «Inserisci l'imposta del tuo comune» (vedi «Inserire la tariffa del tuo comune»). Se per il tuo comune esiste già una tariffa ufficiale vale quella e non puoi inserirne un'altra.
+- La tariffa del comune. Le tariffe ufficiali le mantiene CasaZen. Se il comune del tuo immobile non ne ha una, il passo «Imposta di soggiorno» dell'attivazione dice «Il comune di {città} non ha ancora una tariffa in CasaZen» e ti invita a verificare con il comune se l'imposta è dovuta e con quale tariffa. Quel passo è solo un avviso: puoi attivare comunque l'immobile. In Adempimenti la voce «Inserisci l'imposta di soggiorno del comune» resta finché la tariffa manca (non vale mai zero) e non ha nessun pulsante, perché la scheda dell'immobile non ha un campo per la tariffa: il motivo che la accompagna ti dice di inserirla nel check-in guidato di un soggiorno, al passo «Imposta di soggiorno». Dove la inserisci: nel check-in guidato di una prenotazione, passo «Imposta di soggiorno», con «Inserisci l'imposta del tuo comune» (vedi «Inserire la tariffa del tuo comune»). Se per il tuo comune esiste già una tariffa ufficiale vale quella e non puoi inserirne un'altra.
 - Il comune dell'immobile si sceglie dall'elenco ufficiale dei comuni nei dati dell'immobile. Senza comune scelto dall'elenco non si applicano le regole della tua regione, l'imposta per codice e il controllo del CIN.
 - Esenzioni e come è stata riscossa si indicano per soggiorno (check-in e check-out guidati).
 
@@ -3638,7 +3638,7 @@ Verifica con il comune se l'imposta è dovuta e con quale tariffa. Puoi attivare
 
 #### Dove inserisco la tariffa del mio comune?
 
-Nel check-in guidato di una prenotazione, passo «Imposta di soggiorno», pulsante «Inserisci l'imposta del tuo comune». La voce «Inserisci l'imposta di soggiorno del comune» in Adempimenti ti porta alla scheda dell'immobile, che non ha il campo: usa il check-in guidato.
+Nel check-in guidato di una prenotazione, passo «Imposta di soggiorno», pulsante «Inserisci l'imposta del tuo comune». La voce «Inserisci l'imposta di soggiorno del comune» in Adempimenti non ha un pulsante, perché la scheda dell'immobile non ha il campo: il motivo che la accompagna ti manda al check-in guidato di un soggiorno.
 
 #### Quando devo dichiarare e versare l'imposta di soggiorno?
 
@@ -3691,7 +3691,7 @@ Sezione: Incassi e fisco · Si trova in: Affitti brevi › Incassi · Per: Gesto
 
 In Affitti brevi › Incassi trovi tutti i pagamenti delle tue prenotazioni: quelli arrivati, quelli ancora da incassare e i rimborsi. Gli ospiti del tuo sito pagano con carta tramite Stripe, e i soldi vanno direttamente sul tuo conto Stripe: CasaZen non li trattiene. I pagamenti ricevuti fuori da CasaZen (contanti, bonifico) li registri tu con «Registra incasso».
 Per far pagare online gli ospiti serve collegare Stripe in Impostazioni › Stripe Connect (la pagina si chiama «Incassi online»). Finché lo stato non è «Attivo», il tuo sito non prende prenotazioni, nemmeno con «Paga in struttura»: l'ospite legge «Le prenotazioni online sono in pausa» e può solo scriverti. Cosa serve e come si fa: Collegare Stripe per ricevere i pagamenti online.
-Attenzione: se annulli tu una prenotazione pagata con carta, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, qualunque importo scriva tu, e il rimborso non si può ritirare. Quando annulli tu non esiste un rimborso parziale: vedi Annullare una prenotazione e rimborsare chi ha pagato.
+Attenzione: se annulli tu una prenotazione pagata con carta, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, e l'annullamento e il rimborso non si possono annullare né ritirare. Quando annulli tu non esiste un rimborso parziale: vedi Annullare una prenotazione e rimborsare chi ha pagato.
 
 ### Funzionalità
 
@@ -3762,7 +3762,7 @@ Cosa tenere pronto. Le domande le decide Stripe, non CasaZen, e possono cambiare
 I tre stati, che vedi in Impostazioni › Stripe Connect:
 - Non collegato: nessun account. La pagina mostra «Sito prenotazioni non ancora attivo» e il pulsante «Collega Stripe».
 - In verifica: l'account esiste ma Stripe non ha ancora abilitato i pagamenti con carta: manca qualche dato, o Stripe sta ancora controllando. Se Stripe chiede altro vedi «Verifica incompleta» e il pulsante «Completa la verifica».
-- Attivo: Stripe ha abilitato i pagamenti con carta. Vedi il messaggio «Il tuo account può accettare pagamenti. I fondi vengono accreditati direttamente sul tuo conto Stripe — CasaZen non trattiene i tuoi incassi».
+- Attivo: Stripe ha abilitato i pagamenti con carta. Vedi il messaggio «Stripe ha abilitato i pagamenti con carta sul tuo account: gli ospiti possono pagare. I fondi vengono accreditati direttamente sul tuo conto Stripe — CasaZen non trattiene i tuoi incassi». «Attivo» riguarda i pagamenti con carta: se Stripe non ha ancora abilitato anche i bonifici verso il tuo conto bancario, sotto compare una seconda riga, «I bonifici verso il tuo conto bancario non sono ancora abilitati su Stripe: finché non lo sono, i soldi restano nel saldo Stripe. Controlla su Stripe.». Lo stato resta «Attivo».
 Cosa succede al sito finché non è «Attivo». Al posto del modulo di prenotazione l'ospite legge «Le prenotazioni online sono in pausa» (con il tuo nome e un pulsante per scriverti). Non può prenotare in nessun modo, nemmeno con «Paga in struttura»: anche quella richiesta ha bisogno di Stripe «Attivo».
 Il paese dell'account Stripe viene scelto da CasaZen in base ai dati della tua organizzazione (il paese dei documenti fiscali o della fatturazione). Se l'account è già stato aperto e non hai ancora inviato nessun dato a Stripe, CasaZen può sostituirlo con uno del paese giusto.
 Prova o reale? Se nessuno ti ha detto che lavori su una versione di prova di CasaZen, lavori su quella reale: i pagamenti, i rimborsi e i bonifici sono veri. Solo nella versione di prova Stripe è in modalità di prova: i pagamenti sono finti, non muovono soldi veri e si fanno con le carte di prova di Stripe (per esempio 4242 4242 4242 4242).
@@ -3785,8 +3785,8 @@ Ogni immobile ha una politica di cancellazione scelta tra le cinque di CasaZen. 
 - Non rimborsabile: nessun rimborso del prezzo del soggiorno, in nessun momento.
 In tutte l'imposta di soggiorno, se pagata, torna sempre per intero. Il «prezzo del soggiorno» è alloggio più pulizie. Le ore si contano fino all'inizio del giorno di check-in (ora italiana). Se hai personalizzato il rimborso dell'immobile (vedi sotto), valgono i tuoi numeri.
 - Se l'ospite annulla da solo (con il link ricevuto o da «Le mie prenotazioni»): riceve la percentuale della politica applicata al prezzo del soggiorno più tutta l'imposta di soggiorno, mai più di quello che può essere rimborsato. Se l'immobile non ha una politica, gli viene restituita solo l'imposta di soggiorno.
-- Se annulli tu la prenotazione, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta (meno quanto è già stato rimborsato), qualunque sia la politica e qualunque importo tu scriva: non puoi trattenere una parte. Nella finestra vedi solo «Rimborso totale» con l'importo; la frase sulla regola che si applica è solo informativa. Per i pagamenti in contanti o bonifico il rimborso resta a te.
-- Se non scegli nessuna politica: il passo dell'immobile scrive che «il rimborso totale vale fino a 7 giorni prima dell'arrivo; dopo, decidi tu caso per caso», ma non è quello che fa CasaZen quando l'ospite annulla da solo: gli restituisce soltanto l'imposta di soggiorno, e il sito non promette nessuna cancellazione gratuita. I 7 giorni servono solo a decidere il giorno dell'addebito di «Paga alla scadenza». Scegli sempre una politica.
+- Se annulli tu la prenotazione, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta (meno quanto è già stato rimborsato), qualunque sia la politica: non puoi trattenere una parte. Nella finestra vedi «Rimborso totale» con l'importo e la frase che dice che non puoi rimborsare meno: non c'è nessun importo da scegliere. Per i pagamenti in contanti o bonifico il rimborso resta a te.
+- Se non scegli nessuna politica: il passo dell'immobile lo dice chiaro: un ospite che cancella da solo riceve indietro soltanto l'imposta di soggiorno già pagata (non il prezzo del soggiorno) e il sito non promette nessuna cancellazione gratuita. Senza politica, il giorno dell'addebito di «Paga alla scadenza» è 7 giorni prima dell'arrivo. Scegli sempre una politica.
 - Personalizzare il rimborso: nel modulo dell'immobile puoi cambiare le ore del rimborso totale, le ore e la percentuale del rimborso parziale, oppure segnare il soggiorno come «Non rimborsabile». Vale per i soggiorni sotto le 28 notti; dalle 28 notti in su resta la politica di CasaZen senza modifiche.
 - Il sito di prenotazione scrive «Cancellazione gratuita fino al…» solo se la politica prevede davvero un rimborso totale fino a quel giorno.
 
@@ -3901,8 +3901,8 @@ Se vedi «Questo pagamento non è passato da Stripe: il rimborso va fatto fuori 
 Ti serve: il permesso di modificare le prenotazioni e, se ci sono pagamenti con carta o un pagamento non completato, anche quello di modificare i pagamenti.
 Attenzione: quando annulli tu, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, qualunque sia la politica di cancellazione. Non si può rimborsare meno da questa finestra. L'annullamento e il rimborso non si possono annullare né ritirare. Se non vuoi rimborsare tutto, non confermare.
 1. Apri la prenotazione e premi «Annulla prenotazione».
-2. CasaZen calcola pagamenti e rimborsi e ti mostra: «Pagato con Stripe», «Già rimborsato», «Rimborsi in attesa di Stripe», «Rimborsabile ora». Se una parte è stata pagata in contanti o bonifico, vedi un avviso: il rimborso di quella parte va gestito a parte, da te.
-3. Leggi la riga sulla regola che si applica (cancellazione gratuita mostrata all'ospite, condizioni della politica o nessuna regola): è solo informativa, perché il rimborso è comunque totale. Se qualcosa è stato pagato con carta, sotto vedi «Rimborso totale» con l'importo che verrà restituito; se non è stato pagato nulla con carta vedi «Nessun rimborso richiesto» dopo l'annullamento.
+2. CasaZen calcola pagamenti e rimborsi e, se c'è qualcosa da rimborsare sulla carta, ti mostra: «Pagato con Stripe», «Già rimborsato» e «Rimborsi in attesa di Stripe» (quando ci sono), «Rimborsabile ora». Se una parte è stata pagata in contanti o bonifico, vedi un avviso: il rimborso di quella parte va gestito a parte, da te.
+3. Sotto vedi «Rimborso totale» con l'importo che verrà restituito e due frasi: quando annulli tu, l'ospite riceve sempre tutto ciò che ha pagato con carta, qualunque sia la politica di cancellazione, e non puoi rimborsare meno; l'annullamento e il rimborso non si possono annullare né ritirare. Non c'è nessun importo da scegliere. Se non c'è niente da rimborsare sulla carta questo blocco non compare e, dopo l'annullamento, vedi «Nessun rimborso richiesto».
 4. Se vuoi, scrivi il «Motivo (visibile solo a te)».
 5. Premi «Annulla prenotazione» per confermare, oppure «Non annullare» per lasciare tutto com'era.
 Cosa succede dopo: le date tornano libere, il pagamento non completato dall'ospite viene annullato su Stripe (l'ospite non potrà più pagarlo, e una carta salvata per «Paga alla scadenza» non verrà più addebitata), parte il rimborso su Stripe e l'ospite riceve una e-mail di annullamento con il rimborso, senza il motivo. Se Stripe rifiuta il rimborso, la prenotazione resta annullata: lo vedi «Non riuscito» nel pagamento e puoi riprovare da lì. Se in quel momento un pagamento dell'ospite sta per concludersi, CasaZen ferma l'annullamento: riprova dopo qualche istante, quando il pagamento risulta registrato.
@@ -3914,7 +3914,7 @@ Ti serve: il permesso di modificare gli immobili.
 1. Apri Affitti brevi › Immobili e crea o modifica l'immobile.
 2. Nel passo «Quali regole valgono in casa?» cerca il blocco «Se l'ospite cancella» e scegli una delle politiche. Sotto ognuna leggi quanto rimborsi e quando.
 3. Salva.
-Se non scegli nessuna politica il passo scrive che il rimborso totale vale fino a 7 giorni prima dell'arrivo: non fidartene (vedi «Politiche di cancellazione e importi»). Per avere regole chiare e un rimborso automatico per gli ospiti che annullano da soli, scegli sempre una politica. Per i dettagli dell'immobile vedi Immobili.
+Se non scegli nessuna politica il passo lo dice chiaro: un ospite che cancella da solo riceve indietro soltanto l'imposta di soggiorno già pagata (non il prezzo del soggiorno) e il sito non promette nessuna cancellazione gratuita (vedi «Politiche di cancellazione e importi»). Per avere regole chiare e un rimborso automatico per gli ospiti che annullano da soli, scegli sempre una politica. Per i dettagli dell'immobile vedi Immobili.
 
 #### Personalizzare il rimborso di un immobile
 
@@ -4017,7 +4017,7 @@ Compare solo sui pagamenti con carta, già incassati o rimborsati in parte, e so
 
 #### Se annullo io una prenotazione, posso rimborsare solo una parte?
 
-No. Quando annulli tu, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, anche se scrivi un importo più basso o se la politica prevedrebbe meno. Il rimborso non si può ritirare. Per restituire una cifra a un ospite senza annullare la prenotazione usa «Rimborsa» dalla pagina del pagamento.
+No. Quando annulli tu, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, anche se la politica prevedrebbe meno: nella finestra non c'è nessun importo da scrivere. L'annullamento e il rimborso non si possono annullare né ritirare. Per restituire una cifra a un ospite senza annullare la prenotazione usa «Rimborsa» dalla pagina del pagamento.
 
 #### Cosa succede se l'addebito di «Paga alla scadenza» non riesce?
 
@@ -4041,7 +4041,7 @@ No. Il «Deposito cauzionale» è solo un dato della scheda dell'immobile: non v
 
 #### Cosa succede se non scelgo una politica di cancellazione?
 
-Se l'ospite annulla da solo, gli viene restituita solo l'imposta di soggiorno, anche se il passo dell'immobile parla di 7 giorni. Se annulli tu, il rimborso è comunque totale. Conviene scegliere sempre una politica.
+Se l'ospite annulla da solo, gli viene restituita solo l'imposta di soggiorno già pagata e il sito non promette nessuna cancellazione gratuita. Se annulli tu, il rimborso è comunque totale. Conviene scegliere sempre una politica.
 
 #### Quanto dura un rimborso?
 
@@ -5127,7 +5127,7 @@ Ti serve: il permesso di creare i contratti; una casa in affitto lungo con APE e
 2. Alla domanda «Che contratto vuoi fare?» scegli «Canone libero (4+4)» o «Transitorio» (se non sai quale, leggi «I tipi di contratto» qui sopra).
 3. Alla domanda «Come vuoi procedere?» scegli «Lo preparo con CasaZen» e premi «Continua: scegli la casa».
 4. Scegli la casa (se non c'è, «Aggiungi un nuovo immobile»). Leggi «Cosa serve per il contratto»: APE e dati catastali devono esserci.
-5. Passo Parti: compila locatore e conduttore. Il codice fiscale è controllato e due persone non possono avere lo stesso. Scrivi la tua e-mail di locatore: ci arrivano i promemoria. Per il conduttore l'e-mail serve per il link di pagamento, i solleciti e l'area del conduttore (Area conduttore e richieste di manutenzione): scrivila uguale a quella che userà per entrare; il telefono serve per il promemoria WhatsApp. Premi «Salva e vai alle condizioni».
+5. Passo Parti: compila locatore e conduttore. Il codice fiscale è controllato e due persone non possono avere lo stesso. Scrivi la tua e-mail di locatore: ci arrivano i promemoria. Per il conduttore l'e-mail è l'indirizzo con cui apre la sua area (Area conduttore e richieste di manutenzione; deve essere un indirizzo verificato) e a cui CasaZen manda il link di pagamento e i solleciti: scrivila uguale a quella che userà per entrare. Finché il contratto è una bozza il conduttore non lo vede nella sua area: compare quando parte la firma elettronica o quando carichi la copia firmata. Il telefono serve per il promemoria WhatsApp. Premi «Salva e vai alle condizioni».
 6. Passo Condizioni: scegli il regime fiscale, scrivi il canone mensile e il deposito. Per il transitorio compila l'esigenza. Facoltativo: nel riquadro «Spese condominiali» premi «Calcola l'importo» (da consuntivo e preventivo) o scrivi l'«Importo per rata», poi «Usa questo importo»: è una proposta, non un pagamento. Premi «Salva e vai alle date».
 7. Passo Date: scegli la «Data di inizio» (per il transitorio anche «Ultimo giorno del contratto»). Leggi «In parole semplici». Premi «Salva e vai al controllo».
 8. Passo Revisione: leggi «Il contratto in parole». Sistema ciò che è in «Da sistemare» con «Vai al passo» e leggi «Da controllare» e «Da sapere». Se vedi «Il modello di contratto di CasaZen è ancora una bozza…», dopo non potrai scaricare il contratto da firmare: leggi «Il modello di contratto: approvato o ancora bozza». Quando vedi «Tutto a posto: puoi confermare la revisione», premi «Conferma e vai alla firma». Compare «Revisione confermata» con «Annulla» per ripensarci.
@@ -5480,7 +5480,7 @@ Se non hai un indirizzo e-mail per nessun conduttore, il link non si può mandar
 
 #### Pagare con bonifico: l'IBAN lo comunichi tu
 
-CasaZen non ha un campo dove scrivere il tuo IBAN per l'inquilino e nell'area del conduttore gli estremi del bonifico non compaiono («Gli estremi del bonifico non sono ancora disponibili.»). Se vuoi essere pagato con bonifico, comunica l'IBAN al conduttore fuori da CasaZen: per esempio scrivendolo a mano nella riga in bianco del contratto stampato, oppure nel messaggio di un sollecito. Il conduttore può poi premere «Ho effettuato il bonifico» nella sua area: ti arriva la dichiarazione, ma la rata resta «Da incassare» finché non registri tu l'incasso (o importi l'estratto conto).
+CasaZen non ha un campo dove scrivere il tuo IBAN per l'inquilino e nell'area del conduttore gli estremi del bonifico non compaiono (il conduttore legge «CasaZen non mostra qui l'IBAN: usa quello che ti ha dato il gestore.»). Se vuoi essere pagato con bonifico, comunica l'IBAN al conduttore fuori da CasaZen: per esempio scrivendolo a mano nella riga in bianco del contratto stampato, oppure nel messaggio di un sollecito. Il conduttore può poi premere «Ho effettuato il bonifico» nella sua area: ti arriva la dichiarazione, ma la rata resta «Da incassare» finché non registri tu l'incasso (o importi l'estratto conto).
 
 #### Solleciti
 
@@ -5719,7 +5719,7 @@ Sezione: Agenzie e proprietari · Si trova in: Amministrazione › Proprietari �
 ### In breve
 
 Sei un proprietario invitato da un'agenzia? Vai a Entrare nel portale per la prima volta (per il proprietario): il resto della pagina è per l'agenzia. Il portale si apre dal browser, anche del telefono. Il link dell'invito si usa una volta sola: salva tra i preferiti l'indirizzo del portale.
-Chi gestisce gli immobili di altre persone usa il piano Agency (in questo manuale si chiama sempre così; qualche schermata dice «piano Agenzia»: è lo stesso). Ogni immobile ha uno o più proprietari, ciascuno con la sua quota e il suo mandato (la provvigione dell'agenzia). Con questi dati CasaZen prepara ogni mese il rendiconto di ogni proprietario. Il proprietario lo trova nel suo portale, dove può anche leggere i documenti, guardare il calendario, chiedere un soggiorno e scrivere all'agenzia.
+Chi gestisce gli immobili di altre persone usa il piano Agency (così si chiama nel manuale e nell'app). Ogni immobile ha uno o più proprietari, ciascuno con la sua quota e il suo mandato (la provvigione dell'agenzia). Con questi dati CasaZen prepara ogni mese il rendiconto di ogni proprietario. Il proprietario lo trova nel suo portale, dove può anche leggere i documenti, guardare il calendario, chiedere un soggiorno e scrivere all'agenzia.
 In Amministrazione › Proprietari vedi l'elenco e, per ognuno, apri i Dati finanziari. Questa parte è su attivazione (Cosa significa «Su attivazione»?): la accende CasaZen, per ambiente. Serve il piano Agency (si guarda in Amministrazione › Fatturazione) e il ruolo di titolare o di amministratore dell'organizzazione. Come si chiude il mese e come si pagano i proprietari lo trovi in Chiusura mensile, rendiconti, fatture, ritenute e bonifici ai proprietari; ruoli e piani sono spiegati in Account, persone, ruoli e piano.
 
 ### Funzionalità
@@ -5743,13 +5743,13 @@ Funzionalità: Messaggi, documenti e richieste di soggiorno dei proprietari, lat
 
 #### Chi ha il piano Agency e cosa sblocca
 
-Non è un ruolo: è il piano Agency dell'organizzazione, che si paga per camera. Nell'elenco dei piani si chiama «Agency»; il messaggio che compare a chi non lo ha dice «Serve il piano Agenzia»: è lo stesso piano. Lo scegli quando crei l'organizzazione con il profilo «Agenzia / Property manager» (Per iniziare con CasaZen): chi la crea ne è titolare e le altre persone entrano solo su invito. Il piano si guarda in Amministrazione › Fatturazione; piani, ruoli e persone sono in Account, persone, ruoli e piano. Come si passa al piano Agency da un'organizzazione già esistente il manuale non lo descrive: se ti serve, scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»).
+Non è un ruolo: è il piano Agency dell'organizzazione, che si paga per camera. Nell'elenco dei piani si chiama «Agency»; il messaggio che compare a chi non lo ha dice «Serve il piano Agency». Lo scegli quando crei l'organizzazione con il profilo «Agenzia / Property manager» (Per iniziare con CasaZen): chi la crea ne è titolare e le altre persone entrano solo su invito. Il piano si guarda in Amministrazione › Fatturazione; piani, ruoli e persone sono in Account, persone, ruoli e piano. Come si passa al piano Agency da un'organizzazione già esistente il manuale non lo descrive: se ti serve, scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»).
 Questa parte è su attivazione: la accende CasaZen per ambiente (Cosa significa «Su attivazione»?). Quando è accesa, il titolare e gli amministratori trovano nell'area Amministrazione queste voci:
 - Proprietari (questa pagina);
 - Chiusura mensile, con le schede «Rendiconti», «Fatture ai proprietari», «Autofatture (TD17)», «Ritenute d'acconto», «Bonifici proprietari» e «Commissioni dei canali» (vedi Chiusura mensile, rendiconti, fatture, ritenute e bonifici ai proprietari).
 Cosa vedi se qualcosa manca:
 - Se la funzione non è accesa sul tuo ambiente, o se non sei titolare o amministratore, le due voci non ci sono nel menu.
-- Se la funzione è accesa e sei titolare o amministratore ma l'organizzazione non ha il piano Agency, le voci ci sono e, aprendole, vedi «Serve il piano Agenzia» con il pulsante «Vai al piano», che porta a Amministrazione › Fatturazione.
+- Se la funzione è accesa e sei titolare o amministratore ma l'organizzazione non ha il piano Agency, le voci ci sono e, aprendole, vedi «Serve il piano Agency» con il pulsante «Vai al piano», che porta a Amministrazione › Fatturazione.
 - Se apri una di queste pagine con un altro ruolo (gestore, collaboratore, contabile…), vedi «Serve l'amministratore dell'organizzazione».
 - «Questa pagina non è disponibile per il tuo accesso» vuol dire che il server ha rifiutato la pagina (ruolo o piano cambiati da poco): esci e rientra, o chiedi a un amministratore.
 
@@ -5812,7 +5812,7 @@ La regola vale in base al giorno di partenza (check-out) del soggiorno. I mesi g
 Ti serve: essere titolare o amministratore dell'organizzazione.
 1. Apri Amministrazione › Fatturazione e, in «Il tuo piano», leggi il nome del piano. Se è «Agency», il piano c'è.
 2. Apri il menu dell'area Amministrazione e guarda se ci sono Proprietari e Chiusura mensile.
-3. Se le voci ci sono ma, aprendole, vedi «Serve il piano Agenzia», l'organizzazione non ha il piano Agency. Come passarci da un'organizzazione già esistente il manuale non lo descrive: scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»).
+3. Se le voci ci sono ma, aprendole, vedi «Serve il piano Agency», l'organizzazione non ha il piano Agency. Come passarci da un'organizzazione già esistente il manuale non lo descrive: scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»).
 4. Se il piano è Agency ma le voci non ci sono, la funzione non è ancora accesa sul tuo ambiente (o non sei titolare né amministratore): scrivi all'assistenza nello stesso modo e chiedi l'attivazione.
 
 #### Vedere a che punto è l'attivazione dei proprietari
@@ -6029,7 +6029,7 @@ Un proprietario può avere al massimo 10 contatti. Un invito scaduto conta ancor
 
 #### Perché non vedo la voce «Proprietari»?
 
-Perché la funzione non è ancora accesa sul tuo ambiente, oppure perché non sei titolare o amministratore: in entrambi i casi la voce non è nel menu. Se la voce c'è ma aprendola vedi «Serve il piano Agenzia», l'organizzazione non ha il piano Agency: controllalo in Amministrazione › Fatturazione. In tutti i casi puoi scrivere all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»).
+Perché la funzione non è ancora accesa sul tuo ambiente, oppure perché non sei titolare o amministratore: in entrambi i casi la voce non è nel menu. Se la voce c'è ma aprendola vedi «Serve il piano Agency», l'organizzazione non ha il piano Agency: controllalo in Amministrazione › Fatturazione. In tutti i casi puoi scrivere all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»).
 
 #### Come aggiungo un proprietario quando ne ho già inseriti molti?
 
@@ -6085,7 +6085,7 @@ Sono le percentuali che un portale trattiene quando la sua prenotazione non port
 
 ### Glossario
 
-- Piano Agency (detto anche «piano Agenzia»): il piano dell'organizzazione, a pagamento per camera, che sblocca i proprietari, i rendiconti, le ritenute e i bonifici. Non è un ruolo.
+- Piano Agency: il piano dell'organizzazione, a pagamento per camera, che sblocca i proprietari, i rendiconti, le ritenute e i bonifici. Non è un ruolo.
 - Agenzia / Property manager: chi gestisce immobili per conto di altri proprietari. Come profilo della registrazione è la scelta «Agenzia / Property manager»; come ruolo del team «Property manager» è un'altra cosa (vedi Account, persone, ruoli e piano). «PM», nella «Fattura del PM», è l'agenzia.
 - Proprietario: il cliente dell'agenzia a cui appartiene un immobile. Non è il «Proprietario privato» della registrazione, cioè chi gestisce da solo le case sue.
 - Immobile, struttura, unità: in queste pagine sono la casa o l'appartamento che l'agenzia gestisce; la «camera» è l'unità su cui si calcola il piano Agency.
@@ -6222,7 +6222,7 @@ Se il saldo non torna, o è negativo, si può chiudere solo con un motivo scritt
 2. La pagina mostra il mese scorso. Usa «Mese precedente» e «Mese successivo» per cambiare, e «Torna a» (il mese consigliato) per tornare.
 3. Leggi il riquadro in alto, «Chiusura di» e il mese: dice quanti rendiconti sono senza anomalie (per esempio «80% pronti: 8 su 10») e «Tutto in ordine: puoi andare avanti» oppure «N anomalie da risolvere prima di chiudere».
 4. Se nel mese non c'è niente vedi «Nessun rendiconto da preparare»; se tutto è chiuso, «… è chiuso».
-Se vedi «Serve il piano Agenzia» (è il piano Agency) o «Serve l'amministratore dell'organizzazione», la tua organizzazione o il tuo ruolo non permettono questa pagina (Capire se la tua organizzazione ha il piano Agency).
+Se vedi «Serve il piano Agency» o «Serve l'amministratore dell'organizzazione», la tua organizzazione o il tuo ruolo non permettono questa pagina (Capire se la tua organizzazione ha il piano Agency).
 Prima di chiudere il primo mese tieni pronto: le commissioni dei portali (se le prenotazioni non le riportano), i cambi (se i proprietari sono pagati in valute diverse), il mandato e i dati finanziari di ogni proprietario validi dal primo mese da chiudere, le quote di ogni immobile al 100% e una regola fiscale approvata dal commercialista. Se manca qualcosa lo scopri comunque dalle anomalie dopo «Controlla il mese».
 
 #### Controllare il mese e risolvere le anomalie
@@ -6669,7 +6669,7 @@ Commissioni. Come gestore non vedi nessun importo di commissione né sulle sched
 #### Fornitori fidati
 
 I fornitori fidati sono i professionisti con cui lavori già: li inviti tu e, accettato l'invito, compaiono tra le proposte quando richiedi un intervento, accanto a quelli del Marketplace. Puoi assegnarli a tutte le tue case o solo ad alcune. Sotto il nome di ogni fornitore leggi da dove arriva: «Fornitore di fiducia · Commissione all'host» (lo hai invitato tu) oppure «Fornitore marketplace · Commissione a CasaZen».
-Su attivazione. Questa voce compare solo se l'organizzazione è sul piano Agenzia e solo a chi amministra l'organizzazione (Cosa significa «Su attivazione»?). Se non la vedi, chiedi l'attivazione all'assistenza di CasaZen: in alto premi Guida e scegli «Scrivi all'assistenza» (Assistenza: come scrivere a CasaZen).
+Su attivazione. Questa voce compare solo se l'organizzazione è sul piano Agency e solo a chi amministra l'organizzazione (Cosa significa «Su attivazione»?). Se non la vedi, chiedi l'attivazione all'assistenza di CasaZen: in alto premi Guida e scegli «Scrivi all'assistenza» (Assistenza: come scrivere a CasaZen).
 
 #### Link di pagamento per e-mail
 
@@ -6729,7 +6729,7 @@ La richiesta parte solo quando premi «Invia la richiesta» all'ultimo passo. Fi
    - scegli il servizio del fornitore, oppure «Altro lavoro» se non è nell'elenco;
    - scegli il giorno (non può essere già passato);
    - scegli uno degli orari liberi (sono mostrati in base all'agenda del fornitore). Se quel giorno non ce ne sono, CasaZen suggerisce i giorni vicini. Per «Altro lavoro» scrivi tu l'ora di inizio e scegli la durata (da 5 minuti a 24 ore);
-   - indica l'urgenza: «Normale» (si può programmare), «Alta» (serve in tempi brevi) o «Emergenza» (serve subito);
+   - indica l'urgenza: «Normale» (si può programmare), «Alta» (serve in tempi brevi) o «Emergenza» (serve subito). Quando scegli «Emergenza» compare l'avviso «CasaZen non è un pronto intervento e non chiama nessuno: con un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi.»;
    - scrivi le note (facoltative, fino a 1000 caratteri): cosa deve fare il fornitore. Non scrivere dati degli ospiti;
    - se vuoi, collega un soggiorno («Collega a un soggiorno»; la scelta predefinita è «Nessun soggiorno: solo la casa»).
 7. Passo «Riepilogo» («Controlla e invia»): controlla le risposte (ognuna ha «Modifica»), il prezzo («Stima…», «Su preventivo» o «Da concordare con il fornitore») e il riquadro «Cosa vede il fornitore».
@@ -6822,13 +6822,13 @@ Cosa succede: annullare è sempre gratuito; il fornitore riceve subito un avviso
 #### Invitare un fornitore di fiducia
 
 Su attivazione e solo per l'amministratore (Cosa significa «Su attivazione»?).
-Ti serve: il piano Agenzia, l'e-mail del fornitore (la stessa con cui si registrerà) e, se vuoi, le case a cui assegnarlo.
+Ti serve: il piano Agency, l'e-mail del fornitore (la stessa con cui si registrerà) e, se vuoi, le case a cui assegnarlo.
 1. Apri Affitti brevi › Immobili › Fornitori fidati e premi «Invita fornitore».
 2. Scrivi l'«Email fornitore»: dev'essere quella con cui il fornitore si registrerà.
 3. Scegli le «Proprietà assegnate». Se non ne scegli nessuna, il fornitore lavora su tutte le tue proprietà.
-4. Premi «Invia invito». Compare «Richiesta registrata. Dopo la verifica il fornitore riceverà il link per accettare».
+4. Premi «Invia invito». Compare «Invito inviato: il fornitore riceve un'e-mail con il link per accettare.»
 5. Il rapporto inizia quando il titolare del profilo accetta: da quel momento il fornitore compare nell'elenco e tra le proposte delle tue richieste.
-Il messaggio dice «Dopo la verifica il fornitore riceverà il link»: di norma l'e-mail con il link parte subito. Se dopo qualche minuto il fornitore non l'ha ricevuta, controlla che l'indirizzo sia giusto e la cartella dello spam. Il fornitore apre il link, crea l'account (o accede) con quella e-mail e accetta: i suoi passi sono in Registrarsi con un invito. Per scegliere un fornitore dal Marketplace usa invece «Cerca fornitori nel marketplace CasaZen».
+L'e-mail con il link parte subito. Se dopo qualche minuto il fornitore non l'ha ricevuta, controlla che l'indirizzo sia giusto e la cartella dello spam. Il fornitore apre il link, crea l'account (o accede) con quella e-mail e accetta: i suoi passi sono in Registrarsi con un invito. Per scegliere un fornitore dal Marketplace usa invece «Cerca fornitori nel marketplace CasaZen».
 
 #### Rimuovere un fornitore di fiducia
 
@@ -7655,7 +7655,7 @@ Sezione: Sito e portali · Si trova in: Area conduttore (pagina dell'inquilino) 
 
 ### In breve
 
-L'area conduttore è la pagina riservata dell'inquilino. Entra con un suo account CasaZen e vede solo i suoi contratti: le scadenze con gli importi da pagare, i documenti che il gestore condivide e le richieste di manutenzione che può mandare. Il proprietario (o l'agenzia) le riceve nel contratto e nella scheda della casa, le approva o rifiuta e, se approvate, le paga. L'inquilino non entra mai nell'organizzazione del proprietario e non vede altri contratti.
+L'area conduttore è la pagina riservata dell'inquilino. Entra con un suo account CasaZen e vede solo i suoi contratti (non le bozze): le scadenze con gli importi da pagare, i documenti che il gestore condivide e le richieste di manutenzione che può mandare. Il proprietario (o l'agenzia) le riceve nel contratto e nella scheda della casa, le approva o rifiuta e, se approvate, le paga. L'inquilino non entra mai nell'organizzazione del proprietario e non vede altri contratti.
 Nessun invito parte da solo: l'area ha un indirizzo proprio e sei tu (o l'agenzia) a comunicarlo all'inquilino. Per entrare l'inquilino deve usare un account con la stessa e-mail scritta nel contratto.
 
 ### Funzionalità
@@ -7681,7 +7681,8 @@ L'area conduttore non ha un invito separato e non c'è nessun link nel menu dell
 - usa un account CasaZen con l'e-mail verificata. Se non ha un account lo crea dalla pagina di accesso: la verifica avviene con un messaggio che riceve per e-mail;
 - quell'e-mail deve essere la stessa scritta nel contratto per quel conduttore (passo «Parti», senza distinguere maiuscole e minuscole), e il conduttore deve essere ancora attivo nel contratto (non anonimizzato);
 - se l'e-mail dell'account è verificata ma non coincide, il contratto non compare: l'inquilino vede «Non hai un contratto attivo da consultare. Il contratto compare qui quando il gestore ti aggiunge.»;
-- se l'e-mail dell'account non è ancora verificata, l'area non si carica («Non riesco a caricare la tua area.»): deve aprire il messaggio di conferma e riprovare.
+- se l'e-mail dell'account non è ancora verificata, l'area non si carica: l'inquilino vede «Non riesco a caricare la tua area.» e sotto «Per aprire l'area conduttore devi prima confermare il tuo indirizzo e-mail con il messaggio di verifica. Dopo averlo fatto, ricarica la pagina.»;
+- se il contratto è ancora una bozza, l'area non lo mostra e non si può aprire: l'inquilino vede lo stesso «Non hai un contratto attivo da consultare». Un contratto compare appena non è più una bozza, cioè quando parte la firma elettronica o quando viene caricata la copia firmata; un contratto scaricato da firmare a mano resta bozza finché non carichi la copia firmata. Restano visibili anche i contratti in attesa di firma o firmati in parte.
 L'inquilino non deve usare «Registrati su CasaZen» dalla pagina iniziale: è la registrazione di chi gestisce case, e porta alla scelta del profilo e del piano. Deve entrare sempre dall'indirizzo dell'area.
 Per questo, da proprietario, la cosa più importante è scrivere l'e-mail giusta del conduttore quando fai il contratto. L'inquilino non diventa mai un membro della tua organizzazione e ogni richiesta è controllata contratto per contratto: un conduttore non può vedere contratti degli altri.
 Il link per pagare un singolo canone arriva invece per e-mail (richiesta di pagamento o sollecito): si apre su una pagina pubblica e non richiede l'area.
@@ -7704,7 +7705,7 @@ Una scadenza è la somma di più voci già sommate: il canone, l'acconto condomi
 
 Una scadenza risulta pagata solo quando il pagamento è confermato, mai in base a una semplice dichiarazione.
 1. Con la carta, dal link dell'e-mail (pagina «Pagamento del canone»): vede casa, periodo, scadenza e importo, preme «Paga [importo]» e paga con Stripe. Il denaro va direttamente sul conto Stripe del locatore. Se il link non è più valido o è stato sostituito dal gestore con uno più recente, vede «Il link di pagamento non è valido…». Se il pagamento non va a buon fine può riprovare, anche con un altro metodo.
-2. Con bonifico: gli estremi per il bonifico non compaiono ancora nell'area: nella scadenza il conduttore legge «Gli estremi del bonifico non sono ancora disponibili.». CasaZen non ha un campo dove scrivere il tuo IBAN per l'inquilino: l'IBAN è quello che hai concordato con lui, per esempio scritto a mano nella riga in bianco del contratto stampato, oppure da te comunicato nel messaggio del sollecito. Il conduttore fa il bonifico dalla sua banca e poi preme «Ho effettuato il bonifico» (importo, data, riferimento, nota e ricevuta facoltativi). La dichiarazione avvisa il gestore ma non segna la scadenza come pagata: il gestore la verifica e registra l'incasso. Una dichiarazione può essere «Inviata», «Verificata», «Respinta» o «Sostituita»; se è respinta se ne può mandare un'altra.
+2. Con bonifico: gli estremi per il bonifico non compaiono nell'area: nella scadenza, sotto «Bonifico manuale», il conduttore legge «Se non colleghi un conto, paga con bonifico come ti ha indicato il gestore e poi avvisalo.» e «CasaZen non mostra qui l'IBAN: usa quello che ti ha dato il gestore.». CasaZen non ha un campo dove scrivere il tuo IBAN per l'inquilino: l'IBAN è quello che hai concordato con lui, per esempio scritto a mano nella riga in bianco del contratto stampato, oppure da te comunicato nel messaggio del sollecito. Il conduttore fa il bonifico dalla sua banca e poi preme «Ho effettuato il bonifico» (importo, data, riferimento, nota e ricevuta facoltativi). La dichiarazione avvisa il gestore ma non segna la scadenza come pagata: il gestore la verifica e registra l'incasso. Una dichiarazione può essere «Inviata», «Verificata», «Respinta» o «Sostituita»; se è respinta se ne può mandare un'altra.
 3. Con il conto collegato (su attivazione, solo in euro): «Bonifico con Stripe» → «Collega il conto» → «Avvia il bonifico». La scadenza non risulta pagata finché Stripe non conferma il bonifico («Bonifico avviato. La scadenza non è segnata come pagata»).
 4. Con addebito SEPA (su attivazione, solo in euro): l'inquilino autorizza il mandato con Stripe («Autorizza mandato con Stripe») e sceglie «Attiva automatico mensile» oppure «Mantieni pagamento manuale». Prima di ogni addebito legge l'importo, la commissione indicata e il «Totale da addebitare». Non vengono addebitati gli arretrati precedenti all'attivazione. Si può spegnere con «Disattiva automatico».
 Le funzioni «su attivazione» (Cosa significa «Su attivazione»?) dipendono da CasaZen: se all'inquilino non compaiono, scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»).
@@ -7712,10 +7713,10 @@ Le funzioni «su attivazione» (Cosa significa «Su attivazione»?) dipendono da
 #### Richieste di manutenzione
 
 Il conduttore può segnalare un guasto. Cosa succede dopo l'invio: la richiesta arriva al gestore del contratto (il proprietario o l'agenzia), non a un fornitore e non a CasaZen. Il conduttore non sceglie il fornitore e non può né approvarla né pagarla. Il gestore la legge, la approva o la rifiuta (con il motivo) e, se la approva, può pagarla. L'area lo ricorda: «La richiesta va al gestore del contratto. Non assegni tu un fornitore.»
-Tempi e urgenze: CasaZen non fissa un tempo di risposta: dipende dal gestore. L'urgenza («Normale», «Alta» o «Emergenza») serve solo a dire al gestore quanto è importante, e non è un servizio di pronto intervento: l'area stessa avverte «Aprire la richiesta non significa che qualcuno stia già intervenendo.» Per un'emergenza (perdita d'acqua, fuga di gas, corto circuito, pericolo per le persone) il conduttore deve chiamare subito il proprietario o l'agenzia e, se c'è pericolo, i soccorsi (112): la richiesta in CasaZen è in più, non al posto della telefonata.
+Tempi e urgenze: CasaZen non fissa un tempo di risposta: dipende dal gestore. L'urgenza («Normale», «Alta» o «Emergenza») serve solo a dire al gestore quanto è importante, e non è un servizio di pronto intervento: l'area stessa lo ricorda quando scegli «Emergenza»: «Aprire la richiesta non significa che qualcuno stia già intervenendo: CasaZen non è un pronto intervento e non chiama nessuno. Con un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi.» Per un'emergenza (perdita d'acqua, fuga di gas, corto circuito, pericolo per le persone) il conduttore deve chiamare subito il proprietario o l'agenzia e, se c'è pericolo, i soccorsi (112): la richiesta in CasaZen è in più, non al posto della telefonata.
 Ci sono due schermate per aprire la richiesta, che portano alla stessa richiesta del gestore:
 - dall'area, Manutenzione › «Nuova richiesta» (è la strada normale): sceglie la Categoria, l'Urgenza («Normale», «Alta» o «Emergenza»), scrive la Descrizione e può allegare foto («Allegati»), poi preme «Invia al gestore»;
-- da un link «richiesta di manutenzione» (indirizzo che finisce con /richiesta-manutenzione): una procedura a passi pensata per il telefono: «Cosa non funziona?» (il guasto in poche parole), «Quanto è urgente?» («Bassa», «Normale» o «Urgente»), «Aggiungi una nota», «Una foto, se ce l'hai» (facoltativa) e «Controlla e invia» con «Invia la richiesta». Nell'area non c'è un pulsante che porta a questa procedura: la raggiungi solo se qualcuno ti manda il link.
+- da un link «richiesta di manutenzione» (indirizzo che finisce con /richiesta-manutenzione): una procedura a passi pensata per il telefono: «Cosa non funziona?» (il guasto in poche parole), «Quanto è urgente?» («Normale», «Alta» o «Emergenza», le stesse parole dell'area; con «Emergenza» compare l'avviso «CasaZen non è un pronto intervento e non chiama nessuno: con un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi.»), «Aggiungi una nota», «Una foto, se ce l'hai» (facoltativa) e «Controlla e invia» con «Invia la richiesta». Nell'area non c'è un pulsante che porta a questa procedura: la raggiungi solo se qualcuno ti manda il link.
 Gli stati che vede il conduttore nell'area sono: «Inviata al gestore», «In valutazione», «Servono altre informazioni», «Presa in carico dal gestore», «In corso», «Chiusa», «Non accettata». Il proprietario vede invece «In attesa», «Approvata», «Rifiutata», «Pagata» (vedi sotto): i due elenchi non coincidono parola per parola.
 
 #### La parte del proprietario
@@ -7736,7 +7737,7 @@ Ti serve: l'indirizzo della tua area (te lo dà il proprietario o l'agenzia: è 
 2. Se hai già un account CasaZen con la stessa e-mail del contratto, accedi. Se non ce l'hai, creane uno dalla pagina di accesso con la stessa e-mail del contratto. Non usare «Registrati su CasaZen» dalla pagina iniziale: serve a chi gestisce case e ti porta alla scelta di un piano.
 3. Apri il messaggio di conferma che ti arriva per e-mail e conferma l'indirizzo. Poi torna all'indirizzo della tua area.
 4. Vedi l'elenco dei tuoi contratti: premi «Apri il contratto».
-Se vedi «Non hai un contratto attivo da consultare», l'e-mail del tuo account non coincide con quella scritta nel contratto: chiedi al proprietario o all'agenzia quale e-mail hanno scritto. Se vedi «Non riesco a caricare la tua area», conferma prima l'e-mail con il messaggio che ti è arrivato e riprova.
+Se vedi «Non hai un contratto attivo da consultare», l'e-mail del tuo account non coincide con quella scritta nel contratto, oppure il contratto è ancora una bozza (le bozze non compaiono nell'area): chiedi al proprietario o all'agenzia quale e-mail hanno scritto e se il contratto è pronto. Se vedi «Non riesco a caricare la tua area», conferma prima l'e-mail con il messaggio di verifica che ti è arrivato, poi ricarica la pagina.
 Suggerimento: per pagare un solo canone non serve entrare nell'area: basta il link che ti arriva per e-mail.
 
 #### Far entrare il conduttore nella sua area
@@ -7745,7 +7746,7 @@ Serve poter creare i contratti.
 Ti serve: l'e-mail del conduttore (quella che userà per entrare), scritta nel contratto; un modo per scrivergli (e-mail o messaggio).
 1. Quando crei il contratto, nel passo «Parti» scrivi l'«Email» di ogni conduttore: è quella che userà per entrare (Creare un contratto con CasaZen). Controllala bene: se è sbagliata il conduttore non vedrà il contratto. Scrivi anche il «Numero di telefono» con prefisso internazionale.
 2. Scrivi tu al conduttore, perché CasaZen non gli manda un invito. Puoi usare queste parole: «Nella tua area di CasaZen puoi vedere il contratto, le scadenze e i documenti e segnalarmi i guasti. Apri [l'indirizzo di CasaZen]/portale-conduttore, accedi o crea un account con questa stessa e-mail, conferma il messaggio che ti arriva e premi «Apri il contratto». Per pagare un solo canone ti basta il link che ricevi per e-mail.» Al posto di [l'indirizzo di CasaZen] scrivi l'indirizzo con cui apri tu CasaZen.
-3. Se non vede il contratto, controlla che l'e-mail dell'account sia la stessa del contratto e verificata, e che il conduttore sia ancora tra le parti del contratto. Se l'e-mail scritta nel contratto è sbagliata o non è più in uso, scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza») per sapere come correggerla.
+3. Se non vede il contratto, controlla che l'e-mail dell'account sia la stessa del contratto e verificata, che il conduttore sia ancora tra le parti del contratto e che il contratto non sia ancora una bozza (compare quando parte la firma elettronica o quando carichi la copia firmata). Se l'e-mail scritta nel contratto è sbagliata o non è più in uso, scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza») per sapere come correggerla.
 
 #### Vedere il contratto e le scadenze
 
@@ -7814,7 +7815,7 @@ Per il proprietario o l'agenzia.
 
 ### Regole e limiti
 
-- L'area è riservata a chi ha un account con e-mail verificata uguale a quella di un conduttore attivo del contratto. Il conduttore non diventa membro dell'organizzazione e non vede altri contratti.
+- L'area è riservata a chi ha un account con e-mail verificata uguale a quella di un conduttore attivo del contratto, e mostra solo i contratti che non sono più bozze. Il conduttore non diventa membro dell'organizzazione e non vede altri contratti.
 - CasaZen non manda un invito all'area e non mette un link nell'app: l'indirizzo lo comunica il proprietario.
 - Una scadenza risulta pagata solo con la conferma del pagamento (Stripe) o con l'incasso registrato dal gestore. La dichiarazione «Ho effettuato il bonifico» non la segna pagata.
 - Gli estremi del bonifico (IBAN del proprietario) non sono mostrati nell'area: vanno comunicati fuori da CasaZen.
@@ -7831,7 +7832,7 @@ Apre l'indirizzo che gli comunichi tu (l'indirizzo di CasaZen che finisce con /p
 
 #### Il conduttore non vede il suo contratto: perché?
 
-Quasi sempre l'e-mail del suo account è diversa da quella scritta nel contratto (vede «Non hai un contratto attivo da consultare»), oppure non è verificata (l'area non si carica). Verifica nel contratto (scheda «Inquilini») e fagli usare la stessa e-mail.
+Quasi sempre l'e-mail del suo account è diversa da quella scritta nel contratto (vede «Non hai un contratto attivo da consultare»), oppure non è verificata (l'area non si carica e chiede di confermare l'e-mail con il messaggio di verifica). Verifica nel contratto (scheda «Inquilini») e fagli usare la stessa e-mail. Una terza causa: il contratto è ancora una bozza, e le bozze non compaiono nell'area (vede lo stesso «Non hai un contratto attivo da consultare»). Il contratto compare quando parte la firma elettronica o quando carichi la copia firmata.
 
 #### Mi sono registrato da «Registrati su CasaZen» invece che dall'indirizzo dell'area: che faccio?
 
@@ -7843,7 +7844,7 @@ No. La dichiarazione avvisa il gestore, che deve verificarla. La rata passa a «
 
 #### Dove trova l'inquilino l'IBAN per il bonifico?
 
-Non nell'area: gli estremi del bonifico non vengono mostrati («Gli estremi del bonifico non sono ancora disponibili.»). L'IBAN glielo comunichi tu o lo scrivi a mano nel contratto stampato; puoi anche scriverlo nel messaggio di un sollecito.
+Non nell'area: gli estremi del bonifico non vengono mostrati («CasaZen non mostra qui l'IBAN: usa quello che ti ha dato il gestore.»). L'IBAN glielo comunichi tu o lo scrivi a mano nel contratto stampato; puoi anche scriverlo nel messaggio di un sollecito.
 
 #### Ho una perdita d'acqua: come segnalo il guasto?
 
@@ -7888,7 +7889,7 @@ Sezione: Sito e portali · Si trova in: Affitti brevi › Sito di prenotazione �
 
 ### In breve
 
-Il sito di prenotazione è la pagina pubblica dove i tuoi ospiti vedono le tue case, scelgono le date, pagano con la carta e prenotano direttamente da te, senza passare da un portale. Lo apri da Affitti brevi › Sito di prenotazione (nel menu si chiama così; in cima alla pagina il titolo è «Direct Booking»: è la stessa cosa): vedi l'anteprima, l'elenco delle case pubblicate e i link da copiare e condividere.
+Il sito di prenotazione è la pagina pubblica dove i tuoi ospiti vedono le tue case, scelgono le date, pagano con la carta e prenotano direttamente da te, senza passare da un portale. Lo apri da Affitti brevi › Sito di prenotazione (il titolo in cima alla pagina è lo stesso): vedi l'anteprima, l'elenco delle case pubblicate e i link da copiare e condividere.
 Tu scegli come appare (logo, copertina, tema, caratteri, colore), quali documenti legali pubblicare e dove mettere il link. L'ospite non crea nessun account: bastano nome, e-mail e un pagamento sicuro con Stripe.
 Prima di condividere il link controlla tre cose:
 1. Stripe è «Attivo». Senza Stripe attivo il sito non prende prenotazioni: l'ospite vede «Le prenotazioni online sono in pausa». Prima di collegarlo (Impostazioni › Stripe Connect, solo l'amministratore) tieni pronti i dati che Stripe chiede per verificarti: di solito un documento d'identità e il conto bancario su cui ricevere i soldi (cosa serve davvero lo decide Stripe). Lo stato passa da «Non collegato» a «In verifica» e poi «Attivo»; finché non è «Attivo» il sito non prende prenotazioni. Passi: Collegare Stripe per ricevere i pagamenti online.
@@ -7897,7 +7898,7 @@ Prima di condividere il link controlla tre cose:
 
 ### Funzionalità
 
-Funzionalità: Anteprima e link del sito; Cosa fa: Mostra il sito com'è per gli ospiti e permette di copiare il link del sito e delle singole case; Dove si trova: Sito di prenotazione (titolo della pagina: «Direct Booking»); Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Controllare il tuo sito e copiare il link
+Funzionalità: Anteprima e link del sito; Cosa fa: Mostra il sito com'è per gli ospiti e permette di copiare il link del sito e delle singole case; Dove si trova: Sito di prenotazione; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Controllare il tuo sito e copiare il link
 Funzionalità: Stato di pubblicazione di una casa; Cosa fa: Dice per ogni casa se è «Pubblicata» o «Non pubblicata»; Dove si trova: Sito di prenotazione › elenco «Proprietà»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Capire se una casa è sul sito
 Funzionalità: Avviso «Gli ospiti non possono ancora prenotare dal tuo sito»; Cosa fa: Spiega perché il sito non può ancora prendere prenotazioni e porta alla pagina che risolve; Dove si trova: Sito di prenotazione (in alto); Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Capire perché il sito non prende prenotazioni
 Funzionalità: Link per il sito della tua agenzia; Cosa fa: Crea il link di una casa con date, ospiti, lingua e nome della campagna, e il suo codice QR; Dove si trova: Sito di prenotazione › icona del link accanto a una casa; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Creare un link con date e QR per il sito della tua agenzia
@@ -7991,7 +7992,7 @@ Le mappe del sito sono schematiche e mostrano posizioni indicative: l'indirizzo 
 #### Controllare il tuo sito e copiare il link
 
 Ti serve: almeno una casa «Pubblicata» e, per prendere prenotazioni, Stripe «Attivo».
-1. Apri Affitti brevi › Sito di prenotazione (in cima alla pagina il titolo è «Direct Booking»).
+1. Apri Affitti brevi › Sito di prenotazione.
 2. A sinistra, sotto «Proprietà», vedi le tue case. Premi il nome di una casa per vederne l'anteprima a destra; ripremilo per tornare al sito intero. Con i pulsanti «Anteprima desktop» e «Anteprima mobile» scegli come vederla, con «Apri a schermo intero» la apri a pagina intera.
 3. Per copiare il link di una casa premi l'icona «Copia URL struttura» sulla riga. Per aprire la sua pagina pubblica premi «Apri pagina struttura».
 4. Per il link dell'intero sito apri la voce «URL organizzazione» in basso a sinistra e premi «Copia URL».
@@ -8167,7 +8168,7 @@ No. L'informativa e i termini del sito sono tuoi e li pubblichi tu in Documenti 
 
 ### Glossario
 
-- Sito di prenotazione: la pagina pubblica della tua organizzazione dove gli ospiti prenotano direttamente (il titolo in cima alla pagina nell'app è «Direct Booking»).
+- Sito di prenotazione: la pagina pubblica della tua organizzazione dove gli ospiti prenotano direttamente (si apre da Affitti brevi › Sito di prenotazione).
 - Pubblicata: una casa che gli ospiti possono vedere e prenotare sul sito.
 - Prenotazione immediata: l'ospite paga online e la prenotazione è subito confermata.
 - Su richiesta: l'ospite chiede di prenotare, paga all'arrivo e l'host accetta o rifiuta.
@@ -8266,7 +8267,7 @@ Cosa devi sapere:
 
 #### Il plugin per WordPress
 
-Se il tuo sito è in WordPress (il programma con cui è fatto il sito di molti; un plugin è un componente aggiuntivo) non devi incollare codice: il plugin «CasaZen per WordPress» aggiunge blocchi e shortcode, crea per te le pagine e le voci di menu e funziona con Elementor, Polylang e WPML. Il plugin non è ancora nell'elenco di WordPress.org: lo installi da un file ZIP. Nella pagina «Incorpora nel tuo sito» trovi il link «Scarica il plugin» solo se il file è disponibile nella tua installazione; se non lo vedi, scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza») e chiedi il file ZIP.
+Se il tuo sito è in WordPress (il programma con cui è fatto il sito di molti; un plugin è un componente aggiuntivo) non devi incollare codice: il plugin «CasaZen per WordPress» aggiunge blocchi e shortcode, crea per te le pagine e le voci di menu e funziona con Elementor, Polylang e WPML. Il plugin non è ancora nell'elenco di WordPress.org: lo installi da un file ZIP. Nella pagina «Incorpora nel tuo sito», sotto «Plugin per WordPress», trovi sempre il pulsante «Scarica il plugin».
 Requisiti: WordPress 6.4 o successivo, PHP 7.4 o successivo, un indirizzo del tuo sito di prenotazione CasaZen (meglio il tuo dominio attivo) e la funzione «Incorpora» attiva (Cosa significa «Su attivazione»?). Finché non lo è, il plugin non mostra nulla ai visitatori e avvisa solo gli amministratori del sito WordPress.
 Come lo configuri (in WordPress, Impostazioni › CasaZen):
 - Indirizzo CasaZen: l'indirizzo del tuo sito di prenotazione, per esempio https://prenota.latuaagenzia.it. Deve essere https.
@@ -8345,7 +8346,7 @@ Finché la scelta non è completa (nessuna casa scelta, indirizzo mancante) non 
 #### Installare il plugin per WordPress
 
 Ti serve: la funzione «Incorpora nel tuo sito» attiva sulla tua installazione, un sito WordPress 6.4 o successivo (PHP 7.4 o successivo) di cui sei amministratore, il file ZIP del plugin e l'indirizzo del tuo sito di prenotazione CasaZen.
-1. In Impostazioni › Incorpora nel tuo sito, sotto «Plugin per WordPress», premi «Scarica il plugin». Se il link non c'è, il file non è ancora disponibile nella tua installazione: scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza») e chiedi il file ZIP.
+1. In Impostazioni › Incorpora nel tuo sito, sotto «Plugin per WordPress», premi «Scarica il plugin»: il pulsante c'è sempre e scarica il file ZIP. Sotto la pagina riassume il percorso in quattro passi (scarichi e attivi il plugin; nel plugin premi «Connetti a CasaZen» e confermi, e indirizzo e identificativo si compilano da soli; scrivi il dominio e crei i due record DNS che il plugin mostra; crei le pagine con la procedura guidata) e, in «Configurazione manuale», indica l'indirizzo e l'identificativo da scrivere a mano nelle impostazioni avanzate del plugin se preferisci non collegarlo.
 2. In WordPress apri Plugin › Aggiungi nuovo › Carica plugin, scegli il file ZIP, premi Installa ora e poi Attiva.
 3. Apri Impostazioni › CasaZen e scrivi «Indirizzo CasaZen» (e lo slug se è l'indirizzo di CasaZen). Salva.
 4. Premi «Prova la connessione». Quando leggi «La connessione funziona» puoi andare avanti. Se il test dice che l'incorporamento «non è ancora attivo per la tua agenzia», la funzione non è attiva: scrivi all'assistenza di CasaZen e chiedi di attivare «Incorpora nel tuo sito», poi riprova.
@@ -9558,11 +9559,11 @@ Piano: Scale; Immobili inclusi: illimitati; Persone (posti): illimitate
 Piano: Agency; Immobili inclusi: illimitati; Persone (posti): illimitate, si paga per camera
 Sono i limiti di base; la pagina «Fatturazione e piano» mostra sempre quelli reali della tua organizzazione («Immobili: X di Y», «Persone: X di Y»).
 - Se superi i limiti dell'immobile, non perdi nulla: gli immobili restano tutti, ma non puoi aggiungerne finché non rientri.
-- Moduli. Le funzioni a pagamento sono moduli: «Canali e distribuzione», «Prenotazioni dirette», «Adempimenti automatici», «Identificazione ospiti», «AI Agents», «Assistente AI per i messaggi», «Interventi e fornitori», «Documenti fiscali», «Prezzi e ricavi», «CRM e Marketing». Alcuni sono già inclusi nel piano, altri si aggiungono dal piano Pro in poi. Se una pagina richiede un modulo che non hai, vedi «Aggiungi questo modulo al tuo piano» con «Gestisci piano e moduli» (per chi è amministratore) o la richiesta di rivolgersi all'amministratore.
+- Moduli. Le funzioni a pagamento sono moduli: «Canali e distribuzione», «Prenotazioni dirette», «Adempimenti automatici», «Identificazione ospiti», «AI Agents», «Assistente AI per i messaggi», «Interventi e fornitori», «Documenti fiscali», «Prezzi e ricavi», «CRM e Marketing». Con la registrazione guidata il piano Starter non include nessun modulo: i moduli si aggiungono dal piano Pro in poi, e sotto «Confronta i piani» la pagina te lo ricorda (con i nomi «Adempimenti automatici», «Prenotazioni dirette», «Canali e distribuzione», «Interventi e fornitori») e dice che, senza il modulo, restano bloccati tra l'altro Alloggiati Web e ISTAT automatici, Stripe Connect, aspetto e dominio del sito, canali e interventi. Se una pagina richiede un modulo che non hai, vedi «Aggiungi questo modulo al tuo piano» con «Gestisci piano e moduli» (per chi è amministratore) o la richiesta di rivolgersi all'amministratore.
 - Aree di gestione. Aggiungere gli affitti brevi o le locazioni di lungo periodo alla tua attività è una scelta riservata al gestore del piano («Gestisci le aree attive»).
 - Agency. Si paga per camera, a fine mese, sulle unità vendibili attive almeno un giorno nel mese; c'è un minimo mensile e, da una certa soglia di unità, un preventivo.
 - Prezzi. Sono quelli che vedi nella pagina, con IVA esclusa o inclusa come indicato. Un piano non ancora acquistabile mostra «Prezzo in definizione» e non si può scegliere.
-- Accesso aperto. Se vedi questo avviso, per ora non viene addebitato nulla e tutte le funzioni sono sbloccate. Il piano che scegli vale quando riprenderà la fatturazione; CasaZen ti avvisa prima.
+- Accesso aperto. Se vedi questo avviso, per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo. I pagamenti non cambiano: un abbonamento già attivo continua a essere addebitato, un piano scelto ora si paga da subito e i moduli a pagamento restano quelli che hai acquistato. Quando l'accesso aperto finirà valgono i limiti del piano che paghi; CasaZen ti avvisa prima. Se i prezzi dei piani sono ancora in definizione, l'avviso lo dice: per ora i piani non si possono acquistare.
 
 #### Fatturazione dell'abbonamento
 
