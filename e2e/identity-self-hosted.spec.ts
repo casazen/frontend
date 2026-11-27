@@ -442,7 +442,7 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
 
     await page.getByTestId('checkin-document-file').setInputFiles({ name: 'front.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('fixture-front') });
     await expect(page.getByTestId('checkin-prefill')).toBeVisible(FIRST);
-    await expect(page.getByTestId('checkin-prefill-missing-item')).toHaveCount(2);
+    await expect(page.getByTestId('checkin-prefill-missing-item')).toHaveCount(4);
     await expect(page.getByTestId('checkin-prefill-value-documentNumber')).toBeVisible();
 
     const readings = identity.calls('read-document');

@@ -197,7 +197,8 @@ const READING: CheckInDocumentReadResult = {
     { name: 'documentNumber', value: 'CA00000AA', side: 'front', zone: 'documentNumber', confidence: 0.97, source: 'viz' },
     { name: 'expiryDate', value: '2032-03-11', side: 'front', zone: 'expiryDate', confidence: 0.96, source: 'viz' },
   ],
-  missing: ['birthPlace', 'citizenship'],
+  // What neither guest nor fields give, in the order the server asks for it: the reading has no gender and no place of issue.
+  missing: ['gender', 'birthPlace', 'citizenship', 'issuePlace'],
   guest: { firstName: 'Luca', lastName: 'Rossi', dateOfBirth: '1992-05-15', documentKind: 'IdentityCard', documentNumber: 'CA00000AA', documentExpiresOn: '2032-03-11' },
 };
 
