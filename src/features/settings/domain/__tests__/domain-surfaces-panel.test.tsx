@@ -284,6 +284,8 @@ describe('the texts of the block (E40/F02/US02)', () => {
   // No other system is named: not the one that signs the owners in, nor the ones that host the site, take the payments or manage the channels.
   const SYSTEM = /auth0|vercel|railway|supabase|stripe|octorate|kross|krossbooking|concordato\s*facile|wordpress/i;
   const NEW_SENTENCES = ['domainVerified', 'ownerLoginFailed', 'ownerLoginReady'];
+  // The run of the bell texts that is written in alphabetical order, and where each of the three new sentences has its place (not after the run).
+  const BELL_RUN = [...NEW_SENTENCES, 'otaReviewActionFailed', 'otaReviewReceived', 'scheduledMessageIssue'];
 
   it.each([
     ['it', it_],
@@ -298,8 +300,8 @@ describe('the texts of the block (E40/F02/US02)', () => {
     expect(texts.filter(([, text]) => SYSTEM.test(text)).map(([key, text]) => `${key}: ${text}`)).toEqual([]);
     expect(texts.filter(([, text]) => text.trim() === '').map(([key]) => key)).toEqual([]);
     for (const [path, keys] of orders) expect(keys, path).toEqual([...keys].sort());
-    // The three new sentences of the bell sit together, in order, as the keys of the other blocks are added.
-    expect(NEW_SENTENCES).toEqual([...NEW_SENTENCES].sort());
+    // The order the keys really have in the file (object keys that are not numbers keep it): the three new sentences each sit in their place of the run of the bell.
+    expect(Object.keys(locale.notifications.types).filter((key) => BELL_RUN.includes(key))).toEqual([...BELL_RUN].sort());
   });
 
   it('texts_TheCodeOfTheBlock_NeverUsesADefaultValue', () => {

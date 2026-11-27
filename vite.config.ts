@@ -100,8 +100,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       environment: 'jsdom',
       globals: true,
       setupFiles: ['./src/test/setup.ts'],
-      // Exclude Playwright E2E tests — they are run separately via `npm run test:e2e`
-      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', '**/.worktrees/**'],
+      // Exclude Playwright E2E tests — they are run separately via `npm run test:e2e`.
+      // `integrations/**` is the WordPress plugin: its tests (PHPUnit, and the Node tests of its tools) run in its own workflow.
+      exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', 'integrations/**', '**/.worktrees/**'],
     },
   }
 })

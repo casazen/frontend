@@ -24,7 +24,15 @@ import { EmbedShell } from '../embed-shell';
  * is wrong is held here: a widget that is off must ask the server for nothing, the agency's domain serves only its own org, and the address
  * names the origin of the page that frames it only in the strict form of an origin.
  */
-vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn() } }));
+vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn(), getOrgProperty: vi.fn(() => new Promise(() => undefined)) } }));
+// The widgets are the real ones: the booking widget asks the search of the site, and none of the calls reaches the network here (this file is about the shell).
+vi.mock('@/api/public-site-search.api', () => ({
+  publicSiteSearchApi: {
+    getStays: vi.fn(() => new Promise(() => undefined)),
+    getSiteCalendar: vi.fn(() => new Promise(() => undefined)),
+    getDestinations: vi.fn(() => new Promise(() => undefined)),
+  },
+}));
 
 const ORG: PublicOrgDto = {
   slug: 'villa-rossi',
@@ -113,12 +121,16 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
     expect(shell).toHaveClass('public-site-root');
     // Transparent, no margin, no horizontal scroll, and a height that is the one of the content.
     expect(shell.style.background).toBe('transparent');
-    expect(document.body.style.margin).toBe('0px');
-    expect(document.documentElement.style.overflowX).toBe('hidden');
+    // The margin and the scroll of the document are set by an effect of the shell, after the commit that shows the widget: waited for, never read at once.
+    await waitFor(() => {
+      expect(document.body.style.margin).toBe('0px');
+      expect(document.documentElement.style.overflowX).toBe('hidden');
+    });
     expect(shell.className).not.toMatch(/min-h-screen|h-screen|\bvh\b/);
     // No header, footer, cookie banner, skip link or favourites: none of the frame of the booking site.
     expect(screen.queryByTestId('public-site-shell')).not.toBeInTheDocument();
-    expect(screen.queryByRole('banner')).not.toBeInTheDocument();
+    // The wrapper holds the widget (`main`) and nothing else: no header or footer of the site around it. (A widget may have a header of its own, inside `main`.)
+    expect([...shell.children].map((child) => child.tagName)).toEqual(['MAIN']);
     expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cookie-consent-banner')).not.toBeInTheDocument();
     expect(screen.queryByText(i18n.t('publicSite.skipToContent'))).not.toBeInTheDocument();
@@ -129,7 +141,13 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
 
   it('embedShell_PutsTheDocumentBackWhenItGoes', async () => {
     renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`);
-    await screen.findByTestId('embed-shell');
+    await screen.findByTestId('embed-widget-booking');
+    // What the shell puts on the document is written by effects: it has to be there before there is something to put back.
+    await waitFor(() => {
+      expect(document.documentElement.style.overflowX).toBe('hidden');
+      expect(document.body.style.margin).toBe('0px');
+      expect(document.documentElement.style.getPropertyValue('--cz-public-primary')).toBe('#1a6b8f');
+    });
 
     cleanup();
 
@@ -346,20 +364,25 @@ describe('what the shell gives the widget it frames', () => {
 });
 
 describe('the language of the page (AC4)', () => {
+  // The entry of the guest area is the widget that asks the server for nothing: what the language of the page does is seen in its words.
   it('embedShell_LangEn_GivesEnglishTextsAndTheLangOfTheDocument', async () => {
-    renderEmbed(`/embed/villa-rossi/booking?lang=en&${ADDRESS}`);
+    renderEmbed(`/embed/villa-rossi/guest-access?lang=en&${ADDRESS}`);
 
-    expect(await screen.findByText('This widget is not available')).toBeInTheDocument();
-    await waitFor(() => expect(i18n.language).toBe('en'));
-    expect(document.documentElement.lang).toBe('en');
+    expect(await screen.findByLabelText('Booking code')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(i18n.language).toBe('en');
+      expect(document.documentElement.lang).toBe('en');
+    });
   });
 
   it.each([['?lang=de&'], ['?lang=&'], ['?']])('embedShell_AddressWith%s_GivesItalian', async (query) => {
     await i18n.changeLanguage('en');
-    renderEmbed(`/embed/villa-rossi/booking${query}${ADDRESS}`);
+    // The page that frames the widget was in English: the document ends in Italian only if the shell puts it there.
+    document.documentElement.lang = 'en';
+    renderEmbed(`/embed/villa-rossi/guest-access${query}${ADDRESS}`);
 
-    expect(await screen.findByText('Questo widget non è disponibile')).toBeInTheDocument();
-    expect(document.documentElement.lang).toBe('it');
+    expect(await screen.findByLabelText('Codice prenotazione')).toBeInTheDocument();
+    await waitFor(() => expect(document.documentElement.lang).toBe('it'));
   });
 
   it('embedShell_Language_IsNeverWrittenToTheBrowser', async () => {
@@ -394,7 +417,11 @@ describe('the states of the shell (AC7)', () => {
     expect(await screen.findByTestId('embed-not-found')).toBeInTheDocument();
     expect(screen.queryByTestId('embed-error')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
+    // The loading state before it had written a `noindex` already: the title is what says that the effect of THIS state ran.
+    await waitFor(() => {
+      expect(document.title).toBe(i18n.t('embed.notFound.title'));
+      expect(robots()).toBe('noindex,nofollow');
+    });
   });
 
   it('embedShell_Org404WithAnOlderAnswerInTheCache_IsStillNotFound', async () => {
@@ -415,7 +442,11 @@ describe('the states of the shell (AC7)', () => {
     const retry = await screen.findByRole('button', { name: i18n.t('shared.errorFallback.tryAgain') });
     expect(screen.getByTestId('embed-error')).toHaveAttribute('role', 'alert');
     expect(screen.queryByTestId('embed-not-found')).not.toBeInTheDocument();
-    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
+    // The loading state before it had written a `noindex` already: the title is what says that the effect of THIS state ran.
+    await waitFor(() => {
+      expect(document.title).toBe(i18n.t('embed.error.title'));
+      expect(robots()).toBe('noindex,nofollow');
+    });
 
     fireEvent.click(retry);
 
@@ -434,8 +465,12 @@ describe('the states of the shell (AC7)', () => {
     renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`);
     await screen.findByTestId('embed-widget-booking');
 
-    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
-    expect(document.title).toBe('Prenota · Villa Rossi');
+    // The title and the `noindex` are written by an effect, after the commit that shows the widget, and the loading state had written a `noindex` already:
+    // the title is what says that the effect of THIS state has run, so the two are waited for together.
+    await waitFor(() => {
+      expect(document.title).toBe('Prenota · Villa Rossi');
+      expect(robots()).toBe('noindex,nofollow');
+    });
   });
 });
 

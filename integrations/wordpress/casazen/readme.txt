@@ -31,10 +31,15 @@ The payment of a booking never happens inside a frame: the booking engine takes 
 
 == Installation ==
 
-1. Upload the plugin folder to `/wp-content/plugins/`, or install the ZIP from Plugins, Add New, Upload Plugin.
-2. Activate the plugin.
-3. Open Settings, then CasaZen. Enter the address of your CasaZen booking site and press Test connection.
-4. Add a block called CasaZen booking (or the shortcode `[casazen_booking]`) to a page.
+The plugin is not on WordPress.org yet: install the ZIP.
+
+1. Download `casazen-<version>.zip` from the release of the plugin (the release tag is `wp-plugin-v<version>`, on https://github.com/casazen/frontend/releases), or take the ZIP that CasaZen gave you.
+2. In WordPress open Plugins, Add New, Upload Plugin, choose the ZIP, press Install Now, then Activate.
+3. Open Settings, then CasaZen. Enter the address of your CasaZen booking site (for example https://prenota.example.com) and press Test connection: the box Connection status shows the name of your agency.
+4. Open the tab Guided setup and press Create the pages. It creates the pages for the booking engine, the online check-in and the owner area, and adds them to a menu that you choose. Or add the block CasaZen booking (or the shortcode `[casazen_booking]`) to a page yourself.
+5. To put the search bar in the hero of your home page, add the shortcode `[casazen_search]` (in Elementor, with the Shortcode widget).
+
+The long guide (every shortcode attribute, the language mapping for Polylang and WPML, Elementor, cache plugins, privacy and troubleshooting) is the README of the plugin, in Italian and in English: https://github.com/casazen/frontend/tree/develop/integrations/wordpress/casazen
 
 == Frequently Asked Questions ==
 
@@ -45,6 +50,30 @@ Yes. The plugin only shows what your agency publishes with CasaZen. While no add
 = Does the plugin send data about my visitors to CasaZen? =
 
 No. When a visitor opens a page of your site, your server does not call CasaZen. The widgets are loaded by the browser of the visitor from your CasaZen address, like any other embedded content.
+
+= What do I need on the CasaZen side? =
+
+A domain of your agency verified in CasaZen (for example prenota.example.com), and embedding switched on for your agency. Until embedding is on, the plugin shows nothing to your visitors, and the administrators of the site see a note.
+
+= Which versions of WordPress and PHP does it need? =
+
+WordPress 6.4 or later and PHP 7.4 or later.
+
+= Nothing appears on my page. What do I check? =
+
+Open Settings, then CasaZen, and press Test connection: it tells you if the address is wrong, if CasaZen does not know it, or if embedding is not on yet. If the test is fine and the page is still empty, a cache or optimisation plugin is probably delaying or combining the script: exclude every address that contains /embed/v1/ from its JavaScript options and clear the cache. The README lists the other causes.
+
+= Does it work with Elementor, Polylang and WPML? =
+
+Yes. In Elementor use the Shortcode widget (the editor shows a placeholder, the published page shows the widget). With Polylang or WPML the widgets follow the language of the page: the language mapping in the settings says how the code of a language becomes it, en or auto.
+
+= Is the payment made inside the page? =
+
+No. When a guest chooses to book, the whole page goes to the checkout of your CasaZen address. Payment, sign-in and the owner portal are never inside a frame.
+
+= What does uninstalling remove? =
+
+The settings, the cached results and the scheduled events of the plugin. The pages created by the Guided setup, and their menu entries, are your content: they stay.
 
 == Changelog ==
 

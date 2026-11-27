@@ -7,6 +7,8 @@
  * @package Casazen
  */
 
+// phpcs:disable Universal.Namespaces.DisallowCurlyBraceSyntax, Universal.Namespaces.OneDeclarationPerFile, Universal.Namespaces.DisallowDeclarationWithoutName, Generic.Files.OneObjectStructurePerFile -- the file declares the double of an Elementor class in the namespace of Elementor, and the test class in the global namespace.
+
 namespace Elementor {
 
 	/**

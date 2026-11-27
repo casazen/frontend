@@ -9,7 +9,8 @@ import { townPoint } from '../engine/region/registry';
 import { snapToLand } from '../engine/snap';
 import { isPositionSet, projectPoint, publicPoint, unprojectPoint, type LatLon, type View } from '../engine/view';
 import { isMappable } from '../load';
-import { MapCard, type MapCardData } from './map-card';
+import { MapCard } from './map-card';
+import { mapCardOfPin, type MapCardData } from './map-card-data';
 import { MapCluster } from './map-cluster';
 import { MapControls } from './map-controls';
 import { MapPin } from './map-pin';
@@ -36,7 +37,7 @@ function pinName(t: TFunction, pin: MapPinData): string {
 
 /** The map itself: loaded on demand by `RegionMap`, together with the engine and the data. */
 export default function RegionMapCanvas(props: RegionMapProps) {
-  const { pins, onSelect, onActiveChange, highlightIds, view: initial, labels = 'auto', highlightTowns, aspect } = props;
+  const { pins, onSelect, onActiveChange, highlightIds, view: initial, labels = 'auto', highlightTowns, aspect, hideCard = false } = props;
   const { t } = useTranslation();
   const hintId = useId();
   const phone = useMediaQuery(PHONE);
@@ -92,19 +93,7 @@ export default function RegionMapCanvas(props: RegionMapProps) {
   // pins in the order of the map, from the top to the bottom and from the left to the right: the order of the Tab key
   const order = at.map((_, i) => i).sort((a, b) => at[a].y - at[b].y || at[a].x - at[b].x);
   const selectedPin = at.find((a) => a.pin.id === selectedId)?.pin;
-  const card: MapCardData | null =
-    selectedPin && selectedPin.tone !== 'zone'
-      ? {
-          id: selectedPin.id,
-          name: selectedPin.name,
-          zone: selectedPin.card?.zone,
-          photoUrl: selectedPin.card?.photoUrl,
-          rating: selectedPin.card?.rating,
-          priceLabel: selectedPin.card?.priceLabel ?? selectedPin.label,
-          unavailableNote: selectedPin.available === false ? (selectedPin.unavailableNote ?? t('siteMap.unavailable')) : undefined,
-          href: selectedPin.href,
-        }
-      : null;
+  const card: MapCardData | null = selectedPin ? mapCardOfPin(selectedPin, t) : null;
 
   const zoomBy = (f: number, anchor?: LatLon) => {
     const next = mv.zoom(f, anchor);
@@ -269,9 +258,11 @@ export default function RegionMapCanvas(props: RegionMapProps) {
               })}
             </ul>
           </div>
-          <div data-map-ui>
-            <MapCard data={card} phone={phone} onClose={() => select(null)} />
-          </div>
+          {hideCard ? null : (
+            <div data-map-ui>
+              <MapCard data={card} phone={phone} onClose={() => select(null)} />
+            </div>
+          )}
         </>
       )}
     </div>

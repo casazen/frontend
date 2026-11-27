@@ -18,9 +18,17 @@
   ],
   "ignoreExportsUsedInFile": true,
   "ignoreBinaries": [
-    "psql"
+    "psql",
+    "wp-env"
   ],
   "ignoreIssues": {
+    "integrations/**": [
+      "unlisted",
+      "unresolved",
+      "binaries",
+      "exports",
+      "types"
+    ],
     "src/components/ui/**": [
       "exports",
       "types"

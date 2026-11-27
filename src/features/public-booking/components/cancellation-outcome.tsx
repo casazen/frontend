@@ -1,8 +1,8 @@
 import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
 import type { GuestRefundStatus } from '@/types';
+import { cancellationMoney } from '../cancellation-preview';
 
 interface CancellationOutcomeProps {
   refundAmount: number;
@@ -20,7 +20,7 @@ export const CancellationOutcome = forwardRef<HTMLParagraphElement, Cancellation
   titleRef,
 ) {
   const { t } = useTranslation();
-  const amount = formatCurrency(refundAmount, currency);
+  const amount = cancellationMoney(refundAmount, currency, t);
   const detail =
     refundStatus === 'confirmed'
       ? t('guestCancellation.outcome.confirmed', { amount })

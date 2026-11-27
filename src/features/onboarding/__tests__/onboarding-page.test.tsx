@@ -56,7 +56,7 @@ const refreshAccessToken = vi.fn(async () => 'fresh-token');
 const forceReauth = vi.fn();
 const assign = vi.fn();
 
-function mockAuth(roles: string[], getAccessToken = vi.fn(async () => undefined)) {
+function mockAuth(roles: string[], getAccessToken: () => Promise<string | undefined> = vi.fn(async () => undefined)) {
   vi.mocked(useAuth).mockReturnValue({
     isLoading: false,
     isAuthenticated: true,
@@ -68,6 +68,12 @@ function mockAuth(roles: string[], getAccessToken = vi.fn(async () => undefined)
     logout: vi.fn(),
     logoutToLogin: vi.fn(),
   } as unknown as ReturnType<typeof useAuth>);
+}
+
+/** An access token that carries the roles (the ID token of the user has none): only the claim is read, the signature is not. */
+function accessToken(roles: string[]): string {
+  const encode = (value: object) => btoa(JSON.stringify(value)).replace(/=+$/, '');
+  return `${encode({ alg: 'none' })}.${encode({ [ROLES_CLAIM]: roles })}.signature`;
 }
 
 function profile(overrides: Partial<UserDetail> = {}): UserDetail {
@@ -462,8 +468,27 @@ describe('OnboardingPage (PL-01)', () => {
     },
   );
 
+  it('OnboardingPage_NoRolesInTheTokenAndTheServerDoesNotConfirmTheSetup_StaysOnTheWizard (the host features are withheld)', async () => {
+    const getAccessToken = vi.fn(async () => undefined);
+    mockAuth([], getAccessToken);
+    vi.mocked(UsersApi.getMe).mockResolvedValue({ ...ONBOARDED, commercialSetupRequired: false, onboardingRequired: true, consentsAccepted: false });
+
+    renderPage('/onboarding?checkout=success');
+
+    // A host whose legal documents changed has its rental type already: it is asked the consents only. The choice of the type is on screen for the
+    // first render of the profile alone (the consents step is set by an effect of the page), so that is not what the test waits for.
+    expect(await screen.findByTestId('accept-consents')).toBeInTheDocument();
+    expect(screen.getByText(i18n.t('onboarding.consentsRenewalTitle'))).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: i18n.t('onboarding.choose') })).not.toBeInTheDocument();
+    // The claims are known only once the token is read: after that nothing else can move the page.
+    await waitFor(() => expect(getAccessToken).toHaveBeenCalled());
+    await act(async () => undefined);
+    expect(continuation).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('short-rent-home')).not.toBeInTheDocument();
+    expect(screen.getByTestId('accept-consents')).toBeInTheDocument();
+  });
+
   it.each([
-    ['the host features are withheld', { onboardingRequired: true, consentsAccepted: false }],
     ['the payment is still pending', { commercialSetupRequired: true }],
     ['the onboarding is not finished', { onboardingCompletedAt: null }],
   ] as const)('OnboardingPage_NoRolesInTheTokenAndTheServerDoesNotConfirmTheSetup_StaysOnTheWizard (%s)', async (_case, overrides) => {
@@ -478,6 +503,36 @@ describe('OnboardingPage (PL-01)', () => {
     await waitFor(() => expect(getAccessToken).toHaveBeenCalled());
     await act(async () => undefined);
     expect(continuation).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('short-rent-home')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: i18n.t('onboarding.choose') }).length).toBeGreaterThan(0);
+  });
+
+  it('OnboardingPage_RolesOnlyInTheAccessToken_WaitsForThemAndOpensTheAreaTheySayNotTheOneOfTheRentalType', async () => {
+    // The ID token has no roles, the access token says Admin. The profile is the one of a host the server has set up (an org, a rental type, the current
+    // consents, no payment waiting), which with no roles at all opens the area of its rental type: while the token is not read yet the roles are not known,
+    // and an Admin must not be sent to the short-rent area first.
+    let readTheToken: (token: string) => void = () => undefined;
+    const token = new Promise<string>((resolve) => {
+      readTheToken = resolve;
+    });
+    const getAccessToken = vi.fn(() => token);
+    mockAuth([], getAccessToken);
+    vi.mocked(UsersApi.getMe).mockResolvedValue({ ...ONBOARDED, onboardingRequired: false, consentsAccepted: true, commercialSetupRequired: false });
+
+    renderPage();
+
+    // The profile is in and the roles are not: the page waits on the wizard (the loading screen has no buttons), it does not guess the area.
+    expect((await screen.findAllByRole('button', { name: i18n.t('onboarding.choose') })).length).toBeGreaterThan(0);
+    await waitFor(() => expect(getAccessToken).toHaveBeenCalled());
+    await act(async () => undefined);
+    expect(continuation).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('short-rent-home')).not.toBeInTheDocument();
+
+    await act(async () => readTheToken(accessToken(['Admin'])));
+
+    expect(await screen.findByTestId('admin-area')).toBeInTheDocument();
+    expect(continuation).toHaveBeenCalledWith('/app/admin');
+    expect(continuation).not.toHaveBeenCalledWith('/app/short-rent');
     expect(screen.queryByTestId('short-rent-home')).not.toBeInTheDocument();
   });
 

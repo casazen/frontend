@@ -176,7 +176,7 @@ class Wizard {
 
 		$connection = Connection::cached();
 		if ( ! is_array( $connection ) || empty( $connection['ok'] ) ) {
-			$result = self::empty_result();
+			$result          = self::empty_result();
 			$result['ok']    = false;
 			$result['error'] = 'not_connected';
 		} else {

@@ -19,7 +19,7 @@ import { getNavLabel } from '@/lib/nav-labels';
 
 const groups = [
   { name: 'workspace', pages: ['organization', 'invitations'] },
-  { name: 'website', pages: ['site-appearance', 'domain', 'site-documents'] },
+  { name: 'website', pages: ['site-appearance', 'domain', 'embed', 'site-documents'] },
   { name: 'money', pages: ['payments', 'plan', 'billing'] },
   { name: 'tools', pages: ['guest-portal', 'integration', 'ai'] },
 ];

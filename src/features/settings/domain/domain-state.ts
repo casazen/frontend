@@ -1,4 +1,4 @@
-import type { DomainIssueCode, DomainVerificationStatus } from '@/types/domain.types';
+import type { DomainIssueCode, DomainSurfaces, DomainVerificationStatus } from '@/types/domain.types';
 
 type TranslateFn = (key: string) => string;
 
@@ -35,6 +35,22 @@ export function getDomainState(status: DomainVerificationStatus, detail?: string
   if (status === 'Verified') return 'verified';
   if (status === 'Failed') return 'failed';
   return detail && PLATFORM_CODES.has(detail) ? 'activating' : 'waitingDns';
+}
+
+/** Where the sign-in of the owners on the agency's own domain stands, as the words of the line say it (`domain.surfaces.ownerLogin.state.*`): one per state the server can be in, and two for `Pending` (CasaZen enables it by hand, or it registers by itself). */
+export type OwnerLoginLine = 'failed' | 'notRequested' | 'pendingAutomatic' | 'pendingManual' | 'ready';
+
+export function ownerLoginState(surfaces: Pick<DomainSurfaces, 'ownerLoginHostState' | 'ownerLoginAutomatic'>): OwnerLoginLine {
+  switch (surfaces.ownerLoginHostState) {
+    case 'Pending':
+      return surfaces.ownerLoginAutomatic ? 'pendingAutomatic' : 'pendingManual';
+    case 'Ready':
+      return 'ready';
+    case 'Failed':
+      return 'failed';
+    default:
+      return 'notRequested';
+  }
 }
 
 /**

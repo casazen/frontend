@@ -123,11 +123,11 @@ class Test_Destinations extends WP_UnitTestCase {
 	/**
 	 * Keeps a list for the saved address, as a refresh would.
 	 *
-	 * @param array $list The list.
+	 * @param array $places The list.
 	 */
-	private function store_destinations( array $list ) {
+	private function store_destinations( array $places ) {
 		$settings = Settings::get();
-		set_transient( Destinations::cache_key( $settings['address'], $settings['org_slug'] ), $list, HOUR_IN_SECONDS );
+		set_transient( Destinations::cache_key( $settings['address'], $settings['org_slug'] ), $places, HOUR_IN_SECONDS );
 	}
 
 	/**

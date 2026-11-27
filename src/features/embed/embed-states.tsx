@@ -76,3 +76,33 @@ export function EmbedError({ onRetry }: { onRetry: () => void }) {
     </EmbedState>
   );
 }
+
+/**
+ * The home of the property widget does not exist, or it cannot be booked online (the API answers 404 for both). Said as the page of the site says it, and with
+ * no way out of the frame: the page that frames the widget is told (`error`) and shows its own link to the site.
+ */
+export function EmbedPropertyNotFound() {
+  const { t } = useTranslation();
+
+  return (
+    <EmbedState
+      icon={SearchX}
+      testId="embed-property-not-found"
+      title={t('publicProperty.notFound.title')}
+      description={t('embed.property.notFound.description')}
+    />
+  );
+}
+
+/** The home could not be read for a reason other than «it does not exist»: an error with a retry, never the not-found state. */
+export function EmbedPropertyError({ onRetry }: { onRetry: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <EmbedState icon={TriangleAlert} role="alert" testId="embed-property-error" title={t('publicProperty.loadError.title')} description={t('publicProperty.loadError.text')}>
+      <Button type="button" onClick={onRetry}>
+        {t('shared.errorFallback.tryAgain')}
+      </Button>
+    </EmbedState>
+  );
+}

@@ -4219,6 +4219,86 @@
     "save": "Save",
     "saveFailed": "The settings of the identity check could not be saved",
     "saved": "Identity check settings saved",
+    "segments": {
+      "add": {
+        "cancel": "Cancel",
+        "channel": "Guest's browser",
+        "format": "Document type",
+        "hint": "A new segment always starts in observation.",
+        "noFormats": "There is no document type to choose from yet.",
+        "open": "Add a segment",
+        "propertiesError": "We could not read the list of properties: you can still choose «All properties».",
+        "property": "Property",
+        "submit": "Add the segment",
+        "title": "New segment"
+      },
+      "added": "Segment added: it starts in observation.",
+      "allProperties": "All properties",
+      "alreadyThere": "This segment already exists: nothing changed.",
+      "apply": "Apply",
+      "autoDisabled": "Automatic approval is switched off platform-wide: no segment approves on its own, whatever its mode.",
+      "automatic": {
+        "confirm": "Turn on automatic approval",
+        "consequences": {
+          "approves": "When every condition is met, the system approves the identity of the guests of this segment on its own, with no person checking. If one is missing, a person decides.",
+          "revocable": "You can go back to observation or suspend the segment at any time."
+        },
+        "description": "{{name}}: do you confirm the «Automatic» mode?",
+        "title": "Turn on automatic approval?"
+      },
+      "automaticNeedsQualification": "«Automatic» can only be chosen for a qualified segment.",
+      "channel": {
+        "androidChrome": "Chrome on Android",
+        "desktopChromium": "Chrome, Edge and similar on a computer",
+        "desktopFirefox": "Firefox on a computer",
+        "desktopSafari": "Safari on a computer",
+        "iosSafari": "Safari on iPhone and iPad",
+        "other": "Any other browser"
+      },
+      "description": "A segment is a property (or all of them), a document type and a type of browser. For each one you choose whether the verification stays in observation, may approve automatically, or is suspended.",
+      "empty": "There is no segment yet: until you add one, every verification stays in observation.",
+      "loadError": "We cannot read the segments of the verification.",
+      "mode": {
+        "automatic": "Automatic",
+        "legend": "Mode of the segment {{name}}",
+        "observation": "Observation",
+        "suspended": "Suspended"
+      },
+      "modeLabel": "Mode",
+      "notApproving": "For now it does not approve automatically.",
+      "observation": "In observation the system works out an automatic decision, but a person always decides.",
+      "policy": {
+        "none": "No decision policy can be used right now.",
+        "provisional": "Provisional",
+        "version": "Decision policy in force: {{version}}."
+      },
+      "qualificationHint": "The qualification of a segment is done by the platform administrators, not from here. Until a segment is qualified it stays in observation.",
+      "qualified": "Qualified",
+      "qualifiedFor": "Qualified for policy {{version}}.",
+      "reason": {
+        "assurance_requires_chip": "A photo is not enough for this document: the chip has to be read, so a person decides.",
+        "auto_approval_disabled": "Automatic approval is switched off platform-wide.",
+        "other": "The reason is not one of those expected: for now a person decides.",
+        "policy_provisional": "The policy in force is provisional: no segment approves automatically.",
+        "policy_unavailable": "No decision policy can be used.",
+        "qualification_mismatch": "The qualification is for another version of the policy or of the models: it needs a new qualification.",
+        "segment_not_qualified": "Not qualified yet: the platform administrators qualify it.",
+        "segment_observation": "The segment is in observation: a person decides.",
+        "segment_suspended": "The segment is suspended: a person decides."
+      },
+      "retry": "Try again",
+      "saveFailed": "We could not save the segment.",
+      "saved": "Segment updated",
+      "suspend": {
+        "confirm": "Suspend the segment",
+        "description": "{{name}}: from now on a person always decides. The reason stays on record and the administrators of your organization can read it.",
+        "reasonHint": "At most 200 characters.",
+        "reasonLabel": "Reason for the suspension",
+        "title": "Suspend this segment?"
+      },
+      "suspendedReason": "Reason for the suspension: {{reason}}",
+      "title": "Segments of the verification"
+    },
     "thresholdsRange": "The thresholds go from {{min}} to {{max}}: the higher the value, the stricter the comparison.",
     "title": "Identity check"
   },
@@ -6641,6 +6721,18 @@
       "SingleGuest": "Single guest"
     },
     "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "A person checks your identity, with no automatic face comparison. No consent to the face check is needed.",
+          "label": "Verification by a person",
+          "switch": "Switch to verification by a person"
+        },
+        "automatic": {
+          "hint": "You photograph your document and show your face to the camera. It needs your consent, written above.",
+          "label": "Automatic verification"
+        },
+        "title": "How would you like to be verified?"
+      },
       "document": {
         "back": {
           "fileLabel": "Photo of the back of the identity document",
@@ -6723,6 +6815,10 @@
           "noReason": "The check did not pass this time.",
           "title": "We could not verify you yet"
         }
+      },
+      "unsupported": {
+        "text": "This page cannot do this step of the verification yet. You can ask for a person to check your identity: whoever manages the property will be told.",
+        "title": "This step needs a person"
       }
     },
     "invoice": {
@@ -9814,14 +9910,149 @@
     "signIn": "Sign in"
   },
   "embed": {
+    "booking": {
+      "more": {
+        "button": "Show more homes",
+        "shown": "Showing {{shown}} of {{total}} homes"
+      },
+      "noResults": {
+        "capacity": "The homes of this site sleep up to {{count}} people.",
+        "dates": "The homes are already booked on these dates. Try other dates, nearby ones too.",
+        "none": "No home can be booked online right now."
+      }
+    },
     "error": {
       "description": "We could not reach the server. Please try again shortly.",
       "title": "We could not load the content"
+    },
+    "guestAccess": {
+      "label": "Manage your booking",
+      "submit": "Continue"
     },
     "loading": "Loading…",
     "notFound": {
       "description": "We can't find the booking site this widget should show.",
       "title": "Site not found"
+    },
+    "property": {
+      "backToResults": "Back to results",
+      "navLabel": "Navigation for this home",
+      "notFound": {
+        "description": "The link may be old or incomplete, or the home can no longer be booked online."
+      },
+      "openOnSite": "Open on the site"
+    },
+    "settings": {
+      "description": "Bring booking to the website you already have: choose the widget, copy the code or use the WordPress plugin.",
+      "focus": {
+        "description": "Copy the code into your site. The widget in the preview is the real one.",
+        "title": "Choose what to embed"
+      },
+      "gtm": {
+        "cleared": "Container ID removed",
+        "description": "If you use Google Tag Manager, write your container here: the booking pages on your domain load it, only with the guest's consent. Leave it empty to use none.",
+        "failed": "We could not save the container ID: try again shortly.",
+        "hint": "GTM- followed by 4 to 12 letters or digits.",
+        "invalid": "This is not a valid container ID: it must be GTM- followed by 4 to 12 letters or digits (for example GTM-ABC123).",
+        "label": "Container ID",
+        "placeholder": "GTM-ABC123",
+        "save": "Save",
+        "saved": "Container ID saved",
+        "title": "Google Tag Manager"
+      },
+      "loadError": "We cannot read the settings of your domain.",
+      "loading": "Loading…",
+      "noOrg": "No organization found for your account.",
+      "picker": {
+        "label": "What to embed"
+      },
+      "plugin": {
+        "description": "If your site runs on WordPress you do not need to paste any code.",
+        "download": "Download the plugin",
+        "step1": "Install and activate the CasaZen plugin on your WordPress site.",
+        "step2Own": "In the plugin settings, write the CasaZen address: {{address}}.",
+        "step2Slug": "In the plugin settings, write the CasaZen address ({{address}}) and the organization slug ({{slug}}).",
+        "step3": "Open the guided setup: it creates the pages “Book”, “Online check-in” and “Owner area”.",
+        "title": "WordPress plugin"
+      },
+      "preview": {
+        "failed": "We could not load the preview from {{address}}: the address may not be active yet or may not be answering.",
+        "hint": "This is the real widget. If you try to book, the payment opens in a full page and you leave this one: use the back button of your browser to return.",
+        "hintSearch": "This is the real bar, as your visitors see it. Here it checks the dates and the guests but does not change page: on your site it takes them to the page you wrote.",
+        "loading": "Loading the preview…",
+        "region": "Widget preview",
+        "retry": "Try again",
+        "title": "Preview",
+        "waiting": "The preview appears as soon as the choice is complete."
+      },
+      "property": {
+        "empty": "No home is published on your site yet: publish one to embed it.",
+        "label": "Home",
+        "loadError": "We cannot read your homes.",
+        "loading": "Loading your homes…"
+      },
+      "restricted": {
+        "description": "The domain and the code to embed are managed by your organization's administrator: contact the administrator to use them.",
+        "title": "Reserved for the organization administrator"
+      },
+      "retry": "Try again",
+      "search": {
+        "destinationsFailed": "We cannot read the places of your site.",
+        "destinationsIncluded_one": "The bar offers {{count}} place of your site, as they are today. After adding homes in a new place, copy the code again.",
+        "destinationsIncluded_other": "The bar offers {{count}} places of your site, as they are today. After adding homes in a new place, copy the code again.",
+        "destinationsNone": "Your site has no places to offer yet: the bar will only ask for the dates and the guests.",
+        "targetHint": "The bar takes the guest there with the dates and the guests chosen. Write the full address.",
+        "targetInvalid": "Write a full address that starts with http:// or https://, without a user name or password.",
+        "targetLabel": "Page of your site with the booking engine",
+        "targetPlaceholder": "https://www.example.com/book"
+      },
+      "snippet": {
+        "copied": "Copied",
+        "copy": "Copy",
+        "copyFailed": "We could not copy: select the text and copy it by hand.",
+        "hint": "Paste it where you want the widget on the page. In WordPress, use a “Custom HTML” block.",
+        "title": "Code to paste",
+        "waiting": {
+          "destinations": "Reading the places of your site…",
+          "destinationsFailed": "The code waits for the places of your site: try reading them again.",
+          "homesFailed": "The code waits for your homes: try reading them again.",
+          "property": "Choose a home to see the code.",
+          "target": "Write the address of the page to see the code."
+        }
+      },
+      "status": {
+        "domain": "Domain",
+        "guestArea": "Guest area",
+        "links": "Links you send",
+        "linksCasazen": "stay the CasaZen ones",
+        "linksOwn": "start from your domain",
+        "manage": "Manage the domain",
+        "noDomain": "Without a verified domain the code uses the CasaZen address and the name of your site ({{slug}}): once the domain is active it will use yours.",
+        "noDomainValue": "none yet",
+        "ownerPortal": "Owner portal",
+        "surfaceCasazen": "on the CasaZen address",
+        "surfaceOwn": "on your domain",
+        "title": "Your domain"
+      },
+      "title": "Embed in your site",
+      "widgets": {
+        "booking": {
+          "help": "The whole booking engine: dates, guests and the homes that are available.",
+          "label": "Booking"
+        },
+        "guestAccess": {
+          "help": "The entry of your guests: they write the code of their booking and manage the stay in a full page.",
+          "label": "Guest area"
+        },
+        "property": {
+          "help": "The page of one home, with its calendar and price.",
+          "label": "One home"
+        },
+        "search": {
+          "help": "A bar with dates and guests for the first page of your site: it takes the guest to your booking engine.",
+          "label": "Search bar"
+        }
+      }
     },
     "title": "Book · {{name}}",
     "unavailable": {
@@ -16781,6 +17012,7 @@
     "longRentPayments": "Condominium payments",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
+    "embed": "Embed in your site",
     "organization": "Organization",
     "accountSettings": "Settings",
     "settings": "Settings",
@@ -17024,12 +17256,12 @@
       "fiscalDocumentIssued": "A fiscal document was issued for a booking.",
       "fiscalDocumentSdiRejected": "The SDI rejected an invoice: it needs to be corrected.",
       "touristTaxPaid": "A guest paid the tourist tax online.",
+      "domainVerified": "Your domain has been verified: it is now active.",
       "otaReviewActionFailed": "A reply to a review, or your review of a guest, did not reach the portal: try again from the review.",
       "otaReviewReceived": "A guest left a review.",
-      "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened.",
-      "domainVerified": "Your domain has been verified: it is now active.",
       "ownerLoginFailed": "Owner sign-in on your domain could not be activated: try again from the domain settings.",
       "ownerLoginReady": "Owner sign-in on your domain is active.",
+      "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened.",
       "swissNotificationDeclared": "Someone on your team updated the notification to the authority of an arrival.",
       "swissNotificationDue": "The guests of an arrival must be notified to the cantonal authority by the deadline.",
       "swissNotificationOverdue": "The deadline to notify the cantonal authority of the guests of an arrival has passed.",
@@ -27740,6 +27972,9 @@
     "zoomAnnounce": "Map {{km}} km wide",
     "zoomIn": "Closer",
     "zoomOut": "Farther"
+  },
+  "siteMoney": {
+    "currencyNotAvailable": "currency not available"
   },
   "siteReviews": {
     "count_one": "{{count}} review",

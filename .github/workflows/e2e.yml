@@ -141,3 +141,43 @@ jobs:
           path: test-results/**/owner-profile-*.png
           if-no-files-found: ignore
           retention-days: 7
+
+  # The cross-origin proof of the embeddable widgets (NF-150, E43): a page of ANOTHER origin loads the real built `embed.js`. Playwright builds the app and serves it
+  # (`webServer` of the mode E2E_EMBED), answers the two fictitious https origins itself (the agency's WordPress site and its booking domain) and mocks the API: no real
+  # network, no certificate. One job, outside the shard matrix: the six shards never run the spec (`testIgnore` of the default project).
+  e2e-embed:
+    name: E2E embed (cross-origin)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      # The step builds the whole app: the `webServer` of Playwright runs `npm run build` and passes its environment on (`{ ...process.env, ...env }`).
+      # On Node 20 a process dies at about 2 GB of heap ("JavaScript heap out of memory", exit 134), and that build needs more at times, so that a
+      # rerun sometimes passes: the heap of every Node process of the job is raised to 4 GB.
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Build the app and run the cross-origin proof
+        run: npm run test:e2e:embed
+        env:
+          CI: true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-embed-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

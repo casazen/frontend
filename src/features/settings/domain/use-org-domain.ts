@@ -33,6 +33,11 @@ export interface OrgBookingSite {
    */
   status: 'ready' | 'loading' | 'restricted' | 'failed';
   retry: () => void;
+  /**
+   * The domain settings the links were built from, for a page that shows more of them than the address (the surfaces, the tracking: `Incorpora nel tuo sito`, E41/F03/US01). Only with
+   * `status` `ready`: a read that failed leaves the settings of the last one that worked in the query, and they are not given out as if they were current.
+   */
+  config?: OrgDomainConfig;
 }
 
 /**
@@ -49,12 +54,13 @@ export function useOrgBookingSite(orgId: string | undefined, orgSlug: string | n
   // An answer with no addresses in it is a read that failed too, not one that is still on its way.
   const publicUrls = canRead && !isError ? data?.publicUrls : undefined;
   const status = !canRead ? 'restricted' : isError || (data && !data.publicUrls) ? 'failed' : data ? 'ready' : 'loading';
+  const config = status === 'ready' ? data : undefined;
 
   return useMemo(() => {
     if (!orgSlug) return null;
     const site = resolveBookingSite({ orgSlug, publicUrls, appOrigin: window.location.origin });
-    return { site, status, retry: () => void refetch() };
-  }, [orgSlug, publicUrls, status, refetch]);
+    return { site, status, retry: () => void refetch(), config };
+  }, [orgSlug, publicUrls, status, refetch, config]);
 }
 
 export function useSetOrgDomain(orgId?: string) {

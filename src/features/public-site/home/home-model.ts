@@ -102,7 +102,8 @@ export function zonesOf(cards: readonly PublicStayCard[], destinations: readonly
       name: comune,
       count: homes.length,
       fromPerNightCents: Math.min(...homes.map((home) => home.price.perNightCents)),
-      currency: homes[0].price.currency || 'EUR',
+      // What the first home says, as it says it: a home that says none leaves the zone with none, and the price is then written with the phrase that says so.
+      currency: homes[0].price.currency,
       photo: homes.flatMap((home) => home.photos)[0],
       lat: middle((home) => home.latitude),
       lon: middle((home) => home.longitude),

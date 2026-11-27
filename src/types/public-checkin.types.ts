@@ -78,7 +78,7 @@ export interface PublicCheckInGuestPrefill {
 
 /**
  * Context of `GET /public/checkin/{token}`. Once the guest has submitted (`completed`), the API returns only
- * `completed` and `status`: no booking data and no guest data.
+ * `completed`, `status` and `orgSlug` (public data): no booking data and no guest data.
  */
 export interface PublicCheckInContextDto {
   houseRules?: string | null;
@@ -98,6 +98,11 @@ export interface PublicCheckInContextDto {
   /** Version of the privacy notice shown (art. 13 GDPR); absent when not configured. */
   privacyNoticeVersion?: string;
   privacyNoticeOrgSlug?: string;
+  /**
+   * Slug of the agency the link belongs to (NF-140): sent for every usable link, whether or not the agency has a published privacy notice. The check-in page of an agency's own domain is
+   * shown only for the agency of that domain. Optional so that an answer of a backend that does not send it yet still types; the guard then reads `privacyNoticeOrgSlug`.
+   */
+  orgSlug?: string;
   /** Version of the optional marketing consent text; absent when the consent is not offered. */
   marketingConsentVersion?: string;
   /**
@@ -315,8 +320,14 @@ export interface CheckInLinkResponse {
   emailError?: string | null;
 }
 
-/** The steps of the identity verification as the page shows them (API `IdentityVerificationSteps`). */
-export type IdentityVerificationStep = 'consent' | 'document' | 'selfie' | 'done' | 'operator';
+/**
+ * The steps of the identity verification as the API names them (`IdentityVerificationSteps`). `presence` is the step of the self-hosted flow (E70-E74): this page has no screen for it yet, so it shows the way to a person
+ * instead (and so does any step of the future that is not named here).
+ */
+export type IdentityVerificationStep = 'consent' | 'document' | 'selfie' | 'presence' | 'done' | 'operator';
+
+/** What the guest chose when the identity step opened (API `IdentityChoices`): the automatic verification, or a person (the assisted path). */
+export type IdentityChoice = 'automatic' | 'assisted';
 
 /** What the guest is told after an attempt (API `IdentityVerificationGuestResults`): passed, try again, or a person verifies. */
 export type IdentityVerificationResultKind = 'ok' | 'retry' | 'operator';
@@ -346,6 +357,25 @@ export interface IdentityVerificationState {
   documentSides?: string[];
   /** The side of a document of two sides still to photograph (`front` or `back`), so a page that is opened again asks for it; null (or absent) when none is missing. */
   documentSideNeeded?: DocumentSide | null;
+  /**
+   * The session follows the self-hosted flow (E70/F02/US01/T01, NF-188; backend flag `CheckInIdentitySelfHosted`). False, or absent while the API is older, on the legacy path: every member below keeps its default
+   * and the page is the one it always was. Add-only field.
+   */
+  selfHosted?: boolean;
+  /** The identity step was opened and bound to one guest of the session. Add-only field. */
+  opened?: boolean;
+  /** The version of the notice (the text of the consent) recorded at the opening; null before it. Add-only field. */
+  noticeVersion?: string | null;
+  /** What the guest chose: `automatic` (a consent) or `assisted` (a refusal, or the request for a person); null before the choice. Add-only field. */
+  choice?: IdentityChoice | null;
+  /** The format of the registry the document was read as (the Italian electronic identity card first); null before it was recognised. Add-only field. */
+  formatId?: string | null;
+  /** The one guided retry of a correctable defect is still available. Add-only field. */
+  guidedRetryAvailable?: boolean;
+  /** The verification is closed: no document or presence step is accepted any more (409 `identity_already_closed`), and the request for a person stays open. Add-only field. */
+  closed?: boolean;
+  /** What the guest sees of a closed verification: `ok` (approved) or `operator` (a person has it); null before it is decided. Add-only field. */
+  outcome?: IdentityVerificationResultKind | null;
 }
 
 /** The side of an identity document a picture is of: a card has the face on the front and, on the Italian electronic identity card, the lines of letters (MRZ) on the back. */
@@ -409,6 +439,22 @@ export interface IdentitySelfieResponse {
 export interface IdentityOperatorResponse {
   result: string;
   operatorPathOpen: boolean;
+  state: IdentityVerificationState;
+}
+
+/**
+ * What `POST /api/public/checkin/{token}/identity/open` is sent (E70/F02/US01/T01, NF-188): the version of the text of the consent the page shows, as `GET .../legal-texts` served it. Any other version is
+ * 422 `notice_version_unknown` and nothing is recorded.
+ */
+export interface IdentityOpenRequest {
+  noticeVersion: string;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/identity/open`: the state of the verification after the opening (`selfHosted`, `opened`, `noticeVersion`, `choice`, `closed`, `outcome` among the rest). The call is
+ * idempotent: later calls change nothing. A verification that is closed answers 409 `identity_already_closed` instead, with the same `state` in the body.
+ */
+export interface IdentityOpenResponse {
   state: IdentityVerificationState;
 }
 

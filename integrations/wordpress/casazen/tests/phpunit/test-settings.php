@@ -64,7 +64,7 @@ class Test_Settings extends WP_UnitTestCase {
 
 		Settings::install();
 
-		$autoload = $wpdb->get_var( $wpdb->prepare( "SELECT autoload FROM {$wpdb->options} WHERE option_name = %s", Settings::OPTION ) );
+		$autoload = $wpdb->get_var( $wpdb->prepare( "SELECT autoload FROM {$wpdb->options} WHERE option_name = %s", Settings::OPTION ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- the test reads the autoload flag that WordPress stored.
 		$this->assertContains( $autoload, array( 'no', 'off' ) );
 		$this->assertSame( Settings::defaults(), get_option( Settings::OPTION ) );
 	}
@@ -112,26 +112,26 @@ class Test_Settings extends WP_UnitTestCase {
 	 */
 	public static function provider_refused_addresses() {
 		return array(
-			'javascript'                => array( 'javascript:alert(1)', 'address_scheme' ),
-			'javascript upper case'     => array( 'JAVASCRIPT:alert(1)', 'address_scheme' ),
-			'data'                      => array( 'data:text/html;base64,PHNjcmlwdD4=', 'address_scheme' ),
-			'ftp'                       => array( 'ftp://prenota.example.com', 'address_scheme' ),
-			'a bare host'               => array( 'prenota.example.com', 'address_scheme' ),
-			'a bare path'               => array( '/just/a/path', 'address_scheme' ),
-			'scheme relative'           => array( '//prenota.example.com', 'address_scheme' ),
-			'user and password'         => array( 'https://user:pass@prenota.example.com', 'address_credentials' ),
-			'user only'                 => array( 'https://user@prenota.example.com', 'address_credentials' ),
-			'http on a real host'       => array( 'http://prenota.example.com', 'address_insecure' ),
-			'localhost inside a name'   => array( 'http://localhost.example.com', 'address_insecure' ),
-			'ends with localhost'       => array( 'http://evil-localhost', 'address_insecure' ),
-			'no host'                   => array( 'https://', 'address_invalid' ),
-			'a space inside'            => array( 'https://exa mple.com', 'address_invalid' ),
-			'a label with a hyphen'     => array( 'https://-bad-.example.com', 'address_invalid' ),
-			'a port out of range'       => array( 'https://prenota.example.com:99999', 'address_invalid' ),
-			'an IPv6 literal'           => array( 'https://[::1]/', 'address_invalid' ),
-			'a trailing dot'            => array( 'https://prenota.example.com.', 'address_invalid' ),
-			'markup in the host'        => array( 'https://x"><script>.example', 'address_invalid' ),
-			'not a string'              => array( array( 'https://prenota.example.com' ), 'address_invalid' ),
+			'javascript'              => array( 'javascript:alert(1)', 'address_scheme' ),
+			'javascript upper case'   => array( 'JAVASCRIPT:alert(1)', 'address_scheme' ),
+			'data'                    => array( 'data:text/html;base64,PHNjcmlwdD4=', 'address_scheme' ),
+			'ftp'                     => array( 'ftp://prenota.example.com', 'address_scheme' ),
+			'a bare host'             => array( 'prenota.example.com', 'address_scheme' ),
+			'a bare path'             => array( '/just/a/path', 'address_scheme' ),
+			'scheme relative'         => array( '//prenota.example.com', 'address_scheme' ),
+			'user and password'       => array( 'https://user:pass@prenota.example.com', 'address_credentials' ),
+			'user only'               => array( 'https://user@prenota.example.com', 'address_credentials' ),
+			'http on a real host'     => array( 'http://prenota.example.com', 'address_insecure' ),
+			'localhost inside a name' => array( 'http://localhost.example.com', 'address_insecure' ),
+			'ends with localhost'     => array( 'http://evil-localhost', 'address_insecure' ),
+			'no host'                 => array( 'https://', 'address_invalid' ),
+			'a space inside'          => array( 'https://exa mple.com', 'address_invalid' ),
+			'a label with a hyphen'   => array( 'https://-bad-.example.com', 'address_invalid' ),
+			'a port out of range'     => array( 'https://prenota.example.com:99999', 'address_invalid' ),
+			'an IPv6 literal'         => array( 'https://[::1]/', 'address_invalid' ),
+			'a trailing dot'          => array( 'https://prenota.example.com.', 'address_invalid' ),
+			'markup in the host'      => array( 'https://x"><script>.example', 'address_invalid' ),
+			'not a string'            => array( array( 'https://prenota.example.com' ), 'address_invalid' ),
 		);
 	}
 
@@ -270,9 +270,21 @@ class Test_Settings extends WP_UnitTestCase {
 	 * The mapping is read again from what it stored (an array), so saving twice changes nothing.
 	 */
 	public function test_language_map_accepts_what_it_stored() {
-		$parsed = Settings::parse_language_map( array( 'it_IT' => 'it', 'de' => 'en', 'xx' => 'nope' ) );
+		$parsed = Settings::parse_language_map(
+			array(
+				'it_IT' => 'it',
+				'de'    => 'en',
+				'xx'    => 'nope',
+			)
+		);
 
-		$this->assertSame( array( 'it_IT' => 'it', 'de' => 'en' ), $parsed['map'] );
+		$this->assertSame(
+			array(
+				'it_IT' => 'it',
+				'de'    => 'en',
+			),
+			$parsed['map']
+		);
 		$this->assertCount( 1, $parsed['rejected'] );
 		$this->assertSame( "it_IT = it\nde = en", Settings::language_map_to_text( $parsed['map'] ) );
 	}
@@ -314,7 +326,16 @@ class Test_Settings extends WP_UnitTestCase {
 
 		// A value that was polluted in the database (written without the sanitisation) is read back as the four keys too.
 		remove_filter( 'sanitize_option_' . Settings::OPTION, array( Settings::class, 'sanitize' ) );
-		update_option( Settings::OPTION, array_merge( $clean, array( 'token' => 'abc', 'api_key' => 'sk_live_secret' ) ) );
+		update_option(
+			Settings::OPTION,
+			array_merge(
+				$clean,
+				array(
+					'token'   => 'abc',
+					'api_key' => 'sk_live_secret',
+				)
+			)
+		);
 		$this->assertArrayHasKey( 'token', get_option( Settings::OPTION ), 'The polluted value was stored as it is.' );
 		$keys = array_keys( Settings::get() );
 		sort( $keys );

@@ -1,0 +1,35 @@
+# What stays in the repository and never goes into the ZIP of the plugin (tools/build-zip.mjs reads this file).
+#
+# One pattern per line, the rules of a .gitignore without negation:
+#   - a pattern without a slash (`*.zip`, `.*`) matches a name at any depth;
+#   - a pattern with a slash (`/tests`, `blocks/src`) is relative to this folder;
+#   - `*` stays inside one name, `**` crosses folders; a matched folder is left out with everything in it.
+#
+# The ZIP holds: casazen.php, uninstall.php, includes/, blocks/build/, languages/, readme.txt and license.txt.
+# includes/build-config.php (the address of the CasaZen console) is not a source file: tools/build-zip.mjs writes it into the ZIP with
+# --app-origin, after these rules are applied, and refuses a plugin folder that holds one. No rule below may leave it out.
+
+# Dotfiles: .distignore, .gitignore, .wp-env.json, .phpunit.result.cache, ...
+.*
+
+# Sources and the tools that are not part of the plugin
+/blocks/src
+/tests
+/tools
+
+# What the build tools install or write
+/node_modules
+/vendor
+/dist
+/build
+*.zip
+*.log
+
+# Package and configuration files of the development tools
+/package*.json
+/composer.*
+/phpcs.xml.dist
+/phpunit.xml.dist
+
+# The guide for GitHub readers; the guide inside WordPress is readme.txt
+/README.md

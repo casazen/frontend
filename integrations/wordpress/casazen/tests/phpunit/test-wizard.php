@@ -11,6 +11,8 @@ use Casazen\Pages;
 use Casazen\Settings;
 use Casazen\Wizard;
 
+// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound -- the exception below is a helper of the test class of this file alone.
+
 /**
  * Thrown by the `wp_redirect` filter of the tests, so that the handler does not reach its `exit`.
  */
@@ -211,7 +213,7 @@ class Test_Wizard extends WP_UnitTestCase {
 	 */
 	private function submit( array $posted, $nonce = '' ) {
 		$_POST    = array( 'casazen_wizard' => wp_slash( $posted ) );
-		$_REQUEST = $_POST;
+		$_REQUEST = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the test builds the request, with its nonce, that the handler verifies.
 		if ( '' === $nonce ) {
 			$nonce = wp_create_nonce( Wizard::ACTION );
 		}
@@ -221,7 +223,7 @@ class Test_Wizard extends WP_UnitTestCase {
 		}
 
 		$catch = static function ( $location ) {
-			throw new Casazen_Test_Wizard_Redirect( $location );
+			throw new Casazen_Test_Wizard_Redirect( $location ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- the address goes back to the test, it is never printed.
 		};
 		add_filter( 'wp_redirect', $catch );
 		try {
@@ -467,7 +469,7 @@ class Test_Wizard extends WP_UnitTestCase {
 		$this->assertSame( $this->role_pages(), $ids );
 
 		// The titles, the box «publish» and the other choices of the second run do not matter either.
-		$other  = $this->form(
+		$other = $this->form(
 			array(
 				'publish' => '',
 				'menu'    => (string) $menu_id,
@@ -577,7 +579,7 @@ class Test_Wizard extends WP_UnitTestCase {
 				'menu-item-position' => 1,
 			)
 		);
-		$blog = wp_update_nav_menu_item(
+		$blog    = wp_update_nav_menu_item(
 			$menu_id,
 			0,
 			array(
@@ -598,7 +600,7 @@ class Test_Wizard extends WP_UnitTestCase {
 			)
 		);
 		update_post_meta( $guest, Pages::META_KEY, Pages::ROLE_GUEST_ACCESS );
-		$hand = wp_update_nav_menu_item(
+		$hand       = wp_update_nav_menu_item(
 			$menu_id,
 			0,
 			array(
@@ -763,7 +765,7 @@ class Test_Wizard extends WP_UnitTestCase {
 
 		$this->submit( $form );
 
-		$result = Wizard::take_result();
+		$result  = Wizard::take_result();
 		$booking = get_post( $result['pages'][ Pages::ROLE_BOOKING ]['id'] );
 		$this->assertSame( 'My "booking" page', $booking->post_title );
 		$this->assertStringNotContainsString( '<', $booking->post_title );
@@ -787,16 +789,16 @@ class Test_Wizard extends WP_UnitTestCase {
 			wp_delete_post( $page_id, true );
 		}
 		$_POST    = array(
-			'casazen_wizard'        => array(
+			'casazen_wizard'   => array(
 				'pages'   => 'not an array',
 				'publish' => array( 'x' ),
 				'menu'    => array( '5' ),
 			),
 			Admin::NONCE_FIELD => wp_create_nonce( Wizard::ACTION ),
 		);
-		$_REQUEST = $_POST;
+		$_REQUEST = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the test builds the request, with its nonce, that the handler verifies.
 		$catch    = static function ( $location ) {
-			throw new Casazen_Test_Wizard_Redirect( $location );
+			throw new Casazen_Test_Wizard_Redirect( $location ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- the address goes back to the test, it is never printed.
 		};
 		add_filter( 'wp_redirect', $catch );
 		try {
@@ -929,7 +931,15 @@ class Test_Wizard extends WP_UnitTestCase {
 		}
 
 		// With a state that lies, nothing is believed either.
-		update_option( Wizard::STATE_OPTION, array( 'completed' => false, 'time' => 1, 'pages' => array() ), false ); // phpcs:ignore WordPress.Arrays.MultipleStatementAlignment
+		update_option(
+			Wizard::STATE_OPTION,
+			array(
+				'completed' => false,
+				'time'      => 1,
+				'pages'     => array(),
+			),
+			false
+		);
 		$this->assertSame( 'exists', Wizard::run( $this->form() )['pages'][ Pages::ROLE_BOOKING ]['status'] );
 	}
 
@@ -1166,12 +1176,28 @@ class Test_Wizard extends WP_UnitTestCase {
 	public function test_nothing_is_ever_deleted() {
 		$first = Wizard::run( $this->form() );
 		wp_trash_post( $first['pages'][ Pages::ROLE_OWNER_AREA ]['id'] );
-		$count = count( get_posts( array( 'post_type' => 'page', 'post_status' => 'any', 'numberposts' => -1, 'fields' => 'ids' ) ) ); // phpcs:ignore WordPress.Arrays.MultipleStatementAlignment
+		$count = count( $this->all_page_ids() );
 
 		Wizard::run( $this->form() );
 
 		$this->assertSame( 'trash', get_post( $first['pages'][ Pages::ROLE_OWNER_AREA ]['id'] )->post_status, 'A trashed page stays in the trash.' );
-		$this->assertSame( $count + 1, count( get_posts( array( 'post_type' => 'page', 'post_status' => 'any', 'numberposts' => -1, 'fields' => 'ids' ) ) ) ); // phpcs:ignore WordPress.Arrays.MultipleStatementAlignment
+		$this->assertSame( $count + 1, count( $this->all_page_ids() ) );
 		$this->assertSame( $first['pages'][ Pages::ROLE_BOOKING ]['id'], Pages::find( Pages::ROLE_BOOKING, 'any' ) );
+	}
+
+	/**
+	 * The ids of every page, in any status but the trash.
+	 *
+	 * @return int[]
+	 */
+	private function all_page_ids() {
+		return get_posts(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'any',
+				'numberposts' => -1,
+				'fields'      => 'ids',
+			)
+		);
 	}
 }

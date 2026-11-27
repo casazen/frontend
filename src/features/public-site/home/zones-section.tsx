@@ -59,7 +59,7 @@ export function ZonesSection({ zones, searchPath }: { zones: readonly HomeZone[]
                   <strong>{zone.name}</strong>
                   <small>
                     {t('siteHome.categories.homes', { count: zone.count })} · {t('publicSite.card.from')}{' '}
-                    {formatPrice(zone.fromPerNightCents, zone.currency, locale)} / {t('siteHome.card.night')}
+                    {formatPrice(zone.fromPerNightCents, zone.currency, locale, t)} / {t('siteHome.card.night')}
                   </small>
                 </span>
                 <span className="hm-zone__go">

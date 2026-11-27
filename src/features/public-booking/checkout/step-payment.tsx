@@ -69,7 +69,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
     offers.some((offer) => offer.id === selection.id && offer.unitPrice === selection.expectedUnitPrice));
   const hasChangedExtras = !!ready && selections.length !== (draft.extras?.length ?? 0);
   const extrasCents = checkoutExtraLines(offers, selections, draft.mode).reduce((sum, line) => sum + line.cents, 0);
-  const total = ready ? formatPrice(quoteTotalCents(ready.quote) + extrasCents, currency, locale) : '';
+  const total = ready ? formatPrice(quoteTotalCents(ready.quote) + extrasCents, currency, locale, t) : '';
   const request = draft.mode === 'request';
   const pay = !request && draft.pay === 'deadline' && deferredDate ? 'deadline' : 'now';
   const detailsOk = detailsSchema.safeParse(draft.details).success;
@@ -273,7 +273,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
               <div key={offer.id}>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={!!selected} onChange={(event) => change(event.target.checked ? 1 : 0)} />
-                  <span>{offer.name} · {formatPrice(Math.round(offer.unitPrice * 100), currency, locale)}</span>
+                  <span>{offer.name} · {formatPrice(Math.round(offer.unitPrice * 100), currency, locale, t)}</span>
                 </label>
                 {offer.description && <p>{offer.description}</p>}
                 {(offer.requiresApproval || request) && <p>{t(offer.requiresApproval ? 'publicCheckout.extras.approval' : 'publicCheckout.extras.portal')}</p>}

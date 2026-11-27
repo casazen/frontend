@@ -19,6 +19,8 @@ export {
   type View,
 } from './engine/view';
 export { LocalMap } from './components/local-map';
+export { MapCard } from './components/map-card';
+export { mapCardOfPin, type MapCardData } from './components/map-card-data';
 export { RegionMap } from './components/region-map';
 export type { MapPinData, RegionMapProps } from './components/types';
 export type { LocalMapProps, LocalPoi } from './components/types-local';

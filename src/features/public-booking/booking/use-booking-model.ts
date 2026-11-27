@@ -138,7 +138,8 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
     online,
     acceptsBookings,
     fromPriceCents,
-    currency: quote.status === 'ready' ? quote.quote.currency : property.currency || 'EUR',
+    // The currency the data say: the quote's own once it is in, else the home's. Never a default: a home that says none is written with no symbol.
+    currency: quote.status === 'ready' ? quote.quote.currency : property.currency,
     checkoutHref,
     linkTo,
   };

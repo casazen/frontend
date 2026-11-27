@@ -40,6 +40,11 @@ export interface RegionMapProps {
   /** The pin lit because the same item of the list is hovered or focused (see `useMapLink`), and the way back. */
   activeId?: string | null;
   onActiveChange?: (id: string | null) => void;
+  /**
+   * The map does not draw the card of the selected pin (over the map, or a sheet from the bottom of the window on a phone): the page that asks it
+   * shows the card where it wants (`MapCard` with `layout="flow"`), for a page whose window is as tall as its content.
+   */
+  hideCard?: boolean;
   /** Pins to emphasise. */
   highlightIds?: readonly string[];
   /** The frame to start from; without it the map is fitted to the pins, with a margin. */

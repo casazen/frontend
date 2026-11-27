@@ -25,6 +25,7 @@
 	},
 	"scripts": {
 		"test": "phpunit",
-		"lint": "phpcs --standard=WordPress,PHPCompatibilityWP --runtime-set testVersion 7.4- --runtime-set minimum_supported_wp_version 6.4 --extensions=php --ignore=*/vendor/*,*/node_modules/* ."
+		"lint": "phpcs",
+		"lint:fix": "phpcbf"
 	}
 }

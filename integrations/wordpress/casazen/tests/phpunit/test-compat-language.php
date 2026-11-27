@@ -63,13 +63,13 @@ class Test_Compat_Language extends WP_UnitTestCase {
 	 *
 	 * @param string|false $current      The slug of the current language, or false for none.
 	 * @param array        $translations Page id => { language => id of the translation }.
-	 * @param string       $default      The default language.
+	 * @param string       $fallback     The default language.
 	 */
-	private function play_polylang( $current, array $translations = array(), $default = 'it' ) {
+	private function play_polylang( $current, array $translations = array(), $fallback = 'it' ) {
 		$GLOBALS['casazen_pll'] = array(
 			'current'      => $current,
 			'translations' => $translations,
-			'default'      => $default,
+			'default'      => $fallback,
 			'languages'    => array(),
 		);
 
