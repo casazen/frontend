@@ -588,6 +588,7 @@
   "accountBilling": {
     "compare": {
       "current": "Your plan",
+      "modulesNote": "With the guided registration, the Starter plan includes no modules (for example {{modules}}): they can be added from the Pro plan onwards. Without the module, among other things, automatic Alloggiati Web and ISTAT, Stripe Connect, the site look and domain, channels and interventions stay locked.",
       "note": "Prices exclude VAT. With an active subscription the change is confirmed in the Stripe portal.",
       "overLimit_one": "You have {{count}} property and the plan includes {{allowance}}: it stays, but you will not be able to add more until you are back within the limit.",
       "overLimit_other": "You have {{count}} properties and the plan includes {{allowance}}: they all stay, but you will not be able to add more until you are back within the limit.",
@@ -622,8 +623,8 @@
       "nextCharge": "Next charge",
       "noCharge": "None",
       "notice": {
-        "openAccess": "Open access: for now we charge nothing and every feature is unlocked. The plan you choose today applies when billing restarts: we will let you know before it does.",
-        "openAccessPricesPending": "Open access: for now we charge nothing and every feature is unlocked. The prices of the plans are being defined: we will let you know before billing restarts.",
+        "openAccess": "Open access: for now properties, people and the custom domain follow a plan higher than yours. Payments do not change: an active subscription is still charged, a plan you choose now is paid from the start, and paid modules stay the ones you bought. When open access ends, the limits of the plan you pay for apply: we will tell you beforehand.",
+        "openAccessPricesPending": "Open access: for now properties, people and the custom domain follow a plan higher than yours. An active subscription is still charged and paid modules stay the ones you bought. The prices of the plans are being defined: plans cannot be bought for now, and we will tell you before open access ends.",
         "pricesPending": "The prices of the plans are being defined: they cannot be purchased yet."
       },
       "people": "People",
@@ -2383,6 +2384,7 @@
       "supplierInviteEmailMismatch": "The invitation is for another email: sign in with the account of the email the invitation was sent to.",
       "supplierInviteComuneMismatch": "The invitation is for another municipality: the municipality cannot be changed.",
       "supplierAccountEmailMissing": "Your account has no email, so the registration cannot be verified.",
+      "tenantEmailNotVerified": "To open the tenant area you must first confirm your e-mail address with the verification message. Once done, reload the page.",
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
       "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
@@ -6049,6 +6051,7 @@
       "manual": "Open the CasaZen manual",
       "support": "Write to support",
       "text": "The manual explains every area in plain words. If you get stuck, write to us: we will answer.",
+      "textNoSupport": "The manual explains every area in plain words.",
       "title": "Need a hand?"
     },
     "open": "Open the guide",
@@ -7379,7 +7382,7 @@
       "deadlinePassed": "The {{deadline}} deadline has passed: enter the CIN as soon as possible.",
       "obligation": "The CIN is mandatory: it must be displayed outside the property and stated in every listing.",
       "penalties": "Penalties (art. 13-ter, par. 9): €800 to €8,000 for a missing CIN, €500 to €5,000 for not displaying it or not stating it in listings.",
-      "requestOnBdsr": "Request the CIN on BDSR"
+      "requestOnBdsr": "Request CIN on the portal"
     }
   },
   "commandPalette": {
@@ -9613,7 +9616,7 @@
     }
   },
   "directBooking": {
-    "title": "Direct Booking",
+    "title": "Booking site",
     "description": "Your direct booking site. Share it with guests to receive commission-free OTA bookings.",
     "yourSite": "Your booking site",
     "visitDescription": "Visit your public site to see how your guests experience it.",
@@ -11444,7 +11447,7 @@
     "exportPrivate": "Keep it private: anyone with the link can see the dates taken.",
     "exportHowTo": "Where to paste it",
     "exportAirbnbSteps": "in your listing open Availability → Calendar sync → Import calendar, paste the link and give it a name (e.g. CasaZen).",
-    "exportBookingSteps": "in the Extranet open Rates & availability → Sync calendars, add a calendar to import and paste the link.",
+    "exportBookingSteps": "in the Extranet open Rates & availability, in the section for syncing calendars, add a calendar to import and paste the link.",
     "exportRefreshNote": "OTAs read the link again from time to time: changes do not show up at once.",
     "copyFailed": "Could not copy: select the link and copy it by hand.",
     "regenerate": "Regenerate link",
@@ -13391,7 +13394,7 @@
       "citizenshipHint": "Needed for the communication to the Questura if the tenant is not a citizen of the European Union.",
       "companyNotice": "A tenant with an 11-digit code is a company: the cedolare secca is not allowed.",
       "contactEmail": "Email",
-      "contactEmailHintTenant": "Only used to send the payment link and the reminders.",
+      "contactEmailHintTenant": "It is the address the tenant uses to open their area in CasaZen (it must be verified) and where we send the payment link and the reminders.",
       "contactPhone": "Phone number",
       "contactPhoneHintTenant": "Include the international prefix: used to contact the tenant and prepare WhatsApp reminders.",
       "countriesEu": "European Union",
@@ -18940,7 +18943,7 @@
     "tier": {
       "agency": "Agency",
       "badge": "Plan",
-      "requires_agency": "This feature requires Agency tier"
+      "requires_agency": "This feature requires the Agency plan"
     }
   },
   "orgSettings": {
@@ -26813,6 +26816,7 @@
     "planSettings": "Plan settings"
   },
   "shared": {
+    "emergencyNotice": "CasaZen is not an emergency service and calls no one: if there is danger (flooding water, a smell of gas, sparks), call a technician or the emergency services right away.",
     "errorBoundary": {
       "title": "Something went wrong",
       "fallbackMessage": "An unexpected error occurred",
@@ -30080,10 +30084,10 @@
       ],
       "bookingTitle": "Booking.com",
       "bookingSteps": [
-        "Log in to the Extranet",
-        "Go to Rates & Availability → Calendar",
-        "Click Export",
-        "Copy the iCal URL shown in the popup",
+        "Log in to the Booking.com Extranet",
+        "In Rates & availability open the section for syncing calendars (the names of the items may change)",
+        "Choose to export the calendar",
+        "Copy the iCal address that appears",
         "Paste it in the CasaZen iCal dialog"
       ],
       "vrboTitle": "VRBO",
@@ -31266,7 +31270,7 @@
       "inviteEmailPlaceholder": "supplier@example.com",
       "inviteSend": "Send invite",
       "inviteHint": "Enter the supplier’s email address. The relationship starts when the profile owner accepts.",
-      "inviteSuccess": "Request recorded. After verification the supplier will receive a link to accept.",
+      "inviteSuccess": "Invitation sent: the supplier receives an e-mail with the link to accept.",
       "inviteError": "Unable to send invite",
       "properties": "Assigned properties",
       "propertiesHint": "If you choose none, the supplier works on all your properties.",
@@ -33667,7 +33671,8 @@
       "reportCount_other": "{{count}} dues",
       "manualTitle": "Manual transfer",
       "manualHint": "If you do not link an account, use these details and then tell the manager.",
-      "noBank": "The transfer details are not available yet.",
+      "manualHintNoBank": "If you do not link an account, pay by bank transfer as your manager told you, then let them know.",
+      "noBank": "CasaZen does not show the IBAN here: use the one your manager gave you.",
       "period": "From {{from}} to {{to}}",
       "status": {
         "Scheduled": "To pay",
@@ -33720,7 +33725,7 @@
       "sent": "Request sent to the manager.",
       "failed": "The request could not be sent.",
       "sentToManager": "The request goes to the manager of the contract. You do not assign a supplier.",
-      "emergencyNotImmediate": "Opening the request does not mean someone is already on the way.",
+      "emergencyNotImmediate": "Opening the request does not mean someone is already on the way: CasaZen is not an emergency service and calls no one. If there is danger (flooding water, a smell of gas, sparks), call a technician or the emergency services right away.",
       "submittedAt": "Sent on {{date}}",
       "urgencyLevel": {
         "Normal": "Normal",
@@ -33827,13 +33832,13 @@
     "urgency": {
       "title": "How urgent is it?",
       "hint": "Choose one level.",
-      "bassa": "Low",
-      "normale": "Normal",
-      "urgente": "Urgent",
+      "bassa": "Normal",
+      "normale": "High",
+      "urgente": "Emergency",
       "detail": {
-        "bassa": "It can wait",
-        "normale": "In the next few days",
-        "urgente": "It is needed soon"
+        "bassa": "It can be scheduled.",
+        "normale": "Needed soon.",
+        "urgente": "Needed now: it cannot wait."
       }
     },
     "note": {

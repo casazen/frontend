@@ -588,6 +588,7 @@
   "accountBilling": {
     "compare": {
       "current": "Il tuo piano",
+      "modulesNote": "Con la registrazione guidata, il piano Starter non include nessun modulo (per esempio {{modules}}): si aggiungono dal piano Pro in poi. Senza il modulo restano bloccati, tra l'altro, Alloggiati Web e ISTAT automatici, Stripe Connect, aspetto e dominio del sito, canali e interventi.",
       "note": "Prezzi IVA esclusa. Con un abbonamento attivo il cambio si conferma sul portale di Stripe.",
       "overLimit_one": "Hai {{count}} immobile e il piano ne include {{allowance}}: resta, ma non potrai aggiungerne finché non rientri.",
       "overLimit_other": "Hai {{count}} immobili e il piano ne include {{allowance}}: restano tutti, ma non potrai aggiungerne finché non rientri.",
@@ -622,8 +623,8 @@
       "nextCharge": "Prossimo addebito",
       "noCharge": "Nessuno",
       "notice": {
-        "openAccess": "Accesso aperto: per ora non addebitiamo nulla e tutte le funzioni sono sbloccate. Il piano che scegli oggi vale quando riprenderà la fatturazione: ti avvisiamo prima che riparta.",
-        "openAccessPricesPending": "Accesso aperto: per ora non addebitiamo nulla e tutte le funzioni sono sbloccate. I prezzi dei piani sono in definizione: ti avvisiamo prima che riparta la fatturazione.",
+        "openAccess": "Accesso aperto: per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo. I pagamenti non cambiano: un abbonamento già attivo continua a essere addebitato, un piano scelto ora si paga da subito e i moduli a pagamento restano quelli che hai acquistato. Quando l'accesso aperto finirà valgono i limiti del piano che paghi: ti avvisiamo prima.",
+        "openAccessPricesPending": "Accesso aperto: per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo. Un abbonamento già attivo continua a essere addebitato e i moduli a pagamento restano quelli che hai acquistato. I prezzi dei piani sono in definizione: per ora non si possono acquistare e ti avvisiamo prima che l'accesso aperto finisca.",
         "pricesPending": "I prezzi dei piani sono in definizione: per ora non si possono acquistare."
       },
       "people": "Persone",
@@ -1706,11 +1707,11 @@
     "planError": "Impossibile verificare il piano dell'organizzazione",
     "planRequired": {
       "action": "Vai al piano",
-      "description": "I rendiconti, le ritenute e i bonifici dei proprietari sono per le organizzazioni con il piano Agenzia, e la tua non lo ha. Puoi cambiare piano dalla pagina del piano e della fatturazione.",
-      "title": "Serve il piano Agenzia"
+      "description": "I rendiconti, le ritenute e i bonifici dei proprietari sono per le organizzazioni con il piano Agency, e la tua non lo ha. Puoi cambiare piano dalla pagina del piano e della fatturazione.",
+      "title": "Serve il piano Agency"
     },
     "refused": {
-      "description": "Il server non ti mostra i soldi dei proprietari: servono il piano Agenzia e il ruolo di titolare o amministratore dell'organizzazione. Se pensi che sia un errore, esci e rientra o chiedi a un amministratore.",
+      "description": "Il server non ti mostra i soldi dei proprietari: servono il piano Agency e il ruolo di titolare o amministratore dell'organizzazione. Se pensi che sia un errore, esci e rientra o chiedi a un amministratore.",
       "title": "Questa pagina non è disponibile per il tuo accesso"
     }
   },
@@ -2383,6 +2384,7 @@
       "supplierInviteEmailMismatch": "L'invito è per un'altra email: accedi con l'account dell'email a cui è arrivato l'invito.",
       "supplierInviteComuneMismatch": "L'invito vale per un altro comune: il comune non si può cambiare.",
       "supplierAccountEmailMissing": "Il tuo account non ha un'email: impossibile verificare la registrazione.",
+      "tenantEmailNotVerified": "Per aprire l'area conduttore devi prima confermare il tuo indirizzo e-mail con il messaggio di verifica. Dopo averlo fatto, ricarica la pagina.",
       "supplierAccountEmailMismatch": "L'email della registrazione deve essere quella del tuo account.",
       "supplierSelfServeUnavailable": "La registrazione autonoma dei fornitori non è ancora disponibile: puoi entrare solo con un invito.",
       "supplierComuneNotPilot": "La registrazione autonoma non è disponibile per questo comune: scegli un comune dell'elenco o chiedi un invito.",
@@ -6049,6 +6051,7 @@
       "manual": "Apri il manuale di CasaZen",
       "support": "Scrivi all'assistenza",
       "text": "Il manuale spiega ogni area con parole semplici. Se ti blocchi, scrivici: ti rispondiamo noi.",
+      "textNoSupport": "Il manuale spiega ogni area con parole semplici.",
       "title": "Ti serve una mano?"
     },
     "open": "Apri la guida",
@@ -7379,7 +7382,7 @@
       "deadlinePassed": "La scadenza del {{deadline}} è superata: inserisci il CIN al più presto.",
       "obligation": "Il CIN è obbligatorio: va esposto all'esterno dell'immobile e indicato in ogni annuncio.",
       "penalties": "Sanzioni (art. 13-ter, c. 9): da €800 a €8.000 per l'assenza del CIN, da €500 a €5.000 per la mancata esposizione o indicazione negli annunci.",
-      "requestOnBdsr": "Richiedi il CIN su BDSR"
+      "requestOnBdsr": "Richiedi il CIN sul portale"
     }
   },
   "commandPalette": {
@@ -9613,7 +9616,7 @@
     }
   },
   "directBooking": {
-    "title": "Direct Booking",
+    "title": "Sito di prenotazione",
     "description": "Il tuo sito di prenotazioni diretto. Condividilo con i tuoi ospiti per ricevere prenotazioni senza commissioni OTA.",
     "yourSite": "Il tuo sito di prenotazioni",
     "visitDescription": "Accedi al sito pubblico per visualizzare come lo vedono i tuoi ospiti.",
@@ -11444,7 +11447,7 @@
     "exportPrivate": "Tienilo riservato: chiunque abbia il link vede le date occupate.",
     "exportHowTo": "Dove incollarlo",
     "exportAirbnbSteps": "nell'annuncio apri Disponibilità → Sincronizzazione calendari → Importa calendario, incolla il link e dagli un nome (es. CasaZen).",
-    "exportBookingSteps": "nell'Extranet apri Tariffe e disponibilità → Sincronizza calendari, aggiungi un calendario da importare e incolla il link.",
+    "exportBookingSteps": "nell'Extranet apri Tariffe e disponibilità, nella sezione per sincronizzare i calendari, aggiungi un calendario da importare e incolla il link.",
     "exportRefreshNote": "Le OTA rileggono il link periodicamente: le modifiche non compaiono subito.",
     "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano.",
     "regenerate": "Rigenera link",
@@ -13391,7 +13394,7 @@
       "citizenshipHint": "Serve per la comunicazione alla Questura se il conduttore non è cittadino dell'Unione europea.",
       "companyNotice": "Un conduttore con un codice di 11 cifre è una società: la cedolare secca non è ammessa.",
       "contactEmail": "Email",
-      "contactEmailHintTenant": "Serve solo per mandare il link di pagamento e i solleciti.",
+      "contactEmailHintTenant": "È l'indirizzo con cui il conduttore apre la sua area in CasaZen (deve essere verificato) e a cui mandiamo il link di pagamento e i solleciti.",
       "contactPhone": "Numero di telefono",
       "contactPhoneHintTenant": "Con prefisso internazionale: serve per contattare il conduttore e preparare i promemoria su WhatsApp.",
       "countriesEu": "Unione europea",
@@ -18940,7 +18943,7 @@
     "tier": {
       "agency": "Agency",
       "badge": "Piano",
-      "requires_agency": "Questa funzionalita richiede il piano Agency"
+      "requires_agency": "Questa funzionalità richiede il piano Agency"
     }
   },
   "orgSettings": {
@@ -26813,6 +26816,7 @@
     "planSettings": "Impostazioni piano"
   },
   "shared": {
+    "emergencyNotice": "CasaZen non è un pronto intervento e non chiama nessuno: con un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi.",
     "errorBoundary": {
       "title": "Qualcosa e' andato storto",
       "fallbackMessage": "Si e' verificato un errore imprevisto",
@@ -30080,10 +30084,10 @@
       ],
       "bookingTitle": "Booking.com",
       "bookingSteps": [
-        "Accedi all'Extranet",
-        "Vai su Tariffe e Disponibilità → Calendario",
-        "Clicca su Esporta",
-        "Copia l'URL iCal mostrato nel popup",
+        "Accedi all'Extranet di Booking.com",
+        "In Tariffe e disponibilità apri la sezione per sincronizzare i calendari (i nomi delle voci possono cambiare)",
+        "Scegli di esportare il calendario",
+        "Copia l'indirizzo iCal che compare",
         "Incollalo nel dialog iCal di CasaZen"
       ],
       "vrboTitle": "VRBO",
@@ -31266,7 +31270,7 @@
       "inviteEmailPlaceholder": "fornitore@esempio.it",
       "inviteSend": "Invia invito",
       "inviteHint": "Inserisci l’email del fornitore. Il rapporto inizia quando il titolare del profilo accetta.",
-      "inviteSuccess": "Richiesta registrata. Dopo la verifica il fornitore riceverà il link per accettare.",
+      "inviteSuccess": "Invito inviato: il fornitore riceve un'e-mail con il link per accettare.",
       "inviteError": "Impossibile inviare l'invito",
       "properties": "Proprietà assegnate",
       "propertiesHint": "Se non ne scegli nessuna, il fornitore lavora su tutte le tue proprietà.",
@@ -33667,7 +33671,8 @@
       "reportCount_other": "{{count}} scadenze",
       "manualTitle": "Bonifico manuale",
       "manualHint": "Se non colleghi un conto, usa questi estremi e poi avvisa il gestore.",
-      "noBank": "Gli estremi del bonifico non sono ancora disponibili.",
+      "manualHintNoBank": "Se non colleghi un conto, paga con bonifico come ti ha indicato il gestore e poi avvisalo.",
+      "noBank": "CasaZen non mostra qui l'IBAN: usa quello che ti ha dato il gestore.",
       "period": "Dal {{from}} al {{to}}",
       "status": {
         "Scheduled": "Da pagare",
@@ -33720,7 +33725,7 @@
       "sent": "Richiesta inviata al gestore.",
       "failed": "Non riesco a inviare la richiesta.",
       "sentToManager": "La richiesta va al gestore del contratto. Non assegni tu un fornitore.",
-      "emergencyNotImmediate": "Aprire la richiesta non significa che qualcuno stia già intervenendo.",
+      "emergencyNotImmediate": "Aprire la richiesta non significa che qualcuno stia già intervenendo: CasaZen non è un pronto intervento e non chiama nessuno. Con un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi.",
       "submittedAt": "Inviata il {{date}}",
       "urgencyLevel": {
         "Normal": "Normale",
@@ -33827,13 +33832,13 @@
     "urgency": {
       "title": "Quanto è urgente?",
       "hint": "Scegli un solo livello.",
-      "bassa": "Bassa",
-      "normale": "Normale",
-      "urgente": "Urgente",
+      "bassa": "Normale",
+      "normale": "Alta",
+      "urgente": "Emergenza",
       "detail": {
-        "bassa": "Può aspettare",
-        "normale": "Nei prossimi giorni",
-        "urgente": "Serve presto"
+        "bassa": "Si può programmare.",
+        "normale": "Serve in tempi brevi.",
+        "urgente": "Serve subito: non può aspettare."
       }
     },
     "note": {
