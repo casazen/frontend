@@ -1,7 +1,21 @@
-import { useId, useRef } from 'react';
+import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Camera } from 'lucide-react';
+import { BadgeCheck, Camera } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Field } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { getDocumentTypeLabel, getGenderLabel } from '@/lib/i18n-labels';
+import {
+  PREFILL_DOCUMENT_KINDS,
+  PREFILL_INPUT,
+  prefillFieldKey,
+  type DocumentPrefill,
+  type PrefillRow,
+  type PrefillValues,
+} from '../lib/document-prefill';
+import { ALLOGGIATI_GENDERS } from '../schemas/checkin.schema';
 
 interface DocumentReadStepProps {
   reading: boolean;
@@ -14,10 +28,32 @@ interface DocumentReadStepProps {
   onContinue: () => void;
   /** The property keeps no image of the document (canton Ticino, decision D6): the step says the photo is not stored. Nothing is said otherwise. */
   notArchived?: boolean;
+  /**
+   * What the local reading gave, to check before it goes into the form (self-hosted flow, E71/F02/US01/T02): each value marked as read from the document and editable, and the data the guest will still be
+   * asked for. `null` (or absent) is the step as it always was: the values go straight into the form.
+   */
+  prefill?: DocumentPrefill | null;
+  /** The guest confirmed the values (as they left them): the page puts them in the form. */
+  onConfirmPrefill?: (values: PrefillValues) => void;
+  /** The guest drops the reading to take the photo again. */
+  onDiscardPrefill?: () => void;
 }
 
 /** First step of check-in: a photo of the identity document, read before the guest confirms the fields. */
-export function DocumentReadStep({ review, onConfirm, reading, message, readCount, onFile, onManual, onContinue, notArchived = false }: DocumentReadStepProps) {
+export function DocumentReadStep({
+  review,
+  onConfirm,
+  reading,
+  message,
+  readCount,
+  onFile,
+  onManual,
+  onContinue,
+  notArchived = false,
+  prefill = null,
+  onConfirmPrefill,
+  onDiscardPrefill,
+}: DocumentReadStepProps) {
   const { t } = useTranslation();
   const inputId = useId();
   const hintId = useId();
@@ -62,6 +98,9 @@ export function DocumentReadStep({ review, onConfirm, reading, message, readCoun
           </p>
         )}
       </div>
+      {prefill && onConfirmPrefill && (
+        <DocumentPrefillPanel prefill={prefill} busy={reading} onConfirm={onConfirmPrefill} onDiscard={onDiscardPrefill} />
+      )}
       {review && <div role="status" className="space-y-2">
         <p>{review}</p>
         <Button type="button" onClick={onConfirm} disabled={reading}>{t('checkin.scanConfirmButton')}</Button>
@@ -76,11 +115,128 @@ export function DocumentReadStep({ review, onConfirm, reading, message, readCoun
           {t('checkin.scanManual')}
         </Button>
         {readCount > 0 && (
-          <Button type="button" disabled={reading || !!review} onClick={onContinue} data-testid="checkin-scan-continue">
+          <Button type="button" disabled={reading || !!review || !!prefill} onClick={onContinue} data-testid="checkin-scan-continue">
             {t('checkin.next')}
           </Button>
         )}
       </div>
     </div>
+  );
+}
+
+interface DocumentPrefillPanelProps {
+  prefill: DocumentPrefill;
+  /** The page is putting the values in the form, or reading a photo: nothing can be confirmed or dropped. */
+  busy: boolean;
+  onConfirm: (values: PrefillValues) => void;
+  onDiscard?: () => void;
+}
+
+/**
+ * What the local reading of the document gave, for the guest to check (E71/F02/US01/T02, NF-190): every value is marked «read from the document» and can be changed, and the data the reading did not give
+ * are listed, so that the guest knows what the next steps will ask and nothing else. The values are in the state of this panel only: not in a storage, not in the address, and they are gone when the
+ * guest confirms (the page puts them in the form, in memory) or drops the reading.
+ */
+function DocumentPrefillPanel({ prefill, busy, onConfirm, onDiscard }: DocumentPrefillPanelProps) {
+  const { t } = useTranslation();
+  const titleId = useId();
+  const [values, setValues] = useState<PrefillValues>(() => Object.fromEntries(prefill.rows.map((row) => [row.name, row.value])));
+
+  const change = (name: PrefillRow['name'], value: string) => setValues((current) => ({ ...current, [name]: value }));
+
+  // A press of Enter in a field of the panel must not send the form of the page around it: confirming is a button.
+  const keepTheFormUnsent = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') event.preventDefault();
+  };
+
+  // Names the page has no label for share one line.
+  const asked = [...new Map(prefill.missing.map((name) => [prefillFieldKey(name), name])).entries()];
+
+  return (
+    <section className="space-y-4 rounded-md border p-4" aria-labelledby={titleId} onKeyDown={keepTheFormUnsent} data-testid="checkin-prefill">
+      <div className="space-y-1">
+        <h3 id={titleId} className="text-base font-semibold">
+          {t('checkin.prefill.title')}
+        </h3>
+        <p className="text-sm text-muted-foreground">{t('checkin.prefill.intro')}</p>
+      </div>
+
+      {prefill.rows.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {prefill.rows.map((row) => (
+            <Field
+              key={row.name}
+              label={t(prefillFieldKey(row.name))}
+              hint={
+                <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <Badge variant="outline" className="gap-1" data-testid={`checkin-prefill-marker-${row.name}`}>
+                    <BadgeCheck className="size-3.5" aria-hidden="true" />
+                    {t('checkin.prefill.readFromDocument')}
+                  </Badge>
+                  {row.source === 'viz' && <span>{t('checkin.prefill.checkIt')}</span>}
+                </span>
+              }
+            >
+              {PREFILL_INPUT[row.name] === 'gender' ? (
+                <Select value={values[row.name] ?? ''} onChange={(event) => change(row.name, event.target.value)} data-testid={`checkin-prefill-value-${row.name}`}>
+                  <option value="">{t('checkin.selectGender')}</option>
+                  {ALLOGGIATI_GENDERS.map((gender) => (
+                    <option key={gender} value={gender}>
+                      {getGenderLabel(gender, t)}
+                    </option>
+                  ))}
+                </Select>
+              ) : PREFILL_INPUT[row.name] === 'kind' ? (
+                <Select value={values[row.name] ?? ''} onChange={(event) => change(row.name, event.target.value)} data-testid={`checkin-prefill-value-${row.name}`}>
+                  <option value="">{t('checkin.selectDocumentType')}</option>
+                  {PREFILL_DOCUMENT_KINDS.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {getDocumentTypeLabel(kind, t)}
+                    </option>
+                  ))}
+                </Select>
+              ) : (
+                <Input
+                  type={PREFILL_INPUT[row.name] === 'date' ? 'date' : 'text'}
+                  value={values[row.name] ?? ''}
+                  onChange={(event) => change(row.name, event.target.value)}
+                  autoComplete="off"
+                  data-testid={`checkin-prefill-value-${row.name}`}
+                />
+              )}
+            </Field>
+          ))}
+        </div>
+      )}
+
+      {asked.length > 0 ? (
+        <div className="space-y-1 rounded-md bg-muted p-3 text-sm" data-testid="checkin-prefill-missing">
+          <p className="font-medium">{t('checkin.prefill.missingTitle')}</p>
+          <ul className="list-disc space-y-0.5 pl-5">
+            {asked.map(([key, name]) => (
+              <li key={key} data-testid="checkin-prefill-missing-item" data-field={name}>
+                {t(key)}
+              </li>
+            ))}
+          </ul>
+          <p className="text-muted-foreground">{t('checkin.prefill.missingText')}</p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground" data-testid="checkin-prefill-complete">
+          {t('checkin.prefill.complete')}
+        </p>
+      )}
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button type="button" size="lg" disabled={busy} onClick={() => onConfirm(values)} data-testid="checkin-prefill-confirm">
+          {t('checkin.prefill.confirm')}
+        </Button>
+        {onDiscard && (
+          <Button type="button" size="lg" variant="outline" disabled={busy} onClick={onDiscard} data-testid="checkin-prefill-discard">
+            {t('checkin.prefill.discard')}
+          </Button>
+        )}
+      </div>
+    </section>
   );
 }

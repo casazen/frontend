@@ -34,6 +34,7 @@ import {
 import { StayGuestDocumentFields, StayGuestPersonalFields, VehiclePlateField } from './components/stay-guest-fields';
 import { getDocumentTypeLabel } from '@/lib/i18n-labels';
 import { DocumentReadStep } from './components/document-read-step';
+import { buildPrefill, withConfirmedValues, type DocumentPrefill, type PrefillValues } from './lib/document-prefill';
 import { GuestPageFrame } from './components/guest-page-frame';
 import { GuestInvoiceForm } from './guest-invoice-form';
 import { LanguageSwitcher } from './components/language-switcher';
@@ -250,6 +251,9 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
   const [documentsRead, setDocumentsRead] = useState(0);
   const verifyingPhoto = useRef<File | null>(null);
   const [review, setReview] = useState<{ result: CheckInDocumentReadResult; file: File } | null>(null);
+  // The values the local reading gave (self-hosted flow, E71/F02/US01/T02), for the guest to check before they go into the form. Personal data: in memory only, never in a storage, an address or a log,
+  // and gone as soon as the guest confirms them, drops them or leaves the step.
+  const [zonedReading, setZonedReading] = useState<{ prefill: DocumentPrefill; result: CheckInDocumentReadResult; file: File } | null>(null);
   const [privacyRead, setPrivacyRead] = useState(false);
   const [acceptedRulesVersion, setAcceptedRulesVersion] = useState<string | undefined>();
   const activeRulesVersion = context?.houseRulesVersion ?? undefined;
@@ -287,6 +291,7 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
 
   const moveFromScan = () => {
     setReview(null);
+    setZonedReading(null);
     goToStep(STEP_GUESTS);
   };
 
@@ -507,10 +512,67 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
     setScanMessage(t('checkin.scanReadOk', { name: [booked.firstName, booked.lastName].join(' ') }));
   };
 
+  /**
+   * Whether the form already holds a datum of the guest at `index`, in the words of the `missing` of `read-document`: typed by the guest, taken from the booking, or put there by the other photo of the card.
+   * What the prefill says is still to be typed is what the form does not hold after all the photos, not only after this one.
+   */
+  const formHolds = (index: number, name: string): boolean => {
+    const guest = getValues('guests')[index];
+    if (!guest) return false;
+    const held = (value: unknown) => typeof value === 'string' && value.trim() !== '';
+    switch (name) {
+      case 'lastName':
+        return held(guest.lastName);
+      case 'firstName':
+        return held(guest.firstName);
+      case 'gender':
+        return held(guest.gender);
+      case 'dateOfBirth':
+        return held(guest.dateOfBirth);
+      case 'birthPlace':
+        return held(guest.birthComuneName) || held(guest.birthCountryName);
+      case 'citizenship':
+        return held(guest.citizenshipName);
+      case 'documentKind':
+        return held(guest.documentType);
+      case 'documentNumber':
+        return held(guest.documentNumber);
+      case 'issuePlace':
+        return held(guest.documentIssuePlaceName);
+      default:
+        return false;
+    }
+  };
+
+  /**
+   * What follows a reading that belongs to a guest of the stay. With the local reading of the self-hosted flow (the answer carries `fields`, `missing` and `source`) the values are shown first, marked as read from
+   * the document and editable, with what is still to be typed (E71/F02/US01/T02); with the answer of before they go straight into the form, as they always did.
+   */
+  const proceedWithReading = async (result: CheckInDocumentReadResult, file: File) => {
+    const index = result.guestPosition;
+    const prefill = index == null ? null : buildPrefill(result, (name) => formHolds(index, name));
+    if (prefill) setZonedReading({ prefill, result, file });
+    else await applyDocument(result, file);
+  };
+
+  /** The guest checked the values: what they left in them goes into the form, and the panel (with every value it held) is gone. */
+  const confirmPrefill = async (values: PrefillValues) => {
+    if (!zonedReading) return;
+    const { result, file } = zonedReading;
+    setZonedReading(null);
+    setReadingDocument(true);
+    try {
+      await applyDocument(withConfirmedValues(result, values), file);
+    } finally {
+      setReadingDocument(false);
+    }
+  };
+
   const readDocument = async (file: File) => {
     setReadingDocument(true);
     setScanMessage(null);
     setReview(null);
+    setZonedReading(null);
     try {
       const prepared = await prepareDocumentPhoto(file, { withSelfie: true });
       if (!prepared.ok) {
@@ -524,7 +586,7 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
         return;
       }
       if (result.confirmGuest) setReview({ result, file: photo });
-      else await applyDocument(result, photo);
+      else await proceedWithReading(result, photo);
     } catch (error) {
       setScanMessage(getProblemMessage(error, t) ?? t('checkin.scanUnread'));
     } finally {
@@ -731,9 +793,12 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
                       if (!review) return;
                       setReadingDocument(true);
                       setReview(null);
-                      try { await applyDocument(review.result, review.file); }
+                      try { await proceedWithReading(review.result, review.file); }
                       finally { setReadingDocument(false); }
                     }}
+                    prefill={zonedReading?.prefill ?? null}
+                    onConfirmPrefill={(values) => { void confirmPrefill(values); }}
+                    onDiscardPrefill={() => setZonedReading(null)}
                     onFile={(file) => { void readDocument(file); }}
                     onManual={moveFromScan}
                     onContinue={moveFromScan}
