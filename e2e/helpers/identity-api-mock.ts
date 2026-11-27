@@ -284,7 +284,7 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
 
       if (method === 'POST' && endpoint === 'biometric-consent') {
         const body = call.json as { consentGiven?: boolean; consentVersion?: string } | undefined;
-        if (body?.consentGiven === true && body.consentVersion !== CONSENT_VERSION) return problem(400, 'biometric_consent_version_unknown');
+        if (body?.consentGiven === true && body.consentVersion !== CONSENT_VERSION) return problem(422, 'biometric_consent_version_unknown');
         if (body?.consentGiven === true) {
           change({ step: 'document', consentRecorded: true, choice: 'automatic' });
           const answer: BiometricConsentResponse = { consentRecorded: true, result: 'consent_recorded', biometricOffered: true, operatorPathOpen: true, state: snapshot() };
