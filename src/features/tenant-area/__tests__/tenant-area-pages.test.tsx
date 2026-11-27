@@ -6,6 +6,7 @@ import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { AxiosError, AxiosHeaders } from 'axios';
 import axios from '@/lib/axios';
 import { resetStripeTransferAttempts } from '@/features/bank-transfer/transfer-attempt';
 import { freezeClock } from '@/test/clock';
@@ -359,6 +360,37 @@ describe('tenant area', () => {
     );
     expect(screen.queryByTestId('tenant-bank')).not.toBeInTheDocument();
     expect(screen.queryByText('IT60X0542811101000000123456')).not.toBeInTheDocument();
+  });
+
+  it('does not send the tenant to details that are not there: with no bank details the hint does not say «use these details»', async () => {
+    get.mockResolvedValue({ data: { ...area, dues: [{ ...area.dues[0], bank: null }] } });
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-no-bank')).toHaveTextContent(i18n.t('tenantArea.dues.noBank'));
+    expect(screen.getByTestId('tenant-manual')).toHaveTextContent(i18n.t('tenantArea.dues.manualHintNoBank'));
+    expect(screen.getByTestId('tenant-manual')).not.toHaveTextContent(i18n.t('tenantArea.dues.manualHint'));
+    expect(screen.queryByTestId('tenant-bank')).not.toBeInTheDocument();
+  });
+
+  it('tells a tenant whose e-mail is not verified what to do, and not only that the area cannot be loaded', async () => {
+    const config = { headers: new AxiosHeaders() };
+    get.mockRejectedValue(
+      new AxiosError('Forbidden', 'ERR_BAD_REQUEST', config, undefined, {
+        status: 403,
+        statusText: 'Forbidden',
+        headers: {},
+        config,
+        data: { code: 'tenant_email_not_verified' },
+      }),
+    );
+
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    const error = await screen.findByTestId('tenant-error');
+    expect(error).toHaveTextContent(i18n.t('tenantArea.loadError'));
+    expect(error).toHaveTextContent(i18n.t('apiErrors.codes.tenantEmailNotVerified'));
+    expect(error).not.toHaveTextContent(i18n.t('apiErrors.forbidden'));
   });
 
   it('starts SEPA from the selected due and a manual declaration never marks it paid', async () => {

@@ -328,9 +328,9 @@ function TimeChoices({ window }: { window: TurnoverWindow | null }) {
 export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => void; linkedStay?: Booking }) {
   const { t, i18n } = useTranslation();
   const { register, control, setValue, formState } = useFormContext<RequestValues>();
-  const [propertyId, category, supplierOrgId, supplierName, serviceId, day, notes] = useWatch({
+  const [propertyId, category, supplierOrgId, supplierName, serviceId, day, notes, urgency] = useWatch({
     control,
-    name: ['propertyId', 'category', 'supplierOrgId', 'supplierName', 'serviceId', 'day', 'notes'],
+    name: ['propertyId', 'category', 'supplierOrgId', 'supplierName', 'serviceId', 'day', 'notes', 'urgency'],
   });
   const suppliers = useSuppliersByProperty(propertyId, category);
   const { stays } = useUpcomingStays(propertyId, linkedStay);
@@ -404,6 +404,11 @@ export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => vo
           ))}
         </ChoiceGroup>
         <FormFieldError error={formState.errors.urgency} />
+        {urgency === 'Emergency' ? (
+          <p className="text-sm text-foreground/70" data-testid="request-emergency-notice">
+            {t('shared.emergencyNotice')}
+          </p>
+        ) : null}
       </PlainSection>
 
       <Field

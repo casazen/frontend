@@ -183,7 +183,7 @@ describe('the wire page asks the role before it reads anything (agency.wire.mana
 
     renderPage();
 
-    expect(screen.getByTestId('agency-plan-required')).toHaveTextContent('Serve il piano Agenzia');
+    expect(screen.getByTestId('agency-plan-required')).toHaveTextContent('Serve il piano Agency');
     expect(screen.getByRole('link', { name: 'Vai al piano' })).toHaveAttribute('href', '/app/account/billing');
     expect(api.listPayablePayouts).not.toHaveBeenCalled();
     expect(api.listBatches).not.toHaveBeenCalled();

@@ -131,7 +131,8 @@ function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
       <h3 id={titleId} className="text-base font-semibold">
         {t('guide.help.title')}
       </h3>
-      <p className="text-sm text-foreground/70">{t('guide.help.text')}</p>
+      {/* «Scrivici» only where the button that writes to support is: without an address the text stops at the manual. */}
+      <p className="text-sm text-foreground/70">{helpEmail ? t('guide.help.text') : t('guide.help.textNoSupport')}</p>
       <div className="flex flex-col items-start">
         <Link to={manual} state={returnState} className={PANEL_LINK} data-testid="guide-help-manual">
           <BookOpen aria-hidden="true" className="size-4" />
