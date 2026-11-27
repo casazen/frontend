@@ -373,6 +373,7 @@ function CampaignWizardBody({ onOpenChange, initialSegmentId, initialGoalId, ini
             propertyId={propertyId}
             properties={propertyOptions}
             loadingProperties={properties.isPending}
+            propertiesError={properties.isError ? marketingErrorText(properties.error, t) : null}
             segments={segments.data ?? []}
             loadingSegments={segments.isPending}
             onUpdate={update}
@@ -406,6 +407,7 @@ interface AudienceStepProps {
   propertyId: string;
   properties: PropertyOption[];
   loadingProperties: boolean;
+  propertiesError: string | null;
   segments: Segment[];
   loadingSegments: boolean;
   onUpdate: (patch: Partial<CampaignDraft>) => void;
@@ -413,7 +415,7 @@ interface AudienceStepProps {
   error: string | null;
 }
 
-function AudienceStep({ draft, goal, propertyId, properties, loadingProperties, segments, loadingSegments, onUpdate, onCreateAnother, error }: AudienceStepProps) {
+function AudienceStep({ draft, goal, propertyId, properties, loadingProperties, propertiesError, segments, loadingSegments, onUpdate, onCreateAnother, error }: AudienceStepProps) {
   const { t, i18n } = useTranslation();
   const propertyList = properties.map(({ id, name }) => ({ id, name }));
   const recipe = goal?.recipeId ? recipeById(goal.recipeId, propertyList) : undefined;
@@ -423,7 +425,8 @@ function AudienceStep({ draft, goal, propertyId, properties, loadingProperties, 
 
   return (
     <div className="space-y-7">
-      {!loadingProperties && properties.length === 0 ? (
+      {propertiesError ? <Alert variant="danger">{propertiesError}</Alert> : null}
+      {!propertiesError && !loadingProperties && properties.length === 0 ? (
         <Alert
           variant="warning"
           action={

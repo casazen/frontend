@@ -5,7 +5,6 @@ export type ConditionRule = ConditionGroup['rules'][number];
 export type GroupLogic = ConditionGroup['operator'];
 
 export const STAGES = ['upcoming', 'first', 'returning', 'loyal', 'lost'] as const;
-export type Stage = (typeof STAGES)[number];
 
 export const GUEST_LANGUAGES = ['it', 'en', 'de', 'fr', 'es', 'nl'] as const;
 

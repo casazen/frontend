@@ -66,7 +66,7 @@ describe('segment wizard', () => {
 
   it('shows the rules proposed by the AI in plain words and says that they come from it', async () => {
     view(<SegmentWizard open onOpenChange={() => undefined} />);
-    fireEvent.change(await screen.findByLabelText(/Descrivilo a parole tue/), { target: { value: 'Chi torna più di una volta' } });
+    fireEvent.change(await screen.findByLabelText(/Scrivilo con parole tue/), { target: { value: 'Chi torna più di una volta' } });
     fireEvent.click(screen.getByTestId('segment-ai-submit'));
 
     expect(await screen.findByText('Hanno soggiornato almeno 3 volte')).toBeVisible();
