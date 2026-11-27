@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
+import { campaignsApi } from '@/api/campaigns.api';
 import { CrmApi } from '@/api/crm.api';
 import type { CrmProfileList, CrmProfileListItem } from '@/types/crm.types';
 import GuestList from '../GuestList';
@@ -12,13 +13,34 @@ import GuestList from '../GuestList';
 vi.mock('@/api/crm.api', () => ({
   CrmApi: { getGuests: vi.fn() },
 }));
-const permissions = vi.hoisted(() => ({ canWrite: true }));
-vi.mock('@/hooks/use-workspace', () => ({
-  useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permissions.canWrite || permission !== 'guest.write' }),
+vi.mock('@/api/campaigns.api', () => ({
+  campaignsApi: { getSegments: vi.fn(), getCampaigns: vi.fn() },
 }));
+const permissions = vi.hoisted(() => ({ canWrite: true, canMarket: true }));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({
+    hasPermission: (_context: string, permission: string) => {
+      if (permission === 'guest.write') return permissions.canWrite;
+      if (permission === 'marketing.manage') return permissions.canMarket;
+      return true;
+    },
+  }),
+}));
+interface HeaderAction {
+  label: string;
+  to?: string;
+  testId?: string;
+}
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title, description }: { title: string; description?: string }) =>
-    createElement('div', null, createElement('h1', null, title), description ? createElement('p', null, description) : null),
+  PageHeader: ({ title, description, primary, secondary }: { title: string; description?: string; primary?: HeaderAction; secondary?: Array<HeaderAction | { separator: true }> }) =>
+    createElement(
+      'div',
+      null,
+      createElement('h1', null, title),
+      description ? createElement('p', null, description) : null,
+      primary ? createElement('a', { href: primary.to, 'data-testid': primary.testId }, primary.label) : null,
+      ...(secondary ?? []).map((item) => ('label' in item ? createElement('a', { key: item.label, href: item.to, 'data-testid': item.testId }, item.label) : null)),
+    ),
 }));
 
 const ROSSI = '0b8f5d6e-1111-4a22-8333-aaaaaaaaaaa1';
@@ -66,13 +88,17 @@ function renderList(address = '/app/short-rent/crm/guests') {
 }
 
 const findTable = () => screen.findByRole('table', { name: i18n.t('crm.list.label') });
-const lastAsked = () => vi.mocked(CrmApi.getGuests).mock.calls.at(-1)?.[0];
+const overviewAsked = () => vi.mocked(CrmApi.getGuests).mock.calls.map(([params]) => params).filter((params) => params?.pageSize === 1);
+const lastAsked = () => vi.mocked(CrmApi.getGuests).mock.calls.map(([params]) => params).filter((params) => params?.pageSize !== 1).at(-1);
 
 describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     permissions.canWrite = true;
+    permissions.canMarket = true;
     vi.mocked(CrmApi.getGuests).mockResolvedValue(page([profile()]));
+    vi.mocked(campaignsApi.getSegments).mockResolvedValue([{ id: 'segment-1' }] as never);
+    vi.mocked(campaignsApi.getCampaigns).mockResolvedValue([{ id: 'campaign-1', status: 'Sent' }] as never);
     await i18n.changeLanguage('it');
   });
   afterEach(() => cleanup());
@@ -82,7 +108,7 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
 
     const table = within(await findTable());
     expect(table.getByRole('rowheader', { name: /Mario Rossi/ })).toBeInTheDocument();
-    expect(table.getByText('3')).toBeInTheDocument();
+    expect(table.getByText('3 soggiorni')).toBeInTheDocument();
     // Italian groups the thousands from five digits on, English from four: either way the amount is there, in euro.
     expect(table.getByText(/1\.?240,00/)).toBeInTheDocument();
     expect(table.getByText('14 set 2026')).toBeInTheDocument();
@@ -135,7 +161,7 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
 
     const mark = within(await findTable()).getByTestId('crm-merge-mark');
     expect(mark).toHaveAttribute('title', i18n.t('crm.list.mergeProposalHint'));
-    expect(mark.getAttribute('title')).toMatch(/duplicati/);
+    expect(mark.getAttribute('title')).toMatch(/schede doppie/);
   });
 
   it('GuestList_TheMarkOfAProposal_DoesNotSendWhoMayOnlyReadToAPageTheyCannotOpen', async () => {
@@ -147,7 +173,7 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     // The mark is there (a profile with a duplicate is worth a look), and says who decides; the page of the duplicates is not named.
     const mark = within(await findTable()).getByTestId('crm-merge-mark');
     expect(mark).toHaveAttribute('title', i18n.t('crm.list.mergeProposalHintReadOnly'));
-    expect(mark.getAttribute('title')).not.toMatch(/duplicati/);
+    expect(mark.getAttribute('title')).not.toMatch(/doppie/);
     expect(within(mark).queryByRole('link')).not.toBeInTheDocument();
   });
 
@@ -159,8 +185,9 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
 
     expect(readOnly).not.toBe('crm.list.mergeProposalHintReadOnly');
     expect(readOnly).not.toBe(decide);
-    expect(decide).toMatch(/duplicat/i);
-    expect(readOnly).not.toMatch(/duplicat/i);
+    const namesThePage = language === 'it' ? /schede doppie/i : /duplicate cards/i;
+    expect(decide).toMatch(namesThePage);
+    expect(readOnly).not.toMatch(namesThePage);
   });
 
   it('GuestList_ARow_OpensTheProfile', async () => {
@@ -309,13 +336,31 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     expect(screen.getByRole('searchbox', { name: i18n.t('crm.filters.search.label') })).toHaveValue('');
   });
 
-  it('GuestList_NoGuestYet_SaysProfilesArriveWithTheBookings', async () => {
+  it('GuestList_NoGuestYet_SaysHowGuestsArriveAndOffersTheImportAndTheHelp', async () => {
     vi.mocked(CrmApi.getGuests).mockResolvedValue(page([]));
 
     renderList();
 
     expect(await screen.findByText(i18n.t('crm.list.empty.title'))).toBeInTheDocument();
     expect(screen.getByText(i18n.t('crm.list.empty.description'))).toBeInTheDocument();
+    const empty = within(screen.getByTestId('crm-empty'));
+    expect(empty.getByRole('link', { name: i18n.t('crm.list.empty.import') })).toHaveAttribute('href', '/app/short-rent/crm/segments?import=1');
+    expect(empty.getByRole('link', { name: i18n.t('crm.list.empty.help') })).toHaveAttribute('href', '/app/short-rent/help#guide-guests');
+    // Nothing to search in yet: no filters, no numbers, no next step.
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('crm-overview')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('crm-next-step')).not.toBeInTheDocument();
+  });
+
+  it('GuestList_NoGuestYetAndNoPermissionToMarket_OffersNoImport', async () => {
+    permissions.canMarket = false;
+    vi.mocked(CrmApi.getGuests).mockResolvedValue(page([]));
+
+    renderList();
+
+    const empty = within(await screen.findByTestId('crm-empty'));
+    expect(empty.queryByRole('link', { name: i18n.t('crm.list.empty.import') })).not.toBeInTheDocument();
+    expect(empty.getByRole('link', { name: i18n.t('crm.list.empty.help') })).toBeInTheDocument();
   });
 
   it('GuestList_NoProfileMatches_SaysSoAndOffersToClearTheFilters', async () => {
@@ -344,7 +389,7 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
 
     renderList();
     await findTable();
-    expect(screen.getByTestId('crm-count')).toHaveTextContent('45 profili');
+    expect(screen.getByTestId('crm-count')).toHaveTextContent('45 ospiti');
 
     fireEvent.click(screen.getByRole('button', { name: i18n.t('listView.pagination.next') }));
 
@@ -359,5 +404,114 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('?page=3'));
     expect(await findTable()).toBeInTheDocument();
+  });
+
+  it('GuestList_ARow_HasTheFaceOfTheGuest_AndALeadWithoutANameHasTheIconOfAPerson', async () => {
+    vi.mocked(CrmApi.getGuests).mockResolvedValue(page([profile(), profile({ id: LEAD, displayName: '', emailMasked: 'l***@example.it', totalStays: 0 })]));
+
+    renderList();
+
+    const table = within(await findTable());
+    const [named, lead] = table.getAllByTestId('crm-avatar');
+    expect(named).toHaveTextContent('MR');
+    expect(named).toHaveAttribute('aria-hidden', 'true');
+    expect(lead.querySelector('svg')).not.toBeNull();
+    expect(table.getByText(i18n.t('crm.list.noStays'))).toBeInTheDocument();
+  });
+
+  it('GuestList_WhoMayMarket_FindsTheCampaignTheGroupAndTheImportInTheHead', async () => {
+    renderList();
+    await findTable();
+
+    expect(screen.getByTestId('crm-new-campaign')).toHaveAttribute('href', '/app/short-rent/crm/campaigns?new=1');
+    expect(screen.getByTestId('crm-new-group')).toHaveAttribute('href', '/app/short-rent/crm/segments?new=1');
+    expect(screen.getByTestId('crm-import')).toHaveAttribute('href', '/app/short-rent/crm/segments?import=1');
+  });
+
+  it('GuestList_WhoMayNotMarket_HasNoActionNoNextStepAndAsksNothingOfTheCampaigns', async () => {
+    permissions.canMarket = false;
+    vi.mocked(campaignsApi.getSegments).mockResolvedValue([]);
+
+    renderList();
+    await findTable();
+
+    expect(screen.queryByTestId('crm-new-campaign')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('crm-new-group')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('crm-import')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('crm-next-step')).not.toBeInTheDocument();
+    expect(campaignsApi.getSegments).not.toHaveBeenCalled();
+    expect(campaignsApi.getCampaigns).not.toHaveBeenCalled();
+  });
+
+  it('GuestList_TheStrip_CountsAllTheGuestsWhateverTheFiltersAreOnScreen', async () => {
+    vi.mocked(CrmApi.getGuests).mockImplementation(async (params) => {
+      if (params?.pageSize !== 1) return page([profile()], 3);
+      if (params.reachableByEmail) return page([], 25);
+      if (params.minStays === 3) return page([], 6);
+      if (params.minStays === 2) return page([], 14);
+      return page([], 40);
+    });
+
+    renderList('/app/short-rent/crm/guests?country=IT');
+
+    const strip = await screen.findByTestId('crm-overview');
+    expect(strip).toHaveTextContent(/Ospiti\s*40/);
+    expect(strip).toHaveTextContent(/Raggiungibili via e-mail\s*25/);
+    expect(strip).toHaveTextContent(/Tornati almeno una volta\s*14/);
+    expect(strip).toHaveTextContent(/Fedeli \(3\+ soggiorni\)\s*6/);
+    expect(overviewAsked()).toHaveLength(4);
+    expect(overviewAsked()).toEqual(
+      expect.arrayContaining([
+        { page: 1, pageSize: 1 },
+        { reachableByEmail: true, page: 1, pageSize: 1 },
+        { minStays: 2, page: 1, pageSize: 1 },
+        { minStays: 3, page: 1, pageSize: 1 },
+      ]),
+    );
+  });
+
+  it('GuestList_OneOfTheFourNumbersFails_LeavesTheStripOutAndKeepsTheList', async () => {
+    vi.mocked(CrmApi.getGuests).mockImplementation(async (params) => {
+      if (params?.minStays === 3) throw new Error('boom');
+      return page([profile()]);
+    });
+
+    renderList();
+
+    expect(await findTable()).toBeInTheDocument();
+    await waitFor(() => expect(overviewAsked()).toHaveLength(4));
+    expect(screen.queryByTestId('crm-overview')).not.toBeInTheDocument();
+  });
+
+  it('GuestList_NoGroupYet_AsksForTheFirstGroupAsTheOnlyNextStep', async () => {
+    vi.mocked(campaignsApi.getSegments).mockResolvedValue([]);
+    vi.mocked(campaignsApi.getCampaigns).mockResolvedValue([]);
+
+    renderList();
+
+    const step = await screen.findByTestId('crm-next-step');
+    expect(step).toHaveAttribute('data-step', 'group');
+    expect(within(step).getByRole('heading', { name: i18n.t('crm.nextStep.group.title') })).toBeInTheDocument();
+    expect(within(step).getByRole('link', { name: i18n.t('crm.nextStep.group.cta') })).toHaveAttribute('href', '/app/short-rent/crm/segments?new=1');
+    expect(screen.getAllByTestId('crm-next-step')).toHaveLength(1);
+  });
+
+  it('GuestList_GroupsButNoCampaign_AsksForTheFirstCampaign', async () => {
+    vi.mocked(campaignsApi.getCampaigns).mockResolvedValue([]);
+
+    renderList();
+
+    const step = await screen.findByTestId('crm-next-step');
+    expect(step).toHaveAttribute('data-step', 'campaign');
+    expect(within(step).getByRole('link', { name: i18n.t('crm.nextStep.campaign.cta') })).toHaveAttribute('href', '/app/short-rent/crm/campaigns?new=1');
+  });
+
+  it('GuestList_GroupsAndCampaignsDone_ShowsNoNextStep', async () => {
+    renderList();
+
+    expect(await findTable()).toBeInTheDocument();
+    await waitFor(() => expect(campaignsApi.getCampaigns).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByTestId('crm-overview')).toBeInTheDocument());
+    expect(screen.queryByTestId('crm-next-step')).not.toBeInTheDocument();
   });
 });

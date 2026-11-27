@@ -51,7 +51,7 @@ test.describe('Area navigation (UI-04a)', () => {
       // The pages that hang from an entry, the profile, plan and billing are in no menu.
       const inNoMenu = [
         'Ospiti',
-        'CRM Ospiti',
+        'Ospiti e marketing',
         'Recensioni',
         'Ricavi',
         'Report',
