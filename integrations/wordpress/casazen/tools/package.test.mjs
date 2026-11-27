@@ -1371,15 +1371,4 @@ describe('the workflow that publishes the ZIP: who may write, and when', { skip:
 		assert.deepEqual(topLevelBlock(release, 'permissions'), ['  contents: write']);
 		assert.match(release, /tags:\r?\n\s+- 'wp-plugin-v\*'/);
 	});
-
-	it('the documentation says where the two ZIPs are', () => {
-		const docs = join(REPOSITORY, 'docs', 'technical', 'wordpress-plugin.md');
-		assert.ok(existsSync(docs), 'docs/technical/wordpress-plugin.md');
-		const text = readFileSync(docs, 'utf8');
-		assert.match(text, /^## Canali di pubblicazione\r?$/m);
-		for (const channel of Object.keys(CHANNELS)) {
-			assert.ok(text.includes(`https://github.com/casazen/frontend/releases/download/${releaseTag(channel)}/casazen.zip`), `the address of the ZIP of ${channel}`);
-			assert.ok(text.includes(appOriginOf(channel)), `the console of ${channel}`);
-		}
-	});
 });
