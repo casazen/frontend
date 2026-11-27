@@ -5,7 +5,7 @@ import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { SaveNotificationPreferencesRequest } from '@/types';
 
-export const NOTIFICATION_PREFERENCES_KEY = ['notification-preferences'] as const;
+const NOTIFICATION_PREFERENCES_KEY = ['notification-preferences'] as const;
 
 /** One id for the confirmation: a run of quick changes replaces the message instead of piling up a toast for each switch. */
 const SAVED_TOAST_ID = 'notification-preferences-saved';

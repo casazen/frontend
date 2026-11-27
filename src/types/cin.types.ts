@@ -12,7 +12,7 @@ export interface CinComplianceItem {
  * Where today stands with respect to the configured CIN deadline (`Cin:ExposureDeadline` on the backend, CO-20):
  * `none` when no deadline is configured (only the obligation is shown, without a date).
  */
-export type CinDeadlineStatus = 'none' | 'upcoming' | 'today' | 'passed';
+type CinDeadlineStatus = 'none' | 'upcoming' | 'today' | 'passed';
 
 export interface CinComplianceSummary {
   valid: number;

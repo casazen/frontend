@@ -25,12 +25,12 @@ import {
 } from '@/api/fiscal-documents.api';
 import { BATCH_MAX, documentFileName, emailLinkDayOf, exportFileName, isAwaitingSdi, isPeriodDraft, type NumberedDocument } from '@/features/fiscal/documents/document-model';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
-import { useNow } from '@/hooks/use-now';
 import i18n from '@/i18n/config';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 import type { FiscalCreditNoteRequest, FiscalDocumentCriteria, FiscalDocumentEntry, FiscalDocumentExportFormat, SdiDeclaration, SdiScope } from '@/types';
 import { PAYMENTS_KEY } from './use-payments';
+import { useRestartOnNewWaiting, useWatchWindow } from './use-watch-window';
 
 /**
  * Root of the query keys of the fiscal documents. It is under `fiscal` on purpose: a change to the tax profile or to the invoicing setup (`useBillingSetup`, which invalidates it
@@ -57,32 +57,6 @@ export const SDI_POLL_MS = 60_000;
 export const SDI_WATCH_MS = 30 * 60_000;
 
 /**
- * The window in which the page follows the documents that wait for the SDI by itself. `now` is the time as of the last tick, kept in the state of the screen so that nothing reads
- * the clock while it renders.
- */
-function useWatchWindow() {
-  const [since, setSince] = useState(() => Date.now());
-  const now = useNow(SDI_POLL_MS);
-  return { since, now, setSince, over: now - since >= SDI_WATCH_MS, restart: () => setSince(Date.now()) };
-}
-
-/**
- * Opens the window again when a document that was not waiting starts to wait (an invoice just sent, a document read for the first time): without it the window would run from the
- * opening of the page, and a document sent after more than thirty minutes would be told at once as «no longer checking» and never followed. The state is adjusted while rendering,
- * as React lets a value that follows from what the screen reads (here the ids that wait) be.
- */
-function useRestartOnNewWaiting(watch: Pick<ReturnType<typeof useWatchWindow>, 'now' | 'setSince'>, waitingIds: readonly string[]) {
-  const [known, setKnown] = useState<readonly string[]>([]);
-  const { now, setSince } = watch;
-  if (waitingIds.some((id) => !known.includes(id))) {
-    setKnown(waitingIds);
-    setSince(now);
-  } else if (waitingIds.length < known.length) {
-    setKnown(waitingIds);
-  }
-}
-
-/**
  * What the list holds is money and the data of the people who were billed, and it changes from other screens (a document issued or credited, a payment collected) and
  * without any screen at all (the SDI answers): it is read again whenever the page opens and whenever the window is looked at again (`staleTime: 0`,
  * `refetchOnMount: 'always'`), and it is not kept once nothing shows it (`gcTime: 0`): a list that was left is never shown again as if it were current, and the names of the
@@ -98,7 +72,7 @@ const FRESH = { staleTime: 0, gcTime: 0, refetchOnMount: 'always' } as const;
  * while a document is still waiting. A tab in the background does not ask (`refetchIntervalInBackground: false`), and nothing asks once the page is left.
  */
 export function useFiscalDocuments(criteria: FiscalDocumentCriteria, page: number, pageSize: number, options: { enabled?: boolean } = {}) {
-  const watch = useWatchWindow();
+  const watch = useWatchWindow(SDI_POLL_MS, SDI_WATCH_MS);
   const query = useQuery({
     queryKey: [...FISCAL_DOCUMENTS_KEY, 'list', criteria, page, pageSize],
     queryFn: () => listDocuments(criteria, page, pageSize),

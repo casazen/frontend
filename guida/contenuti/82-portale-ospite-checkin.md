@@ -52,7 +52,7 @@ Due durate da non confondere: il **link del check-in** vale 7 giorni dall'invio;
 - Per le prenotazioni dei portali che ci danno la chat, anche nella chat del portale.
 
 ### Cosa vede l'ospite
-Il portale si apre sulla **pagina del soggiorno**: «Il tuo soggiorno» con arrivo, partenza, ospiti e codice prenotazione, e il **prossimo passo** da fare («Completa il check-in», «Paga la tassa di soggiorno» o «Guida della casa»). Sotto, le sezioni; sul telefono c'è una barra in basso con «Soggiorno», «Guida», «Servizi», «Chat» e «Altro».
+Il portale si apre sulla **pagina del soggiorno**: «Il tuo soggiorno» con arrivo, partenza, ospiti e codice prenotazione, e il **prossimo passo** da fare («Completa il check-in», «Paga la tassa di soggiorno» o «Guida della casa»). Sotto, solo le voci che la barra non ripete: «Informazioni sulla prenotazione», «Documenti e ricevute» (dopo la partenza anche «Privacy e dati personali») e, a check-in fatto, «Check-in completato». Le altre sezioni sono nella barra con «Soggiorno», «Guida», «Servizi», «Chat» e «Altro»: in basso sul telefono, a sinistra sul computer.
 
 | Sezione | Cosa c'è |
 |---|---|

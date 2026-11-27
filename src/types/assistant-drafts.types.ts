@@ -4,14 +4,8 @@
  * approvals (`GET api/approval-queue`), where it waits for the host.
  */
 
-/** What the assistant did with the last message of the guest (`AssistantDecision`). The server may add a value later: the screen tells it as «not completed». */
-export const ASSISTANT_DECISIONS = ['Drafted', 'AutoSent', 'Escalated', 'NotHandled'] as const;
-
-/** A decision this version of the app knows. */
-export type AssistantDecision = (typeof ASSISTANT_DECISIONS)[number];
-
 /** How soon a person must look at a message, as the assistant judged it (`AssistantUrgency`). */
-export type AssistantUrgency = 'Normal' | 'High' | 'Urgent';
+type AssistantUrgency = 'Normal' | 'High' | 'Urgent';
 
 /**
  * The answer of `POST api/assistant/threads/{threadKey}/draft`: the `decision` (`Drafted` with the item of the queue, `Escalated` with the «To do» raised,

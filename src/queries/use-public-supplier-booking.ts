@@ -76,7 +76,7 @@ export function useInquiryConfirmation(slug: string, inquiryId: string | null, t
   });
 }
 
-export interface BookingRequestSession {
+interface BookingRequestSession {
   access: PublicBookingAccess;
   view: PublicBookingView;
 }

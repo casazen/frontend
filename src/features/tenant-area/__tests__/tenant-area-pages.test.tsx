@@ -13,7 +13,7 @@ import { freezeClock } from '@/test/clock';
 import { TenantContractPage } from '../tenant-contract-page';
 import { TenantDocumentsPage } from '../tenant-documents-page';
 import { TenantDuesPage } from '../tenant-dues-page';
-import { TenantMaintenanceDetailPage, TenantMaintenanceFormPage } from '../tenant-maintenance-pages';
+import { TenantMaintenanceDetailPage, TenantMaintenanceFormPage, TenantMaintenanceListPage } from '../tenant-maintenance-pages';
 
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -66,6 +66,7 @@ function renderAt(path: string, element: ReactNode) {
             <Route path="/portale-conduttore/contratti/:leaseId" element={element} />
             <Route path="/portale-conduttore/contratti/:leaseId/scadenze/:dueId?" element={element} />
             <Route path="/portale-conduttore/contratti/:leaseId/documenti" element={element} />
+            <Route path="/portale-conduttore/contratti/:leaseId/manutenzione" element={element} />
             <Route path="/portale-conduttore/contratti/:leaseId/manutenzione/nuova" element={element} />
             <Route path="/portale-conduttore/contratti/:leaseId/manutenzione/:requestId" element={element} />
           </Routes>
@@ -170,6 +171,28 @@ describe('tenant area', () => {
     expect(screen.queryByText(/Rossi/)).not.toBeInTheDocument();
     expect(screen.queryByText(/180/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Preventivo/)).not.toBeInTheDocument();
+    // The state is the chip of the list, under the title, once; «La richiesta va al gestore» is for who writes the request (the form), not for who reads it.
+    expect(screen.getAllByTestId('tenant-request-status')).toHaveLength(1);
+    expect(screen.getByTestId('tenant-request-status')).toHaveClass('rounded-full');
+    expect(screen.getByRole('heading', { level: 1 }).parentElement).toContainElement(screen.getByTestId('tenant-request-status'));
+    expect(screen.queryByText(/La richiesta va al gestore del contratto/)).not.toBeInTheDocument();
+  });
+
+  it('says where the request goes in the form only', async () => {
+    get.mockResolvedValue({ data: area });
+    renderAt('/portale-conduttore/contratti/lease-1/manutenzione/nuova', <TenantMaintenanceFormPage />);
+
+    expect(await screen.findByText(/La richiesta va al gestore del contratto/)).toBeInTheDocument();
+  });
+
+  it('uses the empty state of the app when there is no request, and lists the requests with their state otherwise', async () => {
+    get.mockImplementation((url: string) => Promise.resolve({ data: String(url).endsWith('/maintenance') ? { items: [] } : area }));
+    renderAt('/portale-conduttore/contratti/lease-1/manutenzione', <TenantMaintenanceListPage />);
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'Nessuna richiesta.' })).toBeInTheDocument();
+    expect(screen.getByText(/arriva al gestore del contratto e qui ne segui lo stato/)).toBeInTheDocument();
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Nuova richiesta' })).toHaveAttribute('href', '/portale-conduttore/contratti/lease-1/manutenzione/nuova');
   });
 
   it('asks for category, urgency, description and attachments, and posts them to the manager', async () => {
@@ -345,6 +368,49 @@ describe('tenant area', () => {
 
     expect(await screen.findByTestId('tenant-dues-empty')).toHaveTextContent('Nessuna scadenza');
     expect(screen.queryByTestId('tenant-sepa')).not.toBeInTheDocument();
+  });
+
+  it('shows the totals only when more than one due is open', async () => {
+    const paid = { ...area.dues[0], id: 'due-0', dueDate: '2026-10-05', status: 'Paid', amount: 900, amountPaid: 900, residual: 0, components: [{ kind: 'Rent', amount: 900 }] };
+    const second = { ...area.dues[0], id: 'due-2', dueDate: '2026-12-05', amount: 200, residual: 200, components: [{ kind: 'Rent', amount: 200 }] };
+    get.mockResolvedValue({ data: { ...area, dues: [paid, area.dues[0]] } });
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-due-due-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('tenant-payment-report')).not.toBeInTheDocument();
+
+    cleanup();
+    get.mockResolvedValue({ data: { ...area, dues: [paid, area.dues[0], second] } });
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-payment-report')).toBeInTheDocument();
+    expect(screen.getByTestId('tenant-report-open')).toHaveTextContent(/1\.?250,00/);
+    expect(screen.getByTestId('tenant-report-paid')).toHaveTextContent(/900,00/);
+  });
+
+  it('has no lead under the title and puts the debit settings after the list of dues', async () => {
+    get.mockResolvedValue({ data: area });
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze', <TenantDuesPage />);
+
+    const list = await screen.findByRole('list', { name: 'Scadenze' });
+    expect(screen.queryByText(/Qui vedi se hai pagato/)).not.toBeInTheDocument();
+    expect(list.compareDocumentPosition(screen.getByTestId('tenant-sepa-settings')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps one filled button on a due: the SEPA payment, or the declaration when it is the only way to pay', async () => {
+    get.mockResolvedValue({ data: area });
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByRole('button', { name: 'Paga con SEPA' })).toHaveClass('bg-primary');
+    expect(screen.getByTestId('tenant-declare-transfer')).not.toHaveClass('bg-primary');
+    expect(screen.getByTestId('tenant-declare-transfer')).toHaveClass('border-input');
+
+    cleanup();
+    get.mockResolvedValue({ data: { ...area, dues: [{ ...area.dues[0], currency: 'CHF' }] } });
+    renderAt('/portale-conduttore/contratti/lease-1/scadenze/due-1', <TenantDuesPage />);
+
+    expect(await screen.findByTestId('tenant-declare-transfer')).toHaveClass('bg-primary');
+    expect(screen.queryByRole('button', { name: 'Paga con SEPA' })).not.toBeInTheDocument();
   });
 
   it('names the next amount on the contract and does not show the bank details', async () => {

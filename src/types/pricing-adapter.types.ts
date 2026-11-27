@@ -2,10 +2,10 @@
 export type AdaptationFrequency = 'daily' | 'weekly';
 
 /** Rule that produced a suggestion (backend `SeasonalPriceRule`). */
-export type SeasonalPriceRule = 'None' | 'HighSeason' | 'LowSeason' | 'Holiday';
+type SeasonalPriceRule = 'None' | 'HighSeason' | 'LowSeason' | 'Holiday';
 
 /** Italian national public holiday (backend `ItalianHoliday`). */
-export type ItalianHoliday =
+type ItalianHoliday =
   | 'NewYear'
   | 'Epiphany'
   | 'EasterSunday'
@@ -70,7 +70,7 @@ export interface SeasonalSuggestionsResponse {
   items: SeasonalSuggestion[];
 }
 
-export type SeasonalSuggestionRunStatus = 'Computed' | 'BasePriceMissing';
+type SeasonalSuggestionRunStatus = 'Computed' | 'BasePriceMissing';
 
 export interface RecalculateSuggestionsResponse {
   status: SeasonalSuggestionRunStatus;

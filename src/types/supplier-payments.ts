@@ -28,7 +28,7 @@ export interface SupplierPaymentsLink {
  * not finished), everything sent and Stripe still checking, or able to take payments. It follows what the server says about the
  * capabilities (`canReceivePayments`): a state the server did not report is never made up.
  */
-export type SupplierPaymentsState = 'notConnected' | 'toComplete' | 'verifying' | 'active';
+type SupplierPaymentsState = 'notConnected' | 'toComplete' | 'verifying' | 'active';
 
 export function resolveSupplierPaymentsState(account: SupplierPaymentsAccount): SupplierPaymentsState {
   if (!account.hasAccount) return 'notConnected';

@@ -6,9 +6,9 @@ import { OWNER_ACCOUNTING_KEY } from './use-owner-accounting';
 import { saveDownload } from './save-download';
 
 /** Root of the query keys of the invoices to the owners: a write that makes or issues one invalidates everything under it. */
-export const OWNER_INVOICES_KEY = 'owner-invoices';
+const OWNER_INVOICES_KEY = 'owner-invoices';
 
-export const ownerInvoiceKeys = {
+const ownerInvoiceKeys = {
   list: (criteria: OwnerInvoiceCriteria) => [OWNER_INVOICES_KEY, 'list', criteria.period ?? 'all', criteria.ownerId ?? 'all'] as const,
   detail: (invoiceId: string) => [OWNER_INVOICES_KEY, 'detail', invoiceId] as const,
 };

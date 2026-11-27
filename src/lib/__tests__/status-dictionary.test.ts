@@ -54,6 +54,8 @@ const ENUM_VALUES: Record<StatusKind, readonly string[]> = {
   serviceListing: ["Draft", "Active", "Paused"],
   // ChannelPublishStatus (E02/F03/US01): the state of the content of a property on a channel
   channel: ["Draft", "Sending", "Accepted", "Published", "ToFix", "ManagedOnChannel"],
+  // The state of a payment in the earnings of a supplier (UI-14): an open set of the server, these are the values it sends today
+  earning: ["to_collect", "paid", "late", "in_review", "refunded", "partially_refunded"],
 };
 
 const kinds = Object.keys(STATUS_DICTIONARY) as StatusKind[];

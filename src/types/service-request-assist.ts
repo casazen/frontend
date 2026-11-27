@@ -18,7 +18,7 @@ export type ServiceRequestAssistReason =
   | 'ai_not_understood';
 
 /** Who the request goes to: CasaZen suppliers whenever one covers the property for the service, the external partners otherwise. */
-export type ServiceRequestAssistChannel = 'casazen' | 'external';
+type ServiceRequestAssistChannel = 'casazen' | 'external';
 
 /** The body of `POST /api/service-requests/assist`: the words of the host (8 to 600 characters) and the property the request is for. */
 export interface ServiceRequestAssistInput {

@@ -1,6 +1,12 @@
 /** The tabs of `GET /supplier/earnings`: they may overlap (a late payment is also to collect). */
 export type SupplierEarningsTab = 'tutti' | 'da-incassare' | 'pagati' | 'in-ritardo' | 'da-verificare';
 
+/**
+ * The states of a payment the server sends today. `SupplierEarning.state` is an open set (the held payments will add values), so the field stays a
+ * `string`; these are the ones the status dictionary knows (`earning`), and a value outside them is shown with a generic word.
+ */
+export type SupplierEarningState = 'to_collect' | 'paid' | 'late' | 'in_review' | 'refunded' | 'partially_refunded';
+
 /** The filters of `GET /supplier/earnings` and of its export: `from` and `to` are Europe/Rome days (`YYYY-MM-DD`, both included). */
 export interface SupplierEarningsParams {
   tab?: SupplierEarningsTab;
@@ -48,14 +54,14 @@ export interface SupplierEarning {
   lateSince?: string | null;
 }
 
-export interface SupplierEarningsMonth {
+interface SupplierEarningsMonth {
   /** `yyyy-MM` (Europe/Rome). */
   month: string;
   netCents: number;
 }
 
 /** The figures above the list, independent of the tab, the period and the customer of the list. */
-export interface SupplierEarningsSummary {
+interface SupplierEarningsSummary {
   /** What is still to be collected, in net, and how many jobs: the same figure as the home. */
   toCollectNetCents: number;
   toCollectJobs: number;

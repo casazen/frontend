@@ -6,7 +6,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { CRM_GUEST_KEY, CRM_GUESTS_KEY, CRM_KEY, crmGuestKey } from '@/queries/crm';
 
 /** Proposals in a page of the merge screen. */
-export const MERGE_PAGE_SIZE = 20;
+const MERGE_PAGE_SIZE = 20;
 
 /** The pages of the merge proposals. */
 export const MERGE_CANDIDATES_KEY = [CRM_KEY, 'merge-candidates'] as const;

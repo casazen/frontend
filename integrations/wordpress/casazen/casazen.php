@@ -3,7 +3,7 @@
  * Plugin Name:       CasaZen
  * Plugin URI:        https://github.com/casazen/frontend/tree/develop/integrations/wordpress/casazen
  * Description:       Connects your WordPress site to CasaZen, so that your booking engine and your guest area appear on your own pages.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            CasaZen
@@ -22,7 +22,7 @@ if ( defined( 'CASAZEN_VERSION' ) ) {
 	return;
 }
 
-define( 'CASAZEN_VERSION', '0.1.0' );
+define( 'CASAZEN_VERSION', '0.2.0' );
 define( 'CASAZEN_FILE', __FILE__ );
 define( 'CASAZEN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CASAZEN_URL', plugin_dir_url( __FILE__ ) );

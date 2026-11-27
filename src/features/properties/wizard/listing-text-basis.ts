@@ -1,12 +1,7 @@
 import type { ListingTextBasis } from '@/api/listing-text.api';
+import { joinList } from '@/lib/listing-texts';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
-
-/** «a», «a e b», «a, b e c». */
-function joinList(parts: readonly string[], and: string): string {
-  if (parts.length <= 1) return parts[0] ?? '';
-  return `${parts.slice(0, -1).join(', ')} ${and} ${parts[parts.length - 1]}`;
-}
 
 /**
  * What a text of the AI was written from, in words, for the line under it: «6 foto, il comune di Como (CO), 3 annunci simili della zona e i

@@ -1,14 +1,8 @@
 // The requests "su misura" of the public showcase as the supplier answers them (SP-10b, SP-10b-b) and the complaint about a job paid through
 // CasaZen (SP-15c-c): the conversation with the customer, the offer, the dispute. All of it is the server's word; nothing here is worked out.
 
-/**
- * `kind` of a request of the supplier: `Standard` (a host's request, or a booking at a free slot) or `Custom` (a request on measure from the
- * showcase: no time and no price until the supplier's offer is accepted). An open set: a kind this version does not know is a standard one.
- */
-export type SupplierRequestKind = 'Standard' | 'Custom' | (string & {});
-
 /** Who wrote a message of the conversation: the customer, the supplier or CasaZen itself. */
-export type SupplierMessageAuthor = 'Customer' | 'Supplier' | 'System' | (string & {});
+type SupplierMessageAuthor = 'Customer' | 'Supplier' | 'System' | (string & {});
 
 export interface SupplierRequestMessage {
   id: string;
@@ -37,7 +31,7 @@ export type SupplierNegotiation =
   | (string & {});
 
 /** One line of an offer: what it is for, how many and the price of one, in cents of euro (gross, as declared); `amountCents` is their product. */
-export interface SupplierOfferLine {
+interface SupplierOfferLine {
   label: string;
   quantity: number;
   unitAmountCents: number;
@@ -97,10 +91,10 @@ export interface SupplierOfferResponse {
 }
 
 /** The states of a complaint (`ServiceDisputeStatus`): an open set, a state this version does not know is shown as waiting for the decision. */
-export type ServiceDisputeStatus = 'AwaitingSupplier' | 'AwaitingDecision' | 'ResolvedForSupplier' | 'ResolvedForCustomer' | 'Withdrawn' | (string & {});
+type ServiceDisputeStatus = 'AwaitingSupplier' | 'AwaitingDecision' | 'ResolvedForSupplier' | 'ResolvedForCustomer' | 'Withdrawn' | (string & {});
 
 /** Why the payer complained, in the server's words; an open set. */
-export type ServiceDisputeReason = 'not_done' | 'incomplete' | 'poor_quality' | 'not_as_described' | 'other' | (string & {});
+type ServiceDisputeReason = 'not_done' | 'incomplete' | 'poor_quality' | 'not_as_described' | 'other' | (string & {});
 
 /**
  * The complaint against the supplier about a job it did and is paid for through CasaZen (`GET /supplier/requests/{id}/dispute`, SP-15c-c): the

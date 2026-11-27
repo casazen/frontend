@@ -87,7 +87,8 @@ test('a guest and supplier agree a quote and complete an experience in separate 
     await supplier.goto(demoUrl('/app/supplier/inbox', 'supplier'));
     await expect(supplier.getByText('Nessun ordine.', { exact: true })).toBeVisible();
     await guest.goto('/s/' + token + '?lang=en');
-    await guest.getByRole('link', { name: /Services and extras/ }).click();
+    // The services are a tab of the stay bar (the home no longer repeats them as a row).
+    await guest.getByRole('navigation', { name: 'Stay' }).getByRole('link', { name: 'Services' }).click();
     const details = guest.locator('details').filter({ hasText: offer.serviceName });
     const summary = details.locator('summary');
     await expect(summary).toContainText(/On request/);

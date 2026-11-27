@@ -5,16 +5,16 @@
  */
 
 /** What an item of the cockpit is about. */
-export type AutopilotTopic = 'GuestData' | 'Departure' | 'Alloggiati';
+type AutopilotTopic = 'GuestData' | 'Departure' | 'Alloggiati';
 
 /** Who does an item: the assistant in the next run, the assistant later, or only the host. */
-export type AutopilotItemStatus = 'Ready' | 'Waiting' | 'Host';
+type AutopilotItemStatus = 'Ready' | 'Waiting' | 'Host';
 
 /** How an item ended. `Skipped`: it was no longer to be done when the run came to it. */
-export type AutopilotOutcomeStatus = 'Done' | 'Failed' | 'Skipped';
+type AutopilotOutcomeStatus = 'Done' | 'Failed' | 'Skipped';
 
 /** How a guest can be reached: the check-in link by e-mail from CasaZen, and/or a message the host sends from his own phone. */
-export type AutopilotChannel = 'email' | 'chat';
+type AutopilotChannel = 'email' | 'chat';
 
 /** One item of the cockpit that has a stay, as the assistant sees it. */
 export interface AutopilotItem {

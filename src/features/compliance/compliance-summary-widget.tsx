@@ -26,11 +26,15 @@ function Badge({ badge }: { badge: CockpitBadge }) {
   return badge.kind === 'property' ? <StatusBadge kind="property" status={badge.status} /> : <StatusBadge kind="alloggiati" status={badge.status} />;
 }
 
-function CockpitRowItem({ row }: { row: CockpitRow }) {
+/** What the law dates and is still to do is the urgent one. What is in hand (yellow) or done (green) is not. */
+function isUrgent(row: CockpitRow) {
+  return row.tier === 'fine' && row.light !== 'yellow' && row.light !== 'green';
+}
+
+function CockpitRowItem({ row, solid }: { row: CockpitRow; solid: boolean }) {
   const { t } = useTranslation();
-  // What the law dates and is still to do is the urgent one: its icon takes the color of urgency and its button is the solid one. What is in
-  // hand (yellow) or done (green) is not.
-  const urgent = row.tier === 'fine' && row.light !== 'yellow' && row.light !== 'green';
+  // The icon of an urgent row takes the color of urgency; its button is solid only if it is the first urgent row of the page (`solid`).
+  const urgent = isUrgent(row);
   // «Verifica nel tuo Cassetto Compliance»: for the rows whose outcome the server says is held by the connected area, where the connector is on.
   const drawer = useComplianceDrawerAvailable() ? row.drawer : undefined;
   // The button of the row: where it goes, unless the row is only to read.
@@ -53,8 +57,9 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
         link || drawer ? (
           <>
             {link ? (
-              // What the law dates has the solid button: it is the one thing the eye should land on; the rest asks less.
-              <Button asChild variant={urgent ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
+              // Only the first urgent row of the page has the solid button: it is the one thing the eye should land on, and several solid
+              // buttons would compete (UX round 3). The other rows, urgent or not, ask less.
+              <Button asChild variant={solid ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
                 <Link to={link} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
                   {row.cta}
                 </Link>
@@ -68,12 +73,12 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
   );
 }
 
-/** The rows of a section, one under the other with a line between them. */
-function RowList({ rows }: { rows: readonly CockpitRow[] }) {
+/** The rows of a section, one under the other with a line between them. `solidId` is the row of the page that has the solid button. */
+function RowList({ rows, solidId }: { rows: readonly CockpitRow[]; solidId: string | undefined }) {
   return (
     <ul role="list" className="divide-y divide-border rounded-2xl border bg-card">
       {rows.map((row) => (
-        <CockpitRowItem key={row.id} row={row} />
+        <CockpitRowItem key={row.id} row={row} solid={row.id === solidId} />
       ))}
     </ul>
   );
@@ -134,6 +139,8 @@ export function ComplianceSummaryWidget() {
   }
 
   const { fine, start, chore } = model;
+  // The urgent rows are the dated ones, all in the first section and never cut: the first of them is the page's solid button.
+  const solidId = fine.rows.find(isUrgent)?.id;
   const shown = (rows: CockpitRow[], expanded: boolean) => (expanded ? rows : rows.slice(0, CALM_VISIBLE));
   const more = (rows: CockpitRow[], expanded: boolean, toggle: () => void) =>
     rows.length > CALM_VISIBLE
@@ -158,7 +165,7 @@ export function ComplianceSummaryWidget() {
       {fine.total > 0 ? (
         <PlainSection title={t('compliance.cockpit.fine.title')} count={fine.total} data-testid="compliance-tier-fine">
           <SectionWhy testId="compliance-tier-fine-why">{t('compliance.cockpit.fine.intro')}</SectionWhy>
-          <RowList rows={fine.rows} />
+          <RowList rows={fine.rows} solidId={solidId} />
           {fine.hidden > 0 ? (
             <p className="text-sm text-foreground/70" data-testid="compliance-summary-more">
               {t('compliance.summary.moreItems', { count: fine.hidden })}{' '}
@@ -178,7 +185,7 @@ export function ComplianceSummaryWidget() {
           {...more(start.rows, showAllStart, () => setShowAllStart((value) => !value))}
         >
           <SectionWhy testId="compliance-tier-start-why">{t('compliance.cockpit.start.intro')}</SectionWhy>
-          <RowList rows={shown(start.rows, showAllStart)} />
+          <RowList rows={shown(start.rows, showAllStart)} solidId={solidId} />
         </PlainSection>
       ) : null}
 
@@ -189,7 +196,7 @@ export function ComplianceSummaryWidget() {
           data-testid="compliance-tier-chore"
           {...more(chore.rows, showAllChore, () => setShowAllChore((value) => !value))}
         >
-          <RowList rows={shown(chore.rows, showAllChore)} />
+          <RowList rows={shown(chore.rows, showAllChore)} solidId={solidId} />
         </PlainSection>
       ) : null}
 
@@ -202,7 +209,7 @@ export function ComplianceSummaryWidget() {
           onToggle={() => setShowGreen((value) => !value)}
         >
           <div data-testid="compliance-summary-green-section">
-            <RowList rows={model.green} />
+            <RowList rows={model.green} solidId={solidId} />
           </div>
         </Disclosure>
       ) : null}
@@ -216,7 +223,7 @@ export function ComplianceSummaryWidget() {
           onToggle={() => setShowActive((value) => !value)}
         >
           <div data-testid="compliance-summary-properties-section">
-            <RowList rows={model.activeProperties} />
+            <RowList rows={model.activeProperties} solidId={solidId} />
           </div>
         </Disclosure>
       ) : null}

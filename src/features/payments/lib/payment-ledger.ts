@@ -7,6 +7,7 @@ import {
 import type { FeatureFlags } from '@/config/feature-flags';
 import { endOfMonth, formatStayDate, isStayDate, startOfMonth } from '@/lib/stay-dates';
 import { PAYMENT_LEDGER_KINDS, type PaymentLedgerLine, type PaymentStatus } from '@/types';
+import { formatExactAmount } from '@/lib/exact-amount';
 
 /**
  * Where the fiscal documents of the host are (E06/F03/US04/T01, the page of the list of documents). The ledger links the document of a line there only while the
@@ -26,38 +27,11 @@ export const LEDGER_DAY_LIMITS = { min: FIRST_DAY, max: LAST_DAY } as const;
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Money
 
-/** More decimals than any currency has, so that a figure the server wrote is never cut by the format: what it sends is what is shown. */
-const MAX_FRACTION_DIGITS = 4;
-
-const CURRENCY_CODE = /^[A-Za-z]{3}$/;
-const AMOUNT_FORMATS = new Map<string, Intl.NumberFormat>();
-
-function numberFormat(language: string, currency: string | null): Intl.NumberFormat {
-  const key = `${language}|${currency ?? ''}`;
-  const known = AMOUNT_FORMATS.get(key);
-  if (known) return known;
-  const options: Intl.NumberFormatOptions = currency
-    ? { style: 'currency', currency: currency.toUpperCase(), maximumFractionDigits: MAX_FRACTION_DIGITS }
-    : { maximumFractionDigits: MAX_FRACTION_DIGITS };
-  let format: Intl.NumberFormat;
-  try {
-    format = new Intl.NumberFormat(language, options);
-  } catch {
-    // A language tag the runtime does not know: the page's own default, never a crash on a money screen.
-    format = new Intl.NumberFormat('it', options);
-  }
-  AMOUNT_FORMATS.set(key, format);
-  return format;
-}
-
 /**
  * An amount of the ledger as the server wrote it, in the language of the person and in the currency of the line: no sum, no rounding to another unit, no
  * conversion, and never an assumed euro (a currency that is not a code is written after the number as it came).
  */
-export function formatLedgerAmount(amount: number, currency: string, language: string): string {
-  if (CURRENCY_CODE.test(currency)) return numberFormat(language, currency).format(amount);
-  return `${numberFormat(language, null).format(amount)} ${currency}`.trim();
-}
+export const formatLedgerAmount = formatExactAmount;
 
 /**
  * The fee of the provider or of the channel is a cost: it is shown as a deduction, with a minus, whatever sign the server wrote it with. Flipping a sign is not

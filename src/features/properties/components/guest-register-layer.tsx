@@ -19,6 +19,7 @@ import type { GuestRegisterInfo, GuestRegisterPeriod } from '@/types/guest-regis
 import { defaultRegisterPeriod, periodProblemOf, type GuestRegisterPeriodProblem, type GuestRegisterTable } from '../lib/guest-register-model';
 import { parseGuestRegisterLayerId } from '../lib/guest-register-address';
 import { GuestRegisterSheet } from './guest-register-sheet';
+import { LayerNotice } from '@/features/compliance/components/layer-notice';
 
 /** The name of the layer: the property it is about, so that a host with two properties knows which one is on screen. Until the property arrives, the plain name. */
 export function GuestRegisterLayerTitle({ id }: DetailTitleProps) {
@@ -38,16 +39,6 @@ function refusalOf(error: unknown): Refusal | null {
   if (status === 403) return { page: 'guestRegister.layer.forbidden' };
   if (status === 400) return { period: code === 'swiss_period_too_long' ? 'tooLong' : code === 'swiss_period_invalid' ? 'order' : 'missing' };
   return null;
-}
-
-/** A line the layer says in place of the register, with nothing asked of the server. */
-function RegisterNotice({ textKey, testId }: { textKey: string; testId: string }) {
-  const { t } = useTranslation();
-  return (
-    <p role="alert" className="text-sm text-foreground/70" data-testid={testId}>
-      {t(textKey)}
-    </p>
-  );
 }
 
 /** What the count of the period says: how many guests, how long the regime asks the host to keep the register, or that nobody arrived. */
@@ -121,7 +112,7 @@ function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
 
   // A refusal comes first: a read that failed still holds the answer before it, and a 404 or a 403 must not show the count of a moment ago.
   const refusal = info.isError ? refusalOf(info.error) : null;
-  if (refusal && 'page' in refusal) return <RegisterNotice textKey={refusal.page} testId="guest-register-problem" />;
+  if (refusal && 'page' in refusal) return <LayerNotice textKey={refusal.page} testId="guest-register-problem" />;
 
   // A day that is still being typed is not a mistake: nothing is said (the buttons wait) until the period is a period that is wrong (the end before the start, a year and a day).
   const periodProblem = problem === 'missing' ? null : (problem ?? (refusal && 'period' in refusal ? refusal.period : null));
@@ -234,11 +225,11 @@ export function GuestRegisterLayerContent({ id, close }: DetailContentProps) {
   const { hasPermission } = useWorkspace();
   const propertyId = parseGuestRegisterLayerId(id);
 
-  if (propertyId === null) return <RegisterNotice textKey="guestRegister.layer.notFound" testId="guest-register-problem" />;
+  if (propertyId === null) return <LayerNotice textKey="guestRegister.layer.notFound" testId="guest-register-problem" />;
   if (isLoading) return <SkeletonLine lines={3} />;
-  if (!flags.guestRegistrationRegimes) return <RegisterNotice textKey="guestRegister.layer.unavailable" testId="guest-register-unavailable" />;
+  if (!flags.guestRegistrationRegimes) return <LayerNotice textKey="guestRegister.layer.unavailable" testId="guest-register-unavailable" />;
   if (!hasPermission('short-rent', 'guest.read') || !hasPermission('short-rent', 'booking.read')) {
-    return <RegisterNotice textKey="guestRegister.layer.forbidden" testId="guest-register-problem" />;
+    return <LayerNotice textKey="guestRegister.layer.forbidden" testId="guest-register-problem" />;
   }
   return <GuestRegisterLayer key={propertyId} propertyId={propertyId} close={close} />;
 }

@@ -10,18 +10,18 @@
 
 /** What a line is: a card payment, a bank transfer, cash, a payment of a channel, or any other way. */
 export const PAYMENT_LEDGER_KINDS = ['Card', 'BankTransfer', 'Cash', 'Ota', 'Other'] as const;
-export type PaymentLedgerKind = (typeof PAYMENT_LEDGER_KINDS)[number];
+type PaymentLedgerKind = (typeof PAYMENT_LEDGER_KINDS)[number];
 
 /**
  * Whether the money of a line came in. `ToCollect` is a payment recorded or on its way (pending or processing) and nothing else: a payment cancelled with its
  * booking is `Canceled`, and a state that is not `Paid` is never shown as collected.
  */
 export const PAYMENT_LEDGER_STATES = ['Paid', 'ToCollect', 'Refunded', 'PartiallyRefunded', 'Failed', 'Canceled'] as const;
-export type PaymentLedgerState = (typeof PAYMENT_LEDGER_STATES)[number];
+type PaymentLedgerState = (typeof PAYMENT_LEDGER_STATES)[number];
 
 /** Who collected the money of a line (`Unknown`: the server does not know). */
 export const PAYMENT_LEDGER_COLLECTORS = ['Unknown', 'Host', 'Channel', 'Platform'] as const;
-export type PaymentLedgerCollector = (typeof PAYMENT_LEDGER_COLLECTORS)[number];
+type PaymentLedgerCollector = (typeof PAYMENT_LEDGER_COLLECTORS)[number];
 
 /** The fiscal document of the booking a line belongs to: its id, its number (a draft has none) and the stable codes of its kind, its status and its collection state. */
 export interface PaymentLedgerDocument {

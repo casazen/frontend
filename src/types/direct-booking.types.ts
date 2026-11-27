@@ -1,6 +1,6 @@
 import type { TouristTaxQuoteStatus } from './tourist-tax.types';
 
-export interface DirectBookingGuestPayload {
+interface DirectBookingGuestPayload {
   firstName: string;
   lastName: string;
   email: string;
@@ -8,7 +8,7 @@ export interface DirectBookingGuestPayload {
   country: string;
 }
 
-export interface DirectBookingConsentPayload {
+interface DirectBookingConsentPayload {
   dataProcessing: boolean;
   consentVersion: string;
 }
@@ -86,7 +86,7 @@ export interface DirectBookingQuotePayload {
   childrenAges?: number[];
 }
 
-export interface TouristTaxQuote {
+interface TouristTaxQuote {
   status: TouristTaxQuoteStatus;
   /** Only when `status` is `Calculated`. */
   amount: number | null;
@@ -100,7 +100,7 @@ export interface TouristTaxQuote {
  * What the checkout may offer and promise for a stay, decided by the backend (BK-07, A3-16): the page never offers an
  * option the API refuses, nor a free cancellation the guest cannot use.
  */
-export interface DirectBookingPaymentOptions {
+interface DirectBookingPaymentOptions {
   /** "Paga alla scadenza" can be chosen: its charge day is after today in Europe/Rome. */
   deferredPaymentAvailable: boolean;
   /** Day (`YYYY-MM-DD`) the saved card is charged; null when the deferred payment is not available. */
@@ -114,7 +114,7 @@ export interface DirectBookingPaymentOptions {
 }
 
 /** What a line of the price breakdown of a quote is (DB-03). `Discount` is not sent yet; a page that meets a kind it does not know shows it plainly. */
-export type QuoteLineKind = 'Nights' | 'WeekendNights' | 'CleaningFee' | 'TouristTax' | 'Total' | 'Discount';
+type QuoteLineKind = 'Nights' | 'WeekendNights' | 'CleaningFee' | 'TouristTax' | 'Total' | 'Discount';
 
 /**
  * One line of the price breakdown of a quote (DB-03), in cents of the currency of the quote, whole numbers. The lines before the
@@ -134,7 +134,7 @@ export interface QuoteLine {
  * and the partial refund. A window the policy does not have, or that is already over, is null. A page shows the dates only when
  * `selfServiceAvailable` is true: the guest can then cancel by themselves and the system keeps the promise.
  */
-export interface StayCancellation {
+interface StayCancellation {
   fullRefundUntil: string | null;
   partialRefundPercent: number | null;
   partialRefundUntil: string | null;
@@ -163,7 +163,7 @@ export interface DirectBookingQuote {
   cancellation?: StayCancellation | null;
 }
 
-export interface ConnectedAccountPublishableContext {
+interface ConnectedAccountPublishableContext {
   publishableKey: string;
   stripeAccountId: string;
 }
@@ -243,7 +243,7 @@ export type GuestBookingStatus =
   | 'StayCompleted';
 
 /** Online check-in of the booking (CO-02): the link is only emailed, never shown. */
-export type GuestCheckInAccessStatus = 'NotApplicable' | 'NotYetOpen' | 'Open' | 'Completed';
+type GuestCheckInAccessStatus = 'NotApplicable' | 'NotYetOpen' | 'Open' | 'Completed';
 
 /**
  * One booking as its guest sees it (`GET /api/public/guest/bookings/{code}` with the guest session, DB-06a; the body of

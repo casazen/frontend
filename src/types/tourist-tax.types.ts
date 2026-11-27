@@ -8,7 +8,7 @@ export type TouristTaxRateVerification = (typeof TOURIST_TAX_RATE_VERIFICATIONS)
 /** Fixed amount per person per night, or percentage of the night price per person with an optional cap (BK-03). */
 export const TOURIST_TAX_CALCULATION_METHODS = ['PerPersonPerNight', 'PercentOfNightlyPrice'] as const;
 
-export type TouristTaxCalculationMethod = (typeof TOURIST_TAX_CALCULATION_METHODS)[number];
+type TouristTaxCalculationMethod = (typeof TOURIST_TAX_CALCULATION_METHODS)[number];
 
 /**
  * Outcome of a tourist tax quote (backend `TouristTaxQuoteStatus`). Only `Calculated` has an amount:

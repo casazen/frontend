@@ -1,6 +1,6 @@
 <?php
 /**
- * The connection test: the ONLY place where PHP calls CasaZen.
+ * The connection test: where PHP reads the public addresses of CasaZen (the calls of a connected site are in Api_Client).
  *
  * @package Casazen
  */
@@ -222,6 +222,29 @@ class Connection {
 			$base .= '/api';
 		}
 		return $base . '/' . ltrim( (string) $path, '/' );
+	}
+
+	/**
+	 * The address of the API that the manifest of an address names (contract v1, the same checks as test()).
+	 *
+	 * «Connect to CasaZen» reads it from the console, from the screen of the administrator: never for a request of a visitor.
+	 *
+	 * @param string $address The origin of a CasaZen address (already normalised).
+	 * @return string The API address without a trailing slash, or an empty string when the manifest cannot be read or is not valid.
+	 */
+	public static function read_api_base( $address ) {
+		if ( ! is_string( $address ) || '' === $address ) {
+			return '';
+		}
+		$host        = wp_parse_url( $address, PHP_URL_HOST );
+		$development = is_string( $host ) && Settings::is_development_host( strtolower( $host ) ) && self::allows_development_hosts();
+
+		$reply = self::get_json( $address . '/embed/v1/manifest.json', $development );
+		if ( null === $reply || 200 !== $reply['status'] || ! is_array( $reply['data'] ) ) {
+			return '';
+		}
+		$api_base = self::read_manifest( $reply['data'], $development );
+		return false === $api_base ? '' : $api_base;
 	}
 
 	/**

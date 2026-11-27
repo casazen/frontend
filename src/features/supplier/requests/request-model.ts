@@ -107,8 +107,9 @@ export function hasNoPrice(request: Pick<SupplierServiceRequest, 'price'>): bool
 }
 
 /**
- * What the supplier can do about a request now. A new request without a price puts the quote first and the take second ("Accetta senza
- * preventivo"); one with a price keeps the take first and offers the quote as a quiet button. A quote that waits is a state to wait in: the
+ * What the supplier can do about a request now. A new request without a price puts the quote first ("Accetta senza preventivo" is a quiet
+ * button); one with a price keeps the take first and offers the quote as a quiet button. «Rifiuta» is the second action of a new request
+ * either way: always in the same place (UX round 3). A quote that waits is a state to wait in: the
  * supplier may change it or take it back, but there is nothing it has to do. The reminder needs `onlinePayments` (the flag of the
  * server, `SupplierOnlinePayments`) and the server's own word (`payment.canRequest`); recording a payment received outside CasaZen needs
  * only the server's (`payment.canRecordOffline`), also with online payments off.
@@ -120,7 +121,7 @@ export function actionsOf(
   switch (phaseOf(request)) {
     case 'toAnswer':
       return hasNoPrice(request)
-        ? { primary: 'quote', secondary: 'take', more: ['reject'] }
+        ? { primary: 'quote', secondary: 'reject', more: ['take'] }
         : { primary: 'take', secondary: 'reject', more: ['quote'] };
     // A backup answers the request as it is: it can say it would take the job, or refuse; no quote, no other time (the host did not choose it).
     case 'backupWaiting':

@@ -16,10 +16,10 @@ export type PartiesPolicy = 'No' | 'OnRequest';
 export type ChildrenPolicy = 'No' | 'OnRequest' | 'Yes';
 
 /** The one state of a short-stay property in the host's list (SR-07a): derived by the server, never worked out here. */
-export type PropertyLifecycleStatus = 'NeedsAttention' | 'Active' | 'Paused' | 'Suspended';
+type PropertyLifecycleStatus = 'NeedsAttention' | 'Active' | 'Paused' | 'Suspended';
 
 /** Where a short-stay property stands on the booking site: on it, ready but kept off (paused or switched off), or not ready. */
-export type PropertySiteVisibility = 'Published' | 'Hidden' | 'NotReady';
+type PropertySiteVisibility = 'Published' | 'Hidden' | 'NotReady';
 
 /**
  * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
@@ -377,7 +377,6 @@ export interface PublicHighlight {
 
 /** What a point of interest is, in the order the list shows them (DB-11a). */
 export const PUBLIC_POI_TYPES = ['beach', 'sight', 'food', 'shop', 'transport', 'health', 'parking'] as const;
-export type PublicPoiType = (typeof PUBLIC_POI_TYPES)[number];
 
 /**
  * A place near the house with the time to get there (DB-11a). It has no coordinates: only the direction (compass bearing from the
@@ -404,7 +403,7 @@ export interface PublicFloorPlanLevel {
   areaSqm?: number | null;
 }
 
-export interface PublicFloorPlan {
+interface PublicFloorPlan {
   levels: PublicFloorPlanLevel[];
 }
 
@@ -416,7 +415,7 @@ export type PublicAreaKind = 'Country' | 'Coast' | 'Historic';
  * and the site profile). Every member is optional: **the page shows a block only when its data is there**, never a placeholder, and
  * never says what the host did not say (D24, D37). A member that an older backend does not send is simply absent.
  */
-export interface PublicPropertyProfile {
+interface PublicPropertyProfile {
   /** Living area in square metres. */
   areaSqm?: number | null;
   beds?: number | null;
@@ -485,7 +484,7 @@ export interface PublicPropertyDetailDto extends PublicPropertyDto, PublicProper
  * The night that starts on `date` in the public calendar of a property (DB-03b, `GET api/public/properties/{id}/calendar`).
  * Dates and amounts only: it never says who stays, nor tells a booking from a block of the host.
  */
-export interface PublicCalendarDayDto {
+interface PublicCalendarDayDto {
   date: string;
   /** A stay can start this night. The day of a check-out is free for a new check-in, so it is available. */
   available: boolean;
@@ -520,7 +519,7 @@ export interface PublicCalendarDto {
   generatedAt: string;
 }
 
-export type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
+type OtaSyncStatus = 'Pending' | 'InProgress' | 'Success' | 'Failed' | null;
 
 export interface PropertyDocumentDto {
   id: string;
@@ -555,7 +554,7 @@ export interface OtaIntegrationSummaryDto {
   syncEnabled: boolean;
 }
 
-export interface BookingsSummaryDto {
+interface BookingsSummaryDto {
   totalBookings: number;
   upcomingBookings: number;
   activeBookings: number;
@@ -564,7 +563,7 @@ export interface BookingsSummaryDto {
 }
 
 /** Seasonal price suggestions of the property: on/off, last computation, next due Europe/Rome date (yyyy-MM-dd). */
-export interface PricingAdapterSummaryDto {
+interface PricingAdapterSummaryDto {
   isEnabled: boolean;
   lastAdaptedAt: string | null;
   nextRunOn: string | null;

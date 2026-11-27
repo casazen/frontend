@@ -27,7 +27,7 @@ export const OWNER_PORTAL_PERMISSIONS: readonly OwnerPortalPermission[] = [
 // ---------------------------------------------------------------- calendar and owner stays
 
 /** The neutral kinds of the days of the owner calendar: no guest, no channel, no text. */
-export type OwnerCalendarKind = 'available' | 'occupied' | 'blocked' | 'ownerStay';
+type OwnerCalendarKind = 'available' | 'occupied' | 'blocked' | 'ownerStay';
 
 /**
  * How an owner stay reads: `confirmed` only once its block is acknowledged, `approved_syncing` while it is not, `sync_failed` when the block was
@@ -36,10 +36,10 @@ export type OwnerCalendarKind = 'available' | 'occupied' | 'blocked' | 'ownerSta
 export type OwnerStayState = 'requested' | 'approved_syncing' | 'confirmed' | 'sync_failed' | 'rejected' | 'cancelled';
 
 /** Where an owner stay stands for the agency (`OwnerStayStatus`). */
-export type OwnerStayStatus = 'Requested' | 'Approved' | 'Rejected' | 'Cancelled';
+type OwnerStayStatus = 'Requested' | 'Approved' | 'Rejected' | 'Cancelled';
 
 /** What the channels say of the block of a stay, or of its release (`OwnerStaySyncState`). */
-export type OwnerStaySyncState = 'None' | 'Pending' | 'Acknowledged' | 'Failed';
+type OwnerStaySyncState = 'None' | 'Pending' | 'Acknowledged' | 'Failed';
 
 /** A run of nights with the same kind: `start` included, `end` excluded. The stay id and state come only with `ownerStay`. */
 export interface OwnerCalendarRange {
@@ -81,7 +81,7 @@ export interface OwnerStay {
 }
 
 /** Dates closed to owner stays: the nights from `from` to `to`, both included. */
-export interface OwnerStayBlackout {
+interface OwnerStayBlackout {
   from: string;
   to: string;
 }
@@ -121,7 +121,7 @@ export interface OwnerStayRequestBody {
 
 // ---------------------------------------------------------------- documents
 
-export type OwnerDocumentType = 'Mandate' | 'Contract' | 'Insurance' | 'Statement' | 'Invoice' | 'Other';
+type OwnerDocumentType = 'Mandate' | 'Contract' | 'Insurance' | 'Statement' | 'Invoice' | 'Other';
 
 /** How a version reads on a day: not in force yet, in force, a later one is in force, or lapsed. */
 export type OwnerDocumentVersionState = 'upcoming' | 'current' | 'superseded' | 'expired';
@@ -158,7 +158,7 @@ export interface OwnerDocument {
 }
 
 /** The life of a version of an owner statement (E06). The portal shows `Published` and `Superseded` only. */
-export type OwnerStatementVersionState = 'Draft' | 'Flagged' | 'Approved' | 'Published' | 'Superseded';
+type OwnerStatementVersionState = 'Draft' | 'Flagged' | 'Approved' | 'Published' | 'Superseded';
 
 /** A published (or superseded) statement version of the owner accounting, referenced where it is (E06), never copied. */
 export interface OwnerStatementReference {
@@ -235,12 +235,12 @@ export interface OwnerContactAccepted {
 // ---------------------------------------------------------------- inbox
 
 /** What a conversation is about. */
-export type OwnerConversationTopic = 'General' | 'Property' | 'OwnerStay' | 'Document' | 'StatementVersion';
+type OwnerConversationTopic = 'General' | 'Property' | 'OwnerStay' | 'Document' | 'StatementVersion';
 
 /** The topic as `POST api/owner-portal/conversations` reads it (case-insensitive on the server). */
 export type OwnerConversationTopicCode = 'general' | 'property' | 'ownerStay' | 'document' | 'statementVersion';
 
-export type OwnerMessageSender = 'Agency' | 'Owner';
+type OwnerMessageSender = 'Agency' | 'Owner';
 
 export interface OwnerConversation {
   id: string;
@@ -256,7 +256,7 @@ export interface OwnerConversation {
   lastMessageAt: string;
 }
 
-export interface OwnerMessageAttachment {
+interface OwnerMessageAttachment {
   fileName: string;
   contentType: string;
   sizeBytes: number;

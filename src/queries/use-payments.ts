@@ -58,9 +58,9 @@ export function useCreatePayment() {
 }
 
 /** Refunds still waiting for Stripe are polled until Stripe confirms or fails them (BK-02). */
-export const REFUND_POLL_INTERVAL_MS = 5000;
+const REFUND_POLL_INTERVAL_MS = 5000;
 
-export function isRefundInProgress(refund: PaymentRefund): boolean {
+function isRefundInProgress(refund: PaymentRefund): boolean {
   return refund.status === 'Pending' || refund.status === 'RequiresAction';
 }
 

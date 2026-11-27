@@ -12,25 +12,12 @@
  * page, the cache of the queries or a log.
  */
 
-/** The kinds of a stored document (backend `FiscalDocumentKind`): not the kind a regime asks for (`FiscalDocumentKind` of the issuer setting). */
-export const FISCAL_DOCUMENT_ENTRY_KINDS = ['Invoice', 'CreditNote', 'Receipt', 'Proforma'] as const;
-export type FiscalDocumentEntryKind = (typeof FISCAL_DOCUMENT_ENTRY_KINDS)[number];
-
-/** Who issued a document: CasaZen, for a direct booking, or the channel manager (imported, read-only). */
-export const FISCAL_DOCUMENT_SOURCES = ['CasaZen', 'Octorate'] as const;
-export type FiscalDocumentSource = (typeof FISCAL_DOCUMENT_SOURCES)[number];
-
 /** The life of a document: a draft has no number, an issued one is immutable, a discarded draft consumed no number. */
 export const FISCAL_DOCUMENT_STATUSES = ['Draft', 'Issued', 'Discarded'] as const;
 export type FiscalDocumentStatus = (typeof FISCAL_DOCUMENT_STATUSES)[number];
 
-/** Whether the amount of a document was collected. `Unknown`: an imported document that says nothing. */
-export const FISCAL_DOCUMENT_PAYMENT_STATES = ['Unknown', 'ToCollect', 'Paid'] as const;
-export type FiscalDocumentPaymentState = (typeof FISCAL_DOCUMENT_PAYMENT_STATES)[number];
-
 /** The states of a document on the SDI (the Italian exchange system of electronic invoices), as the server writes them. */
 export const FISCAL_DOCUMENT_SDI_STATUSES = ['not_applicable', 'to_send', 'submitted', 'delivered', 'rejected', 'manual_declared', 'unknown'] as const;
-export type FiscalDocumentSdiStatus = (typeof FISCAL_DOCUMENT_SDI_STATUSES)[number];
 
 /**
  * One document of the list, reduced to what the page shows. `kind`, `source`, `status`, `paymentState` and `sdiStatus` are the codes above (a code this client does

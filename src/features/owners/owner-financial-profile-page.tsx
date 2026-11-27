@@ -40,6 +40,7 @@ import { OwnerMandateSection } from './components/owner-mandate-form';
 import { OwnerTaxChecksSection } from './components/owner-tax-checks-section';
 import { ApprovePolicyDialog, PolicyDialog } from './components/policy-dialog';
 import { ProfileDialog } from './components/profile-dialog';
+import { DescriptionItem } from '@/components/shared/description-item';
 
 const FACT_GROUPS = [
   { title: 'identity', fields: ['entityKind', 'legalName'] },
@@ -446,16 +447,16 @@ function PolicyPanel({ policy, all, canManage, onApprove, onNew }: PolicyPanelPr
           </p>
           {parameters ? (
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2" data-testid="policy-parameters">
-              <Row label={t('ownerProfile.policy.withholding')} value={parameters.withholdingApplies ? t('ownerProfile.policy.yes') : t('ownerProfile.policy.no')} />
+              <DescriptionItem label={t('ownerProfile.policy.withholding')} value={parameters.withholdingApplies ? t('ownerProfile.policy.yes') : t('ownerProfile.policy.no')} />
               {parameters.withholdingApplies ? (
                 <>
-                  <Row label={t('ownerProfile.policy.rate')} value={typeof parameters.withholdingRatePercent === 'number' ? percent(parameters.withholdingRatePercent) : '—'} />
-                  <Row label={t('ownerProfile.policy.taxCode')} value={parameters.withholdingTaxCode ?? '—'} />
-                  <Row label={t('ownerProfile.policy.components')} value={parameters.grossBaseComponents.join(', ') || '—'} />
+                  <DescriptionItem label={t('ownerProfile.policy.rate')} value={typeof parameters.withholdingRatePercent === 'number' ? percent(parameters.withholdingRatePercent) : '—'} />
+                  <DescriptionItem label={t('ownerProfile.policy.taxCode')} value={parameters.withholdingTaxCode ?? '—'} />
+                  <DescriptionItem label={t('ownerProfile.policy.components')} value={parameters.grossBaseComponents.join(', ') || '—'} />
                 </>
               ) : null}
-              <Row label={t('ownerProfile.policy.rounding')} value={parameters.rounding ? t(`ownerProfile.policy.roundingValue.${parameters.rounding}`) : '—'} />
-              <Row label={t('ownerProfile.policy.retention')} value={typeof parameters.retentionYears === 'number' ? t('ownerProfile.policy.years', { count: parameters.retentionYears }) : '—'} />
+              <DescriptionItem label={t('ownerProfile.policy.rounding')} value={parameters.rounding ? t(`ownerProfile.policy.roundingValue.${parameters.rounding}`) : '—'} />
+              <DescriptionItem label={t('ownerProfile.policy.retention')} value={typeof parameters.retentionYears === 'number' ? t('ownerProfile.policy.years', { count: parameters.retentionYears }) : '—'} />
             </dl>
           ) : null}
           {!policy.approved && canManage ? (
@@ -469,15 +470,6 @@ function PolicyPanel({ policy, all, canManage, onApprove, onNew }: PolicyPanelPr
       )}
       {all.length > 0 ? <p className="text-sm text-foreground/70">{t('ownerProfile.policy.available', { count: all.length })}</p> : null}
     </PlainSection>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-foreground/70">{label}</dt>
-      <dd className="break-words">{value}</dd>
-    </div>
   );
 }
 

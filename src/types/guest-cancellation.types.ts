@@ -5,22 +5,22 @@
  */
 
 /** What cancelling means: the plain cancellation, withdrawing a request to pay at the property, or releasing a saved card never charged. */
-export type GuestCancellationKind = 'cancel' | 'withdrawRequest' | 'deferredNoCharge';
+type GuestCancellationKind = 'cancel' | 'withdrawRequest' | 'deferredNoCharge';
 
 /** Why the guest cannot cancel from where they are. */
-export type GuestCancellationReason = 'already_cancelled' | 'stay_started' | 'not_cancellable_status' | 'payment_in_progress';
+type GuestCancellationReason = 'already_cancelled' | 'stay_started' | 'not_cancellable_status' | 'payment_in_progress';
 
 /** Where a refund stands: never `confirmed` before the bank/Stripe says so. */
 export type GuestRefundStatus = 'none' | 'pending' | 'confirmed' | 'failed';
 
-export interface GuestCancellationPolicy {
+interface GuestCancellationPolicy {
   slug: string;
   name: string;
   /** The text of the catalog policy; `null` when the host changed its windows (the text would say something else). */
   description: string | null;
 }
 
-export interface GuestCancellationStay {
+interface GuestCancellationStay {
   propertyName: string;
   /** `YYYY-MM-DD` */
   checkInDate: string;
@@ -29,7 +29,7 @@ export interface GuestCancellationStay {
 }
 
 /** The refund of a cancellation that already happened. */
-export interface GuestCancellationOutcome {
+interface GuestCancellationOutcome {
   refundAmount: number;
   refundStatus: GuestRefundStatus;
 }

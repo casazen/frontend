@@ -7,7 +7,7 @@ import { retryTransientErrors } from '@/lib/query-client';
 import type { ReportReviewPayload, ReviewInviteStatus, SubmitReviewPayload } from '@/types';
 
 /** Reviews per page, on the public page and in the host's list: "Carica altre" asks for the next page. */
-export const REVIEWS_PAGE_SIZE = 10;
+const REVIEWS_PAGE_SIZE = 10;
 
 const PUBLIC_REVIEWS_KEY = 'public-reviews';
 const REVIEW_LINK_KEY = 'review-link';

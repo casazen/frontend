@@ -6280,6 +6280,31 @@
       "Female": "Female",
       "Other": "Other"
     },
+    "prefill": {
+      "checkIt": "Check it: it was read from the printed text.",
+      "complete": "Everything this document gives was read: check it and confirm.",
+      "confirm": "Confirm these details",
+      "discard": "Take the photo again",
+      "field": {
+        "birthPlace": "Place of birth",
+        "citizenship": "Citizenship",
+        "dateOfBirth": "Date of birth",
+        "documentExpiresOn": "Expiry date",
+        "documentIssuedOn": "Issue date",
+        "documentKind": "Document type",
+        "documentNumber": "Document number",
+        "firstName": "First name",
+        "gender": "Gender",
+        "issuePlace": "Place of issue",
+        "lastName": "Last name",
+        "other": "Other details"
+      },
+      "intro": "Check the details read from the document and correct any that are wrong. In the next steps we will only ask for the ones we could not read.",
+      "missingText": "These could not be read from the photo: you will enter them in the next steps.",
+      "missingTitle": "We will still ask for",
+      "readFromDocument": "Read from the document",
+      "title": "Details read from the document"
+    },
     "validation": {
       "firstName": {
         "required": "First name is required",
@@ -6737,6 +6762,41 @@
           "pick": "Photograph the back",
           "pickAgain": "Photograph the back again"
         },
+        "camera": {
+          "captureBack": "Photograph the back",
+          "captureFront": "Photograph the front",
+          "chooseFile": "Choose a photo from your phone",
+          "chooseHint": "You can also use a photo you already took, or the camera app of your phone.",
+          "duplicate": {
+            "send": "Send it anyway",
+            "text": "This photo looks like the photo of the front. Turn the document over and take it again, or send it anyway: we check it after it is sent.",
+            "title": "It looks like the same side"
+          },
+          "heldLabel": "The photo of the document you took",
+          "hint": {
+            "blur": "The picture is blurred: hold the phone steady.",
+            "bright": "There is too much light: move to a softer light.",
+            "dark": "There is too little light: move somewhere brighter.",
+            "edges": "Show the whole document, with all four edges inside the frame.",
+            "glare": "Glare on the document: tilt it slightly or move away from the light.",
+            "orientation": "Turn your phone to landscape.",
+            "ready": "The framing is right: you can take the photo.",
+            "settling": "Hold the phone still…",
+            "waiting": "Opening the camera…"
+          },
+          "previewLabel": "Camera preview with the outline of the document",
+          "problem": {
+            "denied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try the camera again\".",
+            "fallback": "You can choose a photo of the document from your phone below, or continue with a person.",
+            "not_found": "No camera was found on this device.",
+            "title": "The camera is not available",
+            "unknown": "The camera could not be started.",
+            "unsupported": "This page cannot use the camera in this browser."
+          },
+          "retake": "Take the photo again",
+          "retryCamera": "Try the camera again",
+          "sendAgain": "Send again"
+        },
         "fileLabel": "Photo of the identity document",
         "frontReceived": "The side with your photo has arrived.",
         "instructions": "Place the document on a flat, well-lit surface. Show the whole side with your photo, without reflections. A passport has everything on one page: show the page with your photo and the two lines of letters at the bottom.",
@@ -6752,14 +6812,33 @@
         "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
         "document_back_needed": "Now photograph the back of the card, where the lines of letters are.",
         "active_pose_retry": "Take both photos again following the direction shown.",
+        "document_blur": "The photo is blurred: hold the phone steady and try again.",
+        "document_edges_not_visible": "Show the whole document, with all four edges visible.",
+        "document_format_unsupported": "Document not supported: continue with a person.",
+        "document_glare": "Glare on the photo: tilt the document slightly.",
+        "document_layout_mismatch": "We could not recognize the layout of the document: hold it straight, whole and steady, then try again.",
+        "document_not_found": "We can't see a document in this photo: place it on a flat surface and show all of it.",
         "document_not_recognized": "We could not identify a document in this photo. Upload a photo of an identity card, passport or driving licence.",
         "document_front_needed": "Photograph the side of the card with your photo.",
+        "document_orientation": "The document is turned: hold it straight, in landscape.",
+        "document_portrait_missing": "We can't see your photo on the document: show the side with the photo and don't cover it.",
+        "document_side_duplicate": "You photographed the same side twice: now photograph the other side of the document.",
+        "document_unreadable": "We could not read the document: continue with a person.",
+        "document_wrong_side": "This photo shows the other side of the document: photograph the side we asked for.",
+        "document_wrong_side_back": "This is the front: now photograph the back, where the lines of letters and numbers are.",
+        "document_wrong_side_front": "This is the back: photograph the front, where your photo is.",
         "hold_still": "Hold the phone still: the photo is blurred.",
         "less_light": "There is too much light: move to a softer light.",
         "more_light": "There is too little light: move to a brighter place.",
         "move_closer": "Move closer: your face is too small in the picture.",
         "one_face_only": "Only you should be in the picture.",
         "other": "Please take the photo again.",
+        "presence_again": "Record again, following the instructions on the screen.",
+        "presence_challenge_not_followed": "We did not see all the movements asked for: follow the instructions on the screen, in order.",
+        "presence_quality": "The recording was not clear enough: find more light, hold the phone steady and keep your face inside the oval.",
+        "presence_single_face": "Only your face should be in the recording, and always in view: nobody else behind you.",
+        "presence_timing": "The timing of the recording did not add up: follow the instructions one after the other, without stopping, and try again.",
+        "presence_too_short": "The recording was too short: stay in front of the camera until the instructions end.",
         "retake_picture": "The picture could not be read: please take it again.",
         "retake_selfie": "Take the selfie again, looking straight at the camera.",
         "show_document_photo": "Show the side of the document with your photo.",
@@ -6777,6 +6856,41 @@
         "ask": "Ask an operator to verify me",
         "requested": "We told the host. They will verify your identity and the access code reaches you after their decision."
       },
+      "presence": {
+        "camera": {
+          "busy": "Another app is using the camera. Close it and press “Try again”.",
+          "fallback": "You can try again, or carry on with a person who checks your identity."
+        },
+        "cancel": "Cancel and ask for a person",
+        "cancelling": "Stopping the upload…",
+        "instructions": "Stand somewhere well lit and keep your face inside the oval. Press “Start” and follow the instructions on the screen: you will turn your head and look up or down. It takes a few seconds.",
+        "kept": {
+          "offline": "No connection. We could not send your recording, but it is still here: when the connection is back press “Send again”.",
+          "sendAgain": "Send again",
+          "server": "The service is not answering right now. Your recording is still here: in a moment press “Send again”."
+        },
+        "leadIn": "Look at the camera",
+        "move": {
+          "lookDown": "Look down",
+          "lookUp": "Look up",
+          "turnToTheLeft": "Turn your head to the left",
+          "turnToTheRight": "Turn your head to the right"
+        },
+        "notice": {
+          "expired": "Time for the check ran out. We start again with a new recording: press “Start”.",
+          "hidden": "The page went to the background during the recording, so we cancelled it. Press “Start” to do it again.",
+          "lost": "We could not send the recording and we deleted it. When you are connected press “Start” to do it again, or carry on with a person.",
+          "not_prepared": "We could not record the images. Press “Start” to try again.",
+          "rotated": "The screen was turned or resized during the recording, so we cancelled it. Hold the phone still and press “Start” to do it again."
+        },
+        "preparing": "Getting the check ready…",
+        "retry": "Try again",
+        "secondsLeft": "Seconds left: {{count}}",
+        "start": "Start",
+        "step": "Step {{current}} of {{total}}",
+        "title": "Show your face to the camera",
+        "waitingForConnection": "Waiting for the connection to come back…"
+      },
       "problem": {
         "consent_required": "We need your answer about the face check first.",
         "consent_text_changed": "The text of the consent has been updated. Please read it again before you answer.",
@@ -6785,12 +6899,18 @@
         "failed": "Something went wrong. Please try again.",
         "link_unavailable": "This link is no longer valid, or the check-in is already complete. Ask your host for a new link.",
         "network": "We could not reach the server. Nothing was saved: check your connection and try again.",
+        "presence_expired": "Time for this check ran out. Start again with a new recording.",
+        "presence_invalid": "The recording is not valid. Try again with a new recording, or ask for a person to verify you.",
+        "presence_required": "This check has changed: reload the page, or ask for a person to verify you.",
+        "presence_too_large": "The recording is too large to send. Try again with a new recording.",
+        "presence_unavailable": "The automatic check is not available right now: a person will verify you.",
         "processing": "We could not process the photo. Please try again.",
         "too_large": "The photo is too large. Take it again with a lower resolution.",
         "too_many_requests": "Too many attempts in a short time. Wait a moment and try again.",
         "unsupported": "This type of file is not supported. Use a JPEG or PNG photo."
       },
       "result": {
+        "closed": "This check was already finished: here is how it went.",
         "ok": {
           "codeEmail": "If your booking has an email address, we also sent the code there.",
           "codeHeldTouristTax": "Your identity is verified. The access code will reach you after the tourist tax is paid.",
@@ -6806,6 +6926,7 @@
         "retry": {
           "again": "Take the selfie again",
           "againDocument": "Photograph the document again",
+          "againPresence": "Try again",
           "attempts": "Attempts left: {{count}}",
           "intro": "The check did not pass this time. Here is what to change:",
           "noReason": "The check did not pass this time.",
@@ -20020,7 +20141,6 @@
       "flaggedTitle": "Anomalies that flagged this version",
       "focusBody": "Closing balance {{balance}}. Version cut on {{cutoff}}.",
       "focusTitle": "Version {{version}} · {{status}}",
-      "formula": "Closing balance = opening balance {{opening}} + revenue {{revenue}} + commissions and costs {{costs}} + payments and withholdings {{paid}} + corrections {{corrections}} = {{closing}}.",
       "immutableBody": "The recorded lines no longer add up to the totals saved in this version. So that you are never shown wrong figures we do not show it, nor its files: trying again will not help. Write to support with the month and the owner.",
       "immutableTitle": "This statement cannot be shown",
       "kicker": "Statement of {{period}}",
@@ -20887,7 +21007,7 @@
         "signHint": "Positive amounts are in your favour, negative amounts are charged to you.",
         "summaryTitle": "Summary"
       },
-      "documentsTitle": "Accounting documents",
+      "emptyHint": "When the agency publishes a statement, you find it here with its amounts.",
       "error": "The statements could not be loaded",
       "invoiceOf": "Linked to the statement of {{period}}",
       "invoiceStatus": {
@@ -20896,7 +21016,6 @@
       },
       "invoiceTitle": "Invoice no. {{number}} of {{date}}",
       "invoicesError": "The linked invoices could not be loaded",
-      "invoicesNote": "These are invoices the agency issued outside CasaZen: here you find the link the agency recorded.",
       "invoicesTitle": "Linked invoices",
       "line": {
         "bookingCode": "Booking {{code}}",
@@ -20912,7 +21031,6 @@
         "share": "Share {{percent}}%"
       },
       "loading": "Loading the accounting",
-      "noDocuments": "The agency has not shared any accounting document with you.",
       "noInvoiceLink": "The link to this invoice is not available.",
       "noStatements": "The agency has not published any statement for you yet.",
       "open": "Open the statement",
@@ -20932,6 +21050,7 @@
         "creditedInFull": "Fully credited",
         "currencyMissing": "The currency of this document is not given: the amount is shown without a currency symbol.",
         "empty": "Your property manager has not issued any invoice to you yet.",
+        "emptyHint": "The invoices your property manager issues for your statements will appear here, each with its PDF.",
         "error": "The property manager invoices could not be loaded",
         "kind": {
           "CreditNote": "Credit note",
@@ -20939,7 +21058,6 @@
           "Other": "Document",
           "Receipt": "Receipt"
         },
-        "note": "The invoices your property manager has issued to you for the statements, each with its PDF.",
         "of": "For the statement of {{period}}",
         "title": "Property manager invoices",
         "total": "Total"
@@ -21106,14 +21224,9 @@
     },
     "dashboard": {
       "bookings": "Bookings",
-      "description": "Your properties and what you can do with your agency: calendar, accounting, documents and messages.",
+      "emptyHint": "When the agency links a property to you, you find it here with its calendar.",
       "error": "The properties could not be loaded",
       "noProperties": "There are no properties available",
-      "numbersUnavailable": {
-        "description": "Occupancy, revenue and the trend over time are not shown in the portal yet: here you only find your properties and their bookings. For the numbers, ask the agency in the messages.",
-        "title": "The numbers of your properties are not available yet"
-      },
-      "recentBookings": "Recent bookings",
       "title": "Owner Portal",
       "yourProperties": "Your properties"
     },
@@ -21125,6 +21238,7 @@
       "downloadFailed": "The file could not be downloaded. Try again.",
       "effectiveFrom": "In force from {{date}}",
       "empty": "The agency has not shared any document with you yet.",
+      "emptyHint": "When the agency shares a document with you, such as the mandate or the contract, you find it here.",
       "error": "The documents could not be loaded",
       "expiresOn": "Expires on {{date}}",
       "expiry": {
@@ -21294,7 +21408,6 @@
       "notFound": "Property not found",
       "openCalendar": "Calendar and stays",
       "recentBookings": "Recent bookings",
-      "recentBookingsDescription": "Guest data masked for privacy (only dates, channel and state are visible)",
       "summaryTitle": "Summary of the property",
       "totalBookings": "Total bookings",
       "writeToAgency": "Write to the agency"
@@ -28742,6 +28855,32 @@
         "label": "Paused"
       }
     },
+    "earning": {
+      "in_review": {
+        "explain": "CasaZen is checking this payment.",
+        "label": "Under review by CasaZen"
+      },
+      "late": {
+        "explain": "The payment was requested and has not arrived yet.",
+        "label": "Late"
+      },
+      "paid": {
+        "explain": "The payment for this job has arrived.",
+        "label": "Paid"
+      },
+      "partially_refunded": {
+        "explain": "Part of the payment was given back to the person who made it.",
+        "label": "Partly refunded"
+      },
+      "refunded": {
+        "explain": "The payment was given back in full to the person who made it.",
+        "label": "Refunded"
+      },
+      "to_collect": {
+        "explain": "The job is done and the payment has not arrived yet.",
+        "label": "To collect"
+      }
+    },
     "checkin": {
       "Inviato": {
         "label": "Link sent",
@@ -30286,6 +30425,7 @@
       },
       "empty": {
         "description": "You need a name, a price and a duration. We guide you through four steps.",
+        "how": "How it works",
         "steps": {
           "booking": "How long it takes and when you offer it",
           "photos": "The photos, then you publish",
@@ -33708,7 +33848,6 @@
     },
     "dues": {
       "title": "Payments",
-      "lead": "Here you see whether you have paid everything, and you pay the due. Rent, condominium advance and settlement are already added together.",
       "listLabel": "Dues",
       "emptyTitle": "No dues",
       "emptyDescription": "When the manager issues an installment, it appears here with the amount to pay.",
@@ -33780,6 +33919,7 @@
     "maintenance": {
       "new": "New request",
       "empty": "No requests.",
+      "emptyHint": "If something is wrong in the home, write a request: it goes to the contract manager and you follow its state here.",
       "category": "Category",
       "urgency": "Urgency",
       "description": "Description",

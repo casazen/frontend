@@ -16,7 +16,7 @@ export type ServiceRequestUrgency = 'Normal' | 'High' | 'Emergency';
  * Rental context a request was opened in (decision D2): short-rent requests are for one stay (`bookingId`), long-rent
  * requests for the property.
  */
-export type ServiceRequestRentalContext = 'ShortRent' | 'LongRent';
+type ServiceRequestRentalContext = 'ShortRent' | 'LongRent';
 
 /** Workspace context of a service request screen (`/app/short-rent/…` or `/app/long-rent/…`). */
 export type ServiceRequestContextKey = 'short-rent' | 'long-rent';
@@ -101,7 +101,7 @@ export interface ServiceRequest {
  * would take the job), `BackupWindow` (the chosen supplier did not take it or refused: every supplier still waiting can, until
  * `backupDueAt`, and the first has it) or `Closed`. An open set: a word this version does not know is shown as a group that is over.
  */
-export type ServiceRequestGroupPhase = 'PrimaryWindow' | 'BackupWindow' | 'Closed';
+type ServiceRequestGroupPhase = 'PrimaryWindow' | 'BackupWindow' | 'Closed';
 
 export interface ServiceRequestGroup {
   id: string;
@@ -160,7 +160,7 @@ export interface ServiceRequestWorkPhoto {
 }
 
 /** The stay of a short-rent request as its host reads it (SR-08a): the guest's name and the days. */
-export interface ServiceRequestStay {
+interface ServiceRequestStay {
   bookingId: string;
   guestName: string;
   /** Arrival day, `YYYY-MM-DD`. */
@@ -170,7 +170,7 @@ export interface ServiceRequestStay {
 }
 
 /** The phone and the e-mail of the supplier of a request it took (SR-08a). */
-export interface ServiceRequestSupplierContact {
+interface ServiceRequestSupplierContact {
   phone?: string | null;
   email?: string | null;
 }
@@ -182,14 +182,14 @@ export interface ServiceRequestSupplierContact {
  */
 export type HostActionKind = 'none' | 'remind' | 'acceptProposal' | 'confirmFinalAmount' | 'pay' | 'markPaid' | 'requestAgain';
 
-export interface ServiceRequestHostAction {
+interface ServiceRequestHostAction {
   kind: HostActionKind | string;
   /** With `none` on a request that waits for the supplier: from when the host can remind it again (UTC instant). */
   remindAvailableAt?: string | null;
 }
 
 /** The price of a request as the host sees it, in cents of euro (SP-04): `amountCents` is the one to show. */
-export interface ServiceRequestPrice {
+interface ServiceRequestPrice {
   estimatedAmountCents?: number | null;
   quotedAmountCents?: number | null;
   finalAmountCents?: number | null;
@@ -202,7 +202,7 @@ export interface ServiceRequestPrice {
 }
 
 /** A time the supplier proposed for a new request (UTC instants). */
-export interface ServiceRequestProposal {
+interface ServiceRequestProposal {
   startUtc: string;
   endUtc: string;
   proposedAt: string;
@@ -227,7 +227,7 @@ export interface ServicePaymentSession {
 }
 
 /** The stay of a short-rent request as the supplier sees it (SU-08): dates only, never the guest. */
-export interface SupplierStay {
+interface SupplierStay {
   bookingId: string;
   /** Check-in day, `YYYY-MM-DD` (Europe/Rome). */
   checkIn: string;
@@ -236,7 +236,7 @@ export interface SupplierStay {
 }
 
 /** Host contact given to the supplier once it took the request (SU-08). */
-export interface SupplierHostContact {
+interface SupplierHostContact {
   name: string;
   email?: string | null;
   phone?: string | null;
@@ -246,7 +246,7 @@ export interface SupplierHostContact {
  * One line of the price of a request in cents of euro: `base` (the agreed price), `quote` (a line of the quote the customer accepted,
  * SP-04b: the lines add up to the agreed price) or `extra`. An open set: a line of a kind this version does not know is shown as it comes.
  */
-export interface ServiceRequestPriceLine {
+interface ServiceRequestPriceLine {
   kind: string;
   label: string;
   amountCents: number;
@@ -256,7 +256,7 @@ export interface ServiceRequestPriceLine {
  * The price of a request in cents of euro (SP-04): `amountCents` is the one to show (the final amount, else the quote, else the
  * estimate; empty is "da concordare").
  */
-export interface SupplierRequestPrice {
+interface SupplierRequestPrice {
   amountCents?: number | null;
   /** The price agreed when the request was taken (the total of the quote the customer accepted): the reference of the +20 % rule (D7). */
   quotedAmountCents?: number | null;
@@ -271,7 +271,7 @@ export interface SupplierRequestPrice {
 }
 
 /** One line of a quote (SP-04b): what it is for and how much, in cents of euro. */
-export interface ServiceRequestQuoteLine {
+interface ServiceRequestQuoteLine {
   label: string;
   amountCents: number;
 }
@@ -305,7 +305,7 @@ export interface SendServiceRequestQuoteDto {
  * The payment of a job (SP-04e): there when the request has a payment record or is `Completato`; the commission, the net and the
  * status are empty while there is no record. The console shows these figures as they come and promises no payout date.
  */
-export interface SupplierRequestPayment {
+interface SupplierRequestPayment {
   /** Commercial terms of an explicit host sale. Older and showcase payments omit this breakdown. */
   hostDocuments?: {
     grossCents: number;
@@ -415,7 +415,7 @@ export interface SupplierServiceRequest {
 }
 
 /** `Supplier` and `Host` take the steps; `Customer` (a private customer of the showcase) and `System` (nobody answered in time) end some. */
-export type ServiceRequestActorParty = 'Host' | 'Supplier' | 'Customer' | 'System';
+type ServiceRequestActorParty = 'Host' | 'Supplier' | 'Customer' | 'System';
 
 /** One transition of a service request: the status reached, when (UTC instant) and by whom. */
 export interface ServiceRequestHistoryEntry {
@@ -451,9 +451,6 @@ export interface ServiceRequestListResponse {
  * is taken or in progress, `topay` is finished, `done` is paid, refused or cancelled, `needsaction` asks something of the host.
  */
 export type InterventionView = 'all' | 'pending' | 'active' | 'topay' | 'done' | 'needsaction';
-
-/** The order of the host's list (`sort` of `GET /service-requests`, with `:asc` or `:desc`). */
-export type InterventionSortKey = 'scheduled' | 'created' | 'status';
 
 /** What the page asks of `GET /service-requests` and `GET /service-requests/counts` (the counters take everything but `view`, `sort` and the page). */
 export interface InterventionFilterParams {

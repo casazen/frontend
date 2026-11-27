@@ -18,7 +18,7 @@ export interface ReportPeriodInfo {
  * The figures of one cut of a period. A channel has no nights (they belong to a property), so for a channel the night figures, the
  * occupancy and the RevPAR are null. Amounts are euros to the cent, also given as cents.
  */
-export interface PerformanceFigures {
+interface PerformanceFigures {
   occupiedNights: number | null;
   availableNights: number | null;
   closedNights: number | null;
@@ -38,7 +38,7 @@ export interface PerformanceFigures {
 }
 
 /** One figure of one bucket of a trend. */
-export type TrendPoint = PerformanceFigures;
+type TrendPoint = PerformanceFigures;
 
 /** A property, a channel or the total: its figures, the same days one year earlier and the differences the server worked out. */
 export interface PerformanceRow {
@@ -95,7 +95,7 @@ export interface TrendBucket {
 }
 
 /** One line of a trend: one entry for each bucket, in order. */
-export interface TrendSeries {
+interface TrendSeries {
   /** A stable key: the property id, the booking source, `total` or `other` (the lines beyond the 25th, summed). */
   key: string;
   propertyId: string | null;
@@ -140,7 +140,7 @@ export interface WeightedFigures {
 }
 
 /** An owner of the agency (or the properties nobody owns) with its weighted figures. Never a fiscal code, an IBAN, an e-mail or a phone. */
-export interface OwnerReportRow {
+interface OwnerReportRow {
   /** The owner of the registry; null for the row of the properties nobody owns. */
   ownerId: string | null;
   /** First and last name, or the anonymized label of the server; null for the row of the properties nobody owns. */

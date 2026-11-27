@@ -1,5 +1,4 @@
 import { todayInRome } from '@/lib/stay-dates';
-import type { StatusIconName, StatusTone } from '@/lib/status-dictionary';
 import type { SupplierEarning, SupplierEarningsTab } from '@/types/supplier-earnings';
 
 /** The period of the list, in the address as `?f_period=`: this month, the month before, this year (Europe/Rome). */
@@ -23,24 +22,6 @@ export function periodRange(period: EarningsPeriod, today: string = todayInRome(
 
 export function isEarningsPeriod(value: string | undefined): value is EarningsPeriod {
   return value !== undefined && (EARNINGS_PERIODS as readonly string[]).includes(value);
-}
-
-/** How a state of the server looks: its tone and icon; the words are `supplier.earnings.state.<state>`. */
-const STATE_VIEWS: Record<string, { tone: StatusTone; icon: StatusIconName }> = {
-  to_collect: { tone: 'info', icon: 'hourglass' },
-  paid: { tone: 'success', icon: 'check-circle' },
-  late: { tone: 'danger', icon: 'alert-triangle' },
-  in_review: { tone: 'warning', icon: 'alert-circle' },
-  refunded: { tone: 'neutral', icon: 'undo' },
-  partially_refunded: { tone: 'neutral', icon: 'undo' },
-};
-
-const UNKNOWN_STATE = { tone: 'neutral', icon: 'circle-dashed' } as const;
-
-/** The look of a state; one the app does not know (the held payments will add some) is neutral, with a generic word. */
-export function stateView(state: string): { key: string; tone: StatusTone; icon: StatusIconName } {
-  const view = STATE_VIEWS[state];
-  return view ? { key: state, ...view } : { key: 'unknown', ...UNKNOWN_STATE };
 }
 
 /** The end of the free period of the commission while it lasts (the instant the server sends); nothing when there is none or it is over. */

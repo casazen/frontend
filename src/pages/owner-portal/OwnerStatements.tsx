@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Landmark, ExternalLink, MessageSquare } from 'lucide-react';
+import { ArrowRight, ExternalLink, FileText, Landmark, MessageSquare } from 'lucide-react';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
+import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui/button';
-import { DocumentsList } from '@/features/owner-portal/documents-list';
-import { currentData, isAccountingDocument, safeDownloadName, safeExternalUrl } from '@/features/owner-portal/owner-portal-model';
+import { currentData, safeDownloadName, safeExternalUrl } from '@/features/owner-portal/owner-portal-model';
 import { currencyCode, formatMoney, invoiceKindOf, periodLabel, sortedInvoices, sortedStatements } from '@/features/owner-portal/owner-statement-model';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { PortalLoading, PortalPageHeading, PortalReadProblem, StatusPill, TOUCH } from '@/features/owner-portal/portal-parts';
@@ -12,7 +12,7 @@ import { MoneyNote, PdfButton, StatementNet, StatementTotalsList } from '@/featu
 import { useOwnerDownload } from '@/features/owner-portal/use-owner-download';
 import { OwnerWithholdingSection } from '@/features/owner-portal/withholding-section';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
-import { useOwnerDocuments, useOwnerExternalDocuments, useOwnerInvoices, useOwnerStatements } from '@/queries/ownerPortal';
+import { useOwnerExternalDocuments, useOwnerInvoices, useOwnerStatements } from '@/queries/ownerPortal';
 import type { OwnerPortalExternalDocument, OwnerPortalInvoice, OwnerPortalStatement } from '@/types';
 
 const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
@@ -20,9 +20,32 @@ const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year:
 /** The downloads of the page: one at a time, whichever card asks (the buttons of every card wait for the one that works). */
 type Downloads = ReturnType<typeof useOwnerDownload>;
 
+/**
+ * The agency every item of a list comes from, when it is one: the section then says it once, under its title, and the cards do not repeat it.
+ * With more than one agency (or none named) there is no such name and each card keeps its own.
+ */
+function commonAgency(items: ReadonlyArray<{ agencyName: string }>): string | null {
+  const names = new Set(items.map((item) => item.agencyName.trim()).filter(Boolean));
+  return names.size === 1 ? [...names][0] : null;
+}
+
+/** The title of a section and, under it, the agency its cards share (see `commonAgency`). */
+function SectionHeading({ id, title, agency }: { id: string; title: string; agency: string | null }) {
+  return (
+    <div>
+      <h2 id={id} className="text-xl font-semibold">
+        {title}
+      </h2>
+      {agency ? <p className="break-words text-sm text-muted-foreground" data-testid={`${id}-agency`}>{agency}</p> : null}
+    </div>
+  );
+}
+
 /** A statement with its net and its totals in its own currency, the way to open its lines, its PDF and the way to ask the agency about it. */
 // `latest`: only the newest statement has the filled «Apri»; the others open with an outline button, so the list has one primary action (UX round 2026-11).
-function StatementCard({ statement, downloads, latest = false }: { statement: OwnerPortalStatement; downloads: Downloads; latest?: boolean }) {
+// `showAgency`: the card names its agency only when the section does not (several agencies). The «Pubblicato» pill is gone: every card is published, so it said nothing;
+// only the version that a newer one replaced says so (UX round 3).
+function StatementCard({ statement, downloads, latest = false, showAgency }: { statement: OwnerPortalStatement; downloads: Downloads; latest?: boolean; showAgency: boolean }) {
   const { t, i18n } = useTranslation();
   const { download, busyKey } = downloads;
   const language = i18n.language;
@@ -39,11 +62,9 @@ function StatementCard({ statement, downloads, latest = false }: { statement: Ow
             {t('ownerPortal.accounting.version', { number: statement.version })} ·{' '}
             {t('ownerPortal.accounting.publishedOn', { date: formatStayDate(romeDateOf(statement.publishedAt), language, DATE) })}
           </p>
-          {statement.agencyName ? <p className="break-words text-sm text-muted-foreground">{statement.agencyName}</p> : null}
+          {showAgency && statement.agencyName ? <p className="break-words text-sm text-muted-foreground">{statement.agencyName}</p> : null}
         </div>
-        <StatusPill tone={statement.superseded ? 'neutral' : 'success'}>
-          {statement.superseded ? t('ownerPortal.accounting.status.superseded') : t('ownerPortal.accounting.status.published')}
-        </StatusPill>
+        {statement.superseded ? <StatusPill tone="neutral">{t('ownerPortal.accounting.status.superseded')}</StatusPill> : null}
       </div>
 
       <StatementNet net={statement.totals.net} currency={statement.currency} />
@@ -95,7 +116,7 @@ function StatementCard({ statement, downloads, latest = false }: { statement: Ow
 }
 
 /** An invoice of the property manager to the owner: its number, its day, its total in its own currency, and its PDF. */
-function PmInvoiceCard({ invoice, statements, downloads }: { invoice: OwnerPortalInvoice; statements: readonly OwnerPortalStatement[]; downloads: Downloads }) {
+function PmInvoiceCard({ invoice, statements, downloads, showAgency }: { invoice: OwnerPortalInvoice; statements: readonly OwnerPortalStatement[]; downloads: Downloads; showAgency: boolean }) {
   const { t, i18n } = useTranslation();
   const { download, busyKey } = downloads;
   const language = i18n.language;
@@ -121,7 +142,7 @@ function PmInvoiceCard({ invoice, statements, downloads }: { invoice: OwnerPorta
         <div className="min-w-0">
           <h3 className="break-words text-base font-semibold">{title}</h3>
           {period ? <p className="break-words text-sm text-muted-foreground">{t('ownerPortal.accounting.pmInvoices.of', { period })}</p> : null}
-          {invoice.agencyName ? <p className="break-words text-sm text-muted-foreground">{invoice.agencyName}</p> : null}
+          {showAgency && invoice.agencyName ? <p className="break-words text-sm text-muted-foreground">{invoice.agencyName}</p> : null}
         </div>
         {invoice.creditedInFull ? <StatusPill tone="neutral">{t('ownerPortal.accounting.pmInvoices.creditedInFull')}</StatusPill> : null}
       </div>
@@ -213,7 +234,6 @@ function LinkedInvoicesSection({ statements }: { statements: readonly OwnerPorta
       <h2 id="owner-invoices-title" className="text-xl font-semibold">
         {t('ownerPortal.accounting.invoicesTitle')}
       </h2>
-      <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.invoicesNote')}</p>
       {linked.isError ? (
         <PortalReadProblem error={linked.error} failedTitle={t('ownerPortal.accounting.invoicesError')} onRetry={() => void linked.refetch()} testId="owner-invoices-error" />
       ) : (
@@ -230,7 +250,8 @@ function LinkedInvoicesSection({ statements }: { statements: readonly OwnerPorta
 /**
  * The accounting of the owner (E07/F07/US01/T03, E13/F02/US02/T01): the statements the agency PUBLISHED (and the ones a newer version superseded) each with its net and its totals
  * in the currency of the statement, the way to open its lines and to download its PDF, then the invoices of the property manager with their PDF, the links of the invoices
- * issued elsewhere (only for the owner that has some) and the accounting documents the agency shares. The amounts are the server's: the page writes them in the currency of the data (an
+ * issued elsewhere (only for the owner that has some) and a link to the Documents page, where the accounting documents the agency shares are listed with the others (UX round 3: the page
+ * used to list them a second time). The amounts are the server's: the page writes them in the currency of the data (an
  * amount with no currency has no symbol, and the page says so) and never works one out. The portal has no payout state and no evidence of a payment or of a submission for the owner, so no
  * «paid», no «sent», no «accepted» appears here. Guests never appear: a statement tells its stays by property, days, channel and booking code. Behind the flag of the tax exports the page also has
  * the withholding of the year and the data of the owner's Certificazione Unica (E18/F02/US01/T01), which tell only what the agency recorded and never the recipient data, the stays or the co-owners.
@@ -239,55 +260,50 @@ export function OwnerStatements() {
   const { t } = useTranslation();
   const statements = useOwnerStatements();
   const invoices = useOwnerInvoices();
-  const documents = useOwnerDocuments();
   const downloads = useOwnerDownload();
-  // Drawn only while the last answer is good: after a refusal nothing of the answer before it stays under the notice (the statements, the invoices, the documents).
+  // Drawn only while the last answer is good: after a refusal nothing of the answer before it stays under the notice (the statements, the invoices).
   const statementList = sortedStatements(currentData(statements) ?? []);
   const invoiceList = sortedInvoices(currentData(invoices) ?? []);
-  const documentsAnswer = currentData(documents);
+  const statementAgency = commonAgency(statementList);
+  const invoiceAgency = commonAgency(invoiceList);
 
   return (
     <div className="space-y-8">
       <PortalPageHeading icon={Landmark} title={t('ownerPortal.accounting.title')} description={t('ownerPortal.accounting.description')} />
 
       <section aria-labelledby="owner-statements-title" className="space-y-3">
-        <h2 id="owner-statements-title" className="text-xl font-semibold">
-          {t('ownerPortal.accounting.statementsTitle')}
-        </h2>
+        <SectionHeading id="owner-statements-title" title={t('ownerPortal.accounting.statementsTitle')} agency={statementAgency} />
         {statements.isLoading ? (
           <PortalLoading label={t('ownerPortal.accounting.loading')} />
         ) : statements.isError ? (
           <PortalReadProblem error={statements.error} failedTitle={t('ownerPortal.accounting.error')} onRetry={() => void statements.refetch()} testId="owner-accounting-error" />
         ) : statementList.length === 0 ? (
-          <p className="rounded-md border border-dashed p-4 text-sm text-muted-foreground" data-testid="owner-statements-empty">
-            {t('ownerPortal.accounting.noStatements')}
-          </p>
+          <div data-testid="owner-statements-empty">
+            <EmptyState icon={Landmark} title={t('ownerPortal.accounting.noStatements')} description={t('ownerPortal.accounting.emptyHint')} />
+          </div>
         ) : (
           <ul className="space-y-3" data-testid="owner-statements">
             {statementList.map((statement, index) => (
-              <StatementCard key={statement.statementId} statement={statement} downloads={downloads} latest={index === 0} />
+              <StatementCard key={statement.statementId} statement={statement} downloads={downloads} latest={index === 0} showAgency={statementAgency === null} />
             ))}
           </ul>
         )}
       </section>
 
       <section aria-labelledby="owner-pm-invoices-title" className="space-y-3">
-        <h2 id="owner-pm-invoices-title" className="text-xl font-semibold">
-          {t('ownerPortal.accounting.pmInvoices.title')}
-        </h2>
-        <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.pmInvoices.note')}</p>
+        <SectionHeading id="owner-pm-invoices-title" title={t('ownerPortal.accounting.pmInvoices.title')} agency={invoiceAgency} />
         {invoices.isLoading ? (
           <PortalLoading label={t('ownerPortal.accounting.loading')} />
         ) : invoices.isError ? (
           <PortalReadProblem error={invoices.error} failedTitle={t('ownerPortal.accounting.pmInvoices.error')} onRetry={() => void invoices.refetch()} testId="owner-pm-invoices-error" />
         ) : invoiceList.length === 0 ? (
-          <p className="rounded-md border border-dashed p-4 text-sm text-muted-foreground" data-testid="owner-pm-invoices-empty">
-            {t('ownerPortal.accounting.pmInvoices.empty')}
-          </p>
+          <div data-testid="owner-pm-invoices-empty">
+            <EmptyState icon={FileText} title={t('ownerPortal.accounting.pmInvoices.empty')} description={t('ownerPortal.accounting.pmInvoices.emptyHint')} />
+          </div>
         ) : (
           <ul className="space-y-3" data-testid="owner-pm-invoices">
             {invoiceList.map((invoice) => (
-              <PmInvoiceCard key={invoice.invoiceId} invoice={invoice} statements={statementList} downloads={downloads} />
+              <PmInvoiceCard key={invoice.invoiceId} invoice={invoice} statements={statementList} downloads={downloads} showAgency={invoiceAgency === null} />
             ))}
           </ul>
         )}
@@ -297,18 +313,13 @@ export function OwnerStatements() {
 
       <OwnerWithholdingSection />
 
-      <section aria-labelledby="owner-accounting-documents-title" className="space-y-3">
-        <h2 id="owner-accounting-documents-title" className="text-xl font-semibold">
-          {t('ownerPortal.accounting.documentsTitle')}
-        </h2>
-        {documents.isLoading ? (
-          <PortalLoading label={t('ownerPortal.accounting.loading')} />
-        ) : documents.isError ? (
-          <PortalReadProblem error={documents.error} failedTitle={t('ownerPortal.documents.error')} onRetry={() => void documents.refetch()} testId="owner-accounting-documents-error" />
-        ) : documentsAnswer ? (
-          <DocumentsList documents={documentsAnswer.documents.filter(isAccountingDocument)} emptyText={t('ownerPortal.accounting.noDocuments')} testId="owner-accounting-documents" />
-        ) : null}
-      </section>
+      {/* The accounting documents the agency shares are in the Documents page, with the others: a way there, not the same list twice. */}
+      <Button asChild variant="link" className={`${TOUCH} -ml-4 w-fit`}>
+        <Link to={ownerPortalPaths.documents} data-testid="owner-accounting-documents-link">
+          {t('ownerPortal.shell.nav.documents')}
+          <ArrowRight aria-hidden="true" className="h-4 w-4" />
+        </Link>
+      </Button>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { ComplianceCockpitAction, ComplianceSummaryItem, ComplianceSummaryResult } from '@/types/compliance.types';
 import { LIGHT_RANK, lightStateOf, SECTION_FIELDS, sectionItems } from './compliance-light';
+import { dueTime } from './due-time';
 
 /**
  * One compliance item of a stay or a property, as the card "Cosa succede ora" shows it (NF-52, CHK-12 point 5): its light, the reason the API
@@ -30,11 +31,6 @@ const PROPERTY_ACTIONS: readonly ComplianceCockpitAction[] = [
   'NotifyTicinoPolice',
   'NotifyGuestsAuthority',
 ];
-
-const dueTime = (dueAt: string | null): number => {
-  const time = dueAt ? new Date(dueAt).getTime() : Number.NaN;
-  return Number.isNaN(time) ? Number.POSITIVE_INFINITY : time;
-};
 
 /** The worst light first, then the nearest deadline, then the order the card knows its actions in. */
 function byUrgency(a: ComplianceLine, b: ComplianceLine, actions: readonly ComplianceCockpitAction[]): number {

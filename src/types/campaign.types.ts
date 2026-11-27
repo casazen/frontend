@@ -1,8 +1,8 @@
-export type CampaignStatus = 'Draft' | 'PendingApproval' | 'Approved' | 'Scheduled' | 'Sending' | 'Sent' | 'Failed';
+type CampaignStatus = 'Draft' | 'PendingApproval' | 'Approved' | 'Scheduled' | 'Sending' | 'Sent' | 'Failed';
 
 export type ConditionFieldType = 'Text' | 'Number' | 'Date' | 'Boolean' | 'Enum' | 'Set';
 
-export interface ConditionField {
+interface ConditionField {
   fieldId: string;
   operator: string;
   value: unknown;

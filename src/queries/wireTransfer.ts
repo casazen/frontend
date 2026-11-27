@@ -5,7 +5,7 @@ import { withoutRequest } from '@/features/marketplace/activation/use-sequential
 import { saveDownload } from './save-download';
 
 /** Root of the query keys of the wire files and of what the wire page reads to build them. */
-export const WIRE_KEY = 'wire-transfers';
+const WIRE_KEY = 'wire-transfers';
 const BATCHES_KEY = [WIRE_KEY, 'batches'] as const;
 /** The payable payouts, one list per currency: `[WIRE_KEY, 'payable', 'CHF']` and `[WIRE_KEY, 'payable', 'EUR']`. */
 const PAYABLE_KEY = [WIRE_KEY, 'payable'] as const;

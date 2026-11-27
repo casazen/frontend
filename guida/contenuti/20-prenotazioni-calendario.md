@@ -191,7 +191,7 @@ Quando annulli tu una prenotazione pagata online, CasaZen rimborsa all'ospite tu
 Per una prenotazione di un portale la finestra è diversa: «Chiedi al tuo channel manager di annullare questa prenotazione». Premi «Chiedi l'annullamento»: la prenotazione risulta annullata in CasaZen solo quando il channel manager conferma. Da CasaZen non si muove nessun pagamento. Se il portale non lo permette, trovi la frase che dice come fare (di solito: l'ospite annulla sul portale).
 
 ### Controllare un soggiorno da verificare
-Quando il calendario del portale collegato non mostra più la prenotazione, o mostra date diverse, il soggiorno compare con «Da verificare» (elenco) e con il riquadro «Soggiorno da verificare» (scheda). CasaZen non modifica né cancella nulla: le date restano occupate.
+Quando il calendario del portale collegato non mostra più la prenotazione, o mostra date diverse, il soggiorno compare con «Da verificare» (elenco) e con il riquadro «Soggiorno da verificare» (nella scheda «Soggiorno» della prenotazione). CasaZen non modifica né cancella nulla: le date restano occupate.
 1. Apri la prenotazione e leggi il riquadro (rimossa dal calendario, oppure date cambiate).
 2. Controlla sul portale. Se la prenotazione è stata cancellata, annulla il soggiorno in CasaZen.
 3. Se il portale ha date nuove giuste, premi «Applica le date del canale». Altrimenti premi «Segna come verificato».

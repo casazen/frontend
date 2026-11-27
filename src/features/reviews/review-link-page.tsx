@@ -1,9 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import type { TFunction } from 'i18next';
 import { isAxiosError } from 'axios';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
@@ -14,6 +14,7 @@ import { useReviewLink, useSubmitReview } from '@/queries/use-reviews';
 import type { PublicOrgDto, PublicReview } from '@/types';
 import { ReviewCard } from './components/review-card';
 import { ReviewForm, type ReviewFormValues } from './components/review-form';
+import { LinkProblem } from '@/components/shared/link-problem';
 
 interface PublicBookingContext {
   org: PublicOrgDto;
@@ -145,14 +146,4 @@ function errorMessageOf(error: unknown, t: TFunction): string {
   if (code === LINK_INVALID_CODE) return t('siteReviews.link.invalid');
   if (code === NOT_AVAILABLE_CODE) return t('siteReviews.link.notAvailable');
   return getProblemMessage(error, t) ?? t('siteReviews.form.error');
-}
-
-function LinkProblem({ message, action, testId }: { message: string; action: ReactNode; testId: string }) {
-  return (
-    <div className="mx-auto max-w-lg space-y-4 text-center" data-testid={testId}>
-      <AlertCircle className="mx-auto size-10 text-destructive" aria-hidden="true" />
-      <p role="alert">{message}</p>
-      <div className="flex justify-center">{action}</div>
-    </div>
-  );
 }

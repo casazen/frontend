@@ -19,7 +19,7 @@ import type {
   TaxFilingState,
   TaxReconciliation,
 } from '@/types';
-import { getProblemMessage } from '@/lib/api-errors';
+import { getProblemMessage, toCamelCase } from '@/lib/api-errors';
 import { addDays, endOfMonth, startOfMonth } from '@/lib/stay-dates';
 
 /** The path of the month-end close (E06/F05/US02/T04): a page of the Amministrazione. */
@@ -256,10 +256,7 @@ export const ISSUE_CODES = [
 export type IssueCode = (typeof ISSUE_CODES)[number];
 
 /** `fx_missing` → `fxMissing`: the key of the texts of the code. */
-export function camelCode(code: string): string {
-  const [first = '', ...rest] = code.toLowerCase().split('_').filter(Boolean);
-  return first + rest.map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join('');
-}
+export const camelCode = toCamelCase;
 
 export function isKnownIssue(code: string): code is IssueCode {
   return (ISSUE_CODES as readonly string[]).includes(code);

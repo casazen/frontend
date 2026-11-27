@@ -22,6 +22,11 @@ export interface PageHeaderAction {
   /** Only a button can be disabled (a link that cannot be followed is not shown). */
   disabled?: boolean;
   testId?: string;
+  /**
+   * How loud the page's one action is, when it is the `primary` of the page: `outline` for a page that only reads (its numbers are the focal point, so it has no filled
+   * button). The menu "⋯" ignores it.
+   */
+  variant?: 'default' | 'outline';
 }
 
 /** An action of the menu "⋯": it can be marked as one that is hard to take back. */
@@ -101,13 +106,13 @@ export function PageHeaderPrimary({ action, mode }: PageHeaderPrimaryProps) {
       }
     >
       {action.to ? (
-        <Button asChild className={buttonClass}>
+        <Button asChild variant={action.variant} className={buttonClass}>
           <Link to={action.to} data-testid={action.testId}>
             <ActionContent action={action} />
           </Link>
         </Button>
       ) : (
-        <Button type="button" className={buttonClass} onClick={action.onClick} disabled={action.disabled} data-testid={action.testId}>
+        <Button type="button" variant={action.variant} className={buttonClass} onClick={action.onClick} disabled={action.disabled} data-testid={action.testId}>
           <ActionContent action={action} />
         </Button>
       )}

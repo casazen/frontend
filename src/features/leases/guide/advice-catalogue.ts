@@ -8,7 +8,7 @@ import type { GuideFacts, GuidePhase } from './guide-facts';
  * The catalogue of the advice of the guide of a lease (LR-GUIDE-1): everything CasaZen knows about what a landlord should do, check or
  * ask the accountant, one entry for each thing, written as data. Whoever updates a rule touches this file and the texts of the entry
  * (`leaseGuide.advice.<id>` in `it.json` and `en.json`) and nothing else; how an entry is chosen and shown is `select-advice.ts` and
- * `lease-guide.tsx`. `documentazione/03-documenti-ai/runbook/frontend/lease-guide.md` (workspace folder) says how to add one.
+ * `lease-guide.tsx`. `docs/03-documenti-ai/runbook/frontend/lease-guide.md` (workspace folder) says how to add one.
  *
  * What goes in an entry:
  * - `types`, `phases` and `when`: for which contracts (libero 4+4, concordato 3+2, transitorio), at which moment of their life

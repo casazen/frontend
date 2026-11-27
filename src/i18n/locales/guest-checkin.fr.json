@@ -11,6 +11,31 @@
       "Female": "Femme",
       "Other": "Autre"
     },
+    "prefill": {
+      "checkIt": "Vérifiez-le : lu dans le texte imprimé.",
+      "complete": "Tout ce que ce document donne a été lu : vérifiez et confirmez.",
+      "confirm": "Confirmer ces données",
+      "discard": "Reprendre la photo",
+      "field": {
+        "birthPlace": "Lieu de naissance",
+        "citizenship": "Nationalité",
+        "dateOfBirth": "Date de naissance",
+        "documentExpiresOn": "Date d'expiration",
+        "documentIssuedOn": "Date de délivrance",
+        "documentKind": "Type de document",
+        "documentNumber": "Numéro du document",
+        "firstName": "Prénom",
+        "gender": "Sexe",
+        "issuePlace": "Lieu de délivrance",
+        "lastName": "Nom",
+        "other": "Autres données"
+      },
+      "intro": "Vérifiez les données lues sur le document et corrigez celles qui sont fausses. Aux étapes suivantes, nous ne demanderons que celles que nous n'avons pas pu lire.",
+      "missingText": "Ces données n'ont pas pu être lues sur la photo : vous les saisirez aux étapes suivantes.",
+      "missingTitle": "Nous demanderons encore",
+      "readFromDocument": "Lu sur le document",
+      "title": "Données lues sur le document"
+    },
     "validation": {
       "firstName": {
         "required": "Le prénom est obligatoire",
@@ -348,6 +373,41 @@
           "pick": "Photographier le verso",
           "pickAgain": "Photographier de nouveau le verso"
         },
+        "camera": {
+          "captureBack": "Photographier le verso",
+          "captureFront": "Photographier le recto",
+          "chooseFile": "Choisir une photo sur le téléphone",
+          "chooseHint": "Vous pouvez aussi utiliser une photo déjà prise ou l'appareil photo de votre téléphone.",
+          "duplicate": {
+            "send": "Envoyer quand même",
+            "text": "Cette photo ressemble à celle du recto. Retournez le document et reprenez la photo, ou envoyez-la quand même : nous la vérifions après l'envoi.",
+            "title": "On dirait le même côté"
+          },
+          "heldLabel": "La photo du document que vous avez prise",
+          "hint": {
+            "blur": "L'image est floue : tenez le téléphone immobile.",
+            "bright": "Il y a trop de lumière : placez-vous sous une lumière plus douce.",
+            "dark": "Il n'y a pas assez de lumière : placez-vous dans un endroit plus lumineux.",
+            "edges": "Montrez tout le document, avec les quatre bords dans le cadre.",
+            "glare": "Reflet sur le document : inclinez-le un peu ou éloignez-vous de la lumière.",
+            "orientation": "Tournez le téléphone en mode paysage.",
+            "ready": "Le cadrage est bon : vous pouvez prendre la photo.",
+            "settling": "Tenez le téléphone immobile…",
+            "waiting": "Ouverture de la caméra…"
+          },
+          "previewLabel": "Aperçu de la caméra avec le contour du document",
+          "problem": {
+            "denied": "Le navigateur a bloqué la caméra. Pour l'autoriser, touchez l'icône du cadenas ou de la caméra à côté de l'adresse web, choisissez « Autoriser » pour la caméra, puis appuyez sur « Réessayer la caméra ».",
+            "fallback": "Vous pouvez choisir ci-dessous une photo du document sur votre téléphone, ou continuer avec une personne.",
+            "not_found": "Aucune caméra n'a été trouvée sur cet appareil.",
+            "title": "La caméra n'est pas disponible",
+            "unknown": "La caméra n'a pas pu être démarrée.",
+            "unsupported": "Cette page ne peut pas utiliser la caméra dans ce navigateur."
+          },
+          "retake": "Reprendre la photo",
+          "retryCamera": "Réessayer la caméra",
+          "sendAgain": "Envoyer de nouveau"
+        },
         "fileLabel": "Photo de la pièce d'identité",
         "frontReceived": "Le côté avec votre photo a bien été reçu.",
         "instructions": "Posez le document sur une surface plane et bien éclairée. Montrez tout le côté avec votre photo, sans reflets. Un passeport a tout sur une seule page : montrez la page avec votre photo et les deux lignes de lettres en bas.",
@@ -363,14 +423,33 @@
         "avoid_glare": "Évitez les reflets : inclinez un peu le document ou éloignez-vous de la lumière.",
         "document_back_needed": "Photographiez maintenant le verso de la carte, où se trouvent les lignes de lettres.",
         "active_pose_retry": "Reprenez les deux photos en suivant la direction indiquée.",
+        "document_blur": "La photo est floue : tenez le téléphone immobile et réessayez.",
+        "document_edges_not_visible": "Montrez tout le document, avec les quatre bords visibles.",
+        "document_format_unsupported": "Document non pris en charge : continuez avec une personne.",
+        "document_glare": "Reflet sur la photo : inclinez légèrement le document.",
+        "document_layout_mismatch": "Nous ne reconnaissons pas la disposition du document : tenez-le droit, entier et immobile, puis réessayez.",
+        "document_not_found": "Nous ne voyons pas de document sur cette photo : posez-le sur une surface plane et montrez-le en entier.",
         "document_not_recognized": "Aucun document reconnu sur cette photo. Chargez une photo de votre carte d’identité, passeport ou permis de conduire.",
         "document_front_needed": "Photographiez le côté de la carte avec votre photo.",
+        "document_orientation": "Le document est tourné : tenez-le droit, en format paysage.",
+        "document_portrait_missing": "Nous ne voyons pas votre photo sur le document : montrez le côté avec la photo, sans la cacher.",
+        "document_side_duplicate": "Vous avez photographié deux fois le même côté : photographiez maintenant l'autre côté du document.",
+        "document_unreadable": "Nous ne parvenons pas à lire le document : continuez avec une personne.",
+        "document_wrong_side": "Cette photo montre l'autre côté du document : photographiez le côté demandé.",
+        "document_wrong_side_back": "Ceci est le recto : photographiez maintenant le verso, où se trouvent les lignes de lettres et de chiffres.",
+        "document_wrong_side_front": "Ceci est le verso : photographiez le recto, où se trouve votre photo.",
         "hold_still": "Tenez le téléphone immobile : la photo est floue.",
         "less_light": "Il y a trop de lumière : placez-vous sous une lumière plus douce.",
         "more_light": "Il n'y a pas assez de lumière : placez-vous dans un endroit plus lumineux.",
         "move_closer": "Rapprochez-vous : votre visage est trop petit sur l'image.",
         "one_face_only": "Vous devez être seul sur l'image.",
         "other": "Veuillez reprendre la photo.",
+        "presence_again": "Refaites l'enregistrement en suivant les indications à l'écran.",
+        "presence_challenge_not_followed": "Nous n'avons pas vu tous les mouvements demandés : suivez les indications à l'écran, dans l'ordre.",
+        "presence_quality": "L'enregistrement n'était pas assez net : cherchez plus de lumière, tenez le téléphone immobile et gardez votre visage dans l'ovale.",
+        "presence_single_face": "Seul votre visage doit apparaître dans l'enregistrement, et toujours visible : personne d'autre derrière vous.",
+        "presence_timing": "Le déroulement de l'enregistrement ne correspond pas : suivez les indications l'une après l'autre, sans vous arrêter, puis réessayez.",
+        "presence_too_short": "L'enregistrement était trop court : restez devant la caméra jusqu'à la fin des indications.",
         "retake_picture": "L'image n'a pas pu être lue : veuillez la reprendre.",
         "retake_selfie": "Reprenez le selfie en regardant droit la caméra.",
         "show_document_photo": "Montrez le côté du document avec votre photo.",
@@ -388,6 +467,41 @@
         "ask": "Demander la vérification par une personne",
         "requested": "Nous avons prévenu l'hôte. Il vérifiera votre identité et le code d'accès vous parviendra après sa décision."
       },
+      "presence": {
+        "camera": {
+          "busy": "Une autre application utilise la caméra. Fermez-la puis appuyez sur « Réessayer ».",
+          "fallback": "Vous pouvez réessayer, ou continuer avec une personne qui vérifie votre identité."
+        },
+        "cancel": "Annuler et demander une personne",
+        "cancelling": "Interruption de l'envoi…",
+        "instructions": "Placez-vous dans un endroit bien éclairé et gardez votre visage dans l'ovale. Appuyez sur « Commencer » et suivez les indications à l'écran : vous allez tourner la tête et lever ou baisser les yeux. Cela ne dure que quelques secondes.",
+        "kept": {
+          "offline": "Pas de connexion. Nous n'avons pas pu envoyer votre enregistrement, mais il est toujours là : quand la connexion revient, appuyez sur « Envoyer de nouveau ».",
+          "sendAgain": "Envoyer de nouveau",
+          "server": "Le service ne répond pas pour le moment. Votre enregistrement est toujours là : dans un instant, appuyez sur « Envoyer de nouveau »."
+        },
+        "leadIn": "Regardez la caméra",
+        "move": {
+          "lookDown": "Baissez les yeux",
+          "lookUp": "Levez les yeux",
+          "turnToTheLeft": "Tournez la tête vers la gauche",
+          "turnToTheRight": "Tournez la tête vers la droite"
+        },
+        "notice": {
+          "expired": "Le temps de la vérification est écoulé. Nous recommençons avec un nouvel enregistrement : appuyez sur « Commencer ».",
+          "hidden": "La page est passée en arrière-plan pendant l'enregistrement, nous l'avons donc annulé. Appuyez sur « Commencer » pour le refaire.",
+          "lost": "Nous n'avons pas pu envoyer l'enregistrement et nous l'avons supprimé. Quand vous êtes connecté, appuyez sur « Commencer » pour le refaire, ou continuez avec une personne.",
+          "not_prepared": "Nous n'avons pas pu enregistrer les images. Appuyez sur « Commencer » pour réessayer.",
+          "rotated": "L'écran a été tourné ou redimensionné pendant l'enregistrement, nous l'avons donc annulé. Tenez le téléphone immobile et appuyez sur « Commencer » pour le refaire."
+        },
+        "preparing": "Préparation de la vérification…",
+        "retry": "Réessayer",
+        "secondsLeft": "Secondes restantes : {{count}}",
+        "start": "Commencer",
+        "step": "Étape {{current}} sur {{total}}",
+        "title": "Montrez votre visage à la caméra",
+        "waitingForConnection": "En attente du retour de la connexion…"
+      },
       "problem": {
         "consent_required": "Nous avons d'abord besoin de votre réponse sur la vérification du visage.",
         "consent_text_changed": "Le texte du consentement a été mis à jour. Veuillez le relire avant de répondre.",
@@ -396,12 +510,18 @@
         "failed": "Un problème est survenu. Veuillez réessayer.",
         "link_unavailable": "Ce lien n'est plus valide, ou l'enregistrement est déjà terminé. Demandez un nouveau lien à votre hôte.",
         "network": "Nous n'avons pas pu joindre le serveur. Rien n'a été enregistré : vérifiez votre connexion et réessayez.",
+        "presence_expired": "Le temps de cette vérification est écoulé. Recommencez avec un nouvel enregistrement.",
+        "presence_invalid": "L'enregistrement n'est pas valide. Réessayez avec un nouvel enregistrement, ou demandez la vérification par une personne.",
+        "presence_required": "Cette vérification a changé : rechargez la page, ou demandez la vérification par une personne.",
+        "presence_too_large": "L'enregistrement est trop volumineux pour être envoyé. Réessayez avec un nouvel enregistrement.",
+        "presence_unavailable": "La vérification automatique n'est pas disponible pour le moment : une personne vérifiera votre identité.",
         "processing": "Nous n'avons pas pu traiter la photo. Veuillez réessayer.",
         "too_large": "La photo est trop volumineuse. Reprenez-la avec une résolution plus basse.",
         "too_many_requests": "Trop de tentatives en peu de temps. Attendez un instant puis réessayez.",
         "unsupported": "Ce type de fichier n'est pas pris en charge. Utilisez une photo JPEG ou PNG."
       },
       "result": {
+        "closed": "Cette vérification était déjà terminée : voici comment elle s'est passée.",
         "ok": {
           "codeEmail": "Si votre réservation comporte une adresse e-mail, nous y avons aussi envoyé le code.",
           "codeHeldTouristTax": "Votre identité est vérifiée. Le code d'accès vous parviendra après le paiement de la taxe de séjour.",
@@ -417,6 +537,7 @@
         "retry": {
           "again": "Reprendre le selfie",
           "againDocument": "Photographier de nouveau le document",
+          "againPresence": "Réessayer",
           "attempts": "Essais restants : {{count}}",
           "intro": "La vérification n'a pas abouti cette fois. Voici ce qu'il faut changer :",
           "noReason": "La vérification n'a pas abouti cette fois.",

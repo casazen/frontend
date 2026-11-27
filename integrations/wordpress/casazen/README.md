@@ -2,30 +2,54 @@
 
 [Italiano](#italiano) · [English](#english)
 
-Chi sviluppa il plugin trova struttura, comandi, CI e rilascio in `documentazione/03-documenti-ai/runbook/frontend/wordpress-plugin.md` (project documentation folder, outside the repository). / Developers: structure, commands, CI and release are in `documentazione/03-documenti-ai/runbook/frontend/wordpress-plugin.md` (project documentation folder, outside the repository).
+Chi sviluppa il plugin trova struttura, comandi, CI e rilascio in `docs/03-documenti-ai/runbook/frontend/wordpress-plugin.md` (project documentation folder, outside the repository). / Developers: structure, commands, CI and release are in `docs/03-documenti-ai/runbook/frontend/wordpress-plugin.md` (project documentation folder, outside the repository).
 
 ## Italiano
 
 ### Che cosa fa
 
-CasaZen per WordPress collega il tuo sito WordPress al sito di prenotazione che la tua agenzia usa con CasaZen. Mette sulle tue pagine il motore di prenotazione, la barra di ricerca per la home, l'accesso degli ospiti alla loro prenotazione e il collegamento all'area proprietari, con blocchi o shortcode, e crea per te le pagine e le voci di menu. Il PHP del plugin è sottile di proposito: i widget vivono in un piccolo script che CasaZen serve dal tuo indirizzo, quindi una modifica ai widget non richiede un aggiornamento del plugin. Il pagamento non avviene mai dentro un frame: «Prenota» porta l'intera pagina al checkout del tuo indirizzo CasaZen.
+CasaZen per WordPress collega il tuo sito WordPress al sito di prenotazione che la tua agenzia usa con CasaZen. Mette sulle tue pagine il motore di prenotazione, la barra di ricerca per la home, l'accesso degli ospiti alla loro prenotazione e il collegamento all'area proprietari, con blocchi o shortcode, e crea per te le pagine e le voci di menu. Con un solo pulsante («Connetti a CasaZen») il sito si collega all'account dell'agenzia: l'indirizzo si compila da solo e il dominio si gestisce dalla schermata del plugin. Il PHP del plugin è sottile di proposito: i widget vivono in un piccolo script che CasaZen serve dal tuo indirizzo, quindi una modifica ai widget non richiede un aggiornamento del plugin. Il pagamento non avviene mai dentro un frame: «Prenota» porta l'intera pagina al checkout del tuo indirizzo CasaZen.
 
 ### Requisiti
 
 - WordPress 6.4 o successivo e PHP 7.4 o successivo.
-- Un dominio dell'agenzia verificato in CasaZen (per esempio `prenota.example.com`).
-- L'incorporamento attivo per la tua agenzia in CasaZen. Finché non lo è, il plugin non mostra nulla ai visitatori e avvisa gli amministratori del sito.
+- L'account CasaZen della tua agenzia, con l'incorporamento attivo. Finché non lo è, il plugin non mostra nulla ai visitatori e avvisa gli amministratori del sito.
+- Per collegare il sito: essere amministratore dell'agenzia in CasaZen, e un sito il cui indirizzo inizia con `https://` (`http` solo per i server di sviluppo locali) con l'amministrazione di WordPress sullo stesso indirizzo.
+- Per usare un dominio tuo (per esempio `prenota.example.com`): il piano Pro. Senza, il sito di prenotazione risponde sull'indirizzo di CasaZen.
 
 ### Installazione
 
 Il plugin non è ancora su WordPress.org: si installa lo ZIP.
 
-1. Scarica `casazen-<versione>.zip` dalla release di GitHub con il tag `wp-plugin-v<versione>` del repository frontend: <https://github.com/casazen/frontend/releases>.
+1. Scarica lo ZIP da CasaZen: nella console, «Incorpora nel tuo sito», pulsante «Scarica il plugin». Una versione numerata è anche nella release di GitHub con il tag `wp-plugin-v<versione>` del repository frontend: <https://github.com/casazen/frontend/releases>.
 2. In WordPress apri Plugin → Aggiungi nuovo → Carica plugin, scegli lo ZIP, premi Installa ora e poi Attiva.
+3. Apri Impostazioni → CasaZen e premi «Connetti a CasaZen» (vedi sotto).
 
-### Impostazioni
+Lo ZIP scaricato dalla console di un ambiente si collega alla console di quell'ambiente. Per un'installazione di prova con uno ZIP senza indirizzo (per esempio costruito dal repository) aggiungi a `wp-config.php` la costante `define( 'CASAZEN_APP_ORIGIN', 'https://casazen-test-app.vercel.app' );`: «Connetti a CasaZen» apre quella console. Senza la costante e senza indirizzo nello ZIP vale la console di produzione, `https://www.casazen.space`.
 
-Apri Impostazioni → CasaZen, scheda Impostazioni.
+### Collegare il sito a CasaZen
+
+1. In Impostazioni → CasaZen premi «Connetti a CasaZen». Si apre la console di CasaZen (se serve, accedi): controlla l'indirizzo del sito che chiede il collegamento e conferma con «Collega».
+2. Torni su WordPress e la schermata dice «Collegato a <agenzia>». L'indirizzo CasaZen e l'identificativo dell'organizzazione sono già compilati e la prova di connessione è già fatta: il passo successivo è la procedura guidata («Apri la procedura guidata»).
+3. Il collegamento usa una credenziale propria del sito, creata dal pulsante e revocabile. Sta solo nel database di WordPress (l'opzione `casazen_link`, non caricata in automatico e mai mostrata nelle pagine) e serve solo alle schermate di amministrazione del plugin. «Scollega», nella stessa schermata, la restituisce a CasaZen; anche la console di CasaZen elenca i siti collegati e può scollegarli.
+
+Se CasaZen non accetta più il sito (per esempio è stato scollegato dalla console), la schermata dice «Non più collegato» e ripropone «Connetti a CasaZen»: le impostazioni restano. Se l'indirizzo CasaZen non offre il collegamento (una versione più vecchia di CasaZen, o l'incorporamento non attivo per la tua agenzia), la schermata lo dice: usa la configurazione manuale («Avanzate»).
+
+### Dominio
+
+Con il sito collegato, la sezione «Dominio» della schermata gestisce l'indirizzo del tuo sito di prenotazione:
+
+1. Scrivi il dominio (per esempio `prenota.example.com`) e premi «Collega dominio».
+2. Compaiono i record DNS da creare dove si gestisce il DNS del dominio, con i pulsanti per copiarne nome e valore: il record TXT di proprietà, il record CNAME (per un dominio senza www, in alternativa i record A) e, solo quando serve, un record TXT del fornitore del servizio. È l'unico passo fuori da WordPress.
+3. Lo stato («In attesa dei record DNS», «Attivazione in corso», «Il tuo dominio è attivo» o «Il dominio non può essere attivato», con il motivo e l'ultimo controllo) si aggiorna da solo mentre la schermata è aperta, al massimo ogni 30 secondi e per al massimo 15 minuti; «Controlla ora» lo controlla subito.
+4. Quando il dominio è attivo il plugin usa da solo il suo indirizzo: l'indirizzo CasaZen delle impostazioni diventa il dominio e l'identificativo si svuota, e la prova di connessione riparte. «Rimuovi dominio» riporta il sito di prenotazione sull'indirizzo di CasaZen, e il plugin lo segue.
+5. Sotto, le tre scelte di cosa passa dal dominio (area ospite, portale proprietari, link nelle e-mail, con «Salva le scelte») e lo stato dell'accesso dei proprietari.
+
+Il dominio personalizzato richiede il piano Pro: senza, la sezione lo dice e porta alla pagina del dominio della console. Piano, fatturazione e Google Tag Manager restano nella console.
+
+### Configurazione manuale («Avanzate»)
+
+Senza collegare il sito puoi scrivere tu l'indirizzo: apri Impostazioni → CasaZen, sezione «Avanzate: configurazione manuale». Con il sito collegato i campi restano, ma indirizzo e identificativo li compila CasaZen.
 
 | Campo | Cosa scrivere |
 |---|---|
@@ -123,46 +147,75 @@ Lo script ha gli attributi che i plugin di cache e di ottimizzazione leggono per
 ### Privacy
 
 - Il server del tuo sito contatta il tuo indirizzo CasaZen solo dalla schermata delle impostazioni (quando salvi l'indirizzo e quando premi «Prova la connessione») e da eventi in background che rinnovano il risultato dopo 12 ore: `<indirizzo>/embed/v1/manifest.json`, `/api/public/resolve-host`, `/api/public/orgs/<slug>` (solo se hai scritto uno slug e l'indirizzo è il dominio di CasaZen) e `/api/public/orgs/<slug>/destinations`. Si invia solo il nome host del tuo indirizzo e lo slug, dentro l'indirizzo della richiesta, più il nome e la versione del plugin come user agent. Nessun cookie, nessun dato personale, nessun dato dei tuoi visitatori; l'apertura di una pagina da parte di un visitatore non avvia queste richieste.
+- Con il sito collegato, il server del tuo sito chiama anche l'API di CasaZen, solo dalle schermate di amministrazione del plugin e alla disinstallazione: il manifesto della console (`<console>/embed/v1/manifest.json`), lo scambio del codice di collegamento (`/api/public/site-connections/token`: il codice, la verifica PKCE e l'indirizzo del sito) e, con la credenziale del sito nell'intestazione `Authorization`, l'account e il dominio dell'agenzia (`/api/site/v1/account`, `/api/site/v1/domain`, `/api/site/v1/domain/verify`, `/api/site/v1/domain/surfaces`) e lo scollegamento (`/api/site/v1/connection`). Sempre `https`, senza reindirizzamenti, con un limite di 10 secondi. La credenziale non compare mai in una pagina, in un indirizzo o in un registro.
 - Il browser dei visitatori carica lo script e i frame dei widget dal tuo indirizzo CasaZen (`<indirizzo>/embed/v1/embed.js`), come qualsiasi contenuto incorporato. Le pagine dei widget non usano cookie né archivio del browser.
-- Il plugin non imposta nessun cookie. Nel database tiene solo le sue impostazioni (un'opzione) e i risultati in memoria della prova di connessione e dei luoghi della barra di ricerca: nessun dato dei visitatori.
+- Il plugin non imposta nessun cookie. Nel database tiene solo le sue impostazioni (un'opzione), il collegamento all'account (l'opzione `casazen_link`, con la credenziale del sito) e i risultati in memoria della prova di connessione, dei luoghi della barra di ricerca e dell'account dell'agenzia: nessun dato dei visitatori.
 
 ### Disinstallazione
 
-Plugin → Elimina rimuove le impostazioni (`casazen_settings`), la nota della procedura guidata, i risultati in memoria e gli eventi pianificati del plugin. Le pagine create dalla procedura guidata e le loro voci di menu restano: sono contenuti tuoi.
+Plugin → Elimina restituisce a CasaZen la credenziale del sito collegato (una richiesta; se CasaZen non risponde entro 10 secondi la disinstallazione prosegue comunque) e rimuove il collegamento (`casazen_link`), le impostazioni (`casazen_settings`), la nota della procedura guidata, i risultati in memoria e gli eventi pianificati del plugin. Le pagine create dalla procedura guidata e le loro voci di menu restano: sono contenuti tuoi.
 
 ### Risoluzione dei problemi
 
 | Sintomo | Causa e rimedio |
 |---|---|
-| Nelle pagine non compare nulla e gli amministratori vedono «CasaZen: imposta l'indirizzo in Impostazioni → CasaZen» | L'indirizzo è vuoto. Scrivilo in Impostazioni → CasaZen e salva. |
+| Nelle pagine non compare nulla e gli amministratori vedono «CasaZen: imposta l'indirizzo in Impostazioni → CasaZen» | L'indirizzo è vuoto. In Impostazioni → CasaZen premi «Connetti a CasaZen», oppure scrivilo in «Avanzate» e salva. |
 | La prova dà `host_not_found` | CasaZen non conosce l'indirizzo o lo slug. Controlla come sono scritti; il dominio dell'agenzia deve essere verificato in CasaZen; sul dominio di CasaZen serve lo slug. |
 | La prova dà `manifest_unreachable` | L'indirizzo non risponde. Controlla che sia giusto e `https`, che il sito sia online, il DNS e il certificato, e che l'hosting non blocchi le richieste in uscita. |
 | Il widget è nascosto e gli amministratori vedono «CasaZen: l'incorporamento non è ancora attivo per questa agenzia.» | L'incorporamento non è attivo per l'agenzia: chiedi al referente CasaZen di attivarlo, poi premi «Prova la connessione». |
 | Il frame mostra il collegamento «Prenota su prenota.example.com» (con il nome del tuo indirizzo CasaZen) | Il frame non si è caricato; il collegamento apre il sito di prenotazione nell'intera pagina, così l'ospite può comunque prenotare. Esegui la prova di connessione, controlla che l'incorporamento sia attivo e che nessun plugin di sicurezza o regola del sito blocchi i frame provenienti dal tuo indirizzo CasaZen. |
 | La pagina è vuota e c'è un plugin di cache | Vedi «Plugin di cache e di ottimizzazione»: escludi gli indirizzi con `/embed/v1/`, poi svuota la cache. |
+| La schermata dice «Non più collegato» | CasaZen non accetta più la credenziale del sito (il collegamento è stato rimosso dalla console). Premi «Connetti a CasaZen»: le impostazioni sono rimaste. |
+| Dopo «Connetti a CasaZen» la schermata dice che l'indirizzo CasaZen non offre il collegamento | La versione di CasaZen non ha ancora il collegamento del plugin, oppure l'incorporamento non è attivo per la tua agenzia: usa la configurazione manuale («Avanzate») e chiedi al referente CasaZen. |
+| «Connetti a CasaZen» dice che il sito non si può collegare | L'indirizzo del sito non inizia con `https://`, oppure l'amministrazione di WordPress è su un altro indirizzo: usa la configurazione manuale («Avanzate»). |
+| Il dominio resta «In attesa dei record DNS» | Controlla i due record presso chi gestisce il DNS del dominio (nome e valore esattamente come nella schermata) e attendi la propagazione, poi premi «Controlla ora». |
 
 ## English
 
 ### What it does
 
-CasaZen for WordPress connects your WordPress site to the booking site that your agency uses with CasaZen. It puts the booking engine, the search bar for your home page, the access of your guests to their booking and the link to the owner area on your own pages, with blocks or shortcodes, and it creates the pages and the menu entries for you. The PHP of the plugin is thin on purpose: the widgets live in a small script that CasaZen serves from your own address, so a change to the widgets never needs a plugin update. The payment never happens inside a frame: «Book» takes the whole page to the checkout of your CasaZen address.
+CasaZen for WordPress connects your WordPress site to the booking site that your agency uses with CasaZen. It puts the booking engine, the search bar for your home page, the access of your guests to their booking and the link to the owner area on your own pages, with blocks or shortcodes, and it creates the pages and the menu entries for you. With one button («Connect to CasaZen») the site is connected to the account of the agency: the address fills in by itself and the domain is managed from the screen of the plugin. The PHP of the plugin is thin on purpose: the widgets live in a small script that CasaZen serves from your own address, so a change to the widgets never needs a plugin update. The payment never happens inside a frame: «Book» takes the whole page to the checkout of your CasaZen address.
 
 ### Requirements
 
 - WordPress 6.4 or later and PHP 7.4 or later.
-- A domain of your agency verified in CasaZen (for example `prenota.example.com`).
-- Embedding switched on for your agency in CasaZen. Until it is, the plugin shows nothing to your visitors and tells the administrators of the site.
+- The CasaZen account of your agency, with embedding switched on. Until it is, the plugin shows nothing to your visitors and tells the administrators of the site.
+- To connect the site: being an administrator of the agency in CasaZen, and a site whose address starts with `https://` (`http` only for local development hosts) with the WordPress administration on the same address.
+- To use a domain of your own (for example `prenota.example.com`): the Pro plan. Without it, the booking site answers on the CasaZen address.
 
 ### Installation
 
 The plugin is not on WordPress.org yet: install the ZIP.
 
-1. Download `casazen-<version>.zip` from the GitHub release tagged `wp-plugin-v<version>` of the frontend repository: <https://github.com/casazen/frontend/releases>.
+1. Download the ZIP from CasaZen: in the console, «Embed in your site», button «Download the plugin». A numbered version is also in the GitHub release tagged `wp-plugin-v<version>` of the frontend repository: <https://github.com/casazen/frontend/releases>.
 2. In WordPress open Plugins → Add New → Upload Plugin, choose the ZIP, press Install Now and then Activate.
+3. Open Settings → CasaZen and press «Connect to CasaZen» (see below).
 
-### Settings
+The ZIP downloaded from the console of an environment connects to the console of that environment. For a test install with a ZIP that carries no address (for example one built from the repository), add the constant `define( 'CASAZEN_APP_ORIGIN', 'https://casazen-test-app.vercel.app' );` to `wp-config.php`: «Connect to CasaZen» opens that console. Without the constant and without an address in the ZIP, the production console is used, `https://www.casazen.space`.
 
-Open Settings → CasaZen, tab Settings.
+### Connect the site to CasaZen
+
+1. In Settings → CasaZen press «Connect to CasaZen». The CasaZen console opens (sign in if needed): check the address of the site that asks to be connected and confirm.
+2. Back in WordPress the screen says «Connected to <agency>». The CasaZen address and the organisation slug are already filled in and the connection test has already run: the next step is the guided setup («Open the guided setup»).
+3. The connection uses a credential of the site itself, made by the button and revocable. It is kept only in the WordPress database (the option `casazen_link`, not autoloaded and never shown in a page) and only the admin screens of the plugin use it. «Disconnect», on the same screen, gives it back to CasaZen; the CasaZen console also lists the connected sites and can disconnect them.
+
+If CasaZen no longer accepts the site (for example it was disconnected from the console), the screen says «No longer connected» and offers «Connect to CasaZen» again: the settings stay. If the CasaZen address does not offer the connection (an older CasaZen, or embedding not switched on for your agency), the screen says so: use the manual set-up («Advanced»).
+
+### Domain
+
+With the site connected, the section «Domain» of the screen manages the address of your booking site:
+
+1. Write the domain (for example `prenota.example.com`) and press «Connect domain».
+2. The DNS records to create where the DNS of the domain is managed appear, with buttons to copy their name and value: the ownership TXT record, the CNAME record (for a domain without www, the A records instead) and, only when it is needed, a TXT record of the service provider. It is the only step outside WordPress.
+3. The state («Waiting for the DNS records», «Activation in progress», «Your domain is active» or «The domain cannot be activated», with the reason and the last check) refreshes by itself while the screen is open, at most every 30 seconds and for at most 15 minutes; «Check now» checks it at once.
+4. Once the domain is active the plugin uses its address by itself: the CasaZen address of the settings becomes the domain, the slug is cleared and the connection test runs again. «Remove domain» takes the booking site back to the CasaZen address, and the plugin follows.
+5. Below, the three choices of what runs on the domain (guest area, owner portal, links in the e-mails, with «Save the choices») and the state of the owner sign-in.
+
+A custom domain needs the Pro plan: without it, the section says so and links to the domain page of the console. Plan, billing and Google Tag Manager stay in the console.
+
+### Manual set-up («Advanced»)
+
+Without connecting the site you can write the address yourself: open Settings → CasaZen, section «Advanced: manual set-up». With the site connected the fields stay, but CasaZen fills in the address and the slug.
 
 | Field | What to enter |
 |---|---|
@@ -260,20 +313,25 @@ The script carries the attributes that cache and optimisation plugins read to le
 ### Privacy
 
 - The server of your site contacts your CasaZen address only from the settings screen (when you save the address and when you press «Test connection») and from background events that renew the result after 12 hours: `<address>/embed/v1/manifest.json`, `/api/public/resolve-host`, `/api/public/orgs/<slug>` (only if you wrote a slug and the address is the CasaZen domain) and `/api/public/orgs/<slug>/destinations`. Only the host name of your address and the slug are sent, inside the address of the request, plus the name and version of the plugin as the user agent. No cookie, no personal data, no data about your visitors; a visitor opening a page does not start these requests.
+- With the site connected, the server of your site also calls the CasaZen API, only from the admin screens of the plugin and at the uninstall: the manifest of the console (`<console>/embed/v1/manifest.json`), the exchange of the connection code (`/api/public/site-connections/token`: the code, the PKCE verifier and the address of the site) and, with the credential of the site in the `Authorization` header, the account and the domain of the agency (`/api/site/v1/account`, `/api/site/v1/domain`, `/api/site/v1/domain/verify`, `/api/site/v1/domain/surfaces`) and the disconnection (`/api/site/v1/connection`). Always `https`, without redirects, within 10 seconds. The credential never appears in a page, an address or a log.
 - The browser of your visitors loads the script and the frames of the widgets from your CasaZen address (`<address>/embed/v1/embed.js`), like any other embedded content. The pages of the widgets use no cookie and no browser storage.
-- The plugin sets no cookie. In the database it keeps only its settings (one option) and the cached results of the connection test and of the places of the search bar: no data about visitors.
+- The plugin sets no cookie. In the database it keeps only its settings (one option), the connection to the account (the option `casazen_link`, with the credential of the site) and the cached results of the connection test, of the places of the search bar and of the account of the agency: no data about visitors.
 
 ### Uninstall
 
-Plugins → Delete removes the settings (`casazen_settings`), the note of the guided setup, the cached results and the scheduled events of the plugin. The pages made by the guided setup and their menu entries stay: they are your content.
+Plugins → Delete gives the credential of a connected site back to CasaZen (one request; if CasaZen does not answer within 10 seconds the uninstall goes on all the same) and removes the connection (`casazen_link`), the settings (`casazen_settings`), the note of the guided setup, the cached results and the scheduled events of the plugin. The pages made by the guided setup and their menu entries stay: they are your content.
 
 ### Troubleshooting
 
 | Symptom | Cause and remedy |
 |---|---|
-| Nothing appears on the pages and administrators see «CasaZen: set the address in Settings → CasaZen» | The address is empty. Write it in Settings → CasaZen and save. |
+| Nothing appears on the pages and administrators see «CasaZen: set the address in Settings → CasaZen» | The address is empty. In Settings → CasaZen press «Connect to CasaZen», or write it under «Advanced» and save. |
 | The test gives `host_not_found` | CasaZen does not know the address or the slug. Check how they are written; the domain of the agency must be verified in CasaZen; on the CasaZen domain the slug is needed. |
 | The test gives `manifest_unreachable` | The address does not answer. Check that it is right and `https`, that the site is online, the DNS and the certificate, and that the hosting does not block outgoing requests. |
 | The widget is hidden and administrators see «CasaZen: embedding is not enabled for this agency yet.» | Embedding is not switched on for the agency: ask your CasaZen contact to switch it on, then press «Test connection». |
 | The frame shows the link «Book on prenota.example.com» (with the name of your own CasaZen address) | The frame did not load; the link opens the booking site in the whole page, so the guest can still book. Run the connection test, check that embedding is on and that no security plugin or rule of the site blocks frames from your CasaZen address. |
 | The page is empty and there is a cache plugin | See «Cache and optimisation plugins»: exclude the addresses with `/embed/v1/`, then clear the cache. |
+| The screen says «No longer connected» | CasaZen no longer accepts the credential of the site (the connection was removed from the console). Press «Connect to CasaZen»: the settings stayed. |
+| After «Connect to CasaZen» the screen says that the CasaZen address does not offer the connection | That CasaZen does not have the connection of the plugin yet, or embedding is not switched on for your agency: use the manual set-up («Advanced») and ask your CasaZen contact. |
+| «Connect to CasaZen» says that the site cannot be connected | The address of the site does not start with `https://`, or the WordPress administration is on another address: use the manual set-up («Advanced»). |
+| The domain stays «Waiting for the DNS records» | Check the two records where the DNS of the domain is managed (name and value exactly as on the screen) and wait for them to propagate, then press «Check now». |

@@ -10,7 +10,6 @@ import {
   contactName,
   currentData,
   formatBytes,
-  isAccountingDocument,
   isContactEditable,
   isAgencyNeededRefusal,
   isContactRevocable,
@@ -196,12 +195,6 @@ describe('documents and accounting', () => {
     expect(safeExternalUrl('file:///etc/passwd')).toBeNull();
     expect(safeExternalUrl('not a url')).toBeNull();
     expect(safeExternalUrl(null)).toBeNull();
-  });
-
-  it('IsAccountingDocument_IsAStatementOrAnInvoice', () => {
-    expect(isAccountingDocument({ type: 'Statement' })).toBe(true);
-    expect(isAccountingDocument({ type: 'Invoice' })).toBe(true);
-    expect(isAccountingDocument({ type: 'Mandate' })).toBe(false);
   });
 });
 

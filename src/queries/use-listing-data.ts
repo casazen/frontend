@@ -4,8 +4,8 @@ import type { PropertyRoomInput, StayDiscountTier } from '@/types';
 
 const PROPERTIES_KEY = 'properties';
 
-export const roomsKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'rooms'] as const;
-export const stayDiscountsKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'stay-discounts'] as const;
+const roomsKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'rooms'] as const;
+const stayDiscountsKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'stay-discounts'] as const;
 
 /** The rooms of a unit with their beds (NF-34), in order. `fresh`: read again on mount even when cached (a form that starts from the stored rooms). */
 export function usePropertyRooms(propertyId: string | undefined, options: { fresh?: boolean } = {}) {

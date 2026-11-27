@@ -13,7 +13,7 @@ import type { GuestRegisterPeriod } from '@/types/guest-register.types';
 export const GUEST_REGISTER_KEY = 'guest-register';
 
 /** The key of the count of a period of a property (`from` and `to` empty while the period is not one the server can make). */
-export const guestRegisterInfoKey = (propertyId: string, period: GuestRegisterPeriod | null) =>
+const guestRegisterInfoKey = (propertyId: string, period: GuestRegisterPeriod | null) =>
   [GUEST_REGISTER_KEY, propertyId, 'info', period?.from ?? '', period?.to ?? ''] as const;
 
 /**

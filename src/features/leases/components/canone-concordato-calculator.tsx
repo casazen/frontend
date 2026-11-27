@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import type { CanoneConcordatoEligibility } from '@/api/canone-concordato.api';
 import type { ConcordatoCharacteristics } from '@/types';
 import { Disclosure } from '../guide/disclosure';
 import { rentPlace } from '../guide/guide-answers';
+import { LabeledField } from '@/components/ui/labeled-field';
 
 interface Props {
   propertyId: string;
@@ -173,44 +174,44 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, ini
   return (
     <div className="space-y-4 text-sm" data-testid="canone-calculator">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id={id('sqm')} label={t('leases.canoneConcordato.sqm')}>
+        <LabeledField id={id('sqm')} label={t('leases.canoneConcordato.sqm')}>
           <Input id={id('sqm')} type="number" min={1} step="0.01" value={sqm} onChange={(e) => setSqm(e.target.value)} required />
-        </Field>
-        <Field id={id('zone')} label={t('leases.canoneConcordato.zone')}>
+        </LabeledField>
+        <LabeledField id={id('zone')} label={t('leases.canoneConcordato.zone')}>
           <ZoneSelect id={id('zone')} zones={zones} value={selectedZone} onChange={setZone} />
-        </Field>
-        <Field id={id('foglio')} label={t('leases.canoneConcordato.foglio')}>
+        </LabeledField>
+        <LabeledField id={id('foglio')} label={t('leases.canoneConcordato.foglio')}>
           <Input id={id('foglio')} value={foglio} onChange={(e) => setFoglio(e.target.value)} />
-        </Field>
+        </LabeledField>
       </div>
 
       <Disclosure summary={t('leaseGuide.rent.more')} testId="canone-more">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id={id('garage')} label={t('leases.canoneConcordato.garageSqm')}>
+          <LabeledField id={id('garage')} label={t('leases.canoneConcordato.garageSqm')}>
             <Input id={id('garage')} type="number" min={0} step="0.01" value={garageSqm} onChange={(e) => setGarageSqm(e.target.value)} />
-          </Field>
-          <Field id={id('balcony')} label={t('leases.canoneConcordato.balconySqm')}>
+          </LabeledField>
+          <LabeledField id={id('balcony')} label={t('leases.canoneConcordato.balconySqm')}>
             <Input id={id('balcony')} type="number" min={0} step="0.01" value={balconySqm} onChange={(e) => setBalconySqm(e.target.value)} />
-          </Field>
-          <Field id={id('other')} label={t('leases.canoneConcordato.otherAppurtenanceSqm')}>
+          </LabeledField>
+          <LabeledField id={id('other')} label={t('leases.canoneConcordato.otherAppurtenanceSqm')}>
             <Input id={id('other')} type="number" min={0} step="0.01" value={otherSqm} onChange={(e) => setOtherSqm(e.target.value)} />
-          </Field>
-          <Field id={id('green')} label={t('leases.canoneConcordato.privateGreenSqm')}>
+          </LabeledField>
+          <LabeledField id={id('green')} label={t('leases.canoneConcordato.privateGreenSqm')}>
             <Input id={id('green')} type="number" min={0} step="0.01" value={greenSqm} onChange={(e) => setGreenSqm(e.target.value)} />
-          </Field>
-          <Field id={id('typeA')} label={t('leases.canoneConcordato.typeA')}>
+          </LabeledField>
+          <LabeledField id={id('typeA')} label={t('leases.canoneConcordato.typeA')}>
             <Input id={id('typeA')} type="number" min={0} value={typeACount} onChange={(e) => setTypeACount(e.target.value)} required />
-          </Field>
-          <Field id={id('typeB')} label={t('leases.canoneConcordato.typeB')}>
+          </LabeledField>
+          <LabeledField id={id('typeB')} label={t('leases.canoneConcordato.typeB')}>
             <Input id={id('typeB')} type="number" min={0} value={typeBCount} onChange={(e) => setTypeBCount(e.target.value)} required />
-          </Field>
-          <Field id={id('typeC')} label={t('leases.canoneConcordato.typeC')}>
+          </LabeledField>
+          <LabeledField id={id('typeC')} label={t('leases.canoneConcordato.typeC')}>
             <Input id={id('typeC')} type="number" min={0} value={typeCCount} onChange={(e) => setTypeCCount(e.target.value)} required />
-          </Field>
-          <Field id={id('typeD')} label={t('leases.canoneConcordato.typeD')}>
+          </LabeledField>
+          <LabeledField id={id('typeD')} label={t('leases.canoneConcordato.typeD')}>
             <Input id={id('typeD')} type="number" min={0} value={typeDCount} onChange={(e) => setTypeDCount(e.target.value)} required />
-          </Field>
-          <Field id={id('qualifyingD')} label={t('leases.canoneConcordato.qualifyingTypeD')}>
+          </LabeledField>
+          <LabeledField id={id('qualifyingD')} label={t('leases.canoneConcordato.qualifyingTypeD')}>
             <Input
               id={id('qualifyingD')}
               type="number"
@@ -218,7 +219,7 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, ini
               value={qualifyingDCount}
               onChange={(e) => setQualifyingDCount(e.target.value)}
             />
-          </Field>
+          </LabeledField>
           <CheckboxField id={id('furnished')} label={t('leases.canoneConcordato.furnished')} checked={furnished} onChange={setFurnished} />
           <CheckboxField
             id={id('airConditioning')}
@@ -438,15 +439,6 @@ function ZoneSelect({
         </p>
       )}
     </>
-  );
-}
-
-function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-    </div>
   );
 }
 

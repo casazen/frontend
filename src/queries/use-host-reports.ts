@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { reportsApi, type HostReportKind, type PerformanceQuery, type ReportPeriod } from '@/api/reports.api';
 
-export const HOST_REPORTS_KEY = 'host-reports';
+const HOST_REPORTS_KEY = 'host-reports';
 
 /** Downloads the CSV of a report of short rent (the caller saves the blob and shows the error). */
 export function useDownloadHostReport() {

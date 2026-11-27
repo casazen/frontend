@@ -60,19 +60,19 @@ export type CrmProfileList = PagedResult<CrmProfileListItem>;
 export type CrmContactChannel = 'Email' | 'Phone' | 'WhatsApp';
 
 /** The double opt-in of a contact: not asked yet, asked and waiting for the answer, or confirmed. */
-export type CrmContactConfirmation = 'Unconfirmed' | 'Pending' | 'Confirmed';
+type CrmContactConfirmation = 'Unconfirmed' | 'Pending' | 'Confirmed';
 
 /** Where a contact came from: the first thing its legal basis depends on. */
 export type CrmContactOrigin = 'OtaForward' | 'CheckIn' | 'DirectBooking' | 'Manual' | 'OctorateContactInfo' | 'WelcomePage' | 'GuestPage';
 
 /** Why a contact cannot be written to for marketing (a code of the backend `CrmContactRules`). */
-export type CrmReachabilityReason = 'suppressed' | 'ota_forward' | 'not_confirmed' | 'no_basis' | 'channel_not_available';
+type CrmReachabilityReason = 'suppressed' | 'ota_forward' | 'not_confirmed' | 'no_basis' | 'channel_not_available';
 
 /** How a guest usually comes: alone, as a couple, with children, or in a group of three adults or more. */
 export type CrmGroupKind = 'Single' | 'Couple' | 'Family' | 'Group';
 
 /** The status of a booking in the history of a profile. */
-export type CrmBookingStatus = 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
+type CrmBookingStatus = 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
 
 /** One booking in the history of a profile. */
 export interface CrmProfileStay {
@@ -95,21 +95,21 @@ export interface CrmProfileStay {
 }
 
 /** Stays and spend of a profile on one channel. */
-export interface CrmChannelTotal {
+interface CrmChannelTotal {
   channel: string;
   stays: number;
   spend: number;
 }
 
 /** Stays of a profile at one property. */
-export interface CrmPropertyTotal {
+interface CrmPropertyTotal {
   propertyId: string;
   propertyName: string;
   stays: number;
 }
 
 /** The totals of a profile over its stays that happened. */
-export interface CrmProfileTotals {
+interface CrmProfileTotals {
   stays: number;
   spend: number;
   averageSpend: number;
@@ -124,13 +124,13 @@ export interface CrmProfileTotals {
 }
 
 /** A review in the summary: the mark and when it was published. */
-export interface CrmReviewEntry {
+interface CrmReviewEntry {
   rating: number;
   publishedAt: string;
 }
 
 /** The reviews of the stays of a profile. */
-export interface CrmReviewSummary {
+interface CrmReviewSummary {
   count: number;
   /** From 1 to 5; `null` without a review. */
   averageRating: number | null;

@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { OrgsApi } from '@/api/orgs.api';
 import type { UpdateOrgSettingsRequest } from '@/types';
@@ -21,16 +20,6 @@ export function useOrgSettings(enabled = true) {
     enabled,
     retry: false,
   });
-}
-
-/** `value`, once it stopped changing for `delayMs`. */
-export function useDebouncedValue<T>(value: T, delayMs: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delayMs);
-    return () => clearTimeout(timer);
-  }, [value, delayMs]);
-  return debounced;
 }
 
 /** A1-23: availability of a new public slug for the caller's org; advisory only, the save checks again. */

@@ -7,7 +7,7 @@ import type { DepositReturnInput, IstatCalculationInput, LeaseLetterKind, MarkLe
 import { LEASES_KEY } from './use-leases';
 
 /** The operations of a lease hang from the lease (`['leases', id, …]`): whatever refreshes the lease refreshes them too. */
-export const leaseOperationsKey = (leaseId: string) => [LEASES_KEY, leaseId, 'operations'] as const;
+const leaseOperationsKey = (leaseId: string) => [LEASES_KEY, leaseId, 'operations'] as const;
 
 /**
  * What the landlord can do about the end of a lease in force and the state of its letters (LR-OPS-1, `GET /leases/:id/operations`). Read

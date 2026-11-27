@@ -66,7 +66,7 @@ export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
  * Legacy combined value (contract type + tax regime) still returned by the API; the lease form sends `contractType` and
  * `taxRegime` (LT-10, A7-13).
  */
-export type FiscalRegime = 'CedolareSecca' | 'RegimeOrdinario' | 'CanoneConcordato';
+type FiscalRegime = 'CedolareSecca' | 'RegimeOrdinario' | 'CanoneConcordato';
 
 /** Contract type (backend `LeaseContractType`): libero 4+4, concordato 3+2, transitorio 1-18 months. */
 export const LEASE_CONTRACT_TYPES = ['Libero', 'Concordato', 'Transitorio'] as const;
@@ -122,16 +122,16 @@ export interface LeaseConcordatoAssessment extends ConcordatoCharacteristics {
 
 export type PartyRole = 'Landlord' | 'Tenant';
 
-export type RegistrationStatus = 'Pending' | 'SentToProvider' | 'Registered' | 'Failed';
+type RegistrationStatus = 'Pending' | 'SentToProvider' | 'Registered' | 'Failed';
 
 /** How the RLI registration is made (LT-01): declared by the landlord, or filed by a provider. */
-export type RegistrationChannel = 'Manual' | 'Provider';
+type RegistrationChannel = 'Manual' | 'Provider';
 
 /**
  * A party as returned by the lease detail API: fiscal code and email arrive already masked from the
  * server (GDPR, A7-17); the clear values never reach the browser.
  */
-export interface LeaseParty {
+interface LeaseParty {
   id: string;
   role: PartyRole;
   firstName: string;
@@ -177,7 +177,7 @@ export type ManualRegistrationInput = {
   registrationDate: string;
 } & ({ receipt: File } | { receiptDocumentId: string });
 
-export interface LeasePropertySummary {
+interface LeasePropertySummary {
   id: string;
   name: string;
   city?: string;
@@ -235,10 +235,10 @@ export interface LeaseSummary {
 }
 
 /** What the progress of a lease measures (backend `LeaseProgressKind`, LR-02b): the steps of the path, the period it runs in, or the end. */
-export type LeaseProgressKind = 'Setup' | 'Term' | 'End';
+type LeaseProgressKind = 'Setup' | 'Term' | 'End';
 
 /** The unit of the progress (backend `LeaseProgressUnit`). */
-export type LeaseProgressUnit = 'Steps' | 'Months' | 'Years';
+type LeaseProgressUnit = 'Steps' | 'Months' | 'Years';
 
 /** `done` of `total` in `unit` (3 of 8 steps, year 4 of 8) and `percent` (0 to 100) for the bar. */
 export interface LeaseProgress {
@@ -363,9 +363,9 @@ export const LEASE_DRAFT_PLACEHOLDER_DATE = '3000-01-01';
  * How a party signs the contract (LT-02): `Offline` on paper or with the party's own digital signature, recorded when the
  * landlord uploads the signed PDF; `Provider` through the e-signature provider, with a personal link.
  */
-export type LeaseSignatureMethod = 'Offline' | 'Provider';
+type LeaseSignatureMethod = 'Offline' | 'Provider';
 
-export type LeaseSignerStatus = 'Pending' | 'Signed';
+type LeaseSignerStatus = 'Pending' | 'Signed';
 
 /** A party as signer, persisted by the API (A7-16): the provider link survives a page refresh. */
 export interface LeaseSigner {
@@ -419,7 +419,7 @@ export interface TriggerRegistrationResult {
 export type HighTensionAreaStatus = 'NotListed' | 'Unverified' | 'Verified';
 
 /** `Computed`, or `InputRequired` (data CasaZen does not hold), or `NotComputed` (left to the accountant). */
-export type AdvisoryEstimateStatus = 'Computed' | 'InputRequired' | 'NotComputed';
+type AdvisoryEstimateStatus = 'Computed' | 'InputRequired' | 'NotComputed';
 
 /**
  * `GET|POST /leases/:id/rli/advisory` (LT-08): cedolare secca against the ordinary regime. Figures come from the
@@ -536,9 +536,4 @@ export interface QuesturaCommunicationInput {
   /** `YYYY-MM-DD`, not later than today in Europe/Rome. */
   communicationDate: string;
   receipt?: File | null;
-}
-
-export interface TriggerRegistrationRequest {
-  tosVersion: string;
-  attestationAccepted: boolean;
 }

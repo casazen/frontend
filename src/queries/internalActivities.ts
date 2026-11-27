@@ -10,20 +10,12 @@ import { INTERNAL_ACTIVITIES_KEY } from '@/lib/query-client';
  * condition is met, but the server dispatches the events of the condition about once a minute (ADR-022, ADR-026): a read right after
  * the write may still show the item, the next ones do not. The window focus and the network coming back read it again too.
  */
-export const TODO_POLL_MS = 60_000;
+const TODO_POLL_MS = 60_000;
 
 export function useMyActivities() {
   return useQuery({
     queryKey: [INTERNAL_ACTIVITIES_KEY, 'my-activities'],
     queryFn: () => internalActivitiesApi.getMyActivities(),
-  });
-}
-
-export function useActivityDetail(id: string) {
-  return useQuery({
-    queryKey: [INTERNAL_ACTIVITIES_KEY, id],
-    queryFn: () => internalActivitiesApi.getActivity(id),
-    enabled: !!id,
   });
 }
 

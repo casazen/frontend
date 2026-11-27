@@ -62,7 +62,7 @@ function withMessage(thread: SupplierRequestThread | undefined, message: Supplie
 }
 
 /** A message of the supplier. The hook does not toast: the conversation shows the message as «not sent» with its own retry. */
-export function useSendSupplierMessage(id: string) {
+function useSendSupplierMessage(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: string) => postSupplierRequestMessage(id, body),
@@ -161,7 +161,7 @@ export function useReplySupplierDispute(id: string) {
 }
 
 /** A message written on this page that the server has not confirmed yet. */
-export interface PendingInquiryMessage {
+interface PendingInquiryMessage {
   key: string;
   text: string;
   status: 'sending' | 'failed';

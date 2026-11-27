@@ -130,8 +130,8 @@ describe('an informational line is in its group and in no total of the statement
     const order = rows.map((row) => row.getAttribute('data-testid'));
     expect(order.indexOf('statement-group-channelFees-informational')).toBe(order.indexOf('statement-group-channelFees') + 1);
 
-    // The figures above the table are the server's: the line is in none of them (and not in the formula).
-    expect(screen.getByTestId('version-formula').textContent).not.toMatch(/67,50|198,73/);
+    // The figures above the table are the server's: the line is in none of them.
+    expect(screen.getByTestId('statement-figures').textContent).not.toMatch(/67,50|198,73/);
     expect(plain(screen.getByTestId('statement-focus').textContent)).toContain(franc(266.23));
   });
 

@@ -7,7 +7,7 @@ import { photoMetaInputs, type PhotoMetaDraft } from '@/lib/listing-photos';
 const PROPERTIES_KEY = 'properties';
 
 export const siteProfileKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'site-profile'] as const;
-export const photoMetaKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'photo-meta'] as const;
+const photoMetaKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'photo-meta'] as const;
 
 /**
  * The site profile of a property with the texts of its listing in every language and who wrote each (NF-31). `fresh`: read again on

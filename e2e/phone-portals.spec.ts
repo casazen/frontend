@@ -197,8 +197,8 @@ test.describe('Phone portals: tenant and landlord', () => {
       await pay.click();
 
       await expect(page.getByRole('heading', { name: 'Pagamenti', exact: true })).toBeVisible();
-      await expect(page.getByTestId('tenant-report-open')).toContainText('970,00');
-      await expect(page.getByTestId('tenant-report-paid')).toContainText('900,00');
+      // One due is open: the totals would only repeat it, so the report is not shown (it is, from two open dues: unit test).
+      await expect(page.getByTestId('tenant-payment-report')).toHaveCount(0);
       await expect(page.getByTestId('tenant-advance-note')).toContainText('acconto condominiale');
       await expect(page.getByTestId('tenant-settlement-note')).toContainText('credito');
       await expect(page.getByText('Facciata non confermata')).toHaveCount(0);

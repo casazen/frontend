@@ -140,3 +140,9 @@ export function buildSiteProfileRequest(profile: SiteProfile, drafts: Record<str
     translations,
   };
 }
+
+/** «a», «a e b», «a, b e c». */
+export function joinList(parts: readonly string[], and: string): string {
+  if (parts.length <= 1) return parts[0] ?? '';
+  return `${parts.slice(0, -1).join(', ')} ${and} ${parts[parts.length - 1]}`;
+}

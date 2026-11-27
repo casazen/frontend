@@ -178,6 +178,21 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(await screen.findByTestId('booking-open-checkin-wizard')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}/check-in?return=documents`);
   });
 
+  it('BookingDetailPage_OtaStayToVerify_HasItsNoticeOnTheStayTabAndNotOnTheOthers', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Airbnb', otaSource: 'Airbnb', otaReviewReason: 'BlockRemoved' }));
+
+    const stay = renderPage();
+    // The notice has buttons that act on the stay: it is in the tab of the stay, above what the tab says, and nowhere above the tabs.
+    const notice = await screen.findByTestId('ota-review-notice', undefined, WAIT);
+    expect(within(screen.getByRole('tabpanel')).getByTestId('ota-review-notice')).toBe(notice);
+    expect(within(notice).getByTestId('ota-review-resolve')).toBeInTheDocument();
+    stay.unmount();
+
+    renderPage(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
+    expect(await screen.findByTestId('alloggiati-panel-stub', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('ota-review-notice')).not.toBeInTheDocument();
+  });
+
   it('keeps the guest status readable when the operator cannot save guest records', async () => {
     denied.add('alloggiati.submit');
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking());

@@ -175,20 +175,6 @@ export function useExternalDocuments(versionId: string | undefined) {
   });
 }
 
-/** The evidence of an owner's month (it holds every published file: read it when the person asks for it). */
-export function useOwnerEvidence(year: number, month: number, ownerId: string, enabled: boolean) {
-  return useQuery({
-    queryKey: ownerAccountingKeys.evidence(year, month, ownerId),
-    queryFn: () => ownerAccountingApi.getEvidence(year, month, ownerId),
-    enabled,
-    refetchOnMount: 'always' as const,
-  });
-}
-
-export function useFxRates(enabled = true) {
-  return useQuery({ queryKey: ownerAccountingKeys.fxRates, queryFn: () => ownerAccountingApi.listFxRates(), enabled });
-}
-
 /**
  * The fiscal profiles of an owner, the newest first (masked unless the caller manages the owners' finances, who receive the identifiers, the address and the bank account in
  * full). They are personal data: the answer is dropped as soon as the page that shows it is left (`gcTime: 0`), so no profile outlives the screen in the cache.
@@ -320,15 +306,6 @@ export function useCloseMonth() {
   });
 }
 
-export function useSetLegalHold() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ year, month, ownerId, hold, reason }: { year: number; month: number; ownerId: string; hold: boolean; reason?: string }) =>
-      ownerAccountingApi.setLegalHold(year, month, ownerId, hold, reason),
-    onSuccess: () => invalidateAll(queryClient),
-  });
-}
-
 export function useAddFxRate() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -360,14 +337,6 @@ export function useConfirmPayout() {
         throw withoutRequest(error);
       }
     },
-    onSuccess: () => invalidateAll(queryClient),
-  });
-}
-
-export function useReversePayout() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ payoutId, reason }: { payoutId: string; reason: string }) => ownerAccountingApi.reversePayout(payoutId, reason),
     onSuccess: () => invalidateAll(queryClient),
   });
 }

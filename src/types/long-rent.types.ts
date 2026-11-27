@@ -9,7 +9,7 @@ import type { RentRegisterCounters } from './rent.types';
  */
 
 /** What the agenda lists: the five kinds of date the server knows. IMU and ISTAT are not among them. */
-export type LongRentDeadlineType = 'RliRegistration' | 'Questura' | 'LeaseEnd' | 'Notice' | 'Rent';
+type LongRentDeadlineType = 'RliRegistration' | 'Questura' | 'LeaseEnd' | 'Notice' | 'Rent';
 
 /**
  * One date of the agenda. `daysFromToday` is negative when it is past (`isOverdue`: a registration, a Questura communication or a
