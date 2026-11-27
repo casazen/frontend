@@ -1,0 +1,55 @@
+/* The screen of the CasaZen plugin (Settings, then CasaZen). Only loaded there. */
+
+.casazen-card {
+	max-width: 52rem;
+}
+
+.casazen-inline-form {
+	display: inline-block;
+	margin: 0 0.5em 0.5em 0;
+}
+
+.casazen-confirm {
+	margin-top: 1em;
+}
+
+.casazen-confirm > summary,
+.casazen-advanced > summary {
+	cursor: pointer;
+	padding: 0.5em 0;
+}
+
+.casazen-advanced {
+	margin-top: 2em;
+}
+
+.casazen-advanced > summary {
+	font-size: 1.1em;
+	font-weight: 600;
+}
+
+.casazen-domain-state {
+	margin: 1em 0;
+	padding: 0.25em 0.75em;
+	border-inline-start: 4px solid #dcdcde;
+	background: #f6f7f7;
+}
+
+.casazen-domain-state--verified {
+	border-color: #00a32a;
+	background: #edfaef;
+}
+
+.casazen-domain-state--failed {
+	border-color: #d63638;
+	background: #fcf0f1;
+}
+
+.casazen-dns code {
+	word-break: break-all;
+}
+
+.casazen-copy,
+.casazen-copy-status {
+	margin-inline-start: 0.5em;
+}

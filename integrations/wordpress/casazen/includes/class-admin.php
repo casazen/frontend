@@ -10,11 +10,12 @@ namespace Casazen;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Admin side of the plugin: the settings page with its two tabs («Settings» and «Guided setup»), its status box and the «Test
- * connection» button.
+ * Admin side of the plugin: the settings page with its two tabs («Settings» and «Guided setup»): the button «Connect to CasaZen»
+ * or, once the site is connected, the agency and the section «Domain»; the status box and the «Test connection» button; and,
+ * under «Advanced», the manual set-up of the address and of the slug.
  *
  * Every action checks the capability and a nonce, every output is escaped where it is printed, and there is no field for a
- * secret (phase 1 has no API key).
+ * secret: the credential of a connected site (Link) stays on the server and is never printed.
  */
 class Admin {
 
@@ -24,6 +25,34 @@ class Admin {
 	 * @var string
 	 */
 	const CAPABILITY = 'manage_options';
+
+	/**
+	 * The next step that a message can offer: the guided setup.
+	 *
+	 * @var string
+	 */
+	const NEXT_SETUP = 'setup';
+
+	/**
+	 * The message of the last action of a user is kept in a transient named with this prefix and the id of the user.
+	 *
+	 * @var string
+	 */
+	const FLASH_PREFIX = 'casazen_notice_';
+
+	/**
+	 * How long the message of an action waits to be shown (5 minutes).
+	 *
+	 * @var int
+	 */
+	const FLASH_TTL = 5 * MINUTE_IN_SECONDS;
+
+	/**
+	 * The handle of the script and of the style of the screen.
+	 *
+	 * @var string
+	 */
+	const ASSET_HANDLE = 'casazen-admin';
 
 	/**
 	 * Slug of the settings page (Settings, then CasaZen).
@@ -78,6 +107,7 @@ class Admin {
 		add_action( 'admin_init', array( __CLASS__, 'register_fields' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'maybe_show_setup_notice' ) );
 		add_action( 'admin_post_' . self::TEST_ACTION, array( __CLASS__, 'handle_test_connection' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( CASAZEN_FILE ), array( __CLASS__, 'plugin_action_links' ) );
 	}
 
@@ -97,7 +127,119 @@ class Admin {
 
 		// The screen id of the page: the notice below is printed only there.
 		self::$page_hook = is_string( $hook_suffix ) ? $hook_suffix : '';
+		if ( '' !== self::$page_hook ) {
+			add_action( 'load-' . self::$page_hook, array( __CLASS__, 'on_load_page' ) );
+		}
 		return $hook_suffix;
+	}
+
+	/**
+	 * Before the screen is printed: the return from the console of CasaZen (it comes back here with its code), then, for a connected
+	 * site, a fresh copy of the account (at most once a minute: the domain may have changed in the meantime, or the connection may
+	 * have been removed in the console). This is the screen of the administrator: a public page never calls CasaZen.
+	 *
+	 * @return void
+	 */
+	public static function on_load_page() {
+		if ( ! current_user_can( self::CAPABILITY ) ) {
+			return;
+		}
+		Connect::maybe_handle_return();
+		if ( self::TAB_SETTINGS === self::current_tab() && Link::is_connected() ) {
+			Account::refresh( Account::STALE_AFTER );
+		}
+	}
+
+	/**
+	 * The script and the style of the screen, only on the screen of the plugin. The script is progressive: every button works
+	 * without it, through admin-post. Its data carry the address of admin-ajax and a nonce: never the credential.
+	 *
+	 * @param string $hook_suffix The screen that is printed.
+	 * @return void
+	 */
+	public static function enqueue_assets( $hook_suffix ) {
+		if ( '' === self::$page_hook || self::$page_hook !== $hook_suffix ) {
+			return;
+		}
+		wp_enqueue_style( self::ASSET_HANDLE, CASAZEN_URL . 'assets/admin.css', array(), CASAZEN_VERSION );
+		wp_enqueue_script( self::ASSET_HANDLE, CASAZEN_URL . 'assets/admin.js', array(), CASAZEN_VERSION, array( 'in_footer' => true ) );
+		wp_localize_script(
+			self::ASSET_HANDLE,
+			'casazenAdmin',
+			array(
+				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+				'nonce'      => wp_create_nonce( Domain::AJAX_NONCE ),
+				'copied'     => __( 'Copied to the clipboard', 'casazen' ),
+				'copyFailed' => __( 'Cannot copy: select the value by hand', 'casazen' ),
+				'checking'   => __( 'Checking…', 'casazen' ),
+			)
+		);
+	}
+
+	/**
+	 * The checks of every form of the screen: the capability (403 otherwise) and the nonce of its action.
+	 *
+	 * @param string $action The action of the form (and of its nonce).
+	 * @return void
+	 */
+	public static function check_request( $action ) {
+		if ( ! current_user_can( self::CAPABILITY ) ) {
+			wp_die(
+				esc_html__( 'You do not have permission to do this.', 'casazen' ),
+				'',
+				array( 'response' => 403 )
+			);
+		}
+		check_admin_referer( $action, self::NONCE_FIELD );
+	}
+
+	/**
+	 * Keeps the message of an action for the current user, to show it once on the screen.
+	 *
+	 * @param string $type `success`, `error`, `warning` or `info`.
+	 * @param string $text The message: plain text, escaped where it is printed. It never holds the credential.
+	 * @param string $next The next step to offer (NEXT_SETUP), or an empty string.
+	 * @return void
+	 */
+	public static function flash( $type, $text, $next = '' ) {
+		set_transient(
+			self::FLASH_PREFIX . get_current_user_id(),
+			array(
+				'type' => (string) $type,
+				'text' => (string) $text,
+				'next' => (string) $next,
+			),
+			self::FLASH_TTL
+		);
+	}
+
+	/**
+	 * The message of the last action of the current user, once: it is deleted when it is read.
+	 *
+	 * @return array|null { type, text, next }
+	 */
+	public static function take_flash() {
+		$key   = self::FLASH_PREFIX . get_current_user_id();
+		$flash = get_transient( $key );
+		delete_transient( $key );
+		if ( ! is_array( $flash ) || ! isset( $flash['type'], $flash['text'] ) || ! is_string( $flash['text'] ) || '' === $flash['text'] ) {
+			return null;
+		}
+		return array(
+			'type' => in_array( $flash['type'], array( 'success', 'error', 'warning', 'info' ), true ) ? $flash['type'] : 'info',
+			'text' => $flash['text'],
+			'next' => ( isset( $flash['next'] ) && self::NEXT_SETUP === $flash['next'] ) ? self::NEXT_SETUP : '',
+		);
+	}
+
+	/**
+	 * Back to the screen of the plugin (its first tab), after a form.
+	 *
+	 * @return void
+	 */
+	public static function redirect_to_page() {
+		wp_safe_redirect( add_query_arg( array( 'page' => self::PAGE_SLUG ), admin_url( 'options-general.php' ) ) );
+		exit;
 	}
 
 	/**
@@ -379,22 +521,27 @@ class Admin {
 	}
 
 	/**
-	 * The first tab: the result of the last test, the status, the settings form and the «Test connection» form.
+	 * The first tab: the message of the last action, the result of the last test, «Connect to CasaZen» (or the agency and its
+	 * domain), the status, the «Test connection» form and, under «Advanced», the settings form. It reads what is stored: printing the
+	 * screen never calls CasaZen.
 	 *
 	 * @return void
 	 */
 	private static function render_settings_tab() {
+		$flash = self::take_flash();
+		self::render_flash( $flash );
 		self::render_test_result();
+
+		$link = Link::summary();
+		if ( null === $link ) {
+			self::render_connect_card();
+		} else {
+			self::render_account_card( $link );
+			self::render_domain_section( Account::cached(), null !== $flash && self::NEXT_SETUP === $flash['next'] );
+		}
+
 		self::render_status();
 		?>
-		<form method="post" action="options.php">
-			<?php
-			settings_fields( Settings::GROUP );
-			do_settings_sections( self::PAGE_SLUG );
-			submit_button();
-			?>
-		</form>
-
 		<h2><?php esc_html_e( 'Test connection', 'casazen' ); ?></h2>
 		<p><?php esc_html_e( 'Check now that this site can reach your CasaZen address.', 'casazen' ); ?></p>
 		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=' . self::TEST_ACTION ) ); ?>">
@@ -403,7 +550,494 @@ class Admin {
 			submit_button( __( 'Test connection', 'casazen' ), 'secondary', 'casazen_test_submit', false );
 			?>
 		</form>
+
 		<?php
+		// After a save the section is open: the messages of the settings are about its fields.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only decides whether the section starts open, nothing changes.
+		$open = isset( $_GET['settings-updated'] );
+		?>
+		<details class="casazen-advanced" id="casazen-advanced"<?php echo $open ? ' open' : ''; ?>>
+			<summary><?php esc_html_e( 'Advanced: manual set-up', 'casazen' ); ?></summary>
+			<p class="description">
+				<?php
+				if ( null === $link ) {
+					esc_html_e( 'Without connecting the site, write the address of your CasaZen booking site (and, on the CasaZen address, the slug of your organisation) yourself.', 'casazen' );
+				} else {
+					esc_html_e( 'This site is connected: CasaZen fills in the address and the slug by itself. Change them here only if CasaZen asks you to.', 'casazen' );
+				}
+				?>
+			</p>
+			<form method="post" action="options.php">
+				<?php
+				settings_fields( Settings::GROUP );
+				do_settings_sections( self::PAGE_SLUG );
+				submit_button();
+				?>
+			</form>
+		</details>
+		<?php
+	}
+
+	/**
+	 * The message of the last action (once), with the next step when it offers one.
+	 *
+	 * @param array|null $flash The message of take_flash().
+	 * @return void
+	 */
+	private static function render_flash( $flash ) {
+		if ( null === $flash ) {
+			return;
+		}
+		printf(
+			'<div class="notice notice-%1$s casazen-flash" id="casazen-flash"%2$s><p>%3$s</p>',
+			esc_attr( $flash['type'] ),
+			'error' === $flash['type'] ? ' role="alert"' : '',
+			esc_html( $flash['text'] )
+		);
+		if ( self::NEXT_SETUP === $flash['next'] ) {
+			printf(
+				'<p>%1$s</p><p><a class="button button-primary" href="%2$s">%3$s</a></p>',
+				esc_html__( 'Next step: create the pages of your booking site.', 'casazen' ),
+				esc_url( self::tab_url( self::TAB_SETUP ) ),
+				esc_html__( 'Open the guided setup', 'casazen' )
+			);
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * A hidden nonce field for the forms of the screen (without the id that wp_nonce_field() repeats on every form).
+	 *
+	 * @param string $action The action of the form.
+	 * @return void
+	 */
+	private static function nonce_field( $action ) {
+		printf(
+			'<input type="hidden" name="%1$s" value="%2$s" />',
+			esc_attr( self::NONCE_FIELD ),
+			esc_attr( wp_create_nonce( $action ) )
+		);
+	}
+
+	/**
+	 * A form of admin-post with its nonce and one button.
+	 *
+	 * @param string $action The action of the form (and of its nonce).
+	 * @param string $label  The text of the button.
+	 * @param string $type   The classes of the button for submit_button(): `primary`, `secondary`, `primary large`.
+	 * @param string $extra  Attributes of the form, already escaped (for the script of the screen).
+	 * @return void
+	 */
+	private static function action_form( $action, $label, $type = 'secondary', $extra = '' ) {
+		printf(
+			'<form method="post" class="casazen-inline-form" action="%1$s"%2$s>',
+			esc_url( admin_url( 'admin-post.php?action=' . $action ) ),
+			$extra // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed attributes written by this class.
+		);
+		self::nonce_field( $action );
+		submit_button( $label, $type, $action . '_submit', false );
+		echo '</form>';
+	}
+
+	/**
+	 * Before the site is connected: the one button «Connect to CasaZen» (and, when CasaZen no longer accepts the site, why).
+	 *
+	 * @return void
+	 */
+	private static function render_connect_card() {
+		$revoked = Link::revoked();
+		?>
+		<div class="card casazen-card" id="casazen-connect">
+			<h2 class="title"><?php esc_html_e( 'Connect this site to CasaZen', 'casazen' ); ?></h2>
+			<?php if ( null !== $revoked ) : ?>
+				<div class="notice notice-warning inline" id="casazen-revoked" role="status">
+					<p><strong><?php esc_html_e( 'No longer connected', 'casazen' ); ?></strong></p>
+					<p>
+						<?php
+						if ( '' !== $revoked ) {
+							printf(
+								/* translators: %s: the name of the agency in CasaZen. */
+								esc_html__( 'CasaZen does not accept this site for %s any more: the connection was removed in the CasaZen console. Your settings were kept: connect the site again to manage the domain from here.', 'casazen' ),
+								esc_html( $revoked )
+							);
+						} else {
+							esc_html_e( 'CasaZen does not accept this site any more: the connection was removed in the CasaZen console. Your settings were kept: connect the site again to manage the domain from here.', 'casazen' );
+						}
+						?>
+					</p>
+				</div>
+			<?php endif; ?>
+			<p><?php esc_html_e( 'One button: CasaZen opens, you confirm, and the address of your booking site is filled in here by itself. Then you manage your domain from this screen.', 'casazen' ); ?></p>
+			<?php self::action_form( Connect::START_ACTION, __( 'Connect to CasaZen', 'casazen' ), 'primary large' ); ?>
+			<p class="description"><?php esc_html_e( 'You need to be an administrator of your agency in CasaZen. Without connecting, you can set the address by hand under Advanced.', 'casazen' ); ?></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The site is connected: the agency and the address of the site (nothing else of the link), and «Disconnect».
+	 *
+	 * @param array $link The link of Link::summary() (no credential in it).
+	 * @return void
+	 */
+	private static function render_account_card( array $link ) {
+		?>
+		<div class="card casazen-card" id="casazen-account">
+			<h2 class="title">
+				<?php
+				printf(
+					/* translators: %s: the name of the agency in CasaZen. */
+					esc_html__( 'Connected to %s', 'casazen' ),
+					esc_html( $link['org_name'] )
+				);
+				?>
+			</h2>
+			<p><?php esc_html_e( 'Site', 'casazen' ); ?>: <code><?php echo esc_html( $link['site_url'] ); ?></code></p>
+			<details class="casazen-confirm">
+				<summary><?php esc_html_e( 'Disconnect', 'casazen' ); ?></summary>
+				<p><?php esc_html_e( 'The site stops managing the domain from here and CasaZen forgets its credential. The address and the settings stay, so the widgets keep working.', 'casazen' ); ?></p>
+				<?php self::action_form( Connect::DISCONNECT_ACTION, __( 'Yes, disconnect', 'casazen' ) ); ?>
+			</details>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The section «Domain» of a connected site, from the copy of the account (Account::cached()): the domain of the agency, its DNS
+	 * records with their copy buttons, its state, «Check now», «Remove domain» and what passes from it. Without the plan for a
+	 * custom domain: the Pro message and a link to the console, no form.
+	 *
+	 * @param array|null $account       The copy of the account, or null when CasaZen could not be read.
+	 * @param bool       $after_connect Whether the screen comes right after the connection (the guided setup is then the next step).
+	 * @return void
+	 */
+	private static function render_domain_section( $account, $after_connect ) {
+		$state   = Account::domain_state( $account );
+		$pending = Account::is_pending( $account );
+		printf(
+			'<div class="card casazen-card" id="casazen-domain" data-casazen-state="%1$s"%2$s>',
+			esc_attr( $state ),
+			$pending ? ' data-casazen-poll="1" data-casazen-fingerprint="' . esc_attr( Account::fingerprint( $account ) ) . '"' : '' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in place.
+		);
+		echo '<h2 class="title">' . esc_html__( 'Domain', 'casazen' ) . '</h2>';
+
+		if ( null === $account ) {
+			echo '<p>' . esc_html__( 'The data of your domain could not be read from CasaZen. Try again in a few minutes.', 'casazen' ) . '</p>';
+			self::action_form( Domain::REFRESH_ACTION, __( 'Reload the data', 'casazen' ) );
+			echo '</div>';
+			return;
+		}
+
+		if ( '' !== $account['error'] ) {
+			printf(
+				'<div class="notice notice-warning inline"><p>%1$s %2$s</p></div>',
+				esc_html__( 'These data may not be up to date:', 'casazen' ),
+				esc_html( Api_Client::message( $account['error'] ) )
+			);
+		}
+
+		printf(
+			'<p>%s</p>',
+			sprintf(
+				/* translators: %s: the address of the booking site of the agency. */
+				esc_html__( 'Your booking site answers on %s.', 'casazen' ),
+				'<code>' . esc_html( $account['public_address'] ) . '</code>'
+			)
+		);
+
+		$domain = $account['domain'];
+		if ( ! $domain['can_use_custom_domain'] ) {
+			printf(
+				'<p><strong>%1$s</strong></p><p><a class="button" href="%2$s" target="_blank" rel="noopener noreferrer">%3$s</a></p>',
+				esc_html( Api_Client::message( 'plan_required' ) ),
+				esc_url( self::console_domain_url() ),
+				esc_html__( 'Open the domain settings in CasaZen', 'casazen' )
+			);
+			echo '</div>';
+			return;
+		}
+
+		if ( 'none' === $state ) {
+			echo '<p>' . esc_html__( 'To use an address of your own, such as prenota.example.com, write it here. Then you create two DNS records where your domain is managed.', 'casazen' ) . '</p>';
+			self::render_domain_form( '', $after_connect ? 'secondary' : 'primary' );
+			echo '</div>';
+			return;
+		}
+
+		printf(
+			'<p>%1$s: <strong>%2$s</strong></p>',
+			esc_html__( 'Your domain', 'casazen' ),
+			esc_html( $domain['custom_domain'] )
+		);
+		self::render_domain_state( $account, $state );
+		if ( 'verified' !== $state ) {
+			if ( null !== $domain['dns'] ) {
+				self::render_dns_records( $domain['dns'] );
+			}
+			self::action_form( Domain::VERIFY_ACTION, __( 'Check now', 'casazen' ), 'secondary', ' data-casazen-verify="1"' );
+		}
+		if ( 'failed' === $state ) {
+			self::render_domain_form( $domain['custom_domain'], 'secondary' );
+		}
+		?>
+		<details class="casazen-confirm">
+			<summary><?php esc_html_e( 'Remove domain', 'casazen' ); ?></summary>
+			<p><?php esc_html_e( 'Your booking site goes back to the CasaZen address, and this site follows it by itself. The DNS records can then be deleted.', 'casazen' ); ?></p>
+			<?php self::action_form( Domain::REMOVE_ACTION, __( 'Yes, remove the domain', 'casazen' ) ); ?>
+		</details>
+		<?php
+		if ( null !== $domain['surfaces'] ) {
+			self::render_surfaces( $domain );
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * The field of the domain and «Connect domain».
+	 *
+	 * @param string $value  The domain to show in the field.
+	 * @param string $button The classes of the button: `primary`, or `secondary` when another step is the one to take first.
+	 * @return void
+	 */
+	private static function render_domain_form( $value, $button ) {
+		?>
+		<form method="post" class="casazen-domain-form" action="<?php echo esc_url( admin_url( 'admin-post.php?action=' . Domain::SAVE_ACTION ) ); ?>">
+			<?php self::nonce_field( Domain::SAVE_ACTION ); ?>
+			<p>
+				<label for="casazen-domain-field"><?php esc_html_e( 'Your domain', 'casazen' ); ?></label><br />
+				<input type="text" id="casazen-domain-field" name="<?php echo esc_attr( Domain::DOMAIN_FIELD ); ?>" value="<?php echo esc_attr( $value ); ?>" class="regular-text code" placeholder="prenota.example.com" maxlength="253" autocomplete="off" spellcheck="false" required aria-describedby="casazen-domain-help" />
+			</p>
+			<p class="description" id="casazen-domain-help"><?php esc_html_e( 'The address where your guests book, without https://, for example prenota.example.com.', 'casazen' ); ?></p>
+			<?php submit_button( __( 'Connect domain', 'casazen' ), $button, Domain::SAVE_ACTION . '_submit', false ); ?>
+		</form>
+		<?php
+	}
+
+	/**
+	 * The state of the domain, with the words of the console: its title, why (the explanation that CasaZen gives), the last check and
+	 * whether CasaZen checks it by itself.
+	 *
+	 * @param array  $account The copy of the account.
+	 * @param string $state   The state of Account::domain_state().
+	 * @return void
+	 */
+	private static function render_domain_state( array $account, $state ) {
+		$status = $account['domain']['status'];
+		$titles = array(
+			'verified'   => __( 'Your domain is active', 'casazen' ),
+			'waiting'    => __( 'Waiting for the DNS records', 'casazen' ),
+			'activating' => __( 'Activation in progress', 'casazen' ),
+			'failed'     => __( 'The domain cannot be activated', 'casazen' ),
+		);
+		$descriptions = array(
+			'verified'   => __( 'Your guests can book from your domain. We keep checking the DNS records: if they are removed, the domain stops being active.', 'casazen' ),
+			'waiting'    => __( 'Create the DNS records shown below at your provider and wait for them to propagate (it can take a few hours). Then press Check now, or wait for the automatic check.', 'casazen' ),
+			'activating' => __( 'The DNS records are not the problem: we are finishing the activation of the domain on the platform and will retry automatically.', 'casazen' ),
+			'failed'     => __( 'The domain cannot be activated. Check that it is spelled correctly or choose another domain.', 'casazen' ),
+		);
+		$explanation = 'verified' === $state ? '' : $status['message'];
+		$last_check  = Domain::last_check( $account );
+
+		printf(
+			'<div class="casazen-domain-state casazen-domain-state--%1$s" role="%2$s"><p><strong>%3$s</strong></p><p>%4$s</p></div>',
+			esc_attr( $state ),
+			'failed' === $state ? 'alert' : 'status',
+			esc_html( $titles[ $state ] ),
+			esc_html( '' !== $explanation ? $explanation : $descriptions[ $state ] )
+		);
+		if ( ! $status['activation_available'] ) {
+			echo '<p class="description">' . esc_html__( 'Activating custom domains is not available on the platform yet: the domain will stay on hold until the service is configured. There is nothing different to do on your DNS.', 'casazen' ) . '</p>';
+		}
+		printf(
+			'<p class="description">%1$s: <span data-casazen-last-check>%2$s</span>. %3$s</p>',
+			esc_html__( 'Last check', 'casazen' ),
+			esc_html( '' !== $last_check ? $last_check : __( 'not checked yet', 'casazen' ) ),
+			esc_html(
+				$status['auto_check_active']
+					? __( 'We re-check the domain automatically: you do not need to come back here.', 'casazen' )
+					: __( 'The automatic check is paused because the domain has not been configured for too long: press Check now after fixing the DNS records.', 'casazen' )
+			)
+		);
+	}
+
+	/**
+	 * The DNS records to create, exactly as CasaZen gives them, each name and value with its copy button (shown by the script).
+	 *
+	 * @param array $dns The records of the copy of the account.
+	 * @return void
+	 */
+	private static function render_dns_records( array $dns ) {
+		echo '<h3>' . esc_html__( 'DNS records to create', 'casazen' ) . '</h3>';
+		echo '<p>' . esc_html__( 'Create these records at the provider of your domain (where you registered it). Then press Check now.', 'casazen' ) . '</p>';
+		echo '<table class="widefat striped casazen-dns" id="casazen-dns"><thead><tr>';
+		printf(
+			'<th scope="col">%1$s</th><th scope="col">%2$s</th><th scope="col">%3$s</th>',
+			esc_html__( 'Record', 'casazen' ),
+			esc_html__( 'Name', 'casazen' ),
+			esc_html__( 'Value', 'casazen' )
+		);
+		echo '</tr></thead><tbody>';
+
+		self::render_dns_row( __( '1. Ownership TXT record', 'casazen' ), __( 'Proves the domain is yours. Type TXT.', 'casazen' ), $dns['txt_host'], $dns['txt_value'] );
+		self::render_dns_row( __( '2. CNAME record', 'casazen' ), __( 'Points the domain to our service. Type CNAME, for a subdomain such as www.', 'casazen' ), $dns['cname_host'], $dns['cname_target'] );
+		foreach ( $dns['a_records'] as $index => $address ) {
+			self::render_dns_row(
+				0 === $index ? __( 'Alternatively: A record', 'casazen' ) : '',
+				0 === $index ? __( 'For a domain without www (the root of a domain cannot have a CNAME) create a record of type A for each address.', 'casazen' ) : '',
+				$dns['cname_host'],
+				$address
+			);
+		}
+		if ( '' !== $dns['provider_txt_host'] && '' !== $dns['provider_txt_value'] ) {
+			self::render_dns_row( __( '3. Service provider TXT record', 'casazen' ), __( 'Required only because the domain is already used on another account of the provider. Type TXT.', 'casazen' ), $dns['provider_txt_host'], $dns['provider_txt_value'] );
+		}
+		echo '</tbody></table>';
+		echo '<p class="description">' . esc_html__( 'The SSL certificate is generated automatically once the domain is active.', 'casazen' ) . '</p>';
+	}
+
+	/**
+	 * One row of the DNS records.
+	 *
+	 * @param string $label The record.
+	 * @param string $hint  What it is for (may be empty).
+	 * @param string $name  The name (host) of the record.
+	 * @param string $value The value of the record.
+	 * @return void
+	 */
+	private static function render_dns_row( $label, $hint, $name, $value ) {
+		if ( '' === $name || '' === $value ) {
+			return;
+		}
+		printf(
+			'<tr><th scope="row">%1$s%2$s</th><td><code>%3$s</code> %4$s</td><td><code>%5$s</code> %6$s</td></tr>',
+			esc_html( $label ),
+			'' !== $hint ? '<br /><span class="description">' . esc_html( $hint ) . '</span>' : '',
+			esc_html( $name ),
+			self::copy_button( $name, __( 'Copy the name', 'casazen' ) ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in copy_button().
+			esc_html( $value ),
+			self::copy_button( $value, __( 'Copy the value', 'casazen' ) ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in copy_button().
+		);
+	}
+
+	/**
+	 * A copy button. It starts hidden: the script of the screen shows it (without the script the value is selected by hand).
+	 *
+	 * @param string $value The text to copy.
+	 * @param string $label The text of the button.
+	 * @return string HTML, already escaped.
+	 */
+	private static function copy_button( $value, $label ) {
+		return sprintf(
+			'<button type="button" class="button button-small casazen-copy" data-casazen-copy="%1$s" hidden>%2$s</button><span class="casazen-copy-status" aria-live="polite"></span>',
+			esc_attr( $value ),
+			esc_html( $label )
+		);
+	}
+
+	/**
+	 * What passes from the domain (the three choices of the agency, with the words of the console) and the state of the sign-in of
+	 * the owners, as read-only text.
+	 *
+	 * @param array $domain The domain of the copy of the account.
+	 * @return void
+	 */
+	private static function render_surfaces( array $domain ) {
+		$surfaces  = $domain['surfaces'];
+		$effective = $surfaces['effective'];
+
+		$links_note = '';
+		if ( $effective['links'] && '' !== $domain['custom_domain_url'] ) {
+			/* translators: %s: the address of the domain of the agency. */
+			$links_note = sprintf( __( 'The links you send start from %s.', 'casazen' ), $domain['custom_domain_url'] );
+		} elseif ( $surfaces['links'] && ! $effective['links'] ) {
+			$links_note = __( 'For now the links stay the CasaZen ones.', 'casazen' );
+		}
+		$choices = array(
+			'guest_area'   => array(
+				'label' => __( 'Guest area on my domain', 'casazen' ),
+				'help'  => __( 'Your guests manage their booking and check in from your address, under your brand.', 'casazen' ),
+				'note'  => $surfaces['guest_area'] && ! $effective['guest_area'] ? __( 'For now the guest area stays on the CasaZen address.', 'casazen' ) : '',
+			),
+			'owner_portal' => array(
+				'label' => __( 'Owner portal on my domain', 'casazen' ),
+				'help'  => __( 'Owners sign in from your address. Their links move only once owner sign-in is active.', 'casazen' ),
+				'note'  => $surfaces['owner_portal'] && ! ( $effective['owner_portal'] && $effective['owner_login'] ) ? __( 'For now the owner portal stays on the CasaZen address.', 'casazen' ) : '',
+			),
+			'links'        => array(
+				'label' => __( 'Use my domain in the links I send', 'casazen' ),
+				'help'  => __( 'Check-in, booking management, confirmations and invitations start from your address instead of the CasaZen one.', 'casazen' ),
+				'note'  => $links_note,
+			),
+		);
+		$owner_states = array(
+			'failed'           => __( 'registration failed', 'casazen' ),
+			'notRequested'     => __( 'not requested yet', 'casazen' ),
+			'pendingAutomatic' => __( 'registration in progress', 'casazen' ),
+			'pendingManual'    => __( 'waiting for CasaZen to enable it', 'casazen' ),
+			'ready'            => __( 'active', 'casazen' ),
+		);
+		$owner_state  = self::owner_login_line( $surfaces );
+		?>
+		<h3><?php esc_html_e( 'What runs on your domain', 'casazen' ); ?></h3>
+		<p><?php esc_html_e( 'Choose what runs on your address. Anything you leave off stays on the CasaZen address.', 'casazen' ); ?></p>
+		<form method="post" class="casazen-surfaces" id="casazen-surfaces" action="<?php echo esc_url( admin_url( 'admin-post.php?action=' . Domain::SURFACES_ACTION ) ); ?>">
+			<?php self::nonce_field( Domain::SURFACES_ACTION ); ?>
+			<fieldset>
+				<legend class="screen-reader-text"><?php esc_html_e( 'What runs on your domain', 'casazen' ); ?></legend>
+				<?php foreach ( $choices as $key => $choice ) : ?>
+					<p>
+						<label>
+							<input type="checkbox" name="<?php echo esc_attr( Domain::SURFACES_FIELD . '[' . $key . ']' ); ?>" value="1"<?php checked( $surfaces[ $key ] ); ?> />
+							<?php echo esc_html( $choice['label'] ); ?>
+						</label>
+						<br /><span class="description"><?php echo esc_html( $choice['help'] ); ?></span>
+						<?php if ( '' !== $choice['note'] ) : ?>
+							<br /><strong class="casazen-note"><?php echo esc_html( $choice['note'] ); ?></strong>
+						<?php endif; ?>
+					</p>
+				<?php endforeach; ?>
+			</fieldset>
+			<?php submit_button( __( 'Save the choices', 'casazen' ), 'secondary', Domain::SURFACES_ACTION . '_submit', false ); ?>
+		</form>
+		<p id="casazen-owner-login">
+			<strong><?php esc_html_e( 'Owner sign-in', 'casazen' ); ?>:</strong>
+			<?php echo esc_html( $owner_states[ $owner_state ] ); ?>
+			<?php if ( 'pendingManual' === $owner_state ) : ?>
+				<br /><span class="description"><?php esc_html_e( 'CasaZen enables it: there is nothing for you to do.', 'casazen' ); ?></span>
+			<?php endif; ?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * The state of the sign-in of the owners, as the line says it: one per state of CasaZen, and two for `Pending` (CasaZen enables it
+	 * by hand, or it registers by itself).
+	 *
+	 * @param array $surfaces The surfaces of the copy of the account.
+	 * @return string `failed`, `notRequested`, `pendingAutomatic`, `pendingManual` or `ready`.
+	 */
+	private static function owner_login_line( array $surfaces ) {
+		switch ( $surfaces['owner_login'] ) {
+			case 'Pending':
+				return $surfaces['owner_automatic'] ? 'pendingAutomatic' : 'pendingManual';
+			case 'Ready':
+				return 'ready';
+			case 'Failed':
+				return 'failed';
+			default:
+				return 'notRequested';
+		}
+	}
+
+	/**
+	 * The domain page of the console of the connected site (or of this install).
+	 *
+	 * @return string
+	 */
+	private static function console_domain_url() {
+		$link   = Link::summary();
+		$origin = ( null !== $link && '' !== $link['app_origin'] ) ? $link['app_origin'] : Build_Config::app_origin();
+		return $origin . '/app/short-rent/settings/domain';
 	}
 
 	/**
