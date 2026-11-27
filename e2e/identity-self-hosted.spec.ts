@@ -15,24 +15,26 @@ import { LOCK_CODE, PRESENCE_PLAN, mockIdentityApi, type IdentityApiMock, type I
  * the size, the touch and the pixel ratio of the device in the engine of the suite (Chromium): it is not a substitute for the device, which is a row of the manual QA matrix (D12).
  */
 
-const italian: unknown = JSON.parse(readFileSync(resolve(process.cwd(), 'src/i18n/locales/it.json'), 'utf8'));
+/** The Italian texts of the page, read when a test first needs a word (a text that is not there fails the test that asks for it, not the loading of the file). */
+let italian: unknown;
 
 /** What the guest page says for `key` in Italian. */
 function words(key: string): string {
+  italian ??= JSON.parse(readFileSync(resolve(process.cwd(), 'src/i18n/locales/it.json'), 'utf8'));
   let node: unknown = italian;
   for (const part of key.split('.')) node = typeof node === 'object' && node !== null ? (node as Record<string, unknown>)[part] : undefined;
   if (typeof node !== 'string') throw new Error(`The Italian text ${key} does not exist`);
   return node;
 }
 
-/** What each move of the challenge is asked as (`PresenceSequenceCapture`: the guest looks at a mirror, so `turn_left` is asked as «turn to the right»). */
-const MOVE_WORDS: Record<(typeof PRESENCE_PLAN.steps)[number], string> = {
-  turn_left: words('checkin.identity.presence.move.turnToTheRight'),
-  look_up: words('checkin.identity.presence.move.lookUp'),
-};
-
-/** The prompts a recording shows, in order: the lead-in and then each move. */
-const PROMPTS = [words('checkin.identity.presence.leadIn'), ...PRESENCE_PLAN.steps.map((move) => MOVE_WORDS[move])];
+/** The prompts a recording shows, in order: the lead-in and then each move. The guest looks at a mirror (`PresenceSequenceCapture`), so `turn_left` is asked as «turn to the right». */
+function expectedPrompts(): string[] {
+  const asked: Record<(typeof PRESENCE_PLAN.steps)[number], string> = {
+    turn_left: words('checkin.identity.presence.move.turnToTheRight'),
+    look_up: words('checkin.identity.presence.move.lookUp'),
+  };
+  return [words('checkin.identity.presence.leadIn'), ...PRESENCE_PLAN.steps.map((move) => asked[move])];
+}
 
 /** The first time the page is opened the dev server has to compile what it shows: every wait for a step of the page is generous. */
 const FIRST = { timeout: 20_000 };
@@ -49,7 +51,10 @@ async function expectStage(page: Page, stage: string): Promise<void> {
   await expect(stepOf(page)).toHaveAttribute('data-stage', stage, FIRST);
 }
 
-/** The camera of the presence is open and the challenge is there: the guest may start. */
+/**
+ * The camera of the presence is open and the challenge is there: the guest may start. The challenges the mock has issued are counted from here and never as an absolute number: the dev server runs React
+ * StrictMode, which opens a screen twice, so the screen of the presence asks for its first challenge twice (and drops the first answer).
+ */
 async function expectReadyToRecord(page: Page): Promise<void> {
   await expect(presenceOf(page)).toHaveAttribute('data-phase', 'ready', FIRST);
 }
@@ -58,6 +63,7 @@ async function expectReadyToRecord(page: Page): Promise<void> {
 async function startRecording(page: Page): Promise<void> {
   await expectReadyToRecord(page);
   await page.getByTestId('checkin-presence-start').click();
+  await expect(presenceOf(page)).toHaveAttribute('data-phase', 'recording', FIRST);
 }
 
 /** The photo of a side of the document, chosen from the files of the phone (the second way next to the guided camera): text that stands for a picture, never a picture. */
@@ -176,8 +182,7 @@ async function screenTurnsDuringTheRecording(page: Page): Promise<void> {
 
   await expectReadyToRecord(page);
   const challengesBefore = identity.challenges().length;
-  await page.getByTestId('checkin-presence-start').click();
-  await expect(presenceOf(page)).toHaveAttribute('data-phase', 'recording', FIRST);
+  await startRecording(page);
 
   const size = page.viewportSize();
   if (!size) throw new Error('The page has no viewport to turn');
@@ -192,7 +197,7 @@ async function screenTurnsDuringTheRecording(page: Page): Promise<void> {
   expect(identity.calls('presence')).toHaveLength(0);
 
   // The guest records again, and what is sent answers the new challenge.
-  await page.getByTestId('checkin-presence-start').click();
+  await startRecording(page);
   await expect(page.getByTestId('identity-result-ok')).toBeVisible(AFTER_RECORDING);
   const uploads = identity.calls('presence');
   expect(uploads).toHaveLength(1);
@@ -257,7 +262,8 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
     await expect(page.getByTestId('identity-lock-code')).toHaveText(LOCK_CODE);
 
     // The prompts came in order, and what was sent is one recording with its times and its key.
-    expect((await prompts()).filter((text) => PROMPTS.includes(text))).toEqual(PROMPTS);
+    const expected = expectedPrompts();
+    expect((await prompts()).filter((text) => expected.includes(text))).toEqual(expected);
     const uploads = identity.calls('presence');
     expect(uploads).toHaveLength(1);
     expectARecording(uploads[0]);
@@ -312,6 +318,7 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
   });
 
   test('(c) a camera the guest refuses: the step says why, offers the person and asks for one', async ({ page }) => {
+    test.slow();
     const identity = await mockIdentityApi(page, { startAt: 'presence' });
     await installFakeCamera(page, { denied: true });
     await page.goto(identity.entry);
@@ -344,7 +351,7 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
     await connectionBreaksDuringTheUpload(page);
   });
 
-  test('(e) a double tap on the shutter and on the start button sends one photo and one recording', async ({ page }) => {
+  test('(e) a double tap on the shutter sends one photo', async ({ page }) => {
     test.slow();
     const identity = await mockIdentityApi(page, { startAt: 'document', documentDelayMs: 600 });
     await installFakeCamera(page);
@@ -362,14 +369,41 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
     await expect(shutter).toBeEnabled(FIRST);
     await shutter.click();
     await expectStage(page, 'presence');
-    expect(identity.calls('document')).toHaveLength(2);
+    expect(identity.calls('document').map((call) => call.fields.side)).toEqual(['front', 'back']);
+    await expect(page.getByTestId('checkin-identity-problem')).toHaveCount(0);
+    await expectTheCameraReleased(page);
+  });
+
+  test('(e) a double tap on «Invia di nuovo» sends the recording that was kept once, with the same key', async ({ page }) => {
+    test.slow();
+    // The upload is tried four times (at once, then after 1, 2 and 4 seconds) and fails each time; the fifth request, the one the guest asks for, is answered.
+    const identity = await mockIdentityApi(page, { startAt: 'presence', presence: ['abort', 'abort', 'abort', 'abort', 'ok'] });
+    await installFakeCamera(page);
+    await page.goto(identity.entry);
 
     await expectReadyToRecord(page);
     const challengesBefore = identity.challenges().length;
-    await page.getByTestId('checkin-presence-start').dblclick();
+    await startRecording(page);
+
+    // The recording is kept in memory, the guest is told why, and nothing is asked of them again but the one tap.
+    const kept = page.getByTestId('checkin-presence-kept');
+    await expect(kept).toBeVisible(AFTER_RECORDING);
+    await expect(kept).toHaveAttribute('data-problem', 'network');
+    await expect(kept).toContainText(words('checkin.identity.presence.kept.offline'));
+    expect(identity.calls('presence')).toHaveLength(4);
+
+    await page.getByTestId('checkin-presence-send-again').dblclick();
     await expect(page.getByTestId('identity-result-ok')).toBeVisible(AFTER_RECORDING);
-    expect(identity.calls('presence')).toHaveLength(1);
+
+    const uploads = identity.calls('presence');
+    expect(uploads.map((upload) => upload.outcome)).toEqual(['aborted', 'aborted', 'aborted', 'aborted', 'answered']);
+    uploads.forEach(expectARecording);
+    // The same recording every time: one key, one challenge, the very same frames. The second tap of the double tap sent nothing.
+    expect(new Set(uploads.map((upload) => upload.headers['idempotency-key'])).size).toBe(1);
+    expect(new Set(uploads.map((upload) => upload.fields.challengeToken)).size).toBe(1);
+    expect(new Set(uploads.map((upload) => upload.framesDigest)).size).toBe(1);
     expect(identity.challenges()).toHaveLength(challengesBefore);
+    await expect(page.getByTestId('checkin-identity-problem')).toHaveCount(0);
     await expectTheCameraReleased(page);
   });
 
@@ -427,6 +461,7 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
   });
 
   test('(g) at the notice the person is a choice of the same weight: choosing it records no consent, opens no camera and hands the case to a person', async ({ page }) => {
+    test.slow();
     const identity = await mockIdentityApi(page);
     await installFakeCamera(page);
     await page.goto(identity.entry);
@@ -450,6 +485,7 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
   });
 
   test('(h) the first step reads the front locally and offers the values to check, and leaves the identity routes alone', async ({ page }) => {
+    test.slow();
     const identity = await mockIdentityApi(page);
     await page.goto(identity.link);
 

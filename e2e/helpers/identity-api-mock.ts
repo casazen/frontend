@@ -75,7 +75,7 @@ export interface IdentityCall {
   fields: Record<string, string>;
   /** The JSON body, for a call that sends one. */
   json: unknown;
-  /** Every picture part of the body starts with the marker of a JPEG. */
+  /** Every picture part of the body that came with its bytes starts with the marker of a JPEG. */
   picturesAreJpeg: boolean;
   /** The SHA-256 of the `frames` parts, one after the other: two requests with the same one carry the same recording. `null` for a body with no frames. */
   framesDigest: string | null;
@@ -168,8 +168,8 @@ function writeDown(request: Request, endpoint: string): IdentityCall {
         call.fields[part.name] = part.content.toString('utf8');
         continue;
       }
-      // A picture: a JPEG begins with the bytes FF D8. A fixture file of a proof that is not a JPEG says so here.
-      if (part.content.length < 2 || part.content[0] !== 0xff || part.content[1] !== 0xd8) call.picturesAreJpeg = false;
+      // A picture: a JPEG begins with the bytes FF D8. A fixture file of a proof that is not a JPEG says so here. A part that comes with no bytes says nothing: how much of a blob the test runner hands over is its business.
+      if (part.content.length >= 2 && (part.content[0] !== 0xff || part.content[1] !== 0xd8)) call.picturesAreJpeg = false;
       if (part.name === 'frames') {
         frames.update(part.content);
         sawFrames = true;
@@ -299,7 +299,8 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
       expiresAt: new Date(Date.now() + 120_000).toISOString(),
       targetFps: 8,
       maxFrames: 40,
-      maxFrameSide: 320,
+      // Small frames: the proof is about the sequence and not about the pictures, and a recording of a couple of dozen of them stays a few tens of kilobytes.
+      maxFrameSide: 160,
     };
   };
 
