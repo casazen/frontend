@@ -739,8 +739,8 @@ describe('presence-resilience: an expired challenge is renewed (AC4)', () => {
     expect(publicCheckinApi.startPresenceChallenge).toHaveBeenCalledTimes(1);
   });
 
-  it('PresenceSequenceCapture_TheRenewalFails_SaysSoAndTheGuestTriesAgain', async () => {
-    stubCamera();
+  it('PresenceSequenceCapture_TheRenewalFails_SaysSoStopsTheCameraAndTheGuestTriesAgain', async () => {
+    const rig = stubCamera();
     vi.mocked(publicCheckinApi.startPresenceChallenge)
       .mockResolvedValueOnce(challengeBody({ expiresAt: new Date(Date.now() + 1_000).toISOString() }))
       .mockRejectedValueOnce(networkError());
@@ -750,6 +750,41 @@ describe('presence-resilience: an expired challenge is renewed (AC4)', () => {
     expect(phase()).toBe('failed');
     expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text('checkin.identity.problem.network'));
     expect(screen.getByTestId('checkin-presence-retry')).toBeEnabled();
+    // The camera that was open for a recording that did not start is not left on behind the failure.
+    expect(rig.stop).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('checkin-presence-video')).toHaveProperty('srcObject', null);
+
+    // The next try opens it again.
+    fireEvent.click(screen.getByTestId('checkin-presence-retry'));
+    await waitForTheStart();
+    expect(rig.getUserMedia).toHaveBeenCalledTimes(2);
+  });
+
+  it('IdentityStep_TheNewChallengeAfterATurnFails_StopsTheCameraThatWasLeftOpenAndTheGuestTriesAgain', async () => {
+    const rig = stubCamera();
+    vi.mocked(publicCheckinApi.startPresenceChallenge)
+      .mockResolvedValueOnce(challengeBody({ challengeToken: 'challenge-1' }))
+      .mockRejectedValueOnce(networkError());
+    renderStep();
+    await startRecording();
+    await advance(700);
+
+    setScreen(480, 900);
+    await settle();
+
+    expect(phase()).toBe('failed');
+    expect(screen.getByTestId('checkin-presence-notice')).toHaveAttribute('data-notice', 'rotated');
+    expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text('checkin.identity.problem.network'));
+    // The turn kept the camera open for a new recording and the new challenge did not come: the camera goes with the failure, and what was taken before the turn is not kept.
+    expect(rig.stop).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('checkin-presence-video')).toHaveProperty('srcObject', null);
+    expect(canvas().width).toBe(0);
+
+    setScreen(1024, 768);
+    fireEvent.click(screen.getByTestId('checkin-presence-retry'));
+    await waitForTheStart();
+    expect(rig.getUserMedia).toHaveBeenCalledTimes(2);
+    expect(publicCheckinApi.postPresence).not.toHaveBeenCalled();
   });
 
   it('IdentityStep_TheServerSaysTheChallengeExpired_StartsAgainWithANewChallengeANewKeyAndANewRecording', async () => {

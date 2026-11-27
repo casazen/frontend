@@ -375,6 +375,8 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
         const asked = await latest.current.startChallenge(isCurrent);
         if (!isCurrent() || asked.kind === 'stale' || asked.kind === 'moved') return;
         if (asked.kind === 'failed') {
+          // A camera that stays open while the screen says it did not work (a turn of the phone left it open) is let go: the next try opens it again.
+          stopCamera();
           dispatch({ type: 'failed' });
           return;
         }
@@ -391,7 +393,7 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
       }
       dispatch({ type: 'ready' });
     },
-    [openCamera],
+    [openCamera, stopCamera],
   );
 
   /**
@@ -517,6 +519,8 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
         const asked = await latest.current.startChallenge(isCurrent);
         if (!isCurrent() || asked.kind === 'stale' || asked.kind === 'moved') return;
         if (asked.kind === 'failed') {
+          // The camera was open for the recording that did not start: it is let go with the failure, and the next try opens it again (`prepare`).
+          stopCamera();
           dispatch({ type: 'failed' });
           return;
         }
