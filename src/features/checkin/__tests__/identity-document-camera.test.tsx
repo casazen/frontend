@@ -825,8 +825,9 @@ describe('identity-document-camera: inside the identity step of a self-hosted ve
 
     expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(2);
     expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'selfie');
-    // The step is over: the camera was not opened once more for a photo nobody asks for, and the one that was open is stopped.
-    expect(rig.getUserMedia).toHaveBeenCalledTimes(1);
+    // The document is done: the rear camera was not opened once more for a photo nobody asks for (the front camera of the selfie, which comes next, is another call), and the one that was open is stopped.
+    const rearCameraCalls = rig.getUserMedia.mock.calls.filter(([constraints]) => (constraints as { video: { facingMode: string } }).video.facingMode === 'environment');
+    expect(rearCameraCalls).toHaveLength(1);
     expect(screen.queryByTestId('checkin-identity-camera')).not.toBeInTheDocument();
     expect(rig.stop).toHaveBeenCalled();
   });
