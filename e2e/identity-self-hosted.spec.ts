@@ -114,7 +114,8 @@ function listenToTheConsole(page: Page): string[] {
 async function expectNothingKept(page: Page, said: string[], secrets: string[]): Promise<void> {
   const stored = await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }));
   const everything = [stored, said.join('\n'), page.url()].join('\n');
-  expect(everything).not.toContain('data:image');
+  // «/9j/» is how a JPEG starts in base64.
+  for (const marker of ['data:image', 'blob:', '/9j/']) expect(everything).not.toContain(marker);
   for (const secret of secrets) expect(everything).not.toContain(secret);
 }
 
