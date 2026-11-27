@@ -1,12 +1,13 @@
 ---
 id: area-fornitore
 titolo: Area Fornitori, richieste, agenda, servizi e incassi
+menu: Area fornitore
 sezione: Fornitori e marketplace
 ordine: 71
 riassunto: Come un fornitore (pulizie, idraulico, elettricista…) attiva il profilo, riceve e accetta le richieste dei gestori, tiene l'agenda, scrive servizi e prezzi, conosce i suoi clienti e si fa pagare.
 chi: [fornitore]
 dove: Area Fornitori (Dashboard, Richieste, Disponibilità, Servizi e prezzi, Clienti, Impostazioni, Profilo)
-parole_chiave: [fornitore, attivazione, richieste, preventivo, accettare, rifiutare, riserva, agenda, disponibilità, orari, iCal, calendario, servizi e prezzi, clienti, incassi, commissione, Stripe, profilo, termini di servizio]
+parole_chiave: [fornitore, registrarsi, iscrizione, invito, senza invito, attivazione, primo lavoro, richieste, preventivo, accettare, rifiutare, riserva, agenda, orari, iCal, servizi e prezzi, clienti, incassi, commissione, Stripe, partita IVA, verificato, profilo, ragione sociale, termini di servizio]
 copre: [/app/supplier/dashboard, /app/supplier/inbox, /app/supplier/inbox/:id, /app/supplier/availability, /app/supplier/calendar, /app/supplier/services, /app/supplier/services/new, /app/supplier/services/:id, /app/supplier/clients, /app/supplier/settings, /app/supplier/earnings, /app/supplier/profile, /app/supplier/help/ical, /app/supplier/activation, /register, /register/claim]
 stato: disponibile
 fonte_codice: [frontend/src/features/supplier/supplier-dashboard-page.tsx, frontend/src/features/supplier/supplier-inbox-page.tsx, frontend/src/features/supplier/supplier-request-detail-page.tsx, frontend/src/features/supplier/requests/request-parts.tsx, frontend/src/features/supplier/requests/use-request-actions.tsx, frontend/src/features/supplier/supplier-availability-page.tsx, frontend/src/features/supplier/supplier-calendar-sync-page.tsx, frontend/src/features/supplier/ical-help-page.tsx, frontend/src/features/supplier/services/supplier-services-page.tsx, frontend/src/features/supplier/services/supplier-service-wizard-page.tsx, frontend/src/features/supplier/services/supplier-service-detail-page.tsx, frontend/src/features/supplier/clients/supplier-clients-page.tsx, frontend/src/features/supplier/earnings/supplier-earnings-page.tsx, frontend/src/features/supplier/settings/supplier-settings-page.tsx, frontend/src/features/supplier/settings/auto-accept-section.tsx, frontend/src/features/supplier/supplier-profile-page.tsx, frontend/src/features/supplier/supplier-activation-page.tsx, frontend/src/pages/supplier-register-page.tsx, frontend/src/pages/supplier-claim-page.tsx, backend/Casazen.Core/Options/ServiceRequestOptions.cs, backend/Casazen.Core/Options/SupplierPaymentsOptions.cs, backend/Casazen.Core/Entities/Enums/SupplierStatus.cs]
@@ -15,12 +16,16 @@ fonte_codice: [frontend/src/features/supplier/supplier-dashboard-page.tsx, front
 ## In breve
 L'**area Fornitori** è lo spazio di chi offre servizi alle case dei gestori: pulizie, idraulico, elettricista, manutenzione e altro. Qui attivi il tuo profilo, scegli quando lavori, scrivi i tuoi servizi con i prezzi e rispondi alle richieste che arrivano dai gestori (e, dove è attivo, dai clienti della tua vetrina).
 
-Il giro tipico è: ti registri dall'invito, **attivi il profilo** (cinque passi), imposti **orari** e **servizi**, e da quel momento i gestori della tua zona ti trovano. Ogni richiesta ha un tempo per la risposta: tu accetti, rifiuti o mandi un preventivo. A lavoro finito segni «Completato» e, dove i pagamenti online sono attivi, ti fai pagare dentro CasaZen.
+Il giro tipico è: ti registri (con un invito oppure, dove è aperta, da solo: [[area-fornitore#registrarsi-come-fornitore-senza-invito]]), **attivi il profilo** (cinque passi), imposti **orari** e **servizi** e, se vuoi, pubblichi la **vetrina**. Solo così i gestori della tua zona possono scegliere con te un orario libero: l'ordine completo è in [[area-fornitore#ricevere-il-primo-lavoro]]. Ogni richiesta ha un tempo per la risposta: tu accetti, rifiuti o mandi un preventivo. A lavoro finito segni «Completato» e, dove i pagamenti online sono attivi, ti fai pagare dentro CasaZen.
+
+**Da telefono:** l'area Fornitori si usa anche dal browser del telefono. L'app «CasaZen» per telefono (in arrivo) copre richieste, lavori, foto, pagamento e orari; il resto resta sul sito ([[app-mobile]]).
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
 |---|---|---|---|---|---|
 | Registrazione su invito | Crea il tuo profilo fornitore dal link ricevuto per e-mail | Link dell'invito | fornitore | Disponibile | Registrarsi con un invito |
+| Registrazione senza invito | Crea da solo il tuo profilo fornitore, dove la registrazione libera è aperta; altrimenti ti dice come avere un invito | Scelta del profilo › «Fornitore di servizi» | fornitore | Su attivazione | Registrarsi come fornitore senza invito |
+| Primo lavoro | L'ordine dei passi dalla registrazione alla prima richiesta | Area Fornitori | fornitore | Disponibile | Ricevere il primo lavoro |
 | Collega il tuo profilo | Collega il profilo già registrato al tuo account | Pagina «Collega il tuo profilo fornitore» | fornitore | Disponibile | Registrarsi con un invito |
 | Attivazione del profilo | Cinque passi per comparire ai gestori | Attivazione | fornitore | Disponibile | Attivare il profilo |
 | Dashboard | Le cose da fare, la giornata e i tuoi numeri | Dashboard | fornitore | Disponibile | Leggere la Dashboard |
@@ -47,7 +52,7 @@ Il giro tipico è: ti registri dall'invito, **attivi il profilo** (cinque passi)
 Il tuo profilo ha tre stati:
 - **In attesa**: il profilo esiste ma non hai finito l'attivazione. I gestori **non** ti vedono.
 - **Attivo**: hai completato l'attivazione e accettato i Termini di Servizio. Compari nella ricerca dei gestori («Visibile ai host nella ricerca»).
-- **Sospeso**: uno staff di CasaZen ha sospeso l'account. Non ricevi nuove richieste e non puoi accettare, completare o rifiutare quelle esistenti. Per riattivarlo scrivi al supporto CasaZen.
+- **Sospeso**: uno staff di CasaZen ha sospeso l'account. Non ricevi nuove richieste e non puoi accettare, completare o rifiutare quelle esistenti. Per riattivarlo scrivi all'assistenza di CasaZen: in alto premi **Guida** e scegli «Scrivi all'assistenza» ([[per-iniziare#assistenza-come-scrivere-a-casazen]]).
 
 Se CasaZen aggiorna i **Termini di Servizio**, compare un avviso «Accetta la nuova versione dei Termini di Servizio»: finché non accetti non puoi accettare, completare o rifiutare incarichi.
 
@@ -59,7 +64,7 @@ Le richieste arrivano da due strade:
 **Prima di accettare** vedi: tipo di lavoro, urgenza, giorno e orario, il comune («Indirizzo dopo che accetti») e il prezzo. **Dopo che accetti** vedi l'indirizzo completo e i contatti del cliente (nome, telefono, e-mail). Se la richiesta è chiusa, i dati del cliente non sono più disponibili.
 
 ### Il tempo per rispondere
-Ogni richiesta ha un tempo limite, scritto nella richiesta («Rispondi entro le 14:30»). Per impostazione predefinita un gestore aspetta **due ore**; se ha chiesto anche ad altri fornitori di riserva, il fornitore scelto ha **un'ora**. Se nessuno risponde in tempo la richiesta può essere annullata da CasaZen («Nessuno ha risposto in tempo»). La risposta più rapida migliora il tuo «Tempo di risposta» (lo vedi in Dashboard e i gestori lo vedono sulla tua scheda come «Risponde in genere entro…»).
+Ogni richiesta ha un tempo limite, scritto nella richiesta («Rispondi entro le 14:30»). Per impostazione predefinita un gestore aspetta **due ore**; se ha chiesto anche ad altri fornitori di riserva, il fornitore scelto ha **un'ora**. Dove l'annullamento automatico è attivo ([[per-iniziare#cosa-significa-su-attivazione]]: lo accende CasaZen), passato il tempo CasaZen annulla la richiesta e avvisa te e il gestore («Nessuno ha risposto in tempo»); dove non è attivo, la richiesta resta aperta finché non rispondi o il gestore non la annulla. In ogni caso il gestore sta aspettando: rispondi appena puoi. La risposta più rapida migliora il tuo «Tempo di risposta» (lo vedi in Dashboard e i gestori lo vedono sulla tua scheda come «Risponde in genere entro…»).
 
 ### Gli stati di una richiesta, dal tuo punto di vista
 | Stato | Cosa fai tu |
@@ -115,21 +120,51 @@ Dove i pagamenti online sono attivi, in **Incassi** leggi la regola che vale per
 Se il cliente, il gestore o CasaZen segnalano un problema (lavoro non fatto, incompleto, non come descritto, qualità non attesa, altro motivo) vedi una **segnalazione** nella richiesta. Il pagamento resta **trattenuto da CasaZen**. Hai **48 ore** per rispondere, **una volta sola**, in testo semplice, scrivendo i fatti (cosa hai fatto, quando, cosa è successo). Se non rispondi la segnalazione passa comunque al team CasaZen, che decide; puoi rispondere anche dopo, finché CasaZen non ha deciso. Esiti: «Risolta a tuo favore» (il pagamento non viene rimborsato), «Risolta a favore del cliente» (con rimborso totale o parziale) o «Ritirata dal cliente». Un esito a favore del cliente può pesare sulla tua posizione di fornitore. Se nessuno segna il lavoro come completato e l'orario previsto è passato, CasaZen può aprire la segnalazione da solo.
 
 ### Dove sono i dati del cliente
-Telefono ed e-mail del cliente li vedi solo **dopo che accetti** («Il contatto compare dopo che hai preso un lavoro di questo cliente»). I tuoi dati: gli host vedono il tuo telefono solo quando prendi in carico un incarico.
+Telefono ed e-mail del cliente li vedi solo **dopo che accetti** («Il contatto compare dopo che hai preso un lavoro di questo cliente»). I tuoi dati: il telefono e l'e-mail del tuo profilo li vedono i gestori che aprono la tua scheda nel Marketplace (sezione «Contatti»); l'indirizzo e i contatti del cliente, invece, li vedi tu solo dopo che accetti.
 
 ## Come fare
 
 ### Registrarsi con un invito
+**Ti serve:** il link dell'invito (arriva per e-mail, ha una scadenza e si usa una sola volta) e l'indirizzo e-mail a cui è arrivato. Va bene dal computer o dal telefono.
 1. Apri il link dell'**invito** che ti è arrivato per e-mail. La pagina mostra «Invito per [tua e-mail]», il comune e fino a quando vale («Valido fino al…», ora italiana).
 2. Premi «Crea account e accetta l'invito». Se hai già un account con la stessa e-mail, premi «Ho già un account: accedi».
 3. L'e-mail dell'account deve essere **quella dell'invito**: se sei entrato con un'altra, la pagina te lo dice («Accedi con l'email invitata»).
-4. Finita la registrazione si apre l'**attivazione del profilo**.
+4. Finita la registrazione si apre l'**attivazione del profilo** ([[area-fornitore#attivare-il-profilo]]).
 
-Se il link non funziona (invito scaduto, già usato o annullato) la pagina lo dice: serve un nuovo invito. Senza invito, la registrazione libera è disponibile solo dove CasaZen l'ha aperta; altrimenti leggi «Al momento i fornitori entrano in CasaZen solo su invito».
+Se il link non funziona (invito scaduto, già usato o annullato) la pagina lo dice: serve un nuovo invito, chiedilo a chi te lo aveva mandato. Se non hai nessun invito, vedi «Registrarsi come fornitore senza invito».
 
 > **Se hai già registrato il profilo con la stessa e-mail** e crei l'account dopo, la pagina «Collega il tuo profilo fornitore» lo collega: usa «Crea account» o «Ho già un account: accedi» con **la stessa e-mail**. Se l'e-mail non è verificata, apri il link che ti abbiamo inviato e poi premi «Riprova».
 
+### Registrarsi come fornitore senza invito
+**Ti serve:** un indirizzo e-mail a cui hai accesso, il nome della tua attività (o il tuo, se lavori in proprio), un numero di telefono e il comune principale in cui lavori. Va bene dal computer o dal telefono.
+
+> **Attenzione:** il sito pubblico di CasaZen dice che per ora l'accesso è solo su invito e non ha un pulsante di registrazione. La registrazione libera dei fornitori c'è solo dove CasaZen l'ha aperta (su attivazione: [[per-iniziare#cosa-significa-su-attivazione]]). Se la pagina «Registrazione fornitore» dice «Registrazione su invito», è chiusa: usa la strada B o la strada C.
+
+**Strada A: registrazione libera (dove è aperta)**
+1. Crea il tuo account CasaZen ([[per-iniziare#creare-il-tuo-account-e-la-tua-attivita]]) e, nella scelta del profilo, premi «Fornitore di servizi»: si apre la pagina «Registrazione fornitore». Se l'account c'è già, la stessa scelta compare nella domanda «Offri servizi agli host (pulizie, manutenzione, check-in…)?» con «Registra la tua attività come fornitore».
+2. Se leggi «Registrazione su invito» («Al momento i fornitori entrano in CasaZen solo su invito…»), la registrazione libera è chiusa: passa alla strada B o C.
+3. Compila «Email», «Comune» (cercalo e scegli dall'elenco), «Nome attività / Ragione sociale» e «Telefono». Premi «Completa la registrazione».
+4. Compare «Registrazione completata». Premi «Crea il tuo account» con **la stessa e-mail** oppure, se l'account ce l'hai già, «Ho già un account: accedi»: il profilo si collega al tuo account.
+5. Si apre l'attivazione del profilo ([[area-fornitore#attivare-il-profilo]]). Finché non la completi i gestori non ti vedono.
+
+**Strada B: chiedi l'invito a un gestore.** Se lavori già per un gestore che usa CasaZen, chiedigli di invitarti con la tua e-mail. Può farlo solo se la sua organizzazione ha «Fornitori fidati» ([[marketplace#invitare-un-fornitore-di-fiducia]]). Ti arriva un'e-mail con il link: poi segui «Registrarsi con un invito».
+
+**Strada C: chiedi l'invito a CasaZen.** Sul sito pubblico di CasaZen (anche nella pagina «Per i fornitori») premi «Richiedi un invito»: si apre un'e-mail già compilata, con oggetto «Richiesta di invito a CasaZen». Inviala tu: da sola non parte nulla. Il pulsante c'è solo se il sito ha un indirizzo di contatto. Quanto tempo impiega CasaZen a risponderti non è scritto nell'app. Altri dettagli: [[per-iniziare#ottenere-un-invito-a-casazen]].
+
+### Ricevere il primo lavoro
+**Ti serve:** l'accesso come fornitore (vedi sopra), i dati della tua attività, i comuni e le categorie in cui lavori, i tuoi orari e il prezzo dei servizi che offri. Per farti pagare dentro CasaZen serve anche un conto bancario (IBAN). Lo stesso ordine vale dal telefono e dal computer.
+1. **Registrati**: [[area-fornitore#registrarsi-con-un-invito]] oppure [[area-fornitore#registrarsi-come-fornitore-senza-invito]].
+2. **Attiva il profilo** (cinque passi): [[area-fornitore#attivare-il-profilo]]. Da qui il tuo profilo è attivo, ma non basta.
+3. **Imposta gli orari di lavoro**: [[area-fornitore#impostare-gli-orari-di-lavoro]]. Senza orari il gestore non trova nessun orario libero da scegliere.
+4. **Crea e pubblica almeno un servizio con il prezzo**: [[area-fornitore#creare-un-servizio]]. È il servizio che il gestore sceglie nella richiesta.
+5. Facoltativo: collega il tuo calendario ([[area-fornitore#collegare-il-calendario-ical]]), perché i tuoi impegni chiudano le ore.
+6. Facoltativo: pubblica la vetrina, una pagina da condividere con i clienti ([[vetrina-fornitore#creare-e-pubblicare-la-vetrina]]).
+7. Dove i pagamenti online sono attivi: collega il conto per i pagamenti ([[area-fornitore#collegare-il-conto-per-i-pagamenti]]).
+8. Aspetta una richiesta. Quando un gestore ti sceglie arriva un avviso e la trovi in **Richieste › Da rispondere**, con l'ora entro cui rispondere ([[area-fornitore#rispondere-a-una-richiesta]]).
+
+Se dopo qualche giorno non arriva nulla, controlla «Perché i gestori non mi trovano?» nelle domande frequenti.
 ### Attivare il profilo
+**Ti serve:** la ragione sociale (o il tuo nome), un numero di telefono, il comune e le categorie in cui lavori e due righe su di te; facoltative le prime foto e la partita IVA (serve per il «Verificato»). Ci vogliono pochi minuti e i progressi si salvano.
 1. Apri **Attivazione** (si apre da solo dopo la registrazione). Vedi «Passo 1 di 5». I progressi si salvano: puoi interrompere e riprendere.
 2. **«Dati dell'attività»** («Chi sei?»): ragione sociale, telefono (con il prefisso se non italiano) e, se vuoi, la partita IVA.
 3. **«Servizi e comuni»**: scegli almeno una **categoria di servizio** e almeno un **comune** in cui lavori, cercandolo nell'elenco ufficiale.
@@ -137,6 +172,8 @@ Se il link non funziona (invito scaduto, già usato o annullato) la pagina lo di
 5. **«Presentazione»**: scrivi chi sei e cosa fai. Lo leggono i gestori quando ti scelgono.
 6. **«Termini e attivazione»**: leggi i Termini di Servizio, spunta «Accetto i Termini di Servizio di CasaZen…» e premi «Attiva profilo».
 7. Compare «Profilo fornitore attivato: da ora gli host possono trovarti».
+
+> **Non hai ancora finito:** per ricevere richieste vere imposta gli orari di lavoro ([[area-fornitore#impostare-gli-orari-di-lavoro]]) e crea il primo servizio con il prezzo ([[area-fornitore#creare-un-servizio]]). Senza, il gestore non trova nessun orario libero da scegliere.
 
 Se manca qualcosa, nel riepilogo «Prima di attivare» leggi cosa: la ragione sociale, un telefono valido, almeno una categoria, almeno un comune, la descrizione, i Termini; con «Vai al passo…» ci torni.
 
@@ -224,6 +261,7 @@ Un servizio **bozza** lo vedi solo tu; uno **pubblicato** è in elenco; uno **in
 ### Collegare il conto per i pagamenti
 > **Su attivazione:** finché i pagamenti online non sono attivi leggi «I pagamenti online non sono ancora attivi».
 
+**Ti serve:** i dati della tua attività (ragione sociale e, se ce l'hai, partita IVA), un documento d'identità e l'IBAN del conto su cui vuoi ricevere i soldi. L'elenco preciso e i tempi di verifica li decide Stripe, il servizio che gestisce i pagamenti. Puoi fermarti e riprendere più tardi.
 1. Apri **Impostazioni › Pagamenti**. Leggi lo stato: «Collega il conto per ricevere i pagamenti online».
 2. Premi «Collega il conto»: ti porta su **Stripe**, dove inserisci i dati della tua attività e il conto su cui ricevere i soldi. CasaZen non vede né conserva i tuoi dati bancari.
 3. Tornando, lo stato può essere «Stripe sta verificando i tuoi dati» (premi «Controlla di nuovo») o «Manca ancora qualcosa» (premi «Riprendi la configurazione»; se il link è scaduto ne ottieni uno nuovo).
@@ -257,7 +295,7 @@ L'incasso registrato fuori **non si può annullare**: il cliente riceve un avvis
 2. Cambia «Dati dell'attività» (ragione sociale, telefono, partita IVA), la «Presentazione», «Servizi e zona», gli orari e le «Foto del tuo lavoro» (JPEG, PNG o WebP fino a 5 MB: si salvano appena le carichi o le sposti).
 3. Premi «Salva i dati». Compare «Dati salvati».
 
-L'e-mail dell'account non si cambia da qui: per cambiarla scrivi al supporto.
+L'e-mail dell'account non si cambia da qui: per cambiarla scrivi all'assistenza di CasaZen ([[per-iniziare#assistenza-come-scrivere-a-casazen]]).
 
 ## Flussi completi
 
@@ -287,6 +325,7 @@ L'e-mail dell'account non si cambia da qui: per cambiarla scrivi al supporto.
 
 ## Regole e limiti
 - Un profilo **non attivo** non compare ai gestori; uno **sospeso** non riceve né gestisce richieste.
+- **Registrazione**: con un invito (si usa una volta sola, con la stessa e-mail con cui è stato mandato); senza invito solo dove CasaZen ha aperto la registrazione libera dei fornitori.
 - Il tempo per rispondere è **due ore** per impostazione predefinita; **un'ora** per il fornitore scelto quando ci sono riserve (poi un'altra ora di gara tra le riserve).
 - Il motivo del rifiuto o dell'annullamento è visibile al cliente: massimo 500 caratteri.
 - Una **riserva** non ha penalità se il primo fornitore accetta.
@@ -310,7 +349,7 @@ Controlla che il profilo sia **Attivo**, di aver scelto almeno un **comune** e u
 Sì, con «Rifiuta» e il motivo. Il cliente lo legge e può scegliere un altro fornitore.
 
 ### Cosa succede se non rispondo in tempo?
-La richiesta può passare a una riserva (dove attive) o essere annullata da CasaZen («Nessuno ha risposto in tempo»). L'ordine in cui i gestori ti vedono tiene conto di affidabilità e disponibilità: rispondere in tempo ti aiuta.
+La richiesta può passare a una riserva (dove attive) oppure, dove l'annullamento automatico è attivo, essere annullata da CasaZen («Nessuno ha risposto in tempo»). L'ordine in cui i gestori ti vedono tiene conto di affidabilità e disponibilità: rispondere in tempo ti aiuta.
 
 ### Perché non vedo l'indirizzo del cliente?
 Lo vedi solo dopo che accetti la richiesta.
@@ -319,10 +358,16 @@ Lo vedi solo dopo che accetti la richiesta.
 In **Incassi** leggi la regola che vale per te (percentuale, periodo gratuito o nessuna commissione). Sui lavori pagati fuori da CasaZen non trattiene nulla.
 
 ### Posso cambiare l'e-mail del mio account?
-Non da qui: scrivi al supporto CasaZen.
+Non da qui: scrivi all'assistenza di CasaZen ([[per-iniziare#assistenza-come-scrivere-a-casazen]]).
 
-### Cos'è «Verificato»?
-Un segno che i gestori vedono sulla tua scheda quando i dati dell'attività e la partita IVA sono verificati.
+### Sono un fornitore e non ho un invito: come mi iscrivo?
+Hai tre strade, spiegate in [[area-fornitore#registrarsi-come-fornitore-senza-invito]]: la registrazione libera (dove CasaZen l'ha aperta), l'invito di un gestore che usa «Fornitori fidati» oppure la richiesta a CasaZen con «Richiedi un invito» sul sito pubblico.
+
+### Iscriversi come fornitore costa?
+Registrarsi e attivare il profilo non ha nessun passo a pagamento nell'app. Quanto trattiene CasaZen sui pagamenti fatti online dentro CasaZen lo leggi in **Impostazioni › Incassi** (su attivazione, dopo aver collegato il conto); sui lavori pagati fuori da CasaZen non trattiene nulla.
+
+### Cos'è «Verificato» e come lo ottengo?
+È un segno che i gestori vedono sulla tua scheda nel Marketplace. Compare da solo quando il tuo profilo è **attivo** e nel profilo hai scritto la **partita IVA**: per averlo completa l'attivazione ([[area-fornitore#attivare-il-profilo]]) e scrivi la partita IVA in **Profilo › Dati dell'attività**. Non misura la qualità dei tuoi lavori. Nella tua vetrina pubblica, la sezione «Fiducia» mostra «Verificato» solo se in più il conto per i pagamenti è pronto ([[area-fornitore#collegare-il-conto-per-i-pagamenti]]).
 
 ### Come tolgo un servizio dalla vetrina?
 Mettilo in pausa in **Servizi e prezzi** («Metti in pausa»): i clienti non lo vedono finché non lo riattivi.
@@ -336,7 +381,13 @@ Mettilo in pausa in **Servizi e prezzi** («Metti in pausa»): i clienti non lo 
 - **Netto**: quanto ti spetta, dopo la commissione.
 - **Trattenuto**: pagamento già pagato dal cliente, tenuto da CasaZen fino al rilascio.
 - **Segnalazione**: la comunicazione di un problema su un lavoro pagato online.
+- **Ragione sociale**: il nome ufficiale della tua attività (o il tuo nome, se lavori in proprio).
+- **Partita IVA**: il numero con cui la tua attività è registrata ai fini fiscali. Qui è facoltativa, ma serve per il «Verificato».
+- **Verificato**: segno sulla tua scheda quando il profilo è attivo e c'è la partita IVA.
+- **Consigliato**: segno che i gestori vedono sul fornitore messo meglio nell'ordine (affidabilità e disponibilità), solo se è davvero davanti agli altri.
+- **Stripe**: il servizio che gestisce i pagamenti con carta e l'accredito sul tuo conto. CasaZen non vede né conserva i tuoi dati bancari.
 
 ## Vedi anche
 - [[vetrina-fornitore]]: la tua pagina pubblica e le prenotazioni online.
 - [[marketplace]]: come ti trova il gestore e cosa vede.
+- [[per-iniziare#come-si-entra-invito-o-registrazione]]: i modi di entrare in CasaZen, invito e assistenza.

@@ -6,14 +6,16 @@ ordine: 60
 riassunto: L'area per le case affittate con un contratto: la Panoramica ti dice cosa fare oggi, gli Immobili raccolgono case, APE e dati catastali, e da qui apri il report fiscale, le spese condominiali e gli interventi.
 chi: [gestore, amministratore]
 dove: Affitti lunghi › Panoramica
-parole_chiave: [affitti lunghi, panoramica, immobili, APE, dati catastali, cambio modalità, passaggio affitto breve, report fiscale, spese condominiali, interventi, assistenza, manutenzione, cedolare secca]
+parole_chiave: [affitti lunghi, panoramica, immobili, APE, dati catastali, visura catastale, cambio modalità, passaggio affitto breve, report fiscale, spese condominiali, interventi, assistenza, manutenzione, cedolare secca, inquilino, contratto, canoni]
 copre: [/app/long-rent, /app/long-rent/properties, /app/long-rent/properties/new, /app/long-rent/properties/:id, /app/long-rent/properties/:id/edit, /app/long-rent/properties/:id/mode, /app/long-rent/fiscal, /app/long-rent/payments, /app/long-rent/service-requests, /app/long-rent/service-requests/:id, /app/long-rent/settings, /app/long-rent/settings/organization, /app/long-rent/settings/invitations, /app/long-rent/settings/plan, /app/long-rent/settings/billing, /app/long-rent/profile]
 stato: disponibile
-fonte_codice: [frontend/src/features/leases/overview/long-rent-overview-page.tsx, frontend/src/features/leases/overview/overview-model.ts, frontend/src/features/leases/overview/now-block.tsx, frontend/src/features/leases/overview/rent-numbers.tsx, frontend/src/features/leases/overview/upcoming-deadlines.tsx, frontend/src/features/onboarding/components/long-rent-guide.tsx, frontend/src/features/properties/long-rent, frontend/src/features/properties/mode/property-mode-wizard-page.tsx, frontend/src/features/leases/fiscal/long-rent-fiscal-page.tsx, frontend/src/features/leases/landlord-payments-page.tsx, frontend/src/features/condominium/condominium-management.tsx, frontend/src/features/service-requests/long-rent, frontend/src/pages/long-rent, backend/Casazen.Core/Leases/LongRentRules.cs, backend/Casazen.Core/Leases/LongRentDeadlineRules.cs]
+fonte_codice: [frontend/src/features/leases/overview/long-rent-overview-page.tsx, frontend/src/features/leases/overview/overview-model.ts, frontend/src/features/leases/overview/now-block.tsx, frontend/src/features/leases/overview/rent-numbers.tsx, frontend/src/features/leases/overview/upcoming-deadlines.tsx, frontend/src/features/onboarding/components/long-rent-guide.tsx, frontend/src/features/properties/long-rent, frontend/src/features/properties/long-rent/wizard/long-rent-property-wizard.tsx, frontend/src/features/properties/mode/property-mode-wizard-page.tsx, frontend/src/features/leases/fiscal/long-rent-fiscal-page.tsx, frontend/src/features/leases/landlord-payments-page.tsx, frontend/src/features/condominium/condominium-management.tsx, frontend/src/features/service-requests/long-rent, frontend/src/pages/long-rent, backend/Casazen.Core/Leases/LongRentRules.cs, backend/Casazen.Core/Leases/LongRentDeadlineRules.cs]
 ---
 
 ## In breve
-L'area **Affitti lunghi** è per chi affitta case con un contratto di locazione (canone libero 4+4, canone concordato 3+2, transitorio) e non a notti. La **Panoramica** è la pagina di partenza: ti mostra l'unico passo che non può aspettare, i contratti per stato, i canoni del mese e le prossime scadenze. Per fare un contratto ti servono prima la casa, il suo APE e i suoi dati catastali: li inserisci in **Immobili**.
+L'area **Affitti lunghi** è per chi affitta case con un contratto di locazione (canone libero 4+4, canone concordato 3+2, transitorio) e non a notti. La **Panoramica** è la pagina di partenza: ti mostra l'unico passo che non può aspettare, i contratti per stato, i canoni del mese e le prossime scadenze. Per fare un contratto ti servono prima la casa, il suo APE e i suoi dati catastali: li inserisci in **Immobili** (per aggiungere la casa bastano indirizzo e comune: APE e dati catastali li puoi aggiungere dopo, ma servono prima di creare il contratto).
+
+L'inquilino non usa questa area: ha una sua pagina, l'[[area-inquilino]].
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
@@ -22,24 +24,24 @@ L'area **Affitti lunghi** è per chi affitta case con un contratto di locazione 
 | Elenco immobili | Le tue case in affitto lungo, con inquilino, canone, APE e dati catastali | Affitti lunghi › Immobili | gestore, amministratore | Disponibile | Aggiungere un immobile in affitto lungo |
 | Nuovo immobile | Procedura in quattro passi: indirizzo, dati catastali, APE, riepilogo | Immobili › «Aggiungi immobile» | chi può modificare gli immobili | Disponibile | Aggiungere un immobile in affitto lungo |
 | Scheda dell'immobile | Contratti collegati, dati, documenti, spese condominiali, manutenzione e interventi | Immobili › apri la riga › «Scheda completa» | gestore, amministratore | Disponibile | Completare APE e dati catastali |
-| Modifica immobile | Cambia i dati della casa | Scheda dell'immobile › «Modifica» | chi può modificare gli immobili | Disponibile | Modificare un immobile |
+| Modifica immobile | Cambia i dati della casa | Scheda dell'immobile › «Modifica» | chi può modificare gli immobili | Disponibile | Modificare un immobile in affitto lungo |
 | Cambio di modalità | Passa una casa da affitto breve a lungo, o il contrario, in un giorno scelto | Procedura «Che cosa vuoi fare con questo immobile?» | chi può modificare gli immobili | Disponibile | Passare un immobile da affitto breve ad affitto lungo |
 | Report fiscale | Canoni dell'anno e imposte stimate per contratto, da portare al commercialista | Affitti lunghi › Report fiscale | gestore, amministratore (chi può leggere i contratti) | Disponibile | Leggere il report fiscale e scaricare il riepilogo |
 | Spese condominiali | Registro delle spese del condominio per ogni casa, anche senza contratto | Affitti lunghi › Spese condominiali | gestore, amministratore | Disponibile | Registrare le spese condominiali |
-| Interventi | Riparazioni e manutenzione affidate a un fornitore, dalla richiesta al pagamento | Immobili › scheda › «Interventi» e «Vedi tutti gli interventi» | gestore, amministratore | Disponibile | Chiedere un intervento a un fornitore |
+| Interventi | Riparazioni e manutenzione affidate a un fornitore, dalla richiesta al pagamento | Immobili › scheda › «Interventi» e «Vedi tutti gli interventi» | gestore, amministratore | Disponibile | Chiedere un intervento a un fornitore per una casa in affitto lungo |
 | Impostazioni dell'area | Organizzazione, «Consiglia CasaZen», piano e fatturazione | Impostazioni (in fondo al menu) | amministratore | Disponibile | Vedi [[account-team-piano]] |
 
 ## Come funziona
 
 ### A chi serve e come ci si arriva
-L'area è quella del **locatore**: la persona (o l'agenzia) che affitta una casa a un **conduttore** (l'inquilino) con un contratto. Ci entri dal menu dell'app scegliendo l'area **Affitti lunghi**. Le voci del suo menu sono:
+L'area è quella del **locatore**: la persona (o l'agenzia) che affitta una casa a un **conduttore** (l'inquilino) con un contratto. Ci entri dal menu dell'app scegliendo l'area **Affitti lunghi**; se nel menu non la vedi, potrebbe non essere attiva per la tua organizzazione (vedi [[account-team-piano]]). Le voci del suo menu sono:
 - **Panoramica**: la pagina di partenza;
 - **Immobili**: le case, e dentro ogni casa i suoi contratti;
 - **Report fiscale**;
 - **Spese condominiali**;
 - **Impostazioni**, in fondo.
 
-I contratti non hanno una voce di menu: si aprono dalla scheda della casa, nella scheda «Contratti». Anche **Canoni**, **Scadenze** e **Inquilini** si raggiungono da link (dalla Panoramica e dalle schede): li trovi spiegati in [[canoni-scadenze]]. Un vecchio indirizzo dell'elenco dei contratti porta da solo alla casa giusta, se conosce la casa, oppure all'elenco degli immobili.
+I contratti non hanno una voce di menu: si aprono dalla scheda della casa, nella scheda «Contratti». Anche **Canoni**, **Scadenze** e **Inquilini** si raggiungono da link (dalla Panoramica e dalle schede): li trovi spiegati in [[canoni-scadenze]]. Un vecchio indirizzo dell'elenco dei contratti porta da solo alla casa giusta, se conosce la casa, oppure all'elenco degli immobili. L'inquilino invece entra da un indirizzo suo, che gli comunichi tu: vedi [[area-inquilino]].
 
 ### La Panoramica
 La pagina ti saluta per nome («Buongiorno, …») e riassume la giornata.
@@ -57,8 +59,8 @@ Tutti i numeri li calcola CasaZen: la pagina non fa conti suoi.
 L'elenco **Immobili** mostra le case in affitto lungo. Ogni riga ha: casa, inquilino, canone, stato, APE, dati catastali, camere e bagni. I filtri rapidi sono «Tutti», «Affittati» (con un contratto registrato e in corso) e «Liberi» (senza un contratto registrato e in corso, anche se ne hai uno in preparazione). La ricerca cerca per nome, indirizzo o inquilino.
 
 Per **creare un contratto in CasaZen** la casa deve avere:
-- l'**APE** (attestato di prestazione energetica), con il suo codice e la sua classe;
-- i **dati catastali**: foglio, particella, subalterno e, per essere completi, categoria catastale e rendita.
+- l'**APE** (attestato di prestazione energetica: dice quanto consuma la casa, con una classe da A4, la migliore, a G; lo rilascia un tecnico abilitato, il certificatore energetico), con il suo codice e la sua classe;
+- i **dati catastali**: foglio, particella, subalterno e, per essere completi, categoria catastale e rendita. Li trovi nella **visura catastale** (il documento del catasto che descrive la casa) o nell'atto di acquisto.
 
 Nell'elenco vedi se mancano: «APE mancante», «APE da confermare» o «APE B» (la classe letta); «Completi» o «Da completare» per i dati catastali. Nella scheda di una casa libera il blocco «Crea il contratto» ricorda che servono l'APE e i dati catastali; se l'APE manca, la scheda avvisa «Nessun APE caricato… caricalo qui sotto». Per un **contratto già firmato** APE e dati catastali mancanti sono solo un avviso: non ti fermano.
 
@@ -108,6 +110,8 @@ La quota del conduttore (acconto condominiale e conguaglio) si somma al canone n
 ### Interventi (richieste di assistenza)
 Gli **Interventi** sono i lavori di riparazione e manutenzione che affidi a un fornitore (idraulico, elettricista, pulizie). Dalla scheda di una casa, o dalla pagina degli interventi, premi «Richiedi intervento»: scegli la casa («Per quale immobile?») e poi indichi cosa serve e scegli il fornitore. Per chiedere un intervento serve almeno una casa in affitto lungo.
 
+**Non è un servizio di pronto intervento**: il fornitore ha un tempo per rispondere. Se c'è un'emergenza (perdita d'acqua, gas, corto circuito, pericolo per le persone) chiama subito un tecnico o i soccorsi (112); la richiesta la apri dopo, se serve.
+
 La pagina elenca gli interventi con le schede «Aperti», «Chiusi» e «Tutti», e una ricerca per tipo, casa o fornitore. Aprendo un intervento vedi sempre il **prossimo passo** e a chi tocca:
 - **In attesa che il fornitore risponda**: ha un tempo per rispondere; puoi premere «Sollecita».
 - **Il fornitore propone un altro orario**: «Accetta l'orario» oppure «Rifiuta» (se rifiuti, la richiesta resta in attesa di un'altra risposta).
@@ -135,11 +139,11 @@ In fondo al menu trovi **Impostazioni**, con le schede **Organizzazione**, **Con
 Se vedi «Niente di urgente» non devi fare niente.
 
 ### Aggiungere un immobile in affitto lungo
-Serve il permesso di modificare gli immobili.
+**Ti serve:** il permesso di modificare gli immobili; l'indirizzo e il comune della casa. Facoltativi, e li puoi aggiungere dopo: foglio, particella e subalterno (dalla visura catastale o dall'atto d'acquisto) e l'APE (PDF dell'attestato o foto delle pagine). Servono prima di creare un contratto con CasaZen.
 1. Apri **Affitti lunghi › Immobili** e premi «Aggiungi immobile» (oppure dalla Panoramica «Aggiungi immobile»).
 2. Passo **Indirizzo**: scrivi il nome (lo vedi solo tu), il comune e l'indirizzo, e se serve la scala o l'interno. Comune e indirizzo vanno nel contratto.
-3. Passo **Dati catastali**: scrivi foglio, particella e subalterno (li trovi nella visura catastale o nell'atto d'acquisto). Se non li hai sottomano, salta il passo: li aggiungi dopo.
-4. Passo **APE**: carica il file dell'attestato (PDF) oppure le foto delle pagine. Se carichi foto, controlla l'ordine delle pagine e confermalo, oppure toglile: CasaZen le unisce in un solo PDF.
+3. Passo **Dati catastali**: scrivi foglio, particella e subalterno (li trovi nella visura catastale o nell'atto d'acquisto). Se non li hai sottomano, salta il passo con «Salta questo passo»: li aggiungi dopo.
+4. Passo **APE**: carica il file dell'attestato (PDF) oppure le foto delle pagine. Se carichi foto, controlla l'ordine delle pagine e confermalo, oppure toglile: CasaZen le unisce in un solo PDF. **Non hai ancora l'APE?** Il passo si può saltare («Salta questo passo»): la casa si aggiunge lo stesso, ma non potrai creare il contratto con CasaZen finché non lo carichi. L'APE lo rilascia un tecnico abilitato (certificatore energetico): chiedilo a lui. Se il contratto è già firmato puoi andare avanti senza.
 5. Passo **Riepilogo** («Controlla e aggiungi»): ricontrolla le risposte. Ognuna si può correggere. Poi premi «Aggiungi immobile».
 6. Aspetta: «Stiamo aggiungendo l'immobile e leggendo l'APE: può volerci un minuto. Non chiudere la pagina.»
 
@@ -151,6 +155,7 @@ Errori comuni:
 - Codice e classe dell'APE non si leggono dal file: li scrivi tu nel campo che compare, come sono stampati sull'attestato (la classe va da A4, la migliore, a G).
 
 ### Completare APE e dati catastali
+**Ti serve:** il permesso di modificare gli immobili; l'attestato APE e la visura catastale (o l'atto d'acquisto).
 1. Apri **Immobili**, scegli la casa e apri la «Scheda completa».
 2. Per i dati catastali apri la scheda **Dati**, premi «Modifica» accanto a «Dati catastali» e compila «Foglio», «Particella», «Subalterno», «Categoria catastale» (per esempio A/2) e «Rendita catastale (€)». Premi «Salva».
 3. Per l'APE apri la scheda **Documenti** e carica l'attestato. Se CasaZen non riesce a leggere codice e classe, scrivili tu.
@@ -158,12 +163,13 @@ Errori comuni:
 
 Senza questi dati un contratto fatto in CasaZen si ferma prima della revisione; vedi [[contratti#creare-un-contratto-con-casazen]].
 
-### Modificare un immobile
+### Modificare un immobile in affitto lungo
+**Ti serve:** il permesso di modificare gli immobili.
 1. Apri **Immobili**, scegli la casa e premi «Modifica» (dalla riga o dalla scheda).
 2. Cambia i dati e salva.
 
 ### Passare un immobile da affitto breve ad affitto lungo
-Serve il permesso di modificare gli immobili. Prima chiudi ciò che occupa la casa: bozze di contratto e soggiorni o date dei portali che durano oltre il giorno scelto.
+**Ti serve:** il permesso di modificare gli immobili. Prima chiudi ciò che occupa la casa: bozze di contratto e soggiorni o date dei portali che durano oltre il giorno scelto.
 1. Apri la procedura di cambio di modalità della casa (per i dettagli sulla scheda dell'immobile in affitto breve vedi [[immobili]]).
 2. Scegli «Passa all'affitto lungo».
 3. Scegli «Primo giorno in affitto lungo». CasaZen mostra l'intervallo possibile («Puoi scegliere da … a …») e, se un giorno non va bene, perché: puoi aprire la prenotazione o il contratto che lo blocca.
@@ -179,6 +185,7 @@ Reversibile: sì, con «Annulla il passaggio», fino al giorno prima della data 
 Dopo il passaggio la casa compare in Affitti brevi e, per accettare prenotazioni, devi completare l'annuncio.
 
 ### Leggere il report fiscale e scaricare il riepilogo
+**Ti serve:** il permesso di leggere i contratti; almeno un contratto firmato in vigore nell'anno.
 1. Apri **Affitti lunghi › Report fiscale**.
 2. Scegli l'**Anno**.
 3. Leggi in alto «Riepilogo dell'anno» e sotto la tabella con una riga per contratto: «Regime», «Competenza», «Incassati registrati», «Imposta stimata».
@@ -190,6 +197,7 @@ Se vedi «Nessun contratto in vigore nel [anno]», premi «Vai ai contratti»: i
 > **Attenzione:** il report è una stima, non una dichiarazione. Gli importi veri dipendono dai tuoi altri redditi: verifica con il commercialista.
 
 ### Registrare le spese condominiali
+**Ti serve:** gli importi dell'amministratore del condominio (preventivo, consuntivo, ripartizione delle rate) e, per registrare un pagamento, la data e l'importo versati.
 1. Apri **Affitti lunghi › Spese condominiali** e, nel selettore «Appartamento», scegli la casa.
 2. Se la casa non ha ancora una gestione, scrivi il «Nome del condominio» e il «Primo mese dell'esercizio condominiale», e premi «Attiva gestione condominiale». Scegli come iniziare: «Carica i documenti» o «Imposta manualmente».
 3. Per il preventivo premi «Aggiungi il preventivo» (o apri «Preventivo e piano rate»), scrivi la «Quota ordinaria annuale (€)» (e la straordinaria, se c'è), scegli la «Frequenza delle rate al condominio» e premi «Conferma preventivo».
@@ -198,7 +206,8 @@ Se vedi «Nessun contratto in vigore nel [anno]», premi «Vai ai contratti»: i
 
 Per segnare come pagata una scadenza di una casa premi «Segna come pagato» e poi «Conferma pagamento effettuato»: serve il permesso di modificare gli immobili. CasaZen non avvia nessun pagamento.
 
-### Chiedere un intervento a un fornitore
+### Chiedere un intervento a un fornitore per una casa in affitto lungo
+**Ti serve:** almeno una casa in affitto lungo; sapere cosa serve e quando. **Non è un pronto intervento**: se c'è un'emergenza chiama prima un tecnico.
 1. Apri **Immobili** e, nella riga della casa, premi «Richiedi intervento» (oppure, in **Interventi**, «Richiedi intervento»).
 2. Scegli l'immobile e premi «Continua».
 3. Indica cosa serve e scegli il fornitore, seguendo i passi della procedura (la descrive [[marketplace]]).
@@ -216,9 +225,9 @@ Per segnare come pagata una scadenza di una casa premi «Segna come pagato» e p
 1. Aggiungi la casa con tutti i passi ([[affitti-lunghi#aggiungere-un-immobile-in-affitto-lungo]]) e controlla che APE e dati catastali siano a posto.
 2. Dalla casa premi «Crea contratto» e segui [[contratti#creare-un-contratto-con-casazen]] (oppure [[contratti#caricare-un-contratto-gia-firmato]] se hai già il contratto firmato).
 3. Fai firmare il contratto e carica la copia firmata ([[contratti#far-firmare-il-contratto-e-caricare-la-copia-firmata]]).
-4. Registra il contratto entro la scadenza ([[contratti#registrare-il-contratto]]).
+4. Registra il contratto entro la scadenza ([[contratti#registrare-il-contratto-e-dichiarare-la-registrazione-in-casazen]]).
 5. Attiva il piano dei canoni e segui gli incassi ([[canoni-scadenze#attivare-il-piano-dei-canoni]]).
-6. Il conduttore entra nella sua area con la sua e-mail ([[area-inquilino]]).
+6. Comunica al conduttore l'indirizzo della sua area: entra con la sua e-mail ([[area-inquilino]]).
 
 ### Flusso: fine del contratto e ritorno agli affitti brevi
 1. Registri la disdetta o il recesso del conduttore ([[contratti#registrare-una-disdetta]], [[contratti#registrare-il-recesso-del-conduttore]]).
@@ -227,19 +236,22 @@ Per segnare come pagata una scadenza di una casa premi «Segna come pagato» e p
 4. Completi l'annuncio per le prenotazioni (vedi [[immobili]]).
 
 ## Regole e limiti
-- Per creare un contratto in CasaZen servono APE (con codice e classe) e dati catastali della casa. Per un contratto già firmato mancano solo gli avvisi.
+- Per creare un contratto in CasaZen servono APE (con codice e classe) e dati catastali della casa. Per aggiungere la casa bastano indirizzo e comune. Per un contratto già firmato mancano solo gli avvisi.
 - Una casa in affitto breve non si può usare in un contratto lungo: deve prima passare in affitto lungo.
 - Due contratti non possono coprire gli stessi giorni sulla stessa casa.
 - Il passaggio di modalità non parte il giorno stesso: va scelto un giorno non prima del primo giorno possibile mostrato; si annulla fino al giorno prima.
 - Il report fiscale è una stima: conta mesi interi e usa solo gli incassi registrati in CasaZen.
 - Le spese condominiali registrate qui non muovono denaro.
-- Un intervento annullato non si riapre; un intervento pagato online è «pagato» solo quando Stripe lo conferma.
+- Un intervento annullato non si riapre; un intervento pagato online è «pagato» solo quando Stripe lo conferma. Gli interventi non sono un pronto intervento.
 - Chi vede cosa: la Panoramica, il report fiscale e i contratti richiedono il permesso di lettura dei contratti; le case, il permesso di lettura degli immobili; aggiungere e modificare case, il permesso di modifica degli immobili; creare e modificare contratti, il permesso di creare i contratti.
 
 ## Domande frequenti
 
 ### Perché non riesco a creare il contratto?
 Quasi sempre manca qualcosa alla casa: l'APE (con codice e classe), i dati catastali, oppure la casa è ancora in affitto breve. Apri la scheda della casa: la colonna APE e quella dei dati catastali ti dicono cosa manca.
+
+### Posso aggiungere una casa se non ho ancora l'APE?
+Sì: per aggiungere la casa bastano indirizzo e comune, e i passi dei dati catastali e dell'APE si possono saltare. Ma senza APE e dati catastali non puoi creare il contratto con CasaZen: caricali dalla scheda della casa quando li hai. L'APE lo rilascia un tecnico abilitato (certificatore energetico). Se il contratto è già firmato, puoi caricarlo anche senza.
 
 ### Dove vedo l'elenco dei miei contratti?
 Nella scheda **Contratti** di ogni casa (Immobili › casa › Contratti). Nella Panoramica vedi solo i contatori.
@@ -253,18 +265,22 @@ No. Le spese condominiali sono un registro: paghi tu dal tuo home banking e poi 
 ### Posso tenere la stessa casa in affitto breve e lungo?
 Non nello stesso periodo. La casa sta in una sola area alla volta: il passaggio si programma con un giorno.
 
+### Come faccio entrare l'inquilino nella sua area?
+CasaZen non manda inviti: gli comunichi tu l'indirizzo e lui entra con la stessa e-mail scritta nel contratto. Vedi [[area-inquilino#far-entrare-il-conduttore-nella-sua-area]].
+
 ## Glossario
 - **Locatore**: chi affitta la casa. **Conduttore**: chi la prende in affitto (l'inquilino).
-- **APE**: attestato di prestazione energetica; classe da A4 a G.
+- **APE**: attestato di prestazione energetica; dice quanto consuma la casa, classe da A4 (la migliore) a G; lo rilascia un tecnico abilitato.
 - **Dati catastali**: foglio, particella, subalterno, categoria e rendita della casa.
-- **Cedolare secca**: imposta sostitutiva sul canone, al posto dell'imposta sul reddito, dell'imposta di registro e del bollo.
+- **Visura catastale**: il documento del catasto con i dati catastali della casa; la chiedi al catasto o la trovi nell'atto d'acquisto.
+- **Cedolare secca sugli affitti lunghi**: imposta sostitutiva sul canone, al posto dell'imposta sul reddito, dell'imposta di registro e del bollo; non è ammessa con una società come conduttore e sospende l'aggiornamento ISTAT del canone. Per gli affitti brevi vedi [[fisco-documenti]].
 - **Acconto condominiale e conguaglio**: la quota di spese condominiali pagata a rate insieme al canone e la differenza che si regola a fine anno.
 - **Esercizio condominiale**: l'anno di gestione del condominio, che può non coincidere con l'anno solare.
 
 ## Vedi anche
 - [[contratti]]: come creare, firmare e registrare un contratto.
 - [[canoni-scadenze]]: canoni, incassi, solleciti, scadenze e inquilini.
-- [[area-inquilino]]: cosa vede il conduttore e le richieste di manutenzione.
+- [[area-inquilino]]: cosa vede il conduttore, come entra e le richieste di manutenzione.
 - [[immobili]]: gli immobili in affitto breve e il passaggio di modalità.
 - [[account-team-piano]]: impostazioni, team e piano.
 - [[marketplace]]: i fornitori a cui affidi gli interventi.

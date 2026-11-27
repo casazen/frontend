@@ -1,6 +1,7 @@
 ---
 id: cruscotto-notifiche-assistente
 titolo: Cruscotto, Da fare, notifiche e assistente
+menu: Cruscotto e notifiche
 sezione: Per iniziare
 ordine: 3
 riassunto: Cosa vedi ogni giorno nel Cruscotto, come lavorare con «Da fare», «Da approvare» e «Verifiche», come funzionano campanella e avvisi, cosa sa fare davvero «Chiedi a CasaZen» e cosa si attiva nelle impostazioni AI.
@@ -14,6 +15,8 @@ fonte_codice: [frontend/src/features/dashboard/dashboard-page.tsx, frontend/src/
 
 ## In breve
 Il **Cruscotto** è la pagina da cui parti ogni mattina: cosa succede oggi, cosa devi fare e i numeri essenziali. Le schede **Da fare**, **Da approvare** e **Verifiche** raccolgono ciò che aspetta una tua decisione. La **campanella** e gli avvisi ti dicono quando succede qualcosa, senza ricaricare la pagina. **Chiedi a CasaZen** è una scorciatoia per aprire pagine e trovare prenotazioni: non fa operazioni al posto tuo.
+
+> **Suggerimento:** **in pratica, ogni giorno** fai tre cose, in quest'ordine. 1) Apri il **Cruscotto** e guarda «Oggi» (arrivi, partenze, pulizie) e «Da fare». 2) Guarda la **campanella**: ti dice cosa è successo e porta alla pagina giusta. 3) Se usi l'assistente o le campagne, apri **Da approvare**: ciò che prepara CasaZen non parte senza il tuo sì. Il pulsante **Guida** serve finché non hai finito la configurazione. «Home» e «Cruscotto» sono la stessa pagina: la pagina iniziale di Affitti brevi. Il primo giorno è normale che sia quasi vuoto: si riempie quando hai una casa attiva. Dal telefono la campanella e il Cruscotto si usano dal browser; le notifiche sul telefono arrivano con l'app «CasaZen», che non è ancora negli store ([[app-mobile]]).
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |

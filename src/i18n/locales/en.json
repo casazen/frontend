@@ -5964,6 +5964,7 @@
     "button": "Guide",
     "description": "It walks you through step by step: what you have done, what to do now and what comes next.",
     "help": {
+      "fullManual": "Full manual (in Italian): step-by-step guides and FAQ",
       "manual": "Open the CasaZen manual",
       "support": "Write to support",
       "text": "The manual explains every area in plain words. If you get stuck, write to us: we will answer.",

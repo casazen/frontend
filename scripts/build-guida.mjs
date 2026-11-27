@@ -8,7 +8,7 @@
  *   node scripts/build-guida.mjs --notes f.md   scrive anche le «Note per la revisione» di tutte le pagine
  *
  * Nessuna dipendenza esterna. Il formato dei file sorgente e le regole editoriali sono in guida/README.md.
- * Le risorse statiche (assets/guida.css, assets/guida.js, logo, font) stanno già in public/guida/assets e non sono generate.
+ * Le risorse statiche (assets/guida.css, assets/guida.js, assets/guida-ricerca.js, logo, font) stanno già in public/guida/assets e non sono generate.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,13 +45,13 @@ export const SECTIONS = [
 ];
 
 export const PERSONAS = {
-  gestore: { label: 'Gestore', hint: 'Gestisco uno o più immobili' },
-  amministratore: { label: 'Amministratore', hint: "Amministro l'organizzazione" },
-  proprietario: { label: 'Proprietario', hint: 'Ho un immobile gestito da un’agenzia' },
-  commercialista: { label: 'Commercialista', hint: 'Seguo la contabilità di un cliente' },
-  fornitore: { label: 'Fornitore', hint: 'Offro servizi (pulizie, manutenzione…)' },
-  ospite: { label: 'Ospite', hint: 'Soggiorno in un alloggio' },
-  inquilino: { label: 'Inquilino', hint: 'Ho un contratto di affitto' },
+  gestore: { label: 'Gestore', hint: 'Gestisco uno o più immobili', desc: 'gestisci case e prenotazioni (anche se le case sono tue)' },
+  amministratore: { label: 'Amministratore', hint: "Amministro l'organizzazione", desc: "sei il titolare o un amministratore dell'organizzazione: persone, piano e impostazioni" },
+  proprietario: { label: 'Proprietario', hint: 'Ho un immobile gestito da un’agenzia', desc: 'la casa è tua ma la gestisce un’agenzia' },
+  commercialista: { label: 'Commercialista', hint: 'Seguo la contabilità di un cliente', desc: 'segui la contabilità di un cliente' },
+  fornitore: { label: 'Fornitore', hint: 'Offro servizi (pulizie, manutenzione…)', desc: 'offri servizi (pulizie, manutenzione…) ai gestori' },
+  ospite: { label: 'Ospite', hint: 'Soggiorno in un alloggio', desc: 'prenoti o soggiorni in una casa' },
+  inquilino: { label: 'Inquilino', hint: 'Ho un contratto di affitto', desc: 'hai un contratto di affitto (nel contratto si chiama «conduttore»)' },
 };
 
 const AVAILABILITY = {
@@ -573,6 +573,27 @@ function badge(av) {
   return `<span class="gd-badge gd-badge--${a.cls}">${a.label}</span>`;
 }
 
+/** Rimando alla pagina «Inizia qui» (solo se esiste: il generatore non deve mai collegare una pagina assente). */
+const START_ID = 'inizia-qui';
+function startLink(pages, label) {
+  return pages.some((p) => p.id === START_ID) ? `<a href="${START_ID}.html">${label}</a>` : label;
+}
+
+/** Legenda dei tre stati di disponibilità, con il rimando a come si accende una funzione «su attivazione». */
+function availabilityLegend(ctx) {
+  const how = ctx.link('per-iniziare', 'cosa-significa-su-attivazione', 'come si attiva');
+  return `<p class="gd-legend"><span class="gd-legend__i">${badge('disponibile')} lo usi subito, se hai il ruolo e i permessi giusti</span><span class="gd-legend__i">${badge('su attivazione')} non è accesa di partenza (${how})</span><span class="gd-legend__i">${badge('in arrivo')} non c'è ancora</span></p>`;
+}
+
+/** «Chi è chi»: le persone dei filtri spiegate in una riga, per chi non conosce i nomi dell'app. */
+function personasLegend(pages) {
+  const items = Object.entries(PERSONAS)
+    .filter(([k]) => pages.some((p) => p.meta.chi.includes(k)))
+    .map(([, v]) => `<li><strong>${esc(v.label)}</strong>: ${esc(v.desc)}</li>`)
+    .join('');
+  return `<details class="gd-persone"><summary>Chi è chi? Cosa vuol dire Gestore, Amministratore, Proprietario…</summary><ul>${items}</ul></details>`;
+}
+
 function renderFeatureTable(rows, page, ctx) {
   const howtoSlugs = new Map();
   for (const sec of page.struct.sections) if (sec.key === 'comefare') for (const sub of sec.subs) howtoSlugs.set(slugify(sub.title), sub.slug);
@@ -601,7 +622,8 @@ function renderSection(sec, page, ctx) {
       return `<section class="gd-lead"${id}><h2 class="gd-visually-hidden">${inline(sec.title, ctx)}</h2>${renderBlocks(sec.blocks, ctx)}</section>`;
     case 'funzionalita': {
       const rows = featureRows(sec, page);
-      return `<section class="gd-sec"${id}>${heading(sec.title)}${renderBlocks(sec.blocks.filter((b) => b.type !== 'table'), ctx)}${rows.length ? renderFeatureTable(rows, page, ctx) : ''}</section>`;
+      const legend = rows.some((r) => r.disponibilita !== 'disponibile') ? availabilityLegend(ctx) : '';
+      return `<section class="gd-sec"${id}>${heading(sec.title)}${renderBlocks(sec.blocks.filter((b) => b.type !== 'table'), ctx)}${legend}${rows.length ? renderFeatureTable(rows, page, ctx) : ''}</section>`;
     }
     case 'comefare': {
       const subs = sec.subs
@@ -664,7 +686,7 @@ function renderNav(pages, current) {
   const aggregates = [
     ['funzionalita.html', 'Elenco funzionalità', 'list'],
     ['come-fare.html', 'Come fare: tutti i compiti', 'book'],
-    ['flussi.html', 'Flussi completi', 'flow'],
+    ['flussi.html', 'Percorsi completi', 'flow'],
     ['domande-frequenti.html', 'Domande frequenti', 'help'],
     ['glossario.html', 'Glossario', 'glossary'],
   ];
@@ -676,7 +698,7 @@ function renderNav(pages, current) {
     if (!list.length) return '';
     const open = list.some((p) => `${p.id}.html` === current);
     const items = list
-      .map((p) => `<li><a class="gd-nav__link${current === `${p.id}.html` ? ' is-current' : ''}" href="${p.id}.html"${current === `${p.id}.html` ? ' aria-current="page"' : ''}><span>${esc(p.meta.titolo)}</span></a></li>`)
+      .map((p) => `<li><a class="gd-nav__link${current === `${p.id}.html` ? ' is-current' : ''}" href="${p.id}.html"${current === `${p.id}.html` ? ' aria-current="page"' : ''}><span>${esc(p.meta.menu || p.meta.titolo)}</span></a></li>`)
       .join('');
     return `<details class="gd-nav__sec gd-accent--${s.accent}"${open ? ' open' : ''}><summary>${icon(s.icon, 'gd-i gd-i--sm')}<span>${esc(s.name)}</span>${icon('chevron', 'gd-i gd-i--sm gd-nav__chev')}</summary><ul>${items}</ul></details>`;
   }).join('');
@@ -696,6 +718,7 @@ function layout({ title, description, current, pages, main, toc = '', bodyClass 
 <meta name="theme-color" content="#1f3a3d">
 <link rel="icon" type="image/svg+xml" href="assets/marchio.svg">
 <link rel="stylesheet" href="assets/guida.css">
+<script src="assets/guida-ricerca.js" defer></script>
 <script src="assets/guida.js" defer></script>
 </head>
 <body class="${bodyClass}" data-page="${esc(current)}">
@@ -720,7 +743,7 @@ ${toc ? `<aside class="gd-toc" aria-label="In questa pagina">${toc}</aside>` : '
 </div>
 <footer class="gd-foot">
   <p>Guida di CasaZen · aggiornata il ${esc(meta.aggiornatoLungo)}. Le funzioni visibili nell'app dipendono dall'area, dal ruolo, dal piano e dalle attivazioni del tuo account.</p>
-  <p>Non trovi la risposta? Apri la <strong>Guida</strong> nell'app e scrivi all'assistenza di CasaZen.</p>
+  <p>Non trovi la risposta? Parti da ${startLink(pages, 'Inizia qui')} oppure apri la <strong>Guida</strong> nell'app: se la tua installazione ha un indirizzo di assistenza, lì trovi «Scrivi all'assistenza».</p>
 </footer>
 </body>
 </html>
@@ -794,6 +817,18 @@ function prevNext(page, pages) {
  * Pagine aggregate
  * ---------------------------------------------------------------------------------------------------------------- */
 
+/** «Per chi: ospite, inquilino.» dentro un compito: sostituisce le persone della pagina nei filtri («Chi sei»). */
+function taskChi(blocks, fallback) {
+  for (const b of blocks) {
+    if (b.type !== 'p') continue;
+    const m = b.text.match(/^(?:\*\*)?Per chi:?(?:\*\*)?:?\s*(.+?)\.?$/i);
+    if (!m) continue;
+    const found = Object.keys(PERSONAS).filter((k) => new RegExp(`\\b${k}\\b`, 'i').test(m[1]));
+    if (found.length) return found;
+  }
+  return fallback;
+}
+
 function collect(pages, ctx) {
   const features = [];
   const howtos = [];
@@ -838,8 +873,9 @@ function collect(pages, ctx) {
       } else if (sec.key === 'comefare') {
         for (const s of sec.subs) {
           const text = blocksToText(s.blocks, titleOf);
-          howtos.push({ ...base, id: `${page.id}#${s.slug}`, titolo: s.title, slug: s.slug, testo: text });
-          chunks.push({ id: `${page.id}#${s.slug}`, tipo: 'howto', ...base, titolo: s.title, url: `${page.id}.html#${s.slug}`, stato: page.meta.stato || 'disponibile', testo: `${ctxText(`come fare: ${stripInline(s.title, titleOf)}`)}\n\n${text}` });
+          const chi = taskChi(s.blocks, page.meta.chi);
+          howtos.push({ ...base, chi, id: `${page.id}#${s.slug}`, titolo: s.title, slug: s.slug, testo: text });
+          chunks.push({ id: `${page.id}#${s.slug}`, tipo: 'howto', ...base, chi, titolo: s.title, url: `${page.id}.html#${s.slug}`, stato: page.meta.stato || 'disponibile', testo: `${ctxText(`come fare: ${stripInline(s.title, titleOf)}`)}\n\n${text}` });
         }
       } else if (sec.key === 'flussi') {
         for (const s of sec.subs) {
@@ -890,9 +926,12 @@ function renderFeaturesPage(pages, ctx, data, meta) {
       return `<tr data-chi="${esc(f.chi.join(' '))}" data-sec="${sectionSlug(f.sezione)}" data-av="${esc(f.disponibilita.replace(/ /g, '-'))}" data-filterable><th scope="row" data-label="Funzionalità"><a href="${link}">${esc(f.nome)}</a></th><td data-label="Cosa fa">${esc(f.cosa)}</td><td data-label="Dove si trova">${esc(f.dove_funzione)}</td><td data-label="Chi può usarla">${f.chi.map((c) => `<span class="gd-chip">${esc(PERSONAS[c]?.label || c)}</span>`).join(' ')}</td><td data-label="Disponibilità">${badge(f.disponibilita)}</td><td data-label="Sezione"><a href="${f.pagina}.html">${esc(f.sezione)}</a></td></tr>`;
     })
     .join('');
+  ctx.where = 'Elenco delle funzionalità';
   const main = `
 <article class="gd-article gd-accent--ink">
 <header class="gd-article__head"><p class="gd-kicker">${icon('list', 'gd-i gd-i--sm')} Per cercare</p><h1>Elenco delle funzionalità</h1><p class="gd-summary">Tutto ciò che CasaZen sa fare, con dove trovarlo e chi può usarlo. Seleziona una funzionalità per aprire la guida passo passo.</p></header>
+${availabilityLegend(ctx)}
+${personasLegend(pages)}
 ${sectionTabs(data.features, 'features')}
 <div class="gd-tablewrap"><table class="gd-table gd-table--features"><thead><tr><th scope="col">Funzionalità</th><th scope="col">Cosa fa</th><th scope="col">Dove si trova</th><th scope="col">Chi può usarla</th><th scope="col">Disponibilità</th><th scope="col">Sezione</th></tr></thead><tbody>${rows}</tbody></table></div>
 <p class="gd-empty" data-empty hidden>Nessuna funzionalità corrisponde ai filtri.</p>
@@ -911,7 +950,8 @@ function renderHowtoPage(pages, ctx, data, meta) {
     .join('\n');
   const main = `
 <article class="gd-article gd-accent--ink">
-<header class="gd-article__head"><p class="gd-kicker">${icon('book', 'gd-i gd-i--sm')} Per cercare</p><h1>Come fare: tutti i compiti</h1><p class="gd-summary">Ogni compito ha la sua guida passo passo. Scegli quello che ti serve.</p></header>
+<header class="gd-article__head"><p class="gd-kicker">${icon('book', 'gd-i gd-i--sm')} Per cercare</p><h1>Come fare: tutti i compiti</h1><p class="gd-summary">Ogni compito ha la sua guida passo passo. Scegli quello che ti serve.</p><p class="gd-summary">Prima volta in CasaZen? Non partire da qui: apri ${startLink(pages, 'Inizia qui')}, che ti dice in che ordine fare le cose.</p></header>
+${personasLegend(pages)}
 ${sectionTabs(data.howtos, 'howtos')}
 ${groups}
 <p class="gd-empty" data-empty hidden>Nessun compito corrisponde ai filtri.</p>
@@ -931,10 +971,10 @@ function renderFlowsPage(pages, ctx, data, meta) {
     .join('\n');
   const main = `
 <article class="gd-article gd-accent--ink">
-<header class="gd-article__head"><p class="gd-kicker">${icon('flow', 'gd-i gd-i--sm')} Per cercare</p><h1>Flussi completi</h1><p class="gd-summary">I percorsi che attraversano più schermate o più persone, dall'inizio alla fine: chi fa cosa e cosa fa CasaZen da solo.</p></header>
-${data.flows.length ? `${sectionTabs(data.flows, 'flows')}<ul class="gd-cards gd-cards--tasks" aria-label="Elenco dei flussi">${cards}</ul><hr>${articles}<p class="gd-empty" data-empty hidden>Nessun flusso corrisponde ai filtri.</p>` : '<p>I flussi completi saranno aggiunti a breve.</p>'}
+<header class="gd-article__head"><p class="gd-kicker">${icon('flow', 'gd-i gd-i--sm')} Per cercare</p><h1>Percorsi completi</h1><p class="gd-summary">I percorsi che attraversano più schermate o più persone, dall'inizio alla fine: chi fa cosa e cosa fa CasaZen da solo.</p></header>
+${data.flows.length ? `${personasLegend(pages)}${sectionTabs(data.flows, 'flows')}<ul class="gd-cards gd-cards--tasks" aria-label="Elenco dei percorsi">${cards}</ul><hr>${articles}<p class="gd-empty" data-empty hidden>Nessun percorso corrisponde ai filtri.</p>` : '<p>I percorsi completi saranno aggiunti a breve.</p>'}
 </article>`;
-  return layout({ title: 'Flussi completi', description: 'I percorsi di CasaZen dall’inizio alla fine.', current: 'flussi.html', pages, main, bodyClass: 'gd-page gd-page--list', meta });
+  return layout({ title: 'Percorsi completi', description: 'I percorsi di CasaZen dall’inizio alla fine.', current: 'flussi.html', pages, main, bodyClass: 'gd-page gd-page--list', meta });
 }
 
 function renderFaqPage(pages, ctx, data, meta) {
@@ -949,26 +989,43 @@ function renderFaqPage(pages, ctx, data, meta) {
     .join('\n');
   const main = `
 <article class="gd-article gd-accent--ink">
-<header class="gd-article__head"><p class="gd-kicker">${icon('help', 'gd-i gd-i--sm')} Per cercare</p><h1>Domande frequenti</h1><p class="gd-summary">Le risposte rapide alle domande più comuni.</p></header>
-${data.faqs.length ? `${sectionTabs(data.faqs, 'faqs')}${groups}<p class="gd-empty" data-empty hidden>Nessuna domanda corrisponde ai filtri.</p>` : '<p>Le domande frequenti saranno aggiunte a breve.</p>'}
+<header class="gd-article__head"><p class="gd-kicker">${icon('help', 'gd-i gd-i--sm')} Per cercare</p><h1>Domande frequenti</h1><p class="gd-summary">Le risposte rapide alle domande più comuni. Se cominci adesso, le prime sono quelle di «Per iniziare».</p></header>
+${data.faqs.length ? `${personasLegend(pages)}${sectionTabs(data.faqs, 'faqs')}${groups}<p class="gd-empty" data-empty hidden>Nessuna domanda corrisponde ai filtri.</p>` : '<p>Le domande frequenti saranno aggiunte a breve.</p>'}
 </article>`;
   return layout({ title: 'Domande frequenti', description: 'Le risposte rapide alle domande più comuni su CasaZen.', current: 'domande-frequenti.html', pages, main, bodyClass: 'gd-page gd-page--list', meta });
 }
 
 function renderGlossaryPage(pages, ctx, data, meta) {
   const terms = [...data.terms].sort((a, b) => fold(a.termine).localeCompare(fold(b.termine), 'it'));
-  const seen = new Set();
-  const uniq = terms.filter((t) => {
+  // Un termine può avere più significati nelle varie pagine («Bozza», «Richiesta»…): si mostrano tutte le definizioni diverse, ciascuna con la sua pagina.
+  const byTerm = new Map();
+  for (const t of terms) {
     const k = fold(t.termine);
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
+    if (!byTerm.has(k)) byTerm.set(k, []);
+    byTerm.get(k).push(t);
+  }
+  const uniq = [...byTerm.values()].map((list) => {
+    const seenDefs = new Set();
+    const defs = list.filter((t) => {
+      const dk = fold(t.definizione).replace(/[^a-z0-9]+/g, ' ').trim();
+      if (seenDefs.has(dk)) return false;
+      seenDefs.add(dk);
+      return true;
+    });
+    return { termine: list[0].termine, defs };
   });
   const letters = [...new Set(uniq.map((t) => fold(t.termine)[0].toUpperCase()))];
   const body = letters
     .map((L) => {
       const list = uniq.filter((t) => fold(t.termine)[0].toUpperCase() === L);
-      return `<section class="gd-sec" id="lettera-${L.toLowerCase()}"><h2 class="gd-h2">${L}</h2><dl class="gd-gloss">${list.map((t) => { ctx.where = `${t.pagina} (glossario)`; return `<dt>${inline(t.termine, ctx)}</dt><dd>${inline(t.definizione, ctx)} <a class="gd-gloss__from" href="${t.pagina}.html">${esc(t.titolo_pagina)}</a></dd>`; }).join('')}</dl></section>`;
+      const entries = list
+        .map((g) => {
+          ctx.where = `${g.defs[0].pagina} (glossario)`;
+          const dds = g.defs.map((t) => { ctx.where = `${t.pagina} (glossario)`; return `<dd>${inline(t.definizione, ctx)} <a class="gd-gloss__from" href="${t.pagina}.html">${esc(t.titolo_pagina)}</a></dd>`; }).join('');
+          return `<dt>${inline(g.termine, ctx)}</dt>${dds}`;
+        })
+        .join('');
+      return `<section class="gd-sec" id="lettera-${L.toLowerCase()}"><h2 class="gd-h2">${L}</h2><dl class="gd-gloss">${entries}</dl></section>`;
     })
     .join('\n');
   const main = `
@@ -994,7 +1051,7 @@ function renderHome(pages, data, meta) {
     const list = pages.filter((p) => p.meta.sezione === s.name);
     if (!list.length) return '';
     const nHow = data.howtos.filter((h) => h.sezione === s.name).length;
-    const links = list.map((p) => `<li><a href="${p.id}.html">${esc(p.meta.titolo)}</a></li>`).join('');
+    const links = list.map((p) => `<li><a href="${p.id}.html">${esc(p.meta.menu || p.meta.titolo)}</a></li>`).join('');
     return `<li id="${sectionSlug(s.name)}" class="gd-secard gd-accent--${s.accent}"><div class="gd-secard__head"><span class="gd-secard__ic">${icon(s.icon)}</span><div><h3>${esc(s.name)}</h3><p>${esc(s.blurb)}</p></div></div><ul>${links}</ul><p class="gd-secard__n">${nHow ? `${nHow} guide passo passo` : `${list.length} pagine`}</p></li>`;
   }).join('');
   const personaChips = Object.entries(PERSONAS)
@@ -1012,14 +1069,15 @@ function renderHome(pages, data, meta) {
 <section class="gd-hero" aria-labelledby="gd-hero-t">
   <p class="gd-kicker">Guida CasaZen</p>
   <h1 id="gd-hero-t">Come possiamo aiutarti?</h1>
-  <p class="gd-hero__sub">Trova in pochi secondi come si fa una cosa in CasaZen. Cerca per compito, scorri gli argomenti o apri l'elenco di tutte le funzionalità.</p>
+  <p class="gd-hero__sub"><strong>CasaZen</strong> è il gestionale per chi affitta case a breve o a lungo termine: un calendario solo, un sito di prenotazione diretta e le regole italiane sotto controllo, insieme ai canali che già usi. Qui trovi come si fa ogni cosa: cerca per compito, scorri gli argomenti o apri l'elenco di tutte le funzionalità.</p>
+  <p class="gd-hero__start">${pages.some((p) => p.id === START_ID) ? `<a class="gd-btn gd-btn--primary" href="${START_ID}.html">${icon('compass', 'gd-i gd-i--sm')} Prima volta qui? Inizia qui</a>` : ''}<a href="per-iniziare.html#come-si-entra-invito-o-registrazione">Come si entra in CasaZen</a></p>
   <form class="gd-search gd-search--hero" role="search" action="cerca.html" method="get" autocomplete="off">
     ${icon('search', 'gd-i gd-search__i')}
     <input type="search" name="q" placeholder="Es. registrare un pagamento, collegare un calendario…" aria-label="Cerca nella guida" data-search-input>
     <button class="gd-btn gd-btn--primary" type="submit">Cerca</button>
     <div class="gd-suggest" data-suggest hidden></div>
   </form>
-  <div class="gd-hero__quick"><a href="funzionalita.html">${icon('list', 'gd-i gd-i--sm')} Elenco delle funzionalità</a><a href="come-fare.html">${icon('book', 'gd-i gd-i--sm')} Tutti i compiti</a><a href="flussi.html">${icon('flow', 'gd-i gd-i--sm')} Flussi completi</a><a href="domande-frequenti.html">${icon('help', 'gd-i gd-i--sm')} Domande frequenti</a></div>
+  <div class="gd-hero__quick"><a href="funzionalita.html">${icon('list', 'gd-i gd-i--sm')} Elenco delle funzionalità</a><a href="come-fare.html">${icon('book', 'gd-i gd-i--sm')} Tutti i compiti</a><a href="flussi.html">${icon('flow', 'gd-i gd-i--sm')} Percorsi completi</a><a href="domande-frequenti.html">${icon('help', 'gd-i gd-i--sm')} Domande frequenti</a></div>
 </section>
 <section class="gd-sec" aria-labelledby="gd-sec-t">
   <h2 class="gd-h2" id="gd-sec-t">Esplora per argomento</h2>
@@ -1028,6 +1086,7 @@ function renderHome(pages, data, meta) {
 <section class="gd-sec" aria-labelledby="gd-task-t">
   <h2 class="gd-h2" id="gd-task-t">Cosa vuoi fare?</h2>
   <div class="gd-filters"><div class="gd-filter"><span class="gd-filter__l">Chi sei</span><button type="button" class="gd-pill is-on" data-filter-chi="">Tutti</button>${personaChips}</div></div>
+  ${personasLegend(pages)}
   <ul class="gd-cards gd-cards--tasks">${popCards}</ul>
   <p><a class="gd-btn gd-btn--ghost" href="come-fare.html">Vedi tutti i compiti ${icon('arrow', 'gd-i gd-i--sm')}</a></p>
 </section>`;
@@ -1111,18 +1170,42 @@ export function buildGuida() {
   files.set('glossario.html', renderGlossaryPage(pages, ctx, data, meta));
   files.set('cerca.html', renderSearchPage(pages, meta));
 
+  // Controllo finale dei rimandi interni delle pagine generate (home, elenchi e legende comprese).
+  {
+    const idsOf = new Map();
+    for (const [name, content] of files) if (name.endsWith('.html')) idsOf.set(name, new Set([...content.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])));
+    const seenBad = new Set();
+    for (const [name, content] of files) {
+      if (!name.endsWith('.html')) continue;
+      for (const m of content.matchAll(/href="([a-z0-9-]+\.html)(?:#([^"]*))?"/g)) {
+        const [, target, hash] = m;
+        const key = `${name}→${target}#${hash || ''}`;
+        if (seenBad.has(key)) continue;
+        if (!idsOf.has(target)) {
+          seenBad.add(key);
+          errors.push(`${name}: rimando a una pagina che non esiste (${target})`);
+        } else if (hash && !idsOf.get(target).has(hash)) {
+          seenBad.add(key);
+          errors.push(`${name}: rimando a un punto che non esiste (${target}#${hash})`);
+        }
+      }
+    }
+  }
+
   // Indice di ricerca (letto da assets/guida.js)
   const idx = [];
   for (const p of pages) {
     ctx.where = p.file;
     idx.push({ t: 'pagina', titolo: p.meta.titolo, sezione: p.meta.sezione, ctx: 'Pagina', url: `${p.id}.html`, chi: p.meta.chi, testo: stripInline(p.meta.riassunto, ctx.titleOf).slice(0, 300), kw: [...(Array.isArray(p.meta.parole_chiave) ? p.meta.parole_chiave : []), p.meta.dove || ''].join(' ') });
   }
-  for (const h of data.howtos) idx.push({ t: 'howto', titolo: stripInline(h.titolo, ctx.titleOf), sezione: h.sezione, ctx: h.titolo_pagina, url: `${h.pagina}.html#${h.slug}`, chi: h.chi, testo: h.testo.slice(0, 420), kw: '' });
-  for (const f of data.features) idx.push({ t: 'funzione', titolo: f.nome, sezione: f.sezione, ctx: f.titolo_pagina, url: `${f.pagina}.html#funzionalita`, chi: f.chi, testo: `${f.cosa} ${f.dove_funzione}`.slice(0, 260), kw: '' });
-  for (const f of data.faqs) idx.push({ t: 'faq', titolo: stripInline(f.domanda, ctx.titleOf), sezione: f.sezione, ctx: f.titolo_pagina, url: `${f.pagina}.html#${f.slug}`, chi: f.chi, testo: f.testo.slice(0, 320), kw: '' });
-  for (const f of data.flows) idx.push({ t: 'flusso', titolo: stripInline(f.titolo, ctx.titleOf), sezione: f.sezione, ctx: f.titolo_pagina, url: `${f.pagina}.html#${f.slug}`, chi: f.chi, testo: f.testo.slice(0, 320), kw: '' });
-  for (const g of data.terms) idx.push({ t: 'termine', titolo: stripInline(g.termine, ctx.titleOf), sezione: g.sezione, ctx: 'Glossario', url: `glossario.html`, chi: [], testo: stripInline(g.definizione, ctx.titleOf), kw: '' });
-  files.set('guida-indice.js', `window.GUIDA_INDICE=${JSON.stringify({ versione: 1, aggiornato: meta.aggiornato, voci: idx })};\n`);
+  for (const h of data.howtos) idx.push({ t: 'howto', pg: h.pagina, titolo: stripInline(h.titolo, ctx.titleOf), sezione: h.sezione, ctx: h.titolo_pagina, url: `${h.pagina}.html#${h.slug}`, chi: h.chi, testo: h.testo.slice(0, 420), kw: '' });
+  for (const f of data.features) idx.push({ t: 'funzione', pg: f.pagina, titolo: f.nome, sezione: f.sezione, ctx: f.titolo_pagina, url: `${f.pagina}.html#funzionalita`, chi: f.chi, testo: `${f.cosa} ${f.dove_funzione}`.slice(0, 260), kw: '' });
+  for (const f of data.faqs) idx.push({ t: 'faq', pg: f.pagina, titolo: stripInline(f.domanda, ctx.titleOf), sezione: f.sezione, ctx: f.titolo_pagina, url: `${f.pagina}.html#${f.slug}`, chi: f.chi, testo: f.testo.slice(0, 320), kw: '' });
+  for (const f of data.flows) idx.push({ t: 'flusso', pg: f.pagina, titolo: stripInline(f.titolo, ctx.titleOf), sezione: f.sezione, ctx: f.titolo_pagina, url: `${f.pagina}.html#${f.slug}`, chi: f.chi, testo: f.testo.slice(0, 320), kw: '' });
+  for (const g of data.terms) idx.push({ t: 'termine', pg: g.pagina, titolo: stripInline(g.termine, ctx.titleOf), sezione: g.sezione, ctx: 'Glossario', url: `glossario.html`, chi: [], testo: stripInline(g.definizione, ctx.titleOf), kw: '' });
+  const pagineKw = {};
+  for (const p of pages) pagineKw[p.id] = [...(Array.isArray(p.meta.parole_chiave) ? p.meta.parole_chiave : []), p.meta.dove || ''].join(' ');
+  files.set('guida-indice.js', `window.GUIDA_INDICE=${JSON.stringify({ versione: 2, aggiornato: meta.aggiornato, pagine: pagineKw, voci: idx })};\n`);
 
   // Base di conoscenza per il chatbot: un blocco autosufficiente per compito, domanda, flusso, regola…
   const chunks = data.chunks.map((c) => ({ ...c, url: `${BASE_URL_PATH}${c.url}` }));
@@ -1156,7 +1239,7 @@ export function buildGuida() {
     .filter(Boolean)
     .join('\n');
 
-  for (const f of ['assets/guida.css', 'assets/guida.js', 'assets/marchio.svg']) {
+  for (const f of ['assets/guida.css', 'assets/guida-ricerca.js', 'assets/guida.js', 'assets/marchio.svg']) {
     if (!fs.existsSync(path.join(ASSETS_DIR, f))) errors.push(`risorsa mancante: public/guida/${f}`);
   }
   const riepilogo = pages.map((p) => {

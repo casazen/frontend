@@ -38,7 +38,8 @@ Qui gestisci chi lavora con te, cosa può fare, quanto paghi e come ti avvisa Ca
 
 ### Dove trovi le cose
 - **Amministrazione** è l'area di chi gestisce l'account: voci «Home», «Persone», «Immobili», «Fatturazione» e «Impostazioni» (le ultime due sono fisse in fondo al menu). La vedono titolare e amministratori; a un altro ruolo compaiono solo le voci che può aprire.
-- **Impostazioni** di Affitti brevi e Affitti lunghi (in fondo al menu) ha le schede «Organizzazione», «Consiglia CasaZen», «Piano» e «Fatturazione». Se hai anche l'area Amministrazione, «Piano» e «Fatturazione» ti portano direttamente alla pagina «Fatturazione e piano» di Amministrazione.
+- **Impostazioni** di Affitti lunghi (in fondo al menu) ha le schede «Organizzazione», «Consiglia CasaZen», «Piano» e «Fatturazione». Quelle di Affitti brevi ne hanno di più: «Organizzazione», «Consiglia CasaZen», «Aspetto sito», «Dominio pubblico», «Incorpora nel tuo sito» (su attivazione), «Documenti sito», «Stripe Connect», «Piano», «Fatturazione», «Portale ospiti» (su attivazione) e «AI»; quelle del sito e dei pagamenti sono spiegate in [[sito-prenotazione]] e [[incassi]]. Se hai anche l'area Amministrazione, «Piano» e «Fatturazione» ti portano direttamente alla pagina «Fatturazione e piano» di Amministrazione.
+- **Posti e titolare.** Anche tu, titolare, occupi un posto del piano (con Starter i posti sono 2: tu e un'altra persona). Ogni persona attiva e ogni invito in attesa ne occupa uno. Di base puoi mandare al massimo 10 e-mail di invito ogni 24 ore (anche i «Reinvia» contano) e reinviare lo stesso invito una volta all'ora.
 - **Profilo**: apri il menu in alto a destra (le tue iniziali) e scegli «Profilo».
 - Chi non è amministratore che apre una pagina riservata legge «Riservato all'amministratore dell'organizzazione» e a chi rivolgersi. Non vede errori né dati.
 
@@ -126,7 +127,7 @@ Il **Profilo** mostra il tuo nome, l'email, il tuo ruolo, il tuo tipo di operato
 Le **Notifiche** sono una tabella: per ogni evento scegli i canali. Le scelte valgono solo per te e si salvano da sole.
 - **Eventi:** Nuova prenotazione, Prenotazione annullata, Nuovo messaggio di un ospite, Messaggio urgente, Risposta da approvare, Scadenza di legge, Errore di sincronizzazione, Problema con un messaggio programmato.
 - **Canali:** Campanella, Email, Notifica sul telefono, Notifica nel browser. Un canale che ancora non può consegnare è segnato «Non ancora disponibile».
-- **Predefinito:** finché non scegli, vale la scelta predefinita (con il bollino «Predefinito»).
+- **Predefinito:** finché non scegli, vale la scelta predefinita (con il bollino «Predefinito»). I valori predefiniti sono questi: «Nuova prenotazione», «Nuovo messaggio di un ospite», «Messaggio urgente» e «Risposta da approvare» avvisano con «Notifica sul telefono» e «Campanella»; «Scadenza di legge» con «Notifica sul telefono», «Campanella» e «Email»; «Prenotazione annullata», «Errore di sincronizzazione» e «Problema con un messaggio programmato» solo con la «Campanella». «Notifica nel browser» è segnata «Non ancora disponibile». La riga «Nuova prenotazione» non decide l'e-mail di avviso di una nuova prenotazione: vedi «Come ricevo un'e-mail quando arriva una prenotazione?».
 - **Scadenze di legge:** non si possono spegnere del tutto. Lascia attivo almeno un canale.
 - **Ore di silenzio:** imposti «Dalle» e «Alle» (orario italiano). In quelle ore le notifiche sul telefono e le email aspettano la fine del silenzio; la campanella si aggiorna sempre; le scadenze di legge ti avvisano comunque. Inizio e fine uguali significano nessun silenzio.
 
@@ -169,10 +170,10 @@ CasaZen controlla se l'indirizzo è libero. Se lo cambi, il vecchio indirizzo co
 In questa pagina trovi anche **Richieste ai fornitori**: l'opzione «Invia le richieste anche a fornitori di riserva». Quando chiedi un intervento, la richiesta va al fornitore che scegli e anche ad altri fornitori della zona dichiarati come riserve. Il fornitore scelto ha un'ora per accettare: se non lo fa, il lavoro passa alla prima riserva che accetta. Per ogni richiesta puoi scegliere diversamente.
 
 ### Invitare una persona nel team
-Serve il permesso di gestire le persone (titolare o amministratore).
-1. Apri **Amministrazione › Persone** e premi «Invita».
-2. **Chi**: scrivi «Nome e cognome» ed «Email», e scegli la lingua dell'email (Italiano o Inglese). La password la sceglie la persona invitata: tu non la vedi mai.
-3. **Ruolo**: scegli il ruolo («Che ruolo avrà?»). «Confronta i ruoli in una tabella» apre il confronto. Solo il titolare può nominare un amministratore.
+**Ti serve:** essere titolare o amministratore (il permesso di gestire le persone), un posto libero nel piano e l'indirizzo e-mail esatto che la persona userà per entrare. Se vuoi limitare un Collaboratore ad alcune case («Solo alcuni»), aggiungi prima le case.
+1. Apri **Amministrazione › Persone** e premi «Invita». Se in alto non vedi «Amministrazione», cambia area (vedi [[per-iniziare#andare-in-amministrazione-o-cambiare-area-di-lavoro]]).
+2. **Chi**: scrivi «Nome e cognome» ed «Email», e scegli la lingua dell'email (Italiano o Inglese). Scrivi l'indirizzo con cui la persona entrerà: **l'invito funziona solo con quell'indirizzo** (con un altro la persona non può accettarlo). La password la sceglie la persona invitata: tu non la vedi mai.
+3. **Ruolo**: scegli il ruolo («Che ruolo avrà?»). «Confronta i ruoli in una tabella» apre il confronto. Come scegliere: **Collaboratore** per chi lavora ogni giorno su alcune case (arrivi, ospiti, interventi) senza toccare prezzi e incassi; **Property manager** per chi ti aiuta a gestire case, prenotazioni, contratti, incassi e fornitori; **Contabile** per il tuo commercialista (sola lettura); **Amministratore** solo per chi deve gestire anche persone, piano e fatture (lo nomina soltanto il titolare).
 4. **Aree e immobili**: scegli le aree («Affitti brevi», «Affitti lunghi»). Per il Collaboratore scegli anche «Tutti gli immobili» o «Solo alcuni» e spunta gli immobili.
 5. **Riepilogo**: controlla persona, ruolo, aree e immobili e premi «Invia l'invito».
 6. Vedi «Invito inviato a [nome]». Da lì puoi «Copia il link», «Vedi gli inviti» o «Invita un altro utente».
@@ -323,6 +324,9 @@ Restano tutti, ma non puoi aggiungerne altri finché non rientri nel limite o ca
 
 ### Come chiudo l'account?
 Scrivi all'assistenza dalla pagina Privacy e dati.
+
+### Come ricevo un'e-mail quando arriva una prenotazione?
+Non devi accendere niente: quando un ospite prenota dal tuo sito e paga online («Paga ora») oppure sceglie «Paga alla scadenza», CasaZen ti manda subito un'e-mail di avviso. Va all'«Email di contatto» dell'organizzazione e, se sono persone diverse, anche al responsabile dell'immobile e agli amministratori. Per cambiare l'indirizzo cambia l'«Email di contatto» ([[account-team-piano#modificare-i-dati-dell-organizzazione]]). L'avviso non dipende dall'interruttore «Email» della riga «Nuova prenotazione» in **Profilo › Notifiche** e non aspetta le ore di silenzio. Con «Paga in struttura» non parte alla conferma, perché la richiesta l'hai accettata tu. Se la prenotazione arriva da Airbnb o Booking.com tramite un channel manager (Octorate), CasaZen non manda nessuna e-mail: la trovi in **Prenotazioni**.
 
 ## Glossario
 - **Titolare**: chi ha creato l'organizzazione.

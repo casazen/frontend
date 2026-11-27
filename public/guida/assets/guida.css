@@ -370,3 +370,14 @@ strong { font-weight: 650; }
   .gd-faq > :not(summary) { display: block; }
   a { color: inherit; text-decoration: none; }
 }
+
+/* Legenda degli stati di disponibilità e «Chi è chi» (aggiunte del giro di revisione del 27/11/2026) */
+.gd-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin: 0.25rem 0 1.1rem; font-size: 0.9rem; color: var(--muted); }
+.gd-legend__i { display: inline; }
+.gd-legend__i .gd-badge { margin-right: 0.4rem; }
+.gd-persone { margin: 0.4rem 0 1rem; font-size: 0.9rem; color: var(--muted); }
+.gd-persone summary { cursor: pointer; font-weight: 550; color: var(--text); min-height: 2.25rem; display: flex; align-items: center; }
+.gd-persone ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+.gd-persone li { margin: 0.2rem 0; }
+.gd-hero__start { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.6rem 1.2rem; margin: 1.4rem 0 0; }
+.gd-hero__start a:not(.gd-btn) { font-weight: 550; }

@@ -1,12 +1,13 @@
 ---
 id: marketplace
 titolo: Marketplace dei servizi, interventi e fornitori fidati
+menu: Marketplace e interventi
 sezione: Fornitori e marketplace
 ordine: 70
 riassunto: Come trovi un fornitore nella tua zona (pulizie, idraulico, elettricista…), come gli chiedi un intervento, lo segui, lo paghi e lo annulli, e come inviti i tuoi fornitori di fiducia.
 chi: [gestore, amministratore]
 dove: Affitti brevi › Marketplace; Affitti brevi › Immobili › Interventi; Affitti brevi › Immobili › Fornitori fidati
-parole_chiave: [marketplace, fornitori, intervento, richiedere un intervento, pulizie, idraulico, elettricista, manutenzione, preventivo, sollecito, pagamento fornitore, fornitori fidati, riserva, partner, verificato, link di pagamento]
+parole_chiave: [marketplace, fornitori, intervento, richiedere un intervento, pulizie, idraulico, elettricista, manutenzione, perdita d'acqua, guasto urgente, emergenza, pronto intervento, preventivo, sollecito, fornitore non risponde, pagamento fornitore, fornitori fidati, riserva, partner, verificato, link di pagamento, annullare un intervento]
 copre: [/app/short-rent/marketplace, /app/short-rent/marketplace/categories, /app/short-rent/marketplace/categories/:category, /app/short-rent/marketplace/search, /app/short-rent/marketplace/mine, /app/short-rent/marketplace/suppliers/:orgId, /app/short-rent/interventions, /app/short-rent/interventions/request, /app/short-rent/interventions/:id, /app/short-rent/trusted-suppliers, /service/pay/:paymentId]
 stato: disponibile
 fonte_codice: [frontend/src/features/marketplace/marketplace-page.tsx, frontend/src/features/marketplace/category-page.tsx, frontend/src/features/marketplace/search-page.tsx, frontend/src/features/marketplace/mine-page.tsx, frontend/src/features/marketplace/supplier-page.tsx, frontend/src/features/marketplace/marketplace-supplier-drawer.tsx, frontend/src/features/marketplace/components/supplier-card.tsx, frontend/src/features/marketplace/components/supplier-sections.tsx, frontend/src/features/service-requests/interventions/interventions-page.tsx, frontend/src/features/service-requests/interventions/intervention-page.tsx, frontend/src/features/service-requests/interventions/intervention-now.tsx, frontend/src/features/service-requests/interventions/intervention-model.ts, frontend/src/features/service-requests/interventions/use-intervention-actions.tsx, frontend/src/features/service-requests/interventions/request/request-page.tsx, frontend/src/features/service-requests/interventions/request/request-model.ts, frontend/src/features/service-requests/interventions/request/request-pick-steps.tsx, frontend/src/features/service-requests/interventions/request/request-steps.tsx, frontend/src/features/service-requests/interventions/request/request-assist-card.tsx, frontend/src/pages/TrustedSuppliersPage.tsx, frontend/src/features/public-service-payment/service-payment-page.tsx, frontend/src/features/host-tracking/host-tracking.tsx, frontend/src/features/service-requests/long-rent/long-rent-requests-page.tsx, backend/Casazen.Core/Suppliers/HostServiceRequestActions.cs, backend/Casazen.Core/Options/ServiceRequestOptions.cs, backend/Casazen.Core/Options/SupplierPaymentsOptions.cs, backend/Casazen.Web/Controllers/TrustedSuppliersController.cs]
@@ -16,6 +17,8 @@ fonte_codice: [frontend/src/features/marketplace/marketplace-page.tsx, frontend/
 Nel **Marketplace** trovi i fornitori CasaZen che lavorano nei comuni dei tuoi immobili: pulizie, idraulico, elettricista, manutenzione e altri lavori. Quando ti serve un lavoro apri **Interventi** e premi «Richiedi un intervento»: scegli la casa, il servizio, il fornitore e l'orario, e la richiesta parte solo quando premi «Invia la richiesta».
 
 Da quel momento segui tutto dalla pagina dell'intervento: il fornitore accetta, rifiuta o propone un altro orario; a lavoro finito paghi con la carta dentro CasaZen (quando è attivo) oppure segni tu che hai pagato. Annullare è sempre gratuito.
+
+> **Attenzione:** CasaZen non è un servizio di pronto intervento. Se c'è un pericolo (acqua che allaga, odore di gas, scintille) chiama subito un tecnico o i soccorsi: leggi l'avviso in «Richiedere un intervento».
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
@@ -56,9 +59,9 @@ I fornitori si cercano **per comune**. Il Marketplace mostra quelli che lavorano
 ### Che cosa vedi di un fornitore
 Su ogni scheda trovi il nome, le categorie, il prezzo «da…» (oppure «Su preventivo») e, solo quando è misurato, «Risponde in genere entro…». I segni di fiducia sono:
 - **«Consigliato»**: lo ha solo il fornitore messo meglio nell'ordine (affidabilità e disponibilità), e solo se è davvero davanti agli altri.
-- **«Verificato»**: fornitore attivo su CasaZen con il profilo verificato, cioè dati dell'attività e partita IVA.
+- **«Verificato»**: il profilo del fornitore è attivo e ha una partita IVA indicata. Compare da solo e non misura la qualità del lavoro ([[area-fornitore#cos-e-verificato-e-come-lo-ottengo]]).
 
-Aprendo il fornitore vedi anche la presentazione («Chi è»), i servizi con prezzo e durata, le categorie e le zone («Dove e cosa fa») e i contatti (telefono ed e-mail). Se il fornitore ha pubblicato una vetrina, c'è il pulsante «Vedi la vetrina» (vedi [[vetrina-fornitore]]). **Non vedi nessuna commissione**: il prezzo è quello del servizio.
+Aprendo il fornitore vedi anche la presentazione («Chi è»), i servizi con prezzo e durata, le categorie e le zone («Dove e cosa fa») e i contatti (telefono ed e-mail). Se il fornitore ha pubblicato una vetrina, c'è il pulsante «Vedi la vetrina» (vedi [[vetrina-fornitore]]). **Non vedi nessun importo di commissione**: il prezzo è quello del servizio.
 
 ### Il ruolo di «Interventi»
 Il Marketplace serve a **conoscere** i fornitori; la richiesta si fa da **Interventi** (**Affitti brevi › Immobili › Interventi**). Lì trovi tutte le richieste che hai fatto, a che punto sono e cosa devi fare tu. Puoi anche partire da altri punti: la scheda di una prenotazione («Richiedi le pulizie» o «Altro intervento»), il Cruscotto («Richiedi un intervento») o la schermata finale del check-out («Richiedi le pulizie»).
@@ -97,10 +100,13 @@ In cima alla pagina di un intervento c'è un solo riquadro evidenziato, «Prossi
 - **Intervento concluso e pagato**: «Richiedi di nuovo» con un tocco.
 
 ### Tempi di risposta e solleciti
-Il fornitore ha un tempo limitato per rispondere, che vedi sempre nella pagina dell'intervento. Per impostazione predefinita sono **due ore**; se la richiesta va anche ai fornitori di riserva, il fornitore che hai scelto ha **un'ora**. Se nessuno risponde in tempo, CasaZen può annullare la richiesta da sola («L'ha annullato CasaZen in automatico», motivo «Il fornitore non ha risposto in tempo»): in quel caso la rilanci con «Richiedi di nuovo».
+> **Attenzione:** una richiesta in CasaZen non è una telefonata. Il fornitore ha di norma **due ore** per rispondere e l'urgenza «Emergenza» non accorcia questo tempo: è solo un'indicazione per lui. Per un guasto che non può aspettare chiama tu un tecnico.
+
+Il fornitore ha un tempo limitato per rispondere, che vedi sempre nella pagina dell'intervento («Ha tempo per rispondere fino a…»). Per impostazione predefinita sono **due ore**; se la richiesta va anche ai fornitori di riserva (su attivazione), il fornitore che hai scelto ha **un'ora**. Poi:
+- **Dove l'annullamento automatico è attivo** ([[per-iniziare#cosa-significa-su-attivazione]]: lo accende CasaZen), passato il tempo CasaZen annulla la richiesta da sola (il controllo gira ogni 10 minuti circa) e avvisa te e il fornitore: leggi «L'ha annullato CasaZen in automatico» e il motivo «Il fornitore non ha risposto in tempo». La rilanci con «Richiedi di nuovo».
+- **Dove non è attivo**, la richiesta resta «Richiesto» anche dopo l'ora indicata: non si annulla da sola. Puoi sollecitare, aspettare o annullarla tu.
 
 Con **«Sollecita»** il fornitore riceve un promemoria. Puoi sollecitarlo **una volta ogni 6 ore** (impostazione predefinita): prima, il pulsante mostra «Puoi sollecitare tra N ore» o «tra N minuti».
-
 ### Fornitori di riserva
 > **Su attivazione.** Dove è attiva, ogni richiesta può partire anche verso altri fornitori della zona, dichiarati come **riserve** (fino a tre).
 
@@ -114,16 +120,16 @@ Nella pagina dell'intervento compare il blocco **«Fornitori contattati»**: per
 Il fornitore può indicare un preventivo e poi, a lavoro finito, l'importo finale. Se l'importo finale supera il preventivo di **più del 20 %** (impostazione predefinita), devi **confermarlo** tu prima di poter pagare: il riquadro dice «Conferma l'importo finale» e il pulsante riporta la cifra (per esempio «Conferma € 120,00»).
 
 ### Come si paga un intervento
-Il modo di pagamento si decide quando il fornitore accetta, e lo leggi nella pagina dell'intervento, alla voce «Pagamento»:
+Inviare la richiesta non addebita nulla: si paga a lavoro finito (stato «Completato»). Il modo di pagamento si decide quando il fornitore accetta, e lo leggi nella pagina dell'intervento, alla voce «Pagamento»:
 - **«Online, in CasaZen»** (su attivazione): paghi con la carta dentro CasaZen, con **Stripe**. L'intervento risulta pagato quando Stripe lo conferma a CasaZen; la pagina si aggiorna da sola. Gli importi molto piccoli (sotto 0,50 €) non si pagano online.
 - **«Fuori da CasaZen: lo segni tu»**: paghi il fornitore come vi siete accordati (contanti, bonifico…) e poi premi «Segna come pagato». CasaZen non effettua il pagamento: registra solo che lo hai fatto.
 
-**Commissioni.** Come gestore **non vedi nessuna commissione** né sulle schede né nel pagamento: paghi l'importo del lavoro. La commissione di CasaZen, quando c'è, la vede il fornitore nei suoi incassi (vedi [[area-fornitore]]).
+**Commissioni.** Come gestore **non vedi nessun importo di commissione** né sulle schede né nel pagamento: paghi l'importo del lavoro (solo nella pagina «Fornitori fidati» un'etichetta dice a chi va la commissione, senza cifre). La commissione di CasaZen, quando c'è, la vede il fornitore nei suoi incassi (vedi [[area-fornitore]]).
 
 ### Fornitori fidati
 I **fornitori fidati** sono i professionisti con cui lavori già: li inviti tu e, accettato l'invito, compaiono tra le proposte quando richiedi un intervento, accanto a quelli del Marketplace. Puoi assegnarli a tutte le tue case o solo ad alcune. Sotto il nome di ogni fornitore leggi da dove arriva: «Fornitore di fiducia · Commissione all'host» (lo hai invitato tu) oppure «Fornitore marketplace · Commissione a CasaZen».
 
-> **Su attivazione.** Questa voce è riservata all'amministratore dell'organizzazione e compare solo dove è attivata (piano Agenzia). Se non la vedi, non è attiva per la tua organizzazione.
+> **Su attivazione.** Questa voce compare solo se l'organizzazione è sul piano Agenzia e solo a chi amministra l'organizzazione ([[per-iniziare#cosa-significa-su-attivazione]]). Se non la vedi, chiedi l'attivazione all'assistenza di CasaZen: in alto premi **Guida** e scegli «Scrivi all'assistenza» ([[per-iniziare#assistenza-come-scrivere-a-casazen]]).
 
 ### Link di pagamento per e-mail
 Quando un lavoro finito si paga dentro CasaZen, il cliente può ricevere per e-mail un **link di pagamento** (pagina «Pagamento di un servizio»). Il link vale **30 giorni** («Il link vale fino al…») ed è legato a quel solo pagamento: se ne ricevi uno più recente, usa quello. Nella pagina vedi professionista, servizio, immobile, voci e totale, e premi «Paga». Dopo il pagamento compare «Pagamento ricevuto. Grazie!»; se il link non è valido o il pagamento è già stato saldato, la pagina lo dice.
@@ -137,6 +143,7 @@ Per gli affitti lunghi esiste la stessa gestione degli interventi (**Affitti lun
 ## Come fare
 
 ### Trovare un fornitore nel Marketplace
+**Ti serve:** almeno un immobile con il **comune** scelto dall'elenco ufficiale ([[immobili]]): senza comune CasaZen non sa quale zona cercare.
 1. Apri **Affitti brevi › Marketplace**: si apre la scheda «Scopri».
 2. Premi «Servizi per la casa» tra i pulsanti in alto, oppure scorri fino al gruppo.
 3. Premi la categoria che ti serve (per esempio «Pulizie»). Sotto il nome leggi quanti fornitori ci sono («3 fornitori») oppure «Ancora nessun fornitore».
@@ -162,6 +169,12 @@ Se non vedi nessun fornitore, controlla che i tuoi immobili abbiano il comune: s
 3. Premi «Vedi il fornitore» per aprirne la scheda.
 
 ### Richiedere un intervento
+> **Attenzione:** CasaZen non è un servizio di pronto intervento. Se c'è un pericolo (acqua che allaga, odore di gas, scintille, fumo) chiama subito un tecnico di fiducia, i vigili del fuoco (115) o il numero unico di emergenza (112): non aspettare una richiesta in CasaZen. Una richiesta non è una telefonata: il fornitore ha di norma due ore per rispondere e «Emergenza» è solo un'indicazione per lui, non accorcia l'attesa. Dove l'annullamento automatico non è attivo, una richiesta senza risposta resta aperta ([[marketplace#tempi-di-risposta-e-solleciti]]).
+
+**Ti serve:** il permesso di richiedere interventi, almeno un immobile con il **comune** scelto, e sapere che lavoro serve, per quando e con che urgenza. Non scrivere dati degli ospiti nelle note. Inviare la richiesta non addebita nulla: si paga a lavoro finito.
+
+Gestisci affitti lunghi? La stessa richiesta si fa da **Affitti lunghi › Interventi**: vedi [[affitti-lunghi#chiedere-un-intervento-a-un-fornitore-per-una-casa-in-affitto-lungo]].
+
 La richiesta parte **solo** quando premi «Invia la richiesta» all'ultimo passo. Fino ad allora puoi tornare indietro e cambiare tutto; se esci, CasaZen conserva una bozza delle prime risposte.
 1. Apri **Affitti brevi › Immobili › Interventi** e premi «Richiedi un intervento». Il pulsante non compare se non puoi richiedere interventi.
 2. Passo **«Immobile»** («Per quale immobile?»): scegli la casa. Se ne hai una sola è già scelta. Senza immobili compare «Prima serve un immobile» con «Aggiungi un immobile».
@@ -232,6 +245,7 @@ Serve poter modificare gli immobili. Il sollecito non si può ritirare.
 ### Pagare un intervento con la carta
 > **Su attivazione:** il pagamento con la carta compare solo per i fornitori che possono ricevere pagamenti online da CasaZen.
 
+**Ti serve:** un lavoro in stato «Completato», il permesso di modificare gli immobili, una carta e un fornitore che riceve pagamenti online da CasaZen.
 1. Apri l'intervento: il riquadro dice «Lavoro fatto: resta il pagamento».
 2. Premi «Paga» (con la cifra, per esempio «Paga € 80,00»).
 3. Nella finestra «Paga l'intervento» inserisci i dati della carta e conferma.
@@ -241,6 +255,7 @@ Serve poter modificare gli immobili. Il sollecito non si può ritirare.
 Serve poter modificare gli immobili. Un pagamento andato a buon fine non si ritira da qui.
 
 ### Segnare un intervento come pagato
+**Ti serve:** un lavoro in stato «Completato», il permesso di richiedere interventi e di aver già pagato il fornitore fuori da CasaZen. L'operazione non si annulla.
 1. Paga il fornitore come vi siete accordati (contanti, bonifico…).
 2. Apri l'intervento e premi «Segna come pagato».
 3. Nella finestra leggi: «CasaZen non effettua il pagamento: questo segna solo che l'hai già fatto» e «L'operazione non si può annullare e il fornitore riceverà una notifica».
@@ -261,15 +276,17 @@ Cosa succede: annullare è **sempre gratuito**; il fornitore riceve subito un av
 3. Si apre la richiesta guidata già compilata con la stessa casa e lo stesso tipo di lavoro. Dopo un rifiuto il fornitore che ha detto no non viene riproposto; negli altri casi sì.
 
 ### Invitare un fornitore di fiducia
-> **Su attivazione** e solo per l'amministratore.
+> **Su attivazione** e solo per l'amministratore ([[per-iniziare#cosa-significa-su-attivazione]]).
+
+**Ti serve:** il piano Agenzia, l'e-mail del fornitore (la stessa con cui si registrerà) e, se vuoi, le case a cui assegnarlo.
 
 1. Apri **Affitti brevi › Immobili › Fornitori fidati** e premi «Invita fornitore».
-2. Scrivi l'«Email fornitore». Se li conosci, aggiungi anche partita IVA, codice fiscale o telefono («Identificativi facoltativi»): servono a riconoscere un fornitore già registrato.
+2. Scrivi l'«Email fornitore»: dev'essere quella con cui il fornitore si registrerà.
 3. Scegli le «Proprietà assegnate». Se non ne scegli nessuna, il fornitore lavora su tutte le tue proprietà.
 4. Premi «Invia invito». Compare «Richiesta registrata. Dopo la verifica il fornitore riceverà il link per accettare».
 5. Il rapporto inizia **quando il titolare del profilo accetta**: da quel momento il fornitore compare nell'elenco e tra le proposte delle tue richieste.
 
-L'invito non parte subito: CasaZen lo controlla prima, per evitare doppioni di fornitori già registrati. Per scegliere un fornitore dal Marketplace usa invece «Cerca fornitori nel marketplace CasaZen».
+Il messaggio dice «Dopo la verifica il fornitore riceverà il link»: di norma l'e-mail con il link parte subito. Se dopo qualche minuto il fornitore non l'ha ricevuta, controlla che l'indirizzo sia giusto e la cartella dello spam. Il fornitore apre il link, crea l'account (o accede) con **quella e-mail** e accetta: i suoi passi sono in [[area-fornitore#registrarsi-con-un-invito]]. Per scegliere un fornitore dal Marketplace usa invece «Cerca fornitori nel marketplace CasaZen».
 
 ### Rimuovere un fornitore di fiducia
 1. In **Fornitori fidati** premi «Rimuovi» sulla scheda del fornitore.
@@ -307,11 +324,11 @@ Se leggi «Questo link di pagamento non è valido o è stato sostituito da uno p
 1. La richiesta è in «Richiesto» e il «Prossimo passo» dice «In attesa che [fornitore] risponda».
 2. **Tu**: dopo un po' premi «Sollecita» (una volta ogni 6 ore).
 3. Con le riserve attive: dopo un'ora il lavoro passa al primo fornitore di riserva che accetta e il blocco «Fornitori contattati» te lo dice.
-4. Senza riserve, o se nessuno accetta: la richiesta può essere annullata da CasaZen in automatico.
+4. Senza riserve, o se nessuno accetta: dove l'annullamento automatico è attivo, CasaZen annulla la richiesta e ti avvisa; altrimenti resta «Richiesto» e decidi tu se aspettare, sollecitare o annullarla.
 5. **Tu**: premi «Richiedi di nuovo» e scegli un altro fornitore.
 
 ## Regole e limiti
-- **Tempo di risposta**: due ore per impostazione predefinita; un'ora per il fornitore scelto più un'ora di gara tra le riserve, quando sono attive. Le durate possono essere diverse sul tuo ambiente: vale sempre quella scritta nella pagina dell'intervento.
+- **Tempo di risposta**: due ore per impostazione predefinita; un'ora per il fornitore scelto più un'ora di gara tra le riserve, quando sono attive. L'annullamento automatico per mancata risposta c'è solo dove è attivo; altrimenti la richiesta resta aperta. Le durate possono essere diverse sul tuo ambiente: vale sempre quella scritta nella pagina dell'intervento.
 - **Sollecito**: una volta ogni 6 ore (impostazione predefinita).
 - **Importo finale**: oltre il 20 % sopra il preventivo serve la tua conferma prima di pagare (impostazione predefinita).
 - **Riserve**: fino a tre, scelte tra i fornitori liberi della zona e della categoria.
@@ -339,13 +356,16 @@ No. Vede il comune e il CAP prima di accettare e l'indirizzo dopo; se colleghi u
 Sì. Paghi come vi siete accordati e poi premi «Segna come pagato». CasaZen non esegue quel pagamento e non lo può annullare per te.
 
 ### CasaZen mi addebita una commissione?
-Nelle schede e nel pagamento dell'intervento non vedi nessuna commissione: paghi l'importo del lavoro. Se hai dubbi sulla fattura del fornitore, chiedila a lui.
+Nelle schede e nel pagamento dell'intervento non vedi nessun importo di commissione: paghi l'importo del lavoro. Se hai dubbi sulla fattura del fornitore, chiedila a lui.
 
 ### Posso annullare quando il lavoro è già iniziato?
 Sì, annullare è gratuito, ma se il fornitore ha già lavorato dovete accordarvi direttamente.
 
-### Cos'è «Verificato»?
-È un fornitore attivo su CasaZen con il profilo verificato: dati dell'attività e partita IVA.
+### Ho una perdita d'acqua o un guasto urgente: cosa faccio?
+Chiama subito un tecnico di fiducia e, se c'è un pericolo (acqua che allaga, odore di gas, scintille, fumo), i vigili del fuoco (115) o il numero unico di emergenza (112). CasaZen non è un servizio di pronto intervento: una richiesta non è una telefonata, il fornitore ha di norma due ore per rispondere e «Emergenza» non accorcia l'attesa. Puoi mandare la richiesta anche subito, ma non aspettare la risposta per metterti in sicurezza.
+
+### Il fornitore non risponde alla mia richiesta: cosa faccio?
+Guarda l'orario scritto nella pagina dell'intervento («Ha tempo per rispondere fino a…») e premi «Sollecita» (una volta ogni 6 ore). Se non puoi aspettare, annulla la richiesta (è gratuito) e scegline un altro fornitore con «Richiedi di nuovo». Dove l'annullamento automatico è attivo CasaZen la annulla da sola passato il tempo e ti avvisa; dove non è attivo la richiesta resta aperta finché non la chiudi tu.
 
 ### Posso usare il mio idraulico di sempre?
 Sì, se la tua organizzazione ha «Fornitori fidati»: invitalo con la sua e-mail. Quando accetta lo trovi tra le proposte.
@@ -358,6 +378,10 @@ Sì, se la tua organizzazione ha «Fornitori fidati»: invitalo con la sua e-mai
 - **Partner**: azienda esterna a CasaZen; il lavoro si organizza sul suo sito.
 - **Preventivo**: prezzo che il fornitore propone prima del lavoro.
 - **Prossimo passo**: il riquadro che dice cosa fare adesso e a chi tocca.
+- **Consigliato**: segno sul fornitore messo meglio nell'ordine per affidabilità e disponibilità, solo se è davvero davanti agli altri.
+- **Verificato**: segno su un fornitore con profilo attivo e partita IVA indicata.
+- **Marketplace**: la voce di menu dove trovi i fornitori CasaZen della tua zona e, in altri gruppi, i collegamenti ai canali di vendita e agli strumenti.
+- **Pronto intervento**: servizio di emergenza (tecnici o soccorsi) che risponde subito; CasaZen non lo è.
 
 ## Vedi anche
 - [[area-fornitore]]: come i fornitori ricevono, accettano e si fanno pagare.

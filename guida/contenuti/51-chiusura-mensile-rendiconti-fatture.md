@@ -1,12 +1,13 @@
 ---
 id: chiusura-mensile
 titolo: Chiusura mensile, rendiconti, fatture, ritenute e bonifici ai proprietari
+menu: Chiusura mensile e rendiconti
 sezione: Agenzie e proprietari
 ordine: 51
 riassunto: Come un'agenzia chiude ogni mese i conti dei proprietari, dal controllo al rendiconto, dall'approvazione e dalla pubblicazione al pagamento e alla chiusura, poi fatture, autofatture, ritenute d'acconto, F24 e file dei bonifici. Chi emette cosa e cosa resta a te.
 chi: [amministratore]
 dove: Amministrazione › Chiusura mensile
-parole_chiave: [chiusura mensile, rendiconto, versione, approvazione, pubblicazione, riconciliazione, rettifica, cambio, fattura al proprietario, fattura del PM, autofattura, TD17, SDI, ritenuta d'acconto, F24, Certificazione Unica, 770, bonifici, ISO 20022, SEPA, esegui per tutti, anomalie]
+parole_chiave: [chiusura mensile, chiudere il mese, rendiconto, pubblicare rendiconto, versione, approvazione, pubblicazione, riconciliazione, rettifica, cambio, fattura al proprietario, fattura del PM, autofattura, TD17, SDI, ritenuta d'acconto, F24, Certificazione Unica, 770, bonifici, pagare proprietario, ISO 20022, SEPA, esegui per tutti, anomalie]
 copre: [/app/account/owner-close, /app/account/owner-close/versions/:versionId, /app/account/statements, /app/account/owner-invoices, /app/account/self-billing, /app/account/withholding, /app/account/wire-transfers]
 stato: su-attivazione
 fonte_codice: [frontend/src/features/owner-accounting/month-end-close-page.tsx, frontend/src/features/owner-accounting/statement-detail-page.tsx, frontend/src/features/owner-accounting/owner-accounting-model.ts, frontend/src/features/owner-accounting/components/owner-close-row.tsx, frontend/src/features/owner-accounting/components/close-dialog.tsx, frontend/src/features/owner-accounting/components/tax-filing-panel.tsx, frontend/src/features/owner-accounting/components/tax-exports-section.tsx, frontend/src/features/owner-accounting/components/owner-invoice-panel.tsx, frontend/src/features/owner-accounting/components/external-invoices-panel.tsx, frontend/src/features/owner-accounting/components/bulk-close-dialog.tsx, frontend/src/features/owner-invoices/owner-invoices-page.tsx, frontend/src/features/fiscal/self-billing/self-billing-page.tsx, frontend/src/pages/StatementsPage.tsx, frontend/src/components/statements/StatementDetail.tsx, frontend/src/pages/WithholdingPage.tsx, frontend/src/pages/WireTransferPage.tsx, frontend/src/components/finance/agency-finance-gate.tsx, backend/Casazen.Web/Controllers/OwnerAccountingController.cs, backend/Casazen.Web/Controllers/StatementsController.cs, backend/Casazen.Web/Controllers/OwnerPayoutsController.cs, backend/Casazen.Web/Controllers/OwnerInvoicesController.cs, backend/Casazen.Web/Controllers/SelfBillingController.cs, backend/Casazen.Web/Controllers/WithholdingController.cs, backend/Casazen.Web/Controllers/WireTransferController.cs, backend/Casazen.Core/Services/IOwnerAccountingService.cs, backend/Casazen.Core/Authorization/AgencyPermissions.cs]
@@ -15,7 +16,9 @@ fonte_codice: [frontend/src/features/owner-accounting/month-end-close-page.tsx, 
 ## In breve
 Ogni mese, quando il mese è finito, **chiudi i conti dei tuoi proprietari** da **Amministrazione › Chiusura mensile**. Per ogni proprietario CasaZen prepara un **rendiconto**: tu lo controlli, lo **approvi**, lo **pubblichi** (da quel momento il proprietario lo vede nel suo portale), registri il **pagamento** e infine **chiudi il mese**. Le altre schede della stessa sezione riguardano le fatture e i soldi che ne seguono: **Fatture ai proprietari**, **Autofatture (TD17)**, **Ritenute d'acconto** e **Bonifici proprietari**.
 
-CasaZen prepara e conserva; **non esegue** i bonifici, **non versa** l'F24 e **non trasmette** niente all'Agenzia delle Entrate: lo fai tu o il tuo commercialista, e in CasaZen registri che è stato fatto. Questa parte è **su attivazione** e serve il piano Agenzia e il ruolo di titolare o amministratore (vedi [[agenzie-proprietari]]).
+CasaZen prepara e conserva; **non esegue** i bonifici, **non versa** l'F24 e **non trasmette** niente all'Agenzia delle Entrate: lo fai tu o il tuo commercialista, e in CasaZen registri che è stato fatto (CasaZen non controlla che sia vero). Questa parte è **su attivazione** ([[per-iniziare#cosa-significa-su-attivazione]]) e serve il **piano Agency** e il ruolo di titolare o amministratore: nomi, percorso e cosa vedi senza piano sono in [[agenzie-proprietari#chi-ha-il-piano-agency-e-cosa-sblocca]].
+
+> **Attenzione, queste azioni non si annullano dall'app:** «Pubblica» (avvisa subito il proprietario con un'e-mail; per cambiare qualcosa serve una nuova versione), «Registra il pagamento», «Chiudi il mese» (non c'è un comando per riaprirlo), «Emetti» (la fattura prende un numero e non si modifica più), la registrazione del pagamento dell'F24, «Confermato pagato» sul file dei bonifici e «Esegui per tutti», che ripete un passaggio per tutti i proprietari insieme. Controlla prima: dove puoi, prova con un solo proprietario.
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
@@ -46,8 +49,8 @@ CasaZen prepara e conserva; **non esegue** i bonifici, **non versa** l'F24 e **n
 | Cosa | Chi lo prepara o lo emette | Cosa resta a te |
 |---|---|---|
 | **Rendiconto** del proprietario | CasaZen lo prepara dal libro del mese. **Non è un documento fiscale**: è il riepilogo di quello che l'agenzia deve al proprietario | Controllarlo, approvarlo, pubblicarlo |
-| **Fattura dell'agenzia al proprietario** («Fattura del PM») | Con la funzione attiva, **CasaZen** prepara la bozza dal rendiconto e la **emette** quando premi «Emetti» (numero, PDF). Senza la funzione, CasaZen non emette: fatturi dal tuo sistema e **colleghi** la fattura al rendiconto | Rivedere la bozza ed emetterla; l'invio allo SDI è spiegato in [[fisco-documenti]] |
-| **Autofattura TD17** (commissioni dei portali esteri senza IVA) | CasaZen prepara le bozze dal libro del mese; **la emetti tu** e CasaZen le dà il numero e crea PDF e XML | Emettere entro il giorno 15 del mese dopo e inviarla allo SDI come le altre fatture |
+| **Fattura dell'agenzia al proprietario** («Fattura del PM»; «PM» è la tua agenzia, il property manager) | Con la funzione attiva, **CasaZen** prepara la bozza dal rendiconto e la **emette** quando premi «Emetti» (numero, PDF). Senza la funzione, CasaZen non emette: fatturi dal tuo sistema e **colleghi** la fattura al rendiconto. Come capisci quale è il tuo caso: nel rendiconto vedi «Crea la fattura» (CasaZen emette) oppure «Collega una fattura» (emetti tu, fuori da CasaZen) | Rivedere la bozza ed emetterla. L'invio allo SDI è automatico solo se CasaZen è collegata allo SDI (su attivazione: riquadro «Invio allo SDI», pulsante «Invia»); altrimenti l'invio resta a te, a mano ([[fisco-documenti]]) |
+| **Autofattura TD17** (commissioni dei portali esteri senza IVA) | CasaZen prepara le bozze dal libro del mese; **la emetti tu** e CasaZen le dà il numero e crea PDF e XML | Emettere entro il giorno 15 del mese dopo (data prudente, da confermare con il commercialista) e inviarla allo SDI come le altre fatture. Quando le bozze sono pronte, in «Da fare» compare «Autofatture da controllare ed emettere» con quella scadenza |
 | Ricevute e fatture dei **soggiorni** a nome del proprietario | CasaZen le emette a suo nome se il suo profilo emittente è completo (su attivazione) | Completare il profilo ([[agenzie-proprietari]]) |
 | **Ritenuta d'acconto** | CasaZen la **decide** quando registri il pagamento, con la regola approvata dal commercialista, e conserva la prova | Versare l'F24 (tu o il commercialista) e registrare il giorno |
 | **F24**, Certificazione Unica, 770, comunicazione dei contratti | CasaZen prepara i **dati** (PDF, CSV, Excel) e non trasmette nulla | Il commercialista li compila e li invia; tu registri invio e ricevuta |
@@ -104,7 +107,7 @@ Un'anomalia è qualcosa che impedisce di fidarsi del rendiconto. Alcune **blocca
 | «Il proprietario è presunto un imprenditore» | È un avviso: il rendiconto è giusto, ma i suoi soggiorni non hanno la ritenuta delle locazioni brevi |
 
 ### Pagamento e ritenuta
-**Registrare un pagamento** in CasaZen vuol dire scrivere che hai pagato (o stai per pagare) il proprietario. È **in quel momento** che CasaZen decide se c'è una **ritenuta**, con la regola fiscale approvata e in vigore il giorno del pagamento, e ne conserva la prova. I fatti su cui decide li legge dal libro: non si scrivono a mano.
+**Registrare un pagamento** in CasaZen vuol dire scrivere che hai pagato (o stai per pagare) il proprietario. È **in quel momento** che CasaZen decide se c'è una **ritenuta**, con la regola fiscale approvata e in vigore il giorno del pagamento, e ne conserva la prova. I fatti su cui decide li legge dal libro: non si scrivono a mano. La **data del pagamento** conta: da lei dipendono il mese in cui entrano il pagamento e la ritenuta (e quindi l'F24 da versare) e la regola fiscale che vale; se quel mese è già chiuso, CasaZen non registra il pagamento.
 
 La ritenuta si applica ai soggiorni che sono una **locazione breve** e per cui l'agenzia ha **incassato o è intervenuta nel pagamento**. Non c'è ritenuta, per esempio, quando: il portale l'ha già trattenuta; l'agenzia non ha incassato; il proprietario non è una persona fisica senza partita IVA o è un'«impresa presunta»; l'immobile non è in Italia; la durata del soggiorno è fuori dai limiti; il soggiorno non è attivo (annullato, non presentato, in attesa). La finestra «Registra un pagamento» mostra, soggiorno per soggiorno, se entra nella base e perché. Se il proprietario è pagato in un'altra valuta (per esempio in franchi), la ritenuta decisa in euro si trattiene al cambio dell'agenzia.
 
@@ -127,7 +130,9 @@ Se il saldo non torna, o è negativo, si può chiudere solo con un **motivo scri
 3. Leggi il riquadro in alto, «Chiusura di» e il mese: dice quanti rendiconti sono senza anomalie (per esempio «80% pronti: 8 su 10») e «Tutto in ordine: puoi andare avanti» oppure «N anomalie da risolvere prima di chiudere».
 4. Se nel mese non c'è niente vedi «Nessun rendiconto da preparare»; se tutto è chiuso, «… è chiuso».
 
-Se vedi «Serve il piano Agenzia» o «Serve l'amministratore dell'organizzazione», la tua organizzazione o il tuo ruolo non permettono questa pagina ([[agenzie-proprietari#capire-se-la-tua-organizzazione-ha-il-livello-agenzia]]).
+Se vedi «Serve il piano Agenzia» (è il piano Agency) o «Serve l'amministratore dell'organizzazione», la tua organizzazione o il tuo ruolo non permettono questa pagina ([[agenzie-proprietari#capire-se-la-tua-organizzazione-ha-il-piano-agency]]).
+
+**Prima di chiudere il primo mese tieni pronto:** le commissioni dei portali (se le prenotazioni non le riportano), i cambi (se i proprietari sono pagati in valute diverse), il mandato e i dati finanziari di ogni proprietario validi dal primo mese da chiudere, le quote di ogni immobile al 100% e una regola fiscale approvata dal commercialista. Se manca qualcosa lo scopri comunque dalle anomalie dopo «Controlla il mese».
 
 ### Controllare il mese e risolvere le anomalie
 1. Premi «Controlla il mese». CasaZen registra nel libro i movimenti del mese che mancano e dice: «Controllo fatto: N righe registrate, N stornate, N invariate».
@@ -157,12 +162,15 @@ Per cambiare una versione già preparata usa «Rigenera come nuova versione»: l
 3. Sul rendiconto **Approvato** premi «Pubblica». Si apre «Pubblica la versione N».
 4. Leggi: il file e la sua impronta si conservano e non cambiano più; per cambiare qualcosa serve una nuova versione. Premi «Pubblica».
 
-Cosa succede dopo: il proprietario vede il rendiconto nel portale (in «Contabilità») e riceve un'e-mail che lo avvisa, **senza importi**. Il PDF entra anche tra i suoi documenti. Se l'e-mail non parte, in «Da fare» ti compare «Proprietario da avvisare a mano»: avvisalo tu; il rendiconto è pubblicato comunque.
+> **Attenzione:** appena premi «Pubblica» il proprietario riceve l'e-mail e non c'è modo di ritirare né di cambiare il rendiconto. Controlla prima cifre e righe.
+
+Cosa succede dopo: il proprietario vede il rendiconto nel portale (in «Contabilità») e riceve un'e-mail che lo avvisa. L'e-mail dice solo quale agenzia ha pubblicato e ha il link a «Contabilità»: **nessun importo, riga, periodo o ospite**. Il PDF entra anche tra i suoi documenti. Se l'e-mail non parte, in «Da fare» ti compare «Proprietario da avvisare a mano»: avvisalo tu; il rendiconto è pubblicato comunque.
 
 Non si annulla: un'approvazione o una pubblicazione si sostituisce con una nuova versione. Approvare e pubblicare sono due permessi distinti nel sistema; titolare e amministratori hanno entrambi.
 
 ### Registrare il pagamento a un proprietario
-Serve essere titolare o amministratore. Il rendiconto deve essere approvato.
+**Ti serve:** essere titolare o amministratore; il rendiconto approvato; i dati finanziari del proprietario completi, con una regola fiscale approvata.
+> **Attenzione:** un pagamento registrato **non si annulla dalla pagina**. Registralo il giorno in cui il bonifico parte davvero (o lo carichi in banca) e scrivi quella data. Controlla importo, data e ritenuta prima di premere «Registra il pagamento». CasaZen non muove soldi: il bonifico lo fai tu in banca.
 1. Sul rendiconto **Approvato** o **Pubblicato** apri «Altre azioni» e scegli «Registra un pagamento» (se è il prossimo passo è il pulsante principale).
 2. Controlla «Fatti letti dal registro del proprietario»: per ogni soggiorno vedi se entra nella base della ritenuta e perché. Non si scrivono a mano; se qualcosa non torna, correggilo nel libro e riapri la finestra.
 3. Scegli la «Data del pagamento» e, se vuoi, scrivi il «Riferimento del bonifico» (al massimo 100 caratteri).
@@ -180,15 +188,16 @@ Cosa succede dopo: il pagamento compare nei **Bonifici proprietari** se il rendi
 4. Se non torna o il saldo è negativo, scrivi il «Motivo della chiusura con differenza» (fino a 500 caratteri). Può farlo solo chi gestisce le finanze dei proprietari.
 5. Scrivi **CHIUDI** nel campo di conferma e premi «Chiudi il mese».
 
-Cosa succede dopo: il mese è «Chiuso». Non si registra più niente in quel mese: quello che arriva dopo va in una rettifica di un mese aperto. Le prove (versioni, righe, file pubblicati) si conservano per il tempo previsto dalla regola fiscale. **Non si riapre da qui.**
+Cosa succede dopo: il mese è «Chiuso». Non si registra più niente in quel mese: quello che arriva dopo va in una rettifica di un mese aperto. Le prove (versioni, righe, file pubblicati) si conservano per il tempo previsto dalla regola fiscale. **Un mese chiuso non si riapre: nell'app non c'è un comando per farlo.** Se hai chiuso per errore, scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza»): non c'è una procedura che tu possa fare da solo.
 
 Se vedi «Il mese non si può ancora chiudere», sotto c'è l'elenco delle anomalie che bloccano: risolvile e riprova.
 
 ### Eseguire un passaggio per tutti i proprietari
 Utile con tanti immobili. Ogni proprietario fa da sé: se uno non va avanti, gli altri sì.
+> **Attenzione:** «Pubblica i rendiconti» avvisa **subito ogni proprietario** con un'e-mail e «Chiudi il mese» chiude il mese di **tutti** quelli con il saldo a posto: nessuno dei due passaggi si annulla. Prima apri almeno un rendiconto e controllalo; se puoi, fai prima il passaggio su un solo proprietario dalla sua riga.
 1. In «Rendiconti del mese» premi «Esegui per tutti».
 2. In «Quale passaggio?» scegli: «Controlla e registra i movimenti», «Prepara i rendiconti», «Approva i rendiconti», «Pubblica i rendiconti» oppure «Chiudi il mese». Uno è «consigliato». «Chiudi il mese» è indicato «il mese non è ancora finito» finché non lo è.
-3. Leggi le conseguenze e premi «Esegui».
+3. Leggi le conseguenze (per «Pubblica i rendiconti»: i proprietari vedono subito il rendiconto e ricevono l'avviso) e premi «Esegui».
 4. Segui l'avanzamento («N proprietari su M»). Puoi chiudere la finestra: finché resti sulla pagina ti avvisiamo quando finisce, e il risultato resta in «Esegui per tutti».
 5. Leggi il risultato: «Fatti», «Con anomalie», «Già a posto», «Non completati», con il motivo per ognuno. Premi «Esegui un altro passaggio» per continuare.
 
@@ -269,7 +278,7 @@ Cosa succede dopo: l'autofattura emessa non si modifica più. Come per ogni fatt
 1. Registra i pagamenti ai proprietari del mese ([[chiusura-mensile#registrare-il-pagamento-a-un-proprietario]]): è da lì che nascono le ritenute.
 2. In fondo alla **Chiusura mensile**, nel riquadro «Ritenute e invii fiscali», leggi «F24 di» e il mese. Se ci sono ritenute vedi «Ritenute calcolate: … da versare con F24. Il file F24 non è ancora stato generato». Premi «Genera l'F24». Se non ci sono ritenute vedi «Nessuna ritenuta da versare per questo mese: senza ritenuta non c'è un F24».
 3. Apri **Chiusura mensile › Ritenute d'acconto**. Scegli «Anno» e «Mese». In «Ritenute del mese» vedi per ogni proprietario base e ritenuto. In «F24 di» vedi codice tributo, importo totale, scadenza e riferimento. Premi «Scarica l'F24 (PDF)».
-4. **Versa l'F24 tu o il tuo commercialista.** CasaZen non lo versa.
+4. **Versa l'F24 tu o il tuo commercialista.** CasaZen non lo versa. La scadenza che CasaZen indica è il 16 del mese dopo (il 16 gennaio per dicembre): confermala con il tuo commercialista. In «Da fare» non c'è un avviso prima di quella data: segnala la scadenza nel tuo calendario (la pagina scrive «La scadenza era il …» solo quando è già passata).
 5. Torna in «Ritenute d'acconto», premi «Registra pagamento», scegli il «Giorno del pagamento» e conferma «Registrare il pagamento dell'F24?». Non si annulla da qui, e CasaZen non verifica il versamento.
 6. Nel riquadro «Ritenute e invii fiscali» segui il file: «Segna come verificato», «Registra l'invio» (scrivi chi l'ha trasmesso e come) e «Registra la ricevuta» (il riferimento della ricevuta dell'Agenzia delle Entrate) oppure «Segna come rifiutato» (con il motivo). Senza riferimento di invio o ricevuta CasaZen non lo considera spedito né accettato.
 7. Se le ritenute cambiano (per esempio un pagamento stornato) premi «Rigenera dai dati». Se vedi «L'F24 non corrisponde alle ritenute del mese», rigeneralo prima di andare avanti.
@@ -279,7 +288,7 @@ Cosa succede dopo: l'autofattura emessa non si modifica più. Come per ogni fatt
 2. Per ogni riga premi «Scarica CSV» o «Scarica Excel»: «Dati dell'F24» del mese (sempre disponibile); su attivazione, «Certificazione Unica» dell'anno (una riga per ogni destinatario e i suoi soggiorni, più un «Prospetto PDF» di bozza per ogni proprietario, con la filigrana «bozza»), «Dati del modello 770» e «Comunicazione dei contratti di locazione breve» (da comunicare entro il 30 giugno dell'anno dopo).
 3. Per la Certificazione Unica premi prima «Genera i dati annuali» (nel riquadro «Dati annuali per la Certificazione Unica»), poi segui «Segna come verificato», «Registra l'invio» e «Registra la ricevuta».
 
-CasaZen prepara i dati e **non trasmette niente**: la compilazione e l'invio li fa il tuo commercialista. Se un file non c'è, la riga dice perché («nessuna ritenuta nel periodo», «dati annuali non ancora generati»). Per i report generali di incassi e fisco vedi [[report-commercialista]].
+CasaZen prepara i dati e **non trasmette niente**: la compilazione e l'invio li fa il tuo commercialista, e le date di legge (per esempio il 30 giugno dell'anno dopo per la comunicazione dei contratti) le confermi con lui: CasaZen non ti manda un avviso in «Da fare» per la Certificazione Unica, il 770 o la comunicazione. «Registra l'invio» e «Registra la ricevuta» scrivono solo quello che dichiari tu. Se un file non c'è, la riga dice perché («nessuna ritenuta nel periodo», «dati annuali non ancora generati»). Per i report generali di incassi e fisco vedi [[report-commercialista]].
 
 ### Decidere il regime di un soggiorno con conduttore società
 Questa parte è **su attivazione**. Se il conduttore è una società e l'immobile è di un proprietario privato, non è chiaro se vale il regime delle locazioni brevi: lo decidi tu, sentito il commercialista. Finché nessuno decide, il soggiorno resta una locazione breve.
@@ -340,7 +349,8 @@ Non si annulla da qui. CasaZen non sa se la banca ha eseguito: lo segni tu. Il f
 4. L'autofattura va allo SDI; se è scartata la correggi con lo stesso numero ([[fisco-documenti]]).
 
 ## Regole e limiti
-- Le pagine di questa parte servono il **piano Agenzia** e il ruolo di **titolare o amministratore** (con accesso a tutte le strutture). Se il piano Agenzia risulta in fase di riduzione, puoi consultare ma le modifiche vengono rifiutate.
+- Le pagine di questa parte servono il **piano Agency** e il ruolo di **titolare o amministratore** (con accesso a tutte le strutture), e sono su attivazione. Se il piano Agency risulta in fase di riduzione, puoi consultare ma le modifiche vengono rifiutate.
+- Non si annullano dall'app: un rendiconto pubblicato (si sostituisce con una nuova versione), un pagamento registrato, un mese chiuso, una fattura emessa, il pagamento dell'F24 registrato e un file dei bonifici segnato come pagato.
 - Il mese si chiude solo **dopo la sua fine**. La pagina si apre sul mese scorso.
 - Una versione approvata o pubblicata **non si modifica mai**: serve una nuova versione. Un rendiconto «Da aggiornare» non si approva né si pubblica.
 - Un rendiconto con anomalie che bloccano resta «Segnalato» e non si approva.
@@ -384,7 +394,16 @@ Il mese resta chiuso. Compare l'avviso «È arrivato un movimento dopo la chiusu
 Controlla tre cose: il pagamento è registrato nella chiusura mensile; il rendiconto è pubblicato; il netto è maggiore di zero. Se il proprietario ha «IBAN mancante» compare ma non si può pagare.
 
 ### Ho registrato un pagamento sbagliato. Come lo correggo?
-Nella pagina non c'è un pulsante per annullarlo. Controlla sempre data e importo prima di confermare.
+Nella pagina non c'è un pulsante per annullarlo e non esiste una procedura che tu possa fare da solo: scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza») dicendo quale pagamento è sbagliato e perché. Non registrare un secondo pagamento per «compensare»: il totale pagato salirebbe. Per evitarlo, controlla sempre data e importo prima di confermare.
+
+### Posso riaprire un mese chiuso?
+No: nell'app non c'è un comando per riaprirlo. Quello che arriva dopo la chiusura va in una rettifica di un mese aperto.
+
+### Ho pubblicato un rendiconto per sbaglio. Posso ritirarlo?
+No. Il proprietario è già stato avvisato (l'e-mail non contiene importi) e vede il rendiconto nel portale. Prepara una nuova versione con «Rigenera come nuova versione»: sostituisce la precedente, che resta consultabile.
+
+### CasaZen avvisa il proprietario che il bonifico è partito?
+No. Il file dei bonifici non esegue niente e CasaZen non sa se la banca ha pagato: «Confermato pagato» lo premi tu quando i bonifici sono stati eseguiti.
 
 ### Perché la scheda «Rendiconti» è vuota?
 Non crea rendiconti: mostra quelli per immobile già generati. I rendiconti dei proprietari si preparano dalla chiusura mensile.
@@ -399,14 +418,19 @@ La pagina dice «La scadenza era il … e il pagamento non è registrato» finch
 - **Anomalia**: un problema che segnala il mese; alcune bloccano la chiusura.
 - **Riconciliazione**: il confronto tra il saldo approvato e i pagamenti.
 - **Rettifica**: una riga in più, con motivo, che sistema il conto senza cancellare niente.
-- **Ritenuta d'acconto**: la parte del pagamento che l'agenzia trattiene per il fisco quando la regola lo prevede.
-- **F24**: il modello con cui si versa la ritenuta.
-- **Autofattura TD17**: la fattura con cui si integra l'IVA su una commissione di un portale estero.
+- **Ritenuta d'acconto** (dell'agenzia): la parte del pagamento al proprietario che l'agenzia trattiene per il fisco quando la regola lo prevede, e poi versa con l'F24. Non è la ritenuta che un portale può trattenere sulle prenotazioni.
+- **Locazione breve**: l'affitto di una casa per un periodo breve, il caso in cui l'agenzia può dover trattenere la ritenuta (le condizioni esatte sono quelle della regola fiscale approvata dal commercialista).
+- **F24**: il modello con cui si versa la ritenuta. CasaZen lo prepara, non lo versa.
+- **Certificazione Unica (CU) e modello 770**: dichiarazioni annuali sulle ritenute. CasaZen prepara i dati; le compila e le invia il commercialista.
+- **Autofattura TD17**: la fattura con cui si integra l'IVA su una commissione che un portale estero ti ha fatturato senza IVA italiana.
+- **Bozza e «Emetti»**: la bozza si può scartare; con «Emetti» la fattura prende il suo numero, in ordine e senza buchi, e non si modifica più.
+- **Quota**: la parte di un immobile che spetta a un proprietario (due proprietari al 50% fanno 100%).
+- **Mandato**: l'accordo con cui il proprietario affida l'immobile all'agenzia (provvigione, IVA, forfait): vedi [[agenzie-proprietari]].
 - **SDI**: il sistema che riceve le fatture elettroniche italiane.
 - **ISO 20022**: il formato del file che la banca legge per eseguire i bonifici.
 
 ## Vedi anche
-- [[agenzie-proprietari]]: il livello agenzia, i dati dei proprietari, il mandato e il portale.
+- [[agenzie-proprietari]]: il piano Agency, i dati dei proprietari, il mandato e il portale.
 - [[fisco-documenti]]: fatture, ricevute, numerazione e invio allo SDI.
 - [[report-commercialista]]: report e pacchetto per il commercialista.
 - [[incassi]]: come arrivano i pagamenti delle prenotazioni che finiscono nei rendiconti.

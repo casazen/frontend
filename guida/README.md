@@ -7,6 +7,7 @@ Il manuale d'uso di CasaZen è un sito statico di pagine HTML, in italiano, serv
 | **Sorgenti** (da modificare) | `guida/contenuti/NN-id.md` + `guida/meta.json` (data e versione) |
 | **Pagine generate** (non si modificano a mano) | `public/guida/*.html`, `guida-indice.js`, `guida-chunks.json`, `guida-completa.md`, `llms.txt` |
 | **Aspetto e comportamento** (scritti a mano) | `public/guida/assets/guida.css`, `guida.js`, `marchio.svg`, `fonts/` |
+| **Motore di ricerca** (una sola copia della logica, scritta a mano) | `public/guida/assets/guida-ricerca.js` (`window.GuidaRicerca`: normalizzazione, radici, sinonimi, punteggio); lo carica ogni pagina prima di `guida.js`. Prova: `scripts/guida-ricerca.test.mjs` |
 | **Generatore** (nessuna dipendenza) | `scripts/build-guida.mjs` |
 | **Controllo che i file generati siano aggiornati** | `scripts/build-guida.test.mjs` (gira con `npm test`) |
 
@@ -31,6 +32,7 @@ Anteprima: servire la cartella `public/` con un server statico (es. `node <serve
 ---
 id: prenotazioni                  # univoco, minuscolo con trattini: è l'indirizzo della pagina (prenotazioni.html)
 titolo: Prenotazioni e calendario
+menu: Prenotazioni              # facoltativo: titolo breve per il menu e le schede (di default vale «titolo»)
 sezione: Affitti brevi            # una tra: Per iniziare, Affitti brevi, Adempimenti, Incassi e fisco, Affitti lunghi,
                                   #   Agenzie e proprietari, Fornitori e marketplace, Sito e portali, App mobile, Account e piano
 ordine: 20
@@ -47,9 +49,9 @@ fonte_codice: [frontend/src/features/bookings/bookings-page.tsx]  # non pubblica
 ## Vedi anche
 ```
 
-Sezione facoltativa `## Note per la revisione (NON pubblicate)`: il generatore non la pubblica e `--notes` la raccoglie. **Non committarla** in questo repository pubblico: dubbi, discrepanze e incertezze si tengono nei documenti privati del progetto (`documentazione/02-guida-utente/`), mai nei sorgenti del manuale.
+Sezione facoltativa `## Note per la revisione (NON pubblicate)`: il generatore non la pubblica e `--notes` la raccoglie. **Non committarla** in questo repository pubblico: dubbi, discrepanze e incertezze si tengono nei documenti privati del progetto (fuori da questo repository), mai nei sorgenti del manuale.
 
-Tabella «Funzionalità»: colonne `Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa` (la colonna «Come si usa» riporta il titolo del compito in «Come fare» e diventa un link). Link interni: `[[id]]`, `[[id#slug-del-titolo]]`, `[[id#slug|testo]]`. Note: citazione che inizia con `**Nota:**`, `**Attenzione:**` o `**Suggerimento:**`. Solo Markdown semplice: niente HTML, niente immagini.
+Tabella «Funzionalità»: colonne `Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa` (la colonna «Come si usa» riporta il titolo del compito in «Come fare» e diventa un link). Link interni: `[[id]]`, `[[id#slug-del-titolo]]`, `[[id#slug|testo]]` (dentro una cella di tabella senza `|testo`, perché `|` separa le colonne). Un compito può dichiarare a chi serve con una riga `Per chi: ospite, inquilino.` (sostituisce le persone della pagina nei filtri «Chi sei»); prima dei passi, una riga `**Ti serve:** …` dice cosa deve avere pronto chi comincia. Note: citazione che inizia con `**Nota:**`, `**Attenzione:**` o `**Suggerimento:**`. Solo Markdown semplice: niente HTML, niente immagini.
 
 ## Regole editoriali (il generatore ne fa rispettare alcune)
 

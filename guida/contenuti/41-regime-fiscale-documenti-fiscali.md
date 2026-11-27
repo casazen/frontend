@@ -6,16 +6,18 @@ ordine: 41
 riassunto: Come scegli il regime fiscale degli immobili, come imposti la fatturazione e come CasaZen prepara, emette e invia fatture, ricevute e note di credito agli ospiti.
 chi: [gestore, amministratore]
 dove: Affitti brevi › Incassi › Regime fiscale e Documenti fiscali
-parole_chiave: [regime fiscale, cedolare secca, partita IVA, fattura, ricevuta, nota di credito, bozza, SDI, fattura elettronica, numerazione, bollo, ritenute, report fiscali, fatturazione]
+parole_chiave: [regime fiscale, cedolare secca, partita IVA, forfettario, IRPEF, fattura, ricevuta, nota di credito, bozza, emettere, SDI, fattura elettronica, numerazione, bollo, ritenute, report fiscali, fatturazione, documento fiscale, imponibile, aliquota, soglia, XML]
 copre: [/app/short-rent/fiscal, /app/short-rent/fiscal/wizard, /app/short-rent/fiscal/setup, /app/short-rent/fiscal/issuer (non-utente), /app/short-rent/fiscal/documents, /app/short-rent/fiscal/reports]
 stato: disponibile
-fonte_codice: [frontend/src/features/fiscal/fiscal-dashboard-page.tsx, frontend/src/features/fiscal/fiscal-wizard-page.tsx, frontend/src/features/fiscal/fiscal-reports-page.tsx, frontend/src/features/fiscal/billing-wizard/billing-wizard-page.tsx, frontend/src/features/fiscal/billing-wizard/steps, frontend/src/features/fiscal/documents/fiscal-documents-page.tsx, frontend/src/features/fiscal/documents/document-actions.tsx, frontend/src/features/fiscal/documents/document-batch.tsx, frontend/src/features/fiscal/documents/document-sdi-panel.tsx, backend/Casazen.Core/Entities/Enums/DocumentIssuerMode.cs, backend/Casazen.Infrastructure/Services/FiscalDocumentService.Automation.cs, backend/Casazen.Web/Controllers/FiscalDocumentsController.cs, backend/Casazen.Web/Controllers/FiscalDocumentSdiController.cs, backend/Casazen.Web/Controllers/OctorateDocumentsController.cs, backend/Casazen.Web/appsettings.json]
+fonte_codice: [frontend/src/features/fiscal/fiscal-dashboard-page.tsx, frontend/src/features/fiscal/fiscal-wizard-page.tsx, frontend/src/features/fiscal/fiscal-reports-page.tsx, frontend/src/features/fiscal/billing-wizard/billing-wizard-page.tsx, frontend/src/features/fiscal/billing-wizard/steps, frontend/src/features/fiscal/documents/fiscal-documents-page.tsx, frontend/src/features/fiscal/documents/document-actions.tsx, frontend/src/features/fiscal/documents/document-batch.tsx, frontend/src/features/fiscal/documents/document-sdi-panel.tsx, backend/Casazen.Core/Entities/Enums/DocumentIssuerMode.cs, backend/Casazen.Infrastructure/Services/FiscalDocumentService.Automation.cs, backend/Casazen.Infrastructure/Services/FiscalService.cs, backend/Casazen.Core/Services/IFiscalRegimeService.cs, backend/Casazen.Web/Controllers/FiscalDocumentsController.cs, backend/Casazen.Web/Controllers/FiscalDocumentSdiController.cs, backend/Casazen.Web/Controllers/OctorateDocumentsController.cs, backend/Casazen.Web/appsettings.json]
 ---
 
 ## In breve
 In **Affitti brevi › Incassi** ci sono due parti per il fisco. «**Regime fiscale**» ti fa scegliere, immobile per immobile, come paghi le tasse sugli affitti brevi dell'anno (per esempio cedolare secca) e ti dà i report da portare al commercialista. «**Documenti fiscali**» è l'elenco delle fatture, delle ricevute e delle note di credito che **CasaZen emette per te** agli ospiti.
 
-Il commercialista **non emette niente**: riceve soltanto i dati (vedi [[report-commercialista]]). CasaZen non presenta dichiarazioni, non prepara F24 e non sostituisce il commercialista.
+Il commercialista **non emette niente**: riceve soltanto i dati (vedi [[report-commercialista]]). CasaZen non presenta dichiarazioni, non versa imposte e non sostituisce il commercialista. In campo fiscale l'unica cosa che CasaZen trasmette per te, e solo se il collegamento è attivo, sono le fatture elettroniche allo SDI; altrimenti le invii tu. Per le agenzie, i dati per F24 e Certificazione Unica dei proprietari sono in [[chiusura-mensile]]: anche lì CasaZen prepara i dati, ma non versa e non trasmette.
+
+> **Nota:** le funzioni dei documenti fiscali (bozze, emissione, invio allo SDI) sono su attivazione ([[per-iniziare#cosa-significa-su-attivazione]]): le accende CasaZen. Per chiederle scrivi all'assistenza di CasaZen: in alto premi **Guida** e scegli «Scrivi all'assistenza». Il regime fiscale e i report fiscali sono invece disponibili.
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
@@ -46,12 +48,16 @@ Cosa emetti dipende dal tuo regime, che dici nel percorso «Fatturazione»:
 - **Svizzera**: documenti in franchi svizzeri; con iscrizione all'IVA una fattura con IVA e numero UID, senza iscrizione una ricevuta senza IVA.
 
 ### Dalla bozza al documento
-1. **A fine soggiorno** CasaZen prepara sempre la **bozza** del documento. Non è una scelta.
+1. **A fine soggiorno** CasaZen prepara la **bozza** del documento, se il percorso «Fatturazione» è completo nelle parti che servono (vedi sotto). Preparare la bozza non è una scelta: la scelta riguarda l'emissione.
 2. Se hai scelto «Emetti in automatico», CasaZen **emette da sola** i documenti dei soggiorni finiti, con i dati della prenotazione di quel momento, senza chiederti conferma. Altrimenti la bozza aspetta la tua conferma e la emetti tu (da soli o in blocco).
 3. All'emissione il documento riceve il suo **numero**, in ordine e senza buchi, nella sua serie. Dopo l'emissione **non si modifica più**: per correggerlo serve una nota di credito.
 4. Se hai scelto «Invia il documento all'ospite per e-mail», l'ospite riceve il link per scaricarlo (quando la prenotazione ha un indirizzo).
 
-CasaZen non prepara bozze finché il percorso «Fatturazione» non è completo nelle parti che servono (chi emette e IVA). Se il documento di una prenotazione è bloccato, la scheda della prenotazione ti dice cosa fare e mostra i pulsanti «Controlla il regime IVA» e «Controlla i dati emittente». Per i soggiorni già finiti, CasaZen ricontrolla ogni giorno e prepara le bozze mancanti; il controllo giornaliero non considera i soggiorni segnati come mancato arrivo.
+> **Attenzione:** con «Emetti in automatico» i documenti partono **senza che tu li controlli**, per ogni canale (anche per le prenotazioni di Airbnb e Booking.com), e si correggono soltanto con una nota di credito. In CasaZen non c'è un'impostazione per escludere un canale. All'inizio lascia l'opzione spenta e controlla le bozze una per una; accendila solo quando sei sicuro e, se non sai se un documento serve, chiedilo al commercialista.
+
+CasaZen non prepara bozze finché il percorso «Fatturazione» non è completo nelle parti che servono (chi emette e IVA). Se il documento di una prenotazione è bloccato, la scheda della prenotazione ti dice cosa fare e mostra i pulsanti «Controlla il regime IVA» e «Controlla i dati emittente». Per i soggiorni già finiti, CasaZen ricontrolla ogni giorno e prepara le bozze mancanti, ma guarda solo gli ultimi 31 giorni (per impostazione predefinita): un soggiorno finito da più tempo, senza documento, non viene ripreso da solo.
+
+**Se l'ospite non è arrivato.** Segna «L'ospite non è arrivato» dal check-in guidato ([[ospiti-checkin#segnare-che-l-ospite-non-e-arrivato]]): per i mancati arrivi CasaZen non prepara documenti. Se non lo segni, il soggiorno è trattato come uno normale e, a fine soggiorno, CasaZen prepara la bozza (e, con «Emetti in automatico», emette il documento).
 
 ### Gli stati di un documento
 | Stato | Cosa vuol dire |
@@ -68,22 +74,24 @@ CasaZen non prepara bozze finché il percorso «Fatturazione» non è completo n
 | **Gestito dal tuo channel manager** | Documento importato in sola lettura |
 
 ### Il regime fiscale degli immobili
-La pagina **Regime fiscale [anno]** elenca gli immobili in affitto breve dell'anno. Per ognuno CasaZen indica il regime **consigliato** e tu lo **confermi** o ne scegli un altro. Un regime **non viene mai applicato da solo**: finché non lo confermi, l'immobile risulta «Non assegnato».
+La pagina **Regime fiscale [anno]** elenca gli immobili in affitto breve dell'anno. Per ognuno CasaZen indica il regime **consigliato** e tu lo **confermi** o ne scegli un altro. Un regime **non viene mai applicato da solo**: finché non lo confermi, l'immobile risulta «Non assegnato». Il consiglio è informativo, non è consulenza fiscale: confermalo con il tuo commercialista.
+
+> **Nota:** in CasaZen ci sono **due scelte diverse** che si chiamano in modo simile. Il **regime fiscale** («Regime per quest'anno»: cedolare secca, IRPEF, impresa) dice **come paghi le imposte** sull'affitto: serve ai report e alle stime. Il **regime IVA** (passo «IVA» del percorso «Fatturazione»: Privato, Forfettario, Regime ordinario) dice **quale documento emette CasaZen** (ricevuta o fattura). Falle coincidere con quello che ti dice il commercialista.
 
 I regimi disponibili sono:
-- **Cedolare secca 21% (unità designata)**: vale per una sola unità del titolare. Se la assegni a un altro immobile, quella già designata passa al 26%.
+- **Cedolare secca 21% (unità designata)**: vale per una sola unità del titolare fiscale. Se la assegni a un altro immobile, quella già designata passa al 26%.
 - **Cedolare secca 26%**.
 - **IRPEF ordinaria senza partita IVA**: CasaZen non calcola l'imposta, la calcola il contribuente o il commercialista.
 - **Impresa, regime ordinario (partita IVA)** e **Impresa, regime forfettario (partita IVA)**: richiedono la partita IVA nel profilo fiscale. Anche qui CasaZen non stima l'imposta.
 
-Se un titolare destina agli affitti brevi più appartamenti del numero indicato nella pagina, si presume un'attività d'impresa, con partita IVA: la cedolare secca non è più disponibile e la pagina ti avvisa («Un titolare supera la soglia degli affitti brevi»). In questi casi, verifica il regime con il tuo commercialista: il prodotto stesso scrive che la raccomandazione è informativa, non è consulenza fiscale.
+**La soglia degli affitti brevi.** Se un titolare fiscale destina agli affitti brevi più appartamenti della soglia (oggi più di 2, dal 2026; il numero in vigore è scritto nelle note dei report fiscali), si presume un'attività d'impresa, con partita IVA: la cedolare secca non è più disponibile e la pagina ti avvisa («Un titolare supera la soglia degli affitti brevi»). Contano gli appartamenti che nell'anno hanno avuto almeno un soggiorno confermato di non più di 30 notti. In questi casi verifica il regime con il tuo commercialista: il prodotto stesso scrive che la raccomandazione è informativa, non è consulenza fiscale.
 
 ### Il percorso «Fatturazione»
 È un percorso guidato che salva da solo ogni passo: puoi uscire con «Salva ed esci» e riprendere quando vuoi. Ci si arriva da **Regime fiscale** (riquadro «Fatturazione», pulsante «Imposta la fatturazione»). I passi che vedi dipendono dal tuo caso (per esempio «Italia» c'è solo se emetti dall'Italia, e i passi dei proprietari solo per le agenzie). In ogni passo c'è «Aiuto». Alla fine il «Riepilogo» dice cosa manca e mostra un documento di esempio.
 
 - **Chi emette**: scegli il paese («Italia»: ricevuta o fattura elettronica in euro; «Svizzera»: documento secondo la legge svizzera, in franchi) e scrivi il «Nome sui documenti» e l'indirizzo completo (via, numero civico, CAP, città, provincia o cantone).
 - **IVA**: in Italia scegli il tuo regime («Privato», «Forfettario», «Regime ordinario») e scrivi partita IVA (11 cifre) e codice fiscale. Scegli anche l'IVA del soggiorno («IVA al 10%» o «Esente, art. 10 n. 8») e se le pulizie sono «Parte del soggiorno» o «Un servizio a parte». Sono scelte da **confermare con il commercialista**. In Svizzera dici se sei iscritto all'IVA e scrivi il numero UID.
-- **Italia**: due promemoria che CasaZen non può controllare per te: l'adesione gratuita alla conservazione dei documenti (servizio dell'Agenzia delle Entrate) e l'autorizzazione al bollo virtuale con il suo numero. Senza numero né conferma, sui documenti con bollo compare «imposta di bollo da assolvere».
+- **Italia**: due promemoria che CasaZen non può controllare per te: l'adesione gratuita alla conservazione dei documenti (servizio dell'Agenzia delle Entrate) e l'imposta di bollo. Per il bollo indica il numero dell'autorizzazione al bollo virtuale (o del contrassegno); se non hai il numero ma l'Agenzia delle Entrate ti ha autorizzato, spunta «Ho l'autorizzazione al bollo virtuale». Senza numero né conferma, sui documenti con bollo compare «imposta di bollo da assolvere».
 - **Emissione**: scegli se emettere in automatico («Emetti in automatico») e se mandare il documento all'ospite («Invia il documento all'ospite per e-mail»).
 - **Numerazione**: controlla la «Serie dei documenti agli ospiti» (può contenere l'anno): vedi un esempio di numero. Il numero vero continua da quello dell'ultimo documento emesso; la serie la confermi con questo passo, anche se lasci quella proposta.
 - **Tassa di soggiorno**: in Italia le regole di ogni comune le tiene CasaZen e ti chiede solo se un portale la incassa al posto tuo. In Svizzera scegli per ogni portale «La incassa il portale» o «La incasso io». Dettagli in [[imposta-soggiorno-documenti]].
@@ -96,7 +104,7 @@ Se hai solo il permesso di guardare, il percorso mostra «Puoi solo guardare». 
 ### L'invio delle fatture allo SDI
 Le fatture elettroniche italiane passano dallo **SDI**.
 - Se CasaZen è **collegata allo SDI** (su attivazione), nel dettaglio del documento premi «Invia»: CasaZen manda la fattura, aspetta la risposta e te la mostra («Consegnata» o «Scartata dallo SDI»). Se viene scartata, trovi l'avviso nel «Da fare».
-- Se **il collegamento non è ancora attivo**, la fattura resta «Emessa - da inviare allo SDI». In questo caso scarichi il file «XML», lo carichi sul portale «Fatture e Corrispettivi» dell'Agenzia delle Entrate e poi premi «Dichiara inviato a mano». CasaZen non controlla quello che dichiari: scrive quello che scrivi tu.
+- Se **il collegamento non è ancora attivo**, la fattura resta «Emessa - da inviare allo SDI». In questo caso scarichi il file «XML», lo carichi sul portale «Fatture e Corrispettivi» dell'Agenzia delle Entrate e poi premi «Dichiara inviato a mano». **«Dichiara inviato a mano» non invia nulla**: annota quello che hai fatto tu, e CasaZen non controlla quello che dichiari: scrive quello che scrivi tu.
 - Per una **fattura già consegnata** non si fa una correzione: si annulla con una nota di credito.
 
 ### Imposta di soggiorno sul documento
@@ -105,7 +113,7 @@ Se il portale incassa l'imposta di soggiorno al posto tuo, il documento per l'os
 ## Come fare
 
 ### Scegliere il regime fiscale di un immobile
-Serve il permesso di modificare gli immobili. Chi può solo guardare vede lo stato di ogni immobile.
+**Ti serve:** il permesso di modificare gli immobili (chi può solo guardare vede lo stato di ogni immobile); sapere con il commercialista quale regime vale per te; se scegli un regime d'impresa, la partita IVA nel profilo fiscale.
 1. Apri **Affitti brevi › Incassi › Regime fiscale**.
 2. Nel riquadro in alto vedi cosa fare per primo: «Conferma il regime fiscale di [immobile]» oppure «Scegli il regime fiscale di [immobile]».
 3. Per accettare il consiglio premi «Conferma il regime consigliato».
@@ -116,6 +124,7 @@ Serve il permesso di modificare gli immobili. Chi può solo guardare vede lo sta
 Se non c'è nessun immobile in affitto breve, vedi «Nessun immobile con affitti brevi» e il pulsante «Aggiungi un immobile».
 
 ### Inserire partita IVA e codice fiscale
+**Ti serve:** la partita IVA (11 cifre), se ce l'hai, e il codice fiscale del titolare (16 caratteri; 11 cifre per una società).
 1. In **Regime fiscale** premi «Profilo fiscale» (in alto).
 2. Se hai la partita IVA, spunta «Ho una Partita IVA» e scrivila (11 cifre).
 3. Scrivi il «Codice fiscale» (16 caratteri; 11 cifre per una società).
@@ -124,6 +133,7 @@ Se non c'è nessun immobile in affitto breve, vedi «Nessun immobile con affitti
 Con la partita IVA nel profilo diventano disponibili i regimi d'impresa.
 
 ### Scaricare un report fiscale
+**Ti serve:** poter vedere gli immobili; un regime assegnato, se vuoi l'imposta stimata.
 1. In **Regime fiscale** premi «Apri i report» (oppure vai a **Incassi › Report** e scegli il report).
 2. Scegli l'«Anno d'imposta» e il «Periodo» («Anno intero», «1° trimestre»…«4° trimestre»).
 3. Scegli la sezione: «Riepilogo per immobile» (incassi del periodo, tassa di soggiorno, ritenute, imponibile e imposta stimata secondo il regime), «Ritenute subite» (le ritenute degli intermediari per canale e per pagamento, da riconciliare con la Certificazione Unica), «Tassa di soggiorno per comune e periodo».
@@ -131,13 +141,13 @@ Con la partita IVA nel profilo diventano disponibili i regimi d'impresa.
 
 Come leggerli:
 - L'**incassato lordo** conta i pagamenti completati nel periodo, rimborsi tolti. Comprende la tassa di soggiorno, che è esclusa dall'imponibile.
-- Le **commissioni** dei portali non sono registrate in CasaZen: compaiono come «n.d.». Riportale dagli estratti conto dei portali; con la cedolare secca non sono deducibili.
+- Le **commissioni** dei portali non sono registrate in CasaZen: compaiono come «n.d.» (non disponibile). **Le porti tu**: riportale dagli estratti conto e dalle fatture dei portali; con la cedolare secca non sono deducibili.
 - L'**imposta stimata** c'è solo per la cedolare secca (canone lordo per l'aliquota; aliquota ridotta per l'unità designata). Per IRPEF ordinaria, regimi d'impresa, immobili senza regime e titolari sopra la soglia vedi «Non calcolata».
 - Le **ritenute** dei portali sono sempre a titolo d'acconto: si scomputano in dichiarazione.
 - Il file è un **pacchetto di dati per il commercialista**: non è una dichiarazione, un F24 o una Certificazione Unica ufficiale.
 
 ### Impostare la fatturazione
-Serve il permesso di modificare gli immobili e l'accesso a tutti gli immobili dell'organizzazione.
+**Ti serve:** il permesso di modificare gli immobili e l'accesso a tutti gli immobili dell'organizzazione; la funzione attiva; i dati di chi emette (nome sui documenti, indirizzo completo, partita IVA e codice fiscale se ce l'hai); il regime IVA e l'IVA del soggiorno confermati con il commercialista.
 1. Apri **Incassi › Regime fiscale** e premi «Imposta la fatturazione» nel riquadro «Fatturazione».
 2. Compila i passi uno alla volta (vedi «Il percorso Fatturazione» sopra) e premi «Continua».
 3. Se devi fermarti, premi «Salva ed esci»: ciò che è corretto viene salvato, ciò che non lo è resta fuori e lo correggi quando riprendi.
@@ -145,14 +155,17 @@ Serve il permesso di modificare gli immobili e l'accesso a tutti gli immobili de
 
 Cosa succede dopo: da quel momento CasaZen può preparare e (se l'hai scelto) emettere i documenti. Puoi cambiare ogni scelta quando vuoi, dallo stesso percorso. I documenti già emessi non cambiano.
 
+Se non vedi «Imposta la fatturazione», la funzione non è attiva per te o ti mancano i permessi: vedi la domanda frequente più sotto.
+
 ### Scegliere se emettere da sola o con la tua conferma
+**Ti serve:** lo stesso accesso del percorso «Fatturazione».
 1. Apri il percorso «Fatturazione» e vai al passo «Emissione».
-2. Con «Emetti in automatico» acceso, CasaZen emette i documenti a fine soggiorno senza chiederti conferma. Spento, ti chiede conferma prima di emettere.
+2. Con «Emetti in automatico» acceso, CasaZen emette i documenti a fine soggiorno senza chiederti conferma (vedi l'avviso sopra: non si controllano prima e si correggono solo con una nota di credito). Spento, ti chiede conferma prima di emettere.
 3. Con «Invia il documento all'ospite per e-mail» acceso, il documento emesso parte per e-mail quando c'è un indirizzo.
 4. Premi «Continua».
 
 ### Emettere un documento
-Serve il permesso di modificare i pagamenti e la funzione attiva.
+**Ti serve:** il permesso di modificare i pagamenti e la funzione attiva; il percorso «Fatturazione» completo.
 1. Apri **Incassi › Documenti fiscali**. Per vedere solo le bozze apri «Stato» e scegli «Bozze».
 2. Controlla la bozza (premila per aprire il dettaglio: righe, IVA, totali, intestatario). Se i dati della prenotazione sono cambiati, premi «Aggiorna» per rifare la bozza.
 3. Premi «Emetti». Vedi numero previsto, serie e totale.
@@ -161,14 +174,16 @@ Serve il permesso di modificare i pagamenti e la funzione attiva.
 Cosa succede dopo: il documento ha il suo numero e **non si modifica più**. Non si annulla: per correggerlo emetti una nota di credito. Il numero definitivo lo assegna CasaZen all'emissione, in ordine e senza buchi.
 
 ### Emettere più bozze insieme
+**Ti serve:** come per «Emettere un documento».
 1. In **Documenti fiscali** imposta i filtri («Dal», «Al», «Tipo», «Stato»).
 2. Premi «Seleziona tutte le bozze del periodo» oppure spunta le bozze una per una. Le note di credito si spuntano una per una.
 3. Premi «Emetti selezionate». Nella finestra «Emettere N documenti?» leggi l'avviso e premi «Emetti N documenti».
 4. Leggi il risultato: per ogni documento vedi se è stato emesso e, se no, perché. Gli altri vengono emessi lo stesso.
 
-C'è un massimo di documenti per volta: se ne selezioni troppi, deseleziona quelli in più. Se resta qualche bozza, ripeti l'emissione.
+C'è un massimo di documenti per volta: se ne selezioni troppi, deseleziona quelli in più. Se resta qualche bozza, ripeti l'emissione. Ogni documento emesso ha il suo numero e **non si modifica più**.
 
 ### Inviare il documento all'ospite per e-mail
+**Ti serve:** un documento emesso e un indirizzo e-mail nella prenotazione.
 1. In **Documenti fiscali** trova il documento emesso.
 2. Premi «Invia al cliente».
 3. Conferma con «Invia l'e-mail».
@@ -176,29 +191,33 @@ C'è un massimo di documenti per volta: se ne selezioni troppi, deseleziona quel
 Cosa succede dopo: l'ospite riceve una e-mail con un link per aprire e scaricare il documento (non è allegato). L'e-mail va a una persona vera, all'indirizzo lasciato nella prenotazione. Per rimandarla premi «Rinvia e-mail»: ogni invio manda un nuovo link, i vecchi funzionano fino alla loro scadenza.
 
 ### Correggere un documento emesso con una nota di credito
+**Ti serve:** il permesso di modificare i pagamenti; il documento emesso da correggere.
 1. In **Documenti fiscali** trova il documento emesso e premi «Nota di credito».
 2. Scegli «Tutto quello che resta da stornare» oppure «Solo una parte» e scrivi l'«Importo da stornare» con i centesimi (per esempio 120,50). Non può superare quanto resta da stornare.
 3. Scrivi il «Motivo» (compare sulla nota di credito).
 4. Premi «Emetti la nota di credito».
 
-Cosa succede dopo: la nota di credito è emessa subito, con il suo numero, e il documento originale non cambia. Non è reversibile.
+Cosa succede dopo: la nota di credito è emessa subito, con il suo numero, e il documento originale non cambia. **Non è reversibile.**
 
 ### Scartare una bozza
+**Ti serve:** il permesso di modificare i pagamenti; una bozza (non un documento emesso).
 1. In **Documenti fiscali** trova la bozza e premi «Scarta».
 2. Conferma con «Scarta la bozza».
 
-La bozza scartata non consuma nessun numero e la prenotazione potrà avere una nuova bozza.
+La bozza scartata non consuma nessun numero. **Scartare non esclude il soggiorno per sempre:** se il soggiorno è finito da meno di 31 giorni, CasaZen può preparare di nuovo la bozza nei giorni dopo (e, con «Emetti in automatico», emetterla). Se non devi emettere nulla per quel soggiorno, tieni «Emetti in automatico» spento e non emettere la bozza che ricompare.
 
 ### Inviare una fattura allo SDI o dichiarare l'invio a mano
+**Ti serve:** il permesso di modificare i documenti; una fattura emessa. Per l'invio a mano: l'accesso al portale «Fatture e Corrispettivi» dell'Agenzia delle Entrate.
 1. Apri il documento emesso e guarda il riquadro «Invio allo SDI».
 2. Se il collegamento è attivo, premi «Invia». Aspetta la risposta: lo stato si aggiorna; se non succede, usa «Controlla di nuovo».
 3. Se il collegamento non è attivo, premi «XML» per scaricare il file, caricalo sul portale «Fatture e Corrispettivi» dell'Agenzia delle Entrate e poi premi «Dichiara inviato a mano».
 4. Scegli «L'ho inviato io, a mano» (e scrivi il «Giorno dell'invio» e il «Riferimento dell'invio») oppure «Lo SDI l'ha scartato» (e scrivi il «Codice dello scarto» e il «Testo della notifica»).
 5. Premi «Dichiara».
 
-Puoi vedere lo stato anche con un ruolo di sola lettura; per inviare o dichiarare serve chi può modificare i documenti.
+«Dichiara» annota soltanto ciò che hai fatto: non invia niente e CasaZen non lo verifica. Puoi vedere lo stato anche con un ruolo di sola lettura; per inviare o dichiarare serve chi può modificare i documenti.
 
 ### Correggere una fattura scartata dallo SDI
+**Ti serve:** il permesso di modificare i documenti; la fattura «Scartata dallo SDI».
 1. Apri la fattura «Scartata dallo SDI» (dal «Da fare» o dall'elenco) e premi «Correggi».
 2. Passo «Che cosa facciamo»: leggi la spiegazione e premi «Inizia la correzione». Una fattura scartata non è mai arrivata a chi la riceve, quindi non serve una nota di credito: viene sostituita.
 3. Passo «Controlla i dati»: controlla il codice fiscale o la partita IVA di chi riceve la fattura, spesso lo scarto dipende da lì.
@@ -234,54 +253,80 @@ Puoi chiudere quando vuoi con «Chiudi e riprendi dopo»: la bozza resta nell'el
 ### Flusso: prima volta con la fatturazione
 1. Apri **Regime fiscale** e premi «Imposta la fatturazione».
 2. Completa i passi fino a «Tutto a posto» (in particolare «Chi emette» e «IVA»).
-3. Scegli «Emissione» (automatica o con conferma).
+3. Scegli «Emissione» (automatica o con conferma): all'inizio, meglio con conferma.
 4. Dopo il primo soggiorno finito trovi la bozza in **Documenti fiscali**.
 
 ## Regole e limiti
 - CasaZen emette i documenti a nome della tua organizzazione; il commercialista non emette niente.
-- Un documento emesso non si modifica: si corregge con una nota di credito. Una fattura scartata dallo SDI si sostituisce con lo stesso numero. Una bozza scartata non consuma numeri.
+- Un documento emesso non si modifica: si corregge con una nota di credito. Una fattura scartata dallo SDI si sostituisce con lo stesso numero. Una bozza scartata non consuma numeri, ma può essere rifatta da CasaZen finché il soggiorno è finito da meno di 31 giorni.
 - La numerazione è progressiva, senza salti, per ogni serie.
 - Senza il percorso «Fatturazione» completo (chi emette e IVA), CasaZen non prepara le bozze.
 - Chi può cosa: vedere regime e report serve poter vedere gli immobili; cambiare il regime serve poter modificarli; vedere i documenti serve vedere i pagamenti e gli immobili; emettere, inviare, correggere e scartare serve poter modificare i pagamenti, con la funzione attiva. La fatturazione è dell'intera organizzazione: chi vede solo alcuni immobili la guarda ma non la cambia.
 - L'ospite riceve il documento per e-mail solo se lo scegli e se la prenotazione ha un indirizzo.
-- Il regime fiscale è per anno e per immobile; la cedolare secca al 21% vale per una sola unità del titolare.
+- Il regime fiscale è per anno e per immobile; la cedolare secca al 21% vale per una sola unità del titolare fiscale.
 - I report fiscali coprono un solo anno e partono dall'anno indicato nella pagina.
-- CasaZen **non presenta dichiarazioni, non prepara F24 né Certificazioni Uniche**: i report sono dati per il commercialista. Per scelte fiscali (regime, IVA, bollo) confermale con il tuo commercialista.
+- CasaZen **non presenta dichiarazioni e non versa imposte**: i report sono dati per il commercialista, non un F24 né una Certificazione Unica ufficiale. Per scelte fiscali (regime, IVA, bollo) confermale con il tuo commercialista.
 - Per l'invio allo SDI: se il collegamento non è attivo, l'invio è a mano e CasaZen scrive solo ciò che dichiari.
 
 ## Domande frequenti
 
+### Devo fare la fattura all'ospite?
+Dipende dal tuo regime fiscale, non da CasaZen. Senza partita IVA («Privato») CasaZen prepara una ricevuta; con la partita IVA, una fattura elettronica. CasaZen prepara le bozze dei soggiorni finiti e tu scegli se emetterle da sola o con la tua conferma. Non è consulenza fiscale: chiedi al tuo commercialista cosa devi emettere.
+
 ### Chi emette le fatture e le ricevute ai miei ospiti?
 CasaZen, a nome della tua organizzazione. Il commercialista riceve gli export e non emette niente.
+
+### Che differenza c'è tra «Regime fiscale» e «IVA»?
+Sono due scelte diverse. Il «Regime fiscale» (pagina «Regime fiscale», «Regime per quest'anno») dice come paghi le imposte sull'affitto: cedolare secca, IRPEF o impresa. L'«IVA» (passo del percorso «Fatturazione») dice quale documento emette CasaZen: ricevuta o fattura. Falle coincidere con il tuo commercialista.
 
 ### Posso modificare un documento già emesso?
 No. Per correggerlo emetti una nota di credito dal documento. Se è una fattura scartata dallo SDI, premi «Correggi».
 
 ### Perché non vedo «Documenti fiscali» o «Imposta la fatturazione»?
-La funzione di emissione dei documenti è su attivazione: finché non è attiva per te, queste voci non compaiono. Servono anche i permessi giusti (vedere i pagamenti e gli immobili).
+La funzione di emissione dei documenti è su attivazione ([[per-iniziare#cosa-significa-su-attivazione]]): finché non è attiva per te, queste voci non compaiono. Per chiederla scrivi all'assistenza di CasaZen: in alto premi **Guida** e scegli «Scrivi all'assistenza». Servono anche i permessi giusti (vedere i pagamenti e gli immobili).
 
 ### Perché non trovo la bozza di un soggiorno finito?
-Controlla che il percorso «Fatturazione» sia completo, che il soggiorno sia finito (non è un mancato arrivo) e che non esista già un documento per quella prenotazione.
+Controlla che il percorso «Fatturazione» sia completo, che il soggiorno sia finito da non più di 31 giorni, che non sia un mancato arrivo e che non esista già un documento per quella prenotazione.
 
 ### Cosa devo fare con «Emessa - da inviare allo SDI»?
 Se vedi «Invia», premilo. Altrimenti scarica l'«XML», caricalo sul portale «Fatture e Corrispettivi» dell'Agenzia delle Entrate e premi «Dichiara inviato a mano».
 
 ### Una prenotazione di Airbnb o Booking.com ha un documento?
-CasaZen emette i documenti di ogni prenotazione, qualunque sia il canale. Per le prenotazioni dei portali che incassano per te, il documento indica che il pagamento è avvenuto tramite il portale.
+CasaZen prepara una bozza per ogni prenotazione, qualunque sia il canale. Per le prenotazioni dei portali che incassano per te, il documento indica che il pagamento è avvenuto tramite il portale.
+
+### Il portale emette già un documento per l'ospite: devo emetterne uno anch'io?
+Non lo decide CasaZen: chiedilo al tuo commercialista. Quello che CasaZen fa è preparare una bozza anche per le prenotazioni dei portali; con «Emetti in automatico» acceso la emette da sola, senza escludere nessun canale. Se non devi emettere nulla, tieni l'opzione spenta e non emettere la bozza.
+
+### Ho scartato una bozza e ne è comparsa un'altra: perché?
+Scartare toglie la bozza ma non esclude il soggiorno: finché è finito da meno di 31 giorni, CasaZen può prepararne una nuova.
 
 ### Che cos'è il regime «Raccomandato»?
 È il regime che CasaZen propone in base ai tuoi dati (per esempio la partita IVA o quanti appartamenti destini agli affitti brevi). Non è applicato finché non lo confermi, ed è solo un'indicazione, non una consulenza.
 
 ### CasaZen calcola e versa le mie tasse?
-No. CasaZen stima l'imposta solo per la cedolare secca e solo come dato per il commercialista. Non presenta dichiarazioni, non prepara F24 né Certificazioni Uniche e non versa nulla.
+No. CasaZen stima l'imposta solo per la cedolare secca e solo come dato per il commercialista. Non presenta dichiarazioni e non versa nulla. Le fatture elettroniche le trasmette allo SDI solo se il collegamento è attivo.
 
 ## Glossario
+- **Regime fiscale**: il modo in cui paghi le imposte sugli affitti brevi dell'anno. Si sceglie per immobile e per anno.
+- **Cedolare secca**: imposta sostitutiva sul canone lordo, al 21% per una sola unità del titolare fiscale (l'«unità designata») e al 26% per le altre. Con la cedolare secca le commissioni dei portali non sono deducibili.
+- **IRPEF**: l'imposta sul reddito delle persone. Con «IRPEF ordinaria senza partita IVA» l'affitto si somma agli altri tuoi redditi e CasaZen non calcola l'imposta.
+- **Imponibile**: la parte dell'incasso su cui si calcola l'imposta. Nei report è l'incassato lordo senza la tassa di soggiorno.
+- **Aliquota**: la percentuale con cui si calcola un'imposta (per esempio 21% o 26% per la cedolare secca, 10% per l'IVA sul soggiorno).
+- **Imposta stimata**: la cifra che CasaZen calcola nei report solo per la cedolare secca; per gli altri regimi è «Non calcolata». È un dato per il commercialista.
+- **Partita IVA**: il numero di chi esercita un'attività. In Italia, con la partita IVA CasaZen emette fatture elettroniche; senza, emette ricevute.
+- **Regime forfettario**: regime agevolato della partita IVA, per le attività sotto certi limiti. Per sapere se fa per te chiedi al commercialista.
+- **Regime ordinario**: il regime normale della partita IVA.
+- **Titolare fiscale**: la persona o la società a cui fanno capo gli immobili ai fini delle tasse (compare come «Titolare» nelle pagine e nei report fiscali). La soglia degli affitti brevi e l'unità designata si contano per titolare.
 - **Bozza**: il documento preparato da CasaZen prima dell'emissione.
 - **Nota di credito**: il documento che corregge o annulla in tutto o in parte un documento già emesso.
 - **SDI**: il Sistema di Interscambio dell'Agenzia delle Entrate, da cui passano le fatture elettroniche.
+- **XML**: il file della fattura elettronica, quello che si carica sul portale «Fatture e Corrispettivi».
+- **Fatture e Corrispettivi**: il portale dell'Agenzia delle Entrate dove si caricano le fatture elettroniche.
 - **Serie**: la sequenza di numeri di un tipo di documento.
-- **Cedolare secca**: la tassa sostitutiva sugli affitti, al 21% o al 26% secondo l'unità.
 - **Ritenuta**: la somma che un portale trattiene sugli incassi e versa per tuo conto, a titolo d'acconto.
+- **Certificazione Unica**: il documento con cui chi ti paga (per esempio un portale) attesta le ritenute versate per te.
+- **F24**: il modello per versare imposte e contributi. CasaZen non lo versa.
+- **Bollo**: imposta fissa dovuta su alcuni documenti; CasaZen la indica sui documenti che la richiedono.
 - **Bollo virtuale**: il modo di pagare l'imposta di bollo sui documenti in PDF, con autorizzazione dell'Agenzia delle Entrate.
 - **UID**: il numero di identificazione delle imprese in Svizzera.
 

@@ -5964,6 +5964,7 @@
     "button": "Guida",
     "description": "Ti accompagna passo per passo: cosa hai già fatto, cosa fare adesso e cosa viene dopo.",
     "help": {
+      "fullManual": "Manuale completo: guide passo passo e domande frequenti",
       "manual": "Apri il manuale di CasaZen",
       "support": "Scrivi all'assistenza",
       "text": "Il manuale spiega ogni area con parole semplici. Se ti blocchi, scrivici: ti rispondiamo noi.",

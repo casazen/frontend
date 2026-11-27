@@ -1,12 +1,13 @@
 ---
 id: pagine-pubbliche
-titolo: Pagine pubbliche di CasaZen
+titolo: Sito pubblico di CasaZen, cercare una casa, guide per comune, demo e documenti legali
+menu: Sito pubblico e demo
 sezione: Sito e portali
 ordine: 83
 riassunto: Le pagine che chiunque può aprire senza accedere: il sito di presentazione di CasaZen, la ricerca delle case, le guide per comune e il calcolo della tassa di soggiorno, i documenti legali e le pagine di servizio degli ospiti. Cosa pubblica CasaZen, cosa controlli tu e cosa trovano i motori di ricerca.
 chi: [gestore, amministratore, ospite]
 dove: Pagine pubbliche (senza accesso) · sito di CasaZen
-parole_chiave: [pagine pubbliche, SEO, guide per comune, tassa di soggiorno, calcolatore, ricerca case, documenti legali, privacy, termini, sub-responsabili, indicizzazione, sitemap, motori di ricerca, benvenuto, iscrizione, annulla iscrizione]
+parole_chiave: [pagine pubbliche, sito pubblico, SEO, cerca una casa, prenotare una casa vacanza, demo senza account, richiedi un invito, guide per comune, tassa di soggiorno, calcolatore, documenti legali, privacy, termini, sub-responsabili, indicizzazione, motori di ricerca, benvenuto, annulla iscrizione, sitemap]
 copre: [/, /affitti-brevi, /affitti-lunghi, /funzionalita, /per-i-fornitori, /chi-siamo, /search, /p/affitti-brevi, /p/affitti-brevi/:region/:comune, /p/tassa-soggiorno/:comune, /legale, /legale/termini, /legale/privacy, /legale/dpa, /legale/sub-responsabili, /benvenuto/:token, /marketing/confirm, /unsubscribe, /app/admin/seo (non-utente), /app/admin/marketing (non-utente)]
 stato: disponibile
 fonte_codice: [frontend/src/site/site-pages.ts, frontend/src/site/site-gate.ts, frontend/src/site/components/site-pages-content.tsx, frontend/src/features/public-seo/seo-hub-page.tsx, frontend/src/features/public-seo/seo-paths.ts, frontend/src/features/public-seo/compliance-guide-page.tsx, frontend/src/features/public-seo/tourist-tax-calculator-page.tsx, frontend/src/features/public-seo/components/featured-properties.tsx, frontend/src/features/search/search-page.tsx, frontend/src/features/legal/legal-index-page.tsx, frontend/src/features/legal/legal-document-page.tsx, frontend/src/features/legal/subprocessors-page.tsx, frontend/src/features/public-marketing/welcome-page.tsx, frontend/src/features/public-marketing/confirm-page.tsx, frontend/src/features/public-marketing/unsubscribe-page.tsx, frontend/src/features/public-site/hooks/use-org-seo-meta.ts, frontend/src/config/robots-txt.ts, frontend/src/routes/index.tsx, backend/Casazen.Web/Controllers/PublicSeoController.cs, backend/Casazen.Web/Controllers/PublicOrgSitemapController.cs, backend/Casazen.Web/Controllers/PublicPlatformSearchController.cs, backend/Casazen.Web/Controllers/LegalController.cs, backend/docs/runbooks/seo-domain.md, backend/docs/runbooks/legal-documents.md]
@@ -17,11 +18,16 @@ Oltre al tuo sito di prenotazione ([[sito-prenotazione]]), CasaZen ha **pagine p
 
 Queste pagine le pubblica CasaZen. Tu controlli le tue case e il tuo sito: le trovano poi nella ricerca e, dove c'è, nelle guide del loro comune. Questa pagina spiega cosa sono, cosa puoi farci e cosa trovano i motori di ricerca.
 
+**Se non conosci CasaZen:** apri l'indirizzo principale, leggi le pagine di presentazione e prova una demo con dati di esempio, senza creare un account («Vedi gli arrivi di oggi», «Controlla un contratto»). Per entrare serve un invito: premi «Richiedi un invito» ([[per-iniziare#come-si-entra-invito-o-registrazione]]).
+
+**Se vuoi prenotare una casa:** usa «Cerca una casa» sul sito di CasaZen, senza account ([[pagine-pubbliche#cercare-una-casa-dal-sito-di-casazen]]).
+
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
 |---|---|---|---|---|---|
 | Sito di presentazione di CasaZen | Spiega CasaZen a host, proprietari e fornitori e porta alla richiesta di invito | Indirizzo principale di CasaZen e le sue pagine | chiunque | Disponibile | Le pagine del sito di CasaZen |
-| Cerca una casa | Cerca le case libere di tutti gli host CasaZen e porta al loro sito per prenotare | Barra «Cerca una casa» e pagina di ricerca | ospite | Disponibile | Come un ospite cerca una casa |
+| Demo senza account | Due prove guidate con dati di esempio: gli arrivi del giorno e un contratto | Pagina iniziale e pagine «Affitti brevi» e «Affitti lunghi» | chiunque | Disponibile | Le pagine del sito di CasaZen |
+| Cerca una casa | Cerca le case libere di tutti gli host CasaZen e porta al loro sito per prenotare | Barra «Cerca una casa» e pagina di ricerca | ospite | Disponibile | Cercare una casa dal sito di CasaZen |
 | Guide per comune | Spiega per ogni comune CIN, Alloggiati Web e imposta di soggiorno con le fonti ufficiali | «Guide per gli affitti brevi» | gestore, ospite | Disponibile | Leggere la guida del tuo comune |
 | Calcolo della tassa di soggiorno | Stima la tassa di un soggiorno per un comune | Pagina «Tassa di soggiorno» del comune | gestore, ospite | Disponibile | Calcolare la tassa di soggiorno di un comune |
 | Pagina pubblica di una casa e del sito | La scheda della casa e la pagina iniziale del tuo sito | Il tuo sito di prenotazione | ospite | Disponibile | [[sito-prenotazione]] |
@@ -42,7 +48,9 @@ Sono pagine di presentazione, in **italiano e inglese** (il menu cambia lingua).
 | **Per i fornitori** | Come lavorare con gli host della zona: scegliere categorie e comuni e ricevere le richieste |
 | **Chi siamo** | Come lavora CasaZen, i dati societari e i contatti |
 
-Il pulsante «Accedi» porta al login. Se l'accesso è ancora su invito, la pagina lo dice («Per ora si entra solo su invito») e offre «Richiedi un invito».
+**Come si entra.** Per ora l'accesso a CasaZen è su invito: il sito lo dice («CasaZen è in fase di avvio: per ora l'accesso è solo su invito») e offre «Richiedi un invito», che apre un'e-mail già compilata da inviare a CasaZen. Il pulsante c'è solo se il sito ha un indirizzo di contatto. Sul sito vero non c'è il pulsante «Accedi»: chi ha già un account apre l'indirizzo di accesso (l'indirizzo di CasaZen seguito da /login); «Accedi» compare solo nelle versioni di prova del sito. I passi per entrare sono in [[per-iniziare#come-si-entra-invito-o-registrazione]].
+
+**Provare senza account.** Nella pagina iniziale e nelle pagine «Affitti brevi» e «Affitti lunghi» ci sono due demo con dati di esempio: «Vedi gli arrivi di oggi» e «Controlla un contratto». Non creano un account e non toccano dati veri.
 
 ### Cosa pubblica CasaZen e cosa controlli tu
 | Pagina | Chi decide |
@@ -87,6 +95,7 @@ Come prepari QR, pubblici e campagne: [[routine-ai-crm]].
 ## Come fare
 
 ### Leggere la guida del tuo comune
+**Ti serve:** niente account; il nome del comune. Va bene dal telefono.
 1. Apri **Guide per gli affitti brevi** dal piè di pagina del sito di CasaZen (`/p/affitti-brevi`).
 2. Sotto **«Guide per comune»** scegli il tuo comune.
 3. Leggi la guida e controlla la data di aggiornamento.
@@ -95,6 +104,7 @@ Come prepari QR, pubblici e campagne: [[routine-ai-crm]].
 Se il tuo comune non c'è, la guida non è ancora pubblicata («La guida per questo comune non è ancora disponibile»).
 
 ### Calcolare la tassa di soggiorno di un comune
+**Ti serve:** la categoria dell'alloggio, il prezzo di una notte (senza pulizie e altri servizi), il numero di notti e di ospiti e l'età dei minori. Nessun account.
 1. Dal punto **«Guide per gli affitti brevi»** apri **«Tassa di soggiorno»** del tuo comune.
 2. Scegli la **Categoria dell'alloggio**.
 3. Scrivi il **prezzo di una notte** (senza pulizie e altri servizi), il numero di notti e degli ospiti; per i minori indica l'età.
@@ -103,15 +113,18 @@ Se il tuo comune non c'è, la guida non è ancora pubblicata («La guida per que
 
 Il risultato è una **stima**: non è un conteggio ufficiale.
 
-### Come un ospite cerca una casa
-1. Dalla pagina iniziale di CasaZen scrive **Dove**, **Arrivo**, **Partenza** e **Ospiti** e preme **«Cerca una casa»**.
-2. Vede le case libere con il prezzo dell'intero soggiorno e ne apre una.
-3. Con **«Vedi e prenota»** o aprendo la scheda va al sito dell'host: il resto è come in [[sito-prenotazione#come-prenota-un-ospite-dal-tuo-sito]].
+### Cercare una casa dal sito di CasaZen
+**Ti serve:** niente account: bastano il luogo, le date e il numero di ospiti. Va bene anche dal telefono.
+1. Apri il sito di CasaZen. Nella pagina iniziale scrivi **Dove**, **Arrivo**, **Partenza** e **Ospiti** e premi **«Cerca una casa»**.
+2. Vedi le case libere con il prezzo dell'intero soggiorno. Apri quella che ti interessa.
+3. Premi **«Vedi e prenota»** (o apri la scheda): vai al sito dell'host, dove scegli le date, paghi e ricevi la conferma ([[sito-prenotazione#come-prenota-un-ospite-dal-tuo-sito]]).
 
+Se non trovi nulla, cambia le date o il luogo: compaiono solo le case pubblicate e libere in quei giorni.
 ### Le pagine del sito di CasaZen
+**Ti serve:** solo un browser, anche del telefono: nessun account.
 1. Apri l'indirizzo principale di CasaZen: vedi la pagina iniziale.
 2. Dal menu scegli **Funzionalità**, **Per i fornitori**, **Guide**, **Chi siamo** o **Soluzioni** (Affitti brevi, Affitti lunghi).
-3. Con il pulsante **«Accedi»** vai al login; con **«Richiedi un invito»** chiedi l'accesso quando è su invito.
+3. Con **«Richiedi un invito»** chiedi l'accesso (per ora è su invito). Dove c'è il pulsante **«Accedi»** (versioni di prova) vai al login.
 
 ### Leggere i documenti legali di CasaZen
 1. In fondo a una pagina pubblica di CasaZen apri **«Documenti legali»**.
@@ -134,7 +147,7 @@ Il risultato è una **stima**: non è un conteggio ufficiale.
 - Solo le case **pubblicate** compaiono nella ricerca e nelle guide.
 - Le pagine con segreti o dati di una prenotazione non sono indicizzate.
 - Le pagine di servizio degli ospiti (benvenuto, conferma e annullamento iscrizione) non richiedono l'accesso.
-- I pulsanti «Accedi» e «Richiedi un invito» dipendono da come è aperto l'accesso a CasaZen.
+- «Richiedi un invito» c'è solo se il sito ha un indirizzo di contatto; «Accedi» c'è solo sulle versioni di prova del sito.
 
 ## Domande frequenti
 
@@ -153,12 +166,26 @@ Significa che CasaZen non ha ancora la tariffa di quel comune: verifica la tarif
 ### Dove trovo l'informativa privacy del mio sito di prenotazione?
 In fondo al tuo sito di prenotazione, voce «Informativa privacy»: l'hai scritta tu in **Documenti sito**.
 
+### Voglio prenotare una casa vacanza: dove vado?
+Apri il sito di CasaZen e usa «Cerca una casa»: scrivi dove vuoi andare, le date e quanti siete. Non serve un account. Scegli una casa e premi «Vedi e prenota»: prenoti dal sito dell'host ([[pagine-pubbliche#cercare-una-casa-dal-sito-di-casazen]]).
+
+### Posso provare CasaZen senza creare un account?
+Sì: nella pagina iniziale e nelle pagine «Affitti brevi» e «Affitti lunghi» ci sono due demo con dati di esempio («Vedi gli arrivi di oggi» e «Controlla un contratto»). Non creano un account e non toccano dati veri.
+
+### Il sito dice «solo su invito»: come entro?
+Premi «Richiedi un invito»: si apre un'e-mail già compilata da inviare a CasaZen. Se non vedi il pulsante, o se cerchi altre strade, vedi [[per-iniziare#come-si-entra-invito-o-registrazione]]. Se sei un fornitore: [[area-fornitore#registrarsi-come-fornitore-senza-invito]].
+
+### Dove clicco «Accedi»? Non lo vedo.
+Sul sito vero di CasaZen il pulsante «Accedi» non c'è: chi ha già un account apre l'indirizzo di accesso (l'indirizzo di CasaZen seguito da /login) o il link che ha ricevuto. Vedi [[per-iniziare#accedere-a-casazen]].
+
 ## Glossario
 - **Guida per comune**: pagina di CasaZen che spiega gli adempimenti di un comune.
 - **Calcolatore**: pagina che stima la tassa di soggiorno di un comune.
 - **Sitemap**: l'elenco delle pagine che CasaZen segnala ai motori di ricerca.
 - **Sub-responsabile**: un fornitore che tratta dati personali per conto di CasaZen.
 - **Benvenuto**: la pagina del QR stampato per una casa.
+- **Demo**: prova guidata con dati di esempio, senza account.
+- **Invito**: il modo, per ora, di entrare in CasaZen: lo chiedi con «Richiedi un invito» o te lo manda chi usa già CasaZen.
 
 ## Vedi anche
 - [[sito-prenotazione]]: il tuo sito pubblico e le tue case.
@@ -166,3 +193,4 @@ In fondo al tuo sito di prenotazione, voce «Informativa privacy»: l'hai scritt
 - [[portale-ospite]]: la pagina personale del soggiorno.
 - [[imposta-soggiorno-documenti]]: come CasaZen gestisce l'imposta.
 - [[routine-ai-crm]]: QR, campagne e pubblici per le offerte.
+- [[per-iniziare#come-si-entra-invito-o-registrazione]]: come si entra in CasaZen.

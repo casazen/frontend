@@ -1,12 +1,13 @@
 ---
 id: vetrina-fornitore
 titolo: La vetrina del fornitore, pagina pubblica, prenotazioni e richieste su misura
+menu: La vetrina del fornitore
 sezione: Fornitori e marketplace
 ordine: 72
 riassunto: Come un fornitore crea, pubblica e condivide la sua pagina pubblica (stile, testi, foto, servizi), apre le prenotazioni online e risponde ai clienti; come la usa chi la visita.
 chi: [fornitore, gestore]
 dove: Area Fornitori › Vetrina; pagina pubblica del fornitore
-parole_chiave: [vetrina, sito del fornitore, pubblica, bozza, anteprima, stile, foto dei lavori, prenotazione online, richiesta su misura, preventivo, link da condividere, pausa, AI, testi]
+parole_chiave: [vetrina, sito del fornitore, pagina pubblica, pubblicare la vetrina, pubblica, bozza, anteprima, stile, foto dei lavori, prenotazione online, richiesta su misura, preventivo, link da condividere, pausa, AI, testi, verificato, cosa vede il cliente]
 copre: [/app/supplier/showcase, /app/supplier/showcase/publish, /fornitori/:slug, /fornitori/:slug/servizi, /fornitori/:slug/servizi/:serviceSlug, /fornitori/:slug/chi-siamo, /fornitori/:slug/prenota, /fornitori/:slug/conferma, /fornitori/:slug/richiesta, /fornitori/:slug/preventivo]
 stato: disponibile
 fonte_codice: [frontend/src/features/supplier/showcase/showcase-hub-page.tsx, frontend/src/features/supplier/showcase/publish-wizard-page.tsx, frontend/src/features/supplier/showcase/showcase-work-page.tsx, frontend/src/features/supplier/showcase/panels/texts-panel.tsx, frontend/src/features/supplier/showcase/panels/ai-texts-block.tsx, frontend/src/features/supplier/showcase/panels/style-panel.tsx, frontend/src/features/supplier/showcase/panels/works-panel.tsx, frontend/src/features/supplier/showcase/panels/services-panel.tsx, frontend/src/features/supplier/showcase/panels/publish-panel.tsx, frontend/src/components/supplier-site/supplier-site-shell.tsx, frontend/src/components/supplier-site/booking/booking-wizard.tsx, frontend/src/components/supplier-site/booking/booking-confirmation.tsx, frontend/src/components/supplier-site/inquiry/inquiry-form.tsx, frontend/src/lib/supplier-site/booking-flow.ts, frontend/src/routes/index.tsx, backend/Casazen.Core/Options/ShowcaseBookingOptions.cs, backend/Casazen.Core/Options/SupplierPaymentsOptions.cs]
@@ -16,6 +17,8 @@ fonte_codice: [frontend/src/features/supplier/showcase/showcase-hub-page.tsx, fr
 La **vetrina** è la pagina pubblica del fornitore su CasaZen: servizi con prezzi, zone in cui lavora, foto dei lavori, domande frequenti e un indirizzo da condividere (`/fornitori/…`). La crei e la pubblichi da **Area Fornitori › Vetrina**; i clienti vedono solo ciò che pubblichi.
 
 Dove la prenotazione online è attiva, chi visita la vetrina può **prenotare un servizio** (scegliendo un orario libero) o mandare una **richiesta su misura**. Le risposte le gestisci dalle **Richieste** (vedi [[area-fornitore]]).
+
+**Cosa è pubblico:** solo ciò che pubblichi (nome, testi, servizi con prezzi, zone, foto). La bozza, la partita IVA, i dati bancari e quelli dei clienti non lo sono: vedi [[vetrina-fornitore#cosa-e-pubblico-e-cosa-no]].
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
@@ -50,18 +53,25 @@ In ogni stato la pagina mostra **un solo riquadro evidenziato** con la cosa da f
 Mentre scrivi, l'editor **salva da solo** («Salvato alle 14:32»). Quello che salvi è la **bozza**: nessuno la vede finché non premi «Pubblica la vetrina» (o «Pubblica le modifiche»). Se la apri da due schede e una la cambia, compare «La vetrina è stata modificata altrove»: premi «Ricarica» per vedere l'ultima versione (le modifiche non salvate della scheda vecchia vanno perse).
 
 ### Cosa serve per pubblicare
-Prima di pubblicare, il riquadro **«Prima di pubblicare»** elenca i controlli, ciascuno **«Da fare»** (necessario), **«Consigliato»** o **«Fatto»**. Le voci «Da fare» vanno sistemate («Sistema le voci «Da fare» per pubblicare»); le altre no. I controlli sono:
-- almeno un **servizio attivo con un prezzo**;
-- almeno un **comune** dove lavori;
-- gli **orari di lavoro**;
-- una **frase in grande** e un **«chi siamo»** scritti da te;
+Prima di pubblicare, il riquadro **«Prima di pubblicare»** elenca i controlli. Ognuno è **«Da fare»**, **«Consigliato»** o **«Fatto»**. I controlli **necessari** vanno sistemati prima di pubblicare («Sistema le voci «Da fare» per pubblicare»); quelli **consigliati** no: puoi pubblicare anche senza, ma la vetrina convince di più con.
+
+**Necessari (senza, non pubblichi):**
+- almeno un **servizio attivo con un prezzo** (anche «Su preventivo»);
+- almeno un **comune** dove lavori (lo scegli nel profilo: [[area-fornitore#aggiornare-il-profilo]]);
+- un **colore dei pulsanti** leggibile (quello dello stile va già bene).
+
+**Consigliati (puoi pubblicare anche senza):**
+- gli **orari di lavoro**: senza, i clienti non vedono orari liberi ([[area-fornitore#impostare-gli-orari-di-lavoro]]);
+- una **frase in grande** (almeno 12 caratteri) e un **«chi siamo»** (almeno 60) scritti da te;
 - **tre foto dei tuoi lavori**;
 - **tre domande frequenti** con la risposta;
-- un **colore dei pulsanti** leggibile;
-- il **«Verificato» di CasaZen**.
+- il **«Verificato»**: compare da solo quando il profilo è attivo, c'è la partita IVA e il conto per i pagamenti è pronto; non si chiede dalla vetrina ([[area-fornitore#cos-e-verificato-e-come-lo-ottengo]]).
 
 Alcune righe dei testi lasciate a metà (una domanda senza risposta, un lavoro senza foto) bloccano la pubblicazione finché non le completi o le togli. Il riquadro dice anche **cosa cambia pubblicando** (per esempio «Introduzione, Stile, Servizi mostrati») o «Tutto: è la prima pubblicazione».
 
+### Cosa è pubblico e cosa no
+- **Pubblico** (lo vede chiunque abbia il link, anche senza account): il nome, la frase in grande, il «chi siamo», i servizi mostrati con prezzi e durata, le zone, le foto dei lavori, le domande frequenti, i punti di forza, la garanzia, le certificazioni e le persone che hai scritto tu, e il segno «Verificato» se c'è. I gestori arrivano alla vetrina anche dalla tua scheda nel Marketplace ([[marketplace]]).
+- **Non pubblico:** la bozza e l'anteprima (finché non pubblichi), i servizi in bozza o in pausa, la partita IVA, i dati bancari e quelli dei clienti. I clienti ti contattano con le prenotazioni e le richieste su misura dentro CasaZen: nella vetrina non c'è uno spazio per il tuo telefono o la tua e-mail. Indirizzo e telefono del cliente arrivano a te solo dopo che accetti.
 ### L'indirizzo pubblico
 La vetrina ha un indirizzo suo (`/fornitori/…`), assegnato quando **attivi il profilo** (vedi [[area-fornitore]]): prima, l'anteprima non c'è. Il titolo della pagina è «[nome]: fornitore su CasaZen». Le pagine di prenotazione, conferma e richiesta **non sono indicizzate** dai motori di ricerca.
 
@@ -87,6 +97,8 @@ Nel passo **«Servizi e sezioni»** scegli **quali servizi mostrare e in che ord
 
 Perché i clienti possano prenotare servono **tutte** queste cose: la vetrina è **pubblicata** e **non in pausa**, le **prenotazioni sono aperte** («Apri le prenotazioni»), i **pagamenti online** sono attivi e il **conto per i pagamenti** è pronto (**Impostazioni › Pagamenti**, vedi [[area-fornitore]]). Nel riquadro «Prenotazioni» della vetrina leggi cosa manca: «La vetrina non è ancora pubblicata», «La vetrina è in pausa», «Tutto è pronto ma le prenotazioni sono chiuse», «I pagamenti online non sono ancora attivi», «Il conto per i pagamenti non è ancora pronto», con il collegamento «Vai ai pagamenti».
 
+**Pagamento e commissione.** Il cliente paga con la carta solo se tu accetti: l'importo viene bloccato, non addebitato (vedi sotto). Quanto trattiene CasaZen sui pagamenti online lo leggi tu in **Impostazioni › Incassi** ([[area-fornitore#la-commissione]]): questa pagina non scrive cifre perché l'app le mostra solo lì.
+
 ### Cosa succede quando un cliente prenota
 1. Il cliente sceglie servizio, comune, giorno e orario libero, e lascia i suoi dati.
 2. CasaZen gli manda un **link per confermare l'e-mail**: finché non lo apre, tu non ricevi nulla e l'orario resta riservato per **30 minuti** (poi torna libero).
@@ -105,6 +117,7 @@ La **home** mostra il nome, la frase in grande, i pulsanti «Prenota ora» e «R
 ## Come fare
 
 ### Creare e pubblicare la vetrina
+**Ti serve:** il profilo attivo ([[area-fornitore#attivare-il-profilo]]), almeno un servizio attivo con il prezzo, almeno un comune e due righe di presentazione. Per le prenotazioni online servono in più i pagamenti attivi e il conto per i pagamenti pronto (su attivazione).
 1. Apri **Area Fornitori › Vetrina**. Se non hai ancora una vetrina compare «Crea la tua vetrina in cinque minuti».
 2. Premi «Crea la tua vetrina». La procedura ha quattro passi: «Stile», «Presentazione», «Servizi» e «Riepilogo».
 3. **«Scegli lo stile della vetrina»**: scegli uno stile (lo puoi cambiare quando vuoi).
@@ -123,7 +136,7 @@ Se la pubblicazione non riesce («Non riesco a pubblicare la vetrina»), riprova
 
 ### Scrivere i testi con l'AI
 1. In **Testi**, apri «Scrivi con l'AI».
-2. Facoltativo: scrivi due righe su di te, da quanto lavori, in cosa sei specializzato e cosa ti distingue. Premi «Più domande» o «Meno domande» per vederne di più o di meno.
+2. Facoltativo: scrivi due righe su di te, da quanto lavori, in cosa sei specializzato e cosa ti distingue. Premi «Altre domande» o «Meno domande» per vederne di più o di meno.
 3. Premi «Scrivi la bozza». Attendi «Sto scrivendo…».
 4. Leggi «Ecco una bozza», scegli le parti e premi «Usa le parti scelte». Per ricominciare, «Scrivi un'altra bozza».
 5. Rileggi tutto e correggi: la bozza resta tua e **non è pubblica** finché non pubblichi.
@@ -214,7 +227,7 @@ Indirizzo e telefono arrivano al professionista **solo dopo che accetta**.
 5. Se nessuno risponde in tempo, **CasaZen** chiude la richiesta e propone altri professionisti della zona.
 
 ## Regole e limiti
-- Frase in grande: almeno **12 caratteri**.
+- Frase in grande: da **12** a **90** caratteri; «chi siamo»: almeno **60** perché il controllo consigliato risulti fatto.
 - Colore dei pulsanti: contrasto con il bianco di almeno **4,5**.
 - Logo: PNG, JPG o WebP fino a **200 KB**; foto: PNG, JPG o WebP (non SVG né PDF). Ci sono limiti al numero di lavori e di foto: l'editor li mostra («Fino a N lavori e M foto in tutto»).
 - Almeno **un servizio** in vetrina; solo servizi **attivi**.
@@ -246,8 +259,11 @@ Mettila in pausa: i clienti vedono che per ora non accetti prenotazioni.
 ### L'AI inventa cose sul mio lavoro?
 No: usa solo categorie, zone, nomi dei servizi e le righe che scrivi tu, e la bozza non è pubblica finché non la rivedi e pubblichi.
 
-### Cos'è «Verificato»?
-Un segno di fiducia su dati dell'attività e partita IVA, assegnato da CasaZen: compare nella sezione «Fiducia» solo se vero.
+### Perché la mia vetrina non mostra il «Verificato»?
+Nella vetrina il «Verificato» compare solo se il profilo è attivo, nel profilo c'è la partita IVA e il conto per i pagamenti è pronto. Come funziona e come ottenerlo: [[area-fornitore#cos-e-verificato-e-come-lo-ottengo]].
+
+### Cosa vedono i clienti di me nella vetrina?
+Solo ciò che hai pubblicato: nome, testi, servizi con prezzi, zone, foto e domande frequenti. Non vedono la bozza, la partita IVA né i dati bancari ([[vetrina-fornitore#cosa-e-pubblico-e-cosa-no]]).
 
 ## Glossario
 - **Vetrina**: la pagina pubblica del fornitore.
@@ -255,6 +271,8 @@ Un segno di fiducia su dati dell'attività e partita IVA, assegnato da CasaZen: 
 - **Richiesta su misura**: richiesta libera, per ciò che il listino non dice.
 - **Blocco sulla carta**: l'importo è riservato sulla carta del cliente ma non addebitato.
 - **Offerta**: voci, totale e orario che il fornitore propone dentro la conversazione.
+- **Verificato**: segno di fiducia sulla vetrina (profilo attivo, partita IVA e conto per i pagamenti pronto).
+- **Frase in grande**: la riga di presentazione in cima alla home della vetrina.
 
 ## Vedi anche
 - [[area-fornitore]]: richieste, agenda, servizi, incassi e conto per i pagamenti.

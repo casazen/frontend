@@ -3,18 +3,21 @@ id: canali-octorate
 titolo: Canali, calendari e Octorate
 sezione: Affitti brevi
 ordine: 11
-riassunto: Come tenere allineate le date tra CasaZen e i portali (Airbnb, Booking.com e altri) con i calendari iCal, come collegare il channel manager Octorate, abbinare gli annunci ai tuoi immobili e attivare canali e funzioni dal Marketplace.
+riassunto: Come evitare le doppie prenotazioni quando la stessa casa è su più portali (Airbnb, Booking.com e altri): calendari iCal (e perché CasaZen non fa da ponte tra i portali), channel manager Octorate, abbinamento degli annunci, canali e funzioni del Marketplace.
 chi: [gestore, amministratore]
 dove: Affitti brevi › Immobili › Canali e calendari
-parole_chiave: [iCal, calendario, Airbnb, Booking.com, doppie prenotazioni, sincronizzazione, link di esportazione, Octorate, channel manager, abbinamento, mapping, Marketplace, funzioni, OTA, canali]
+parole_chiave: [iCal, calendario, Airbnb, Booking.com, doppie prenotazioni, overbooking, due prenotazioni stessa notte, collegare Airbnb, collegare Booking, link calendario, sincronizzare calendari, esportare calendario, link di esportazione, date occupate, Octorate, attivare Octorate, channel manager, abbinamento, Marketplace, funzioni, OTA, canali, portali]
 copre: [/app/short-rent/channels, /app/short-rent/ota, /app/short-rent/ota/create, /app/short-rent/integrations/octorate, /app/short-rent/marketplace/activate/:kind/:code, /app/short-rent/marketplace/request/:moduleCode, /app/short-rent/marketplace/partners/:code/activate]
 stato: disponibile
-fonte_codice: [frontend/src/features/channels/channels-page.tsx, frontend/src/features/channels/calendar-row.tsx, frontend/src/features/properties/components/ical-settings.tsx, frontend/src/features/properties/components/ical-export-section.tsx, frontend/src/features/ota/ota-page.tsx, frontend/src/features/ota/ota-setup-page.tsx, frontend/src/features/integrations/octorate/connect-wizard.tsx, frontend/src/features/marketplace/activation/activation-wizard-page.tsx, frontend/src/features/marketplace/functions/licensed-request-wizard-page.tsx, frontend/src/features/marketplace/partners/partner-wizard-page.tsx, frontend/src/i18n/locales/it.json, backend/docs/runbooks/ical.md, backend/docs/runbooks/octorate-webhooks.md, backend/Casazen.Core/Services/HostCalendarOverview.cs, backend/Casazen.Infrastructure/Jobs/CalendarSyncJob.cs, backend/Casazen.Infrastructure/Jobs/OctorateBookingImportJob.cs, backend/Casazen.Infrastructure/Jobs/OctorateBookingSyncJob.cs, backend/Casazen.Core/Features/FeatureFlags.cs]
+fonte_codice: [frontend/src/features/channels/channels-page.tsx, frontend/src/features/channels/calendar-row.tsx, frontend/src/features/properties/components/ical-settings.tsx, frontend/src/features/properties/components/ical-export-section.tsx, frontend/src/features/ota/ota-page.tsx, frontend/src/features/ota/ota-setup-page.tsx, frontend/src/features/integrations/octorate/connect-wizard.tsx, frontend/src/features/marketplace/activation/activation-wizard-page.tsx, frontend/src/features/marketplace/functions/licensed-request-wizard-page.tsx, frontend/src/features/marketplace/partners/partner-wizard-page.tsx, frontend/src/i18n/locales/it.json, backend/docs/runbooks/ical.md, backend/docs/runbooks/octorate-webhooks.md, backend/Casazen.Core/Services/HostCalendarOverview.cs, backend/Casazen.Infrastructure/Services/ICalExportService.cs, backend/Casazen.Infrastructure/Services/PropertyICalSyncService.cs, backend/Casazen.Infrastructure/Octorate/BookingOctorateSyncService.cs, backend/Casazen.Infrastructure/Jobs/CalendarSyncJob.cs, backend/Casazen.Infrastructure/Jobs/OctorateBookingImportJob.cs, backend/Casazen.Infrastructure/Jobs/OctorateBookingSyncJob.cs, backend/Casazen.Core/Features/FeatureFlags.cs]
 ---
 
 ## In breve
-Se affitti la stessa casa su più portali, le date occupate devono parlarsi, altrimenti rischi due prenotazioni sulla stessa notte. CasaZen ti dà tre strade: i **calendari iCal** (per tutti, i più semplici), il channel manager **Octorate** (su attivazione, più completo) e, solo dove è attivo, un collegamento diretto con i portali.
-Con iCal CasaZen legge i calendari dei portali circa ogni 15 minuti e ti dà un suo link da incollare sui portali. Con Octorate le prenotazioni, le date e i prezzi viaggiano insieme.
+Se affitti la stessa casa su più portali (per esempio Airbnb e Booking.com), le date occupate devono parlarsi, altrimenti rischi una **doppia prenotazione**: due ospiti sulla stessa notte. CasaZen ti dà due strade: i **calendari iCal** (per tutti, semplici ma con un ritardo di minuti o ore) e il channel manager **Octorate** (su attivazione, vedi [[per-iniziare#cosa-significa-su-attivazione]]; più completo). Solo dove è attivo c'è anche un collegamento diretto con i portali (pagina OTA).
+
+**Con i soli calendari iCal CasaZen non fa da ponte tra i portali.** CasaZen legge le date occupate di ogni portale (circa ogni 15 minuti) e ti dà un suo link da incollare sui portali, ma quel link contiene solo ciò che si prenota su CasaZen: le prenotazioni del tuo sito, quelle che inserisci tu e i tuoi blocchi manuali. **Non** contiene le prenotazioni di Airbnb né quelle di Booking.com. Quindi una prenotazione di Airbnb non chiude le date su Booking.com passando da CasaZen. Per non avere due prenotazioni sulla stessa notte devi anche far leggere a ogni portale il calendario degli altri: su Airbnb quello di Booking.com e su Booking.com quello di Airbnb. I passi sono in [[canali-octorate#evitare-le-doppie-prenotazioni-tra-portali-con-i-calendari-ical]]. Anche così resta un ritardo di minuti o ore.
+
+Con iCal le prenotazioni dei portali arrivano come **date occupate, senza nome dell'ospite e senza prezzi**: per mandargli il check-in online e preparare la comunicazione degli ospiti alla Questura trasforma il blocco in soggiorno ([[prenotazioni#creare-un-soggiorno-da-un-blocco-di-un-altro-canale]]). Con Octorate arrivano le prenotazioni complete.
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
@@ -22,6 +25,7 @@ Con iCal CasaZen legge i calendari dei portali circa ogni 15 minuti e ti dà un 
 | Canali e calendari | Elenca i calendari collegati di tutte le case, con stato e ultimo aggiornamento | Affitti brevi › Immobili › Canali e calendari | gestore, amministratore | Disponibile | Controllare lo stato dei calendari |
 | Collega un calendario iCal | Importa le date occupate di Airbnb, Booking.com o altri | Scheda immobile › Calendari iCal › «Collega un calendario» | gestore, amministratore (permesso di modifica degli immobili) | Disponibile | Collegare un calendario iCal |
 | Link di esportazione di CasaZen | Link da incollare sui portali perché leggano le date occupate su CasaZen | Scheda immobile › Calendari iCal; «⋯» in Canali e calendari | gestore, amministratore | Disponibile | Incollare il link di CasaZen sui portali |
+| Calendari incrociati tra portali | Fa leggere ad Airbnb le date di Booking.com e viceversa: CasaZen non lo fa al posto tuo | Sui portali (in CasaZen copi solo i link) | gestore, amministratore | Disponibile | Evitare le doppie prenotazioni tra portali con i calendari iCal |
 | Sincronizza ora | Rilegge subito un calendario | Canali e calendari; scheda immobile | gestore, amministratore (permesso di modifica) | Disponibile | Sincronizzare un calendario subito |
 | Scollega | Toglie un calendario e libera le sue date | Scheda immobile › Calendari iCal | gestore, amministratore (permesso di modifica) | Disponibile | Scollegare un calendario |
 | Rigenera link | Crea un nuovo link di esportazione e spegne il vecchio | Scheda immobile › Calendari iCal | gestore, amministratore (permesso di modifica) | Disponibile | Rigenerare il link di esportazione |
@@ -43,20 +47,27 @@ Con iCal CasaZen legge i calendari dei portali circa ogni 15 minuti e ti dà un 
 | Quanto è veloce | CasaZen legge ogni circa 15 minuti; ogni portale legge il link di CasaZen quando vuole, di solito ogni poche ore | Date lette ogni 15 minuti; prenotazioni segnalate quando cambiano | Su richiesta |
 | Disponibilità | Disponibile | Su attivazione | Su attivazione |
 
-**Come funziona iCal.**
-- Ogni portale ti dà un link iCal del calendario di un tuo annuncio. Tu lo incolli in CasaZen: CasaZen lo legge circa ogni 15 minuti e segna come occupate le date indicate.
-- Le date importate compaiono nel calendario come blocchi con il nome del canale e occupano le notti sul tuo sito. Non portano il nome dell'ospite, né prezzi, pagamenti o messaggi: solo «occupato».
-- Per l'altra direzione CasaZen ha un **link di esportazione** per ogni immobile. Lo incolli nelle impostazioni del portale: il portale lo rilegge ogni tanto (non subito) e chiude le date prese su CasaZen.
-- Il link di esportazione contiene le prenotazioni dirette e quelle inserite da te, e i tuoi blocchi manuali. **Non** contiene le prenotazioni arrivate dai portali né le date importate dai loro calendari. Per questo CasaZen non fa da ponte tra due portali: per evitare doppie prenotazioni collega su ogni portale anche il calendario degli altri (il calendario di Booking.com su Airbnb e quello di Airbnb su Booking.com).
-- Il link mostra solo «Occupato»: mai nomi, email o note.
+**Quale scelgo?** Per cominciare usa i **calendari iCal**: sono disponibili per tutti e bastano per tenere allineate le date, tenendo presenti due limiti: c'è un ritardo e arrivano solo date occupate (niente nomi, niente prezzi). Scegli **Octorate** se hai più case o più portali e vuoi lavorare da un solo punto, con prenotazioni complete e con prezzi e restrizioni che partono da CasaZen. Octorate è un servizio a parte (serve un tuo account Octorate, con le sue condizioni di abbonamento) e in CasaZen è su attivazione. La pagina OTA è una terza strada, diretta, anch'essa su attivazione: serve a chi ha le chiavi di accesso dei portali.
+
+**Come funziona iCal.** iCal è un link a un calendario che contiene solo le date occupate. Funziona in due direzioni, separate:
+
+| Direzione | Cosa passa | Cosa non passa |
+|---|---|---|
+| **Dal portale a CasaZen**: tu incolli in CasaZen il link iCal del portale | Le date occupate di quel calendario. CasaZen lo legge circa ogni 15 minuti e le mostra nel calendario come blocchi con il nome del canale; occupano le notti anche sul tuo sito | Il nome dell'ospite, i prezzi, i pagamenti, i messaggi: solo «occupato» |
+| **Da CasaZen al portale**: tu incolli sul portale il link di CasaZen | Le prenotazioni arrivate dal tuo sito, i soggiorni che inserisci tu e i tuoi blocchi manuali, sempre come «Occupato». Il portale rilegge il link ogni tanto (non subito) e chiude quelle date | Le prenotazioni dei portali (anche quelle che hai trasformato in soggiorno), le date importate dai calendari dei portali, prezzi, nomi, e-mail e note. Restano fuori anche le prenotazioni annullate e le richieste «Paga in struttura» finché non le accetti |
+
+- Per questo CasaZen **non fa da ponte** tra due portali: il link di CasaZen è uno solo per casa e CasaZen non sa quale portale lo sta leggendo, quindi non ci mette le prenotazioni dei portali. Airbnb e Booking.com si parlano solo se li colleghi tu l'uno all'altro ([[canali-octorate#evitare-le-doppie-prenotazioni-tra-portali-con-i-calendari-ical]]).
+- Il link di CasaZen mostra solo «Occupato»: mai nomi, e-mail o note.
 - Un calendario valido ma senza eventi libera tutte le date importate da quel calendario (le prenotazioni cancellate sul portale liberano le notti). Un file non valido non cambia nulla: le date restano come erano.
 - Un evento termina il giorno della partenza: quel giorno resta libero per un nuovo arrivo. Gli eventi annullati non bloccano nulla.
 
-**Limite reale di iCal: la finestra di ritardo.** Tra la prenotazione su un portale e il momento in cui gli altri portali la vedono passa del tempo (CasaZen circa 15 minuti, i portali anche alcune ore). Se due ospiti prenotano la stessa notte in quella finestra, CasaZen non può impedirlo. CasaZen rifiuta invece una prenotazione che inserisci tu su notti già occupate. Per ridurre il rischio usa un channel manager.
+**Limite reale di iCal: la finestra di ritardo.** Tra la prenotazione su un portale e il momento in cui gli altri portali la vedono passa del tempo (CasaZen circa 15 minuti, i portali anche alcune ore). Se due ospiti prenotano la stessa notte in quella finestra, nessuno può impedirlo, nemmeno con i link incrociati. CasaZen rifiuta invece una prenotazione che inserisci tu su notti già occupate. Per ridurre il rischio usa un channel manager.
 
 **Quando un calendario è «da ricontrollare».** In Canali e calendari compare «Da ricontrollare» se l'ultimo tentativo è fallito o se non viene letto da più di 2 ore.
 
-**Perché Octorate.** Octorate è un *channel manager*: un servizio che gestisce annunci, calendari, prenotazioni e prezzi su molti portali. Collegandolo, CasaZen diventa il punto unico da cui lavori. CasaZen non vede mai la tua password: la inserisci solo sul sito di Octorate e dai il consenso lì. **Questa parte è su attivazione:** compare solo dove CasaZen l'ha abilitata per te.
+**Perché Octorate.** Octorate è un *channel manager*: un servizio a parte, con il suo account e le sue condizioni di abbonamento, che gestisce annunci, calendari, prenotazioni e prezzi su molti portali e fa da punto unico anche per le date. Collegandolo, CasaZen diventa il punto da cui lavori; non servono i link incrociati tra i portali collegati a Octorate. CasaZen non vede mai la tua password: la inserisci solo sul sito di Octorate e dai il consenso lì.
+
+**Come si ottiene Octorate in CasaZen.** Questa parte è su attivazione: non si accende da un'impostazione del tuo account, la abilita CasaZen per l'installazione. Se non vedi «Collega i tuoi canali» o le schede del Marketplace per i collegamenti, scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza») e chiedi di attivare il collegamento con Octorate. L'account Octorate lo apri e lo paghi con Octorate; quanto costano i singoli collegamenti lo leggi nelle schede del Marketplace («Costo e chi fattura»).
 
 **Cosa si sincronizza con Octorate** (verificato per ogni voce):
 | Cosa | Verso | Quando |
@@ -88,32 +99,44 @@ Prenotazioni e date che registri tu in CasaZen vengono comunicate a Octorate per
 ### Controllare lo stato dei calendari
 1. Apri **Affitti brevi › Immobili** e poi la scheda **Canali e calendari**.
 2. Ogni riga è un calendario: vedi la casa, il canale (Airbnb, Booking.com, Altro), l'etichetta e «Aggiornato» seguito da quanto tempo fa. «Non ancora aggiornato» significa che non è mai stato letto.
-3. Una riga con «Da ricontrollare» e un messaggio rosso ha un problema: leggi il messaggio (vedi [[canali-octorate#risolvere-gli-errori-piu-comuni]]).
+3. Lo stato di ogni calendario è «Sincronizzato», «Sincronizzazione in corso», «Sincronizzato in parte», «Errore» oppure «Mai sincronizzato». Una riga con «Da ricontrollare» e un messaggio rosso ha un problema: leggi il messaggio (vedi [[canali-octorate#risolvere-gli-errori-dei-calendari]]).
 4. Una casa senza calendari mostra «Nessun calendario collegato: le date non si aggiornano da sole» e il pulsante «Collega».
 5. Se non hai nessun immobile vedi «Nessun immobile da collegare» e il pulsante «Vai agli immobili».
 
 ### Collegare un calendario iCal
-Serve il permesso di modifica degli immobili.
-1. Sul portale (Airbnb, Booking.com o altro) copia il **link iCal di esportazione** del calendario dell'annuncio. Nell'app trovi la guida «Come trovare il link iCal».
-2. In CasaZen apri **Affitti brevi › Immobili › Canali e calendari** e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda **Calendari iCal**.
-3. In «Collega un calendario» scegli il «Canale»: Airbnb, Booking.com o Altro.
+Importa in CasaZen le date occupate di un portale. **Ti serve:** il permesso di modifica degli immobili, la casa già creata in CasaZen e l'accesso al tuo account Airbnb, Booking.com (o all'altro portale) per copiare il link del calendario.
+1. Sul portale cerca la funzione che **esporta** il calendario dell'annuncio e copia il suo **link iCal**: un indirizzo che comincia con https. Ogni portale lo chiama in modo diverso: «Esporta calendario», «Sincronizza calendari», «Indirizzo segreto iCal». Secondo la guida dentro CasaZen, su Airbnb lo trovi nell'annuncio, in Disponibilità › Sincronizzazione calendari › «Esporta calendario»; su Booking.com, nell'Extranet, in Tariffe e disponibilità (Calendario › «Esporta»). I portali cambiano spesso nomi e posizioni: se non trovi la voce, cerca nel portale «esporta calendario» o «sincronizza calendari». Non usare il link dell'annuncio né quello di importazione.
+2. In CasaZen apri **Affitti brevi › Immobili › Canali e calendari** e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda **Calendari iCal**. Se non sai dove trovare il link sul portale, sotto il campo «URL import (HTTPS)» premi «Come trovare il link iCal»: si apre la pagina «Come collegare il calendario via iCal» con i passi per Airbnb, Booking.com, VRBO, Google Calendar, Apple Calendar e Outlook (la stessa guida si apre dal «?» «Cos'è iCal» in Canali e calendari).
+3. Nel modulo «Collega un calendario» scegli il «Canale»: Airbnb, Booking.com o Altro.
 4. Se vuoi, scrivi un'«Etichetta (facoltativa)», fino a 60 caratteri, per esempio «Airbnb - camera 2». Serve se una casa ha più calendari.
-5. Incolla il link in «URL import (HTTPS)». Deve cominciare con https e raggiungibile da internet.
+5. Incolla il link in «URL import (HTTPS)». Deve cominciare con https ed essere raggiungibile da internet.
 6. Premi «Aggiungi e sincronizza». Vedi «Calendario collegato: la prima sincronizzazione è in corso.».
 7. Dopo pochi istanti lo stato diventa «Sincronizzato» e leggi quanti «periodi bloccati importati» ci sono. Le date sono occupate sul tuo sito.
 
 Una casa può avere fino a 10 calendari, ognuno con un link diverso. Se il canale non lo scegli tu, CasaZen lo riconosce dall'indirizzo (Airbnb, Booking.com) o usa «Altro»: è solo una scritta.
 
+> **Attenzione:** questo passo porta le date del portale **dentro CasaZen**, non le porta agli altri portali. Se la casa è su due o più portali, completa anche [[canali-octorate#incollare-il-link-di-casazen-sui-portali]] e [[canali-octorate#evitare-le-doppie-prenotazioni-tra-portali-con-i-calendari-ical]].
+
 ### Incollare il link di CasaZen sui portali
-Serve perché i portali chiudano le date prese su CasaZen.
+Serve perché i portali chiudano le date prese su CasaZen (prenotazioni del tuo sito, quelle che inserisci tu e i blocchi manuali). **Ti serve:** il permesso di leggere gli immobili e l'accesso ai portali.
 1. Apri la scheda **Calendari iCal** della casa e guarda «Link di esportazione per le OTA».
 2. Premi «Copia». Se la copia non riesce, seleziona il link e copialo a mano. In **Canali e calendari** puoi anche aprire il menu «⋯» di una riga e scegliere «Copia il link di CasaZen».
-3. Su **Airbnb**: nell'annuncio apri Disponibilità → Sincronizzazione calendari → Importa calendario, incolla il link e dagli un nome (per esempio CasaZen).
-4. Su **Booking.com**: nell'Extranet apri Tariffe e disponibilità → Sincronizza calendari, aggiungi un calendario da importare e incolla il link.
-5. I portali rileggono il link ogni tanto: le modifiche non compaiono subito.
+3. Sul portale cerca la funzione che **importa** o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Secondo la guida dentro CasaZen, su **Airbnb**: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su **Booking.com**: nell'Extranet apri Tariffe e disponibilità › Sincronizza calendari e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
+4. I portali rileggono il link ogni tanto: le modifiche non compaiono subito.
 
 > **Attenzione:** chi ha il link vede le date occupate. Incollalo solo sui portali che devono leggerle («Tienilo riservato»).
-> **Suggerimento:** per le doppie prenotazioni tra portali incolla su Airbnb anche il link di esportazione di Booking.com e su Booking.com quello di Airbnb.
+> **Attenzione:** il link di CasaZen porta ai portali solo ciò che si prenota su CasaZen. Non basta per allineare tra loro Airbnb e Booking.com: serve anche il compito seguente.
+
+### Evitare le doppie prenotazioni tra portali con i calendari iCal
+Serve quando la stessa casa è su **due o più portali** (per esempio Airbnb e Booking.com) e non usi Octorate. CasaZen non passa le prenotazioni da un portale all'altro: devono leggere l'uno il calendario dell'altro. **Ti serve:** la casa già in CasaZen, l'accesso a tutti i portali dove è pubblicata e il permesso di modifica degli immobili.
+1. Per ogni portale collega in CasaZen il suo calendario: [[canali-octorate#collegare-un-calendario-ical]]. Così le prenotazioni di quel portale chiudono le date sul tuo sito e nel calendario di CasaZen.
+2. Per ogni portale incolla il link di CasaZen: [[canali-octorate#incollare-il-link-di-casazen-sui-portali]]. Così le prenotazioni del tuo sito e quelle che inserisci tu chiudono le date sui portali.
+3. Su **ogni portale** importa anche il calendario degli altri portali. Con Airbnb e Booking.com: sul portale di Booking.com copia il link iCal di esportazione e incollalo su Airbnb (nella stessa funzione di importazione in cui hai incollato il link di CasaZen); poi fai il contrario, copiando il link di esportazione di Airbnb e incollandolo su Booking.com. Con tre portali ognuno importa gli altri due. Il link di esportazione di un portale lo copi come al passo 1 di [[canali-octorate#collegare-un-calendario-ical]].
+4. Controlla ogni tanto **Canali e calendari**: se vedi «Da ricontrollare» agisci subito.
+5. Quando arriva una prenotazione da un portale, nel calendario trovi un blocco: trasformalo in soggiorno per fare il check-in dell'ospite ([[prenotazioni#creare-un-soggiorno-da-un-blocco-di-un-altro-canale]]).
+
+> **Attenzione:** senza il passo 3, una prenotazione di Airbnb non blocca mai le date su Booking.com, e viceversa: rischi due prenotazioni sulla stessa notte.
+> **Nota:** anche con tutti i passi resta un ritardo di minuti o ore. Se due ospiti prenotano la stessa notte in quel ritardo, nessuno può impedirlo. Per ridurre il rischio usa un channel manager come Octorate (su attivazione).
 
 ### Sincronizzare un calendario subito
 1. In **Canali e calendari** premi «Sincronizza ora» sulla riga, oppure fallo dalla scheda **Calendari iCal** della casa.
@@ -136,7 +159,7 @@ Ti serve se il link è finito a chi non dovrebbe averlo.
 > **Attenzione:** il vecchio link smette di funzionare subito. Fino a quando non aggiorni i portali, vedono le date occupate di CasaZen come libere.
 
 ### Collegare Octorate a CasaZen
-Su attivazione. Serve il permesso di gestire i canali. La procedura «Collega i tuoi canali» non è in nessun menu: si apre dall'attivazione degli immobili, dal Marketplace (dove leggi «Prima collega il tuo channel manager» con il link «Collega il channel manager») o dal passo «Canali» di «Aggiungi immobile» (pulsante «Vai al collegamento dei canali»).
+Su attivazione. **Ti serve:** la funzione attiva (se non la vedi, scrivi all'assistenza di CasaZen: in alto premi **Guida** e scegli «Scrivi all'assistenza»), il permesso di gestire i canali, un tuo account Octorate con le credenziali per entrarci e, per alcuni passaggi sul pannello di Octorate, l'amministratore dell'organizzazione. La procedura «Collega i tuoi canali» non è in nessun menu: si apre da **Affitti brevi › Immobili › Attivazione** (scegli la casa e, in «Portali di prenotazione», premi «Collega»), dal Marketplace (dove leggi «Prima collega il tuo channel manager» con il link «Collega il channel manager») o dal passo «Canali» di «Aggiungi immobile» (pulsante «Vai al collegamento dei canali»).
 1. Nella prima domanda, «Dove si trovano oggi i tuoi annunci?», scegli la risposta più vicina alla tua: «Sono già su Octorate», «Sono già sulle OTA o in un altro gestionale», «Non sono ancora stati pubblicati» oppure «Ho una situazione mista» (per ogni immobile dici in quale situazione è). Se una strada non è disponibile leggi «Questa strada non è ancora disponibile: scegli un'altra risposta».
 2. Leggi «Perché collegare» e vai avanti: collegare non cambia nulla sui tuoi annunci.
 3. Nel passo «Collegamento» premi «Vai al tuo channel manager». Si apre il sito di Octorate **nella stessa scheda**: accedi con le tue credenziali e autorizza CasaZen.
@@ -198,7 +221,7 @@ Su attivazione. Serve il permesso di lettura dei canali OTA (e di scrittura per 
 2. Per leggere subito le prenotazioni di un portale premi «Sincronizza ora». Per tutte premi «Sincronizza tutto» e poi «Avvia sync»: recupera le ultime prenotazioni, aggiorna quelle cambiate, crea le nuove ed evita i duplicati.
 3. Per collegare un portale premi «Aggiungi integrazione» (oppure «Connetti» su una scheda disconnessa): nella pagina «Aggiungi integrazione OTA» scegli la «Piattaforma», la «Proprietà», inserisci le chiavi («API Key», «API Secret») e l'«ID proprietà sulla piattaforma», e premi «Crea integrazione». Per iniziare subito lascia acceso «Attiva (inizia subito la sincronizzazione)».
 
-### Risolvere gli errori più comuni
+### Risolvere gli errori dei calendari
 | Cosa vedi | Cosa significa | Cosa fare |
 |---|---|---|
 | «L'indirizzo del calendario non è valido: usa un link https pubblico» | Il link non comincia con https o non è pubblico | Copia di nuovo il link iCal dal portale |
@@ -211,6 +234,7 @@ Su attivazione. Serve il permesso di lettura dei canali OTA (e di scrittura per 
 | «L'etichetta del calendario può contenere al massimo 60 caratteri» | Etichetta troppo lunga o con a capo | Accorciala |
 | Le date non si aggiornano | Calendario «Da ricontrollare» o link cambiato | Premi «Sincronizza ora»; controlla l'errore sulla riga |
 | Una prenotazione dal portale non compare | iCal porta solo le date | Cerca il blocco nel calendario e trasformalo in soggiorno: vedi [[prenotazioni]] |
+| Una prenotazione di Airbnb non chiude le date su Booking.com (o il contrario) | CasaZen non fa da ponte tra i portali | Fai leggere a ogni portale il calendario degli altri: [[canali-octorate#evitare-le-doppie-prenotazioni-tra-portali-con-i-calendari-ical]] |
 | Una modifica a prezzo o restrizioni risulta «Non inviata» | Il channel manager non l'ha accettata | Premi «Riprova ora» sulla riga; finché non va, il channel manager non ha quella modifica |
 | «La camera non ha una licenza attiva nel tuo channel manager» | Manca la licenza della camera | Attivala nel channel manager, poi riprova |
 | «Il tuo channel manager non ha accettato l'accesso di CasaZen: ricollega l'account e riprova» | Il consenso non vale più | Rifai «Collegare Octorate a CasaZen» |
@@ -222,9 +246,10 @@ Su attivazione. Serve il permesso di lettura dei canali OTA (e di scrittura per 
 1. Aggiungi l'immobile e attivalo ([[immobili#aggiungere-un-immobile-con-la-procedura-guidata]]).
 2. Per ogni portale copi il link iCal di esportazione e lo incolli in CasaZen ([[canali-octorate#collegare-un-calendario-ical]]).
 3. CasaZen legge i calendari circa ogni 15 minuti: le date importate occupano le notti sul tuo sito ([[sito-prenotazione]]).
-4. Copi il link di CasaZen e lo incolli su ogni portale, compresi i calendari degli altri portali ([[canali-octorate#incollare-il-link-di-casazen-sui-portali]]).
-5. Controlli ogni tanto «Canali e calendari»: se vedi «Da ricontrollare» agisci subito.
-6. Quando arriva una prenotazione da un portale, nel calendario trovi un blocco: trasformalo in soggiorno per fare il check-in dell'ospite ([[prenotazioni]], [[ospiti-checkin]]).
+4. Copi il link di CasaZen e lo incolli su ogni portale ([[canali-octorate#incollare-il-link-di-casazen-sui-portali]]).
+5. Su ogni portale incolli anche il link di esportazione degli altri portali: Booking.com su Airbnb e Airbnb su Booking.com ([[canali-octorate#evitare-le-doppie-prenotazioni-tra-portali-con-i-calendari-ical]]). Senza questo passo i portali non si vedono tra loro.
+6. Controlli ogni tanto «Canali e calendari»: se vedi «Da ricontrollare» agisci subito.
+7. Quando arriva una prenotazione da un portale, nel calendario trovi un blocco: trasformalo in soggiorno per fare il check-in dell'ospite ([[prenotazioni]], [[ospiti-checkin]]).
 
 ### Flusso: dai calendari iCal a Octorate
 1. Colleghi Octorate ([[canali-octorate#collegare-octorate-a-casazen]]) e abbini gli annunci agli immobili.
@@ -236,7 +261,8 @@ Su attivazione. Serve il permesso di lettura dei canali OTA (e di scrittura per 
 - Frequenza: CasaZen legge i calendari iCal circa ogni 15 minuti; un calendario si segnala «da ricontrollare» dopo 2 ore senza letture riuscite. I portali leggono il link di CasaZen con i loro tempi.
 - Al massimo 10 calendari per immobile, ognuno con un link diverso. Il link deve essere https e pubblico.
 - Un calendario scollegato libera subito le sue date; gli altri calendari non cambiano.
-- Il link di esportazione non contiene prenotazioni dai portali né date importate. Mostra solo «Occupato».
+- Il link di esportazione di CasaZen contiene solo prenotazioni del tuo sito, soggiorni inseriti da te e blocchi manuali; non contiene prenotazioni dai portali né date importate. Mostra solo «Occupato».
+- CasaZen non fa da ponte tra i portali: con i soli calendari iCal serve il collegamento incrociato fatto sui portali.
 - Un file non valido lascia le date com'erano; un calendario valido ma vuoto le libera.
 - Con Octorate: calendario letto ogni 15 minuti per 365 giorni; le notti chiuse in Octorate sono blocchi che non si tolgono da CasaZen.
 - Un canale iCal «Altro» non viene mai sostituito da Octorate.
@@ -245,14 +271,26 @@ Su attivazione. Serve il permesso di lettura dei canali OTA (e di scrittura per 
 
 ## Domande frequenti
 
+### Come evito le doppie prenotazioni tra Airbnb e Booking.com?
+Con i calendari iCal: collega in CasaZen il calendario di ogni portale, incolla su ogni portale il link di CasaZen e, su Airbnb, importa anche il link di esportazione di Booking.com (e su Booking.com quello di Airbnb): CasaZen non fa da ponte tra i due portali. Resta un ritardo di minuti o ore; per ridurlo usa un channel manager (Octorate, su attivazione). Passi: [[canali-octorate#evitare-le-doppie-prenotazioni-tra-portali-con-i-calendari-ical]].
+
+### Cosa significa iCal? E cosa vuol dire channel manager?
+iCal è il link a un calendario che un portale ti dà: contiene solo le date occupate, non nomi né prezzi. Un channel manager è un programma che tiene allineati prezzi, date e prenotazioni su tutti i portali; quello che CasaZen sa collegare è Octorate.
+
+### Devo scegliere tra iCal e Octorate? Quale uso?
+Per cominciare bastano i calendari iCal. Octorate serve se vuoi gestire da un solo punto prezzi, date e prenotazioni complete su più portali: è un servizio a parte, con il suo abbonamento, e in CasaZen è su attivazione. Puoi usare prima iCal e passare a Octorate dopo ([[canali-octorate#flusso-dai-calendari-ical-a-octorate]]).
+
 ### Le prenotazioni dei portali arrivano con il nome dell'ospite?
-Con iCal no: arrivano solo come date occupate. Per gestire l'ospite trasforma il blocco in soggiorno ([[prenotazioni]]). Con Octorate arrivano le prenotazioni complete.
+Con iCal no: arrivano solo come date occupate, senza nome, prezzi e messaggi. Per gestire l'ospite trasforma il blocco in soggiorno ([[prenotazioni#creare-un-soggiorno-da-un-blocco-di-un-altro-canale]]). Con Octorate arrivano le prenotazioni complete.
 
 ### Perché Airbnb non vede le prenotazioni di Booking.com?
-Perché CasaZen non fa da ponte: il link di esportazione non contiene le date importate. Incolla su Airbnb anche il link di Booking.com, e viceversa.
+Perché CasaZen non fa da ponte: il link di esportazione non contiene le date importate. Incolla su Airbnb anche il link di esportazione di Booking.com, e viceversa ([[canali-octorate#evitare-le-doppie-prenotazioni-tra-portali-con-i-calendari-ical]]).
 
 ### Quanto ci mette un portale a vedere una mia prenotazione?
 Dipende dal portale: rilegge il link ogni tanto, spesso dopo alcune ore. Il tuo calendario in CasaZen si aggiorna subito.
+
+### I prezzi che imposto in CasaZen arrivano su Airbnb e Booking.com?
+Con i soli calendari iCal no: ai portali passano solo le date occupate e i prezzi li imposti ancora sui portali. Con Octorate prezzi e restrizioni dei giorni che cambi in CasaZen partono verso Octorate ([[prezzi-tariffe]]).
 
 ### Cosa succede se rigenero il link?
 Il vecchio smette di funzionare subito. Aggiorna tutti i portali.
@@ -261,7 +299,7 @@ Il vecchio smette di funzionare subito. Aggiorna tutti i portali.
 Sì: finché Octorate non ha letto il calendario CasaZen continua con iCal; poi per Airbnb e Booking.com il calendario arriva da Octorate.
 
 ### Perché non vedo «Collega i tuoi canali» o il Marketplace dei canali?
-Sono su attivazione: compaiono solo dove CasaZen li ha abilitati per la tua organizzazione. Se pensi di doverli avere, chiedi al tuo referente CasaZen.
+Sono funzioni su attivazione: compaiono solo se CasaZen le ha attivate. Scrivi all'assistenza di CasaZen: in alto premi **Guida** e scegli «Scrivi all'assistenza», e chiedi di attivare il collegamento con Octorate. Ti servirà anche un tuo account Octorate.
 
 ### Perché «Attiva» mi chiede di collegare prima il channel manager?
 Perché i canali si collegano tramite il tuo channel manager: senza collegamento non c'è nulla a cui agganciarli. Premi «Collega il channel manager».
@@ -270,6 +308,7 @@ Perché i canali si collegano tramite il tuo channel manager: senza collegamento
 - **iCal**: file di calendario che un portale pubblica con un link; porta solo le date occupate.
 - **Link di esportazione**: il link che CasaZen ti dà e che incolli nei portali.
 - **Blocco**: periodo occupato importato da un calendario o chiuso da te.
+- **Doppia prenotazione** (overbooking): due prenotazioni sulla stessa notte, perché due portali non si sono parlati in tempo.
 - **Channel manager**: servizio (qui Octorate) che gestisce annunci, prenotazioni, calendari e prezzi su più portali.
 - **Abbinamento**: scelta di quale immobile di CasaZen corrisponde a un annuncio.
 - **OTA**: portale di prenotazione online (Airbnb, Booking.com, Expedia…).

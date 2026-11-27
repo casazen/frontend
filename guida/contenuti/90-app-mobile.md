@@ -6,10 +6,10 @@ ordine: 90
 riassunto: L'app CasaZen per iPhone e Android: cosa fanno dal telefono il gestore, l'ospite, il fornitore e l'inquilino, come si accede, come funzionano notifiche e uso senza connessione e cosa si fa solo sul sito.
 chi: [gestore, fornitore, ospite, inquilino]
 dove: App CasaZen sul telefono
-parole_chiave: [app, app mobile, telefono, iPhone, Android, installare, accesso, login, notifiche push, offline, senza connessione, fotocamera, permessi, calendario, check-in, check-out rapido, adempimenti, Alloggiati Web, richieste fornitore, area fornitore, area inquilino, cerca e prenota, scadenze, manutenzione, cambiare area]
+parole_chiave: [app, app mobile, telefono, iPhone, Android, installare, scaricare l'app, App Store, Google Play, store, accesso, notifiche push, offline, senza connessione, fotocamera, permessi, check-out rapido, richieste fornitore, area fornitore, area inquilino, cerca e prenota, manutenzione, cambiare area, eliminare l'account, in arrivo]
 copre: [mobile:index, mobile:login, mobile:(tabs)/calendar, mobile:(tabs)/compliance, mobile:(tabs)/properties, mobile:(tabs)/profile, mobile:bookings/:id, mobile:bookings/:id/service-request, mobile:bookings/:id/checkout, mobile:(guest)/search, mobile:(guest)/trips, mobile:(guest)/settings, mobile:stay/:orgSlug/:property, mobile:book/:orgSlug/:property, mobile:trips/:id, mobile:(supplier)/today, mobile:(supplier)/requests, mobile:(supplier)/agenda, mobile:(supplier)/account, mobile:supplier/requests/:id, mobile:(tenant)/home, mobile:(tenant)/dues, mobile:(tenant)/documents, mobile:(tenant)/maintenance, mobile:(tenant)/me, mobile:tenant/dues/:id, mobile:tenant/maintenance/new, mobile:tenant/maintenance/:id, mobile:+native-intent (non-utente)]
 stato: in-arrivo
-fonte_codice: [mobile/README.md, mobile/docs/technical/guide.md, mobile/app.json, mobile/app.config.ts, mobile/package.json, mobile/app/_layout.tsx, mobile/app/index.tsx, mobile/app/login.tsx, mobile/app/(tabs)/_layout.tsx, mobile/app/(tabs)/compliance.tsx, mobile/app/(tabs)/properties.tsx, mobile/app/(guest)/_layout.tsx, mobile/app/(guest)/search.tsx, mobile/app/(supplier)/_layout.tsx, mobile/app/(tenant)/_layout.tsx, mobile/app/(tenant)/home.tsx, mobile/app/bookings, mobile/app/supplier/requests, mobile/app/tenant, mobile/src/i18n/locales/it.ts, mobile/src/i18n/index.ts, mobile/src/auth/area.ts, mobile/src/auth/host-access.ts, mobile/src/profile/AccountPanel.tsx, mobile/src/notifications/PushHandler.tsx, mobile/src/notifications/PushSettingsCard.tsx, mobile/src/notifications/notification-routes.ts, mobile/src/bookings/stay-actions.ts, mobile/src/bookings/booking-compliance.ts, mobile/src/bookings/checkout-summary.ts, mobile/src/calendar/HostCalendar.tsx, mobile/src/compliance/compliance-summary.ts, mobile/src/properties/share-link.ts, mobile/src/supplier/supplier-request.ts, mobile/src/supplier/photos.ts, mobile/src/service-requests/supplier-choice.ts, backend/Casazen.Core/Services/PushRoutes.cs, backend/Casazen.Core/Services/IPushNotificationService.cs, backend/Casazen.Infrastructure/Push/InAppNotificationPushDecorator.cs, backend/Casazen.Web/Controllers/ServiceRequestsController.cs, backend/docs/runbooks/mobile-release.md, frontend/src/i18n/locales/it.json]
+fonte_codice: [mobile/app.json, mobile/app.config.ts, mobile/eas.json, mobile/package.json, mobile/app/(guest)/trips.tsx, mobile/app/(guest)/settings.tsx, mobile/app/trips/[id].tsx, mobile/app/_layout.tsx, mobile/app/index.tsx, mobile/app/login.tsx, mobile/app/(tabs)/_layout.tsx, mobile/app/(tabs)/compliance.tsx, mobile/app/(tabs)/properties.tsx, mobile/app/(guest)/_layout.tsx, mobile/app/(guest)/search.tsx, mobile/app/(supplier)/_layout.tsx, mobile/app/(tenant)/_layout.tsx, mobile/app/(tenant)/home.tsx, mobile/app/bookings, mobile/app/supplier/requests, mobile/app/tenant, mobile/src/i18n/locales/it.ts, mobile/src/i18n/index.ts, mobile/src/auth/area.ts, mobile/src/auth/host-access.ts, mobile/src/profile/AccountPanel.tsx, mobile/src/notifications/PushHandler.tsx, mobile/src/notifications/PushSettingsCard.tsx, mobile/src/notifications/notification-routes.ts, mobile/src/bookings/stay-actions.ts, mobile/src/bookings/booking-compliance.ts, mobile/src/bookings/checkout-summary.ts, mobile/src/calendar/HostCalendar.tsx, mobile/src/compliance/compliance-summary.ts, mobile/src/properties/share-link.ts, mobile/src/supplier/supplier-request.ts, mobile/src/supplier/photos.ts, mobile/src/service-requests/supplier-choice.ts, backend/Casazen.Core/Services/PushRoutes.cs, backend/Casazen.Core/Services/IPushNotificationService.cs, backend/Casazen.Infrastructure/Push/InAppNotificationPushDecorator.cs, backend/Casazen.Web/Controllers/ServiceRequestsController.cs, backend/docs/runbooks/mobile-release.md, frontend/src/i18n/locales/it.json]
 ---
 
 ## In breve
@@ -17,9 +17,11 @@ CasaZen ha **un'unica app per il telefono**, chiamata «CasaZen». Dentro ci son
 
 Dal telefono fai le cose di ogni giorno. Il gestore controlla calendario, arrivi, check-in degli ospiti e adempimenti. L'ospite cerca e prenota una casa. Il fornitore risponde alle richieste e segue i lavori. L'inquilino vede scadenze e documenti e chiede una manutenzione. Le operazioni più grandi (creare prenotazioni, prezzi, incassi, messaggi, invii agli enti) restano **solo sul sito**: l'app non lo sostituisce.
 
-**Stato: in arrivo.** L'app non è ancora negli store (App Store e Google Play). Questa pagina descrive le funzioni che ci sono nella versione attuale dell'app.
+**Stato: in arrivo.** L'app non è ancora negli store (App Store e Google Play): oggi non la trovi da scaricare. Questa pagina descrive le funzioni che ci sono nella versione attuale dell'app, che usa solo chi ha ricevuto una versione di prova.
 
-**Per partire subito:** apri l'app. Sei un gestore, un fornitore o un inquilino? Premi «Sei un host o un fornitore? Accedi». Sei un ospite? Usa «Cerca» e, quando vuoi prenotare, accedi.
+**Se non hai l'app:** usa CasaZen dal browser del telefono: il sito si adatta allo schermo e il menu diventa una barra in basso ([[per-iniziare#muoverti-nel-menu]], [[per-iniziare#posso-usare-casazen-dal-telefono]]). Tutto ciò che l'app non fa si fa lì.
+
+**Ti serve** (se hai la versione di prova): un iPhone con iOS 16.4 o successivo oppure un telefono Android 7.0 o successivo, internet e il tuo account CasaZen, lo stesso del sito. **Per partire:** apri l'app. Sei un gestore, un fornitore o un inquilino? Premi «Sei un host o un fornitore? Accedi». Sei un ospite? Usa «Cerca» e, quando vuoi prenotare, accedi.
 
 ## Funzionalità
 La colonna «Disponibilità» dice se la funzione c'è già nell'app. L'app stessa non è ancora negli store (vedi «Lingua, requisiti e installazione»).
@@ -33,12 +35,12 @@ La colonna «Disponibilità» dice se la funzione c'è già nell'app. L'app stes
 | Dettaglio prenotazione | Stato del check-in ospiti, di Alloggiati Web e delle richieste ai fornitori | «Calendario» › tocca una prenotazione | gestore | Disponibile | Aprire una prenotazione e capire cosa manca |
 | Registra arrivo | Segna che l'ospite è arrivato | Prenotazione › «Registra arrivo» | gestore | Disponibile | Registrare un arrivo |
 | Link di check-in | Manda per e-mail o condividi il link con cui l'ospite compila i suoi dati | Prenotazione › «Invia link via email», «Condividi link di check-in» | gestore | Disponibile | Mandare il link di check-in a un ospite |
-| Richiedi fornitore | Chiedi un intervento (pulizie, manutenzione…) legato a un soggiorno | Prenotazione › «Richiedi fornitore» | gestore | Disponibile | Chiedere un intervento a un fornitore |
+| Richiedi fornitore | Chiedi un intervento (pulizie, manutenzione…) legato a un soggiorno | Prenotazione › «Richiedi fornitore» | gestore | Disponibile | Chiedere un intervento a un fornitore dall'app |
 | Segna pagato | Registra che hai pagato un fornitore per un lavoro completato | Prenotazione › «Richieste fornitore» › «Segna pagato» | gestore | Disponibile | Segnare come pagata una richiesta a un fornitore |
 | Check-out rapido | Chiude il soggiorno in pochi tocchi | Prenotazione › «Check-out rapido» | gestore | Disponibile | Fare il check-out rapido |
 | Adempimenti | Mostra cosa richiede attenzione: case da attivare, check-in incompleti, check-out in scadenza, Alloggiati | «Adempimenti» | gestore | Disponibile | Controllare gli adempimenti dal telefono |
 | Link di prenotazione di una casa | Condividi il link della pagina di prenotazione della casa | «Proprietà» › «Condividi link» | gestore | Disponibile | Condividere il link di prenotazione di una casa |
-| Cerca una casa | Cerca case per luogo, date e ospiti, senza account | «Cerca» | ospite | Disponibile | Cercare una casa |
+| Cerca una casa | Cerca case per luogo, date e ospiti, senza account | «Cerca» | ospite | Disponibile | Cercare una casa con l'app |
 | Prenota un soggiorno | Scegli date e ospiti, accedi e paghi con la carta | Pagina della casa › «Prenota» | ospite | Disponibile | Prenotare un soggiorno |
 | Le mie prenotazioni | Ritrovi le prenotazioni fatte con la tua e-mail | «Prenotazioni» | ospite | Disponibile | Ritrovare le tue prenotazioni |
 | Elimina il mio account | Cancella l'account ospite | «Account» › «Elimina il mio account» | ospite | Disponibile | Eliminare il tuo account ospite |
@@ -150,8 +152,9 @@ L'app non chiede la posizione, i contatti né il microfono. Quando premi «Chiam
 
 ### Accedere come gestore, fornitore o inquilino
 Per chi: gestore, fornitore, inquilino.
+**Ti serve:** l'app «CasaZen» (versione di prova), internet e il tuo account CasaZen, lo stesso del sito. Un account nuovo da gestore va prima attivato sul sito.
 1. Apri l'app «CasaZen». Se non hai ancora fatto l'accesso si apre «Cerca».
-2. In alto premi «Sei un host o un fornitore? Accedi». Vedi la schermata «CasaZen» con «Gestisci prenotazioni e lavori dal telefono».
+2. In alto premi «Sei un host o un fornitore? Accedi» (vale anche se sei inquilino). Vedi la schermata «CasaZen» con «Gestisci prenotazioni e lavori dal telefono».
 3. Premi «Continua con Auth0». Si apre nel browser del telefono la pagina di accesso di CasaZen.
 4. Accedi con il tuo account CasaZen, lo stesso del sito.
 5. Alla fine l'app si riapre da sola nella tua area: «Calendario» per il gestore, «Oggi» per il fornitore, «Casa» per l'inquilino.
@@ -164,6 +167,7 @@ Se chiudi il browser prima di finire, resti sulla schermata di accesso e puoi ri
 
 ### Accedere o registrarsi come ospite
 Per chi: ospite.
+**Ti serve:** l'app, internet e un indirizzo e-mail. Per cercare non serve nessun account.
 1. Apri l'app e usa «Cerca»: per cercare non serve un account.
 2. Quando premi «Prenota» sulla pagina di una casa, o apri «Prenotazioni» o «Account» senza aver fatto l'accesso, l'app ti propone «Accedi o registrati». Premilo.
 3. Nel browser crea il tuo account oppure accedi.
@@ -172,6 +176,7 @@ Per chi: ospite.
 
 ### Cambiare area
 Per chi: chi ha più di un'area sullo stesso account.
+**Ti serve:** un account che ha più di un'area (per esempio gestore e fornitore).
 1. Apri la pagina dell'account: «Profilo» (gestore) oppure «Account» (fornitore, inquilino, ospite).
 2. Premi il pulsante dell'area che vuoi: «Passa all'area fornitore», «Passa all'area host», «Passa all'area conduttore» (l'area dell'inquilino) oppure «Cerca e prenota come ospite».
 3. L'app si apre sulla pagina iniziale dell'altra area. La scelta resta anche se riapri l'app.
@@ -180,6 +185,7 @@ I pulsanti compaiono solo se il tuo account ha davvero quell'area. «Cerca e pre
 
 ### Attivare le notifiche sul telefono
 Per chi: gestore, fornitore, inquilino.
+**Ti serve:** un telefono vero (non un emulatore), l'accesso fatto e il permesso del telefono per le notifiche.
 1. Al primo accesso, quando l'app chiede «Vuoi attivare le notifiche?», premi «Attiva» e consenti nel messaggio del telefono.
 2. Se avevi scelto «Non ora» o avevi rifiutato, apri «Profilo» (gestore) o «Account» (fornitore, inquilino) e guarda il riquadro «Notifiche».
 3. Premi il pulsante che c'è: «Attiva notifiche», «Apri impostazioni» (se il telefono le blocca: attivale per CasaZen nelle impostazioni) oppure «Riprova».
@@ -198,6 +204,7 @@ Per chi: gestore, fornitore, inquilino.
 
 ### Vedere il calendario di un immobile
 Per chi: gestore.
+**Ti serve:** l'accesso da gestore e almeno una casa già creata sul sito.
 1. Apri la scheda «Calendario» (si apre da sola dopo l'accesso).
 2. Se hai più case, scegli quella che vuoi toccando il suo nome nella fascia in alto. Con una sola casa vedi il suo nome.
 3. Usa ‹ e › per cambiare mese. Il pulsante «Oggi» (compare quando sei su un altro mese) riporta al mese corrente.
@@ -213,6 +220,7 @@ Se vedi «Nessuna prenotazione e nessuna data bloccata in questo mese.» il mese
 
 ### Aprire una prenotazione e capire cosa manca
 Per chi: gestore.
+**Ti serve:** l'accesso da gestore e una prenotazione.
 1. Tocca la prenotazione nel «Calendario» (oppure da «Adempimenti» o da una notifica).
 2. In alto vedi nome dell'ospite, date e stato. Sotto, l'elenco «Avvisi» dice cosa devi fare (per esempio «Dati degli ospiti incompleti» o «Scadenza Alloggiati superata»).
 3. In «Check-in ospite» vedi se il link è stato mandato («Link non inviato», «Link inviato», «In compilazione», «Check-in completato», «Alloggiati inviato», «Link scaduto»), come è andata l'e-mail («Email in coda», «Email inviata», «Email non inviata», «Link da copiare»), fino a quando vale il link e «Ospiti completi: X su Y».
@@ -225,6 +233,7 @@ Per chi: gestore.
 
 ### Registrare un arrivo
 Per chi: gestore.
+**Ti serve:** una prenotazione «Confermata» e il giorno di arrivo (o un giorno successivo, fino alla partenza).
 1. Apri la prenotazione.
 2. Premi «Registra arrivo». Il pulsante c'è solo per una prenotazione «Confermata», dal giorno di arrivo fino al giorno di partenza (secondo l'ora italiana).
 3. Alla domanda «Confermi che l'ospite è arrivato nella struttura?» premi «Conferma».
@@ -234,6 +243,7 @@ Nell'app non c'è un pulsante per annullare la registrazione dell'arrivo.
 
 ### Mandare il link di check-in a un ospite
 Per chi: gestore.
+**Ti serve:** una prenotazione confermata o in corso con i dati degli ospiti non ancora completi. Per l'e-mail serve l'indirizzo dell'ospite; altrimenti condividi il link in un altro modo.
 1. Apri la prenotazione e vai a «Check-in ospite».
 2. Scegli come mandarlo:
    - «Invia link via email»: CasaZen manda un'e-mail all'ospite. Se hai già mandato un link il pulsante si chiama «Invia sollecito».
@@ -244,8 +254,9 @@ Per chi: gestore.
 
 Cosa succede dopo: l'ospite riceve il link e compila i suoi dati (vedi [[ospiti-checkin]]); quando ha finito ti arriva un avviso. L'e-mail partita non si può richiamare e il link sostituito non torna valido. I pulsanti ci sono solo se la prenotazione è confermata o in corso e i dati degli ospiti non sono ancora completi.
 
-### Chiedere un intervento a un fornitore
+### Chiedere un intervento a un fornitore dall'app
 Per chi: gestore.
+**Ti serve:** una prenotazione non annullata, il permesso di richiedere interventi e almeno un fornitore attivo nel comune della casa. Per un guasto urgente non aspettare: CasaZen non è un pronto intervento, chiama subito un tecnico ([[marketplace#richiedere-un-intervento]]).
 1. Apri la prenotazione (non annullata) e premi «Richiedi fornitore».
 2. Scegli la «Categoria», per esempio «Pulizie» o «Manutenzione».
 3. Scegli il «Fornitore» tra quelli attivi nel comune della casa (vedi «Opera a»). L'app non ne sceglie uno per te. Se non ce ne sono vedi «Nessun fornitore attivo per questa categoria nel comune dell'immobile.»
@@ -257,6 +268,7 @@ Cosa succede dopo: il fornitore riceve un avviso e trova la richiesta in «Da ri
 
 ### Segnare come pagata una richiesta a un fornitore
 Per chi: gestore, se il tuo ruolo può gestire le richieste ai fornitori.
+**Ti serve:** un lavoro «Completato» che hai già pagato fuori da CasaZen e un ruolo che può gestire le richieste ai fornitori.
 1. Apri la prenotazione e guarda «Richieste fornitore».
 2. Sulla richiesta con stato «Completato» premi «Segna pagato».
 3. Alla domanda «Confermi il pagamento al fornitore?» premi «Conferma».
@@ -265,6 +277,7 @@ Cosa succede dopo: la richiesta passa a «Pagato» e il fornitore viene avvisato
 
 ### Fare il check-out rapido
 Per chi: gestore.
+**Ti serve:** una prenotazione «Check-in effettuato» (oppure «Confermata» con l'arrivo ancora da registrare), dal giorno di arrivo.
 1. Apri la prenotazione e premi «Check-out rapido». Il pulsante compare dal giorno di arrivo, per una prenotazione «Check-in effettuato» o «Confermata» senza arrivo registrato. Puoi arrivarci anche da «Adempimenti» (voce di «Check-out in scadenza») o dalla notifica di check-out.
 2. Se l'arrivo non era stato registrato vedi «Arrivo non registrato». Se l'ospite è arrivato, premi «Registra arrivo e procedi» e conferma.
 3. Leggi «Riepilogo check-out»: ogni passo ha il suo stato («Fatto», «Da completare», «Da fare», «Obbligatorio»). Vedi anche «Alloggiati Web» e «Pulizie».
@@ -278,6 +291,7 @@ Cosa succede dopo: la prenotazione passa a «Check-out effettuato». Se non hai 
 
 ### Controllare gli adempimenti dal telefono
 Per chi: gestore.
+**Ti serve:** l'accesso da gestore.
 1. Apri la scheda «Adempimenti» («Panoramica compliance»).
 2. Leggi le cinque sezioni, ognuna con il suo numero: «Immobili in attesa di attivazione», «Check-in ospiti incompleti», «Check-out in scadenza», «Errori Alloggiati» e «Alloggiati da inviare manualmente».
 3. Tocca una voce. Una prenotazione apre il suo dettaglio o il check-out rapido. Una casa da attivare apre il sito (la freccia ↗ lo indica), perché l'attivazione si fa sul sito.
@@ -288,6 +302,7 @@ Per chi: gestore.
 
 ### Condividere il link di prenotazione di una casa
 Per chi: gestore.
+**Ti serve:** una casa attiva, non in pausa, con il sito di prenotazione configurato.
 1. Apri la scheda «Proprietà» (sul sito le case si chiamano «Immobili»).
 2. Sulla casa premi «Condividi link»: si apre il menu di condivisione del telefono con il link alla pagina di prenotazione.
 3. Se il pulsante è spento, leggi il motivo sotto la casa: il sito di prenotazione non è configurato, la casa non è pubblicata (deve essere attiva, non in pausa e con «Compliance: Attivo») oppure non si riesce a leggere il profilo (tira giù per riprovare).
@@ -295,8 +310,9 @@ Per chi: gestore.
 
 L'elenco «Proprietà» è in sola lettura: per cambiare una casa usa il sito (vedi [[immobili]]).
 
-### Cercare una casa
+### Cercare una casa con l'app
 Per chi: ospite.
+**Ti serve:** niente account: bastano il luogo, le date e il numero di ospiti.
 1. Apri «Cerca».
 2. In «Dove» scrivi il luogo, oppure scegli un suggerimento sotto «Destinazioni» («Tutte le destinazioni» per non limitare).
 3. Premi «Quando» («Aggiungi le date»), scegli il giorno di arrivo e poi quello di partenza, e premi «Conferma le date». Con le date l'app mostra le case libere in quei giorni, con il prezzo del soggiorno.
@@ -311,6 +327,7 @@ Se non trovi nulla: «Nessuna casa libera per queste date» suggerisce altre dat
 
 ### Prenotare un soggiorno
 Per chi: ospite.
+**Ti serve:** un account CasaZen con e-mail verificata, una carta e internet: il pagamento si apre in una pagina sicura dentro l'app.
 1. Nella pagina della casa, in «Il tuo soggiorno» scegli le date e gli ospiti e controlla il totale.
 2. Premi «Prenota» (con il totale). Se non hai fatto l'accesso, l'app ti chiede «Accedi per prenotare».
 3. Nel passo «Prenota la tua casa» controlla «Il soggiorno», «Totale» e «Prenoti come».
@@ -323,6 +340,7 @@ Cosa succede dopo: ricevi la conferma come sul sito. L'app non gestisce il pagam
 
 ### Ritrovare le tue prenotazioni
 Per chi: ospite.
+**Ti serve:** l'accesso con l'e-mail usata per prenotare, già verificata.
 1. Apri «Prenotazioni» (accedi se richiesto).
 2. Passa da «In arrivo» a «Passate». Se ce ne sono molte, premi «Mostra altre».
 3. Tocca una prenotazione: vedi lo stato, il «Codice prenotazione», le date, gli ospiti, il prezzo («Alloggio», «Pulizia», «Imposta di soggiorno»), «Totale», «Pagato», «Rimborsato» e l'host. «Rivedi la casa» riapre la casa.
@@ -332,13 +350,15 @@ Compaiono le prenotazioni dirette fatte con l'e-mail verificata del tuo account.
 
 ### Eliminare il tuo account ospite
 Per chi: ospite.
+**Ti serve:** essere soltanto ospite (nessun profilo da host o da fornitore). L'operazione non si annulla.
 1. Apri «Account» e premi «Elimina account» (sezione «Elimina il mio account»).
 2. Alla domanda «Eliminare l'account?» premi «Elimina».
 
-Cosa succede dopo: l'account viene cancellato e dovrai registrarti di nuovo per averne uno. **Non si può annullare.** Le prenotazioni già fatte restano nei registri degli host, come previsto dalla legge. Se il tuo account ha anche un profilo da host o da fornitore, il pulsante non c'è: scrivi al supporto.
+Cosa succede dopo: l'account viene cancellato e dovrai registrarti di nuovo per averne uno. **Non si può annullare.** Le prenotazioni già fatte restano nei registri degli host, come previsto dalla legge. Se il tuo account ha anche un profilo da host o da fornitore, il pulsante non c'è: scrivi all'assistenza di CasaZen ([[per-iniziare#assistenza-come-scrivere-a-casazen]]).
 
 ### Rispondere a una nuova richiesta
 Per chi: fornitore.
+**Ti serve:** l'accesso da fornitore e una richiesta in «Da rispondere». Ha un tempo limite: rispondi appena puoi.
 1. Apri «Oggi»: se c'è una richiesta nuova, è il blocco in evidenza con «Accetta» («Hai N richieste a cui rispondere»). Oppure apri «Richieste» › «Da rispondere». Il numero sull'icona di «Richieste» dice quante ne hai da rispondere.
 2. Apri la richiesta per vedere «Quando», «Dove», «Compenso» e «Rispondi entro». Indirizzo, note e contatti dell'host compaiono **dopo** che hai accettato.
 3. Per accettare premi «Accetta» e conferma («Accetti la richiesta?»). La prendi così com'è: orario e compenso sono quelli dell'host. La trovi tra le richieste «Programmate».
@@ -353,6 +373,7 @@ Cosa succede dopo: l'host viene avvisato. Un rifiuto non si annulla; un lavoro a
 
 ### Proporre un altro orario o inviare un preventivo
 Per chi: fornitore.
+**Ti serve:** una richiesta nuova a cui rispondere.
 1. Apri la richiesta nuova e premi «Altro orario o preventivo».
 2. Scegli «Proponi un altro orario» oppure «Invia un preventivo».
 
@@ -371,6 +392,7 @@ Cosa succede dopo: la richiesta resta in attesa della risposta («In attesa» o 
 
 ### Seguire un lavoro fino alla fine
 Per chi: fornitore.
+**Ti serve:** una richiesta accettata; per le foto, il permesso della fotocamera o delle foto.
 1. Il giorno del lavoro apri «Oggi»: trovi «Prossimo lavoro» e «Lavori di oggi». Premi «Dettagli».
 2. Per contattare l'host usa «Chiama», «Scrivi una e-mail» e «Apri la mappa».
 3. Quando cominci premi «Inizia il lavoro».
@@ -382,6 +404,7 @@ Cosa succede dopo: l'host viene avvisato e la richiesta passa a «Completata», 
 
 ### Farsi pagare un lavoro finito
 Per chi: fornitore.
+**Ti serve:** un lavoro completato; per il pagamento online, il conto per i pagamenti già pronto (su attivazione).
 1. Apri la richiesta completata e guarda la sezione «Pagamento»: vedi lo stato («Richiesto al cliente», «In elaborazione», «Pagato», «Non riuscito», «In verifica») e «A te arrivano» con l'importo netto.
 2. Se il pagamento passa da CasaZen, premi «Chiedi il pagamento» e conferma. CasaZen manda all'host il link per pagare. Puoi chiederlo una volta al giorno.
 3. Se invece ti ha già pagato fuori da CasaZen, premi «Ho incassato fuori da CasaZen», scrivi come hai ricevuto il pagamento (contanti, bonifico…) e premi «Registra il pagamento». Se la richiesta si paga su CasaZen il motivo è obbligatorio.
@@ -390,6 +413,7 @@ Cosa succede dopo: l'host viene avvisato e, con «Registra il pagamento», la ri
 
 ### Impostare orari di lavoro e giorni di assenza
 Per chi: fornitore.
+**Ti serve:** l'accesso da fornitore.
 
 Per i giorni di assenza:
 1. Apri «Agenda» e premi «Aggiungi giorni di assenza».
@@ -410,6 +434,7 @@ Per gli orari:
 
 ### Vedere il contratto e la prossima scadenza
 Per chi: inquilino.
+**Ti serve:** un accesso a un contratto di affitto ancora valido, dato dal gestore.
 1. Apri «Casa». Vedi la casa del contratto, l'indirizzo, il tuo ruolo («Conduttore referente» o «Conduttore») e le date.
 2. In «Prossima scadenza» vedi la data e come è composta: «Canone», «Acconto condominiale», «Conguaglio», «Altri oneri», con «Totale», «Pagato» e «Residuo».
 3. Nel riquadro «Bonifico» trovi «Intestatario», «IBAN» e «Causale». Premi «Copia l'IBAN» o «Copia la causale»: vedi «Copiato».
@@ -419,6 +444,7 @@ Se vedi «Nessun contratto attivo su questo account.» il tuo accesso non è col
 
 ### Dichiarare un bonifico
 Per chi: inquilino.
+**Ti serve:** aver già fatto il bonifico con la tua banca, l'IBAN e la causale della scadenza e, se vuoi, la foto della ricevuta.
 1. Fai il bonifico con la tua banca. Usa l'IBAN e la causale che trovi in «Casa» o nella scadenza (puoi copiarli).
 2. In «Scadenze» apri la scadenza che hai pagato e premi «Ho effettuato il bonifico».
 3. Compila «Importo» (sotto vedi «Residuo da versare»), «Data del bonifico» (nel formato AAAA-MM-GG, per esempio 2026-12-05), «Riferimento della banca» e, se vuoi, «Nota».
@@ -429,6 +455,7 @@ Cosa succede dopo: vedi «Dichiarazione inviata». Il gestore deve ancora verifi
 
 ### Aprire i documenti condivisi
 Per chi: inquilino.
+**Ti serve:** l'accesso da inquilino e documenti condivisi dal gestore.
 1. Apri «Documenti».
 2. Tocca il documento («Apri» e il titolo).
 
@@ -436,6 +463,7 @@ Trovi i preventivi, i consuntivi, i conguagli e i resoconti che il gestore ha co
 
 ### Chiedere un intervento di manutenzione
 Per chi: inquilino.
+**Ti serve:** l'accesso da inquilino, la descrizione del guasto e, se vuoi, fino a quattro foto. Se è un'emergenza chiama subito il gestore.
 1. Apri «Manutenzione» e premi «Nuova richiesta». Da «Casa» ci arrivi con «Richiedi un intervento», che apre «Manutenzione».
 2. Se hai più contratti, scegli la casa.
 3. Scegli la «Categoria» («Idraulico», «Elettricità», «Riscaldamento», «Serratura», «Elettrodomestico», «Altro») e l'«Urgenza» («Normale» o «Urgente»). Con «Urgente» compare «In caso di emergenza» con le istruzioni e i numeri del gestore.
@@ -460,7 +488,7 @@ Cosa succede dopo: questo telefono smette di ricevere le notifiche del tuo accou
 3. Prima dell'arrivo il gestore manda il link di check-in ([[app-mobile#mandare-il-link-di-check-in-a-un-ospite]]). L'ospite compila i suoi dati e il gestore riceve l'avviso. Il resto del check-in è spiegato in [[ospiti-checkin]].
 4. «Adempimenti» e il dettaglio della prenotazione dicono cosa manca. L'invio ad Alloggiati Web si fa sul sito ([[alloggiati-istat]]).
 5. Il giorno dell'arrivo il gestore registra l'arrivo ([[app-mobile#registrare-un-arrivo]]).
-6. Durante il soggiorno il gestore può chiedere un intervento a un fornitore ([[app-mobile#chiedere-un-intervento-a-un-fornitore]]).
+6. Durante il soggiorno il gestore può chiedere un intervento a un fornitore ([[app-mobile#chiedere-un-intervento-a-un-fornitore-dall-app]]).
 7. Alla partenza il gestore fa il check-out rapido ([[app-mobile#fare-il-check-out-rapido]]).
 
 ### Flusso: un intervento dal gestore al fornitore
@@ -477,7 +505,7 @@ Cosa succede dopo: questo telefono smette di ricevere le notifiche del tuo accou
 4. Il gestore verifica l'incasso sul sito ([[canoni-scadenze]]). La dichiarazione diventa «Verificata» o «Respinta». La scadenza risulta pagata solo quando il gestore registra l'incasso.
 
 ### Flusso: dalla ricerca alla prenotazione
-1. L'ospite apre «Cerca», sceglie luogo, date e ospiti ([[app-mobile#cercare-una-casa]]).
+1. L'ospite apre «Cerca», sceglie luogo, date e ospiti ([[app-mobile#cercare-una-casa-con-l-app]]).
 2. Apre una casa, controlla il prezzo e preme «Prenota». Accede o si registra ([[app-mobile#accedere-o-registrarsi-come-ospite]]).
 3. Preme «Continua al pagamento», paga con la carta e torna in «Prenotazioni» ([[app-mobile#prenotare-un-soggiorno]]).
 4. Dopo la prenotazione, per annullare, scrivere all'host o fare il check-in online usa la pagina della prenotazione sul sito ([[portale-ospite]]).
@@ -505,7 +533,10 @@ Cosa succede dopo: questo telefono smette di ricevere le notifiche del tuo accou
 No. L'app serve per le cose di ogni giorno. Creare prenotazioni, prezzi, incassi, messaggi con gli ospiti, documenti fiscali e invii agli enti si fanno sul sito.
 
 ### Dove scarico l'app?
-Non è ancora negli store. Se ti è stata data una versione di prova, segui le istruzioni di chi te l'ha data. L'app si chiama «CasaZen».
+Non è ancora negli store. Se ti è stata data una versione di prova, segui le istruzioni di chi te l'ha data. L'app si chiama «CasaZen». Intanto usa CasaZen dal browser del telefono ([[per-iniziare#posso-usare-casazen-dal-telefono]]).
+
+### Devo scaricare l'app per usare CasaZen?
+No. Il sito funziona dal browser del telefono e fa tutto, anche ciò che l'app non fa. L'app non è ancora negli store ([[per-iniziare#posso-usare-casazen-dal-telefono]]).
 
 ### Con quale account accedo?
 Con lo stesso del sito. Gli ospiti possono crearne uno dall'app con «Accedi o registrati».
@@ -534,6 +565,12 @@ Segui «Risolvere i problemi con le notifiche». Controlla il riquadro «Notific
 ### Posso annullare una prenotazione dall'app?
 Come ospite no: «Gestisci sul sito» apre la pagina della prenotazione dove annullare. Come gestore neppure: l'annullamento si fa sul sito.
 
+### Come scrivo all'host o faccio il check-in online dall'app?
+Non dall'app: in «Prenotazioni» apri la prenotazione e premi «Gestisci sul sito» ([[portale-ospite]]). Nell'app non ci sono nemmeno preferiti, mappa e recensioni.
+
+### Come cancello il mio account dall'app?
+Solo se sei soltanto ospite: «Account» › «Elimina account» ([[app-mobile#eliminare-il-tuo-account-ospite]]). Non si annulla. Se hai anche un profilo da gestore o da fornitore, scrivi all'assistenza di CasaZen ([[per-iniziare#assistenza-come-scrivere-a-casazen]]).
+
 ### Posso avere più aree con lo stesso account?
 Sì, se il tuo account le ha: per esempio gestore e fornitore. Passi dall'una all'altra dalla pagina dell'account ([[app-mobile#cambiare-area]]).
 
@@ -553,6 +590,9 @@ In italiano; in inglese se il telefono è impostato in inglese.
 - **Preventivo:** il prezzo del lavoro, a voci, che il fornitore propone prima di accettare.
 - **Dichiarazione di bonifico:** l'avviso con cui l'inquilino dice al gestore di aver pagato; non segna da sola la scadenza come pagata.
 - **Date bloccate:** giorni occupati importati da un calendario collegato di un altro canale.
+- **Store:** App Store (iPhone) e Google Play (Android), i negozi da cui si scaricano le app.
+- **Versione di prova:** una versione dell'app che non viene dagli store: la usa solo chi l'ha ricevuta, seguendo le istruzioni di chi gliela ha data.
+- **Emulatore:** un finto telefono sul computer, usato da chi sviluppa; non riceve le notifiche.
 
 ## Vedi anche
 - [[prenotazioni]]: prenotazioni e calendario sul sito.

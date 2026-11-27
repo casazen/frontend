@@ -3,18 +3,20 @@ id: immobili
 titolo: Immobili
 sezione: Affitti brevi
 ordine: 10
-riassunto: Come aggiungere e gestire le case che affitti a notte. L'elenco, la procedura guidata «Aggiungi immobile», la scheda, l'attivazione, la pausa, il passaggio tra affitto breve e lungo e il codice QR.
+riassunto: Come aggiungere e gestire le case che affitti a notte. L'elenco, la procedura guidata «Aggiungi immobile», la scheda, l'attivazione (con il CIN), la pausa, l'eliminazione, il passaggio tra affitto breve e lungo e il codice QR.
 chi: [gestore, amministratore]
 dove: Affitti brevi › Immobili
-parole_chiave: [immobile, casa, appartamento, aggiungere immobile, procedura guidata, attivazione, Da completare, pausa, elimina, foto, dotazioni, regole della casa, capienza, check-in, check-out, CIN, cambio modalità, affitto lungo, QR]
+parole_chiave: [immobile, appartamento, aggiungere appartamento, inserire casa, aggiungere immobile, procedura guidata, attivazione, non riesco ad attivare, Da completare, mostra sul sito, pausa, eliminare immobile, foto, dotazioni, regole della casa, capienza, CIN, chi invia, cambio modalità, affitto lungo, QR]
 copre: [/app/short-rent/properties, /app/short-rent/properties/create, /app/short-rent/properties/:id, /app/short-rent/properties/:id/edit, /app/short-rent/properties/:id/mode, /app/short-rent/properties/:propertyId/qr, /app/short-rent/activation, /app/long-rent/properties/:id/mode]
 stato: disponibile
-fonte_codice: [frontend/src/features/properties/properties-page.tsx, frontend/src/features/properties/properties-list.tsx, frontend/src/features/properties/property-create-page.tsx, frontend/src/features/properties/wizard/property-wizard.tsx, frontend/src/features/properties/wizard/property-wizard-model.ts, frontend/src/features/properties/property-detail-page.tsx, frontend/src/features/properties/property-edit-page.tsx, frontend/src/features/properties/property-activation-page.tsx, frontend/src/features/properties/mode/property-mode-wizard-page.tsx, frontend/src/pages/PropertyQrCode.tsx, frontend/src/i18n/locales/it.json, frontend/src/i18n/locales/property-setup.it.json, backend/Casazen.Web/Controllers/PropertiesController.cs, backend/docs/runbooks/property-rental-mode.md]
+fonte_codice: [frontend/src/features/properties/properties-page.tsx, frontend/src/features/properties/properties-list.tsx, frontend/src/features/properties/property-create-page.tsx, frontend/src/features/properties/components/quick-property-form.tsx, frontend/src/features/properties/wizard/property-wizard.tsx, frontend/src/features/properties/wizard/property-wizard-model.ts, frontend/src/features/properties/property-detail-page.tsx, frontend/src/features/properties/property-edit-page.tsx, frontend/src/features/properties/property-activation-page.tsx, frontend/src/features/properties/mode/property-mode-wizard-page.tsx, frontend/src/pages/PropertyQrCode.tsx, frontend/src/i18n/locales/it.json, frontend/src/i18n/locales/property-setup.it.json, backend/Casazen.Web/Controllers/PropertiesController.cs, backend/Casazen.Core/Entities/Property.cs, backend/docs/runbooks/property-rental-mode.md]
 ---
 
 ## In breve
 **Immobili** è l'elenco delle case che affitti a notte. Da qui aggiungi una casa con una procedura guidata a passi, la attivi quando è tutto a posto e la gestisci nel tempo: modifica, pausa, eliminazione, passaggio all'affitto lungo.
 Una casa nuova nasce «Da completare» e non riceve prenotazioni finché non la attivi. Ogni passo della procedura viene salvato: puoi chiudere e riprendere quando vuoi.
+
+**Prima di attivare tieni pronti:** il prezzo base, il **CIN** (il codice nazionale che ogni casa in affitto breve in Italia deve avere: si chiede sul portale del Ministero del Turismo, quindi **se non ce l'hai chiedilo subito**: vedi «Cosa serve per attivare una casa»), i documenti richiesti dalla tua regione e la scelta di chi invia i dati degli ospiti a Polizia e ISTAT.
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
@@ -24,8 +26,8 @@ Una casa nuova nasce «Da completare» e non riceve prenotazioni finché non la 
 | Primo immobile (modulo breve) | Dopo la registrazione chiede solo i dati essenziali | Si apre da solo al primo accesso | gestore, amministratore | Disponibile | Aggiungere il primo immobile |
 | Riprendi configurazione | Riapre la procedura dall'ultimo passo aperto | Immobili (riquadro in alto) o «Completa» sulla riga | gestore, amministratore | Disponibile | Riprendere una configurazione lasciata a metà |
 | Scheda dell'immobile | Panoramica, foto, prenotazioni e interventi, calendari, documenti | Immobili › nome della casa › «Scheda completa» | gestore, amministratore | Disponibile | Leggere la scheda di un immobile |
-| Modifica immobile | Cambia i dati della casa in un solo modulo | Scheda › «⋯» › «Modifica» | gestore, amministratore (permesso di modifica) | Disponibile | Modificare un immobile |
-| Attivazione dell'immobile | Passa la casa da «Da completare» ad «Attivo» | Ultimo passo della procedura; Immobili › Attivazione | gestore, amministratore (permesso di modifica) | Disponibile | Attivare un immobile |
+| Modifica immobile | Cambia i dati della casa in un solo modulo | Scheda › «⋯» › «Modifica» | gestore, amministratore (permesso di modifica) | Disponibile | Modificare i dati di un immobile in affitto breve |
+| Attivazione dell'immobile | Passa la casa da «Da completare» ad «Attivo» | Ultimo passo della procedura; Immobili › Attivazione | gestore, amministratore (permesso di modifica) | Disponibile | Completare l'attivazione di un immobile |
 | Pausa e riattivazione | Toglie la casa dalla vendita senza cancellarla | Riga › «⋯» › «Metti in pausa» / «Riattiva» | gestore, amministratore (permesso di modifica) | Disponibile | Mettere in pausa e riattivare un immobile |
 | Elimina immobile | Nasconde la casa dall'elenco | Riga o scheda › «⋯» › «Elimina immobile» | gestore, amministratore (permesso di modifica) | Disponibile | Eliminare un immobile |
 | Cambia modalità | Programma il passaggio da affitto breve a lungo (e viceversa) | Scheda › «⋯» › «Cambia modalità» | gestore, amministratore (permesso di modifica) | Disponibile | Passare un immobile all'affitto lungo (o breve) |
@@ -41,13 +43,13 @@ Una casa nuova nasce «Da completare» e non riceve prenotazioni finché non la 
 
 **Cosa serve per attivare una casa.** Lo decide CasaZen, non il modulo: ad ogni salvataggio ricalcola cosa manca. I punti che possono bloccare l'attivazione sono:
 - i dati di base e il **prezzo base per notte**;
-- il **CIN** (per le case in Italia);
+- il **CIN** (per le case in Italia). **Non ce l'hai?** Chiedilo subito, perché la casa resta «Da completare» finché non lo inserisci. Il CIN si chiede sul portale del Ministero del Turismo (BDSR): in CasaZen apri **Adempimenti › CIN** e premi «Richiedi il CIN sul portale» (in un avviso sul CIN il pulsante si chiama «Richiedi il CIN su BDSR»). Nel frattempo compili foto, testi e prezzi. Come si chiede, passo per passo: [[cin-identificazione-ticino#chiedere-il-cin]];
 - i **documenti** richiesti dalla tua regione;
 - il comune e, in Ticino, il numero della struttura, che servono per notificare gli ospiti.
 
 La **scheda di sicurezza** (estintori e rilevatori) è un tuo obbligo di legge, ma non blocca l'attivazione: resta tra le cose da completare («Da completare (non blocca l'attivazione)»). Per l'attivazione serve anche accettare i Termini. Per il significato del CIN, della scheda di sicurezza e dell'invio dei dati degli ospiti vai a [[cin-identificazione-ticino]] e [[alloggiati-istat]].
 
-**La procedura «Aggiungi immobile».** È un percorso a passi. L'immobile viene creato quando premi «Continua» alla fine del primo passo; da quel momento ogni passo successivo viene salvato e puoi uscire con «Salva e chiudi». I passi sono:
+**La procedura «Aggiungi immobile».** È un percorso a passi. L'immobile viene creato quando premi «Continua» alla fine del primo passo; da quel momento ogni passo successivo viene salvato e puoi uscire con «Salva e chiudi». Alcuni passi compaiono solo dove la funzione è attiva («su attivazione», vedi [[per-iniziare#cosa-significa-su-attivazione]]). I passi sono:
 
 | Passo | Cosa chiede | Obbligatorio? |
 |---|---|---|
@@ -80,16 +82,17 @@ La **scheda di sicurezza** (estintori e rilevatori) è un tuo obbligo di legge, 
 > **Nota:** se l'elenco non si carica vedi «Impossibile caricare gli immobili»: premi il pulsante per riprovare.
 
 ### Aggiungere il primo immobile
-Subito dopo la registrazione CasaZen ti mostra un modulo breve, «Aggiungi il tuo primo immobile».
+Subito dopo la registrazione CasaZen ti mostra un modulo breve, «Aggiungi il tuo primo immobile». **Ti serve:** il nome che vuoi dare alla casa, il suo indirizzo con numero civico, il comune, il numero massimo di ospiti e il prezzo per notte.
 1. Scrivi il nome in «Come si chiama?», per esempio «Appartamento Duomo».
-2. Inserisci i dati richiesti dal modulo (indirizzo, comune, ospiti, prezzo per notte). Il prezzo potrai cambiarlo in ogni momento e aggiungere tariffe stagionali.
-3. Premi «Crea immobile e continua». L'immobile viene creato e CasaZen ti guida a completare il resto (foto, CIN, pagamenti) un passo alla volta.
-4. Se preferisci inserire tutto subito, premi «Preferisco inserire tutti i dettagli ora»: si apre la procedura completa.
+2. Scegli il «Comune» dall'elenco e scrivi l'«Indirizzo» (via e numero civico, per esempio «Via Roma 123») e il «CAP».
+3. Scrivi «Ospiti max» (quante persone al massimo) e «Prezzo per notte» (in euro). I campi con l'asterisco (*) sono obbligatori. Il prezzo potrai cambiarlo in ogni momento e aggiungere tariffe stagionali.
+4. Premi «Crea immobile e continua». L'immobile viene creato e CasaZen ti guida a completare il resto (foto, CIN, pagamenti) un passo alla volta.
+5. Se preferisci inserire tutto subito, premi «Preferisco inserire tutti i dettagli ora»: si apre la procedura completa.
 
 Errori frequenti: «Scegli il comune dall'elenco» (il comune va scelto dall'elenco ufficiale) ed «Esiste già un immobile con questo indirizzo» (se sono appartamenti diversi dello stesso edificio, indica l'interno o la scala).
 
 ### Aggiungere un immobile con la procedura guidata
-Serve il permesso di modifica degli immobili.
+**Ti serve:** il permesso di modifica degli immobili e l'indirizzo con numero civico (o «snc»). Per attivare la casa alla fine ti serviranno anche il prezzo, il CIN e i documenti richiesti dalla tua regione: se non hai il CIN chiedilo subito (vedi «Cosa serve per attivare una casa»); intanto puoi completare foto, testi e prezzi.
 1. Apri **Affitti brevi › Immobili** e premi «Aggiungi immobile».
 2. **Dati base.** Scegli «Che tipo di immobile è?» (Appartamento, Casa o villa, Loft o attico, Stanza o suite, Trullo o masseria). Scrivi il «Nome dell'immobile» (da 3 a 100 caratteri).
 3. Scrivi l'«Indirizzo» con via e numero civico. Se il numero non c'è, scrivi «snc». Senza numero civico il passo non va avanti.
@@ -103,9 +106,9 @@ Serve il permesso di modifica degli immobili.
 11. **Testi.** Scrivi «Titolo (Italiano)» (fino a 60 caratteri) e «Descrizione (Italiano)» (fino a 10.000), poi gli stessi in inglese. Le altre lingue sono facoltative. Con «Suggerisci con l'AI» l'AI scrive una bozza guardando fino a 6 foto, il comune (non l'indirizzo) e gli annunci simili della zona; «Rigenera» ne chiede un'altra, «Annulla» torna al testo di prima. Rileggi sempre il testo. Se l'AI non è disponibile CasaZen compone il testo con i dati inseriti.
 12. **Regole.** Scegli «Check-in dalle» e «Check-out entro le» (già impostati alle 15:00 e alle 10:00), le regole su «Fumare», «Animali», «Feste ed eventi» e «Bambini», gli «Orari di silenzio» (vanno indicati tutti e due o nessuno), il «Supplemento per ospite in più (€ a notte)» (lascia vuoto se non accetti ospiti in più), la politica «Se l'ospite cancella» (vedi [[prezzi-tariffe#impostare-la-politica-di-cancellazione]]) e «Altre regole» (fino a 1000 caratteri).
 13. **Prezzi.** Scrivi il «Prezzo base per notte (€)». Senza prezzo la casa resta «Da completare». Il resto (weekend, pulizia, soggiorno minimo, sconti, calcolo con l'AI) è spiegato in [[prezzi-tariffe]].
-14. **Canali, Adempimenti, Fatturazione.** Compaiono solo dove la funzione è attiva. In «Adempimenti» devi confermare chi invia i dati degli ospiti a Polizia e ISTAT: una scelta predefinita non vale come conferma. Dettagli in [[alloggiati-istat]].
+14. **Canali, Adempimenti, Fatturazione.** Compaiono solo dove la funzione è attiva. In «Adempimenti» devi confermare **chi invia i dati degli ospiti a Polizia e ISTAT**: per legge ogni ospite va comunicato alla Polizia con il portale Alloggiati Web, e i dati statistici vanno ai portali regionali. Alla domanda «Chi invia i dati alla Polizia?» le scelte sono tre: **«Lo faccio io»** (scarichi tu da CasaZen i file dei soggiorni e li carichi sul portale della Polizia; CasaZen ti ricorda le scadenze), **il tuo channel manager** (Octorate: invia lui, dopo il collegamento e la verifica di ogni immobile) e **CasaZen**, che compare nell'elenco ma per ora non si può scegliere da qui. La scelta di partenza è il channel manager se la casa è collegata a Octorate (annuncio abbinato e confermato), altrimenti «Lo faccio io»: una scelta di partenza non vale come conferma, quindi devi confermarla tu. **Attenzione:** anche con Octorate collegato l'invio automatico degli ospiti è spento di partenza, quindi non dare per scontato che Octorate comunichi gli ospiti alla Polizia: controlla «Chi invia» e lo stato dell'invio. Puoi cambiare scelta quando vuoi. Scadenze, cosa fa CasaZen e cosa resta a te: [[alloggiati-istat#comunicare-gli-ospiti-alla-questura-alloggiati-web]].
 15. **Attivazione.** Nell'ultimo passo trovi: «Collega i calendari» (consigliato: le date prenotate su Airbnb o Booking.com risultano occupate anche da te, vedi [[canali-octorate#collegare-un-calendario-ical]]), «Codice CIN» con «Salva il CIN», i «Documenti richiesti», il «Riepilogo» (ogni sezione ha «Modifica») e «Cosa manca».
-16. Decidi «Mostra la casa sul sito»: acceso, gli ospiti possono prenotare dal tuo sito; spento, la casa sarà attiva ma non comparirà.
+16. Decidi «Mostra la casa sul sito»: di partenza è **acceso**. Acceso, gli ospiti possono prenotare dal tuo sito; spento, la casa sarà attiva ma non comparirà.
 17. Se non c'è nessun blocco, accetta i Termini (e conferma di sapere che documenti e scheda di sicurezza ancora aperti sono tuoi obblighi) e premi «Attiva l'immobile».
 18. Se manca ancora qualcosa premi «Finisci dopo»: l'immobile resta «Da completare» e lo attivi appena è tutto a posto. Alla fine vedi «È salvato» o «È pronto», con i pulsanti «Apri il calendario», «Completa l'attivazione», «Aggiungi un altro immobile» o «Vai agli immobili».
 
@@ -130,19 +133,20 @@ Serve il permesso di modifica degli immobili.
 3. «Imposta come copertina» sceglie la foto che gli ospiti vedono per prima nel sito di prenotazione e nei risultati di ricerca. Usa «Sposta la foto … prima / dopo» per cambiare l'ordine.
 4. «Elimina la foto» chiede conferma: la foto sparisce dalla galleria e dal sito e **non si può annullare**.
 
-### Modificare un immobile
+### Modificare i dati di un immobile in affitto breve
 Serve il permesso di modifica degli immobili.
 1. Apri la scheda della casa e il menu «⋯», poi «Modifica» (oppure «⋯» sulla riga dell'elenco).
 2. Si apre «Modifica immobile» con tutti i dati in un solo modulo: nome, descrizione, posizione, camere, bagni, ospiti, prezzo per notte, servizi, CIN, pulizie, «Deposito cauzionale», regole della casa, fuso orario e policy di cancellazione.
 3. Premi «Aggiorna immobile». Per tornare indietro senza salvare premi «Annulla».
 4. Per cambiare un solo passo della procedura (per esempio le foto) puoi anche usare «Completa» o «Riprendi configurazione».
 
-### Attivare un immobile
+### Completare l'attivazione di un immobile
+**Ti serve:** il permesso di modifica degli immobili, il prezzo base, il CIN (se la casa è in Italia), i documenti richiesti dalla tua regione e la scelta di chi invia i dati degli ospiti.
 1. Apri la procedura sull'ultimo passo: da Immobili premi «Completa» sulla riga, oppure «Completa l'attivazione» nel pannello della casa.
 2. Leggi «Cosa manca»: ogni voce ha un pulsante «Correggi» che ti porta al passo giusto. Le voci «Consigliato» non bloccano.
 3. Quando «Cosa manca» dice «Tutto a posto: manca solo la conferma finale», accetta i Termini e premi «Attiva l'immobile».
 4. Se il servizio rifiuta l'attivazione leggi «Non si può ancora attivare: il servizio segnala questi punti» e correggi quelli.
-5. Dopo l'attivazione la casa è «Attivo». Se hai lasciato spento «Mostra la casa sul sito» gli ospiti non possono prenotarla dal tuo sito finché non lo accendi.
+5. Dopo l'attivazione la casa è «Attivo». Se hai spento «Mostra la casa sul sito» gli ospiti non possono prenotarla dal tuo sito finché non lo accendi.
 
 La pagina **Immobili › Attivazione** raccoglie tutte le case da seguire in un unico punto. Scegli una casa dall'elenco «Immobili da seguire» (con «Cerca per nome o città»): vedi «Controllo dei dati e pubblicazione» con il pulsante «Rivedi la scheda» o «Apri la scheda», l'elenco dei «Portali di prenotazione» con «Collega» o «Riprendi» (porta alle procedure di [[canali-octorate]]) e gli «Adempimenti» (Alloggiati e ISTAT), dove puoi chiedere allo staff CasaZen di configurarli. Per un annuncio importato da un channel manager la pagina elenca i campi da rivedere («Da compilare», «Da confermare», «Da mappare»).
 
@@ -156,9 +160,10 @@ La pagina **Immobili › Attivazione** raccoglie tutte le case da seguire in un 
 La pausa si può sempre annullare. Non cancella nulla.
 
 ### Eliminare un immobile
+**Ti serve:** il permesso di modifica degli immobili.
 1. Apri il menu «⋯» della riga o della scheda e scegli «Elimina immobile».
 2. Si apre «Eliminare l'immobile?». Leggi cosa succede: «L'immobile non sarà più visibile nell'elenco» e «Non puoi eliminarlo se ha prenotazioni future o locazioni attive».
-3. Scrivi il nome della casa per confermare e premi «Elimina immobile».
+3. Nel campo di conferma scrivi il **nome della casa**, come compare nell'elenco (non una parola fissa): il pulsante «Elimina immobile» si attiva solo quando il nome coincide. Poi premilo.
 4. Se l'immobile ha un soggiorno non ancora concluso (in attesa, confermato o con check-in fatto) o un contratto in corso, CasaZen rifiuta e te lo dice. Prima concludi o annulla quei soggiorni o contratti.
 
 > **Attenzione:** dall'app non esiste un pulsante per ripristinare una casa eliminata. Se vuoi solo fermare le vendite per un po' usa la pausa.
@@ -186,12 +191,12 @@ Verso l'affitto breve: fino alla data contratti e canoni restano come sono; dal 
 ## Flussi completi
 
 ### Flusso: dalla prima casa alla prima prenotazione possibile
-1. Dopo la registrazione compili il modulo breve «Aggiungi il tuo primo immobile» ([[immobili#aggiungere-il-primo-immobile]]).
+1. Dopo la registrazione compili il modulo breve «Aggiungi il tuo primo immobile» ([[immobili#aggiungere-il-primo-immobile]]). Se non hai ancora il CIN, chiedilo subito sul portale del Ministero del Turismo ([[cin-identificazione-ticino]]).
 2. Completi la procedura: foto, dotazioni, testi, regole, prezzo ([[immobili#aggiungere-un-immobile-con-la-procedura-guidata]], [[prezzi-tariffe]]).
 3. Colleghi i calendari di Airbnb e Booking.com o il tuo channel manager ([[canali-octorate]]).
 4. Inserisci il CIN e carichi i documenti richiesti ([[cin-identificazione-ticino]]), scegli chi invia i dati degli ospiti ([[alloggiati-istat]]).
-5. Accetti i Termini e premi «Attiva l'immobile»: la casa è «Attivo».
-6. Accendi «Mostra la casa sul sito» e condividi il tuo sito di prenotazione ([[sito-prenotazione]]). Le prenotazioni si gestiscono in [[prenotazioni]].
+5. Accetti i Termini e premi «Attiva l'immobile»: la casa è «Attivo» ([[immobili#completare-l-attivazione-di-un-immobile]]).
+6. Accendi «Mostra la casa sul sito» (di partenza è già acceso) e condividi il tuo sito di prenotazione ([[sito-prenotazione]]). Le prenotazioni si gestiscono in [[prenotazioni]].
 
 ### Flusso: da affitto breve ad affitto lungo
 1. Controlli in [[prenotazioni]] i soggiorni in corso e futuri della casa.
@@ -205,27 +210,39 @@ Verso l'affitto breve: fino alla data contratti e canoni restano come sono; dal 
 - Foto: 20 per immobile, 10 per volta, JPEG, PNG o WebP, 10 MB ciascuna. La didascalia al massimo 200 caratteri.
 - Titolo dell'annuncio al massimo 60 caratteri; descrizione al massimo 10.000; «Altre regole» al massimo 1000.
 - Una casa «Da completare» o «Sospeso» non riceve prenotazioni. Una casa in pausa non è pubblicata.
-- Si elimina un immobile solo se non ha soggiorni da concludere né contratti in corso.
+- Si elimina un immobile solo se non ha soggiorni da concludere né contratti in corso; per confermare si scrive il nome della casa.
 - Il passaggio di modalità si programma al massimo tra dieci anni, parte all'inizio del giorno scelto e si può annullare fino al giorno prima.
 - Il CIN ha questo formato: IT + codice ISTAT del comune (6 cifre) + categoria (2 caratteri) + fino a 8 caratteri; spazi e trattini sono ignorati. Esempio: IT015146C2ABCDEFGH. Lasciare il campo vuoto rimuove il CIN registrato.
 - Per le case in Svizzera il CIN italiano non si applica; CasaZen non verifica la registrazione cantonale (vedi [[cin-identificazione-ticino]]).
 
 ## Domande frequenti
 
+### Come aggiungo il mio appartamento?
+Apri **Affitti brevi › Immobili** e premi «Aggiungi immobile» (la prima volta compare «Aggiungi il tuo primo immobile»). Ti servono nome, comune, indirizzo con numero civico, ospiti massimi e prezzo per notte. Vedi [[immobili#aggiungere-il-primo-immobile]].
+
 ### Perché il mio immobile è «Da completare»?
 Perché manca almeno un punto che blocca l'attivazione: di solito il prezzo base, il CIN, un documento o il comune. Apri «Completa» sulla riga e leggi «Cosa manca».
+
+### Non riesco ad attivare la casa: cosa devo fare?
+Premi «Completa» sulla riga della casa e leggi «Cosa manca»: di solito sono prezzo base, CIN, documenti o comune. Premi «Correggi» su ogni voce, poi accetta i Termini e premi «Attiva l'immobile». Vedi [[immobili#completare-l-attivazione-di-un-immobile]].
+
+### Non ho il CIN: dove lo ottengo?
+Si chiede sul portale del Ministero del Turismo (BDSR). In CasaZen apri **Adempimenti › CIN** e premi «Richiedi il CIN sul portale». Finché non lo inserisci la casa resta «Da completare»; nel frattempo puoi compilare foto, testi e prezzi. Vedi [[cin-identificazione-ticino#chiedere-il-cin]].
 
 ### Posso salvare a metà e continuare dopo?
 Sì. Dopo il primo «Continua» l'immobile esiste e ogni passo si salva. Usa «Salva e chiudi» e poi «Riprendi configurazione».
 
 ### La casa è attiva ma i miei ospiti non la vedono sul sito
-Controlla l'interruttore «Mostra la casa sul sito» (ultimo passo della procedura) e che la casa non sia in pausa.
+Controlla l'interruttore «Mostra la casa sul sito» (ultimo passo della procedura; di partenza è acceso) e che la casa non sia in pausa. Vedi [[sito-prenotazione#quando-una-casa-compare-sul-sito]].
 
 ### Posso avere due appartamenti allo stesso indirizzo?
 Sì, se indichi l'interno o la scala in «Piano e interno»: ognuno deve averne uno diverso. Altrimenti CasaZen dice «Esiste già un immobile con questo indirizzo».
 
 ### Posso eliminare una casa che ha prenotazioni future?
 No. Prima concludi o annulla i soggiorni e i contratti. Se vuoi solo fermare le vendite usa «Metti in pausa».
+
+### Il pulsante «Elimina immobile» resta spento: perché?
+Nella finestra di conferma devi scrivere il nome della casa, come compare nell'elenco. Quando il nome coincide, il pulsante si attiva.
 
 ### Cosa succede alle prenotazioni quando metto in pausa?
 La pausa toglie la casa dalla pubblicazione. Le prenotazioni già registrate restano nel tuo elenco: gestiscile in [[prenotazioni]].
@@ -237,7 +254,7 @@ Sì, fino al giorno prima, con «Annulla il passaggio».
 - **Da completare**: stato di una casa a cui manca almeno un punto per essere attivata.
 - **Attivazione**: conferma finale che rende la casa «Attivo».
 - **Mostra la casa sul sito**: interruttore che decide se la casa compare sul tuo sito di prenotazione.
-- **CIN**: Codice Identificativo Nazionale della struttura.
+- **CIN**: Codice Identificativo Nazionale: il codice che identifica una casa in affitto breve in Italia. Va esposto fuori dalla casa e scritto in ogni annuncio; si chiede sul portale del Ministero del Turismo (BDSR).
 - **Scheda di sicurezza**: elenco delle dotazioni di sicurezza che dichiari per la casa.
 - **Cambia modalità**: passaggio programmato tra affitto breve e affitto lungo.
 

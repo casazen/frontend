@@ -1,7 +1,7 @@
 /*
  * Guida CasaZen: comportamenti della guida (ricerca, indice su telefono, filtri, indice della pagina).
  * Scritto a mano, senza dipendenze; le pagine restano leggibili anche senza JavaScript.
- * L'indice di ricerca (guida-indice.js) viene caricato solo quando serve.
+ * L'indice di ricerca (guida-indice.js) viene caricato solo quando serve; la logica di ricerca è in guida-ricerca.js.
  */
 (function () {
   'use strict';
@@ -9,15 +9,9 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
-  function fold(s) {
-    return String(s || '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/\p{M}/gu, '')
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
+  /* La logica della ricerca (normalizzazione, indice, punteggio) sta in guida-ricerca.js, caricato prima di questo file. */
+  var R = window.GuidaRicerca;
+  var fold = R ? R.fold : function (x) { return String(x || '').toLowerCase(); };
 
   /* ---------------- Indice laterale su telefono ---------------- */
   var body = document.body;
@@ -41,77 +35,25 @@
   }
 
   /* ---------------- Ricerca ---------------- */
-  var STOP = {};
-  ('di a da in con su per tra fra il lo la i gli le un uno una e o che come si posso devo fare cosa del della dei delle dello al alla ai alle mi ti non piu quando dove quale quali ho sono ha hanno puo possono voglio vorrei').split(' ').forEach(function (w) { STOP[w] = 1; });
-  var TYPES = { pagina: 'Pagina', howto: 'Come fare', funzione: 'Funzionalità', faq: 'Domanda', flusso: 'Flusso', termine: 'Glossario' };
-  var TYPE_BONUS = { howto: 3, funzione: 2, faq: 2, flusso: 1, pagina: 1, termine: 0 };
-  var index = null;
-  var loading = null;
+  var TYPES = { pagina: 'Pagina', howto: 'Come fare', funzione: 'Funzionalità', faq: 'Domanda', flusso: 'Percorso', termine: 'Glossario' };
+  var ready = null;
 
+  /* Carica l'indice (guida-indice.js) solo alla prima ricerca e lo passa al motore. */
   function loadIndex() {
-    if (index) return Promise.resolve(index);
-    if (loading) return loading;
-    loading = new Promise(function (resolve, reject) {
-      if (window.GUIDA_INDICE) { prepare(window.GUIDA_INDICE); resolve(index); return; }
+    if (ready) return ready;
+    ready = new Promise(function (resolve, reject) {
+      var fail = function (msg) { ready = null; reject(new Error(msg)); };
+      if (!R) { fail('motore di ricerca non disponibile'); return; }
+      if (window.GUIDA_INDICE) { R.prepara(window.GUIDA_INDICE); resolve(); return; }
       var s = document.createElement('script');
       s.src = 'guida-indice.js';
-      s.onload = function () { prepare(window.GUIDA_INDICE); resolve(index); };
-      s.onerror = function () { reject(new Error('indice non disponibile')); };
+      s.onload = function () { R.prepara(window.GUIDA_INDICE); resolve(); };
+      s.onerror = function () { fail('indice non disponibile'); };
       document.head.appendChild(s);
     });
-    return loading;
+    return ready;
   }
-  function prepare(data) {
-    index = (data && data.voci ? data.voci : []).map(function (e) {
-      e._t = fold(e.titolo);
-      e._k = fold(e.kw);
-      e._x = fold(e.testo);
-      e._c = fold(e.ctx + ' ' + e.sezione);
-      return e;
-    });
-  }
-  function stem(t) { return t.length >= 5 ? t.replace(/[aeiou]{1,2}$/, '') : t; }
-  function hasWord(text, t) { return (' ' + text + ' ').indexOf(' ' + t + ' ') >= 0; }
-  function tokens(q) {
-    return fold(q).split(' ').filter(function (t) { return t.length > 1 && !STOP[t]; });
-  }
-  function score(e, toks, phrase) {
-    var s = 0;
-    for (var i = 0; i < toks.length; i += 1) {
-      var t = toks[i];
-      var st = stem(t);
-      var hit = 0;
-      if (hasWord(e._t, t)) hit += 8; else if (e._t.indexOf(st) >= 0) hit += 5;
-      if (e._k.indexOf(st) >= 0) hit += 4;
-      if (e._c.indexOf(st) >= 0) hit += 1;
-      if (hasWord(e._x, t)) hit += 2; else if (e._x.indexOf(st) >= 0) hit += 1;
-      if (!hit) return 0;
-      s += hit;
-    }
-    if (phrase && e._t.indexOf(phrase) >= 0) s += 10;
-    return s + (TYPE_BONUS[e.t] || 0);
-  }
-  function search(q, limit) {
-    var toks = tokens(q);
-    if (!toks.length) return [];
-    var phrase = fold(q);
-    var out = [];
-    for (var i = 0; i < index.length; i += 1) {
-      var sc = score(index[i], toks, phrase);
-      if (sc > 0) out.push({ e: index[i], s: sc });
-    }
-    out.sort(function (a, b) { return b.s - a.s; });
-    // Una sola voce per indirizzo: se pagina e compito coincidono, tiene il più specifico.
-    var seen = {};
-    var uniq = [];
-    for (var j = 0; j < out.length; j += 1) {
-      var k = out[j].e.url + '|' + out[j].e.t;
-      if (seen[k]) continue;
-      seen[k] = 1;
-      uniq.push(out[j].e);
-    }
-    return uniq.slice(0, limit || 8);
-  }
+  function search(q, limit) { return R.cerca(q, limit); }
   function el(tag, cls, text) {
     var n = document.createElement(tag);
     if (cls) n.className = cls;
@@ -129,7 +71,7 @@
       box.textContent = '';
       items = [];
       if (!results.length) {
-        box.appendChild(el('div', 'gd-suggest__empty', 'Nessun risultato per «' + q + '». Prova con altre parole.'));
+        box.appendChild(el('div', 'gd-suggest__empty', 'Nessun risultato per «' + q + '». Prova con meno parole oppure apri «Inizia qui».'));
         box.hidden = false;
         return;
       }
@@ -186,12 +128,23 @@
       loadIndex().then(function () {
         var found = search(q, 60);
         results.textContent = '';
-        if (sub) sub.textContent = found.length ? found.length + (found.length === 1 ? ' risultato' : ' risultati') : 'Nessun risultato. Prova con altre parole oppure sfoglia gli argomenti.';
-        var order = ['howto', 'funzione', 'faq', 'flusso', 'pagina', 'termine'];
+        if (sub) sub.textContent = found.length ? found.length + (found.length === 1 ? ' risultato' : ' risultati') : 'Nessun risultato. Prova con meno parole o con altre parole. Se non trovi risposta, apri la Guida nell’app: se c’è un indirizzo di assistenza, trovi «Scrivi all’assistenza».';
+        if (!found.length) {
+          var exits = el('p');
+          [['inizia-qui.html', 'Inizia qui'], ['index.html', 'Sfoglia gli argomenti'], ['domande-frequenti.html', 'Domande frequenti']].forEach(function (l, i) {
+            if (i) exits.appendChild(document.createTextNode(' · '));
+            var a = el('a', '', l[1]);
+            a.href = l[0];
+            exits.appendChild(a);
+          });
+          results.appendChild(exits);
+        }
+        var order = [];
+        found.forEach(function (r) { if (order.indexOf(r.t) < 0) order.push(r.t); });      // i gruppi seguono la classifica: prima quello della voce migliore
         order.forEach(function (t) {
           var list = found.filter(function (r) { return r.t === t; });
           if (!list.length) return;
-          var h = el('h2', 'gd-h2', ({ howto: 'Come fare', funzione: 'Funzionalità', faq: 'Domande frequenti', flusso: 'Flussi completi', pagina: 'Pagine', termine: 'Glossario' })[t]);
+          var h = el('h2', 'gd-h2', ({ howto: 'Come fare', funzione: 'Funzionalità', faq: 'Domande frequenti', flusso: 'Percorsi completi', pagina: 'Pagine', termine: 'Glossario' })[t]);
           results.appendChild(h);
           var ul = el('ul', 'gd-results');
           list.forEach(function (r) {
