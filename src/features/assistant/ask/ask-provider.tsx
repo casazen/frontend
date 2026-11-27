@@ -47,12 +47,12 @@ export function AskProvider({ area, userId, orgId, orgName, children }: Props) {
     propertyId,
     location.key,
   ]);
-  const [session, setSession] = useState<{ scope: string; intent: AskIntent; opener: HTMLElement } | null>(null);
+  const [session, setSession] = useState<{ scope: string; intent: AskIntent; opener: HTMLElement; question?: string } | null>(null);
   if (session && session.scope !== scope) setSession(null);
 
   return (
     <AskContext.Provider
-      value={{ canReadArrivals, canPrepareDraft, open: (intent, opener) => setSession({ scope, intent, opener }) }}
+      value={{ canReadArrivals, canPrepareDraft, open: (intent, opener, question) => setSession({ scope, intent, opener, question }) }}
     >
       {children}
       {session?.scope === scope && (
@@ -71,6 +71,7 @@ export function AskProvider({ area, userId, orgId, orgName, children }: Props) {
             canReadArrivals={canReadArrivals}
             bookingId={canPrepareDraft ? bookingId : null}
             initialIntent={session.intent}
+            initialQuestion={session.question}
             opener={session.opener}
             onClose={() => setSession(null)}
           />

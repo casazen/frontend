@@ -1204,7 +1204,15 @@ export function buildGuida() {
   for (const g of data.terms) idx.push({ t: 'termine', pg: g.pagina, titolo: stripInline(g.termine, ctx.titleOf), sezione: g.sezione, ctx: 'Glossario', url: `glossario.html`, chi: [], testo: stripInline(g.definizione, ctx.titleOf), kw: '' });
   const pagineKw = {};
   for (const p of pages) pagineKw[p.id] = [...(Array.isArray(p.meta.parole_chiave) ? p.meta.parole_chiave : []), p.meta.dove || ''].join(' ');
-  files.set('guida-indice.js', `window.GUIDA_INDICE=${JSON.stringify({ versione: 2, aggiornato: meta.aggiornato, pagine: pagineKw, voci: idx })};\n`);
+  // Quale capitolo spiega quale pagina dell'app (`copre` del sorgente, senza le rotte tecniche): la Guida dell'app lo legge per suggerire, nella pagina aperta, i «Come fare» giusti.
+  const rotte = {};
+  for (const p of pages) {
+    for (const c of Array.isArray(p.meta.copre) ? p.meta.copre : []) {
+      if (/\(non-utente\)\s*$/i.test(c)) continue;
+      (rotte[c.trim()] ??= []).push(p.id);
+    }
+  }
+  files.set('guida-indice.js', `window.GUIDA_INDICE=${JSON.stringify({ versione: 2, aggiornato: meta.aggiornato, pagine: pagineKw, rotte, voci: idx })};\n`);
 
   // Base di conoscenza per il chatbot: un blocco autosufficiente per compito, domanda, flusso, regola…
   const chunks = data.chunks.map((c) => ({ ...c, url: `${BASE_URL_PATH}${c.url}` }));

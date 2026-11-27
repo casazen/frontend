@@ -22,15 +22,15 @@ Funzionalità: Invito a un team; Cosa fa: Ti fa entrare nell'organizzazione di u
 Funzionalità: Invito di un amico host; Cosa fa: Ti fa registrare dopo il consiglio di un altro host; non assegna ruoli; Dove si trova: Link ricevuto per email › «Crea il tuo account»; Chi può usarla: gestore; Disponibilità: Disponibile; Come si usa: Registrarti dopo l'invito di un amico
 Funzionalità: Configurazione guidata; Cosa fa: Profilo, area, piano e pagamento in cinque passaggi (i documenti si confermano prima di pagare); Dove si trova: Dopo la registrazione, pagina «Come vuoi usare CasaZen?»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Creare il tuo account e la tua attività
 Funzionalità: «Metti in pausa»; Cosa fa: Salva le scelte per riprenderle dopo; Dove si trova: Passaggi «Piano e funzionalità» e «Riepilogo»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Mettere in pausa la configurazione
-Funzionalità: Benvenuto al primo accesso; Cosa fa: Ti propone il percorso di avvio, una sola volta; Dove si trova: Home di Affitti brevi; Chi può usarla: amministratore; Disponibilità: Disponibile; Come si usa: Seguire i passi della Guida
-Funzionalità: Checklist «Attiva il tuo sito di prenotazione»; Cosa fa: Elenca i passi per essere operativo; Dove si trova: Guida in alto, Home; Chi può usarla: amministratore, gestore; Disponibilità: Disponibile; Come si usa: Seguire i passi della Guida
-Funzionalità: Percorso «Inizia con CasaZen»; Cosa fa: Piano guidato in parti: canali, annunci, prezzi, adempimenti, fatturazione, messaggi; Dove si trova: Guida in alto › «Vedi tutti i passi»; Chi può usarla: amministratore, gestore; Disponibilità: Su attivazione; Come si usa: Seguire il percorso «Inizia con CasaZen»
+Funzionalità: Benvenuto al primo accesso; Cosa fa: Ti propone il percorso di avvio, una sola volta; Dove si trova: Home di Affitti brevi; Chi può usarla: amministratore; Disponibilità: Disponibile; Come si usa: Seguire la checklist di avvio
+Funzionalità: Checklist «Attiva il tuo sito di prenotazione»; Cosa fa: Elenca i passi per essere operativo; Dove si trova: Home, riquadro «Il prossimo passo»; Chi può usarla: amministratore, gestore; Disponibilità: Disponibile; Come si usa: Seguire la checklist di avvio
+Funzionalità: Percorso «Inizia con CasaZen»; Cosa fa: Piano guidato in parti: canali, annunci, prezzi, adempimenti, fatturazione, messaggi; Dove si trova: Home, riquadro «Inizia con CasaZen»; Chi può usarla: amministratore, gestore; Disponibilità: Su attivazione; Come si usa: Seguire il percorso «Inizia con CasaZen»
 Funzionalità: Aree di lavoro; Cosa fa: Separano affitti brevi, affitti lunghi, amministrazione e fornitori; Dove si trova: In alto nella barra laterale; su telefono «Altro»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Andare in Amministrazione o cambiare area di lavoro
 Funzionalità: Menu; Cosa fa: Voci raggruppate, «Altro», impostazioni in basso, barra inferiore su telefono; Dove si trova: Barra laterale; su telefono barra in basso; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Muoverti nel menu
 Funzionalità: «Cerca nel menu»; Cosa fa: Trova una pagina del menu per nome; Dove si trova: In cima al menu; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Trovare una pagina
-Funzionalità: «Cerca»; Cosa fa: Cerca immobili, prenotazioni, ospiti, pagine e azioni; Dove si trova: Barra in alto (Ctrl o Cmd + K); Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Trovare una pagina
-Funzionalità: «Guida»; Cosa fa: Mostra cosa fare adesso e come chiedere aiuto; Dove si trova: In alto a destra, pulsante «Guida»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Usare la Guida
-Funzionalità: Manuale in app «Guida CasaZen»; Cosa fa: 11 argomenti brevi con ricerca e il link al manuale completo; Dove si trova: Guida › «Apri il manuale di CasaZen»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Aprire il manuale completo dall'app
+Funzionalità: «Cerca»; Cosa fa: Cerca immobili, prenotazioni, ospiti, pagine, azioni e argomenti del manuale; Dove si trova: Barra in alto (Ctrl o Cmd + K); Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Trovare una pagina
+Funzionalità: «Guida»; Cosa fa: Il manuale in un pannello: ricerca nel manuale, i «Come fare» della pagina in cui sei, i capitoli principali, «Chiedi a CasaZen»; Dove si trova: In alto a destra, pulsante «Guida»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Usare la Guida
+Funzionalità: Manuale completo; Cosa fa: Guide passo passo, elenco delle funzionalità, domande frequenti e glossario; Dove si trova: Guida › «Apri il manuale completo»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Aprire il manuale completo dall'app
 Funzionalità: Assistenza; Cosa fa: Ti fa scrivere a CasaZen quando ti blocchi o ti serve una funzione «su attivazione»; Dove si trova: Guida › «Scrivi all'assistenza» (compare solo se l'installazione ha un indirizzo di assistenza); anche in «Cerca»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Scrivere all'assistenza di CasaZen
 Funzionalità: «Personalizza area di lavoro»; Cosa fa: Tabelle compatte, voci in primo piano, cruscotto con le attività prima; Dove si trova: Menu del tuo profilo (avatar in alto a destra); Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Personalizzare l'area di lavoro
 
@@ -137,17 +137,18 @@ Non vedi tutte le voci: dipendono da ruolo, permessi e funzioni attive. In Ammin
 
 #### «Cerca» e «Cerca nel menu»
 
-- «Cerca» è la barra in alto («Cerca immobili, prenotazioni, ospiti, pagine…»; su telefono è la lente). Da computer si apre anche con Ctrl + K (su Mac Cmd + K). I risultati sono divisi in Azioni, Prenotazioni, Ospiti, Pagine, Immobili e Recenti. Scegli con le frecce, apri con Invio, chiudi con Esc. Fra le azioni ci sono «Aggiungi un immobile», «Crea una prenotazione», «Registra un pagamento», «Nuovo contratto», «Cambia area: [nome dell'area]», il cambio di lingua, «Esci» e, solo se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza». L'azione «Collega Airbnb o Booking.com» compare solo se il collegamento diretto con i portali è attivo (su attivazione): per collegare un calendario usa i calendari iCal (Canali, calendari e Octorate). Vedi solo ciò che il tuo ruolo permette.
+- «Cerca» è la barra in alto («Cerca immobili, prenotazioni, ospiti, pagine…»; su telefono è la lente). Da computer si apre anche con Ctrl + K (su Mac Cmd + K). I risultati sono divisi in Azioni, Prenotazioni, Ospiti, Pagine, Immobili, Guida (gli argomenti del manuale, che si aprono in una nuova scheda) e Recenti. Scegli con le frecce, apri con Invio, chiudi con Esc. Fra le azioni ci sono «Aggiungi un immobile», «Crea una prenotazione», «Registra un pagamento», «Nuovo contratto», «Cambia area: [nome dell'area]», il cambio di lingua, «Esci» e, solo se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza». L'azione «Collega Airbnb o Booking.com» compare solo se il collegamento diretto con i portali è attivo (su attivazione): per collegare un calendario usa i calendari iCal (Canali, calendari e Octorate). Vedi solo ciò che il tuo ruolo permette.
 - «Cerca nel menu» è il campo in cima al menu: trova le pagine e le loro schede per nome. Se non trova nulla vedi «Nessuna pagina trovata».
-- Accanto a «Cerca» c'è il pulsante «Chiedi a CasaZen»: lo trovi in Chiedi a CasaZen.
+- Accanto a «Cerca» c'è il pulsante «Chiedi a CasaZen»: lo trovi in Chiedi a CasaZen. Quello che scrivi in «Cerca» o in «Chiedi a CasaZen» viene cercato anche nel manuale.
 
 #### La Guida e il manuale in app
 
-Il pulsante Guida è in alto a destra. Se c'è qualcosa di urgente porta un numero. Si apre il pannello «La tua guida» con:
-- I passi per configurare CasaZen (la checklist o il percorso, solo finché non è completo), con «Adesso», l'avanzamento («3 di 7 passi fatti») e «Continua» o «Vedi tutti i passi»;
-- Da fare adesso: le prime cose da fare, dalla più urgente, con «Vedi tutte le cose da fare» (vedi Da fare);
-- Ti serve una mano?: «Apri il manuale di CasaZen» e, se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza».
-Il manuale in app si chiama Guida CasaZen e ha 11 argomenti brevi: primi passi e aree di lavoro, immobili e pubblicazione, prenotazioni e calendario, calendari esterni e iCal, ospiti, check-in e privacy, Alloggiati e adempimenti, pagamenti e comunicazioni agli ospiti, organizzazione persone e permessi, affitti lunghi e contratti, fornitori e richieste di servizio, problemi frequenti e assistenza. Usa «Cerca nella guida» per filtrare e «Torna agli argomenti» per tornare all'elenco. Questo manuale lo approfondisce.
+Il pulsante Guida è in alto a destra. Si apre il pannello «Guida utente», che è questo manuale a portata di mano:
+- Cerca nel manuale: scrivi cosa vuoi fare («aggiungere un immobile») e vedi i punti del manuale che ne parlano;
+- In questa pagina: i «Come fare» del capitolo che spiega la pagina in cui sei, con «Apri il capitolo» (se il manuale non ha un capitolo per quella pagina, il riquadro non compare);
+- Parti da qui: «Primi passi», «Come fare», «Domande frequenti» e «Glossario», e «Apri il manuale completo»;
+- in fondo: «Chiedi a CasaZen», che si apre con quello che hai scritto, e, se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza».
+Ogni risultato del manuale si apre in una nuova scheda. Il pannello non mostra i passi di configurazione né le cose da fare: li trovi nel Cruscotto, nei riquadri «Il prossimo passo» o «Inizia con CasaZen», e in Da fare (vedi Da fare).
 
 #### Modalità demo
 
@@ -250,16 +251,16 @@ Se non riesce a collegare l'invito, puoi premere «Continua senza invito»: il t
 3. Per riprendere premi «Riprendi la configurazione», oppure riapri la pagina: riparti dal passaggio salvato e vedi «Abbiamo recuperato le scelte salvate in questa scheda».
 Attenzione: dopo una ricarica devi confermare di nuovo i documenti. Se chiudi la scheda o passa più di un giorno, le scelte si perdono: ripeti i passaggi.
 
-#### Seguire i passi della Guida
+#### Seguire la checklist di avvio
 
-1. Premi Guida in alto a destra.
-2. Leggi «Adesso» e premi «Continua»: si apre la procedura giusta.
+1. Apri il Cruscotto (la Home di Affitti brevi): finché la configurazione non è completa vedi il riquadro «Il prossimo passo».
+2. Premi il pulsante del riquadro: si apre la procedura giusta.
 3. Quando finisci un passo, ti proponiamo il successivo. Puoi fermarti quando vuoi: riprendi da dove eri.
-4. Per vedere tutti i passi premi «Vedi tutti i passi».
+4. Per vedere tutti i passi premi «Tutti i passi».
 
 #### Seguire il percorso «Inizia con CasaZen»
 
-Disponibile su attivazione. Lo apri da Guida › Vedi tutti i passi o dal benvenuto.
+Disponibile su attivazione. Lo apri dal benvenuto o dal riquadro «Inizia con CasaZen» del Cruscotto.
 1. Nella pagina «Inizia con CasaZen» leggi la carta «Prossimo passo» e premi «Continua».
 2. Ogni parte spiega cosa fa, cosa ti serve e cosa manca immobile per immobile. Premi «Fai ora» o «Riprendi» per aprire la procedura guidata.
 3. Se non puoi farlo adesso premi «Lo faccio dopo», scegli quando ricordartelo e conferma. Lo trovi in Da fare.
@@ -289,20 +290,21 @@ In alternativa, da qualsiasi pagina: menu del profilo, sotto «Le tue aree», op
 #### Usare la Guida
 
 1. Premi Guida in alto a destra (su schermi stretti è l'icona della bussola).
-2. Segui «Adesso» o apri una «cosa da fare».
-3. Per la guida breve dell'app premi «Apri il manuale di CasaZen»; «Torna alla pagina di partenza» ti riporta dove eri.
+2. Per cercare, scrivi cosa vuoi fare nel campo «Cerca nel manuale» (per esempio «aggiungere un immobile») e scegli un risultato: il punto giusto del manuale si apre in una nuova scheda.
+3. In «In questa pagina» trovi i «Come fare» della pagina in cui sei; «Apri il capitolo» apre il capitolo intero.
+4. Se non trovi la risposta premi «Chiedi a CasaZen» in fondo al pannello: si apre con quello che hai scritto.
 
 #### Aprire il manuale completo dall'app
 
-1. In alto a destra premi Guida e, sotto «Ti serve una mano?», premi «Apri il manuale di CasaZen»: si apre la pagina «Guida CasaZen» (11 argomenti brevi).
-2. In quella pagina cerca il link «Apri il manuale completo: guide passo passo, elenco delle funzionalità e domande frequenti» (oggi è in fondo alla pagina).
-3. Premilo: il manuale si apre in una nuova scheda. Il manuale è pubblico: lo apri anche senza accedere, con l'indirizzo di CasaZen seguito da /guida/.
+1. In alto a destra premi Guida.
+2. Sotto «Parti da qui» premi «Apri il manuale completo», oppure uno dei quattro riquadri: «Primi passi», «Come fare», «Domande frequenti», «Glossario».
+3. Il manuale si apre in una nuova scheda. Il manuale è pubblico: lo apri anche senza accedere, con l'indirizzo di CasaZen seguito da /guida/.
 
 #### Scrivere all'assistenza di CasaZen
 
 Ti serve: un programma di posta impostato sul computer o sul telefono, e che la tua installazione abbia un indirizzo di assistenza.
 1. In alto a destra premi Guida.
-2. In fondo, sotto «Ti serve una mano?», premi «Scrivi all'assistenza» (oppure apri «Cerca» e scegli «Scrivi all'assistenza»).
+2. In fondo al pannello premi «Scrivi all'assistenza» (oppure apri «Cerca» e scegli «Scrivi all'assistenza»).
 3. Si apre un messaggio già indirizzato all'assistenza: scrivi cosa stavi facendo, cosa ti aspettavi e cosa è successo, poi invialo.
 Se non vedi «Scrivi all'assistenza», vedi «Assistenza: come scrivere a CasaZen».
 
@@ -326,7 +328,7 @@ Le preferenze si salvano su questo dispositivo, per il tuo profilo e per l'area 
 1. Tu: crei l'account e scegli profilo, area Affitti brevi e piano (vedi «Creare il tuo account e la tua attività»).
 2. Tu: confermi i documenti e paghi su Stripe.
 3. CasaZen: crea la tua organizzazione e ti porta sulla Home di Affitti brevi; se non hai immobili ti apre «Aggiungi il tuo primo immobile» (con il percorso guidato, se attivo, apre «Inizia con CasaZen»).
-4. Tu: completi l'immobile (Immobili) e segui i passi della Guida.
+4. Tu: completi l'immobile (Immobili) e segui la checklist di avvio del Cruscotto.
 5. Tu: colleghi i calendari e imposti prezzi (Canali, calendari e Octorate, Prezzi e tariffe).
 6. Tu: controlli ogni giorno Cruscotto e Da fare (Cruscotto, Da fare, notifiche e assistente).
 
@@ -403,7 +405,7 @@ Dal menu del profilo, sotto «Lingua».
 
 #### Come scrivo all'assistenza? Non c'è un numero di telefono.
 
-Non c'è un numero: si scrive. In alto premi Guida: nel pannello, sotto «Ti serve una mano?», trovi «Scrivi all'assistenza» se la tua installazione ha un indirizzo configurato. In «Cerca» c'è la stessa azione. Passi e cosa scrivere: «Scrivere all'assistenza di CasaZen».
+Non c'è un numero: si scrive. In alto premi Guida: nel pannello, in fondo, trovi «Scrivi all'assistenza» se la tua installazione ha un indirizzo configurato. In «Cerca» c'è la stessa azione. Passi e cosa scrivere: «Scrivere all'assistenza di CasaZen».
 
 #### Cos'è CasaZen e cosa posso farci?
 
@@ -478,7 +480,7 @@ Sezione: Per iniziare · Si trova in: Affitti brevi › Cruscotto (schede Da far
 
 ### In breve
 
-Il Cruscotto è la pagina da cui parti ogni mattina: cosa succede oggi, cosa devi fare e i numeri essenziali. Le schede Da fare, Da approvare e Verifiche raccolgono ciò che aspetta una tua decisione. La campanella e gli avvisi ti dicono quando succede qualcosa, senza ricaricare la pagina. Chiedi a CasaZen è una scorciatoia per aprire pagine e trovare prenotazioni: non fa operazioni al posto tuo.
+Il Cruscotto è la pagina da cui parti ogni mattina: cosa succede oggi, cosa devi fare e i numeri essenziali. Le schede Da fare, Da approvare e Verifiche raccolgono ciò che aspetta una tua decisione. La campanella e gli avvisi ti dicono quando succede qualcosa, senza ricaricare la pagina. Chiedi a CasaZen è una scorciatoia per aprire pagine, trovare prenotazioni e raggiungere il punto giusto del manuale: non fa operazioni al posto tuo.
 Suggerimento: in pratica, ogni giorno fai tre cose, in quest'ordine. 1) Apri il Cruscotto e guarda «Oggi» (arrivi, partenze, pulizie) e «Da fare». 2) Guarda la campanella: ti dice cosa è successo e porta alla pagina giusta. 3) Se usi l'assistente o le campagne, apri Da approvare: ciò che prepara CasaZen non parte senza il tuo sì. Il pulsante Guida serve finché non hai finito la configurazione. «Home» e «Cruscotto» sono la stessa pagina: la pagina iniziale di Affitti brevi. Il primo giorno è normale che sia quasi vuoto: si riempie quando hai una casa attiva. Dal telefono la campanella e il Cruscotto si usano dal browser; le notifiche sul telefono arrivano con l'app «CasaZen», che non è ancora negli store (App mobile CasaZen).
 
 ### Funzionalità
@@ -491,7 +493,7 @@ Funzionalità: Da approvare; Cosa fa: Bozze e azioni che aspettano la tua approv
 Funzionalità: Verifiche; Cosa fa: Identità degli ospiti che aspetta una persona; Dove si trova: Cruscotto › scheda «Verifiche»; Chi può usarla: amministratore, gestore; Disponibilità: Disponibile; Come si usa: Registrare la decisione su una verifica
 Funzionalità: Campanella; Cosa fa: Elenco delle notifiche, con numero da leggere; Dove si trova: In alto, icona «Notifiche»; Chi può usarla: tutti; Disponibilità: Disponibile; Come si usa: Leggere le notifiche
 Funzionalità: Avvisi in primo piano; Cosa fa: Un avviso alla volta per le scadenze; Dove si trova: Sopra la pagina, in basso a destra; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Rispondere a un avviso
-Funzionalità: «Chiedi a CasaZen»; Cosa fa: Apre pagine, trova prenotazioni, prepara bozze; Dove si trova: In alto, accanto a «Cerca»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Chiedere a CasaZen
+Funzionalità: «Chiedi a CasaZen»; Cosa fa: Apre pagine, trova prenotazioni, indica i punti del manuale, prepara bozze; Dove si trova: In alto, accanto a «Cerca»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Chiedere a CasaZen
 Funzionalità: Impostazioni AI; Cosa fa: Porta alle routine, all'assistente e alla verifica dei volti; Dove si trova: Impostazioni › AI; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Controllare le impostazioni AI
 Funzionalità: Assistente per i messaggi; Cosa fa: Prepara bozze di risposta agli ospiti; Dove si trova: Impostazioni › AI › Assistente; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Regolare l'assistente dei messaggi
 
@@ -589,6 +591,7 @@ Cosa sa fare davvero:
 - Trovare una prenotazione: scrivi «prenotazione Rossi» o il codice. Se ce n'è una sola, la apre; altrimenti ne mostra fino a sei e «Cerca nell'elenco prenotazioni».
 - Dirti le attività aperte: «cose da fare» risponde «Ci sono N attività aperte» (o «Tutto in regola. Nessuna attività aperta.»), propone le prime cinque con il pulsante per aprirle e il collegamento a Da fare.
 - Portarti alla pagina giusta: «alloggiati» apre Report Alloggiati; «fatture di ottobre» apre Documenti fiscali già filtrati sul mese (e sulle fatture); «impostazioni» apre le impostazioni dell'organizzazione; «crea una routine per le pulizie» apre Routine AI (nei modelli o in creazione, secondo le parole usate).
+- Indicarti il manuale: se chiedi come fare una cosa («come metto in pausa una casa?») compare «Nel manuale» con i punti che ne parlano; si aprono in una nuova scheda. Se nessuna pagina corrisponde ma il manuale ha la risposta, vedi solo quella.
 - Trovare i check-in incompleti di oggi: la domanda suggerita «Quali arrivi di oggi hanno il check-in incompleto?» (pulsante «Trova i check-in incompleti») elenca gli arrivi del giorno (ora di Roma), per «Tutti gli immobili assegnati» o per l'immobile selezionato, con lo stato del link («Link da inviare», «Link inviato · dati in attesa», «Link scaduto», «Compilazione in corso», «Modulo inviato · dati ospiti incompleti»). Scegli una prenotazione con «Apri prenotazione» per verificarla.
 - Preparare le istruzioni di arrivo: dal dettaglio di una prenotazione, «Prepara le istruzioni di arrivo» ti fa scegliere un «Modello della tua organizzazione», premi «Prepara bozza» e ottieni una «Bozza modificabile» che copi con «Copia la bozza» e incolli nei messaggi della prenotazione.
 - Preparare un invito: «voglio invitare Marta come manager» (anche con l'email, e con «come amministratore», «come collaboratore» o «come commercialista») apre il modulo «Invita un utente» già compilato con nome, email, ruolo e area. Se indichi un'altra organizzazione ti dice qual è quella attiva. L'invio lo confermi tu e serve poter gestire le persone.
