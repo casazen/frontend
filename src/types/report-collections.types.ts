@@ -29,7 +29,7 @@ export interface CollectionsBucket {
 }
 
 /** The money collected with one payment method (`CreditCard`, `BankTransfer`, `PayPal`, `ApplePay`, `GooglePay`, `CashOnArrival`). */
-export interface CollectionsMethodRow {
+interface CollectionsMethodRow {
   method: string;
   amount: number;
   amountCents: number;
@@ -39,7 +39,7 @@ export interface CollectionsMethodRow {
 }
 
 /** The money collected for the stays of one channel (the booking source: `Direct`, `Manual`, `Airbnb`, `BookingCom`, ...). */
-export interface CollectionsChannelRow {
+interface CollectionsChannelRow {
   source: string;
   amount: number;
   amountCents: number;
@@ -49,10 +49,10 @@ export interface CollectionsChannelRow {
 }
 
 /** `Credited` when the arrival day has come, `Expected` while it is still ahead. */
-export type StripeCreditStatus = 'Credited' | 'Expected';
+type StripeCreditStatus = 'Credited' | 'Expected';
 
 /** The card payments credited on one day, in one currency: the day's credits, not a bank payout (the provider's payout id is not stored). */
-export interface StripeCreditRow {
+interface StripeCreditRow {
   /** The day the funds are credited (`yyyy-MM-dd`). */
   arrivalDate: string;
   currency: string;
@@ -73,7 +73,7 @@ export interface StripeCredits {
 }
 
 /** What the channel manager reports as the net amount of the stays one channel collected itself: reported, never a bank credit, with no date. */
-export interface ChannelCreditRow {
+interface ChannelCreditRow {
   source: string;
   currency: string;
   amount: number;
@@ -110,7 +110,7 @@ export interface CollectionsReport {
 }
 
 /** Where the figures of a balance come from: CasaZen's own payments, or the balance the channel manager reported. */
-export type BalanceBasis = 'Payments' | 'ChannelManager';
+type BalanceBasis = 'Payments' | 'ChannelManager';
 
 /** A stay with something still to collect. A money report never carries a guest: no name, no contact. */
 export interface BalanceRow {

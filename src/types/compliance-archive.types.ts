@@ -14,7 +14,7 @@ export type ComplianceProofKind = 'AlloggiatiReceipt' | 'IstatProof' | 'TouristT
 export const COMPLIANCE_PROOF_KINDS: readonly ComplianceProofKind[] = ['AlloggiatiReceipt', 'IstatProof', 'TouristTaxDeclaration', 'TouristTaxPayment'];
 
 /** A flat a receipt covers (`ComplianceCoveredPropertyDto`): its id and its name. */
-export interface ComplianceCoveredProperty {
+interface ComplianceCoveredProperty {
   id: string;
   name: string;
 }
@@ -70,10 +70,10 @@ export interface ComplianceArchiveFilters {
  * What the log of a stay says (`ComplianceSendKind`): three kinds of send and, since E20/F02/US01/T02, `DocumentsDeleted`: not a send but the line that tells CasaZen deleted the
  * photos of the guests' documents of the stay because an archived receipt covers it (written by CasaZen, with the date and no reference).
  */
-export type ComplianceSendKind = 'AlloggiatiGuests' | 'IstatPeriod' | 'TouristTaxPeriod' | 'DocumentsDeleted';
+type ComplianceSendKind = 'AlloggiatiGuests' | 'IstatPeriod' | 'TouristTaxPeriod' | 'DocumentsDeleted';
 
 /** Who sent it, as the log keeps it: CasaZen, the channel manager, or the host by hand (`ComplianceSender`). */
-export type SendLogSender = 'CasaZen' | 'ChannelManager' | 'Manual';
+type SendLogSender = 'CasaZen' | 'ChannelManager' | 'Manual';
 
 /** One line of the send log of a stay: what was sent, when and by whom. No guest data. */
 export interface ComplianceSendLogLine {
@@ -158,7 +158,7 @@ export interface ComplianceReportFilters {
 export type ComplianceReportFormat = 'pdf' | 'csv';
 
 /** What a receipt of one day would prove for one flat (`ComplianceReceiptCoveragePropertyDto`): the stays of that flat that arrived that day, zero when none did. */
-export interface ReceiptCoverageProperty {
+interface ReceiptCoverageProperty {
   propertyId: string;
   propertyName: string;
   stays: number;

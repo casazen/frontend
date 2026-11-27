@@ -20,7 +20,7 @@ export interface TicinoNotificationRequest {
 }
 
 /** What a row of the file stands for: one notified person, or the leader of a group of six or more with the others counted on the row (decision D11). */
-export type TicinoRowKind = 'guest' | 'group';
+type TicinoRowKind = 'guest' | 'group';
 
 /** A person in the file, with the accompanying minors counted on them (14 to 17, under 14); the leader of a group counts the other members. */
 export interface TicinoNotificationRow {
@@ -37,7 +37,7 @@ export interface TicinoNotificationRow {
  * A guest (or a whole stay, `position` null) left out of the file, with the codes of what they miss: `firstName`, `lastName`,
  * `birthDate`, `nationality`, `documentType`, `guests` (fewer guests recorded than the booking counts).
  */
-export interface TicinoNotificationIssue {
+interface TicinoNotificationIssue {
   bookingId: string;
   position: number | null;
   guestName: string;
@@ -49,7 +49,7 @@ export interface TicinoNotificationIssue {
  * the parents, filed as the receipt type `ParentalAuthorization`) and `group_sheet_incomplete` (a member of a group misses a name or a nationality). A
  * stay may be in the file and still have a warning.
  */
-export interface TicinoStayWarning {
+interface TicinoStayWarning {
   bookingId: string;
   code: string;
 }
@@ -182,7 +182,7 @@ export interface SwissNotificationGuest {
  * A guest (or a whole stay, `position` null) that still lacks something, with the codes of what it lacks: `firstName`, `lastName`, `birthDate`, `nationality`, `documentType`,
  * `guests` (fewer guests recorded than the booking counts).
  */
-export interface SwissNotificationIssue {
+interface SwissNotificationIssue {
   bookingId: string;
   position: number | null;
   guestName: string;
@@ -190,7 +190,7 @@ export interface SwissNotificationIssue {
 }
 
 /** An arrival day still to notify; `dueAt` is `null` where the canton has no deadline in the sources. */
-export interface SwissPendingDay {
+interface SwissPendingDay {
   day: string;
   stayCount: number;
   dueAt: string | null;

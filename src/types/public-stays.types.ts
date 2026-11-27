@@ -30,7 +30,7 @@ export interface PublicLocalizedText {
   en?: string | null;
 }
 
-export interface PublicStayAvailability {
+interface PublicStayAvailability {
   /** Free for the stay and bookable; `true` when no dates were chosen. */
   available: boolean;
   /** Why not, when it is not free. */
@@ -41,7 +41,7 @@ export interface PublicStayAvailability {
   firstFreeCheckIn?: string | null;
 }
 
-export interface PublicStayPrice {
+interface PublicStayPrice {
   currency: string;
   /** With dates: the average night of the stay; without: the lowest night of the next 30 days. Cleaning and tax are not in it. */
   perNightCents: number;
@@ -51,7 +51,7 @@ export interface PublicStayPrice {
 }
 
 /** What cancelling costs for the stay asked, in dates of Europe/Rome that are still ahead; absent without dates or a policy. */
-export interface PublicStayCancellation {
+interface PublicStayCancellation {
   fullRefundUntil?: string | null;
   partialRefundPercent?: number | null;
   partialRefundUntil?: string | null;

@@ -16,7 +16,7 @@ export interface AgencyAmounts {
 }
 
 /** Occupancy and revenue of the period as the Home counts them (by accrual, the tourist tax excluded). No currency: see the note of the file. */
-export interface AgencyStays {
+interface AgencyStays {
   occupiedNights: number;
   availableNights: number;
   /** Occupied over available, 0 to 1; `null` when nothing is available. */
@@ -36,14 +36,14 @@ export interface AgencyBalance {
 }
 
 /** What was collected in the period (by cash, net of refunds; no currency) and what is still to collect for each currency. */
-export interface AgencyCollections {
+interface AgencyCollections {
   collected: number;
   payments: number;
   toCollect: AgencyBalance[];
 }
 
 /** An issuer of fiscal documents. */
-export interface AgencyIssuer {
+interface AgencyIssuer {
   name: string;
   /** `IT` or `CH`. */
   countryCode: string;
@@ -76,7 +76,7 @@ export interface AgencyPortalCost {
 }
 
 /** The Italian tourist tax: what the stays record as due, what was remitted and what is left (`null` for a caller who reaches only some properties). No currency. */
-export interface AgencyItalianTouristTax {
+interface AgencyItalianTouristTax {
   owed: number;
   paid: number | null;
   toRemit: number | null;
@@ -92,7 +92,7 @@ export interface AgencySwissTouristTax {
   collected: number;
 }
 
-export interface AgencyTouristTax {
+interface AgencyTouristTax {
   italy: AgencyItalianTouristTax;
   switzerland: AgencySwissTouristTax[];
 }
@@ -128,7 +128,7 @@ export interface AgencyRate {
 }
 
 /** The invoices of the agency to the owners issued in the period (owner accounting). */
-export interface AgencyOwnerInvoices {
+interface AgencyOwnerInvoices {
   counts: AgencyOwnerInvoiceCount[];
   /** The totals for each currency and VAT rate, credit notes taken away. */
   rates: AgencyRate[];

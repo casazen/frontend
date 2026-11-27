@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { octorateApi } from '@/api/octorate.api';
 
-export const OCTORATE_CONNECTION_KEY = ['octorate', 'connection'] as const;
+const OCTORATE_CONNECTION_KEY = ['octorate', 'connection'] as const;
 
 /**
  * Where the connection of the org to its channel manager stands. Reading it makes a call to the channel manager (its quota), so it is

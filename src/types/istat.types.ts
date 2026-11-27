@@ -16,7 +16,7 @@ export type IstatDeadlineKind = 'Unknown' | 'Daily' | 'Monthly';
 export const ISTAT_DEADLINE_KINDS: readonly IstatDeadlineKind[] = ['Unknown', 'Daily', 'Monthly'];
 
 /** What the host does next, as the server works it out from the coverage. */
-export type IstatNextStep = 'ConnectInPanel' | 'ManualPortal' | 'AskSupport';
+type IstatNextStep = 'ConnectInPanel' | 'ManualPortal' | 'AskSupport';
 
 /** The statistical fields of the guest a region can require: the three of the lists of the backend. */
 export const ISTAT_GUEST_FIELDS = ['TourismType', 'TravelWay', 'EducationLevel'] as const;

@@ -7,7 +7,7 @@ export const HOST_INVITE_LOCALES = ['it', 'en'] as const;
 export type HostInviteLocale = (typeof HOST_INVITE_LOCALES)[number];
 
 /** Who sent an invite (only the admin list carries it). */
-export interface HostInviteInviter {
+interface HostInviteInviter {
   name: string;
   orgName: string;
 }

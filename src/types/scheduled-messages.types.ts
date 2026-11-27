@@ -50,8 +50,3 @@ export interface ScheduledMessage {
   canSkip: boolean;
   canSendNow: boolean;
 }
-
-/** `PUT api/scheduled-messages/{id}`: the new text of this message, or an empty text to go back to the template of the routine. */
-export interface EditScheduledMessageRequest {
-  text: string | null;
-}

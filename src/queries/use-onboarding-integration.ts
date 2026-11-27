@@ -4,7 +4,7 @@ import type { OnboardingPartKey } from '@/types/onboarding.types';
 import { invalidateOnboarding } from './use-onboarding-plan';
 
 /** The integration settings of the org (`GET /onboarding/integration`): the connection, the parts that can be reopened, the senders and the channels. */
-export const ONBOARDING_INTEGRATION_KEY = ['onboarding', 'integration'] as const;
+const ONBOARDING_INTEGRATION_KEY = ['onboarding', 'integration'] as const;
 
 /**
  * The integration settings (NF-108): the health of the connection, the plan with whether each part can be reopened, who sends the Alloggiati and ISTAT

@@ -1,4 +1,4 @@
-import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX } from '@/lib/listing-texts';
+import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX, joinList } from '@/lib/listing-texts';
 import type { PropertyWizardValues } from './property-wizard-model';
 
 // The limits of the listing headline and description are the API's (`@/lib/listing-texts`); the description was a short pitch of 600
@@ -17,12 +17,6 @@ export type ListingTextInput = Pick<
 
 /** How many of the amenities the person chose are named in the text. */
 const NAMED_AMENITIES = 3;
-
-/** «a», «a e b», «a, b e c». */
-function joinList(parts: readonly string[], and: string): string {
-  if (parts.length <= 1) return parts[0] ?? '';
-  return `${parts.slice(0, -1).join(', ')} ${and} ${parts[parts.length - 1]}`;
-}
 
 const capitalise = (text: string) => (text.length > 0 ? text[0]!.toUpperCase() + text.slice(1) : text);
 

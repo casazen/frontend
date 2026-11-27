@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 
 export interface ApiResponse<T> {
   data: T;
@@ -6,7 +5,7 @@ export interface ApiResponse<T> {
   success: boolean;
 }
 
-export interface PaginationMeta {
+interface PaginationMeta {
   total: number;
   page: number;
   limit: number;
@@ -17,20 +16,4 @@ export interface PaginatedResponse<T> {
   data: T[];
   meta: PaginationMeta;
   success: boolean;
-}
-
-export interface ApiError {
-  message: string;
-  statusCode: number;
-  error?: string;
-  errors?: Record<string, string[]>;
-}
-
-export type ApiErrorResponse = AxiosError<ApiError>;
-
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
 }

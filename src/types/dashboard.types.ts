@@ -10,7 +10,7 @@ export type DashboardOverviewQuery = { propertyId?: string } & (
 );
 
 /** Occupied / available nights of a period; `rate` is 0..1 (null when nothing is available), `deltaPoints` the difference from the period before in percentage points. */
-export interface DashboardOccupancy {
+interface DashboardOccupancy {
   occupiedNights: number;
   availableNights: number;
   closedNights: number;
@@ -19,7 +19,7 @@ export interface DashboardOccupancy {
 }
 
 /** Revenue by accrual (the nights of the confirmed stays). Absent for whoever may not read payments (SR-D7). */
-export interface DashboardRevenue {
+interface DashboardRevenue {
   amount: number;
   currency: string;
   stayCount: number;
@@ -105,7 +105,7 @@ export interface DashboardTodayService {
 }
 
 /** A "pay at the property" request waiting for the host, to answer by `respondBy`. */
-export interface DashboardTodayApproval {
+interface DashboardTodayApproval {
   bookingId: string;
   propertyId: string;
   propertyName: string;

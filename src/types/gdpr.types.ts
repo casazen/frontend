@@ -1,14 +1,14 @@
 /** Categories of guest data with their own retention period (API enum `GuestDataCategory`, CO-15). */
-export type GuestDataCategory = 'DocumentScans' | 'AlloggiatiData' | 'Marketing' | 'FiscalData';
+type GuestDataCategory = 'DocumentScans' | 'AlloggiatiData' | 'Marketing' | 'FiscalData';
 
 /** What a privacy event is about (API enum `GuestConsentPurpose`). */
-export type GuestConsentPurpose = 'PrivacyNotice' | 'Marketing';
+type GuestConsentPurpose = 'PrivacyNotice' | 'Marketing';
 
 /** What happened (API enum `GuestConsentAction`): a notice is only presented, never "accepted". */
-export type GuestConsentAction = 'NoticePresented' | 'NoticeAcknowledged' | 'Granted' | 'Withdrawn' | 'Expired';
+type GuestConsentAction = 'NoticePresented' | 'NoticeAcknowledged' | 'Granted' | 'Withdrawn' | 'Expired';
 
 /** Who recorded the event (API enum `GuestConsentSource`). */
-export type GuestConsentSource = 'GuestPortal' | 'HostOnGuestRequest' | 'RetentionPolicy';
+type GuestConsentSource = 'GuestPortal' | 'HostOnGuestRequest' | 'RetentionPolicy';
 
 /** Retention of one category for a guest, computed by the API from `Gdpr:Retention` (never a default in code). */
 export interface GuestRetentionScheduleItem {

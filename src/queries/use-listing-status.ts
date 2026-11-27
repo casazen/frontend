@@ -68,7 +68,7 @@ export interface AdoptedTexts {
  * form of the wizard still has the old ones: `adopted` carries what the server has, for the wizard to start its form from again (or its next
  * save would send the old texts back over them). `rereadFailed` is a «take» that went through whose texts could not be read again.
  */
-export interface OutsideChangeResult {
+interface OutsideChangeResult {
   adopted: AdoptedTexts | null;
   rereadFailed: boolean;
 }

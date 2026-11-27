@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Disclosure } from '../guide/disclosure';
 import { regimeOutcome } from '../guide/guide-answers';
 import { formatWholeEuro, splitSource } from '../guide/guide-format';
@@ -13,6 +12,7 @@ import { useRliAdvisory } from '@/queries/use-leases';
 import { formatCurrency } from '@/lib/utils';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { CedolareAdvisory, CedolareAdvisoryInput } from '@/types';
+import { LabeledField } from '@/components/ui/labeled-field';
 
 interface Props {
   leaseId: string;
@@ -414,16 +414,16 @@ function RefineEstimate({
     <form className="space-y-3" onSubmit={submit} noValidate>
       <p className="text-foreground/70">{t('leases.rli.advisory.inputs.privacy')}</p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field id="advisory-pages" label={t('leaseGuide.regime.refine.pages')}>
+        <LabeledField id="advisory-pages" label={t('leaseGuide.regime.refine.pages')}>
           <Input id="advisory-pages" inputMode="numeric" value={writtenPages} onChange={(e) => setWrittenPages(e.target.value)} />
-        </Field>
-        <Field id="advisory-lines" label={t('leaseGuide.regime.refine.lines')}>
+        </LabeledField>
+        <LabeledField id="advisory-lines" label={t('leaseGuide.regime.refine.lines')}>
           <Input id="advisory-lines" inputMode="numeric" value={lines} onChange={(e) => setLines(e.target.value)} />
-        </Field>
-        <Field id="advisory-copies" label={t('leaseGuide.regime.refine.copies')}>
+        </LabeledField>
+        <LabeledField id="advisory-copies" label={t('leaseGuide.regime.refine.copies')}>
           <Input id="advisory-copies" inputMode="numeric" value={copies} onChange={(e) => setCopies(e.target.value)} />
-        </Field>
-        <Field id="advisory-income" label={t('leaseGuide.regime.refine.income')}>
+        </LabeledField>
+        <LabeledField id="advisory-income" label={t('leaseGuide.regime.refine.income')}>
           <Input
             id="advisory-income"
             inputMode="decimal"
@@ -431,7 +431,7 @@ function RefineEstimate({
             value={otherIncome}
             onChange={(e) => setOtherIncome(e.target.value)}
           />
-        </Field>
+        </LabeledField>
       </div>
       {invalid && (
         <p className="text-destructive" role="alert">
@@ -443,14 +443,5 @@ function RefineEstimate({
         {pending ? t('leases.rli.advisory.inputs.updating') : t('leases.rli.advisory.inputs.submit')}
       </Button>
     </form>
-  );
-}
-
-function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-    </div>
   );
 }

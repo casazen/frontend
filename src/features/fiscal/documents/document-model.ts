@@ -23,6 +23,7 @@ import {
   type SdiScope,
   type SdiSubmitResult,
 } from '@/types';
+import { CURRENCY_CODE, exactNumberFormat, formatExactAmount } from '@/lib/exact-amount';
 
 /** Documents on a page of the list (the page size the server uses when it is not told one). */
 export const DOCUMENTS_PAGE_SIZE = 20;
@@ -33,38 +34,11 @@ export const DOCUMENT_DAY_LIMITS = { min: '2000-01-01', max: '2100-12-31' } as c
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Money and days
 
-/** More decimals than any currency has, so that a figure the server wrote is never cut by the format: what it sends is what is shown. */
-const MAX_FRACTION_DIGITS = 4;
-
-const CURRENCY_CODE = /^[A-Za-z]{3}$/;
-const AMOUNT_FORMATS = new Map<string, Intl.NumberFormat>();
-
-function numberFormat(language: string, currency: string | null): Intl.NumberFormat {
-  const key = `${language}|${currency ?? ''}`;
-  const known = AMOUNT_FORMATS.get(key);
-  if (known) return known;
-  const options: Intl.NumberFormatOptions = currency
-    ? { style: 'currency', currency: currency.toUpperCase(), maximumFractionDigits: MAX_FRACTION_DIGITS }
-    : { maximumFractionDigits: MAX_FRACTION_DIGITS };
-  let format: Intl.NumberFormat;
-  try {
-    format = new Intl.NumberFormat(language, options);
-  } catch {
-    // A language tag the runtime does not know: the page's own default, never a crash on a money screen.
-    format = new Intl.NumberFormat('it', options);
-  }
-  AMOUNT_FORMATS.set(key, format);
-  return format;
-}
-
 /**
  * The total of a document as the server wrote it, in the language of the person and in the currency of the document: no sum, no rounding to another unit, no conversion,
  * and never an assumed euro (a currency that is not a code is written after the number as it came). Two currencies are never in one figure.
  */
-export function formatDocumentAmount(amount: number, currency: string, language: string): string {
-  if (CURRENCY_CODE.test(currency)) return numberFormat(language, currency).format(amount);
-  return `${numberFormat(language, null).format(amount)} ${currency}`.trim();
-}
+export const formatDocumentAmount = formatExactAmount;
 
 /** Whether a currency of the server is a code (`EUR`): without one an amount is written with no symbol, and the screen that shows it says so in words. */
 export function hasCurrencyCode(currency: string): boolean {
@@ -625,7 +599,7 @@ export function lineTypeKey(lineType: string | null): string | null {
 
 /** A rate of VAT as a percentage in the language of the person: `3,8%`. */
 export function formatDocumentRate(percent: number, language: string): string {
-  return `${numberFormat(language, null).format(percent)}%`;
+  return `${exactNumberFormat(language, null).format(percent)}%`;
 }
 
 /** One row of the VAT summary: the rate (and the nature code of an operation without VAT), what is taxed at it and the VAT of it. */

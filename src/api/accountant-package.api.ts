@@ -6,6 +6,7 @@ import type { AccountantPackageEmailQueued, AccountantPackageLastSend, Accountan
 import { acceptsRefusal } from './accept-refusal';
 import type { DownloadedFile } from './file.api';
 import { ReportAccessDeniedError } from './report-files';
+import { headerOf } from '@/api/response-helpers';
 
 const PATH = '/accountant-package';
 const SETTINGS_PATH = `${PATH}/settings`;
@@ -33,16 +34,6 @@ export function accountantPackageFileName(period: string): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/** The value of a header of an answer, whatever the case of its name, or `null` (a browser lets a page read only the headers that the API exposes). */
-function headerOf(headers: unknown, name: string): string | null {
-  if (!isRecord(headers)) return null;
-  const wanted = name.toLowerCase();
-  for (const [key, value] of Object.entries(headers)) {
-    if (key.toLowerCase() === wanted && typeof value === 'string') return value;
-  }
-  return null;
 }
 
 /**

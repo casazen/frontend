@@ -31,7 +31,7 @@ export interface SwissMunicipality {
 }
 
 /** Where the place of a property comes from: `Stored` = the host confirmed it, `Derived` = worked out from its postal code and city (never stored by a save). */
-export type SwissPlaceSource = 'Stored' | 'Derived';
+type SwissPlaceSource = 'Stored' | 'Derived';
 
 /**
  * `swissPlace` of the property record: where the rules place a Swiss property (the one resolver of the place, E29/F01/US01/T02).

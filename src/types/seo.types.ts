@@ -107,9 +107,9 @@ export type SeoContentStatus =
   | 'InvalidOutput'
   | 'Placeholder';
 
-export type SeoReviewAction = 'Approved' | 'Withdrawn';
+type SeoReviewAction = 'Approved' | 'Withdrawn';
 
-export interface SeoRevisionAdmin {
+interface SeoRevisionAdmin {
   id: string;
   generatedAt: string;
   aiModelTier: string;
@@ -307,7 +307,7 @@ export interface FeaturedPropertiesResponse {
 }
 
 /** A row of the admin widget: what one comune did in the window. */
-export interface SeoTopComune {
+interface SeoTopComune {
   comuneCode: string;
   comuneName: string;
   /** `cta_click` events. */

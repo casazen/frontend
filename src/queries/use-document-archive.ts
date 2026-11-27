@@ -9,7 +9,7 @@ import { saveBlobAs } from '@/lib/file-download';
 import type { ArchiveDocument, ArchiveExportQuery, ArchiveListQuery, ArchiveTypesQuery } from '@/types';
 
 /** Root of every query key of the document archive. */
-export const DOCUMENT_ARCHIVE_KEY = 'document-archive';
+const DOCUMENT_ARCHIVE_KEY = 'document-archive';
 
 /**
  * One page of the documents the caller may read (NF-99), filtered, searched and paged by the server. The archive changes on other screens

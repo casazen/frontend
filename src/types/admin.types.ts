@@ -1,11 +1,11 @@
-export interface CinComplianceStats {
+interface CinComplianceStats {
   valid: number;
   missing: number;
   invalid: number;
   total: number;
 }
 
-export interface OtaSyncHealth {
+interface OtaSyncHealth {
   synced: number;
   failed: number;
   neverSynced: number;

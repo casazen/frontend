@@ -8,7 +8,7 @@ import type { ReportPeriodInfo } from './report.types';
  */
 
 /** What the cost of a row is: the commission of a channel, the card fees of the direct stays (a line of their own), or nothing at all. */
-export type ChannelCostKind = 'ChannelCommission' | 'PaymentFee' | 'NoCost';
+type ChannelCostKind = 'ChannelCommission' | 'PaymentFee' | 'NoCost';
 
 /** How the commission of a channel is settled, from the settings of its portal; `Unknown` claims nothing. */
 export type ChannelCommissionMode = 'DeductedFromPayout' | 'InvoicedSeparately' | 'Unknown';

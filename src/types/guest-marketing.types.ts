@@ -11,7 +11,7 @@
 export type GuestMarketingState = 'none' | 'pending' | 'confirmed' | 'soft_opt_in' | 'service_only' | 'withdrawn';
 
 /** The e-mail channel of a booking's guest. */
-export interface GuestMarketingEmail {
+interface GuestMarketingEmail {
   state: GuestMarketingState;
   /** The address the choice is about, masked (`m***@e***.com`); null when the booking has no real address and the guest typed none. */
   maskedAddress: string | null;
@@ -20,7 +20,7 @@ export interface GuestMarketingEmail {
 }
 
 /** The WhatsApp channel of a booking's guest: never `pending` (there is no confirmation). */
-export interface GuestMarketingWhatsapp {
+interface GuestMarketingWhatsapp {
   state: GuestMarketingState;
   /** The number the choice is about, masked (`+39******567`); null when there is none. */
   maskedPhone: string | null;

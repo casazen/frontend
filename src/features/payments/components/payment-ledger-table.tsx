@@ -19,18 +19,9 @@ import {
   providerCurrencyOf,
   type LedgerRow,
 } from '../lib/payment-ledger';
+import { MissingValue } from '@/components/shared/missing-value';
 
 const LINK = 'rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
-
-/** A figure the server did not give: a dash for the eye and the words for a screen reader, never a 0 (a real 0 is a figure and is drawn as one). */
-function Missing({ label, testId }: { label: string; testId?: string }) {
-  return (
-    <span data-missing="true" data-testid={testId}>
-      <span aria-hidden="true">—</span>
-      <span className="sr-only">{label}</span>
-    </span>
-  );
-}
 
 function Figure({ testId, children }: { testId: string; children: ReactNode }) {
   return (
@@ -49,7 +40,7 @@ function sourceWords(t: TFunction, line: PaymentLedgerLine): string {
 /** The fiscal document of the booking: what it is, its number when it has one, its status and whether it was collected; a link when the page of the documents can be opened. */
 function LedgerDocument({ document, href }: { document: PaymentLedgerDocument | null | undefined; href: string | null }) {
   const { t } = useTranslation();
-  if (!document) return <Missing label={t('paymentLedger.document.none')} testId="payment-ledger-document-none" />;
+  if (!document) return <MissingValue label={t('paymentLedger.document.none')} testId="payment-ledger-document-none" />;
 
   const word = (part: 'kind' | 'status' | 'paymentState', code: string) => {
     const key = ledgerDocumentKey(part, code);
@@ -134,19 +125,19 @@ export function PaymentLedgerTable({
       typeof line.providerFee === 'number' ? (
         <Figure testId="payment-ledger-fee">{formatLedgerFee(line.providerFee, providerCurrencyOf(line), language)}</Figure>
       ) : (
-        <Missing label={notAvailable} testId="payment-ledger-fee" />
+        <MissingValue label={notAvailable} testId="payment-ledger-fee" />
       );
     const net = ({ line }: LedgerRow) =>
       typeof line.net === 'number' ? (
         <Figure testId="payment-ledger-net">{formatLedgerAmount(line.net, providerCurrencyOf(line), language)}</Figure>
       ) : (
-        <Missing label={notAvailable} testId="payment-ledger-net" />
+        <MissingValue label={notAvailable} testId="payment-ledger-net" />
       );
     const credit = ({ line }: LedgerRow) =>
       line.creditDate ? (
         <Figure testId="payment-ledger-credit">{formatLedgerDay(line.creditDate, language)}</Figure>
       ) : (
-        <Missing label={notAvailable} testId="payment-ledger-credit" />
+        <MissingValue label={notAvailable} testId="payment-ledger-credit" />
       );
 
     return [
@@ -228,7 +219,7 @@ export function PaymentLedgerTable({
             typeof line.providerFee === 'number' ? (
               <Figure testId="payment-ledger-fee">{formatLedgerFee(line.providerFee, feeCurrency, language)}</Figure>
             ) : (
-              <Missing label={notAvailable} testId="payment-ledger-fee" />
+              <MissingValue label={notAvailable} testId="payment-ledger-fee" />
             ),
           )}
           {detail(
@@ -236,12 +227,12 @@ export function PaymentLedgerTable({
             typeof line.net === 'number' ? (
               <Figure testId="payment-ledger-net">{formatLedgerAmount(line.net, feeCurrency, language)}</Figure>
             ) : (
-              <Missing label={notAvailable} testId="payment-ledger-net" />
+              <MissingValue label={notAvailable} testId="payment-ledger-net" />
             ),
           )}
           {detail(
             t('paymentLedger.columns.credit'),
-            line.creditDate ? <Figure testId="payment-ledger-credit">{formatLedgerDay(line.creditDate, language)}</Figure> : <Missing label={notAvailable} testId="payment-ledger-credit" />,
+            line.creditDate ? <Figure testId="payment-ledger-credit">{formatLedgerDay(line.creditDate, language)}</Figure> : <MissingValue label={notAvailable} testId="payment-ledger-credit" />,
           )}
         </dl>
         <div className="text-sm">

@@ -14,22 +14,22 @@ export type MarketplaceCardStatus = 'Active' | 'NotActive' | 'Pending' | 'ToFix'
 export type MarketplaceEntryKind = 'Channel' | 'Tool' | 'LicensedFunction' | 'Partner';
 
 /** Whether the status of a card is the one of the whole organization or of the property the page is about. */
-export type MarketplaceStatusScope = 'Org' | 'Property';
+type MarketplaceStatusScope = 'Org' | 'Property';
 
 /** Who invoices the cost of an integration. `Unknown` when nobody told. */
 export type MarketplaceCostInvoicer = 'Unknown' | 'Partner' | 'CasaZen' | 'ChannelManager';
 
 /** The job of a partner: the order of the Partners group (PO-11). */
-export type MarketplacePartnerJob = 'Sell' | 'AccessProperty' | 'Compliance' | 'Cleaning' | 'Prices' | 'Administration';
+type MarketplacePartnerJob = 'Sell' | 'AccessProperty' | 'Compliance' | 'Cleaning' | 'Prices' | 'Administration';
 
 /** How an integration is activated, which says where the button of a card leads. */
-export type MarketplaceActivationType = 'api' | 'licenseRequest' | 'partnerSite';
+type MarketplaceActivationType = 'api' | 'licenseRequest' | 'partnerSite';
 
 /** The language of the texts of the catalog: the backend answers in Italian when a text is missing in the other one. */
 export type MarketplaceLanguage = 'it' | 'en';
 
 /** What an integration costs. The text is `null` when the cost is not known: it is never replaced by an invented price. */
-export interface MarketplaceCost {
+interface MarketplaceCost {
   text: string | null;
   invoicedBy: MarketplaceCostInvoicer;
 }
@@ -71,7 +71,7 @@ export interface MarketplaceCatalogGroup {
 }
 
 /** Whether the channel manager is available for this organization: the first three groups wait for both. */
-export interface MarketplaceOctorateState {
+interface MarketplaceOctorateState {
   enabled: boolean;
   connected: boolean;
 }
@@ -82,12 +82,12 @@ export interface MarketplaceCatalogResponse {
   groups: MarketplaceCatalogGroup[];
 }
 
-export interface MarketplaceRequirement {
+interface MarketplaceRequirement {
   code: string;
   text: string;
 }
 
-export interface MarketplaceFaq {
+interface MarketplaceFaq {
   q: string;
   a: string;
 }
@@ -247,7 +247,7 @@ export interface MarketplaceChannelRoom {
 }
 
 /** A product (room) of the property's listing on the channel manager. */
-export interface MarketplaceProduct {
+interface MarketplaceProduct {
   productId: string;
   name: string | null;
 }
@@ -343,7 +343,7 @@ export interface MarketplacePartnerActivation {
  */
 
 /** A problem in simple words: `code` is the stable code a client may translate, `message` is the text in the language asked (never a text of the channel manager's). */
-export interface MarketplaceHealthError {
+interface MarketplaceHealthError {
   code: string;
   message: string;
 }

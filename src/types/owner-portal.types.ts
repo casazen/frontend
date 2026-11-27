@@ -19,7 +19,7 @@ export interface OwnerPortalProperty {
  * Booking summary with guest data masked (ADR-011-R3): names NULL, emails NULL, phones NULL.
  * Only dates, channel, and amounts visible.
  */
-export interface OwnerPortalBookingSummary {
+interface OwnerPortalBookingSummary {
   bookingId: string;
   checkInDate: string;
   checkOutDate: string;
@@ -32,7 +32,7 @@ export interface OwnerPortalBookingSummary {
 // the old summaries of this file were the shape of endpoints that answered an empty list for every owner, and are gone.
 
 /** How the owner's overview and trend are cut: all the owner's properties together, or one line for each. */
-export type OwnerPortalGroupBy = 'none' | 'property';
+type OwnerPortalGroupBy = 'none' | 'property';
 
 /** What the owner portal asks `GET /api/owner-portal/overview` and `/trend` (NF-96). */
 export interface OwnerPortalReportQuery {
@@ -50,7 +50,7 @@ export interface OwnerPortalReportQuery {
  * A property of the owner, or the total: its figures weighted by the share the owner holds, the same days one year earlier and the
  * differences the server worked out. Numbers only: no guest, no other owner.
  */
-export interface OwnerPortalRow {
+interface OwnerPortalRow {
   /** A stable key, never text to show: the property id, or `total`. */
   key: string;
   propertyId: string | null;
@@ -81,7 +81,7 @@ export interface OwnerPortalOverview {
 }
 
 /** One line of the owner's trend: one entry for each bucket, in order. */
-export interface OwnerPortalSeries {
+interface OwnerPortalSeries {
   key: string;
   propertyId: string | null;
   label: string;

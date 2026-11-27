@@ -93,7 +93,7 @@ export const ACTIVATION_STEP_REASONS = [
   'awaiting_first_booking',
 ] as const;
 
-export type ActivationStepReason = (typeof ACTIVATION_STEP_REASONS)[number];
+type ActivationStepReason = (typeof ACTIVATION_STEP_REASONS)[number];
 
 export interface ActivationStep {
   key: ActivationStepKey;
@@ -174,7 +174,7 @@ export const ONBOARDING_FLOW_REASONS = [
   'chat_not_licensed',
   'not_provided',
 ] as const;
-export type OnboardingFlowReason = (typeof ONBOARDING_FLOW_REASONS)[number];
+type OnboardingFlowReason = (typeof ONBOARDING_FLOW_REASONS)[number];
 
 /** What fixes a reason, the «Do now» of the host (backend `OnboardingFlowActions`). A reason may have none. */
 export const ONBOARDING_FLOW_ACTIONS = [
@@ -204,7 +204,7 @@ export interface FlowSummary {
 }
 
 /** A prerequisite of a flow on a property and whether it holds. `reason` is null when it does. */
-export interface FlowPrerequisite {
+interface FlowPrerequisite {
   key: OnboardingPrerequisiteKey;
   met: boolean;
   reason: OnboardingFlowReason | null;
@@ -344,7 +344,7 @@ export const ASSIST_REQUEST_STATUSES = ['Requested', 'InProgress', 'Done', 'Canc
 export type AssistRequestStatus = (typeof ASSIST_REQUEST_STATUSES)[number];
 
 /** The open «Do it for me» request of a part, if any (`assist` of a part of the plan): ids and instants only, no person, no note. */
-export interface OnboardingPartAssist {
+interface OnboardingPartAssist {
   id: string;
   status: AssistRequestStatus;
   /** What help is asked with: `panelPolice`, `panelIstat`, `panelChannelAccess` or `part`. */
@@ -451,12 +451,7 @@ export type ActivationOutcome = (typeof ACTIVATION_OUTCOMES)[number];
 
 /** What the deactivation of a flow did on one property (`outcome` of `POST /onboarding/flows/{flow}/deactivate`). */
 export const DEACTIVATION_OUTCOMES = ['deactivated', 'alreadyInactive', 'notFound'] as const;
-export type DeactivationOutcome = (typeof DEACTIVATION_OUTCOMES)[number];
-
-/** Body of `POST /onboarding/flows/{flow}/activate` and `deactivate`: 1 to 500 distinct properties. An empty list is a 422, never «all». */
-export interface FlowActivationRequest {
-  propertyIds: string[];
-}
+type DeactivationOutcome = (typeof DEACTIVATION_OUTCOMES)[number];
 
 /** The outcome for one property, in the order asked. `unmetPrerequisites` and `reason` say why a `prerequisitesNotMet` or `notAvailable` outcome. */
 export interface FlowActivationOutcome {
@@ -538,7 +533,7 @@ export type PanelStepKind = (typeof PANEL_STEP_KINDS)[number];
 
 /** Where a guided step stands. */
 export const PANEL_STEP_STATUSES = ['started', 'verified', 'confirmed', 'notValid', 'assistRequested'] as const;
-export type PanelStepStatus = (typeof PANEL_STEP_STATUSES)[number];
+type PanelStepStatus = (typeof PANEL_STEP_STATUSES)[number];
 
 /** How the person goes to the panel and comes back: the panel sends them back to a page of CasaZen, or CasaZen manages a window. */
 export const PANEL_STEP_HANDOFF_MODES = ['redirectCallback', 'managedWindow'] as const;
@@ -546,14 +541,14 @@ export type PanelStepHandoffMode = (typeof PANEL_STEP_HANDOFF_MODES)[number];
 
 /** The code of the instructions a step shows. */
 export const PANEL_STEP_INSTRUCTIONS = ['panelPolice', 'panelIstat', 'panelChannelAccess'] as const;
-export type PanelStepInstructionsKey = (typeof PANEL_STEP_INSTRUCTIONS)[number];
+type PanelStepInstructionsKey = (typeof PANEL_STEP_INSTRUCTIONS)[number];
 
 /** What a check of a step found: it holds, it does not, or CasaZen cannot tell (the person may then confirm by hand). */
 export const PANEL_STEP_VERIFICATIONS = ['verified', 'notValid', 'unverifiable'] as const;
-export type PanelStepVerification = (typeof PANEL_STEP_VERIFICATIONS)[number];
+type PanelStepVerification = (typeof PANEL_STEP_VERIFICATIONS)[number];
 
 /** The point of a wizard a step comes back to: a reference to the draft, never its content. */
-export interface PanelStepResume {
+interface PanelStepResume {
   wizardType: WizardType | null;
   draftEntityId: string | null;
   stepCode: string | null;
@@ -709,7 +704,7 @@ export interface AssistPresence {
 }
 
 /** Whether the region of a property needs ISTAT credentials: `required`, `notRequired` (outside Italy) or `toVerify` (the table of the regions is not there yet). */
-export type AssistIstatRequirement = 'required' | 'notRequired' | 'toVerify';
+type AssistIstatRequirement = 'required' | 'notRequired' | 'toVerify';
 
 /** The ISTAT credentials of a property: whether they are there, since when, and whether the region needs them. */
 export interface AssistIstatPresence extends AssistPresence {
@@ -717,7 +712,7 @@ export interface AssistIstatPresence extends AssistPresence {
 }
 
 /** Who sends the police and ISTAT communications of a property, since when, and whether the host declared it active after that change. */
-export interface AssistSender {
+interface AssistSender {
   sender: ComplianceSenderType;
   changedAt: Instant;
   activationDeclared: boolean;
@@ -788,7 +783,7 @@ export interface SupportVaultReveal {
 }
 
 /** What staff can store in the support vault (backend `SupportVaultSecretKind`): the user of the panel of a structure, or ISTAT credentials the host handed to support. */
-export type SupportVaultSecretKind = 'OctoratePanel' | 'RegionalIstat';
+type SupportVaultSecretKind = 'OctoratePanel' | 'RegionalIstat';
 
 /** The longest values the vault takes (`support_vault_value_invalid` above them). */
 export const SUPPORT_VAULT_VALUE_MAX_LENGTH = { username: 200, password: 200, extraCode: 100 } as const;
@@ -838,10 +833,10 @@ export const ISTAT_CREDENTIALS_MAX_LENGTH = { username: 100, password: 200, stru
 
 /** Which properties a bulk call is about: all of them, a list, or a filter. What the kind does not use must be left out. */
 export const BULK_SELECTION_KINDS = ['all', 'ids', 'filter'] as const;
-export type BulkSelectionKind = (typeof BULK_SELECTION_KINDS)[number];
+type BulkSelectionKind = (typeof BULK_SELECTION_KINDS)[number];
 
 /** A flow and one of its states. */
-export interface BulkFlowState {
+interface BulkFlowState {
   flow: OnboardingFlowKey;
   state: OnboardingFlowState;
 }
@@ -867,7 +862,7 @@ export interface BulkSelection {
 }
 
 /** One property of the sample of a preview. */
-export interface BulkPropertySample {
+interface BulkPropertySample {
   propertyId: string;
   name: string;
   city: string;
@@ -898,7 +893,7 @@ export interface BulkApplyRequest {
 
 /** What an apply did (or, only when nothing was written, would do) on one property. */
 export const BULK_APPLY_OUTCOMES = ['applied', 'unchanged', 'refused', 'wouldChange'] as const;
-export type BulkApplyOutcome = (typeof BULK_APPLY_OUTCOMES)[number];
+type BulkApplyOutcome = (typeof BULK_APPLY_OUTCOMES)[number];
 
 /** The outcome for one property; `name` and `city` are null for an id that is not a property of the selection. `reason`: the code of the rule that refused it. */
 export interface BulkApplyItem {
@@ -910,7 +905,7 @@ export interface BulkApplyItem {
 }
 
 /** How many properties are in each outcome of an apply. */
-export interface BulkApplySummary {
+interface BulkApplySummary {
   applied: number;
   unchanged: number;
   refused: number;
@@ -935,7 +930,7 @@ export interface BulkFlowProgress {
 }
 
 /** A property of the pilot group. */
-export interface PilotMember {
+interface PilotMember {
   propertyId: string;
   name: string;
   city: string;
@@ -943,7 +938,7 @@ export interface PilotMember {
 }
 
 /** How one flow has got on the pilot group: how many members it is available for and active on; `isActive` when it has at least one and every one has it active. */
-export interface PilotFlow {
+interface PilotFlow {
   flow: OnboardingFlowKey;
   available: number;
   active: number;
@@ -980,7 +975,7 @@ export interface BulkActivateRequest {
 }
 
 /** For one flow asked, the outcome of each property as the activation of a flow gives it. */
-export interface BulkActivateFlow {
+interface BulkActivateFlow {
   flow: OnboardingFlowKey;
   outcomes: FlowActivationOutcome[];
 }
@@ -992,7 +987,7 @@ export interface BulkActivateResult {
 }
 
 /** An error of a row of the import: the column (`propertyId`, `cinCode`, `comuneIstatCode`, `regionCode`, `alloggiatiRoomNumbers`, `lockCode`) and the code. */
-export interface ImportRowError {
+interface ImportRowError {
   column: string;
   code: string;
 }
@@ -1014,7 +1009,7 @@ export interface ImportRowResult {
 }
 
 /** How many rows the file has, how many are valid, how many are not and how many changed something. */
-export interface ImportSummary {
+interface ImportSummary {
   rows: number;
   valid: number;
   invalid: number;

@@ -66,7 +66,7 @@ export interface CalendarOverviewFeed {
  * One active short-rent property of the overview. `exportUrl` is the link the host pastes on the portals, a secret in practice
  * (whoever has it sees the dates taken); it is null until the link was first asked for (`GET .../ical/export-url` creates it).
  */
-export interface CalendarOverviewProperty {
+interface CalendarOverviewProperty {
   propertyId: string;
   propertyName: string;
   exportUrl?: string | null;

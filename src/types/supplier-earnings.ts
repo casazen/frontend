@@ -54,14 +54,14 @@ export interface SupplierEarning {
   lateSince?: string | null;
 }
 
-export interface SupplierEarningsMonth {
+interface SupplierEarningsMonth {
   /** `yyyy-MM` (Europe/Rome). */
   month: string;
   netCents: number;
 }
 
 /** The figures above the list, independent of the tab, the period and the customer of the list. */
-export interface SupplierEarningsSummary {
+interface SupplierEarningsSummary {
   /** What is still to be collected, in net, and how many jobs: the same figure as the home. */
   toCollectNetCents: number;
   toCollectJobs: number;

@@ -10,13 +10,13 @@ import type { MessageBookingCard, MessageCustomer, MessageHubChannel } from './m
 export type OtaReviewActionState = 'None' | 'Sent' | 'Error' | 'ManualVerify';
 
 /** Whether the host may still write its own review of the guest on the channel, as the channel manager says it. */
-export type HostReviewWindow = 'Unknown' | 'Open' | 'Sent' | 'Closed';
+type HostReviewWindow = 'Unknown' | 'Open' | 'Sent' | 'Closed';
 
 /** Where a review is kept: the booking site (`Review`, key `review:…`) or a channel (`OtaReview`, key `otareview:…`). */
 export type ReviewThreadSource = 'Review' | 'OtaReview';
 
 /** One rating of a review: the category as the channel names it (`cleanliness`, `communication`…) and its value, 1 to 5. */
-export interface ReviewCategoryRating {
+interface ReviewCategoryRating {
   category: string;
   value: number;
 }
@@ -47,7 +47,7 @@ export interface OtaHostReview {
  * and is absent while the channel allows; `replyReason` and `hostReviewReason` say why one action is closed while the other may be open (`ota_review_reply_already_sent`,
  * `ota_review_window_closed`, `ota_review_action_unconfirmed`, `ota_review_not_published`…).
  */
-export interface OtaReviewCapabilities {
+interface OtaReviewCapabilities {
   canRead: boolean;
   canReply: boolean;
   canHostReview: boolean;

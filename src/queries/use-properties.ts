@@ -3,7 +3,6 @@ import { propertiesApi } from '@/api/properties.api';
 import type {
   CreatePropertyDto,
   UpdatePropertyDto,
-  PropertySearchParams,
   PropertyDocumentType,
   RentalMode,
   PropertyCadastralData,
@@ -222,14 +221,6 @@ export function useSetPropertyResponsible() {
   return useMutation({
     mutationFn: ({ id, userId }: { id: string; userId: string | null }) => propertiesApi.setResponsible(id, userId),
     onSettled: (_data, _error, { id }) => invalidatePropertyCaches(queryClient, id),
-  });
-}
-
-export function useSearchProperties(params?: PropertySearchParams) {
-  return useQuery({
-    queryKey: [PROPERTIES_KEY, 'search', params],
-    queryFn: () => propertiesApi.search(params || {}),
-    enabled: !!params,
   });
 }
 

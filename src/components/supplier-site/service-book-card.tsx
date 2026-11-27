@@ -26,6 +26,7 @@ import type { SiteModel } from '@/lib/supplier-site/site-model';
 import { useSupplierEstimate, useSupplierSlots } from '@/queries/use-public-supplier';
 import type { Comune } from '@/types/comune.types';
 import { FinderComuneField } from './finder-comune-field';
+import { OptionField } from '@/components/supplier-site/option-field';
 
 /** Pause after the last change before the estimate is asked: one request per decision, not per press (the server allows 30 a minute). */
 const ESTIMATE_DEBOUNCE_MS = 400;
@@ -33,19 +34,6 @@ const FIRST_SLOTS = 3;
 const MAX_HOURS = 12;
 const MAX_SETS = 40;
 const MIN_SQUARE_METERS = 10;
-
-/** One option of the card: its label and, under it, what it is. */
-function Option({ label, htmlFor, hint, children }: { label: string; htmlFor?: string; hint?: string; children: ReactNode }) {
-  return (
-    <div className="vd-opt">
-      <span className="vd-opt__l">
-        {htmlFor ? <label htmlFor={htmlFor}>{label}</label> : label}
-        {hint ? <small>{hint}</small> : null}
-      </span>
-      {children}
-    </div>
-  );
-}
 
 interface ServiceBookCardProps {
   model: SiteModel;
@@ -100,7 +88,7 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
       );
     }
     return (
-      <Option key={supplement.code} label={supplement.label} hint={`+ ${price} · ${supplementUnitLabel(supplement.per, t)}`}>
+      <OptionField key={supplement.code} label={supplement.label} hint={`+ ${price} · ${supplementUnitLabel(supplement.per, t)}`}>
         <Qty
           label={supplement.label}
           value={selection.options[supplement.code] ?? 0}
@@ -108,7 +96,7 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
           max={maxUnits(supplement)}
           onChange={(value) => setOption(supplement.code, value)}
         />
-      </Option>
+      </OptionField>
     );
   };
 
@@ -153,7 +141,7 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
         <>
           <div className="vd-opts">
             {service.priceUnit === 'PerHour' ? (
-              <Option label={t('supplierSite.service.hours')}>
+              <OptionField label={t('supplierSite.service.hours')}>
                 <Qty
                   label={t('supplierSite.service.hours')}
                   value={selection.quantity ?? 1}
@@ -161,10 +149,10 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
                   max={MAX_HOURS}
                   onChange={(quantity) => setSelection((current) => ({ ...current, quantity }))}
                 />
-              </Option>
+              </OptionField>
             ) : null}
             {service.priceUnit === 'PerSet' ? (
-              <Option label={t('supplierSite.service.sets')}>
+              <OptionField label={t('supplierSite.service.sets')}>
                 <Qty
                   label={t('supplierSite.service.sets')}
                   value={selection.quantity ?? 1}
@@ -172,10 +160,10 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
                   max={MAX_SETS}
                   onChange={(quantity) => setSelection((current) => ({ ...current, quantity }))}
                 />
-              </Option>
+              </OptionField>
             ) : null}
             {service.priceUnit === 'PerSquareMeter' ? (
-              <Option label={t('supplierSite.service.squareMeters')}>
+              <OptionField label={t('supplierSite.service.squareMeters')}>
                 <Qty
                   label={t('supplierSite.service.squareMeters')}
                   value={selection.quantity ?? MIN_SQUARE_METERS}
@@ -184,10 +172,10 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
                   step={SQUARE_METERS_STEP}
                   onChange={(quantity) => setSelection((current) => ({ ...current, quantity }))}
                 />
-              </Option>
+              </OptionField>
             ) : null}
             {surface ? (
-              <Option label={t('supplierSite.service.surface')} htmlFor={`${ids}-surface`}>
+              <OptionField label={t('supplierSite.service.surface')} htmlFor={`${ids}-surface`}>
                 <select
                   id={`${ids}-surface`}
                   value={selection.surface ?? ''}
@@ -201,10 +189,10 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
                     </option>
                   ))}
                 </select>
-              </Option>
+              </OptionField>
             ) : null}
             {supplements.map(supplementControl)}
-            <Option label={t('supplierSite.service.where')} htmlFor={`${ids}-comune`}>
+            <OptionField label={t('supplierSite.service.where')} htmlFor={`${ids}-comune`}>
               <div className="vd-comune">
                 <FinderComuneField
                   id={`${ids}-comune`}
@@ -215,7 +203,7 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
                   }}
                 />
               </div>
-            </Option>
+            </OptionField>
           </div>
           <div className="vd-est" aria-live="polite" aria-busy={estimate.isFetching} data-testid="supplier-site-estimate">
             {result && result.lines.length > 0 ? (

@@ -38,13 +38,6 @@ export const BILLING_SETUP_ITEM_KEYS = [
 export type BillingSetupItemKey = (typeof BILLING_SETUP_ITEM_KEYS)[number];
 
 /**
- * Why an item is missing (backend `BillingSetupReasons`): a value is absent, a choice was never confirmed, the installation lacks something the user cannot fix, or somebody else has to do something and
- * the user waits (`pending`: the enabling of a VAT number at the channel to the SDI, E17/F01/US02/T02).
- */
-export const BILLING_SETUP_REASONS = ['required', 'unconfirmed', 'unavailable', 'pending'] as const;
-export type BillingSetupReason = (typeof BILLING_SETUP_REASONS)[number];
-
-/**
  * One thing still to do. `key` and `section` are strings and not the unions above: the server may be newer than the app, and an item the app does not know is possible
  * at run time. `count` is there when the item counts something (the owners without a mandate). Codes and counts only, no personal data.
  */
@@ -214,7 +207,7 @@ export interface ChannelAccountHolderChange {
 export const COMMISSION_BASES = ['GrossExclTouristTax', 'GrossExclTouristTaxAndCleaning'] as const satisfies readonly CommissionBase[];
 
 /** A commission rule of a portal, as stored (`rules` of `GET api/owner-accounting/channel-commission-rules`). */
-export interface ChannelCommissionRule {
+interface ChannelCommissionRule {
   id: string;
   channel: string;
   percent: number;

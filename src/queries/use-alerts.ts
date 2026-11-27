@@ -8,11 +8,11 @@ import { retryTransientErrors } from '@/lib/query-client';
 import type { PendingAlert } from '@/types/alert';
 
 /** Root of the popup alert queries. */
-export const ALERTS_QUERY = 'alerts';
+const ALERTS_QUERY = 'alerts';
 export const PENDING_ALERTS_KEY = [ALERTS_QUERY, 'pending'] as const;
 
 /** While the real-time channel is down, the alerts that wait for an answer are read again at this pace (ADR-025-R6). */
-export const ALERT_POLL_MS = 30_000;
+const ALERT_POLL_MS = 30_000;
 
 /**
  * The alerts waiting for an answer, as the server lists them. The real-time channel adds the alerts it pushes to this same list

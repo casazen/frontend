@@ -25,11 +25,11 @@ import { ServiceRequestBackupsSetting } from './service-request-backups-setting'
 import { Badge } from '@/components/ui/badge';
 import {
   SLUG_CHECK_DEBOUNCE_MS,
-  useDebouncedValue,
   useOrgSettings,
   useOrgSlugAvailability,
   useUpdateOrgSettings,
 } from './use-org-settings';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 /**
  * What the form edits. The operator data (DB-03b-a: backend `OrgOperatorRules`) and the phone (AM-08b-b) are text boxes: empty means
