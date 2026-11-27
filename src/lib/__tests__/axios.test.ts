@@ -129,7 +129,6 @@ describe('request interceptor: explicit public flag (A9-20)', () => {
       publicOrgApi.getOrgProperties('demo'),
       publicOrgApi.getOrgProperty('demo', 'p1'),
       publicBookingApi.createDirectBooking({} as never),
-      publicBookingApi.getPropertyAvailability('p1', '2026-10-01', '2026-10-05'),
       publicBookingApi.lookupGuestBooking({ orgSlug: 'demo', bookingCode: 'K7M4Q-9XP2H', email: 'guest@example.test' }),
       publicBookingApi.sendGuestCheckInLink({ orgSlug: 'demo', bookingCode: 'K7M4Q-9XP2H', email: 'guest@example.test' }),
       publicBookingApi.getCheckoutOutcome('b1', 'tok'),
@@ -155,7 +154,7 @@ describe('request interceptor: explicit public flag (A9-20)', () => {
       fetchSupplierRegistrationOptions(),
     ]);
 
-    expect(ctx.calls).toHaveLength(25);
+    expect(ctx.calls).toHaveLength(24);
     expect(ctx.getAccessToken).not.toHaveBeenCalled();
     ctx.calls.forEach((_, index) => expect(ctx.authorization(index)).toBeFalsy());
   });

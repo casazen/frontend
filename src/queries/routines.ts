@@ -29,16 +29,6 @@ export function useRoutines(enabled = true) {
   });
 }
 
-export function useRoutine(id: string | undefined) {
-  return useQuery({
-    queryKey: [ROUTINES_KEY, id],
-    queryFn: () => routinesApi.getById(id!),
-    enabled: !!id,
-    staleTime: ROUTINES_STALE_TIME,
-    refetchOnMount: 'always',
-  });
-}
-
 /**
  * The actions a routine can hold and whether each can run today (`GET /routines/actions`). It says what the server can do, which changes with a deploy or a flag and
  * not while a person works: it is read once for the session.

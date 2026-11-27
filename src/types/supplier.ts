@@ -310,28 +310,6 @@ export interface SupplierDashboard {
   lastUpdated: string;
 }
 
-/** Periods of the supplier KPIs (API enum `SupplierKpiPeriod`): Europe/Rome calendar dates, today at most. */
-export const SUPPLIER_KPI_PERIODS = ['CurrentMonth', 'PreviousMonth', 'Last30Days', 'CurrentYear'] as const;
-export type SupplierKpiPeriod = (typeof SUPPLIER_KPI_PERIODS)[number];
-
-/**
- * Work KPIs of the supplier org from its service requests (`GET /supplier/dashboard/kpis`, SU-11).
- * `completed` and `rejected` count the period; `awaitingAcceptance` and `upcoming` are the open work now.
- */
-export interface SupplierKpis {
-  period: SupplierKpiPeriod;
-  /** First date of the period (`YYYY-MM-DD`, Europe/Rome), included. */
-  from: string;
-  /** Last date of the period (`YYYY-MM-DD`, Europe/Rome), included. */
-  to: string;
-  timeZone: string;
-  completed: number;
-  rejected: number;
-  awaitingAcceptance: number;
-  upcoming: number;
-  totalRequests: number;
-}
-
 /**
  * `GET /supplier/today?days=` (SP-04, SP-04e): the home of the console. `jobs` are the ones taken, in progress, completed or paid from
  * `date` (today in Europe/Rome) to `dateTo`, the first in time first (at most 50, `jobsTotal` says how many there are); `newRequests` are

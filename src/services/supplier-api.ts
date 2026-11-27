@@ -14,8 +14,6 @@ import type {
   SupplierInboxCounts,
   SupplierInboxParams,
   SupplierInboxResponse,
-  SupplierKpiPeriod,
-  SupplierKpis,
   SupplierOverview,
   SupplierOverviewPeriod,
   SupplierProfile,
@@ -26,8 +24,6 @@ import axios from '@/lib/axios';
 import type { SupplierServiceRequestDetail } from '@/types/service-request';
 import type { PagedResult } from '@/types/users.types';
 import type {
-  AdminInvite,
-  AdminInvitesParams,
   AdminSupplier,
   AdminSupplierAuditEntry,
   AdminSuppliersParams,
@@ -183,28 +179,6 @@ export async function fetchSupplierAudit(orgId: string): Promise<AdminSupplierAu
   return ApiClient.get<AdminSupplierAuditEntry[]>(`/admin/suppliers/${encodeURIComponent(orgId)}/audit`);
 }
 
-/** A page of the supplier invites for the platform admin (SU-12). */
-export async function fetchAdminInvites({ search, state, page = 1, pageSize = 20 }: AdminInvitesParams): Promise<PagedResult<AdminInvite>> {
-  return ApiClient.get<PagedResult<AdminInvite>>('/admin/suppliers/invites', {
-    page,
-    pageSize,
-    ...(search ? { search } : {}),
-    ...(state ? { state } : {}),
-  });
-}
-
-/** Sends an invite again: new link and expiry, the old link stops working. */
-export async function resendSupplierInvite(inviteId: string): Promise<{ inviteId: string; expiresAt: string }> {
-  return ApiClient.post<{ inviteId: string; expiresAt: string }>(
-    `/admin/suppliers/invites/${encodeURIComponent(inviteId)}/resend`,
-  );
-}
-
-/** Revokes a pending invite: its link no longer works. */
-export async function revokeSupplierInvite(inviteId: string): Promise<void> {
-  await axios.delete(`/admin/suppliers/invites/${encodeURIComponent(inviteId)}`);
-}
-
 export interface SupplierRegisterPayload {
   email: string;
   legalName: string;
@@ -285,11 +259,6 @@ export async function fetchSupplierRegistrationOptions(): Promise<SupplierRegist
 
 export async function fetchSupplierDashboard(): Promise<SupplierDashboard> {
   return ApiClient.get<SupplierDashboard>('/supplier/dashboard');
-}
-
-/** Service-request KPIs of the supplier org for a Europe/Rome period (SU-11). */
-export async function fetchSupplierKpis(period: SupplierKpiPeriod): Promise<SupplierKpis> {
-  return ApiClient.get<SupplierKpis>('/supplier/dashboard/kpis', { period });
 }
 
 /** The new requests to answer and the jobs of today and the next `days` days, 1 to 7 (SP-04, SP-04e): the data of the home. */
