@@ -20,6 +20,8 @@ vi.mock('@/api/checkin.api', () => ({
     postDocument: vi.fn(),
     postSelfie: vi.fn(),
     startSelfieChallenge: vi.fn(),
+    startPresenceChallenge: vi.fn(),
+    postPresence: vi.fn(),
     requestOperator: vi.fn(),
   },
 }));
@@ -409,8 +411,9 @@ describe('identity-opening: the way to a person on every step (E70/F03/US01/T01,
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeEnabled();
     expect(screen.getByTestId('checkin-identity-assisted-path')).toHaveTextContent(i18n.t('checkin.identity.choice.assisted.switch'));
 
+    // A self-hosted verification goes from the document to the recording of the presence, not to the selfie.
     pickDocument();
-    await waitFor(() => expect(stage()).toBe('selfie'));
+    await waitFor(() => expect(stage()).toBe('presence'));
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeVisible();
 
     fireEvent.click(screen.getByTestId('checkin-identity-assisted-path'));
@@ -564,9 +567,10 @@ describe('identity-opening: a closed verification shows where it ended and offer
 });
 
 describe('identity-opening: a step this page has no screen for shows the way to a person (E70/F03/US01/T01, AC5)', () => {
-  it('IdentityStep_TheStepIsPresence_ShowsTheAssistedPathMessageInsteadOfABlankScreen', async () => {
+  // The presence has a screen on a self-hosted verification (E72/F02/US01/T01); on a state that does not say `selfHosted` it has none.
+  it('IdentityStep_ThePresenceOfAStateThatIsNotSelfHosted_ShowsTheAssistedPathMessageInsteadOfABlankScreen', async () => {
     vi.mocked(publicCheckinApi.requestOperator).mockResolvedValue({ result: 'operator', operatorPathOpen: true, state: closedWithAPerson() });
-    renderStep(selfHosted({ step: 'presence', consentRecorded: true, documentChecked: true, opened: true, choice: 'automatic' }));
+    renderStep(state({ step: 'presence', consentRecorded: true, documentChecked: true }));
 
     expect(stage()).toBe('unsupported');
     expect(screen.getByTestId('checkin-identity-unsupported')).toHaveTextContent(i18n.t('checkin.identity.unsupported.title'));
@@ -593,7 +597,7 @@ describe('identity-opening: a step this page has no screen for shows the way to 
   });
 
   it('IdentityStep_TheUnsupportedStep_HasNoAccessibilityViolations', async () => {
-    const { container } = renderStep(selfHosted({ step: 'presence', consentRecorded: true, documentChecked: true, opened: true }));
+    const { container } = renderStep(state({ step: 'presence', consentRecorded: true, documentChecked: true }));
 
     await expectNoAxeViolations(container);
   });
@@ -605,6 +609,8 @@ describe('the model of the opening (E70/F03/US01/T01)', () => {
     [{ step: 'document' }, 'document'],
     [{ step: 'selfie' }, 'selfie'],
     [{ step: 'presence' }, 'unsupported'],
+    [{ step: 'presence', selfHosted: true }, 'presence'],
+    [{ step: 'presence', selfHosted: true, documentNotArchived: true }, 'document'],
     [{ step: 'done' }, 'done'],
     [{ step: 'operator' }, 'operator'],
     [{ step: 'selfie', closed: true, outcome: 'ok' }, 'done'],

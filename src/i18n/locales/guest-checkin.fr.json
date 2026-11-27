@@ -444,6 +444,12 @@
         "move_closer": "Rapprochez-vous : votre visage est trop petit sur l'image.",
         "one_face_only": "Vous devez être seul sur l'image.",
         "other": "Veuillez reprendre la photo.",
+        "presence_again": "Refaites l'enregistrement en suivant les indications à l'écran.",
+        "presence_challenge_not_followed": "Nous n'avons pas vu tous les mouvements demandés : suivez les indications à l'écran, dans l'ordre.",
+        "presence_quality": "L'enregistrement n'était pas assez net : cherchez plus de lumière, tenez le téléphone immobile et gardez votre visage dans l'ovale.",
+        "presence_single_face": "Seul votre visage doit apparaître dans l'enregistrement, et toujours visible : personne d'autre derrière vous.",
+        "presence_timing": "Le déroulement de l'enregistrement ne correspond pas : suivez les indications l'une après l'autre, sans vous arrêter, puis réessayez.",
+        "presence_too_short": "L'enregistrement était trop court : restez devant la caméra jusqu'à la fin des indications.",
         "retake_picture": "L'image n'a pas pu être lue : veuillez la reprendre.",
         "retake_selfie": "Reprenez le selfie en regardant droit la caméra.",
         "show_document_photo": "Montrez le côté du document avec votre photo.",
@@ -461,6 +467,41 @@
         "ask": "Demander la vérification par une personne",
         "requested": "Nous avons prévenu l'hôte. Il vérifiera votre identité et le code d'accès vous parviendra après sa décision."
       },
+      "presence": {
+        "camera": {
+          "busy": "Une autre application utilise la caméra. Fermez-la puis appuyez sur « Réessayer ».",
+          "fallback": "Vous pouvez réessayer, ou continuer avec une personne qui vérifie votre identité."
+        },
+        "cancel": "Annuler et demander une personne",
+        "cancelling": "Interruption de l'envoi…",
+        "instructions": "Placez-vous dans un endroit bien éclairé et gardez votre visage dans l'ovale. Appuyez sur « Commencer » et suivez les indications à l'écran : vous allez tourner la tête et lever ou baisser les yeux. Cela ne dure que quelques secondes.",
+        "kept": {
+          "offline": "Pas de connexion. Nous n'avons pas pu envoyer votre enregistrement, mais il est toujours là : quand la connexion revient, appuyez sur « Envoyer de nouveau ».",
+          "sendAgain": "Envoyer de nouveau",
+          "server": "Le service ne répond pas pour le moment. Votre enregistrement est toujours là : dans un instant, appuyez sur « Envoyer de nouveau »."
+        },
+        "leadIn": "Regardez la caméra",
+        "move": {
+          "lookDown": "Baissez les yeux",
+          "lookUp": "Levez les yeux",
+          "turnToTheLeft": "Tournez la tête vers la gauche",
+          "turnToTheRight": "Tournez la tête vers la droite"
+        },
+        "notice": {
+          "expired": "Le temps de la vérification est écoulé. Nous recommençons avec un nouvel enregistrement : appuyez sur « Commencer ».",
+          "hidden": "La page est passée en arrière-plan pendant l'enregistrement, nous l'avons donc annulé. Appuyez sur « Commencer » pour le refaire.",
+          "lost": "Nous n'avons pas pu envoyer l'enregistrement et nous l'avons supprimé. Quand vous êtes connecté, appuyez sur « Commencer » pour le refaire, ou continuez avec une personne.",
+          "not_prepared": "Nous n'avons pas pu enregistrer les images. Appuyez sur « Commencer » pour réessayer.",
+          "rotated": "L'écran a été tourné ou redimensionné pendant l'enregistrement, nous l'avons donc annulé. Tenez le téléphone immobile et appuyez sur « Commencer » pour le refaire."
+        },
+        "preparing": "Préparation de la vérification…",
+        "retry": "Réessayer",
+        "secondsLeft": "Secondes restantes : {{count}}",
+        "start": "Commencer",
+        "step": "Étape {{current}} sur {{total}}",
+        "title": "Montrez votre visage à la caméra",
+        "waitingForConnection": "En attente du retour de la connexion…"
+      },
       "problem": {
         "consent_required": "Nous avons d'abord besoin de votre réponse sur la vérification du visage.",
         "consent_text_changed": "Le texte du consentement a été mis à jour. Veuillez le relire avant de répondre.",
@@ -469,12 +510,18 @@
         "failed": "Un problème est survenu. Veuillez réessayer.",
         "link_unavailable": "Ce lien n'est plus valide, ou l'enregistrement est déjà terminé. Demandez un nouveau lien à votre hôte.",
         "network": "Nous n'avons pas pu joindre le serveur. Rien n'a été enregistré : vérifiez votre connexion et réessayez.",
+        "presence_expired": "Le temps de cette vérification est écoulé. Recommencez avec un nouvel enregistrement.",
+        "presence_invalid": "L'enregistrement n'est pas valide. Réessayez avec un nouvel enregistrement, ou demandez la vérification par une personne.",
+        "presence_required": "Cette vérification a changé : rechargez la page, ou demandez la vérification par une personne.",
+        "presence_too_large": "L'enregistrement est trop volumineux pour être envoyé. Réessayez avec un nouvel enregistrement.",
+        "presence_unavailable": "La vérification automatique n'est pas disponible pour le moment : une personne vérifiera votre identité.",
         "processing": "Nous n'avons pas pu traiter la photo. Veuillez réessayer.",
         "too_large": "La photo est trop volumineuse. Reprenez-la avec une résolution plus basse.",
         "too_many_requests": "Trop de tentatives en peu de temps. Attendez un instant puis réessayez.",
         "unsupported": "Ce type de fichier n'est pas pris en charge. Utilisez une photo JPEG ou PNG."
       },
       "result": {
+        "closed": "Cette vérification était déjà terminée : voici comment elle s'est passée.",
         "ok": {
           "codeEmail": "Si votre réservation comporte une adresse e-mail, nous y avons aussi envoyé le code.",
           "codeHeldTouristTax": "Votre identité est vérifiée. Le code d'accès vous parviendra après le paiement de la taxe de séjour.",
@@ -490,6 +537,7 @@
         "retry": {
           "again": "Reprendre le selfie",
           "againDocument": "Photographier de nouveau le document",
+          "againPresence": "Réessayer",
           "attempts": "Essais restants : {{count}}",
           "intro": "La vérification n'a pas abouti cette fois. Voici ce qu'il faut changer :",
           "noReason": "La vérification n'a pas abouti cette fois.",

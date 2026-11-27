@@ -444,6 +444,12 @@
         "move_closer": "Acérquese: su cara se ve demasiado pequeña en la imagen.",
         "one_face_only": "En la imagen debe salir solo usted.",
         "other": "Vuelva a hacer la foto.",
+        "presence_again": "Repita la grabación siguiendo las indicaciones de la pantalla.",
+        "presence_challenge_not_followed": "No hemos visto todos los movimientos pedidos: siga las indicaciones de la pantalla, en orden.",
+        "presence_quality": "La grabación no era lo bastante clara: busque más luz, mantenga quieto el teléfono y el rostro dentro del óvalo.",
+        "presence_single_face": "En la grabación solo debe salir su rostro, siempre visible: nadie más detrás de usted.",
+        "presence_timing": "Los tiempos de la grabación no cuadran: siga las indicaciones una tras otra, sin detenerse, y vuelva a intentarlo.",
+        "presence_too_short": "La grabación fue demasiado corta: permanezca delante de la cámara hasta que terminen las indicaciones.",
         "retake_picture": "No se pudo leer la imagen: vuelva a hacerla.",
         "retake_selfie": "Vuelva a hacer el selfie mirando directamente a la cámara.",
         "show_document_photo": "Muestre el lado del documento con su foto.",
@@ -461,6 +467,41 @@
         "ask": "Pedir la verificación de una persona",
         "requested": "Hemos avisado al anfitrión. Verificará su identidad y el código de acceso le llegará después de su decisión."
       },
+      "presence": {
+        "camera": {
+          "busy": "Otra aplicación está usando la cámara. Ciérrela y pulse «Reintentar».",
+          "fallback": "Puede volver a intentarlo o continuar con una persona que verifique su identidad."
+        },
+        "cancel": "Cancelar y pedir una persona",
+        "cancelling": "Cancelando el envío…",
+        "instructions": "Colóquese en un lugar bien iluminado y mantenga el rostro dentro del óvalo. Pulse «Empezar» y siga las indicaciones de la pantalla: tendrá que girar la cabeza y subir o bajar la mirada. Dura unos segundos.",
+        "kept": {
+          "offline": "Sin conexión. No hemos podido enviar su grabación, pero sigue aquí: cuando vuelva la conexión pulse «Enviar de nuevo».",
+          "sendAgain": "Enviar de nuevo",
+          "server": "El servicio no responde en este momento. Su grabación sigue aquí: en un momento pulse «Enviar de nuevo»."
+        },
+        "leadIn": "Mire a la cámara",
+        "move": {
+          "lookDown": "Baje la mirada",
+          "lookUp": "Suba la mirada",
+          "turnToTheLeft": "Gire la cabeza hacia la izquierda",
+          "turnToTheRight": "Gire la cabeza hacia la derecha"
+        },
+        "notice": {
+          "expired": "Se acabó el tiempo de la verificación. Empezamos de nuevo con una grabación nueva: pulse «Empezar».",
+          "hidden": "La página pasó a segundo plano durante la grabación, así que la hemos cancelado. Pulse «Empezar» para repetirla.",
+          "lost": "No hemos podido enviar la grabación y la hemos borrado. Cuando tenga conexión pulse «Empezar» para repetirla, o continúe con una persona.",
+          "not_prepared": "No hemos podido grabar las imágenes. Pulse «Empezar» para intentarlo de nuevo.",
+          "rotated": "Se giró o cambió el tamaño de la pantalla durante la grabación, así que la hemos cancelado. Mantenga quieto el teléfono y pulse «Empezar» para repetirla."
+        },
+        "preparing": "Preparando la verificación…",
+        "retry": "Reintentar",
+        "secondsLeft": "Segundos restantes: {{count}}",
+        "start": "Empezar",
+        "step": "Paso {{current}} de {{total}}",
+        "title": "Muestre su rostro a la cámara",
+        "waitingForConnection": "Esperando a que vuelva la conexión…"
+      },
       "problem": {
         "consent_required": "Primero necesitamos su respuesta sobre la comprobación facial.",
         "consent_text_changed": "El texto del consentimiento se ha actualizado. Léalo de nuevo antes de responder.",
@@ -469,12 +510,18 @@
         "failed": "Algo ha salido mal. Inténtelo de nuevo.",
         "link_unavailable": "Este enlace ya no es válido o el check-in ya está completo. Pida un enlace nuevo a su anfitrión.",
         "network": "No hemos podido conectar con el servidor. No se ha guardado nada: compruebe su conexión e inténtelo de nuevo.",
+        "presence_expired": "Se acabó el tiempo de esta verificación. Empiece de nuevo con una grabación nueva.",
+        "presence_invalid": "La grabación no es válida. Inténtelo de nuevo con una grabación nueva o pida la verificación de una persona.",
+        "presence_required": "Esta verificación ha cambiado: recargue la página o pida la verificación de una persona.",
+        "presence_too_large": "La grabación es demasiado grande para enviarla. Inténtelo de nuevo con una grabación nueva.",
+        "presence_unavailable": "La verificación automática no está disponible en este momento: le verificará una persona.",
         "processing": "No hemos podido procesar la foto. Inténtelo de nuevo.",
         "too_large": "La foto es demasiado grande. Vuelva a hacerla con una resolución más baja.",
         "too_many_requests": "Demasiados intentos en poco tiempo. Espere un momento e inténtelo de nuevo.",
         "unsupported": "Este tipo de archivo no es compatible. Use una foto JPEG o PNG."
       },
       "result": {
+        "closed": "Esta verificación ya había terminado: así fue.",
         "ok": {
           "codeEmail": "Si su reserva tiene una dirección de correo electrónico, también hemos enviado allí el código.",
           "codeHeldTouristTax": "Su identidad está verificada. El código de acceso le llegará después de pagar la tasa turística.",
@@ -490,6 +537,7 @@
         "retry": {
           "again": "Volver a hacer el selfie",
           "againDocument": "Fotografiar de nuevo el documento",
+          "againPresence": "Reintentar",
           "attempts": "Intentos restantes: {{count}}",
           "intro": "La comprobación no ha salido bien esta vez. Esto es lo que debe cambiar:",
           "noReason": "La comprobación no ha salido bien esta vez.",

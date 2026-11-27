@@ -1,26 +1,61 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { publicCheckinApi, type SelfiePose } from '@/api/checkin.api';
+import { getHttpStatus } from '@/lib/api-errors';
 import { prepareDocumentPhoto } from '@/lib/image-capture';
-import type { DocumentSide, IdentityVerificationState } from '@/types/public-checkin.types';
+import type { DocumentSide, IdentityVerificationState, PresenceChallenge, PresenceSequence } from '@/types/public-checkin.types';
 import { looksLikeTheSameSide } from './lib/document-fingerprint';
 import {
   afterConsent,
   afterDocument,
   afterOperatorRequest,
+  afterPresence,
+  afterPresenceUnavailable,
   afterProblem,
   afterRetake,
   afterSelfie,
   assistedReasonOf,
   classifyIdentityError,
+  closedAnswerOf,
   closedStateOf,
   frontWasTaken,
   identityStateOf,
   isIdentityConcluded,
   isNoticeVersionUnknown,
+  isPresenceChallengeRenewal,
+  presenceUnavailableOf,
   progressFromState,
+  readPresenceAnswer,
+  readPresenceChallenge,
   type IdentityProblem,
   type IdentityProgress,
 } from './lib/identity-model';
+import { isRateLimited, uploadPresence } from './lib/presence-upload';
+
+/**
+ * What asking for the challenge of the presence came to (E72/F02/US01/T01): the challenge; a failure the guest may try again (`problem` says which); the step moved on by itself, because the automatic check cannot
+ * be done for this session (the assisted path takes over) or the verification was found closed; or the screen that asked is already gone, and the answer is not for it.
+ */
+export type PresenceChallengeResult = { kind: 'ready'; challenge: PresenceChallenge } | { kind: 'failed' } | { kind: 'moved' } | { kind: 'stale' };
+
+/**
+ * What sending the sequence of the presence came to (E72/F02/US01/T02): the server answered (the step moved on: a pass, a retry with its guidance, a person, or a verification found closed); the upload did not get
+ * through (the network, the server, too many requests) and the same recording may be sent again with the same key (`problem` says which); the challenge ran out and nothing was decided (a new challenge, a new
+ * key, a new recording); the server refused for good (`problem` says why, and the recording starts again); another call of the step is in flight and nothing was sent; or the guest stopped the upload
+ * (`cancelled`, see `cancelPresence`: the request that was on its way was given up, and the recording is not kept).
+ */
+export type PresenceSendResult =
+  | { kind: 'answered' }
+  | { kind: 'kept'; problem: IdentityProblem }
+  | { kind: 'renew' }
+  | { kind: 'failed' }
+  | { kind: 'busy' }
+  | { kind: 'cancelled' };
+
+/**
+ * What stopping the upload of the presence and asking for a person came to (E72/F02/US01/T02): `asked` (a person was asked for, and the step moved to the assisted path), `answered` (the server had answered before the upload
+ * could be stopped: the step moved on by itself, and nobody is asked for), or `failed` (the request for a person did not get through: the guest is told and keeps the way to a person).
+ */
+export type PresenceCancelResult = 'asked' | 'answered' | 'failed';
 
 /** What the identity step of the check-in page can do, and what it knows (E03/F04/US03/T01, E22/F02/US01/T01). */
 export interface IdentityVerificationController {
@@ -53,6 +88,26 @@ export interface IdentityVerificationController {
   looksLikeTheFront: (fingerprint: string) => boolean;
   /** The selfie. Resolves `true` when the API answered, `false` when the call failed (the guest sends the same picture again). */
   sendSelfie: (selfie: Blob, pose?: SelfiePose) => Promise<boolean>;
+  /**
+   * The challenge of the presence of a self-hosted verification (E72/F02/US01/T01): the moves to follow and how the frames are taken. It is a call of its own, not one of the buttons of the step, so it holds none of
+   * them disabled and the way to a person stays open while it is on its way. `isCurrent` says whether the screen that asked is still the one that wants the answer: when it is not, nothing is done with it (`stale`). A challenge that
+   * the server cannot issue for this session (409 `presence_challenge_unavailable`) moves the step to the assisted path, with the state of the answer; a verification found closed shows where it ended; any
+   * other failure is a `problem` and the guest tries again.
+   */
+  startPresence: (isCurrent?: () => boolean) => Promise<PresenceChallengeResult>;
+  /**
+   * The sequence of the presence (E72/F02/US01/T02): sent with `idempotencyKey`, which belongs to the recording and is the same for every repeat of it. A network that drops, a timeout and a 5xx are repeated with the
+   * same frames and the same key (so a request that did reach the server comes back as its stored answer); a 4xx is not. The pictures of the document a property that keeps none holds for the recording go with it.
+   * One call at a time (`busy` while it lasts): a second one is not sent. The sequence is not kept here: the caller owns its frames and lets them go.
+   */
+  sendPresence: (sequence: PresenceSequence, idempotencyKey: string) => Promise<PresenceSendResult>;
+  /**
+   * The guest stops the upload of the sequence and asks for a person (E72/F02/US01/T02): the way to a person is disabled while a call of the step is in flight, and a recording on a slow network may take minutes, so this is
+   * the one way to a person that is open while the upload is on its way. The request that is on its way is cancelled (`AbortController`: nothing is repeated and nothing waits for the connection any more), the recording is not
+   * kept, and when the upload has ended a person is asked for, as `askOperator` does. If the server had answered before the upload could be stopped, that answer is what the guest sees and nobody is asked for (`answered`).
+   * The timeouts of the tries are not shortened: a slow network is given its whole time unless the guest stops it.
+   */
+  cancelPresence: () => Promise<PresenceCancelResult>;
   /** The guest asks for a person, from any screen of the step (GDPR art. 22). */
   askOperator: () => Promise<void>;
   /** The guest takes again what the guidance asked for (from the screen of a `retry`). */
@@ -118,6 +173,8 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
   const documentPictures = useRef<HeldPictures>(NO_PICTURES);
   // The difference hash of the front that was taken with the camera (a value derived from the document: a reference only, never state, never a storage, a request or a log).
   const frontFingerprint = useRef<string | null>(null);
+  // The upload of the sequence of the presence that is on its way (E72/F02/US01/T02): what stops it, and a promise that settles once the step is free again (`true` when it ended with the answer of the server). `null` when none is.
+  const presenceUpload = useRef<{ abort: AbortController; finished: Promise<boolean> } | null>(null);
 
   const progress = local ?? (initial ? progressFromState(initial) : null);
 
@@ -154,6 +211,24 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
       update(() => progressFromState(state));
     },
     [letGoOfThePictures, update],
+  );
+
+  /**
+   * The state a verification that was found closed ended in, for the calls of the presence (E72/F02/US01/T02). The 409 `identity_already_closed` of the challenge carries no state (`known` is `null`), and the page does not
+   * deduce how it ended: a verification closed with an `ok` in another tab is a verification that passed. The state of the link is read again, with the same call the page started from (the context of the link), and shown
+   * as it says. When the link cannot be read, or does not say the verification is closed, no outcome is shown: `problem` is why, and the guest tries again.
+   */
+  const readClosedState = useCallback(
+    async (known: IdentityVerificationState | null): Promise<{ state: IdentityVerificationState } | { problem: IdentityProblem }> => {
+      if (known) return { state: known };
+      try {
+        const state = identityStateOf((await publicCheckinApi.getContext(token))?.identityVerification);
+        return state !== null && state.closed === true ? { state } : { problem: 'failed' };
+      } catch (error) {
+        return { problem: classifyIdentityError(error) };
+      }
+    },
+    [token],
   );
 
   /** One call at a time. A failure never throws out of here: it becomes a problem, and the guest stays where they are. */
@@ -300,10 +375,147 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     }, afterSelfie);
   };
 
-  const askOperator = async () => {
+  const startPresence = async (isCurrent: () => boolean = () => true): Promise<PresenceChallengeResult> => {
+    // The guest who asks for a challenge is not on a failure any more: the sentence of the last one goes.
+    setProblem(null);
+    try {
+      const challenge = readPresenceChallenge(await publicCheckinApi.startPresenceChallenge(token));
+      if (!isCurrent()) return { kind: 'stale' };
+      if (challenge !== null) return { kind: 'ready', challenge };
+      // A body that is not a challenge the page can follow is a failure like any other: the guest tries again, or asks for a person.
+      setProblem('failed');
+      return { kind: 'failed' };
+    } catch (error) {
+      if (!isCurrent()) return { kind: 'stale' };
+      // The verification is over (another tab, a reload): the guest sees where it ended. The 409 of the challenge carries no state, so the state of the link says how it ended: nothing is deduced, and a verification
+      // that passed in another tab is shown as one that passed.
+      const closed = closedAnswerOf(error);
+      if (closed) {
+        const read = await readClosedState(closed.state);
+        if (!isCurrent()) return { kind: 'stale' };
+        if ('state' in read) {
+          showClosed(read.state);
+          return { kind: 'moved' };
+        }
+        // The link could not be read, or does not say it is over: no outcome is shown, the guest tries again.
+        setProblem(read.problem);
+        return { kind: 'failed' };
+      }
+      // The automatic check cannot be done for this session: the message of the assisted path, with what the state says about why.
+      const unavailable = presenceUnavailableOf(error);
+      if (unavailable) {
+        letGoOfThePictures();
+        update((current) => afterPresenceUnavailable(current, unavailable.state));
+        return { kind: 'moved' };
+      }
+
+      const reason = classifyIdentityError(error);
+      setProblem(reason);
+      update((current) => afterProblem(current, reason));
+      return { kind: 'failed' };
+    }
+  };
+
+  const sendPresence = async (sequence: PresenceSequence, idempotencyKey: string): Promise<PresenceSendResult> => {
+    if (inFlight.current) return { kind: 'busy' };
+
+    // A property that keeps no document gets the pictures again with the recording, as it does with the selfie: held in memory for the step only.
+    const needsDocument = progress?.documentNotArchived === true;
+    const needsBack = needsDocument && progress?.documentTwoSided === true;
+    const held = documentPictures.current;
+    if (needsDocument && (!held.front || (needsBack && !held.back))) {
+      // The page was closed since the document was photographed: its pictures are gone, and the API asks for them again.
+      setProblem('document_photo');
+      update((current) => afterProblem(current, 'document_photo'));
+      return { kind: 'failed' };
+    }
+
+    inFlight.current = true;
+    setBusy(true);
+    setProblem(null);
+    // The guest may stop the upload (`cancelPresence`): the signal goes to every request of it, and `finished` settles once the step is free again, with whether the server answered.
+    const abort = new AbortController();
+    let settle: (answered: boolean) => void = () => undefined;
+    const finished = new Promise<boolean>((resolve) => {
+      settle = resolve;
+    });
+    presenceUpload.current = { abort, finished };
+    let answered = false;
+    try {
+      const body: PresenceSequence = { ...sequence, documentPhoto: needsDocument ? held.front : null, documentPhotoBack: needsBack ? held.back : null };
+      const outcome = await uploadPresence((key) => publicCheckinApi.postPresence(token, body, key, abort.signal), idempotencyKey, undefined, abort.signal);
+
+      // The guest stopped the upload: the request that was on its way is given up and nothing of it is shown, no outcome and no sentence (`cancelPresence` goes on from here).
+      if (outcome.kind === 'cancelled') return { kind: 'cancelled' };
+
+      if (outcome.kind === 'answered') {
+        const answer = readPresenceAnswer(outcome.answer);
+        if (answer === null) {
+          // An answer that is not one (a page of the server in its place) decided nothing the page can show: it is a failure, never a pass.
+          setProblem('failed');
+          return { kind: 'failed' };
+        }
+        // A pass or a person ends the step: the pictures of the document are let go. After a retry they are needed for the next recording.
+        if (answer.result !== 'retry') letGoOfThePictures();
+        update((current) => afterPresence(current, answer));
+        answered = true;
+        return { kind: 'answered' };
+      }
+
+      // The network or the server did not answer after the tries: the same recording is worth sending again with the same key.
+      if (outcome.kind === 'gave-up') return { kind: 'kept', problem: getHttpStatus(outcome.error) === undefined ? 'network' : 'processing' };
+
+      const { error } = outcome;
+      // The verification is over (a recording sent from another tab, or after a reload): the server answered where it ended, and that is what the guest sees; the call is answered, and it is not a failure. An answer that
+      // carries no state is not taken for a person: the state of the link is read.
+      const closed = closedAnswerOf(error);
+      if (closed) {
+        const read = await readClosedState(closed.state);
+        if ('state' in read) {
+          showClosed(read.state);
+          answered = true;
+          return { kind: 'answered' };
+        }
+        setProblem(read.problem);
+        return { kind: 'failed' };
+      }
+      // Too many requests in a short time: the server did not process this one, so the same recording may be sent again with the same key.
+      if (isRateLimited(error)) return { kind: 'kept', problem: 'too_many_requests' };
+      // The challenge ran out before the server closed the verification: nothing was decided, and a new recording starts from a new challenge and a new key.
+      if (isPresenceChallengeRenewal(error)) return { kind: 'renew' };
+
+      const reason = classifyIdentityError(error);
+      setProblem(reason);
+      update((current) => afterProblem(current, reason));
+      return { kind: 'failed' };
+    } finally {
+      presenceUpload.current = null;
+      inFlight.current = false;
+      setBusy(false);
+      settle(answered);
+    }
+  };
+
+  /** The request for a person of the guest, answered or not: a person has it, or it passed (the pictures of the document are no longer needed), or the call failed (they stay, for the guest who tries again). */
+  const requestOperator = async (): Promise<boolean> => {
     const asked = await run(() => publicCheckinApi.requestOperator(token), afterOperatorRequest);
-    // A person has it, or it passed: the pictures of the document are no longer needed. A call that failed leaves them, for the guest who tries again.
     if (asked) letGoOfThePictures();
+    return asked;
+  };
+
+  const askOperator = async () => {
+    await requestOperator();
+  };
+
+  const cancelPresence = async (): Promise<PresenceCancelResult> => {
+    const upload = presenceUpload.current;
+    if (upload) {
+      // The request that is on its way is cancelled with the upload, and what waits (the pause before a repeat, the connection that is not there) stops waiting.
+      upload.abort.abort();
+      // The step is free again once the upload has ended, and only then can a person be asked for. If the server had answered first, that answer is what the guest sees: nobody is asked for on top of it.
+      if (await upload.finished) return 'answered';
+    }
+    return (await requestOperator()) ? 'asked' : 'failed';
   };
 
   const retake = () => {
@@ -321,6 +533,9 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     sendDocument,
     looksLikeTheFront,
     sendSelfie,
+    startPresence,
+    sendPresence,
+    cancelPresence,
     askOperator,
     retake,
     openNotice,

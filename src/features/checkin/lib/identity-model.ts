@@ -11,6 +11,8 @@ import type {
   IdentityVerificationResultKind,
   IdentityVerificationState,
   IdentityVerificationStep,
+  PresenceChallenge,
+  PresenceMove,
 } from '@/types/public-checkin.types';
 
 /**
@@ -75,6 +77,26 @@ export function assistedReasonOf(codes: readonly string[]): string | null {
   return codes.find((code) => (ASSISTED_GUIDANCE_CODES as readonly string[]).includes(code)) ?? null;
 }
 
+/**
+ * The codes of what to change in the sequence of the presence (E72/F02/US01/T01, NF-192): the recording was too short, its timing did not hold, its quality was not enough, it did not show one face, or the moves of the
+ * challenge were not followed. They come in the `guidance` of the answer of the presence, each with its words in every language of the page (`checkin.identity.guidance.*`); a code of the family the page does not
+ * know is shown with the generic sentence of the presence. Kept apart from {@link GUIDANCE_CODES}, which are the codes of the capture checks of the document and of the legacy selfie.
+ */
+export const PRESENCE_GUIDANCE_CODES = [
+  'presence_too_short',
+  'presence_timing',
+  'presence_quality',
+  'presence_single_face',
+  'presence_challenge_not_followed',
+] as const;
+
+/** The key of the words of a code of the guidance of the presence: the code's own, the one of a capture check when the server sends one of those, and otherwise the generic sentence of the presence. */
+export function presenceGuidanceKey(code: string): string {
+  if ((PRESENCE_GUIDANCE_CODES as readonly string[]).includes(code)) return `checkin.identity.guidance.${code}`;
+  if ((GUIDANCE_CODES as readonly string[]).includes(code)) return guidanceKey(code);
+  return 'checkin.identity.guidance.presence_again';
+}
+
 /** The older code of the capture checks that says what a targeted code of the document step says (a reflection, a blurred picture): the server sends both when both checks find it. */
 const OLDER_TWIN: Readonly<Record<string, string>> = { document_glare: 'avoid_glare', document_blur: 'hold_still' };
 
@@ -118,16 +140,20 @@ const DOCUMENT_GUIDANCE: ReadonlySet<string> = new Set([
   ...GUIDANCE_CODES.filter((code) => code.startsWith('document_') && code !== 'document_not_recognized'),
 ]);
 
-/** What the guest takes again after a `retry`: the document when the guidance says so, otherwise the selfie. */
-export function retakeTargetOf(codes: readonly string[]): 'document' | 'selfie' {
-  return codes.some((code) => DOCUMENT_GUIDANCE.has(code)) ? 'document' : 'selfie';
+/**
+ * What the guest takes again after a `retry`: the document when the guidance says so; otherwise the recording of the presence on a self-hosted verification (`selfHosted`, or when the guidance is the presence's own), where
+ * the selfie does not exist; otherwise the selfie.
+ */
+export function retakeTargetOf(codes: readonly string[], selfHosted = false): 'document' | 'selfie' | 'presence' {
+  if (codes.some((code) => DOCUMENT_GUIDANCE.has(code))) return 'document';
+  return selfHosted || codes.some((code) => (PRESENCE_GUIDANCE_CODES as readonly string[]).includes(code)) ? 'presence' : 'selfie';
 }
 
 /**
- * Where the guest is in the identity step. `unsupported` is a step of the API this page has no screen for (`presence` before the capture of the presence reaches the page, or a step of the future): the page shows the
- * way to a person instead of a blank screen.
+ * Where the guest is in the identity step. `presence` is the recording of a self-hosted verification (E72/F02/US01/T01): the moves of a challenge, followed in front of the camera. `unsupported` is a step of the API this
+ * page has no screen for (`presence` on a state that does not say `selfHosted`, or a step of the future): the page shows the way to a person instead of a blank screen.
  */
-export type IdentityStage = 'consent' | 'document' | 'selfie' | 'retry' | 'operator' | 'done' | 'unsupported';
+export type IdentityStage = 'consent' | 'document' | 'selfie' | 'presence' | 'retry' | 'operator' | 'done' | 'unsupported';
 
 /**
  * Everything the identity step knows, in memory for the life of the page and never in a storage, a cache or a log: the stage, whether a person
@@ -161,6 +187,8 @@ export interface IdentityProgress {
    * step. False on the legacy path, where none of that is there and the page is the one it always was.
    */
   selfHosted: boolean;
+  /** The verification was already closed when the page learnt where it stood (it was opened again, or a 409 `identity_already_closed` said so): the result says it was already over (E72/F02/US01/T02). */
+  closed: boolean;
 }
 
 /** `lockCodeHeld` of the selfie answer while the organization asks for the tourist tax before the lock code and the stay still owes it (E25/F01/US01/T01). */
@@ -187,8 +215,13 @@ function stageOfState(state: IdentityVerificationState): IdentityStage {
     case 'selfie':
       // In Ticino nothing of the document is kept, and the page that was closed no longer has its photo: the selfie asks for it again.
       return state.documentNotArchived ? 'document' : 'selfie';
+    case 'presence':
+      // The step of the self-hosted flow that takes the place of the selfie (E72/F02/US01/T01): the recording is asked for the same way, with the photo of the document again in Ticino. A state that does not say
+      // `selfHosted` has no screen for it (nothing of the legacy path changes): the way to a person.
+      if (state.selfHosted !== true) return 'unsupported';
+      return state.documentNotArchived ? 'document' : 'presence';
     default:
-      // `presence`, or a step the page does not know yet: not a blank screen, the way to a person.
+      // A step the page does not know yet: not a blank screen, the way to a person.
       return 'unsupported';
   }
 }
@@ -226,6 +259,7 @@ export function progressFromState(state: IdentityVerificationState): IdentityPro
     documentRefused: false,
     lockCode: null,
     selfHosted: state.selfHosted === true,
+    closed: isClosed(state),
     ...documentFromState(state),
   };
 }
@@ -278,7 +312,10 @@ export function identityStateOf(value: unknown): IdentityVerificationState | nul
 /** The `code` of the 409 that refuses a step because the verification is over (API `IdentityApiErrors.IdentityAlreadyClosed`). */
 const IDENTITY_ALREADY_CLOSED = 'identity_already_closed';
 
-/** A verification that is closed with a person: what the page shows when the 409 says it is closed and says no more. It never says «passed». */
+/**
+ * A verification that is closed with a person: what the page shows when the 409 of the document, the selfie, the request for a person or the opening says it is closed and carries no state it can read (those answers always carry
+ * one: the page never meets this case with the server of today). It never says «passed». The calls of the presence do not use it: see {@link closedAnswerOf}.
+ */
 const CLOSED_WITH_A_PERSON: IdentityVerificationState = {
   step: 'operator',
   result: 'operator',
@@ -297,16 +334,29 @@ const CLOSED_WITH_A_PERSON: IdentityVerificationState = {
 };
 
 /**
- * The state the verification ended in, when `error` is the 409 `identity_already_closed` (a document, a selfie or a presence step sent after it was closed, from another tab or after a reload): the body carries
- * the `state`, and that is what the page shows. A 409 that says it is closed and carries no state that can be read is a verification that ended with a person. `null` for any other failure.
+ * The 409 `identity_already_closed`, when `error` is one: the verification is over (a document, a selfie or a presence step sent after it was closed, from another tab or after a reload). `state` is the state the body
+ * carries when it carries one that says the verification is closed, and `null` when it carries none the page can read. `null` itself for any other failure.
+ *
+ * Not every 409 of this kind carries the state: the one of the challenge of the presence (`presence-challenge`) is the bare problem (`code` and nothing else), while the document, the selfie, the presence itself and the
+ * opening send it. The page never deduces how a verification ended from a body that says only that it ended (it may have passed in another tab): the calls of the presence read the state of the link instead.
  */
-export function closedStateOf(error: unknown): IdentityVerificationState | null {
+export function closedAnswerOf(error: unknown): { state: IdentityVerificationState | null } | null {
   if (!isAxiosError(error) || error.response?.status !== 409) return null;
   const body: unknown = error.response.data;
   if (getProblemCode(body) !== IDENTITY_ALREADY_CLOSED) return null;
 
   const state = identityStateOf(isRecord(body) ? body.state : undefined);
-  return state !== null && state.closed === true ? state : CLOSED_WITH_A_PERSON;
+  return { state: state !== null && state.closed === true ? state : null };
+}
+
+/**
+ * The state the verification ended in, when `error` is the 409 `identity_already_closed` of a call whose answer always carries the state (the document, the selfie, the request for a person and the opening): the body carries
+ * the `state`, and that is what the page shows. Where it carries none the page can read, it is taken as a verification that ended with a person, and never as a pass. `null` for any other failure. The calls of the presence
+ * do not use this: the 409 of their challenge carries no state, and a verification closed with an `ok` in another tab must not be shown as one that ended with a person ({@link closedAnswerOf}).
+ */
+export function closedStateOf(error: unknown): IdentityVerificationState | null {
+  const closed = closedAnswerOf(error);
+  return closed === null ? null : (closed.state ?? CLOSED_WITH_A_PERSON);
 }
 
 /**
@@ -375,7 +425,8 @@ export function afterDocument(progress: IdentityProgress, response: IdentityDocu
 
   return {
     ...progress,
-    stage: next === null ? 'selfie' : 'document',
+    // What follows a document that is complete: the selfie, or on a self-hosted verification the recording of the presence (the legacy selfie routes are refused there, and never called).
+    stage: next === null ? (progress.selfHosted ? 'presence' : 'selfie') : 'document',
     documentNotArchived: notArchived,
     documentTwoSided: twoSided,
     documentSidesTaken: taken,
@@ -425,6 +476,145 @@ export function afterSelfie(progress: IdentityProgress, response: IdentitySelfie
   };
 }
 
+/** The moves of the challenge of the presence the page has words and a drawing for. */
+const PRESENCE_MOVES: readonly PresenceMove[] = ['turn_left', 'turn_right', 'look_up', 'look_down'];
+
+function isPresenceMove(value: unknown): value is PresenceMove {
+  return typeof value === 'string' && (PRESENCE_MOVES as readonly string[]).includes(value);
+}
+
+function isPositiveNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0;
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0;
+}
+
+/**
+ * The challenge of the presence read from a body that came off the network (E72/F02/US01/T01), or `null` when it is not one the page can follow: no token, no moves, a move the page has no words for, a time or a rate
+ * that is not a positive number, an expiry that is not a date. A challenge the page cannot follow is never half-used: the guest is told, and may try again or ask for a person.
+ */
+export function readPresenceChallenge(value: unknown): PresenceChallenge | null {
+  if (!isRecord(value)) return null;
+  const { challengeToken, steps, stepMs, leadInMs, expiresAt, targetFps, maxFrames, maxFrameSide } = value;
+  if (typeof challengeToken !== 'string' || challengeToken.trim() === '') return null;
+  if (!Array.isArray(steps) || steps.length === 0 || !steps.every(isPresenceMove)) return null;
+  if (!isPositiveNumber(stepMs) || typeof leadInMs !== 'number' || !Number.isFinite(leadInMs) || leadInMs < 0) return null;
+  if (!isPositiveNumber(targetFps) || !isPositiveInteger(maxFrames) || !isPositiveInteger(maxFrameSide)) return null;
+  if (typeof expiresAt !== 'string' || !Number.isFinite(Date.parse(expiresAt))) return null;
+
+  return { challengeToken, steps: [...steps], stepMs, leadInMs, expiresAt, targetFps, maxFrames, maxFrameSide };
+}
+
+/** The answer of the presence as the page reads it: the result, what to change, and the lock code when the server sends one with an `ok`. */
+export interface PresenceAnswer {
+  result: IdentityVerificationResultKind;
+  guidance: readonly string[];
+  guidedRetryAvailable: boolean;
+  state: IdentityVerificationState | null;
+  lockCode: string | null;
+  lockCodeHeld: string | null;
+}
+
+/**
+ * The answer of `POST .../presence` read from a body that came off the network, or `null` when it is not one (no `result` the page knows): an answer that cannot be read is a failure, never a pass. The codes of what to
+ * change are the `guidance` of the answer (the older name `guidanceCodes` is read too), each a text; the lock code, when the server sends one with an `ok`, is a text.
+ */
+export function readPresenceAnswer(value: unknown): PresenceAnswer | null {
+  if (!isRecord(value)) return null;
+  const result = resultKindOf(value.result);
+  if (result === null) return null;
+  const codes = Array.isArray(value.guidance) ? value.guidance : Array.isArray(value.guidanceCodes) ? value.guidanceCodes : [];
+  const text = (member: string) => (typeof value[member] === 'string' ? (value[member] as string).trim() : '');
+
+  return {
+    result,
+    guidance: codes.filter((code): code is string => typeof code === 'string' && code.trim() !== ''),
+    guidedRetryAvailable: value.guidedRetryAvailable === true,
+    state: identityStateOf(value.state),
+    lockCode: text('lockCode') === '' ? null : text('lockCode'),
+    lockCodeHeld: text('lockCodeHeld') === '' ? null : text('lockCodeHeld'),
+  };
+}
+
+/**
+ * After the answer of the presence (E72/F02/US01/T01): `ok` is a pass (with the lock code when the server sends one, or why it is held back); `retry` says what to change and offers the recording again, with a new challenge
+ * and a new key; anything else is a person who verifies. The pictures of the document a property that keeps none holds for the recording are let go by the caller, except after a `retry`. Nothing says «passed» unless the server did.
+ */
+export function afterPresence(progress: IdentityProgress, answer: PresenceAnswer): IdentityProgress {
+  const attemptsRemaining = answer.state?.attemptsRemaining ?? progress.attemptsRemaining;
+  if (answer.result === 'ok') {
+    return {
+      ...progress,
+      stage: 'done',
+      attemptsRemaining,
+      guidanceCodes: [],
+      documentRefused: false,
+      documentSidesTaken: [],
+      lockCode: answer.lockCode,
+      lockCodeHeld: answer.lockCode === null ? answer.lockCodeHeld : null,
+    };
+  }
+  if (answer.result === 'retry') {
+    return { ...progress, stage: 'retry', attemptsRemaining, guidanceCodes: answer.guidance, lockCode: null, lockCodeHeld: null };
+  }
+  return {
+    ...progress,
+    stage: 'operator',
+    operatorRequested: true,
+    attemptsRemaining,
+    guidanceCodes: [],
+    documentRefused: false,
+    documentSidesTaken: [],
+    lockCode: null,
+    lockCodeHeld: null,
+  };
+}
+
+/** The `code` of the 409 that says the automatic check cannot be done for this session (API `IdentityApiErrors.PresenceChallengeUnavailable`). */
+const PRESENCE_CHALLENGE_UNAVAILABLE = 'presence_challenge_unavailable';
+
+/**
+ * The state the 409 `presence_challenge_unavailable` carries (`null` when it carries none the page can read), or `null` itself for any other failure. The challenge cannot be issued for this session: the guest is
+ * told, and a person verifies. The state in the body says why (a person already asked, the face check not offered, the attempts used).
+ */
+export function presenceUnavailableOf(error: unknown): { state: IdentityVerificationState | null } | null {
+  if (!isAxiosError(error) || error.response?.status !== 409) return null;
+  const body: unknown = error.response.data;
+  if (getProblemCode(body) !== PRESENCE_CHALLENGE_UNAVAILABLE) return null;
+  return { state: identityStateOf(isRecord(body) ? body.state : undefined) };
+}
+
+/**
+ * The automatic check cannot be done: the page shows the message of the assisted path (the person verifies, and is asked for at once by the step). The state of the answer, when there is one, tells whether a person was
+ * already asked and whether the face check is offered at all; a verification found closed is shown where it ended.
+ */
+export function afterPresenceUnavailable(progress: IdentityProgress, state: IdentityVerificationState | null): IdentityProgress {
+  if (state?.closed === true) return progressFromState(state);
+  return {
+    ...progress,
+    stage: 'operator',
+    operatorRequested: state?.operatorRequested ?? progress.operatorRequested,
+    biometricOffered: state?.biometricOffered ?? progress.biometricOffered,
+    guidanceCodes: [],
+    documentRefused: false,
+    documentSidesTaken: [],
+    lockCode: null,
+    lockCodeHeld: null,
+  };
+}
+
+/**
+ * The 409 that says the challenge a recording answers is no longer one the server accepts (`presence_challenge_expired`, or `presence_challenge_required` when it has none for this attempt): nothing was decided, and
+ * the guest records again with a new challenge and a new key (E72/F02/US01/T02).
+ */
+export function isPresenceChallengeRenewal(error: unknown): boolean {
+  if (!isAxiosError(error) || error.response?.status !== 409) return false;
+  const code = getProblemCode(error.response.data);
+  return code === 'presence_challenge_expired' || code === 'presence_challenge_required';
+}
+
 /** After the guest asked for a person: the operators are told. A verification that had already passed stays passed. */
 export function afterOperatorRequest(progress: IdentityProgress, response: IdentityOperatorResponse): IdentityProgress {
   const { state } = response;
@@ -441,11 +631,11 @@ export function afterOperatorRequest(progress: IdentityProgress, response: Ident
 }
 
 /**
- * The guest takes again what the guidance asked for (the document or the selfie), from the screen of a `retry`. The document starts again from its face side; what the server already
- * has of the other side stays with the server.
+ * The guest takes again what the guidance asked for (the document, the selfie, or on a self-hosted verification the recording of the presence), from the screen of a `retry`. The document starts again from its face
+ * side; what the server already has of the other side stays with the server. The recording starts from nothing: a new challenge and a new key.
  */
 export function afterRetake(progress: IdentityProgress): IdentityProgress {
-  const target = retakeTargetOf(progress.guidanceCodes);
+  const target = retakeTargetOf(progress.guidanceCodes, progress.selfHosted);
   return {
     ...progress,
     stage: target,
@@ -464,6 +654,10 @@ export function afterProblem(progress: IdentityProgress, problem: IdentityProble
     // The pictures the page held are no longer the ones the server has read (or it has none): the document comes again from its face side.
     return { ...progress, stage: 'document', guidanceCodes: [], documentRefused: false, documentSideNeeded: 'front', documentSidesTaken: [] };
   }
+  // The automatic check cannot be done for this session: the way to a person, with the message of the assisted path.
+  if (problem === 'presence_unavailable') return afterPresenceUnavailable(progress, null);
+  // The server wants a recording of the presence on a page that offers the selfie (a page opened before the flag was turned on): no screen of this page can answer, so the way to a person.
+  if (problem === 'presence_required') return { ...progress, stage: 'unsupported', guidanceCodes: [], documentRefused: false };
   return progress;
 }
 
@@ -486,6 +680,13 @@ export const IDENTITY_PROBLEMS = [
   'document_photo',
   'processing',
   'failed',
+  // The recording of the presence of a self-hosted verification (E72/F02/US01/T01): the automatic check cannot be done (a person verifies), the challenge ran out, the sequence is not valid or too large, or the page
+  // is the one of the selfie while the server wants a recording.
+  'presence_unavailable',
+  'presence_expired',
+  'presence_invalid',
+  'presence_too_large',
+  'presence_required',
 ] as const;
 export type IdentityProblem = (typeof IDENTITY_PROBLEMS)[number];
 
@@ -500,7 +701,13 @@ export function classifyIdentityError(error: unknown): IdentityProblem {
   const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
   if (status === 404) return 'link_unavailable';
   if (status === 429) return 'too_many_requests';
+  // The sequence of the presence has its own 413, before the one of the photos: it is a recording that is too large, not a photo.
+  if (code === 'presence_sequence_too_large') return 'presence_too_large';
   if (status === 413) return 'too_large';
+  if (code === 'presence_challenge_unavailable') return 'presence_unavailable';
+  if (code === 'presence_challenge_expired' || code === 'presence_challenge_required') return 'presence_expired';
+  if (code === 'presence_sequence_invalid') return 'presence_invalid';
+  if (code === 'presence_sequence_required') return 'presence_required';
   if (code === 'biometric_consent_required') return 'consent_required';
   // The text the guest read is no longer the one the registry serves (a new version was published), or none was sent: the guest reads it again before answering.
   if (code === 'biometric_consent_version_unknown' || code === 'biometric_consent_version_required') return 'consent_text_changed';

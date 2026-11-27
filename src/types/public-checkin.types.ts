@@ -364,8 +364,9 @@ export interface CheckInLinkResponse {
 }
 
 /**
- * The steps of the identity verification as the API names them (`IdentityVerificationSteps`). `presence` is the step of the self-hosted flow (E70-E74): this page has no screen for it yet, so it shows the way to a person
- * instead (and so does any step of the future that is not named here).
+ * The steps of the identity verification as the API names them (`IdentityVerificationSteps`). `presence` is the step of the self-hosted flow (E70-E74) that takes the place of `selfie`: the guest follows the moves
+ * of a challenge while the browser records a timestamped sequence of frames (E72/F02/US01/T01). On a state that does not say `selfHosted`, and for any step of the future that is not named here, the page shows
+ * the way to a person instead of a screen it does not have.
  */
 export type IdentityVerificationStep = 'consent' | 'document' | 'selfie' | 'presence' | 'done' | 'operator';
 
@@ -498,6 +499,53 @@ export interface IdentityOpenRequest {
  * idempotent: later calls change nothing. A verification that is closed answers 409 `identity_already_closed` instead, with the same `state` in the body.
  */
 export interface IdentityOpenResponse {
+  state: IdentityVerificationState;
+}
+
+/**
+ * The moves of the challenge of the presence (API `PresenceMoves`, E72/F01/US01/T01): the guest is asked for them one after the other, in the order the challenge names them. The server names them by the picture it
+ * receives, as the camera gives it: `turn_right` is the nose going to the right of the frame (which is the guest's own left, in front of the camera) and `look_up` the nose going up. A move the page has no
+ * words and no drawing for is not a move of the challenge: the challenge is not used.
+ */
+export type PresenceMove = 'turn_left' | 'turn_right' | 'look_up' | 'look_down';
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/presence-challenge` (E72/F02/US01/T01, NF-192): the short challenge of the presence, bound to the session and to the attempt, that expires at `expiresAt`. The
+ * guest looks at the camera for `leadInMs`, then follows each of `steps` for `stepMs`; the browser takes a frame about `targetFps` times a second (at most `maxFrames`, each no larger than `maxFrameSide` px on its
+ * long side) and sends the sequence back with `challengeToken`. 409 `presence_challenge_unavailable` when the automatic check cannot be done for this session: a person verifies.
+ */
+export interface PresenceChallenge {
+  challengeToken: string;
+  steps: PresenceMove[];
+  stepMs: number;
+  leadInMs: number;
+  expiresAt: string;
+  targetFps: number;
+  maxFrames: number;
+  maxFrameSide: number;
+}
+
+/**
+ * What `POST /api/public/checkin/{token}/presence` is sent (E72/F02/US01/T01): the frames of the sequence (JPEG, in memory only), the time of each in milliseconds from the first (a whole number, the first is 0, each one larger
+ * than the one before), the token of the challenge they answer and, for a property that keeps no document (Ticino), the picture(s) of the document again, as the selfie of the legacy path does.
+ */
+export interface PresenceSequence {
+  frames: Blob[];
+  timestamps: number[];
+  challengeToken: string;
+  documentPhoto?: Blob | null;
+  documentPhotoBack?: Blob | null;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/presence`: `ok`, `retry` (with the codes of what to change, `presence_too_short`, `presence_timing`, `presence_quality`, `presence_single_face`,
+ * `presence_challenge_not_followed`) or `operator`, whether the one guided retry is still there, and the state of the verification. The server keeps the answer of an `Idempotency-Key` it has already
+ * processed and gives it again for the same key, also after the challenge has expired. Nothing of the frames comes back.
+ */
+export interface IdentityPresenceResponse {
+  result: IdentityVerificationResultKind;
+  guidance: string[];
+  guidedRetryAvailable: boolean;
   state: IdentityVerificationState;
 }
 
