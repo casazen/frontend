@@ -40,7 +40,7 @@ describe('Product guide', () => {
     expect(screen.getByRole('searchbox', { name: 'Search the guide' })).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(11);
     fireEvent.click(screen.getByRole('link', { name: /Alloggiati/ }));
-    expect(screen.getByText(/In the current workflow CasaZen prepares/)).toBeInTheDocument();
+    expect(screen.getByText(/As a rule CasaZen prepares the information/)).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2 })).toHaveFocus();
     fireEvent.click(screen.getByRole('link', { name: 'Back to topics' }));
     expect(screen.getByRole('link', { name: /Alloggiati/ })).toHaveFocus();
