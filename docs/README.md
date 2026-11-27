@@ -1,24 +1,15 @@
-# Documentazione webapp CasaZen
+# docs/ — indirizzamento
 
-## Per gli utenti
+> Verificato il 2026-11-27 su `develop@498fb224`. Questa cartella contiene **solo questo file**: non aggiungere altri `.md` qui (vedi `AGENTS.md`, sezione «Documentazione»).
 
-La **Guida CasaZen** è consultabile dopo il login dall’icona libro nell’intestazione. Ogni area la espone all’indirizzo `/app/<area>/help`. Non richiede un permesso operativo aggiuntivo, ma richiede accesso all’area e il completamento dell’onboarding.
+La documentazione di progetto (requisiti, punti aperti, decisioni, ADR, integrazioni, guide tecniche, report) sta nella cartella **`documentazione/` del workspace CasaZen** (la cartella che contiene `backend/`, `frontend/` e `mobile/`), fuori dai repository di proposito: questo repository è pubblico.
 
-Copre primi passi, immobili, prenotazioni, iCal, ospiti e privacy, Alloggiati, pagamenti e messaggi, organizzazione, contratti, fornitori e assistenza. I contenuti sono editoriali: non contengono dati dell’organizzazione o degli ospiti.
-
-## Per chi sviluppa
-
-| Documento | Contenuto |
+| Cercavi | Ora è in |
 |---|---|
-| [Sviluppo](technical/development.md) | Prerequisiti, variabili, avvio, problemi frequenti |
-| [Architettura](technical/architecture.md) | Routing, aree, dati, componenti, sicurezza |
-| [Test e rilascio](technical/testing.md) | Vitest, Playwright, CI e verifica degli ambienti |
-| [Modalità demo](technical/demo-mode.md) | Dati dimostrativi e limiti |
-| [Guida prodotto](product/README.md) | Fonti dei contenuti e regole di aggiornamento |
-| [Navigazione operativa](product/navigazione-operativa.md) | Voci IT/EN, ruoli, collegamenti contestuali e posizione su telefono e desktop |
-| [Verifica dei percorsi](product/verifica-percorsi.md) | Confronti prima/dopo, accessibilità e risultati browser |
-| [Demo e conversione](product/demo-e-conversione.md) | Percorsi commerciali, eventi, coorti e backlog |
-| [Assistente operativo](technical/assistente-operativo.md) | Contratto, copertura per area e condizioni di integrazione |
-| [Plugin WordPress](technical/wordpress-plugin.md) | Struttura, build, CI, rilascio e checklist del pilota |
+| `docs/technical/*` (sviluppo, architettura, test, demo, design system, flussi host, guida contratti, assistente, plugin WordPress) | `documentazione/03-documenti-ai/runbook/frontend/` (essenziale in `AGENTS.md`) |
+| `docs/product/README.md` (regole editoriali della guida) | `AGENTS.md`, sezione «Guida utente» |
+| `docs/product/demo-e-conversione.md` | `documentazione/03-documenti-ai/requisiti/specifiche/frontend-demo-e-conversione.md` |
+| `docs/product/{verifica,revisione}-*.md`, `evidenze-*` | rimossi (verifiche e screenshot di sessioni concluse: restano nella storia git, `git show 498fb224:<percorso>`) |
+| Runbook condivisi con il backend | repository `casazen/backend`, cartella `docs/runbooks/` |
 
-L’[indice backend](https://github.com/casazen/backend/blob/develop/docs/index.md) raccoglie contratti API, dominio, infrastruttura e runbook operativi condivisi. I README accanto ai componenti restano nel codice perché descrivono le API locali dei componenti.
+Mappa completa dei vecchi percorsi: `documentazione/99-archivio/MAPPA-SPOSTAMENTI.md`. Guida utente: in-app (**Guida** nell'intestazione, testi `productGuide` in `src/i18n/locales/{it,en}.json`) e guida HTML (`guida/`, `public/guida/`, `npm run guida:build`).
