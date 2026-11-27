@@ -77,6 +77,9 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
   const options = senderOptions(read);
   const automatic = isAutomaticSender(chosen);
   const istatClaim = useIstatClaim(read.propertyId);
+  // With the direct send of CasaZen in force the server offers no way to choose (`availableSenders` is empty) and the sender changes only with the support: the cards say that, not
+  // that they are «not available yet». A legacy row that names CasaZen without a direct send in force does not activate a route: the server reads it as `Inactive`, and it keeps the generic words.
+  const directActive = read.sender === 'CasaZen' && read.state !== 'Inactive';
 
   return (
     <div className="flex flex-col gap-6" data-testid="sender-choice-step">
@@ -111,9 +114,11 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
             description={
               available
                 ? t(`compliance.sender.choice.options.${sender}.description`)
-                : sender === 'CasaZen'
-                  ? t('compliance.sender.choice.options.CasaZen.unavailable')
-                  : t('compliance.sender.choice.notAvailable')
+                : directActive
+                  ? t('compliance.sender.choice.directActive')
+                  : sender === 'CasaZen'
+                    ? t('compliance.sender.choice.options.CasaZen.unavailable')
+                    : t('compliance.sender.choice.notAvailable')
             }
             data-testid={`sender-option-${sender}`}
           />

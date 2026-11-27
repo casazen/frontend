@@ -7676,7 +7676,7 @@
       "guest_data_missing": "Some guest details needed for Alloggiati Web are missing.",
       "identity_missing": "The arrival is near and the guest's identity is not verified yet.",
       "identity_verified": "The guest's identity is verified.",
-      "municipality_rate_missing": "We do not know the tourist tax rate of the municipality: enter it (it is never taken as zero).",
+      "municipality_rate_missing": "We do not know the tourist tax rate of the municipality: enter it in the guided check-in of a stay, at the “Tourist tax” step (it is never taken as zero).",
       "operator_decision_required": "An operator has to decide on the identity check.",
       "over_thirty_nights_not_sent": "Over 30 nights the channel manager does not send by itself: send Alloggiati Web yourself.",
       "period_open": "The period is still open: the deadline has not come.",
@@ -7856,6 +7856,7 @@
       },
       "choice": {
         "autoSendOff": "By default nothing starts by itself: guests go to your channel manager only when you confirm the check-in. Check the status on the Compliance page.",
+        "directActive": "It cannot be changed here: with direct sending active, ask support.",
         "istat": "The same sender also handles the regional statistics (ISTAT), where required.",
         "istatSeeNotice": "For the ISTAT, what the notice above says applies.",
         "legend": "Who sends the guests' data to the police?",

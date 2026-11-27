@@ -326,6 +326,26 @@ describe('SenderWizardPage: who sends (NF-42, NF-49)', () => {
     expect(screen.queryByTestId('sender-auto-send-off')).not.toBeInTheDocument();
   });
 
+  it('SenderWizardPage_DirectSendInForce_NoWayIsOfferedAndTheCardsSayItChangesOnlyWithTheSupportNotThatItIsNotAvailableYet', async () => {
+    // With the direct send of CasaZen in force the server offers no way to choose (`availableSenders` is empty): «Lo faccio io» is not «Non ancora disponibile», it cannot be changed from here.
+    server = senderOf({ sender: 'CasaZen', source: 'Stored', state: 'Unverified', verification: 'Unverifiable', channelManagerAvailable: false, availableSenders: [] });
+    await open();
+
+    const manual = screen.getByTestId('sender-option-Manual');
+    expect(manual).toBeDisabled();
+    expect(manual.closest('label')).toHaveTextContent(text('compliance.sender.choice.directActive'));
+    expect(manual.closest('label')).not.toHaveTextContent(text('compliance.sender.choice.notAvailable'));
+    expect(screen.getByTestId('sender-option-CasaZen').closest('label')).toHaveTextContent(text('compliance.sender.choice.directActive'));
+  });
+
+  it('SenderWizardPage_LegacyRowNamingCasaZenWithoutADirectSend_KeepsTheGenericWordsOfNotAvailable', async () => {
+    server = senderOf({ sender: 'CasaZen', source: 'Stored', state: 'Inactive', verification: 'NotApplicable', channelManagerAvailable: false, availableSenders: [] });
+    await open();
+
+    expect(screen.getByTestId('sender-option-Manual').closest('label')).toHaveTextContent(text('compliance.sender.choice.notAvailable'));
+    expect(screen.getByTestId('sender-option-Manual').closest('label')).not.toHaveTextContent(text('compliance.sender.choice.directActive'));
+  });
+
   it('SenderWizardPage_ConnectedProperty_StartsFromItsChannelManagerAsTheDefault', async () => {
     server = senderOf({ sender: 'ChannelManager', source: 'DefaultConnected', state: 'Unverified', verification: 'Unverifiable' });
     await open();

@@ -7676,7 +7676,7 @@
       "guest_data_missing": "Mancano dei dati degli ospiti per Alloggiati Web.",
       "identity_missing": "L'arrivo è vicino e l'identità dell'ospite non è ancora verificata.",
       "identity_verified": "L'identità dell'ospite è verificata.",
-      "municipality_rate_missing": "Non conosciamo l'imposta di soggiorno del comune: inseriscila (non vale zero).",
+      "municipality_rate_missing": "Non conosciamo l'imposta di soggiorno del comune: inseriscila nel check-in guidato di un soggiorno, al passo «Imposta di soggiorno» (non vale zero).",
       "operator_decision_required": "Un operatore deve decidere sulla verifica dell'identità.",
       "over_thirty_nights_not_sent": "Oltre 30 notti il channel manager non invia da solo: invia tu Alloggiati Web.",
       "period_open": "Il periodo è ancora aperto: la scadenza non è arrivata.",
@@ -7856,6 +7856,7 @@
       },
       "choice": {
         "autoSendOff": "Di partenza non parte nulla da solo: gli ospiti vanno al tuo channel manager solo quando confermi tu il check-in. Controlla lo stato in Adempimenti.",
+        "directActive": "Non si cambia da qui: con l’invio diretto attivo serve l’assistenza.",
         "istat": "Lo stesso invio si occupa anche delle statistiche regionali (ISTAT), dove richieste.",
         "istatSeeNotice": "Per l'ISTAT vale quanto dice l'avviso qui sopra.",
         "legend": "Chi invia i dati degli ospiti alla Polizia?",
