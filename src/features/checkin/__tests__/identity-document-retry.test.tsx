@@ -19,6 +19,7 @@ import {
   frontWasTaken,
   GUIDANCE_CODES,
   guidanceKey,
+  listedGuidance,
   progressFromState,
   retakeTargetOf,
 } from '../lib/identity-model';
@@ -173,7 +174,7 @@ describe('identity-document-retry: every guidance code has its own words (E71/F0
     render(
       <IdentityDocumentCapture
         refused
-        guidanceCodes={['document_glare', 'document_blur', 'avoid_glare']}
+        guidanceCodes={['document_glare', 'document_blur', 'more_light']}
         side="front"
         twoSided
         frontReceived={false}
@@ -185,6 +186,33 @@ describe('identity-document-retry: every guidance code has its own words (E71/F0
 
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
     expect(screen.getByTestId('checkin-identity-document-operator')).toBeEnabled();
+  });
+
+  it('IdentityDocumentCapture_ATargetedCodeAndTheOlderCodeThatSaysTheSame_AreOneLineAndAnOlderCodeOnItsOwnStillIsAline', () => {
+    // The server sends the targeted codes first and then the codes of the capture checks of before: a reflection or a blur found by both is said once.
+    const { rerender } = render(
+      <IdentityDocumentCapture
+        refused
+        guidanceCodes={['document_glare', 'document_blur', 'avoid_glare', 'hold_still', 'more_light']}
+        side="front"
+        twoSided
+        frontReceived={false}
+        busy={false}
+        onPhoto={vi.fn()}
+        onRequestOperator={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(screen.queryByTestId('checkin-identity-document-guidance-avoid_glare')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-identity-document-guidance-hold_still')).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkin-identity-document-guidance-document_glare')).toBeInTheDocument();
+    expect(screen.getByTestId('checkin-identity-document-guidance-document_blur')).toBeInTheDocument();
+
+    rerender(
+      <IdentityDocumentCapture refused guidanceCodes={['avoid_glare', 'hold_still']} side="front" twoSided frontReceived={false} busy={false} onPhoto={vi.fn()} onRequestOperator={vi.fn()} />,
+    );
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
   });
 
   it('IdentityDocumentCapture_ARefusal_IsHeardByAScreenReaderAndHasNoAccessibilityViolations', async () => {
@@ -249,6 +277,13 @@ describe('identity-document-retry: the codes that end with a person (AC2)', () =
     const next = afterDocument(progressFromState(state()), refusal(code), 'front');
 
     expect(next).toMatchObject({ stage: 'operator', operatorRequested: true, guidanceCodes: [code], documentRefused: false, documentSidesTaken: [], lockCode: null });
+  });
+
+  it('listedGuidance_OnlyTheOlderCodeThatATargetedCodeSaysAgain_IsLeftOut', () => {
+    expect(listedGuidance(['document_glare', 'avoid_glare', 'more_light'])).toEqual(['document_glare', 'more_light']);
+    expect(listedGuidance(['document_blur', 'hold_still'])).toEqual(['document_blur']);
+    expect(listedGuidance(['avoid_glare', 'hold_still', 'document_edges_not_visible'])).toEqual(['avoid_glare', 'hold_still', 'document_edges_not_visible']);
+    expect(listedGuidance([])).toEqual([]);
   });
 
   it('afterDocument_ATargetedCodeThatIsNotFinal_KeepsTheGuestAtTheDocumentWithTheReason', () => {

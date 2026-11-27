@@ -75,6 +75,17 @@ export function assistedReasonOf(codes: readonly string[]): string | null {
   return codes.find((code) => (ASSISTED_GUIDANCE_CODES as readonly string[]).includes(code)) ?? null;
 }
 
+/** The older code of the capture checks that says what a targeted code of the document step says (a reflection, a blurred picture): the server sends both when both checks find it. */
+const OLDER_TWIN: Readonly<Record<string, string>> = { document_glare: 'avoid_glare', document_blur: 'hold_still' };
+
+/**
+ * The codes of a refusal as the page lists them: a targeted code and the older code that gives the same advice are one line, the targeted one (the server sends the targeted codes first and then the
+ * codes of the capture checks of before). An older code on its own is listed as it always was, and so is every other.
+ */
+export function listedGuidance(codes: readonly string[]): string[] {
+  return codes.filter((code) => !Object.entries(OLDER_TWIN).some(([targeted, older]) => older === code && codes.includes(targeted)));
+}
+
 /**
  * The key of the words of a guidance code, or of the generic sentence for a code that is not known. A photo that shows the other side than the one asked (`document_wrong_side`) says which side to
  * photograph when the page knows it (`asked`): «this is the back: photograph the front», or the other way round; otherwise it says it in general.

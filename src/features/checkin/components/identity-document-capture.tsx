@@ -4,7 +4,7 @@ import { Camera, Copy, FileX, FlipHorizontal2, Focus, LayoutTemplate, Maximize, 
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { DocumentSide } from '@/types/public-checkin.types';
-import { guidanceKey } from '../lib/identity-model';
+import { guidanceKey, listedGuidance } from '../lib/identity-model';
 import { DocumentCameraGuide } from './document-camera-guide';
 import { MrzPositionIllustration } from './mrz-position-illustration';
 
@@ -120,7 +120,7 @@ export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided
         <Alert variant="warning" role="alert" title={t('checkin.identity.document.notAcceptable')} data-testid="checkin-identity-document-guidance">
           {guidanceCodes.length > 0 && (
             <ul className="mt-1 list-disc space-y-0.5 pl-5">
-              {guidanceCodes.map((code) => {
+              {listedGuidance(guidanceCodes).map((code) => {
                 const Icon = GUIDANCE_ICONS[code];
                 const words = t(guidanceKey(code, side));
                 return (
