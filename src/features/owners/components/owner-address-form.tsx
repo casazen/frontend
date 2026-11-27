@@ -6,6 +6,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
+import { HelpTip } from '@/components/ui/help-tip';
 import { Input } from '@/components/ui/input';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useOwnerAddress, useSaveOwnerAddress } from '@/queries/use-owner-accounting';
@@ -20,10 +21,10 @@ interface OwnerAddressSectionProps {
   canManage: boolean;
 }
 
-function AddressCard({ action, children }: { action?: ReactNode; children: ReactNode }) {
+function AddressCard({ action, help, children }: { action?: ReactNode; help?: ReactNode; children: ReactNode }) {
   const { t } = useTranslation();
   return (
-    <OwnerCard icon={MapPin} title={t('ownerAddress.title')} action={action} data-testid="owner-address-section">
+    <OwnerCard icon={MapPin} title={t('ownerAddress.title')} action={action} help={help} data-testid="owner-address-section">
       {children}
     </OwnerCard>
   );
@@ -79,7 +80,7 @@ function AddressEditor({ ownerId, saved }: { ownerId: string; saved: OwnerAddres
     </Button>
   );
   return (
-    <AddressCard action={edit}>
+    <AddressCard action={edit} help={<HelpTip title={t('ownerAddress.title')}>{t('ownerAddress.description')}</HelpTip>}>
       {lines.length > 0 ? (
         <address className="text-sm not-italic leading-relaxed" data-testid="owner-address-summary">
           {lines.map((line, index) => (
@@ -89,7 +90,6 @@ function AddressEditor({ ownerId, saved }: { ownerId: string; saved: OwnerAddres
       ) : (
         <p className="text-sm text-foreground/60">{t('ownerProfile.facts.empty')}</p>
       )}
-      <p className="text-sm text-foreground/70">{t('ownerAddress.caption')}</p>
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="max-h-[90dvh] overflow-y-auto">
           <DialogHeader>

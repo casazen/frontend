@@ -20323,7 +20323,6 @@
     }
   },
   "ownerAddress": {
-    "caption": "For the agency invoice, the QR-bill and the bank transfer to the owner.",
     "countryHint": "Two letters, for example IT or CH.",
     "countryInvalid": "The country is two letters.",
     "description": "The address the agency's invoice, the QR-bill and the bank transfer to the owner need. Saving it replaces the one before.",
@@ -34444,7 +34443,6 @@
   "issuedDocuments": {
     "agency": {
       "download": "Download for the owner’s accountant",
-      "summary": "One ZIP with the PDFs and XMLs of the documents, the CSV and Excel list and the index with the file fingerprints: what the owner’s accountant needs.",
       "title": "Documents issued in the name of the owner"
     },
     "export": {
@@ -34461,7 +34459,6 @@
     }
   },
   "ownerIssuer": {
-    "caption": "CasaZen issues the stay documents in the name of the owner, with their own series.",
     "chip": {
       "incomplete": "To complete",
       "none": "To set up",

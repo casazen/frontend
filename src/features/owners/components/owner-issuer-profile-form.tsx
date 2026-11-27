@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
+import { HelpTip } from '@/components/ui/help-tip';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { isFeatureEnabled } from '@/config/feature-flags';
@@ -289,10 +290,10 @@ function IssuerStateNote({ profile }: { profile: Pick<OwnerIssuerProfile, 'exist
   return <QuietNote icon={AlertTriangle}>{fields.length > 0 ? t('ownerIssuer.state.missing', { fields: fields.join(', ') }) : t('ownerIssuer.state.missingUnknown')}</QuietNote>;
 }
 
-function IssuerCard({ chip, action, children }: { chip?: ReactNode; action?: ReactNode; children: ReactNode }) {
+function IssuerCard({ chip, action, help, children }: { chip?: ReactNode; action?: ReactNode; help?: ReactNode; children: ReactNode }) {
   const { t } = useTranslation();
   return (
-    <OwnerCard icon={FileText} title={t('ownerIssuer.title')} chip={chip} action={action} data-testid="owner-issuer-section">
+    <OwnerCard icon={FileText} title={t('ownerIssuer.title')} chip={chip} action={action} help={help} data-testid="owner-issuer-section">
       {children}
     </OwnerCard>
   );
@@ -376,13 +377,8 @@ function IssuerEditor({ ownerId, profile }: { ownerId: string; profile: OwnerIss
     </Button>
   );
   return (
-    <IssuerCard chip={editing ? undefined : <IssuerStateChip profile={profile} />} action={edit}>
-      {!editing ? (
-        <>
-          <p className="text-sm text-foreground/70">{t('ownerIssuer.caption')}</p>
-          <OwnerIssuerProfileFacts profile={profile} />
-        </>
-      ) : null}
+    <IssuerCard chip={editing ? undefined : <IssuerStateChip profile={profile} />} action={edit} help={<HelpTip title={t('ownerIssuer.title')}>{t('ownerIssuer.description')}</HelpTip>}>
+      {!editing ? <OwnerIssuerProfileFacts profile={profile} /> : null}
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent className="max-h-[90dvh] overflow-y-auto">
           <DialogHeader>

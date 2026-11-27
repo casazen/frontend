@@ -20323,7 +20323,6 @@
     }
   },
   "ownerAddress": {
-    "caption": "Per la fattura dell'agenzia, la QR-fattura e il bonifico al proprietario.",
     "countryHint": "Due lettere, per esempio IT o CH.",
     "countryInvalid": "Il paese è di due lettere.",
     "description": "L'indirizzo che serve alla fattura dell'agenzia, alla QR-fattura e al bonifico al proprietario. Salvandolo si sostituisce quello di prima.",
@@ -34444,7 +34443,6 @@
   "issuedDocuments": {
     "agency": {
       "download": "Scarica per il commercialista del proprietario",
-      "summary": "Un solo ZIP con PDF e XML dei documenti, elenco CSV ed Excel e indice con le impronte: è quello che serve al commercialista.",
       "title": "Documenti emessi a nome del proprietario"
     },
     "export": {
@@ -34461,7 +34459,6 @@
     }
   },
   "ownerIssuer": {
-    "caption": "CasaZen emette i documenti dei soggiorni a nome del proprietario, con il suo sezionale.",
     "chip": {
       "incomplete": "Da completare",
       "none": "Da impostare",
