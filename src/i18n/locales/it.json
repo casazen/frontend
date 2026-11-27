@@ -6840,6 +6840,12 @@
         "move_closer": "Avvicinati: il tuo viso è troppo piccolo nella foto.",
         "one_face_only": "Nella foto devi esserci solo tu.",
         "other": "Scatta di nuovo la foto.",
+        "presence_again": "Ripeti la ripresa seguendo le indicazioni sullo schermo.",
+        "presence_challenge_not_followed": "Non abbiamo visto tutti i movimenti richiesti: segui le indicazioni sullo schermo, nell'ordine.",
+        "presence_quality": "La ripresa non era abbastanza chiara: cerca più luce, tieni fermo il telefono e il viso dentro l'ovale.",
+        "presence_single_face": "Nella ripresa deve esserci solo il tuo viso, sempre visibile: nessun'altra persona dietro di te.",
+        "presence_timing": "I tempi della ripresa non tornano: segui le indicazioni tutte di seguito, senza fermarti, e riprova.",
+        "presence_too_short": "La ripresa è stata troppo breve: resta davanti alla fotocamera fino alla fine delle indicazioni.",
         "retake_picture": "La foto non si legge: scattala di nuovo.",
         "retake_selfie": "Scatta di nuovo il selfie, guardando dritto la fotocamera.",
         "show_document_photo": "Inquadra il lato del documento con la tua foto.",
@@ -6857,6 +6863,29 @@
         "ask": "Chiedi la verifica di un operatore",
         "requested": "Abbiamo avvisato chi gestisce la struttura. Verificherà la tua identità e il codice di accesso ti arriva dopo la sua decisione."
       },
+      "presence": {
+        "camera": {
+          "busy": "La fotocamera è usata da un'altra app. Chiudila e premi «Riprova».",
+          "fallback": "Puoi riprovare, oppure continuare con una persona che verifica la tua identità."
+        },
+        "instructions": "Mettiti in un posto ben illuminato e tieni il viso dentro l'ovale. Premi «Inizia» e segui le indicazioni sullo schermo: dovrai girare la testa e alzare o abbassare lo sguardo. Dura pochi secondi.",
+        "leadIn": "Guarda la fotocamera",
+        "move": {
+          "look_down": "Abbassa lo sguardo",
+          "look_up": "Alza lo sguardo",
+          "turn_left": "Gira la testa a sinistra",
+          "turn_right": "Gira la testa a destra"
+        },
+        "notice": {
+          "not_prepared": "Non siamo riusciti a registrare le immagini. Premi «Inizia» per riprovare."
+        },
+        "preparing": "Prepariamo la verifica…",
+        "retry": "Riprova",
+        "secondsLeft": "Secondi rimasti: {{count}}",
+        "start": "Inizia",
+        "step": "Passo {{current}} di {{total}}",
+        "title": "Mostra il tuo viso alla fotocamera"
+      },
       "problem": {
         "consent_required": "Prima ci serve la tua risposta sul controllo del volto.",
         "consent_text_changed": "Il testo del consenso è stato aggiornato. Leggilo di nuovo prima di rispondere.",
@@ -6865,6 +6894,11 @@
         "failed": "Qualcosa non ha funzionato. Riprova.",
         "link_unavailable": "Questo link non è più valido, oppure il check-in è già completo. Chiedi un nuovo link a chi gestisce la struttura.",
         "network": "Non siamo riusciti a raggiungere il server. Non è stato salvato nulla: controlla la connessione e riprova.",
+        "presence_expired": "Il tempo per questa verifica è scaduto. Ricomincia con una nuova ripresa.",
+        "presence_invalid": "La ripresa non è valida. Riprova con una nuova ripresa, oppure chiedi la verifica di una persona.",
+        "presence_required": "Questa verifica è cambiata: ricarica la pagina oppure chiedi la verifica di una persona.",
+        "presence_too_large": "La ripresa è troppo grande per essere inviata. Riprova con una nuova ripresa.",
+        "presence_unavailable": "In questo momento la verifica automatica non è disponibile: ti verifica una persona.",
         "processing": "Non siamo riusciti a elaborare la foto. Riprova.",
         "too_large": "La foto è troppo grande. Scattala di nuovo con una risoluzione più bassa.",
         "too_many_requests": "Troppi tentativi in poco tempo. Aspetta un momento e riprova.",
@@ -6886,6 +6920,7 @@
         "retry": {
           "again": "Scatta di nuovo il selfie",
           "againDocument": "Fotografa di nuovo il documento",
+          "againPresence": "Riprova",
           "attempts": "Tentativi rimasti: {{count}}",
           "intro": "Questa volta il controllo non è andato a buon fine. Ecco cosa cambiare:",
           "noReason": "Questa volta il controllo non è andato a buon fine.",

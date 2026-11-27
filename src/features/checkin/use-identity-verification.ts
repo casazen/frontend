@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { publicCheckinApi, type SelfiePose } from '@/api/checkin.api';
 import { prepareDocumentPhoto } from '@/lib/image-capture';
-import type { DocumentSide, IdentityVerificationState } from '@/types/public-checkin.types';
+import type { DocumentSide, IdentityVerificationState, PresenceChallenge, PresenceSequence } from '@/types/public-checkin.types';
 import { looksLikeTheSameSide } from './lib/document-fingerprint';
 import {
   afterConsent,
   afterDocument,
   afterOperatorRequest,
+  afterPresence,
+  afterPresenceUnavailable,
   afterProblem,
   afterRetake,
   afterSelfie,
@@ -17,10 +19,25 @@ import {
   identityStateOf,
   isIdentityConcluded,
   isNoticeVersionUnknown,
+  presenceUnavailableOf,
   progressFromState,
+  readPresenceAnswer,
+  readPresenceChallenge,
   type IdentityProblem,
   type IdentityProgress,
 } from './lib/identity-model';
+
+/**
+ * What asking for the challenge of the presence came to (E72/F02/US01/T01): the challenge; a failure the guest may try again (`problem` says which); the step moved on by itself, because the automatic check cannot
+ * be done for this session (the assisted path takes over) or the verification was found closed; or the screen that asked is already gone, and the answer is not for it.
+ */
+export type PresenceChallengeResult = { kind: 'ready'; challenge: PresenceChallenge } | { kind: 'failed' } | { kind: 'moved' } | { kind: 'stale' };
+
+/**
+ * What sending the sequence of the presence came to (E72/F02/US01/T01): the server answered (the step moved on: a pass, a retry with its guidance, a person, or a verification found closed); the call failed (`problem`
+ * says why, and the recording starts again, with a new challenge and a new key); or another call of the step is in flight and nothing was sent.
+ */
+export type PresenceSendResult = { kind: 'answered' } | { kind: 'failed' } | { kind: 'busy' };
 
 /** What the identity step of the check-in page can do, and what it knows (E03/F04/US03/T01, E22/F02/US01/T01). */
 export interface IdentityVerificationController {
@@ -53,6 +70,18 @@ export interface IdentityVerificationController {
   looksLikeTheFront: (fingerprint: string) => boolean;
   /** The selfie. Resolves `true` when the API answered, `false` when the call failed (the guest sends the same picture again). */
   sendSelfie: (selfie: Blob, pose?: SelfiePose) => Promise<boolean>;
+  /**
+   * The challenge of the presence of a self-hosted verification (E72/F02/US01/T01): the moves to follow and how the frames are taken. It is a call of its own, not one of the buttons of the step, so it holds none of
+   * them disabled and the way to a person stays open while it is on its way. `isCurrent` says whether the screen that asked is still the one that wants the answer: when it is not, nothing is done with it (`stale`). A challenge that
+   * the server cannot issue for this session (409 `presence_challenge_unavailable`) moves the step to the assisted path, with the state of the answer; a verification found closed shows where it ended; any
+   * other failure is a `problem` and the guest tries again.
+   */
+  startPresence: (isCurrent?: () => boolean) => Promise<PresenceChallengeResult>;
+  /**
+   * The sequence of the presence (E72/F02/US01/T01): sent with `idempotencyKey`, which belongs to the recording (made once for it). The pictures of the document a property that keeps none holds for the recording go
+   * with it. One call at a time (`busy` while it lasts): a second one is not sent. The sequence is not kept here: the caller owns its frames and lets them go.
+   */
+  sendPresence: (sequence: PresenceSequence, idempotencyKey: string) => Promise<PresenceSendResult>;
   /** The guest asks for a person, from any screen of the step (GDPR art. 22). */
   askOperator: () => Promise<void>;
   /** The guest takes again what the guidance asked for (from the screen of a `retry`). */
@@ -300,6 +329,86 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     }, afterSelfie);
   };
 
+  const startPresence = async (isCurrent: () => boolean = () => true): Promise<PresenceChallengeResult> => {
+    // The guest who asks for a challenge is not on a failure any more: the sentence of the last one goes.
+    setProblem(null);
+    try {
+      const challenge = readPresenceChallenge(await publicCheckinApi.startPresenceChallenge(token));
+      if (!isCurrent()) return { kind: 'stale' };
+      if (challenge !== null) return { kind: 'ready', challenge };
+      // A body that is not a challenge the page can follow is a failure like any other: the guest tries again, or asks for a person.
+      setProblem('failed');
+      return { kind: 'failed' };
+    } catch (error) {
+      if (!isCurrent()) return { kind: 'stale' };
+      // The verification is over (another tab, a reload): the guest sees where it ended.
+      const closed = closedStateOf(error);
+      if (closed) {
+        showClosed(closed);
+        return { kind: 'moved' };
+      }
+      // The automatic check cannot be done for this session: the message of the assisted path, with what the state says about why.
+      const unavailable = presenceUnavailableOf(error);
+      if (unavailable) {
+        letGoOfThePictures();
+        update((current) => afterPresenceUnavailable(current, unavailable.state));
+        return { kind: 'moved' };
+      }
+
+      const reason = classifyIdentityError(error);
+      setProblem(reason);
+      update((current) => afterProblem(current, reason));
+      return { kind: 'failed' };
+    }
+  };
+
+  const sendPresence = async (sequence: PresenceSequence, idempotencyKey: string): Promise<PresenceSendResult> => {
+    if (inFlight.current) return { kind: 'busy' };
+
+    // A property that keeps no document gets the pictures again with the recording, as it does with the selfie: held in memory for the step only.
+    const needsDocument = progress?.documentNotArchived === true;
+    const needsBack = needsDocument && progress?.documentTwoSided === true;
+    const held = documentPictures.current;
+    if (needsDocument && (!held.front || (needsBack && !held.back))) {
+      // The page was closed since the document was photographed: its pictures are gone, and the API asks for them again.
+      setProblem('document_photo');
+      update((current) => afterProblem(current, 'document_photo'));
+      return { kind: 'failed' };
+    }
+
+    inFlight.current = true;
+    setBusy(true);
+    setProblem(null);
+    try {
+      const body: PresenceSequence = { ...sequence, documentPhoto: needsDocument ? held.front : null, documentPhotoBack: needsBack ? held.back : null };
+      const answer = readPresenceAnswer(await publicCheckinApi.postPresence(token, body, idempotencyKey));
+      if (answer === null) {
+        // An answer that is not one (a page of the server in its place) decided nothing the page can show: it is a failure, never a pass.
+        setProblem('failed');
+        return { kind: 'failed' };
+      }
+      // A pass or a person ends the step: the pictures of the document are let go. After a retry they are needed for the next recording.
+      if (answer.result !== 'retry') letGoOfThePictures();
+      update((current) => afterPresence(current, answer));
+      return { kind: 'answered' };
+    } catch (error) {
+      // The verification is over (a recording sent from another tab, or after a reload): the server answered where it ended, and that is what the guest sees; the call is answered, and it is not a failure.
+      const closed = closedStateOf(error);
+      if (closed) {
+        showClosed(closed);
+        return { kind: 'answered' };
+      }
+
+      const reason = classifyIdentityError(error);
+      setProblem(reason);
+      update((current) => afterProblem(current, reason));
+      return { kind: 'failed' };
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
+  };
+
   const askOperator = async () => {
     const asked = await run(() => publicCheckinApi.requestOperator(token), afterOperatorRequest);
     // A person has it, or it passed: the pictures of the document are no longer needed. A call that failed leaves them, for the guest who tries again.
@@ -321,6 +430,8 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     sendDocument,
     looksLikeTheFront,
     sendSelfie,
+    startPresence,
+    sendPresence,
     askOperator,
     retake,
     openNotice,

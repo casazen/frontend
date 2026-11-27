@@ -3,11 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Clock, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GUIDANCE_ICONS } from './components/guidance-icons';
-import { assistedReasonOf, guidanceKey, LOCK_CODE_HELD_TOURIST_TAX, retakeTargetOf } from './lib/identity-model';
+import { assistedReasonOf, guidanceKey, LOCK_CODE_HELD_TOURIST_TAX, presenceGuidanceKey, retakeTargetOf } from './lib/identity-model';
 
 interface IdentityResultProps {
   /** What the guest is told: passed, try again, or a person verifies. */
   kind: 'ok' | 'retry' | 'operator';
+  /**
+   * The answer is the one of a self-hosted verification (E72/F02/US01/T01): a retry is the recording of the presence again, with a new challenge, and says what to change in its own words; the selfie, and the attempts of
+   * the legacy path, are not there. The server decides how many guided retries there are, so the page counts none.
+   */
+  presence?: boolean;
   /** The lock code of the property: shown only for `ok`, whatever else is passed. */
   lockCode: string | null;
   /** Why an `ok` has no code although the property has one: the code is held back until the tourist tax is paid (`tourist_tax_due`). */
@@ -32,6 +37,7 @@ interface IdentityResultProps {
  */
 export function IdentityResult({
   kind,
+  presence = false,
   lockCode,
   lockCodeHeld = null,
   guidanceCodes,
@@ -86,7 +92,12 @@ export function IdentityResult({
     );
   }
 
-  const retakeLabel = retakeTargetOf(guidanceCodes) === 'document' ? 'checkin.identity.result.retry.againDocument' : 'checkin.identity.result.retry.again';
+  const retakeTarget = retakeTargetOf(guidanceCodes, presence);
+  const retakeLabel = {
+    document: 'checkin.identity.result.retry.againDocument',
+    presence: 'checkin.identity.result.retry.againPresence',
+    selfie: 'checkin.identity.result.retry.again',
+  }[retakeTarget];
   const assistedReason = kind === 'operator' ? assistedReasonOf(guidanceCodes) : null;
   const AssistedIcon = assistedReason ? GUIDANCE_ICONS[assistedReason] : undefined;
 
@@ -110,7 +121,7 @@ export function IdentityResult({
               <p className="text-sm">{t('checkin.identity.result.retry.intro')}</p>
               <ul className="list-disc space-y-0.5 pl-5 text-sm">
                 {guidanceCodes.map((code) => (
-                  <li key={code}>{t(guidanceKey(code))}</li>
+                  <li key={code}>{t(presence ? presenceGuidanceKey(code) : guidanceKey(code))}</li>
                 ))}
               </ul>
             </div>
@@ -119,9 +130,11 @@ export function IdentityResult({
               {t('checkin.identity.result.retry.noReason')}
             </p>
           )}
-          <p className="text-sm font-medium" data-testid="identity-attempts-left">
-            {t('checkin.identity.result.retry.attempts', { count: attemptsRemaining })}
-          </p>
+          {!presence && (
+            <p className="text-sm font-medium" data-testid="identity-attempts-left">
+              {t('checkin.identity.result.retry.attempts', { count: attemptsRemaining })}
+            </p>
+          )}
           <Button type="button" size="lg" onClick={onRetake} disabled={busy} data-testid="identity-retake">
             {t(retakeLabel)}
           </Button>

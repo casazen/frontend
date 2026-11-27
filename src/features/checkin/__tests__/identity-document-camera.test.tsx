@@ -20,6 +20,8 @@ vi.mock('@/api/checkin.api', () => ({
     postDocument: vi.fn(),
     postSelfie: vi.fn(),
     startSelfieChallenge: vi.fn(),
+    startPresenceChallenge: vi.fn(),
+    postPresence: vi.fn(),
     requestOperator: vi.fn(),
   },
 }));
@@ -850,8 +852,8 @@ describe('identity-document-camera: inside the identity step of a self-hosted ve
     await settle();
 
     expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(2);
-    expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'selfie');
-    // The document is done: the rear camera was not opened once more for a photo nobody asks for (the front camera of the selfie, which comes next, is another call), and the one that was open is stopped.
+    expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'presence');
+    // The document is done: the rear camera was not opened once more for a photo nobody asks for (the front camera of the presence, which comes next, is another call), and the one that was open is stopped.
     const rearCameraCalls = rig.getUserMedia.mock.calls.filter(([constraints]) => (constraints as { video: { facingMode: string } }).video.facingMode === 'environment');
     expect(rearCameraCalls).toHaveLength(1);
     expect(screen.queryByTestId('checkin-identity-camera')).not.toBeInTheDocument();
@@ -917,6 +919,6 @@ describe('identity-document-camera: inside the identity step of a self-hosted ve
     expect(vi.mocked(publicCheckinApi.postDocument).mock.calls[2][2]).toBe('back');
     // Two frames were ever encoded: the one that failed, and the new one of the back.
     expect(encoded).toHaveLength(2);
-    expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'selfie');
+    expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'presence');
   });
 });

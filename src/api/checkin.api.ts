@@ -17,7 +17,10 @@ import type {
   IdentityOpenRequest,
   IdentityOpenResponse,
   IdentityOperatorResponse,
+  IdentityPresenceResponse,
   IdentitySelfieResponse,
+  PresenceChallenge,
+  PresenceSequence,
   PublicCheckInContextDto,
   PublicCheckInInvoiceRequest,
   PublicCheckInLanguageResponse,
@@ -29,6 +32,9 @@ import type {
  * gets no file. The browser adds the boundary.
  */
 const PUBLIC_MULTIPART: ApiRequestOptions = { public: true, headers: { 'Content-Type': 'multipart/form-data' } };
+
+/** How long the upload of the sequence of the presence is given: the frames of a recording are a few megabytes, and a phone on a mobile network sends slowly. */
+const PRESENCE_UPLOAD_TIMEOUT_MS = 45_000;
 
 export interface SelfiePose { turnedSelfie: Blob; challengeToken: string }
 
@@ -141,6 +147,35 @@ export const publicCheckinApi = {
     if (documentPhoto) body.append('documentPhoto', documentPhoto, 'document.jpg');
     if (documentPhotoBack) body.append('documentPhotoBack', documentPhotoBack, 'document-back.jpg');
     return ApiClient.post<IdentitySelfieResponse>(`/public/checkin/${token}/selfie`, body, PUBLIC_MULTIPART);
+  },
+
+  /**
+   * The challenge of the presence of a self-hosted verification (E72/F02/US01/T01, NF-192), which takes the place of `startSelfieChallenge`: the moves to follow and for how long, when it expires and how the frames
+   * are to be taken. A challenge is consumed only by the server, when it closes the verification, so asking for another one is always fine. 409 `presence_challenge_unavailable` (the automatic check cannot be done
+   * for this session: a person verifies, and the state in the body says why) and 409 `identity_already_closed` (the verification is over, the state is in the body). Never cached: it is private to the attempt.
+   */
+  startPresenceChallenge: (token: string) =>
+    ApiClient.post<PresenceChallenge>(`/public/checkin/${token}/presence-challenge`, undefined, { public: true }),
+
+  /**
+   * The sequence of frames of the presence (E72/F02/US01/T01, NF-192, ADR-013-R11): the JPEG frames as `frames` parts in order, `timestamps` (a JSON array of whole numbers of milliseconds, the first 0) and the `challengeToken`
+   * they answer; for a property that keeps no document (Ticino) the picture(s) of the document come again as `documentPhoto` and `documentPhotoBack`, as with the legacy selfie. `idempotencyKey` (8-64 of letters, digits and
+   * hyphens) is made once for each recording and goes in the `Idempotency-Key` header: a request that reached the server and is sent again with the same key gets the stored answer, so a repeat never decides twice.
+   * 400 `idempotency_key_required`; 409 `presence_challenge_required`, `presence_challenge_expired`, `identity_already_closed` (with the state); 413 `presence_sequence_too_large`; 422 `presence_sequence_invalid`.
+   * The sequence of a phone on a slow network is a few megabytes, so the call waits longer than the default.
+   */
+  postPresence: (token: string, sequence: PresenceSequence, idempotencyKey: string) => {
+    const body = new FormData();
+    sequence.frames.forEach((frame, index) => body.append('frames', frame, `frame-${index}.jpg`));
+    body.append('timestamps', JSON.stringify(sequence.timestamps));
+    body.append('challengeToken', sequence.challengeToken);
+    if (sequence.documentPhoto) body.append('documentPhoto', sequence.documentPhoto, 'document.jpg');
+    if (sequence.documentPhotoBack) body.append('documentPhotoBack', sequence.documentPhotoBack, 'document-back.jpg');
+    return ApiClient.post<IdentityPresenceResponse>(`/public/checkin/${token}/presence`, body, {
+      public: true,
+      timeout: PRESENCE_UPLOAD_TIMEOUT_MS,
+      headers: { 'Content-Type': 'multipart/form-data', 'Idempotency-Key': idempotencyKey },
+    });
   },
 
   /** The guest asks for a person, at any step, also after a retry or a failed attempt (GDPR art. 22, AC-NF51-11): the operators are told at once. */

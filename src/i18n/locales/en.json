@@ -6840,6 +6840,12 @@
         "move_closer": "Move closer: your face is too small in the picture.",
         "one_face_only": "Only you should be in the picture.",
         "other": "Please take the photo again.",
+        "presence_again": "Record again, following the instructions on the screen.",
+        "presence_challenge_not_followed": "We did not see all the movements asked for: follow the instructions on the screen, in order.",
+        "presence_quality": "The recording was not clear enough: find more light, hold the phone steady and keep your face inside the oval.",
+        "presence_single_face": "Only your face should be in the recording, and always in view: nobody else behind you.",
+        "presence_timing": "The timing of the recording did not add up: follow the instructions one after the other, without stopping, and try again.",
+        "presence_too_short": "The recording was too short: stay in front of the camera until the instructions end.",
         "retake_picture": "The picture could not be read: please take it again.",
         "retake_selfie": "Take the selfie again, looking straight at the camera.",
         "show_document_photo": "Show the side of the document with your photo.",
@@ -6857,6 +6863,29 @@
         "ask": "Ask an operator to verify me",
         "requested": "We told the host. They will verify your identity and the access code reaches you after their decision."
       },
+      "presence": {
+        "camera": {
+          "busy": "Another app is using the camera. Close it and press “Try again”.",
+          "fallback": "You can try again, or carry on with a person who checks your identity."
+        },
+        "instructions": "Stand somewhere well lit and keep your face inside the oval. Press “Start” and follow the instructions on the screen: you will turn your head and look up or down. It takes a few seconds.",
+        "leadIn": "Look at the camera",
+        "move": {
+          "look_down": "Look down",
+          "look_up": "Look up",
+          "turn_left": "Turn your head to the left",
+          "turn_right": "Turn your head to the right"
+        },
+        "notice": {
+          "not_prepared": "We could not record the images. Press “Start” to try again."
+        },
+        "preparing": "Getting the check ready…",
+        "retry": "Try again",
+        "secondsLeft": "Seconds left: {{count}}",
+        "start": "Start",
+        "step": "Step {{current}} of {{total}}",
+        "title": "Show your face to the camera"
+      },
       "problem": {
         "consent_required": "We need your answer about the face check first.",
         "consent_text_changed": "The text of the consent has been updated. Please read it again before you answer.",
@@ -6865,6 +6894,11 @@
         "failed": "Something went wrong. Please try again.",
         "link_unavailable": "This link is no longer valid, or the check-in is already complete. Ask your host for a new link.",
         "network": "We could not reach the server. Nothing was saved: check your connection and try again.",
+        "presence_expired": "Time for this check ran out. Start again with a new recording.",
+        "presence_invalid": "The recording is not valid. Try again with a new recording, or ask for a person to verify you.",
+        "presence_required": "This check has changed: reload the page, or ask for a person to verify you.",
+        "presence_too_large": "The recording is too large to send. Try again with a new recording.",
+        "presence_unavailable": "The automatic check is not available right now: a person will verify you.",
         "processing": "We could not process the photo. Please try again.",
         "too_large": "The photo is too large. Take it again with a lower resolution.",
         "too_many_requests": "Too many attempts in a short time. Wait a moment and try again.",
@@ -6886,6 +6920,7 @@
         "retry": {
           "again": "Take the selfie again",
           "againDocument": "Photograph the document again",
+          "againPresence": "Try again",
           "attempts": "Attempts left: {{count}}",
           "intro": "The check did not pass this time. Here is what to change:",
           "noReason": "The check did not pass this time.",

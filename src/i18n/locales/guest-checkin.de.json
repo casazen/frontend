@@ -444,6 +444,12 @@
         "move_closer": "Gehen Sie näher heran: Ihr Gesicht ist im Bild zu klein.",
         "one_face_only": "Im Bild sollen nur Sie zu sehen sein.",
         "other": "Bitte nehmen Sie das Foto erneut auf.",
+        "presence_again": "Wiederholen Sie die Aufnahme und folgen Sie den Anweisungen auf dem Bildschirm.",
+        "presence_challenge_not_followed": "Wir haben nicht alle verlangten Bewegungen gesehen: Folgen Sie den Anweisungen auf dem Bildschirm der Reihe nach.",
+        "presence_quality": "Die Aufnahme war nicht klar genug: Sorgen Sie für mehr Licht, halten Sie das Handy ruhig und Ihr Gesicht im Oval.",
+        "presence_single_face": "In der Aufnahme darf nur Ihr Gesicht zu sehen sein, und zwar durchgehend: Hinter Ihnen darf niemand stehen.",
+        "presence_timing": "Die Zeiten der Aufnahme stimmen nicht: Folgen Sie den Anweisungen ohne Pause nacheinander und versuchen Sie es erneut.",
+        "presence_too_short": "Die Aufnahme war zu kurz: Bleiben Sie vor der Kamera, bis die Anweisungen zu Ende sind.",
         "retake_picture": "Das Bild konnte nicht gelesen werden: Bitte nehmen Sie es erneut auf.",
         "retake_selfie": "Nehmen Sie das Selfie erneut auf und schauen Sie direkt in die Kamera.",
         "show_document_photo": "Zeigen Sie die Seite des Dokuments mit Ihrem Foto.",
@@ -461,6 +467,29 @@
         "ask": "Überprüfung durch eine Person anfordern",
         "requested": "Wir haben die Unterkunft informiert. Sie prüft Ihre Identität, und der Zugangscode erreicht Sie nach ihrer Entscheidung."
       },
+      "presence": {
+        "camera": {
+          "busy": "Eine andere App verwendet die Kamera. Schließen Sie sie und drücken Sie „Erneut versuchen“.",
+          "fallback": "Sie können es erneut versuchen oder mit einer Person fortfahren, die Ihre Identität prüft."
+        },
+        "instructions": "Stellen Sie sich an einen hellen Ort und halten Sie Ihr Gesicht im Oval. Drücken Sie „Start“ und folgen Sie den Anweisungen auf dem Bildschirm: Sie drehen den Kopf und schauen nach oben oder unten. Das dauert nur wenige Sekunden.",
+        "leadIn": "Schauen Sie in die Kamera",
+        "move": {
+          "look_down": "Schauen Sie nach unten",
+          "look_up": "Schauen Sie nach oben",
+          "turn_left": "Drehen Sie den Kopf nach links",
+          "turn_right": "Drehen Sie den Kopf nach rechts"
+        },
+        "notice": {
+          "not_prepared": "Die Bilder konnten nicht aufgenommen werden. Drücken Sie „Start“, um es erneut zu versuchen."
+        },
+        "preparing": "Die Prüfung wird vorbereitet …",
+        "retry": "Erneut versuchen",
+        "secondsLeft": "Verbleibende Sekunden: {{count}}",
+        "start": "Start",
+        "step": "Schritt {{current}} von {{total}}",
+        "title": "Zeigen Sie Ihr Gesicht der Kamera"
+      },
       "problem": {
         "consent_required": "Wir brauchen zuerst Ihre Antwort zur Gesichtsprüfung.",
         "consent_text_changed": "Der Text der Einwilligung wurde aktualisiert. Bitte lesen Sie ihn noch einmal, bevor Sie antworten.",
@@ -469,6 +498,11 @@
         "failed": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
         "link_unavailable": "Dieser Link ist nicht mehr gültig oder der Check-in ist bereits abgeschlossen. Bitten Sie Ihren Gastgeber um einen neuen Link.",
         "network": "Wir konnten den Server nicht erreichen. Es wurde nichts gespeichert: Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "presence_expired": "Die Zeit für diese Prüfung ist abgelaufen. Beginnen Sie mit einer neuen Aufnahme von vorn.",
+        "presence_invalid": "Die Aufnahme ist nicht gültig. Versuchen Sie es mit einer neuen Aufnahme oder bitten Sie um die Überprüfung durch eine Person.",
+        "presence_required": "Diese Prüfung hat sich geändert: Laden Sie die Seite neu oder bitten Sie um die Überprüfung durch eine Person.",
+        "presence_too_large": "Die Aufnahme ist zu groß zum Senden. Versuchen Sie es mit einer neuen Aufnahme.",
+        "presence_unavailable": "Die automatische Prüfung ist im Moment nicht verfügbar: Eine Person prüft Ihre Identität.",
         "processing": "Wir konnten das Foto nicht verarbeiten. Bitte versuchen Sie es erneut.",
         "too_large": "Das Foto ist zu groß. Nehmen Sie es mit einer niedrigeren Auflösung erneut auf.",
         "too_many_requests": "Zu viele Versuche in kurzer Zeit. Warten Sie einen Moment und versuchen Sie es erneut.",
@@ -490,6 +524,7 @@
         "retry": {
           "again": "Selfie erneut aufnehmen",
           "againDocument": "Dokument erneut fotografieren",
+          "againPresence": "Erneut versuchen",
           "attempts": "Verbleibende Versuche: {{count}}",
           "intro": "Die Prüfung war diesmal nicht erfolgreich. Das sollten Sie ändern:",
           "noReason": "Die Prüfung war diesmal nicht erfolgreich.",
