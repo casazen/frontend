@@ -53,3 +53,13 @@
 .casazen-copy-status {
 	margin-inline-start: 0.5em;
 }
+
+/*
+ * The copy buttons start hidden and the script of the screen shows them. WordPress gives every button `display: inline-block`
+ * (`.wp-core-ui .button`, buttons.css), which beats the `hidden` attribute: without this rule they would show, and do nothing,
+ * without JavaScript.
+ */
+.casazen-copy[hidden],
+.wp-core-ui .casazen-copy[hidden] {
+	display: none;
+}
