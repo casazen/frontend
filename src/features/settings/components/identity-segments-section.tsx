@@ -340,23 +340,25 @@ export function IdentitySegmentsSection() {
   const segments = useIdentitySegments(available);
   const setMode = useSetIdentitySegmentMode();
   const busy = useBiometricCardBusy();
-  const [suspending, setSuspending] = useState<IdentitySegment | null>(null);
+  // The segment whose suspension is being asked for, with the name it was given when it was chosen: the dialog stands on this and not on the list, so a read in the background that fails while the reason is being typed
+  // takes neither the dialog nor the reason away (and does not bring an empty one back when the list is read again).
+  const [suspending, setSuspending] = useState<{ segment: IdentitySegment; name: string } | null>(null);
   const titleId = useId();
 
   if (!available) return null;
+
+  // A read that failed leaves the older answer in memory: the section says it cannot be read, and shows none of it.
+  const overview = segments.isError ? undefined : segments.data;
 
   const choose = (segment: IdentitySegment, mode: IdentitySegmentMode) => {
     if (busy) return;
     if (mode === 'suspended') {
       setMode.reset();
-      setSuspending(segment);
+      setSuspending({ segment, name: segmentName(segment, overview?.formats ?? [], t) });
       return;
     }
     setMode.mutate({ id: segment.id, request: { mode } });
   };
-
-  // A read that failed leaves the older answer in memory: the section says it cannot be read, and shows none of it.
-  const overview = segments.isError ? undefined : segments.data;
 
   return (
     <section className="space-y-4 border-t pt-4" aria-labelledby={titleId} data-testid="identity-segments-section">
@@ -427,11 +429,11 @@ export function IdentitySegmentsSection() {
         </>
       )}
 
-      {suspending !== null && overview !== undefined && (
+      {suspending !== null && (
         <SuspendDialog
-          key={suspending.id}
-          segment={suspending}
-          name={segmentName(suspending, overview.formats, t)}
+          key={suspending.segment.id}
+          segment={suspending.segment}
+          name={suspending.name}
           onClose={() => {
             setMode.reset();
             setSuspending(null);

@@ -449,6 +449,32 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(row).toHaveAttribute('data-mode', 'automatic');
   });
 
+  it('IdentitySegmentsSection_AReadInTheBackgroundFailsWhileTheReasonIsTyped_TheDialogStaysWithTheReasonAndNoEmptyOneComesBack', async () => {
+    const { client } = renderSection();
+    const row = await rowOf('segment-mare-android');
+    fireEvent.click(radio(row, 'Sospesa'));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: 'Esiti anomali' } });
+
+    // The list is read again in the background (the window comes back to the front) and the read fails: the section says it cannot be read, and the dialog is still there with what was typed.
+    vi.mocked(biometricSettingsApi.getSegments).mockRejectedValue(httpError(404));
+    await act(async () => {
+      await client.refetchQueries({ queryKey: IDENTITY_SEGMENTS_QUERY_KEY });
+    });
+    expect(await screen.findByTestId('identity-segments-error')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toBe(dialog);
+    expect(within(dialog).getByTestId('identity-segment-suspend-reason')).toHaveValue('Esiti anomali');
+
+    // The suspension is sent from the dialog all the same, and the dialog closes when the server has answered.
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.suspend.confirm') }));
+    await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledWith('segment-mare-android', { mode: 'suspended', reason: 'Esiti anomali' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    // The answer of the server is written into the list, which is there again with the segment suspended and no dialog of its own to come back.
+    expect(await rowOf('segment-mare-android')).toHaveAttribute('data-mode', 'suspended');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('IdentitySegmentsSection_TheServerRefusesWithoutAMessage_SaysTheSegmentWasNotSaved', async () => {
     vi.mocked(biometricSettingsApi.updateSegment).mockRejectedValue(httpError(500));
     renderSection();
