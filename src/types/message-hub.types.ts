@@ -9,7 +9,7 @@ import type { BookingStatus } from './booking.types';
  * Where the conversation lives: the one with the guest of a direct booking, or one of a channel. `Review` and `OtaReview` are the reviews of the guests (E05/F06): the booking site's
  * and a channel's. They are not conversations: the list shows them only under the filter «Recensioni» and a row of them opens its own detail (`ReviewThread`).
  */
-export type MessageHubSource = 'Direct' | 'Ota' | 'Storefront' | 'Review' | 'OtaReview';
+type MessageHubSource = 'Direct' | 'Ota' | 'Storefront' | 'Review' | 'OtaReview';
 
 /** The channel of a conversation: the direct one, or one of the four channels that have an integrated chat. */
 export type MessageHubChannel = 'Direct' | 'Airbnb' | 'Booking' | 'Vrbo' | 'Expedia' | 'Storefront';
@@ -17,16 +17,16 @@ export type MessageHubChannel = 'Direct' | 'Airbnb' | 'Booking' | 'Vrbo' | 'Expe
 export const MESSAGE_HUB_CHANNELS: readonly MessageHubChannel[] = ['Direct', 'Airbnb', 'Booking', 'Vrbo', 'Expedia', 'Storefront'];
 
 /** What the row is about: a reservation, a request with no booking yet (an inquiry), or a review of a guest (only under the filter «Recensioni», never in the default view). */
-export type MessageHubThreadKind = 'Reservation' | 'Request' | 'Review';
+type MessageHubThreadKind = 'Reservation' | 'Request' | 'Review';
 
 /** Whether the conversation is still being worked on. */
-export type MessageHubThreadState = 'Open' | 'Closed' | 'Archived';
+type MessageHubThreadState = 'Open' | 'Closed' | 'Archived';
 
 /**
  * Who wrote a message: the guest, a person of the host side, the assistant of CasaZen, or an automatic message of CasaZen that no person wrote
  * (`Automation`: the check-in link in the chat of the portal). An automatic message is never shown as a person's and never counts as an answer.
  */
-export type MessageHubOrigin = 'Guest' | 'Person' | 'Assistant' | 'Automation';
+type MessageHubOrigin = 'Guest' | 'Person' | 'Assistant' | 'Automation';
 
 /**
  * One conversation of the list (`GET /api/messages?includeOta=true`). `threadKey` is the opaque key every other call takes: the client
@@ -85,7 +85,7 @@ export interface MessageHubFilters {
 }
 
 /** One conversation with something unread: counters only, no name and no text. */
-export interface MessageHubUnreadItem {
+interface MessageHubUnreadItem {
   threadKey: string;
   bookingId?: string | null;
   unreadCount: number;
@@ -97,17 +97,17 @@ export interface MessageHubUnread {
 }
 
 /** Who a message is for: the guest wrote an `Inbound` one, the host side an `Outbound` one. */
-export type MessageHubDirection = 'Inbound' | 'Outbound';
+type MessageHubDirection = 'Inbound' | 'Outbound';
 
 /**
  * Where an outbound message of a channel is on its way to the guest: `Created` and `WaitingAuthorization` (the channel has it and sends
  * it), `Sent`, `Error` (the channel refused it) or `ManualVerify` (the outcome is not known: a person checks on the channel before it is
  * sent again, never by a second send).
  */
-export type MessageHubDeliveryState = 'Created' | 'WaitingAuthorization' | 'Sent' | 'Error' | 'ManualVerify';
+type MessageHubDeliveryState = 'Created' | 'WaitingAuthorization' | 'Sent' | 'Error' | 'ManualVerify';
 
 /** The file of a message: its type only. It is opened through the API, never by an address of the channel. */
-export interface MessageHubAttachment {
+interface MessageHubAttachment {
   contentType: string;
 }
 
@@ -160,7 +160,7 @@ export interface MessageBookingCard {
 }
 
 /** What the host may do in the conversation; all false with a `reason` while it can be read and not answered. */
-export interface MessageThreadActions {
+interface MessageThreadActions {
   canReply: boolean;
   /** False on a request before the booking: no link, address or number may be written. */
   contactDetailsAllowed: boolean;

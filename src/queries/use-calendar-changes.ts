@@ -19,7 +19,7 @@ export const CHANGE_POLL_MS = 5_000;
 export const CHANGE_WATCH_MS = 180_000;
 
 /** The change is waiting to be sent or being sent: the only states that are still on their way. */
-export const isChangeWaiting = (change: Pick<CalendarChange, 'state'> | undefined): boolean => change?.state === 'Queued' || change?.state === 'Sending';
+const isChangeWaiting = (change: Pick<CalendarChange, 'state'> | undefined): boolean => change?.state === 'Queued' || change?.state === 'Sending';
 
 /**
  * One change of the calendar with the state of each property (E08/F05/US02/T02). While it is `Queued` or `Sending` it is read again every five seconds, up to

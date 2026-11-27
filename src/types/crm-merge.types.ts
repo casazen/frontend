@@ -7,11 +7,8 @@ import type { PagedResult } from './users.types';
  * Alloggiati registration, and none ever will (AC-NF88-6): even the reason "same name and birth date" is only a code, never the date.
  */
 
-/** Why the matching proposed a pair, as the codes of the backend (`GuestMatchRules`): never what matched. */
-export type CrmMergeReason = 'same_email' | 'same_name_birth' | 'same_phone' | 'same_name_same_property';
-
 /** A contact of a profile in a proposal: the channel, where it came from, and the value with most of it hidden (`m***@example.it`). */
-export interface CrmMergeContact {
+interface CrmMergeContact {
   channel: CrmContactChannel;
   origin: CrmContactOrigin;
   valueMasked: string;

@@ -1,5 +1,5 @@
 /** How to reach a customer: only once a job of theirs was taken (decision D9); `null` before, and for a removed customer. */
-export interface SupplierClientContact {
+interface SupplierClientContact {
   name?: string | null;
   email?: string | null;
   phone?: string | null;

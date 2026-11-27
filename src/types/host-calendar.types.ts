@@ -34,7 +34,7 @@ interface HostCalendarItemBase {
 }
 
 /** A stay of CasaZen: the booking site, entered by the host, or a portal's reservation the host turned into a stay. */
-export interface HostCalendarBookingItem extends HostCalendarItemBase {
+interface HostCalendarBookingItem extends HostCalendarItemBase {
   type: 'Booking';
   /** `Pending` is an unanswered "pay at the property" request or a checkout being paid. */
   status: 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut';

@@ -6,7 +6,7 @@ import type { OtaReviewReason } from './calendar.types';
 export type BookingStatus = 'Pending' | 'Confirmed' | 'CheckedIn' | 'CheckedOut' | 'Cancelled';
 
 /** Inline guest info embedded in booking (subset of the full Guest entity) */
-export interface BookingGuest {
+interface BookingGuest {
   firstName: string;
   lastName: string;
   email: string;
@@ -111,10 +111,10 @@ export interface Booking {
 }
 
 /** Where the last operation CasaZen sent to the channel manager for a booking stands (`octorateSync.state`). `NotAllowedByChannel` is a change the channel does not allow. */
-export type OctorateSyncState = 'Pending' | 'Synced' | 'Failed' | 'Conflict' | 'NotAllowedByChannel';
+type OctorateSyncState = 'Pending' | 'Synced' | 'Failed' | 'Conflict' | 'NotAllowedByChannel';
 
 /** The last operation sent to the channel manager for a booking. */
-export type OctorateSyncOperation = 'Create' | 'Update' | 'Cancel' | 'Payment';
+type OctorateSyncOperation = 'Create' | 'Update' | 'Cancel' | 'Payment';
 
 /** The stay as the channel manager holds it after it refused a change (`Conflict` only); a member that was not kept is `null`. */
 export interface OctorateVersion {
@@ -159,7 +159,7 @@ export interface BookingOtaAmounts {
 }
 
 /** Who collects the money of a channel booking (NF-77); either flag is `null` when the channel did not say. */
-export interface BookingCollection {
+interface BookingCollection {
   /** True: the channel collects the payment. False: the host does. */
   companyCollect: boolean | null;
   /** True: the commission is already in the payments. */
@@ -192,7 +192,7 @@ export interface BookingAmountSources {
 export type BookingEditLock = 'Cancelled' | 'Started' | 'SourceLocked';
 
 /** `canEdit` of a booking (SR-05a): `reason` is null when `allowed`. */
-export interface BookingEditability {
+interface BookingEditability {
   allowed: boolean;
   reason: BookingEditLock | null;
 }
@@ -233,7 +233,7 @@ export const BOOKING_ORIGINS = ['Portal', 'AgencySite', 'CasaZenSite', 'Manual']
 export type BookingOrigin = (typeof BOOKING_ORIGINS)[number];
 
 /** How much of the total of a booking has come in. */
-export type BookingPaymentState = 'None' | 'Partial' | 'Paid' | 'Refunded';
+type BookingPaymentState = 'None' | 'Partial' | 'Paid' | 'Refunded';
 
 /** A row of `GET /api/bookings/search` (SR-03b): the booking and what a list says besides it. */
 export interface BookingListItem extends Booking {
@@ -281,7 +281,7 @@ export interface BookingListParams extends BookingFilterParams {
 }
 
 /** The iCal block of an OTA stay (CO-21). */
-export interface OtaChannelBlock {
+interface OtaChannelBlock {
   id: string;
   startDate: string;
   endDate: string;
@@ -311,7 +311,7 @@ export interface ResolveOtaReviewDto {
 }
 
 /** Where an open "pay at the property" request stands (BK-06, decision D5). */
-export type OnSiteRequestState = 'AwaitingGuestEmail' | 'AwaitingHostApproval';
+type OnSiteRequestState = 'AwaitingGuestEmail' | 'AwaitingHostApproval';
 
 /** A "pay at the property" request waiting for the host (`GET /api/bookings/approval-requests`). */
 export interface BookingApprovalRequest {
@@ -418,16 +418,16 @@ export interface BookingPaymentLink {
 }
 
 /** `state` of GET /properties/:id/availability (SR-06a). */
-export type StayAvailabilityState = 'ok' | 'belowMinimum' | 'occupied' | 'linkableBlock' | 'invalid';
+type StayAvailabilityState = 'ok' | 'belowMinimum' | 'occupied' | 'linkableBlock' | 'invalid';
 
 /** Why a stay is `invalid`. */
-export type StayAvailabilityInvalidReason = 'checkOutNotAfterCheckIn' | 'checkInInPast' | 'stayTooLong';
+type StayAvailabilityInvalidReason = 'checkOutNotAfterCheckIn' | 'checkInInPast' | 'stayTooLong';
 
 /**
  * A stay of CasaZen (`booking`), a portal's reservation that arrived as a block of its calendar (`ical`), the host's own block (`block`) or the channel
  * manager saying the nights cannot be booked (`channelManager`: no id of its own, the dates are the ones asked for).
  */
-export type StayAvailabilityConflictType = 'booking' | 'ical' | 'block' | 'channelManager';
+type StayAvailabilityConflictType = 'booking' | 'ical' | 'block' | 'channelManager';
 
 /** Something that takes a night of the dates asked for. */
 export interface StayAvailabilityConflict {
@@ -491,10 +491,10 @@ export interface UpdateBookingDto {
 }
 
 /** What an edit does with the difference between the new price and what the guest has paid. */
-export type BookingSettlementAction = 'refund' | 'chargeSavedCard' | 'paymentLink' | 'none';
+type BookingSettlementAction = 'refund' | 'chargeSavedCard' | 'paymentLink' | 'none';
 
 /** Where the money of a saved edit stands: `done` (confirmed by Stripe, or the link sent), `pending` (Stripe has not confirmed it yet) or `none`. */
-export type BookingSettlementState = 'done' | 'pending' | 'none';
+type BookingSettlementState = 'done' | 'pending' | 'none';
 
 /**
  * The money of an edit that was saved (`settlement` of `PUT /bookings/:id`, E08/F02/US01/T01, NF-75): what was done with the difference. `offlineRefundDue` is
@@ -547,7 +547,7 @@ export interface ArrivalRegisteredBooking extends Booking {
 }
 
 /** Rule of the model that sets the minimum refund of a cancellation (BK-02). */
-export type CancellationRefundRule = 'None' | 'FreeCancellationDeadline' | 'PropertyCancellationPolicy';
+type CancellationRefundRule = 'None' | 'FreeCancellationDeadline' | 'PropertyCancellationPolicy';
 
 /** GET /bookings/:id/cancellation */
 export interface BookingCancellationQuote {
@@ -610,13 +610,13 @@ export type BookingTimelineKind =
   | 'Refund';
 
 /** `Done` happened; `Current` waits for the host, the guest or the bank. */
-export type BookingTimelineState = 'Done' | 'Current';
+type BookingTimelineState = 'Done' | 'Current';
 
 /**
  * Why the system cancelled a booking (or the host declined the request), or that the guest cancelled it themselves (DB-08a);
  * null in the entry when the host cancelled it.
  */
-export type BookingCancellationReason =
+type BookingCancellationReason =
   | 'CheckoutHoldExpired'
   | 'DatesUnavailableAtPayment'
   | 'OnSiteRequestDeclined'
@@ -626,10 +626,10 @@ export type BookingCancellationReason =
   | 'GuestRequested';
 
 /** Where the link of the online check-in stands. */
-export type BookingCheckInLinkState = 'Sent' | 'InProgress' | 'Expired' | 'Completed';
+type BookingCheckInLinkState = 'Sent' | 'InProgress' | 'Expired' | 'Completed';
 
 /** What an entry says besides its kind: each field belongs to a few kinds and is null for the others. Never a name or an email. */
-export interface BookingTimelineData {
+interface BookingTimelineData {
   /** Where the booking came from (`Created`, `RequestReceived`): `Direct`, `Manual`, `Airbnb`… */
   source: string | null;
   /** Euros (`PaymentReceived`, `Refund`); null for who may not read payments: the entry is there without the figure. */

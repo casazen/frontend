@@ -54,7 +54,7 @@ export interface LeaseLetterState {
  * `lastDayToGiveNotice` the last day by which it is on time (null for a type that does not renew) and `late` says today is after it.
  * `firstPeriod`: the letter must state one of `reasons`; later periods have none.
  */
-export interface LeaseDisdettaOperation {
+interface LeaseDisdettaOperation {
   available: boolean;
   firstPeriod: boolean;
   periodEnd: string;
@@ -64,7 +64,7 @@ export interface LeaseDisdettaOperation {
 }
 
 /** A withdrawal of the tenant that was recorded. */
-export interface LeaseWithdrawalRecord {
+interface LeaseWithdrawalRecord {
   receivedOn: string;
   reason: TenantWithdrawalReason;
   effectiveOn: string;
@@ -76,7 +76,7 @@ export interface LeaseWithdrawalRecord {
  * `maxContractualNoticeMonths` bounds the notice the landlord types when the contract gave the faculty; `recorded` is the one already
  * recorded.
  */
-export interface LeaseWithdrawalOperation {
+interface LeaseWithdrawalOperation {
   available: boolean;
   minReceivedOn: string;
   maxReceivedOn: string;
@@ -85,14 +85,14 @@ export interface LeaseWithdrawalOperation {
 }
 
 /** The other lease of the property that is in the way of a renewal: its id (never a person) and the first and last day it covers. */
-export interface LeaseRenewalConflict {
+interface LeaseRenewalConflict {
   leaseId: string;
   from: string;
   to: string;
 }
 
 /** A renewal that was recorded: whether it was agreed on a day (otherwise the standard one) and the period it added. */
-export interface LeaseRenewalRecord {
+interface LeaseRenewalRecord {
   agreed: boolean;
   from: string;
   to: string;
@@ -105,7 +105,7 @@ export interface LeaseRenewalRecord {
  * `conflict` is the lease that already covers days of the standard renewal (the server would refuse it with 409 `lease_period_overlaps`);
  * `recorded` is the renewal of the period the lease is in now.
  */
-export interface LeaseRenewalOperation {
+interface LeaseRenewalOperation {
   available: boolean;
   opensOn: string;
   startsOn: string;
@@ -121,7 +121,7 @@ export interface LeaseRenewalOperation {
  * before the end (`confirmBy`, its last day). `available`: the need is the landlord's, so CasaZen prepares the letter; `holder` says whose
  * the need is, or `null` when the contract does not say.
  */
-export interface LeaseTransitoryConfirmation {
+interface LeaseTransitoryConfirmation {
   applies: boolean;
   available: boolean;
   holder: 'Landlord' | 'Tenant' | null;
@@ -134,7 +134,7 @@ export interface LeaseTransitoryConfirmation {
  * contract states the real one) and `maxSharePercent` the most a share can be; the update can start from a day between `minEffectiveOn` (never
  * in the past) and `maxEffectiveOn` (the end of the period).
  */
-export interface LeaseIstatOperation {
+interface LeaseIstatOperation {
   available: boolean;
   currentRent: number;
   defaultSharePercent: number;
@@ -147,7 +147,7 @@ export interface LeaseIstatOperation {
  * The communication of the cedolare secca to the tenant. `available`: the lease is in force and under the cedolare secca; the option can be
  * said to apply from a day between `minEffectiveOn` and `maxEffectiveOn`.
  */
-export interface LeaseCedolareNotice {
+interface LeaseCedolareNotice {
   available: boolean;
   minEffectiveOn: string;
   maxEffectiveOn: string;
@@ -158,7 +158,7 @@ export interface LeaseCedolareNotice {
  * a type that ends by itself), so the minutes can be prepared; they can be dated from `minOn` to `maxOn`, and the window suggests
  * `suggestedOn`, the last day of the lease.
  */
-export interface LeaseHandoverOperation {
+interface LeaseHandoverOperation {
   available: boolean;
   minOn: string;
   maxOn: string;
@@ -166,7 +166,7 @@ export interface LeaseHandoverOperation {
 }
 
 /** A return of the deposit the landlord recorded: the day, the deposit, the interest that was due, the sums kept and what was returned (euros). */
-export interface LeaseDepositRecord {
+interface LeaseDepositRecord {
   returnedOn: string;
   deposit: number;
   interestDue: number;
@@ -180,7 +180,7 @@ export interface LeaseDepositRecord {
  * be dated up to `maxReturnOn` and the window suggests `suggestedReturnOn`; at most `maxDeductions` sums can be kept. `recorded` is the return the
  * landlord recorded last, if any.
  */
-export interface LeaseDepositOperation {
+interface LeaseDepositOperation {
   available: boolean;
   amount: number;
   paidOn: string;
@@ -192,7 +192,7 @@ export interface LeaseDepositOperation {
 }
 
 /** The interest of one calendar year of the statement: the rate, the days the deposit was held in it, the days of the year and the interest. */
-export interface LeaseDepositYear {
+interface LeaseDepositYear {
   year: number;
   ratePercent: number;
   days: number;

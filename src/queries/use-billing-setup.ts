@@ -226,7 +226,7 @@ export function useChannelAccountHolders(enabled: boolean) {
 }
 
 /** The holders to write, and whether the person confirmed the waiver of the recharge that the write may start (`acknowledgeRechargeWaiver`, only ever `true`). */
-export interface SaveChannelAccountHoldersRequest {
+interface SaveChannelAccountHoldersRequest {
   changes: readonly ChannelAccountHolderChange[];
   acknowledgeRechargeWaiver?: true;
 }

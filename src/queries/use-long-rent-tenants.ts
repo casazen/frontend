@@ -3,7 +3,7 @@ import { longRentTenantsApi } from '@/api/long-rent-tenants.api';
 import type { TenantListParams } from '@/types';
 import { LEASES_KEY } from './use-leases';
 
-export const LONG_RENT_TENANTS_KEY = 'long-rent-tenants';
+const LONG_RENT_TENANTS_KEY = 'long-rent-tenants';
 
 /**
  * A page of the people of the area (LR-09). The rows of the last view stay on the screen, a little dimmed, while the next ones come;

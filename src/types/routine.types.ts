@@ -64,7 +64,7 @@ export type RoutineConditionOperator = 'equals' | 'notEquals' | 'in' | 'notIn' |
  * What a rule compares with, of the kind its operator takes: a list of property ids for `propertyId`; the name of a channel (a `BookingSource`) or a list of them for
  * `channel`; a whole number for `equals` on a count, a number for `greaterThan` and `lessThan`, two numbers (the lower first) for `between`.
  */
-export type RoutineConditionValue = string | number | string[] | number[];
+type RoutineConditionValue = string | number | string[] | number[];
 
 export interface RoutineConditionRule {
   fieldId: RoutineConditionField;
@@ -72,7 +72,7 @@ export interface RoutineConditionRule {
   value: RoutineConditionValue;
 }
 
-export interface RoutineConditionGroup {
+interface RoutineConditionGroup {
   operator: 'AND' | 'OR';
   rules: RoutineConditionRule[];
 }
@@ -156,7 +156,7 @@ export interface RoutineExecutionResult {
   code?: string;
 }
 
-export interface RoutineSimulatedAction {
+interface RoutineSimulatedAction {
   index: number;
   type: RoutineActionType;
   config?: RoutineActionConfig;

@@ -64,14 +64,6 @@ export function useCampaigns() {
   });
 }
 
-export function useCampaign(id: string) {
-  return useQuery({
-    queryKey: [CAMPAIGNS_KEY, id],
-    queryFn: () => campaignsApi.getCampaignById(id),
-    enabled: !!id,
-  });
-}
-
 export function useCreateDraft() {
   const queryClient = useQueryClient();
 

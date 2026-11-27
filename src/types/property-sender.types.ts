@@ -7,19 +7,19 @@ import type { ComplianceSenderType } from './checkin-wizard.types';
 
 /** How the sender in effect came to be: a person chose it, one of the two defaults (PO-02), or the property is outside Italy. */
 export const PROPERTY_SENDER_SOURCES = ['Stored', 'OrganizationDefault', 'DefaultConnected', 'DefaultNotConnected', 'NotApplicable'] as const;
-export type PropertySenderSource = (typeof PROPERTY_SENDER_SOURCES)[number];
+type PropertySenderSource = (typeof PROPERTY_SENDER_SOURCES)[number];
 
 /** The state of the sender as the host reads it: `Active` only when the channel manager itself proved it, `Declared` is the host's word. */
 export const PROPERTY_SENDER_STATES = ['Active', 'Declared', 'Unverified', 'Inactive', 'NotConfigured'] as const;
-export type PropertySenderState = (typeof PROPERTY_SENDER_STATES)[number];
+type PropertySenderState = (typeof PROPERTY_SENDER_STATES)[number];
 
 /** How the state is known. */
 export const PROPERTY_SENDER_VERIFICATIONS = ['Verified', 'UserDeclared', 'Unverifiable', 'NotApplicable'] as const;
-export type PropertySenderVerification = (typeof PROPERTY_SENDER_VERIFICATIONS)[number];
+type PropertySenderVerification = (typeof PROPERTY_SENDER_VERIFICATIONS)[number];
 
 /** The answer of the connection test: `Verified` is the only one that may be shown as «Attivo». */
 export const SENDER_CONNECTION_TEST_OUTCOMES = ['Verified', 'Inactive', 'Unverifiable', 'NotApplicable', 'NotAvailable'] as const;
-export type SenderConnectionTestOutcome = (typeof SENDER_CONNECTION_TEST_OUTCOMES)[number];
+type SenderConnectionTestOutcome = (typeof SENDER_CONNECTION_TEST_OUTCOMES)[number];
 
 /**
  * `GET|PUT /properties/{id}/sender` and `POST .../declare-activated`. No personal data: the credentials of the Questura are only said to exist. The police fields

@@ -4,10 +4,10 @@ import { istatApi } from '@/api/istat.api';
 import type { IstatRegionRule, SaveIstatRegionRequest } from '@/types/istat.types';
 
 /** Root of the query key of the ISTAT region table of the staff. */
-export const ISTAT_REGIONS_KEY = ['admin', 'istat-regions'] as const;
+const ISTAT_REGIONS_KEY = ['admin', 'istat-regions'] as const;
 
 /** Root of the query key of the ISTAT coverage of a property: one key for each property. */
-export const ISTAT_COVERAGE_KEY = 'istat-coverage';
+const ISTAT_COVERAGE_KEY = 'istat-coverage';
 
 /** The same territory: the region code and, for the two autonomous provinces of Trentino-Alto Adige, the plate code. */
 const sameTerritory = (first: Pick<IstatRegionRule, 'regionIstatCode' | 'provinceCode'>, second: Pick<IstatRegionRule, 'regionIstatCode' | 'provinceCode'>): boolean =>

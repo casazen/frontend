@@ -7,7 +7,7 @@ import type { CheckInLinkDelivery } from '@/types/checkin-link.types';
 export const CHECKIN_LINK_DELIVERY_KEY = 'checkin-link-delivery';
 
 /** How often an open page reads the delivery again while the link has not left yet and the page is visible: the server moves it by itself, once an hour at most. */
-export const CHECKIN_LINK_DELIVERY_POLL_MS = 60_000;
+const CHECKIN_LINK_DELIVERY_POLL_MS = 60_000;
 
 /** The states in which the link is still on its way: the ones that move by themselves, and the only ones worth reading again. */
 const ON_ITS_WAY: ReadonlySet<string> = new Set(['Sending', 'WaitingChatPermission', 'WaitingThread', 'WaitingContact', 'WaitingStaticIps']);

@@ -17,7 +17,7 @@ const SYNCING_FAST_WINDOW_MS = 60_000;
 const BOOKING_CALENDAR_KEY = ['bookings', 'calendar'] as const;
 
 export const propertyIcalFeedsKey = (propertyId: string | undefined) => ['property-ical-feeds', propertyId] as const;
-export const propertyIcalExportKey = (propertyId: string | undefined) => ['property-ical-export', propertyId] as const;
+const propertyIcalExportKey = (propertyId: string | undefined) => ['property-ical-export', propertyId] as const;
 
 const isSyncing = (feed: PropertyIcalFeed) => feed.lastImportStatus === 'Syncing';
 
@@ -69,7 +69,7 @@ export function usePropertyIcalFeeds(propertyId: string | undefined) {
   });
 }
 
-export const calendarOverviewKey = ['property-calendar-overview'] as const;
+const calendarOverviewKey = ['property-calendar-overview'] as const;
 
 const isOverviewSyncing = (overview: CalendarOverview | undefined) =>
   overview?.properties.some((property) => property.feeds.some((feed) => feed.syncing)) ?? false;

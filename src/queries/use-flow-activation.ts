@@ -13,36 +13,6 @@ function invalidateAfterActivation(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: ONBOARDING_FLOWS_KEY });
 }
 
-interface FlowSelection {
-  flow: OnboardingFlowKey;
-  /** 1 to 500 properties: an empty list is a 422 and never «all». */
-  propertyIds: string[];
-}
-
-/**
- * Switches a flow on for the properties named (`POST /onboarding/flows/{flow}/activate`): the server checks the prerequisites of each one again and
- * answers one outcome per property, so a property that is not ready stays as it is and is told why. Organization administrator only (403 to anyone
- * else): the screen offers it to nobody else. The lists are read again also after a refusal: the server may have moved on.
- */
-export function useActivateFlow() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ flow, propertyIds }: FlowSelection) => onboardingApi.activateFlow(flow, propertyIds),
-    onSettled: () => invalidateAfterActivation(queryClient),
-  });
-}
-
-/** Switches a flow off on the properties where it runs (`POST /onboarding/flows/{flow}/deactivate`): the row stays, with when and who. Organization administrator only. */
-export function useDeactivateFlow() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ flow, propertyIds }: FlowSelection) => onboardingApi.deactivateFlow(flow, propertyIds),
-    onSettled: () => invalidateAfterActivation(queryClient),
-  });
-}
-
 /**
  * The final test (`POST /onboarding/test-run`): a recently imported booking of the property passes through every flow and nothing is written or sent,
  * so nothing is read again after it. Without a booking the server takes the most recent one of the property that came from the channel manager. 404
@@ -72,7 +42,7 @@ const LIST_PAGE_SIZE = 100;
 const MAX_PER_CALL = 500;
 
 /** A property a flow was not switched on for, with the prerequisite it still lacks. */
-export interface NotActivated {
+interface NotActivated {
   propertyId: string;
   name: string;
   unmet: OnboardingPrerequisiteKey[];

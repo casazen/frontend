@@ -7,7 +7,7 @@ import type { PropertyPhotosDto } from '@/types';
 
 const PROPERTIES_KEY = 'properties';
 
-export const propertyPhotosKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'photos'] as const;
+const propertyPhotosKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'photos'] as const;
 
 /** Photo gallery of a property (PC-04): the photos in display order (the first is the cover) and the upload rules. */
 export function usePropertyPhotos(propertyId: string | undefined) {

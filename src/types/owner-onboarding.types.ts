@@ -15,23 +15,23 @@ export const OWNER_PORTAL_STATES = ['notReady', 'ready', 'invited', 'accepted', 
 export type OwnerPortalState = (typeof OWNER_PORTAL_STATES)[number];
 
 /** One error of a row of the owner file: the column it is about and the code of the error (never a value). */
-export interface OwnerImportRowError {
+interface OwnerImportRowError {
   column: string;
   code: string;
 }
 
 /** An owner an ambiguous row could be: its id, its key and the name the agency keeps for it. */
-export interface OwnerImportCandidate {
+interface OwnerImportCandidate {
   ownerId: string;
   externalKey: string | null;
   displayName: string;
 }
 
 /** What the import would do, or did, with the owner of a row. */
-export type OwnerImportOwnerAction = 'create_owner' | 'match_owner' | 'conflict';
+type OwnerImportOwnerAction = 'create_owner' | 'match_owner' | 'conflict';
 
 /** What the import would do, or did, with the ownership of a row; `null` when the row cannot be judged. */
-export type OwnerImportOwnershipAction = 'create_ownership' | 'update_future_period' | 'unchanged' | 'conflict';
+type OwnerImportOwnershipAction = 'create_ownership' | 'update_future_period' | 'unchanged' | 'conflict';
 
 /** One row of the owner file: `status` is `ok` or the code of its first error. */
 export interface OwnerImportRow {
@@ -51,7 +51,7 @@ export interface OwnerImportRow {
   applied: boolean;
 }
 
-export interface OwnerImportSummary {
+interface OwnerImportSummary {
   rows: number;
   valid: number;
   invalid: number;
@@ -63,7 +63,7 @@ export interface OwnerImportSummary {
 }
 
 /** The days where the shares of a property would be wrong after the file. */
-export interface OwnerImportPropertyIssue {
+interface OwnerImportPropertyIssue {
   propertyId: string;
   issues: OwnershipIssue[];
 }
@@ -79,7 +79,7 @@ export interface OwnerImportResult {
 }
 
 /** How many owners are ready and how many are to complete, for one dimension. */
-export interface OwnerReadinessCount {
+interface OwnerReadinessCount {
   ready: number;
   toComplete: number;
 }
@@ -146,7 +146,7 @@ export interface OwnerInvitationStatus {
 }
 
 /** An owner the batch would invite, with the address the link would go to (shown to who manages the owners, in the preview only). */
-export interface OwnerInvitationRecipient {
+interface OwnerInvitationRecipient {
   ownerId: string;
   displayName: string;
   email: string;
@@ -154,14 +154,14 @@ export interface OwnerInvitationRecipient {
 }
 
 /** An owner the batch leaves out, and the codes that say why. */
-export interface OwnerInvitationExclusion {
+interface OwnerInvitationExclusion {
   ownerId: string;
   displayName: string | null;
   reasons: string[];
 }
 
 /** The limit of the day: at most `limit` invitations for each org in 24 hours. */
-export interface OwnerInvitationQuota {
+interface OwnerInvitationQuota {
   limit: number;
   used: number;
   remaining: number;
@@ -175,12 +175,6 @@ export interface OwnerInvitationPreview {
   quota: OwnerInvitationQuota;
 }
 
-/** Body of the preview and of the confirmation: the owners chosen (never empty: an empty list is refused, it never means «all») and, to confirm, the fingerprint of the preview. */
-export interface OwnerInvitationBatchRequest {
-  ownerIds: string[];
-  fingerprint?: string;
-}
-
 /** `POST api/onboarding/owners/invitations/confirm`: the invitations sent, and the owners whose e-mail could not be queued. */
 export interface OwnerInvitationBatchResult {
   sent: number;
@@ -189,7 +183,7 @@ export interface OwnerInvitationBatchResult {
 }
 
 /** How the claims of the owner portal reached the identity provider (`claimsRefresh` of the acceptance). */
-export type OwnerClaimsRefresh = 'published' | 'not_configured' | 'failed';
+type OwnerClaimsRefresh = 'published' | 'not_configured' | 'failed';
 
 /** `POST api/owner-invitations/accept`: the owner is now the account's. Ids only. */
 export interface OwnerInvitationAccepted {

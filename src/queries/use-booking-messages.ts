@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { bookingMessagesApi, type HostThreadFilters } from '@/api/booking-messages.api';
+import { bookingMessagesApi } from '@/api/booking-messages.api';
 import { retryTransientErrors } from '@/lib/query-client';
 import { invalidateMessageHubLists } from '@/queries/use-message-hub';
 import { NOTIFICATIONS_QUERY } from '@/queries/use-notifications';
@@ -65,17 +65,6 @@ export function useMarkThreadRead(bookingId: string) {
       invalidateMessageHubLists(queryClient);
       void queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY] });
     },
-  });
-}
-
-/** The threads of the host's properties (`needsReply: true` is the «Rispondi a un ospite» of the Home). Read again on every visit. */
-export function useHostThreads(filters: HostThreadFilters, enabled: boolean = true) {
-  return useQuery({
-    queryKey: [HOST_THREADS_QUERY, filters],
-    queryFn: () => bookingMessagesApi.listThreads(filters),
-    enabled,
-    refetchOnMount: 'always',
-    retry: retryTransientErrors(1),
   });
 }
 

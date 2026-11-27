@@ -8,7 +8,7 @@
  */
 
 /** How an issued invoice is paid: `offset` (the statement covers it), `to_pay` (the owner owes `amountDue`) or `credited` (credit notes credited the whole invoice). */
-export interface OwnerInvoiceSettlement {
+interface OwnerInvoiceSettlement {
   state: string;
   amountDue: number;
 }

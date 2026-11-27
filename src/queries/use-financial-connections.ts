@@ -4,7 +4,7 @@ import type { StartOrgBankLinkPayment } from '@/types';
 import { TENANT_AREA_KEY } from './use-tenant-area';
 import { PUBLIC_RENT_KEY, RENT_KEY, RENT_REGISTER_KEY } from './use-rent';
 
-export const ORG_BANK_LINK_KEY = 'org-bank-link';
+const ORG_BANK_LINK_KEY = 'org-bank-link';
 
 export function useOrgBankLink(enabled: boolean) {
   return useQuery({

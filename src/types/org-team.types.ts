@@ -109,7 +109,7 @@ export interface AcceptOrgInvitationResult {
 export type OrgCapabilityLevel = 'Yes' | 'Read' | 'No';
 
 /** One of the twelve capabilities of the matrix. `id` is a stable key the client translates; `group` is `short-rent`, `long-rent`, `both` or `account`. */
-export interface OrgCapability {
+interface OrgCapability {
   id: string;
   group: string;
   level: OrgCapabilityLevel;
@@ -173,7 +173,7 @@ export interface OrgMembersResponse {
 }
 
 /** What happened (`OrgActivityType`): the log holds the code and the ids, the client composes the sentence. */
-export type OrgActivityType =
+type OrgActivityType =
   | 'MemberInvited'
   | 'InvitationRevoked'
   | 'InvitationAccepted'
@@ -199,7 +199,7 @@ export type OrgActivityType =
   | 'AdminGrantedConcordatoFacileGift';
 
 /** What the id of a line points to (`OrgActivitySubjectType`). */
-export type OrgActivitySubjectType = 'Member' | 'Invitation' | 'Org' | 'Property' | 'Supplier';
+type OrgActivitySubjectType = 'Member' | 'Invitation' | 'Org' | 'Property' | 'Supplier';
 
 /** One line of the activity log. Ids and short codes only: never a name, an email or a free text. */
 export interface OrgActivityEntry {

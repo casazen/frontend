@@ -31,7 +31,7 @@ export type OwnerLedgerEntryType =
   | 'ChannelFeeBorneByAgency';
 
 /** Where a line of the owner ledger comes from. `MandateFlatFee` is a flat fee of the mandate for a stay, `OwnerInvoice` an owner invoice (or its credit note) of CasaZen. */
-export type OwnerLedgerSourceType = 'Payment' | 'Booking' | 'OwnerCharge' | 'WireBatch' | 'Manual' | 'OwnerPayout' | 'MandateFlatFee' | 'OwnerInvoice';
+type OwnerLedgerSourceType = 'Payment' | 'Booking' | 'OwnerCharge' | 'WireBatch' | 'Manual' | 'OwnerPayout' | 'MandateFlatFee' | 'OwnerInvoice';
 
 /** The life of a version of an owner statement. */
 export type OwnerStatementVersionStatus = 'Draft' | 'Flagged' | 'Approved' | 'Published' | 'Superseded';
@@ -40,10 +40,10 @@ export type OwnerStatementVersionStatus = 'Draft' | 'Flagged' | 'Approved' | 'Pu
 export type OwnerClosePeriodStatus = 'Open' | 'Closed';
 
 /** The life of a payout to an owner. */
-export type OwnerPayoutStatus = 'Confirmed' | 'Reversed';
+type OwnerPayoutStatus = 'Confirmed' | 'Reversed';
 
 /** The withholding decision of a payout. */
-export type TaxDecision = 'Applicable' | 'NotApplicable';
+type TaxDecision = 'Applicable' | 'NotApplicable';
 
 /** Where a tax file (an F24, the annual data) is: generated and reviewed are never filed. */
 export type TaxFilingState = 'Generated' | 'Reviewed' | 'Submitted' | 'Accepted' | 'Rejected';
@@ -292,7 +292,7 @@ export interface PayoutStayFact {
 }
 
 /** The agency's rate of the payout day, from the currency of the withholding to the one of the payout: one unit of `from` is `rate` units of `to`. */
-export interface PayoutFx {
+interface PayoutFx {
   from: string;
   to: string;
   rate: number;
@@ -424,7 +424,7 @@ export interface TaxFilingCommand {
 }
 
 /** The obligations of a month against its F24 (`f24` is `null` while there is none). */
-export interface TaxPeriodReconciliation {
+interface TaxPeriodReconciliation {
   month: number;
   obligations: number;
   f24: number | null;
@@ -595,7 +595,7 @@ export interface OwnerOnboardingWarning {
 }
 
 /** An owner of `GET api/onboarding/owners/readiness`. `warnings` are empty unless the exports and checks of the Italian withholding are on (`taxReportingExports`). */
-export interface OwnerOnboardingOwner {
+interface OwnerOnboardingOwner {
   ownerId: string;
   displayName: string;
   accountingReady: boolean;
@@ -635,7 +635,7 @@ export interface OwnerOnboardingReadiness {
 export type CommissionBase = 'GrossExclTouristTax' | 'GrossExclTouristTaxAndCleaning';
 
 /** The tax treatment of the commission for the owner's tax calculation (backend `CommissionTreatment`). */
-export type CommissionTreatment = 'Deductible' | 'NotDeductible';
+type CommissionTreatment = 'Deductible' | 'NotDeductible';
 
 /**
  * A version of the mandate of an owner (`GET api/owners/{id}/mandates`, the newest first): in force from `validFrom` to `validTo` (both included, `yyyy-MM-dd`; `null` until a later
@@ -708,7 +708,7 @@ export type OwnerBulkAction = (typeof OWNER_BULK_ACTIONS)[number];
  * How far a bulk run is (backend `OwnerBulkRunStatus`, by name). `Completed` says that every owner was answered, never that every owner is done: a row can still be a failure.
  * `Failed` is the run itself failing (not one of its owners): what it did before is in its rows.
  */
-export type OwnerBulkRunStatus = 'Queued' | 'Running' | 'Completed' | 'Failed';
+type OwnerBulkRunStatus = 'Queued' | 'Running' | 'Completed' | 'Failed';
 
 /**
  * What a bulk step did for one owner. `ok` is the truth: the owner is where the step leads, done now or already so (`unchanged`). `code` is the stable code of the reason: why the step was not

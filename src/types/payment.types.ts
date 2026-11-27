@@ -74,7 +74,7 @@ export interface PaymentListItem {
 }
 
 /** `POST /payments` (SR-06b): a payment the host received outside CasaZen, cash or bank transfer, to record on a booking. */
-export interface CreatePaymentDto {
+interface CreatePaymentDto {
   bookingId: string;
   amount: number;
   currency?: string;
@@ -94,10 +94,6 @@ export interface RecordPaymentInput extends CreatePaymentDto {
   idempotencyKey: string;
 }
 
-export interface UpdatePaymentDto extends Partial<CreatePaymentDto> {
-  status?: PaymentStatus;
-}
-
 /**
  * Stripe status of one refund (BK-02). Only `Succeeded` means the money went back: `Pending` and
  * `RequiresAction` are still waiting for Stripe, `Failed` and `Canceled` refunded nothing.
@@ -105,7 +101,7 @@ export interface UpdatePaymentDto extends Partial<CreatePaymentDto> {
 export type PaymentRefundStatus = 'Pending' | 'Succeeded' | 'Failed' | 'Canceled' | 'RequiresAction';
 
 /** Who started the refund: the host, the booking cancellation, or someone on the Stripe Dashboard. */
-export type PaymentRefundOrigin = 'Host' | 'BookingCancellation' | 'Stripe';
+type PaymentRefundOrigin = 'Host' | 'BookingCancellation' | 'Stripe';
 
 export interface PaymentRefund {
   id: string;
@@ -139,14 +135,6 @@ export interface RefundPaymentDto {
   reason?: string;
 }
 
-/** Matches GET /payments/revenue backend response. */
-export interface RevenueResponse {
-  propertyId: string;
-  startDate: string;
-  endDate: string;
-  revenue: number;
-}
-
 export interface RevenueParams {
   startDate?: string;
   endDate?: string;
@@ -154,7 +142,7 @@ export interface RevenueParams {
   groupBy?: 'day' | 'week' | 'month' | 'year';
 }
 
-export interface RevenueData {
+interface RevenueData {
   period: string;
   revenue: number;
   bookings: number;

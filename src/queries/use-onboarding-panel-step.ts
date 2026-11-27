@@ -14,7 +14,7 @@ const panelStepKey = (id: string) => [...PANEL_STEPS_KEY, 'step', id] as const;
  * six flows (a connection that works turns a property from «to complete» to ready), the connection and the import of the listings, and the
  * «Da fare» list, where the step had its item. Only the screens that show them ask the server again; the others read on their next visit.
  */
-export function invalidateAfterPanelStep(queryClient: QueryClient): void {
+function invalidateAfterPanelStep(queryClient: QueryClient): void {
   invalidateOnboarding(queryClient);
   // The list, not the step a page follows: that one is kept as the server answered (`remember`) and is read at its own pace.
   void queryClient.invalidateQueries({ queryKey: PANEL_STEPS_LIST_KEY });

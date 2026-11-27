@@ -1,5 +1,5 @@
 /** Matches backend CalendarBookingDto */
-export interface CalendarBookingDto {
+interface CalendarBookingDto {
   id: string;
   propertyId: string;
   guestId: string;

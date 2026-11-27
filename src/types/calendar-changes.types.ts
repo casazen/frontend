@@ -6,7 +6,7 @@
  */
 
 /** What to do to one value of the rules of a night: keep it (the default), set it to `value`, or clear it (a flag goes back to off). */
-export type FieldPatchAction = 'Keep' | 'Set' | 'Clear';
+type FieldPatchAction = 'Keep' | 'Set' | 'Clear';
 
 export interface FieldPatch<T> {
   action: FieldPatchAction;
@@ -40,9 +40,9 @@ export interface CalendarChangeRequest {
 export type CalendarChangeState = 'Applied' | 'Queued' | 'Sending' | 'Sent' | 'Confirmed' | 'PartiallySent' | 'Failed';
 
 /** Where one property of a change stands (backend `CalendarChangePropertyState`): `Skipped` is a property that is not on the channel manager. */
-export type CalendarChangePropertyState = 'Pending' | 'Accepted' | 'Confirmed' | 'Failed' | 'Skipped';
+type CalendarChangePropertyState = 'Pending' | 'Accepted' | 'Confirmed' | 'Failed' | 'Skipped';
 
-export type CalendarChangeKind = 'DayRules' | 'Block' | 'Bulk' | 'Publication';
+type CalendarChangeKind = 'DayRules' | 'Block' | 'Bulk' | 'Publication';
 
 export interface CalendarChangeProperty {
   propertyId: string;
@@ -87,14 +87,14 @@ export interface CalendarChangeValues {
 }
 
 /** A night the change would change, with its values before and after. */
-export interface CalendarChangeSample {
+interface CalendarChangeSample {
   date: string;
   before: CalendarChangeValues;
   after: CalendarChangeValues;
 }
 
 /** What the change would do to one property. */
-export interface CalendarChangePreviewProperty {
+interface CalendarChangePreviewProperty {
   propertyId: string;
   name: string;
   /** The property books into the channel manager: the change would be sent there. */
@@ -112,7 +112,7 @@ export interface CalendarChangePreviewProperty {
 }
 
 /** Something to know before applying: `property_not_mirrored` (the change stays in CasaZen) or `room_not_chosen` (nothing is sent until the room is chosen). */
-export interface CalendarChangeWarning {
+interface CalendarChangeWarning {
   code: string;
   propertyId: string;
   message: string;

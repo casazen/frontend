@@ -20,25 +20,6 @@ export interface OwnerStatement {
 
 export type StatementStatus = 'Draft' | 'Approved' | 'Published';
 
-export interface StatementLine {
-  id: string;
-  statementId: string;
-  type: StatementLineType;
-  bookingId: string | null;
-  label: string | null;
-  description: string | null;
-  grossRevenue: number;
-  commission: number;
-  expenses: number;
-  withholding: number;
-  cashYear: number;
-  stayYear: number | null;
-  attachmentUrl: string | null;
-  createdAt: string;
-}
-
-export type StatementLineType = 'Booking' | 'OtaRevenue' | 'Expense' | 'Adjustment';
-
 export interface StatementFilters {
   propertyOwnerId?: string;
   propertyId?: string;

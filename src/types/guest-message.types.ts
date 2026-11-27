@@ -2,7 +2,7 @@
 export const GUEST_MESSAGE_MAX_LENGTH = 2000;
 
 /** Who wrote a message of the thread between the guest of a direct booking and the host. */
-export type GuestMessageSender = 'Guest' | 'Host';
+type GuestMessageSender = 'Guest' | 'Host';
 
 /** One message: plain text (shown as text, never as markup or links). The guest's card numbers and IBANs arrive as «[rimosso]». */
 export interface GuestThreadMessage {

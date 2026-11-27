@@ -30,7 +30,7 @@ export interface ComplianceWizardStep {
  * A note that never blocks the activation: stable code and the message localized by the API (it names the comuni
  * involved), e.g. `cin_istat_comune_mismatch` (the comune inside the CIN is not the property's) or `comune_istat_missing`.
  */
-export interface ActivationWarning {
+interface ActivationWarning {
   step: string;
   code: string;
   message: string;
@@ -54,7 +54,7 @@ export interface ActivationTouristTax {
   categoryRequired?: boolean;
 }
 
-export interface ActivationTouristTaxRate extends TouristTaxRateRule {
+interface ActivationTouristTaxRate extends TouristTaxRateRule {
   effectiveFrom: string;
   effectiveTo: string | null;
   sourceUrl: string | null;
@@ -112,9 +112,9 @@ export const SAFETY_DETECTOR_TYPES = ['Battery', 'Mains', 'FixedSystem'] as cons
 export type SafetyDetectorType = (typeof SAFETY_DETECTOR_TYPES)[number];
 
 /** Stored answer; `ToReview` only comes from the old checklist and is never sent. */
-export type SafetyItemAnswer = 'Present' | 'Missing' | 'ToReview';
+type SafetyItemAnswer = 'Present' | 'Missing' | 'ToReview';
 export type SafetyItemRequirement = 'Required' | 'Optional' | 'NotApplicable' | 'Undetermined';
-export type SafetyItemStatus = 'Present' | 'Missing' | 'NotAnswered' | 'ToReview' | 'NotApplicable';
+type SafetyItemStatus = 'Present' | 'Missing' | 'NotAnswered' | 'ToReview' | 'NotApplicable';
 export type SafetyNotApplicableReason = 'NoGasNoCombustion' | 'NotEntrepreneurial';
 
 export interface SafetyChecklistFacts {
@@ -145,7 +145,7 @@ export interface SafetyChecklistItem {
   notes: string | null;
 }
 
-export interface SafetyChecklistIssue {
+interface SafetyChecklistIssue {
   code: string;
   message: string;
 }
@@ -344,7 +344,7 @@ export interface ComplianceSummaryResult {
 export const CHECKOUT_WIZARD_STEPS = ['stay-summary', 'alloggiati', 'cleaning', 'tourist-tax', 'property-ready'] as const;
 export type CheckoutWizardStepId = (typeof CHECKOUT_WIZARD_STEPS)[number];
 
-export interface CheckoutWizardStep {
+interface CheckoutWizardStep {
   id: string;
   label: string;
   status: ComplianceStepStatus;
@@ -426,7 +426,7 @@ export interface CheckoutWizardCompleteResult {
 }
 
 /** The elements "What happens now" tells about after the check-out, one line each (NF-45, NF-05): the channel manager only for a booking that is mirrored there. */
-export type CheckoutResultElementId = 'departure' | 'channelManager' | 'alloggiati' | 'cleaning' | 'touristTax' | 'propertyReady';
+type CheckoutResultElementId = 'departure' | 'channelManager' | 'alloggiati' | 'cleaning' | 'touristTax' | 'propertyReady';
 
 /** How an element stands: `done`, `attention` (not completed: still to do, or on its way) or `problem` (it failed). It is said in words as well, never by colour alone. */
 export type CheckoutResultTone = 'done' | 'attention' | 'problem';

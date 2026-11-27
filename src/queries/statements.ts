@@ -2,13 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { statementsApi } from '@/api/statements.api';
 import type {
   StatementFilters,
-  GenerateStatementRequest,
 } from '@/types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { failureMessage } from '@/lib/agency-finance';
-import { getProblemMessage } from '@/lib/api-errors';
 import { saveDownload } from './save-download';
 
 const STATEMENTS_KEY = 'statements';
@@ -24,25 +22,6 @@ export function useStatements(filters?: StatementFilters) {
     queryFn: () => statementsApi.getAll(filters),
     refetchOnMount: 'always' as const,
     staleTime: 30_000,
-  });
-}
-
-/**
- * Generates a new monthly statement for the given owner, property, and period.
- * The statement is created in Draft status with line items for all bookings collected in that month.
- */
-export function useGenerateStatement() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: GenerateStatementRequest) => statementsApi.generate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [STATEMENTS_KEY] });
-      toast.success(i18n.t('statement.generate.success'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('statement.generate.error'));
-    },
   });
 }
 

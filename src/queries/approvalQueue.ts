@@ -30,7 +30,7 @@ export function invalidateQueue(queryClient: QueryClient): Promise<void> {
  * Approving the draft of a message sends it to the guest, so the conversation that is open, the lists of the conversations and the counters of what waits for an
  * answer are stale too: a thread open in front of the host shows the message that went out without a reload.
  */
-export function invalidateConversations(queryClient: QueryClient): void {
+function invalidateConversations(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'thread'] });
   invalidateMessageHubLists(queryClient);
   void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });

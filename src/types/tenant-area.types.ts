@@ -1,9 +1,9 @@
 import type { RentLedgerComponent } from './rent.types';
 
 /** Role of the signed-in person on the contract they can open. */
-export type TenantAccessRole = 'TenantPrimary' | 'Tenant';
+type TenantAccessRole = 'TenantPrimary' | 'Tenant';
 
-export type TenantDeclarationStatus = 'Submitted' | 'Verified' | 'Rejected' | 'Superseded';
+type TenantDeclarationStatus = 'Submitted' | 'Verified' | 'Rejected' | 'Superseded';
 
 /** What the tenant is allowed to see of a maintenance request. Never a supplier price or a commercial term. */
 export type TenantMaintenanceStatus =
@@ -75,7 +75,7 @@ export interface TenantDue {
   declaration: TenantPaymentDeclaration | null;
 }
 
-export type TenantDocumentKind = 'Budget' | 'Settlement' | 'Statement' | 'Report' | 'Other';
+type TenantDocumentKind = 'Budget' | 'Settlement' | 'Statement' | 'Report' | 'Other';
 
 export interface TenantDocument {
   id: string;
@@ -86,7 +86,7 @@ export interface TenantDocument {
   accepted?: boolean;
 }
 
-export interface TenantEmergencyContact {
+interface TenantEmergencyContact {
   name: string;
   phone: string;
 }
@@ -97,7 +97,7 @@ export interface TenantEmergency {
 }
 
 /** `GET /tenant-area/contracts/:leaseId`: only this contract and its property. */
-export interface TenantCondominiumReport {
+interface TenantCondominiumReport {
   id: string; periodLabel: string; periodEnd: string; recoverable: number; advances: number; prior: number; balance: number;
 }
 export interface TenantContractArea {
@@ -116,7 +116,7 @@ export interface TenantMaintenanceUpdate {
   text: string;
 }
 
-export interface TenantMaintenanceAttachment {
+interface TenantMaintenanceAttachment {
   id: string;
   name: string;
 }

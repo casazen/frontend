@@ -7,7 +7,7 @@
 export type LeaseOrigin = 'Created' | 'Imported';
 
 /** State of a step of the wizard, decided by the server (`LeaseStepState`). `Waiting` is never produced in the first release. */
-export type LeaseStepState = 'Done' | 'Todo' | 'Waiting' | 'Locked' | 'NotApplicable';
+type LeaseStepState = 'Done' | 'Todo' | 'Waiting' | 'Locked' | 'NotApplicable';
 
 /** One thing missing in a step, or one thing to know: a stable code (a closed list on the server) and its parameters. */
 export interface LeaseNeed {
@@ -153,10 +153,10 @@ export interface LongRentRules {
 }
 
 /** Where the reading of the contract the owner uploaded is (`GET /leases/:id/draft/reading`): none uploaded, being read, read, or not readable. */
-export type LeaseReadingState = 'None' | 'Reading' | 'Done' | 'Failed';
+type LeaseReadingState = 'None' | 'Reading' | 'Done' | 'Failed';
 
 /** What became of a value the contract states: written (`Read`), already there and the same (`Agrees`), another is typed (`Conflict`), refused by the rules (`Unusable`). */
-export type LeaseReadingFieldState = 'Read' | 'Agrees' | 'Conflict' | 'Unusable';
+type LeaseReadingFieldState = 'Read' | 'Agrees' | 'Conflict' | 'Unusable';
 
 /** One value of the contract: the name of the field and, for a person, the entry of the draft (`partyId`). Never the value itself. */
 export interface LeaseReadingField {
@@ -171,7 +171,7 @@ export interface LeaseReadingField {
 }
 
 /** What a run of pages of one file is (CF-DOCS-REAL): the file the guided service delivers holds the contract, its attestation and its calculation sheet. */
-export type LeaseDocumentSectionKind = 'contract' | 'attestation' | 'calculationSheet';
+type LeaseDocumentSectionKind = 'contract' | 'attestation' | 'calculationSheet';
 
 /** A run of pages of a document that is one thing: the pages count from 1 and both ends are part of it. */
 export interface LeaseDocumentSection {

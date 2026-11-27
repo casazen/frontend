@@ -21,7 +21,7 @@ export interface AdminSupplier {
 
 /** State of an invite, computed by the API: an invite from before the token hashes counts as `Expired`. */
 export const ADMIN_INVITE_STATES = ['Pending', 'Used', 'Expired', 'Revoked'] as const;
-export type AdminInviteState = (typeof ADMIN_INVITE_STATES)[number];
+type AdminInviteState = (typeof ADMIN_INVITE_STATES)[number];
 
 /** An invite in the admin list (`GET /admin/suppliers/invites`); the link token is never sent. */
 export interface AdminInvite {
@@ -36,7 +36,7 @@ export interface AdminInvite {
   revokedAt?: string | null;
 }
 
-export type AdminSupplierAuditAction = 'Suspended' | 'Reactivated' | 'InviteResent' | 'InviteRevoked';
+type AdminSupplierAuditAction = 'Suspended' | 'Reactivated' | 'InviteResent' | 'InviteRevoked';
 
 /** One line of the audit trail of a supplier (`GET /admin/suppliers/{orgId}/audit`). */
 export interface AdminSupplierAuditEntry {

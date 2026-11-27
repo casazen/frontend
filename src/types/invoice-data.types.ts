@@ -17,7 +17,7 @@ export type InvoiceRecipientKind = (typeof INVOICE_RECIPIENT_KINDS)[number];
  */
 export const INVOICE_DATA_SOURCES = ['Octorate', 'CheckIn', 'Host'] as const;
 
-export type InvoiceDataSource = (typeof INVOICE_DATA_SOURCES)[number];
+type InvoiceDataSource = (typeof INVOICE_DATA_SOURCES)[number];
 
 /** The names of the fields as the API says them (camel case): each 422 of the invoice data names one. */
 export const INVOICE_DATA_FIELDS = [

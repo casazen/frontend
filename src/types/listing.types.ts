@@ -65,14 +65,14 @@ export interface ListingTexts {
 }
 
 /** A text of the site profile: Italian, English and, for some texts, the other languages in `others`. */
-export interface SiteProfileText {
+interface SiteProfileText {
   it: string;
   en?: string | null;
   others?: Record<string, string | null> | null;
 }
 
 /** One of the (at most three) highlights of the property page. */
-export interface SiteProfileHighlight {
+interface SiteProfileHighlight {
   icon: string;
   title: SiteProfileText;
   text?: SiteProfileText | null;
@@ -186,12 +186,6 @@ export interface AmenityCatalog {
 
 /** Where the content of a property stands on a channel. */
 export type ChannelPublishStatus = 'Draft' | 'Sending' | 'Accepted' | 'Published' | 'ToFix' | 'ManagedOnChannel';
-
-/** The wizard steps that can lack data for a channel: the ids of the steps of «Aggiungi immobile». */
-export type ListingMissingStep = 'base' | 'photos' | 'descriptions' | 'amenities' | 'rules' | 'prices';
-
-/** The groups of the content that changed outside CasaZen. */
-export type OutsideChangeGroup = 'descriptions' | 'rooms' | 'property';
 
 /**
  * The state of the listing on one channel (`GET api/properties/{id}/channel-status`). `reason` is in simple words, in the language of the

@@ -97,7 +97,7 @@ export function useRefreshBookingReviews(bookingId: string) {
 }
 
 /** How a reply or the host's own review ended, as the page tells it. */
-export interface ReviewSendResult {
+interface ReviewSendResult {
   state: OtaReviewActionState;
   /** The code of a refusal (`Error`). */
   errorCode: string | null;

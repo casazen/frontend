@@ -50,7 +50,7 @@ export interface TouristTaxComuneSummary {
 }
 
 /** The sums of the comuni; `paid`, `balance` and their cents are `null` while the payments are hidden. */
-export interface TouristTaxSummaryTotals {
+interface TouristTaxSummaryTotals {
   stays: number;
   nights: number;
   guests: number;
@@ -116,7 +116,7 @@ export interface TouristTaxDeclaration {
 }
 
 /** How the account of the agent is cut, as the server names it (the `by` of the request is `month` or `quarter`). */
-export type TouristTaxAccountPeriod = 'Month' | 'Quarter';
+type TouristTaxAccountPeriod = 'Month' | 'Quarter';
 
 /** One comune in one period of the account of the agent, or in the whole year (`isYear`). */
 export interface TouristTaxAgentAccountRow {

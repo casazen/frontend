@@ -7,7 +7,7 @@ import type { RentalMode } from './property.types';
  */
 
 /** Where a change is (`PropertyModeChangeStatus`): only a `Scheduled` one can be cancelled; the others are history. */
-export type PropertyModeChangeStatus = 'Scheduled' | 'Applied' | 'Cancelled' | 'Failed';
+type PropertyModeChangeStatus = 'Scheduled' | 'Applied' | 'Cancelled' | 'Failed';
 
 /** A change of mode of a property (`PropertyModeChangeDto`). */
 export interface PropertyModeChange {
