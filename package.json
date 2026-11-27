@@ -9,6 +9,8 @@
     "build": "tsc -b && vite build && vite build --ssr src/site/entry-server.ts --outDir dist-ssr && node scripts/prerender-site.mjs && node scripts/build-embed.mjs",
     "build:demo": "tsc -b && cross-env VITE_DEMO_MODE=true vite build --mode demo && cross-env VITE_DEMO_MODE=true vite build --mode demo --ssr src/site/entry-server.ts --outDir dist-ssr && node scripts/prerender-site.mjs && node scripts/build-embed.mjs --mode demo",
     "build:embed": "node scripts/build-embed.mjs",
+    "guida:build": "node scripts/build-guida.mjs",
+    "guida:check": "node scripts/build-guida.mjs --check",
     "typecheck": "tsc -b --noEmit",
     "knip": "knip",
     "lint": "eslint .",

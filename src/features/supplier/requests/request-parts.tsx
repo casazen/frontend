@@ -446,7 +446,9 @@ function PaymentGroup({ request }: { request: SupplierServiceRequest }) {
   if (!payment) return null;
   const money = (cents: number | null | undefined) => (cents === null || cents === undefined ? null : formatMoney(cents, i18n.language));
   const status = payment.status ? (PAYMENT_STATUSES.has(payment.status) ? payment.status : 'unknown') : null;
-  const commission = money(payment.commissionCents);
+  const plan = payment.hostDocuments;
+  const gross = money(plan?.grossCents ?? payment.amountCents);
+  const commission = plan && plan.commissionCents === 0 ? null : money(plan?.commissionCents ?? payment.commissionCents);
   const priceLines = request.price?.lines ?? [];
   const agreed = money(request.price?.quotedAmountCents);
   const how = payment.paidVia === 'Offline' ? 'paidOutside' : request.paymentMode === 'Manual' ? 'outside' : request.paymentMode === 'Online' ? 'inside' : null;
@@ -475,12 +477,14 @@ function PaymentGroup({ request }: { request: SupplierServiceRequest }) {
         {agreed && request.price?.finalAmountCents !== null && request.price?.finalAmountCents !== undefined ? (
           <Row label={t('supplier.requests.payment.agreed')}>{agreed}</Row>
         ) : null}
-        {money(payment.amountCents) ? <Row label={t('supplier.requests.payment.amount')} testId="supplier-request-payment-amount">{money(payment.amountCents)}</Row> : null}
+        {gross && <Row label={t(plan ? 'supplier.requests.payment.hostSale' : 'supplier.requests.payment.amount')} testId="supplier-request-payment-amount">{gross}</Row>}
+        {plan && plan.refundedCents > 0 && <Row label={t('supplier.requests.payment.hostSaleRefund')}>{money(plan.refundedCents)}</Row>}
         {commission ? (
-          <Row label={t('supplier.requests.payment.commission')} testId="supplier-request-payment-commission">
+          <Row label={t(plan ? 'supplier.requests.payment.hostSaleCommission' : 'supplier.requests.payment.commission')} testId="supplier-request-payment-commission">
             {payment.commissionPercent ? `${commission} (${payment.commissionPercent} %)` : commission}
           </Row>
         ) : null}
+        {plan && plan.commissionRefundedCents > 0 && <Row label={t('supplier.requests.payment.hostSaleFeeRefund')}>{money(plan.commissionRefundedCents)}</Row>}
         {money(payment.netCents) ? <Row label={t('supplier.requests.payment.net')} testId="supplier-request-payment-net">{money(payment.netCents)}</Row> : null}
         {status ? <Row label={t('supplier.requests.payment.state')} testId="supplier-request-payment-state">{t(`supplier.requests.payment.status.${status}`)}</Row> : null}
         {payment.paidAt ? <Row label={t('supplier.requests.payment.paidAt')}>{formatRomeDateTime(payment.paidAt, i18n.language, { day: 'numeric', month: 'long', year: 'numeric' })}</Row> : null}

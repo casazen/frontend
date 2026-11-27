@@ -72,6 +72,12 @@ describe('vercel.json routing', () => {
     expect(rewriteFor(path)).toBe('/index.html');
   });
 
+  it('rewrites_guida_opensTheStaticManualInsteadOfTheSpa', () => {
+    // The user manual (public/guida, built by scripts/build-guida.mjs) is static: `/guida/` is served from the filesystem,
+    // and the address without the slash must not fall into the SPA.
+    expect(rewriteFor('/guida')).toBe('/guida/index.html');
+  });
+
   const CRAWLERS = [
     'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
     'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
