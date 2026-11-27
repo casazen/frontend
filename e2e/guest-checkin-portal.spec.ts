@@ -1,6 +1,7 @@
 import { test, expect } from './test';
 import { bookingId, mockArrivalJourney, property } from './helpers/arrival-journey';
 import { demoUrl } from './helpers/demo-profile';
+import { installFakeCamera } from './helpers/fake-camera';
 
 test.describe('Guest check-in portal', () => {
   test('a link issued by the host opens the same stay in a fresh guest browser', async ({ page, browser, baseURL }) => {
@@ -175,19 +176,8 @@ test.describe('Guest check-in portal', () => {
 });
 
 test('confirms a misread name, reuses the front after consent and submits the verified guest', async ({ page }) => {
-  // The browser exercises camera capture with generated pixels. The API outcomes below are fixtures.
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { value: async () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 640;
-      canvas.height = 480;
-      const stream = canvas.captureStream(10);
-      const ctx = canvas.getContext('2d')!;
-      const timer = setInterval(() => ctx.fillRect(0, 0, 640, 480), 100);
-      stream.getVideoTracks()[0].addEventListener('ended', () => clearInterval(timer));
-      return stream;
-    } });
-  });
+  // The browser exercises camera capture with generated pixels (`helpers/fake-camera.ts`). The API outcomes below are fixtures.
+  await installFakeCamera(page);
   const steps: string[] = [];
   const state = { step: 'consent', biometricOffered: true, consentRecorded: false, consentRefused: false,
     documentChecked: false, attemptsRemaining: 3, operatorRequested: false, operatorPathOpen: true,
