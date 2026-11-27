@@ -2674,6 +2674,8 @@
       "showcaseSupplierNotActive": "Your profile is not active yet: complete the activation to publish the showcase.",
       "showcaseUndoUnavailable": "The time to undo the publication has run out.",
       "showcaseVersionConflict": "The showcase was changed elsewhere: reload the page to see the latest version.",
+      "siteConnectionInvalidRequest": "The request to connect the site is not valid: go back to the plugin and try again.",
+      "siteConnectionNotFound": "This connected site no longer exists: the list has been refreshed.",
       "servicePaymentInFlight": "A payment for this amount is already in progress: wait a few moments.",
       "servicePaymentLinkInvalid": "This payment link is not valid or has expired.",
       "servicePaymentNotPayable": "This payment can no longer be paid: it may already be settled or withdrawn.",
@@ -6045,6 +6047,7 @@
     "button": "Guide",
     "description": "It walks you through step by step: what you have done, what to do now and what comes next.",
     "help": {
+      "fullManual": "Full manual (in Italian): step-by-step guides and FAQ",
       "manual": "Open the CasaZen manual",
       "support": "Write to support",
       "text": "The manual explains every area in plain words. If you get stuck, write to us: we will answer.",
@@ -9967,12 +9970,19 @@
         "label": "What to embed"
       },
       "plugin": {
-        "description": "If your site runs on WordPress you do not need to paste any code.",
+        "description": "If your site runs on WordPress you do not need to paste any code: the plugin connects to your account with one button.",
         "download": "Download the plugin",
-        "step1": "Install and activate the CasaZen plugin on your WordPress site.",
-        "step2Own": "In the plugin settings, write the CasaZen address: {{address}}.",
-        "step2Slug": "In the plugin settings, write the CasaZen address ({{address}}) and the organization slug ({{slug}}).",
-        "step3": "Open the guided setup: it creates the pages “Book”, “Online check-in” and “Owner area”.",
+        "manual": {
+          "address": "CasaZen address: {{address}}",
+          "description": "If you would rather not connect the plugin, write these values by hand in the advanced settings of the plugin.",
+          "slug": "Organization identifier (slug): {{slug}}",
+          "slugNotNeeded": "Organization identifier: not needed, the domain of your agency already knows who you are.",
+          "title": "Manual setup"
+        },
+        "step1": "Download the plugin and activate it in WordPress: Plugins, Add New, Upload Plugin.",
+        "step2": "In the plugin press “Connect to CasaZen” and confirm: the address and the identifier fill in by themselves.",
+        "step3": "Still in the plugin, write the domain and create the two DNS records it shows.",
+        "step4": "Create the pages “Book”, “Online check-in” and “Owner area” with the guided setup.",
         "title": "WordPress plugin"
       },
       "preview": {
@@ -10005,6 +10015,25 @@
         "targetInvalid": "Write a full address that starts with http:// or https://, without a user name or password.",
         "targetLabel": "Page of your site with the booking engine",
         "targetPlaceholder": "https://www.example.com/book"
+      },
+      "sites": {
+        "description": "The WordPress sites connected to your account through the plugin. If you disconnect one, its plugin stops working until you connect it again.",
+        "empty": "No connected sites",
+        "lastUsed": "Last used: {{date}}",
+        "lastUsedNever": "Never used",
+        "linked": "Connected on {{date}}",
+        "loadError": "We cannot read the connected sites.",
+        "loading": "Loading the connected sites…",
+        "revoke": "Disconnect",
+        "revokeConfirm": {
+          "confirm": "Disconnect",
+          "description": "The plugin of this site stops working with your account: to make it work again you will have to connect it again from WordPress. The pages and widgets already published stay where they are.",
+          "title": "Disconnect {{site}}?"
+        },
+        "revokeFailed": "We could not disconnect the site. Try again.",
+        "revokeLabel": "Disconnect {{site}}",
+        "revoked": "Site disconnected.",
+        "title": "Connected sites"
       },
       "snippet": {
         "copied": "Copied",
@@ -22211,6 +22240,8 @@
     "empty": "No topics found. Try another word.",
     "contents": "Guide topics",
     "availability": "Visible features depend on your work area, permissions and organisation configuration.",
+    "fullManual": "Open the full manual (in Italian): step-by-step guides, feature list and FAQ",
+    "fullManualNewTab": "opens in a new tab",
     "sections": {
       "start": {
         "title": "Getting started and work areas",
@@ -27696,6 +27727,46 @@
       "wait": "Request sent to {{host}}"
     }
   },
+  "siteConnect": {
+    "wordpress": {
+      "adminOnly": {
+        "description": "Only an administrator of the agency can connect a site. Sign in with the account of an administrator and try again from the plugin.",
+        "title": "Connection not allowed"
+      },
+      "allowed": {
+        "domain": "see and change the domain of your booking site",
+        "surfaces": "choose what passes through the domain: guest area, owner portal and links in e-mails",
+        "title": "The plugin will be able to:"
+      },
+      "cancelled": {
+        "description": "You can close this tab and go back to WordPress.",
+        "title": "Cancelled"
+      },
+      "connect": "Connect",
+      "disconnectAnytime": "You can disconnect the site at any time from the plugin or from “Embed in your site”.",
+      "failed": "The site could not be connected. Try again shortly.",
+      "invalid": {
+        "description": "Go back to the plugin and try again.",
+        "title": "Invalid request"
+      },
+      "leaving": {
+        "description": "The connection is completed on WordPress: wait a moment.",
+        "title": "Taking you back to WordPress"
+      },
+      "loading": "Preparing the connection…",
+      "notAllowed": {
+        "data": "see bookings, guests or payments",
+        "title": "The plugin will not be able to:"
+      },
+      "question": "Connect the site <strong>{{site}}</strong> to <strong>{{agency}}</strong>?",
+      "unavailable": {
+        "description": "We cannot check whether connecting sites is available. Try again.",
+        "retry": "Try again",
+        "title": "Connection not available"
+      },
+      "verifySite": "Check that the address is your site. If you do not recognise it, cancel."
+    }
+  },
   "siteDocuments": {
     "title": "Site documents",
     "description": "The privacy notice and booking terms of your site: guests read them before they book.",
@@ -29824,6 +29895,10 @@
           "TransferFailed": "The transfer has not gone through yet: CasaZen tries again",
           "unknown": "Being checked"
         },
+        "hostSale": "Supplier sale to the host, gross amount",
+        "hostSaleRefund": "Commercial refund to the host",
+        "hostSaleCommission": "CasaZen B2B commission payable by the supplier, included in the gross amount",
+        "hostSaleFeeRefund": "Commission adjustment on the refund",
         "subNet": "Net {{amount}}",
         "title": "Payment and pay",
         "tooSoon": "You sent a reminder a short while ago: you can try again tomorrow."

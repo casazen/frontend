@@ -137,6 +137,13 @@ function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
           <BookOpen aria-hidden="true" className="size-4" />
           {t('guide.help.manual')}
         </Link>
+        <a href="/guida/" target="_blank" rel="noopener" className={PANEL_LINK} data-testid="guide-help-full-manual">
+          <BookOpen aria-hidden="true" className="size-4" />
+          <span>
+            {t('guide.help.fullManual')}
+            <span className="sr-only"> ({t('productGuide.fullManualNewTab')})</span>
+          </span>
+        </a>
         {helpEmail ? (
           <a href={`mailto:${helpEmail}`} className={PANEL_LINK} data-testid="guide-help-support">
             <LifeBuoy aria-hidden="true" className="size-4" />

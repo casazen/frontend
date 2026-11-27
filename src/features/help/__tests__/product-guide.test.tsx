@@ -21,6 +21,18 @@ describe('Product guide', () => {
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(11);
   });
 
+  it('offers the full static manual right under the search, in a new tab', () => {
+    render(<MemoryRouter initialEntries={['/app/short-rent/help']}><ProductGuidePage /></MemoryRouter>);
+    const manual = screen.getByRole('link', { name: /Apri il manuale completo/ });
+    expect(manual).toHaveAttribute('href', '/guida/');
+    expect(manual).toHaveAttribute('target', '_blank');
+    expect(manual).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    // It sits in the search block (before the list of topics), not at the bottom of the page.
+    const search = screen.getByRole('searchbox');
+    expect(search.compareDocumentPosition(manual) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(manual.compareDocumentPosition(screen.getAllByRole('heading', { level: 2 })[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('changes the content and search labels with the app language', async () => {
     render(<MemoryRouter initialEntries={['/app/short-rent/help']}><ProductGuidePage /></MemoryRouter>);
     await act(() => i18n.changeLanguage('en'));
