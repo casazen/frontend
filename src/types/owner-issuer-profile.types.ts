@@ -68,6 +68,3 @@ export interface OwnerIssuerProfileRequest {
   issuerSdiRecipientCode?: string;
   issuerPec?: string;
 }
-
-/** The months and the years the export for the accountant of an owner takes: `yyyy-MM` or `yyyy`, as the server reads them (`accountant_package_invalid_period` otherwise). */
-export type IssuedDocumentsPeriod = string;

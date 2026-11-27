@@ -6,7 +6,7 @@ import { INTERNAL_ACTIVITIES_KEY } from '@/lib/query-client';
 import type { CleaningVatAnswerCommand } from '@/types';
 
 /** Root of the query keys of the question of the VAT of a cleaning (FIX/BE-CLEANING-VAT): one question for each cleaning request. */
-export const CLEANING_VAT_KEY = 'cleaning-vat';
+const CLEANING_VAT_KEY = 'cleaning-vat';
 
 export const cleaningVatKeys = {
   question: (requestId: string) => [CLEANING_VAT_KEY, requestId] as const,

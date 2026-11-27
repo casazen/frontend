@@ -12,7 +12,7 @@ export type ShowcaseState = 'Draft' | 'Online' | 'ChangesReady' | 'Paused';
 export type ShowcaseDocument = PublicShowcaseContent & { serviceOrder?: string[] };
 
 /** `ok` done · `warn` advised, the showcase can be published without it · `todo` required: it cannot. */
-export type ShowcaseReadinessLevel = 'ok' | 'warn' | 'todo';
+type ShowcaseReadinessLevel = 'ok' | 'warn' | 'todo';
 
 export interface ShowcaseReadinessItem {
   /** `services`, `zones`, `color` (required) and `hours`, `presentation`, `photos`, `faq`, `verified` (advised). */
@@ -95,7 +95,7 @@ export interface ShowcaseTextSuggestionRequest {
 }
 
 /** What a suggestion was written from: category codes, comune names, the names of the services, and which answers were used. */
-export interface ShowcaseTextBasis {
+interface ShowcaseTextBasis {
   categories: string[];
   zones: string[];
   services: string[];

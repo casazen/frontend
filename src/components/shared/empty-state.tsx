@@ -13,6 +13,8 @@ export type EmptyStateAction = { label: string } & (
 interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
+  /** The level of the title: `h3` (default) under the `h2` of a section, `h2` where the state sits straight under the `h1` of a page. */
+  titleAs?: "h2" | "h3";
   description: string;
   /** The one thing to do about the emptiness ("Create the first booking"). */
   action?: EmptyStateAction;
@@ -60,6 +62,7 @@ const HELP_LINK =
 export function EmptyState({
   icon: Icon,
   title,
+  titleAs: Title = "h3",
   description,
   action,
   secondaryAction,
@@ -72,7 +75,7 @@ export function EmptyState({
       <div className="rounded-full bg-muted p-6 mb-4">
         <Icon className="h-12 w-12 text-muted-foreground" />
       </div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <Title className="text-lg font-semibold mb-2">{title}</Title>
       <p className="text-sm text-muted-foreground mb-6 max-w-sm">{description}</p>
       {(action || secondaryAction) && (
         <div className="flex flex-wrap items-center justify-center gap-3">

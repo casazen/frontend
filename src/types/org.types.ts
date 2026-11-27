@@ -11,13 +11,13 @@ export interface Org {
   planTier: PlanTier;
 }
 
-export interface EntitlementLimits {
+interface EntitlementLimits {
   maxProperties: number;
   /** People the plan allows (AM-02): int max (2147483647) or -1 is "no limit". Missing from a backend that has no seats yet. */
   maxSeats?: number;
 }
 
-export interface EntitlementUsage {
+interface EntitlementUsage {
   properties: number;
   /** People in use: active members plus pending invitations (AM-02). */
   seats?: number;

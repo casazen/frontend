@@ -54,7 +54,7 @@ export interface SubmitReviewPayload {
 }
 
 /** `Published`, `Reported` (reported by the host, still public until the staff decides) or `Removed` (taken down by the staff). */
-export type HostReviewStatus = 'Published' | 'Reported' | 'Removed';
+type HostReviewStatus = 'Published' | 'Reported' | 'Removed';
 
 /** A review as its host sees it. */
 export interface HostReview {

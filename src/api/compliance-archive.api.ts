@@ -14,6 +14,7 @@ import type {
   ReceiptCoverage,
   UploadComplianceProofInput,
 } from '@/types';
+import { headerOf } from '@/api/response-helpers';
 
 const PATH = '/compliance';
 
@@ -46,23 +47,6 @@ const EXPORT_TIMEOUT_MS = 10 * 60_000;
 /** The code of the problem a failed call carries (a JSON body that `withJsonErrorBody` has parsed), or `undefined`. */
 export function complianceArchiveErrorCode(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * The value of a header of an answer, whatever the case of its name, or `null`. A browser lets a page read only the headers that the API exposes
- * (CORS), so a header that is not there is `null`: whoever reads it has a way on without it.
- */
-function headerOf(headers: unknown, name: string): string | null {
-  if (!isRecord(headers)) return null;
-  const wanted = name.toLowerCase();
-  for (const [key, value] of Object.entries(headers)) {
-    if (key.toLowerCase() === wanted && typeof value === 'string') return value;
-  }
-  return null;
 }
 
 /** What is empty is not sent: the API reads a missing parameter as «no limit», and an empty one as a mistake. */

@@ -98,12 +98,19 @@ describe('the properties of the owner say no amount of money (the answer has no 
 });
 
 describe('a figure that is missing is never a zero in its place (the Home service answers nothing for an owner)', () => {
-  it('OwnerPortal_Dashboard_SaysTheNumbersAreNotAvailableYet_NoTilesNoChartNoOccupancyAndNoRequestForThem', async () => {
+  it('OwnerPortal_Dashboard_DrawsNoTilesNoChartNoOccupancyAndNoRequestForThem_AndHasNoNoticeAboutNumbers', async () => {
     renderPortal('/portale-proprietari');
-    const notice = await screen.findByTestId('owner-numbers-unavailable');
-    await screen.findByTestId('owner-properties');
+    const properties = await screen.findByTestId('owner-properties');
 
-    expect(notice.textContent).toContain('non sono ancora disponibili');
+    // The notice of the numbers is gone (UX round 3): the page shows what there is and does not explain what it does not show.
+    expect(screen.queryByTestId('owner-numbers-unavailable')).toBeNull();
+    expect(screen.getByRole('main').textContent ?? '').not.toMatch(/non sono ancora (disponibili|mostrati)/);
+    // Nor the line under the title that repeats the menu, nor the count of the recent bookings (only the total stays), nor an icon on each card.
+    expect(screen.queryByText(/calendario, contabilità, documenti e messaggi/)).toBeNull();
+    expect(properties.textContent).not.toContain('Prenotazioni recenti');
+    expect(properties.querySelector('svg.size-9')).toBeNull();
+    // The heading of the list stays for the screen readers and the outline of the page, and is not drawn.
+    expect(screen.getByRole('heading', { level: 2, name: 'I tuoi immobili' })).toHaveClass('sr-only');
     // No tile, no trend, no period to pick: nothing that could read 0% or €0 for an owner whose numbers are not there.
     expect(screen.queryByTestId('owner-overview')).toBeNull();
     expect(screen.queryByTestId('owner-tiles')).toBeNull();
@@ -121,6 +128,8 @@ describe('a figure that is missing is never a zero in its place (the Home servic
     renderPortal('/portale-proprietari');
 
     expect(await screen.findByText('Non ci sono immobili disponibili')).toBeInTheDocument();
+    // The empty state of the app: what to expect, in a line under the title, not a bare sentence in a box.
+    expect(screen.getByText(/Quando l’agenzia ti collega un immobile/)).toBeInTheDocument();
     expect(screen.queryByTestId('owner-numbers-unavailable')).toBeNull();
   });
 

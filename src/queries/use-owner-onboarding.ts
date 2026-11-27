@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { ownerOnboardingApi } from '@/api/owner-onboarding.api';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
-import { useNow } from '@/hooks/use-now';
 import type { OwnerInvitationStatus } from '@/types/owner-onboarding.types';
 import { OWNER_ACCOUNTING_KEY } from './use-owner-accounting';
+import { useRestartOnNewWaiting, useWatchWindow } from './use-watch-window';
 
 /** Root of the keys of the owner portfolio in the onboarding of an agency (E10/F02/US02, NF-109). */
 export const OWNER_ONBOARDING_KEY = 'owner-onboarding';
@@ -31,32 +31,6 @@ export const OWNER_WATCH_MS = 10 * 60_000;
 
 /** A link is in force and the owner may still accept it: the only state of an invitation that is on its way. */
 const isAwaitingAcceptance = (invitation: Pick<OwnerInvitationStatus, 'state'>): boolean => invitation.state === 'invited';
-
-/**
- * The window in which the page follows the links that are in force by itself. `now` is the time as of the last tick, kept in the state of the screen so that nothing reads the
- * clock while it renders (the same window as the changes of the calendar, `use-calendar-changes.ts`).
- */
-function useWatchWindow() {
-  const [since, setSince] = useState(() => Date.now());
-  const now = useNow(OWNER_REFRESH_MS);
-  return { since, now, setSince, over: now - since >= OWNER_WATCH_MS, restart: () => setSince(Date.now()) };
-}
-
-/**
- * Opens the window again when a link that was not waiting starts to wait: the batch the person has just confirmed, a new link sent again, an invitation read for the first time.
- * Without it the window would run from the opening of the page, and a link sent after more than ten minutes would be told at once as «no longer checking» and never followed. The
- * state is adjusted while rendering, as React lets a value that follows from what the screen reads (here the ids that wait) be.
- */
-function useRestartOnNewWaiting(watch: Pick<ReturnType<typeof useWatchWindow>, 'now' | 'setSince'>, waitingIds: readonly string[]) {
-  const [known, setKnown] = useState<readonly string[]>([]);
-  const { now, setSince } = watch;
-  if (waitingIds.some((id) => !known.includes(id))) {
-    setKnown(waitingIds);
-    setSince(now);
-  } else if (waitingIds.length < known.length) {
-    setKnown(waitingIds);
-  }
-}
 
 /**
  * Whatever a write of the owner portfolio changes: the readiness and the states of the invitations, and the owner accounting that reads the same
@@ -93,7 +67,7 @@ export function useOwnerReadiness(enabled: boolean, propertyId?: string) {
  */
 export function useOwnerInvitations(enabled: boolean) {
   const queryClient = useQueryClient();
-  const watch = useWatchWindow();
+  const watch = useWatchWindow(OWNER_REFRESH_MS, OWNER_WATCH_MS);
   const query = useQuery({
     queryKey: ownerOnboardingKeys.invitations,
     queryFn: () => ownerOnboardingApi.listInvitations(),

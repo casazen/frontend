@@ -8,6 +8,7 @@ import {
   useStartOctorateConnect,
 } from '@/queries/use-octorate-connection';
 import { readOctorateCallback, withoutOctorateCallback } from './octorate-callback';
+import { isHttpsAddress } from '@/lib/onboarding-panel';
 
 /**
  * Where the consent stands, in the words of the screen:
@@ -34,16 +35,6 @@ export interface OctorateConnect {
    * and a wizard that waited for it must not go on to another step in the meantime.
    */
   start: () => Promise<void>;
-}
-
-/** The consent page is an https address; anything else is not followed, whatever the answer says. */
-function isHttpsAddress(value: unknown): value is string {
-  if (typeof value !== 'string') return false;
-  try {
-    return new URL(value).protocol === 'https:';
-  } catch {
-    return false;
-  }
 }
 
 /**

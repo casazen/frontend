@@ -33,7 +33,7 @@ export interface NotificationQuietHours {
 }
 
 /** What the caller has for one kind of event: `isDefault` when it never chose and the default of PO-10 applies. */
-export interface NotificationEventSetting {
+interface NotificationEventSetting {
   eventType: NotificationEventType;
   /** The channels of this kind of event; empty = nothing at all (never for a legal deadline). */
   channels: NotificationChannel[];
@@ -41,7 +41,7 @@ export interface NotificationEventSetting {
 }
 
 /** A channel and whether it can deliver today; `reason` is a code of the API (`web_push_not_available`) while it cannot. */
-export interface NotificationChannelAvailability {
+interface NotificationChannelAvailability {
   channel: NotificationChannel;
   available: boolean;
   reason: string | null;

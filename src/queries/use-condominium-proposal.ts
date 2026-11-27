@@ -3,9 +3,9 @@ import { DRAFT_KEY } from './use-lease-draft';
 import { condominiumProposalApi } from '@/api/condominium-proposal.api';
 import type { ProposeTenantExpense, TenantExpenseProposal } from '@/types/condominium-proposal.types';
 
-export const CONDOMINIUM_EXPENSE_KEY = 'lease-condominium-expense';
+const CONDOMINIUM_EXPENSE_KEY = 'lease-condominium-expense';
 
-export interface CondominiumExpenseView {
+interface CondominiumExpenseView {
   /** The fiscal-year proposal, or null when nothing is loaded yet. */
   proposal: TenantExpenseProposal | null;
   /**

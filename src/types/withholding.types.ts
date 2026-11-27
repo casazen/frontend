@@ -12,7 +12,7 @@ export interface WithholdingSummary {
 }
 
 /** The withholding of one owner in the month. */
-export interface WithholdingOwnerSummary {
+interface WithholdingOwnerSummary {
   ownerId: string;
   ownerName: string;
   totalBase: number;

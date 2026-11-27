@@ -27,7 +27,7 @@ export type AlloggiatiWebStatus =
   | 'ChannelManagerWriteFailed';
 
 /** Where the guests of a stay stand on the channel manager (`ChannelManagerWriteState` of the backend, by name). */
-export type ChannelManagerWriteState = 'NotApplicable' | 'NothingWritten' | 'InProgress' | 'Entrusted' | 'Failed';
+type ChannelManagerWriteState = 'NotApplicable' | 'NothingWritten' | 'InProgress' | 'Entrusted' | 'Failed';
 
 /**
  * One guest of a stay as it stands on the channel manager (`AlloggiatiChannelManagerGuestDto`). No name and no document: the position of the guest in the stay (from 0,
@@ -48,7 +48,7 @@ export interface AlloggiatiChannelManagerGuestDto {
 }
 
 /** Whether an archived receipt covers the arrival day of the stay: the only thing that makes it green. */
-export interface AlloggiatiReceiptCoverageDto {
+interface AlloggiatiReceiptCoverageDto {
   archived: boolean;
   /** `casazen_receipt` or `manual_upload`; null when none. */
   source: string | null;
@@ -145,7 +145,7 @@ export type AlloggiatiRecordField =
   | 'documentIssuePlace';
 
 /** Official codes of a guest's line, from the imported tables (null = to complete or not part of the line). */
-export interface AlloggiatiRowCodesDto {
+interface AlloggiatiRowCodesDto {
   type: string | null;
   birthComune: string | null;
   birthCountry: string | null;
@@ -227,57 +227,4 @@ export interface AlloggiatiGuestSummaryDto {
 export interface MarkAlloggiatiSentManuallyRequest {
   /** `yyyy-MM-dd`, from the check-in date to today (Europe/Rome). */
   sentOn: string;
-}
-
-export interface CheckInGuestDto {
-  firstName: string;
-  lastName: string;
-  email: string;
-  dateOfBirth?: string | null;
-  placeOfBirth: string;
-  nationality: string;
-  gender?: Gender | null;
-  documentType?: DocumentType | null;
-  documentNumber: string;
-  documentExpiryDate?: string | null;
-  documentIssuingCountry: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  documentScanUrl?: string | null;
-}
-
-export interface CheckInContextDto {
-  bookingId: string;
-  guestId: string;
-  propertyName: string;
-  checkInDate: string;
-  checkOutDate: string;
-  guest: CheckInGuestDto;
-  dataComplete: boolean;
-}
-
-export interface SubmitGuestCheckInRequest {
-  dateOfBirth: string;
-  placeOfBirth: string;
-  nationality: string;
-  gender: Gender;
-  documentType: DocumentType;
-  documentNumber: string;
-  documentExpiryDate?: string | null;
-  documentIssuingCountry: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  consentAccepted: boolean;
-}
-
-export interface GuestCheckInDataResponse {
-  dataComplete: boolean;
-}
-
-export interface GuestDocumentUploadResponse {
-  documentScanUrl: string;
 }

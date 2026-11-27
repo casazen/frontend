@@ -20,9 +20,6 @@ export interface OwnerPortalWithholdingDetail {
   amountWithheld: number;
 }
 
-/** How a record of the CU was made: for the owner itself, for the signatory of a property of several owners (it adds the shares of the others), or for the share of one of them. */
-export type OwnerPortalCuAttribution = 'owner' | 'signatory' | 'share';
-
 /** The Certificazione Unica data of the owner for a year as the agency stored it: its state, the base and the withholding in euro, the tax code of the F24 and how the record was made. The owner sees it once the agency reviewed it. */
 export interface OwnerPortalCu {
   agencyId: string;

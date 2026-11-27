@@ -12,7 +12,7 @@ import type {
  */
 
 /** Where the guests of a stay are: expected, arrived, departed, a no-show, or no check-in is expected (pending or cancelled booking). */
-export type StayAttendance = 'Expected' | 'Arrived' | 'Departed' | 'NoShow' | 'Inactive';
+type StayAttendance = 'Expected' | 'Arrived' | 'Departed' | 'NoShow' | 'Inactive';
 
 /**
  * What a host's save of the guests sends (`PUT /bookings/{id}/checkin-wizard/guests`, `PUT /alloggiati/{bookingId}/stay-guests`): the whole list of
@@ -25,9 +25,9 @@ export interface GuestsSave {
 }
 
 /** The steps of the wizard the server names in `suggestedStep`; `result` is "nothing left to do". */
-export type CheckInSuggestedStep = 'guests' | 'documents' | 'checks' | 'tax' | 'send' | 'result';
+type CheckInSuggestedStep = 'guests' | 'documents' | 'checks' | 'tax' | 'send' | 'result';
 
-export interface CheckInWizardBooking {
+interface CheckInWizardBooking {
   bookingId: string;
   propertyId: string;
   propertyName: string;
@@ -90,15 +90,6 @@ export interface CheckInWizardGuest {
   dataSource: StayGuestDataSource;
 }
 
-/** Codes of an issue of the checks (`CheckInIssueCodes` of the API). */
-export type CheckInIssueCode =
-  | 'guest_field_missing'
-  | 'guest_code_missing'
-  | 'octorate_field_missing'
-  | 'guest_field_required'
-  | 'document_expired'
-  | 'guests_count_mismatch';
-
 /** Something the checks found: the code and the field the client says in plain words. A blocking one stops the confirmation. */
 export interface CheckInIssue {
   /** The position of the guest; null for the stay as a whole. */
@@ -112,7 +103,7 @@ export interface CheckInIssue {
 export type ComplianceSenderType = 'ChannelManager' | 'CasaZen' | 'Manual';
 
 /** Who sends the police communications of the property. */
-export interface CheckInWizardSender {
+interface CheckInWizardSender {
   alloggiatiSender: ComplianceSenderType;
   source: string;
   /** False for a property outside Italy. */
@@ -122,7 +113,7 @@ export interface CheckInWizardSender {
 export type OctorateSyncStatus = 'Pending' | 'Sent' | 'Failed';
 
 /** One guest as sent to Octorate (no personal data). */
-export interface OctorateGuestLink {
+interface OctorateGuestLink {
   position: number;
   status: OctorateSyncStatus;
   sentAsDraft: boolean;
@@ -131,10 +122,10 @@ export interface OctorateGuestLink {
   sentAt?: string | null;
 }
 
-export type OctorateStayStateName = 'CheckInEnd' | 'CheckOutEnd' | 'NoShow';
+type OctorateStayStateName = 'CheckInEnd' | 'CheckOutEnd' | 'NoShow';
 
 /** One state of the stay on Octorate; `status` is null when it was never pushed. */
-export interface OctorateStayStateView {
+interface OctorateStayStateView {
   state: OctorateStayStateName;
   status?: OctorateSyncStatus | null;
   attempts: number;
@@ -145,7 +136,7 @@ export interface OctorateStayStateView {
 }
 
 /** The check-in on Octorate: each guest sent and the three states of the stay. */
-export interface CheckInWizardOctorate {
+interface CheckInWizardOctorate {
   /** False when the booking is not on Octorate (then the lists are empty). */
   mirrored: boolean;
   guests: OctorateGuestLink[];
@@ -153,7 +144,7 @@ export interface CheckInWizardOctorate {
 }
 
 /** The police communication of the stay (`status` is an `AlloggiatiWebStatus`, plus `NotDue` for a no-show). */
-export interface CheckInWizardAlloggiati {
+interface CheckInWizardAlloggiati {
   status: string;
   dataComplete: boolean;
   deadlineAt: string;
@@ -162,7 +153,7 @@ export interface CheckInWizardAlloggiati {
 }
 
 /** What the host can do now. */
-export interface CheckInWizardCapabilities {
+interface CheckInWizardCapabilities {
   /** The photo of a document can be read (`POST …/checkin-wizard/document-reading`; closed while the feature is off). */
   documentReading: boolean;
   canRegisterArrival: boolean;
@@ -172,11 +163,11 @@ export interface CheckInWizardCapabilities {
 }
 
 export type TouristTaxQuoteStatus = 'Calculated' | 'RateUnavailable' | 'CategoryRequired' | 'ChildAgesRequired' | 'NightlyPriceRequired';
-export type TouristTaxRateSource = 'None' | 'Official' | 'HostDeclared';
+type TouristTaxRateSource = 'None' | 'Official' | 'HostDeclared';
 export type TouristTaxCollector = 'Channel' | 'Host';
-export type TouristTaxCollectorSource = 'Default' | 'ChannelRule' | 'HostDeclared';
+type TouristTaxCollectorSource = 'Default' | 'ChannelRule' | 'HostDeclared';
 /** Why a guest pays no tourist tax: `Age` is applied by the calculator (never chosen), `Host` is a reason the host chose. */
-export type TouristTaxExemptionKind = 'None' | 'Age' | 'Host';
+type TouristTaxExemptionKind = 'None' | 'Age' | 'Host';
 
 /** The tax of one guest: a position of the stay, never a person. */
 export interface StayTouristTaxGuest {
@@ -191,7 +182,7 @@ export interface StayTouristTaxGuest {
 }
 
 /** A reason the host may choose: the code and the i18n key of its plain-words label. */
-export interface TouristTaxExemptionReason {
+interface TouristTaxExemptionReason {
   code: string;
   labelKey: string;
 }
@@ -282,9 +273,9 @@ export interface CheckInWizardState {
 /** What the confirmation did with the guests on Octorate. */
 export type OctorateCheckInSendState = 'NotMirrored' | 'NotApplicable' | 'NothingToSend' | 'Sent' | 'PartlyFailed' | 'Failed';
 
-export type OctorateGuestSendOutcome = 'Created' | 'Updated' | 'Unchanged' | 'Failed';
+type OctorateGuestSendOutcome = 'Created' | 'Updated' | 'Unchanged' | 'Failed';
 
-export interface OctorateGuestSendResult {
+interface OctorateGuestSendResult {
   position: number;
   outcome: OctorateGuestSendOutcome;
   /** Why it failed (`octorate_auth`, `octorate_rate_limited`, `octorate_guest_rejected`…); null otherwise. */
@@ -292,7 +283,7 @@ export interface OctorateGuestSendResult {
 }
 
 /** What the police communication does next for the sender of the property. */
-export type CheckInAlloggiatiNextStep = 'ChannelManagerSends' | 'Manual' | 'AlreadySent' | 'NotApplicable';
+type CheckInAlloggiatiNextStep = 'ChannelManagerSends' | 'Manual' | 'AlreadySent' | 'NotApplicable';
 
 /** The answer of `POST /bookings/{id}/checkin-wizard/confirm`: one entry per element and the new state. */
 export interface CheckInConfirmation {
@@ -314,7 +305,7 @@ export interface CheckInConfirmation {
   state: CheckInWizardState;
 }
 
-export type DocumentReadingMethod = 'None' | 'Mrz' | 'Ocr';
+type DocumentReadingMethod = 'None' | 'Mrz' | 'Ocr';
 
 /** The fields read on a document photo (never stored): the host checks them before saving the guest. */
 export interface DocumentReadingFields {
@@ -346,7 +337,7 @@ export interface NoShowResult {
 }
 
 /** The rate an org declares for a comune with no official one (`GET /properties/{id}/tourist-tax-rate`). */
-export interface OrgTouristTaxRate {
+interface OrgTouristTaxRate {
   ratePerPersonPerNight: number;
   maxNights?: number | null;
   minimumAge: number;

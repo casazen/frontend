@@ -44,7 +44,7 @@ export interface CreateBatchResponse {
 }
 
 /** Where a payout of the wire page is: `Confirmed` can be paid, `Reversed` is a payout reversed after its batch was made (it stays in the batch and says so). */
-export type WirePayoutStatus = 'Confirmed' | 'Reversed';
+type WirePayoutStatus = 'Confirmed' | 'Reversed';
 
 /**
  * A payout on the wire page (`GET api/wire-transfers/payable-payouts?currency=` and `GET api/wire-transfers/batch/{id}/payouts`): who is paid (the owner by id and by the

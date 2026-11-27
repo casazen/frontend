@@ -82,7 +82,9 @@ test.describe('Servizi e prezzi (SP-06)', () => {
       const catalog = await openServices(page, '/app/supplier/services');
       await expect(page.getByRole('heading', { name: 'Crea il tuo primo servizio' })).toBeVisible();
 
-      await page.getByTestId('supplier-service-add').click();
+      // The catalog is empty: the way in is the button of the empty state (the header has none until there is a service).
+      await expect(page.getByTestId('supplier-service-add')).toHaveCount(0);
+      await page.getByTestId('supplier-services-empty').getByRole('link', { name: 'Aggiungi un servizio' }).click();
       await expect(page.getByRole('heading', { level: 2, name: 'Cosa offri?' })).toBeVisible();
       await page.getByTestId('service-name').fill('Pulizia cambio ospiti');
       await page.getByTestId('service-summary').fill('La casa pronta per il prossimo ospite.');

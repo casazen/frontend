@@ -57,7 +57,7 @@ export interface BulkSaveCleaningSetupDto extends SaveCleaningSetupDto {
 }
 
 /** What the bulk save did for one property: saved, or the code and the words of the rule that stopped it. */
-export interface CleaningSetupBulkResult {
+interface CleaningSetupBulkResult {
   propertyId: string;
   saved: boolean;
   /** The stable code of the rule that stopped the property; `null` when it was saved. */

@@ -15,7 +15,7 @@ export const accountantPackageKeys = {
  * How the package is sent to the accountant. Not under {@link ACCOUNTANT_PACKAGE_KEY}: the summary is read again whenever a document is issued (`use-notifications-realtime.ts`), and that must
  * not read the settings of the send again while the person is typing them.
  */
-export const ACCOUNTANT_SETTINGS_KEY = ['accountant-package-settings'] as const;
+const ACCOUNTANT_SETTINGS_KEY = ['accountant-package-settings'] as const;
 
 /**
  * The summary of the agency for a month (`2026-10`) or a year (`2026`). Its figures change on other screens and by other hands (a document issued, a payment recorded, an invoice made out to

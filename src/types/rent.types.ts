@@ -10,10 +10,10 @@ export type RentCadence = 'Monthly' | 'Bimonthly' | 'Quarterly' | 'Semiannual';
  */
 export type RentInstallmentStatus = 'Scheduled' | 'Processing' | 'Paid' | 'Failed' | 'Cancelled';
 
-export type RentPaymentChannel = 'Stripe' | 'Offline';
+type RentPaymentChannel = 'Stripe' | 'Offline';
 
 /** One part of a rent-ledger row (CondoLedger phase 1). `AmountDue` stays the total. */
-export type RentComponentKind = 'Rent' | 'CondominiumAdvance' | 'CondominiumSettlement' | 'Other';
+type RentComponentKind = 'Rent' | 'CondominiumAdvance' | 'CondominiumSettlement' | 'Other';
 
 export interface RentLedgerComponent {
   id?: string;
@@ -33,7 +33,7 @@ export interface RentLedgerComponent {
  * Bank details for a transfer, when the API sends them with the installment. The amount and the due date stay on the row.
  * Absent while the backend has not added them: the screen keeps working on the total alone.
  */
-export interface RentTransferDetails {
+interface RentTransferDetails {
   accountHolder: string;
   iban: string;
   /** Unique payment reference (causale). */
@@ -84,7 +84,7 @@ export interface RentInstallment {
   transfer?: RentTransferDetails | null;
 }
 
-export interface RentSchedule {
+interface RentSchedule {
   cadence: RentCadence;
   billingDayOfMonth: number;
   amount: number;
@@ -96,7 +96,7 @@ export interface RentSchedule {
   onlineRequestsEnabled?: boolean;
 }
 
-export interface RentPeriod {
+interface RentPeriod {
   start: string;
   end: string;
 }
@@ -145,7 +145,7 @@ export interface MarkRentPaidInput {
 export type RentRegisterStatus = 'All' | 'Paid' | 'Pending' | 'Overdue';
 
 /** A number of installments and what they add up to. */
-export interface RentCounter {
+interface RentCounter {
   count: number;
   amount: number;
 }
@@ -240,13 +240,13 @@ export interface RentWhatsAppReminder {
  * Import of a bank statement on the rents (`/long-rent/rents/bank-import`). The landlord uploads the movements file of their bank, the
  * server proposes for each credit the installment it pays, and the landlord confirms; the file is not kept, the confirmation sends it again.
  */
-export type BankStatementFormat = 'Csv' | 'Xlsx' | 'Camt053' | 'Mt940';
+type BankStatementFormat = 'Csv' | 'Xlsx' | 'Camt053' | 'Mt940';
 
 /** How sure the server is: only `High` is ticked by itself; the others wait for the landlord's choice. */
 export type BankImportConfidence = 'High' | 'Medium' | 'Low';
 
 /** Why the server thinks so; the screen says it in words. */
-export type BankImportReason = 'Amount' | 'Surname' | 'FirstName' | 'PayerIban' | 'PayerName' | 'Property' | 'Month';
+type BankImportReason = 'Amount' | 'Surname' | 'FirstName' | 'PayerIban' | 'PayerName' | 'Property' | 'Month';
 
 /** An installment a credit can pay. The tenant is the first one of the lease, by name only; null once that tenant was anonymized. */
 export interface BankImportInstallment {
@@ -289,7 +289,7 @@ export interface BankImportCredit {
   payer: string | null;
 }
 
-export interface BankImportSummary {
+interface BankImportSummary {
   movements: number;
   credits: number;
   alreadyImported: number;
@@ -333,7 +333,7 @@ export interface BankImportSelection {
 }
 
 /** A choice that was not applied, and the stable code of the refusal (`bank_movement_already_imported`, `rent_installment_not_payable`…). */
-export interface BankImportSkipped extends BankImportSelection {
+interface BankImportSkipped extends BankImportSelection {
   code: string;
 }
 
@@ -344,7 +344,7 @@ export interface BankImportConfirmation {
   skipped: BankImportSkipped[];
 }
 
-export type PublicRentPaymentState = 'Payable' | 'Processing' | 'Paid' | 'Unavailable';
+type PublicRentPaymentState = 'Payable' | 'Processing' | 'Paid' | 'Unavailable';
 
 /** `POST /public/rent-payments/:id` with the token of the link: what the tenant sees, no personal data. */
 export interface PublicRentPayment {

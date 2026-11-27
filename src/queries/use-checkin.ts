@@ -63,7 +63,7 @@ export function useOpenDoorCheckIn(doorToken: string) {
 }
 
 /** Root of the door QR of a property for the host. */
-export const DOOR_QR_KEY = 'door-qr';
+const DOOR_QR_KEY = 'door-qr';
 
 /**
  * The address behind the QR of the door of a property (E22/F02/US01/T01): it holds the door token, so it is asked again every time the page opens and is not kept once the page is closed
@@ -186,7 +186,7 @@ export function useSetCheckInLanguage(token: string) {
 }
 
 /** While the link email is queued, the host view polls its real outcome (sent or failed). */
-export const CHECKIN_EMAIL_POLL_MS = 5000;
+const CHECKIN_EMAIL_POLL_MS = 5000;
 
 export function useBookingCheckInSession(bookingId: string) {
   return useQuery({

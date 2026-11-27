@@ -268,6 +268,22 @@ describe('ComplianceSummaryWidget levels', () => {
     expect(screen.queryByRole('button', { name: /mostra/i })).not.toBeInTheDocument();
   });
 
+  it('widget_SeveralUrgentRows_OnlyTheFirstHasTheSolidButton', async () => {
+    vi.mocked(fetchComplianceSummary).mockResolvedValue({ ...cockpit, alloggiatiManualRequired: { count: 6, items: manyStays(6, 'SendAlloggiati') } });
+    renderWidget();
+
+    const fine = await screen.findByTestId('compliance-tier-fine');
+    const buttons = Array.from(fine.querySelectorAll<HTMLAnchorElement>('[data-testid="compliance-summary-row"] a[data-testid$="-link"]'));
+    expect(buttons.length).toBeGreaterThan(2);
+    // The solid one is the first of the page; every other row asks less (outline), in the other sections too.
+    expect(buttons[0]).toHaveClass('bg-primary');
+    for (const other of buttons.slice(1)) {
+      expect(other).not.toHaveClass('bg-primary');
+      expect(other).toHaveClass('border-input');
+    }
+    expect(screen.getByTestId('compliance-summary-widget').querySelectorAll('a.bg-primary')).toHaveLength(1);
+  });
+
   it('widget_ServerListsLessThanItCounts_SaysSoAndLeadsToTheAlloggiatiPage', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue({ ...cockpit, alloggiatiManualRequired: { count: 15, items: manyStays(4, 'SendAlloggiati') } });
     renderWidget();

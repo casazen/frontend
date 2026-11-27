@@ -212,12 +212,16 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
     { label: t('ownerAccounting.statement.ownerProfile'), to: ownerFinancialPath(version.ownerId, period), testId: 'statement-menu-profile' },
   ];
 
-  const tone = version.status === 'Flagged' ? 'warning' : version.status === 'Published' || closed ? 'success' : 'neutral';
+  // A version a newer one replaced: the block says so (warning) and leads to the newer one; with no newer one named it leads back to the close like any other.
+  const superseded = version.status === 'Superseded';
+  const tone = version.status === 'Flagged' || superseded ? 'warning' : version.status === 'Published' || closed ? 'success' : 'neutral';
   const focusPrimary = primary
     ? { label: t(`ownerAccounting.actions.${primary}.label`), onClick: () => controller.ask(primary), loading: controller.generating, testId: 'statement-primary' }
-    : published && version.status === 'Published'
-      ? { label: t('ownerAccounting.statement.downloadPublished'), onClick: saveFile, loading: download.isPending, testId: 'statement-download' }
-      : { label: t('ownerAccounting.statement.backToClose'), href: closePath(period.year, period.month), testId: 'statement-back' };
+    : superseded && version.supersededByVersionId
+      ? { label: t('ownerAccounting.statement.openLatest'), href: statementPath(version.supersededByVersionId), testId: 'statement-open-latest' }
+      : published && version.status === 'Published'
+        ? { label: t('ownerAccounting.statement.downloadPublished'), onClick: saveFile, loading: download.isPending, testId: 'statement-download' }
+        : { label: t('ownerAccounting.statement.backToClose'), href: closePath(period.year, period.month), testId: 'statement-back' };
 
   const charges = version.charges;
   const withheld = entries.filter((entry) => entry.type === 'Withholding').reduce((sum, entry) => sum + entry.amount, 0);
@@ -232,38 +236,23 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
       />
 
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <Alert className="xl:col-start-2 xl:row-start-1" variant="info" data-testid="statement-non-fiscal">
-          {invoicing ? t('ownerAccounting.statement.nonFiscalInvoicing') : t('ownerAccounting.statement.nonFiscal')}
-        </Alert>
-
-        {version.status === 'Superseded' ? (
-          <Alert
-            variant="warning"
-            className="xl:col-span-2"
-            data-testid="statement-superseded"
-            action={
-              version.supersededByVersionId ? (
-                <Button asChild size="sm" variant="outline">
-                  <Link to={statementPath(version.supersededByVersionId)}>{t('ownerAccounting.statement.openLatest')}</Link>
-                </Button>
-              ) : undefined
-            }
-          >
-            {t('ownerAccounting.statement.superseded')}
-          </Alert>
-        ) : null}
-
+        {/* The block of the page comes first, also on a phone; the permanent notice that the statement is not a tax document is under it. A version a newer one replaced
+            says so here (it used to be an alert of its own, above the block), with the way to the newer one as the button. */}
         <FocusBlock
           tone={tone}
           kicker={t('ownerAccounting.statement.kicker', { period: periodName })}
           title={t('ownerAccounting.statement.focusTitle', { version: version.version, status: t(`ownerAccounting.version.status.${version.status}`) })}
-          body={t('ownerAccounting.statement.focusBody', { balance: money(version.closingBalance, version.currency), cutoff: dateTime(version.cutoffAt) })}
+          body={superseded ? t('ownerAccounting.statement.superseded') : t('ownerAccounting.statement.focusBody', { balance: money(version.closingBalance, version.currency), cutoff: dateTime(version.cutoffAt) })}
           who={closed ? t('ownerAccounting.statement.closed') : undefined}
           then={actions.stale ? t('ownerAccounting.actions.stale') : undefined}
           primary={focusPrimary}
           className="xl:col-start-1 xl:row-start-1"
           data-testid="statement-focus"
         />
+
+        <Alert className="xl:col-start-2 xl:row-start-1" variant="info" data-testid="statement-non-fiscal">
+          {invoicing ? t('ownerAccounting.statement.nonFiscalInvoicing') : t('ownerAccounting.statement.nonFiscal')}
+        </Alert>
       </div>
 
       {flagged.length > 0 && version.status === 'Flagged' ? (
@@ -276,22 +265,13 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
         </Alert>
       ) : null}
 
-      <StatStrip label={t('ownerAccounting.statement.figures')}>
+      {/* The numbers of the statement are these four tiles (the opening balance is under the closing one): a line that added them up again was the same numbers twice. */}
+      <StatStrip label={t('ownerAccounting.statement.figures')} data-testid="statement-figures">
         <StatTile label={t('ownerAccounting.statement.revenue')} value={money(version.revenue, version.currency)} />
         <StatTile label={t('ownerAccounting.statement.costs')} value={money(version.channelFees + version.commission + charges, version.currency)} />
         <StatTile label={t('ownerAccounting.statement.paidAndWithheld')} value={money(version.payments + withheld, version.currency)} />
         <StatTile label={t('ownerAccounting.statement.closing')} value={money(version.closingBalance, version.currency)} delta={t('ownerAccounting.statement.opening', { amount: money(version.openingBalance, version.currency) })} />
       </StatStrip>
-      <p className="rounded-xl border-l-4 border-primary/50 bg-muted/40 px-4 py-3 text-sm tabular-nums" data-testid="version-formula">
-        {t('ownerAccounting.statement.formula', {
-          opening: money(version.openingBalance, version.currency),
-          revenue: money(version.revenue, version.currency),
-          costs: money(version.channelFees + version.commission + charges, version.currency),
-          paid: money(version.payments + withheld, version.currency),
-          corrections: money(version.corrections, version.currency),
-          closing: money(version.closingBalance, version.currency),
-        })}
-      </p>
 
       <StatementGroups version={version} entries={entries} touristTax={touristTax} />
 

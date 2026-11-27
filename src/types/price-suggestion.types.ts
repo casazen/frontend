@@ -10,10 +10,10 @@ export type PricePositioning = 'Lower' | 'Market' | 'Higher';
 export type PriceSuggestionReason = 'ai_not_configured' | 'ai_budget_exhausted' | 'ai_unavailable' | 'ai_invalid_answer';
 
 /** The facts of the property the AI was told about; what the host did not say is not listed. */
-export type PriceSuggestionField = 'type' | 'guests' | 'bedrooms' | 'beds' | 'bathrooms' | 'area' | 'amenities' | 'setting';
+type PriceSuggestionField = 'type' | 'guests' | 'bedrooms' | 'beds' | 'bathrooms' | 'area' | 'amenities' | 'setting';
 
 /** What a suggestion was written from, for the line «Basato su: …». */
-export interface PriceSuggestionBasis {
+interface PriceSuggestionBasis {
   /** The comune as the official list names it; `null` when the property has none. */
   comune: string | null;
   province: string | null;

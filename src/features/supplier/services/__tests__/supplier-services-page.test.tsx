@@ -117,11 +117,16 @@ describe('SupplierServicesPage (SP-06, SP-SERV)', () => {
     expect(row).toHaveTextContent('2 h');
   });
 
-  it('offers the first service when there is none, with the four steps', async () => {
+  it('offers the first service when there is none, with the four steps one tap away', async () => {
     renderPage('', listOf([]));
 
     const empty = await screen.findByTestId('supplier-services-empty');
     expect(within(empty).getByRole('heading', { name: 'Crea il tuo primo servizio' })).toBeInTheDocument();
+    // The four steps are behind «Come funziona»: closed until the supplier asks.
+    const how = within(empty).getByTestId('supplier-services-how') as HTMLDetailsElement;
+    expect(how.open).toBe(false);
+    fireEvent.click(within(how).getByText('Come funziona'));
+    expect(how.open).toBe(true);
     const steps = within(empty).getByRole('list', { name: 'I quattro passi' });
     expect(within(steps).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['1Cosa fai', '2Quanto costa', '3Quanto dura e quando lo offri', '4Le foto: poi pubblichi']);
     expect(within(empty).getByRole('link', { name: 'Aggiungi un servizio' })).toHaveAttribute('href', `${PATH}/new`);
@@ -129,11 +134,20 @@ describe('SupplierServicesPage (SP-06, SP-SERV)', () => {
     expect(screen.queryByTestId('list-chips')).not.toBeInTheDocument();
   });
 
-  it('always has the way to add a service in the header', async () => {
+  it('has one way to add a service while the catalog is empty: the button of the empty state, not a second one in the header', async () => {
+    renderPage('', listOf([]));
+
+    await screen.findByTestId('supplier-services-empty');
+    expect(screen.getAllByRole('link', { name: 'Aggiungi un servizio' })).toHaveLength(1);
+    expect(screen.queryByTestId('supplier-service-add')).not.toBeInTheDocument();
+  });
+
+  it('has the way to add a service in the header when there are services', async () => {
     renderPage();
 
     await findTable();
     expect(screen.getByTestId('supplier-service-add')).toHaveAttribute('href', `${PATH}/new`);
+    expect(screen.queryByTestId('supplier-services-empty')).not.toBeInTheDocument();
   });
 
   it('tells a failed load with a retry, never an empty list', async () => {

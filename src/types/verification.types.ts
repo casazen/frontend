@@ -4,7 +4,7 @@
  */
 
 /** What the automatic check decided on its last attempt (API enum `BiometricOutcome`, sent as text). */
-export type PendingBiometricOutcome = 'Accept' | 'Escalate' | 'Reject';
+type PendingBiometricOutcome = 'Accept' | 'Escalate' | 'Reject';
 
 /**
  * One check of the last automatic outcome (AC-NF51-5): `check` and `result` are codes the console translates, `value` is the number measured and

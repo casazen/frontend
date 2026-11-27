@@ -32,7 +32,7 @@ export interface DnsInstructions {
 }
 
 /** Honest state of the custom domain: why it waits, when it was last checked, whether the platform can activate it. */
-export interface DomainStatusInfo {
+interface DomainStatusInfo {
   detail?: string | null;
   message?: string | null;
   checkedAt?: string | null;
@@ -50,10 +50,10 @@ export interface PublicUrls {
 }
 
 /** Where the sign-in of the owners on the agency's own domain stands (backend `OwnerLoginHostState`, E40/F01/US02). */
-export type OwnerLoginHostState = 'NotRequested' | 'Pending' | 'Ready' | 'Failed';
+type OwnerLoginHostState = 'NotRequested' | 'Pending' | 'Ready' | 'Failed';
 
 /** What is really on the agency's own domain now: the choice of the agency together with what the platform, the plan, the domain and the owner sign-in allow. */
-export interface DomainSurfacesEffective {
+interface DomainSurfacesEffective {
   guestArea: boolean;
   ownerPortal: boolean;
   ownerLoginReady: boolean;

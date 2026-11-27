@@ -1,7 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
@@ -11,6 +10,7 @@ import { formatStayDate } from '@/lib/stay-dates';
 import { useCancelWithLink, useLinkCancellationPreview } from '@/queries/use-guest-cancellation';
 import type { PublicOrgDto } from '@/types';
 import { CancellationClosed, CancellationPanel } from './components/cancellation-panel';
+import { LinkProblem } from '@/components/shared/link-problem';
 
 interface PublicBookingContext {
   org: PublicOrgDto;
@@ -112,16 +112,6 @@ export function GuestCancelLinkPage() {
       </div>
 
       {!data.cancellable && <div className="flex justify-center">{backToSite}</div>}
-    </div>
-  );
-}
-
-function LinkProblem({ message, action, testId }: { message: string; action: ReactNode; testId: string }) {
-  return (
-    <div className="mx-auto max-w-lg space-y-4 text-center" data-testid={testId}>
-      <AlertCircle className="mx-auto size-10 text-destructive" aria-hidden="true" />
-      <p role="alert">{message}</p>
-      <div className="flex justify-center">{action}</div>
     </div>
   );
 }

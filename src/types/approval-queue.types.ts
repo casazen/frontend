@@ -13,10 +13,10 @@ export const APPROVAL_ITEM_TYPES = ['MessageDraft', 'Campaign', 'Routine', 'AiTe
 export type KnownApprovalItemType = (typeof APPROVAL_ITEM_TYPES)[number];
 
 /** What approving an item does (`OriginAction`): `null` for an item of before the column existed. */
-export type ApprovalOriginAction = 'SendGuestMessage' | 'ApproveCampaign' | 'SendReviewReply' | 'None';
+type ApprovalOriginAction = 'SendGuestMessage' | 'ApproveCampaign' | 'SendReviewReply' | 'None';
 
 /** Where the action an item was waiting for stands (`OriginActionStatus`). `Failed`: the item stays pending, with the code in `originActionError`. */
-export type ApprovalOriginActionStatus = 'NotRequired' | 'Pending' | 'Executed' | 'Failed';
+type ApprovalOriginActionStatus = 'NotRequired' | 'Pending' | 'Executed' | 'Failed';
 
 /**
  * How far the action went, on the answer of an approval only (`OriginActionResult`): `Sent`, `Created` or `WaitingAuthorization` (the channel has the

@@ -41,7 +41,7 @@ export interface OctorateConnectResult {
  * `Proposed` is one clear candidate (or none: the listing is then offered for import), `Ambiguous` close or tied candidates a person must
  * choose from, `Confirmed` the only state in which CasaZen writes to the listing, `Rejected` a listing the person said is not theirs.
  */
-export type OctorateMappingStatus = 'Proposed' | 'Confirmed' | 'Ambiguous' | 'Rejected';
+type OctorateMappingStatus = 'Proposed' | 'Confirmed' | 'Ambiguous' | 'Rejected';
 
 /** A CasaZen property as the mapping screen names it (backend `OctoratePropertySummaryDto`). */
 export interface OctoratePropertySummary {
@@ -56,7 +56,7 @@ export interface OctoratePropertySummary {
  * listing on it exactly as the channel manager gives it, and its state (`Connected` when the channel manager holds a connection of the
  * listing to the channel).
  */
-export interface OctorateChannel {
+interface OctorateChannel {
   channelId: string;
   externalId: string;
   state: string;
@@ -146,7 +146,7 @@ export type ExistingImportStatus =
 export type ChannelAccessState = 'NotStarted' | 'Waiting' | 'Verifying' | 'NeedsConfirmation' | 'Verified' | 'Confirmed' | 'NotValid';
 
 /** Which properties a batch is about: all the inventory, the properties named, or a named group of a mixed portfolio (backend `OctorateInventoryScopeKind`). */
-export type InventoryScopeKind = 'AllInventory' | 'Properties' | 'Group';
+type InventoryScopeKind = 'AllInventory' | 'Properties' | 'Group';
 
 /** The counts of the listings of a channel. */
 export interface ExistingInventoryCounts {
@@ -164,7 +164,7 @@ export interface ExistingInventoryCounts {
 }
 
 /** Which operations of the import are verified for the channel: one that is not stops with `d6_operation_unverified` and the step stays guided. */
-export interface ExistingInventoryCapabilities {
+interface ExistingInventoryCapabilities {
   importRooms: boolean;
   importReservations: boolean;
   importCalendar: boolean;

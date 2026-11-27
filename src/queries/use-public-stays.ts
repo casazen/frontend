@@ -50,7 +50,7 @@ export function useOrgStays(slug: string | undefined, query: PublicStaysQuery, {
 }
 
 /** Homes of a page of the search across all the sites (the server's own default). */
-export const PLATFORM_PAGE_SIZE = 24;
+const PLATFORM_PAGE_SIZE = 24;
 
 /**
  * The free homes of ALL the booking sites for a stay and some filters (the public `/search`), a page at a time: the pages loaded so far

@@ -7,7 +7,6 @@ import { ServicePageHeader } from '@/features/supplier/components/service-page-h
 import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { FocusBlock } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SkeletonList } from '@/components/ui/skeleton';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
@@ -92,18 +91,9 @@ export function SupplierAvailabilityPage() {
 
   // The one thing the page asks for: the answers on the calendar events marked "Disponibile"; if there are none, the hours; if they
   // are set, the jobs whose time does not fit them (without hours every job would be one).
+  // A read that failed is the error state of the app (what failed, the server's reason and the retry), not a warning with a button of its own.
   const notice = freeEventsQuery.isError ? (
-    <Alert
-      variant="warning"
-      data-testid="free-events-error"
-      action={
-        <Button size="sm" variant="outline" onClick={() => void freeEventsQuery.refetch()}>
-          {t('supplier.retry')}
-        </Button>
-      }
-    >
-      {t('supplier.freeEventsLoadError')}
-    </Alert>
+    <ErrorState testId="free-events-error" title={t('supplier.freeEventsLoadError')} error={freeEventsQuery.error} onRetry={() => void freeEventsQuery.refetch()} />
   ) : freeEventsQuery.isLoading ? (
     <p className="text-sm text-foreground/70" role="status" data-testid="free-events-loading">
       {t('supplier.freeEventsLoading')}

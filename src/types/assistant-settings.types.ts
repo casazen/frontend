@@ -105,7 +105,7 @@ export interface SavePropertyAssistantSettingsRequest {
 }
 
 /** A fact the server read from the listing: its topic, its text in the language asked and the field of the listing it comes from. Never stored. */
-export interface ListingFact {
+interface ListingFact {
   topic: KnowledgeTopic | string;
   text: string;
   sourceField: string;
@@ -153,7 +153,7 @@ export interface SaveKnowledgeEntryRequest {
 }
 
 /** Where the value of a situation comes from (`origin`): the default of the assistant, the organization's row, or the exception of a property. */
-export type SituationOrigin = 'default' | 'organization' | 'property';
+type SituationOrigin = 'default' | 'organization' | 'property';
 
 /**
  * A situation with the value it has (`GET api/assistant/situations`, `GET api/assistant/properties/{propertyId}/situations`): the stable `code` (the key of the

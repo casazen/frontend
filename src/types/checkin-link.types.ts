@@ -5,7 +5,7 @@
  */
 
 /** The way the link goes (or is going) to the guest: an e-mail, one message in the reservation chat of the portal, or the host's own hands. */
-export type CheckInLinkChannel = 'Email' | 'PortalChat' | 'Manual';
+type CheckInLinkChannel = 'Email' | 'PortalChat' | 'Manual';
 
 /**
  * Where the delivery stands. `Sent` is a link that left (the channel says so, or the e-mail is with its queue), `Sending` a message with the

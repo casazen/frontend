@@ -278,6 +278,19 @@ describe('PageHeader primary action (UI-05)', () => {
     expect(screen.getByRole('button', { name: 'Salva' })).toBeDisabled();
   });
 
+  it('PageHeader_PrimaryButton_IsFilledUnlessThePageSaysItIsOutline', () => {
+    const { rerender } = render(inShell('short-rent', <PageHeader title="Pagamento" primary={{ label: 'Salva', onClick: vi.fn() }} />));
+    expect(screen.getByRole('button', { name: 'Salva' })).toHaveClass('bg-primary');
+
+    // A page that only reads (its numbers are the focal point) has no filled button: its one action is outline, as a button and as a link.
+    rerender(inShell('short-rent', <PageHeader title="Incassi" primary={{ label: 'Esporta', onClick: vi.fn(), variant: 'outline' }} />));
+    expect(screen.getByRole('button', { name: 'Esporta' })).toHaveClass('border-input');
+    expect(screen.getByRole('button', { name: 'Esporta' })).not.toHaveClass('bg-primary');
+
+    rerender(inShell('short-rent', <PageHeader title="Incassi" primary={{ label: 'Apri', to: '/app/short-rent', variant: 'outline' }} />));
+    expect(screen.getByRole('link', { name: 'Apri' })).toHaveClass('border-input');
+  });
+
   it('PageHeader_PrimaryAction_IsASingleElementThatTheCssMovesToTheBottomOfThePhone', () => {
     render(inShell('short-rent', <PageHeader title="Pagamento" primary={{ label: 'Salva', onClick: vi.fn() }} />));
 

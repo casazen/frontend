@@ -1951,7 +1951,7 @@ Quando annulli tu una prenotazione pagata online, CasaZen rimborsa all'ospite tu
 
 #### Controllare un soggiorno da verificare
 
-Quando il calendario del portale collegato non mostra più la prenotazione, o mostra date diverse, il soggiorno compare con «Da verificare» (elenco) e con il riquadro «Soggiorno da verificare» (scheda). CasaZen non modifica né cancella nulla: le date restano occupate.
+Quando il calendario del portale collegato non mostra più la prenotazione, o mostra date diverse, il soggiorno compare con «Da verificare» (elenco) e con il riquadro «Soggiorno da verificare» (nella scheda «Soggiorno» della prenotazione). CasaZen non modifica né cancella nulla: le date restano occupate.
 1. Apri la prenotazione e leggi il riquadro (rimossa dal calendario, oppure date cambiate).
 2. Controlla sul portale. Se la prenotazione è stata cancellata, annulla il soggiorno in CasaZen.
 3. Se il portale ha date nuove giuste, premi «Applica le date del canale». Altrimenti premi «Segna come verificato».
@@ -5788,7 +5788,7 @@ I dati sensibili (nome legale, indirizzo, codice fiscale, partita IVA, identific
 Il menu del portale ha queste voci:
 Voce: Panoramica; Cosa trova il proprietario: I suoi immobili e le prenotazioni recenti. Aprendo un immobile vede il riepilogo, le prenotazioni recenti (con i dati degli ospiti mascherati: solo date, canale e stato) e i pulsanti «Calendario e soggiorni» e «Scrivi all'agenzia». I numeri su occupazione e ricavi non sono ancora mostrati: se ti servono, scrivi all'agenzia dai «Messaggi»
 Voce: Immobili e calendario; Cosa trova il proprietario: Notti libere, occupate e bloccate dei prossimi 3, 6 o 12 mesi, i suoi soggiorni e la richiesta di un nuovo soggiorno
-Voce: Contabilità; Cosa trova il proprietario: I rendiconti pubblicati con il PDF, le fatture del gestore, le fatture collegate, i documenti contabili e, in fondo, le ritenute dell'anno e i dati della Certificazione Unica quando l'agenzia li ha verificati
+Voce: Contabilità; Cosa trova il proprietario: I rendiconti pubblicati con il PDF (l'agenzia è scritta una sola volta sotto il titolo, e solo la versione sostituita da una più recente porta il segno «Sostituito»), le fatture del gestore, le fatture collegate, le ritenute dell'anno e i dati della Certificazione Unica quando l'agenzia li ha verificati e, in fondo, il collegamento a «Documenti», dove stanno anche i documenti contabili
 Voce: Documenti; Cosa trova il proprietario: Mandato, contratti, assicurazioni e altro che l'agenzia condivide, con versione, date e scadenza
 Voce: Documenti emessi; Cosa trova il proprietario: Le ricevute e le fatture che CasaZen ha emesso a nome del proprietario per i suoi soggiorni, con il file da dare al commercialista (su attivazione)
 Voce: Messaggi; Cosa trova il proprietario: Le conversazioni con l'agenzia, con allegati PDF, JPEG o PNG fino a 10 MB. L'agenzia riceve il tuo messaggio come avviso ma, per ora, non può rispondere da una schermata dell'app: se non ricevi risposta o è urgente, scrivile o chiamala tu
@@ -6242,8 +6242,8 @@ Per cambiare una versione già preparata usa «Rigenera come nuova versione»: l
 #### Leggere il rendiconto di un proprietario
 
 1. Dalla riga del proprietario premi il suo nome.
-2. In alto leggi «Versione N · stato» e il saldo di chiusura. Il pulsante grande è il prossimo passo.
-3. In «In breve» vedi la formula del saldo. In «Il rendiconto come lo riceve il proprietario» vedi le parti (soggiorni, commissioni dei canali, provvigione, riaddebiti e spese, rettifiche, ritenuta) e premi «PDF» o «CSV» per scaricare lo stesso file del proprietario. Il PDF di una bozza porta la filigrana di bozza.
+2. In alto leggi «Versione N · stato» e il saldo di chiusura. Il pulsante grande è il prossimo passo; su una versione sostituita il riquadro lo dice e il pulsante porta alla versione più recente («Apri la versione più recente»).
+3. In «In breve» vedi i numeri del rendiconto: incassi del proprietario, commissioni e costi, pagamenti e ritenute e saldo di chiusura (con il saldo di apertura sotto). In «Il rendiconto come lo riceve il proprietario» vedi le parti (soggiorni, commissioni dei canali, provvigione, riaddebiti e spese, rettifiche, ritenuta) e premi «PDF» o «CSV» per scaricare lo stesso file del proprietario. Il PDF di una bozza porta la filigrana di bozza.
 4. In «Righe del rendiconto» premi una riga per vedere come si arriva all'importo. Mostra le prime 25: «Mostra tutte (N)» per le altre.
 5. «Cosa è cambiato dalla versione precedente» mostra la differenza con la versione di prima. «Pagamenti e riconciliazione» mostra i pagamenti e il confronto con il saldo.
 6. «Altre azioni» in alto ha le azioni possibili, «Registra una rettifica» e «Dati finanziari del proprietario». Se il rendiconto è pubblicato c'è anche «Scarica il file pubblicato».
@@ -7692,7 +7692,7 @@ Da telefono: l'area si apre anche dal browser del telefono; per l'app di CasaZen
 L'area ha cinque sezioni nella barra: Contratti (l'elenco), Contratto, Pagamenti, Documenti e Manutenzione.
 - Contratti: una scheda per ogni contratto, con il nome e la casa e il pulsante «Apri il contratto».
 - Contratto: nome del contratto, casa e indirizzo, durata («Dal [data] al [data]»). Se c'è una scadenza da pagare vede «Prossima scadenza» con il pulsante «Paga la scadenza» (o «Vedi la scadenza»). Se non c'è nulla da pagare vede «Non c'è nulla da pagare».
-- Pagamenti: «Qui vedi se hai pagato tutto e paghi la scadenza. Canone, acconto condominiale e conguaglio sono già sommati.» Due riquadri riassumono «Ancora da pagare» e «Pagate». Ogni scadenza ha uno stato: Da pagare, In verifica, Pagata, Addebito non riuscito, Annullata; se è passata la data vede anche «In ritardo».
+- Pagamenti: in alto la prossima scadenza da pagare, con il pulsante «Paga questa scadenza»; sotto l'elenco delle scadenze (canone, acconto condominiale e conguaglio sono già sommati) e, in fondo, l'addebito SEPA del canone («Autorizza mandato con Stripe»). Quando le scadenze da pagare sono più di una, in cima due riquadri riassumono «Ancora da pagare» e «Pagate». Aprendo una scadenza, il pulsante pieno è «Paga con SEPA» (se è attivo); «Ho effettuato il bonifico» è il pulsante principale solo quando il bonifico è l'unico modo per pagare. Ogni scadenza ha uno stato: Da pagare, In verifica, Pagata, Addebito non riuscito, Annullata; se è passata la data vede anche «In ritardo».
 - Documenti: «Preventivo», «Conguaglio», «Consuntivo», «Resoconto» o «Documento» che il gestore ha condiviso, con «Scarica».
 - Manutenzione: le richieste inviate e il pulsante «Nuova richiesta».
 
@@ -8506,7 +8506,7 @@ Funzionalità: Richieste privacy; Cosa fa: L'ospite chiede copia o cancellazione
 
 #### Cosa vede l'ospite
 
-Il portale si apre sulla pagina del soggiorno: «Il tuo soggiorno» con arrivo, partenza, ospiti e codice prenotazione, e il prossimo passo da fare («Completa il check-in», «Paga la tassa di soggiorno» o «Guida della casa»). Sotto, le sezioni; sul telefono c'è una barra in basso con «Soggiorno», «Guida», «Servizi», «Chat» e «Altro».
+Il portale si apre sulla pagina del soggiorno: «Il tuo soggiorno» con arrivo, partenza, ospiti e codice prenotazione, e il prossimo passo da fare («Completa il check-in», «Paga la tassa di soggiorno» o «Guida della casa»). Sotto, solo le voci che la barra non ripete: «Informazioni sulla prenotazione», «Documenti e ricevute» (dopo la partenza anche «Privacy e dati personali») e, a check-in fatto, «Check-in completato». Le altre sezioni sono nella barra con «Soggiorno», «Guida», «Servizi», «Chat» e «Altro»: in basso sul telefono, a sinistra sul computer.
 Sezione: Check-in online; Cosa c'è: Il modulo per i dati degli ospiti (vedi sotto). Prima che si apra: «L'host ti avviserà quando potrai fare il check-in»; dopo l'invio: «Check-in completato»
 Sezione: Guida della casa; Cosa c'è: Indirizzo, istruzioni di arrivo, la casa, partenza, parcheggio, numeri utili, consigli sulla zona e regole della casa. L'indirizzo completo, le istruzioni di accesso, il codice della serratura e il Wi-Fi compaiono solo dopo che il check-in online dell'ospite risulta completato; per i soggiorni già finiti, annullati o «non arrivato» non compaiono mai
 Sezione: Servizi e extra; Cosa c'è: Gli extra che offri tu; con i fornitori, anche i loro servizi (funzione a parte, su attivazione)

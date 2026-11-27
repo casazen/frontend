@@ -33,7 +33,7 @@ export function resolveConnectUiStatus(status: ConnectStatus | undefined): Conne
  * (503, Stripe busy or unreachable) and `stripe_connect_account_unavailable` (409, the next attempt links a new account)
  * are worth a retry; the configuration errors are not.
  */
-export const CONNECT_ERROR_CODES = {
+const CONNECT_ERROR_CODES = {
   unavailable: 'stripe_connect_unavailable',
   accountUnavailable: 'stripe_connect_account_unavailable',
   notConfigured: 'stripe_connect_not_configured',

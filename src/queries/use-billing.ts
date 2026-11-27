@@ -14,7 +14,7 @@ import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import type { BillingProfileRequest, BillingSubscription, CheckoutSessionRequest } from '@/types';
 
 export const BILLING_PLANS_QUERY_KEY = ['billing', 'plans'] as const;
-export const BILLING_SUBSCRIPTION_QUERY_KEY = ['billing', 'subscription'] as const;
+const BILLING_SUBSCRIPTION_QUERY_KEY = ['billing', 'subscription'] as const;
 
 /** Plans with their price and whether they can be bought in this environment. */
 export function useBillingPlans(enabled = true) {

@@ -8,13 +8,13 @@ import type { RentalMode } from './property.types';
  */
 
 /** What the APE of the property says, the way the contract needs it: nothing on file, a certificate without its code and class, or both on record. */
-export type LongRentApeStatus = 'Missing' | 'ToConfirm' | 'Identified';
+type LongRentApeStatus = 'Missing' | 'ToConfirm' | 'Identified';
 
 /** `Rented`: a lease in force holds it. `InPreparation`: none does but one is on its way. `Free`: nothing. */
-export type LongRentPropertyState = 'Free' | 'Rented' | 'InPreparation';
+type LongRentPropertyState = 'Free' | 'Rented' | 'InPreparation';
 
 /** The lease that holds the property. `freeFrom` is the first free day, only when the lease does not go on (a notice or an early end, or a type without renewal). */
-export interface LongRentPropertyLease {
+interface LongRentPropertyLease {
   leaseId: string;
   stage: LeaseStage | null;
   /** The last day of the period the lease is in now. */
@@ -23,12 +23,12 @@ export interface LongRentPropertyLease {
   freeFrom: string | null;
 }
 
-export interface LongRentPreparingLease {
+interface LongRentPreparingLease {
   leaseId: string;
   stage: LeaseStage | null;
 }
 
-export interface LongRentScheduledModeChange {
+interface LongRentScheduledModeChange {
   toMode: RentalMode;
   effectiveDate: string;
 }

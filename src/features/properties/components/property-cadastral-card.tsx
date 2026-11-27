@@ -1,12 +1,12 @@
-import { useId, useState, type FormEvent, type ReactNode } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useUpdatePropertyCadastral } from '@/queries/use-properties';
 import { formatCurrency } from '@/lib/utils';
 import type { Property } from '@/types';
+import { LabeledField } from '@/components/ui/labeled-field';
 
 interface Props {
   property: Property;
@@ -84,16 +84,16 @@ export function PropertyCadastralCard({ property }: Props) {
         </>
       ) : (
         <form onSubmit={(e) => void handleSubmit(e)} className="grid gap-3 sm:grid-cols-2">
-          <Field id="cadastral-sheet" label={t('longRentProperties.cadastral.sheet')}>
+          <LabeledField id="cadastral-sheet" label={t('longRentProperties.cadastral.sheet')}>
             <Input id="cadastral-sheet" maxLength={10} value={sheet} onChange={(e) => setSheet(e.target.value)} />
-          </Field>
-          <Field id="cadastral-parcel" label={t('longRentProperties.cadastral.parcel')}>
+          </LabeledField>
+          <LabeledField id="cadastral-parcel" label={t('longRentProperties.cadastral.parcel')}>
             <Input id="cadastral-parcel" maxLength={20} value={parcel} onChange={(e) => setParcel(e.target.value)} />
-          </Field>
-          <Field id="cadastral-subaltern" label={t('longRentProperties.cadastral.subaltern')}>
+          </LabeledField>
+          <LabeledField id="cadastral-subaltern" label={t('longRentProperties.cadastral.subaltern')}>
             <Input id="cadastral-subaltern" maxLength={10} value={subaltern} onChange={(e) => setSubaltern(e.target.value)} />
-          </Field>
-          <Field id="cadastral-category" label={t('longRentProperties.cadastral.category')}>
+          </LabeledField>
+          <LabeledField id="cadastral-category" label={t('longRentProperties.cadastral.category')}>
             <Input
               id="cadastral-category"
               maxLength={10}
@@ -101,8 +101,8 @@ export function PropertyCadastralCard({ property }: Props) {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             />
-          </Field>
-          <Field id="cadastral-income" label={t('longRentProperties.cadastral.income')}>
+          </LabeledField>
+          <LabeledField id="cadastral-income" label={t('longRentProperties.cadastral.income')}>
             <Input
               id="cadastral-income"
               type="number"
@@ -111,7 +111,7 @@ export function PropertyCadastralCard({ property }: Props) {
               value={income}
               onChange={(e) => setIncome(e.target.value)}
             />
-          </Field>
+          </LabeledField>
           <div className="flex flex-wrap items-end gap-2 sm:col-span-2">
             <Button type="submit" disabled={update.isPending}>
               {update.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -133,15 +133,6 @@ function Item({ label, value }: { label: string; value: string | null | undefine
     <div className="min-w-0">
       <dt className="break-words text-foreground/70">{label}</dt>
       <dd className="break-words font-medium">{value || t('longRentProperties.cadastral.notSet')}</dd>
-    </div>
-  );
-}
-
-function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
     </div>
   );
 }

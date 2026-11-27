@@ -6,13 +6,13 @@ export type OtaPlatform =
   | 'TRIPADVISOR'
   | 'AGODA';
 
-export type SyncStatus =
+type SyncStatus =
   | 'PENDING'
   | 'IN_PROGRESS'
   | 'COMPLETED'
   | 'FAILED';
 
-export interface OtaCredentials {
+interface OtaCredentials {
   apiKey?: string;
   apiSecret?: string;
   username?: string;

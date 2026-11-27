@@ -2,8 +2,8 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { longRentAgendaApi } from '@/api/long-rent-agenda.api';
 import type { LongRentDeadlinesParams } from '@/types';
 
-export const LONG_RENT_OVERVIEW_KEY = 'long-rent-overview';
-export const LONG_RENT_DEADLINES_KEY = 'long-rent-deadlines';
+const LONG_RENT_OVERVIEW_KEY = 'long-rent-overview';
+const LONG_RENT_DEADLINES_KEY = 'long-rent-deadlines';
 
 /**
  * The overview of the long-term area (LR-05). Contracts, rents and the registrations change on other pages, and the overview is

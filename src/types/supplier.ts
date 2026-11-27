@@ -59,7 +59,7 @@ export interface SupplierInboxResponse {
  * `status` of `GET /supplier/inbox` (SU-08): `open` (waiting, taken, in progress), `history` (completed, paid,
  * rejected), `all`, or one status.
  */
-export type SupplierInboxStatus = 'open' | 'history' | 'all' | import('@/types/service-request').ServiceRequestStatus;
+type SupplierInboxStatus = 'open' | 'history' | 'all' | import('@/types/service-request').ServiceRequestStatus;
 
 /**
  * `tab` of `GET /supplier/inbox` (SP-04e): the console's own way to pick the requests, with its own order. `da-rispondere` still
@@ -113,7 +113,7 @@ export const ACCEPT_REQUESTS_MAX = 20;
  * One request of `POST /supplier/inbox/accept`: taken (`accepted`, with the `status` it reached) or not (`code` and the localized `message`
  * of the server: the request is no longer new, changed meanwhile, overlaps a job already accepted, the supplier is suspended...).
  */
-export interface AcceptSupplierRequestResult {
+interface AcceptSupplierRequestResult {
   id: string;
   accepted: boolean;
   status?: string | null;
@@ -134,7 +134,7 @@ export interface UpdateAvailabilityEntry {
 }
 
 /** Weekday names of `GET/PUT api/supplier/availability/hours` (Monday first). */
-export type SupplierWeekday =
+type SupplierWeekday =
   | 'Monday'
   | 'Tuesday'
   | 'Wednesday'
@@ -158,9 +158,9 @@ export interface SupplierHoursResponse {
   configuredAt?: string | null;
 }
 
-export type SupplierBusyWindowKind = 'Block' | 'ExtraOpening' | 'External';
-export type SupplierBusyWindowSource = 'Manual' | 'ICalFeed';
-export type SupplierAvailabilitySource = 'Manual' | 'ICalFeed';
+type SupplierBusyWindowKind = 'Block' | 'ExtraOpening' | 'External';
+type SupplierBusyWindowSource = 'Manual' | 'ICalFeed';
+type SupplierAvailabilitySource = 'Manual' | 'ICalFeed';
 
 export interface SupplierAgendaClosedDay {
   date: string;
@@ -234,7 +234,7 @@ export interface SupplierConflict {
 }
 
 /** A time to propose instead: the first free slot as long as the job. */
-export interface SupplierSuggestedSlot {
+interface SupplierSuggestedSlot {
   startUtc: string;
   endUtc: string;
 }
@@ -269,7 +269,7 @@ export interface SupplierConflictsResponse {
  * State of the supplier's iCal sync (SU-15): `Syncing` while the queued job has not run yet; the calendar is synced
  * only once it becomes `Success`.
  */
-export type SupplierCalendarSyncState = 'None' | 'Syncing' | 'Success' | 'Failure';
+type SupplierCalendarSyncState = 'None' | 'Syncing' | 'Success' | 'Failure';
 
 export interface CalendarSyncStatus {
   calendarSyncType: string;

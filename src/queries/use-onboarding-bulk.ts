@@ -6,11 +6,11 @@ import { ONBOARDING_FLOWS_KEY } from './use-onboarding-flows';
 import { invalidateOnboarding } from './use-onboarding-plan';
 
 /** Everything the bulk configuration reads (E10/F02, NF-105): the progress and the pilot group. */
-export const ONBOARDING_BULK_KEY = ['onboarding', 'bulk'] as const;
+const ONBOARDING_BULK_KEY = ['onboarding', 'bulk'] as const;
 const PILOT_KEY = [...ONBOARDING_BULK_KEY, 'pilot'] as const;
 
 /** How often the progress is read again while the page is open (UX: «142 di 250 pronte» follows what the agency does on other pages). */
-export const BULK_PROGRESS_REFETCH_MS = 15_000;
+const BULK_PROGRESS_REFETCH_MS = 15_000;
 
 /**
  * What a change of the bulk configuration touches (E10/F03/US03/T02): the progress and the pilot group, the lists of the properties of every flow, the plan and

@@ -1,7 +1,7 @@
 import axios from '@/lib/axios';
-import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type { OwnerReport, PerformanceGroupBy, PerformanceReport, TrendReport } from '@/types/report.types';
+import { asReport } from '@/api/response-helpers';
 
 /** The reads of short rent under `GET /api/reports/*` (SR-10): ricavo, occupazione e canali. */
 export type HostReportKind = 'revenue-by-property' | 'occupancy-by-property' | 'bookings-by-channel';
@@ -55,12 +55,6 @@ function performanceParams(query: PerformanceQuery, withBucket: boolean): Record
   if (query.propertyId) params.propertyId = query.propertyId;
   if (withBucket && query.bucket) params.bucket = query.bucket;
   return params;
-}
-
-/** A read that did not come back as an object (the page of another kind an odd proxy sends) is an error to show, not data to draw. */
-function asReport<T>(url: string, data: unknown): T {
-  if (typeof data !== 'object' || data === null || Array.isArray(data)) throw new UnexpectedApiResponseError(url);
-  return data as T;
 }
 
 export const reportsApi = {

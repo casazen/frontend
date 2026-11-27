@@ -371,7 +371,7 @@ export interface CheckInLinkResponse {
 export type IdentityVerificationStep = 'consent' | 'document' | 'selfie' | 'presence' | 'done' | 'operator';
 
 /** What the guest chose when the identity step opened (API `IdentityChoices`): the automatic verification, or a person (the assisted path). */
-export type IdentityChoice = 'automatic' | 'assisted';
+type IdentityChoice = 'automatic' | 'assisted';
 
 /** What the guest is told after an attempt (API `IdentityVerificationGuestResults`): passed, try again, or a person verifies. */
 export type IdentityVerificationResultKind = 'ok' | 'retry' | 'operator';

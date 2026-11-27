@@ -24,14 +24,14 @@ export const CLEANING_FEE_TREATMENTS = ['FollowsStay', 'Service'] as const;
 export type CleaningFeeTreatment = (typeof CLEANING_FEE_TREATMENTS)[number];
 
 /** The VAT of one type of line of a document, in percent, with the nature code of an Italian 0% (`lineType`: `Accommodation`, `Cleaning`, `ExtraService`...). */
-export interface FiscalTaxRuleRate {
+interface FiscalTaxRuleRate {
   lineType: string;
   percent: number;
   natureCode?: string;
 }
 
 /** The stamp duty of the documents without VAT: due above `threshold` of amounts without VAT, of `amount`, added to the total when `chargedToRecipient`. */
-export interface FiscalTaxRuleStampDuty {
+interface FiscalTaxRuleStampDuty {
   threshold: number;
   amount: number;
   chargedToRecipient: boolean;

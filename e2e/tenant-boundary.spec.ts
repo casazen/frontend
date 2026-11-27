@@ -1,24 +1,11 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
-import { mockPropertiesApi } from './helpers/properties-api-mock';
 import { mockCurrentUserWithOrg, mockEntitlement } from './helpers/org-api-mock';
 
-const PROPERTIES_URL = '/app/short-rent/properties';
 const PROPERTY_CREATE_URL = '/app/short-rent/properties/create';
 
+// AC11 (the header shows the org name and the plan badge) is covered by `src/components/org/__tests__/org-badge.test.tsx`.
 test.describe('Multi-tenant Org boundary (#202)', () => {
-  test('AC11 header surfaces the caller org name and plan badge', async ({ page }) => {
-    await mockCurrentUserWithOrg(page, { name: 'Acme Stays', planTier: 'Pro' });
-    await mockPropertiesApi(page);
-
-    await page.goto(demoUrl(PROPERTIES_URL, 'short-stay'));
-
-    const badge = page.getByTestId('org-badge');
-    await expect(badge).toBeVisible();
-    await expect(badge).toContainText('Acme Stays');
-    await expect(page.getByTestId('plan-badge')).toContainText('Pro');
-  });
-
   test('AC12 property create is blocked with an Italian plan-limit message and upgrade CTA', async ({ page }) => {
     await mockCurrentUserWithOrg(page, { name: 'Acme Stays', planTier: 'Starter' });
     await mockEntitlement(page, {

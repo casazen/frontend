@@ -12,7 +12,7 @@ import type { RentInstallmentStatus } from './rent.types';
 export type TenantListView = 'All' | 'Current' | 'Former';
 
 /** Whether the tenant is a citizen of the Union. */
-export type TenantCitizenship = 'Eu' | 'NonEu';
+type TenantCitizenship = 'Eu' | 'NonEu';
 
 /** A lease the person is on: the stage is the one of the path of the lease, decided by the server. */
 export interface TenantLease {
@@ -45,7 +45,7 @@ export interface TenantRow {
 }
 
 /** How many people each view holds for the search asked. */
-export interface TenantCounts {
+interface TenantCounts {
   all: number;
   current: number;
   former: number;
@@ -80,7 +80,7 @@ export interface TenantPayment {
 }
 
 /** What is past due across the person's leases; the oldest installment tells which month to look at. */
-export interface TenantOverdue {
+interface TenantOverdue {
   count: number;
   amount: number;
   oldestInstallmentId: string;

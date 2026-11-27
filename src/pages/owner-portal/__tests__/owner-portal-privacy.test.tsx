@@ -260,10 +260,61 @@ describe('the accounting of the owner (E06, E13/F02/US02/T01): the published ver
     expect(shown[0].textContent).toContain('giugno 2026');
     expect(shown[1].textContent).toContain('Sostituito');
     expect(shown[2].textContent).toContain('maggio 2026');
+    // «Pubblicato» says nothing on a list of published statements: only the version a newer one replaced carries a pill.
+    expect(within(shown[0]).queryByText('Pubblicato')).toBeNull();
+    expect(within(shown[2]).queryByText('Pubblicato')).toBeNull();
+    expect(within(shown[1]).getByText('Sostituito')).toBeInTheDocument();
 
     // The portal has no payout state and no evidence of a submission for the owner: nothing here is called paid, sent or accepted.
     const text = document.body.textContent ?? '';
     expect(text).not.toMatch(/\b(pagat[oaie]|inviat[oaie]|accettat[oaie]|incassat[oaie]|saldat[oaie])\b/i);
+  });
+
+  it('OwnerPortal_Accounting_TheAgencyIsNamedOnceUnderTheTitleOfTheSection_AndOnEachCardOnlyWhenThereAreSeveral', async () => {
+    api.listStatements.mockResolvedValue([statement(5), statement(6)]);
+    api.listInvoices.mockResolvedValue([CHF_INVOICE, { ...CHF_INVOICE, invoiceId: 'inv-2', number: '2026/0043' }]);
+    renderPortal('/portale-proprietari/contabilita');
+    await screen.findByTestId('owner-pm-invoices');
+
+    // One agency: the name is said under the title of each section and not repeated on the cards.
+    expect(screen.getByTestId('owner-statements-title-agency')).toHaveTextContent('Agenzia del Lago');
+    expect(screen.getByTestId('owner-pm-invoices-title-agency')).toHaveTextContent('Agenzia del Lago');
+    expect(screen.getAllByText('Agenzia del Lago')).toHaveLength(2);
+    cleanup();
+
+    // Two agencies: the section cannot name one, so every card says its own.
+    api.listStatements.mockResolvedValue([statement(5), { ...statement(6), agencyId: 'ag-2', agencyName: 'Studio Monte' }]);
+    renderPortal('/portale-proprietari/contabilita');
+    await screen.findByTestId('owner-statements');
+
+    expect(screen.queryByTestId('owner-statements-title-agency')).toBeNull();
+    const cards = screen.getAllByTestId('owner-statement');
+    expect(cards[0]).toHaveTextContent('Studio Monte');
+    expect(cards[1]).toHaveTextContent('Agenzia del Lago');
+  });
+
+  it('OwnerPortal_Accounting_DoesNotListTheAccountingDocumentsASecondTime_ItLinksToTheDocumentsPage', async () => {
+    api.listStatements.mockResolvedValue([statement(10)]);
+    renderPortal('/portale-proprietari/contabilita');
+    await screen.findByTestId('owner-statements');
+
+    const link = screen.getByTestId('owner-accounting-documents-link');
+    expect(link).toHaveAttribute('href', '/portale-proprietari/documenti');
+    expect(link).toHaveTextContent('Documenti');
+    expect(screen.queryByTestId('owner-accounting-documents')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Documenti contabili' })).toBeNull();
+    expect(api.listDocuments).not.toHaveBeenCalled();
+  });
+
+  it('OwnerPortal_Accounting_NoStatementsNoInvoices_AreTheEmptyStateOfTheAppWithAWordOfWhatToExpect', async () => {
+    renderPortal('/portale-proprietari/contabilita');
+
+    expect(await screen.findByTestId('owner-statements-empty')).toHaveTextContent('L’agenzia non ha ancora pubblicato rendiconti per te.');
+    expect(screen.getByTestId('owner-statements-empty')).toHaveTextContent('Quando l’agenzia pubblica un rendiconto');
+    expect(screen.getByTestId('owner-pm-invoices-empty')).toHaveTextContent('Il gestore non ti ha ancora emesso fatture.');
+    expect(screen.getByTestId('owner-pm-invoices-empty')).toHaveTextContent('compariranno qui');
+    // No helper line under the title of the invoices (the title says it).
+    expect(screen.queryByText(/Le fatture che il gestore ti ha emesso per i rendiconti/)).toBeNull();
   });
 
   it('OwnerPortal_Accounting_AReadThatFails_IsNeverSaidToBeInOrder_AndARefusalIsItsOwnHonestState', async () => {
@@ -282,48 +333,30 @@ describe('the accounting of the owner (E06, E13/F02/US02/T01): the published ver
     // The rest of the portal is still there: the menu is.
     expect(screen.getByTestId('owner-nav')).toBeInTheDocument();
   });
-  it('OwnerPortal_Accounting_AReadThatWasGoodAndIsRefusedTheNextTime_LeavesNoDocumentNorStatementUnderTheNotice', async () => {
-    api.listDocuments.mockResolvedValueOnce({
-      documents: [
-        {
-          id: 'd9',
-          orgId: 'o1',
-          propertyOwnerId: 'po1',
-          type: 'Invoice',
-          title: 'Fattura di novembre',
-          expiryState: 'none',
-          updatedAt: '2026-11-01T10:00:00Z',
-          versions: [{ id: 'v9', versionNumber: 1, fileName: 'fattura.pdf', contentType: 'application/pdf', sizeBytes: 100, sha256: 'a', state: 'current', uploadedAt: '2026-11-01T10:00:00Z' }],
-        },
-      ],
-      statements: [],
-    } as never);
+  it('OwnerPortal_Accounting_AReadThatWasGoodAndIsRefusedTheNextTime_LeavesNoStatementNorInvoiceUnderTheNotice', async () => {
     api.listStatements.mockResolvedValueOnce([statement(10)]);
     api.listInvoices.mockResolvedValueOnce([CHF_INVOICE]);
     const { client } = renderPortal('/portale-proprietari/contabilita');
-    expect(await screen.findByTestId('owner-accounting-documents')).toBeInTheDocument();
     expect(await screen.findByTestId('owner-statements')).toBeInTheDocument();
     expect(await screen.findByTestId('owner-pm-invoices')).toBeInTheDocument();
 
     // The access is withdrawn: the next reads are refused, and what the reads before them left (TanStack Query keeps it) is not drawn under the notices.
     api.listStatements.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
     api.listInvoices.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
-    api.listDocuments.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
     await act(async () => {
       await Promise.all(
-        ['statements', 'invoices', 'documents'].map((name) => client.refetchQueries({ queryKey: [OWNER_PORTAL_KEY, name] })),
+        ['statements', 'invoices'].map((name) => client.refetchQueries({ queryKey: [OWNER_PORTAL_KEY, name] })),
       );
     });
 
     const notice = await screen.findByTestId('owner-accounting-error');
     expect(notice.getAttribute('data-state')).toBe('permission');
     expect((await screen.findByTestId('owner-pm-invoices-error')).getAttribute('data-state')).toBe('permission');
-    expect((await screen.findByTestId('owner-accounting-documents-error')).getAttribute('data-state')).toBe('permission');
-    expect(screen.queryByTestId('owner-accounting-documents')).toBeNull();
-    expect(screen.queryByTestId('owner-accounting-documents-empty')).toBeNull();
     expect(screen.queryByTestId('owner-statements')).toBeNull();
     expect(screen.queryByTestId('owner-pm-invoices')).toBeNull();
-    expect(document.body.textContent).not.toMatch(/Fattura di novembre|2026\/0042|1234,50/);
+    // The section title keeps the agency only while its cards are there.
+    expect(screen.queryByTestId('owner-statements-title-agency')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/2026\/0042|1234,50|Agenzia del Lago/);
   });
 });
 

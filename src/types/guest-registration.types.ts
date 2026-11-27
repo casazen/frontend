@@ -10,7 +10,7 @@ import type { SwissPlace } from './swiss-places.types';
 
 /** What the law asks, as far as the sources say it. `Unknown` is the honest answer for a regime nobody read. */
 export const GUEST_REGISTRATION_OBLIGATIONS = ['ReportToAuthority', 'KeepRegister', 'Optional', 'Unknown'] as const;
-export type GuestRegistrationObligation = (typeof GUEST_REGISTRATION_OBLIGATIONS)[number];
+type GuestRegistrationObligation = (typeof GUEST_REGISTRATION_OBLIGATIONS)[number];
 
 /** How the data reach the authority; `None` where nothing is transmitted (a register kept at home). */
 export const GUEST_REGISTRATION_CHANNELS = ['PortalFileUpload', 'PortalForm', 'VendorInterface', 'EmailFile', 'Paper', 'None'] as const;
@@ -22,7 +22,7 @@ export type GuestRegistrationDeadlineKind = (typeof GUEST_REGISTRATION_DEADLINE_
 
 /** Whether the rule covers who lets a private home: yes, in part, no, or the sources do not say. */
 export const GUEST_REGISTRATION_PRIVATE_RENTALS = ['Yes', 'Partial', 'No', 'Unknown'] as const;
-export type GuestRegistrationPrivateRentals = (typeof GUEST_REGISTRATION_PRIVATE_RENTALS)[number];
+type GuestRegistrationPrivateRentals = (typeof GUEST_REGISTRATION_PRIVATE_RENTALS)[number];
 
 /** How far the sources of a regime are to be trusted: read on an official source, reported by one that is not the authority, or not found. */
 export const GUEST_REGISTRATION_CERTAINTIES = ['Verified', 'Partial', 'Unverified'] as const;
@@ -30,7 +30,7 @@ export type GuestRegistrationCertainty = (typeof GUEST_REGISTRATION_CERTAINTIES)
 
 /** What CasaZen does for a regime: the file for the portal, the register of the guests, the notification prepared for the host to make, or only the information. */
 export const GUEST_REGISTRATION_SUPPORTS = ['FileExport', 'GuestRegister', 'AssistedNotification', 'InformationOnly'] as const;
-export type GuestRegistrationSupport = (typeof GUEST_REGISTRATION_SUPPORTS)[number];
+type GuestRegistrationSupport = (typeof GUEST_REGISTRATION_SUPPORTS)[number];
 
 /** What CasaZen treats as the duty of the property: raised, not raised, or left to the host (`Ask`, nothing in red). */
 export const GUEST_REGISTRATION_DUTIES = ['Required', 'NotRequired', 'Ask'] as const;

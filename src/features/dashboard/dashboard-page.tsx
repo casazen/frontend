@@ -135,12 +135,6 @@ export function DashboardPage() {
             title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
             description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
             primary={phone ? undefined : createBooking}
-            action={showRoutineStatus && routines.isSuccess ? (
-              <Link to={routines.data.length ? '/app/short-rent/automations' : '/app/short-rent/automations?view=library'} className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm font-medium text-primary-text hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring">
-                <Workflow aria-hidden="true" className="size-4" />
-                {activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine')}
-              </Link>
-            ) : undefined}
             secondary={[
               ...(canReadBookings ? [{ label: t(analytics ? 'nav.dashboard' : 'dashboard.numbers.label'), icon: ChartNoAxesColumn, onClick: () => setQuery({ view: analytics ? null : 'analytics', period: null }) }] : []),
               ...(phone && createBooking ? [createBooking] : []),
@@ -148,6 +142,15 @@ export function DashboardPage() {
               // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
               ...(canRequestService
                 ? [{ label: t('dashboard.actions.requestService'), icon: Wrench, to: requestInterventionPath(propertyId || undefined), testId: 'home-request-service' }]
+                : []),
+              // The routines (how many run, or how to start the first one) are a way to a page, not the action of the Home: the last row of the menu.
+              ...(showRoutineStatus && routines.isSuccess
+                ? [{
+                    label: activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine'),
+                    icon: Workflow,
+                    to: routines.data.length ? '/app/short-rent/automations' : '/app/short-rent/automations?view=library',
+                    testId: 'home-routines',
+                  }]
                 : []),
             ]}
             mobilePrimary="none"

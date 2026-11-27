@@ -8,7 +8,7 @@ export const UNREAD_COUNT_KEY = [NOTIFICATIONS_QUERY, 'unread-count'] as const;
 const LIST_KEY = [NOTIFICATIONS_QUERY, 'list'] as const;
 
 /** Safety net while the real-time channel is down: the count is read again at this pace (and on focus and reconnect). */
-export const DISCONNECTED_POLL_MS = 60_000;
+const DISCONNECTED_POLL_MS = 60_000;
 
 /**
  * The number on the bell. The real-time channel writes it directly (`notificationsChanged`); the window focus and the network

@@ -9,29 +9,10 @@ import { CasaZenMark } from '@/components/brand/casazen-mark';
 import { Button } from '@/components/ui/button';
 import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
+import { startedRecently, rememberStart, RESTART_WINDOW_MS } from '@/lib/login-restart-guard';
 
 /** When this page last sent the visitor to Auth0 (`sessionStorage`, one tab). */
 const LAST_START_KEY = 'casazen.login-started-at';
-
-/** A visitor who comes back to this page within this time is not sent to Auth0 a second time (see `LoginPage`). */
-const RESTART_WINDOW_MS = 15_000;
-
-function startedRecently(): boolean {
-  try {
-    const startedAt = Number(sessionStorage.getItem(LAST_START_KEY));
-    return Number.isFinite(startedAt) && startedAt > 0 && Date.now() - startedAt < RESTART_WINDOW_MS;
-  } catch {
-    return false;
-  }
-}
-
-function rememberStart(): void {
-  try {
-    sessionStorage.setItem(LAST_START_KEY, String(Date.now()));
-  } catch {
-    // No storage (private mode): the guard against a loop is lost, the redirect itself still works.
-  }
-}
 
 /**
  * `/login` has no page of its own: the address sends the visitor straight to the Auth0 login (the product owner,
@@ -60,7 +41,7 @@ export function LoginPage() {
     : pathname === ownerPortalPaths.signIn ? ownerPortalPaths.home : null;
   const { t } = useTranslation();
   // Decided once, when the page opens.
-  const [redirect] = useState(() => !startedRecently());
+  const [redirect] = useState(() => !startedRecently(LAST_START_KEY));
   const started = useRef(false);
   const [slowInitialization, setSlowInitialization] = useState(false);
   useEffect(() => {
@@ -76,7 +57,7 @@ export function LoginPage() {
     }
     if (!redirect || isLoading || isAuthenticated || started.current) return;
     started.current = true;
-    rememberStart();
+    rememberStart(LAST_START_KEY);
     start(returnTo ? { returnTo } : undefined);
   }, [redirect, isAuthenticated, isLoading, user, start, navigate, returnTo]);
 
@@ -99,7 +80,7 @@ export function LoginPage() {
     }>
       <Button type="button" onClick={() => {
         if (initializationStalled) window.location.reload();
-        else { rememberStart(); start(returnTo ? { returnTo } : undefined); }
+        else { rememberStart(LAST_START_KEY); start(returnTo ? { returnTo } : undefined); }
       }} size="lg" className="w-full">
         <LogIn aria-hidden="true" className="size-5" />
         {t(initializationStalled ? 'login.reload' : 'login.signInButton')}

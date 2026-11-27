@@ -9,7 +9,7 @@ export const COMPLIANCE_HANDOFF_TOPICS = ['Alloggiati', 'Istat'] as const;
 export type ComplianceHandoffTopic = (typeof COMPLIANCE_HANDOFF_TOPICS)[number];
 
 /** `Home`: the authenticated home of the connected area (the guide describes the menu steps); `DeepLink`: a verified link to the section. */
-export type ComplianceHandoffDestinationKind = 'Home' | 'DeepLink';
+type ComplianceHandoffDestinationKind = 'Home' | 'DeepLink';
 
 export interface ComplianceHandoffRequest {
   topic: ComplianceHandoffTopic;
@@ -23,7 +23,7 @@ export interface ComplianceHandoffRequest {
 }
 
 /** The target of the check, as the dialog names it: the host's own property, listing and stay reference, no guest. */
-export interface ComplianceHandoffContext {
+interface ComplianceHandoffContext {
   propertyId: string;
   propertyName: string;
   /** The name of the property's listing on the connected area, when known: the structure to open there. */
@@ -35,7 +35,7 @@ export interface ComplianceHandoffContext {
 }
 
 /** The guide of the check, in the language of the request: where to go in the connected area and what to look at there. */
-export interface ComplianceHandoffGuide {
+interface ComplianceHandoffGuide {
   /** One of `alloggiati_daily`, `alloggiati_short_stay`, `alloggiati_long_stay`, `istat_period`. */
   code: string;
   menuPath: string;

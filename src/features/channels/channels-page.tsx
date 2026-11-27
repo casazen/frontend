@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePlanReturn } from '@/features/onboarding/plan-return';
 import { CalendarDays } from 'lucide-react';
@@ -16,18 +16,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { useCalendarOverview, useSyncCalendarFeed } from '@/queries/use-property-ical';
 import { CalendarRowItem } from './calendar-row';
 import { buildCalendarRows, type FeedRow } from './lib/calendar-rows';
-
-const TICK_MS = 60_000;
-
-/** The time now, again every minute: "3 minuti fa" does not stay "ora" on a page that is left open. */
-function useNow(): Date {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), TICK_MS);
-    return () => clearInterval(timer);
-  }, []);
-  return now;
-}
+import { useNowDate } from '@/hooks/use-now';
 
 /**
  * `/app/short-rent/channels`: the calendars of every property in one list (SR-10b, the reduced version of the reviewer): one row for
@@ -47,7 +36,7 @@ export function ChannelsPage() {
   const { mutate: syncFeed, isPending: syncRequested, variables: syncVariables } = useSyncCalendarFeed();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
-  const tick = useNow();
+  const tick = useNowDate();
   const canWrite = hasPermission('short-rent', 'property.write');
 
   const data = overview.data;

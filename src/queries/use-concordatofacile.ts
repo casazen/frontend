@@ -6,10 +6,10 @@ import { getProblemCode } from '@/lib/api-errors';
 import type { CfSyncState } from '@/types/concordatofacile.types';
 
 /** Query key for CF access state. */
-export const CF_ACCESS_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'access', leaseId] as const;
+const CF_ACCESS_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'access', leaseId] as const;
 
 /** 409 of the checkout: the lease already has the service (paid, gift) or has paid and the payment is not recorded yet (CF-FIX). */
-export const CF_ALREADY_PURCHASED_CODE = 'concordatofacile_already_purchased';
+const CF_ALREADY_PURCHASED_CODE = 'concordatofacile_already_purchased';
 
 /** True for the 409 `concordatofacile_already_purchased` of the checkout. */
 export function isCfAlreadyPurchased(error: unknown): boolean {
@@ -17,7 +17,7 @@ export function isCfAlreadyPurchased(error: unknown): boolean {
 }
 
 /** 409 of the link: the privacy notice was not accepted for this lease (CF-FLOW, backend): the person has to accept it first. */
-export const CF_PRIVACY_NOT_ACCEPTED_CODE = 'concordatofacile_privacy_not_accepted';
+const CF_PRIVACY_NOT_ACCEPTED_CODE = 'concordatofacile_privacy_not_accepted';
 
 /** True for the 409 `concordatofacile_privacy_not_accepted` of the link. */
 export function isCfPrivacyNotAccepted(error: unknown): boolean {
@@ -25,7 +25,7 @@ export function isCfPrivacyNotAccepted(error: unknown): boolean {
 }
 
 /** Back from the payment the access is read again this often (the webhook of Stripe can arrive after the person does)... */
-export const CF_ACCESS_POLL_MS = 2_000;
+const CF_ACCESS_POLL_MS = 2_000;
 /** ...for about this long (CF-FLOW): then the person is told that the activation takes a moment and can check again. */
 export const CF_ACCESS_POLL_LIMIT_MS = 40_000;
 
@@ -104,7 +104,7 @@ export function useCfAcceptPrivacy(leaseId: string) {
  * address, so anything else (a script, a relative path) is refused before the browser leaves the app. `replace` swaps the entry of
  * the page in the history, so that "back" from the form does not land on a page that sends the person on again.
  */
-export function goToCfForm(url: string, replace: boolean): void {
+function goToCfForm(url: string, replace: boolean): void {
   const { protocol } = new URL(url);
   if (protocol !== 'https:' && protocol !== 'http:') throw new Error('The link of the form is not a web address');
   if (replace) window.location.replace(url);
@@ -156,7 +156,7 @@ export const CF_SYNC_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'sync
 /** While the server reads the documents the sync is asked again this often (ms)... */
 export const CF_SYNC_POLL_MS = 3_000;
 /** ...at most this many times (about six minutes: the reading of a scanned contract is given four): then the person reloads. */
-export const CF_SYNC_POLL_LIMIT = 120;
+const CF_SYNC_POLL_LIMIT = 120;
 
 /** The states in which the server is still reading a document: the answer will change by itself. */
 const CF_SYNC_READING: readonly CfSyncState[] = ['ReadingContract', 'ReadingReceipt'];
@@ -187,7 +187,7 @@ export function useCfSync(leaseId: string, { enabled }: { enabled: boolean }) {
 }
 
 /** Query key for the lease of a CF practice. */
-export const CF_PRACTICE_LEASE_QUERY_KEY = (practiceId: string) => ['concordatofacile', 'practice-lease', practiceId] as const;
+const CF_PRACTICE_LEASE_QUERY_KEY = (practiceId: string) => ['concordatofacile', 'practice-lease', practiceId] as const;
 
 /**
  * The lease of the org a practice of the partner belongs to (NF-06): the upload page opened from the button «Carica i dati in
@@ -204,7 +204,7 @@ export function useCfPracticeLease(practiceId: string) {
 }
 
 /** Query key for CF status. */
-export const CF_STATUS_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'status', leaseId] as const;
+const CF_STATUS_QUERY_KEY = (leaseId: string) => ['concordatofacile', 'status', leaseId] as const;
 
 /**
  * Get practice status for a lease (ADR-008-R15, ADR-008-R16).

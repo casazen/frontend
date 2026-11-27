@@ -2,15 +2,14 @@ import { useMemo } from 'react';
 import { Coins } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
-import { STATUS_ICONS } from '@/components/shared/status/status-icons';
-import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
+import { StatusBadge } from '@/components/shared/status/status-badge';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { formatRomeDateTime } from '@/lib/stay-dates';
-import { cn } from '@/lib/utils';
+import { getStatusDefinition, type StatusOf } from '@/lib/status-dictionary';
 import type { SupplierEarning } from '@/types/supplier-earnings';
 import { requestPath } from '../requests/request-model';
 import { formatMoney } from '../services/lib/service-money';
-import { daysLate, EARNINGS_PERIODS, stateView } from './earnings-model';
+import { daysLate, EARNINGS_PERIODS } from './earnings-model';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -44,22 +43,16 @@ function commissionCell(earning: SupplierEarning, locale: string, t: Translate) 
   );
 }
 
-/** The state of a payment: an icon and a word, never the colour alone. A state the app does not know gets a generic word. */
+/**
+ * The state of a payment: the shared badge, an icon and a word, never the colour alone. The tone and the icon are the dictionary's (`earning`); the words
+ * are the page's (`supplier.earnings.state.*`), because a late payment says for how many days, and a state the app does not know (the open set of the
+ * server) gets a generic word, neutral, with the raw state as its `data-status`.
+ */
 function stateBadge(earning: SupplierEarning, t: Translate) {
-  const view = stateView(earning.state);
-  const Icon = STATUS_ICONS[view.icon];
+  const key = getStatusDefinition('earning', earning.state) ? earning.state : 'unknown';
   const days = daysLate(earning);
-  const label = view.key === 'late' && days > 0 ? t('supplier.earnings.state.lateDays', { count: days }) : t(`supplier.earnings.state.${view.key}`);
-  return (
-    <span
-      data-status-kind="earning"
-      data-status={earning.state}
-      className={cn('inline-flex max-w-full items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset', STATUS_TONE_CLASSES[view.tone])}
-    >
-      <Icon aria-hidden="true" className="size-3.5 shrink-0" />
-      <span className="min-w-0 break-words">{label}</span>
-    </span>
-  );
+  const label = key === 'late' && days > 0 ? t('supplier.earnings.state.lateDays', { count: days }) : t(`supplier.earnings.state.${key}`);
+  return <StatusBadge kind="earning" status={earning.state as StatusOf<'earning'>} label={label} />;
 }
 
 /**

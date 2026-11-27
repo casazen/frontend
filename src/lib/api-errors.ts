@@ -75,7 +75,8 @@ function validationMessages(errors: unknown): string | undefined {
   return collected.length > 0 ? collected.slice(0, MAX_VALIDATION_MESSAGES).join('\n') : undefined;
 }
 
-function toCamelCase(code: string): string {
+/** `fx_missing` → `fxMissing`: the key of the texts of an error code. */
+export function toCamelCase(code: string): string {
   const [first = '', ...rest] = code.toLowerCase().split('_').filter(Boolean);
   return first + rest.map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join('');
 }

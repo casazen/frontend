@@ -23,7 +23,7 @@ Webapp React per immobili, prenotazioni, ospiti, adempimenti, affitti lunghi e r
 
 Le aree sono `short-rent`, `long-rent`, `account` (amministrazione dell'organizzazione cliente), `supplier` e `admin` (console staff). `ProtectedRoute`, `OnboardingGuard` e `ContextRouteGuard` orientano l'interfaccia, ma **l'autorizzazione sui dati resta dell'API**: non aggirare i controlli nel client. La guida è una route `help` in ogni area.
 
-Convenzioni: richieste solo tramite i moduli API (niente `fetch('/api/...')` nelle feature); dati server in TanStack Query e, dopo una mutazione, invalidare tutte le query interessate (anche le varianti filtrate); **ogni testo UI passa da i18next con chiavi identiche in italiano e inglese** (`src/i18n/locales/{it,en}.json`); date di soggiorno con `src/lib/stay-dates.ts`; HTML esterno solo con la sanitizzazione condivisa; controlli accessibili (focus visibile, etichette per le icone, layout mobile); nessun token o dato personale in console. Notifiche in tempo reale (SignalR `/hubs/notifications`) e avvisi popup: dettagli in `documentazione/03-documenti-ai/runbook/frontend/architecture.md`. Un flusso a passi nella shell usa `WizardShell` (o `useWizardOpenFlag`) perché gli avvisi aspettino.
+Convenzioni: richieste solo tramite i moduli API (niente `fetch('/api/...')` nelle feature); dati server in TanStack Query e, dopo una mutazione, invalidare tutte le query interessate (anche le varianti filtrate); **ogni testo UI passa da i18next con chiavi identiche in italiano e inglese** (`src/i18n/locales/{it,en}.json`); date di soggiorno con `src/lib/stay-dates.ts`; HTML esterno solo con la sanitizzazione condivisa; controlli accessibili (focus visibile, etichette per le icone, layout mobile); nessun token o dato personale in console. Notifiche in tempo reale (SignalR `/hubs/notifications`) e avvisi popup: dettagli in `docs/03-documenti-ai/runbook/frontend/architecture.md`. Un flusso a passi nella shell usa `WizardShell` (o `useWizardOpenFlag`) perché gli avvisi aspettino.
 
 ## Avvio e controlli
 
@@ -36,7 +36,7 @@ npm run dev:demo       # dati locali: non prova autenticazione, persistenza o in
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-La build esegue TypeScript, bundle browser, bundle SSR del sito, prerender e widget incorporabile. Un test mirato: `npx vitest run percorso/al/test.test.tsx`. Se vedi HTML al posto di JSON controlla `VITE_API_BASE_URL`; un `401` indica sessione/audience/tenant, un `403` autorizzazioni o organizzazione. Le variabili di deploy sono nella checklist del backend (`documentazione/03-documenti-ai/runbook/backend/deploy-checklist.md`); `.env.example` e la checklist sono confrontati da un test.
+La build esegue TypeScript, bundle browser, bundle SSR del sito, prerender e widget incorporabile. Un test mirato: `npx vitest run percorso/al/test.test.tsx`. Se vedi HTML al posto di JSON controlla `VITE_API_BASE_URL`; un `401` indica sessione/audience/tenant, un `403` autorizzazioni o organizzazione. Le variabili di deploy sono nella checklist del backend (`docs/03-documenti-ai/runbook/backend/deploy-checklist.md`); `.env.example` e la checklist sono confrontati da un test.
 
 ## Test
 
@@ -48,7 +48,7 @@ La build esegue TypeScript, bundle browser, bundle SSR del sito, prerender e wid
 | `npm run test:e2e:staging`, `…:staging-gj` | smoke e Golden Journey sullo staging (servono configurazione e credenziali; mai quelle di produzione) |
 | `npm run test:e2e:embed` | widget incorporabile |
 
-I flussi L3 su stack effimero (`e2e/gj-l3/`, `e2e/stack/up.sh`) hanno il runbook condiviso `documentazione/03-documenti-ai/runbook/backend/golden-journey-l3.md` (workspace). Uno smoke saltato non prova lo staging reale. Prima di unire: controlli richiesti verdi e nessun conflitto (workflow in `.github/workflows/`).
+I flussi L3 su stack effimero (`e2e/gj-l3/`, `e2e/stack/up.sh`) hanno il runbook condiviso `docs/03-documenti-ai/runbook/backend/golden-journey-l3.md` (workspace). Uno smoke saltato non prova lo staging reale. Prima di unire: controlli richiesti verdi e nessun conflitto (workflow in `.github/workflows/`).
 
 ## Guida utente
 
@@ -65,10 +65,10 @@ Branch `feature/<nome>`, `fix/<nome>` o simili **da `develop`**; commit in Conve
 
 ## Documentazione: tienila pulita e aggiornata
 
-La documentazione di progetto sta nella cartella **`documentazione/` del workspace CasaZen** (la cartella che contiene `backend/`, `frontend/` e `mobile/`), **fuori dai repository** di proposito. `01-documenti-ufficiali/` è scritta o approvata dall'utente o da professionisti; `03-documenti-ai/` è scritta dall'AI (requisiti, punti aperti, decisioni, revisioni, integrazioni, ADR, consegne, guide tecniche). Regole:
+La documentazione di progetto sta nella cartella **`docs/` del workspace CasaZen** (la cartella che contiene `backend/`, `frontend/` e `mobile/`; **non** la cartella `docs/` di questo repository, che ha solo un `README.md` di indirizzamento), **fuori dai repository** di proposito. `01-documenti-ufficiali/` è scritta o approvata dall'utente o da professionisti; `03-documenti-ai/` è scritta dall'AI (requisiti, punti aperti, decisioni, revisioni, integrazioni, ADR, consegne, guide tecniche). Regole:
 
-1. **Un solo posto.** Analisi, requisiti, punti aperti, decisioni, revisioni, runbook, ADR e report vivono solo in `documentazione/`. **Non creare `.md` sparsi in questo repository** (restano soltanto i README accanto al codice o alle risorse: componenti condivisi, `site-maps`, `public/brand`, plugin WordPress) e niente log, JSON di stato, cartelle «attempt», screenshot di verifica, report o appunti di sessione: sono rumore e restano nella storia git.
-2. **La PR che cambia un comportamento aggiorna i documenti toccati**: lo stato dei requisiti (`documentazione/03-documenti-ai/requisiti/<area>.md`), i punti aperti (quelli chiusi vanno in `decisioni.md` con data e decisione), i runbook, **la guida utente** (`guida/**` sorgenti e `public/guida/**` pagine generate con `npm run guida:build`, più i testi `productGuide` in-app it/en) e **la documentazione tecnica ufficiale** (`documentazione/01-documenti-ufficiali/documentazione-tecnica/`, sorgenti e PDF: si rigenera quando cambiano architettura, stack, integrazioni, sicurezza o moduli).
+1. **Un solo posto.** Analisi, requisiti, punti aperti, decisioni, revisioni, runbook, ADR e report vivono solo in `docs/`. **Non creare `.md` sparsi in questo repository** (restano soltanto i README accanto al codice o alle risorse: componenti condivisi, `site-maps`, `public/brand`, plugin WordPress) e niente log, JSON di stato, cartelle «attempt», screenshot di verifica, report o appunti di sessione: sono rumore e restano nella storia git.
+2. **La PR che cambia un comportamento aggiorna i documenti toccati**: lo stato dei requisiti (`docs/03-documenti-ai/requisiti/<area>.md`), i punti aperti (quelli chiusi vanno in `decisioni.md` con data e decisione), i runbook, **la guida utente** (`guida/**` sorgenti e `public/guida/**` pagine generate con `npm run guida:build`, più i testi `productGuide` in-app it/en) e **la documentazione tecnica ufficiale** (`docs/01-documenti-ufficiali/documentazione-tecnica/`, sorgenti e PDF: si rigenera quando cambiano architettura, stack, integrazioni, sicurezza o moduli).
 3. **Una sola fonte per argomento**: collega, non copiare.
 4. **Date assolute** (AAAA-MM-GG) e, in testa a ogni documento vivo, l'ultima verifica: `Verificato il AAAA-MM-GG su develop@<sha>` solo se hai davvero controllato; altrimenti `Stato: NON verificato — fonte: <file>`.
 5. **A fine lavoro rimuovi i file temporanei** che hai creato (script, log, patch, screenshot, bozze).
@@ -76,4 +76,4 @@ La documentazione di progetto sta nella cartella **`documentazione/` del workspa
 7. I **documenti ufficiali** (`01-documenti-ufficiali/`) non si riscrivono senza richiesta dell'utente.
 8. Se una regola di questa sezione confligge con quanto trovi nel repository, **segnalalo** (nella PR o nel report) invece di scegliere in silenzio.
 
-Senza accesso al workspace (per esempio in una sandbox cloud) non inventare né ricreare documenti qui: scrivi nella PR cosa andrebbe aggiornato in `documentazione/`.
+Senza accesso al workspace (per esempio in una sandbox cloud) non inventare né ricreare documenti qui: scrivi nella PR cosa andrebbe aggiornato in `docs/`.

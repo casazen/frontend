@@ -125,8 +125,6 @@ export function PropertiesPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="properties-page">
-      {cinCompliance?.summary ? <CinDeadlineBanner summary={cinCompliance.summary} /> : null}
-
       <PageHeader
         title={t('property.page.title')}
         crumbs="auto"
@@ -137,6 +135,9 @@ export function PropertiesPage() {
             : undefined
         }
       />
+
+      {/* The notice follows the title: the page says what it is first, then what is due (it used to sit above the title). */}
+      {cinCompliance?.summary ? <CinDeadlineBanner summary={cinCompliance.summary} /> : null}
 
       {canWrite && progress && inProgress ? (
         <section aria-labelledby="property-resume-title" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">

@@ -5,9 +5,9 @@ import type { DecideShortLetTaxCommand } from '@/types';
 import { OWNER_ACCOUNTING_KEY } from './use-owner-accounting';
 
 /** Root of the query keys of the checks of the Italian short-let withholding (E18/F01/US03/T01): the stays of a company tenant and the limit of units of an owner. */
-export const OWNER_TAX_CHECKS_KEY = 'owner-tax-checks';
+const OWNER_TAX_CHECKS_KEY = 'owner-tax-checks';
 
-export const ownerTaxChecksKeys = {
+const ownerTaxChecksKeys = {
   cases: [OWNER_TAX_CHECKS_KEY, 'cases'] as const,
   pendingCases: [OWNER_TAX_CHECKS_KEY, 'cases', 'pending'] as const,
   units: (ownerId: string) => [OWNER_TAX_CHECKS_KEY, 'units', ownerId] as const,
