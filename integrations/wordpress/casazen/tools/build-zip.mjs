@@ -6,10 +6,14 @@
  *
  *   1. refuses to go on when the version strings of the plugin differ (see check-version.mjs);
  *   2. copies the plugin into a temporary folder named `casazen`, leaving out what `.distignore` lists;
- *   3. zips that folder with `archiver`: names with forward slashes, sorted, fixed time stamps and modes, so the same
+ *   3. with `--app-origin`, writes `includes/build-config.php` into that folder: the address of the CasaZen console of the
+ *      environment the ZIP is for (the test console for the test ZIP, the production one for the production ZIP). The file is
+ *      generated for the ZIP only: it is never in the sources, and the build refuses a folder that holds one;
+ *   4. zips that folder with `archiver`: names with forward slashes, sorted, fixed time stamps and modes, so the same
  *      sources give the same bytes on Windows and on Linux;
- *   4. reads the ZIP back (its central directory) and checks it: ONE top-level folder `casazen/`, the files that must be
- *      there, nothing that must not (tests, tools, node_modules, vendor, composer and package files, dotfiles, keys).
+ *   5. reads the ZIP back (its central directory) and checks it: ONE top-level folder `casazen/`, the files that must be
+ *      there, nothing that must not (tests, tools, node_modules, vendor, composer and package files, dotfiles, keys), and
+ *      `includes/build-config.php` there with exactly that address when `--app-origin` was given, and not there otherwise.
  *
  * It prints the file list and the size. The blocks (`npm run build`) and the translations (`wp i18n make-mo` and
  * `make-json`) are built BEFORE: the check fails when `blocks/build` or the compiled translations are missing, and when the
@@ -18,14 +22,14 @@
  *
  * Under GitHub Actions it also writes the step outputs `version` and `zip` (the path of the ZIP).
  *
- * Usage: node tools/build-zip.mjs [--out <folder>] [--allow-missing-translations]
+ * Usage: node tools/build-zip.mjs [--out <folder>] [--allow-missing-translations] [--app-origin <https origin>]
  */
-import { appendFileSync, copyFileSync, createWriteStream, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { appendFileSync, copyFileSync, createWriteStream, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
-import { ZipArchive } from 'archiver';
+import { inflateRawSync } from 'node:zlib';
 import { builtBlockScripts, readTextDomain, scriptTranslationFileName } from './check-translations.mjs';
 import { checkVersions } from './check-version.mjs';
 
@@ -47,6 +51,100 @@ const FORBIDDEN_ROOT_NAMES = new Set(['tests', 'tools', 'node_modules', 'vendor'
 
 /** What must never be in the ZIP, wherever it is. */
 const FORBIDDEN_NAME = /^(?:\..*|composer\..*|package(?:-lock)?\.json|npm-shrinkwrap\.json|.*\.zip|.*\.log|.*\.(?:pem|key|pfx|p12)|id_rsa.*)$/i;
+
+/**
+ * The file that carries the address of the CasaZen console, below the plugin folder. It exists in the ZIP only, and only when `--app-origin`
+ * was given: the plugin reads it (`return array( 'app_origin' => '<origin>' );`) to know which environment it was downloaded for.
+ */
+export const BUILD_CONFIG_PATH = 'includes/build-config.php';
+
+/** An `https` host name (letters, digits and hyphens in each label, no underscore, no IP address) and an optional port. */
+const APP_ORIGIN_PATTERN = /^https:\/\/(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?::\d{1,5})?$/;
+
+/**
+ * Checks the address of a CasaZen console and returns it: an `https` origin and nothing else.
+ *
+ * It must be written in its canonical form (lowercase host, no default port, no trailing slash), so that what goes into the PHP file is
+ * exactly what the URL parser calls the origin, and cannot carry a character that needs escaping.
+ *
+ * @param {unknown} value The text given to `--app-origin`.
+ * @returns {string} The origin, for example `https://www.casazen.space`.
+ * @throws {Error} With a message that says what to write instead.
+ */
+export function parseAppOrigin(value) {
+	const shown = typeof value === 'string' ? value : String(value);
+	if (typeof value !== 'string' || value.trim() === '') {
+		throw new Error(`--app-origin is empty: write the origin of the CasaZen console, for example https://www.casazen.space.`);
+	}
+
+	let url;
+	try {
+		url = new URL(value);
+	} catch {
+		throw new Error(`--app-origin "${shown}" is not a URL: write the origin of the CasaZen console, for example https://www.casazen.space.`);
+	}
+	if (url.protocol === 'http:') {
+		throw new Error(`--app-origin "${shown}" is an http address: the plugin only talks to the console over https.`);
+	}
+	if (url.protocol !== 'https:') {
+		throw new Error(`--app-origin "${shown}" is not an https address: write the origin of the CasaZen console, for example https://www.casazen.space.`);
+	}
+	if (url.username !== '' || url.password !== '') {
+		throw new Error(`--app-origin "${shown}" holds credentials: an origin is the scheme, the host and the port, nothing else.`);
+	}
+	if (url.pathname !== '/' || url.search !== '' || url.hash !== '') {
+		throw new Error(`--app-origin "${shown}" has a path, a query or a fragment: write the origin only, ${url.origin}.`);
+	}
+	if (url.hostname.startsWith('[') || /^[0-9.]+$/.test(url.hostname)) {
+		throw new Error(`--app-origin "${shown}" is an IP address: the address of the console is a host name.`);
+	}
+	if (value !== url.origin) {
+		throw new Error(`--app-origin "${shown}" is not written as an origin: write it as ${url.origin} (lowercase host, no default port, no trailing slash).`);
+	}
+	if (!APP_ORIGIN_PATTERN.test(url.origin)) {
+		throw new Error(`--app-origin "${shown}" is not an https address with a plain host name (letters, digits and hyphens in each label).`);
+	}
+	return url.origin;
+}
+
+/**
+ * The text of `includes/build-config.php`, written with the quoting of the plugin's PHP standard (WordPress coding standards: single quotes,
+ * spaces inside the parentheses, a file comment) and valid on PHP 7.4. The line `return array( ... );` is what the plugin reads.
+ *
+ * @param {string} appOrigin The origin of the console (checked again here: the file is only ever written for a valid one).
+ * @returns {string}
+ */
+export function buildConfigPhp(appOrigin) {
+	const origin = parseAppOrigin(appOrigin);
+	const quoted = `'${origin.replace(/[\\']/g, '\\$&')}'`;
+	return [
+		'<?php',
+		'/**',
+		' * The address of the CasaZen console this package was built for.',
+		' *',
+		' * Written into the ZIP by tools/build-zip.mjs (--app-origin). It is generated: it is not in the repository',
+		' * and it is not edited by hand.',
+		' *',
+		' * @package Casazen',
+		' */',
+		'',
+		"defined( 'ABSPATH' ) || exit;",
+		'',
+		`return array( 'app_origin' => ${quoted} );`,
+		'',
+	].join('\n');
+}
+
+/**
+ * The address inside a `build-config.php` that `buildConfigPhp()` wrote.
+ *
+ * @param {string} text The content of the file.
+ * @returns {string | null} The origin, or null when the file is not what the generator writes.
+ */
+export function readBuildConfigOrigin(text) {
+	const match = /^return array\( 'app_origin' => '([^'\\]*)' \);\r?$/m.exec(text);
+	return match ? match[1] : null;
+}
 
 /**
  * A rule of `.distignore`.
@@ -144,14 +242,8 @@ export function collectFiles(root, rules) {
 	return files;
 }
 
-/**
- * The entries of a ZIP, read from its central directory (the way an installer reads it).
- *
- * @param {string} zipPath
- * @returns {{ name: string, size: number }[]}
- */
-export function listZip(zipPath) {
-	const buffer = readFileSync(zipPath);
+/** The central directory of a ZIP: where each entry is and how it is stored. */
+function readCentralDirectory(buffer, zipPath) {
 	let end = -1;
 	for (let position = buffer.length - 22; position >= Math.max(0, buffer.length - 22 - 65535); position -= 1) {
 		if (buffer.readUInt32LE(position) === 0x06054b50) {
@@ -166,14 +258,48 @@ export function listZip(zipPath) {
 	const entries = [];
 	for (let index = 0; index < count; index += 1) {
 		if (buffer.readUInt32LE(offset) !== 0x02014b50) throw new Error(`${zipPath}: the central directory is damaged at entry ${index}.`);
+		const method = buffer.readUInt16LE(offset + 10);
+		const compressedSize = buffer.readUInt32LE(offset + 20);
 		const size = buffer.readUInt32LE(offset + 24);
 		const nameLength = buffer.readUInt16LE(offset + 28);
 		const extraLength = buffer.readUInt16LE(offset + 30);
 		const commentLength = buffer.readUInt16LE(offset + 32);
-		entries.push({ name: buffer.toString('utf8', offset + 46, offset + 46 + nameLength), size });
+		const localOffset = buffer.readUInt32LE(offset + 42);
+		entries.push({ name: buffer.toString('utf8', offset + 46, offset + 46 + nameLength), size, method, compressedSize, localOffset });
 		offset += 46 + nameLength + extraLength + commentLength;
 	}
 	return entries;
+}
+
+/**
+ * The entries of a ZIP, read from its central directory (the way an installer reads it).
+ *
+ * @param {string} zipPath
+ * @returns {{ name: string, size: number }[]}
+ */
+export function listZip(zipPath) {
+	return readCentralDirectory(readFileSync(zipPath), zipPath).map(({ name, size }) => ({ name, size }));
+}
+
+/**
+ * The content of one file of a ZIP, read the way an installer reads it: from the central directory to the local header to the data.
+ *
+ * @param {string} zipPath
+ * @param {string} name The name of the entry, with forward slashes (`casazen/includes/build-config.php`).
+ * @returns {Buffer | null} The bytes, or null when the ZIP has no entry of that name.
+ */
+export function readZipEntry(zipPath, name) {
+	const buffer = readFileSync(zipPath);
+	const entry = readCentralDirectory(buffer, zipPath).find((candidate) => candidate.name === name);
+	if (entry === undefined) return null;
+
+	const { localOffset, compressedSize, method } = entry;
+	if (buffer.readUInt32LE(localOffset) !== 0x04034b50) throw new Error(`${zipPath}: the local header of ${name} is damaged.`);
+	const start = localOffset + 30 + buffer.readUInt16LE(localOffset + 26) + buffer.readUInt16LE(localOffset + 28);
+	const data = buffer.subarray(start, start + compressedSize);
+	if (method === 0) return Buffer.from(data);
+	if (method === 8) return inflateRawSync(data);
+	throw new Error(`${zipPath}: ${name} is stored with the method ${method}, which this tool does not read.`);
 }
 
 /**
@@ -186,9 +312,11 @@ export function listZip(zipPath) {
  * @param {string[]} [options.scripts] The scripts of the built blocks, as paths below the plugin folder (`blocks/build/booking/index.js`):
  *   with `requireTranslations`, the ZIP must hold, for each of them and each language it ships, the JSON file that WordPress asks for.
  * @param {string} [options.domain] The text domain of the plugin (the prefix of the files of `languages/`).
+ * @param {string | null} [options.appOrigin] The address of the console the ZIP was built for: with it, `includes/build-config.php` must be in
+ *   the ZIP; without it (the default), it must not be there.
  * @returns {string[]}
  */
-export function verifyEntries(entries, { blocks = [], requireTranslations = true, scripts = [], domain = TOP_FOLDER } = {}) {
+export function verifyEntries(entries, { blocks = [], requireTranslations = true, scripts = [], domain = TOP_FOLDER, appOrigin = null } = {}) {
 	const problems = [];
 	const names = entries.map((entry) => entry.name);
 	const prefix = `${TOP_FOLDER}/`;
@@ -201,6 +329,12 @@ export function verifyEntries(entries, { blocks = [], requireTranslations = true
 
 	for (const required of REQUIRED_FILES) {
 		if (!files.has(required)) problems.push(`The ZIP has no ${prefix}${required}.`);
+	}
+	if (appOrigin !== null && !files.has(BUILD_CONFIG_PATH)) {
+		problems.push(`The ZIP has no ${prefix}${BUILD_CONFIG_PATH}, which must hold the address of the console, ${appOrigin}.`);
+	}
+	if (appOrigin === null && files.has(BUILD_CONFIG_PATH)) {
+		problems.push(`The ZIP has ${prefix}${BUILD_CONFIG_PATH} but no --app-origin was given: that file is generated for the ZIP, never taken from the sources.`);
 	}
 	for (const block of blocks) {
 		for (const file of ['block.json', 'index.js']) {
@@ -239,6 +373,24 @@ export function verifyEntries(entries, { blocks = [], requireTranslations = true
 	return problems;
 }
 
+/**
+ * Reads `includes/build-config.php` back from a ZIP and checks that it is exactly what the generator writes for `appOrigin`.
+ *
+ * @param {string} zipPath
+ * @param {string} appOrigin The address of the console the ZIP must carry.
+ * @returns {string[]} What is wrong; an empty list means the ZIP carries that address.
+ */
+export function verifyBuildConfig(zipPath, appOrigin) {
+	const name = `${TOP_FOLDER}/${BUILD_CONFIG_PATH}`;
+	const content = readZipEntry(zipPath, name);
+	if (content === null) return [`The ZIP has no ${name}, which must hold the address of the console, ${appOrigin}.`];
+	if (content.toString('utf8') !== buildConfigPhp(appOrigin)) {
+		const found = readBuildConfigOrigin(content.toString('utf8'));
+		return [`${name} does not hold the address ${appOrigin}${found === null ? ': it is not what tools/build-zip.mjs writes' : `: it holds ${found}`}.`];
+	}
+	return [];
+}
+
 /** The names of the blocks, from `blocks/src/<name>/block.json`. */
 export function blockNames(root) {
 	const source = join(root, 'blocks', 'src');
@@ -256,26 +408,43 @@ export function blockNames(root) {
  * @param {string} [options.root] The folder of the plugin.
  * @param {string} [options.outDir] Where `casazen-<version>.zip` is written. Default: `<root>/dist`.
  * @param {boolean} [options.allowMissingTranslations] Do not require the compiled translations.
- * @returns {Promise<{ zipPath: string, version: string, entries: { name: string, size: number }[], bytes: number }>}
+ * @param {string | null} [options.appOrigin] The address of the CasaZen console of the environment the ZIP is for (an `https` origin). With it,
+ *   the ZIP holds `includes/build-config.php` with that address; without it, the ZIP has no such file. The working tree never does.
+ * @returns {Promise<{ zipPath: string, version: string, entries: { name: string, size: number }[], bytes: number, appOrigin: string | null }>}
  */
-export async function buildZip({ root = PLUGIN_ROOT, outDir = resolve(root, 'dist'), allowMissingTranslations = false } = {}) {
+export async function buildZip({ root = PLUGIN_ROOT, outDir = resolve(root, 'dist'), allowMissingTranslations = false, appOrigin = null } = {}) {
+	// First of all: a wrong address stops the build before anything is read or written.
+	const origin = appOrigin === null || appOrigin === undefined ? null : parseAppOrigin(appOrigin);
+
 	const { ok, version, problems } = checkVersions({ root });
 	if (!ok || version === null) throw new Error(`The version of the plugin is not one string:\n  ${problems.join('\n  ')}`);
 
 	const distignore = resolve(root, '.distignore');
 	if (!existsSync(distignore)) throw new Error(`${distignore} does not exist: it lists what stays out of the ZIP.`);
 	const rules = parseDistignore(readFileSync(distignore, 'utf8'));
-	const files = collectFiles(root, rules);
+	const collected = collectFiles(root, rules);
+	if (collected.some(({ rel }) => rel === BUILD_CONFIG_PATH)) {
+		throw new Error(`${BUILD_CONFIG_PATH} is in the plugin folder: that file is written into the ZIP by --app-origin and must never be in the sources. Remove it.`);
+	}
 
 	const staging = mkdtempSync(join(tmpdir(), 'casazen-zip-'));
 	try {
 		// The plugin, minus what .distignore lists, in a folder named like the plugin.
 		const stage = join(staging, TOP_FOLDER);
 		mkdirSync(stage, { recursive: true });
-		for (const { rel, abs } of files) {
+		for (const { rel, abs } of collected) {
 			const target = join(stage, ...rel.split('/'));
 			mkdirSync(dirname(target), { recursive: true });
 			copyFileSync(abs, target);
+		}
+
+		// The address of the console: generated here, into the staging folder, so it is in the ZIP and never in the working tree.
+		const files = [...collected];
+		if (origin !== null) {
+			const target = join(stage, ...BUILD_CONFIG_PATH.split('/'));
+			mkdirSync(dirname(target), { recursive: true });
+			writeFileSync(target, buildConfigPhp(origin));
+			files.push({ rel: BUILD_CONFIG_PATH, abs: target });
 		}
 
 		// Every entry: the top folder, each folder that holds a file, each file. Sorted by name.
@@ -293,6 +462,8 @@ export async function buildZip({ root = PLUGIN_ROOT, outDir = resolve(root, 'dis
 		const zipPath = resolve(outDir, `casazen-${version}.zip`);
 		rmSync(zipPath, { force: true });
 
+		// Loaded here, not at the top: publish-release.mjs and a command that refuses a wrong --app-origin import this file and never zip.
+		const { ZipArchive } = await import('archiver');
 		const archive = new ZipArchive({ zlib: { level: 9 } });
 		const written = pipeline(archive, createWriteStream(zipPath));
 		for (const entry of entries) {
@@ -312,12 +483,15 @@ export async function buildZip({ root = PLUGIN_ROOT, outDir = resolve(root, 'dis
 			requireTranslations: !allowMissingTranslations,
 			scripts: builtBlockScripts(root).map(({ script }) => script),
 			domain: readTextDomain(root) ?? TOP_FOLDER,
+			appOrigin: origin,
 		});
+		// With an address: the file is in the ZIP and holds exactly that address (read back from the ZIP, not from the staging folder).
+		if (origin !== null && wrong.length === 0) wrong.push(...verifyBuildConfig(zipPath, origin));
 		if (wrong.length > 0) {
 			rmSync(zipPath, { force: true });
 			throw new Error(`The ZIP is not good:\n  ${wrong.join('\n  ')}`);
 		}
-		return { zipPath, version, entries: listed, bytes: readFileSync(zipPath).length };
+		return { zipPath, version, entries: listed, bytes: readFileSync(zipPath).length, appOrigin: origin };
 	} finally {
 		rmSync(staging, { recursive: true, force: true });
 	}
@@ -327,10 +501,13 @@ function formatSize(bytes) {
 	return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KiB`;
 }
 
+const USAGE = 'node tools/build-zip.mjs [--out <folder>] [--allow-missing-translations] [--app-origin <https origin>]';
+
 async function main() {
 	const argv = process.argv.slice(2);
 	let outDir;
 	let allowMissingTranslations = false;
+	let appOrigin = null;
 	for (let index = 0; index < argv.length; index += 1) {
 		const argument = argv[index];
 		if (argument === '--allow-missing-translations') {
@@ -339,15 +516,24 @@ async function main() {
 			outDir = resolve(argv[(index += 1)] ?? '');
 		} else if (argument.startsWith('--out=')) {
 			outDir = resolve(argument.slice('--out='.length));
+		} else if (argument === '--app-origin' || argument.startsWith('--app-origin=')) {
+			const value = argument === '--app-origin' ? argv[(index += 1)] : argument.slice('--app-origin='.length);
+			try {
+				appOrigin = parseAppOrigin(value);
+			} catch (error) {
+				// Before anything is built: a wrong address is a mistake of the command, not of the plugin.
+				console.error(`build-zip: ${error.message}`);
+				process.exit(2);
+			}
 		} else {
-			console.error(`Unknown argument: ${argument}. Usage: node tools/build-zip.mjs [--out <folder>] [--allow-missing-translations]`);
+			console.error(`Unknown argument: ${argument}. Usage: ${USAGE}`);
 			process.exit(2);
 		}
 	}
 
 	let result;
 	try {
-		result = await buildZip({ outDir, allowMissingTranslations });
+		result = await buildZip({ outDir, allowMissingTranslations, appOrigin });
 	} catch (error) {
 		console.error(`build-zip: ${error.message}`);
 		process.exit(1);
@@ -360,6 +546,11 @@ async function main() {
 	}
 	const uncompressed = files.reduce((sum, entry) => sum + entry.size, 0);
 	console.log(`build-zip: ${files.length} files, ${formatSize(uncompressed)} unpacked, one top-level folder "${TOP_FOLDER}/".`);
+	console.log(
+		appOrigin === null
+			? `build-zip: no --app-origin, so the ZIP has no ${BUILD_CONFIG_PATH}.`
+			: `build-zip: ${BUILD_CONFIG_PATH} holds the address of the console, ${appOrigin} (read back from the ZIP).`
+	);
 	console.log(`build-zip: ${relative(process.cwd(), zipPath).split(sep).join('/') || zipPath} (${formatSize(bytes)}), plugin version ${version}.`);
 
 	if (process.env.GITHUB_OUTPUT) {

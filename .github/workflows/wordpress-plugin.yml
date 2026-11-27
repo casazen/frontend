@@ -7,8 +7,10 @@ name: WordPress plugin
 # pull request, so this workflow must NOT be made a required check in the branch protection: the required check stays
 # `CI / Lint, typecheck, unit tests, build` (ci.yml), which has no path filter.
 #
-# It publishes nothing and reads no secret. A release (a GitHub release with the ZIP) is made by wordpress-plugin-release.yml,
-# when a tag wp-plugin-v<version> is pushed.
+# It reads no secret. On a pull request it publishes nothing. On a push to develop or main (never on a pull request or in a fork) the
+# job `publish` puts the ZIP, with the address of the console of its channel, in the rolling release wp-plugin-develop or wp-plugin-main
+# (tools/publish-release.mjs): that is the only job with `contents: write`. A release with a version (a GitHub release with the ZIP) is
+# made by wordpress-plugin-release.yml, when a tag wp-plugin-v<version> is pushed.
 
 on:
   pull_request:
@@ -258,3 +260,43 @@ jobs:
           path: integrations/wordpress/casazen/dist/casazen-${{ steps.build.outputs.version }}.zip
           if-no-files-found: error
           retention-days: 14
+
+  # The ZIP of every push to develop or main, published as the asset casazen.zip of the rolling release wp-plugin-<branch>, so that the
+  # console links a stable address with no release step (tools/publish-release.mjs). It needs the job `package`, which needs lint, phpunit and
+  # smoke: a ZIP that did not pass them is not published. It never runs on a pull request, on a manual run or in a fork.
+  #
+  # The ZIP is built again here: it carries the address of the console of its channel (includes/build-config.php), which the ZIP of the job
+  # `package` does not. The channel is the branch; the addresses are in tools/publish-release.mjs and nowhere else.
+  #
+  # This is the only job with `contents: write` (a release is written to the repository). It uses no secret: the token is the one that
+  # GitHub gives to the run. The checkout does not keep it on disk (`persist-credentials: false`) and only the last step has it in its
+  # environment (GH_TOKEN), so `npm ci` and the build of the blocks, which run code of third parties, never see it.
+  publish:
+    name: Publish the ZIP (${{ github.ref_name }})
+    needs: [package]
+    if: github.event_name == 'push' && github.repository == 'casazen/frontend' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build the ZIP
+        id: build
+        uses: ./.github/actions/build-wordpress-plugin
+        with:
+          channel: ${{ github.ref_name }}
+
+      # The release wp-plugin-<channel> is created once; after that only its asset and its notes change. The tag is never moved or recreated.
+      - name: Publish the ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CHANNEL: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+          VERSION: ${{ steps.build.outputs.version }}
+          ZIP: ${{ steps.build.outputs.zip }}
+        run: node tools/publish-release.mjs --channel "$CHANNEL" --zip "$ZIP" --sha "$COMMIT" --version "$VERSION"
