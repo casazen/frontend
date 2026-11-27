@@ -4235,7 +4235,17 @@
       "added": "Segment added: it starts in observation.",
       "allProperties": "All properties",
       "alreadyThere": "This segment already exists: nothing changed.",
+      "apply": "Apply",
       "autoDisabled": "Automatic approval is switched off platform-wide: no segment approves on its own, whatever its mode.",
+      "automatic": {
+        "confirm": "Turn on automatic approval",
+        "consequences": {
+          "approves": "When every condition is met, the system approves the identity of the guests of this segment on its own, with no person checking. If one is missing, a person decides.",
+          "revocable": "You can go back to observation or suspend the segment at any time."
+        },
+        "description": "{{name}}: do you confirm the «Automatic» mode?",
+        "title": "Turn on automatic approval?"
+      },
       "automaticNeedsQualification": "«Automatic» can only be chosen for a qualified segment.",
       "channel": {
         "androidChrome": "Chrome on Android",

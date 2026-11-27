@@ -4235,7 +4235,17 @@
       "added": "Segmento aggiunto: parte in osservazione.",
       "allProperties": "Tutte le strutture",
       "alreadyThere": "Questo segmento c'è già: non è cambiato nulla.",
+      "apply": "Applica",
       "autoDisabled": "L'approvazione automatica è disattivata su tutta la piattaforma: nessun segmento approva da solo, qualunque modalità abbia.",
+      "automatic": {
+        "confirm": "Attiva l'approvazione automatica",
+        "consequences": {
+          "approves": "Quando tutte le condizioni sono soddisfatte, il sistema approva da solo l'identità degli ospiti di questo segmento, senza il controllo di una persona. Se ne manca una, decide una persona.",
+          "revocable": "Puoi tornare in osservazione o sospendere il segmento in qualsiasi momento."
+        },
+        "description": "{{name}}: confermi la modalità «Automatica»?",
+        "title": "Attivare l'approvazione automatica?"
+      },
       "automaticNeedsQualification": "«Automatica» si può scegliere solo per un segmento qualificato.",
       "channel": {
         "androidChrome": "Chrome su Android",

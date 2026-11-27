@@ -41,17 +41,23 @@ interface ModeChoiceProps {
   segment: IdentitySegment;
   name: string;
   busy: boolean;
-  onChoose: (mode: IdentitySegmentMode) => void;
+  /** The mode chosen in the group and not applied yet; `null` while the group shows the one in force. */
+  picked: IdentitySegmentMode | null;
+  onPick: (mode: IdentitySegmentMode) => void;
+  onApply: () => void;
 }
 
 /**
- * The mode of one segment as a group of radio buttons: the one in force is checked, «Automatica» is there but cannot be chosen until the segment is qualified (and says why), and choosing another mode is
- * the request itself. Each choice is a 44 px target with a real radio under it, so the arrows and the space bar work as in any group of radios.
+ * The mode of one segment as a group of radio buttons: the one in force is checked until another is chosen, and «Automatica» is there but cannot be chosen until the segment is qualified (and says why). Choosing only
+ * moves the choice: an arrow key in a group of radios chooses the next one at once, so nothing is ever sent with it (a keyboard that goes from «Osservazione» to «Sospesa» passes «Automatica» without turning it on).
+ * What sends is «Applica»: «Osservazione» at once, «Sospesa» through its reason, «Automatica» through a confirmation. Each choice is a 44 px target with a real radio under it, so the arrows and the space bar work as
+ * in any group of radios.
  */
-function ModeChoice({ segment, name, busy, onChoose }: ModeChoiceProps) {
+function ModeChoice({ segment, name, busy, picked, onPick, onApply }: ModeChoiceProps) {
   const { t } = useTranslation();
   const hintId = useId();
   const current = segmentModeOf(segment.mode);
+  const selected = picked ?? current;
 
   return (
     <fieldset className="m-0 min-w-0 border-0 p-0">
@@ -59,7 +65,7 @@ function ModeChoice({ segment, name, busy, onChoose }: ModeChoiceProps) {
       <span aria-hidden="true" className="mb-1 block text-xs font-medium text-foreground/70">
         {t('biometricSettings.segments.modeLabel')}
       </span>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {IDENTITY_SEGMENT_MODES.map((mode) => {
           const unavailable = mode === 'automatic' && !segment.qualified;
           return (
@@ -76,16 +82,21 @@ function ModeChoice({ segment, name, busy, onChoose }: ModeChoiceProps) {
                 type="radio"
                 name={`identity-segment-mode-${segment.id}`}
                 value={mode}
-                checked={current === mode}
+                checked={selected === mode}
                 disabled={busy || unavailable}
                 aria-describedby={unavailable ? hintId : undefined}
-                onChange={() => onChoose(mode)}
+                onChange={() => onPick(mode)}
                 className="size-4 accent-primary"
               />
               {t(segmentModeKey(mode))}
             </label>
           );
         })}
+        {picked !== null && picked !== current && (
+          <Button type="button" className="min-h-11" disabled={busy} onClick={onApply} data-testid="identity-segment-apply">
+            {t('biometricSettings.segments.apply')}
+          </Button>
+        )}
       </div>
       {!segment.qualified && (
         <p id={hintId} className="mt-1 text-xs text-foreground/70">
@@ -102,11 +113,14 @@ interface SegmentRowProps {
   busy: boolean;
   /** The failure of the last write on this segment, when there is one to tell (the server's own words when it gave them). */
   failure: unknown;
-  onChoose: (segment: IdentitySegment, mode: IdentitySegmentMode) => void;
+  /** The mode chosen for this segment and not applied yet, when there is one. */
+  picked: IdentitySegmentMode | null;
+  onPick: (segment: IdentitySegment, mode: IdentitySegmentMode) => void;
+  onApply: (segment: IdentitySegment) => void;
 }
 
 /** One segment: where it applies, its mode, whether it is qualified (or why not, in plain words) and the choice of its mode. */
-function SegmentRow({ segment, formats, busy, failure, onChoose }: SegmentRowProps) {
+function SegmentRow({ segment, formats, busy, failure, picked, onPick, onApply }: SegmentRowProps) {
   const { t } = useTranslation();
   const mode = segmentModeOf(segment.mode);
   const name = segmentName(segment, formats, t);
@@ -149,7 +163,7 @@ function SegmentRow({ segment, formats, busy, failure, onChoose }: SegmentRowPro
         </p>
       )}
 
-      <ModeChoice segment={segment} name={name} busy={busy} onChoose={(chosen) => onChoose(segment, chosen)} />
+      <ModeChoice segment={segment} name={name} busy={busy} picked={picked} onPick={(chosen) => onPick(segment, chosen)} onApply={() => onApply(segment)} />
 
       {failure !== null && (
         <Alert variant="danger" data-testid="identity-segment-error">
@@ -212,6 +226,45 @@ function SuspendDialog({ segment, name, onClose }: SuspendDialogProps) {
       </Field>
       {setMode.isError && (
         <Alert variant="danger" data-testid="identity-segment-suspend-error">
+          {getProblemMessage(setMode.error, t) ?? t('biometricSettings.segments.saveFailed')}
+        </Alert>
+      )}
+    </ConfirmationDialog>
+  );
+}
+
+interface AutomaticDialogProps {
+  segment: IdentitySegment;
+  name: string;
+  onClose: () => void;
+}
+
+/**
+ * The confirmation of «Automatica»: the mode in which the system approves a guest without a person is never one choice away. The host reads what it means and confirms before anything is sent; what the server
+ * refuses (422: the qualification was withdrawn since the list was read) is told inside the dialog, which stays open, and the dialog cannot be left while the request is on its way, as the one of the suspension.
+ */
+function AutomaticDialog({ segment, name, onClose }: AutomaticDialogProps) {
+  const { t } = useTranslation();
+  const setMode = useSetIdentitySegmentMode();
+
+  return (
+    <ConfirmationDialog
+      open
+      onOpenChange={(open) => {
+        // Nothing leaves the dialog while the request is on its way (see the dialog of the suspension): what the server answers is told here, and never goes unseen.
+        if (!open && !setMode.isPending) onClose();
+      }}
+      title={t('biometricSettings.segments.automatic.title')}
+      description={t('biometricSettings.segments.automatic.description', { name })}
+      consequences={[t('biometricSettings.segments.automatic.consequences.approves'), t('biometricSettings.segments.automatic.consequences.revocable')]}
+      confirmLabel={t('biometricSettings.segments.automatic.confirm')}
+      isLoading={setMode.isPending}
+      onConfirm={async () => {
+        await setMode.mutateAsync({ id: segment.id, request: { mode: 'automatic' } });
+      }}
+    >
+      {setMode.isError && (
+        <Alert variant="danger" data-testid="identity-segment-automatic-error">
           {getProblemMessage(setMode.error, t) ?? t('biometricSettings.segments.saveFailed')}
         </Alert>
       )}
@@ -329,10 +382,11 @@ function AddSegment({ overview, busy }: AddSegmentProps) {
 /**
  * The segments of the self-hosted identity verification, inside the card «Verifica dell'identità» (E70/F03/US01/T02, NF-194, decision D4): for each property (or all of them) × document type × browser, whether the
  * policy only observes (the system works out a decision and a person always decides), may approve by itself (a segment that is qualified, with the platform permission on) or is suspended, and why a segment cannot
- * be automatic. The host adds a segment and changes its mode; the qualification is the platform administrators' (no screen here, and the hint says so).
+ * be automatic. The host adds a segment and changes its mode; the qualification is the platform administrators' (no screen here, and the hint says so). A mode is chosen in the group and sent with «Applica» (a suspension
+ * asks for its reason, «Automatica» for a confirmation): moving through the group with the keys never writes anything.
  *
  * Only for the org billing administrator and only while both flags are on: anything else draws nothing and asks nothing (the server asks the same of every call). A write the server refuses (422) is told in its own
- * words next to the segment, or inside the dialog of the suspension; and while any write of the card is in flight every control stays off.
+ * words next to the segment, or inside the dialog of the suspension or of «Automatica»; and while any write of the card is in flight every control stays off.
  */
 export function IdentitySegmentsSection() {
   const { t } = useTranslation();
@@ -342,9 +396,11 @@ export function IdentitySegmentsSection() {
   const segments = useIdentitySegments(available);
   const setMode = useSetIdentitySegmentMode();
   const busy = useBiometricCardBusy();
-  // The segment whose suspension is being asked for, with the name it was given when it was chosen: the dialog stands on this and not on the list, so a read in the background that fails while the reason is being typed
-  // takes neither the dialog nor the reason away (and does not bring an empty one back when the list is read again).
-  const [suspending, setSuspending] = useState<{ segment: IdentitySegment; name: string } | null>(null);
+  // The mode chosen in the group of each segment and not applied yet: choosing sends nothing, «Applica» does.
+  const [picks, setPicks] = useState<Readonly<Record<string, IdentitySegmentMode>>>({});
+  // The segment whose mode is being confirmed (a suspension asks for its reason, «Automatica» asks to be confirmed), with the name it was given when «Applica» was pressed: the dialog stands on this and not on the list,
+  // so a read in the background that fails while the reason is being typed takes neither the dialog nor the reason away (and does not bring an empty one back when the list is read again).
+  const [confirming, setConfirming] = useState<{ segment: IdentitySegment; mode: 'automatic' | 'suspended'; name: string } | null>(null);
   const titleId = useId();
 
   if (!available) return null;
@@ -352,14 +408,32 @@ export function IdentitySegmentsSection() {
   // A read that failed leaves the older answer in memory: the section says it cannot be read, and shows none of it.
   const overview = segments.isError ? undefined : segments.data;
 
-  const choose = (segment: IdentitySegment, mode: IdentitySegmentMode) => {
+  const dropPick = (id: string) => setPicks((current) => Object.fromEntries(Object.entries(current).filter(([key]) => key !== id)));
+
+  // Choosing a mode in the group (a click, the space bar, an arrow key that passes it) moves the choice and nothing else. The one in force chosen again takes the choice back.
+  const pick = (segment: IdentitySegment, mode: IdentitySegmentMode) => {
     if (busy) return;
-    if (mode === 'suspended') {
-      setMode.reset();
-      setSuspending({ segment, name: segmentName(segment, overview?.formats ?? [], t) });
+    setMode.reset();
+    if (mode === segmentModeOf(segment.mode)) dropPick(segment.id);
+    else setPicks((current) => ({ ...current, [segment.id]: mode }));
+  };
+
+  // «Applica»: «Osservazione» is sent at once; «Sospesa» asks for its reason and «Automatica» for a confirmation, and nothing is sent before.
+  const apply = (segment: IdentitySegment) => {
+    const mode = picks[segment.id];
+    if (busy || mode === undefined || mode === segmentModeOf(segment.mode)) return;
+    setMode.reset();
+    if (mode === 'observation') {
+      setMode.mutate({ id: segment.id, request: { mode } }, { onSettled: () => dropPick(segment.id) });
       return;
     }
-    setMode.mutate({ id: segment.id, request: { mode } });
+    setConfirming({ segment, mode, name: segmentName(segment, overview?.formats ?? [], t) });
+  };
+
+  const closeConfirmation = () => {
+    setMode.reset();
+    if (confirming !== null) dropPick(confirming.segment.id);
+    setConfirming(null);
   };
 
   return (
@@ -415,9 +489,11 @@ export function IdentitySegmentsSection() {
                   segment={segment}
                   formats={overview.formats}
                   busy={busy}
-                  // The refusal of the last write is told on the segment it was for (the dialog of a suspension tells its own inside it).
+                  // The refusal of the last write is told on the segment it was for (the dialogs of the suspension and of «Automatica» tell their own inside them).
                   failure={setMode.isError && setMode.variables?.id === segment.id ? setMode.error : null}
-                  onChoose={choose}
+                  picked={picks[segment.id] ?? null}
+                  onPick={pick}
+                  onApply={apply}
                 />
               ))}
             </ul>
@@ -431,17 +507,8 @@ export function IdentitySegmentsSection() {
         </>
       )}
 
-      {suspending !== null && (
-        <SuspendDialog
-          key={suspending.segment.id}
-          segment={suspending.segment}
-          name={suspending.name}
-          onClose={() => {
-            setMode.reset();
-            setSuspending(null);
-          }}
-        />
-      )}
+      {confirming?.mode === 'suspended' && <SuspendDialog key={confirming.segment.id} segment={confirming.segment} name={confirming.name} onClose={closeConfirmation} />}
+      {confirming?.mode === 'automatic' && <AutomaticDialog key={confirming.segment.id} segment={confirming.segment} name={confirming.name} onClose={closeConfirmation} />}
     </section>
   );
 }

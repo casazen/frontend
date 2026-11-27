@@ -314,7 +314,9 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
     typeInto('biometric-attempts', '4');
     expect(screen.getByTestId('biometric-save')).toBeEnabled();
 
+    // The mode is chosen in the group and sent with «Applica» (a suspension asks for its reason first).
     fireEvent.click(await screen.findByRole('radio', { name: 'Sospesa' }));
+    fireEvent.click(await screen.findByTestId('identity-segment-apply'));
     fireEvent.change(await screen.findByTestId('identity-segment-suspend-reason'), { target: { value: 'Prova' } });
     fireEvent.click(screen.getByRole('button', { name: 'Sospendi il segmento' }));
 

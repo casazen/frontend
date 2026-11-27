@@ -133,6 +133,13 @@ function renderSection({ flags = {}, contexts = [contextOf('short-rent')], wrap 
 const rows = () => screen.findAllByTestId('identity-segment');
 const rowOf = async (id: string) => (await rows()).find((row) => row.getAttribute('data-segment-id') === id) as HTMLElement;
 const radio = (row: HTMLElement, name: string) => within(row).getByRole('radio', { name }) as HTMLInputElement;
+/** «Applica» of a segment: the button that sends the mode chosen in its group (it is there only while the choice is not the mode in force). */
+const applyOf = (row: HTMLElement) => within(row).getByTestId('identity-segment-apply');
+/** What the host does to change a mode: chooses it in the group and presses «Applica». */
+const chooseAndApply = (row: HTMLElement, name: string) => {
+  fireEvent.click(radio(row, name));
+  fireEvent.click(applyOf(row));
+};
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -317,10 +324,15 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
   });
 
-  it('IdentitySegmentsSection_AQualifiedSegment_CanBeMadeAutomaticAndTheModeIsSent', async () => {
+  /** A segment that is qualified and still in observation: the one «Automatica» can be chosen for. */
+  const qualifiedInObservation = () => {
     vi.mocked(biometricSettingsApi.getSegments).mockResolvedValue(
       overview({ segments: [segment({ id: 'segment-q', qualified: true, qualificationReason: null, qualifiedPolicyVersion: '2026.11-1', autoApprovalReason: 'segment_observation' })] }),
     );
+  };
+
+  it('IdentitySegmentsSection_AQualifiedSegment_CanBeMadeAutomaticOnlyAfterTheHostConfirmsAndTheModeIsSent', async () => {
+    qualifiedInObservation();
     vi.mocked(biometricSettingsApi.updateSegment).mockResolvedValue(
       segment({ id: 'segment-q', mode: 'automatic', qualified: true, qualificationReason: null, qualifiedPolicyVersion: '2026.11-1', autoApprovalAllowed: true, autoApprovalReason: null }),
     );
@@ -328,23 +340,102 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     const row = await rowOf('segment-q');
     expect(radio(row, 'Automatica')).toBeEnabled();
 
+    // Choosing it sends nothing and «Applica» asks to confirm; nothing is sent before the confirmation either.
     fireEvent.click(radio(row, 'Automatica'));
+    expect(radio(row, 'Automatica')).toBeChecked();
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+    fireEvent.click(applyOf(row));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(i18n.t('biometricSettings.segments.automatic.title'))).toBeInTheDocument();
+    expect(within(dialog).getByTestId('confirmation-consequences')).toHaveTextContent(i18n.t('biometricSettings.segments.automatic.consequences.approves'));
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.automatic.confirm') }));
 
     await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledWith('segment-q', { mode: 'automatic' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('biometricSettings.segments.saved')));
-    // What the server answered is what is shown.
+    // What the server answered is what is shown, and there is nothing left to apply.
     await waitFor(() => expect(radio(row, 'Automatica')).toBeChecked());
     expect(within(row).getByTestId('identity-segment-mode')).toHaveTextContent('Automatica');
+    expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
   });
 
-  it('IdentitySegmentsSection_BackToObservation_IsSentAtOnceWithoutAReason', async () => {
+  it('IdentitySegmentsSection_AutomaticIsNotConfirmed_SendsNothingAndTheGroupShowsTheModeInForce', async () => {
+    qualifiedInObservation();
+    renderSection();
+    const row = await rowOf('segment-q');
+    chooseAndApply(row, 'Automatica');
+    const dialog = await screen.findByRole('dialog');
+
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.cancel') }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+    expect(radio(row, 'Osservazione')).toBeChecked();
+    expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
+  });
+
+  it('IdentitySegmentsSection_TheKeysMoveThroughTheGroupOfAQualifiedSegment_NothingIsSentAndAutomaticIsNeverTurnedOn', async () => {
+    // The arrow keys go from «Osservazione» through «Automatica» to «Sospesa». In a group of radios an arrow key checks the next radio with a click (a click is what the browser sends, and what is sent here, as the repository has
+    // no keyboard library): it must write nothing, and «Automatica», passed on the way, must not be turned on.
+    qualifiedInObservation();
+    renderSection();
+    const row = await rowOf('segment-q');
+
+    radio(row, 'Osservazione').focus();
+    fireEvent.keyDown(radio(row, 'Osservazione'), { key: 'ArrowRight' });
+    fireEvent.click(radio(row, 'Automatica'));
+    expect(radio(row, 'Automatica')).toBeChecked();
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    fireEvent.keyDown(radio(row, 'Automatica'), { key: 'ArrowRight' });
+    fireEvent.click(radio(row, 'Sospesa'));
+    expect(radio(row, 'Sospesa')).toBeChecked();
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // The segment is still what it was.
+    expect(within(row).getByTestId('identity-segment-mode')).toHaveTextContent('Osservazione');
+
+    // «Applica» goes on with what the keys stopped at: the reason is asked, and still nothing has been sent. «Automatica» never was.
+    fireEvent.click(applyOf(row));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(i18n.t('biometricSettings.segments.suspend.title'))).toBeInTheDocument();
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.cancel') }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+  });
+
+  it('IdentitySegmentsSection_ChoosingTheModeInForceAgain_TakesTheChoiceBackAndThereIsNothingToApply', async () => {
+    renderSection();
+    const row = await rowOf('segment-mare-android');
+    expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
+
+    fireEvent.click(radio(row, 'Osservazione'));
+    expect(applyOf(row)).toBeEnabled();
+    expect(applyOf(row).className).toContain('min-h-11');
+    fireEvent.click(radio(row, 'Automatica'));
+
+    expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
+    expect(radio(row, 'Automatica')).toBeChecked();
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+  });
+
+  it('IdentitySegmentsSection_BackToObservation_IsSentByApplicaAtOnceWithoutAReasonOrAConfirmation', async () => {
     renderSection();
     const row = await rowOf('segment-mare-android');
 
     fireEvent.click(radio(row, 'Osservazione'));
+    // Choosing sends nothing.
+    expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+    fireEvent.click(applyOf(row));
 
     await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledWith('segment-mare-android', { mode: 'observation' }));
     await waitFor(() => expect(row).toHaveAttribute('data-mode', 'observation'));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
   });
 
   it('IdentitySegmentsSection_Suspending_AsksForAReasonAndSendsNothingWithoutOne', async () => {
@@ -352,11 +443,14 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     const row = await rowOf('segment-mare-android');
 
     fireEvent.click(radio(row, 'Sospesa'));
+    // Choosing asks and sends nothing; «Applica» asks for the reason.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.click(applyOf(row));
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(i18n.t('biometricSettings.segments.suspend.title'))).toBeInTheDocument();
-    // The segment is still what it was, and nothing was sent (the page behind a modal dialog is hidden from the accessibility tree: the radio is found as it is).
-    expect(within(row).getByRole('radio', { name: 'Automatica', hidden: true })).toBeChecked();
+    // The segment is still what it was, and nothing was sent.
+    expect(within(row).getByTestId('identity-segment-mode')).toHaveTextContent('Automatica');
     const confirm = within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.suspend.confirm') });
     expect(confirm).toBeDisabled();
 
@@ -369,7 +463,7 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
   it('IdentitySegmentsSection_SuspendingWithAReason_CallsPutWithModeSuspendedAndTheReasonAndTheSegmentShowsIt', async () => {
     renderSection();
     const row = await rowOf('segment-mare-android');
-    fireEvent.click(radio(row, 'Sospesa'));
+    chooseAndApply(row, 'Sospesa');
     const dialog = await screen.findByRole('dialog');
 
     fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: '  Esiti anomali su Android  ' } });
@@ -387,7 +481,7 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
   it('IdentitySegmentsSection_TheReasonOfASuspension_IsLimitedToWhatTheServerTakes', async () => {
     renderSection();
     const row = await rowOf('segment-mare-android');
-    fireEvent.click(radio(row, 'Sospesa'));
+    chooseAndApply(row, 'Sospesa');
     const dialog = await screen.findByRole('dialog');
 
     expect(within(dialog).getByTestId('identity-segment-suspend-reason')).toHaveAttribute('maxlength', '200');
@@ -399,7 +493,7 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
   it('IdentitySegmentsSection_CancellingTheSuspension_SendsNothingAndForgetsWhatWasTyped', async () => {
     renderSection();
     const row = await rowOf('segment-mare-android');
-    fireEvent.click(radio(row, 'Sospesa'));
+    chooseAndApply(row, 'Sospesa');
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: 'Una prova' } });
 
@@ -407,29 +501,50 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
+    // The group shows the mode in force again, with nothing to apply.
     expect(radio(row, 'Automatica')).toBeChecked();
+    expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
     // The next time it opens it is empty.
-    fireEvent.click(radio(row, 'Sospesa'));
+    chooseAndApply(row, 'Sospesa');
     expect(await within(await screen.findByRole('dialog')).findByTestId('identity-segment-suspend-reason')).toHaveValue('');
   });
 
-  it('IdentitySegmentsSection_TheServerRefusesTheMode422_ShowsItsOwnWordsInAnAlertOnTheSegmentAndKeepsTheMode', async () => {
+  it('IdentitySegmentsSection_TheServerRefusesAutomatic422_SaysWhyInsideTheDialogThatStaysOpenAndCannotBeLeftWhileItIsOnItsWay', async () => {
     const detail = 'Il segmento non è qualificato per la politica e per i modelli in uso.';
-    vi.mocked(biometricSettingsApi.getSegments).mockResolvedValue(
-      overview({ segments: [segment({ id: 'segment-q', qualified: true, qualificationReason: null, qualifiedPolicyVersion: '2026.11-1' })] }),
+    qualifiedInObservation();
+    let refuse: (reason: unknown) => void = () => undefined;
+    vi.mocked(biometricSettingsApi.updateSegment).mockReturnValue(
+      new Promise<IdentitySegment>((_resolve, reject) => {
+        refuse = reject;
+      }),
     );
-    vi.mocked(biometricSettingsApi.updateSegment).mockRejectedValue(httpError(422, { code: 'identity_segment_not_qualified', status: 422, detail }));
     renderSection();
     const row = await rowOf('segment-q');
+    chooseAndApply(row, 'Automatica');
+    const dialog = await screen.findByRole('dialog');
+    const confirm = within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.automatic.confirm') });
+    fireEvent.click(confirm);
+    await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledWith('segment-q', { mode: 'automatic' }));
+    await waitFor(() => expect(confirm).toBeDisabled());
 
-    fireEvent.click(radio(row, 'Automatica'));
+    // On its way: Esc and the X do not take the dialog away, so the answer is never given where nobody looks.
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.close') }));
+    expect(screen.getByRole('dialog')).toBe(dialog);
 
-    const alert = await within(row).findByRole('alert');
-    expect(alert).toHaveTextContent(detail);
-    // Nothing was saved: the segment is what it was, and the controls are live again.
-    expect(radio(row, 'Osservazione')).toBeChecked();
-    expect(radio(row, 'Automatica')).toBeEnabled();
+    // The server refuses (the qualification was withdrawn since the list was read): its words are inside the dialog, which stays; the segment is what it was, and nothing was saved.
+    await act(async () => {
+      refuse(httpError(422, { code: 'identity_segment_not_qualified', status: 422, detail }));
+    });
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(detail);
+    expect(screen.getByRole('dialog')).toBe(dialog);
+    expect(row).toHaveAttribute('data-mode', 'observation');
     expect(toast.success).not.toHaveBeenCalled();
+    // Now the way out is open again, and what was chosen is dropped with the dialog.
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(radio(row, 'Osservazione')).toBeChecked();
+    expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
   });
 
   it('IdentitySegmentsSection_TheServerRefusesTheSuspension422_SaysWhyInsideTheDialogThatStaysOpen', async () => {
@@ -437,7 +552,7 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     vi.mocked(biometricSettingsApi.updateSegment).mockRejectedValue(httpError(422, { code: 'identity_segment_invalid', status: 422, detail }));
     renderSection();
     const row = await rowOf('segment-mare-android');
-    fireEvent.click(radio(row, 'Sospesa'));
+    chooseAndApply(row, 'Sospesa');
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: 'Motivo' } });
 
@@ -452,7 +567,7 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
   it('IdentitySegmentsSection_AReadInTheBackgroundFailsWhileTheReasonIsTyped_TheDialogStaysWithTheReasonAndNoEmptyOneComesBack', async () => {
     const { client } = renderSection();
     const row = await rowOf('segment-mare-android');
-    fireEvent.click(radio(row, 'Sospesa'));
+    chooseAndApply(row, 'Sospesa');
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: 'Esiti anomali' } });
 
@@ -489,7 +604,7 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     );
     renderSection();
     const row = await rowOf('segment-mare-android');
-    fireEvent.click(radio(row, 'Sospesa'));
+    chooseAndApply(row, 'Sospesa');
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: 'Motivo' } });
     const confirm = within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.suspend.confirm') });
@@ -519,9 +634,13 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     renderSection();
     const row = await rowOf('segment-mare-android');
 
-    fireEvent.click(radio(row, 'Osservazione'));
+    chooseAndApply(row, 'Osservazione');
 
+    // No dialog on the way back to observation: the refusal is told on the segment, which is what it was, and the choice that was not saved is not left in the group.
     expect(await within(row).findByRole('alert')).toHaveTextContent(i18n.t('biometricSettings.segments.saveFailed'));
+    await waitFor(() => expect(radio(row, 'Automatica')).toBeChecked());
+    expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
+    expect(row).toHaveAttribute('data-mode', 'automatic');
   });
 
   it('IdentitySegmentsSection_AWriteIsInFlight_EveryControlOfTheSectionStaysOffAndASecondOneIsNotSent', async () => {
@@ -535,13 +654,15 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     const first = await rowOf('segment-mare-android');
     const second = await rowOf('segment-all-ios');
 
-    fireEvent.click(radio(first, 'Osservazione'));
+    chooseAndApply(first, 'Osservazione');
 
     await waitFor(() => expect(radio(second, 'Osservazione')).toBeDisabled());
     expect(radio(second, 'Sospesa')).toBeDisabled();
     expect(radio(first, 'Automatica')).toBeDisabled();
+    expect(applyOf(first)).toBeDisabled();
     expect(screen.getByTestId('identity-segment-add')).toBeDisabled();
     fireEvent.click(radio(second, 'Sospesa'));
+    expect(within(second).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(biometricSettingsApi.updateSegment).toHaveBeenCalledTimes(1);
 
@@ -556,11 +677,25 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     const submitted = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
     renderSection({ wrap: (section) => <form onSubmit={submitted}>{section}</form> });
     const row = await rowOf('segment-mare-android');
-    fireEvent.click(radio(row, 'Sospesa'));
+    chooseAndApply(row, 'Sospesa');
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: 'Una prova' } });
 
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.suspend.confirm') }));
+
+    await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledTimes(1));
+    expect(submitted).not.toHaveBeenCalled();
+  });
+
+  it('IdentitySegmentsSection_TheConfirmationOfAutomatic_DoesNotSubmitAFormAroundTheSection', async () => {
+    qualifiedInObservation();
+    const submitted = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
+    renderSection({ wrap: (section) => <form onSubmit={submitted}>{section}</form> });
+    const row = await rowOf('segment-q');
+    chooseAndApply(row, 'Automatica');
+    const dialog = await screen.findByRole('dialog');
+
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.automatic.confirm') }));
 
     await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledTimes(1));
     expect(submitted).not.toHaveBeenCalled();
