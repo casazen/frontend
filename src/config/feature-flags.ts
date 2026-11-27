@@ -35,6 +35,9 @@ export type FeatureFlagKey =
   | 'guestContactInfo'
   | 'touristTaxOnlinePayment'
   | 'checkInIdentityVerification'
+  | 'checkInIdentitySelfHosted'
+  | 'checkInIdentityAutoApproval'
+  | 'checkInIdentityReviewEvidence'
   | 'scheduledMessages'
   | 'whiteLabelHost'
   | 'auth0HostSync'
@@ -239,6 +242,24 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * While it is off nothing changes: the settings page, the queue and the QR page are the ones they always were, nothing asks the server, and the backend answers 404 to every call of the identification.
    */
   checkInIdentityVerification: false,
+  /**
+   * The self-hosted identity verification (backend `CheckInIdentitySelfHosted`, E70-E74, NF-188..NF-199, decision D3), off until the product owner turns it on in the test environment, and only together with
+   * `checkInIdentityVerification` (alone it does nothing). The guest page does not read it: it follows `selfHosted` of the identity state the check-in link carries (the opening of the step, the choice between
+   * the automatic check and a person, the assisted path on every step). It decides what the host sees: the segments of the verification in the card «Verifica dell'identità» of the settings (property × document
+   * format × browser, in observation, automatic or suspended). While it is off nothing changes: the card is the one it always was, nothing asks the server for the segments, and the backend answers 404 to them.
+   */
+  checkInIdentitySelfHosted: false,
+  /**
+   * The platform permission to approve a guest's identity automatically (backend `CheckInIdentityAutoApproval`, NF-194, decision D4), off until a segment is qualified. It works only with `checkInIdentitySelfHosted`
+   * and `checkInIdentityVerification` on. No screen decides anything with it: the segments say whether it is on (`autoApprovalEnabled`), and the card tells the host that nothing approves by itself while it is off. The key
+   * exists so that every flag the server publishes is typed here.
+   */
+  checkInIdentityAutoApproval: false,
+  /**
+   * The minimal evidence kept for the person who reviews a verification (backend `CheckInIdentityReviewEvidence`, NF-195, decision D9), off by default. It works only with `checkInIdentitySelfHosted` and
+   * `checkInIdentityVerification` on. No screen of this client reads it yet: the screens of the review come with their own tasks. The key exists so that every flag the server publishes is typed here.
+   */
+  checkInIdentityReviewEvidence: false,
   /**
    * The scheduled messages of the routines (backend `ScheduledMessages`, E05/F07, NF-71, MSG-11, ADR-022), off until the product owner confirms the send window and the retry times and on in the
    * test environment only: it turns the routine action `MessageToGuest` into real sending. It decides what the host sees on the page of a booking: the section «Messaggi programmati» of the tab

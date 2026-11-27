@@ -14,6 +14,8 @@ import type {
   DoorCheckInResponse,
   DoorQr,
   IdentityDocumentResponse,
+  IdentityOpenRequest,
+  IdentityOpenResponse,
   IdentityOperatorResponse,
   IdentitySelfieResponse,
   PublicCheckInContextDto,
@@ -75,6 +77,17 @@ export const publicCheckinApi = {
    */
   postBiometricConsent: (token: string, request: BiometricConsentRequest) =>
     ApiClient.post<BiometricConsentResponse>(`/public/checkin/${token}/biometric-consent`, request, { public: true }),
+
+  /**
+   * The opening of the identity step of the self-hosted verification (E70/F02/US01/T01, NF-188): `noticeVersion` is the version of the text of the consent the page shows, as `getLegalTexts` served it. The server
+   * records the opening once (the time, the version and the browser family), binds the verification to the guest who verifies and answers `{ state }`; later calls change nothing, so the page may repeat it.
+   * 422 `notice_version_unknown` when the version is not the one in force (nothing is recorded), 409 `identity_already_closed` (with the state in the body) when the verification is over, 404 for a link that is
+   * not open or while the flags are off. Only for a state that says `selfHosted`.
+   */
+  openIdentity: (token: string, noticeVersion: string) => {
+    const request: IdentityOpenRequest = { noticeVersion };
+    return ApiClient.post<IdentityOpenResponse>(`/public/checkin/${token}/identity/open`, request, { public: true });
+  },
 
   /**
    * The legal texts of the identity step for the stay of the link (E22/F01/US02/T02): the consent to the face check and, for a property that keeps no document (Ticino), the notice, each with

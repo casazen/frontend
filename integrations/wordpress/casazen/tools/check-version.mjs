@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 export const TAG_PREFIX = 'wp-plugin-v';
 
 /** A version: three numbers, and optionally a pre-release suffix (`0.2.0-rc.1`). */
-const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?$/;
+export const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?$/;
 
 const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
