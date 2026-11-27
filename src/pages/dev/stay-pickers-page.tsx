@@ -25,7 +25,6 @@ const DESTINATIONS: Destination[] = [
   { id: 'a-very-long-destination-name-that-must-wrap', label: 'Una destinazione con un nome lunghissimo che deve andare a capo senza spingere la pagina', sub: 'Con una riga di spiegazione lunga quanto basta per andare a capo' },
 ];
 
-/** Made-up nights: a price that goes up on Friday and Saturday, some taken nights, a minimum stay on some arrivals. */
 function fakeDays(today: string): CalendarDay[] {
   return Array.from({ length: 400 }, (_, offset) => {
     const date = addDays(today, offset);
@@ -42,7 +41,6 @@ function fakeDays(today: string): CalendarDay[] {
 
 type FakeStatus = StayCalendarData['status'];
 
-/** The pickers of the public site (DB-20) on one page, on made-up data, to look at them and to let Playwright and axe walk through them. */
 export default function StayPickersPage() {
   const today = todayInRome();
   const [status, setStatus] = useState<FakeStatus>('ready');

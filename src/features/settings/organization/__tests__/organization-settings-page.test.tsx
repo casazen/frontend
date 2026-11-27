@@ -70,7 +70,6 @@ function mockUser() {
   } as unknown as CurrentUserResult);
 }
 
-/** The user's contexts as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
 function mockContexts(contextKeys: AppContextKey[], roleKey?: string) {
   vi.mocked(useWorkspace).mockReturnValue({
     contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
@@ -117,7 +116,6 @@ describe('OrganizationSettingsPage', () => {
     expect(OrgsApi.getSettings).not.toHaveBeenCalled();
   });
 
-  // AM-00 (S1): a collaborator of the org has the rental context but not the owner's role key.
   it.each(MEMBER_ROLE_KEYS)(
     'OrganizationSettingsPage_MemberWithRoleKey_%s_ShowsAdminRequiredWithoutCallingTheApi',
     (roleKey) => {
@@ -189,7 +187,6 @@ describe('OrganizationSettingsPage', () => {
         slug: 'new-slug',
         contactEmail: 'new@example.com',
         contactEmailPublic: true,
-        // The operator data (DB-03b-a) and the phone and language of the account (AM-08b-b) always travel with the form: empty = not entered.
         legalName: '',
         registeredOffice: '',
         contactPhone: '',

@@ -83,7 +83,6 @@ describe('HomeNextStep: the path or the next step of the checklist, never both (
     localStorage.clear();
     vi.mocked(orgComplianceSenderApi.get).mockReset();
     vi.mocked(onboardingApi.getStatus).mockReset().mockResolvedValue(STATUS);
-    // The connection is done: the listings, the prices and the compliance, which hang from the properties, can be done now.
     vi.mocked(onboardingApi.getPath).mockReset().mockResolvedValue(path({ connectChannels: 'done' }));
     vi.mocked(onboardingApi.getPlan)
       .mockReset()
@@ -178,7 +177,6 @@ describe('HomeNextStep: the path or the next step of the checklist, never both (
     vi.mocked(onboardingApi.getPath).mockReturnValue(new Promise(() => undefined));
     const { container, client } = renderHome();
 
-    // The checklist answers at once; the path never does: still nothing of either.
     await waitFor(() => expect(onboardingApi.getStatus).toHaveBeenCalled());
     await waitFor(() => expect(client.isFetching()).toBe(1));
 

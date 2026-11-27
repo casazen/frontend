@@ -38,7 +38,6 @@ describe('offeredGuestLocales', () => {
   });
 });
 
-// The first import of a subset file is a dynamic import: on a loaded machine it takes longer than the default 5 s.
 describe('ensureGuestLocale', { timeout: 20_000 }, () => {
   afterEach(() => {
     for (const language of ['de', 'fr', 'es']) i18n.removeResourceBundle(language, 'translation');
@@ -62,7 +61,6 @@ describe('ensureGuestLocale', { timeout: 20_000 }, () => {
 
     expect(i18n.hasResourceBundle(language, 'translation')).toBe(true);
     expect(i18n.getFixedT(language)('checkin.next')).toBe(next);
-    // The subset holds the keys of the page only: the app's own texts are not duplicated in it.
     expect(i18n.getResource(language, 'translation', 'nav')).toBeUndefined();
   });
 
@@ -76,10 +74,8 @@ describe('ensureGuestLocale', { timeout: 20_000 }, () => {
   it('fallbackChain_KeyMissingInGerman_FallsBackToEnglishThenItalian', async () => {
     await ensureGuestLocale('de');
 
-    // A key of the host side, not in the German subset: English answers.
     expect(i18n.getFixedT('de')('checkin.link.copyTitle')).toBe(i18n.getFixedT('en')('checkin.link.copyTitle'));
     expect(i18n.getFixedT('de')('checkin.link.copyTitle')).not.toBe(i18n.getFixedT('it')('checkin.link.copyTitle'));
-    // A key only Italian has: Italian answers.
     i18n.addResource('it', 'translation', 'test.onlyItalian', 'Solo in italiano');
     expect(i18n.getFixedT('de')('test.onlyItalian')).toBe('Solo in italiano');
   });

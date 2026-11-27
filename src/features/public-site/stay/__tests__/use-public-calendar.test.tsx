@@ -8,10 +8,6 @@ import { usePublicPropertyCalendar } from '../use-public-calendar';
 
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getOrgPropertyCalendar: vi.fn() } }));
 
-/**
- * The calendar of a home as the pickers draw it: what the server says of each night, rule by rule (E08/F05/US01, NF-36). A day that
- * the server sends without rules (or an older server that sends none of the fields) must come out as a day with no rule.
- */
 const calendar: PublicCalendarDto = {
   propertyId: 'p-1',
   startDate: '2026-11-02',
@@ -89,7 +85,6 @@ describe('usePublicPropertyCalendar', () => {
       minAdvanceDays: null,
       maxAdvanceDays: null,
     };
-    // The day an older server sends (no field) and the day a current server sends with nothing set come out the same.
     expect(result.current.days[0]).toEqual({ date: '2026-11-02', available: true, priceCents: 15000, minNights: 1, ...noRule });
     expect(result.current.days[2]).toEqual({ date: '2026-11-04', available: true, priceCents: 15000, minNights: 1, ...noRule });
   });

@@ -20,14 +20,12 @@ type ToastData = {
   onDismiss?: () => void;
 };
 
-/** What the last call to `toast.success` / `toast.info` was given. */
 function lastCall(kind: 'success' | 'info' = 'success') {
   const calls = vi.mocked(toast[kind]).mock.calls;
   const [message, data] = calls[calls.length - 1] as unknown as [string, ToastData];
   return { message, data };
 }
 
-/** Lets the promises that the toast starts finish. */
 const settle = () => vi.advanceTimersByTimeAsync(0);
 
 function problem(status: number, detail: string): AxiosError {
@@ -65,7 +63,6 @@ describe('toastUndo (UI-07)', () => {
     it('toastUndo_Default_TheButtonOfTheLibraryGetsAnInvisibleTargetOf44Px', () => {
       toastUndo('Fatto', { undo: vi.fn() });
 
-      // 24 px of button and 10 px of box above and below it.
       expect(lastCall().data.classNames?.actionButton).toContain('after:-inset-y-2.5');
     });
 

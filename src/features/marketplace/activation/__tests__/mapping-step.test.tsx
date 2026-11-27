@@ -21,13 +21,11 @@ vi.mock('@/api/marketplace.api', async (importOriginal) => ({
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: [{ contextKey: 'short-rent', roleKey: 'property_owner' }] }) }));
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { octorateOnboarding: true } }) }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const MAPPING_URL = `${ACTIVATION_PATH}?propertyId=prop-1&step=mapping`;
 const select = (roomId: string) => screen.getByTestId(`activation-room-prop-1-${roomId}`) as HTMLSelectElement;
 
-/** The host has one property, connected and imported: the channel manager gives these rooms. */
 function givenTheRoomsOfTheChannel(rooms = [channelRoom()]) {
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property()]);
   vi.mocked(getActivationPlan).mockImplementation(async (_kind, _code, propertyId) =>
@@ -61,7 +59,6 @@ describe('the mapping step: the rooms of the channel', () => {
     expect(select('room-2')).toHaveValue('prod-2');
     // Where the server proposes, the screen says so: the person confirms instead of choosing.
     expect(screen.getAllByText(i18n.t('marketplace.activation.mapping.proposed'))).toHaveLength(2);
-    // The options are the products of the listing and the explicit «do not link».
     expect(Array.from(select('room-1').options).map((option) => option.value)).toEqual(['', 'prod-1', 'prod-2', '__skip__']);
   });
 
@@ -79,7 +76,6 @@ describe('the mapping step: the rooms of the channel', () => {
 
     await onStep('activate');
     expect(saveActivationMapping).toHaveBeenCalledTimes(1);
-    // The room that was left out is not in the body: «not on this channel» is never sent as a product.
     expect(saveActivationMapping).toHaveBeenCalledWith('act-1', [{ channelRoomId: 'room-1', productId: 'prod-2' }]);
   });
 
@@ -102,7 +98,6 @@ describe('the mapping step: the rooms of the channel', () => {
     renderActivation(MAPPING_URL);
     await screen.findByTestId('activation-room-prop-1-room-1', {}, WAIT);
 
-    // The mapping that exists is the choice, and the save cannot remove one: «do not link» is offered only for the room that is not mapped.
     expect(select('room-1')).toHaveValue('prod-2');
     expect(Array.from(select('room-1').options).map((option) => option.value)).toEqual(['', 'prod-1', 'prod-2']);
     expect(Array.from(select('room-2').options).map((option) => option.value)).toEqual(['', 'prod-1', 'prod-2', '__skip__']);
@@ -143,7 +138,6 @@ describe('the mapping step: what is never saved', () => {
 
     expect(await screen.findByTestId('activation-mapping-prop-1-none', {}, WAIT)).toHaveTextContent(i18n.t('marketplace.activation.mapping.noneMapped'));
     expect(screen.getByTestId('activation-finish-error')).toHaveTextContent(i18n.t('marketplace.activation.errors.mappingNone'));
-    // An empty choice is never «all the rooms»: nothing leaves.
     expect(saveActivationMapping).not.toHaveBeenCalled();
     await onStep('mapping');
   });
@@ -151,7 +145,6 @@ describe('the mapping step: what is never saved', () => {
   it('MappingStep_RoomWithNoDecision_StopsTheSaveAndMarksTheRoom', async () => {
     givenTheRoomsOfTheChannel([
       channelRoom({ channelRoomId: 'room-1', proposedProductId: 'prod-1' }),
-      // No proposal and not mapped: the person has to say what it is.
       channelRoom({ channelRoomId: 'room-2', name: 'Attico', proposedProductId: null }),
     ]);
     renderActivation(MAPPING_URL);

@@ -1,7 +1,3 @@
-/**
- * An amount typed in Italian: `95,50`, `1.234,50`, or a plain `95.50`.
- * Dots are thousands separators when a comma is the decimal mark, or when every group after the first has three digits.
- */
 export function parseEuroAmount(raw: string): number | null {
   const text = raw.trim().replace(/[\s\u00a0']/g, '');
   if (text === '') return null;

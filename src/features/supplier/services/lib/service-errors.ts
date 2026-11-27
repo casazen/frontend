@@ -4,7 +4,6 @@ import type { FieldValues, Path, UseFormReturn } from 'react-hook-form';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { SERVICE_LIMITS } from './service-limits';
 
-/** What went wrong with a call of the catalog, in the terms the screens act on. */
 export type ServiceProblemKind =
   | 'invalid'
   | 'notPublishable'
@@ -17,14 +16,11 @@ export type ServiceProblemKind =
 
 export interface ServiceProblem {
   kind: ServiceProblemKind;
-  /** The fields at fault, as the API names them (`name`, `supplements[1].amountCents`); only for `invalid` and `notPublishable`. */
   fields: string[];
-  /** For the person, in their language: no field name of the API in it. */
   message: string;
   status?: number;
 }
 
-/** The stable codes of the catalog (ProblemDetails `code`); the category of a service has the one of every catalog of categories. */
 const KIND_OF_CODE: Record<string, ServiceProblemKind> = {
   supplier_service_invalid: 'invalid',
   invalid_service_category: 'invalid',
@@ -43,13 +39,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** The `fields` the API adds to a 422 of the catalog; anything that is not a list of names is left out. */
 function readFields(data: unknown): string[] {
   if (!isRecord(data) || !Array.isArray(data.fields)) return [];
   return data.fields.filter((field): field is string => typeof field === 'string' && field !== '');
 }
 
-/** The field of the form that holds what the API calls `field`; `null` for one the form has no place for (the order, the photos). */
 export function formPathOfField(field: string): string | null {
   const supplement = /^supplements\[(\d+)\]\.(code|label|amountCents|per|max)$/.exec(field);
   if (supplement) {
@@ -77,7 +71,6 @@ export function formPathOfField(field: string): string | null {
   }
 }
 
-/** The key of the name a field has for the person (`supplier.services.fields.<key>`), or `null` when it has none. */
 function fieldLabelKey(field: string): string | null {
   if (field.startsWith('supplements')) return 'supplements';
   switch (field) {
@@ -104,16 +97,11 @@ function fieldLabelKey(field: string): string | null {
   }
 }
 
-/** "Name, Price": the fields at fault named as the screen names them, each once. */
 function fieldNames(fields: readonly string[], t: TFunction): string {
   const keys = [...new Set(fields.map(fieldLabelKey).filter((key): key is string => key !== null))];
   return keys.map((key) => t(`supplier.services.fields.${key}`)).join(', ');
 }
 
-/**
- * What a failed call of the catalog means for the screen, and what to tell the person: the message never carries the
- * names the API gives the fields (they are English words of a JSON), only the names the form shows.
- */
 export function describeServiceError(error: unknown, t: TFunction): ServiceProblem {
   const status = getHttpStatus(error);
   const data: unknown = isAxiosError(error) ? error.response?.data : undefined;
@@ -150,7 +138,6 @@ export function describeServiceError(error: unknown, t: TFunction): ServiceProbl
     case 'cannotPause':
       return { ...base, kind, message: t('supplier.services.errors.cannotPause') };
     case 'photo':
-      // The API names the file and the limit in the language of the person: better than anything written here.
       return { ...base, kind, message: server ?? t('supplier.services.errors.photoFailed') };
     default:
       return { ...base, kind, message: server ?? t('supplier.services.errors.generic') };

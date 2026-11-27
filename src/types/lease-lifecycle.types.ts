@@ -6,18 +6,15 @@ import type { LeaseNoticeParty } from './lease.types';
  * `currentTermEndDate`, `noticeOn`, `noticeFrom`, `terminatedOn` and `noticeWarning` say where the lease stands now).
  */
 
-/** `POST /leases/:id/notice`: who gave the notice and the day (`YYYY-MM-DD`, from the start of the lease up to today). */
 export interface RecordLeaseNoticeInput {
   from: LeaseNoticeParty;
   on: string;
 }
 
-/** `POST /leases/:id/terminate`: the last day of the lease (`YYYY-MM-DD`, from its start up to the end of the period it is in). */
 export interface TerminateLeaseInput {
   on: string;
 }
 
-/** Where an erasure request of a lease stands (backend `LeaseErasureStatus`). */
 export type LeaseErasureStatus = 'Anonymized' | 'PartiallyAnonymized' | 'Scheduled';
 
 /** `POST /leases/:id/erasure-request`: idempotent, the answer says what was done and what waits. */

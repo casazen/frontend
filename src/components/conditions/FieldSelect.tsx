@@ -7,13 +7,9 @@ import { Trash2 } from 'lucide-react';
 import type { FieldDefinition, ConditionRule, ConditionOperator } from '@/types/condition';
 
 export interface FieldSelectProps {
-  /** The available fields from the catalog */
   fields: FieldDefinition[];
-  /** Current rule value */
   rule: ConditionRule;
-  /** Called when the rule changes */
   onChange: (rule: ConditionRule) => void;
-  /** Called when remove button is clicked */
   onRemove: () => void;
 }
 
@@ -25,7 +21,6 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
   const handleFieldChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newField = event.target.value;
     const field = fields.find((f) => f.field === newField);
-    // Reset operator and value when field changes
     onChange({
       field: newField,
       operator: field?.operators[0] || 'Equals',
@@ -42,7 +37,6 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
 
   const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    // Convert value based on field type
     let convertedValue: string | number | boolean = value;
 
     if (selectedField?.type === 'Number') {
@@ -67,7 +61,6 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
 
     const { type } = selectedField;
 
-    // Boolean field
     if (type === 'Boolean') {
       return (
         <Select value={String(rule.value)} onChange={handleBooleanChange} className="flex-1">
@@ -77,7 +70,6 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
       );
     }
 
-    // Number field
     if (type === 'Number') {
       return (
         <Input
@@ -90,7 +82,6 @@ export function FieldSelect({ fields, rule, onChange, onRemove }: FieldSelectPro
       );
     }
 
-    // Date field
     if (type === 'Date') {
       return (
         <Input

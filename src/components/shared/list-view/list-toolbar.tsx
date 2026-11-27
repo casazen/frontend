@@ -30,27 +30,18 @@ import type { UseSavedViews } from './use-saved-views';
 /** The title of a group in a menu: `foreground/70`, because the `muted-foreground` of the label is 4.36:1 on white and a text needs 4.5:1. */
 const MENU_LABEL = 'text-foreground/70';
 
-/** How long the search waits after the last key before it goes to the address, ms. */
 export const SEARCH_DEBOUNCE_MS = 350;
 
 interface SearchBoxProps {
-  /** The name of the box for a screen reader and the hint in it. */
   label: string;
   placeholder: string;
-  /** The search as the address has it. */
   value: string;
   onCommit: (q: string) => void;
 }
 
-/**
- * The search box. What is typed shows at once and goes to the address a moment after the last key (or with Enter); the box
- * follows the address when it changes by itself (Back, a saved view, "Azzera i filtri") and never overwrites what is being typed.
- */
 function SearchBox({ label, placeholder, value, onCommit }: SearchBoxProps) {
   const inputId = useId();
   const [draft, setDraft] = useState(value);
-  // What this box last sent to the address, and the address it last saw: together they tell a change that came back from
-  // here from one that came from elsewhere.
   const [sent, setSent] = useState(value);
   const [seen, setSeen] = useState(value);
   if (value !== seen) {
@@ -104,7 +95,6 @@ function SearchBox({ label, placeholder, value, onCommit }: SearchBoxProps) {
   );
 }
 
-/** What a filter that is on says, for the tag that removes it: "Immobile: Trullo". */
 function filterTagText<Row>(filter: ListFilter<Row>, value: string, rows: readonly Row[], t: TFunction, language: string): string {
   if (filter.type === 'date') {
     const { from, to } = parseDateRange(value);
@@ -123,15 +113,11 @@ type PanelName = 'filters' | 'columns' | 'sort' | 'save-view' | 'delete-views';
 export interface ListToolbarProps<Row> {
   list: ListDefinition<Row>;
   listState: UseListState;
-  /** Every row the list has now: the choices of a filter drawn from the rows, and the number of results of the panel. */
   rows: readonly Row[];
-  /** The rows that pass the search and the filters, whatever the quick filter: what the counters of the chips count. */
   chipRows: readonly Row[];
-  /** `server` mode: the counters of the chips that need attention (`urgent`) or only have a size (`counted`), by id (the list cannot count what it does not have). */
   chipCounts?: Readonly<Record<string, number | undefined>>;
   mode: ListMode;
   savedViews: UseSavedViews;
-  /** Where the CSV can be had and what the menu says about it. */
   exportLabel: string | null;
   onExport: () => void;
   hasBulk: boolean;
@@ -139,7 +125,6 @@ export interface ListToolbarProps<Row> {
   onToggleSelectMode: () => void;
 }
 
-/** The bar over the rows: the search, the quick filters, the filters, the views, the choices of the "⋯" menu. */
 export function ListToolbar<Row>({
   list,
   listState,
@@ -168,7 +153,6 @@ export function ListToolbar<Row>({
   const sortable = list.columns.some((column) => column.sort);
   const canChooseColumns = list.columns.some((column) => !column.always);
 
-  // The view the list is in, if it is one of the views the person can pick.
   const presetNow = presets.find((view) => isSameView(list, presetToState(list, view.state), state));
   const savedNow = savedViews.views.find((view) => isSameView(list, readListState(list, new URLSearchParams(view.query)), state));
   const viewNow = presetNow ? `preset:${presetNow.id}` : savedNow ? `saved:${savedNow.id}` : '';
@@ -324,7 +308,6 @@ export function ListToolbar<Row>({
         <div role="group" aria-label={t('listView.chips.label')} className="relative -mx-1 flex gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none]" data-testid="list-chips">
           {chips.map((chip) => {
             const active = state.chip === chip.id;
-            // `urgent`: what needs attention, in red. `counted`: only a size, quiet (SP-08b).
             const alarm = chip.urgent === true;
             const count = alarm || chip.counted ? (mode === 'server' ? (chipCounts?.[chip.id] ?? 0) : chipCount(chip, chipRows)) : 0;
             const Icon = chip.icon;

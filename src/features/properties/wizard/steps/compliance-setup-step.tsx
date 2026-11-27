@@ -9,7 +9,6 @@ import { SETUP_RETURN_PARAM, senderChoiceSaved } from '../property-setup-model';
 
 export function ComplianceSetupStep({ propertyId, country }: { propertyId: string; country: string }) {
   const { t } = useTranslation();
-  // Do not call the Italian sender API for a Swiss (or as yet unknown) address.
   const sender = useSender(propertyId, country === 'IT');
   if (country !== 'IT') return <section className="min-w-0 space-y-4 rounded-2xl border bg-card p-6" data-testid="property-setup-local">
     <ShieldCheck className="size-7 text-primary" aria-hidden="true" />

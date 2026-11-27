@@ -7,15 +7,9 @@ import './host-calendar.css';
 interface DayCellContentProps {
   info: CalendarDayInfo;
   currency: string;
-  /** How many days the Timeline shows (a month is too narrow for more than the price); the month, the week and the day pass 1. */
   zoom: number;
 }
 
-/**
- * What a free night of the future shows in its cell (E08/F05/US03/T01): the price (whole units without decimals when the cents are zero) and, from two nights, the minimum
- * stay; a closed arrival and a closed departure by an icon and a short name each, and a mark when the night has a rule of its own. The Timeline and the month, the week and the
- * day draw it the same, so the host reads the same text wherever the calendar is.
- */
 export function DayCellContent({ info, currency, zoom }: DayCellContentProps) {
   const { t, i18n } = useTranslation();
   const text = dayCellText(info, currency, i18n.language, zoom);

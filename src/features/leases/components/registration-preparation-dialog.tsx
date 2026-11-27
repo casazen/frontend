@@ -14,7 +14,6 @@ interface Props {
 }
 const GROUPS = ['contract', 'property', 'applicant', 'landlords', 'tenants', 'taxes', 'otherProperties'];
 
-/** A server-validated registration supplement. Clear data lives only in this mounted form, never in browser storage. */
 export function RegistrationPreparationDialog({ leaseId, open, onOpenChange, onPrepared, isStartingCheckout }: Props) {
   const { t } = useTranslation();
   const formId = useId();

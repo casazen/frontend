@@ -9,10 +9,6 @@ interface PropertyAmenitiesGridProps {
   amenities: string[];
 }
 
-/**
- * What the property has, as a plain section: a title and the list, without a box. Nothing when the property has nothing listed. The
- * names are the labels of the catalog of the amenities (NF-33), the one source of them.
- */
 export function PropertyAmenitiesGrid({ amenities }: PropertyAmenitiesGridProps) {
   const { t } = useTranslation();
   const amenityLabel = useAmenityLabels();

@@ -22,30 +22,20 @@ import type { BookingFormValues } from '../schemas/booking.schema';
 import type { Booking, BookingEditLock, HostBookingQuotePayload } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
 
-/** What the form hands to the page: the values plus the ages of the minors when the tourist tax needs them. */
 export interface BookingFormSubmit extends BookingFormValues {
   childrenAges?: number[];
 }
 
 interface BookingFormProps {
-  /** The booking to change; without it the form creates a new manual booking. */
   booking?: Booking;
-  /**
-   * Why the dates and guests of `booking` cannot be changed, as the API says it (`stayLockOf`): the form then offers the notes only. Not a rule of the form: a booking of the
-   * booking site is changed once it is confirmed, and one of a channel never is from here, and that is the API's to say.
-   */
   stayLock?: BookingEditLock | null;
   /** The values the form opens with instead of those of `booking`: back from the page that shows what the change does with the money, or the version of the channel manager. */
   initialValues?: BookingFormSubmit;
-  /** Property preselected when the form is opened from a property page. */
   initialPropertyId?: string;
   onSubmit: (data: BookingFormSubmit) => void | Promise<void>;
-  /** "Cancel": leaves the form without saving. */
   onCancel: () => void;
   isLoading?: boolean;
-  /** Another call of the page is under way (asking the channel manager again): the form waits for it without saying it is saving. */
   disabled?: boolean;
-  /** Message of the last failed save (e.g. 409 on overlapping dates), shown until the next submit. */
   submitError?: string | null;
 }
 
@@ -92,7 +82,6 @@ export function BookingForm({ booking, stayLock = null, initialValues, initialPr
         : { propertyId: initialPropertyId ?? '', numberOfChildren: 0, specialRequests: '' }),
   });
 
-  // Age of each minor at check-in, asked only when the tourist tax of the comune depends on it (BK-03).
   const [childrenAgesState, setChildrenAges] = useState<(number | null)[]>(initialValues?.childrenAges ?? []);
   const [showAgesMissing, setShowAgesMissing] = useState(false);
 
@@ -156,14 +145,11 @@ export function BookingForm({ booking, stayLock = null, initialValues, initialPr
           <CardTitle>{t('booking.form.bookingDetails')}</CardTitle>
           <CardDescription>{t('booking.form.bookingDetailsDescription')}</CardDescription>
         </CardHeader>
-        {/* The stay and, beside it once the card is wide, its price and the requests (under each other when it is not). */}
         <CardContent className="@container">
           <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
             <div className="min-w-0 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="propertyId">{t('booking.form.property')}</Label>
-                {/* Controlled by the form value, so the preselected property (edit, or "new booking" from a property) is
-                    shown as soon as its option is loaded. */}
                 <select
                   id="propertyId"
                   {...register('propertyId')}
@@ -385,7 +371,6 @@ interface StayPriceSummaryProps {
   error: string | null;
 }
 
-/** Price the backend will record for the stay: lodging, cleaning, tourist tax (never an invented amount). */
 function StayPriceSummary({ quote, isLoading, error }: StayPriceSummaryProps) {
   const { t } = useTranslation();
 

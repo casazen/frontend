@@ -6,13 +6,11 @@ import { withoutRequest } from '../use-sequential-run';
 
 const SECRET = 'Pa$$-4711-secret';
 
-/** The error of axios for a request that carried the access data of a portal: the request that failed is in `config.data`, on the error and on its answer. */
 function failedStart(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify({ kind: 'Channel', username: 'host', password: SECRET }) } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE, config, {}, { status, data, statusText: 'Bad Gateway', headers: {}, config });
 }
 
-/** True when `secret` is anywhere in `value`, in any text of it, however deep. */
 function holds(value: unknown, secret: string, seen = new WeakSet<object>()): boolean {
   if (typeof value === 'string') return value.includes(secret);
   if (typeof value !== 'object' || value === null || seen.has(value)) return false;
@@ -23,14 +21,12 @@ function holds(value: unknown, secret: string, seen = new WeakSet<object>()): bo
 describe('the failure of a run that carried the access data of a portal', () => {
   it('withoutRequest_ErrorOfAxios_KeepsWhatTheScreenReadsAndNotTheRequestThatFailed', () => {
     const original = failedStart(502, { code: 'octorate_partner_failed' });
-    // The test is a real one: the secret is in what axios gives.
     expect(holds(original, SECRET)).toBe(true);
 
     const kept = withoutRequest(original);
 
     expect(holds(kept, SECRET)).toBe(false);
     expect(isAxiosError(kept)).toBe(true);
-    // What a screen turns into words is still there: the status, the code of the answer and the message of the code.
     expect(isAxiosError(kept) && kept.response?.status).toBe(502);
     expect(problemCodeOf(kept)).toBe('octorate_partner_failed');
     expect(isAxiosError(kept) && getProblemCode(kept.response?.data)).toBe('octorate_partner_failed');
@@ -52,7 +48,6 @@ describe('the failure of a run that carried the access data of a portal', () => 
     const config = { headers: new AxiosHeaders(), public: true, data: JSON.stringify({ password: SECRET }) } as InternalAxiosRequestConfig;
     const original = new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: undefined, statusText: '', headers: {}, config });
     const words = (key: string) => `«${key}»`;
-    // The same refusal of a call that was signed in is a session or a permission, and the words say so: the flag is what tells them apart.
     const signedIn = withoutRequest(failedStart(status, undefined));
     expect(getProblemMessage(signedIn, words)).toBe(status === 401 ? '«apiErrors.sessionExpired»' : '«apiErrors.forbidden»');
 

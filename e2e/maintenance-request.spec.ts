@@ -120,7 +120,6 @@ async function sendRequest(page: Page, what: string, note: string): Promise<void
   await page.getByTestId('maintenance-next').click();
 
   await expect(page.getByRole('heading', { name: 'Quanto è urgente?' })).toBeVisible();
-  // The ids of the options did not change (they send Normal / High / Emergency), the words did: this one is «Alta» and sends High.
   await page.getByTestId('maintenance-urgency-normale').click();
   await page.getByTestId('maintenance-next').click();
 

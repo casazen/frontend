@@ -8,17 +8,12 @@ import { AGENDA_VIEWS, agendaLabel, shiftAgendaDate, type AgendaView } from '../
 
 interface AgendaToolbarProps {
   view: AgendaView;
-  /** The day the view is around (`YYYY-MM-DD`). */
   date: string;
   today: string;
   onViewChange: (view: AgendaView) => void;
   onDateChange: (date: string) => void;
 }
 
-/**
- * How much of the agenda is shown (day, week, month) and where (back, today, forward), with what is on show said in words.
- * The words are the `h2` of the agenda and a live region: moving the period tells a screen reader where it landed.
- */
 export function AgendaToolbar({ view, date, today, onViewChange, onDateChange }: AgendaToolbarProps) {
   const { t, i18n } = useTranslation();
 

@@ -51,10 +51,6 @@ export const withholdingApi = {
    */
   downloadCuData: (year: number, format: ReportFileFormat): Promise<DownloadedFile> => getTaxFile(`/withholding/annual/${year}/export`, { format }),
 
-  /**
-   * The draft «prospetto CU» of one owner for the year as a PDF (same permissions as the CU data), with the watermark that says it is a draft and not the Certificazione Unica. 404 `tax_dataset_not_found`,
-   * `tax_cu_record_not_found` (an owner with no record), 422 `tax_cu_dataset_outdated`.
-   */
   downloadCuProspect: (year: number, ownerId: string): Promise<DownloadedFile> => getTaxFile(`/withholding/annual/${year}/owners/${encodeURIComponent(ownerId)}/pdf`),
 
   /**
@@ -63,10 +59,6 @@ export const withholdingApi = {
    */
   download770Data: (year: number, format: ReportFileFormat): Promise<DownloadedFile> => getTaxFile(`/withholding/770/${year}/export`, { format }),
 
-  /**
-   * The communication of the short-let contracts of the year as a CSV or an Excel file (E18/F01/US02/T02, behind `taxReportingExports`, `agency.owner.financial.manage` on top): every qualifying short let the agency
-   * handled and did not withhold on, with the lessor, the property and the consideration. Due by 30 June of the next year: nothing is sent by CasaZen.
-   */
   downloadContractsCommunication: (year: number, format: ReportFileFormat): Promise<DownloadedFile> =>
     getTaxFile(`/withholding/contracts-communication/${year}/export`, { format }),
 };

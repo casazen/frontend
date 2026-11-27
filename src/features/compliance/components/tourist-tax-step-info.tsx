@@ -6,9 +6,7 @@ import { touristTaxAmountLabel } from '@/lib/tourist-tax';
 import type { ActivationTouristTax } from '@/types/compliance.types';
 
 interface TouristTaxStepInfoProps {
-  /** Tourist tax info of the `tourist-tax` step; missing when the API did not send it. */
   touristTax: ActivationTouristTax | null | undefined;
-  /** City of the property, used when the step carries no info. */
   city: string;
 }
 

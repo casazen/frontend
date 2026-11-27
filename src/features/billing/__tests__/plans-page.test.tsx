@@ -59,7 +59,6 @@ const plans: BillingPlan[] = [
     purchasable: true,
   },
   { tier: 'Pro', displayName: 'Pro', priceMonthly: 79, currency: 'EUR', unitAllowance: 50, features: [], purchasable: true },
-  // No price in the configuration and no Stripe price id in this environment.
   { tier: 'Scale', displayName: 'Scale', priceMonthly: 0, currency: 'EUR', unitAllowance: -1, features: [], purchasable: false },
 ];
 
@@ -94,7 +93,6 @@ function mockUser(planTier: PlanTier = 'Starter') {
   } as unknown as CurrentUserResult);
 }
 
-/** The user's contexts as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
 function mockContexts(contextKeys: AppContextKey[], roleKey?: string) {
   vi.mocked(useWorkspace).mockReturnValue({
     contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
@@ -115,7 +113,6 @@ function renderPage(search = '', path = PLAN_PATH) {
         <MemoryRouter initialEntries={[`${path}${search}`]}>
           <Routes>
             <Route path={PLAN_PATH} element={<PlansPage />} />
-            {/* The long-rent route renders the content only: the long-rent shell comes from the context layout. */}
             <Route path={LONG_RENT_PLAN_PATH} element={<PlansPageContent />} />
             <Route path="/app/short-rent/settings/billing" element={<p>billing page</p>} />
           </Routes>
@@ -218,7 +215,6 @@ describe('PlansPage', () => {
     await submitCheckout(dialog, 'IT', 'it 123.456.789-01');
 
     await waitFor(() => expect(assign).toHaveBeenCalledWith(CHECKOUT_URL));
-    // Stripe comes back to this same page (PL-16); the backend builds the URL on its public domain.
     expect(BillingApi.createCheckoutSession).toHaveBeenCalledWith({
       planTier: 'Pro',
       billingCountry: 'IT',
@@ -228,7 +224,6 @@ describe('PlansPage', () => {
   });
 
   it('ChoosePlan_FromTheLongRentShell_LandlordPaysAndReturnsToTheLongRentPlanPage', async () => {
-    // PL-16 (A1-36): a landlord with only long-term leases is the billing administrator of its org.
     mockContexts(['long-rent']);
     renderPage('', LONG_RENT_PLAN_PATH);
     const dialog = await openCheckoutFor('Pro');
@@ -283,7 +278,6 @@ describe('PlansPage', () => {
       i18n.t('apiErrors.codes.billingPlanUnavailable'),
     );
     expect(assign).not.toHaveBeenCalled();
-    // The catalogue is read again: the card becomes "not available".
     await waitFor(() => expect(BillingApi.getPlans).toHaveBeenCalledTimes(2));
   });
 
@@ -319,7 +313,6 @@ describe('PlansPage', () => {
   });
 
   it('LiveSubscription_PortalFails_ShowsTheErrorAndLetsTheUserTryAgain', async () => {
-    // A1-38: a failed plan action is reported and never leaves the page stuck (no unhandled promise, no frozen choice).
     mockUser('Pro');
     vi.mocked(BillingApi.getSubscription).mockResolvedValue(subscription({ planTier: 'Pro', status: 'active' }));
     vi.mocked(BillingApi.createPortalSession)
@@ -347,7 +340,6 @@ describe('PlansPage', () => {
       i18n.t('billing.checkout.return.confirmed', { plan: 'Pro' }),
     );
     await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ME_QUERY_KEY }));
-    // The return parameter is consumed: a reload does not show the outcome again.
     await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(new RegExp(`^${PLAN_PATH}$`)));
   });
 
@@ -424,7 +416,6 @@ describe('PlansPage', () => {
     expect(BillingApi.getSubscription).not.toHaveBeenCalled();
   });
 
-  // AM-00 (S1): a collaborator of the org has the rental context but not the owner's role key: no plans, no checkout.
   it.each(MEMBER_ROLE_KEYS)(
     'PlansPage_MemberWithRoleKey_%s_AsksToContactTheOwnerWithoutCallingTheApi',
     (roleKey) => {

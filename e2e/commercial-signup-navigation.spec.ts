@@ -1,8 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { provisionLegacyCommercialSignup } from './gj-l3/commercial-signup';
 
-// Reproduces the legacy POST -> app navigation -> onboarding payment guard sequence without the full API stack.
-// The business assertions of the Golden Journey (consents, subscription webhook and paid access) remain there.
 test('legacy signup waits for automatic redirects to show billing without a competing goto', async ({ page }) => {
   const navigations: string[] = [];
   let saved = 0;

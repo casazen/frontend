@@ -109,7 +109,6 @@ describe('PublicSiteShell states and colors (BK-13)', () => {
     const primaryText = style.getPropertyValue('--cz-public-primary-text');
     expect(style.getPropertyValue('--cz-public-primary')).toBe('#f4d03f');
     expect(contrastRatio(onPrimary, '#f4d03f')).toBeGreaterThanOrEqual(4.5);
-    // The variant of the primary used as text/focus ring must be readable on the mare background and cards.
     expect(contrastRatio(primaryText, '#f3f7f6')).toBeGreaterThanOrEqual(4.5);
     expect(contrastRatio(primaryText, '#ffffff')).toBeGreaterThanOrEqual(4.5);
   });

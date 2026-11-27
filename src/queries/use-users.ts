@@ -10,10 +10,8 @@ import { isDemoMode } from '@/config/demo.config';
 import { getDemoProfile } from '@/lib/demo-profile';
 
 const USERS_KEY = 'users';
-// Same key as ME_QUERY_KEY (lib/onboarding-gate), refreshed on a 403 onboarding_required.
 const ME_KEY = 'me';
 
-/** Query key for the caller's resolved plan entitlement (#202). Exported so writes can invalidate it. */
 export const ENTITLEMENT_QUERY_KEY = ['entitlement'] as const;
 
 interface GetUsersParams {
@@ -31,10 +29,6 @@ export function useUsers(params?: GetUsersParams) {
   });
 }
 
-/**
- * Demo mode (A1-18): Playwright mocks `/users/me`, but anywhere else the API rejects the demo token. The profile of
- * the demo persona then stands in for it, so the onboarding guard never loops on an error it cannot fix.
- */
 async function fetchMe(): Promise<UserDetail> {
   if (!isDemoMode) return UsersApi.getMe();
   try {
@@ -52,10 +46,6 @@ export function useMe() {
   });
 }
 
-/**
- * Convenience wrapper over {@link useMe} that surfaces the caller's org + plan (#202, AC9/AC11).
- * Returns null org for users with no tenant yet (pre-backfill) so the UI can fail gracefully.
- */
 export function useCurrentUser() {
   const query = useMe();
   return {
@@ -66,19 +56,16 @@ export function useCurrentUser() {
   };
 }
 
-/** Resolved plan entitlement (limits + usage) for the caller's org (#202, AC8). */
 export function useEntitlement(enabled = true) {
   const { org, user } = useCurrentUser();
   return useQuery({
     queryKey: ENTITLEMENT_QUERY_KEY,
     queryFn: () => OrgsApi.getMyEntitlement(),
-    // A host endpoint: not asked while the backend withholds the host features (PL-02), e.g. from the admin shell.
     enabled: enabled && !!org?.id && user?.onboardingRequired !== true,
     retry: false,
   });
 }
 
-/** Roles a user currently holds (A1-17), read fresh (not cached) each time the roles dialog opens. */
 export function useUserRoles(id: string, enabled: boolean) {
   return useQuery({
     queryKey: [USERS_KEY, id, 'roles'],

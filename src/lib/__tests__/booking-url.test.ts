@@ -12,7 +12,6 @@ import {
 const property = { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', slug: 'trastevere-suite' };
 const stay: BookingSearchParams = { checkIn: '2026-10-01', checkOut: '2026-10-04', guests: 3, children: 0 };
 
-/** Query of a relative URL as the checkout page reads it. */
 function queryOf(url: string): URLSearchParams {
   return new URL(url, 'https://example.test').searchParams;
 }
@@ -22,7 +21,6 @@ describe('isPropertyPublishable', () => {
     expect(isPropertyPublishable({ isActive: true, isPaused: false, complianceStatus: 'Active' })).toBe(true);
   });
 
-  // A2-05: pausing hides the property from the direct-booking site, mirroring the backend's PublicListing.IsPublished.
   it('isPropertyPublishable_Paused_IsFalseEvenWhenActiveAndCompliant', () => {
     expect(isPropertyPublishable({ isActive: true, isPaused: true, complianceStatus: 'Active' })).toBe(false);
   });
@@ -109,7 +107,6 @@ describe('parseBookingSearchParams', () => {
   });
 
   it('parseBookingSearchParams_DoubleQuestionMarkUrl_DoesNotReadCheckIn', () => {
-    // The old widget produced `/checkout??checkIn=…`: the first key became "?checkIn".
     const params = parseBookingSearchParams(new URLSearchParams('??checkIn=2026-10-01&checkOut=2026-10-04'));
 
     expect(params.checkIn).toBe('');

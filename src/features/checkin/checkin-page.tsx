@@ -37,26 +37,17 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
   token: string;
   embedded?: boolean;
   onCompleted?: () => void;
-  /** Where the guest goes once the check-in is done (the guest portal hands in its house guide): the one action of the receipt. */
   next?: { href: string; label: string };
 }) {
   const { t } = useTranslation();
   const {
-    // The link and what the API says of it.
     context, isLoading, isFetching, refetch, invalidLink, completed, submitted, receiptHeading, searchParams,
-    // The language of the page.
     locale, chooseLanguage, languageNotSaved, languageNotLoaded,
-    // The steps and where the guest is.
     steps, current, stepIndex, totalSteps, stepHeading, goToStep, goNext, resumed, step,
-    // The tourist tax.
     taxRead, taxView, taxPaying, setTaxPaying, setTaxCannotPay, taxBlocksNext,
-    // The identity check.
     identity, takeVerifyingPhoto,
-    // The form and the guests.
     form, formElement, onSubmit, focusRequest, problemCount, guests, fields, remove, statisticalFields, swiss, codeSource, changeLeaderType, addGuest, askVehiclePlate,
-    // The reading of the document.
     readingDocument, setReadingDocument, scanMessage, documentsRead, review, setReview, zonedReading, setZonedReading, proceedWithReading, confirmPrefill, readDocument, moveFromScan,
-    // The consents and the send.
     activeRulesVersion, rulesAccepted, setAcceptedRulesVersion, privacyRead, setPrivacyRead, submitError, submitCheckIn, consentsGiven,
   } = useGuestCheckInFlow({ token, embedded, onCompleted, t });
 
@@ -99,7 +90,6 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
   }
 
   const declaredGuests = context.declaredGuests ?? 1;
-  // The guests who give a document: a single guest or a head of family or group, and, in Switzerland, every other guest the police file notifies.
   const documentLevels = documentLevelsOf(guests ?? [], swiss);
   const leaders = fields
     .map((field, index) => ({ field, index, level: documentLevels[index] ?? null }))
@@ -128,7 +118,6 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
           <CardHeader>
             <CardDescription>{t('checkin.stepOf', { step: stepIndex + 1, total: totalSteps })}</CardDescription>
             <h2 ref={stepHeading} tabIndex={-1} className="scroll-mt-4 text-2xl font-semibold tracking-tight">{t(STEP_LABEL[current])}</h2>
-            {/* The photo step already says what follows it (the guest checks the data before sending): no second line for it. */}
             {current !== STEP_SCAN && stepIndex + 1 < totalSteps && (
               <CardDescription>{t('checkin.reopen.nextStep', { name: t(STEP_LABEL[steps[stepIndex + 1]]) })}</CardDescription>
             )}
@@ -136,13 +125,11 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
           <CardContent>
             <FormProvider {...form}>
               <form ref={formElement} onSubmit={onSubmit} autoComplete="off" className="space-y-4" data-testid="guest-data-form">
-                {/* A new element each time, so a second failed attempt is announced again. */}
                 <p key={focusRequest} role="status" className="sr-only" data-testid="checkin-announcement">
                   {focusRequest > 0 && problemCount > 0 ? t('checkin.errors.summary', { count: problemCount }) : null}
                 </p>
                 {current === STEP_SCAN && (
                   <DocumentReadStep
-                    // A property that keeps no document (the API says so, and a Swiss stay is one: only the typed data are kept, D6) says the photo is not stored.
                     notArchived={context.documentNotArchived === true || swissDocuments}
                     reading={readingDocument}
                     message={scanMessage}
@@ -233,7 +220,6 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }:
                     consentsGiven={consentsGiven}
                   />
                 )}
-                {/* A disabled button says nothing on its own: the line under it says what it waits for. */}
                 {current === STEP_CONSENTS && !consentsGiven && (
                   <p id="checkin-submit-hint" className="text-right text-xs text-foreground/70" data-testid="checkin-submit-hint">
                     {t('checkin.submitHint')}

@@ -11,7 +11,6 @@ import { getHostSite } from '@/lib/host-site';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { useCheckInContext } from '@/queries/use-checkin';
 
-/** What the start-up shows while it is still asking the backend which site the host serves, or why it cannot show one. */
 export type HostBootstrapState = 'loading' | 'not-found' | 'error';
 
 /**
@@ -53,7 +52,6 @@ export function HostSiteBootstrapPage({ state, onRetry }: { state: HostBootstrap
   );
 }
 
-/** A page of an org's own host that does not exist (inside the router): offers the way back to the site's landing page. */
 export function HostSiteNotFoundPage() {
   const { t } = useTranslation();
   useSeoMeta({ title: t('hostSite.pageNotFound.title'), noindex: true });
@@ -70,11 +68,6 @@ export function HostSiteNotFoundPage() {
   );
 }
 
-/**
- * An org's own host only ever shows its own org (BK-16, A3-08): `/book/:orgSlug` of another org, reached by typing or
- * following a link on this domain, is "not found" here, so a domain can never be made to show another host's site under
- * its name.
- */
 export function HostOrgGuard({ children }: { children: ReactNode }) {
   const { orgSlug } = useParams<{ orgSlug: string }>();
   const hostSite = getHostSite();
@@ -95,28 +88,17 @@ export function HostCheckInGuard({ children }: { children: ReactNode }) {
   const { data: context } = useCheckInContext(token);
   const hostSite = getHostSite();
 
-  // The agency of the link: `orgSlug` first, the slug of its privacy notice as a fallback. Slugs are lower case; the comparison does not depend on it, so a case that differs never turns an
-  // agency's own guest away.
   const linkSlug = (context?.orgSlug ?? context?.privacyNoticeOrgSlug)?.toLowerCase();
   const ofAnotherAgency = Boolean(linkSlug) && linkSlug !== hostSite?.slug.toLowerCase();
   return hostSite && !ofAnotherAgency ? <>{children}</> : <HostSiteNotFoundPage />;
 }
 
-/**
- * The protected owner portal on an org's own host: the visitor who is not signed in goes to the sign-in page of this domain, never to `/login`, which is «not found» on a host. A person
- * who is signed in, or whose session is still being checked, gets the portal as it is (its own route shows the loading state).
- */
 export function HostOwnerPortalGate({ children }: { children: ReactNode }) {
   const { isLoading, isAuthenticated } = useAuth();
 
   return !isLoading && !isAuthenticated ? <Navigate to={ownerPortalPaths.signIn} replace /> : <>{children}</>;
 }
 
-/**
- * The legal documents are CasaZen's, not the host's: they live on the public web app (`VITE_PUBLIC_SITE_URL`). The footer of
- * an org's own site links them by their path; on its host they lead there. Without the variable nothing is shown (decision
- * D3: no default domain).
- */
 export function HostLegalRedirect() {
   const { pathname, search } = useLocation();
   const origin = getPublicSiteOrigin();

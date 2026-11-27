@@ -45,23 +45,17 @@ function ChannelCommissionRulesBody() {
   const save = useSaveChannelCommissionRules();
   const [typed, setTyped] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
-  // The day the page opened on (Europe/Rome).
   const [today] = useState(() => todayInRome());
-  // The first check-out day the new percents are for: the first day of the month the close asks for next (the one before today), where the stays held back for a missing commission are. The person can
-  // choose another day. Nothing is read to know whether that month is already closed: a closed month is never posted again, so a day in it changes no statement.
   const [from, setFrom] = useState(() => startOfPeriod(defaultPeriod(today)));
 
   const set = rules.data;
-  // What is typed and is not a percent (empty is no change): the field says so, and nothing is sent.
   const problems: Record<string, string> = {};
   for (const [channel, value] of Object.entries(typed)) {
     if (value.trim() !== '' && !isPercent(value)) problems[channel] = BILLING_ERROR_KEYS.percent;
   }
-  // A percent for a portal whose rule in force starts after that day would change the rule in place and leave the days between without one: the day is refused, with the day to choose.
   const fromValid = isStayDate(from);
   const tooEarly = set && fromValid ? commissionStartTooEarly(set, typed, from) : null;
   const fromProblem = !fromValid ? t('ownerAccounting.channelRules.fromInvalid') : tooEarly !== null ? t('ownerAccounting.channelRules.fromTooEarly', { date: date(tooEarly) }) : undefined;
-  // Only what the person typed is saved: a percent that is only shown (the default of the configuration, which nobody confirmed) is not turned into the agency's rule by saving another.
   const request = set && fromProblem === undefined ? commissionRulesRequest(set, typed, today, { draft: true, validFrom: from }) : null;
   const invalid = Object.keys(problems).length > 0 || fromProblem !== undefined;
 
@@ -75,8 +69,6 @@ function ChannelCommissionRulesBody() {
       setTyped({});
       toast.success(t('ownerAccounting.channelRules.saved', { date: date(from) }));
     } catch (error) {
-      // A day that falls on another rule of the portal is refused by the server on `validFrom` (422): it is the day to change, not a percent. A rule that lines of the owner ledger already name cannot
-      // be given another percent (409), and any other refusal comes back in its own words: said as they are, nothing is told as saved.
       const facts = problemFacts(error);
       setFailure(facts.status === 422 && facts.field === 'validFrom' ? t('ownerAccounting.channelRules.fromOverlap') : messageOf(error, t));
     }
@@ -86,7 +78,6 @@ function ChannelCommissionRulesBody() {
   if (rules.isPending) {
     content = <SkeletonCard lines={3} label={t('ownerAccounting.channelRules.loading')} />;
   } else if (rules.isError || !set) {
-    // A failed read is a failed read, whatever the cache still holds from before.
     content = <OwnerAccountingError error={rules.error} title={t('ownerAccounting.channelRules.loadError')} onRetry={() => void rules.refetch()} />;
   } else if (set.channels.length === 0) {
     content = (

@@ -2,11 +2,6 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-/**
- * Decision D3 (SE-02, SE-03): no CasaZen domain is written in the shipped frontend. Public links come from the
- * backend (built on `App__PublicSiteBaseUrl`) or from `VITE_PUBLIC_SITE_URL`; the Privacy and Terms links from the
- * documents configured on the backend. Tests are fixtures and are not scanned.
- */
 const ROOT = process.cwd();
 const SCANNED = ['src', 'api', 'public', 'index.html', 'vercel.json', 'vite.config.ts'];
 const EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.json', '.html', '.txt', '.css']);
@@ -55,7 +50,6 @@ describe('no hardcoded domain (D3)', () => {
         });
     }
 
-    // The scan really covers the sources (the Footer, the auth bridge, the locales...).
     expect(scanned).toBeGreaterThan(100);
     expect(offending, 'build the URL from configuration (VITE_PUBLIC_SITE_URL or the backend)').toEqual([]);
   });

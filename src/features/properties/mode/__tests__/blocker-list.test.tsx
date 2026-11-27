@@ -33,7 +33,6 @@ describe('BlockerList (PM-03)', () => {
     expect(stay).toHaveTextContent(i18n.t('status.booking.Pending.label'));
     expect(within(stay).getByRole('link', { name: 'Apri la prenotazione' })).toHaveAttribute('href', '/app/short-rent/bookings/s1');
 
-    // A block of a portal has no status: only what it is and where the calendars are.
     const portal = screen.getByTestId('property-mode-blocker-ImportedBlock');
     expect(portal).toHaveTextContent('Date occupate su un portale');
     expect(portal.querySelector('[data-status-kind]')).toBeNull();
@@ -56,7 +55,6 @@ describe('BlockerList (PM-03)', () => {
       blocker({ id: 'stay-2', kind: 'Stay', start: '2026-10-05', end: '2026-10-09' }),
     ]);
 
-    // A lease from December to December is not "from the 1st of December to the 1st of December".
     expect(screen.getByTestId('property-mode-blocker-Lease')).toHaveTextContent('dal 1 dicembre 2025 al 1 dicembre 2026');
     const [crossing, within_] = screen.getAllByTestId('property-mode-blocker-Stay');
     expect(crossing).toHaveTextContent('dal 28 dicembre 2026 al 3 gennaio 2027');
@@ -78,7 +76,6 @@ describe('BlockerList (PM-03)', () => {
     });
 
     expect(screen.getByRole('link', { name: 'Vedi tutte le prenotazioni' })).toHaveAttribute('href', '/app/short-rent/bookings?propertyId=p1');
-    // Nothing more to show: no counter, no link.
     expect(screen.getAllByTestId('property-mode-blocker-Stay')).toHaveLength(2);
   });
 

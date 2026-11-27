@@ -2,12 +2,9 @@ import { ACCEPT_REQUESTS_MAX, type AcceptSupplierRequestsResponse } from '@/type
 
 /** The code of a request that was not sent because the whole block failed (no answer from the server): the dialog says so in words. */
 export const BLOCK_NOT_SENT = 'block_not_sent';
-/** The code of a request that is not taken in a block (a backup that waits for the primary supplier): it has its own button. */
 export const NOT_IN_BLOCK = 'not_in_bulk';
-/** The code of a request on measure of the showcase (SP-10b): it has no time and no price, so it is answered with an offer and never taken as it is. */
 export const NEEDS_OFFER = 'needs_offer';
 
-/** A request that was not taken: why, in the words of the server when it gave them (`message`, localized) and its `code`. */
 export interface BulkAcceptFailure {
   id: string;
   code: string | null;
@@ -15,13 +12,10 @@ export interface BulkAcceptFailure {
 }
 
 export interface BulkAcceptOutcome {
-  /** The ids that are now taken, in the order they were sent. */
   accepted: string[];
-  /** The ids that are not, each with the reason. Nothing happened to them: they are as they were. */
   failed: BulkAcceptFailure[];
 }
 
-/** The ids in blocks of at most `size`, in the order they came. A repeated id counts once (the server does the same). */
 export function inBlocks(ids: readonly string[], size: number = ACCEPT_REQUESTS_MAX): string[][] {
   const unique = [...new Set(ids)];
   const blocks: string[][] = [];

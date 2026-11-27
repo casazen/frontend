@@ -15,7 +15,6 @@ interface SendStepProps {
   state: CheckInWizardState;
 }
 
-/** How the guests reach the police, in plain words: through the channel manager, or by the host on the portal. */
 type SendRoute = 'channelManager' | 'channelManagerNotConnected' | 'senderCasaZen' | 'senderManual';
 
 function sendRouteOf(state: CheckInWizardState): SendRoute {
@@ -45,7 +44,6 @@ export function SendStep({ bookingId, form, state }: SendStepProps) {
   const names = guests
     .map((guest, index) => `${guest.firstName} ${guest.lastName}`.trim() || t('checkin.guestHeading', { index: index + 1 }))
     .join(', ');
-  // The guests who give a document: a single guest or a head of family or group and, in Switzerland, every other guest the police file notifies.
   const levels = documentLevelsOf(guests, swissRulesOfState(state));
   const leaders = guests.filter((_, index) => levels[index] !== null);
   const withDocument = leaders.filter((guest) => guest.documentNumber.trim() !== '' || guest.documentNumberOnFile).length;

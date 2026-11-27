@@ -17,7 +17,6 @@ import {
 } from '@/lib/owner-invitation';
 import { expectNoAxeViolations } from '@/test/axe';
 
-// The page pulls in the card of the invitations and the shell of the app; importing it can take a while on a loaded machine.
 configure({ asyncUtilTimeout: 8_000 });
 vi.setConfig({ testTimeout: 60_000 });
 
@@ -29,7 +28,6 @@ beforeAll(async () => {
   ({ OwnerInvitationPage } = await import('../owner-invitation-page'));
 }, 240_000);
 
-/** What the backend reads: 64 lowercase hex characters. */
 const TOKEN = 'b7'.repeat(32);
 const login = vi.fn();
 const logout = vi.fn();
@@ -48,18 +46,15 @@ function mockAuth(authenticated: boolean) {
   } as unknown as ReturnType<typeof useAuth>);
 }
 
-/** A failed call as the API client raises it: the status and a ProblemDetails body. */
 function problem(status: number, code: string): AxiosError {
   const config = { headers: new AxiosHeaders() };
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: { status, code } });
 }
 
-/** No answer at all: a network failure. */
 function networkError(): AxiosError {
   return new AxiosError('Network Error', 'ERR_NETWORK', { headers: new AxiosHeaders() });
 }
 
-/** The real address bar of jsdom: the page is opened the way the link of the e-mail opens it. */
 function openAt(path: string, { strict = false }: { strict?: boolean } = {}) {
   window.history.pushState({}, '', path);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -100,7 +95,6 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
 
     expect(await screen.findByTestId('owner-invitation-signup')).toBeInTheDocument();
 
-    // Out of the address bar and the history entry; in no storage, in no log, and nothing is sent before the person has signed in.
     await waitFor(() => expect(window.location.search).toBe(''));
     expect(window.location.href).not.toContain(TOKEN);
     expect(Object.keys(localStorage)).toHaveLength(0);
@@ -119,7 +113,6 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
       appState: { [OWNER_INVITATION_APP_STATE_KEY]: TOKEN },
       authorizationParams: { screen_hint: 'signup' },
     });
-    // The return address has no secret in it.
     expect(JSON.stringify(vi.mocked(login).mock.calls[0][0].returnTo)).not.toContain(TOKEN);
 
     fireEvent.click(screen.getByTestId('owner-invitation-login'));
@@ -128,7 +121,6 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
   });
 
   it('OwnerInvitationRoute_AuthRoundTripConsumesTokenOnce_Test', async () => {
-    // 1. The owner opens the link, not signed in, and chooses to sign in.
     const first = openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
     fireEvent.click(await screen.findByTestId('owner-invitation-login'));
     const { appState } = vi.mocked(login).mock.calls[0][0] as { appState: Record<string, unknown> };
@@ -152,11 +144,9 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     expect(url).toBe('/owner-invitations/accept');
     expect(url).not.toContain(TOKEN);
     expect(body).toEqual({ token: TOKEN });
-    // The claims were published: a new token is asked for, then the address is replaced with the portal.
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);
     expect(window.location.pathname).toBe(OWNER_PORTAL_HOME_PATH);
     expect(window.location.search).toBe('');
-    // The secret is forgotten: not in memory, not in storage, and another visit of the page finds nothing to send.
     expect(peekOwnerInvitationToken()).toBeNull();
     expect(Object.keys(localStorage)).toHaveLength(0);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
@@ -178,12 +168,10 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
 
     expect(await screen.findByText(i18n.t('ownerInvitation.claimsPending.title'))).toBeInTheDocument();
-    // Not a success: no portal, no new token asked for (the portal would refuse a token without the claims), and a way to try again.
     expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
     expect(screen.queryByTestId('owner-invitation-open-portal')).not.toBeInTheDocument();
     expect(refreshAccessToken).not.toHaveBeenCalled();
     expect(screen.getByTestId('owner-invitation-retry')).toBeInTheDocument();
-    // The server hands the claims over again at every acceptance of the same invitation, so the secret waits for the new try: in memory, in no storage.
     expect(peekOwnerInvitationToken()).toBe(TOKEN);
     expect(Object.keys(localStorage)).toHaveLength(0);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
@@ -199,14 +187,12 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     fireEvent.click(await screen.findByTestId('owner-invitation-retry'));
     await screen.findByTestId('owner-portal');
 
-    // Accepted twice with the same secret, in the body and in no address; the claims were published the second time, so the new token is asked for once.
     expect(axios.post).toHaveBeenCalledTimes(2);
     for (const [url, body] of vi.mocked(axios.post).mock.calls) {
       expect(url).toBe('/owner-invitations/accept');
       expect(body).toEqual({ token: TOKEN });
     }
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);
-    // Published: the secret is forgotten, and nothing was written to the browser.
     expect(peekOwnerInvitationToken()).toBeNull();
     expect(Object.keys(localStorage)).toHaveLength(0);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
@@ -236,13 +222,11 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     const view = openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
     await waitFor(() => expect(axios.post).toHaveBeenCalledTimes(1));
 
-    // The person leaves before the answer comes, and the answer says the claims are not published.
     view.unmount();
     await act(async () => {
       answer({ data: { ...ACCEPTED, claimsRefresh: 'failed' } });
     });
 
-    // Nothing waits for them: the secret is not kept in memory by an answer that finds nobody on the page (nor is a request worth sending again kept for them).
     expect(peekOwnerInvitationToken()).toBeNull();
   });
 
@@ -253,7 +237,6 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     await screen.findByText(i18n.t('ownerInvitation.claimsPending.title'));
     expect(peekOwnerInvitationToken()).toBe(TOKEN);
 
-    // The person goes away: the secret does not outlive the page (the link of the e-mail brings it back).
     view.unmount();
 
     expect(peekOwnerInvitationToken()).toBeNull();
@@ -314,7 +297,6 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     expect(screen.getByTestId('owner-invitation-portal')).toHaveAttribute('href', OWNER_PORTAL_HOME_PATH);
     expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
     expect(refreshAccessToken).not.toHaveBeenCalled();
-    // A link that does not work is forgotten: it is not sent again by another visit.
     expect(peekOwnerInvitationToken()).toBeNull();
   });
 
@@ -325,18 +307,14 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
 
     fireEvent.click(await screen.findByTestId('owner-invitation-switch'));
 
-    // Not a sign-out to the home page (the secret would be lost and nothing would say to open the link again): a new sign-in, asked for although a session exists, that brings
-    // the person back to this page with the secret in the `appState` and in no address.
     expect(login).toHaveBeenLastCalledWith({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: TOKEN }, authorizationParams: { prompt: 'login' } });
     expect(JSON.stringify(vi.mocked(login).mock.calls[0][0].returnTo)).not.toContain(TOKEN);
     expect(logout).not.toHaveBeenCalled();
-    // Nothing is sent again by itself, nothing is granted, and nothing is written to the browser.
     expect(axios.post).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
     expect(Object.keys(localStorage)).toHaveLength(0);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
 
-    // A person who leaves instead takes the secret with them: the link of the e-mail brings it back.
     expect(peekOwnerInvitationToken()).toBe(TOKEN);
     view.unmount();
     expect(peekOwnerInvitationToken()).toBeNull();
@@ -348,7 +326,6 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
 
     fireEvent.click(await screen.findByRole('button', { name: i18n.t('ownerInvitation.emailNotVerified.login') }));
-    // The page is loaded again after the sign-in: the secret goes with the login, in the `appState`, and in no address.
     expect(login).toHaveBeenLastCalledWith({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: TOKEN } });
     expect(axios.post).toHaveBeenCalledTimes(1);
 
@@ -374,7 +351,6 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
 
     const retry = await screen.findByTestId('owner-invitation-retry');
-    // It does not try again by itself.
     expect(axios.post).toHaveBeenCalledTimes(1);
 
     fireEvent.click(retry);

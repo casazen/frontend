@@ -26,7 +26,6 @@ function todo(overrides: Partial<TodoActivity> & { id: string }): TodoActivity {
   };
 }
 
-/** The array of the server: the first is the most urgent, and the later ones are not sorted again by the Home. */
 const LIST: TodoActivity[] = [
   todo({ id: 'one', activityType: 'AlloggiatiDeadline', action: 'UploadAlloggiatiProof', urgency: 'High', dueAt: '2000-01-01T10:00:00Z' }),
   todo({ id: 'two', activityType: 'ReceiptToRetrieve', action: 'UploadAlloggiatiProof', urgency: 'Low', dueAt: '2099-01-10T10:00:00Z', propertyId: 'p-2' }),
@@ -61,7 +60,6 @@ describe('the To do list on the Home as a road (NF-07, ADR-026-R8)', () => {
     expect(first).toHaveTextContent('Alloggiati Web in scadenza');
     expect(first).toHaveTextContent('Prenotazione · Casa Mare');
     expect(first).toHaveTextContent('Gli ospiti vanno comunicati alla Questura entro la scadenza.');
-    // The deadline has passed: said in words on its note, never by painting the whole step.
     expect(first).toHaveTextContent(/Scaduta: /);
     expect(within(first).getByText(/Scaduta: /).closest('p')).toHaveClass('text-danger-foreground');
     expect(screen.getByTestId('home-todo-path').className).not.toMatch(/bg-danger/);
@@ -107,7 +105,6 @@ describe('the To do list on the Home as a road (NF-07, ADR-026-R8)', () => {
   });
 
   it('TodoPath_NoFocus_ListsTheRoadWithNoCurrentStep', () => {
-    // What carries a risk of a sanction holds the one highlight of the Home: the road has no step to do now of its own.
     wrap(<TodoPath items={LIST} urgent={2} propertyNames={NAMES} focus={false} />);
 
     expect(steps().some((row) => row.getAttribute('aria-current') === 'step')).toBe(false);
@@ -149,7 +146,6 @@ describe('the To do list on the Home as a road (NF-07, ADR-026-R8)', () => {
   });
 
   it('TodoPath_ListCutByTheServer_SaysTheFirstOnesAndNoTotalNorUrgentCountItDoesNotKnow', () => {
-    // 50 is the most the server sends: there may be more behind them, so the line is no total and does not count the rest either.
     const cut = Array.from({ length: TODO_LIST_LIMIT }, (_, index) => todo({ id: `cut-${index}` }));
     wrap(<TodoPath items={cut} urgent={null} propertyNames={NAMES} />);
 

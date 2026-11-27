@@ -43,7 +43,6 @@ function NextStep({ step, index, total }: { step: ActivationStep; index: number;
     <NextStepCard
       kicker={t('activation.next.kicker')}
       title={t(`activation.steps.${step.key}.title`)}
-      // The card sits inside the checklist, which has its own heading: the step is not a heading of the page.
       titleAs="p"
       detail={activationStepDetail(step, t, (key) => i18n.exists(key))}
       position={t('activation.next.position', { current: index, total })}
@@ -65,7 +64,6 @@ function StepRow({ step }: { step: ActivationStep }) {
 
   return (
     <li
-      // Stacked on a phone (the text keeps the full width), side by side from `sm`.
       className="flex flex-col gap-3 rounded-md border px-3 py-3 sm:flex-row sm:items-start sm:justify-between"
       data-testid={`activation-step-${step.key}`}
       data-state={step.state}
@@ -137,7 +135,6 @@ export function ActivationChecklist() {
   }
 
   const steps = normalizeSteps(status.data);
-  // Nothing to say (a response without steps), or nothing left to do: no card, no empty shell.
   if (steps.length === 0 || steps.every((step) => step.state === 'done')) return null;
 
   const done = steps.filter((step) => step.state === 'done').length;

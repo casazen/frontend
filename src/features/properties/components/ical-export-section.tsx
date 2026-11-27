@@ -18,10 +18,6 @@ import { usePropertyIcalExportUrl, useRegeneratePropertyIcalExportUrl } from '@/
 
 const COPIED_FEEDBACK_MS = 2_000;
 
-/**
- * Export link of a property (PC-13): the URL the OTAs import to see the dates taken on CasaZen, with copy, the steps
- * to paste it on Airbnb and Booking.com and "regenerate" (PC-12, after a confirmation: the old link stops working).
- */
 export function IcalExportSection({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
   const exportUrl = usePropertyIcalExportUrl(propertyId);
@@ -43,7 +39,6 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
       await navigator.clipboard.writeText(url);
       setCopied(true);
     } catch {
-      // No clipboard (insecure context, permission denied): select the link so the host can copy it by hand.
       inputRef.current?.select();
       toast.error(t('ical.copyFailed'));
     }
@@ -59,7 +54,6 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
     regenerate.reset();
   };
 
-  // The dialog closes only once the new link is there; on error it stays open with the reason.
   const confirm = () => {
     regenerate.mutate(undefined, {
       onSuccess: () => {
@@ -128,7 +122,6 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
             {t('ical.exportBookingSteps')}
           </li>
         </ul>
-        {/* PC-12: no echo, the export never carries the OTA bookings nor the imported blocks. */}
         <p>{t('ical.exportContentNote')}</p>
         <p>{t('ical.exportRefreshNote')}</p>
       </div>

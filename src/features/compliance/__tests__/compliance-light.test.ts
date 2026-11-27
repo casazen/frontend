@@ -34,7 +34,6 @@ describe('lightStateOf (the client never works a light out)', () => {
   );
 
   it('lightRank_WhatNobodyCouldSay_ComesBeforeWhatIsInOrder', () => {
-    // An item with no light is not green: it must never sort among the ones that are in order.
     expect(LIGHT_RANK.red).toBeLessThan(LIGHT_RANK.yellow);
     expect(LIGHT_RANK.yellow).toBeLessThan(LIGHT_RANK.unknown);
     expect(LIGHT_RANK.unknown).toBeLessThan(LIGHT_RANK.green);
@@ -71,7 +70,6 @@ describe('reasonText (plain words, never the raw code)', () => {
     for (const code of COMPLIANCE_REASON_CODES) {
       expect(i18n.exists(`compliance.reason.${code}`, { lng }), `${lng}: compliance.reason.${code}`).toBe(true);
     }
-    // And the generic words of every light, and the name of every light.
     for (const state of ['green', 'yellow', 'red', 'unknown']) {
       expect(i18n.exists(`compliance.light.${state}`, { lng })).toBe(true);
       expect(i18n.exists(`compliance.light.fallback.${state}`, { lng })).toBe(true);
@@ -114,7 +112,6 @@ describe('summarizeLights (what the lights say, counted from what the API sends)
   it('summarizeLights_ServerCountsMoreThanItLists_KeepsTheRestAsNotListedAndNeverAsGreen', () => {
     const lights = summarizeLights(summary({ manualSendsRequired: { count: 60, items: [item({ id: 'a', light: 'Red' }), item({ id: 'b', light: 'Green' })] } }));
 
-    // 60 need attention, 1 of them is listed (red); the green one listed is not one of them.
     expect(lights.needs).toBe(60);
     expect(lights.unlisted).toBe(59);
     expect(lights.green).toBe(1);

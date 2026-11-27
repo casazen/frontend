@@ -13,7 +13,6 @@ import { buildHostSiteRoutes } from '../host-site-routes';
 
 const ADDRESS = '/app/connect/wordpress';
 
-/** The types of the elements of the routes a path goes through, outermost first. */
 const typesOf = (path: string) => (matchRoutes(appRoutes, path) ?? []).map((match) => (isValidElement(match.route.element) ? match.route.element.type : null));
 
 describe('route /app/connect/wordpress (PLG-FE-CONSOLE, NF-201)', () => {
@@ -24,7 +23,6 @@ describe('route /app/connect/wordpress (PLG-FE-CONSOLE, NF-201)', () => {
   });
 
   it('Route_IsInsideTheSignedInApp_BehindTheLoginAndTheOnboardingGuard', () => {
-    // A visitor who is not signed in goes to the login and comes back to this address (`connect-sign-in-return`); a new account is first taken through its onboarding.
     const types = typesOf(ADDRESS);
 
     expect(types).toContain(ProtectedRoute);
@@ -34,7 +32,6 @@ describe('route /app/connect/wordpress (PLG-FE-CONSOLE, NF-201)', () => {
 
   it('Route_IsOutsideEveryArea_NoMenuNoTabs', () => {
     expect(typesOf(ADDRESS)).not.toContain(ContextLayout);
-    // It is not a page of an area, so it is not in the manifest of the areas (the pages with a menu, their permissions and their flags).
     expect(ROUTE_MANIFEST.some((entry) => entry.path === ADDRESS)).toBe(false);
   });
 
@@ -49,7 +46,6 @@ describe('route /app/connect/wordpress (PLG-FE-CONSOLE, NF-201)', () => {
   });
 
   it('Route_OnTheOwnHostOfAnAgency_IsNotServed', () => {
-    // The plugin always goes to the console of CasaZen: on the domain of an agency every `/app/*` is «not found».
     const site: HostSite = { host: 'www.villa-rossi.example.test', slug: 'villa-rossi', displayName: 'Villa Rossi', surfaces: { guestArea: true, ownerPortal: true }, ownerLoginReady: true };
     const hostRoutes = buildHostSiteRoutes(appRoutes, site);
 

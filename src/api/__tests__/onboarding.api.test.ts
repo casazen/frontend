@@ -12,7 +12,6 @@ beforeEach(() => {
   vi.mocked(ApiClient.put).mockResolvedValue({});
 });
 
-/** The paths of the endpoints of E10 (backend `Casazen.Web/Controllers/Onboarding*`), relative to the API base URL that already ends in `/api`. */
 describe('onboardingApi: one method for each endpoint of E10', () => {
   describe('reads', () => {
     it('GetStatusPlanPathIntegration_ReadTheirOwnEndpointWithNoQuery', async () => {
@@ -51,7 +50,6 @@ describe('onboardingApi: one method for each endpoint of E10', () => {
     it('GetPanelStepStatus_AsksTheStatusOfThatStep', async () => {
       await onboardingApi.getPanelStepStatus('step 1/2');
 
-      // The id travels in the path: it is encoded.
       expect(ApiClient.get).toHaveBeenCalledWith('/onboarding/panel-steps/step%201%2F2/status');
     });
 
@@ -156,7 +154,6 @@ describe('onboardingApi: one method for each endpoint of E10', () => {
 
       await onboardingApi.bulkApply(request);
 
-      // The server writes only with `dryRun` false AND `confirmed` true: the client adds neither.
       expect(ApiClient.post).toHaveBeenCalledWith('/onboarding/bulk/apply', request);
       expect(vi.mocked(ApiClient.post).mock.calls[0][1]).not.toHaveProperty('confirmed');
     });

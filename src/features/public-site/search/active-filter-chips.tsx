@@ -5,21 +5,12 @@ import { siteLocale } from '@/lib/site-language';
 import { writeFacetPrice, type FacetsCurrency } from './search-facets';
 import type { SearchFilters } from './search-state';
 
-/**
- * The filters that are on, as chips that take themselves off with one press (DB-07c): the price range, the rooms, the area, each
- * service and each rule. The category chips of the bar are their own toggles and are not repeated here. The address changes and
- * the list follows; the chip says in its name what it removes («Togli «Piscina»»).
- */
 export function ActiveFilterChips({
   filters,
   facets,
   onChange,
 }: {
   filters: SearchFilters;
-  /**
-   * What the price of the chip is written in: the currency of the homes (francs in Switzerland), as the facets say it. With none the chip writes the amount with no
-   * symbol and says so; with homes of two currencies, the number alone; and until the homes are in (`pending`) the chip of the price is not drawn at all.
-   */
   facets: FacetsCurrency;
   onChange: (patch: Partial<SearchFilters>) => void;
 }) {

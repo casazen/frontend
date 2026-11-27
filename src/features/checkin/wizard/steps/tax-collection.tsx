@@ -15,9 +15,7 @@ import {
 
 interface TaxCollectionProps {
   collection: TouristTaxCollection;
-  /** Any write of the card is under way (an exemption, the collector, this button): the buttons wait, none starts a second one. */
   busy: boolean;
-  /** The write of «Pagata in struttura» is under way. */
   recording: boolean;
   onRecordPaidAtProperty: () => void;
 }
@@ -67,7 +65,6 @@ export function TaxCollection({ collection, busy, recording, onRecordPaidAtPrope
     notDue: t('checkin.wizard.tax.collection.detail.notDue'),
   };
 
-  // The guest can still pay online what the host has not collected: said, so the host does not collect it as well (or records it as paid at the property, below).
   const guestMayPay = outlook === 'toCollect' && collection.onlinePaymentAvailable && collection.onlinePayable > 0;
 
   return (

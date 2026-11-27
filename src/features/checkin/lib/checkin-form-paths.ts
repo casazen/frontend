@@ -11,7 +11,6 @@ import { STEP_DOCUMENT, STEP_GUESTS } from './checkin-steps';
 
 export type FormPath = FieldPath<PublicCheckInFormValues>;
 
-/** Fields of each guest checked before leaving the first step (personal data). */
 const PERSONAL_FIELDS = [
   'type',
   'firstName',
@@ -32,7 +31,6 @@ const PERSONAL_FIELDS = [
   'residenceCityName',
 ] as const satisfies readonly (keyof StayGuestFormValues)[];
 
-/** Fields of a single guest or head checked before leaving the second step (document). */
 const DOCUMENT_FIELDS = [
   'documentType',
   'documentNumber',
@@ -41,7 +39,6 @@ const DOCUMENT_FIELDS = [
   'documentExpiresOn',
 ] as const satisfies readonly (keyof StayGuestFormValues)[];
 
-/** What a guest of a Swiss stay the police file notifies (not a head) gives of the document: the kind and the number. */
 const BASIC_DOCUMENT_FIELDS = ['documentType', 'documentNumber'] as const satisfies readonly (keyof StayGuestFormValues)[];
 
 export function personalPaths(guests: readonly StayGuestFormValues[], statistical: readonly StatisticalGuestField[]): FormPath[] {
@@ -56,7 +53,6 @@ export function documentPaths(levels: readonly (DocumentLevel | null)[]): FormPa
   );
 }
 
-/** Server error path → the form path that shows it, or null when the form has no such field. */
 export function toFormPath(path: string, guestCount: number): FormPath | null {
   if (path === 'marketingConsentEmail') return 'marketingConsentEmail';
   if (path === 'marketingConsentWhatsApp') return 'marketingConsentWhatsApp';
@@ -65,7 +61,6 @@ export function toFormPath(path: string, guestCount: number): FormPath | null {
   return guestFormPathOf(path, guestCount);
 }
 
-/** How many fields are in error, for the announcement that follows a failed attempt (the form keeps the errors in a tree). */
 export function countFieldErrors(errors: FieldErrors | undefined): number {
   if (!errors) return 0;
   let count = 0;
@@ -88,7 +83,6 @@ export function firstStepWithProblems(errors: FieldErrors<PublicCheckInFormValue
   const entries = Array.isArray(guestErrors) ? (guestErrors as Array<Record<string, unknown> | undefined>) : [];
   const fieldsInError = new Set(entries.flatMap((entry) => (entry ? Object.keys(entry) : [])));
   if ([...PERSONAL_FIELDS, ...statistical].some((field) => fieldsInError.has(field))) return STEP_GUESTS;
-  // The plate of the car is asked with the guests.
   if (errors.vehiclePlate) return STEP_GUESTS;
   if (DOCUMENT_FIELDS.some((field) => fieldsInError.has(field))) return STEP_DOCUMENT;
   return null;

@@ -24,7 +24,6 @@ describe('ComplianceLight (NF-52): color, icon and words, never the color alone'
     const light = screen.getByTestId('light');
     expect(light).toHaveTextContent(words);
     expect(light).toHaveAttribute('data-light', state);
-    // The icon is decorative (the words say it) and is there: the color is never the only signal.
     expect(light.querySelector('svg')).toBeInTheDocument();
     expect(light.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
@@ -84,7 +83,6 @@ describe('ComplianceStatusBadge reuses the vocabulary of the lights', () => {
     render(<ComplianceStatusBadge status={status} />);
 
     const badge = screen.getByTestId('compliance-status-badge');
-    // The status of the activation, in its own word: it is not the proof a light asks for, so it never says «In regola».
     expect(badge).toHaveTextContent(words);
     expect(badge).not.toHaveTextContent('In regola');
     expect(badge).toHaveAttribute('data-light', light);

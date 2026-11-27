@@ -19,21 +19,12 @@ const TONE_ICON: Record<NonNullable<ListBoardColumn<unknown>['tone']>, string> =
 interface ListBoardViewProps<Row> {
   list: ListDefinition<Row>;
   rows: readonly Row[];
-  /** What a card says about a row, with its title made into whatever opens the row. */
   card: (row: Row) => BuiltCard;
-  /** The other actions of the row, for the menu of its card. */
   menu: (row: Row) => readonly ListMenuEntry[];
-  /** A card is to go to another column, by drag or by menu. */
   onMove: (row: Row, to: string) => void;
-  /** Only with a mouse or a pen: a finger moves a card with the menu. */
   dragEnabled?: boolean;
 }
 
-/**
- * The rows in columns by state, a board (UI-14): a column for each state a row can be in, a card for each row. A card moves to
- * another column by dragging it there (a mouse or a pen) or with "Sposta in…" in its menu, which a keyboard, a screen reader
- * and a finger use; a move that is not allowed says why. On a phone the columns scroll sideways.
- */
 export function ListBoardView<Row>({ list, rows, card, menu, onMove, dragEnabled = true }: ListBoardViewProps<Row>) {
   const { t } = useTranslation();
   const baseId = useId();
@@ -58,8 +49,6 @@ export function ListBoardView<Row>({ list, rows, card, menu, onMove, dragEnabled
       aria-label={t('listView.board.label')}
       data-testid="list-board"
       onPointerDown={onPointerDown}
-      // `relative`: the hidden texts for screen readers (`sr-only`) are placed absolutely; without a positioned box around them
-      // they belong to the page and sit where the board has scrolled to, widening the page.
       className="relative flex snap-x snap-proximity items-start gap-4 overflow-x-auto bg-surface-2 p-3 sm:p-4"
     >
       {board.columns.map((column) => {

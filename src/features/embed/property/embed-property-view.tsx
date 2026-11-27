@@ -25,7 +25,6 @@ import { propertyHasRules } from '@/features/public-booking/lib/property-profile
 import { viewItemEvent } from '@/lib/ga4-ecommerce';
 import type { PublicOrgDto, PublicPropertyDetailDto } from '@/types';
 
-// The amenity icons come with the page, not with the app (as on the page of the site).
 const AmenityGrid = lazy(() => import('@/features/public-site/components/AmenityGrid').then((m) => ({ default: m.AmenityGrid })));
 
 /**
@@ -116,12 +115,10 @@ function EmbedPropertyNav({ property }: { property: PublicPropertyDetailDto }) {
   );
 }
 
-/** What the page of a home shows in a frame, in the order a guest reads it. The card is in the flow at every width: under the title under `lg`, beside the page from `lg`. */
 function EmbedPropertyBody({ property, hostLabel }: { property: PublicPropertyDetailDto; hostLabel: string | null }) {
   const { t } = useTranslation();
   useViewItemEvent(property);
 
-  // Every block exists only when the host gave it something to say: no empty headings, no invented content (as on the page of the site).
   const description = property.description?.trim() ?? '';
   const amenities = (property.amenities ?? []).filter((amenity) => amenity.trim() !== '');
 

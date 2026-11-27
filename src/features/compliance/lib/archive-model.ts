@@ -2,35 +2,26 @@ import { addMonths } from '@/features/reports/report-period';
 import { endOfMonth, formatStayDate, isStayDate, startOfMonth } from '@/lib/stay-dates';
 import { COMPLIANCE_PROOF_KINDS, type ComplianceProofKind, type CoverageEvidenceClass, type CoverageKind, type CoverageReport, type CoverageRow } from '@/types';
 
-/** The two tabs of the page: what is expected and what CasaZen holds. */
 export type ArchiveTab = 'summary' | 'proofs';
 
-/** The names of the parameters of the address of the page: the first four are the ones the cockpit links write (`complianceActionRoute`). */
 export const ARCHIVE_PARAMS = { kind: 'kind', property: 'property', period: 'period', day: 'day', tab: 'tab', page: 'page' } as const;
 
-/** The months before the current one that the default period reaches back to: the three whole months before it, and the current one. */
 const RECENT_MONTHS = 3;
 
-/** The months the period list offers, counting the current one. */
 const LISTED_MONTHS = 12;
 
 const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/;
 const YEAR = /^\d{4}$/;
-/** An id of a property as the API writes it (a GUID): anything else in the address is not a property. */
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
-/** The years the backend knows (`HostDashboardPeriod`): a period outside them is a mistake of the address. */
 const FIRST_YEAR = 2000;
 const LAST_YEAR = 2100;
 
-/** What the address of the page asks for. Every field is already valid: anything the address says wrong is left out, never guessed. */
 export interface ArchiveAddress {
   tab: ArchiveTab;
   kind?: ComplianceProofKind;
   propertyId?: string;
-  /** A month (`2026-08`) or a year (`2026`): the period of the filter. */
   period?: string;
-  /** One day (`2026-08-15`): narrower than a period, so when it is there it is the only one. */
   day?: string;
   page: number;
 }
@@ -67,7 +58,6 @@ export function readArchiveAddress(params: URLSearchParams, hasSummary: boolean)
   const asked = params.get(ARCHIVE_PARAMS.tab);
 
   return {
-    // The summary is the page when no tab is asked (the plain address of the page); the proofs are `?tab=proofs`. Without a summary every address is the proofs.
     tab: hasSummary && asked !== 'proofs' ? 'summary' : 'proofs',
     kind: COMPLIANCE_PROOF_KINDS.find((candidate) => candidate === kind),
     propertyId: property !== null && GUID.test(property) ? property : undefined,
@@ -77,7 +67,6 @@ export function readArchiveAddress(params: URLSearchParams, hasSummary: boolean)
   };
 }
 
-/** The days of the period the page looks at, both included: the day, the month, the year, or by default the recent months. */
 export function archiveWindow(address: Pick<ArchiveAddress, 'period' | 'day'>, today: string): { from: string; to: string } {
   if (address.day) return { from: address.day, to: address.day };
   const { period } = address;
@@ -86,25 +75,18 @@ export function archiveWindow(address: Pick<ArchiveAddress, 'period' | 'day'>, t
   return { from: addMonths(startOfMonth(today), -RECENT_MONTHS), to: endOfMonth(today) };
 }
 
-/** The months the period list offers: this one and the eleven before it (`yyyy-MM`), newest first. */
 export function listedMonths(today: string): string[] {
   const thisMonth = startOfMonth(today);
   return Array.from({ length: LISTED_MONTHS }, (_, index) => addMonths(thisMonth, -index).slice(0, 7));
 }
 
-/**
- * The years a proof is kept for: a proof is kept five years from its upload (`ManualComplianceProof.RetentionYears` of the backend), so the list of the years
- * reaches back as far as the oldest proof that can still be there: the year of `today` and the five before it.
- */
 const RETENTION_YEARS = 5;
 
-/** The years of the periods of a whole year, newest first: the year of `today` and the five before it, as far back as a proof is kept. */
 export function listedYears(today: string): string[] {
   const year = Number(today.slice(0, 4));
   return Array.from({ length: RETENTION_YEARS + 1 }, (_, index) => String(year - index)).filter((value) => inSupportedYears(Number(value)));
 }
 
-/** A month (`yyyy-MM`), a year (`yyyy`) or a day (`yyyy-MM-dd`) as a person reads it, in the language of the page: «agosto 2026», «2026», «15 agosto 2026». */
 export function formatPeriod(period: string, language: string): string {
   if (isStayDate(period)) return formatStayDate(period, language) || period;
   const month = MONTH.exec(period);
@@ -124,12 +106,10 @@ export function proofKindOfRow(kind: CoverageKind): ComplianceProofKind {
   }
 }
 
-/** Whether a row of the report is about what the proofs are filtered to (the tourist tax holds two kinds of proof: its declaration and its payment). */
 export function rowMatchesKind(row: Pick<CoverageRow, 'kind'>, kind: ComplianceProofKind | undefined): boolean {
   return kind === undefined || proofKindOfRow(row.kind) === kind || (row.kind === 'TouristTax' && kind === 'TouristTaxPayment');
 }
 
-/** The proofs that make money (the receipt of a tax declaration or payment): they are read with `payment.read` and written with `payment.write`. */
 export function isTaxKind(kind: ComplianceProofKind): boolean {
   return kind === 'TouristTaxDeclaration' || kind === 'TouristTaxPayment';
 }
@@ -139,27 +119,18 @@ export function isMonthKind(kind: ComplianceProofKind): boolean {
   return kind !== 'AlloggiatiReceipt';
 }
 
-/**
- * The most flats the dialog lets one receipt name. The summary before saving is a GET that carries the id of every flat in its address (about 49 characters each) and the server reads a
- * request line of at most 8 KB: with more than about 160 flats the summary would fail for good. The server itself takes up to 500 (`ComplianceArchiveLimits.MaxCoveredProperties`, a 422
- * beyond), so this is the prudent one of the two limits; the text of the dialog says it.
- */
 export const MAX_RECEIPT_FLATS = 100;
 
-/** The groups of the report, in the order they are told: what is missing first, then what only the channel manager can tell, then what is proven. */
 export const COVERAGE_GROUPS: readonly CoverageEvidenceClass[] = ['Missing', 'ExternalVerificationRequired', 'OfficialProof', 'NotApplicable'];
 
-/** The rows of one state, in the order the API sent them (by day, most recent first). A state this version does not know is a row to verify, never a proof. */
 export function rowsOf(rows: readonly CoverageRow[], state: CoverageEvidenceClass): CoverageRow[] {
   return rows.filter((row) => (COVERAGE_GROUPS.includes(row.evidenceClass) ? row.evidenceClass : 'ExternalVerificationRequired') === state);
 }
 
-/** How the headline of the summary weighs: what is missing is the host's, what is to verify is in hand, `success` only when the API says everything is proven. */
 export type SummaryTone = 'danger' | 'warning' | 'success' | 'neutral';
 
 export interface CoverageSummary {
   tone: SummaryTone;
-  /** The key of the headline; the counts are its variables. */
   key: 'missing' | 'toVerify' | 'allProven' | 'nothingOwed' | 'unknown';
   missing: number;
   toVerify: number;
@@ -173,7 +144,6 @@ export interface CoverageSummary {
  * from the absence of data.
  */
 export function summarizeCoverage(report: Pick<CoverageReport, 'complete' | 'officialProof' | 'externalVerificationRequired' | 'missing' | 'rows'>): CoverageSummary {
-  // The counts of the API and the rows are both read, and the larger wins: whichever says something is missing or to verify is believed.
   const missing = Math.max(report.missing, rowsOf(report.rows, 'Missing').length);
   const toVerify = Math.max(report.externalVerificationRequired, rowsOf(report.rows, 'ExternalVerificationRequired').length);
   const proven = report.officialProof;

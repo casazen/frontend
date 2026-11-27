@@ -73,12 +73,10 @@ describe('useNavCounts (UI-04a)', () => {
   });
 
   it('NavCounts_InboxEntry_CountsTheRequestsAwaitingTheAnswerOfTheSupplier', async () => {
-    // Three wait for the answer of the supplier and two for the customer: the menu counts only the first.
     vi.mocked(fetchSupplierInboxCounts).mockResolvedValue({ toAnswer: 3, awaitingCustomer: 2, scheduled: 1, toCollect: 0, archive: 0, paymentsLate: 0 });
     const { result } = render([inbox]);
 
     await waitFor(() => expect(result.current).toEqual({ supplierRequests: 3 }));
-    // The counters of the chips of the list: the cache entry is shared with the page.
     expect(fetchSupplierInboxCounts).toHaveBeenCalledTimes(1);
     expect(bookingsApi.getApprovalRequests).not.toHaveBeenCalled();
   });
@@ -106,7 +104,6 @@ describe('useNavCounts (UI-04a)', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summary as never);
     const { result } = render([dashboard, compliance]);
 
-    // 1 failed + 2 to send + 3 guest data: the 21 properties to activate and the upkeep do not weigh on the menu.
     await waitFor(() => expect(result.current).toEqual({ compliance: 6 }));
     expect(bookingsApi.getApprovalRequests).not.toHaveBeenCalled();
   });
@@ -137,7 +134,6 @@ describe('useNavCounts (UI-04a)', () => {
     vi.mocked(internalActivitiesApi.getUrgentCount).mockResolvedValue({ count: 3 });
     const { result } = render([dashboard, activities]);
 
-    // The number is the server's (ADR-026-R12): the hook adds nothing of its own and asks nothing else.
     await waitFor(() => expect(result.current).toEqual({ activities: 3 }));
     expect(internalActivitiesApi.getUrgentCount).toHaveBeenCalledTimes(1);
     expect(bookingsApi.getApprovalRequests).not.toHaveBeenCalled();
@@ -181,7 +177,6 @@ describe('useNavCounts (UI-04a)', () => {
     });
     const { result } = render([messages]);
 
-    // The channels' conversations and the direct ones are one number (counters only: no name, no text).
     await waitFor(() => expect(result.current).toEqual({ messages: 5 }));
     expect(messageHubApi.unread).toHaveBeenCalledTimes(1);
     expect(bookingsApi.getApprovalRequests).not.toHaveBeenCalled();

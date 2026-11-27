@@ -44,7 +44,6 @@ describe('ServicePreviewCard', () => {
   it('ServicePreviewCard_VatNotDeclared_SaysNothingAboutVat', () => {
     renderCard({ includesVat: false, supplementCount: 0 });
 
-    // Nothing is promised that the supplier did not declare (D4): no note at all.
     expect(screen.queryByTestId('service-preview-notes')).not.toBeInTheDocument();
     expect(screen.queryByText(/IVA/)).not.toBeInTheDocument();
   });

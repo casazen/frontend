@@ -85,7 +85,6 @@ describe('ChannelsCell (the column «Canali» of the list)', () => {
     );
 
   it('theSummaryIsNotReadYet_OrCouldNotBeRead_SaysNothingIsKnown_NeverNonPubblicato', () => {
-    // While it loads, or after a failed read, the summary has no entry for anybody: that is not «never published».
     cell({ known: false });
 
     expect(screen.getByTestId('channels-unknown')).toHaveTextContent('Stato dei canali non ancora disponibile');
@@ -127,7 +126,6 @@ describe('MultiChannelStatus (the sheet of the property)', () => {
     expect(within(screen.getByTestId('multi-channel-homeaway')).getByText('Da correggere')).toBeInTheDocument();
     expect(screen.getByTestId('multi-channel-homeaway')).toHaveTextContent('Servono più foto per questo canale');
     expect(within(screen.getByTestId('multi-channel-expedia')).getByText('Gestito sul canale')).toBeInTheDocument();
-    // The colours are told by the tone of each badge, never by the colour alone: every badge has its word and its icon.
     expect(screen.getByTestId('multi-channel-status').querySelectorAll('[data-status-kind="channel"] svg')).toHaveLength(4);
   });
 
@@ -153,12 +151,10 @@ describe('MultiChannelStatus (the sheet of the property)', () => {
     expect(screen.getByTestId('multi-channel-outside')).toHaveTextContent('scegli quale versione tenere');
     expect(screen.queryByTestId('outside-change-dialog')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('multi-channel-outside-choose'));
-    // The dialog lists the channel that changed, and only that one.
     expect(screen.getByTestId('outside-change-dialog')).toBeInTheDocument();
     expect(screen.getByTestId('outside-change-booking_xml')).toBeInTheDocument();
     expect(screen.queryByTestId('outside-change-airbnb_xml')).not.toBeInTheDocument();
 
-    // Who may only read is told, and has no choice to make.
     rerender(
       <MemoryRouter>
         <MultiChannelStatus propertyId="p1" canWrite={false} />

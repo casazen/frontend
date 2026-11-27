@@ -32,7 +32,6 @@ const CONSENTS: OnboardingConsentsPayload = {
   subprocessorsVersion: '2026-06-v1',
 };
 
-// The consents step has its own tests: here it only hands its result to the page.
 vi.mock('../components/consents-step', () => ({
   ConsentsStep: ({ onContinue }: { onContinue: (payload: OnboardingConsentsPayload) => void }) => (
     <button type="button" data-testid="accept-consents" onClick={() => onContinue(CONSENTS)}>
@@ -45,7 +44,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { confirmWorkspaceAccess } from '../confirm-workspace-access';
 import { UsersApi } from '@/api/users.api';
 import { toast } from 'sonner';
-// Compatibility editor and consent-renewal coverage. The new signup is covered in commercial-signup-wizard.test.tsx and the browser flow.
 vi.mock('../commercial-signup-wizard', () => ({ CommercialSignupWizard: () => <p data-testid="commercial-wizard">payment</p> }));
 import { ExistingOnboardingPage as OnboardingPage, OnboardingPage as RoutedOnboardingPage } from '../onboarding-page';
 import { CONSENT_STORAGE_KEY } from '@/lib/cookie-consent';
@@ -70,7 +68,6 @@ function mockAuth(roles: string[], getAccessToken: () => Promise<string | undefi
   } as unknown as ReturnType<typeof useAuth>);
 }
 
-/** An access token that carries the roles (the ID token of the user has none): only the claim is read, the signature is not. */
 function accessToken(roles: string[]): string {
   const encode = (value: object) => btoa(JSON.stringify(value)).replace(/=+$/, '');
   return `${encode({ alg: 'none' })}.${encode({ [ROLES_CLAIM]: roles })}.signature`;
@@ -131,14 +128,12 @@ function renderPage(entry: string | { pathname: string; search?: string; state?:
 
 async function chooseShortTermWithConsents() {
   fireEvent.click((await screen.findAllByRole('button', { name: i18n.t('onboarding.choose') }))[0]);
-  // The plan is never asked: the consents are the last screen, the org starts on Starter.
   fireEvent.click(await screen.findByTestId('accept-consents'));
 }
 
 describe('OnboardingPage (PL-01)', () => {
   beforeEach(() => {
     vi.stubGlobal('location', { ...window.location, assign });
-    // The visitor allowed statistics: without that the attribution is neither kept nor sent (`cookie-consent.test.ts` proves it).
     window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
   });
 
@@ -175,7 +170,6 @@ describe('OnboardingPage (PL-01)', () => {
   });
 
   it('OnboardingPage_FirstOnboardingCreatesTheOrg_SendsTheSignupAttributionBeforeLeaving', async () => {
-    // SE-03: captured on /signup before the Auth0 signup.
     captureSignupAttribution(
       { pathname: '/signup', search: '?comune=como&utm_source=seo-compliance&utm_medium=cta', origin: 'https://site.test' },
       '',
@@ -188,7 +182,6 @@ describe('OnboardingPage (PL-01)', () => {
     renderPage();
     await chooseShortTermWithConsents();
 
-    // A new org starts with its first property, not on an empty dashboard.
     await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent/properties/create?first=1'));
     expect(UsersApi.recordSignupAttribution).toHaveBeenCalledWith({
       utmSource: 'seo-compliance',
@@ -210,7 +203,6 @@ describe('OnboardingPage (PL-01)', () => {
     await chooseShortTermWithConsents();
 
     await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent/properties/create?first=1'));
-    // Kept for the next page load (the onboarding guard sends it again).
     expect(readPendingSignupAttribution()).toEqual({ utmSource: 'google', landingPath: '/signup' });
   });
 
@@ -263,12 +255,10 @@ describe('OnboardingPage (PL-01)', () => {
 
     fireEvent.click(await screen.findByTestId('accept-consents'));
 
-    // Edit mode has no plan step (A1-15): the consents are sent with the type chosen on the role step.
     await waitFor(() =>
       expect(UsersApi.postOnboarding).toHaveBeenCalledWith({ rentalType: 'LongTerm', planTier: undefined, consents: CONSENTS }),
     );
     expect(toast.error).toHaveBeenCalledWith(i18n.t('onboarding.consentRequiredToast'));
-    // PL-06: edit mode returns to the profile of the saved rental type (not the legacy /profile alias).
     await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/long-rent/profile'));
   });
 
@@ -279,7 +269,6 @@ describe('OnboardingPage (PL-01)', () => {
 
     renderPage('/onboarding?mode=edit');
 
-    // A1-15: the role step, never the plan selector whose choice the backend ignores for an existing org.
     expect(await screen.findByText(i18n.t('onboarding.editOperatorType'))).toBeInTheDocument();
     expect(screen.getByText(i18n.t('onboarding.editRoleDescription'))).toBeInTheDocument();
 
@@ -287,7 +276,6 @@ describe('OnboardingPage (PL-01)', () => {
     expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
     fireEvent.click(screen.getByTestId('onboarding-edit-save'));
 
-    // PL-06: after saving LongTerm in edit mode, open the long-rent profile (not the plan page).
     await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/long-rent/profile'));
     expect(UsersApi.putOnboarding).toHaveBeenCalledWith({ rentalType: 'LongTerm', planTier: undefined });
     expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
@@ -395,8 +383,6 @@ describe('OnboardingPage (PL-01)', () => {
   });
 
   it('OnboardingPage_OnboardedWithOrgButNoRentalTypeAndOldConsents_CollectsTheConsentsInsteadOfAPlainUpdate', async () => {
-    // The loop of the checklist: onboarding completed and an org, but no rental type yet and the legal documents not
-    // accepted (backend consentsAccepted=false). A plain update records no consent, so the step would stay open for good.
     mockAuth(['PropertyOwner']);
     vi.mocked(UsersApi.getMe).mockResolvedValue(
       profile({
@@ -421,7 +407,6 @@ describe('OnboardingPage (PL-01)', () => {
   });
 
   it('OnboardingPage_HostWithOrgButOnboardingRequired_StaysOnTheWizard', async () => {
-    // Org created before PL-02 without the onboarding: the roles and the org no longer skip the wizard.
     mockAuth(['PropertyOwner']);
     vi.mocked(UsersApi.getMe).mockResolvedValue(
       profile({ orgId: 'org-legacy', onboardingRequired: true, consentsAccepted: false }),
@@ -454,7 +439,6 @@ describe('OnboardingPage (PL-01)', () => {
   ] as const)(
     'OnboardingPage_BackFromThePaymentWithoutRolesInTheToken_GoesToTheAreaOfTheRentalTypeTheServerSetUp (%s)',
     async (rentalType, area) => {
-      // The access token was issued before the memberships existed: no role claims. The profile says the host is set up.
       mockAuth([]);
       vi.mocked(UsersApi.getMe).mockResolvedValue({
         ...ONBOARDED, rentalType, onboardingRequired: false, consentsAccepted: true, commercialSetupRequired: false,
@@ -480,7 +464,6 @@ describe('OnboardingPage (PL-01)', () => {
     expect(await screen.findByTestId('accept-consents')).toBeInTheDocument();
     expect(screen.getByText(i18n.t('onboarding.consentsRenewalTitle'))).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: i18n.t('onboarding.choose') })).not.toBeInTheDocument();
-    // The claims are known only once the token is read: after that nothing else can move the page.
     await waitFor(() => expect(getAccessToken).toHaveBeenCalled());
     await act(async () => undefined);
     expect(continuation).not.toHaveBeenCalled();
@@ -499,7 +482,6 @@ describe('OnboardingPage (PL-01)', () => {
     renderPage('/onboarding?checkout=success');
 
     expect((await screen.findAllByRole('button', { name: i18n.t('onboarding.choose') })).length).toBeGreaterThan(0);
-    // The claims are known only once the token is read: after that nothing else can move the page.
     await waitFor(() => expect(getAccessToken).toHaveBeenCalled());
     await act(async () => undefined);
     expect(continuation).not.toHaveBeenCalled();
@@ -521,7 +503,6 @@ describe('OnboardingPage (PL-01)', () => {
 
     renderPage();
 
-    // The profile is in and the roles are not: the page waits on the wizard (the loading screen has no buttons), it does not guess the area.
     expect((await screen.findAllByRole('button', { name: i18n.t('onboarding.choose') })).length).toBeGreaterThan(0);
     await waitFor(() => expect(getAccessToken).toHaveBeenCalled());
     await act(async () => undefined);
@@ -625,7 +606,6 @@ describe('OnboardingPage supplier option (SU-02)', () => {
   });
 
   it('OnboardingPage_LinkedSupplierWithHostFeaturesWithheld_StillGoesToSupplierConsole (PL-02)', async () => {
-    // A supplier never completed the host onboarding: the backend flag must not keep it in the host wizard.
     mockAuth([]);
     vi.mocked(UsersApi.getMe).mockResolvedValue(
       profile({ orgId: 'supplier-org', supplierOrgId: 'supplier-org', onboardingRequired: true, consentsAccepted: false }),

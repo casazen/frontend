@@ -45,7 +45,6 @@ function IstatAssist({ propertyId }: IstatAssistProps) {
 
 interface IstatCredentialsCardProps {
   propertyId: string;
-  /** The caller may set, replace or remove them (`property.write`; the API checks again). */
   canEdit: boolean;
 }
 
@@ -64,11 +63,8 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
   const [values, setValues] = useState<SetIstatCredentialsRequest>(EMPTY_ISTAT_CREDENTIALS);
   const [errors, setErrors] = useState<IstatCredentialsErrors>({});
   const [confirmRemove, setConfirmRemove] = useState(false);
-  // Any request of the card in flight: none of its buttons can be pressed again meanwhile.
   const busy = save.isPending || remove.isPending;
 
-  // What the server said the last time it was asked, and only if that last time worked: a read that failed keeps the older answer in the query (a 404 included), which is not what is
-  // true now, so the card neither says «configurate» nor offers to replace or remove what it cannot see.
   const read = status.isSuccess ? status.data : undefined;
   const configured = read?.configured === true;
 
@@ -79,7 +75,6 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     save.mutate(values, {
-      // Write-only: the values leave the page as soon as the API has them, and the mutation drops what it was asked (it holds the password until it is reset).
       onSuccess: () => setValues(EMPTY_ISTAT_CREDENTIALS),
       onSettled: () => save.reset(),
     });

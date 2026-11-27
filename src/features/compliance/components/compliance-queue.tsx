@@ -13,7 +13,6 @@ interface ComplianceQueueProps<Row> {
   testId?: string;
 }
 
-/** Filters the rows already available to this user. The priority callout above the queue stays visible when filtering. */
 export function ComplianceQueue<Row>({ rows, textOf, needsAction, children, testId }: ComplianceQueueProps<Row>) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');

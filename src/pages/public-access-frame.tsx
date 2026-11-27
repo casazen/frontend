@@ -4,7 +4,6 @@ import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { cn } from '@/lib/utils';
 
 export interface AccessContent {
-  /** A text, or a sentence with a part in bold (the page that asks to connect a site writes the address of the site and the name of the agency in bold). */
   title: ReactNode;
   description?: ReactNode;
   success?: boolean;

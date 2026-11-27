@@ -6,21 +6,12 @@ import { STATUS_ICONS } from "./status-icons";
 import { getStatusView, STATUS_TONE_CLASSES } from "./status-view";
 
 export interface StatusBadgeProps<K extends StatusKind> extends Omit<React.HTMLAttributes<HTMLSpanElement>, "children"> {
-  /** What the state is of: `booking`, `lease`, `request`... (see `lib/status-dictionary`). */
   kind: K;
-  /** The value the API sent. One the app does not know is shown as it came. */
   status: StatusOf<K>;
-  /** Who is looking: a supplier sees a request with other words. Default: the host. */
   perspective?: StatusPerspective;
   size?: "default" | "lg";
-  /**
-   * The words of this one badge, when the page has better ones than the dictionary: a count («In ritardo di 3 giorni»), a state the server
-   * has not told the app yet («Vedi la richiesta»), a phase that is not a state of the API. The tone and the icon stay the state's.
-   */
   label?: string;
-  /** With `label`, for a phase of a page that is not a state of the dictionary: its own tone. Not for restyling a state that is there. */
   tone?: StatusTone;
-  /** The same, for the icon. */
   icon?: StatusIconName;
 }
 

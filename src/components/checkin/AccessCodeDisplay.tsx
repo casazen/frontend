@@ -8,11 +8,6 @@ interface AccessCodeDisplayProps {
   propertyName?: string;
 }
 
-/**
- * Access code display component (NF-13, E06/F03/US01/T02).
- * Shows the property access code only after verification has passed (AC-NF13-4).
- * Includes disclosure that the code is not unique per stay (AC-NF13-10).
- */
 export function AccessCodeDisplay({ code, propertyName }: AccessCodeDisplayProps) {
   const { t } = useTranslation();
 

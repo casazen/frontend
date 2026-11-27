@@ -22,7 +22,6 @@ describe('LeaseWizardFrame and the popup alerts (ADR-025-R7)', () => {
       </LeaseWizardFrame>,
     );
 
-    // Every screen of the contract wizard is drawn in this frame: while one is on screen the popup waits.
     expect(screen.getByTestId('lease-wizard')).toBeInTheDocument();
     expect(useUiStore.getState().openWizards).toBeGreaterThan(0);
 

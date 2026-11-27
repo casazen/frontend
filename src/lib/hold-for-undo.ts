@@ -15,7 +15,6 @@ const listeners = new Set<() => void>();
 
 const askBeforeLeaving = (event: BeforeUnloadEvent) => {
   event.preventDefault();
-  // Older browsers only ask when the event carries a value.
   event.returnValue = '';
 };
 
@@ -36,22 +35,17 @@ function subscribe(listener: () => void) {
 
 const getHeld = () => held;
 
-/** The keys of the actions that wait for their six seconds to pass. */
 export function useHeldKeys(): ReadonlySet<string> {
   return useSyncExternalStore(subscribe, getHeld, getHeld);
 }
 
 export interface HoldForUndoOptions {
-  /** What is held, as the page names it (`reminder:<id>`): the same key cannot wait twice. */
   key: string;
-  /** What the toast says while it waits, already translated: it does not say the thing is done. */
   message: string;
   description?: string;
-  /** What is done when the six seconds pass without «Annulla». A failure is told by the toast (`toastUndo` reports it). */
   commit: () => Promise<void>;
 }
 
-/** Holds `commit` back with a toast offering «Annulla». `false` (and nothing started) when the same key is already waiting. */
 export function holdForUndo({ key, message, description, commit }: HoldForUndoOptions): boolean {
   if (held.has(key)) return false;
   setHeld(new Set(held).add(key));
@@ -64,7 +58,6 @@ export function holdForUndo({ key, message, description, commit }: HoldForUndoOp
 
   toastUndo(message, {
     description,
-    // «Annulla» drops it: nothing was done, so there is nothing to take back.
     undo: release,
     commit: async () => {
       try {

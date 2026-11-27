@@ -8,10 +8,6 @@ function rolesEqual(a: string[], b: string[]): boolean {
 
 export interface UserRoleState {
   roles: string[];
-  /**
-   * False while the roles are still being read (auth loading, or the access token being decoded when the ID token
-   * profile carries none). Decisions that depend on the absence of a role (e.g. "no Admin role") must wait for it.
-   */
   isResolved: boolean;
 }
 
@@ -27,7 +23,6 @@ export function useUserRoleState(): UserRoleState {
   });
 
   useEffect(() => {
-    // Keep the previous array when the roles are unchanged: consumers use it as a hook dependency.
     const update = (next: string[], isResolved: boolean) =>
       setState((previous) => {
         const sameRoles = rolesEqual(previous.roles, next);
@@ -71,10 +66,6 @@ export function useUserRoleState(): UserRoleState {
   return state;
 }
 
-/**
- * CasaZen roles live in the access token (Auth0 Action), not the ID token profile.
- * Use this hook anywhere the UI needs role checks after login.
- */
 export function useUserRoles(): string[] {
   return useUserRoleState().roles;
 }

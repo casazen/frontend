@@ -1,6 +1,5 @@
 import { expect, type Page } from '@playwright/test';
 
-/** Completes the new host signup with a simulated payment on the demo-only browser suite. */
 export async function completeOnboardingFromRentalChoice(page: Page, rentalButtonIndex: number): Promise<void> {
   const rentalType = rentalButtonIndex === 1 ? 'LongTerm' : 'ShortTerm';
   const profile = 'owner';
@@ -22,8 +21,6 @@ export async function completeOnboardingFromRentalChoice(page: Page, rentalButto
     created = true;
     return route.fulfill({ json: { orgId: 'org-test', orgProvisioned: true, rentalType, rolesAssigned: ['PropertyOwner'], rolesSynced: true } });
   });
-  // The browser-only suite must model the same server authorization checked by signup, not an HTML fallback.
-  // A checkout success URL alone still grants nothing: both saved onboarding and confirmed payment are required.
   await page.route('**/api/me/contexts', route => {
     if (!created || !confirmed) return route.fulfill({ status: 403, json: { code: 'commercial_setup_required' } });
     return route.fulfill({ json: {
@@ -50,8 +47,6 @@ export async function completeOnboardingFromRentalChoice(page: Page, rentalButto
   await page.goto('/onboarding?checkout=success&demoProfile=onboarding');
   await expect(page.getByRole('button', { name: 'Entra e inizia la configurazione' })).toBeVisible();
   confirmed = true;
-  // The demo SDK has no real identity provider refresh. Publish its paid host persona only after confirmation,
-  // so the newly mounted workspace receives the same host area as the server fixture above.
   await page.evaluate(next => sessionStorage.setItem('casazen:demo-profile', next), rentalType === 'LongTerm' ? 'long-term' : 'short-stay');
   await page.getByRole('button', { name: 'Entra e inizia la configurazione' }).click();
 }

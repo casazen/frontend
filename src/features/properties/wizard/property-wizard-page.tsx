@@ -23,7 +23,6 @@ import { PropertyWizard } from './property-wizard';
 import { PROPERTY_ID_PARAM, resumeStepFor, type WizardStepId } from './property-wizard-model';
 import { useWizardListingSeed } from './use-wizard-listing-seed';
 
-/** A property that cannot be opened: said with the reason the server gave, with the way back to the list always there. */
 function LoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const { t } = useTranslation();
   const planReturn = usePlanReturn();
@@ -64,7 +63,6 @@ function ResumeWizard({ propertyId, stepNamed }: { propertyId: string; stepNamed
   const { t } = useTranslation();
   const connectorOn = useFeatureFlags().flags.octorateConnector;
   const property = useProperty(propertyId, { fresh: true });
-  // Not needed when the address already names a step (a link to «Aggiungi foto»): the wizard opens there at once.
   const activation = useComplianceActivation(stepNamed ? '' : propertyId);
   const shortRent = property.data !== undefined && property.data.rentalMode !== 'Long';
   const listing = useWizardListingSeed(propertyId, shortRent);
@@ -111,20 +109,12 @@ function ResumeWizard({ propertyId, stepNamed }: { propertyId: string; stepNamed
   );
 }
 
-/**
- * `/app/short-rent/properties/create` (SR-07b): «Aggiungi immobile». It replaces the form of the creation; the first property of a new
- * host (`?first=1`) keeps its short form and does not come here.
- *
- * A property that appears in the address after the host's first «Avanti» is the one this very wizard created: it is the same wizard
- * going on, not a reason to start another (which would lose its answers), so only a property named by a link is reopened.
- */
 export function PropertyWizardPage() {
   const planReturn = usePlanReturn();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigationType = useNavigationType();
   const [createdHere, setCreatedHere] = useState<string | null>(null);
-  /** Counts the wizards started in this visit: a new one is a new element, with nothing left of the last. */
   const [generation, setGeneration] = useState(0);
   const linkedPropertyId = searchParams.get(PROPERTY_ID_PARAM);
   const savedProperty = useProperty(linkedPropertyId ?? '');

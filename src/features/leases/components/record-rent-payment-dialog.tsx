@@ -18,11 +18,9 @@ import type { LeaseSummary, RentInstallment, RentRegisterRow } from '@/types';
 import { leasePropertyLine, leaseTenantName } from '../lib/lease-list-format';
 import { isOpenInstallment, paymentKey, shortDay } from '../lib/rent-register';
 
-/** How the money came, as the landlord says it: it is written in the note of the payment, nothing else changes. */
 const METHODS = ['bank', 'cheque', 'cash'] as const;
 type Method = (typeof METHODS)[number];
 
-/** The installment being declared paid and who it is about, whichever way the dialog got there. */
 interface Target {
   leaseId: string;
   installmentId: string;
@@ -34,19 +32,16 @@ interface Target {
 }
 
 interface RecordRentPaymentDialogProps {
-  /** From a row of the register the installment is already chosen. Without it the landlord picks the lease and then the installment. */
   row?: RentRegisterRow;
   onClose: () => void;
 }
 
-/** The leases that have a rent plan with something still to collect: the only ones a payment can be declared on. */
 function withRentToCollect(leases: readonly LeaseSummary[]): LeaseSummary[] {
   return leases
     .filter((lease) => !!lease.nextRentDueDate)
     .sort((a, b) => (b.overdueRentCount ?? 0) - (a.overdueRentCount ?? 0));
 }
 
-/** The installment to declare paid and who it is about: the row it was opened from, or the lease and installment chosen. */
 function targetOf(
   t: TFunction,
   row: RentRegisterRow | undefined,
@@ -76,12 +71,6 @@ function targetOf(
   };
 }
 
-/**
- * A payment received outside CasaZen (bank transfer, cheque, cash), declared by the landlord (LR-04b). The whole installment: a
- * partial payment is not a thing here. From a row the installment is known; from the button of the page there are two steps, the
- * lease and then its open installment. There is no way to take a declared payment back, so it waits six seconds after the
- * landlord confirms, with an «Annulla» that is true (`holdForUndo`: nothing is recorded until they pass).
- */
 export function RecordRentPaymentDialog({ row, onClose }: RecordRentPaymentDialogProps) {
   const { t, i18n } = useTranslation();
   const actions = useRentRegisterActions();
@@ -92,7 +81,6 @@ export function RecordRentPaymentDialog({ row, onClose }: RecordRentPaymentDialo
   const [paidOn, setPaidOn] = useState(today);
   const [method, setMethod] = useState<Method | ''>('');
 
-  // Without a row: the leases to choose from, and the open installments of the one chosen.
   const leasesQuery = useLeases(undefined, { enabled: !row });
   const candidates = withRentToCollect(leasesQuery.data ?? []);
   const leaseId = row ? row.leaseId : chosenLeaseId || (candidates.length === 1 ? candidates[0].id : '');
@@ -126,7 +114,6 @@ export function RecordRentPaymentDialog({ row, onClose }: RecordRentPaymentDialo
         toast.success(t('longRentRents.pay.done', { amount, tenant: payment.tenant }));
       },
     });
-    // The same payment is already being recorded: tell, never a click that seems to do nothing.
     if (!started) toast.info(t('longRentRents.alreadyHeld'));
     onClose();
   }

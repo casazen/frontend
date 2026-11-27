@@ -9,17 +9,12 @@ import { upcomingDeadlines } from './overview-model';
 const DEADLINES_PATH = '/app/long-rent/deadlines';
 
 interface UpcomingDeadlinesProps {
-  /** The dates of the next four months; undefined while they load. */
   deadlines: LongRentDeadlines | undefined;
   isError: boolean;
   onRetry: () => void;
   today: string;
 }
 
-/**
- * «Scadenze»: the first four dates of the next four months that are not rents (the rents are in the numbers above), the late
- * ones among them in red, and the link to the whole agenda. Each row leads to the page that deals with the date.
- */
 export function UpcomingDeadlines({ deadlines, isError, onRetry, today }: UpcomingDeadlinesProps) {
   const { t } = useTranslation();
   const rows = deadlines ? upcomingDeadlines(deadlines.items).map((item) => deadlineRow(item, { t, today })) : [];

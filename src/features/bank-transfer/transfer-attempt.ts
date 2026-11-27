@@ -99,7 +99,6 @@ export function stripeTransferAttempt(leaseId: string, dueId: string): StripeTra
   return load(dueKey(leaseId, dueId));
 }
 
-/** A due that already failed may be tried again. The next click is a new transfer with a new key. */
 export function releaseAcceptedStripeTransfer(leaseId: string, dueId: string): void {
   const id = dueKey(leaseId, dueId);
   const attempt = load(id);
@@ -108,10 +107,6 @@ export function releaseAcceptedStripeTransfer(leaseId: string, dueId: string): v
   remember(id, IDLE);
 }
 
-/**
- * Starts the one open attempt, or refuses when one is already in flight or already accepted.
- * The key is created once and reused until `settleStripeTransfer` says the attempt finished.
- */
 export function beginStripeTransfer(leaseId: string, dueId: string): string | null {
   const id = dueKey(leaseId, dueId);
   const attempt = load(id);
@@ -140,7 +135,6 @@ export function settleStripeTransfer(leaseId: string, dueId: string, outcome: 'a
   remember(id, { key: attempt.key, phase: 'accepted' });
 }
 
-/** Tests start from an empty tab. */
 export function resetStripeTransferAttempts(): void {
   cache.clear();
   if (typeof sessionStorage !== 'undefined') {

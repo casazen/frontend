@@ -81,7 +81,6 @@ const change = (over: Partial<MarketplaceActivationChange> = {}): MarketplaceAct
   ...over,
 });
 
-/** An error of the API as axios makes it: the request that failed (with its body) and the answer. */
 function apiError(status: number, data: unknown = {}): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify({ confirmed: true }) } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, undefined, { status, statusText: '', headers: {}, config, data });
@@ -102,7 +101,6 @@ function renderCard(row: ActiveRow, mayManage = true) {
   );
 }
 
-/** Opens the menu of a button the way a keyboard does (Radix opens on the pointer going down, which a click does not send). */
 async function openDeactivation(row: ActiveRow = rowOf()) {
   renderCard(row);
   const trigger = await screen.findByRole('button', { name: `Azioni per ${row.name}` });
@@ -130,14 +128,11 @@ describe('DeactivateIntegrationDialog · the effect first', () => {
     const dialog = await openDeactivation();
 
     expect(api.getDeactivationPreview).toHaveBeenCalledWith('act-1', 'it');
-    // Which integration, which property.
     expect(within(dialog).getByText(/Stai per disattivare «TEST Portal» per l'immobile «Villa Rosa»/)).toBeInTheDocument();
-    // What stops and what stays, in the server's own sentences.
     const list = await within(dialog).findByTestId('deactivate-effects-list');
     expect(list).toHaveTextContent('New TEST Portal bookings will no longer arrive in CasaZen.');
     expect(list).toHaveTextContent('stays published until you close it on the channel yourself');
     expect(within(dialog).getByText(/controlla sul canale le prenotazioni che ricevi/)).toBeInTheDocument();
-    // And that it can be activated again.
     expect(within(dialog).getByText(/potrai riattivarla da Scopri/)).toBeInTheDocument();
     expect(api.deactivateActivation).not.toHaveBeenCalled();
   });
@@ -150,12 +145,10 @@ describe('DeactivateIntegrationDialog · the effect first', () => {
     const deactivate = confirmButton();
     expect(keep.className).toContain('bg-primary');
     expect(deactivate.className).not.toContain('bg-primary');
-    // The filled red of a confirmation is not what this button wears: the quiet, outlined one is.
     expect(deactivate.className).not.toMatch(/(^|\s)bg-destructive(\s|$)/);
     expect(deactivate.className).toContain('border-destructive/40');
     expect(deactivate).toBeDisabled();
 
-    // Nothing is the default action: the focus does not start on the button that deactivates, and Enter on the form does nothing before the tick.
     expect(document.activeElement).not.toBe(deactivate);
     fireEvent.submit(within(dialog).getByTestId('deactivate-dialog-body').closest('form') as HTMLFormElement);
     expect(api.deactivateActivation).not.toHaveBeenCalled();
@@ -169,13 +162,11 @@ describe('DeactivateIntegrationDialog · the effect first', () => {
     const dialog = await openDeactivation();
 
     expect(await within(dialog).findByTestId('deactivate-preview-error')).toHaveTextContent('Non riesco a leggere cosa succede');
-    // The tick is not even offered before the effect is shown; whatever is done, the button stays off.
     expect(screen.getByTestId('deactivate-confirm-check')).toBeDisabled();
     fireEvent.click(screen.getByTestId('deactivate-confirm-check'));
     expect(confirmButton()).toBeDisabled();
     expect(api.deactivateActivation).not.toHaveBeenCalled();
 
-    // Reading it again brings the effect, and then it can be confirmed.
     api.getDeactivationPreview.mockResolvedValue(PREVIEW);
     fireEvent.click(within(dialog).getByRole('button', { name: 'Riprova' }));
     await within(dialog).findByTestId('deactivate-effects-list');
@@ -221,10 +212,8 @@ describe('DeactivateIntegrationDialog · the real effect', () => {
 
     await waitFor(() => expect(button).toBeDisabled());
     expect(api.deactivateActivation).toHaveBeenCalledTimes(1);
-    // What is not finished is said as that: the dialog tells that it is deactivating, not that it did.
     expect(within(dialog).getByTestId('deactivate-working')).toHaveTextContent('Disattivazione in corso');
     expect(toast.success).not.toHaveBeenCalled();
-    // Every button of the dialog and of the card is shut, and Escape does not close the dialog that is waiting for the answer.
     expect(within(dialog).getByRole('button', { name: "Lascia com'è" })).toBeDisabled();
     expect(screen.getByTestId('marketplace-active-Channel-PORTAL1-prop-1-actions')).toBeDisabled();
     expect(screen.getByTestId('marketplace-active-Channel-PORTAL1-prop-1-details')).toBeDisabled();
@@ -262,7 +251,6 @@ describe('DeactivateIntegrationDialog · the real effect', () => {
     expect(error).toHaveTextContent('Non è stato cambiato nulla.');
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    // The person may try again.
     expect(confirmButton()).toBeEnabled();
   });
 
@@ -313,7 +301,6 @@ describe('PartnerDeactivationGuide', () => {
   };
   const partnerRow = () => rowOf({ kind: 'Partner', code: 'beds', name: 'TEST Beds', property: null, isDeclared: true }, null);
 
-  /** The list does not carry the id of a partner's activation (only the health rows have it): a list that sends it gives the partner its menu. */
   const partnerRowWithId = (): ActiveRow => ({ ...partnerRow(), activationId: 'act-p' });
 
   beforeEach(() => {
@@ -330,7 +317,6 @@ describe('PartnerDeactivationGuide', () => {
     expect(within(dialog).getByText(/per tutta l'organizzazione/)).toBeInTheDocument();
     await within(dialog).findByTestId('deactivate-effects-list');
 
-    // «L'ho fatto» is the quiet button, off until the person says they did it.
     expect(confirmButton("L'ho fatto")).toBeDisabled();
     tick();
     fireEvent.click(confirmButton("L'ho fatto"));
@@ -366,7 +352,6 @@ describe('the menu of a card', () => {
   });
 
   it('ActiveIntegrationCard_WithoutTheIdOfTheActivation_OffersNothing_APartnerOfTheListIncluded', async () => {
-    // The health was not read (so there is no id), and a partner has no health row: nothing is offered that could not be done.
     renderCard(rowOf({}, null));
     await screen.findByTestId('marketplace-active-Channel-PORTAL1-prop-1');
     expect(screen.queryByTestId('marketplace-active-Channel-PORTAL1-prop-1-actions')).not.toBeInTheDocument();
@@ -378,14 +363,12 @@ describe('the menu of a card', () => {
   });
 
   it('ActiveIntegrationCard_ConnectionGone_OffersNoSettings_ButStillTheDeactivation', async () => {
-    // The health says the connection is no longer on the channel manager: its settings cannot be changed (the server would refuse), «Correggi» makes it again.
     renderCard(rowOf({ status: 'ToFix' }, { status: 'ToFix', error: { code: 'connection_missing', message: 'Il collegamento non c’è più.' } }));
     fireEvent.keyDown(await screen.findByRole('button', { name: 'Azioni per TEST Portal' }), { key: 'Enter' });
     expect(within(await screen.findByRole('menu')).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Disattiva']);
     fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
     cleanup();
 
-    // A connection that is only switched off on the channel manager is still there: it keeps its settings.
     renderCard(rowOf({ status: 'ToFix' }, { status: 'ToFix', error: { code: 'connection_disabled', message: 'Il collegamento è spento.' } }));
     fireEvent.keyDown(await screen.findByRole('button', { name: 'Azioni per TEST Portal' }), { key: 'Enter' });
     expect(within(await screen.findByRole('menu')).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Modifica impostazioni', 'Disattiva']);

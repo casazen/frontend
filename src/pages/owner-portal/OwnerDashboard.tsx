@@ -14,10 +14,6 @@ import { useOwnerProperties, useOwnerStatements } from '@/queries/ownerPortal';
 
 const PUBLISHED_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 
-/**
- * The one thing an owner comes for (UX round 2026-11): the latest statement the agency published, with the way to open it. Nothing
- * while the list loads, fails or is empty: the page has its properties anyway, and the accounting page says the rest.
- */
 function LatestStatementFocus() {
   const { t, i18n } = useTranslation();
   const statements = currentData(useOwnerStatements());
@@ -55,12 +51,10 @@ export function OwnerDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* No line under the title: the menu next to it already says what the portal holds. */}
       <PortalPageHeading icon={Building2} title={t('ownerPortal.dashboard.title')} />
 
       <LatestStatementFocus />
 
-      {/* Properties list: its heading is for the outline of the page and the screen readers, the cards under it need no title above them. */}
       <section className="space-y-4" aria-labelledby="owner-properties-title">
         <h2 id="owner-properties-title" className="sr-only">
           {t('ownerPortal.dashboard.yourProperties')}
@@ -96,7 +90,6 @@ export function OwnerDashboard() {
                     <CardDescription className="break-words">{property.address}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {/* One count, said as a line: a grid of one number would only be space. */}
                     <dl className="flex flex-wrap items-baseline gap-x-2 border-t pt-4 text-sm">
                       <dt className="text-muted-foreground">{t('ownerPortal.dashboard.bookings')}</dt>
                       <dd className="text-xl font-semibold tabular-nums">{property.totalBookings}</dd>

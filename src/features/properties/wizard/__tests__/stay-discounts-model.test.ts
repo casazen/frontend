@@ -37,7 +37,6 @@ describe('the length-of-stay discounts of the prices step (money rule, NF-35)', 
       { minNights: '14', percentOff: '15' },
       { minNights: '7', percentOff: '10,5' },
       { minNights: '', percentOff: '' },
-      // Half typed: never reaches the server as a discount of 0.
       { minNights: '30', percentOff: '' },
       { minNights: '', percentOff: '20' },
     ]);

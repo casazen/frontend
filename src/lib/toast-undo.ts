@@ -2,16 +2,9 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 
-/** How long the user has to change their mind: long enough to read the toast, take in the word "Annulla" and reach it. */
 export const UNDO_WINDOW_MS = 6000;
 
 export interface ToastUndoOptions {
-  /**
-   * What takes the action back. **Required, and it has to be true.** Either the inverse of what was just done, which really
-   * restores the state before (`activate` after a `pause`; not "hide the row on the screen"), or, for an action that was
-   * held back (`commit`), what drops it. A toast that says "Annulla" and does not undo is worse than no toast: it makes a
-   * promise to a person who is about to rely on it.
-   */
   undo: () => void | Promise<void>;
   /**
    * For an action that has **not happened yet**: it is done, exactly once, when the window closes and the user did not
@@ -20,19 +13,14 @@ export interface ToastUndoOptions {
    * do it at once and give `undo` the inverse call instead.
    */
   commit?: () => void | Promise<void>;
-  /** A second line under the message. */
   description?: string;
-  /** The look of the toast: the action was done (default), or it is only a notice. */
   tone?: 'success' | 'info';
-  /** Default {@link UNDO_WINDOW_MS}. */
   duration?: number;
-  /** To replace or dismiss it later, or to avoid two of the same toast. */
   id?: string | number;
 }
 
 let counter = 0;
 
-/** Tells the user that something failed in what runs behind the toast, with the message of the server if it sent one. */
 function reportFailure(error: unknown, fallbackKey: 'toastUndo.undoFailed' | 'toastUndo.commitFailed') {
   toast.error(getProblemMessage(error, i18n.t) ?? i18n.t(fallbackKey));
 }
@@ -56,7 +44,6 @@ export function toastUndo(message: string, options: ToastUndoOptions): string | 
   const { undo, commit, description, tone = 'success', duration = UNDO_WINDOW_MS } = options;
   const id = options.id ?? `toast-undo-${++counter}`;
 
-  // `settled`: the question has been answered, one way or the other, and nothing else may run.
   let settled = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -93,7 +80,6 @@ export function toastUndo(message: string, options: ToastUndoOptions): string | 
     description,
     duration: commit ? Number.POSITIVE_INFINITY : duration,
     action: { label: i18n.t('toastUndo.undo'), onClick: runUndo },
-    // The button of the library is 24 px tall: the invisible `after` box makes the target 44 px for a finger.
     classNames: { actionButton: "relative after:absolute after:-inset-x-2 after:-inset-y-2.5 after:content-['']" },
     onDismiss: commit ? runCommit : undefined,
   };

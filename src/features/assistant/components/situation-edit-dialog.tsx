@@ -26,13 +26,8 @@ import {
 } from '@/types/assistant-settings.types';
 
 interface SituationEditDialogProps {
-  /** The situation to change; `null` while the dialog is closed. */
   situation: EffectiveSituation | null;
-  /** The property whose exception is saved, or `null` for the value of the organization. */
   propertyId: string | null;
-  /**
-   * The mutation belongs to the table, not to the dialog: the dialog may be closed while the request goes on, and every button of the table waits until it is over.
-   */
   save: ReturnType<typeof useSaveSituation>;
   onClose: () => void;
 }
@@ -57,7 +52,6 @@ export function SituationEditDialog({ situation, propertyId, save, onClose }: Si
 
 function SituationDialogBody({ situation, propertyId, save, onClose }: Omit<SituationEditDialogProps, 'situation'> & { situation: EffectiveSituation }) {
   const { t, i18n } = useTranslation();
-  // The modes the situation allows and this release offers; a mode that is neither (an automatic one set through the API) is told, and saving sets a mode that is offered.
   const allowed = OFFERED_MODES.filter((mode) => situation.allowedModes.includes(mode));
   const currentIsOffered = allowed.includes(situation.mode as AssistantMode);
   const [mode, setMode] = useState<AssistantMode>(currentIsOffered ? (situation.mode as AssistantMode) : 'Draft');
@@ -65,7 +59,6 @@ function SituationDialogBody({ situation, propertyId, save, onClose }: Omit<Situ
   const [source, setSource] = useState<string>(situation.source ?? '');
   const [attempted, setAttempted] = useState(false);
 
-  // The text of the answer is the host's own, shown only to whoever may edit it: a person who may not read it cannot keep it, and saving a row without it is said.
   const templateHidden = situation.hasTemplate && situation.template === null;
   const templateTooLong = template.trim().length > TEMPLATE_MAX_LENGTH;
 

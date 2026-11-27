@@ -10,7 +10,6 @@ import { useCalendarChange, useRetryCalendarChange } from '@/queries/use-calenda
 import type { CalendarChange } from '@/types/calendar-changes.types';
 import { changeReadOf, propertyLineOf, type ChangeLineKind } from '../lib/calendar-change-words';
 
-/** How a line stands. It is said in words (a hidden label) and by an icon, never by a color alone. */
 type Tone = 'done' | 'working' | 'problem' | 'info';
 
 const TONE_ICON: Record<Tone, LucideIcon> = { done: CheckCircle2, working: Loader2, problem: AlertTriangle, info: Info };
@@ -42,7 +41,6 @@ const LINE_TONE: Record<ChangeLineKind, Tone> = {
   notFound: 'problem',
 };
 
-/** What each state of the change says about the channel manager, in plain words (never "published": accepted is not on the portals). */
 const LINE_TEXT_KEYS: Record<ChangeLineKind, string> = {
   notConnected: 'booking.calendar.change.result.notConnected',
   waiting: 'booking.calendar.change.result.waiting',
@@ -59,13 +57,11 @@ interface ResultLineProps {
   testId: string;
   tone: Tone;
   title: string;
-  /** The state the line is in (`data-state`), for the tests and for whoever reads the page. */
   state: string;
   children: ReactNode;
   action?: ReactNode;
 }
 
-/** One line of the result: what it is about, how it stands and, when the host can do something about it, the button. */
 function ResultLine({ testId, tone, title, state, children, action }: ResultLineProps) {
   const { t } = useTranslation();
   const Icon = TONE_ICON[tone];
@@ -86,9 +82,7 @@ function ResultLine({ testId, tone, title, state, children, action }: ResultLine
 }
 
 interface CalendarChangeLinesProps {
-  /** The change as the application answered it (the process of the API): it is on screen at once and then followed. */
   change: CalendarChange;
-  /** The name of a property of the change. */
   propertyName: (propertyId: string) => string;
 }
 
@@ -101,10 +95,7 @@ interface CalendarChangeLinesProps {
 export function CalendarChangeLines({ change: initial, propertyName }: CalendarChangeLinesProps) {
   const { t } = useTranslation();
   const workspace = useContext(WorkspaceContext);
-  // With the connector of the channel manager off nothing is sent there and there is nothing to follow: the change is just saved in CasaZen, nothing is asked and no line speaks
-  // of the channel manager.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
-  // Without a workspace (a test) nothing is offered; the change is read only by who may read properties (a read they may not make would be a 403), and sent again only by who may write them.
   const mayRead = workspace?.hasPermission('short-rent', 'property.read') ?? false;
   const mayRetry = workspace?.hasPermission('short-rent', 'property.write') ?? false;
   const canFollow = mayRead && connectorOn;
@@ -113,7 +104,6 @@ export function CalendarChangeLines({ change: initial, propertyName }: CalendarC
   const retry = useRetryCalendarChange();
   const change = detail.data ?? initial;
   const read = changeReadOf({ enabled: true, isError: detail.isError, notFound: getHttpStatus(detail.error) === 404, hasData: detail.data !== undefined });
-  // Whoever may not read the change cannot follow it: what it was when the API answered is all there is, and it does not say more than that.
   const watchOver = detail.watchOver || (!canFollow && (change.state === 'Queued' || change.state === 'Sending'));
   const busy = retry.isPending;
 

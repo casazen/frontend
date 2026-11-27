@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import type { StatusIconName } from "@/lib/status-dictionary";
 
-/** The icon of each state. Every state has one: its meaning is never only a color. */
 export const STATUS_ICONS: Record<StatusIconName, LucideIcon> = {
   "alert-circle": AlertCircle,
   "alert-triangle": AlertTriangle,

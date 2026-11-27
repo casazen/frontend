@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
 import { SUPPLIER_PAYMENTS_PATH } from '../payments/payments-model';
 
-/** Where the profile points to the payments account (SP-16c-b): a line and the way there, no second block to look at. */
 export function ProfilePayments() {
   const { t } = useTranslation();
 

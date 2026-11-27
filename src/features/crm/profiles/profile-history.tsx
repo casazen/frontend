@@ -9,14 +9,9 @@ import type { CrmProfileStay } from '@/types/crm.types';
 
 interface ProfileHistoryProps {
   stays: CrmProfileStay[];
-  /** There are more bookings than `stays` holds: the totals count them all. */
   truncated: boolean;
 }
 
-/**
- * The history of a profile (E07/F01/US04/T02): each booking with its property, its dates, its channel, its status and its amount, the
- * latest arrival first. A table where there is room and a list of cards on a phone. The bookings are the ones the caller reaches.
- */
 export function ProfileHistory({ stays, truncated }: ProfileHistoryProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;

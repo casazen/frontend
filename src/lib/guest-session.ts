@@ -16,7 +16,6 @@ function sessionStore(): Storage | null {
   try {
     return window.sessionStorage;
   } catch {
-    // Storage refused (blocked cookies, some private modes): the session then lives in memory for the page only.
     return null;
   }
 }
@@ -27,13 +26,11 @@ function isGuestSession(value: unknown): value is GuestSession {
   return typeof accessToken === 'string' && typeof expiresAt === 'string' && typeof bookingCode === 'string';
 }
 
-/** True while the session works: it ends at `expiresAt`, an instant that cannot be read ends it too. */
 export function isGuestSessionActive(session: GuestSession, now: number = Date.now()): boolean {
   const end = Date.parse(session.expiresAt);
   return Number.isFinite(end) && end > now;
 }
 
-/** The session kept for the site, or `null` when there is none, it has expired or the entry is not a session. */
 export function readGuestSession(siteSlug: string): GuestSession | null {
   const store = sessionStore();
   if (!store) return null;
@@ -59,7 +56,6 @@ export function writeGuestSession(siteSlug: string, session: GuestSession): void
   }
 }
 
-/** Forgets the session of the site (sign out, or the server refused the token). */
 export function clearGuestSession(siteSlug: string): void {
   try {
     sessionStore()?.removeItem(storageKey(siteSlug));

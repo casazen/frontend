@@ -38,7 +38,6 @@ vi.mock('@/api/marketplace.api', async (importOriginal) => ({
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: [{ contextKey: 'short-rent', roleKey: 'property_owner' }] }) }));
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { octorateOnboarding: true } }) }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const ROSA = property('prop-1', 'Casa Rosa');
@@ -58,11 +57,9 @@ function deferred<T>() {
 interface Host {
   properties?: ReturnType<typeof property>[];
   requirements?: string[];
-  /** The properties that already have their activation (and so their connection). */
   connected?: string[];
 }
 
-/** The host's properties, and what the channel manager says: the plan of each, the state of the activations that exist. */
 function givenTheHost({ properties = [ROSA], requirements = [], connected = [] }: Host = {}) {
   vi.mocked(propertiesApi.getAll).mockResolvedValue(properties);
   vi.mocked(getActivationPlan).mockImplementation(async (_kind, _code, propertyId) =>
@@ -81,7 +78,6 @@ function givenTheHost({ properties = [ROSA], requirements = [], connected = [] }
   vi.mocked(getActivationMapping).mockImplementation(async (id) => mapping([channelRoom()], id));
 }
 
-/** The person chose both properties (the draft of the wizard says it) and is on `step`. */
 function bothChosenOn(step: string) {
   writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step, values: { propertyIds: ['prop-1', 'prop-2'], hotelIds: {} } });
 }
@@ -91,13 +87,11 @@ const row = (propertyId: string) => screen.getByTestId(`activation-connection-${
 const SECRET_USERNAME = 'host-login-4711';
 const SECRET_PASSWORD = 'Pa$$-4711-secret';
 
-/** The error of axios for a request the server refused: the request that failed is in `config.data`, as axios keeps it (the body of the start holds the access data). */
 function axiosErrorOfRequest(status: number, data: unknown, request: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify(request) } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
-/** True when `secret` is anywhere in `value`, in any text of it, however deep. */
 function holds(value: unknown, secret: string, seen = new WeakSet<object>()): boolean {
   if (typeof value === 'string') return value.includes(secret);
   if (typeof value !== 'object' || value === null || seen.has(value)) return false;
@@ -118,7 +112,6 @@ afterEach(() => {
 describe('the connection step: it creates the connection once', () => {
   it('ConnectionStep_FirstPass_CreatesTheConnectionOnceWithOnlyWhatThePortalAsksForAndForgetsTheAccessData', async () => {
     givenTheHost({ requirements: ['hotelId', 'credentials'] });
-    // The import that follows is not what is looked at here: it never ends.
     vi.mocked(importActivation).mockReturnValue(new Promise(() => undefined));
     renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1&step=access`);
 
@@ -127,12 +120,10 @@ describe('the connection step: it creates the connection once', () => {
     fireEvent.change(screen.getByTestId('activation-password'), { target: { value: 'pw-1' } });
     fireEvent.click(primaryButton());
 
-    // The connection is made, and the wizard goes on by itself to the import.
     await onStep('import');
     expect(startActivation).toHaveBeenCalledTimes(1);
     expect(startActivation).toHaveBeenCalledWith({ kind: 'Channel', code: '142', propertyId: 'prop-1', hotelId: '5551234', username: 'ana', password: 'pw-1' });
 
-    // Going back shows the connection as made, creates nothing, and the access data was forgotten once it was used.
     fireEvent.click(screen.getByTestId('activation-back'));
     await onStep('connection');
     await waitFor(() => expect(row('prop-1')).toHaveAttribute('data-state', 'done'), WAIT);
@@ -150,7 +141,6 @@ describe('the connection step: it creates the connection once', () => {
     await waitFor(() => expect(row('prop-1')).toHaveAttribute('data-state', 'done'), WAIT);
     expect(startActivation).not.toHaveBeenCalled();
     expect(getActivation).toHaveBeenCalledWith('act-1');
-    // A visit that finds the connection made shows it and leaves «Continua» to the person: it does not go on by itself.
     await onStep('connection');
     fireEvent.click(primaryButton());
     await onStep('import');
@@ -163,14 +153,12 @@ describe('the connection step: it creates the connection once', () => {
       request.propertyId === 'prop-1' ? first.promise : Promise.resolve(state({ activationId: 'act-2', propertyId: 'prop-2' })),
     );
     vi.mocked(importActivation).mockReturnValue(new Promise(() => undefined));
-    // Both are chosen; the portal asks for nothing, so the access step is not there and the connection starts at once.
     bothChosenOn('connection');
     renderActivation(`${ACTIVATION_PATH}?step=connection`);
     await waitFor(() => expect(startActivation).toHaveBeenCalledTimes(1), WAIT);
     expect(vi.mocked(startActivation).mock.calls[0][0].propertyId).toBe('prop-1');
     expect(row('prop-1')).toHaveAttribute('data-state', 'running');
 
-    // The second property waits for the first: nothing is asked for it before the first has ended.
     expect(startActivation).toHaveBeenCalledTimes(1);
     first.resolve(state({ activationId: 'act-1', propertyId: 'prop-1' }));
     await waitFor(() => expect(startActivation).toHaveBeenCalledTimes(2), WAIT);
@@ -190,23 +178,19 @@ describe('the connection step: what goes wrong', () => {
     fireEvent.click(primaryButton());
 
     const problem = await screen.findByTestId('activation-connection-prop-1-problem', {}, WAIT);
-    // «The channel refused the connection», with the reason it gave: never an error of CasaZen.
     expect(problem).toHaveTextContent(i18n.t('marketplace.activation.connection.failed.refused', { name: 'Booking.com' }));
     expect(problem).toHaveTextContent(i18n.t('apiErrors.codes.octoratePartnerFailed'));
     expect(screen.queryByTestId('activation-connection-prop-1-retry')).not.toBeInTheDocument();
-    // It is not asked again by itself.
     expect(startActivation).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByTestId('activation-connection-prop-1-fix'));
 
     await onStep('access');
-    // The access data is still there to be corrected (it is forgotten only once the connection is made).
     expect(screen.getByTestId('activation-username')).toHaveValue('ana');
   });
 
   it('ConnectionStep_StartThatFails_LeavesNoAccessDataInTheCacheOfTheMutationsNorInWhatTheStepKeeps', async () => {
     givenTheHost({ requirements: ['credentials'] });
-    // The error of axios carries the request that failed, and the body of the start holds the username and the password.
     vi.mocked(startActivation).mockImplementation(async (request) => {
       throw axiosErrorOfRequest(502, { code: 'octorate_partner_failed' }, request);
     });
@@ -216,14 +200,11 @@ describe('the connection step: what goes wrong', () => {
     fireEvent.change(screen.getByTestId('activation-password'), { target: { value: SECRET_PASSWORD } });
     fireEvent.click(primaryButton());
 
-    // The channel refuses: the person is told, and the data they typed is still there to be corrected.
     expect(await screen.findByTestId('activation-connection-prop-1-problem', {}, WAIT)).toHaveTextContent(i18n.t('apiErrors.codes.octoratePartnerFailed'));
     expect(startActivation).toHaveBeenCalledWith(expect.objectContaining({ username: SECRET_USERNAME, password: SECRET_PASSWORD }));
-    // What the cache of the mutations keeps of the failed start is the failure without its request.
     const mutations = () => client.getMutationCache().getAll();
     expect(mutations().some((mutation) => holds(mutation.state, SECRET_PASSWORD) || holds(mutation.state, SECRET_USERNAME))).toBe(false);
 
-    // And once the step is left, the failed mutation goes at once: it is not kept for the minutes a mutation is kept by default.
     cleanup();
     await waitFor(() => expect(mutations().filter((mutation) => mutation.state.status === 'error')).toHaveLength(0), WAIT);
     expect(mutations().some((mutation) => holds(mutation.state, SECRET_PASSWORD))).toBe(false);
@@ -237,7 +218,6 @@ describe('the connection step: what goes wrong', () => {
 
     const problem = await screen.findByTestId('activation-connection-prop-1-problem', {}, WAIT);
     expect(problem).toHaveTextContent(i18n.t('marketplace.activation.connection.failed.refused', { name: 'Booking.com' }));
-    // There is no access step for this portal, so there is nothing to correct there: no Fix that would lead nowhere, and «Riprova» is the way on.
     expect(screen.queryByTestId('activation-connection-prop-1-fix')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('activation-connection-prop-1-retry'));
 
@@ -246,7 +226,6 @@ describe('the connection step: what goes wrong', () => {
   });
 
   it('ConnectionStep_PropertyWithoutItsAccessData_AsksForItAgainInsteadOfCallingTheServer', async () => {
-    // A reload on the connection step: the login the person typed is gone with the page.
     givenTheHost({ requirements: ['credentials'] });
     renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1&step=connection`);
 
@@ -275,7 +254,6 @@ describe('the connection step: what goes wrong', () => {
 
     expect(await screen.findByTestId('activation-connection-prop-1-unconfirmed', {}, WAIT)).toHaveTextContent(i18n.t('marketplace.activation.connection.unconfirmed'));
     expect(row('prop-1')).toHaveAttribute('data-state', 'unconfirmed');
-    // It is not asked again by itself, and the wizard does not go on.
     expect(startActivation).toHaveBeenCalledTimes(1);
     await onStep('connection');
 
@@ -302,12 +280,10 @@ describe('the import step', () => {
     givenTheHost({ connected: ['prop-1'] });
     renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1&step=import`);
 
-    // The rooms arrive while this visit watches: the wizard goes on by itself to the mapping.
     await onStep('mapping');
     expect(importActivation).toHaveBeenCalledTimes(1);
     expect(importActivation).toHaveBeenCalledWith('act-1');
 
-    // Back to the import: it is read, not asked again, and the wizard does not jump forward by itself.
     fireEvent.click(screen.getByTestId('activation-back'));
     await onStep('import');
     await waitFor(() => expect(screen.getByTestId('activation-import-prop-1')).toHaveAttribute('data-rooms', 'in'), WAIT);
@@ -317,7 +293,6 @@ describe('the import step', () => {
 
   it('ImportStep_RoomsArrived_AreDoneButTheReservationsAndTheCalendarAreOnlyAskedNeverFinished', async () => {
     givenTheHost({ connected: ['prop-1'] });
-    // The rooms arrive, and the person stays to read: the step is opened again, after the import was asked.
     renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1&step=import`);
     await onStep('mapping');
     fireEvent.click(screen.getByTestId('activation-back'));
@@ -355,7 +330,6 @@ describe('the import step', () => {
     fireEvent.click(screen.getByTestId('activation-import-prop-1-fix'));
 
     await onStep('access');
-    // It was asked once and not again by itself.
     expect(importActivation).toHaveBeenCalledTimes(1);
   });
 

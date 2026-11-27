@@ -35,14 +35,12 @@ import { StayAvailabilityNotice } from './stay-availability';
 
 const NO_PROPERTIES: readonly Property[] = [];
 
-/** The short-rent properties of the host, and the one the values point at. */
 function useShortProperties(propertyId: string | undefined) {
   const query = useProperties({ mode: 'short' });
   const list = Array.isArray(query.data) ? query.data : NO_PROPERTIES;
   return { query, list, property: list.find((candidate) => candidate.id === propertyId) };
 }
 
-/** One counter of the guests in a box of its own: the adults and the minors sit side by side as the two dates above them do. */
 function GuestCountRow({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border bg-card px-4 py-3">
@@ -56,16 +54,10 @@ function GuestCountRow({ label, hint, children }: { label: string; hint: string;
 }
 
 interface StayStepProps {
-  /** The step was left with the ages of the minors missing: the empty ones are marked until one is chosen. */
   agesMissing: boolean;
-  /** An age was chosen or the number of minors changed: what was missing is not any more. */
   onAgesChange: () => void;
 }
 
-/**
- * Step 1: the property, the dates and how many people come. The ages of the minors appear only when the tourist tax of the
- * comune depends on them (the quote of the API says so, as it did in the old form).
- */
 export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
   const { t } = useTranslation();
   const {
@@ -87,7 +79,6 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
   const ageRulesApply = payload !== null && quote.data?.touristTax.ageRulesApply === true;
   const askAges = ageRulesApply && values.minors > 0;
   const ages = resizeChildrenAges(values.childrenAges ?? [], values.minors);
-  // Whether the dates are free (SR-06a), as soon as they are known; advice only, the API checks again when the booking is created.
   const availabilityParams = toAvailabilityParams(values);
   const availability = useStayAvailability(availabilityParams);
 
@@ -108,8 +99,6 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
       <div className="space-y-2">
         <Field id="propertyId" label={t('booking.create.stay.property')} error={errors.propertyId}>
           {(field) => (
-            // Controlled by the form value: the option of a property chosen from the address (or from a draft) exists only once
-            // the list is loaded, and the select shows it from then on.
             <Select
               {...field}
               {...register('propertyId')}
@@ -177,7 +166,6 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
 
       <fieldset className="min-w-0 space-y-3">
         <legend className="text-sm font-medium">{t('booking.create.stay.guestsTitle')}</legend>
-        {/* Side by side from `sm`, as the dates: on a wide screen a counter does not end up at the far end of the step, away from its name. */}
         <div className="grid gap-3 sm:grid-cols-2">
           <GuestCountRow label={t('booking.create.stay.adults')} hint={t('booking.create.stay.adultsHint')}>
             <Qty
@@ -275,7 +263,6 @@ export function GuestStep() {
   );
 }
 
-/** The price the API will record for the stay: lodging, cleaning and tourist tax, never an amount invented here. */
 function PriceBlock({ hasStay, quote, isLoading, error }: { hasStay: boolean; quote?: DirectBookingQuote; isLoading: boolean; error: string | null }) {
   const { t } = useTranslation();
 
@@ -311,7 +298,6 @@ function PriceBlock({ hasStay, quote, isLoading, error }: { hasStay: boolean; qu
         : t('booking.form.price.taxNotCalculated');
 
   return (
-    // A receipt: as wide as a receipt (`max-w-xl`), so each amount stays next to what it pays for on a wide screen.
     <dl className="min-w-0 space-y-3 rounded-xl border bg-card p-5 text-sm tabular-nums" data-testid="booking-price-summary">
       <div className="flex min-w-0 justify-between gap-3">
         <dt className="min-w-0 break-words text-foreground/70">
@@ -339,10 +325,6 @@ function PriceBlock({ hasStay, quote, isLoading, error }: { hasStay: boolean; qu
   );
 }
 
-/**
- * The total the host agreed with the guest, when it is not the price above (SR-06a). Empty means the price the API calculated. The
- * tourist tax stays the calculated one and is part of the total; the API refuses a total that does not cover it.
- */
 function AgreedPrice({ quote }: { quote: DirectBookingQuote }) {
   const { t } = useTranslation();
   const {
@@ -399,7 +381,6 @@ function AgreedPrice({ quote }: { quote: DirectBookingQuote }) {
   );
 }
 
-/** A portal's reservation that the host completes: the portal collects, so there is no price to calculate nor to agree (SR-06a). */
 function PortalPayment({ portal }: { portal: string }) {
   const { t } = useTranslation();
   const {
@@ -419,10 +400,6 @@ function PortalPayment({ portal }: { portal: string }) {
   );
 }
 
-/**
- * Step 3: the price the API calculated (and the total the host may agree instead, with a note), one topic for the step. For a portal's reservation the portal
- * collects: no price, only the amount it shows, if the host wants to keep it.
- */
 export function PriceStep() {
   const { t } = useTranslation();
   const { control } = useFormContext<NewBookingValues>();
@@ -455,7 +432,6 @@ const PAYMENT_VALUE_KEYS: Readonly<Record<HostPaymentArrangement, string>> = {
   bankTransfer: 'booking.create.summary.paymentValue.bankTransfer',
 };
 
-/** What happens to the payment once the booking is created, in plain words, for each way. */
 const PAYMENT_HAPPENS_KEYS: Readonly<Record<HostPaymentArrangement, string>> = {
   paymentLink: 'booking.create.summary.willHappen.paymentLink',
   onSite: 'booking.create.summary.willHappen.onSite',
@@ -463,18 +439,10 @@ const PAYMENT_HAPPENS_KEYS: Readonly<Record<HostPaymentArrangement, string>> = {
 };
 
 interface SummaryStepProps {
-  /** The property is mirrored on the channel manager, as the availability said on the way out of the stay step; `null` when it is not known. */
   channelManager: boolean | null;
-  /** The connector of the channel manager is on (`octorateConnector`): with it off nothing is pushed or asked, so nothing is said about a channel manager, whatever else is known. */
   connectorOn: boolean;
 }
 
-/**
- * Step 5: what was answered (each block with its "Edit" back to the step: the price and the way of paying are steps of their own), and, in plain words, what
- * happens when the button creates the booking: it is created in CasaZen and, for a property connected to the channel manager, there too, which closes the dates
- * on every channel (said only with the connector on); and how the guest pays. A portal's reservation is completed with the name of the guest and nothing is
- * paid here: the portal collects.
- */
 export function SummaryStep({ channelManager, connectorOn }: SummaryStepProps) {
   const { t, i18n } = useTranslation();
   const { control } = useFormContext<NewBookingValues>();
@@ -506,8 +474,6 @@ export function SummaryStep({ channelManager, connectorOn }: SummaryStepProps) {
   const contact = [guest?.email?.trim(), guest?.phone?.trim()].filter(Boolean).join(' · ');
   const notes = values.specialRequests?.trim();
 
-  // The total: what the host agreed (for a portal's reservation, the amount the portal shows) or what the API calculated; nothing while there is none: never an
-  // amount invented here.
   const agreed = agreedTotal(values);
   const currency = quote.data?.currency ?? 'EUR';
   let total: string | null = null;
@@ -535,8 +501,6 @@ export function SummaryStep({ channelManager, connectorOn }: SummaryStepProps) {
         },
   ];
 
-  // What will happen, one sentence each. Only things that are true: the channel manager is told only with the connector on, and only for a property that is
-  // connected (or, when that is not known, said as a condition), and nothing is promised about the payment of a portal's reservation.
   const mentionsChannelManager = connectorOn && !link;
   const happens: { id: string; text: string }[] = [
     {

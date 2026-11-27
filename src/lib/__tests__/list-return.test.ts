@@ -71,7 +71,6 @@ describe('list return (UI-05)', () => {
     rememberList(BOOKINGS, '?chip=pending&detail=booking:abc-1&q=rossi');
 
     expect(recallList(BOOKINGS)).toBe('?chip=pending&q=rossi');
-    // The way back from the page of that booking leads to the list, not to the list with the drawer open again.
     expect(withListReturn(BOOKINGS)).toBe(`${BOOKINGS}?chip=pending&q=rossi`);
   });
 

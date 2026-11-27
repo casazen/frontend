@@ -2,16 +2,13 @@ import { useEffect, useRef, type RefObject } from 'react';
 import { useLocation } from 'react-router-dom';
 import { fadeInPage } from '@/lib/motion';
 
-/** A new page is looked at for its heading this often, and for this long (a lazy chunk or a slow request may delay it). */
 const POLL_INTERVAL_MS = 100;
 const MAX_WAIT_MS = 5000;
 /** The live region is emptied and filled again, so that two pages with the same title are both announced. */
 const ANNOUNCE_DELAY_MS = 50;
-/** The text does not stay in the page for a screen reader that reads it line by line. */
 const ANNOUNCE_CLEAR_MS = 4000;
 
 interface RouteFocusProps {
-  /** The content region of the shell: the `h1` of the new page takes the focus, the region itself if there is none. */
   mainRef: RefObject<HTMLElement | null>;
 }
 
@@ -71,7 +68,6 @@ export function RouteFocus({ mainRef }: RouteFocusProps) {
       announce(heading?.textContent?.trim() || document.title);
     };
 
-    // A dialog (or the mobile menu) hides the app from assistive technology. The heading may already be in the page.
     const pageIsHidden = () => main.closest('[aria-hidden="true"]') !== null;
 
     const attempt = (): boolean => {
@@ -89,7 +85,6 @@ export function RouteFocus({ mainRef }: RouteFocusProps) {
           clearInterval(poll);
           return;
         }
-        // Hidden time is not the wait for a heading, and the timeout must not take the focus from the dialog.
         if (pageIsHidden()) return;
         waited += POLL_INTERVAL_MS;
         if (waited >= MAX_WAIT_MS) {

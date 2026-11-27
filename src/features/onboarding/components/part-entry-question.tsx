@@ -11,7 +11,6 @@ import { useWizardDraft } from '@/hooks/use-wizard-draft';
 import { CONNECT_WIZARD_DEFAULTS, MIXED_SCENARIO, isWizardScenario, type WizardScenario } from '@/features/integrations/octorate/inventory-scenario';
 import { OCTORATE_CONNECT_PATH } from '@/features/integrations/octorate/octorate-callback';
 
-/** The draft of the connect wizard of E02: the answer to its first question is the same draft, so the person resumes where they left (UX-03). */
 const CONNECT_WIZARD_DRAFT_ID = 'octorate-connect';
 
 interface Choice {
@@ -56,7 +55,6 @@ export function PartEntryQuestion() {
 
   const choose = (scenario: WizardScenario) => {
     setPicked(scenario);
-    // Over what the wizard already holds (the channels, the import, the decisions): only the answer changes.
     draft.save({ step: 'scenario', values: { ...CONNECT_WIZARD_DEFAULTS, ...draft.restored?.values, scenario } });
     draft.flush();
   };

@@ -6,7 +6,6 @@ import type { StatusTone } from '@/lib/status-dictionary';
 import { cn } from '@/lib/utils';
 import type { LightState } from '../lib/compliance-light';
 
-/** The look of each light: the semantic tokens of the redesign (every pair meets AA) and its own icon, so the color is never the only signal. */
 const VIEW: Record<LightState, { tone: StatusTone; Icon: LucideIcon }> = {
   green: { tone: 'success', Icon: CheckCircle2 },
   yellow: { tone: 'warning', Icon: Clock },
@@ -15,14 +14,12 @@ const VIEW: Record<LightState, { tone: StatusTone; Icon: LucideIcon }> = {
 };
 
 export interface ComplianceLightProps extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'children'> {
-  /** The light as the row reads it (`lightStateOf`): `unknown` is "da verificare", never green. */
   state: LightState;
   /**
    * Why the item has its light, in plain words (already translated). It is not drawn here: it is in the name of the light for a screen
    * reader ("Da fare: Alloggiati Web non è ancora stato inviato"), and the caller shows it beside the light.
    */
   reason?: string;
-  /** Another word than the name of the light, for a state that is not one of the items (the status of a property says "Attivo"). */
   label?: string;
   size?: 'default' | 'lg';
 }

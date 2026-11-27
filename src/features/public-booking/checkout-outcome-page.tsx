@@ -30,17 +30,12 @@ interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
-/** What the checkout hands to this page when it navigates here (never in the URL). */
 export interface CheckoutOutcomeLocationState {
-  /** Result of the guest's own payment attempt in the page (`confirmPayment` / `confirmSetup`). */
   clientStatus?: ClientPaymentStatus;
-  /** The address the confirmation email was sent to, only to say where to look. */
   guestEmail?: string;
-  /** The first name the guest booked with, only to greet them in the title. */
   guestFirstName?: string;
 }
 
-/** Parameters Stripe appends to the `return_url` of a redirect method. */
 const STRIPE_RETURN_PARAMS = [
   'payment_intent',
   'payment_intent_client_secret',
@@ -85,8 +80,6 @@ export function CheckoutOutcomePage() {
 
   useSeoMeta({ title: t('siteConfirm.pageTitle', { org: org.displayName }), noindex: true });
 
-  // Back from a redirect method: keep what Stripe said in the history state and drop its parameters (the client secret
-  // among them) from the address bar, so a reload or a shared link does not carry them.
   useEffect(() => {
     if (!hasStripeParams || !bookingId || !token) return;
     const state: CheckoutOutcomeLocationState = { ...locationState, clientStatus: initialClientStatus ?? undefined };
@@ -125,7 +118,6 @@ export function CheckoutOutcomePage() {
   );
 }
 
-/** The shape of the page while the state of the booking is being read: the proportions of the real one, so nothing jumps. */
 function OutcomeSkeleton() {
   const { t } = useTranslation();
   return (
@@ -167,14 +159,11 @@ function OutcomeContent({
   const [clientStatus, setClientStatus] = useState(initialClientStatus);
   const [attempt, setAttempt] = useState(0);
   const { data, isFetching, refetch } = outcome;
-  // The photo, the zone, the hours and the host come from the public record of the house; the page does not wait for it.
   const property = useOrgPublicProperty(orgSlug, data ? (data.propertySlug ?? data.propertyId) : undefined).data;
   const view: OutcomeView | null = data ? resolveOutcomeView(data.state, clientStatus) : null;
   const intermediate = view !== null && isIntermediateView(view, clientStatus);
   const pollingStopped = intermediate && attempt >= MAX_POLL_ATTEMPTS;
 
-  // Polling with backoff while someone else still has to act (Stripe and its webhook, the guest's email, the host). Paused while the
-  // browser is offline, and started again when it is back.
   useEffect(() => {
     if (!intermediate || pollingStopped || isFetching || !online) return undefined;
     const timer = window.setTimeout(() => {
@@ -188,8 +177,6 @@ function OutcomeContent({
     if (view !== null && isFinalView(view)) clearPendingCheckout(bookingId);
   }, [view, bookingId]);
 
-  // A booking the server says is confirmed is one `purchase` of the agency's analytics on its own domain, with the visitor's consent, ONCE per booking from this
-  // browser (NF-149): not on a reload and not when the link of the e-mail is opened again. Only the state the backend reports counts, never what the browser guesses.
   useTrackPurchase(data);
 
   const refresh = () => {

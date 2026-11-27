@@ -34,10 +34,6 @@ export function StayProblem({ problem }: { problem: ProblemView }) {
   );
 
   const startAgain: StayExit = { label: t('propertyBooking.problem.clearDates'), apply: clearDates };
-  /**
-   * The first dates for as long a stay that respect every rule, looking from each of `starts` in turn; clearing the dates when there
-   * are none. The dates the guest already has are no way out: the server refused them for a rule the calendar did not know yet.
-   */
   const firstFreeExit = (...starts: string[]): StayExit => {
     for (const start of starts) {
       const next = index ? firstFreeStay(index, nights, start) : null;
@@ -70,8 +66,6 @@ export function StayProblem({ problem }: { problem: ProblemView }) {
     case 'minNights': {
       const minimum = problem.minNights ?? property.minNights ?? 2;
       sentence = t('propertyBooking.problem.minNights', { count: minimum });
-      // The stay stretched to the larger of the minimum said above and the one of the calendar (which can be older than the rule). It is a
-      // way out only when it is longer than the stay the guest has: a stay that is not longer is not what the minimum asks for.
       const longer = index ? extendToMinimum(index, stay.checkIn, minimum) : null;
       const longerNights = longer ? nightsBetween(longer.checkIn, longer.checkOut) : 0;
       exit =
@@ -81,14 +75,12 @@ export function StayProblem({ problem }: { problem: ProblemView }) {
       break;
     }
     case 'maxNights': {
-      // The limit of the rule of the arrival: from the quote or the calendar. Without a number the sentence does not name one.
       const maximum = problem.maxNights ?? (index ? maxNightsAt(index, stay.checkIn) : null);
       sentence = maximum ? t('propertyBooking.problem.maxNights', { count: maximum }) : t('propertyBooking.problem.maxNights');
       exit = firstFreeExit(stay.checkIn);
       break;
     }
     case 'advance':
-      // Too close to the arrival or too far ahead of it: from the arrival on, and when nothing is found there (too far ahead) from today.
       sentence = t('propertyBooking.problem.advance');
       exit = firstFreeExit(stay.checkIn, '');
       break;

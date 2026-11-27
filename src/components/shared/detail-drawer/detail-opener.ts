@@ -23,7 +23,6 @@ export function rememberOpenerIfNone(element: HTMLElement | null) {
   if (!opener?.isConnected) opener = element;
 }
 
-/** The element to give the focus back to, and forget it: only if it is still on the page. */
 export function takeOpener(): HTMLElement | null {
   const element = opener;
   opener = null;

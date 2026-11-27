@@ -59,7 +59,7 @@ export interface SyncAllResult {
 
 export interface OtaPricingUpdate {
   propertyId: string;
-  nightlyRate: number;  // ✅ Fixed: was pricePerNight
+  nightlyRate: number;
   startDate?: string;
   endDate?: string;
   platforms?: OtaPlatform[];

@@ -74,7 +74,6 @@ const reportMocks: Record<string, unknown> = {
     taxYear: 2026,
     packLabel,
     byOta: [{ source: 'Airbnb', gross: 100, withholding: 21, net: 79, payoutCount: 1 }],
-    // The report is "empty" without lines: the by-channel table follows the payouts it summarises.
     lines: [
       {
         paymentId: '22222222-2222-2222-2222-222222222222',

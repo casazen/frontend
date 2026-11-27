@@ -16,7 +16,6 @@ import type { BillingProfileRequest, BillingSubscription, CheckoutSessionRequest
 export const BILLING_PLANS_QUERY_KEY = ['billing', 'plans'] as const;
 const BILLING_SUBSCRIPTION_QUERY_KEY = ['billing', 'subscription'] as const;
 
-/** Plans with their price and whether they can be bought in this environment. */
 export function useBillingPlans(enabled = true) {
   return useQuery({
     queryKey: BILLING_PLANS_QUERY_KEY,
@@ -27,11 +26,9 @@ export function useBillingPlans(enabled = true) {
 
 interface SubscriptionQueryOptions {
   enabled?: boolean;
-  /** Polling interval for the last subscription read (e.g. while a checkout waits for the Stripe webhook); `false` stops it. */
   pollInterval?: (subscription: BillingSubscription | undefined) => number | false;
 }
 
-/** Subscription of the org, always read again: the real state after a checkout or a visit to the portal. */
 export function useBillingSubscription({ enabled = true, pollInterval }: SubscriptionQueryOptions = {}) {
   return useQuery({
     queryKey: BILLING_SUBSCRIPTION_QUERY_KEY,
@@ -46,10 +43,6 @@ export function useBillingSubscription({ enabled = true, pollInterval }: Subscri
   });
 }
 
-/**
- * Starts the Stripe Checkout and leaves the app for it. Errors are handled by the page (409 `already_subscribed`,
- * 409 `billing_gate_closed`, 422 `billing_plan_unavailable`).
- */
 export function useStartCheckout() {
   return useMutation({
     mutationFn: (request: CheckoutSessionRequest) => BillingApi.createCheckoutSession(request),
@@ -57,10 +50,6 @@ export function useStartCheckout() {
   });
 }
 
-/**
- * Opens the Stripe billing portal (plan change, payment method, open invoices). `returnPath`: the plan or billing page
- * the portal links back to, i.e. the calling page (PL-16).
- */
 export function useOpenBillingPortal(returnPath?: string) {
   return useMutation({
     mutationFn: () => BillingApi.createPortalSession(returnPath),
@@ -87,7 +76,6 @@ export function useUpdateBillingProfile() {
   });
 }
 
-/** The plan changed on Stripe: the effective tier of the profile and the entitlement are read again. */
 export function useRefreshPlanAfterPayment() {
   const queryClient = useQueryClient();
   return useCallback(() => {

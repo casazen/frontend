@@ -1,6 +1,5 @@
 import {test, expect} from '@playwright/test';
 
-// Real mandate component/dialog, synthetic contract response. Attachments are test bytes and are never sent externally.
 for (const viewport of [{name: 'desktop', width: 1280, height: 900}, {name: 'mobile', width: 390, height: 844}]) {
   test(`owner mandate contract and reviewed terms on ${viewport.name}`, async ({page}, testInfo) => {
     await page.setViewportSize(viewport);

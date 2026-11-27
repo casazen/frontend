@@ -12,7 +12,6 @@ import { MAX_SUPPLIER_PHOTOS } from '../components/activation-steps';
 
 const T = 'supplier.profile.photos';
 const SHOWCASE_PATH = '/app/supplier/showcase';
-/** What the API takes (`POST profile/photos`): JPEG, PNG or WebP. It checks the content too, and refuses all the files if one is not good. */
 const PHOTO_TYPES = 'image/jpeg,image/png,image/webp';
 
 /**
@@ -28,7 +27,6 @@ export function ProfilePhotos({ profile }: { profile: SupplierProfile }) {
   const [problem, setProblem] = useState<string | null>(null);
   const [toRemove, setToRemove] = useState<string | null>(null);
   const list = useRef<PhotoListHandle>(null);
-  /** Where in the list the photo that is being removed was: once the dialog has closed the focus goes to its neighbor. */
   const removedAt = useRef<number | null>(null);
   const photos = profile.photoUrls ?? [];
   const busy = upload.isPending || update.isPending;
@@ -102,7 +100,6 @@ export function ProfilePhotos({ profile }: { profile: SupplierProfile }) {
           removedAt.current = toRemove === null ? null : photos.indexOf(toRemove);
           return keep(photos.filter((url) => url !== toRemove));
         }}
-        // The button that opened the dialog is gone with its photo: the focus goes to the photo that took its place.
         onCloseAutoFocus={(event) => {
           const index = removedAt.current;
           removedAt.current = null;

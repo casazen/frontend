@@ -9,7 +9,6 @@ import type { PublicCheckInContextDto, PublicTouristTax } from '@/types/public-c
 import { guestTaxOutlook, isShownOnCompletedCheckIn } from '../lib/tourist-tax-model';
 import { TouristTaxStep } from '../tourist-tax-step';
 
-/** The receipt of a completed check-in, with the tourist tax that can still be paid under it. */
 export function CheckInReceipt({ submitted, receiptHeading, context, next, taxView, taxRead, token }: {
   submitted: boolean;
   receiptHeading: RefObject<HTMLHeadingElement | null>;
@@ -20,9 +19,7 @@ export function CheckInReceipt({ submitted, receiptHeading, context, next, taxVi
   token: string;
 }) {
   const { t } = useTranslation();
-  // A completed check-in still pays its tax (the server allows it): what can still be paid, and what was paid, is under the card, when the API offers the payment.
   const taxStillToSay = taxView !== null && isShownOnCompletedCheckIn(guestTaxOutlook(taxView));
-  // A tax still to pay is the action of the page (its card is below): the way on is then the quiet one.
   const taxToPay = taxView !== null && guestTaxOutlook(taxView) === 'payable';
   return (
     <>

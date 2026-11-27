@@ -6,14 +6,9 @@ import { cn } from '@/lib/utils';
 interface NavCountPillProps {
   entry: RouteManifestEntry;
   count: number;
-  /** Where the pill sits (next to the name, or on a corner of the icon): the place is the parent's. */
   className?: string;
 }
 
-/**
- * What a counter is about decides its color: a thing to answer is the accent of the area, a risk of a sanction and an urgent
- * thing to do are red. The words for a screen reader say the same, so the color is never the only signal.
- */
 const PILL_COLOR: Record<NavCountKey, string> = {
   bookingRequests: 'bg-primary text-primary-foreground',
   supplierRequests: 'bg-primary text-primary-foreground',
@@ -22,11 +17,6 @@ const PILL_COLOR: Record<NavCountKey, string> = {
   messages: 'bg-primary text-primary-foreground',
 };
 
-/**
- * The counter of a menu entry (`navCount`, UI-04a): the number on the screen (99+ above that) and, for a screen reader,
- * what it counts ("2 richieste da approvare"). Nothing while there is nothing to count. The sidebar, the bottom bar and
- * the sheet of the phone show the same pill, each in its own place.
- */
 export function NavCountPill({ entry, count, className }: NavCountPillProps) {
   const { t } = useTranslation();
   if (!entry.navCount || count <= 0) return null;

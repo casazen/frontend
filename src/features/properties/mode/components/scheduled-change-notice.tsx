@@ -14,10 +14,6 @@ interface ScheduledChangeNoticeProps {
   propertyId: string;
 }
 
-/**
- * The row of status on the page of a property: "Passaggio all'affitto lungo il 1 dicembre", with "Annulla il passaggio" for who
- * may write the property. Nothing at all when no change waits for its day.
- */
 export function ScheduledChangeNotice({ area, propertyId }: ScheduledChangeNoticeProps) {
   const { t } = useTranslation();
   const dayLabel = useDayLabel();
@@ -27,7 +23,6 @@ export function ScheduledChangeNotice({ area, propertyId }: ScheduledChangeNotic
   const [cancelling, setCancelling] = useState(false);
 
   const change = state.data?.scheduledChange;
-  // A failed read shows nothing: the page works without this row, and the wizard says why when it is opened.
   if (!change) return null;
 
   const canCancel = workspace?.hasPermission(area, 'property.write') ?? false;

@@ -9,7 +9,6 @@ import { expectNoAxeViolations } from '@/test/axe';
 import { freezeClock } from '@/test/clock';
 import { Timeline, type TimelineEvent, type TimelineProps } from '../timeline';
 
-// 12:00 UTC of Friday 16 October 2026: 14:00 in Rome.
 const NOW = '2026-10-16T12:00:00Z';
 
 const EVENTS: TimelineEvent[] = [
@@ -26,7 +25,6 @@ function renderTimeline(props: Partial<TimelineProps> = {}) {
   );
 }
 
-/** The title line of each event, without the word for a screen reader that tells its tone. */
 const titles = () =>
   screen.getAllByRole('listitem').map((item) =>
     Array.from((item.querySelector('p') as HTMLElement).childNodes)
@@ -37,7 +35,6 @@ const titles = () =>
 const numbered = (count: number): TimelineEvent[] =>
   Array.from({ length: count }, (_, index) => ({
     id: `e${index + 1}`,
-    // One a day, the first the most recent.
     at: new Date(Date.parse(NOW) - index * 86_400_000).toISOString(),
     title: `Evento ${index + 1}`,
   }));
@@ -126,7 +123,6 @@ describe('Timeline (UI-15)', () => {
       const paid = screen.getByText('Pagamento ricevuto').closest('li') as HTMLElement;
       const time = paid.querySelector('time') as HTMLElement;
       expect(time).toHaveAttribute('datetime', '2026-10-16T09:30:00.000Z');
-      // 09:30 UTC is 11:30 in Rome; two and a half hours before the frozen "now".
       expect(time).toHaveTextContent('16 ott, 11:30 · 2 ore fa');
     });
 
@@ -204,7 +200,6 @@ describe('Timeline (UI-15)', () => {
       expect(screen.getByRole('link', { name: 'Pagamento ricevuto' })).toHaveClass('underline', 'pointer-coarse:py-2.5');
     });
 
-    // A tab or a newline is dropped by the browser when it reads an address: '/' + TAB + '/evil.example' is '//evil.example' to it.
     it.each(['javascript:alert(1)', '//evil.example/x', 'https://evil.example', '/\\evil.example', 'payments/1', '/\t/evil.example', '/\n/evil.example', '/\r/evil.example', '/app/\u0000x'])(
       'Timeline_Href%j_IsNotMadeALinkBecauseItIsNotAPageOfTheApp',
       (href) => {

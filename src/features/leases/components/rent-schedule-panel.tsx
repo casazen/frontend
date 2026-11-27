@@ -37,19 +37,16 @@ const RENT_CADENCES: RentCadence[] = ['Monthly', 'Bimonthly', 'Quarterly', 'Semi
 
 const MONTHS_PER: Record<RentCadence, number> = { Monthly: 1, Bimonthly: 2, Quarterly: 3, Semiannual: 6 };
 
-/** Payments settings page, where the Stripe Connect onboarding happens (BK-09). */
 const PAYMENTS_SETTINGS_PATH = '/app/short-rent/settings/payments';
 
 interface RentSchedulePanelProps {
   leaseId: string;
-  /** Status of the lease: when it changes (e.g. signed) the ledger is read again. */
   leaseStatus?: string;
   /**
    * The days the lease starts and ends (`YYYY-MM-DD`). With them the plan of a lease that is running can be tracked from a month
    * («Traccia da», LR-04a) instead of from the start, so no past period is born late; without them the field is not offered.
    */
   term?: LeaseTerm;
-  /** Called when the plan has been saved: a window that holds the panel closes then. */
   onConfigured?: () => void;
 }
 
@@ -117,8 +114,6 @@ function RentLedgerContent({
   onConfigured?: () => void;
 }) {
   const { t, i18n } = useTranslation();
-  // The page of the payments settings is the short-rent one: who cannot open it (a landlord with only long-term leases) gets the
-  // words and no link to a page that would refuse them. Outside the workspace (a page on its own) the link stays.
   const workspace = useContext(WorkspaceContext);
   const canOpenPaymentsSettings = workspace ? workspace.hasPermission('short-rent', 'property.write') : true;
   const canWriteRent = workspace?.hasPermission('long-rent', 'lease.create') ?? false;
@@ -227,7 +222,6 @@ function RentLedgerContent({
 interface RentScheduleFormProps {
   leaseId: string;
   ledger: RentLedger;
-  /** When the lease starts and ends: without it «Traccia da» is not offered. */
   term?: LeaseTerm;
   onDone: () => void;
   onCancel?: () => void;
@@ -240,9 +234,6 @@ function RentScheduleForm({ leaseId, ledger, term, onDone, onCancel }: RentSched
   const [billingDay, setBillingDay] = useState(ledger.schedule ? String(ledger.schedule.billingDayOfMonth) : '');
   const [amount, setAmount] = useState(ledger.schedule ? String(ledger.schedule.amount) : '');
 
-  // «Traccia da» (LR-04a, LR-D17): a lease that already started is tracked from this month, so the months before it are not born
-  // late. `trackedMonth` is what the server has ('' = from the start of the lease); the field starts there for an existing plan
-  // and at this month for a new one. Only a change is sent: a missing day keeps the one the plan has.
   const leaseStart = parseStayDate(term?.startDate);
   const leaseEnd = parseStayDate(term?.endDate);
   const today = todayInRome();
@@ -251,7 +242,6 @@ function RentScheduleForm({ leaseId, ledger, term, onDone, onCancel }: RentSched
   const started = leaseStart !== '' && leaseStart <= today;
   const running = started && (leaseEnd === '' || leaseEnd >= today);
   const startMonth = leaseStart === '' ? '' : monthOfDate(leaseStart);
-  // A lease that is over can only be tracked up to its last month (a day after its end is refused).
   const lastMonth = leaseEnd !== '' && monthOfDate(leaseEnd) < currentMonth ? monthOfDate(leaseEnd) : currentMonth;
   const [trackFrom, setTrackFrom] = useState(ledger.schedule ? trackedMonth : running && currentMonth > startMonth ? currentMonth : '');
   const trackMonths = startMonth === '' ? [] : trackFromMonths(startMonth, lastMonth, trackFrom);
@@ -271,8 +261,6 @@ function RentScheduleForm({ leaseId, ledger, term, onDone, onCancel }: RentSched
 
   function submit() {
     if (!canSubmit) return;
-    // The day and the amount of the plan go again with every save: the server works out the ones that are missing from the lease, so
-    // a custom amount that was left out would come back as the default.
     const input: ConfigureRentScheduleInput = {
       cadence,
       billingDayOfMonth: billingDay === '' ? undefined : dayNumber,

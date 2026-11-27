@@ -23,9 +23,7 @@ import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
 
 interface OwnerMandateSectionProps {
   ownerId: string;
-  /** The settlement currency of the owner (its fiscal profile); `null` while the profile has none. The flat fees of a stay are in it. */
   currency: string | null;
-  /** Who may write (`agency.owner.financial.manage`). Without it the versions are read and no form is offered. */
   canManage: boolean;
 }
 
@@ -46,7 +44,6 @@ export function OwnerMandateSection({ ownerId, currency, canManage }: OwnerManda
   const hasFees = (versions ?? []).some((mandate) => mandate.cleaningFlatRate !== null || mandate.linenFlatRate !== null);
 
   let content;
-  // A 404 is «not found» whatever the cache still holds (a failed read keeps the old data).
   if (getHttpStatus(mandates.error) === 404) {
     content = <p className="break-words text-sm text-foreground/70" data-testid="owner-mandate-not-found">{t('ownerMandate.notFound')}</p>;
   } else if (mandates.isPending) {
@@ -137,13 +134,8 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const HTTPS = /^https:\/\/\S+$/i;
 const DOCUMENT_MAX = 500;
 
-/** A number as the person types it in Italian: two decimals, a comma. */
 const asField = (value: number): string => value.toFixed(2).replace('.', ',');
 
-/**
- * The form starts from the version the person is replacing (the newest): the terms change on a day, they are not typed again. The first day is today, or the day after the newest
- * version starts when that is later (the server refuses a day that is not). The signed document is never returned by the server, so it is asked again, and left blank it stays absent.
- */
 function initial(from: OwnerMandate | null, latestStart: string | null): FormState {
   const today = todayInRome();
   const earliest = latestStart === null ? today : addDays(latestStart, 1);
@@ -171,7 +163,6 @@ interface MandateDialogProps {
   onOpenChange: (open: boolean) => void;
   ownerId: string;
   currency: string | null;
-  /** The versions of the owner, the newest first: the form starts from the first. */
   versions: readonly OwnerMandate[];
 }
 
@@ -180,10 +171,8 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
   const { t, i18n } = useTranslation();
   const { date } = useOwnerFormat();
   const save = useCreateOwnerMandate(ownerId);
-  // The versions the server checks the overlap on are those of the owner (the shape of before E13, of one ownership, is not): the newest of them is what a new version replaces.
   const ofTheOwner = versions.filter((mandate) => mandate.ownershipId === null);
   const latestStart = latestMandateStart(ofTheOwner);
-  // Its terms are the ones the form starts from, and the treatment of the commission is carried over from it: the form has no field for it.
   const from = ofTheOwner.find((mandate) => mandate.validFrom === latestStart) ?? null;
   const [form, setForm] = useState<FormState>(() => initial(from, latestStart));
   const [error, setError] = useState<string | null>(null);
@@ -235,7 +224,6 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
       if (values.commissionPercent !== null) patch.commissionPercent = asField(values.commissionPercent);
       if (values.commissionBase !== null) patch.commissionBase = values.commissionBase;
       if (values.commissionIncludesVat !== null) patch.commissionIncludesVat = values.commissionIncludesVat;
-      // Never turn a fee written in another or unknown currency into the owner's settlement currency.
       if (currency && values.currency?.toUpperCase() === currency.toUpperCase()) {
         if (values.cleaningFlatRate !== null) patch.cleaningFlatRate = asField(values.cleaningFlatRate);
         if (values.linenFlatRate !== null) patch.linenFlatRate = asField(values.linenFlatRate);
@@ -257,7 +245,6 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
   const linen = flatFeeOf(form.linenFlatRate);
   const document = form.documentReference.trim();
   const documentOk = document === '' || (HTTPS.test(document) && document.length <= DOCUMENT_MAX);
-  // The server refuses a version that does not start after the newest one (409 `owner_mandate_overlap`): the form says so before it is sent.
   const startsAfterTheLast = latestStart === null || !DAY.test(form.validFrom) || form.validFrom > latestStart;
   const valid = DAY.test(form.validFrom) && startsAfterTheLast && percentOk && cleaning.ok && linen.ok && documentOk;
 

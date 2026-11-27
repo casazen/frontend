@@ -5,29 +5,20 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { todayInRome } from '@/lib/stay-dates';
 import { useProperties } from '@/queries/use-properties';
 
-/** What the filters of a money report hold: the period (a preset, or the days typed) and one property or the whole scope. */
 interface MoneyReportFilterState {
   preset: PeriodPresetId;
-  /** The days typed when `preset` is `custom`. */
   custom: ReportPeriod;
-  /** One property, or an empty string for the whole scope (it may be one that is no longer the person's: `useMoneyReportFilters` checks it). */
   propertyId: string;
 }
 
-/** The two checks every report shares (two days in order, in the years the server knows, at most 24 months), as the key of `reports.error.*`. */
 type MoneyPeriodProblem = ReturnType<typeof basicPeriodProblem>;
 
 export interface MoneyReportFilters {
   preset: PeriodPresetId;
-  /** The days typed (shown only for `custom`). */
   custom: ReportPeriod;
-  /** The days the report is asked for. Both are always there: a report is never asked for a period without its days. */
   days: ReportPeriod;
-  /** Why the server is not asked for these days, or null. */
   problem: MoneyPeriodProblem;
-  /** The property in force, already checked against the list the server sent: an old choice that is no longer there is the whole scope. */
   propertyId: string;
-  /** The properties the person can choose from (the server sends only the ones its scope reaches); none for who may not read the properties. */
   properties: ReadonlyArray<{ id: string; name: string }>;
   choosePreset: (preset: PeriodPresetId) => void;
   changeCustom: (change: Partial<ReportPeriod>) => void;
@@ -63,7 +54,6 @@ export function useMoneyReportFilters(defaultPreset: Exclude<PeriodPresetId, 'cu
 
   const choosePreset = useCallback(
     (preset: PeriodPresetId) =>
-      // The days to type start from the ones the person was looking at.
       setState((current) => ({
         ...current,
         preset,

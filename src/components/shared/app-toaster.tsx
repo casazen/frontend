@@ -6,10 +6,8 @@ import { useUiStore } from '@/store/ui-store';
 const SHORT_VIEWPORT = '(height < 36rem)';
 const BELOW_THE_HEADER = 'calc(var(--header-height) + env(safe-area-inset-top, 0px) + 0.75rem)';
 
-/** How far from the bottom edge the toasts of a phone stay when the bottom bar is there: the bar, the home indicator, a margin. */
 const ABOVE_THE_BAR = 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 0.75rem)';
 
-/** The same when the page also has its primary action fixed above the bar (`PageHeader.mobilePrimary`): over both of them. */
 const ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION =
   'calc(var(--bottom-nav-height) + var(--mobile-primary-height) + env(safe-area-inset-bottom, 0px) + 0.75rem)';
 

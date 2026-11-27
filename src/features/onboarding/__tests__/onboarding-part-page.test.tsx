@@ -110,7 +110,6 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     expect(status).toHaveTextContent(i18n.t('onboardingPlan.states.open'));
     expect(screen.getByTestId('onboarding-part-needs')).toHaveTextContent(i18n.t('onboardingPlan.needs.alloggiatiCredentials'));
     expect(screen.getByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('onboardingPlan.reasons.sender_missing'));
-    // The one primary button opens the page that does the part (resolved against the manifest), and «Torna al piano» is always there.
     expect(screen.getByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/compliance');
     expect(screen.getByTestId('part-launch-back')).toHaveAttribute('href', '/app/short-rent/onboarding');
   });
@@ -128,7 +127,6 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     expect(screen.getByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/fiscal/setup?step=numbering');
   });
 
-  // Flag rule: with the issuance off the route of the wizard leads to the home of the area, so the part says that invoicing is not active and offers no button to it.
   it('OnboardingPartPage_FatturazionePartWithTheIssuanceOff_SaysNotYetAvailableAndHasNoButtonToTheWizard', async () => {
     vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ fiscalDocuments: { state: 'open', reason: 'issuer_missing', done: 0, total: 1, launchTarget: 'fiscal' } }));
     vi.mocked(onboardingApi.getFlowProperties).mockResolvedValue(page([]));
@@ -137,7 +135,6 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     expect(await screen.findByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('onboardingPlan.reasons.issuer_missing'));
     expect(await screen.findByTestId('part-launch-unavailable')).toHaveTextContent(i18n.t('onboardingPlan.launch.unavailable.title'));
     expect(screen.queryByTestId('part-launch-primary')).not.toBeInTheDocument();
-    // The same part with the issuance on is the wizard, with no step when the reason is not an item of the setup.
     cleanup();
     renderPage('/app/short-rent/onboarding/parts/fiscalDocuments', { fiscalDocumentIssuance: true });
     expect(await screen.findByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/fiscal/setup');
@@ -163,7 +160,6 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     expect(row).toHaveAttribute('data-state', 'toComplete');
     expect(within(row).getByTestId('flow-state')).toHaveTextContent(i18n.t('onboardingPlan.flows.states.toComplete'));
     expect(screen.getByTestId(`part-property-${PROPERTY}-reason`)).toHaveTextContent(i18n.t('onboardingPlan.reasons.property.sender_missing'));
-    // «chooseSender» is the compliance with the focus «sender»: the sender wizard (E03/F01/US02/T02) opens, for that property.
     expect(screen.getByTestId(`part-property-${PROPERTY}-do`)).toHaveAttribute('href', `/app/short-rent/compliance/sender?property=${PROPERTY}`);
     // The compliance part adds the guided steps of the police and ISTAT for each property.
     expect(screen.getByTestId(`part-property-${PROPERTY}-police`)).toHaveAttribute('href', `/app/short-rent/onboarding/panel/police?propertyId=${PROPERTY}`);
@@ -178,7 +174,6 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
   });
 
   it('OnboardingPartPage_NoPageThePersonCanOpen_SaysNotAvailableYetWithNoLink', async () => {
-    // The page that does the part is not one this person may open (or is not registered yet): the part says so, and offers no dead link.
     workspace.hasPermission = () => false;
     renderPage('/app/short-rent/onboarding/parts/compliance');
 
@@ -214,7 +209,6 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     expect(screen.queryByTestId('part-entry-continue')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('part-entry-onOtas'));
 
-    // The answer opens the SAME connect route of E02 with the scenario; it never opens the listing wizard by itself.
     expect(screen.getByTestId('part-entry-continue')).toHaveAttribute('href', '/app/short-rent/integrations/octorate?scenario=onOtas&planPart=octorateConnection');
     await waitFor(() => expect(wizardDraftApi.save).toHaveBeenCalledWith('OnboardingActivation', expect.objectContaining({ data: expect.objectContaining({ step: 'scenario', values: expect.objectContaining({ scenario: 'onOtas' }) }) })));
     fireEvent.click(screen.getByTestId('part-entry-newInventory'));

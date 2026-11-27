@@ -32,7 +32,6 @@ vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOrig
 
 const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const DAY = '2026-11-19';
-/** What the request of a failure would carry: the name of a guest in the file of a receipt, in the body of the call. */
 const GUEST = 'Giulia Bianchi';
 
 function setup() {
@@ -41,7 +40,6 @@ function setup() {
   return { queryClient, wrapper };
 }
 
-/** A refusal of the API as axios keeps it: with the request that was sent, whose body holds what the host sent, and the problem the server answered. */
 function refusal(status: number, code?: string): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify({ file: `riepilogo-${GUEST}.pdf`, arrivalDay: DAY }) } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: code ? { code } : {}, statusText: '', headers: {}, config });
@@ -74,13 +72,11 @@ describe('what the layer of the Ticino notification files is not kept once it is
       await expect(result.current.mutateAsync(receipt())).rejects.toMatchObject({ response: { status: 400 } });
     });
 
-    // What the layer turns into words stays (the status and the code of the answer); the request, with the file in it, does not.
     const kept = queryClient.getMutationCache().getAll()[0]?.state.error as AxiosError;
     expect(kept.response?.status).toBe(400);
     expect(kept.response?.data).toEqual({ code: 'swiss_receipt_file_invalid' });
     expect(JSON.stringify(kept.config ?? {})).not.toContain(GUEST);
     expect(JSON.stringify(kept.response?.config ?? {})).not.toContain(GUEST);
-    // The file the host chose is not what the mutation keeps either: it goes with it.
     expect(queryClient.getMutationCache().getAll()[0]?.options.gcTime).toBe(0);
 
     unmount();
@@ -112,7 +108,6 @@ describe('what the layer of the Ticino notification files is not kept once it is
       await result.current.mutateAsync({ reportDate: DAY, format: 'csv' });
     });
 
-    // The file is saved and let go: the mutation holds no data (the bytes are never in the cache).
     expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'notifiche-ti-2026-11-19.csv');
     expect(queryClient.getMutationCache().getAll()[0]?.state.data).toBeUndefined();
 

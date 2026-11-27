@@ -16,12 +16,10 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { openQrPrintSheet, useQrDataUrl } from '@/lib/qr-print-sheet';
 import { useDoorQr, useRotateDoorQr } from '@/queries/use-checkin';
 
-/** Opens a clean page with the QR code and the instructions, and prints it; says so when the browser blocked the window. */
 function printSheet(title: string, instructions: string, image: string, popupBlocked: string) {
   if (!openQrPrintSheet({ title, lines: [instructions], image })) toast.error(popupBlocked);
 }
 
-/** The page when the property is not known: the address has no property in it. */
 function MissingProperty() {
   const { t } = useTranslation();
   return (
@@ -42,11 +40,9 @@ interface QrSheetProps {
   title: string;
   instructions: string;
   hint: string;
-  /** What else the host can do with the code, next to printing and downloading it (the door has «Rigenera»). */
   extraAction?: ReactNode;
 }
 
-/** The printable card: the code, «Stampa» and «Scarica PNG», and the hint on where it goes. */
 function QrSheet({ propertyId, image, title, instructions, hint, extraAction }: QrSheetProps) {
   const { t } = useTranslation();
 
@@ -90,15 +86,10 @@ function QrSheet({ propertyId, image, title, instructions, hint, extraAction }: 
   );
 }
 
-/**
- * The QR as it always was (flag off): it directs to `/guest/verify?property=`, the verification entry the page was built for. Nothing of it changes while the identity verification is
- * not switched on.
- */
 function EntranceQr({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
   const origin = window.location.origin;
 
-  // The QR directs to the guest verification entry page where they enter booking code + email
   const image = useQrDataUrl(`${origin}/guest/verify?property=${propertyId}`);
 
   if (!image) {
@@ -116,7 +107,6 @@ function EntranceQr({ propertyId }: { propertyId: string }) {
   );
 }
 
-/** A card with a sentence and, when there is one, the button that tries again: the page has nothing to print. */
 function DoorQrMessage({ title, children, onRetry }: { title: string; children: string; onRetry?: () => void }) {
   const { t } = useTranslation();
   return (
@@ -151,7 +141,6 @@ function DoorEntranceQr({ propertyId }: { propertyId: string }) {
   const rotate = useRotateDoorQr(propertyId);
   const [confirming, setConfirming] = useState(false);
 
-  // The code of a read that failed is never drawn, even when an older answer is still in memory.
   const url = door.isError ? '' : (door.data?.url ?? '');
   const image = useQrDataUrl(url);
 
@@ -179,7 +168,6 @@ function DoorEntranceQr({ propertyId }: { propertyId: string }) {
       await rotate.mutateAsync();
       toast.success(t('property.qr.door.rotated'));
     } catch (error) {
-      // Whether the code was replaced is not known after a failed call: the page reads it again, so it shows the code that is in force.
       void door.refetch();
       toast.error(getHttpStatus(error) === 403 ? t('property.qr.door.needsWrite') : t('property.qr.door.rotateFailed'));
       throw error;

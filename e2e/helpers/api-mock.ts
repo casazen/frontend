@@ -7,17 +7,8 @@ import {
   suggestionsData,
 } from '../fixtures/pricing.fixtures';
 
-/**
- * The axios client uses VITE_API_BASE_URL which defaults to
- * https://localhost:5001/api in development.  Playwright intercepts
- * any URL matching these globs regardless of origin.
- */
 const pricingBase = `**/api/pricing-adapter`;
 
-/**
- * Overrides POST recalculate with a delayed response so the UI can show the pending spinner.
- * Call AFTER mockPricingApiDefaults — Playwright evaluates routes LIFO.
- */
 export async function mockDelayedRecalculate(
   page: Page,
   options: { delayMs?: number; onRecalculate?: () => void } = {},
@@ -40,14 +31,7 @@ export async function mockDelayedRecalculate(
   });
 }
 
-/**
- * Registers the full set of default API mocks needed for the seasonal suggestions flow.
- * Playwright route handlers are evaluated in LIFO order — later registrations
- * take priority, so individual tests can override a specific route by calling
- * page.route() AFTER this helper.
- */
 export async function mockPricingApiDefaults(page: Page): Promise<void> {
-  // GET suggestions
   await page.route(`${pricingBase}/suggestions/${PROPERTY_ID}`, (route) => {
     if (route.request().method() !== 'GET') { route.fallback(); return; }
     route.fulfill({
@@ -57,7 +41,6 @@ export async function mockPricingApiDefaults(page: Page): Promise<void> {
     });
   });
 
-  // POST recalculate
   await page.route(`${pricingBase}/recalculate/${PROPERTY_ID}`, (route) => {
     if (route.request().method() !== 'POST') { route.fallback(); return; }
     route.fulfill({
@@ -67,7 +50,6 @@ export async function mockPricingApiDefaults(page: Page): Promise<void> {
     });
   });
 
-  // Config endpoint — handle GET / POST / DELETE by method
   await page.route(`${pricingBase}/config/${PROPERTY_ID}`, (route) => {
     const method = route.request().method();
     if (method === 'GET') {
@@ -92,10 +74,6 @@ export async function mockPricingApiDefaults(page: Page): Promise<void> {
   });
 }
 
-/**
- * Overrides the GET config endpoint to return the disabled configuration.
- * Call AFTER mockPricingApiDefaults — Playwright evaluates routes LIFO.
- */
 export async function mockConfigDisabled(page: Page): Promise<void> {
   await page.route(`${pricingBase}/config/${PROPERTY_ID}`, (route) => {
     if (route.request().method() !== 'GET') { route.fallback(); return; }

@@ -14,7 +14,6 @@ interface MenuSearchProps {
   children: ReactNode;
 }
 
-/** Looks up both menu entries and their tabs in the already scoped navigation manifest. */
 export function MenuSearch({ entries, children, onNavigate }: MenuSearchProps) {
   const { t } = useTranslation();
   const { pathname } = useLocation();

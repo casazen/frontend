@@ -35,7 +35,6 @@ const STEPS = ['profile', 'features', 'summary', 'payment', 'ready'] as const;
 type Step = typeof STEPS[number];
 
 export function CommercialSignupWizard({ profile }: { profile: UserDetail | undefined }) {
-  // A change of identity or a server provisioning result starts a fresh wizard in the verified scope.
   const scopeKey = JSON.stringify([profile?.id, profile?.orgId, Boolean(profile?.commercialSignup)]);
   return <SignupFlow key={scopeKey} profile={profile} />;
 }
@@ -185,7 +184,6 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
       setSelection(signup);
       if (scope) clearCommercialDraft(scope);
       if (result.orgProvisioned) { markSignupAttributionReady(); await syncSignupAttribution(); }
-      // Memberships are already saved in the database. Resolve the profile before opening billing.
       await client.invalidateQueries({ queryKey: ['me'] });
       setProvisioned(true);
       setConsenting(false);

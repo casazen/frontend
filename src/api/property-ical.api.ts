@@ -8,7 +8,6 @@ import type {
 } from '@/types/property-ical';
 
 export const propertyIcalApi = {
-  /** The calendars of every active short-rent property of the caller in one read (SR-10b). */
   getCalendarOverview: () => ApiClient.get<CalendarOverview>('/properties/calendar-overview'),
 
   getStatus: (propertyId: string) =>
@@ -29,7 +28,6 @@ export const propertyIcalApi = {
   getExportUrl: (propertyId: string) =>
     ApiClient.get<PropertyIcalExportUrl>(`/properties/${propertyId}/ical/export-url`),
 
-  /** New token for the export link (PC-12): the old link stops working at once. */
   regenerateExportUrl: (propertyId: string) =>
     ApiClient.post<PropertyIcalExportUrl>(`/properties/${propertyId}/ical/export-url/regenerate`),
 };

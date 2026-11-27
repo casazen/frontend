@@ -5,7 +5,6 @@ import { applyListState, clearedState, defaultChipId, normalizeColumnIds, preset
 import type { ListDefinition, ListLayout, ListPresetState, ListSort } from './list-types';
 
 export interface UseListState {
-  /** What the address says now: the search, the quick filter, the filters, the order, the columns, the layout, the page. */
   state: ListState;
   /**
    * The search text. `typing` is for text that is still being typed: the first change adds a step to the history and the ones
@@ -13,17 +12,13 @@ export interface UseListState {
    */
   setQ: (q: string, options?: { typing?: boolean }) => void;
   setChip: (chip: string) => void;
-  /** All the filters at once (the panel applies them together). */
   setFilters: (filters: Record<string, string>) => void;
   setSort: (sort: ListSort | null) => void;
   setColumns: (columns: readonly string[] | null) => void;
   setLayout: (layout: ListLayout) => void;
   setPage: (page: number) => void;
-  /** "Azzera i filtri": no search, no filter, the quick filter for everything. */
   clear: () => void;
-  /** A saved view: its query string. */
   applyQuery: (query: string) => void;
-  /** A view that comes with the list. */
   applyPreset: (preset: ListPresetState) => void;
 }
 
@@ -52,7 +47,6 @@ export function useListState<Row>(def: ListDefinition<Row>): UseListState {
   useEffect(() => {
     latest.current = params;
   }, [params]);
-  // The address a "typing" change left, to tell the entry it made from one that Back or a link has put in its place.
   const typed = useRef<string | null>(null);
 
   const commit = useCallback(

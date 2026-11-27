@@ -8,7 +8,6 @@ import { trackSeoEvent } from '@/lib/seo-events';
 
 vi.mock('@/lib/seo-events', () => ({ trackSeoEvent: vi.fn(() => true) }));
 
-// The real auth bridge over a mocked Auth0 SDK: the test sees the exact loginWithRedirect call of the page.
 const auth0 = vi.hoisted(() => ({
   isLoading: false,
   isAuthenticated: false,
@@ -58,7 +57,6 @@ describe('SignupPage (SE-03, A8-03)', () => {
   beforeEach(() => {
     window.localStorage.clear();
     window.sessionStorage.clear();
-    // The visitor allowed statistics: without that nothing is kept (`cookie-consent.test.ts` proves it).
     window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
     auth0.isLoading = false;
     auth0.isAuthenticated = false;
@@ -97,7 +95,6 @@ describe('SignupPage (SE-03, A8-03)', () => {
     expect(screen.queryByTestId('login-page')).not.toBeInTheDocument();
   });
 
-  // SE-04 (#300 AC3): the signup that came from the SEO page of a comune is counted for it, once.
   it('SignupPage_ComingFromAComunePage_CountsSignupStartOnceForThatComune', async () => {
     const { rerender } = renderSignup();
     await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1));
@@ -127,7 +124,6 @@ describe('SignupPage (SE-03, A8-03)', () => {
     auth0.isLoading = true;
     const { rerender } = renderSignup();
     expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
-    // The attribution is stored before Auth0 is even ready.
     expect(screen.queryByTestId('signup-continue')).not.toBeInTheDocument();
     expect(pendingAttribution()).toMatchObject({ comune: 'como' });
 
@@ -173,7 +169,6 @@ describe('SignupPage (SE-03, A8-03)', () => {
 
     expect(await screen.findByTestId('supplier-register')).toBeInTheDocument();
     expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
-    // A supplier is not a host signup: nothing is stored to be attributed to an org.
     expect(pendingAttribution()).toBeNull();
   });
 });

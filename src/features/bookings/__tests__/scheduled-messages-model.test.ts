@@ -25,8 +25,6 @@ import {
   withVariablesInPlaceOfStandIns,
 } from '../lib/scheduled-messages';
 
-// The words the section «Messaggi programmati» says about a message (E05/F07/US02, NF-71): what the model gives for each state, reason and channel the server can send.
-
 function message(overrides: Partial<ScheduledMessage> = {}): ScheduledMessage {
   return {
     id: 'm-1',
@@ -56,7 +54,6 @@ function message(overrides: Partial<ScheduledMessage> = {}): ScheduledMessage {
 
 const STATUSES: ScheduledMessageStatus[] = ['Scheduled', 'Sent', 'Skipped', 'Blocked', 'Failed', 'Expired', 'Cancelled'];
 
-/** Every code of the server that says why a message waits (`ScheduledMessageReasons`, the thirteen variables of a template). */
 const VARIABLES = TEMPLATE_VARIABLES.map((variable) => variable.name);
 const BLOCKED_CODES = [
   ...VARIABLES.map((name) => `variable_missing:${name}`),
@@ -83,7 +80,6 @@ const ENDED_CODES = [
 const FAILURE_CODES = ['chat_not_licensed', 'octorate_message_error', 'octorate_rate_limited', 'octorate_unavailable', 'message_unconfirmed', 'manual_verify'];
 const NO_CHANNEL_CODES = ['mapping_not_confirmed', 'thread_closed', 'no_conversation', 'contact_info_unavailable', 'octorate_not_connected', 'channel_unknown'];
 
-/** Every key the model can give for those codes. */
 function everyKey(): string[] {
   const keys: string[] = [];
   for (const status of STATUSES) keys.push(statusViewOf(status).labelKey);
@@ -114,13 +110,11 @@ describe('the words of a scheduled message', () => {
     const t = i18n.getFixedT(lng) as TFunction;
 
     const keys = everyKey();
-    // The scan really reaches the tables of the model.
     expect(keys.length).toBeGreaterThan(70);
     for (const key of keys) {
       const sentence = t(key);
       expect(sentence, key).not.toBe(key);
       expect(sentence.trim(), key).not.toBe('');
-      // The interface says «il canale» and «la chat del portale», never who carries the message (NF-12).
       expect(sentence, key).not.toMatch(/octorate|airbnb|booking\.com|vrbo|expedia|partner/i);
     }
     await i18n.changeLanguage('it');
@@ -138,7 +132,6 @@ describe('the words of a scheduled message', () => {
     expect(statusViewOf('Failed').labelKey).not.toBe(statusViewOf('Sent').labelKey);
     expect(statusViewOf('Failed').badge).toBe('destructive');
     expect(statusViewOf('Sent').badge).toBe('success');
-    // Neither a message the channel did not take nor one that is held back says «inviato».
     const it_ = i18n.getFixedT('it');
     for (const status of ['Failed', 'Blocked', 'Scheduled', 'Skipped', 'Cancelled', 'Expired'] as const) {
       expect(it_(statusViewOf(status).labelKey), status).not.toMatch(/^inviato$/i);
@@ -170,7 +163,6 @@ describe('the words of a scheduled message', () => {
     it('TheVariablesTheBookingLacksAndTheReasonOfTheRow_AreListedOnceEach', () => {
       const blocked = message({ status: 'Blocked', blockedReason: 'id_not_verified', missingVariables: ['access_code', 'check_in_time'] });
       expect(missingCodesOf(blocked)).toEqual(['variable_missing:access_code', 'variable_missing:check_in_time', 'id_not_verified']);
-      // The reason that names a variable already listed is not said twice.
       expect(missingCodesOf(message({ status: 'Blocked', blockedReason: 'variable_missing:access_code', missingVariables: ['access_code'] }))).toEqual(['variable_missing:access_code']);
     });
 
@@ -183,8 +175,6 @@ describe('the words of a scheduled message', () => {
       expect(missingCodesOf(message({ status, blockedReason: 'chat_not_licensed', missingVariables: ['guest_name'] }))).toEqual([]);
     });
 
-    // A planned or a failed message whose booking lacks a datum is held back when its time comes (or when it is tried again): the data are said for every open message. The code that sits on a failed
-    // row is why the last send did not go, which has its own sentence: it is never one of the things the message waits for.
     it.each(['Scheduled', 'Failed'] as const)('%s_WaitsForTheDataTheBookingLacks_ButNeverForTheReasonOfTheRow', (status) => {
       expect(missingCodesOf(message({ status, blockedReason: 'chat_not_licensed', missingVariables: ['guest_name', 'check_in_time'] }))).toEqual([
         'variable_missing:guest_name',
@@ -239,7 +229,6 @@ describe('the words of a scheduled message', () => {
       expect(channelLineOf({ status: 'Scheduled', channel: 'None', channelReason: null })?.reasonKey).toBe('booking.scheduledMessages.channel.reason.other');
     });
 
-    // The server answers the channel only for a message that can still go: for one that is over it is `None` with no reason, which is not «no way to the guest».
     it.each(['Sent', 'Skipped', 'Cancelled', 'Expired'] as const)('AMessageThatIs_%s_HasNoLineAboutTheChannel', (status) => {
       expect(channelLineOf({ status, channel: 'None', channelReason: null })).toBeNull();
     });
@@ -250,7 +239,6 @@ describe('the words of a scheduled message', () => {
       const it_ = i18n.getFixedT('it');
       const sentences = FAILURE_CODES.map((code) => it_(failureReasonOf(code).reasonKey));
       expect(new Set(sentences).size).toBe(FAILURE_CODES.length);
-      // «Non sappiamo se è arrivato» for a message whose outcome nobody knows: never «inviato».
       expect(it_(failureReasonOf('manual_verify').reasonKey)).toMatch(/non sappiamo/i);
       expect(it_(failureReasonOf('message_unconfirmed').reasonKey)).toMatch(/non lo consideriamo inviato/i);
     });
@@ -277,13 +265,11 @@ describe('the text of a scheduled message', () => {
     expect(splitPlaceholders('')).toEqual([]);
   });
 
-  // PRIVACY and DATA: what is saved must make the link and the code when the message goes out. A text saved with `[check_in_link]` would reach the guest with the brackets.
   it('withVariablesInPlaceOfStandIns_TheStandInsBecomeTheVariablesTheyStandFor_SoNeitherReachesTheGuestAsBrackets', () => {
     expect(withVariablesInPlaceOfStandIns('Link: [check_in_link] codice: [access_code] recensione: [review_link]')).toBe(
       'Link: {{check_in_link}} codice: {{access_code}} recensione: {{review_link}}',
     );
     expect(withVariablesInPlaceOfStandIns('[check_in_link] [check_in_link]')).toBe('{{check_in_link}} {{check_in_link}}');
-    // Anything else in brackets is the host's own text.
     expect(withVariablesInPlaceOfStandIns('Vedi [nota] e [guest_name]')).toBe('Vedi [nota] e [guest_name]');
     // Idempotent: a text that already has the variables is left as it is.
     expect(withVariablesInPlaceOfStandIns(withVariablesInPlaceOfStandIns('[access_code]'))).toBe('{{access_code}}');
@@ -313,7 +299,6 @@ describe('the text of a scheduled message', () => {
     for (const code of ['template_missing', 'message_text_invalid', 'constructor', '', 'Guest_Name']) expect(isTemplateVariable(code), code).toBe(false);
   });
 
-  // DATA: the server takes a variable it has no value for OUT of the text it gives, so a text saved from it would go without the datum.
   describe('missingFromText: the data the text lacks', () => {
     const lacking = { missingVariables: ['check_in_time', 'property_address', 'template_missing'] };
 
@@ -337,13 +322,10 @@ describe('the text of a scheduled message', () => {
 
 describe('time', () => {
   it('formatOnPropertyClock_ShowsTheClockOfTheProperty_WhateverTheZoneOfTheBrowser_AcrossTheTwoChangesOfSummerTime', () => {
-    // 24 November: Rome is on winter time (UTC+1). 24 July: summer time (UTC+2). The same instant of the plan is 08:00 on one day and 09:00 on the other.
     expect(formatOnPropertyClock('2026-11-24T07:00:00Z', 'Europe/Rome', 'it')).toContain('08:00');
     expect(formatOnPropertyClock('2026-07-24T07:00:00Z', 'Europe/Rome', 'it')).toContain('09:00');
-    // The day the clocks change in autumn (25 October 2026): 06:30 UTC is 07:30 in Rome (UTC+1), 00:30 UTC is 02:30 (UTC+2).
     expect(formatOnPropertyClock('2026-10-25T06:30:00Z', 'Europe/Rome', 'it')).toContain('07:30');
     expect(formatOnPropertyClock('2026-10-25T00:30:00Z', 'Europe/Rome', 'it')).toContain('02:30');
-    // A property on another clock is read on that clock.
     expect(formatOnPropertyClock('2026-11-24T07:00:00Z', 'Europe/London', 'en')).toContain('07:00');
   });
 
@@ -403,7 +385,6 @@ describe('time', () => {
     });
   });
 
-  // `isAboutToChange` is judged when the query or the component is updated, not as the clock moves: whether the page reads at all is judged by this, which does not depend on the clock.
   describe('hasOpenMessage: whether any message can still change by itself', () => {
     it.each(['Scheduled', 'Blocked', 'Failed'] as const)('AMessageThatIs_%s_CanStillChange_HoweverFarItsTime', (status) => {
       expect(hasOpenMessage([message({ status, plannedAtUtc: '2027-01-01T07:00:00Z' })])).toBe(true);

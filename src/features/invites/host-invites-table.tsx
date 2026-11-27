@@ -12,10 +12,6 @@ const STATE_VARIANT: Record<HostInviteState, 'success' | 'secondary' | 'destruct
 };
 const DATE_ONLY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/**
- * The host invites of one page. A pending or expired invite can be sent again (new link and expiry), a pending one
- * revoked; a used or revoked one has no action. The admin also sees who invited.
- */
 export function HostInvitesTable({
   invites,
   showInviter,

@@ -10,10 +10,6 @@ import { Button } from '@/components/ui/button';
 import { PublicAccessFrame } from './public-access-frame';
 import { emailVerificationOutcome } from './email-verification-outcome';
 
-/**
- * Landing page of the Auth0 verification email (Redirect To). Stays outside the login callback so Auth0's
- * `code=success` is not treated as an authorization code.
- */
 export function EmailVerifiedPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();

@@ -19,7 +19,6 @@ import type { OwnerPortalIssuedDocument } from '@/types';
 
 const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/** The documents drawn before «Mostra tutti»: an owner with several flats has hundreds of them in a year, and the ZIP for the accountant is the way to have them all. */
 const VISIBLE = 30;
 
 /** The colour of each state towards the SDI that has words; any other state is neutral and is shown as it came. */
@@ -32,7 +31,6 @@ const SDI_TONE: Readonly<Record<string, PillTone>> = {
   manual_declared: 'info',
 };
 
-/** What a failed export says, in words: the permission the owner did not give, a part that is not open, and the sentence of the code of any other (a period that is not one, a ZIP that would be too large). */
 function exportProblemOf(error: unknown, t: TFunction): string {
   const state = ownerReadStateOf(error);
   if (state === 'permission') return t('ownerPortal.states.permission.description');
@@ -66,11 +64,8 @@ function IssuedDocumentsBody() {
   const exporter = useOwnerIssuedDocumentsExport();
   const downloads = useOwnerDownload();
   const [showAll, setShowAll] = useState(false);
-  // Drawn only while the last answer is good: after a refusal nothing of the answer before it stays under the notice.
   const list = currentData(documents) ?? [];
   const shown = showAll ? list : list.slice(0, VISIBLE);
-  // The part that says no (the permission the owner did not give, a part that is not open) offers no file either: the notice of the list says why, and a button that can only be refused is not drawn. A list that
-  // merely failed to load (no answer, a server error) leaves the export, which is a call of its own.
   const refusal = documents.isError ? ownerReadStateOf(documents.error) : null;
   const filesOpen = refusal === null || refusal === 'failed';
 

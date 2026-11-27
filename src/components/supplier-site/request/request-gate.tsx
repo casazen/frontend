@@ -8,17 +8,12 @@ import { BookingField } from '../booking/booking-field';
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 interface RequestGateProps {
-  /** The code the link of the e-mail carried (`?code=`), if any. */
   initialCode: string;
   pending: boolean;
   failure: RequestFailure | null;
   onFind: (code: string, email: string) => void;
 }
 
-/**
- * Where the customer proves it is the one who booked: the code of the request and the e-mail it was made with. The server gives one
- * answer for everything that does not match, and so does the page; nothing is kept in the browser (the e-mail lives in memory only).
- */
 export function RequestGate({ initialCode, pending, failure, onFind }: RequestGateProps) {
   const { t } = useTranslation();
   const [code, setCode] = useState(() => normalizeCode(initialCode));

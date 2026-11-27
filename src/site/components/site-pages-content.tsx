@@ -71,7 +71,6 @@ export function InviteCta({ legal, variant = 'primary' }: { legal: SiteLegal; va
   return <Link href={href}>{t('site.invite.cta')}</Link>;
 }
 
-/** The five checks of the "Adempimenti" section: their texts (`site.home.compliance.*`), icon and accent. */
 const COMPLIANCE: { key: string; icon: LucideIcon; tint: Tint }[] = [
   { key: 'cin', icon: ShieldCheck, tint: 'terra' },
   { key: 'alloggiati', icon: ClipboardList, tint: 'savoia' },
@@ -80,7 +79,6 @@ const COMPLIANCE: { key: string; icon: LucideIcon; tint: Tint }[] = [
   { key: 'wizard', icon: ListChecks, tint: 'ink' },
 ];
 
-/** The cards of "Il lavoro di tutti i giorni": the accents are the ones of the areas of the app. */
 const OPERATIONS: { key: string; icon: LucideIcon; tint: Tint }[] = [
   { key: 'agents', icon: Sparkles, tint: 'terra' },
   { key: 'calendar', icon: CalendarDays, tint: 'terra' },
@@ -89,7 +87,6 @@ const OPERATIONS: { key: string; icon: LucideIcon; tint: Tint }[] = [
   { key: 'longRent', icon: KeyRound, tint: 'savoia' },
 ];
 
-/** Who the site speaks to: the key of the texts (`site.home.audience.*`), icon and accent. */
 const AUDIENCE: { key: string; icon: LucideIcon; tint: Tint }[] = [
   { key: 'host', icon: House, tint: 'terra' },
   { key: 'manager', icon: Building2, tint: 'ink' },
@@ -99,7 +96,6 @@ const AUDIENCE: { key: string; icon: LucideIcon; tint: Tint }[] = [
 
 const range = (count: number) => Array.from({ length: count }, (_, index) => index + 1);
 
-/** A short list of links to the pages of the hub that the home page names (`SEO_FEATURED_GUIDES`, `SEO_FEATURED_TAX_PAGES`). */
 function GuideLinks({ title, pages, text }: { title: string; pages: readonly SeoFeaturedPage[]; text: (comune: string) => string }) {
   return (
     <div>
@@ -120,7 +116,6 @@ function GuideLinks({ title, pages, text }: { title: string; pages: readonly Seo
   );
 }
 
-/** The two ways of renting, each with its own page. */
 const RENT_KINDS = ['short', 'long'] as const;
 
 export function HomePage({ legal }: { legal: SiteLegal }) {
@@ -273,7 +268,6 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
       </Section>
 
       <Section title={t('site.home.guides.title')} intro={t('site.home.guides.text')} icon={BookOpen} tint="terra">
-        {/* Plain links, with the words people search for: the guides are one click from the home page, not two. */}
         <div className="grid gap-8 sm:grid-cols-2">
           <GuideLinks
             title={t('site.home.guides.guidesTitle')}
@@ -307,7 +301,6 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
   );
 }
 
-/** The groups of the features page: title key, intro key, item keys (`site.features.*`), icon and accent. */
 const FEATURE_GROUPS: { title: string; intro: string; items: string[]; icon: LucideIcon; tint: Tint }[] = [
   {
     title: 'site.features.complianceTitle',
@@ -421,7 +414,6 @@ const SUPPLIER_CATEGORY_KEYS = [
   'categoryExcursions',
 ] as const;
 
-/** The chips of the categories take the accents in turn. */
 const CATEGORY_CHIP = [
   'bg-terra-100 text-terra-800',
   'bg-salvia-100 text-salvia-800',
@@ -476,7 +468,6 @@ export function SuppliersPage({ legal }: { legal: SiteLegal }) {
   );
 }
 
-/** The three principles of the about page (`site.about.principle{n}Title|Text`): icon and accent. */
 const PRINCIPLES: { icon: LucideIcon; tint: Tint }[] = [
   { icon: Landmark, tint: 'terra' },
   { icon: Wallet, tint: 'salvia' },

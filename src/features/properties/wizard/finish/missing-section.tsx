@@ -10,20 +10,16 @@ import type { ActivationBlocker, ComplianceWizardStep } from '@/types/compliance
 import { fixTargetFor, missingLines, type FinishSection } from './finish-model';
 
 interface MissingSectionProps {
-  /** The steps of the activation, as the server answers them; `undefined` while they are being read. */
   steps: ComplianceWizardStep[] | undefined;
   failed: boolean;
   onRetry: () => void;
   property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'> | undefined;
-  /** The blockers of the 409 of the last attempt to activate, which the screen could not know. */
   refused: readonly ActivationBlocker[] | null;
 }
 
-/** Puts the focus where a missing item is fixed, in this same step. */
 function goToSection(section: FinishSection): void {
   const id = section === 'cin' ? 'property-wizard-cin' : `property-wizard-section-${section}`;
   const target = document.getElementById(id);
-  // The calendars are a disclosure: it opens, and the focus goes to its title.
   if (target instanceof HTMLDetailsElement) target.open = true;
   target?.scrollIntoView({ block: 'center' });
   (target instanceof HTMLDetailsElement ? target.querySelector('summary') : target)?.focus();
@@ -52,16 +48,10 @@ function FixButton({ stepId, property, label }: { stepId: string; property: Miss
   );
 }
 
-/**
- * «Cosa manca» (SR-07c): the blocking steps of the activation as the server lists them, each with «Correggi», and the advice that
- * does not block. **Nothing is worked out here**: the list is the answer of `compliance/activation`, read again after every save.
- * When the last attempt to activate was refused (409) the blockers the server sent are shown as well.
- */
 export function MissingSection({ steps, failed, onRetry, property, refused }: MissingSectionProps) {
   const { t } = useTranslation();
   const texts = useStepTexts(steps ?? []);
   const blockers = steps ? knownBlockers(steps) : [];
-  // The documents and the safety sheet (PO decision 2026-11-01): the host's obligations, listed apart, never in the way of the activation.
   const reminders = openReminders(steps ?? []);
   const advice = (steps ?? []).filter((step) => !step.blocker && step.status !== 'complete' && !REMINDER_STEP_IDS.includes(step.id));
   const warnings = (steps ?? []).flatMap((step) => step.warnings ?? []);

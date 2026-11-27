@@ -45,7 +45,6 @@ export function ProfilePage() {
 
         <div className={PAGE_COLUMNS}>
           <ProfileInfo user={profileUser} />
-          {/* The second column holds two sections that stack; «Notifiche» is also the second tab of the profile (under the title). */}
           <div className={PAGE_COLUMN}>
             <OperatorTypeSection />
             <NotificationPreferencesLink />

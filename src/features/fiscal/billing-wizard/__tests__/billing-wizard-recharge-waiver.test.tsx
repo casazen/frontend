@@ -28,8 +28,6 @@ vi.mock('@/components/layout/app-shell', () => ({
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
 }));
-// What the hooks of the app answer is the same object at every render, as the real ones are: the administrator of an organization on the agency plan, the flags of the agency and of the
-// invoicing to the owners on, and the two listings of the agency.
 const env = vi.hoisted(() => ({
   contexts: [{ contextKey: 'account', roleKey: 'org_owner' }],
   properties: [
@@ -52,7 +50,6 @@ vi.mock('@/queries/use-properties', () => ({
   useProperties: () => ({ data: env.properties, isPending: false, isError: false, error: null, refetch: vi.fn() }),
 }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
@@ -76,14 +73,11 @@ interface HolderRow {
   holder: PortalAccountHolder;
 }
 
-/** What the server holds: who holds the accounts by default, whether the commissions are recharged, and the listings where the holder differs. */
 const server: { holder: PortalAccountHolder; recharge: boolean; overrides: HolderRow[] } = { holder: 'Owner', recharge: true, overrides: [] };
 let requests: WireRequest[];
-/** A failure that has nothing to do with the waiver, which the server answers to every write of the settings until a test clears it (nothing is saved, whatever the request carries). */
 let failure: WireReply | null;
 
 const agencyHoldsAnAccount = (holder: PortalAccountHolder, overrides: readonly HolderRow[]) => holder === 'Agency' || overrides.some((row) => row.holder === 'Agency');
-/** A waiver is in place when the recharge is off and the agency holds at least one account (the rule of the backend). */
 const waiverIn = (recharge: boolean, holder: PortalAccountHolder, overrides: readonly HolderRow[]) => !recharge && agencyHoldsAnAccount(holder, overrides);
 
 const NOT_ACKNOWLEDGED: WireReply = {
@@ -103,7 +97,6 @@ function agencySetup(): BillingSetup {
   );
 }
 
-/** The server: it answers what the wizard reads, and it refuses a write that starts the waiver without the acknowledgement, as the backend does, saving nothing. */
 function answer(request: WireRequest): WireReply {
   requests.push(request);
   const [path, query] = request.path.split('?');
@@ -147,7 +140,6 @@ function answer(request: WireRequest): WireReply {
 const transport = wireTransport(answer);
 const realAdapter = axiosInstance.defaults.adapter;
 
-/** The writes of a kind that the wizard sent, in order, with the address as it went (the query of the bulk write included). */
 const writes = (path: string) => requests.filter((request) => request.method === 'PUT' && request.path.split('?')[0] === path);
 const carriesTheAcknowledgement = (request: WireRequest) =>
   request.path.includes('acknowledgeRechargeWaiver') || (typeof request.body === 'object' && request.body !== null && 'acknowledgeRechargeWaiver' in request.body);
@@ -173,13 +165,11 @@ async function onStep(step: string) {
   await waitFor(() => expect(wizard()).toHaveAttribute('data-step', step), WAIT);
 }
 
-/** «Continua», once the button is enabled: a click on a button that is still switched off does nothing, and the test would then wait for a step that never comes. */
 async function next() {
   await waitFor(() => expect(screen.getByTestId('fiscal-billing-next')).toBeEnabled(), WAIT);
   fireEvent.click(screen.getByTestId('fiscal-billing-next'));
 }
 
-/** The step of the portals, once everything it reads is on screen. */
 async function onTheChannelsStep() {
   await onStep('channels');
   await screen.findByTestId('billing-holders-table', undefined, WAIT);
@@ -217,8 +207,6 @@ afterEach(() => {
 });
 
 describe('turning the recharge off asks for the explicit confirmation of the waiver (permission rule, through the real client)', () => {
-  // The agency holds the accounts of the portals and recharges their commissions to the owners. Turning the recharge off is a waiver of the reimbursement the law gives the agency: the server
-  // refuses it without `acknowledgeRechargeWaiver: true`, and the wizard sends that only after the person confirms, never in the first write of a save.
   it('BillingWizard_TurningTheRechargeOff_TheFirstWriteNeverCarriesTheAcknowledgement_The422OpensTheDialog_ANoSavesNothing_AYesSendsItOnceWithIt', async () => {
     server.holder = 'Agency';
     server.recharge = true;
@@ -229,7 +217,6 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
     expect(screen.getByTestId('billing-recharge')).not.toBeChecked();
     await next();
 
-    // The first write of the save carries no acknowledgement; the server refuses it (422) and the person is asked, in plain words, before anything is sent again.
     const dialog = await theDialog();
     expect(dialog).toHaveTextContent(i18n.t('billingWizard.channels.waiver.title'));
     expect(dialog).toHaveTextContent(i18n.t('billingWizard.channels.waiver.description'));
@@ -241,7 +228,6 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
     expect(carriesTheAcknowledgement(writes(SETTINGS)[0])).toBe(false);
     expect(server.recharge).toBe(true);
 
-    // A no: nothing is sent again, nothing is saved, the wizard stays on the step and says it was not saved (never a success).
     await answerTheDialog(dialog, i18n.t('shared.cancel'));
     expect(await screen.findByTestId('fiscal-billing-finish-error', undefined, WAIT)).toHaveTextContent(i18n.t('apiErrors.codes.rechargeWaiverNotAcknowledged'));
     expect(wizard()).toHaveAttribute('data-step', 'channels');
@@ -249,7 +235,6 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
     expect(server.recharge).toBe(true);
     expect(requests.some(carriesTheAcknowledgement)).toBe(false);
 
-    // Again «Continua»: the same refusal, the same question. A yes sends the write once more, with the acknowledgement, and only that one carries it.
     await next();
     const again = await theDialog();
     await answerTheDialog(again, i18n.t('billingWizard.channels.waiver.confirm'));
@@ -262,8 +247,6 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
   });
 
   it('BillingWizard_TheFirstListingOfTheAgencyWhileTheRechargeIsOff_IsTheSameQuestion_AndTheAcknowledgementIsTheQueryParameterOfTheBulkWrite', async () => {
-    // The recharge is already off and the agency holds no account: giving it the first listing in the bulk write starts the waiver, and the body of that endpoint is a list, so the
-    // acknowledgement is a query parameter.
     server.holder = 'Owner';
     server.recharge = false;
     renderWizard('channels');
@@ -273,7 +256,6 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
     await next();
 
     const dialog = await theDialog();
-    // The settings write came first and started nothing (the owner stays the default holder): it was not asked about, and it carries no acknowledgement. The bulk write was refused: no row written.
     expect(writes(SETTINGS).map((request) => request.body)).toEqual([{ portalAccountHolder: 'Owner', rechargePortalCommissions: false }]);
     expect(writes(HOLDERS).map((request) => request.path)).toEqual([HOLDERS]);
     expect(server.overrides).toEqual([]);
@@ -306,7 +288,6 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
   });
 
   it('BillingWizard_AWriteThatStartsNoWaiver_IsNeverAskedAbout_AndNothingEverCarriesTheAcknowledgement', async () => {
-    // The recharge stays on: the agency's first listing is not a waiver, the server accepts the plain write and the person is not asked anything.
     server.holder = 'Owner';
     server.recharge = true;
     renderWizard('channels');
@@ -334,7 +315,6 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
     fireEvent.click(screen.getByTestId('billing-save-exit'));
     await answerTheDialog(await theDialog(), i18n.t('shared.cancel'));
 
-    // Not saved, and said so: an error, never «Salvato», and the person is still on the page with what they typed.
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('apiErrors.codes.rechargeWaiverNotAcknowledged')), WAIT);
     expect(toast.success).not.toHaveBeenCalled();
     expect(toast.warning).not.toHaveBeenCalled();
@@ -354,8 +334,6 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
 });
 
 describe('a refusal that is not the question of the waiver never opens it (permission rule, through the real client)', () => {
-  // The question is for ONE answer of the server, the 422 `recharge_waiver_not_acknowledged`. Any other failure of the same write (another 422, a 500) is shown as it always was: nobody is asked
-  // anything, nothing is sent again, and the acknowledgement of the waiver never goes out, whatever the person had just switched off.
   const OTHER_FAILURES: ReadonlyArray<{ name: string; reply: WireReply; stepMessage: string; exitMessage: string }> = [
     {
       name: 'AnotherUnprocessableEntity',
@@ -367,7 +345,6 @@ describe('a refusal that is not the question of the waiver never opens it (permi
   ];
 
   it.each(OTHER_FAILURES)('BillingWizard_TheFirstWriteFailsWithAnotherError_NoDialog_OneWrite_NoAcknowledgement_AndTheFailureIsSaid_OnContinueAndOnSaveAndExit_$name', async ({ reply, stepMessage, exitMessage }) => {
-    // The agency holds the accounts and recharges: switching the recharge off WOULD start the waiver on a server that answers the question, but this one fails for another reason.
     server.holder = 'Agency';
     server.recharge = true;
     failure = reply;
@@ -377,7 +354,6 @@ describe('a refusal that is not the question of the waiver never opens it (permi
     fireEvent.click(screen.getByTestId('billing-recharge'));
     await next();
 
-    // «Continua»: the failure is told on the step, in its own words, and the question never opens (the wait ends on whichever of the two comes first).
     await waitFor(() => expect(screen.queryByTestId('fiscal-billing-finish-error') ?? screen.queryByRole('dialog')).not.toBeNull(), WAIT);
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByTestId('fiscal-billing-finish-error')).toHaveTextContent(i18n.t(stepMessage));
@@ -386,7 +362,6 @@ describe('a refusal that is not the question of the waiver never opens it (permi
     expect(carriesTheAcknowledgement(writes(SETTINGS)[0])).toBe(false);
     expect(server.recharge).toBe(true);
 
-    // «Salva ed esci»: the same, and said as a failure of the save (an error, never «Salvato»), with the person still on the page.
     await waitFor(() => expect(screen.getByTestId('billing-save-exit')).toBeEnabled(), WAIT);
     fireEvent.click(screen.getByTestId('billing-save-exit'));
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t(exitMessage)), WAIT);

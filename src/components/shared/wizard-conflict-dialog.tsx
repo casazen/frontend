@@ -10,23 +10,12 @@ const TIME_ONLY: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digi
 
 interface WizardConflictDialogProps {
   open: boolean;
-  /** Keeps what was typed here: it replaces the version saved elsewhere. Asked after the person confirms. */
   onKeepMine: () => void;
-  /** Gives up what was typed here for the version of the server (the caller puts its values back in the form). Asked after the person confirms. */
   onTakeTheirs: () => void;
-  /** The draft as the server holds it, for its time; `null` when the server has none left to show (then there is only «keep mine»). */
   serverDraft: ServerWizardDraft | null;
-  /** The version of the draft on the server. */
   serverVersion: number;
 }
 
-/**
- * The draft of a wizard was also saved from another device or tab, and nothing was written: the person chooses which version to
- * keep (ADR-024-R7). The conflict has to be answered, so a click outside or Escape does not close it (as the dialogs of the lease
- * and of the showcase), and each choice asks for a confirmation that says in one line what it does (UX-11: click, confirm, action).
- *
- * Render it outside the `<form>` of the wizard: a dialog inside a form submits it.
- */
 export function WizardConflictDialog({ open, onKeepMine, onTakeTheirs, serverDraft, serverVersion }: WizardConflictDialogProps) {
   const { t, i18n } = useTranslation();
   const [choice, setChoice] = useState<"keepMine" | "takeTheirs" | null>(null);

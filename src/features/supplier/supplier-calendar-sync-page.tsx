@@ -16,10 +16,6 @@ import { useCalendarSyncStatus, useDisconnectIcalFeed, useSetIcalFeed, useSyncSu
 import { getProblemMessage } from '@/lib/api-errors';
 import { CalendarSync, Loader2, RefreshCw } from 'lucide-react';
 
-/**
- * The iCal calendar of the supplier (SU-15), a page that hangs from the agenda: what the calendar says the supplier is busy with
- * closes those hours for the customers. One feed, one link (Google, Outlook, Apple and the channels all give an iCal link).
- */
 export function SupplierCalendarSyncPage() {
   const { t } = useTranslation();
   const { data: syncStatus, isLoading, isError, refetch } = useCalendarSyncStatus();
@@ -64,7 +60,6 @@ export function SupplierCalendarSyncPage() {
   }
 
   const hasIcal = syncStatus?.calendarSyncType === 'ICalFeed' && syncStatus?.icalFeedUrl;
-  // SU-15: the sync runs in a background job; "synced" only once the job has run (never right after saving).
   const syncing = syncStatus?.lastSyncStatus === 'Syncing';
   const synced = syncStatus?.lastSyncStatus === 'Success';
   const hasError = !syncing && !!syncStatus?.calendarSyncError;
@@ -89,7 +84,6 @@ export function SupplierCalendarSyncPage() {
     }
   };
 
-  // Unlinking asks first (the days the calendar closed open again for the customers). A failure is said here; the dialog closes after.
   const handleDisconnect = async () => {
     try {
       await disconnectMutation.mutateAsync();
@@ -175,7 +169,6 @@ export function SupplierCalendarSyncPage() {
         </Alert>
       )}
 
-      {/* iCal Dialog */}
       <Dialog open={showIcalDialog} onOpenChange={setShowIcalDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -187,7 +180,6 @@ export function SupplierCalendarSyncPage() {
             <div>
               <div className="flex items-center gap-1.5">
                 <Label htmlFor="ical-url">{t('supplier.icalFeedUrlLabel')}</Label>
-                {/* UI-07 pilot of HelpTip: a bubble beside the label, a sheet from the bottom on a phone. The help page is the one inside the supplier console (SU-16). */}
                 <HelpTip
                   label={t('supplier.help.icalTooltipLabel')}
                   learnMoreHref="/app/supplier/help/ical"

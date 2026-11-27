@@ -26,7 +26,6 @@ export function OfferSheet({
   onCancel,
   onSubmit,
 }: {
-  /** The offer that waits, to replace it; empty for the first one. */
   offer: SupplierOffer | null;
   onCancel: () => void;
   onSubmit: (body: SendSupplierOfferBody) => Promise<unknown>;
@@ -35,7 +34,6 @@ export function OfferSheet({
   const decimal = i18n.language.startsWith('it') ? ',' : '.';
   const replacing = offer !== null;
   const [form, setForm] = useState<OfferForm>(() => (offer ? offerFormOf(offer, decimal) : emptyOfferForm()));
-  // The mistakes are told after the first try to send, not while the person is still writing the first line.
   const [tried, setTried] = useState(false);
   const [pending, setPending] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
@@ -45,7 +43,6 @@ export function OfferSheet({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    // The sheet is drawn outside the page but sits inside it for React: the form around a page must not hear this submit.
     event.stopPropagation();
     if (pending) return;
     setTried(true);
@@ -57,7 +54,6 @@ export function OfferSheet({
       await onSubmit(body);
       onCancel();
     } catch (error) {
-      // Stays open: the time may not be free, the offer may be outside the limits, the request may have changed meanwhile.
       setRefused(getProblemMessage(error, t) ?? t(`${T}.failed`));
       setPending(false);
     }

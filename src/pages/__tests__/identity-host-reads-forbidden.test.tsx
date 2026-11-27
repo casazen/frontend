@@ -14,8 +14,6 @@ import { contextOf } from '@/test/org-contexts';
 import type { BiometricSettings } from '@/types/biometric-settings.types';
 import { PropertyQrCodePage } from '../PropertyQrCode';
 
-// The API of the identity verification is NOT mocked here: the real axios instance and its interceptors are used, and only the transport is replaced. What the screens do with a 403 is
-// what the app does with it: without `localAuthRecovery` a 403 with no code on a protected read opens «no access» for the whole app, whatever the screen was about to say.
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 configure({ asyncUtilTimeout: 5_000 });
@@ -34,7 +32,6 @@ const settings: BiometricSettings = {
 
 type Reply = { status: number; data?: unknown };
 
-/** What the server answers, by the path of the call; anything else is a 200. */
 let replies: Record<string, Reply> = {};
 const onForbidden = vi.fn();
 
@@ -88,7 +85,6 @@ afterEach(() => {
 
 describe('the host reads of the identity verification, with the real interceptor (post-merge review of E22/F02/US01)', () => {
   it('PropertyQrCodePage_TheServerAnswers403_SaysThePermissionIsMissingAndTheAppStaysWhereItIs', async () => {
-    // A property of the org that the person may read but the server does not let them write (a collaborator «Solo alcuni» without it): 403 with no body.
     replies[`/properties/${PROPERTY}/door-qr`] = { status: 403 };
 
     renderWithRealApi(<PropertyQrCodePage />);
@@ -99,7 +95,6 @@ describe('the host reads of the identity verification, with the real interceptor
   });
 
   it('BiometricSettingsCard_TheModelsAnswer403_SaysTheyCannotBeReadAndTheSettingsStayWhereTheyAre', async () => {
-    // The screen takes the person for a platform administrator (a context of the admin area), the server does not (the role is not in the token): 403 with no body.
     replies['/settings/biometrics'] = { status: 200, data: settings };
     replies['/admin/biometrics/status'] = { status: 403 };
 

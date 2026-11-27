@@ -8,7 +8,6 @@ import type { ComplianceWizardStep } from '@/types/compliance.types';
 
 interface SwissSectionProps {
   propertyId: string;
-  /** The step «Notifica degli ospiti» as the activation says it now; `undefined` while the activation is being read. */
   step: ComplianceWizardStep | undefined;
 }
 
@@ -29,7 +28,6 @@ export function SwissSection({ propertyId, step }: SwissSectionProps) {
   );
 }
 
-/** With the regimes off: what the step lists as missing and the field of the structure number of Ticino, as in the step of the activation wizard. */
 function WhatASwissPropertyLacks({ propertyId, step }: SwissSectionProps) {
   const queryClient = useQueryClient();
   const detail = usePropertyDetail(propertyId);
@@ -40,7 +38,6 @@ function WhatASwissPropertyLacks({ propertyId, step }: SwissSectionProps) {
       missing={missingCodesOf(step?.blockers?.map((blocker) => blocker.code))}
       ticino={detail.data?.isInTicino === true}
       canWrite
-      // What the property lacks is told by the activation too: it is read again, so «Cosa manca» and the button of the footer follow.
       onSaved={() => void queryClient.invalidateQueries({ queryKey: ['compliance', 'activation', propertyId] })}
     />
   );

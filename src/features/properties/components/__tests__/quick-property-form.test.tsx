@@ -4,7 +4,6 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { QuickPropertyForm } from '../quick-property-form';
 
-// The real picker searches the official list through the API (its own tests): an input that "picks" a comune stands in.
 vi.mock('@/components/shared/comune-picker', () => ({
   ComunePicker: ({ id, onChange }: { id: string; onChange: (c: { istatCode: string; name: string } | null) => void }) => (
     <button type="button" id={id} onClick={() => onChange({ istatCode: '058091', name: 'Roma' })}>

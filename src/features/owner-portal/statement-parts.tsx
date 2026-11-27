@@ -10,19 +10,16 @@ import { StatusPill, TOUCH } from './portal-parts';
 
 const DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/** The days of a stay («10 nov 2026 - 14 nov 2026»), or nothing when one of the two is not a day. */
 function stayDays(checkIn: string | null | undefined, checkOut: string | null | undefined, locale: string): string {
   const from = checkIn ? formatStayDate(checkIn, locale, DAY) : '';
   const to = checkOut ? formatStayDate(checkOut, locale, DAY) : '';
   return from && to ? `${from} - ${to}` : '';
 }
 
-/** The share of the owner written the way the language of the person writes a number («33,33»). */
 function formatPercent(value: number, locale: string): string {
   return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value);
 }
 
-/** A name and its amount on one row: the name may go to the next line, the amount never breaks. */
 function AmountRow({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
     <div className="flex min-w-0 items-baseline justify-between gap-3 py-1.5">
@@ -34,10 +31,6 @@ function AmountRow({ label, value, testId }: { label: string; value: string; tes
   );
 }
 
-/**
- * The net of the period, the one figure a statement is read for. In the currency of the statement: the symbol and the order of the number and the symbol come from the data
- * and from the language, never from the code.
- */
 export function StatementNet({ net, currency }: { net: number; currency: string }) {
   const { t, i18n } = useTranslation();
   return (
@@ -50,7 +43,6 @@ export function StatementNet({ net, currency }: { net: number; currency: string 
   );
 }
 
-/** What the net is made of: the totals of the statement in a list of names and amounts (no table to scroll sideways). */
 export function StatementTotalsList({ totals, currency }: { totals: OwnerPortalStatementTotals; currency: string }) {
   const { t, i18n } = useTranslation();
   return (
@@ -62,7 +54,6 @@ export function StatementTotalsList({ totals, currency }: { totals: OwnerPortalS
   );
 }
 
-/** The balance the months before left, what was paid between the agency and the owner, and what the agency owes at the end of the month. */
 export function StatementBalances({ totals, currency }: { totals: OwnerPortalStatementTotals; currency: string }) {
   const { t, i18n } = useTranslation();
   return (
@@ -85,18 +76,14 @@ export function MoneyNote({ testId, children }: { testId: string; children: Reac
 
 interface PdfButtonProps {
   label: string;
-  /** What the button does for a screen reader that reads the buttons of a page one after the other: which document it is for. */
   ariaLabel: string;
   onClick: () => void;
-  /** Some download of the page is on its way: every button waits for it. */
   disabled: boolean;
-  /** This is the download that is on its way. */
   loading: boolean;
   variant?: 'default' | 'outline';
   testId?: string;
 }
 
-/** The button that downloads a PDF of the portal: at least 44 px, one download at a time (the others wait for the one that works). */
 export function PdfButton({ label, ariaLabel, onClick, disabled, loading, variant = 'outline', testId }: PdfButtonProps) {
   return (
     <Button type="button" variant={variant} className={TOUCH} disabled={disabled} loading={loading} onClick={onClick} aria-label={ariaLabel} data-testid={testId}>
@@ -106,10 +93,6 @@ export function PdfButton({ label, ariaLabel, onClick, disabled, loading, varian
   );
 }
 
-/**
- * One line of a part. A line for information only (the commission of a portal the agency bears, and the owner is not charged) is quiet: its figure is the commission as a positive amount, not
- * bold, with a pill that says it is for information and the sentence that says what it is; it is in no sum, and the total of its part (the server's) does not hold it.
- */
 function StatementLineRow({ line, currency, sectionLabel }: { line: OwnerPortalStatementLine; currency: string; sectionLabel: string }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -118,7 +101,6 @@ function StatementLineRow({ line, currency, sectionLabel }: { line: OwnerPortalS
   const description = line.description?.trim();
   const property = line.property?.trim();
   const title = description || property || sectionLabel;
-  // The words that tell a line apart: the day or the days of the stay, the property (when it is not the title), the sales channel, the booking code, what it is for and the share of the owner.
   const details = [
     stayDays(line.checkIn, line.checkOut, locale) || formatStayDate(line.date, locale, DAY),
     description ? property : null,
@@ -155,7 +137,6 @@ function StatementLineRow({ line, currency, sectionLabel }: { line: OwnerPortalS
   );
 }
 
-/** One part of the statement as its PDF has it: the name, the sum of its lines and the lines, by day. */
 export function StatementSectionBlock({ section, currency }: { section: OwnerPortalStatementSection; currency: string }) {
   const { t, i18n } = useTranslation();
   const headingId = `owner-statement-section-${section.section}`;
@@ -227,10 +208,6 @@ export function TouristTaxRows({ rows }: { rows: readonly OwnerPortalTouristTax[
   );
 }
 
-/**
- * The tourist tax of the stays of the statement: for information, outside the net. Each stay carries the currency the tax was collected in (its amount is written in that one,
- * not in the one of the statement), and a sum never mixes two currencies.
- */
 export function TouristTaxBox({ rows }: { rows: readonly OwnerPortalTouristTax[] }) {
   const { t } = useTranslation();
   return (

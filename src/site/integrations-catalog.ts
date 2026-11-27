@@ -22,11 +22,8 @@ export type IntegrationGroupId =
 
 export interface IntegrationEntry {
   name: string;
-  /** Public path of the logo, or absent when the entry is shown as text. */
   logo?: string;
-  /** The logo is light (white on a transparent background): it goes on a dark tile to be seen. */
   onDark?: boolean;
-  /** The best known channels: shown first, as a large tile with the name, even when there is no logo. */
   featured?: boolean;
 }
 

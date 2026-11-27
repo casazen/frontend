@@ -16,7 +16,6 @@ import { BOOKINGS_PATH, CHECK_IN_CHOICES, DEFAULT_BOOKING_CHIP } from './lib/boo
 import { bookingChannelName, bookingChannelText, bookingSourceName, CHANNEL_ICONS, channelOf, needsOtaReview } from './lib/ota-stay';
 import { canOpenCheckOut, canRegisterArrival } from './lib/stay-actions';
 
-/** What the actions of a row do. The page owns them: some open a dialog, some call the API. */
 export interface BookingRowHandlers {
   accept: (booking: BookingListItem) => void;
   arrival: (booking: BookingListItem) => void;
@@ -27,19 +26,15 @@ export interface BookingRowHandlers {
 
 interface BookingsListOptions {
   canWrite: boolean;
-  /** The properties of the host, for the filter. */
   properties: readonly { id: string; name: string }[];
   handlers: BookingRowHandlers;
 }
 
-// The filter names the channels the API tells apart (`BookingChannel`): the four portals have a value of their own, and `Other` no longer
-// holds them. Their icons are the ones of `CHANNEL_ICONS` (`lib/ota-stay.ts`), the same the facts of a booking draw.
 const CHANNELS: readonly BookingChannel[] = ['Direct', 'Manual', 'Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda', 'Other'];
 
 const guestName = (booking: BookingListItem) => `${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim();
 const bookingPath = (booking: BookingListItem) => `${BOOKINGS_PATH}/${booking.id}`;
 const isAwaitingHost = (booking: BookingListItem) => booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval';
-/** A pending booking the host can accept: a request waiting for the answer, or one entered by hand and left pending. */
 const canAccept = (booking: BookingListItem) => isAwaitingHost(booking) || (booking.status === 'Pending' && booking.source === 'Manual');
 
 /**
@@ -68,7 +63,6 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
     const respondText = (booking: BookingListItem) =>
       booking.respondBy ? t('booking.list.respondBy', { date: formatRomeDateTime(booking.respondBy, language) }) : t('booking.requests.state.AwaitingHostApproval');
 
-    /** The line under the badge of a request: what the host has to do and by when. */
     const requestLine = (booking: BookingListItem) => {
       if (booking.onSiteRequestState === 'AwaitingHostApproval') {
         return (
@@ -87,7 +81,6 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
       return null;
     };
 
-    /** The channel of a row: its icon and name and, for a booking the channel manager brought in (`otaSource`), the "OTA" badge (ADR-033-R9). */
     const channelCell = (booking: BookingListItem) => {
       const Icon = CHANNEL_ICONS[channelOf(booking.channel)];
       const detail = bookingChannelText(booking, t);
@@ -104,7 +97,6 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
                 {detail}
               </span>
             ) : null}
-            {/* Where it came from (NF-123): a portal, the site of the agency, CasaZen's site or the host; nothing for an answer that has no origin. */}
             <BookingOriginBadge booking={booking} className="mt-1 flex w-fit" />
           </div>
         </div>
@@ -235,7 +227,6 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           options: CHANNELS.map((channel) => ({ value: channel, label: bookingChannelName(channel, t), icon: CHANNEL_ICONS[channel] })),
         },
         {
-          // Where it came from (NF-123): the portals, the site of the agency, CasaZen's site, the host. The values are the words of the `origin` of the API.
           id: 'origin',
           type: 'multi',
           label: t('booking.list.filters.origin'),
@@ -251,7 +242,6 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
         },
       ],
       views: [
-        // A view keeps dates as they are: "the next 7 days" is worked out when the list is defined.
         { id: 'arrivalsWeek', label: t('booking.list.views.arrivalsWeek'), state: { chip: 'upcoming', filters: { arrival: `${addDays(today, 1)}..${addDays(today, 7)}` } } },
         { id: 'documents', label: t('booking.list.views.documents'), state: { chip: 'all', filters: { checkin: 'waiting' } } },
         { id: 'direct', label: t('booking.list.views.direct'), state: { chip: 'all', filters: { channel: 'Direct' } } },
@@ -267,7 +257,6 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
         if (isAwaitingHost(booking)) {
           entries.push({ id: 'decline', label: t('booking.list.actions.decline'), icon: X, onSelect: () => handlers.decline(booking) });
         }
-        // "Annulla" where the API says the booking can be cancelled (`changeOptions`: a booking of a channel only where the channel lets the host do it, NF-76).
         if (bookingCanCancel(booking)) {
           if (entries.length > 0) entries.push('separator');
           entries.push({ id: 'cancel', label: t('booking.cancel.action'), icon: XCircle, danger: true, onSelect: () => handlers.cancel(booking) });
@@ -288,18 +277,14 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
         ],
         foot: channelCell(booking),
       }),
-      // The swipe is the main action and nothing else; the menu of the card has it too (a gesture is never the only way).
       swipe: (booking) => {
         const primary = primaryOf(booking);
         return primary ? { left: { id: primary.id, label: primary.label, icon: primary.icon, tone: 'success', href: primary.href, onSelect: primary.onSelect } } : undefined;
       },
 
-      // The name of a booking opens its drawer (UI-15, the one the Home opens too); "Apri la scheda completa" leads to the page, which
-      // is also where a row goes when the drawer cannot open it.
       rowHref: bookingPath,
       detail: { drawerKind: 'booking' },
       rowTone: (booking) => (isAwaitingHost(booking) ? 'urgent' : booking.status === 'CheckedOut' || booking.status === 'Cancelled' ? 'done' : undefined),
-      // With the sidebar open (from `lg`) five columns and the actions do not fit under 1280 px: cards until then.
       cardsUntil: 'xl',
       csv: { fileName: 'prenotazioni' },
 

@@ -28,7 +28,6 @@ export async function axeViolations(root: Element): Promise<string[]> {
   );
 }
 
-/** The component (or the page) has no accessibility violation that axe can find without a browser. */
 export async function expectNoAxeViolations(root: Element): Promise<void> {
   expect(await axeViolations(root)).toEqual([]);
 }

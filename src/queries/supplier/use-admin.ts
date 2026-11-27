@@ -6,7 +6,6 @@ export function useInviteSupplier() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: inviteSupplier,
-    // A new invite shows up in the admin invites list.
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ADMIN_INVITES_KEY }),
   });
 }
@@ -17,7 +16,6 @@ const ADMIN_SUPPLIERS_KEY = ['admin', 'suppliers'] as const;
 const ADMIN_INVITES_KEY = ['admin', 'supplier-invites'] as const;
 
 
-/** A page of the suppliers for the platform admin (SU-12), filtered and paginated by the server. */
 export function useAdminSuppliers(params: AdminSuppliersParams) {
   return useQuery({
     queryKey: [...ADMIN_SUPPLIERS_KEY, 'list', params],
@@ -26,7 +24,6 @@ export function useAdminSuppliers(params: AdminSuppliersParams) {
 }
 
 
-/** Audit trail of one supplier; loaded only while its dialog is open. */
 export function useSupplierAudit(orgId: string | undefined) {
   return useQuery({
     queryKey: [...ADMIN_SUPPLIERS_KEY, 'audit', orgId],
@@ -54,7 +51,6 @@ export function useReactivateSupplier() {
 }
 
 
-/** A page of the supplier invites for the platform admin (SU-12), filtered and paginated by the server. */
 export function useAdminInvites(params: AdminInvitesParams) {
   return useQuery({
     queryKey: [...ADMIN_INVITES_KEY, 'list', params],

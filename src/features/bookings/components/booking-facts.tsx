@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { BOOKING_AMOUNT_SOURCES, type Booking, type BookingAmountSource } from '@/types';
 import { bookingSourceName, CHANNEL_ICONS, channelOf } from '../lib/ota-stay';
 
-/** How a link looks inside a fact: the accent of the area, underlined, and a 44 px row to tap on a phone. */
 export const FACT_LINK = 'inline-flex min-h-11 items-center break-all font-medium text-primary-text underline underline-offset-4 hover:no-underline md:min-h-0';
 
 /**
@@ -26,10 +25,6 @@ export function Fact({ label, children }: { label: string; children: ReactNode }
   );
 }
 
-/**
- * "OTA" (ADR-033-R9): the booking came through a channel and the channel manager brought it in. A word on a soft background, so it is
- * never told by color alone.
- */
 export function OtaBadge() {
   const { t } = useTranslation();
   return (
@@ -42,10 +37,6 @@ export function OtaBadge() {
   );
 }
 
-/**
- * Where the booking came from, as the facts say it: the icon of its channel, its name (`bookingSourceName`: a portal with no source of
- * its own is told by the name the channel manager gave it) and, for a channel booking (`otaSource`), the "OTA" badge.
- */
 export function BookingSourceValue({ booking }: { booking: Pick<Booking, 'source' | 'icalFeedId' | 'channelLabel' | 'otaSource'> }) {
   const { t } = useTranslation();
   const Icon = CHANNEL_ICONS[channelOf(booking.source)];
@@ -84,7 +75,6 @@ export function AmountSourceTag({ source }: { source: string | null | undefined 
   );
 }
 
-/** The tag of a source on a line of its own, at the right, under the figure it belongs to; nothing for a source that is not ours. */
 export function AmountSourceLine({ source, className }: { source: string | null | undefined; className?: string }) {
   if (!isAmountSource(source)) return null;
   return (
@@ -94,10 +84,6 @@ export function AmountSourceLine({ source, className }: { source: string | null 
   );
 }
 
-/**
- * A figure of a booking: its name on the left and its value on the right, with the tag of its source under the value when the API
- * says where the figure comes from. The name wraps; the value, and the tag under it, do not push it away.
- */
 export function Amount({
   label,
   labelTestId,

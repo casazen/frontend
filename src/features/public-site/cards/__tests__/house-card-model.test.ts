@@ -9,7 +9,6 @@ const priced = (price: PublicStayCard['price']): PriceCard => ({ price });
 
 describe('cardPrice (DB-07b, DB-07c): the page shows the price of the server and adds up nothing', () => {
   it('CardPrice_WithDatesAndATotal_GivesTheTotalOfTheQuoteUntouched', () => {
-    // 4 nights at an average of 145.00 would be 580.00 if the page added them up: the quote also has the cleaning and the tax.
     const price = cardPrice(priced({ currency: 'EUR', perNightCents: 14500, totalCents: 66420, includesTouristTax: 'exact' }), 4);
 
     expect(price).toEqual({ kind: 'total', totalCents: 66420, perNightCents: 14500, nights: 4, tax: 'exact' });
@@ -20,7 +19,6 @@ describe('cardPrice (DB-07b, DB-07c): the page shows the price of the server and
   });
 
   it('CardPrice_DatesButNoTotal_FallsBackToTheNightPriceNeverToAGuess', () => {
-    // A home the quote would refuse (too many guests, shorter than the minimum) has no total: its card does not invent one.
     expect(cardPrice(priced({ currency: 'EUR', perNightCents: 12000, totalCents: null }), 3)).toEqual({ kind: 'from', perNightCents: 12000 });
   });
 
@@ -46,10 +44,6 @@ describe('freeCancellationUntil (DB-07c): a date is a promise only when the gues
   });
 });
 
-/**
- * A home that the search refuses for a rule of the nights the host set (E08/F05/US01, NF-36) says which rule on its card: until the
- * page knew the four reasons, an unknown one fell through to «busy», which is not true of a home that is free but closed.
- */
 describe('availabilityNote', () => {
   const inItalian = i18n.getFixedT('it');
   const inEnglish = i18n.getFixedT('en');

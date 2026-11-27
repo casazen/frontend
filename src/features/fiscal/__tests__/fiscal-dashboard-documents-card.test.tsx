@@ -55,14 +55,12 @@ describe('FiscalDashboardPage: the card of the fiscal documents (E06/F03/US04/T0
     vi.mocked(fiscalApi.getRegime).mockResolvedValue(noProperties);
   });
 
-  // Flag rule: with the flags off (the default of the backend) the page is as it was.
   it('FiscalDashboard_DocumentsCard_WithBothFlagsOffIsNotThere', async () => {
     renderPage();
 
     expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
     expect(screen.queryByTestId('fiscal-documents-card')).not.toBeInTheDocument();
     expect(screen.queryByTestId('fiscal-documents-card-cta')).not.toBeInTheDocument();
-    // The card of the invoicing wizard is not there either: its route is behind the flag of the issuance, and a card never leads to the home of the area.
     expect(screen.queryByTestId('fiscal-billing-card')).not.toBeInTheDocument();
   });
 
@@ -77,11 +75,9 @@ describe('FiscalDashboardPage: the card of the fiscal documents (E06/F03/US04/T0
     expect(within(card).getByRole('heading', { level: 2, name: i18n.t('fiscalDocuments.list.title') })).toBeInTheDocument();
     expect(screen.getByTestId('fiscal-documents-card-cta')).toHaveAttribute('href', FISCAL_DOCUMENTS_PATH);
     expect(screen.getByTestId('fiscal-documents-card-cta')).toHaveTextContent(i18n.t('fiscalDocuments.list.card.action'));
-    // The one highlighted block of the page stays the one that was there.
     expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
   });
 
-  // Permission rule: a link is never drawn to a page the person would be turned away from.
   it.each([
     ['payment.read', ['property.read', 'property.write']],
     ['property.read', ['payment.read', 'property.write']],

@@ -19,12 +19,10 @@ const vercel = JSON.parse(vercelJson) as { rewrites: Rewrite[]; outputDirectory:
 
 const CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
-/** `:name` parameters become named groups (path-to-regexp), the rest of a source is already a regular expression. */
 function sourceRegExp(source: string): RegExp {
   return new RegExp(`^${source.replace(/:([A-Za-z]+)/g, '(?<$1>[^/]+)')}$`);
 }
 
-/** Destination of the first rewrite that matches the path and, when it has a `user-agent` condition, the user agent. */
 function rewriteFor(path: string, userAgent = CHROME): string | undefined {
   for (const rule of vercel.rewrites) {
     const match = sourceRegExp(rule.source).exec(path);
@@ -51,7 +49,6 @@ describe('vercel.json routing', () => {
   });
 
   it('rewrites_bookingSitemaps_goToTheSitemapFunctionForEveryUserAgent', () => {
-    // BK-15: the index of the booking sites and the sitemap of one org (under the org's own path).
     expect(rewriteFor('/sitemap-book.xml')).toBe('/api/sitemap?name=book');
     expect(rewriteFor('/sitemap-supplier.xml')).toBe('/api/sitemap?name=supplier');
     expect(rewriteFor('/book/villa-rossi/sitemap.xml')).toBe('/api/sitemap?org=villa-rossi');
@@ -73,8 +70,6 @@ describe('vercel.json routing', () => {
   });
 
   it('rewrites_guida_opensTheStaticManualInsteadOfTheSpa', () => {
-    // The user manual (public/guida, built by scripts/build-guida.mjs) is static: `/guida/` is served from the filesystem,
-    // and the address without the slash must not fall into the SPA.
     expect(rewriteFor('/guida')).toBe('/guida/index.html');
   });
 
@@ -103,7 +98,6 @@ describe('vercel.json routing', () => {
     'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
     'Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0',
     'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36',
-    // A phone brand with "bot" in its name: a generic "bot" pattern would have taken its owner's browser for a crawler.
     'Mozilla/5.0 (Linux; Android 9; Cubot X19) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36',
     '',
   ];
@@ -116,7 +110,6 @@ describe('vercel.json routing', () => {
       ['/p/affitti-brevi', '/api/seo?kind=hub'],
       ['/p/affitti-brevi/lombardia/como', '/api/seo?kind=guide&region=lombardia&comune=como'],
       ['/p/tassa-soggiorno/como', '/api/seo?kind=tourist-tax&comune=como'],
-      // BK-16: the landing page and the properties of an org's own host (the function tells the app's own host apart).
       ['/', '/api/seo?kind=host&path=/'],
       ['/property/casa-mare', '/api/seo?kind=host&path=/property/casa-mare'],
     ])('rewrites_%s_forACrawler_goesToTheSeoFunction', (path, destination) => {
@@ -128,7 +121,6 @@ describe('vercel.json routing', () => {
     it.each(['/', '/property/casa-mare', '/book/villa-rossi', '/book/villa-rossi/property/casa-mare', '/fornitori/pulizie-roma', '/p/affitti-brevi', '/p/affitti-brevi/lombardia/como', '/p/tassa-soggiorno/como'])(
       'rewrites_%s_forPeople_keepsServingTheSinglePageApp',
       (path) => {
-        // A failure of the function or of the API can only ever affect crawlers.
         for (const userAgent of PEOPLE) {
           expect(rewriteFor(path, userAgent), userAgent).toBe('/index.html');
         }
@@ -144,7 +136,6 @@ describe('vercel.json routing', () => {
       '/my-bookings',
       '/p/affitti-brevi/lombardia',
     ])('rewrites_%s_forACrawler_isNotARenderedPage', (path) => {
-      // Token and booking pages are disallowed in robots.txt and never rendered for crawlers.
       expect(rewriteFor(path, CRAWLERS[0])).toBe('/index.html');
     });
 
@@ -156,7 +147,6 @@ describe('vercel.json routing', () => {
       '/embed/villa-rossi/property/casa-mare',
       '/embed/villa-rossi/guest-access',
     ])('rewrites_%s_forACrawler_isTheSinglePageAppNeverARenderedPage', (path) => {
-      // The pages of the embeddable widgets (E41) are frames with no content of their own for a search engine (`noindex`): no `api/seo` page, whoever asks.
       for (const userAgent of [...CRAWLERS, ...PEOPLE]) {
         expect(rewriteFor(path, userAgent), userAgent).toBe('/index.html');
       }
@@ -203,7 +193,6 @@ describe('vercel.json routing', () => {
     });
 
     it.each([
-      // Preview deployments and the deployment URLs keep working: only the exact production alias is moved.
       'casazen-app-git-feature-seo-casazen.vercel.app',
       'casazen-app-3x7k2l9q-casazen.vercel.app',
       'casazen.space',
@@ -222,10 +211,6 @@ interface Redirect {
   has: { type: string; value: string }[];
 }
 
-/**
- * A `has` value is a regular expression. Read unanchored here, the stricter reading for the hosts that must not be
- * redirected: a value that does not even occur in a host cannot match it, anchored or not.
- */
 function hostMatches(redirect: Redirect, host: string): boolean {
   return redirect.has.every((condition) => condition.type === 'host' && new RegExp(condition.value).test(host));
 }

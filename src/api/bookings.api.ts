@@ -31,7 +31,6 @@ import type { CalendarResponseDto } from '@/types/calendar.types';
 import type { CheckInLinkResponse, CheckInSessionStatusDto } from '@/types/public-checkin.types';
 import type { PagedResult } from '@/types/users.types';
 
-/** Backend `PagedResultDto` or a legacy array from older mocks. */
 export function asBookingPage(data: PagedResult<Booking> | Booking[] | undefined): PagedResult<Booking> {
   if (!data) return { items: [], totalCount: 0, page: 1, pageSize: 10 };
   if (Array.isArray(data)) return { items: data, totalCount: data.length, page: 1, pageSize: data.length || 10 };
@@ -50,25 +49,17 @@ export const bookingsApi = {
   getByGuestId: (guestId: string) =>
     ApiClient.get<PagedResult<Booking> | Booking[]>('/bookings', { guestId }),
 
-  /** One page of the list of bookings: the server narrows it by chip, filters and text, orders it and pages it (SR-03b). */
   search: (params: BookingListParams) => ApiClient.get<PagedResult<BookingListItem>>('/bookings/search', params),
 
-  /** How many bookings are in each chip of the list, for the same filters (SR-03b). */
   counts: (params: BookingFilterParams) => ApiClient.get<BookingCounts>('/bookings/counts', params),
 
   getById: (id: string) => ApiClient.get<Booking>(`/bookings/${id}`),
 
-  /** What happened to a booking and what it waits for, in order (SR-05a); the amounts only for who may read payments. */
   getTimeline: (id: string) => ApiClient.get<BookingTimeline>(`/bookings/${id}/timeline`),
 
-  /** The older creation of a booking by hand, which asks for the whole contact of the guest; the new booking page uses `createManual`. */
   create: (data: CreateBookingDto) =>
     ApiClient.post<Booking>('/bookings', data),
 
-  /**
-   * A booking entered by hand with only the name and the email of the guest, at the price of the quote or at the one the host
-   * agreed, or the completion of a portal's block (SR-06a).
-   */
   createManual: (data: CreateManualBookingDto) => ApiClient.post<ManualBooking>('/bookings/manual', data),
 
   /**
@@ -79,10 +70,6 @@ export const bookingsApi = {
    */
   createPaymentLink: (id: string) => ApiClient.post<BookingPaymentLink>(`/bookings/${id}/payment-link`),
 
-  /**
-   * Whether a stay of a property is free, what takes it if not and the nearest free dates (SR-06a); for a property mirrored on the channel manager its answer
-   * is part of it (`channelManagerChecked`, a `channelManager` conflict, E08/F01/US02/T01). Advice: the API checks again on creation.
-   */
   availability: ({ propertyId, from, to }: StayAvailabilityParams) =>
     ApiClient.get<StayAvailability>(`/properties/${encodeURIComponent(propertyId)}/availability`, { from, to }),
 
@@ -103,17 +90,11 @@ export const bookingsApi = {
   update: (id: string, data: UpdateBookingDto) =>
     ApiClient.put<UpdatedBooking>(`/bookings/${id}`, data),
 
-  /**
-   * What `update` would do with the same body, worked out and not done: the new total, what the guest has paid and what happens to the difference (NF-75). The
-   * same refusals as the edit (409 `booking_dates_unavailable`...). Needs `payment.read` on the property: 403 `booking_edit_payment_permission_required`.
-   */
   editQuote: (id: string, data: UpdateBookingDto) =>
     ApiClient.post<BookingEditQuote>(`/bookings/${id}/edit-quote`, data),
 
-  /** Price of a stay the host is entering or changing, tourist tax included (PC-07, BK-03). */
   quote: (payload: HostBookingQuotePayload) => ApiClient.post<DirectBookingQuote>('/bookings/quote', payload),
 
-  /** What cancelling now would do: paid, refundable and minimum refund amounts (BK-02). */
   getCancellationQuote: (id: string) =>
     ApiClient.get<BookingCancellationQuote>(`/bookings/${id}/cancellation`),
 
@@ -126,16 +107,10 @@ export const bookingsApi = {
   cancel: (id: string, data: CancelBookingDto = {}) =>
     ApiClient.post<CancelBookingResult>(`/bookings/${id}/cancel`, data),
 
-  /** "Pay at the property" requests waiting for the host's answer (BK-06). */
   getApprovalRequests: () => ApiClient.get<BookingApprovalRequest[]>('/bookings/approval-requests'),
 
-  /**
-   * The host confirms a pending booking, the only confirmation of the console: accepts a "pay at the property" request
-   * (BK-06) or confirms a pending booking entered by hand (PC-07). The booking becomes Confirmed.
-   */
   approveRequest: (id: string) => ApiClient.post<Booking>(`/bookings/${id}/approve`),
 
-  /** Declines a "pay at the property" request: cancelled, dates released; `message` goes to the guest (BK-06). */
   declineRequest: (id: string, data: DeclineBookingRequestDto = {}) =>
     ApiClient.post<Booking>(`/bookings/${id}/decline`, data),
 
@@ -151,11 +126,9 @@ export const bookingsApi = {
   getCheckInSession: (id: string) =>
     ApiClient.get<CheckInSessionStatusDto>(`/bookings/${id}/checkin-session`),
 
-  /** New check-in link to copy and send another way (no email); the previous link stops working. */
   createCheckInLink: (id: string) =>
     ApiClient.post<CheckInLinkResponse>(`/bookings/${id}/checkin/link`),
 
-  /** New check-in link emailed to the guest (also the reminder); the link comes back whatever happens to the email. */
   resendCheckInLink: (id: string) =>
     ApiClient.post<CheckInLinkResponse>(`/bookings/${id}/checkin/resend-link`),
 
@@ -166,7 +139,6 @@ export const bookingsApi = {
   createOtaStay: (blockId: string, data: CreateOtaStayDto) =>
     ApiClient.post<Booking>(`/ical-blocks/${blockId}/ota-stay`, data),
 
-  /** "Segna come verificato" of an OTA stay "da verificare", optionally with the dates now on the channel (CO-21). */
   resolveOtaReview: (id: string, data: ResolveOtaReviewDto = {}) =>
     ApiClient.post<Booking>(`/bookings/${id}/ota-review/resolve`, data),
 };

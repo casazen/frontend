@@ -5,10 +5,6 @@ import type { DashboardOverviewQuery } from '@/types/dashboard.types';
 
 export const DASHBOARD_KEY = 'dashboard';
 
-/**
- * The host's day (arrivals, departures, interventions, things to do), read again at every visit: bookings, check-ins and
- * the suppliers change it from other screens.
- */
 export function useDashboardToday(enabled = true) {
   return useQuery({
     queryKey: [DASHBOARD_KEY, 'today'],
@@ -18,7 +14,6 @@ export function useDashboardToday(enabled = true) {
   });
 }
 
-/** The numbers of the Home for a period and, optionally, one property; the previous ones stay on screen while the next load. */
 export function useDashboardOverview(query: DashboardOverviewQuery, enabled = true) {
   return useQuery({
     queryKey: [DASHBOARD_KEY, 'overview', query],
@@ -29,7 +24,6 @@ export function useDashboardOverview(query: DashboardOverviewQuery, enabled = tr
   });
 }
 
-/** State of the iCal import feeds of the host's properties (last sync, status, error), read at every visit. */
 export function useDashboardIcalFeeds(enabled = true) {
   return useQuery({
     queryKey: [DASHBOARD_KEY, 'ical-feeds'],
@@ -39,7 +33,6 @@ export function useDashboardIcalFeeds(enabled = true) {
   });
 }
 
-/** Reads the Home again (day, numbers, feeds): after an action taken on a row, which changes what the Home says. */
 export function useRefreshDashboard() {
   const queryClient = useQueryClient();
   return useCallback(() => {

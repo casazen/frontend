@@ -35,7 +35,6 @@ export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
   const [query, setQuery] = useState('');
   const amenities = form.watch('amenities');
   const chosen = amenities.length;
-  // The area of the first step: with one floor it gives the minimum of extinguishers (one every 200 m²).
   const area = Number(form.watch('areaSqm'));
 
   const toggle = (name: string) => {
@@ -58,7 +57,6 @@ export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
           value={query}
           placeholder={t('propertyWizard.amenities.search.placeholder')}
           onChange={(event) => setQuery(event.target.value)}
-          // «Invio» in the search must not move the wizard on.
           onKeyDown={(event) => {
             if (event.key === 'Enter') event.preventDefault();
           }}

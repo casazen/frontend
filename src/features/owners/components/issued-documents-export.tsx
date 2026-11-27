@@ -17,13 +17,9 @@ import { todayInRome } from '@/lib/stay-dates';
 import { useExportOwnerIssuedDocuments } from '@/queries/use-owner-issuer-profile';
 
 interface IssuedDocumentsExportProps {
-  /** The test id of the block: the agency page and the portal each have their own. */
   testId: string;
-  /** Downloads the ZIP of the period (`2026-10` for a month, `2026` for a year) and saves it. It rejects with the failure, which `problemOf` turns into words. A call the person stopped is not one. */
   download: (request: { period: string; signal: AbortSignal }) => Promise<void>;
-  /** What a failed download says, in words. */
   problemOf: (error: unknown) => string;
-  /** The words of the button: the owner says «for your accountant», the agency «for the accountant of the owner». */
   downloadLabel: string;
 }
 
@@ -61,7 +57,6 @@ export function IssuedDocumentsExport({ testId, download, problemOf, downloadLab
       await download({ period: key, signal: controller.signal });
       toast.success(t('issuedDocuments.export.done'));
     } catch (error) {
-      // A call the person stopped (the page went away) is not a failure to tell.
       if (!isArchiveCallCancelled(error)) setProblem(problemOf(error));
     } finally {
       setPending(false);
@@ -122,17 +117,12 @@ export function IssuedDocumentsExport({ testId, download, problemOf, downloadLab
   );
 }
 
-/** What a failed export of the agency says, in words: a refusal of the role or of the reach (403), the module being off or an owner that is not there (404), and the sentence of the code of any other. */
 function exportProblemOf(error: unknown, t: TFunction): string {
   if (error instanceof ReportAccessDeniedError) return t('issuedDocuments.export.forbidden');
   if (getHttpStatus(error) === 404) return t('issuedDocuments.export.unavailable');
   return getProblemMessage(error, t) ?? t('issuedDocuments.export.failed');
 }
 
-/**
- * The export for the accountant of an owner on the financial page of the owner (E17/F03/US01/T03): the documents CasaZen issued in the owner's name, the same ZIP the owner downloads in its portal. It exists
- * only while the issuance of fiscal documents is on (off: nothing is drawn). The server decides who may download it (`agency.statement.view` and the whole organization): a refusal is told here in words.
- */
 export function OwnerIssuedDocumentsSection({ ownerId }: { ownerId: string }) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();

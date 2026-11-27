@@ -8,17 +8,12 @@ import { requestTitle } from './request-model';
 import { RequestFacts, RequestNow, RequestStateBadge } from './request-parts';
 import { useRequestActions } from './use-request-actions';
 
-/** The name of the drawer is the job; until the request arrives the drawer shows its generic name. */
 export function RequestDrawerTitle({ id }: DetailTitleProps) {
   const { t } = useTranslation();
   const { data } = useSupplierInboxItem(id);
   return <>{data ? requestTitle(data, t) : ''}</>;
 }
 
-/**
- * One request in the drawer of the shell (UI-15): where it is, what to do now, when, where, who and how much, and what happened.
- * Taking, refusing and completing work from here; the whole page of the request is one link away.
- */
 export function RequestDrawerContent({ id }: DetailContentProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierInboxItem(id);

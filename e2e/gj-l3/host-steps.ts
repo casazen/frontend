@@ -2,7 +2,6 @@ import { completeCommercialSignup } from './commercial-signup';
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-/** 1x1 PNG: accepted by the document upload (PNG, <= 10 MB). */
 const PNG_1X1 = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   'base64',
@@ -25,7 +24,6 @@ export async function pickComune(page: Page, inputSelector: string, name: string
   await page.getByRole('option', { name: new RegExp(`^${name}`, 'i') }).first().click();
 }
 
-/** Onboarding wizard as a new host sees it: operator type, then the consents (no plan step: the org starts on Starter). */
 export async function completeHostOnboarding(page: Page): Promise<void> {
   await completeCommercialSignup(page, 'owner');
   await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 30_000 });
@@ -37,10 +35,9 @@ export async function completeHostOnboarding(page: Page): Promise<void> {
  */
 export async function createProperty(page: Page, slug: string): Promise<string> {
   await page.goto('/app/short-rent/properties/create');
-  // The kind and the spaces keep the defaults of the design (an apartment for four, two bedrooms, one bathroom).
   await page.getByLabel("Nome dell'immobile", { exact: true }).fill(PROPERTY.name);
   await page.getByLabel('Indirizzo', { exact: true }).fill(PROPERTY.address);
-  await pickComune(page, '[data-testid="comune-picker-input"]', PROPERTY.city); // gives the city, the ISTAT code and the region
+  await pickComune(page, '[data-testid="comune-picker-input"]', PROPERTY.city);
   await expect(page.getByTestId('comune-picker-region')).toBeVisible();
   await page.getByLabel('CAP', { exact: true }).fill(PROPERTY.postalCode);
   const created = page.waitForResponse(
@@ -59,7 +56,6 @@ export async function createProperty(page: Page, slug: string): Promise<string> 
   await page.locator('#nightlyRate').fill(String(PROPERTY.nightlyRate));
   await page.getByRole('button', { name: 'Aggiorna immobile', exact: true }).click();
   await expect(page).toHaveURL(/\/app\/short-rent\/properties$/, { timeout: 30_000 });
-  // The list shows it: its name is the button that opens the drawer of the property.
   await expect(page.getByRole('button', { name: PROPERTY.name }).first()).toBeVisible({ timeout: 15_000 });
   return id;
 }
@@ -75,7 +71,6 @@ async function uploadDocument(page: Page, type: string): Promise<void> {
   await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 20_000 });
 }
 
-/** Compliance activation wizard (D.L. 145/2023): documents, safety checklist, review, activate. */
 export async function activateProperty(page: Page, propertyId: string): Promise<void> {
   const base = `/app/short-rent/properties/${propertyId}/activation`;
 

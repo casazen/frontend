@@ -14,24 +14,15 @@ import { PropertyCleaningCard } from './property-cleaning-card';
 
 interface PropertyActivityTabProps {
   property: PropertyDetailDto;
-  /** `booking.read`: the bookings, the marketplace and the calendar are pages of the bookings. */
   canReadBookings: boolean;
-  /** `booking.write`: a booking for this property can be started from here. */
   canCreateBooking: boolean;
-  /** `property.write`: the requests to the suppliers can be paid and asked again (the API asks for the same permission). */
   canWrite: boolean;
 }
 
-/**
- * The tab Prenotazioni e interventi (SR-07d): what is linked to the property, the bookings in four numbers and the requests
- * to the suppliers, each with its stay. Both were on the first tab of the old page; here they have their own.
- */
 export function PropertyActivityTab({ property, canReadBookings, canCreateBooking, canWrite }: PropertyActivityTabProps) {
   const { t, i18n } = useTranslation();
-  // The property's short-rent requests, each linked to its stay (D2): read only when this tab is open.
   const serviceRequests = useServiceRequests({ propertyId: property.id, pageSize: 50 });
   const summary = property.bookingsSummary;
-  // Who cleans at the check-out (E24/F01/US02/T01): only with the flag of the routines on (the cleaning is made by a routine) and for who may write the property (its API asks for it, as it holds a price).
   const routinesOn = useFeatureFlags().flags.routines;
 
   const bookings = (

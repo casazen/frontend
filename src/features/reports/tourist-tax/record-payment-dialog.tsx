@@ -24,20 +24,12 @@ import {
 } from './tourist-tax-model';
 
 interface RecordPaymentDialogProps {
-  /** The comune the payment is for (the row the person chose), or null while the dialog is closed. */
   comune: TouristTaxComuneSummary | null;
   /** The days of the summary the person is looking at: the payment starts from them, so that it shows in that summary. */
   period: ReportPeriod;
   onClose: () => void;
 }
 
-/**
- * Records a payment of the tourist tax to a comune, with the receipt when the host has it (NF-100). The comune is the one of the row
- * and cannot be changed here; the days of the period start from the ones of the summary. The amount is typed the way an Italian
- * writes it and the dialog says how it read it before it goes to the server as text with a dot (`1250.00`). A rule the server
- * applies and the form could not (the comune, a day, the receipt) is shown next to the field it is about, with everything typed
- * kept; a failure that no field explains is told by the toast of the mutation.
- */
 export function RecordPaymentDialog({ comune, period, onClose }: RecordPaymentDialogProps) {
   return (
     <Dialog
@@ -67,7 +59,6 @@ function RecordPaymentForm({ comune, period, onClose }: { comune: TouristTaxComu
     defaultValues: defaultPaymentValues(comune.comune, period),
   });
 
-  // How the amount typed was read: the host sees `1.250,00 €` before it is recorded, so a point that means thousands is never a surprise.
   const typedAmount = useWatch({ control, name: 'amount' });
   const amountCents = remittanceAmountCents(typedAmount);
   const toPay = comune.balanceCents !== null && comune.balanceCents > 0 ? comune.balanceCents : null;
@@ -79,7 +70,6 @@ function RecordPaymentForm({ comune, period, onClose }: { comune: TouristTaxComu
     try {
       await record.mutateAsync(input);
     } catch (error) {
-      // The toast of the mutation tells the failures that no field explains; the others go next to their field.
       let first = true;
       for (const [field, message] of Object.entries(getTouristTaxFieldErrors(error))) {
         setError(field as TouristTaxField, { type: 'server', message }, { shouldFocus: first });

@@ -8,7 +8,6 @@ import { UiVersionSync } from '../ui-version-sync';
 const root = document.documentElement;
 const dataUi = () => root.getAttribute('data-ui');
 
-/** The shape of the app's routes that matters here: what is not redesigned yet (and its children) is marked. */
 function makeRouter(initialPath: string) {
   return createMemoryRouter(
     [
@@ -38,7 +37,6 @@ function makeRouter(initialPath: string) {
   );
 }
 
-// `index.html` writes the attribute before the app starts: the sync only takes it off where the app is not redesigned yet.
 beforeEach(() => {
   root.setAttribute('data-ui', 'v2');
 });

@@ -84,7 +84,6 @@ describe('InterventionsPage (SR-08)', { timeout: 20000 }, () => {
     expect((await screen.findAllByTestId('intervention-row-pay', undefined, WAIT)).length).toBeGreaterThan(0);
     expect(screen.getAllByTestId('intervention-row-mark-paid').length).toBeGreaterThan(0);
     expect(screen.getByTestId('list-chip-topay')).toHaveTextContent('2');
-    // The server filters, counts and orders: the page asks it for the plain list, the ones that wait for the host first.
     expect(fetchInterventions).toHaveBeenCalledWith(expect.objectContaining({ view: 'all', sort: 'status:asc', page: 1, pageSize: 20 }));
   });
 
@@ -93,7 +92,6 @@ describe('InterventionsPage (SR-08)', { timeout: 20000 }, () => {
     renderPage();
 
     expect((await screen.findAllByTestId('intervention-row-mark-paid', undefined, WAIT)).length).toBeGreaterThan(0);
-    // The rows are there, the money step of the property is not offered.
     expect(screen.getAllByText('Riparazione perdita').length).toBeGreaterThan(0);
     expect(screen.queryAllByTestId('intervention-row-pay')).toHaveLength(0);
   });

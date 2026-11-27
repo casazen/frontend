@@ -15,7 +15,6 @@ vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOrig
 
 const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const PERIOD = { from: '2026-10-23', to: '2026-11-21' };
-/** A guest the file holds: what the mutations must not keep. */
 const GUEST = 'Giulia Bianchi';
 const CSV = `Arrivo;Cognome;Nome;Firma\r\n19.11.2026;Bianchi;Giulia;\r\n`;
 
@@ -25,7 +24,6 @@ function setup() {
   return { queryClient, wrapper };
 }
 
-/** A refusal of the API as axios keeps it, with the request that was sent (and the guest it names in a field, as a request that carried a body would). */
 function refusal(status: number, code?: string): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify({ guest: GUEST }) } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: code ? { code } : {}, statusText: '', headers: {}, config });
@@ -36,10 +34,6 @@ beforeEach(async () => {
   await i18n.changeLanguage('it');
 });
 
-/**
- * Privacy (NF-130, the register is never stored): the file holds the guests of a period by name, document and address. A mutation keeps what it returns and the request of a failure in the cache of
- * the mutations for five minutes by default, after the layer is gone.
- */
 describe('what the guest register is not kept once the layer is gone', () => {
   it('useDownloadGuestRegister_Saved_KeepsNoFileOfTheGuestsAndNothingOnceTheLayerIsGone', async () => {
     const { queryClient, wrapper } = setup();
@@ -50,7 +44,6 @@ describe('what the guest register is not kept once the layer is gone', () => {
       await result.current.mutateAsync(PERIOD);
     });
 
-    // The file is saved and let go: the mutation holds no data (the bytes are never in the cache).
     expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'registro-ospiti-ch-2026-10-23-2026-11-21.csv');
     expect(queryClient.getMutationCache().getAll()[0]?.state.data).toBeUndefined();
     expect(queryClient.getMutationCache().getAll()[0]?.options.gcTime).toBe(0);
@@ -69,7 +62,6 @@ describe('what the guest register is not kept once the layer is gone', () => {
       await result.current.mutateAsync(PERIOD);
     });
 
-    // The caller draws it, prints it and lets it go; the period it was made for comes with it.
     expect(onTable).toHaveBeenCalledWith({ header: ['Arrivo', 'Cognome', 'Nome', 'Firma'], rows: [['19.11.2026', 'Bianchi', 'Giulia', '']] }, PERIOD);
     expect(guestRegisterApi.download).toHaveBeenCalledWith(PROPERTY_ID, PERIOD, 'it');
     const kept = queryClient.getMutationCache().getAll()[0];
@@ -93,13 +85,11 @@ describe('what the guest register is not kept once the layer is gone', () => {
       await expect((run as (hook: unknown) => Promise<unknown>)(result.current)).rejects.toMatchObject({ response: { status: 404 } });
     });
 
-    // What the layer turns into words stays (the status and the code of the answer); the request does not.
     const kept = queryClient.getMutationCache().getAll()[0]?.state.error as AxiosError;
     expect(kept.response?.status).toBe(404);
     expect(kept.response?.data).toEqual({ code: 'guest_register_not_available' });
     expect(JSON.stringify(kept.config ?? {})).not.toContain(GUEST);
     expect(JSON.stringify(kept.response?.config ?? {})).not.toContain(GUEST);
-    // The words of the refusal are the ones of its code, in the language of the page.
     expect(toast.error).toHaveBeenCalledWith(i18n.t('apiErrors.codes.guestRegisterNotAvailable'));
 
     unmount();

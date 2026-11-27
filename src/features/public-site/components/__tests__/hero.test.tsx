@@ -19,7 +19,6 @@ describe('Hero (BK-13)', () => {
 
     expect(screen.getByTestId('public-hero')).toHaveAttribute('data-hero-variant', 'plain');
     expect(container.querySelector('img')).toBeNull();
-    // No dark band: the text sits on the primary fill and uses --cz-public-on-primary (inherited from the frame).
     expect(container.querySelector('.public-hero-caption')).toBeNull();
     expect(container.querySelector('.public-hero-frame')).toContainElement(screen.getByRole('heading', { name: 'Villa Mare' }));
     // The call to action is inverted, otherwise a primary button would vanish on the primary fill.

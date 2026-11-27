@@ -8,12 +8,10 @@ import i18n from '@/i18n/config';
 import type { ImportResult } from '@/types/onboarding.types';
 import { BulkImportPanel } from '../components/bulk-import-panel';
 
-// The real `onboardingApi` runs on top of a fake client: the test looks at what goes out on the wire (the address and the body), which is what the rule is about.
 vi.mock('@/api/client', () => ({ ApiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn(), patch: vi.fn() } }));
 
 const P1 = '9d4f6a0e-2c1b-4c5d-8e7f-3a2b1c0d9e8f';
 const P2 = '1a2b3c4d-5e6f-4a1b-8c2d-3e4f5a6b7c8d';
-/** A lock code, as a host would write it in the file. It must never come back anywhere. */
 const LOCK_CODE = 'PORTONE-7788-ZX';
 const CSV = `propertyId,lockCode\r\n${P1},${LOCK_CODE}\r\n${P2},12\r\n`;
 
@@ -54,12 +52,10 @@ function choose(file: File) {
   fireEvent.change(screen.getByTestId('bulk-import-input'), { target: { files: [file] } });
 }
 
-/** The calls to the import endpoint: its address, the file in its body and whether the call was a check. */
 function calls() {
   return vi.mocked(ApiClient.post).mock.calls.map(([url, body]) => ({ url: String(url), file: (body as FormData).get('file') as File | null }));
 }
 
-/** The failure of a call as axios raises it: it holds the request config, whose `data` is the body that was sent (the file). */
 function failure(body: FormData) {
   const config = { headers: new AxiosHeaders(), data: body } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed with status code 500', 'ERR_BAD_RESPONSE', config, { body }, { status: 500, statusText: '', headers: {}, config, data: {} });
@@ -83,20 +79,17 @@ describe('BulkImportPanel, the file of the import (E10/F03/US03/T02)', () => {
     choose(file);
     fireEvent.click(screen.getByTestId('bulk-import-check'));
 
-    // The check: the file went to the server as it is (the same file, with the lock code in it) and the address carries only `dryRun`.
     await screen.findByTestId('bulk-import-checked');
     expect(calls()).toHaveLength(1);
     expect(calls()[0].url).toBe('/onboarding/bulk/import?dryRun=true');
     expect(calls()[0].file).toBe(file);
     expect(await calls()[0].file!.text()).toBe(CSV);
     expect(calls()[0].url).not.toContain(LOCK_CODE);
-    // The page shows only what the server answered about the lock code: whether the row had one. Never the code, never the content of the file.
     expect(screen.getByTestId('bulk-import-row-2-lock')).toHaveTextContent(i18n.t('onboardingPlan.bulk.import.lockProvided'));
     expect(screen.getByTestId('bulk-import-row-3-lock')).toHaveTextContent(i18n.t('onboardingPlan.bulk.import.lockProvided'));
     expect(document.body.textContent).not.toContain(LOCK_CODE);
     expect(document.body.textContent).not.toContain('colonna-che-non-conosco');
 
-    // The import: the same file again, `dryRun=false`, after a confirmation that is a separate step.
     fireEvent.click(screen.getByTestId('bulk-import-apply'));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('onboardingPlan.bulk.import.confirmAction', { count: 1 }) }));
@@ -107,7 +100,6 @@ describe('BulkImportPanel, the file of the import (E10/F03/US03/T02)', () => {
     expect(calls()[1].file).toBe(file);
     expect(calls()[1].url).not.toContain(LOCK_CODE);
     expect(document.body.textContent).not.toContain(LOCK_CODE);
-    // Imported: the page lets go of the file, and nothing of the mutations is kept once the panel is gone (`gcTime: 0`).
     expect(screen.queryByTestId('bulk-import-file')).not.toBeInTheDocument();
     cleanup();
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
@@ -121,7 +113,6 @@ describe('BulkImportPanel, the file of the import (E10/F03/US03/T02)', () => {
     fireEvent.click(screen.getByTestId('bulk-import-check'));
 
     expect(await screen.findByTestId('bulk-import-error')).toBeInTheDocument();
-    // What the cache of the mutations keeps of the failure is the failure without its request: an error of axios holds the body that was sent, the file.
     const kept = client.getMutationCache().getAll();
     expect(kept).toHaveLength(1);
     const error = kept[0].state.error as AxiosError;
@@ -135,7 +126,6 @@ describe('BulkImportPanel, the file of the import (E10/F03/US03/T02)', () => {
     vi.mocked(ApiClient.post).mockResolvedValue(CHECKED);
     renderPanel();
 
-    // Nothing chosen: nothing to check and nothing to import.
     expect(screen.getByTestId('bulk-import-check')).toBeDisabled();
     expect(screen.getByTestId('bulk-import-apply')).toBeDisabled();
     choose(csvFile());
@@ -146,7 +136,6 @@ describe('BulkImportPanel, the file of the import (E10/F03/US03/T02)', () => {
     await screen.findByTestId('bulk-import-checked');
     expect(screen.getByTestId('bulk-import-apply')).toBeEnabled();
 
-    // Another file (corrected, or another one altogether): the check is gone, and the import is off until it is checked.
     choose(csvFile('altro.csv'));
     expect(screen.queryByTestId('bulk-import-checked')).not.toBeInTheDocument();
     expect(screen.getByTestId('bulk-import-apply')).toBeDisabled();
@@ -165,7 +154,6 @@ describe('BulkImportPanel, the file of the import (E10/F03/US03/T02)', () => {
       `${i18n.t('onboardingPlan.bulk.import.summary.valid', { count: 1 })}, ${i18n.t('onboardingPlan.bulk.import.summary.invalid', { count: 1 })}`,
     );
     expect(screen.getByTestId('bulk-import-row-2')).toHaveAttribute('data-status', 'ok');
-    // A row with an error is never shown as right: the column and the reason, in words.
     expect(screen.getByTestId('bulk-import-row-3')).toHaveAttribute('data-status', 'toFix');
     expect(screen.getByTestId('bulk-import-row-3-errors')).toHaveTextContent(
       i18n.t('onboardingPlan.bulk.import.errorLine', {
@@ -173,7 +161,6 @@ describe('BulkImportPanel, the file of the import (E10/F03/US03/T02)', () => {
         reason: i18n.t('onboardingPlan.bulk.import.errors.lock_code_invalid'),
       }),
     );
-    // The columns the server did not know are counted, not named.
     expect(screen.getByTestId('bulk-import-unknown-columns')).toHaveTextContent(i18n.t('onboardingPlan.bulk.import.unknownColumns', { count: 1 }));
   });
 
@@ -229,7 +216,6 @@ describe('BulkImportPanel, the file of the import (E10/F03/US03/T02)', () => {
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: i18n.t('onboardingPlan.bulk.import.confirmAction', { count: 1 }) }));
 
     expect(await screen.findByTestId('bulk-import-uncertain')).toHaveTextContent(i18n.t('onboardingPlan.bulk.import.uncertain'));
-    // Not told as an import: no «imported» block, and the import is off until the file is checked again.
     expect(screen.queryByTestId('bulk-import-imported')).not.toBeInTheDocument();
     expect(screen.getByTestId('bulk-import-apply')).toBeDisabled();
   });

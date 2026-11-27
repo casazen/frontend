@@ -2,7 +2,6 @@ import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 
-/** A labelled search over the complete register already loaded in memory. */
 export function RegisterSearch({ value, onChange, label }: { value: string; onChange: (value: string) => void; label: string }) {
   const { t } = useTranslation();
   return (

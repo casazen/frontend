@@ -3,16 +3,12 @@ import { checkinLinkApi } from '@/api/checkin-link.api';
 import { retryTransientErrors } from '@/lib/query-client';
 import type { CheckInLinkDelivery } from '@/types/checkin-link.types';
 
-/** Root of the queries of the delivery of the check-in link: the open booking page and its guest tab read one entry for each booking. */
 export const CHECKIN_LINK_DELIVERY_KEY = 'checkin-link-delivery';
 
-/** How often an open page reads the delivery again while the link has not left yet and the page is visible: the server moves it by itself, once an hour at most. */
 const CHECKIN_LINK_DELIVERY_POLL_MS = 60_000;
 
-/** The states in which the link is still on its way: the ones that move by themselves, and the only ones worth reading again. */
 const ON_ITS_WAY: ReadonlySet<string> = new Set(['Sending', 'WaitingChatPermission', 'WaitingThread', 'WaitingContact', 'WaitingStaticIps']);
 
-/** True while the delivery is open and not final: nobody has to do anything for it to change, so a page that stays open follows it. */
 function isOnItsWay(delivery: CheckInLinkDelivery | undefined): boolean {
   return delivery !== undefined && !delivery.ended && delivery.state != null && ON_ITS_WAY.has(delivery.state);
 }

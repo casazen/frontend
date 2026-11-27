@@ -16,7 +16,6 @@ function linkPath(bookingId: string): string {
  * The amounts are the backend's: `expectedRefundAmount` is the `refundAmount` the guest was shown, never one worked out here.
  */
 export const guestCancellationApi = {
-  /** What cancelling would do now. 401 when the session is no longer good; 404 `guest_booking_not_found`; 429 `rate_limited`. */
   getPreview: (accessToken: string, bookingCode: string) =>
     ApiClient.get<GuestCancellationPreview>(`${areaPath(bookingCode)}/cancellation`, undefined, {
       public: true,
@@ -35,13 +34,11 @@ export const guestCancellationApi = {
       { public: true, headers: { ...guestSessionHeaders(accessToken), 'Idempotency-Key': idempotencyKey } },
     ),
 
-  /** The same preview for the page of the host's link; the token is not spent. 422 `guest_cancel_token_invalid` / `_expired`. */
   getLinkPreview: (bookingId: string, token: string) =>
     ApiClient.get<GuestCancellationPreview>(`${linkPath(bookingId)}/cancellation?token=${encodeURIComponent(token)}`, undefined, {
       public: true,
     }),
 
-  /** Cancels with the host's link for the refund the page showed. 409 `refund_changed` leaves the link usable. */
   cancelWithLink: (bookingId: string, token: string, expectedRefundAmount: number) =>
     ApiClient.post<GuestLinkCancelResult>(
       `${linkPath(bookingId)}/cancel?token=${encodeURIComponent(token)}`,

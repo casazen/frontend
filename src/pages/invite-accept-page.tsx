@@ -43,7 +43,6 @@ function LoadingCard({ message }: { message: string }) {
   );
 }
 
-/** A link that does not work, and why when it is known. The only way on is CasaZen itself: a person who already accepted finds it. */
 function UnusableCard({ reason }: { reason: UnusableReason }) {
   const { t } = useTranslation();
   useEffect(() => { clearPendingOrgInvite(); }, []);
@@ -58,7 +57,6 @@ function UnusableCard({ reason }: { reason: UnusableReason }) {
   );
 }
 
-/** What the invitation is for, as the lookup says: the role, the areas, how long it lasts and the address it is for (masked). */
 function InviteDetails({ invite }: { invite: OrgInvitationLookup }) {
   const { t, i18n } = useTranslation();
   const rows = [
@@ -88,12 +86,10 @@ function HandoffNotice({ status }: { status: ReturnType<typeof useLoginHandoff>[
   return <Alert variant="warning">{t('login.handoffFailed')}</Alert>;
 }
 
-/** Not signed in: the page says what the invitation is and offers the way in that AM-D13 decided (`inviteEntryAction`, one place). */
 function SignedOutCard({ invite }: { invite: OrgInvitationLookup }) {
   const { t } = useTranslation();
   const handoff = useLoginHandoff();
   const { primary, secondary, hintKey } = inviteEntryAction();
-  // Back to this page without the secret: it waits in this tab.
   const enter = (button: InviteEntryButton) => handoff.start({ returnTo: ORG_INVITE_ACCEPT_PATH, authorizationParams: button.authorizationParams });
 
   return (
@@ -117,15 +113,12 @@ function SignedOutCard({ invite }: { invite: OrgInvitationLookup }) {
   );
 }
 
-/** A refusal of the acceptance that is not «the link does not work» (that one replaces the whole card). */
 type Refusal = Exclude<AcceptFailure, { kind: 'unusable' }>;
 
-/** The refusals that no second try changes: the person has to do something else (sign in with another account, ask the support). */
 const BLOCKING: readonly Refusal['kind'][] = ['emailMismatch', 'emailNotVerified', 'platformAdmin', 'hasOrganization', 'alreadyMember'];
 
 interface FailureAlertProps {
   failure: Refusal;
-  /** What the server said, when it said something worth showing. */
   message: string | undefined;
   invite: OrgInvitationLookup;
   onSwitchAccount: () => void;
@@ -233,7 +226,6 @@ function FailureAlert({ failure, message, invite, onSwitchAccount, switching }: 
   }
 }
 
-/** Signed in: the four consents again for this org, then «Accetta». Once in, the person goes to the first page of the area it works in. */
 function SignedInCard({ token, invite }: { token: string; invite: OrgInvitationLookup }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -255,7 +247,6 @@ function SignedInCard({ token, invite }: { token: string; invite: OrgInvitationL
         onSuccess: (joined) => {
           clearPendingOrgInvite();
           toast.success(t('invitation.joined', { org: joined.orgName }), joined.leftEmptyOrg ? { description: t('invitation.leftEmptyOrg') } : undefined);
-          // `/` opens the first page of the area the person works in: it reads the areas again, which are the new org's.
           navigate('/', { replace: true });
         },
         onError: (error) => {
@@ -321,13 +312,10 @@ export function InviteAcceptPage() {
   useNoReferrer();
   useSeoMeta({ title: t('invitation.pageTitle'), noindex: true });
 
-  // Read once, when the page opens: the link of the email, or the one kept in this tab while the person signed in.
   const [token, setToken] = useState(() => readOrgInviteToken(searchParams));
-  // A second invitation can be opened by client-side navigation in the same tab.
   const incoming = searchParams.has('token') ? readOrgInviteToken(searchParams) : token;
   if (incoming !== token) setToken(incoming);
 
-  // The secret leaves the address bar (and the history entry) as soon as the page has it; it waits in this tab for the sign-in.
   useEffect(() => {
     if (!searchParams.has('token')) return;
     if (token) savePendingOrgInvite(token);

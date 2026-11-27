@@ -6,19 +6,16 @@ import { useSupplierSlots } from '@/queries/use-public-supplier';
 import { BookingField } from '../booking/booking-field';
 import { usePanelFocus } from './use-panel-focus';
 
-/** What the customer may write for the supplier when it cancels: the server takes 500 characters. */
 const REASON_MAX = 500;
 
 interface CancelPanelProps {
   supplierName: string;
   pending: boolean;
-  /** A request on measure has no time to give back: its title and sentence are its own. */
   variant?: 'booking' | 'inquiry';
   onConfirm: (reason: string) => void;
   onBack: () => void;
 }
 
-/** "Annulla la richiesta": costs nothing, says who is told, asks for a reason that is optional. One more press to confirm, nothing else. */
 export function CancelPanel({ supplierName, pending, variant = 'booking', onConfirm, onBack }: CancelPanelProps) {
   const { t } = useTranslation();
   const own = variant === 'inquiry' ? 'supplierSite.inquiry.cancel' : 'supplierSite.request.cancel';
@@ -49,16 +46,13 @@ export function CancelPanel({ supplierName, pending, variant = 'booking', onConf
 
 interface ReschedulePanelProps {
   slug: string;
-  /** The slug of the service of the booking: its free times are asked for it. */
   serviceSlug: string;
-  /** The time the request has now: it is not offered again. */
   currentStartUtc: string;
   pending: boolean;
   onConfirm: (startUtc: string) => void;
   onBack: () => void;
 }
 
-/** "Sposta l'orario": the free times of the service for the next two weeks; the server judges the chosen one again and says if it went. */
 export function ReschedulePanel({ slug, serviceSlug, currentStartUtc, pending, onConfirm, onBack }: ReschedulePanelProps) {
   const { t, i18n } = useTranslation();
   const titleId = useId();

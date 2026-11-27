@@ -13,10 +13,6 @@ vi.mock('@/api/guest-cancellation.api', () => ({
   guestCancellationApi: { getPreview: vi.fn(), cancel: vi.fn(), getLinkPreview: vi.fn(), cancelWithLink: vi.fn() },
 }));
 
-/**
- * DB-08b. Money and privacy rules of the cancellation of the guest: the amount the guest confirms is the amount they were shown (and when
- * it changed meanwhile nothing is cancelled and they are asked again), and the secret of the link of the host leaves the address bar.
- */
 const org = { slug: 'demo-casazen', displayName: 'Demo Casazen Stays' } as unknown as PublicOrgDto;
 const CODE = 'K7M4Q-9XP2H';
 const BOOKING_ID = '0f6c1b2a-0000-4000-8000-000000000001';
@@ -27,7 +23,6 @@ const SESSION: GuestSession = {
 };
 const BOOKING = { status: 'Confirmed', host: { name: 'Villa Rosa Srl', email: 'host@villarosa.example' } } as unknown as GuestBookingDetails;
 
-/** 362 paid, half of the stay comes back (190.50) the day of the figures, between the end of the full window and of the partial one. */
 function preview(overrides: Partial<GuestCancellationPreview> = {}): GuestCancellationPreview {
   return {
     cancellable: true,
@@ -51,7 +46,6 @@ function preview(overrides: Partial<GuestCancellationPreview> = {}): GuestCancel
   };
 }
 
-/** The same booking once it is cancelled: what became of the refund. */
 function cancelledPreview(refundAmount: number): GuestCancellationPreview {
   return preview({
     cancellable: false,
@@ -111,7 +105,6 @@ function renderLinkPage(url: string) {
   );
 }
 
-/** Opens the confirmation and confirms it. */
 async function confirmTheCancellation() {
   fireEvent.click(await screen.findByTestId('guest-cancellation-open'));
   const dialog = await screen.findByRole('dialog');
@@ -137,17 +130,14 @@ describe('Cancellation of the guest (DB-08b)', () => {
     });
     renderSection();
 
-    // The figure on screen is the backend's, and the confirmation shows the same one again.
     expect(await screen.findByTestId('guest-cancellation-headline')).toHaveTextContent(/190,50/);
     fireEvent.click(screen.getByTestId('guest-cancellation-open'));
     const dialog = await screen.findByRole('dialog', { name: 'Annullare la prenotazione?' });
     expect(within(dialog).getByTestId('guest-cancellation-headline')).toHaveTextContent(/190,50/);
     fireEvent.click(within(dialog).getByRole('button', { name: 'Sì, annulla' }));
 
-    // What is sent is that amount, with the key of this confirmation.
     await waitFor(() => expect(guestCancellationApi.cancel).toHaveBeenCalledTimes(1));
     expect(guestCancellationApi.cancel).toHaveBeenCalledWith(SESSION.accessToken, CODE, 190.5, expect.stringMatching(/\S/));
-    // The refund is «in corso» until the bank confirms it; there is nothing left to click.
     const outcome = await screen.findByTestId('guest-cancellation-outcome');
     expect(outcome).toHaveTextContent('Prenotazione annullata');
     expect(outcome).toHaveTextContent(/Ti stiamo rimborsando/);
@@ -165,7 +155,6 @@ describe('Cancellation of the guest (DB-08b)', () => {
 
     await confirmTheCancellation();
 
-    // Nothing was cancelled: the new amount replaces the old one and the guest decides again.
     const notice = await screen.findByTestId('guest-cancellation-changed');
     expect(notice).toHaveTextContent(/190,50/);
     expect(notice).toHaveTextContent(/12,00/);
@@ -178,7 +167,6 @@ describe('Cancellation of the guest (DB-08b)', () => {
     await waitFor(() => expect(guestCancellationApi.cancel).toHaveBeenCalledTimes(2));
     const [first, second] = vi.mocked(guestCancellationApi.cancel).mock.calls;
     expect(first[2]).toBe(190.5);
-    // The second confirmation is for the amount of the new preview, with a key of its own.
     expect(second[2]).toBe(12);
     expect(second[3]).not.toBe(first[3]);
   });
@@ -194,7 +182,6 @@ describe('Cancellation of the guest (DB-08b)', () => {
     renderLinkPage(`/book/demo-casazen/bookings/${BOOKING_ID}/cancel?token=secret-token`);
 
     expect(await screen.findByTestId('guest-cancellation-headline')).toHaveTextContent(/190,50/);
-    // The secret is kept in memory only: the address bar (and so the history, a bookmark, a shared address) no longer has it.
     expect(guestCancellationApi.getLinkPreview).toHaveBeenCalledWith(BOOKING_ID, 'secret-token');
     expect(screen.getByTestId('location')).toHaveTextContent(`/book/demo-casazen/bookings/${BOOKING_ID}/cancel`);
     expect(screen.getByTestId('location')).not.toHaveTextContent('secret-token');

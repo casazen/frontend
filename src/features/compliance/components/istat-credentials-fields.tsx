@@ -9,7 +9,6 @@ interface IstatCredentialsFieldsProps {
   values: SetIstatCredentialsRequest;
   errors: IstatCredentialsErrors;
   onChange: (field: IstatCredentialsField, value: string) => void;
-  /** A request is on its way: the fields cannot be changed meanwhile. */
   disabled?: boolean;
 }
 

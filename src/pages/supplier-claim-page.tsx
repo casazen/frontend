@@ -22,7 +22,6 @@ function claimErrorCode(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
 }
 
-/** Claim errors after which the stored token is useless. */
 const TOKEN_FINAL_CODES = new Set([
   'supplier_claim_invalid',
   'supplier_claim_expired',
@@ -45,9 +44,6 @@ export function SupplierClaimPage() {
   const started = useRef(false);
   const leavingStarted = useRef(false);
   const [leaving, setLeaving] = useState(false);
-  // Not `useMutation`: with React StrictMode (development) the component is mounted twice and the mutation observer is
-  // detached from a call started by the first effect run, so the page stayed on "linking…" with the profile already linked.
-  // A promise settles the state of the component whatever the observers do.
   const [claim, setClaim] = useState<{ status: 'idle' | 'pending' | 'success' | 'error'; data?: SupplierClaimResult; error?: unknown }>({
     status: 'idle',
   });
@@ -77,17 +73,14 @@ export function SupplierClaimPage() {
   const target = result?.redirectUrl?.startsWith('/app/') ? result.redirectUrl : SUPPLIER_HOME_ROUTE;
   const linkedAndSynced = result?.rolesSynced === true;
 
-  // Once the profile is linked and the role is granted, the wizard opens by itself: no "profile linked" page to click.
   useEffect(() => {
     if (!linkedAndSynced || leavingStarted.current) return;
     leavingStarted.current = true;
-    // Best effort: the new Supplier role reaches the token; the console already works through the account link.
     void refreshAccessToken()
       .catch(() => undefined)
       .then(() => navigate(target, { replace: true }));
   }, [linkedAndSynced, target, navigate, refreshAccessToken]);
 
-  // Once signed in, the claim starts by itself (the user got here to link the profile).
   useEffect(() => {
     if (authLoading || !isAuthenticated || started.current) return;
     started.current = true;
@@ -95,7 +88,6 @@ export function SupplierClaimPage() {
   }, [authLoading, isAuthenticated, runClaim]);
 
   const retryWithFreshToken = () => {
-    // A just-verified email reaches the access token only with a new token.
     void refreshAccessToken()
       .catch(() => undefined)
       .then(sendClaim);
@@ -106,7 +98,6 @@ export function SupplierClaimPage() {
     try {
       await refreshAccessToken();
     } catch {
-      // Silent renewal refused: a new sign-in issues a token with the current roles.
       forceReauth();
       return;
     }
@@ -163,7 +154,6 @@ export function SupplierClaimPage() {
       );
     }
 
-    // Linked and role granted: nothing to confirm, the wizard is the next screen (it starts by itself, below).
     return <ClaimLoading message={t('supplier.claim.loading')} />;
   }
 
@@ -213,7 +203,6 @@ export function SupplierClaimPage() {
   return <ClaimLoading message={t('supplier.claim.linking')} />;
 }
 
-/** No profile can be linked with what the user has: a new registration is the way forward. */
 const REGISTER_AGAIN_CODES = new Set([
   'supplier_claim_invalid',
   'supplier_claim_expired',

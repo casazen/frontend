@@ -9,7 +9,6 @@ const EMPTY: ReadonlyMap<string, number> = new Map();
  */
 export const UnreadMessagesContext = createContext<ReadonlyMap<string, number>>(EMPTY);
 
-/** How many unread guest messages the booking has; 0 when none or when nobody offered the counts. */
 export function useUnreadMessagesOf(bookingId: string | null | undefined): number {
   const map = useContext(UnreadMessagesContext);
   return bookingId ? (map.get(bookingId) ?? 0) : 0;

@@ -1,7 +1,6 @@
 export type DocumentType = 'Passport' | 'IdentityCard' | 'DriversLicense' | 'Other';
 export type Gender = 'Male' | 'Female' | 'Other';
 
-/** Row of GET /api/guests (backend GuestSummaryDto): guests of the caller's org only. */
 export interface GuestSummary {
   id: string;
   firstName: string;
@@ -13,7 +12,6 @@ export interface GuestSummary {
   createdAt: Date | string;
 }
 
-/** Guest detail of GET/POST/PUT /api/guests (backend GuestDto). */
 export interface Guest {
   id: string;
   firstName: string;
@@ -25,13 +23,11 @@ export interface Guest {
   postalCode: string;
   country: string;
 
-  // Alloggiati Web - Italian police reporting
   dateOfBirth?: Date | string;
   placeOfBirth: string;
   nationality: string;
   gender?: Gender;
   documentType?: DocumentType;
-  /** Masked as `*****` plus the last 3 characters (CO-14); the full number only from `guestsApi.getDocumentNumber`. */
   documentNumberMasked: string | null;
   documentIssueDate?: Date | string;
   documentExpiryDate?: Date | string;
@@ -40,7 +36,6 @@ export interface Guest {
 
   notes: string;
 
-  // GDPR Compliance
   dataProcessingConsentDate?: Date | string;
   consentDate?: Date | string;
   consentVersion: string;
@@ -59,7 +54,6 @@ export interface Guest {
   updatedAt: Date | string;
 }
 
-/** Full document number of a guest (GET /api/guests/{id}/document-number, audited). */
 export interface GuestDocumentNumber {
   guestId: string;
   documentNumber: string;

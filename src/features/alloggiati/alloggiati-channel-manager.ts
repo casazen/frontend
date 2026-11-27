@@ -9,7 +9,6 @@ import type { AlloggiatiChannelManagerGuestDto, AlloggiatiRetryResultDto, Allogg
 /** The error code of a guest held back because a place of its data is not one the channel manager knows: asking again cannot mend it, the data has to be corrected. */
 export const PLACE_NOT_RECOGNIZED = 'place_not_recognized';
 
-/** The action of the status when asking again can mend a write that failed (`AlloggiatiStayActions.RetryOctorateWrite` of the backend). */
 const RETRY_ACTION = 'RetryOctorateWrite';
 
 /**
@@ -31,7 +30,6 @@ export function stayChannelViewOf(status: Pick<AlloggiatiStatusDto, 'status' | '
   return block?.light === 'Red' ? 'receiptMissing' : 'entrusted';
 }
 
-/** The guests whose write failed, by position: the ones the page lists with their reason. */
 export function guestsToCorrect(status: Pick<AlloggiatiStatusDto, 'channelManager'>): AlloggiatiChannelManagerGuestDto[] {
   return (status.channelManager?.guests ?? []).filter((guest) => guest.state === 'Failed').sort((left, right) => left.position - right.position);
 }
@@ -41,7 +39,6 @@ export function canRetryWrite(status: Pick<AlloggiatiStatusDto, 'channelManager'
   return status.channelManager?.actions?.includes(RETRY_ACTION) === true;
 }
 
-/** Whether a guest was held back for a place the channel manager does not know: only a correction of its data helps. */
 export function needsPlaceCorrection(guests: readonly AlloggiatiChannelManagerGuestDto[]): boolean {
   return guests.some((guest) => guest.errorCode === PLACE_NOT_RECOGNIZED);
 }
@@ -57,16 +54,13 @@ const GUEST_ERRORS: ReadonlySet<string> = new Set([
   'octorate_server',
 ]);
 
-/** The key of the words that tell why a guest was not taken by the channel manager. */
 export function guestErrorKey(code: string | null): string {
   return `alloggiati.channelManager.reason.${code !== null && GUEST_ERRORS.has(code) ? code : 'unknown'}`;
 }
 
-/** The fields of a guest a place can be wrong in (`errorFields` of `place_not_recognized`): the ones the page names, each with its own words. */
 const PLACE_FIELDS = ['birthComune', 'residenceComune', 'documentIssuePlace'] as const;
 export type PlaceField = (typeof PLACE_FIELDS)[number];
 
-/** The fields named by `errorFields` (comma separated), in the order of the record; a name this version does not know is left out (the words then say «i luoghi indicati»). */
 export function placeFieldsOf(errorFields: string | null | undefined): PlaceField[] {
   const named = (errorFields ?? '').split(',').map((field) => field.trim());
   return PLACE_FIELDS.filter((field) => named.includes(field));

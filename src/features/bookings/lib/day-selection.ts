@@ -6,20 +6,15 @@ import { addDays, formatStayDate, isStayDate, nightsBetween } from '@/lib/stay-d
  * covers at most 366 days (the most a change of the calendar covers).
  */
 
-/** The most days one selection covers: a year and the day of a leap year, as the change API. */
 export const MAX_SELECTION_DAYS = 366;
 
 export interface DaySelection {
   propertyId: string;
-  /** The day the selection started from: it stays when the range is extended either way. */
   anchor: string;
-  /** First day of the range. */
   from: string;
-  /** Last day of the range. */
   to: string;
 }
 
-/** The selection of one day: the first click, Enter or Space on a day. `null` for a date that is not a calendar date. */
 export function startSelection(propertyId: string, day: string): DaySelection | null {
   return propertyId && isStayDate(day) ? { propertyId, anchor: day, from: day, to: day } : null;
 }
@@ -43,34 +38,26 @@ export function extendSelection(selection: DaySelection | null, propertyId: stri
   };
 }
 
-/**
- * What a press on a day does (a click, Enter, Space): with Shift it extends the selection (from `origin`, the day the key was pressed on, when nothing is selected yet); without, a first press starts one, a press on the same row while only one day is
- * selected is the second click that extends it, and a press when a range is already selected (or on another row) starts a new one.
- */
 export function pressDay(selection: DaySelection | null, propertyId: string, day: string, shift: boolean, origin: string = day): DaySelection | null {
   if (shift) return extendSelection(selection, propertyId, day, origin);
   if (selection && selection.propertyId === propertyId && selection.from === selection.to) return extendSelection(selection, propertyId, day);
   return startSelection(propertyId, day);
 }
 
-/** Escape: nothing is selected. */
 export function clearSelection(): null {
   return null;
 }
 
-/** The days of the selection, in order, both ends included. */
 export function selectedDays(selection: DaySelection | null): string[] {
   if (!selection) return [];
   const count = nightsBetween(selection.from, addDays(selection.to, 1));
   return Array.from({ length: count }, (_, index) => addDays(selection.from, index));
 }
 
-/** Whether a day of a row is in the selection. */
 export function isDaySelected(selection: DaySelection | null, propertyId: string, day: string): boolean {
   return selection !== null && selection.propertyId === propertyId && day >= selection.from && day <= selection.to;
 }
 
-/** The selection of the nights a calendar widget reports (a drag on the month, the week or the day): the first and the last of them, capped like any selection. */
 export function selectionOfDays(propertyId: string, days: readonly string[]): DaySelection | null {
   const valid = days.filter(isStayDate).sort();
   const first = valid[0];
@@ -79,7 +66,6 @@ export function selectionOfDays(propertyId: string, days: readonly string[]): Da
   return extendSelection(startSelection(propertyId, first), propertyId, last);
 }
 
-/** The days of a selection in words: "12 settembre", "12-15 settembre", "28 settembre - 2 ottobre" (a range across a year says the year). */
 export function selectionDatesText(selection: Pick<DaySelection, 'from' | 'to'>, language: string): string {
   const { from, to } = selection;
   if (from === to) return formatStayDate(from, language, { day: 'numeric', month: 'long' });

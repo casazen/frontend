@@ -17,18 +17,12 @@ export type ShowcaseUploadState =
   | { phase: 'uploading'; fileName: string; percent: number }
   | { phase: 'failed'; fileName: string; message: string; retryable: boolean };
 
-/**
- * One upload at a time for one kind of image (SP-13b): the file is checked (empty, type), made smaller when it is a heavy photo, checked
- * again for its weight, sent with its progress, and the server's answer (the stored image, with the address for the content) goes to `onStored`.
- * A failure keeps the file, so "Riprova" sends the same one again; "Annulla" stops the request; leaving the screen stops it too.
- */
 export function useShowcaseUpload(kind: ShowcaseMediaKind, onStored: (media: ShowcaseMedia) => void) {
   const { t } = useTranslation();
   const [state, setState] = useState<ShowcaseUploadState>({ phase: 'idle' });
   const controller = useRef<AbortController | null>(null);
   const last = useRef<File | null>(null);
   const mounted = useRef(true);
-  // The latest `onStored`, so a long upload does not call the one of the render it started in.
   const stored = useRef(onStored);
 
   useEffect(() => {
@@ -65,7 +59,6 @@ export function useShowcaseUpload(kind: ShowcaseMediaKind, onStored: (media: Sho
         const prepared = await prepareShowcaseImage(file, kind);
         if (abort.signal.aborted) return;
 
-        // The weight that counts is the one of the file that goes.
         const heavy = validateShowcaseFile(prepared, kind);
         if (heavy) {
           show({ phase: 'failed', fileName, message: fileProblemMessage(heavy, kind, t), retryable: false });
@@ -99,18 +92,15 @@ export function useShowcaseUpload(kind: ShowcaseMediaKind, onStored: (media: Sho
     [kind, show, t],
   );
 
-  /** Stops what is on its way. */
   const cancel = useCallback(() => {
     controller.current?.abort();
     show({ phase: 'idle' });
   }, [show]);
 
-  /** Sends the file that failed again. */
   const retry = useCallback(() => {
     if (last.current) void start(last.current);
   }, [start]);
 
-  /** Forgets the failure. */
   const dismiss = useCallback(() => {
     last.current = null;
     show({ phase: 'idle' });

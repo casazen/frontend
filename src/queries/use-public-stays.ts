@@ -7,7 +7,6 @@ import { retryTransientErrors } from '@/lib/query-client';
 import type { DirectBookingQuotePayload } from '@/types';
 import type { PublicStaysQuery, PublicStaysResult } from '@/types/public-stays.types';
 
-/** The server keeps an answer of the search for a few seconds: asking the same again before then costs nothing. */
 const STAYS_STALE_MS = 30_000;
 
 /**
@@ -30,11 +29,9 @@ export function cleanStaysQuery(query: PublicStaysQuery): PublicStaysQuery {
 
 interface StaysOptions {
   enabled?: boolean;
-  /** Keep showing the previous answer while the next one is on its way (a filter that moves under the finger). */
   keepPrevious?: boolean;
 }
 
-/** Every published home of a booking site for a stay and some filters (DB-07a): one call, never one per home. */
 export function useOrgStays(slug: string | undefined, query: PublicStaysQuery, { enabled = true, keepPrevious = false }: StaysOptions = {}) {
   const clean = cleanStaysQuery(query);
   return useQuery({
@@ -42,21 +39,14 @@ export function useOrgStays(slug: string | undefined, query: PublicStaysQuery, {
     queryFn: () => publicSiteSearchApi.getStays(slug!, clean),
     enabled: Boolean(slug) && enabled,
     staleTime: STAYS_STALE_MS,
-    // The app does not refetch on mount by default; what is free changes, so an answer older than the server's own is asked again.
     refetchOnMount: true,
     placeholderData: keepPrevious ? keepPreviousData : undefined,
     retry: retryTransientErrors(2),
   });
 }
 
-/** Homes of a page of the search across all the sites (the server's own default). */
 const PLATFORM_PAGE_SIZE = 24;
 
-/**
- * The free homes of ALL the booking sites for a stay and some filters (the public `/search`), a page at a time: the pages loaded so far
- * are one list (`data.items`), the counts, the nearby dates and the facets are those of the first page. `hasNextPage` / `fetchNextPage`
- * load the next one. `pageSize` 1 is the cheap way to ask only how many homes a draft of the filters leaves.
- */
 export function usePlatformStays(
   query: PublicStaysQuery,
   { enabled = true, keepPrevious = false, pageSize = PLATFORM_PAGE_SIZE }: StaysOptions & { pageSize?: number } = {},
@@ -83,7 +73,6 @@ export function usePlatformStays(
   return { data, isPending, isError, isFetching, isPlaceholderData, refetch, hasNextPage, fetchNextPage, isFetchingNextPage };
 }
 
-/** The places of all the sites, for the «Dove» field of the search across them. */
 export function usePlatformDestinations(enabled = true) {
   return useQuery({
     queryKey: ['public-platform-destinations'] as const,
@@ -94,10 +83,6 @@ export function usePlatformDestinations(enabled = true) {
   });
 }
 
-/**
- * The places of the site, for the «Dove» field. `fresh`: read again every time the screen opens, for the one that writes them into code the agency pastes into its own site
- * (the page «Incorpora nel tuo sito»): the places change when a home is published, on pages this one does not watch.
- */
 export function useOrgDestinations(slug: string | undefined, options: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: ['public-destinations', slug] as const,
@@ -109,7 +94,6 @@ export function useOrgDestinations(slug: string | undefined, options: { fresh?: 
   });
 }
 
-/** The price of a stay as the checkout will ask it, broken down: the quote of the server, never worked out on the page. */
 export function usePublicStayQuote(payload: DirectBookingQuotePayload | null) {
   return useQuery({
     queryKey: ['public-stay-quote', payload] as const,
@@ -120,7 +104,6 @@ export function usePublicStayQuote(payload: DirectBookingQuotePayload | null) {
   });
 }
 
-/** The first reviews of a home of the site, newest first (the section «Cosa dicono gli ospiti» of the home). */
 export function usePublicReviewsPreview(orgSlug: string | undefined, propertyId: string | undefined, count: number) {
   return useQuery({
     queryKey: ['public-reviews-preview', orgSlug, propertyId, count] as const,

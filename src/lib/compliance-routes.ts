@@ -6,10 +6,8 @@ import { SWISS_LAYER_KIND, swissLayerPath } from '@/features/compliance/swiss/sw
 import { COMPLIANCE_COCKPIT_PATH, TICINO_LAYER_KIND, ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
 import type { ComplianceCockpitAction, ComplianceSummaryItem } from '@/types/compliance.types';
 
-/** The kinds of proof the archive page can open on (`ManualProofKind` of the backend): the one a period item is about. */
 type ComplianceArchiveKind = 'AlloggiatiReceipt' | 'IstatProof' | 'TouristTaxDeclaration' | 'TouristTaxPayment';
 
-/** The months of the periods the backend sends (`yyyy-MM`): the only shape the address of the archive takes. */
 const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 /**
@@ -27,7 +25,6 @@ interface ComplianceActionQuery {
   layer?: typeof TICINO_LAYER_KIND | typeof SWISS_LAYER_KIND;
 }
 
-/** A page of the ROUTE_MANIFEST (pattern with `:id`), optionally on a tab of the booking detail or with the filters of the archive. */
 export interface ComplianceActionRoute {
   path: string;
   tab?: BookingTab;
@@ -35,18 +32,10 @@ export interface ComplianceActionRoute {
 }
 
 export interface ComplianceActionTarget {
-  /** What the id of the item is. */
   target: 'property' | 'booking';
-  /** The screen where the host does what the cockpit asks. */
   route: ComplianceActionRoute;
-  /** Read-only screen for a user without the permissions of `route` (the guard would send them to the dashboard). */
   fallback?: ComplianceActionRoute;
-  /** The permission that does what the action asks: whoever lacks it is led to the page ("Apri"), not told to do it. */
   write: 'property.write' | 'booking.write' | 'payment.write' | 'alloggiati.submit';
-  /**
-   * The action has no screen where it is done: the item says what is to do and where (its reason) and offers no button (`complianceActionRoute` is `null` for everyone).
-   * `route` is then only the page the item belongs to.
-   */
   noPage?: true;
 }
 
@@ -56,7 +45,6 @@ export interface ComplianceActionTarget {
  * Every action is short-rent: the cockpit is the short-stay compliance of the host.
  */
 export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, ComplianceActionTarget> = {
-  // The wizard opens on the first blocking step still open, computed by the server (CO-05); a suspended property too.
   ActivateProperty: {
     target: 'property',
     route: { path: '/app/short-rent/properties/:id/activation' },
@@ -88,8 +76,6 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/bookings/:id', tab: 'alloggiati' },
     write: 'booking.write',
   },
-  // Stay checked out, property not declared ready (CO-17): the check-out page shows what was declared and the
-  // declaration "ready".
   ConfirmPropertyReady: {
     target: 'booking',
     route: { path: '/app/short-rent/bookings/:id/checkout' },
@@ -97,10 +83,6 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     write: 'booking.write',
   },
 
-  // CHK-12 (E03/F02/US01/T03, NF-52): the actions the traffic light adds. Each opens a page that already exists in the ROUTE_MANIFEST.
-  //
-  // The identity of the guest who leaves the document: the "Documenti" tab of the booking, where the check-in link and what the guest
-  // sent are (the tab `guest`, the one the online check-in lives in).
   VerifyIdentity: {
     target: 'booking',
     route: { path: '/app/short-rent/bookings/:id', tab: 'guest' },
@@ -113,9 +95,6 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/bookings/:id', tab: 'alloggiati' },
     write: 'booking.write',
   },
-  // The send of the channel manager is the property's: the wizard that activates it (who sends, the passage on the panel, the connection test; E03/F01/US02/T02), opened for
-  // the property of the item. Whoever may not change the sender (`property.write`) is led to the section of the property page that tells who sends, whether it works and
-  // what to do (E03/F03/US02/T01): the page asks `property.read` only.
   ActivateOctorateSend: {
     target: 'property',
     route: { path: '/app/short-rent/compliance/sender', query: { property: true } },
@@ -143,7 +122,6 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     write: 'property.write',
     noPage: true,
   },
-  // The receipt of a tax declaration is a record of money: whoever may not write payments is led to the archive and told "Apri".
   DeclareTouristTax: {
     target: 'property',
     route: { path: '/app/short-rent/alloggiati/reports', query: { kind: 'TouristTaxDeclaration', property: true, period: true } },
@@ -184,8 +162,6 @@ function buildRoute(
   if (hasPermission && !entry.requiredPermissions.every((permission) => hasPermission(entry.context, permission))) {
     return null;
   }
-  // A layer of the page (the guided notification of a Ticino property, the assisted notification of another canton): the address is the page with the layer open on the property and the
-  // day of the item.
   if (route.query?.layer === TICINO_LAYER_KIND) return ticinoLayerPath(item.propertyId, item.period);
   if (route.query?.layer === SWISS_LAYER_KIND) return swissLayerPath(item.propertyId, item.period);
   const path = generatePath(entry.path, { id });
@@ -199,11 +175,6 @@ function buildRoute(
   return query ? `${path}?${query}` : path;
 }
 
-/**
- * Route of a cockpit item, or null when there is none to offer: an action unknown to this version of the app, an item
- * without its target, or a user who can open neither the screen nor its read-only fallback. An item about a month (`period`) opens the
- * archive on that month, that property and that kind of proof.
- */
 export function complianceActionRoute(
   item: Pick<ComplianceSummaryItem, 'action' | 'propertyId' | 'bookingId' | 'period'>,
   hasPermission?: PermissionPredicate,
@@ -218,13 +189,6 @@ export function complianceActionRoute(
   );
 }
 
-/**
- * Whether an address of `complianceActionRoute` is the one the person is already at: the same page, with every parameter it carries (the tab, the
- * filters) already in the address of the page. A card on the page of the property (it sits above every tab) that offered a button to that same page would offer one that
- * opens the page it is on and changes nothing: the card leaves the button out, and still says what is wrong and why. The police send opens the wizard that activates it,
- * which is another page (for who may only read the property it opens the section of its connection health, `?section=connection-health`, which is not the address the
- * person is on until they have opened it). The tourist tax rate has no page of its own (it is entered in the guided check-in of a stay): it has no route at all.
- */
 export function isCurrentAddress(address: string, location: { pathname: string; search: string }): boolean {
   const [path, query = ''] = address.split('?');
   if (path !== location.pathname) return false;

@@ -23,7 +23,6 @@ export function SupplierShowcasePage() {
   const { t } = useTranslation();
   const { model } = useSupplierSite();
   const { blocks } = model;
-  // The list of services is public (the bookings flag is on) but empty: said, not left blank.
   const noServicesYet = model.services !== null && model.services.length === 0;
 
   return (
@@ -55,7 +54,6 @@ export function SupplierShowcasePage() {
   );
 }
 
-/** The old address `/s/:slug` (it never worked: see A4-16) leads to the showcase. */
 export function LegacySupplierShowcaseRedirect() {
   const { slug } = useParams<{ slug: string }>();
   return <Navigate to={supplierShowcasePath(slug ?? '')} replace />;

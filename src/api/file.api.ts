@@ -1,7 +1,6 @@
 import axios from '@/lib/axios';
 import { withJsonErrorBody } from '@/lib/file-download';
 
-/** A file the API sent back: its bytes and the name it gave it (`Content-Disposition`, when the page may read the header of the answer). */
 export interface DownloadedFile {
   blob: Blob;
   contentDisposition: string | null;
@@ -11,7 +10,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-/** The header `name` of an answer whatever the case of its name (a plain object or the headers of axios); `null` when the page cannot read it. */
 function headerOf(headers: unknown, name: string): string | null {
   if (!isRecord(headers)) return null;
   const wanted = name.toLowerCase();

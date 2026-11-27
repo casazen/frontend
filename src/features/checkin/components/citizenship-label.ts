@@ -29,7 +29,6 @@ function normalize(value: string): string {
   return value.normalize('NFD').replace(/\p{M}/gu, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
-/** What the citizenship field shows. A known country becomes its adjective; anything else is unchanged. */
 export function citizenshipAdjective(name: string): string {
   const key = normalize(name);
   return ADJECTIVE[key] ?? name;

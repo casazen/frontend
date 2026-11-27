@@ -36,16 +36,13 @@ import {
 } from './document-model';
 import { StatePill } from './document-state-badge';
 
-/** What the panel needs of a document: the detail of a guest document, a self-billed invoice (TD17) and an owner invoice all fit it. */
 export type SdiPanelDocument = Pick<FiscalDocumentEntry, 'id' | 'source' | 'status' | 'sdiStatus' | 'purpose' | 'kind' | 'number' | 'issueDate'>;
 
 interface DocumentSdiPanelProps {
   document: SdiPanelDocument;
   /** The flags of the backend: the panel exists only while the sending to the SDI is on. */
   flags: Partial<FeatureFlags>;
-  /** The person may change the documents of the guests: the right to write payments AND the flag of the issuance of CasaZen. */
   canWrite: boolean;
-  /** The person asks for the guided correction of the rejected document (the detail opens it as a step of its own: it never leaves the page). */
   onCorrect: () => void;
 }
 
@@ -59,7 +56,6 @@ export function DocumentSdiPanel({ document, flags, canWrite, onCorrect }: Docum
   const { contexts } = useWorkspace();
   const scope = sdiScopeOf(document);
   if (!isFeatureEnabled(flags, 'sdiSubmission') || !isSdiDocument(document)) return null;
-  // An owner invoice is the agency's: its state is read and its sending asked by the administrators of the organization, with the flag of the owner invoices on.
   const ownerInvoicing = isFeatureEnabled(flags, 'ownerInvoicing');
   if (scope === 'owner' && !(isOrgBillingAdmin(contexts) && ownerInvoicing)) return null;
   const canAct = scope === 'owner' ? isFeatureEnabled(flags, 'fiscalDocumentIssuance') : canWrite;
@@ -90,10 +86,8 @@ function SdiPanelBody({ document, scope, canAct, onCorrect }: SdiPanelBodyProps)
     setAnswered(null);
     try {
       const result = await submit.mutateAsync({ documentId: document.id, scope });
-      // What is told comes from the answer: the outcome AND the state the server says the document is in now.
       setAnswered({ verdict: submitVerdictOf(result), status: result.state.status });
     } catch (error) {
-      // No answer, or a refusal: nothing is claimed. The state is read again (a call that got lost may have reached the channel), and the words say the document stays as it is.
       toast.error(getProblemMessage(error, t) ?? t('fiscalDocuments.sdi.submit.failed'));
     }
   };
@@ -190,13 +184,11 @@ function SdiPanelBody({ document, scope, canAct, onCorrect }: SdiPanelBodyProps)
   );
 }
 
-/** The state the server says, with the day it is of and, for a refusal, why in plain words (the reason the server wrote in the language of the request: never the name of the channel, never only a code). */
 function StateBlock({ state, language }: { state: FiscalDocumentSdiState; language: string }) {
   const { t } = useTranslation();
   const day = romeDateOf(state.statusUpdatedAt);
   const words = sdiStateOf({ sdiStatus: state.status, sdiErrorCode: state.errorCode });
   const refused = state.status === 'rejected';
-  // A document still «to send» says why only when the channel refused it; a rejected one always says why.
   const showReason = refused || (state.status === 'to_send' && state.errorCode !== null);
 
   return (
@@ -219,7 +211,6 @@ function StateBlock({ state, language }: { state: FiscalDocumentSdiState; langua
   );
 }
 
-/** What the answer of «Invia» says, in words: «presa in carico» only when the server's answer confirms it; a refusal, no channel and an answer that confirms nothing each have their own sentence. */
 function VerdictNote({ verdict, reason }: { verdict: SubmitVerdict; reason: string | null }) {
   const { t } = useTranslation();
   const variant = verdict === 'submitted' ? 'success' : verdict === 'alreadySubmitted' || verdict === 'notConfigured' ? 'info' : 'warning';
@@ -231,7 +222,6 @@ function VerdictNote({ verdict, reason }: { verdict: SubmitVerdict; reason: stri
   );
 }
 
-/** What to do next, by the state: with no channel the XML is uploaded by hand; a delivered invoice is corrected with a credit note; an owner invoice that was rejected is credited from the invoices to the owners. */
 function Hints({ state, scope, canAct }: { state: FiscalDocumentSdiState; scope: SdiScope; canAct: boolean }) {
   const { t } = useTranslation();
   const hints: string[] = [];

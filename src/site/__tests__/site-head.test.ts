@@ -26,14 +26,12 @@ describe('buildSiteHead (SEO-VETRINA)', () => {
     expect(head).toContain('<link rel="alternate" hreflang="it" href="https://site.example.test/funzionalita" />');
     expect(head).toContain('<link rel="alternate" hreflang="x-default" href="https://site.example.test/funzionalita" />');
     expect(head).toContain('<meta property="og:url" content="https://site.example.test/funzionalita" />');
-    // The JSON-LD Organization is on the home page only.
     expect(head).not.toContain('application/ld+json');
   });
 
   it('buildSiteHead_homeWithPublicOrigin_declaresTheSearchOfHomesAsTheSearchOfTheSite', () => {
     const head = buildSiteHead({ page: sitePageById('home'), title: 'T', description: 'D', origin: 'https://site.example.test', legal: NO_LEGAL });
 
-    // The Organization and the WebSite with its SearchAction: two scripts, the second one points at the search of the app.
     expect(head.match(/application\/ld\+json/g)).toHaveLength(2);
     expect(head).toContain('"urlTemplate":"https://site.example.test/search?where={search_term_string}"');
     expect(buildWebSiteJsonLd('https://site.example.test')).toMatchObject({
@@ -65,7 +63,6 @@ describe('buildSiteHead (SEO-VETRINA)', () => {
   });
 
   it('buildOrganizationJsonLd_holderWithoutPartitaIva_isNotDeclaredAsALegalEntity', () => {
-    // A person is shown in the page, never as the legal name of an organization.
     expect(buildOrganizationJsonLd('https://site.example.test', { ...NO_LEGAL, name: 'Mario Rossi', email: 'info@example.com' })).toEqual({
       '@context': 'https://schema.org',
       '@type': 'Organization',

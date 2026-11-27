@@ -2,7 +2,6 @@ import type { Page } from '@playwright/test';
 import type { CheckoutOutcome, DirectBookingQuote, DirectBookingQuotePayload, DirectBookingResponse } from '../../src/types';
 import { addDays, todayInRome } from '../../src/lib/stay-dates';
 
-/** A stay starting `daysAhead` days after today in Europe/Rome: fixed dates would end up in the past. */
 export function futureStay(daysAhead = 30, nights = 3): { checkIn: string; checkOut: string } {
   const checkIn = addDays(todayInRome(), daysAhead);
   return { checkIn, checkOut: addDays(checkIn, nights) };
@@ -27,7 +26,6 @@ export function mockDirectBookingResponse(overrides?: Partial<DirectBookingRespo
   };
 }
 
-/** Outcome of a checkout as `POST /api/public/bookings/{id}/outcome` answers it (BK-07). */
 export function mockCheckoutOutcome(overrides?: Partial<CheckoutOutcome>): CheckoutOutcome {
   const { checkIn, checkOut } = futureStay(30, 3);
   return {
@@ -53,11 +51,9 @@ export function mockCheckoutOutcome(overrides?: Partial<CheckoutOutcome>): Check
 export interface QuotePricing {
   nightlyRate?: number;
   cleaningFee?: number;
-  /** Tourist tax of one adult for one night. */
   touristTaxPerAdultNight?: number;
 }
 
-/** Price of a stay as `POST /api/public/bookings/quote` answers it (BK-03, BK-07): the checkout shows it before booking. */
 export function mockDirectBookingQuote(
   payload: DirectBookingQuotePayload,
   { nightlyRate = 180, cleaningFee = 0, touristTaxPerAdultNight = 1 }: QuotePricing = {},
@@ -101,7 +97,6 @@ export async function mockDirectBookingQuoteApi(page: Page, pricing: QuotePricin
 export async function mockDirectCheckoutApi(page: Page): Promise<void> {
   await mockDirectBookingQuoteApi(page);
 
-  // The outcome page reads the real state of the booking (BK-07): here the webhook has already confirmed it.
   await page.route('**/api/public/bookings/*/outcome', async (route) => {
     const bookingId = new URL(route.request().url()).pathname.split('/').slice(-2)[0];
     await route.fulfill({

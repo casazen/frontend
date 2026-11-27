@@ -6,19 +6,11 @@ import { getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 import { formatWorkDuration } from '@/lib/work-duration';
 import type { ServiceRequest, ServiceRequestHostView, ServiceRequestStatus } from '@/types/service-request';
 
-/**
- * What the landlord sees of a request to a supplier (LR-08b), worked out from what the API sends and nothing more: the tabs of
- * the list, the phase of a request (what the landlord has to do about it), and the little pieces of text of a row and of a page.
- */
-
-/** The tabs of the list. `open` and `closed` are the two views of the API (`?view=`, LR-08a), `all` is the plain list. */
 export const REQUEST_TABS = ['open', 'closed', 'all'] as const;
 export type RequestTab = (typeof REQUEST_TABS)[number];
 
-/** The tab the list opens on: the requests still to follow. */
 export const DEFAULT_REQUEST_TAB: RequestTab = 'open';
 
-/** The tab an address asks for; a value that is not a tab is the default one. */
 export function tabOfParam(value: string | null): RequestTab {
   return REQUEST_TABS.find((tab) => tab === value) ?? DEFAULT_REQUEST_TAB;
 }
@@ -27,10 +19,6 @@ export function viewOfTab(tab: RequestTab): ServiceRequestHostView | undefined {
   return tab === 'all' ? undefined : tab;
 }
 
-/**
- * Where a request is for the landlord. The server decides the state (`status`) and the details that change what is asked of the
- * landlord (a time proposed, an amount to confirm, how it is paid); the phase only names the combination.
- */
 export type HostPhase =
   | 'proposal'
   | 'waiting'
@@ -66,7 +54,6 @@ export function hostPhaseOf(request: Pick<ServiceRequest, 'status' | 'proposal' 
   }
 }
 
-/** The landlord cancels up to and including the work in progress (`ServiceRequestStateMachine.CanCancel`, SP-04). */
 export function canCancelRequest(status: ServiceRequestStatus): boolean {
   return status === 'Richiesto' || status === 'PresoInCarico' || status === 'InCorso';
 }
@@ -81,17 +68,14 @@ const STATUS_ORDER: Readonly<Record<ServiceRequestStatus, number>> = {
   Annullato: 6,
 };
 
-/** The place of a state on the way of a request (to sort a list by state); a state this version does not know goes last. */
 export function statusRank(status: string): number {
   return Object.prototype.hasOwnProperty.call(STATUS_ORDER, status) ? STATUS_ORDER[status as ServiceRequestStatus] : STATUS_ORDER.Annullato + 1;
 }
 
-/** A request that waits for the landlord (an answer to give, an amount to confirm, a payment): the row says so. */
 export function waitsForLandlord(phase: HostPhase): boolean {
   return phase === 'proposal' || phase === 'confirmAmount' || phase === 'payOnline' || phase === 'payManual';
 }
 
-/** A request that is over: paid, rejected or cancelled. The row is quieter. */
 export function isClosedRequest(status: ServiceRequestStatus): boolean {
   return status === 'Pagato' || status === 'Rifiutato' || status === 'Annullato';
 }
@@ -103,7 +87,6 @@ export function instantToCome(instant: string | null | undefined): string | null
   return Number.isFinite(time) && time > Date.now() ? instant : null;
 }
 
-/** The first sentence of the notes of a request, for the line under its name in the list. */
 export function notesSnippet(notes: string | null | undefined, maxLength = 90): string {
   const text = (notes ?? '').trim().replace(/\s+/g, ' ');
   const end = text.search(/[.!?](\s|$)/);
@@ -111,13 +94,11 @@ export function notesSnippet(notes: string | null | undefined, maxLength = 90): 
   return sentence.length > maxLength ? `${sentence.slice(0, maxLength - 1).trimEnd()}…` : sentence;
 }
 
-/** The price to show, as the server worked it out (the final amount, else the quote, else the estimate); `null` is "da definire". */
 export function priceText(request: Pick<ServiceRequest, 'price'>, locale: string): string | null {
   const cents = request.price?.amountCents;
   return cents === null || cents === undefined ? null : formatMoney(cents, locale);
 }
 
-/** The words for which amount the price is, when the server says it: `longRentRequests.detail.priceBasis.*`. */
 export const PRICE_BASIS_KEYS: Readonly<Record<string, string>> = {
   final: 'longRentRequests.detail.priceBasis.final',
   quoted: 'longRentRequests.detail.priceBasis.quoted',
@@ -125,13 +106,10 @@ export const PRICE_BASIS_KEYS: Readonly<Record<string, string>> = {
 };
 
 export interface WhenText {
-  /** The day ("ven 9 ott", or in full), or `null` when the request has no time (an old one). */
   day: string | null;
-  /** "10:00–12:30 · 2 ore", or `null` when the request has no time. */
   time: string | null;
 }
 
-/** The day and the hours of the job, in Europe/Rome whatever the time zone of the browser. */
 export function whenText(
   request: Pick<ServiceRequest, 'scheduledStart' | 'scheduledEnd'>,
   locale: string,
@@ -152,7 +130,6 @@ export function supplierRef(request: Pick<ServiceRequest, 'supplierName'>, t: TF
   return { supplier: name || t('longRentRequests.supplier.mid'), supplierStart: name || t('longRentRequests.supplier.start') };
 }
 
-/** Why a request was cancelled, as a sentence: what a person wrote as it is, and the code of the automatic cancellation in words. */
 export function cancellationReasonText(reason: string | null | undefined, t: TFunction): string | null {
   const text = reason?.trim();
   if (!text) return null;

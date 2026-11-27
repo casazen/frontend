@@ -21,7 +21,6 @@ interface Scenario {
   flags: Partial<FeatureFlags>;
 }
 
-/** Everything a role can look like: all the permissions, none, each one taken away, each one alone; flags off and on. */
 function scenariosFor(area: AppContextKey): Scenario[] {
   const permissions = allPermissions(area);
   const scenarios: Scenario[] = [];
@@ -36,14 +35,8 @@ function scenariosFor(area: AppContextKey): Scenario[] {
   return scenarios;
 }
 
-/**
- * What the menu of an area gives its user, asked of the functions of the sidebar and not of the palette: the entries of the
- * menus (`getContextNav`, what the sidebar draws) and the pages that hang from them, which the page of their entry links to
- * (`getNavChildren`, what `NavChildLinks` draws).
- */
 function reachableFromTheMenu(area: AppContextKey, scenario: Scenario): Set<string> {
   const nav = getContextNav(area, scenario.hasPermission, scenario.flags);
-  // The main menu, "Altro" and the settings pinned at the foot of the sidebar.
   const inTheMenus = [...nav.sections.flatMap((section) => section.entries), ...nav.more, ...nav.footer];
   const children = inTheMenus.flatMap((entry) => getNavChildren(entry.path, scenario.hasPermission, scenario.flags));
   return new Set([...inTheMenus, ...children].map((entry) => entry.path));
@@ -97,7 +90,6 @@ describe('the pages of the palette are the pages of the menu (UI-06)', () => {
     const both = pagesOf(makeContext({ areas: ['short-rent', 'long-rent'] }));
     expect(both.find((entry) => entry.to === '/app/short-rent/properties')).toMatchObject({ label: 'Immobili', subtitle: 'Affitti brevi' });
     expect(both.find((entry) => entry.to === '/app/long-rent/properties')).toMatchObject({ label: 'Immobili', subtitle: 'Affitti lunghi' });
-    // A page that hangs from another says both.
     expect(both.find((entry) => entry.to === '/app/short-rent/alloggiati')?.subtitle).toBe('Adempimenti · Affitti brevi');
   });
 
@@ -143,7 +135,6 @@ describe('the pages of the palette are the pages of the menu (UI-06)', () => {
       expect(entry.label.trim(), entry.id).not.toBe('');
       expect(entry.icon, entry.id).toBeTruthy();
       expect(entry.to, entry.id).toMatch(/^\/app\/[a-z-]+/);
-      // A page with an `:id` could not be opened from here.
       expect(entry.to, entry.id).not.toContain(':');
       expect(entry.id).toBe(`page:${entry.to}`);
     }

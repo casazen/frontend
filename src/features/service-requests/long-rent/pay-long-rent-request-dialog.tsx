@@ -9,7 +9,6 @@ import type { ServicePaymentSession } from '@/types/service-request';
 interface PayLongRentRequestDialogProps {
   /** What Stripe.js needs to pay (`POST …/payment-session`): a credential, used here and never kept. */
   session: ServicePaymentSession;
-  /** Where Stripe leads the landlord back to when its bank asks for a step outside the window: the page of the request. */
   returnUrl: string;
   onClose: () => void;
   /** The card was sent to Stripe (the result as far as the browser knows it, never the state of the request: the backend says that). */
@@ -46,7 +45,6 @@ export function PayLongRentRequestDialog({ session, returnUrl, onClose, onSubmit
           clientSecret={session.clientSecret}
           returnUrl={returnUrl}
           onSubmitted={(status) => {
-            // A card that was refused stays in the window, with the words: the landlord can try another.
             if (status === 'failed') {
               setError(t('longRentRequests.pay.failed'));
               return;

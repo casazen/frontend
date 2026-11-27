@@ -26,10 +26,6 @@ const LEASE_CREATE_PATH = '/app/long-rent/leases/new';
 const PAGE_SIZE = 25;
 const NO_ROWS: readonly RentRegisterRow[] = [];
 
-/**
- * The three numbers of the month, from the counters of the whole month (they do not change with the quick filter or the page):
- * what came in against what was expected, what is late, and what is still to come. Each one leads to the installments it is made of.
- */
 function RentMonthNumbers({ data, month, currentMonth, dimmed }: { data: RentRegisterPage; month: string; currentMonth: string; dimmed: boolean }) {
   const { t, i18n } = useTranslation();
   const { counters } = data;
@@ -110,10 +106,8 @@ export function RentsPage() {
   const register = useRentRegister({ month, status, page: state.page, pageSize: PAGE_SIZE });
   const data = register.data;
   const rows = data?.items ?? NO_ROWS;
-  // The numbers belong to the month the server answered for (the rows of the last month stay a moment while the next one comes).
   const shownMonth = data && isRentMonth(data.month) ? data.month : month;
 
-  // «No rent this month» is not «no contract at all»: the second one starts the person on the first contract.
   const monthIsEmpty = !!data && !register.isPlaceholderData && data.total === 0 && status === 'All';
   const leases = useLeases(undefined, { enabled: monthIsEmpty });
   const noContracts = monthIsEmpty && leases.isSuccess && leases.data.length === 0;
@@ -159,7 +153,6 @@ export function RentsPage() {
         <RentMonthNumbers data={data} month={shownMonth} currentMonth={currentMonth} dimmed={register.isPlaceholderData} />
       ) : null}
 
-      {/* Quiet, under the numbers: the way to stop marking payments one by one is there when there is something to collect. */}
       {canManage && data && !register.isError && !noContracts && data.counters.overdue.count + data.counters.pending.count > 0 ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 text-sm" data-testid="rents-import-hint">
           {t('longRentRents.bankImport.hint')}{' '}

@@ -24,12 +24,10 @@ const COVERAGE_BADGE: Record<IstatCoverage, 'success' | 'secondary' | 'warning'>
   Unknown: 'warning',
 };
 
-/** A coverage this version does not know is «da verificare», never a yes. */
 const coverageOf = (value: string): IstatCoverage => ISTAT_COVERAGES.find((candidate) => candidate === value) ?? 'Unknown';
 
 const rowId = (row: Pick<IstatRegionRule, 'regionIstatCode' | 'provinceCode'>): string => (row.provinceCode ? `${row.regionIstatCode}-${row.provinceCode}` : row.regionIstatCode);
 
-/** A link to an address of the table: opened in another tab, and only when it is an https address (a value of the table is data, never a link to trust). */
 function TableLink({ href, label, testId }: { href: string | null; label: string; testId: string }) {
   const { t } = useTranslation();
   if (!isHttpsAddress(href)) return null;
@@ -101,10 +99,8 @@ export function IstatRegionsPage() {
   const regions = useIstatRegions();
   const reread = useRereadIstatRegions();
   const [editing, setEditing] = useState<IstatRegionRule | null>(null);
-  // The row whose form is being opened: the table is read again first, and nothing else can be opened meanwhile.
   const [opening, setOpening] = useState<string | null>(null);
 
-  // A save replaces the whole row and the API has no version: the form starts from the row the server holds now, never from an older read, and when the table cannot be read nothing opens.
   const edit = async (row: IstatRegionRule) => {
     if (opening !== null) return;
     setOpening(row.id);

@@ -31,7 +31,6 @@ const T = 'supplier.services.detail';
 
 type SectionId = 'service' | 'price' | 'booking' | 'photos' | 'zone';
 
-/** The part of the form a field is in: where a problem has to be shown. */
 function sectionOfField(path: string): SectionId {
   const field = path.split('.')[0] ?? '';
   if (['priceMode', 'fixedUnit', 'amount', 'pricesIncludeVat', 'supplements'].includes(field)) return 'price';
@@ -39,7 +38,6 @@ function sectionOfField(path: string): SectionId {
   return 'service';
 }
 
-/** Whether the person can see the problem, a shut part of the form hides its fields. */
 function sectionsWithProblems(errors: FieldErrors<ServiceFormValues>): SectionId[] {
   return [...new Set(Object.keys(errors).map(sectionOfField))];
 }
@@ -78,7 +76,6 @@ function ServiceEditor({ service }: { service: SupplierService }) {
   const [problem, setProblem] = useState<string | null>(null);
   const [open, setOpen] = useState<ReadonlySet<SectionId>>(new Set<SectionId>(['service', 'price']));
   const focusAfterOpen = useRef<string | null>(null);
-  // A notice that comes up after the person pressed "Save" takes the focus: it is announced, and on a phone it is above the screen.
   const conflictRef = useRef<HTMLDivElement>(null);
   const problemRef = useRef<HTMLDivElement>(null);
   const [problemFocus, setProblemFocus] = useState(0);
@@ -88,7 +85,6 @@ function ServiceEditor({ service }: { service: SupplierService }) {
     resolver: serviceFormResolver,
     mode: 'onTouched',
   });
-  // Only what the summaries of the parts say: typing in the other fields does not draw the page again (the preview has its own watch).
   const [category, priceMode, fixedUnit, amount, durationMinutes, weekdays] = useWatch({
     control: form.control,
     name: ['category', 'priceMode', 'fixedUnit', 'amount', 'durationMinutes', 'weekdays'],
@@ -102,7 +98,6 @@ function ServiceEditor({ service }: { service: SupplierService }) {
     if (problemFocus > 0) problemRef.current?.focus();
   }, [problemFocus]);
 
-  // The part that holds a refused field opens, and only then the focus can go to the field (a shut part cannot take it).
   const reveal = (sections: readonly SectionId[], firstPath: string | undefined) => {
     focusAfterOpen.current = firstPath ?? null;
     setOpen((current) => new Set([...current, ...sections]));
@@ -129,7 +124,6 @@ function ServiceEditor({ service }: { service: SupplierService }) {
       } else {
         setProblem(found.message);
         const paths = markServerFields(form, found);
-        // A refused field takes the focus; a refusal that is about no field is told by its notice, which takes it instead.
         if (paths.length > 0) reveal(paths.map(sectionOfField), paths[0]);
         else setProblemFocus((count) => count + 1);
       }
@@ -137,7 +131,6 @@ function ServiceEditor({ service }: { service: SupplierService }) {
     }
   };
 
-  /** Checks the form and saves it; resolves with whether it was saved. */
   const submit = () =>
     new Promise<boolean>((resolve) => {
       void form.handleSubmit(
@@ -152,7 +145,6 @@ function ServiceEditor({ service }: { service: SupplierService }) {
 
   const reload = async () => {
     const result = await refetch();
-    // A read that failed still has the data of the one before it: that is not the service as the server has it now.
     if (result.isError || !result.data) {
       setProblem(describeServiceError(result.error, t).message);
       setProblemFocus((count) => count + 1);
@@ -161,7 +153,6 @@ function ServiceEditor({ service }: { service: SupplierService }) {
     form.reset(serviceToForm(result.data, decimal));
     setConflict(false);
     setProblem(null);
-    // The button that was pressed goes away with the notice: the focus goes to the first field, on the service as it is now.
     reveal(['service'], 'name');
   };
 
@@ -291,7 +282,6 @@ export function SupplierServiceDetailPage() {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierService(id);
 
-  // A failed read of a service that is already on screen (a reload that did not work) leaves the page as it is: its form must not be lost.
   if (isError && !data) {
     const gone = getHttpStatus(error) === 404;
     if (gone) return <NotFound />;

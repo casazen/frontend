@@ -35,7 +35,6 @@ vi.mock('@/components/layout/page-header', () => ({
     createElement('div', null, createElement('h1', null, title), description ? createElement('p', null, description) : null, action),
 }));
 vi.mock('@/queries/use-properties', () => ({ useProperty: () => ({ data: { name: 'Casa del Mare' } }) }));
-// The page is behind the flag: «Fallo per me» is there while it is on.
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { octorateOnboarding: true }, isLoading: false }) }));
 
 const workspace = vi.hoisted(() => ({
@@ -48,7 +47,6 @@ const STEP_ID = '5b0c8b8e-6f1d-4a43-9b62-0f6f7d2f8a11';
 const PROPERTY_ID = '9d4f6a0e-2c1b-4c5d-8e7f-3a2b1c0d9e8f';
 const PANEL_URL = 'https://panel.channel-manager.test/';
 
-/** The state of the step as the server holds it: the mocks answer from it, a test changes it to say what the server found. */
 let server: PanelStep;
 
 function panelStep(overrides: Partial<PanelStep> = {}): PanelStep {
@@ -71,10 +69,8 @@ function panelStep(overrides: Partial<PanelStep> = {}): PanelStep {
   };
 }
 
-/** What happened, in order: the window opened, the step stored, the window sent to the panel. */
 const events: string[] = [];
 
-/** The secondary window: its address is written and never read, as for a page of another origin. */
 function fakeWindow() {
   const navigated: string[] = [];
   const win = {
@@ -177,7 +173,6 @@ afterEach(() => {
   cleanup();
 });
 
-/** Opens the panel from the first screen and waits for the waiting state: what the person does first. */
 async function openPanel() {
   const { win, navigated } = fakeWindow();
   vi.spyOn(window, 'open').mockImplementation(() => {
@@ -201,18 +196,15 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(step).toHaveAttribute('data-phase', 'explain');
       expect(within(step).getByRole('heading', { level: 2 })).toHaveTextContent(i18n.t('onboardingPlan.panel.state.explain.title'));
       expect(step).toHaveTextContent(i18n.t('onboardingPlan.panel.state.explain.body'));
-      // What to have at hand, and the instructions: brief, numbered, one sentence each.
       expect(screen.getByTestId('panel-step-need')).toHaveTextContent(i18n.t('onboardingPlan.needs.alloggiatiCredentials'));
       expect(within(screen.getByTestId('panel-step-instructions')).getAllByRole('listitem')).toHaveLength(5);
       expect(screen.getByTestId('panel-step-instruction-1')).toHaveTextContent(i18n.t('onboardingPlan.panel.police.steps.1'));
-      // No picture is supplied yet: the numbered text stands alone and there is no broken image.
       expect(screen.queryAllByRole('img')).toHaveLength(0);
       // The credentials are typed on the panel only; the channel manager is never named; «Fallo per me» is there from the start.
       expect(screen.getByTestId('panel-step-credentials-note')).toHaveTextContent(i18n.t('onboardingPlan.panel.explain.credentialsNote'));
       expect(step.textContent ?? '').not.toMatch(/octorate/i);
       expect(screen.getByTestId('assist-request-button')).toHaveTextContent(i18n.t('onboardingPlan.panel.assist.action.doItForMe'));
       expect(screen.getByTestId('panel-step-save-exit')).toBeInTheDocument();
-      // Nothing was stored or opened before the person asked.
       expect(onboardingApi.startPanelStep).not.toHaveBeenCalled();
     });
 
@@ -245,12 +237,10 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     it('OctoratePanelStep_ManagedHandoffNeverLosesWizard_Test', async () => {
       const { win, navigated } = await openPanel();
 
-      // Stored first, opened after: the window was opened blank from the click, the step was stored, then the window was sent to the panel.
       expect(events).toEqual(['open', 'start', 'navigate']);
       expect(navigated).toEqual([PANEL_URL]);
       expect(onboardingApi.startPanelStep).toHaveBeenCalledWith(expect.objectContaining({ kind: 'policeConnection', propertyId: PROPERTY_ID }));
 
-      // CasaZen stays on the waiting step, with where it is, and offers the ways out: reopen, save and exit, do it for me.
       expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.waiting.title'));
       expect(screen.getByTestId('panel-step-context')).toHaveTextContent('Casa del Mare');
       expect(screen.getByTestId('panel-step-open')).toHaveTextContent(i18n.t('onboardingPlan.panel.actions.reopen'));
@@ -258,7 +248,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(screen.getByTestId('assist-request-button')).toBeInTheDocument();
       expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
 
-      // Back in the tab with the check still saying nothing: no manual confirmation, whatever the window did.
       server = panelStep({ lastVerificationOutcome: null, canConfirm: false });
       act(() => {
         win.closed = true;
@@ -271,14 +260,11 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     it('OctoratePanelStep_VerifiedStatusAfterTheTabComesBack_AdvancesByItselfAndClosesTheWindow', async () => {
       const { win } = await openPanel();
 
-      // The person is on the panel from the moment the window is sent to it (the `blur` of the click came before the step was followed, and is not waited
-      // for); they come back to the tab: one check is asked, and the server has seen the connection.
       server = panelStep({ status: 'verified', lastVerificationOutcome: 'verified', completedAt: new Date().toISOString(), activityId: null });
       act(() => {
         window.dispatchEvent(new Event('focus'));
       });
 
-      // No «Controlla ora» is pressed: the page goes to the part the step belongs to.
       expect(await screen.findByTestId('arrived')).toHaveTextContent(partPath('compliance'));
       expect(onboardingApi.verifyPanelStep).toHaveBeenCalledTimes(1);
       expect(win.close).toHaveBeenCalled();
@@ -287,7 +273,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     });
 
     it('OctoratePanelStep_AccessToAChannelStartedByTheWizard_GoesBackToTheStepOfTheWizardAndNotToThePart', async () => {
-      // The step the connect wizard of the existing listings started: the server stored the point it comes back to, and the person reaches the page from «Da fare».
       server = panelStep({
         kind: 'channelAccess',
         propertyId: null,
@@ -302,7 +287,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       press('panel-step-open');
       await waitFor(() => expect(phase()).toBe('waiting'));
 
-      // The access is seen when the person is back: CasaZen goes on where the wizard was (its draft holds the answer, the channels and the import), not to the plan.
       server = { ...server, status: 'verified', lastVerificationOutcome: 'verified', completedAt: new Date().toISOString(), activityId: null };
       act(() => {
         window.dispatchEvent(new Event('focus'));
@@ -313,7 +297,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     });
 
     it('OctoratePanelStep_AccessToAChannelStartedByTheActivationWizardOfTheMarketplace_GoesBackToItsAccessStepForThePropertyAndTheChannel', async () => {
-      // The step the activation wizard of the marketplace started: the server stored the point it comes back to (named, never carried).
       server = panelStep({
         kind: 'channelAccess',
         propertyId: PROPERTY_ID,
@@ -333,13 +316,11 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
         window.dispatchEvent(new Event('focus'));
       });
 
-      // The person is led back to the wizard where they were, at the step of the access: not to the part of the plan.
       expect(await screen.findByTestId('arrived')).toHaveTextContent(`/app/short-rent/marketplace/activate/channel/142?propertyId=${PROPERTY_ID}&step=access`);
       expect(screen.getByTestId('arrived')).not.toHaveTextContent(partPath('channels'));
     });
 
     it('OctoratePanelStep_PoliceConnectionStartedByTheSenderWizard_GoesBackToTheStepOfTheWizardForTheSameProperty', async () => {
-      // The step the sender wizard started (E03/F01/US02/T02): the server stored the wizard, its draft (the property) and the step it comes back to.
       server = panelStep({
         kind: 'policeConnection',
         propertyId: PROPERTY_ID,
@@ -359,7 +340,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
         window.dispatchEvent(new Event('focus'));
       });
 
-      // Same tab, same step: back to the wizard where the person was, for the property of the step (only its id is in the address), not to the part of the plan.
       expect(await screen.findByTestId('arrived')).toHaveTextContent(`/app/short-rent/compliance/sender?property=${PROPERTY_ID}&step=panel`);
       expect(screen.getByTestId('arrived')).not.toHaveTextContent(partPath('compliance'));
     });
@@ -367,7 +347,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     it('OctoratePanelStep_ResultCasaZenCannotTell_AsksTheQuestionOnlyAfterTheWindowClosedAndNeverBefore', async () => {
       const { win } = await openPanel();
 
-      // While the person is still on the panel an «unverifiable» answer exposes nothing to press.
       server = panelStep({ lastVerificationOutcome: 'unverifiable', canConfirm: true });
       act(() => {
         window.dispatchEvent(new Event('visibilitychange'));
@@ -375,7 +354,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(phase()).toBe('waiting');
       expect(screen.queryByTestId('panel-step-confirm')).not.toBeInTheDocument();
 
-      // The window closes: now the check can say it cannot tell, and the person is asked.
       act(() => {
         win.closed = true;
       });
@@ -386,7 +364,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(screen.getByTestId('assist-request-help')).toHaveTextContent(i18n.t('onboardingPlan.panel.assist.action.needHelp'));
       expect(onboardingApi.confirmPanelStep).not.toHaveBeenCalled();
 
-      // «Sì, continua» is the person's word, and it takes them to the part.
       press('panel-step-confirm');
       expect(await screen.findByTestId('arrived')).toHaveTextContent(partPath('compliance'));
       expect(onboardingApi.confirmPanelStep).toHaveBeenCalledWith(STEP_ID);
@@ -398,7 +375,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       vi.mocked(onboardingApi.confirmPanelStep).mockRejectedValue(problemError(409, { code: 'panel_step_assist_open', detail: 'Il supporto se ne sta occupando.' }));
       renderPage();
 
-      // A step that was started on another visit and cannot be read by CasaZen: the person is asked at once.
       await waitFor(() => expect(phase()).toBe('unverifiable'));
       press('panel-step-confirm');
 
@@ -426,7 +402,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
 
       await waitFor(() => expect(phase()).toBe('started'));
       expect(open).toHaveBeenCalledTimes(1);
-      // The step is stored all the same, and nothing external was reached.
       expect(onboardingApi.startPanelStep).toHaveBeenCalledTimes(1);
       expect(events).toEqual(['start']);
       expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(i18n.t('onboardingPlan.panel.state.started.title'));
@@ -461,7 +436,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       press('panel-step-open');
 
       await waitFor(() => expect(assign).toHaveBeenCalledWith(PANEL_URL));
-      // The blank window of the click is not needed: it is closed, and the stored step leaves with the person.
       expect(win.close).toHaveBeenCalled();
     });
   });
@@ -470,15 +444,12 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     it('OctoratePanelStep_OpensPanelWithoutQueryData_Test', async () => {
       const { win, navigated } = await openPanel();
 
-      // Exactly the address the server returned: nothing appended, so no organization, property or person travels to the panel.
       expect(navigated).toEqual([PANEL_URL]);
       expect(navigated[0]).not.toContain('?');
       expect(navigated[0]).not.toContain(PROPERTY_ID);
       expect(navigated[0]).not.toContain(STEP_ID);
-      // The window of the click is blank (nothing of CasaZen in its address) and cannot reach back to CasaZen.
       expect(vi.mocked(window.open).mock.calls[0]?.[0]).toBe('');
       expect(win.opener).toBeNull();
-      // The page of the panel is never read: its address is written, never read (the getter of the fake throws), and nothing else of it is touched.
       expect(win.focus).toHaveBeenCalled();
     });
 
@@ -507,7 +478,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       renderPage(`/app/short-rent/onboarding/panel/police?propertyId=${PROPERTY_ID}&step=${STEP_ID}&state=one-time-state`);
 
       expect(await screen.findByTestId('arrived')).toHaveTextContent(partPath('compliance'));
-      // The state travels in the body and only once.
       expect(onboardingApi.completePanelStepCallback).toHaveBeenCalledTimes(1);
       expect(onboardingApi.completePanelStepCallback).toHaveBeenCalledWith(STEP_ID, 'one-time-state');
     });
@@ -578,7 +548,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     });
   });
 
-  // E20/F03/US02/T01: how support closed the request, told on the step it was closed for.
   describe('the outcome of a request support closed', () => {
     const doneAt = '2026-11-13T09:00:00Z';
 
@@ -622,7 +591,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       vi.mocked(onboardingApi.listPanelSteps).mockResolvedValue([server]);
       renderPage();
 
-      // The words of a step somebody confirmed wait for the list of the requests: none of them is a request support closed.
       await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title')));
 
       expect(phase()).toBe('recovered');
@@ -633,7 +601,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     it('OctoratePanelStep_SupportDeclaresTheStepWhileThePageIsOpen_PopUpSaysItIsTheWordOfSupportAndThePageDoesNotGoOnByItself', async () => {
       const { win, client } = await openPanel();
 
-      // Support closes the request on its word (the panel could not be read): the step is confirmed, the request is done and declared.
       server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
       vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'declared' })]);
       act(() => applyNotificationsChange(client, { unreadCount: 1, type: 'assist-declared', entityId: 'r1' }));
@@ -642,21 +609,18 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredDeclared.title')));
       expect(phase()).toBe('recovered');
       expect(outcome).toHaveAttribute('data-outcome', 'declared');
-      // The pop-up says whose word it is and never «verificato»; the window the page opened is closed; the page is not left by itself, so «Non funziona» can be read.
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recoveredDeclared.toast')));
       expect(toast.success).toHaveBeenCalledTimes(1);
       expect(toast.success).not.toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recovered.toast'));
       expect(win.close).toHaveBeenCalled();
       expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
       expect(within(outcome).getByTestId('assist-reopen')).toBeInTheDocument();
-      // «Continua» goes on when the person has read it.
       press('panel-step-continue');
       expect(await screen.findByTestId('arrived')).toHaveTextContent(partPath('compliance'));
     });
 
     it('OctoratePanelStep_TheStepArrivesBeforeTheRequestSupportClosed_SaysNothingOfHowItWasClosedAndSaysNoPopUpUntilTheRequestIsRead', async () => {
       const { client } = await openPanel();
-      // The request is still on its way when the step is already confirmed: the list of the requests is held until the test lets it go.
       const releases: Array<(requests: AssistRequest[]) => void> = [];
       vi.mocked(onboardingApi.listAssistRequests).mockImplementation(
         () =>
@@ -667,7 +631,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
       act(() => applyNotificationsChange(client, { unreadCount: 1, type: 'assist-declared', entityId: 'r1' }));
 
-      // The step is done and the request that says how is not read yet: neither «CasaZen ha verificato» nor «dichiarato dal supporto», and no pop-up.
       await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredUnknown.title')));
       expect(phase()).toBe('recovered');
       expect(screen.getByTestId('panel-step')).not.toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title'));
@@ -675,7 +638,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(toast.success).not.toHaveBeenCalled();
       expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
 
-      // The request arrives, declared: now it is said, once.
       act(() => {
         for (const release of releases) release([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'declared' })]);
       });
@@ -692,7 +654,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
       act(() => applyNotificationsChange(client, { unreadCount: 1, type: 'assist-declared', entityId: 'r1' }));
 
-      // Nobody can say how it was closed: the words say only that it is done, no pop-up claims a check, and «Continua» is there for the person to go on.
       await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredUnknown.title')));
       expect(screen.getByTestId('panel-step')).not.toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title'));
       expect(screen.getByTestId('panel-step-continue')).toBeEnabled();
@@ -707,7 +668,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       act(() => applyNotificationsChange(client, { unreadCount: 1, type: 'assist-declared', entityId: 'r1' }));
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recoveredDeclared.toast')));
 
-      // «Non funziona»: the request is open again and the step is back with support.
       server = panelStep({ status: 'assistRequested', lastVerificationOutcome: 'unverifiable', activityId: 'a1' });
       vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Requested', hostNote: 'Il portale dice ancora che manca il collegamento.', reopenedAt: doneAt })]);
       act(() => {
@@ -715,7 +675,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       });
       await waitFor(() => expect(phase()).toBe('assist'));
 
-      // Support closes it again and this time CasaZen reads the connection: the closing is told and followed again, so the page goes on by itself as for any step CasaZen saw.
       server = panelStep({ status: 'verified', lastVerificationOutcome: 'verified', completedAt: doneAt, activityId: null });
       vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'verified' })]);
       act(() => applyNotificationsChange(client, { unreadCount: 2, type: 'assist-verified', entityId: 'r1' }));
@@ -727,7 +686,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     it('OctoratePanelStep_ConfirmedByThePersonWhileThePageIsOpen_GoesOnByItselfWithTheWordsOfACheckOnceTheRequestsAreRead', async () => {
       const { win } = await openPanel();
 
-      // A check that could not tell, and the person who is back from the panel confirms: no request of support closed it, so the page goes on as it always did.
       server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
       act(() => {
         window.dispatchEvent(new Event('focus'));
@@ -740,7 +698,6 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
     });
 
     it('AssistRequestButton_RequestClosedForAStepThatIsNotDoneAnyMore_TellsNothingOfThePast', async () => {
-      // The step was started again after support closed the request: the outcome of the past is not this step's.
       server = panelStep({ status: 'started' });
       vi.mocked(onboardingApi.listPanelSteps).mockResolvedValue([server]);
       vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'verified' })]);

@@ -117,10 +117,8 @@ describe('prepareDocumentPhoto', () => {
   });
 
   it('prepareDocumentPhoto_TheDocumentThatComesAgainWithTheSelfieAndTheSelfie_StayUnderTheLimitOfOneRequest', () => {
-    // The request of the selfie of a property that keeps no document carries both pictures, and the API refuses the whole body over its limit.
     expect(REQUEST_LIMIT_BYTES).toBe(10_000_000);
     expect(DOCUMENT_WITH_SELFIE_AS_IS_BYTES + SELFIE_BUDGET_BYTES).toBeLessThanOrEqual(REQUEST_LIMIT_BYTES - 1_000_000);
-    // What went as it is for one picture (9 MB) plus a selfie over 1 MB is the request the API refused.
     expect(IMAGE_SEND_AS_IS_BYTES + 1_000_001).toBeGreaterThan(REQUEST_LIMIT_BYTES);
     expect(DOCUMENT_WITH_SELFIE_AS_IS_BYTES).toBeLessThan(IMAGE_SEND_AS_IS_BYTES);
   });
@@ -158,7 +156,6 @@ describe('prepareDocumentPhoto', () => {
     });
     vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 3000, height: 2000, close: vi.fn() }));
 
-    // Under the limit of one picture, over the one of two: it would be the request the API refuses.
     expect(await prepareDocumentPhoto(file(IMAGE_SEND_AS_IS_BYTES - 1, 'image/jpeg'), { withSelfie: true })).toEqual({ ok: false, problem: 'too_large' });
   });
 

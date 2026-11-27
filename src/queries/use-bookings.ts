@@ -33,7 +33,6 @@ export function useBookings(params?: Record<string, unknown>) {
   });
 }
 
-/** The bookings of one property (same cache entry as `useBookings({ propertyId })`); nothing without a property. */
 export function usePropertyBookings(propertyId?: string) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, { propertyId }],
@@ -42,11 +41,6 @@ export function usePropertyBookings(propertyId?: string) {
   });
 }
 
-/**
- * One page of the list of bookings (SR-04): the server narrows it by chip, filters and text, orders it and pages it. The rows
- * of the last view stay on the screen until the next ones arrive. Other screens change the bookings (made, accepted, cancelled
- * there), so the list reads again when it is opened: the client does not, by default (`refetchOnMount: false`).
- */
 export function useBookingList(params: BookingListParams, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, 'list', params],
@@ -57,7 +51,6 @@ export function useBookingList(params: BookingListParams, options: { enabled?: b
   });
 }
 
-/** How many bookings are in each chip of the list, for the filters in force (the number on "Da confermare"). */
 export function useBookingCounts(params: BookingFilterParams, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, 'counts', params],
@@ -69,14 +62,8 @@ export function useBookingCounts(params: BookingFilterParams, options: { enabled
 }
 
 interface UseBookingOptions {
-  /** `false` reads nothing: a screen that is closed, or one that may not read the booking (a read it may not make would send it to the page of no access). */
   enabled?: boolean;
-  /**
-   * Read the booking again whenever the screen opens, whatever its age: the client does not read an unobserved query again by default (`refetchOnMount: false`),
-   * and a booking changes elsewhere (the guest, the channel manager, another screen). A form that edits it must never start from a stale one.
-   */
   fresh?: boolean;
-  /** Milliseconds between two reads, or `false`; a function sees the booking last read: a page that waits for the channel manager asks again until it answers. */
   refetchInterval?: number | false | ((booking: Booking | undefined) => number | false);
 }
 
@@ -106,10 +93,6 @@ export function useBookingTimeline(id: string) {
   });
 }
 
-/**
- * "Pay at the property" requests waiting for the host's answer (BK-06, decision D5). Also the counter of "Prenotazioni"
- * in the menu (UI-04a), which shares the cache with the requests panel and reads it only when `enabled`.
- */
 export function useBookingApprovalRequests(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [BOOKINGS_KEY, 'approval-requests'],
@@ -119,7 +102,6 @@ export function useBookingApprovalRequests(options?: { enabled?: boolean }) {
   });
 }
 
-/** Accepts a "pay at the property" request: the booking becomes Confirmed. */
 export function useApproveBookingRequest() {
   const queryClient = useQueryClient();
 
@@ -131,14 +113,12 @@ export function useApproveBookingRequest() {
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('booking.requests.approveFailed'));
     },
-    // Also after a 409 (answered elsewhere, expired): the list shows the current state.
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
     },
   });
 }
 
-/** Declines a "pay at the property" request: cancelled, dates released, guest emailed. */
 export function useDeclineBookingRequest() {
   const queryClient = useQueryClient();
 
@@ -198,7 +178,6 @@ export function useCreateManualBooking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
-      // A payment link starts a payment on the host's Stripe account: the payments are read again too.
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       toast.success(i18n.t('toast.bookingCreated'));
     },
@@ -248,7 +227,6 @@ export function useStayAvailability(params: StayAvailabilityParams | null) {
   });
 }
 
-/** The same answer, asked afresh from an event handler (the wizard checks it before it leaves the stay): never the one on screen. */
 export function fetchStayAvailability(queryClient: QueryClient, params: StayAvailabilityParams) {
   return queryClient.fetchQuery({
     queryKey: stayAvailabilityKey(params),
@@ -298,14 +276,11 @@ export function usePaymentLinkAccountReady(enabled: boolean): boolean | null {
     retry: false,
   });
 
-  // An answer that is not a status is as good as none.
   return query.data && typeof query.data === 'object' ? resolveConnectUiStatus(query.data) === 'active' : null;
 }
 
-/** How often the result of the new-booking wizard asks the booking again while the channel manager has not answered. */
 export const MIRROR_POLL_MS = 3_000;
 
-/** What the read of the mirror keeps of a booking: the mirror and nothing else (the booking holds the contact of the guest, which the result does not need). */
 export interface BookingMirror {
   octorateSync: BookingOctorateSync | null;
 }
@@ -340,7 +315,6 @@ export function useBookingMirror(id: string, options: { enabled: boolean; keepWa
   });
 }
 
-/** Stores the booking returned by an action and refreshes every booking list. */
 function applyBookingChange(queryClient: QueryClient, booking: Booking) {
   queryClient.setQueryData([BOOKINGS_KEY, booking.id], booking);
   queryClient.invalidateQueries({ queryKey: [BOOKINGS_KEY] });
@@ -411,10 +385,6 @@ export function useConfirmBooking() {
 
 const hostBookingQuoteKey = (payload: HostBookingQuotePayload | null) => [BOOKINGS_KEY, 'quote', payload] as const;
 
-/**
- * Price of the stay in the host form, tourist tax included (BK-03): it also says whether the ages of the minors
- * matter (`touristTax.ageRulesApply`).
- */
 export function useHostBookingQuote(payload: HostBookingQuotePayload | null) {
   return useQuery({
     queryKey: hostBookingQuoteKey(payload),
@@ -426,10 +396,6 @@ export function useHostBookingQuote(payload: HostBookingQuotePayload | null) {
   });
 }
 
-/**
- * The same quote, asked once from an event handler (the wizard of the new booking checks it before it moves on): it uses
- * and fills the cache of `useHostBookingQuote`. A refusal of the API (too many guests, dates out of range) is thrown.
- */
 export function fetchHostBookingQuote(queryClient: QueryClient, payload: HostBookingQuotePayload) {
   return queryClient.fetchQuery({
     queryKey: hostBookingQuoteKey(payload),
@@ -443,7 +409,6 @@ export function useBookingCancellationQuote(id: string, enabled = true) {
     queryKey: [BOOKINGS_KEY, id, 'cancellation'],
     queryFn: () => bookingsApi.getCancellationQuote(id),
     enabled: enabled && !!id,
-    // Always the current amounts: a refund or a payment may have changed them meanwhile.
     staleTime: 0,
   });
 }
@@ -493,10 +458,6 @@ export function useCheckIn() {
   });
 }
 
-/**
- * "Crea soggiorno OTA" from an iCal block (CO-21). No error toast: the form shows the error next to the fields (e.g. 409
- * when the block is already a stay or overlaps a booking). The calendar and the booking lists change.
- */
 export function useCreateOtaStay() {
   const queryClient = useQueryClient();
 
@@ -510,7 +471,6 @@ export function useCreateOtaStay() {
   });
 }
 
-/** "Segna come verificato" of an OTA stay (CO-21). No error toast: the notice shows the error. */
 export function useResolveOtaReview() {
   const queryClient = useQueryClient();
 

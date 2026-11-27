@@ -4,7 +4,6 @@ import { resolve } from 'node:path';
 import type { APIRequestContext, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
-/** What `e2e/stack/up.sh` wrote about the running ephemeral stack (FN-03). */
 export type StackEnv = {
   apiUrl: string;
   feUrl: string;
@@ -12,7 +11,6 @@ export type StackEnv = {
   dbName: string;
   runId: string;
   password: string;
-  /** True when Stripe test keys were given to the backend (CI secrets). */
   stripe: boolean;
 };
 
@@ -25,9 +23,7 @@ export function loadStack(): StackEnv {
   }
 }
 
-/** Logs in through the mock IdP's login form, the same redirect flow Auth0 Universal Login uses. */
 export async function loginAs(page: Page, stack: StackEnv, email: string): Promise<void> {
-  // `/login` has no page of its own: the address sends the browser straight to the IdP.
   await page.goto('/login');
   await page.waitForURL(/\/authorize/, { timeout: 30_000 });
   await page.locator('input#username').fill(email);
@@ -36,7 +32,6 @@ export async function loginAs(page: Page, stack: StackEnv, email: string): Promi
   await page.waitForURL((url) => url.origin === new URL(stack.feUrl).origin, { timeout: 30_000 });
 }
 
-/** Bearer token of the session in the browser, used only by the API oracle (asserts), never to drive the journey. */
 export async function accessToken(page: Page): Promise<string> {
   const token = await page.evaluate(() => {
     for (const key of Object.keys(localStorage)) {
@@ -55,7 +50,6 @@ export type Oracle = {
   get: <T>(path: string) => Promise<T>;
 };
 
-/** Read-only API oracle on behalf of one signed-in actor: the assertion side, not the action side. */
 export function oracleFor(request: APIRequestContext, stack: StackEnv, token: string): Oracle {
   return {
     async get<T>(path: string): Promise<T> {
@@ -73,20 +67,17 @@ export async function mailbox(request: APIRequestContext, stack: StackEnv): Prom
   return (await res.json()) as Mail[];
 }
 
-/** Waits for a message to `to` whose subject matches, and returns the latest one. */
 export async function waitForMail(
   request: APIRequestContext,
   stack: StackEnv,
   to: string,
   subject: RegExp,
-  /** Only messages received at or after this instant (ISO): a resent link replaces the previous one. */
   since = '',
 ): Promise<Mail> {
   let found: Mail | undefined;
   await expect
     .poll(
       async () => {
-        // The latest one: a resent link replaces the previous one.
         found = (await mailbox(request, stack)).findLast(
           (m) => m.to.some((a) => a.toLowerCase() === to.toLowerCase()) && subject.test(m.subject) && m.at >= since,
         );
@@ -98,7 +89,6 @@ export async function waitForMail(
   return found as Mail;
 }
 
-/** First absolute link of the email that points at the app (`/path-prefix`). */
 export function linkIn(mail: Mail, pathPrefix: string): string {
   const matches = [...mail.html.matchAll(/href="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
   const link = matches.find((href) => new URL(href).pathname.startsWith(pathPrefix));
@@ -106,13 +96,11 @@ export function linkIn(mail: Mail, pathPrefix: string): string {
   return link as string;
 }
 
-/** Calendar day (YYYY-MM-DD) `offsetDays` from today in Europe/Rome, the clock the backend uses for stay dates. */
 export function romeDay(offsetDays = 0): string {
   const when = new Date(Date.now() + offsetDays * 86_400_000);
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome' }).format(when);
 }
 
-/** Runs one SQL statement on the ephemeral database (psql, PG* variables of the environment). Seeds only. */
 export function sql(stack: StackEnv, statement: string): string {
   return execFileSync('psql', ['-X', '-A', '-t', '-d', stack.dbName, '-c', statement], {
     encoding: 'utf8',
@@ -120,10 +108,6 @@ export function sql(stack: StackEnv, statement: string): string {
   }).trim();
 }
 
-/**
- * Stripe Connect onboarding is hosted by Stripe (KYC pages): it is the one host step not driven from the UI. The
- * organization is linked to a connected account and marked charges-enabled directly in the ephemeral database.
- */
 export function linkConnectedAccount(stack: StackEnv, orgSlug: string, accountId: string): void {
   const slug = orgSlug.replace(/'/g, "''");
   const acct = accountId.replace(/'/g, "''");
@@ -135,10 +119,6 @@ export function linkConnectedAccount(stack: StackEnv, orgSlug: string, accountId
   expect(updated, `organization ${orgSlug} linked to a connected account`).toContain('1');
 }
 
-/**
- * Real Stripe test-mode connected account (Custom, test identity data that Stripe verifies instantly): only used
- * when the CI secret `STRIPE_TEST_SECRET_KEY` is present. Refuses anything but a test-mode key.
- */
 export async function createStripeTestConnectedAccount(secretKey: string): Promise<string> {
   if (!/^(sk|rk)_test_/.test(secretKey)) throw new Error('Refusing to use a non test-mode Stripe key in the E2E.');
   const form = new URLSearchParams({

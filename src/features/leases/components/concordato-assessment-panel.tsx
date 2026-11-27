@@ -8,10 +8,6 @@ interface Props {
   assessment: LeaseConcordatoAssessment;
 }
 
-/**
- * Canone concordato range the API computed when the lease was created (LT-10, A7-12), from the declared characteristics
- * and the lease dates. With unconfirmed agreement data it is indicative and did not block the lease (A7-23).
- */
 export function ConcordatoAssessmentPanel({ assessment }: Props) {
   const { t } = useTranslation();
 

@@ -20,13 +20,8 @@ import {
 } from './components/supplier-sections';
 import { marketplaceSupplierPath } from './lib/marketplace-paths';
 
-/** What the address calls the drawer of a supplier of the marketplace: `?detail=marketplace-supplier:<orgId>`. */
 export const MARKETPLACE_SUPPLIER_DRAWER_KIND = 'marketplace-supplier';
 
-/**
- * The supplier of the drawer, read from the account’s supplier list: the same query as
- * the pages when it is not narrowed, so there is no second request, and a shared address opens the right supplier.
- */
 function useSupplierOfTheList(id: string) {
   const suppliers = useMarketplaceSuppliers({ accountScope: true });
 
@@ -38,9 +33,6 @@ export function SupplierDrawerTitle({ id }: DetailTitleProps) {
   return <>{supplier?.legalName ?? ''}</>;
 }
 
-/**
- * The quick look at a supplier (UI-15): services, coverage, contacts and links to the supplier’s full page and showcase.
- */
 function SupplierDetails({ supplier }: { supplier: SupplierPicker }) {
   const { t } = useTranslation();
   return (
@@ -88,8 +80,6 @@ export function SupplierDrawerContent({ id }: DetailContentProps) {
   return <SupplierDetails supplier={supplier} />;
 }
 
-// Registered when this module is loaded, which every list of the suppliers does (the grid imports it): the drawer opens from a
-// card and from a shared address (`?detail=marketplace-supplier:<orgId>`) on the pages of the marketplace.
 registerDetail(MARKETPLACE_SUPPLIER_DRAWER_KIND, {
   title: SupplierDrawerTitle,
   Content: SupplierDrawerContent,

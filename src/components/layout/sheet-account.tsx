@@ -10,19 +10,12 @@ import { cn, getInitials } from '@/lib/utils';
 import { LanguageSwitcher } from './language-switcher';
 
 interface SheetAccountProps {
-  /** The user chose a page: the sheet has nothing more to say and closes. */
   onNavigate: () => void;
 }
 
 const ROW_CLASS =
   'flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-medium outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring';
 
-/**
- * The account in the sheet "Altro" of the phone (UI-05): one row with the user, "Profilo e lingua" (the demo's "Profilo, tema
- * e lingua", the theme being for when the dark theme exists, D26), which opens to the profile page, the language switch and
- * "Esci". It is the same as the profile menu of the header, laid out for a thumb: every row is 44 px tall and there is no
- * menu to open over the sheet.
- */
 export function SheetAccount({ onNavigate }: SheetAccountProps) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();

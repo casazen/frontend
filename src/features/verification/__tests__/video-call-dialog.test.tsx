@@ -40,7 +40,6 @@ function httpError(status?: number, data?: unknown, code?: string): AxiosError {
   return new AxiosError('Request failed', code ?? AxiosError.ERR_BAD_REQUEST, config, {}, response);
 }
 
-/** The workspace of a person who holds the permissions given (a context key and a permission each). */
 function workspaceWith(...held: string[]): WorkspaceContextValue {
   return {
     contexts: [],
@@ -89,7 +88,6 @@ afterEach(() => {
 
 describe('the video call of the verification queue: who sees it (E22/F02/US01/T02, NF-24)', () => {
   it('VideoCallDialog_WithoutVerificationDecision_IsHidden_Test', () => {
-    // The page of the queue already asks the permission; the action asks it again, so it is never on a screen of someone who may not decide.
     renderAction(vi.fn(), { held: ['short-rent:property.write', 'short-rent:booking.write', 'long-rent:verification.decision'] });
 
     expect(screen.queryByTestId('verification-video-call')).not.toBeInTheDocument();
@@ -129,7 +127,6 @@ describe('the video call dialog: what the operator sends', () => {
     expect(onSend).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByTestId('verification-video-call-form')).not.toBeInTheDocument());
     expect(screen.getByTestId('verification-video-call-sent')).toBeInTheDocument();
-    // The link is not kept: the next time the dialog opens it is empty.
     openDialog();
     expect(screen.getByTestId('verification-video-call-url')).toHaveValue('');
   });
@@ -169,7 +166,6 @@ describe('the video call dialog: what the operator sends', () => {
     [httpError(409, { code: 'guest_unreachable' }), 'unreachable'],
     [httpError(409, { code: 'video_call_not_sent' }), 'not_sent'],
     [httpError(404, { code: 'no_pending_verification' }), 'not_pending'],
-    // An answer that never came, or a server that failed, is an outcome nobody knows: the dialog never says that nothing was sent.
     [httpError(undefined, undefined, AxiosError.ERR_NETWORK), 'outcome_unknown'],
     [httpError(500), 'outcome_unknown'],
     [httpError(429), 'too_many_requests'],
@@ -203,7 +199,6 @@ describe('the video call dialog: what the operator sends', () => {
     fireEvent.click(screen.getByRole('button', { name: i18n.t('shared.close') }));
     fireEvent.keyDown(screen.getByTestId('verification-video-call-form'), { key: 'Escape' });
 
-    // What the server answers is told in this dialog: a dialog that had gone would take the answer with it.
     expect(screen.getByTestId('verification-video-call-form')).toBeInTheDocument();
   });
 
@@ -284,7 +279,6 @@ describe('the card of the verification with the video call', () => {
       }),
     );
     render(withProviders(<VerificationItem verification={waiting} />));
-    // The words say the call is proposed here; the old advice to contact the guest outside CasaZen is gone while the call is offered.
     expect(screen.getByTestId('verification-contact-hint')).toHaveTextContent('Proponi una videochiamata');
     expect(screen.getByTestId('verification-contact-hint')).not.toHaveTextContent('fuori da CasaZen');
 
@@ -293,7 +287,6 @@ describe('the card of the verification with the video call', () => {
     send();
 
     await waitFor(() => expect(verificationApi.proposeVideoCall).toHaveBeenCalledWith(BOOKING, { url: MEETING }));
-    // One write of the card at a time: the other actions wait while the e-mail is queued.
     await waitFor(() => expect(screen.getByTestId('verification-decide')).toBeDisabled());
     expect(screen.getByTestId('verification-reject')).toBeDisabled();
     expect(screen.getByTestId('verification-video-call')).toBeDisabled();
@@ -302,7 +295,6 @@ describe('the card of the verification with the video call', () => {
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('verification.videoCall.sent')));
     await waitFor(() => expect(screen.getByTestId('verification-decide')).toBeEnabled());
-    // The verification still waits for the decision after the call: its buttons are the usual ones.
     expect(screen.getByTestId('verification-video-call-sent')).toBeInTheDocument();
   });
 
@@ -322,7 +314,6 @@ describe('the card of the verification with the video call', () => {
     send();
 
     expect(await screen.findByTestId('verification-video-call-error')).toHaveAttribute('data-problem', 'unreachable');
-    // Nothing of the link is on the page but the box the operator typed it in; no write of the card is left in flight.
     expect(document.body.textContent ?? '').not.toContain('room-1234');
     expect(screen.getByTestId('verification-decide')).toBeEnabled();
   });
@@ -331,7 +322,6 @@ describe('the card of the verification with the video call', () => {
     [httpError(409, { code: 'video_call_not_sent' }), 'not_sent'],
     [httpError(409, { code: 'guest_unreachable' }), 'unreachable'],
     [httpError(404, { code: 'no_pending_verification' }), 'not_pending'],
-    // An answer nobody can confirm (a server that failed, no answer at all) never says that nothing was sent.
     [httpError(500), 'outcome_unknown'],
     [httpError(undefined, undefined, AxiosError.ERR_NETWORK), 'outcome_unknown'],
   ])('VerificationItem_TheCallFails_%#_TellsTheOperatorByAToastAsWell', async (error, problem) => {
@@ -372,7 +362,6 @@ describe('the card of the verification with the video call', () => {
     send();
     await waitFor(() => expect(verificationApi.proposeVideoCall).toHaveBeenCalledTimes(1));
 
-    // The page is left, or the queue is drawn again without the card, while the e-mail is queued: nothing of the dialog is there to say what happened.
     unmount();
     fail(httpError(409, { code: 'video_call_not_sent' }));
 

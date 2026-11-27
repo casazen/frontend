@@ -92,7 +92,6 @@ describe('FiscalWizardPage (CO-19)', () => {
     fireEvent.click(screen.getByTestId('fiscal-wizard-save'));
 
     await waitFor(() => expect(fiscalApi.putTaxProfile).toHaveBeenCalledTimes(1));
-    // The saved partita IVA is neither sent nor overwritten.
     expect(vi.mocked(fiscalApi.putTaxProfile).mock.calls[0][0]).toEqual({ fiscalCode: 'VRDLGU75B12F205X' });
     expect(await screen.findByText('dashboard')).toBeInTheDocument();
     expect(toast.success).toHaveBeenCalledWith(i18n.t('fiscal.wizard.saved'));
@@ -164,7 +163,6 @@ describe('FiscalWizardPage (CO-19)', () => {
     const { unmount } = renderPage();
     await screen.findByTestId('fiscal-wizard-form');
 
-    // ADR-025-R7: this page has no `WizardShell`, so it tells the popup alerts to wait.
     expect(useUiStore.getState().openWizards).toBeGreaterThan(0);
 
     unmount();

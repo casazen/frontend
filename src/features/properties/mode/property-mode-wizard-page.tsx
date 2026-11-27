@@ -32,7 +32,6 @@ import {
 interface LoadErrorProps {
   error: unknown;
   onRetry: () => void;
-  /** The list the person came from: every state has a way on (a 404 has nothing else). */
   backTo: string;
 }
 
@@ -75,20 +74,12 @@ interface WizardLoaderProps {
   entry: ModeEntry;
   currentMode: RentalMode;
   waiting: PropertyModeChange | null;
-  /** The last screen is open: the first day possible is not needed any more. */
   doneStep: boolean;
   onScheduled: () => void;
 }
 
-/**
- * Asks the server for the first day possible (what stands in the way of tomorrow, and why) before the wizard opens: the day
- * step needs it for its limits, and the wizard starts from the answer of this visit (a preview is not kept once nobody shows it).
- * On the last screen it is not waited for, so reloading it does not depend on a second request. Once the wizard is open a failed
- * refresh of the answer does not take it away: the data stays, and the steps ask again for what they show.
- */
 function WizardLoader({ propertyId, propertyName, area, entry, currentMode, waiting, doneStep, onScheduled }: WizardLoaderProps) {
   const { t } = useTranslation();
-  // The day the first question is about, fixed for this visit: a wizard left open across midnight must not change its question.
   const [tomorrow] = useState(() => addDays(todayInRome(), 1));
   const preview = usePropertyModePreview(propertyId, oppositeMode(currentMode), tomorrow, { enabled: !doneStep, fresh: true });
 
@@ -114,14 +105,6 @@ function WizardLoader({ propertyId, propertyName, area, entry, currentMode, wait
   );
 }
 
-/**
- * "Cambia modalità" (PM-03, D16): the wizard that programs the passage of a property from short stays to long-term leases, or
- * back, on a day. The same page serves both sections, at `/app/<section>/properties/:id/mode`; the one of the section the
- * property is in opens it, and the other redirects there. Behind the permission to write the property.
- *
- * A property can have one change at a time: with one waiting the page says so and offers to withdraw it. `?from=account`
- * (the list of properties of the account, AM-13) makes the way out lead back there.
- */
 function PropertyModeWizardPage({ area }: { area: ModeArea }) {
   const { t } = useTranslation();
   const { id = '' } = useParams<{ id: string }>();
@@ -129,11 +112,8 @@ function PropertyModeWizardPage({ area }: { area: ModeArea }) {
   const entry = entryFromSearch(searchParams);
   const property = useProperty(id, { fresh: true });
   const state = usePropertyModeState(id, { fresh: true });
-  // Set when the change is programmed in this visit: the state the server sends next must not replace the confirmation.
   const [scheduledHere, setScheduledHere] = useState(false);
 
-  // Nothing to show yet. A failed refresh while there is something on screen is not a reason to take it away (the confirmation
-  // of a change that was programmed must not turn into "could not load"): only a load that has no data fails the page.
   if (!property.data || !state.data) {
     const failed = !property.data && property.isError ? property : !state.data && state.isError ? state : null;
     if (!failed) return <LoadingScreen message={t('propertyMode.loading')} className="h-auto flex-1" />;
@@ -152,8 +132,6 @@ function PropertyModeWizardPage({ area }: { area: ModeArea }) {
     );
   }
 
-  // A property is in one section: its mode decides which one opens the wizard (#246 does the same for its pages). The step is not
-  // taken along: the other section asks the other question, from its beginning; only where the person came from is kept.
   const currentMode = state.data.rentalMode;
   const ownArea = areaOfMode(currentMode);
   if (ownArea !== area) {
@@ -169,8 +147,6 @@ function PropertyModeWizardPage({ area }: { area: ModeArea }) {
   const doneStep = searchParams.get('step') === WIZARD_DONE_STEP;
   const backTo = exitPathFor(area, id, entry);
 
-  // New short-to-long conversions are no longer offered. Historical scheduled changes can still be read and cancelled.
-  // Check the server's mode, not the URL or saved draft, so changing the section or step cannot start a new conversion.
   if (currentMode === 'Short' && !waiting) return <Navigate to={backTo} replace />;
 
   return (
@@ -200,16 +176,11 @@ function PropertyModeWizardPage({ area }: { area: ModeArea }) {
   );
 }
 
-/**
- * `/app/short-rent/properties/:id/mode`. Keyed by the property: going from the wizard of one property to the one of another
- * (history) must not carry the answers, the step and the "programmed here" flag of the first over to the second.
- */
 export function ShortRentPropertyModePage() {
   const { id } = useParams<{ id: string }>();
   return <PropertyModeWizardPage key={id} area="short-rent" />;
 }
 
-/** `/app/long-rent/properties/:id/mode` (keyed like the other one). */
 export function LongRentPropertyModePage() {
   const { id } = useParams<{ id: string }>();
   return <PropertyModeWizardPage key={id} area="long-rent" />;

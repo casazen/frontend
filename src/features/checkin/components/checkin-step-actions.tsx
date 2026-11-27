@@ -5,7 +5,6 @@ import type { useSubmitGuestCheckIn } from '@/queries/use-checkin';
 import { STEP_CONSENTS, STEP_IDENTITY } from '../lib/checkin-steps';
 import type { useIdentityVerification } from '../use-identity-verification';
 
-/** The way back, and the way on (or the send, at the last step). */
 export function CheckInStepActions({ steps, stepIndex, current, identity, taxPaying, taxBlocksNext, goToStep, goNext, submitCheckIn, consentsGiven }: {
   steps: readonly number[];
   stepIndex: number;
@@ -25,8 +24,6 @@ export function CheckInStepActions({ steps, stepIndex, current, identity, taxPay
         <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
       </Button>
       {current !== STEP_CONSENTS ? (
-        // Own key: the same DOM button must not turn from "button" to "submit" during the click that moves
-        // to the last step, or the browser submits the form and the privacy notice is never shown.
         <Button
           key="checkin-next"
           type="button"

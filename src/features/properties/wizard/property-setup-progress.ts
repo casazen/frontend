@@ -1,6 +1,5 @@
 import { clearWizardDraft, readWizardDraft, writeWizardDraft, type WizardDraftScope } from '@/lib/wizard-draft';
 
-/** The last saved property this person was setting up. Only identifiers go in tab storage. */
 const PROGRESS_KEY = 'short-rent-property-setup';
 export const WIZARD_STEP_IDS = [
   'base', 'owner', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'channels', 'compliance', 'billing', 'finish',

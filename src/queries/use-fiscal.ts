@@ -10,7 +10,6 @@ import {
 
 const KEY = 'fiscal';
 
-/** `enabled: false` for a page that only borrows a hint from it, when the person may not read the tax data (`payment.read`). */
 export function useFiscalRegime(taxYear: number, enabled = true) {
   return useQuery({
     queryKey: [KEY, 'regime', taxYear],
@@ -68,7 +67,6 @@ export function useTouristTaxReport(period: FiscalReportPeriod) {
   });
 }
 
-/** Downloads a report as CSV or PDF (the caller saves the blob and shows the error). */
 export function useDownloadFiscalReport() {
   return useMutation({
     mutationFn: (args: {

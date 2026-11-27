@@ -10,16 +10,13 @@ import { futureStay, mockDirectCheckoutApi } from './helpers/direct-checkout-moc
 const { checkIn, checkOut } = futureStay(30, 3);
 const checkoutUrl = `/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}/checkout?checkin=${checkIn}&checkout=${checkOut}&guests=2`;
 
-/** Step 1 done: the stay is the one of the address, booked at once; the guest goes on to their details. */
 async function passTheStay(page: Page): Promise<void> {
   await expect(page.getByTestId('checkout-step-stay')).toBeVisible({ timeout: 15_000 });
-  // The button waits for the quote of this stay (the total of the server) and then leads to the second step.
   await expect(page.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 });
   await page.getByTestId('checkout-next').click();
   await expect(page.getByTestId('checkout-step-details')).toBeVisible();
 }
 
-/** Step 2 done: the guest who books, then the payment step. */
 async function passTheDetails(page: Page): Promise<void> {
   await page.locator('#firstName').fill('Mario');
   await page.locator('#lastName').fill('Rossi');
@@ -35,8 +32,6 @@ test.describe('Direct checkout (#226, DB-05)', () => {
     await mockBrandedBookingApi(page);
     await mockDirectCheckoutApi(page);
     await page.addInitScript(() => {
-      // The cookie banner sits over the bottom of the page, where the button of each step is: the choice is made, the banner has its
-      // own specs (branded-booking-site).
       localStorage.setItem('casazen_cookie_consent', 'rejected');
       localStorage.setItem('casazen.locale', 'it');
     });
@@ -49,7 +44,6 @@ test.describe('Direct checkout (#226, DB-05)', () => {
     await expect(page.getByTestId('checkout-title')).toHaveText('Il tuo soggiorno');
     const summary = page.getByTestId('checkout-summary');
     await expect(summary.getByTestId('price-breakdown')).toBeVisible();
-    // A calculated tax is a line of the quote and part of the total (BK-03); the total is the one of the server.
     await expect(summary.getByTestId('tourist-tax-line')).toContainText('Imposta di soggiorno');
     await expect(summary.getByTestId('price-breakdown-total')).toContainText('546');
     await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 notti');
@@ -96,7 +90,6 @@ test.describe('Direct checkout (#226, DB-05)', () => {
     await page.locator('#data-consent').click();
     await page.getByTestId('checkout-submit').click();
 
-    // Only now the booking exists: the hold of the dates is promised and the payment is asked.
     await expect(page.getByTestId('checkout-payment-step')).toBeVisible();
     await expect(page.getByTestId('checkout-payment')).toContainText('30 minuti');
     expect(bookingAuthHeader).toBeUndefined();
@@ -105,7 +98,6 @@ test.describe('Direct checkout (#226, DB-05)', () => {
     // BK-07: the outcome page of the booking, confirmed only because the (mocked) backend says so.
     await expect(page).toHaveURL(/\/booking\/cccccccc-cccc-cccc-cccc-cccccccccccc\?token=tok_e2e_checkout$/);
     await expect(page.getByTestId('checkout-confirmation')).toBeVisible();
-    // One title for the state (the guest is greeted by name); the step «Prenotazione confermata» below is an h3.
     await expect(page.getByRole('heading', { level: 1, name: /Prenotazione confermata, Mario/i })).toBeVisible();
     await expect(page.getByTestId('checkout-outcome-booking-code')).toBeVisible();
   });
@@ -117,7 +109,6 @@ test.describe('Direct checkout (#226, DB-05)', () => {
     );
 
     await expect(page.getByTestId('checkout-step-stay')).toBeVisible({ timeout: 15_000 });
-    // No stay to price: the button waits and says why.
     await expect(page.getByTestId('checkout-next')).toHaveAttribute('aria-disabled', 'true');
     await expect(page.getByText('Scegli le date del soggiorno.')).toBeVisible();
 
@@ -131,7 +122,6 @@ test.describe('Direct checkout (#226, DB-05)', () => {
     await page.getByTestId('checkout-next').click();
     await expect(page.getByTestId('checkout-step-details')).toBeVisible();
 
-    // A typo of a popular domain is met with a suggestion that one tap applies.
     await page.locator('#email').fill('mario.rossi@gmial.com');
     await expect(page.getByTestId('checkout-email-suggestion')).toContainText('mario.rossi@gmail.com');
     await page.getByTestId('checkout-email-suggestion').getByRole('button').click();

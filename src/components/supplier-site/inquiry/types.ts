@@ -7,10 +7,7 @@ import type { RequestFailure } from '@/lib/supplier-site/request-errors';
  */
 export type QuietCall = (call: (access: PublicBookingAccess) => Promise<PublicBookingView>) => Promise<{ ok: true } | { ok: false; failure: RequestFailure }>;
 
-/** What of the supplier's site the request page needs and cannot read itself (it may be drawn without the frame of the site, as in tests). */
 export interface InquirySiteInfo {
-  /** The typical time to answer in minutes, measured; null until there are enough requests. */
   typicalResponseMinutes: number | null;
-  /** The color of the buttons of the site, for the Payment Element (which lives in an iframe and cannot read the stylesheet). */
   buttonColor: string;
 }

@@ -7,7 +7,6 @@ import { useComuneDatasetStatus } from '@/queries/use-comuni';
 import type { Comune } from '@/types/comune.types';
 import { FinderComuneField } from '../finder-comune-field';
 
-/** What the estimate says of the comune: the supplier's zones are checked by the server, never here. */
 export type ZoneState = 'none' | 'checking' | 'covered' | 'outside' | 'unknown';
 
 interface StepWhereProps {
@@ -16,11 +15,9 @@ interface StepWhereProps {
   comune: { name: string; provinceCode: string; istatCode: string } | null;
   onComune: (comune: Comune | null) => void;
   zone: ZoneState;
-  /** The person went on without a comune. */
   problem: 'required' | null;
 }
 
-/** Step 2, "Dove": the comune of the work, and at once whether the supplier works there. */
 export function StepWhere({ supplierSlug, serviceSlug, comune, onComune, zone, problem }: StepWhereProps) {
   const { t } = useTranslation();
   const id = useId();

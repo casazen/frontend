@@ -37,7 +37,6 @@ test.describe('Context workspace switcher (#189)', () => {
     await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
   });
 
-  // A7-06: the long-rent context has its own property pages (list, new, detail with the APE).
   test('long-rent user manages properties inside the long-rent context', async ({ page }) => {
     await mockLeasesApiEmpty(page);
     await mockPropertiesApiEmpty(page);
@@ -53,7 +52,6 @@ test.describe('Context workspace switcher (#189)', () => {
     await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
   });
 
-  // UI-04a: the area switcher (a button with a menu) replaces the icon tabs of the sidebar.
   test('dual-role user can switch between contexts', async ({ page }) => {
     await mockLeasesApiEmpty(page);
     await page.goto(demoUrl('/app/short-rent', 'dual'), { waitUntil: 'domcontentloaded' });

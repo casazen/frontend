@@ -22,7 +22,6 @@ function renderPage() {
   return render(createElement(QueryClientProvider, { client }, createElement(MarketingPage)));
 }
 
-// SE-03: marketing section surfaces existing tracking data; no new events added.
 describe('MarketingPage', () => {
   beforeEach(async () => {
     vi.clearAllMocks();

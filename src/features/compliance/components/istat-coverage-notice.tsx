@@ -17,15 +17,12 @@ import { useIstatCoverage } from '@/queries/use-istat-regions';
 import { formatPeriod, listedMonths } from '../lib/archive-model';
 import { deadlineShown, isVerified, noticeActionOf, noticeShown, portalAddress, regionShown } from '../lib/istat-coverage-model';
 
-/** The permission of the guided step of the panel and of the wizard that leads to it: whoever may not write the property is not offered the link (the step is also the organization administrator's). */
 const PANEL_STEP_PERMISSION = 'property.write';
 
-/** The words of the button of the request to support: «Chiedi al supporto» (a code of the button, not a text). */
 const SUPPORT_LABEL = 'askSupport';
 
 interface IstatCoverageNoticeProps {
   propertyId: string;
-  /** The property page also offers the upload of the proof of the month; the wizard, which activates the sending, does not. */
   showProof?: boolean;
   /**
    * Drawn inside a wizard. A wizard never takes the person out of the process, and what was typed in it (the credentials are in its state only) is lost when the page is left: so the next
@@ -58,10 +55,8 @@ function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatC
   const { contexts, hasPermission } = useWorkspace();
   const coverage = useIstatCoverage(propertyId);
 
-  // The read failed: the answer the query still holds is an older one and is not what is true now, so nothing is said from it (a 404 is «not found» whatever the cache holds).
   if (coverage.isError) {
     const status = getHttpStatus(coverage.error);
-    // A property the caller does not reach, or another org's, is told by the screen that holds the notice.
     if (status === 404 || status === 403) return null;
     return (
       <Alert
@@ -88,7 +83,6 @@ function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatC
   }
 
   const data = coverage.data;
-  // A property outside Italy has no regional flow: the screen that holds the notice says so.
   if (!data.applies) return null;
 
   const shown = noticeShown(data, senderOpen);
@@ -101,7 +95,6 @@ function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatC
   let step: ReactNode = null;
   if (action === 'panelStep') {
     if (inWizard) {
-      // A wizard never leaves the process: here the step is told in words (it is done from the property page once the wizard is over), and no link takes the person away from what they typed.
       step = (
         <p className="text-sm" data-testid="istat-coverage-panel-step-later">
           {t('istatCoverage.action.panelStepInWizard')}
@@ -116,7 +109,6 @@ function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatC
         </Button>
       );
     } else if (canWrite) {
-      // The guided step of the panel is the organization administrator's (the page of the step says so to anyone else): here the person is told who does it, not led to a page with nothing to press.
       step = (
         <p className="text-sm" data-testid="istat-coverage-panel-step-admin-only">
           {t('onboardingPlan.panel.adminOnly')}
@@ -134,7 +126,6 @@ function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatC
       </Button>
     );
   } else if (action === 'support') {
-    // The request to support is the organization administrator's (the server asks it): anyone else is told who can make it.
     step = isOrgBillingAdmin(contexts) ? (
       <AssistRequestButton part="compliance" context="panelIstat" propertyId={propertyId} label={SUPPORT_LABEL} />
     ) : (

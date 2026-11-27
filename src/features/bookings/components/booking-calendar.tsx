@@ -39,7 +39,6 @@ import { UnreadMessagesBadge } from '@/components/shared/unread-messages-badge';
 
 const CALENDAR_LOCALES: Record<string, Locale> = { it, en: enGB };
 
-// Weeks start on Monday in every language, like the range asked to the API (hostCalendarRange).
 const localizer = dateFnsLocalizer({
   format,
   getDay,
@@ -61,7 +60,6 @@ function CalendarEvent({ event }: EventProps<HostCalendarEvent>) {
   const { t } = useTranslation();
   const { icon: Icon, labelKey } = calendarKindInfo(calendarKindOf(event));
   const unread = useUnreadMessagesOf(event.kind === 'booking' ? event.id : null);
-  // Where a stay comes from (NF-78): the icon and the name of its channel, never the icon alone.
   const channel = event.kind === 'booking' && event.source ? channelOf(event.source) : null;
   const ChannelIcon = channel ? CHANNEL_ICONS[channel] : null;
   return (
@@ -80,14 +78,12 @@ function CalendarEvent({ event }: EventProps<HostCalendarEvent>) {
   );
 }
 
-/** What the day cells of the month, the week and the day need to draw the day layer and to be selected: given by the grid, read by the cell (the library builds the cells). */
 interface DayCellContextValue {
   propertyId: string;
   propertyName: string;
   layer?: DayLayerProperty;
   today: string;
   selection: DaySelection | null;
-  /** The one day that takes the Tab key (the others are reached with the arrows). */
   tabbableDay: string;
   onPressDay?: (propertyId: string, day: string, shift: boolean, origin?: string) => void;
   onClearSelection?: () => void;
@@ -95,11 +91,6 @@ interface DayCellContextValue {
 
 const DayCellContext = createContext<DayCellContextValue | null>(null);
 
-/**
- * The cell of a day of the month, the week or the day (E08/F05/US03/T01, T02): over the background of the library it draws the price and the rules of a free night of the
- * future, marks a past day and the days selected, and, where days can be selected, carries the button that takes the keyboard to the day (Tab, arrows, Enter and Space, Shift
- * plus arrow, Escape); the mouse goes through the library's own selection of days. The text is the same as the Timeline's.
- */
 function DayCellWrapper({ value, children }: DateCellWrapperProps) {
   const { t, i18n } = useTranslation();
   const context = useContext(DayCellContext);
@@ -115,7 +106,6 @@ function DayCellWrapper({ value, children }: DateCellWrapperProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (!onPressDay) return;
     const grid = event.currentTarget.closest<HTMLElement>('.host-calendar');
-    // The arrows move over the grid of days of the property (a week is seven days, so up and down are a week back and forward).
     const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[event.key as 'ArrowLeft'];
     if (step !== undefined) {
       event.preventDefault();
@@ -144,7 +134,6 @@ function DayCellWrapper({ value, children }: DateCellWrapperProps) {
         aria-pressed={selected}
         aria-label={dayLabel({ date: day, propertyName: context.propertyName, today: context.today, language: i18n.language, currency: context.layer?.currency, info }, t)}
         tabIndex={day === tabbableDay ? 0 : -1}
-        // The mouse is the library's (a click and a drag select days there): this is the click that Enter and Space make, which has no position.
         onClick={(event) => {
           if (event.detail === 0) onPressDay(context.propertyId, day, event.shiftKey);
         }}
@@ -158,29 +147,20 @@ const CALENDAR_COMPONENTS = { event: CalendarEvent, dateCellWrapper: DayCellWrap
 
 interface BookingCalendarProps {
   events: HostCalendarEvent[];
-  /** Day shown (`YYYY-MM-DD`): the month, the week or the day around it. */
   date: string;
   view: HostCalendarView;
   onNavigate: (date: string) => void;
   onView: (view: HostCalendarView) => void;
   onSelectEvent?: (event: HostCalendarEvent) => void;
   onSelectSlot?: (slotInfo: SlotInfo) => void;
-  /** The entries of the range are loading: the grid stays, with a loading overlay. */
   loading?: boolean;
-  /** The property shown (the month, the week and the day always show one) and its day layer (E08/F05/US03/T01): the price and the rules of each night, when the caller may read them. */
   property?: { id: string; name: string };
   dayLayer?: DayLayerProperty;
-  /** The days selected (E08/F05/US03/T02) and what a press on a day by keyboard does; without `onPressDay` the days are not controls (the mouse selection is `onSelectSlot`). */
   selection?: DaySelection | null;
   onPressDay?: (propertyId: string, day: string, shift: boolean, origin?: string) => void;
   onClearSelection?: () => void;
 }
 
-/**
- * The grid of the host calendar: the library draws it (month, week, day) and `host-calendar.css` dresses it with the tokens.
- * The legend sits above it; the arrows, the view and the label of the period are the toolbar of the page (`CalendarToolbar`),
- * so the library's own toolbar is off.
- */
 export function BookingCalendar({
   events,
   date,
@@ -200,7 +180,6 @@ export function BookingCalendar({
   const culture = i18n.language?.startsWith('en') ? 'en' : 'it';
   const shownDate = useMemo(() => stayDateToLocalDate(date) ?? new Date(), [date]);
 
-  // The day layer and the selection, for the cells the library builds. The one day that takes Tab: the end of the selection, else today, else the first day shown.
   const today = todayInRome();
   const dayCells = useMemo<DayCellContextValue | null>(() => {
     if (!property || (!dayLayer && !onPressDay)) return null;
@@ -230,7 +209,6 @@ export function BookingCalendar({
 
   const handleNavigate = useCallback(
     (newDate: Date, _view: View, action: NavigateAction) => {
-      // "Today" is the calendar date in Rome, whatever the time zone of the browser.
       onNavigate(action === 'TODAY' ? todayInRome() : toStayDate(newDate));
     },
     [onNavigate],
@@ -258,7 +236,6 @@ export function BookingCalendar({
           : event.otaReviewReason
             ? `${eventTitle(event, t)} · ${getBookingStatusLabel(event.status, t)} · ${t('booking.otaReview.badge')}`
             : `${eventTitle(event, t)} · ${getBookingStatusLabel(event.status, t)}`;
-      // Where the stay comes from, by the name of its channel.
       const channel = event.kind === 'booking' && event.source ? ` · ${bookingChannelName(channelOf(event.source), t)}` : '';
       return `${what}${channel} · ${dates}`;
     },

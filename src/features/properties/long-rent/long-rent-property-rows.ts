@@ -6,28 +6,18 @@ import { useLongRentPropertyAggregate } from '@/queries/use-long-rent-properties
 import { useProperties } from '@/queries/use-properties';
 import type { LeaseSummary, LongRentPropertyAggregate, Property } from '@/types';
 
-/** A property of Affitti lunghi with what its leases say about it. */
 export interface LongRentPropertyRow {
   property: Property;
-  /** `null` when the leases are not known (the person may not read them, or they did not load): then nothing is said of it. */
   status: LongRentPropertyStatus | null;
-  /** The lease that holds the property now: registered and not ended. Its tenant is who lives there. */
   current: LeaseSummary | null;
-  /** A lease on its way (not registered yet) of a property that has none in force: it is free, and this is who is coming. */
   preparing: LeaseSummary | null;
-  /**
-   * What the server says that the two lists do not (LR-07a): the APE, the cadastral data, the day the property is free again and the change of
-   * mode programmed. `null` when it did not answer: the page then works without those words.
-   */
   aggregate: LongRentPropertyAggregate | null;
 }
 
-/** Registered and not ended, the last day included: the same rule as the view `Active` of `GET /leases` (LR-01). */
 export function isInForce(lease: LeaseSummary, today: string): boolean {
   return lease.status === 'Registered' && parseStayDate(lease.endDate) >= today;
 }
 
-/** Not registered yet and not rejected: draft, in signature, signed and waiting for the registration (the view `InPreparation`). */
 export function isInPreparation(lease: LeaseSummary): boolean {
   return lease.status !== 'Registered' && lease.status !== 'Rejected';
 }
@@ -64,35 +54,23 @@ export function longRentPropertyRows(
     if (aggregate?.status) {
       const current = own.find((lease) => lease.id === aggregate.currentLease?.leaseId) ?? null;
       const preparing = current ? null : (own.find((lease) => lease.id === aggregate.preparingLease?.leaseId) ?? null);
-      // A property the server says is let, whose lease this list does not have (read a moment apart): the rule below decides.
       if (aggregate.status !== 'Rented' || current) {
         return { property, status: aggregate.status === 'Rented' ? 'Rented' : 'Free', current, preparing, aggregate };
       }
     }
 
     const inForce = own.filter((lease) => isInForce(lease, today)).sort(startedLast);
-    // A lease registered ahead (a renewal that starts next month) does not hold the property yet: the one that is running does.
     const current = inForce.find((lease) => parseStayDate(lease.startDate) <= today) ?? inForce[inForce.length - 1] ?? null;
     const preparing = current ? null : (own.filter(isInPreparation).sort(touchedLast)[0] ?? null);
     return { property, status: current ? 'Rented' : 'Free', current, preparing, aggregate };
   });
 }
 
-/**
- * The properties of Affitti lunghi with their state, from the lists the API has (`GET /properties?mode=long`, `GET /leases` and
- * `GET /long-rent/properties`, each one request: nothing is asked for each row). The leases are asked only of who may read them; if they are
- * missing or fail the properties are still shown, without a state (`leasesKnown` tells, `leasesFailed` says it is a failure). If the third one
- * fails the page works without the APE, the cadastral data and the "then free" it brings.
- * `fresh`: read again when the screen opens (the page of the list; the drawer reads what the list has just read).
- */
 export function useLongRentPropertyRows({ canReadLeases, fresh = false }: { canReadLeases: boolean; fresh?: boolean }) {
   const properties = useProperties({ mode: 'long' }, { fresh });
-  // The plain list of leases: the same request as the guide of the first steps, so it is one.
   const leases = useLeases(undefined, { refetchOnMount: fresh ? 'always' : undefined, enabled: canReadLeases });
   const aggregate = useLongRentPropertyAggregate({ fresh, canReadLeases });
-  // A disabled query can still hold rows read before a change of role.
   const visibleLeases = canReadLeases ? leases.data : undefined;
-  // An answer that is not a list (the page of the app where an API answer should be) is a failed load, never an empty list.
   const loaded = Array.isArray(properties.data) ? properties.data : undefined;
 
   const rows = useMemo(

@@ -33,7 +33,6 @@ import type { SupplierServiceStatus } from "@/types/supplier-services";
 
 export type StatusTone = "neutral" | "info" | "success" | "warning" | "danger";
 
-/** Names of the icons, drawn in `components/shared/status/status-icons.ts`. */
 export type StatusIconName =
   | "alert-circle"
   | "alert-triangle"
@@ -65,30 +64,20 @@ export type StatusPerspective = "host" | "supplier";
 export interface StatusDefinition<Key extends string = string> {
   tone: StatusTone;
   icon: StatusIconName;
-  /** The state this one moves to on the way forward; `need` lists what it takes. */
   next?: Key;
-  /** There is a list of what it takes to reach `next` (`status.<kind>.<key>.need`). */
   need?: true;
-  /** Not a value of the backend enum: the interface works it out (`Paused`, `Overdue`). */
   derived?: true;
-  /** The supplier sees this state with other words (`status.<kind>.<key>.supplier.*`; `explain` is always there). */
   supplier?: { tone?: StatusTone; icon?: StatusIconName; label?: true; need?: true };
 }
 
-/** Types a kind against its enum: all the values are there, and only them. */
 function defineKind<Key extends string>(definitions: Record<Key, StatusDefinition<Key>>): Record<Key, StatusDefinition<Key>> {
   return definitions;
 }
 
-/** Status of a property: the compliance status of the API, plus the pause that the host sets (`isPaused`). */
 export type PropertyStatus = PropertyComplianceStatus | "Paused";
-/** What a property of Affitti lunghi is doing: `Rented` has a registered lease in force, `Free` has none. The interface works it out from the leases (LR-07). */
 export type LongRentPropertyStatus = "Rented" | "Free";
-/** The regime of a property for the tax year, as the interface works it out from what the host has chosen and confirmed (SR-FISC). */
 export type FiscalRegimeStatus = "Confirmed" | "ToConfirm" | "NotChosen";
-/** `OrgMemberStatus` (a member) and `OrgInvitationStatus` (an invitation) of the backend: the list of people shows both. */
 export type MemberStatus = "Active" | "Deactivated" | "Pending" | "Accepted" | "Revoked" | "Expired";
-/** Status of a rent installment: the one of the API, plus `Overdue` (not paid after its due date: the API says it with `isOverdue`). */
 export type RentStatus = RentInstallmentStatus | "Overdue";
 
 export const STATUS_DICTIONARY = {
@@ -105,7 +94,6 @@ export const STATUS_DICTIONARY = {
     Suspended: { tone: "danger", icon: "ban", next: "Active", need: true },
     Paused: { tone: "neutral", icon: "pause", next: "Active", need: true, derived: true },
   }),
-  /** A property of Affitti lunghi: let or free. A lease still being prepared does not make it let, a registered one does. */
   longRentProperty: defineKind<LongRentPropertyStatus>({
     Rented: { tone: "info", icon: "key", derived: true },
     Free: { tone: "neutral", icon: "circle-dashed", next: "Rented", need: true, derived: true },
@@ -169,7 +157,6 @@ export const STATUS_DICTIONARY = {
     Failed: { tone: "danger", icon: "alert-circle", next: "Paid", need: true },
     Cancelled: { tone: "neutral", icon: "ban" },
   }),
-  /** A payment of a booking (SR-04c), as the host reads it: money that came in, that is still to come, or that went back. */
   payment: defineKind<PaymentStatus>({
     Pending: { tone: "warning", icon: "clock" },
     Processing: { tone: "info", icon: "hourglass" },
@@ -203,9 +190,7 @@ export const STATUS_DICTIONARY = {
     Rifiutato: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     Errore: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     NotDue: { tone: "neutral", icon: "circle-dashed" },
-    // The guests are on the channel manager, which sends them (E20/F01/US01/T02): yellow and waiting for the receipt, never the green of a communication that is proven.
     EntrustedToChannelManager: { tone: "warning", icon: "hourglass", next: "Inviato", need: true },
-    // A guest could not be written to the channel manager: the host corrects the data or asks again; once every guest is on it the stay is entrusted.
     ChannelManagerWriteFailed: { tone: "danger", icon: "alert-circle", next: "EntrustedToChannelManager", need: true },
   }),
   /** The CIN of a property, as `GET /properties/cin-compliance` says it. The deadline and the penalties are the page's: they come from the backend. */
@@ -214,17 +199,11 @@ export const STATUS_DICTIONARY = {
     missing: { tone: "warning", icon: "alert-triangle" },
     invalid: { tone: "danger", icon: "alert-circle" },
   }),
-  /** The regime of a property for the tax year (SR-FISC): chosen and confirmed, detected but not yet confirmed, or not chosen. Never applied on its own. */
   fiscalRegime: defineKind<FiscalRegimeStatus>({
     Confirmed: { tone: "success", icon: "check-circle", derived: true },
     ToConfirm: { tone: "warning", icon: "hourglass", derived: true },
     NotChosen: { tone: "warning", icon: "circle-dashed", derived: true },
   }),
-  /**
-   * The content of a property on a channel of the channel manager (E02/F03/US01, NF-09): sent and waiting, accepted by the channel manager
-   * and waiting for the channel, published, to fix, or managed on the channel itself (the host edits it there). Green published, yellow
-   * while it is on its way, red to fix, grey when nothing is sent.
-   */
   channel: defineKind<ChannelPublishStatus>({
     Draft: { tone: "neutral", icon: "pencil" },
     Sending: { tone: "warning", icon: "send" },
@@ -233,13 +212,11 @@ export const STATUS_DICTIONARY = {
     ToFix: { tone: "danger", icon: "alert-circle" },
     ManagedOnChannel: { tone: "neutral", icon: "circle-dashed" },
   }),
-  /** A service of the catalog of the supplier (SP-06): a draft is seen only by its supplier, a paused one is off offer but kept. */
   serviceListing: defineKind<SupplierServiceStatus>({
     Draft: { tone: "neutral", icon: "pencil" },
     Active: { tone: "success", icon: "check-circle" },
     Paused: { tone: "warning", icon: "pause" },
   }),
-  /** The payment of a job in the earnings of the supplier (UI-14), as the server says it. An open set: a value the server adds later is shown with a generic word until it is here. */
   earning: defineKind<SupplierEarningState>({
     to_collect: { tone: "info", icon: "hourglass" },
     paid: { tone: "success", icon: "check-circle" },
@@ -251,13 +228,8 @@ export const STATUS_DICTIONARY = {
 } as const;
 
 export type StatusKind = keyof typeof STATUS_DICTIONARY;
-/** The states of a kind. */
 export type StatusOf<K extends StatusKind> = Extract<keyof (typeof STATUS_DICTIONARY)[K], string>;
 
-/**
- * The way forward of the kinds that have one, as the states a flow goes through. A state that is not on the path but is
- * part of it while it lasts (`PartiallySigned` is still "awaiting signature") has its place in `PIPELINE_STEP_OF`.
- */
 export const STATUS_PIPELINES: { [K in StatusKind]?: ReadonlyArray<StatusOf<K>> } = {
   booking: ["Pending", "Confirmed", "CheckedIn", "CheckedOut"],
   property: ["Pending", "Active"],
@@ -268,7 +240,6 @@ export const STATUS_PIPELINES: { [K in StatusKind]?: ReadonlyArray<StatusOf<K>> 
   checkin: ["Inviato", "InCompilazione", "Completo", "AlloggiatiInviato"],
 };
 
-/** Where a state that is not a step of its pipeline sits while it lasts. */
 export const PIPELINE_STEP_OF: { [K in StatusKind]?: { [S in StatusOf<K>]?: StatusOf<K> } } = {
   lease: { PartiallySigned: "AwaitingSignature", SentToProvider: "RegistrationPending" },
   member: { Accepted: "Active" },
@@ -279,7 +250,6 @@ export function isStatusKind(value: string): value is StatusKind {
   return Object.prototype.hasOwnProperty.call(STATUS_DICTIONARY, value);
 }
 
-/** The entry of a state, or `null` when the server sent a value this version of the app does not know. */
 export function getStatusDefinition(kind: StatusKind, status: string): StatusDefinition<string> | null {
   const kindDefinitions = STATUS_DICTIONARY[kind] as unknown as Record<string, StatusDefinition<string>>;
   return Object.prototype.hasOwnProperty.call(kindDefinitions, status) ? kindDefinitions[status] : null;
@@ -287,12 +257,10 @@ export function getStatusDefinition(kind: StatusKind, status: string): StatusDef
 
 export type StatusTextPart = "label" | "explain" | "need";
 
-/** Key of a text of the dictionary in the locale files. The supplier's own texts are under `supplier`. */
 export function statusTextKey(kind: StatusKind, status: string, part: StatusTextPart, perspective: StatusPerspective = "host"): string {
   return perspective === "supplier" ? `status.${kind}.${status}.supplier.${part}` : `status.${kind}.${status}.${part}`;
 }
 
-/** The status of a property to show: suspended first (it needs fixing), then the pause the host set, then the compliance status. */
 export function propertyStatus(property: { complianceStatus?: string | null; isPaused?: boolean; isActive?: boolean }): PropertyStatus {
   if (property.isActive === false) return "Pending";
   const compliance = property.complianceStatus;
@@ -301,13 +269,11 @@ export function propertyStatus(property: { complianceStatus?: string | null; isP
   return compliance === "Active" ? "Active" : "Pending";
 }
 
-/** The status of a rent installment to show: not paid after its due date is `Overdue`, whatever the API calls it. */
 export function rentStatus(installment: { status: RentInstallmentStatus; isOverdue?: boolean }): RentStatus {
   const open = installment.status === "Scheduled" || installment.status === "Failed";
   return installment.isOverdue && open ? "Overdue" : installment.status;
 }
 
-/** Index of the step of the pipeline a state is at, or -1 when it is off the path (cancelled, rejected...) or has no pipeline. */
 export function pipelineIndex(kind: StatusKind, status: string): number {
   const pipeline = STATUS_PIPELINES[kind] as ReadonlyArray<string> | undefined;
   if (!pipeline) return -1;

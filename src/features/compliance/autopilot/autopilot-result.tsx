@@ -12,11 +12,9 @@ const AI_NOT_ANSWERED = ['ai_unavailable', 'ai_budget_exhausted', 'ai_invalid_an
 
 interface ChatDraftRowProps {
   outcome: AutopilotOutcome;
-  /** The e-mail is on its way: the message is only for the host who wants to remind the guest another way. */
   optional: boolean;
 }
 
-/** A message ready for a guest: one tap opens WhatsApp or the messages app with the text written, and the text can be read and copied. */
 function ChatDraftRow({ outcome, optional }: ChatDraftRowProps) {
   const { t } = useTranslation();
   const chat = outcome.chat;
@@ -73,15 +71,9 @@ function ChatDraftRow({ outcome, optional }: ChatDraftRowProps) {
 
 interface AutopilotResultViewProps {
   result: AutopilotRunResult;
-  /** When the run ended, already written (HH:mm). */
   at: string;
 }
 
-/**
- * What the assistant did, in one sentence and then by part: the messages the host sends (with the buttons that open WhatsApp and the messages
- * app), what was done, what did not work and why. It says only what happened: a message not yet sent by the host is a message "ready", never
- * "sent".
- */
 export function AutopilotResultView({ result, at }: AutopilotResultViewProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;

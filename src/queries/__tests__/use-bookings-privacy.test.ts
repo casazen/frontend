@@ -22,7 +22,6 @@ function setup() {
   return { queryClient, wrapper };
 }
 
-/** What a refused call carries: the answer, and the request that was sent, with the note of the host in its body and the access token in its headers. */
 function refusal(): AxiosError {
   const config = {
     headers: new AxiosHeaders({ Authorization: TOKEN }),
@@ -37,7 +36,6 @@ function refusal(): AxiosError {
   });
 }
 
-/** Runs a mutation that the server refuses, and checks what the mutation cache keeps of it while the page is there and after it is gone. */
 async function expectTheAnswerAndNotTheRequestIsKept<V>(hook: () => { mutateAsync: (variables: V) => Promise<unknown> }, variables: V) {
   const { queryClient, wrapper } = setup();
   const { result, unmount } = renderHook(hook, { wrapper });
@@ -47,10 +45,8 @@ async function expectTheAnswerAndNotTheRequestIsKept<V>(hook: () => { mutateAsyn
   });
 
   const kept = queryClient.getMutationCache().getAll()[0]?.state.error as AxiosError;
-  // What a screen turns into words is still there...
   expect(kept.response?.status).toBe(422);
   expect(kept.response?.data).toEqual({ status: 422, code: 'booking_settlement_failed' });
-  // ...and the request that failed is not: not the note, not the token.
   expect(kept.config?.data).toBeUndefined();
   expect(JSON.stringify(kept.config ?? {})).not.toContain(NOTE);
   expect(JSON.stringify(kept.config ?? {})).not.toContain('secret');
@@ -59,11 +55,6 @@ async function expectTheAnswerAndNotTheRequestIsKept<V>(hook: () => { mutateAsyn
   await waitFor(() => expect(queryClient.getMutationCache().getAll()).toHaveLength(0));
 }
 
-/**
- * Privacy (E08/F03/US02): a mutation keeps what it was given (the notes of the host, the ages of the minors, the reason of a cancellation) and, when it fails, the request that
- * was sent (the same body, and the access token of the call) in the mutation cache for five minutes by default, after the page that made it is gone. None of that may stay in the
- * browser's memory: the mutation is dropped as soon as nothing observes it, and a refusal is kept with what a screen reads (the status and the answer) and nothing of the request.
- */
 describe('the mutations of the edit and of the cancellation keep nothing once the page is gone', () => {
   const edit = { checkInDate: '2027-10-01', checkOutDate: '2027-10-06', numberOfGuests: 2, specialRequests: NOTE };
 
@@ -99,10 +90,8 @@ describe('the mutations of the edit and of the cancellation keep nothing once th
     await act(async () => {
       await result.current.mutateAsync({ id: 'b-1', data: edit });
     });
-    // While the page that saved is there, the mutation is its own...
     expect(queryClient.getMutationCache().getAll()[0]?.state.variables).toMatchObject({ data: { specialRequests: NOTE } });
 
-    // ...and as soon as it is gone nothing of it is left to read.
     unmount();
     await waitFor(() => expect(queryClient.getMutationCache().getAll()).toHaveLength(0));
   });

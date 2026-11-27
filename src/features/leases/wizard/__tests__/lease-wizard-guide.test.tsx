@@ -37,7 +37,6 @@ const RULES: LongRentRules = {
   transitoryBandFromInhabitants: 10000,
 };
 
-/** A contract made in CasaZen with every data step done and the review not confirmed yet: every step can be opened. */
 const OPEN_FLOW: LeaseDraftFlow = {
   steps: [
     { step: 1, state: 'Done', needs: [] },
@@ -102,12 +101,10 @@ describe('LeaseWizard — the head of every step and the line for what is missin
     renderWizard(step);
 
     const head = screen.getByTestId('lease-wizard-header');
-    // «Passo 3 di 7»: the steps that apply to a contract made in CasaZen are seven (the model has no screen).
     expect(within(head).getByTestId('lease-wizard-position')).toHaveTextContent(`Passo ${step} di 7`);
     expect(within(head).getByRole('heading', { level: 2 })).toHaveTextContent(title);
     expect(within(head).getByTestId('lease-wizard-in-hand')).toHaveTextContent(i18n.t('leaseWizardGuide.header.inHand'));
     expect(screen.getByTestId('lease-wizard-next')).toHaveTextContent(button);
-    // The quiet second gesture is there, and it is not the strong one.
     expect(screen.getByTestId('lease-wizard-save')).toHaveTextContent('Salva e continua dopo');
   });
 
@@ -126,7 +123,6 @@ describe('LeaseWizard — the head of every step and the line for what is missin
     vi.mocked(leasesApi.saveDraft).mockResolvedValue({ version: 5, flow: missing, landlordIds: ['landlord-1'], tenantIds: ['tenant-1'] });
     renderWizard(3, { ...DRAFT, values: { ...DRAFT.values, monthlyRent: null }, flow: missing });
 
-    // Before pressing anything the line is already there: one sentence, never a list.
     const note = screen.getByTestId('lease-wizard-remaining');
     expect(note).toHaveTextContent('Manca: il canone mensile');
     expect(screen.getByTestId('lease-wizard-next')).toBeEnabled();
@@ -136,7 +132,6 @@ describe('LeaseWizard — the head of every step and the line for what is missin
     await waitFor(() => expect(document.getElementById('lw-monthlyRent')).toHaveFocus());
     await waitFor(() => expect(screen.getByTestId('lease-wizard-remaining')).toHaveAttribute('data-pressed', 'true'));
     expect(screen.getByTestId('lease-wizard-remaining')).toHaveTextContent('Manca: il canone mensile');
-    // The wizard did not go on, and nothing says «errore»: no alert but the sentence itself.
     expect(screen.getByTestId('lease-wizard-position')).toHaveTextContent('Passo 3 di 7');
     expect(screen.queryByTestId('lease-wizard-blocked')).not.toBeInTheDocument();
   });
@@ -165,11 +160,9 @@ describe('ReviewStep — the contract told in sentences before its data (LR-WIZ-
     const story = screen.getByTestId('lease-review-story');
     expect(story).toHaveTextContent('Affitti Casa Rossi a Giulia Verdi.');
     expect(story).toHaveTextContent('Dal 1 dicembre 2026 per 4 anni, fino al 30 novembre 2030.');
-    // The Italian way of writing 1300 has no dot of the thousands (a dot would not be wrong either).
     expect(story).toHaveTextContent(/650 € al mese, con 1\.?300 € di deposito\./);
     expect(story).toHaveTextContent('Canone libero (4+4), con la cedolare secca.');
 
-    // The data come after the story, in four groups, each one edited at its own step.
     const data = screen.getByTestId('lease-review-data');
     expect(story.compareDocumentPosition(data) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const edits = within(data).getAllByRole('link', { name: /^Modifica:/ });

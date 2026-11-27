@@ -8,14 +8,8 @@ import { TAB_SELECT_CLASS, tabLinkClass } from './tab-styles';
 
 export interface RouteTabItem {
   label: string;
-  /** Where the tab leads: a path of the app, with its query if it has one (`/app/short-rent/payments`, `/report?tab=canali`). */
   href: string;
-  /** A number beside the name: things waiting in that section. Nothing when it is 0 or missing. */
   count?: number;
-  /**
-   * What the number counts, for a screen reader, **with the number**: "2 da incassare". With it the number itself is hidden from
-   * assistive technology (the label says it once); without it only the number is read.
-   */
   countLabel?: string;
   /** How the number weighs: `warning` for what needs an answer, `danger` for what failed. Without it, the accent of the app. */
   tone?: TabTone;
@@ -30,18 +24,14 @@ export interface RouteTabItem {
 }
 
 export interface RouteTabsProps {
-  /** The name of the group for a screen reader ("Sezioni di Prenotazioni"). */
   label: string;
   items: readonly RouteTabItem[];
   className?: string;
-  /** Test id of the menu that replaces the tabs on a phone. */
   selectTestId?: string;
 }
 
-/** The path of an address without its trailing slash (`/` stays `/`). */
 const trimmed = (pathname: string) => pathname.replace(/\/+$/, '') || '/';
 
-/** The tab the address is on: the longest path that is the address or contains it, then the one that asks for most of the query. */
 function currentTab(items: readonly RouteTabItem[], pathname: string, search: string): number {
   if (items.some((item) => item.current !== undefined)) return items.findIndex((item) => item.current === true);
 
@@ -99,7 +89,6 @@ export function RouteTabs({ label, items, className, selectTestId }: RouteTabsPr
             data-testid={selectTestId}
             onChange={(event) => void navigate(event.target.value)}
           >
-            {/* The page is none of the sections: the menu does not pretend to be on the first one. */}
             {current < 0 ? <option value="" disabled /> : null}
             {items.map((item) => (
               <option key={item.href} value={item.href}>

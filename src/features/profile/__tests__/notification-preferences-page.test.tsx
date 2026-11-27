@@ -19,7 +19,6 @@ vi.mock('@/api/notification-preferences.api', () => ({ notificationPreferencesAp
 const LEGAL_SENTENCE = 'Le scadenze di legge non si possono spegnere del tutto: lascia attivo almeno un canale.';
 const SAVED_TOAST = { id: 'notification-preferences-saved' };
 
-/** The API as a stand-in: it keeps the settings of the user, and a save changes them the way the real one does. */
 let server: NotificationPreferences;
 
 function applySave(request: SaveNotificationPreferencesRequest): NotificationPreferences {
@@ -44,7 +43,6 @@ function problem(status: number, data: Record<string, unknown>) {
   });
 }
 
-/** A client with the defaults of the app (`src/lib/query-client.ts`): what it read is fresh for 5 minutes and is not read again on mount. */
 function appLikeClient() {
   return new QueryClient({
     defaultOptions: {
@@ -92,11 +90,9 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       expect(screen.getByText('Nuovo messaggio di un ospite')).toBeInTheDocument();
       expect(screen.getByText('Scadenza di legge')).toBeInTheDocument();
 
-      // A new guest message is a push on the phone and the counter of the bell (AC-NF65-2), and nothing else.
       expect(switchOf('NewGuestMessage', 'MobilePush')).toBeChecked();
       expect(switchOf('NewGuestMessage', 'CounterOnly')).toBeChecked();
       expect(switchOf('NewGuestMessage', 'Email')).not.toBeChecked();
-      // A legal deadline adds the email; a cancellation is the counter only.
       expect(switchOf('LegalDeadline', 'Email')).toBeChecked();
       expect(switchOf('BookingCancelled', 'CounterOnly')).toBeChecked();
       expect(switchOf('BookingCancelled', 'MobilePush')).not.toBeChecked();
@@ -129,7 +125,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
         expect(toggle).not.toBeChecked();
         expect(toggle).toHaveAccessibleDescription('Non ancora disponibile');
       }
-      // The others are free.
       expect(switchOf('NewBooking', 'Email')).toBeEnabled();
     });
 
@@ -141,9 +136,7 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       fireEvent.click(switchOf('NewBooking', 'Email'));
 
       await waitFor(() => expect(notificationPreferencesApi.save).toHaveBeenCalledTimes(1));
-      // Per event and channel (AC-NF65-1): only the channels of this event, in the order of the columns; the other events are not in the request.
       expect(lastSave()).toEqual({ events: [{ eventType: 'NewBooking', channels: ['MobilePush', 'Email', 'CounterOnly'] }] });
-      // The settings are read again and the row is no longer the default; the others still are.
       await waitFor(() => expect(notificationPreferencesApi.get).toHaveBeenCalledTimes(2));
       await waitFor(() => expect(screen.queryByTestId('notification-default-NewBooking')).not.toBeInTheDocument());
       expect(switchOf('NewBooking', 'Email')).toBeChecked();
@@ -164,7 +157,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
 
       fireEvent.click(switchOf('NewBooking', 'Email'));
 
-      // The server has not answered: the row already shows what is being saved.
       await waitFor(() => expect(switchOf('NewBooking', 'Email')).toBeChecked());
       expect(screen.getByTestId('notification-row-NewBooking')).toHaveAttribute('aria-busy', 'true');
       finish();
@@ -184,13 +176,11 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       renderPage();
       await screen.findByTestId('notification-table');
 
-      // A new booking is a push and the bell: the email goes on, and before the server has answered the push goes off.
       fireEvent.click(switchOf('NewBooking', 'Email'));
       await waitFor(() => expect(switchOf('NewBooking', 'Email')).toBeChecked());
       fireEvent.click(switchOf('NewBooking', 'MobilePush'));
       await waitFor(() => expect(switchOf('NewBooking', 'MobilePush')).not.toBeChecked());
 
-      // The second request starts from the first one (the email is still in it), not from what the server had before the first.
       expect(notificationPreferencesApi.save).toHaveBeenCalledTimes(2);
       expect(vi.mocked(notificationPreferencesApi.save).mock.calls.map(([request]) => request)).toEqual([
         { events: [{ eventType: 'NewBooking', channels: ['MobilePush', 'Email', 'CounterOnly'] }] },
@@ -230,7 +220,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       );
       await waitFor(() => expect(switchOf('NewBooking', 'Email')).not.toBeChecked());
       expect(toast.success).not.toHaveBeenCalled();
-      // Nothing changed on the server, so the settings were not read again.
       expect(notificationPreferencesApi.get).toHaveBeenCalledTimes(1);
       expect(screen.getByTestId('notification-default-NewBooking')).toBeInTheDocument();
     });
@@ -251,10 +240,8 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
     it('legalDeadline_EverySwitchOfTheRowAnsweredUntilOneChannelIsLeft_ThenThatOneIsLockedWithTheReason', async () => {
       renderPage();
       await screen.findByTestId('notification-table');
-      // The rule is written in the row from the start, not only when it blocks.
       expect(within(screen.getByTestId('notification-row-LegalDeadline')).getByText(LEGAL_SENTENCE)).toBeInTheDocument();
 
-      // Three channels: any of them can go.
       fireEvent.click(switchOf('LegalDeadline', 'MobilePush'));
       await waitFor(() => expect(lastSave()).toEqual({ events: [{ eventType: 'LegalDeadline', channels: ['Email', 'CounterOnly'] }] }));
       await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
@@ -265,7 +252,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       await waitFor(() => expect(lastSave()).toEqual({ events: [{ eventType: 'LegalDeadline', channels: ['CounterOnly'] }] }));
       await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(2));
 
-      // One is left: it stays on, cannot be moved, and the sentence that says why is its description.
       const last = switchOf('LegalDeadline', 'CounterOnly');
       await waitFor(() => expect(last).toBeDisabled());
       expect(last).toBeChecked();
@@ -274,7 +260,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       fireEvent.click(last);
       expect(notificationPreferencesApi.save).toHaveBeenCalledTimes(saves);
 
-      // The others of the row can still be switched on, and no save ever left the legal deadline without a channel.
       expect(switchOf('LegalDeadline', 'Email')).toBeEnabled();
       for (const [request] of vi.mocked(notificationPreferencesApi.save).mock.calls) {
         for (const event of request.events ?? []) expect(event.channels.length).toBeGreaterThan(0);
@@ -292,20 +277,17 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       renderPage();
       await screen.findByTestId('notification-table');
 
-      // Three channels. The push goes off, then the email, and the server has answered neither.
       fireEvent.click(switchOf('LegalDeadline', 'MobilePush'));
       await waitFor(() => expect(switchOf('LegalDeadline', 'MobilePush')).not.toBeChecked());
       fireEvent.click(switchOf('LegalDeadline', 'Email'));
       await waitFor(() => expect(switchOf('LegalDeadline', 'Email')).not.toBeChecked());
 
-      // The row is built on what is being saved, so the bell is already the last channel: locked, on, with the sentence that says why.
       const last = switchOf('LegalDeadline', 'CounterOnly');
       expect(last).toBeDisabled();
       expect(last).toBeChecked();
       expect(last).toHaveAccessibleDescription(LEGAL_SENTENCE);
       fireEvent.click(last);
 
-      // The second request carries both changes, the third click sends nothing, and no request is empty.
       expect(notificationPreferencesApi.save).toHaveBeenCalledTimes(2);
       const requests = vi.mocked(notificationPreferencesApi.save).mock.calls.map(([request]) => request);
       expect(requests).toEqual([
@@ -330,7 +312,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
 
       expect(switchOf('LegalDeadline', 'Email')).toBeDisabled();
       expect(switchOf('LegalDeadline', 'Email')).toBeChecked();
-      // Any other kind of event with one channel is not.
       expect(switchOf('SyncError', 'CounterOnly')).toBeEnabled();
     });
   });
@@ -346,7 +327,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       expect(start).toHaveValue('22:00');
       expect(end).toHaveValue('08:00');
       expect(save).toBeDisabled();
-      // The page says that a legal deadline still alerts, and that the times are the Italian ones.
       expect(screen.getByTestId('quiet-hours-legal')).toHaveTextContent('Le scadenze di legge ti avvisano comunque, anche in queste ore.');
       expect(screen.getByText(/Gli orari sono quelli italiani/)).toBeInTheDocument();
 
@@ -356,7 +336,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
 
       await waitFor(() => expect(notificationPreferencesApi.save).toHaveBeenCalledTimes(1));
       expect(lastSave()).toEqual({ quietHours: { start: '23:30:00', end: '08:00:00' } });
-      // Saved: the fields show what the server has, and there is nothing left to save.
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Preferenze salvate.', SAVED_TOAST));
       await waitFor(() => expect(screen.getByTestId('quiet-hours-save')).toBeDisabled());
       expect(screen.getByLabelText('Dalle')).toHaveValue('23:30');
@@ -438,7 +417,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       expect(notificationPreferencesApi.get).toHaveBeenCalledTimes(1);
       expect(switchOf('NewBooking', 'MobilePush')).toBeChecked();
 
-      // A choice is changed on another device, and the person comes back to this window (TanStack Query listens to `visibilitychange`).
       server = withChosen(server, 'NewBooking', ['CounterOnly']);
       document.dispatchEvent(new Event('visibilitychange', { bubbles: true }));
 
@@ -493,7 +471,6 @@ describe('NotificationPreferencesPage (E05/F03/US02, NF-65)', () => {
       const card = screen.getByTestId('notification-row-LegalDeadline');
       expect(within(card).getByText(LEGAL_SENTENCE)).toBeInTheDocument();
       expect(within(card).getByRole('group', { name: 'Scadenza di legge' })).toBeInTheDocument();
-      // Browser push says why it is off, in each card.
       expect(switchOf('NewBooking', 'BrowserPush')).toBeDisabled();
       expect(switchOf('NewBooking', 'BrowserPush')).toHaveAccessibleDescription('Non ancora disponibile');
 

@@ -1,7 +1,3 @@
-/**
- * Drawing of the neighbourhood maps (DB-19a): turns the generated geometry into SVG strings. The SVG is decorative
- * (`aria-hidden`): whatever it shows is also available as text in the page that uses it.
- */
 import { insetConvex, lineD, polyCentroid, polyD, smoothD, clipRect, type Poly, type Pt } from '../geometry';
 import { clamp, esc, num } from '../numeric';
 import { FONT, HALO, INK, textW } from '../style';
@@ -48,7 +44,6 @@ const polyP = (poly: Poly, c: LocalCtx): string => polyD(poly.map(c.P), 1);
 const lineP = (pts: Pt[], c: LocalCtx): string => lineD(pts.map(c.P), 1);
 const smoothP = (pts: Pt[], c: LocalCtx, closed = false): string => smoothD(pts.map(c.P), closed, 1);
 
-/** Does the polygon touch the visible band of the drawing? (whatever is outside the frame is dropped) */
 function bandHit(p: readonly Pt[]): boolean {
   let x0 = Infinity;
   let x1 = -Infinity;
@@ -63,7 +58,6 @@ function bandHit(p: readonly Pt[]): boolean {
   return x1 > -3 && x0 < UW + 3 && y1 > VY0 - 3 && y0 < VY1 + 3;
 }
 
-/** Blocks of one tone, shrunk to leave the lanes. */
 function blocksP(blocks: readonly Block[], tone: number, c: LocalCtx, laneHalf: number, dec = 1): string {
   let d = '';
   for (const b of blocks) {
@@ -74,7 +68,6 @@ function blocksP(blocks: readonly Block[], tone: number, c: LocalCtx, laneHalf: 
   return d;
 }
 
-/** Coloured blocks; the «lane» is a light outline painted before the fill (paint-order). */
 function blockLayer(blocks: readonly Block[], tones: number[], colors: readonly string[], c: LocalCtx, laneHalf: number, lane: string, dec = 1): string {
   const out: string[] = [];
   for (const t of tones) {
@@ -85,7 +78,6 @@ function blockLayer(blocks: readonly Block[], tones: number[], colors: readonly 
   return lane ? `<g stroke="${lane}" stroke-width="${num(laneHalf * 4)}" stroke-linejoin="round" paint-order="stroke">${out.join('')}</g>` : out.join('');
 }
 
-/** Main streets of the town: the first cuts of the split, wider than the lanes. */
 function cutLayer(cuts: readonly Cut[], c: LocalCtx, ks: number, color: string): string {
   const lv: string[][] = [[], [], []];
   for (const q of cuts) {
@@ -103,7 +95,6 @@ const plazaLayer = (polys: readonly Poly[], c: LocalCtx): string => {
   return d ? `<path d="${d}" fill="${PAL.plaza}" stroke="${PAL.plazaEdge}" stroke-width=".9" stroke-linejoin="round"/>` : '';
 };
 
-/** A road with its casing: the path is defined once in the defs and used twice. */
 function roadLayer(id: string, key: string, d: string, casing: string, caseW: number, fill: string, fillW: number): { def: string; use: string } {
   if (!d) return { def: '', use: '' };
   return {
@@ -117,7 +108,6 @@ const treePattern = (id: string, key: string, base: string, dot: string, step: n
 const stripePattern = (id: string, key: string, base: string, line: string, step: number, w: number, rot: number): string =>
   `<pattern id="${id}${key}" width="${step}" height="${step}" patternUnits="userSpaceOnUse" patternTransform="rotate(${rot})"><rect width="${step}" height="${step}" fill="${base}"/><rect width="${step}" height="${w}" fill="${line}"/></pattern>`;
 
-/* ----- coast ----- */
 export function drawCoast(d: CoastData, rotDeg: number, c: LocalCtx, id: string): Drawn {
   const { W, H, ks } = c;
   const defs: string[] = [];
@@ -125,23 +115,19 @@ export function drawCoast(d: CoastData, rotDeg: number, c: LocalCtx, id: string)
   const lh = (1.9 * ks) / 2 + 0.2;
   out.push(`<rect width="${num(W)}" height="${num(H)}" fill="${PAL.paper2}"/>`);
   out.push(blockLayer(d.newBlocks, [0, 1], PAL.newBlocks, c, (2.2 * ks) / 2, '', 0));
-  // park with trees
   defs.push(treePattern(id, 't', PAL.park, '#bfca94', 7, 1.2));
   defs.push(`<path id="${id}pk" d="${smoothP(d.park, c, true)}"/>`);
   out.push(`<use href="#${id}pk" fill="${PAL.park}" stroke="${PAL.parkEdge}" stroke-width="1"/><use href="#${id}pk" fill="url(#${id}t)"/>`);
-  // railway and main road behind the town
   out.push(`<g fill="none" stroke="#b8ab94" stroke-linejoin="round"><path d="${smoothP(d.rail, c)}" stroke-width="${num(1.3 * ks)}"/><path d="${smoothP(d.rail, c)}" stroke-width="${num(4.6 * ks)}" stroke-dasharray="1.1 5.4"/></g>`);
   const rd = roadLayer(id, 'rd', smoothP(d.road, c), PAL.roadCase, 6.6 * ks, PAL.road, 4.6 * ks);
   defs.push(rd.def);
   out.push(rd.use);
-  // old town: blocks, main streets, squares
   out.push(blockLayer(d.blocks, [0, 1, 2, 3], PAL.blocks, c, lh, PAL.lane));
   out.push(cutLayer(d.cuts, c, ks, PAL.lane));
   out.push(plazaLayer(d.plazas, c));
   const via = roadLayer(id, 'vi', smoothP(d.via, c), PAL.laneCase, 5.2 * ks, PAL.lane, 3.6 * ks);
   defs.push(via.def);
   out.push(via.use);
-  // sea
   const seaD = polyD(clipRect(d.sea.map(c.P), -24, -24, W + 24, H + 24), 1);
   defs.push(`<path id="${id}cl" d="${seaD}"/>`);
   defs.push(`<linearGradient id="${id}w" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfe8eb"/><stop offset="1" stop-color="#9ecbd5"/></linearGradient>`);
@@ -162,7 +148,6 @@ export function drawCoast(d: CoastData, rotDeg: number, c: LocalCtx, id: string)
   return { defs, out };
 }
 
-/* ----- historic centre ----- */
 export function drawHistoric(d: HistoricData, c: LocalCtx, id: string): Drawn {
   const { W, H, ks } = c;
   const defs: string[] = [];
@@ -175,17 +160,14 @@ export function drawHistoric(d: HistoricData, c: LocalCtx, id: string): Drawn {
     defs.push(`<path id="${id}pk${i}" d="${smoothP(pk, c, true)}"/>`);
     out.push(`<use href="#${id}pk${i}" fill="${PAL.park}" stroke="${PAL.parkEdge}" stroke-width="1"/><use href="#${id}pk${i}" fill="url(#${id}t)"/>`);
   });
-  // radial roads and ring road (avenues along the old walls)
   const mainD = d.radials.map((r) => smoothP(r, c)).join('') + smoothP(d.ring, c, true);
   const rd = roadLayer(id, 'rd', mainD, PAL.roadCase, 6.8 * ks, PAL.road, 4.8 * ks);
   defs.push(rd.def);
   out.push(rd.use);
-  // moat and castle
   out.push(`<path d="${polyP(d.castle.moat, c)}" fill="#dbe8e2" stroke="#c4d5cd" stroke-width="1"/>`);
   out.push(blockLayer(d.blocks, [0, 1, 2], PAL.blocks, c, lh, PAL.lane));
   out.push(cutLayer(d.cuts, c, ks, PAL.lane));
   out.push(plazaLayer(d.plazas, c));
-  // the big square hosts the Roman amphitheatre: a smaller ring, just hinted
   const pz = d.plazas[0];
   const pcen = polyCentroid(pz);
   out.push(`<path d="${polyP(pz.map((q): Pt => [pcen[0] + (q[0] - pcen[0]) * 0.6, pcen[1] + (q[1] - pcen[1]) * 0.6]), c)}" fill="none" stroke="#d9c9a6" stroke-width="${num(0.9 * ks)}"/>`);
@@ -206,7 +188,6 @@ export function drawHistoric(d: HistoricData, c: LocalCtx, id: string): Drawn {
   return { defs, out };
 }
 
-/* ----- countryside ----- */
 export function drawCountry(d: CountryData, c: LocalCtx, id: string): Drawn {
   const { W, H, ks } = c;
   const defs: string[] = [];
@@ -231,20 +212,17 @@ export function drawCountry(d: CountryData, c: LocalCtx, id: string): Drawn {
   });
   out.push(`<g stroke="#f7f1e4" stroke-width="${num(2 * ks)}" stroke-linejoin="round">${fieldUse.join('')}</g>`);
   out.push(`<g fill="none" stroke="#b9ab89" stroke-width="${num(1.25 * ks)}" stroke-dasharray="0.01 ${num(3.1 * ks)}" stroke-linecap="round">${wallUse.join('')}</g>`);
-  // hills of the town
   d.hills.forEach((h, i) => out.push(`<path d="${smoothP(h, c, true)}" fill="#f6efe0" fill-opacity="${[0.4, 0.45, 0.55][i]}" stroke="#e4d9c0" stroke-opacity=".7" stroke-width=".8"/>`));
   out.push(`<path d="${polyP(d.townGround, c)}" fill="${PAL.lane}" stroke="${PAL.laneCase}" stroke-width="1"/>`);
   out.push(blockLayer(d.townBlocks, [0, 1, 2, 3], PAL.whiteBlocks, c, (1.9 * ks) / 2 + 0.1, PAL.lane));
   out.push(cutLayer(d.townCuts, c, ks * 0.85, PAL.lane));
   out.push(plazaLayer([d.townPlaza], c));
-  // provincial road and tracks
   const rd = roadLayer(id, 'rd', smoothP(d.road, c), PAL.roadCase, 6.6 * ks, PAL.road, 4.6 * ks);
   defs.push(rd.def);
   out.push(rd.use);
   const tr = roadLayer(id, 'tr', d.tracks.map((t) => lineP(t, c)).join(''), '#dccfb3', 3.4 * ks, PAL.lane, 2 * ks);
   defs.push(tr.def);
   out.push(tr.use);
-  // farms and trulli seen from above
   const circ = (t: { c: Pt; r: number }): string => {
     const q = c.P(t.c);
     const r = t.r * c.sc;
@@ -255,7 +233,6 @@ export function drawCountry(d: CountryData, c: LocalCtx, id: string): Drawn {
   return { defs, out };
 }
 
-/** Labels given by the caller: text with a halo, position in percent of the frame. */
 export interface MapLabel {
   text: string;
   x: number;

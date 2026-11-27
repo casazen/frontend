@@ -8,20 +8,12 @@ import type { GuestMarketing, GuestMarketingChange, GuestMarketingResend } from 
 
 const GUEST_MARKETING_QUERY = 'guest-marketing';
 
-/** 409 of the change: the version of the consent text the page showed is not the current one. */
 const CONSENT_OUTDATED_CODE = 'guest_marketing_consent_outdated';
 
 function marketingKey(session: GuestSession, code: string) {
   return [GUEST_MARKETING_QUERY, code, session.expiresAt] as const;
 }
 
-/**
- * The marketing choices of the guest of the booking, per channel (E07/F04/US02/T03, NF-90). Read when the section opens and when the guest
- * comes back to the tab: the confirmation of an e-mail happens in another window. The masked address and number are not kept once the
- * section is gone (`gcTime: 0`), so nothing of them outlives the guest's session in this browser. A 401 means the session ended: the
- * booking is read again, which finds it out and sends the guest back to the form. A 404 means the booking has no choices to show: the
- * section hides itself.
- */
 export function useGuestMarketing(session: GuestSession, code: string) {
   const queryClient = useQueryClient();
   return useQuery({

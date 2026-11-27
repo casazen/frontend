@@ -30,7 +30,6 @@ interface FiscalFocusBlockProps {
   focus: FiscalFocus;
 }
 
-/** The one highlighted block of the page: the next thing to do about the regime of the year, or that nothing is left. */
 function FiscalFocusBlock({ snapshot, focus }: FiscalFocusBlockProps) {
   const { t } = useTranslation();
   const reports = { label: t('fiscal.reports.link'), href: REPORTS_PATH, testId: 'fiscal-focus-cta' };
@@ -71,7 +70,6 @@ interface FiscalOverviewProps {
   onAssign: (propertyId: string, regime: StrFiscalRegime) => void;
 }
 
-/** What the page shows once the regime of the year is loaded: the block with the next thing to do, then one row per property. */
 function FiscalOverview({ snapshot, canWrite, pending, onAssign }: FiscalOverviewProps) {
   const { t } = useTranslation();
 
@@ -80,7 +78,6 @@ function FiscalOverview({ snapshot, canWrite, pending, onAssign }: FiscalOvervie
       <FocusBlock
         title={t('fiscal.empty.title')}
         body={t('fiscal.empty.description')}
-        // Whoever may not add a property goes to the list of them: the button never leads where the guard says no.
         primary={
           canWrite
             ? { label: t('fiscal.empty.action'), href: `${PROPERTIES_PATH}/create`, testId: 'fiscal-empty-cta' }
@@ -134,8 +131,6 @@ export function FiscalDashboardPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const canWrite = hasPermission('short-rent', 'property.write');
-  // The page of the fiscal documents is offered only where it exists for this person: its route is in the manifest, its flags are on and the caller holds what it asks.
-  // With the flags off (the default) the page is as it was.
   const { flags } = useFeatureFlags();
   const documentsEntry = getManifestEntry(FISCAL_DOCUMENTS_PATH);
   const canOpenDocuments = documentsEntry !== undefined && isEntryFeatureEnabled(documentsEntry, flags) && hasEntryPermission(documentsEntry, hasPermission);
@@ -169,7 +164,6 @@ export function FiscalDashboardPage() {
         />
 
         {isError && !data ? (
-          // An API error is never shown as "no properties".
           <ErrorState title={t('fiscal.loadError')} error={error} onRetry={() => void refetch()} testId="fiscal-dashboard-error" />
         ) : isLoading ? (
           <div data-testid="fiscal-loading" className="space-y-6">
@@ -180,7 +174,6 @@ export function FiscalDashboardPage() {
           <FiscalOverview snapshot={data} canWrite={canWrite} pending={assign.isPending} onAssign={assignRegime} />
         ) : null}
 
-        {/* The fiscal documents (E06/F03/US04/T01): a quiet section that leads to the list of the documents CasaZen issued and of the ones of the channel manager. */}
         {canOpenDocuments ? (
           <PlainSection
             title={t('fiscalDocuments.list.title')}

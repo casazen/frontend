@@ -6,27 +6,21 @@ export interface SupplierProfile {
   phone: string;
   email: string;
   categories: string[];
-  /** Comuni written as text (before the official list, or while it is not imported): shown as written. */
   comuni: string[];
-  /** ISTAT codes of the comuni chosen from the official list (SU-04). */
   comuneIstatCodes?: string[];
-  /** The chosen comuni with name, province and region; a stored code not in the list is only in `comuneIstatCodes`. */
   operatingComuni?: import('@/types/comune.types').Comune[];
   bio?: string | null;
   photoUrls: string[];
   tosAcceptedAt?: string | null;
 }
 
-/** Ids of the five activation wizard steps, in order (SU-05). */
 export const ACTIVATION_STEP_IDS = ['identity', 'services', 'showcase', 'profile', 'terms'] as const;
 export type ActivationStepId = (typeof ACTIVATION_STEP_IDS)[number];
 
 export interface ActivationStep {
   id: ActivationStepId;
   status: 'completed' | 'pending';
-  /** Stable code of the first missing requirement (`categories_missing`, ...), null when the step is complete. */
   blocker?: string | null;
-  /** False for a step that never blocks the activation (showcase photos). */
   required: boolean;
 }
 
@@ -34,15 +28,12 @@ export interface SupplierTos {
   currentVersion: string;
   acceptedVersion?: string | null;
   acceptedAt?: string | null;
-  /** The supplier accepted a version other than the current one (or before versions were recorded). */
   reacceptanceRequired: boolean;
-  /** Take, complete and reject are refused until the current version is accepted. */
   blocksActions: boolean;
 }
 
 export interface ActivationStatus {
   status: string;
-  /** Step number (1-5) saved by the server: the wizard resumes there on any device. */
   currentStep: number;
   steps: ActivationStep[];
   tos: SupplierTos;
@@ -55,23 +46,12 @@ export interface SupplierInboxResponse {
   pageSize: number;
 }
 
-/**
- * `status` of `GET /supplier/inbox` (SU-08): `open` (waiting, taken, in progress), `history` (completed, paid,
- * rejected), `all`, or one status.
- */
 type SupplierInboxStatus = 'open' | 'history' | 'all' | import('@/types/service-request').ServiceRequestStatus;
 
-/**
- * `tab` of `GET /supplier/inbox` (SP-04e): the console's own way to pick the requests, with its own order. `da-rispondere` still
- * has to be answered, `in-attesa` waits for the customer, `programmate` is taken or in progress, `da-incassare` is completed and not
- * paid, `archivio` is paid, rejected or cancelled.
- */
 export type SupplierInboxTab = 'da-rispondere' | 'in-attesa' | 'programmate' | 'da-incassare' | 'archivio';
 
-/** `when` of `GET /supplier/inbox`: the day of the job is today, in the next 7 days or this month (Europe/Rome). */
 export type SupplierInboxWhen = 'oggi' | 'settimana' | 'mese';
 
-/** `source` of `GET /supplier/inbox`: where the request comes from, a host of CasaZen or a customer of the public showcase. */
 export type SupplierInboxSource = 'casazen' | 'showcase';
 
 /**
@@ -89,30 +69,22 @@ export interface SupplierInboxParams {
   when?: SupplierInboxWhen;
   from?: string;
   to?: string;
-  /** Only the requests of one customer (a host or a private customer of the showcase): the `id` of `GET /supplier/clients` (SP-16b). */
   clientId?: string;
   page?: number;
   pageSize?: number;
 }
 
-/** `GET /supplier/inbox/counts` (SP-04e): the numbers of the tabs, computed with the same rules as the lists. */
 export interface SupplierInboxCounts {
   toAnswer: number;
   awaitingCustomer: number;
   scheduled: number;
   toCollect: number;
   archive: number;
-  /** Payments asked for that are late and still owed. */
   paymentsLate: number;
 }
 
-/** The most requests `POST /supplier/inbox/accept` takes in one call (SP-04e). */
 export const ACCEPT_REQUESTS_MAX = 20;
 
-/**
- * One request of `POST /supplier/inbox/accept`: taken (`accepted`, with the `status` it reached) or not (`code` and the localized `message`
- * of the server: the request is no longer new, changed meanwhile, overlaps a job already accepted, the supplier is suspended...).
- */
 interface AcceptSupplierRequestResult {
   id: string;
   accepted: boolean;
@@ -121,7 +93,6 @@ interface AcceptSupplierRequestResult {
   message?: string | null;
 }
 
-/** `POST /supplier/inbox/accept` (SP-04e): one result per request, in the order they were sent. */
 export interface AcceptSupplierRequestsResponse {
   results: AcceptSupplierRequestResult[];
   accepted: number;
@@ -133,7 +104,6 @@ export interface UpdateAvailabilityEntry {
   available: boolean;
 }
 
-/** Weekday names of `GET/PUT api/supplier/availability/hours` (Monday first). */
 type SupplierWeekday =
   | 'Monday'
   | 'Tuesday'
@@ -193,19 +163,13 @@ export interface SupplierAgendaRequest {
   endUtc?: string | null;
   status: string;
   category: string;
-  /** The service of the catalog the request is for, as it was when asked; null or missing: only the category (SP-03b). */
   serviceName?: string | null;
-  /** Who asks, as the supplier may know it: "Nome C." until the request is taken, the full name after (SP-03b, D9). */
   clientLabel?: string | null;
-  /** The comune of the work, as written; never the street. */
   comune?: string | null;
-  /** `casazen` (a host asked) or `showcase` (a customer booked from the public page of the supplier). */
   source?: string;
-  /** Where the request is in its life (`to_answer`, `scheduled`...): an open set. */
   phase?: string;
 }
 
-/** `GET api/supplier/calendar`: hours, closed days, time off, blocks and requests for a range. */
 export interface SupplierAgendaCalendar {
   guestOrders?: { id: string; serviceName: string; requestedFor: string }[];
   from: string;
@@ -233,23 +197,18 @@ export interface SupplierConflict {
   windowId?: string | null;
 }
 
-/** A time to propose instead: the first free slot as long as the job. */
 interface SupplierSuggestedSlot {
   startUtc: string;
   endUtc: string;
 }
 
-/** A job to come with something wrong. */
 export interface SupplierRequestConflicts {
   requestId: string;
   status: string;
-  /** The Europe/Rome day of the job. */
   date: string;
   startUtc: string;
   endUtc: string;
-  /** The most serious first; at most one per code. */
   conflicts: SupplierConflict[];
-  /** Only for a request still `Richiesto`, and only when a slot is free within 21 days. */
   suggestedSlot?: SupplierSuggestedSlot | null;
 }
 
@@ -257,18 +216,12 @@ export interface SupplierConflictsResponse {
   from: string;
   to: string;
   timeZone: string;
-  /** The jobs that have at least one conflict, nearest first. */
   items: SupplierRequestConflicts[];
   total: number;
-  /** The range held more jobs than the check looks at: only the nearest `limit` were checked. */
   truncated: boolean;
   limit: number;
 }
 
-/**
- * State of the supplier's iCal sync (SU-15): `Syncing` while the queued job has not run yet; the calendar is synced
- * only once it becomes `Success`.
- */
 type SupplierCalendarSyncState = 'None' | 'Syncing' | 'Success' | 'Failure';
 
 export interface CalendarSyncStatus {
@@ -278,17 +231,14 @@ export interface CalendarSyncStatus {
   lastSyncStatus?: SupplierCalendarSyncState;
   calendarSyncErrorCode?: string | null;
   calendarSyncError?: string | null;
-  /** "Disponibile" events of the feed the supplier has not answered yet: they block their days until then. */
   pendingFreeEventsCount?: number;
 }
 
-/** A calendar event marked "Disponibile" (free) that holds its days until the supplier answers. The title is personal data of the owner. */
 export interface PendingFreeEvent {
   id: string;
   summary: string;
   isAllDay: boolean;
   recurring: boolean;
-  /** Number of dates of the series that are held. */
   occurrences: number;
   nextStartUtc: string;
   nextEndUtc: string;
@@ -310,19 +260,12 @@ export interface SupplierDashboard {
   lastUpdated: string;
 }
 
-/** Periods of the supplier KPIs (API enum `SupplierKpiPeriod`): Europe/Rome calendar dates, today at most. */
 export const SUPPLIER_KPI_PERIODS = ['CurrentMonth', 'PreviousMonth', 'Last30Days', 'CurrentYear'] as const;
 export type SupplierKpiPeriod = (typeof SUPPLIER_KPI_PERIODS)[number];
 
-/**
- * Work KPIs of the supplier org from its service requests (`GET /supplier/dashboard/kpis`, SU-11).
- * `completed` and `rejected` count the period; `awaitingAcceptance` and `upcoming` are the open work now.
- */
 export interface SupplierKpis {
   period: SupplierKpiPeriod;
-  /** First date of the period (`YYYY-MM-DD`, Europe/Rome), included. */
   from: string;
-  /** Last date of the period (`YYYY-MM-DD`, Europe/Rome), included. */
   to: string;
   timeZone: string;
   completed: number;
@@ -332,11 +275,6 @@ export interface SupplierKpis {
   totalRequests: number;
 }
 
-/**
- * `GET /supplier/today?days=` (SP-04, SP-04e): the home of the console. `jobs` are the ones taken, in progress, completed or paid from
- * `date` (today in Europe/Rome) to `dateTo`, the first in time first (at most 50, `jobsTotal` says how many there are); `newRequests` are
- * the first new requests waiting for the answer, the one to answer first on top, and `newRequestsTotal` how many there are in all.
- */
 export interface SupplierToday {
   date: string;
   dateTo?: string;
@@ -347,19 +285,15 @@ export interface SupplierToday {
   newRequestsTotal: number;
 }
 
-/** `period` of `GET /supplier/dashboard/overview` (SP-04e): Europe/Rome days, today at most. */
 export type SupplierOverviewPeriod = 'current-month' | 'last-30-days' | 'last-3-months';
 
-/** The figures of one period of the overview. One that does not exist (a rate when nobody was answered) is `null`, never 0. */
 export interface SupplierOverviewFigures {
   from: string;
   to: string;
   received: number;
   accepted: number;
   rejected: number;
-  /** Accepted over accepted plus rejected, from 0 to 1. */
   acceptanceRate: number | null;
-  /** Average minutes from the arrival of a request to its take. */
   averageResponseMinutes: number | null;
   completedJobs: number;
   /** The net of the payments paid in the period, in cents: 0 unless `onlinePayments`. */
@@ -378,15 +312,12 @@ export interface SupplierOverview {
   previous: SupplierOverviewFigures;
 }
 
-/** `GET /supplier/checklist` (SP-04): the steps of the activation, each from what the supplier really did. */
 export interface SupplierChecklist {
   profileCompletionPercent: number;
   profileComplete: boolean;
-  /** Published services: the step is done with at least one. */
   activeServices: number;
   hoursConfigured: boolean;
   showcasePublished: boolean;
   firstRequestAnswered: boolean;
-  /** `null` means "not available yet", not "no": the step is not counted. */
   paymentsActive?: boolean | null;
 }

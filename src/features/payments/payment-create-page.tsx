@@ -39,12 +39,8 @@ export function PaymentCreatePage() {
   const wanted = searchParams.get('bookingId') ?? undefined;
   const initialBookingId = options.some((option) => option.id === wanted) ? wanted : undefined;
   const backToList = () => navigate(PAYMENTS_PATH);
-  // A payment just recorded is collected: the list opens on «Incassati», where it is whatever the stay. The page opens on «In arrivo»,
-  // which leaves out the stays that are over, and the host would not find the payment it just recorded.
   const toRecordedPayment = () => navigate(`${PAYMENTS_PATH}?chip=collected`);
 
-  // A payment is recorded against a booking: while they load, when they fail to load and when there are none, the form
-  // would be a dead end (an empty list is never shown as if nothing was wrong, A4-25).
   let body;
   if (bookingsQuery.isError) {
     body = (

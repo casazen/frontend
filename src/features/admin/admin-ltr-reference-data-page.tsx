@@ -33,11 +33,6 @@ type VerifyTarget =
   | { kind: 'agreement'; id: string; comune: string }
   | { kind: 'imu'; id: string; comune: string };
 
-/**
- * Reference data of long-term leases (LT-13, A7-22): territorial agreements (status, expiry, rules, bands and zones)
- * and the comune offices receiving the IMU communication. Admins edit them and record each verification with its date
- * and source; every change is kept in the audit log. No deploy is needed to update a PEC or a band.
- */
 export function AdminLtrReferenceDataPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -280,7 +275,6 @@ function CompletenessBadge({ value }: { value: DataCompleteness }) {
   );
 }
 
-/** Loading and error states of a list: an API error is never shown as an empty list. */
 function QueryState({
   query,
   testId,

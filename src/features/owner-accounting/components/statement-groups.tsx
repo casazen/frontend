@@ -10,24 +10,18 @@ import type { OwnerLedgerEntry, OwnerPortalTouristTax, OwnerStatementVersion } f
 import { messageOf, statementGroupsOf } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 
-/** One row of the summary: the name of the part, its amount in the currency of the version, and how many lines it holds. */
 interface SummaryRow {
   key: string;
   label: string;
   amount: number;
   strong?: boolean;
   note?: string;
-  /** A line for information only under its part: quiet, written as the commission the agency bears, in no total. */
   quiet?: boolean;
 }
 
 interface StatementGroupsProps {
   version: OwnerStatementVersion;
   entries: readonly OwnerLedgerEntry[];
-  /**
-   * The stays of the tourist tax box with their amounts, as the server sends them (`touristTax` of the version): the very rows the owner portal shows. Left out, the box keeps its
-   * text only and says nothing of the amounts (a server that does not send them yet): an empty list says that the agency collected none.
-   */
   touristTax?: readonly OwnerPortalTouristTax[];
 }
 
@@ -42,7 +36,6 @@ export function StatementGroups({ version, entries, touristTax }: StatementGroup
   const { money } = useOwnerFormat();
   const download = useDownloadVersionFile();
   const grouped = useMemo(() => statementGroupsOf(version, entries), [version, entries]);
-  // The file being made says so on its own button (the click is ignored, the focus stays); the other button waits for it.
   const busyWith = (format: 'pdf' | 'csv') => download.isPending && download.variables?.format === format;
   const fileBase = `rendiconto-${version.year}-${String(version.month).padStart(2, '0')}-v${version.version}`;
 
@@ -53,9 +46,6 @@ export function StatementGroups({ version, entries, touristTax }: StatementGroup
     );
 
   const lines = (count: number) => (count > 0 ? t('ownerAccounting.summary.lines', { count }) : undefined);
-  // The rows of the table, in the order of the PDF: the parts, the total of the period, then the net (opening balance, payments, closing balance). A line for information only (the commission
-  // of a portal the agency bears) is a quiet row under its part, with its amount as a positive figure and the words that say it is in no total: it is not in the amount of the part nor in
-  // the total of the period, which `statementGroupsOf` adds up without it.
   const rows: SummaryRow[] = [
     ...grouped.groups.flatMap((group): SummaryRow[] => [
       { key: group.section, label: t(`ownerAccounting.summary.part.${group.section}`), amount: group.amount, note: lines(group.count) },

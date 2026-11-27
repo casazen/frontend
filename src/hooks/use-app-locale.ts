@@ -13,11 +13,6 @@ export const APP_LOCALES: ReadonlyArray<{ locale: AppLocale; nameKey: string }> 
   { locale: 'en', nameKey: 'language.names.en' },
 ];
 
-/**
- * The language of the interface and the way to change it (UI-05): the choice is kept for the next visit and the whole app
- * (`<html lang>` included, `I18nLocaleSync`) follows. Used by the language row of the profile menu and by the switch of the
- * sheet "Altro".
- */
 export function useAppLocale() {
   const { i18n: instance } = useTranslation();
   const locale: AppLocale = instance.language.startsWith('en') ? 'en' : 'it';

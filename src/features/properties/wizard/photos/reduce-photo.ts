@@ -1,12 +1,9 @@
-/** Longest side of a photo sent to the AI: what a vision model reads, and a request of a few hundred KB. */
 export const AI_PHOTO_MAX_SIDE = 1024;
 
-/** Photos of the gallery the AI looks at: the cover and the next ones (the backend accepts six). */
 export const AI_PHOTOS_MAX = 6;
 
 const JPEG_QUALITY = 0.8;
 
-/** A photo that does not arrive in this time is left out: the AI writes without it. */
 const LOAD_TIMEOUT_MS = 15_000;
 
 /**
@@ -42,11 +39,6 @@ function readAsDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-/**
- * A photo of the gallery reduced for the AI: at most {@link AI_PHOTO_MAX_SIDE} pixels on its longest side, as a JPEG data URL, turned the
- * way the phone took it (the browser applies the orientation when it draws). `null` when the photo cannot be loaded or read back (a network
- * error, an old browser): the AI then writes without it.
- */
 export async function reducePhotoForAi(url: string): Promise<string | null> {
   try {
     const image = await loadImage(url);
@@ -58,7 +50,6 @@ export async function reducePhotoForAi(url: string): Promise<string | null> {
     if (!context) return null;
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
     const jpeg = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', JPEG_QUALITY));
-    // Frees the memory of the canvas at once (a phone holds little).
     canvas.width = 0;
     canvas.height = 0;
     return jpeg ? await readAsDataUrl(jpeg) : null;
@@ -67,7 +58,6 @@ export async function reducePhotoForAi(url: string): Promise<string | null> {
   }
 }
 
-/** The first {@link AI_PHOTOS_MAX} photos of the gallery, reduced, in order; the ones that cannot be read are left out. */
 export async function reducePhotosForAi(urls: readonly string[]): Promise<string[]> {
   const reduced = await Promise.all(urls.slice(0, AI_PHOTOS_MAX).map((url) => reducePhotoForAi(url)));
   return reduced.filter((photo): photo is string => photo !== null);

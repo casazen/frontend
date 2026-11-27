@@ -10,7 +10,6 @@ import { buildBookingPath, buildInquiryPath } from '@/lib/supplier-site/booking-
 import type { SiteModel } from '@/lib/supplier-site/site-model';
 import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 
-/** The first letters of a person's name, for the round mark that stands for a photo the supplier has not given. */
 function initials(name: string): string {
   return name
     .split(/\s+/)

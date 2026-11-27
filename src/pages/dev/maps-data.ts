@@ -3,11 +3,9 @@ import type { LatLon } from '@/features/site-maps';
 export interface House extends LatLon {
   id: string;
   name: string;
-  /** Names of the towns to emphasise. */
   near: string[];
 }
 
-/** Houses for the review: positions with two decimals, as the server publishes them. The first ones are in Lombardia and Svizzera, where the site works. */
 export const HOUSES: House[] = [
   { id: 'bellagio', name: 'Villa a Bellagio', lat: 45.99, lon: 9.26, near: [] },
   { id: 'como', name: 'Attico a Como', lat: 45.81, lon: 9.08, near: ['como'] },
@@ -37,5 +35,4 @@ export const HOUSES: House[] = [
   { id: 'alghero', name: 'Casa ad Alghero', lat: 40.56, lon: 8.32, near: [] },
 ];
 
-/** The ids of the houses in Lombardia and Svizzera. */
 export const HOME_IDS = HOUSES.slice(0, 15).map((h) => h.id);

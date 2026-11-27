@@ -7,10 +7,8 @@ import { MINOR_MAX_AGE } from '@/lib/tourist-tax';
 import { cn } from '@/lib/utils';
 import './stay-pickers.css';
 
-/** Most people a picker offers when the home does not say its own limit. */
 export const DEFAULT_MAX_GUESTS = 16;
 
-/** Who is coming: how many adults and children, and whether a pet comes. */
 export interface GuestsValue {
   adults: number;
   children: number;
@@ -20,17 +18,8 @@ export interface GuestsValue {
 export interface GuestsPickerProps {
   value: GuestsValue;
   onChange: (next: GuestsValue) => void;
-  /** Most people the home takes, adults and children together. */
   maxGuests?: number;
-  /**
-   * Whether the home takes pets: `true` and `false` change what the line under the question says; left out when it is not known
-   * (the site has many homes) it says that the results tell which ones do. The question is always asked.
-   */
   petsAllowed?: boolean;
-  /**
-   * The age of each child (null until chosen), asked only when the page needs it (the tourist tax of some comuni depends on it,
-   * DB-05): the picker does not require it, it draws the fields when the page gives the ages and what to do with a change.
-   */
   childrenAges?: (number | null)[];
   onChildrenAgesChange?: (ages: (number | null)[]) => void;
   className?: string;
@@ -115,7 +104,6 @@ export function GuestsPicker({
         </div>
         <span className="inline-flex h-11 items-center">
           <Switch
-            // An unchecked track of the muted text color (AA against the card): the pale track of the app is a hairline here.
             className="data-[state=unchecked]:bg-[var(--cz-public-muted)]"
             id={`${uid}-pets`}
             checked={value.pets}

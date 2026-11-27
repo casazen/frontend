@@ -8,17 +8,11 @@ import { useDayLabel } from '../use-mode-labels';
 interface ModeDoneProps {
   propertyId: string;
   propertyName: string;
-  /** The section the property is in until the day of the change: both buttons lead there (or to the account, when it began there). */
   area: ModeArea;
   entry: ModeEntry;
   change: PropertyModeChange;
 }
 
-/**
- * "What happens now" after the change is programmed. Only true things: what closes now, where the property will be and from
- * when, the e-mail, and that it can be withdrawn. The property is still in its old section, so "see the property" leads there:
- * from the day of the change the redirects of the property pages (#246) take whoever opens it to the new one.
- */
 export function ModeDone({ propertyId, propertyName, area, entry, change }: ModeDoneProps) {
   const { t } = useTranslation();
   const dayLabel = useDayLabel();

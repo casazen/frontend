@@ -30,10 +30,8 @@ vi.mock('@/components/layout/page-header', () => ({ PageHeader: ({ title }: { ti
 
 vi.setConfig({ testTimeout: 30_000 });
 
-/** Intl writes a no-break space between a figure and its currency: the page text is compared with plain spaces. */
 const plain = (value: string) => value.replace(/\s/g, ' ');
 const money = (amount: number, currency: string) => plain(new Intl.NumberFormat('it-IT', { style: 'currency', currency }).format(amount));
-/** A promise settled from outside: the request that is on its way. */
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((done) => {
@@ -96,14 +94,11 @@ describe('the statement of a version, grouped as its PDF is (E13/F02/US01/T02)',
     expect(cell('channelFees')).toContain(money(-100, 'CHF'));
     expect(cell('commission')).toContain(money(-162.15, 'CHF'));
     expect(cell('recharges')).toContain(money(-50, 'CHF'));
-    // The net is what the version stores, and the total of the period adds the parts up to the cent.
     expect(cell('period')).toContain(money(687.85, 'CHF'));
     expect(cell('opening')).toContain(money(100, 'CHF'));
     expect(cell('net')).toContain(money(787.85, 'CHF'));
-    // Nothing on the page is in euro: not the summary, not the figures, not the lines.
     expect(container.textContent).not.toContain('€');
     expect(plain(screen.getByTestId('statement-lines').textContent ?? '')).toContain(money(1000, 'CHF'));
-    // The tourist tax is in a box of its own that says it is not part of the net.
     expect(screen.getByTestId('statement-tourist-tax')).toHaveTextContent(i18n.t('ownerAccounting.summary.touristTax.body'));
   });
 
@@ -127,7 +122,6 @@ describe('the statement of a version, grouped as its PDF is (E13/F02/US01/T02)',
 
     fireEvent.click(pdf);
     await waitFor(() => expect(api.downloadVersionPdf).toHaveBeenCalledWith(VERSION_ID, 'it'));
-    // While the PDF is made the other file waits, and the pressed button says it works.
     await waitFor(() => expect(csv).toBeDisabled());
     expect(pdf).toHaveAttribute('aria-busy', 'true');
     pending.resolve({ blob: new Blob(['%PDF']), contentDisposition: null });

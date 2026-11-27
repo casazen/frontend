@@ -10,26 +10,16 @@ import {
 import type { TenantContractArea, TenantContractSummary, TenantMaintenanceRequest, TenantPaymentDeclaration, TenantPaymentDeclarationInput } from '@/types';
 import { ApiClient } from './client';
 
-/**
- * The tenant area (CondoLedger phase 1B). Every call is scoped by the signed-in user on the backend: the response is one
- * contract and its property, never the organisation. A payment declaration is not an offline collection (`mark-paid`).
- */
 function leasePath(leaseId: string): string {
   return `/tenant-area/contracts/${encodeURIComponent(leaseId)}`;
 }
 
 export const tenantAreaApi = {
-  /** Contracts the signed-in tenant may open. */
   listContracts: async (): Promise<TenantContractSummary[]> => parseTenantContractList(await ApiClient.get<unknown>('/tenant-area')),
 
-  /** One contract, its property, dues, shared documents and the emergency contacts the manager configured. */
   getContract: async (leaseId: string): Promise<TenantContractArea> =>
     parseTenantContractArea(await ApiClient.get<unknown>(leasePath(leaseId))),
 
-  /**
-   * Records “I made the transfer”. `POST .../declarations` only: the installment stays unpaid until the manager or a
-   * bank match confirms it.
-   */
   declareTransfer: async (leaseId: string, dueId: string, input: TenantPaymentDeclarationInput): Promise<TenantPaymentDeclaration> => {
     const url = `${leasePath(leaseId)}/dues/${encodeURIComponent(dueId)}/declarations`;
     const body = input.receipt
@@ -63,7 +53,6 @@ export const tenantAreaApi = {
   getMaintenance: async (leaseId: string, requestId: string): Promise<TenantMaintenanceRequest> =>
     parseTenantMaintenance(await ApiClient.get<unknown>(`${leasePath(leaseId)}/maintenance/${encodeURIComponent(requestId)}`)),
 
-  /** Sent to the manager of the contract. The tenant does not choose a supplier. */
   createMaintenance: async (
     leaseId: string,
     input: { category: string; urgency: string; description: string; attachments: File[] },

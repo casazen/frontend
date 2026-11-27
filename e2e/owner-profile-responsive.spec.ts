@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-// Real owner page and dialogs, with test-only API data. No authentication or production data is involved.
 for (const viewport of [{ name: 'desktop', width: 1280, height: 900 }, { name: 'mobile', width: 390, height: 844 }]) {
   test(`owner profile guided editing and summaries on ${viewport.name}`, async ({ page }, testInfo) => {
     await page.setViewportSize(viewport);

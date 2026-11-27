@@ -9,19 +9,10 @@ import type { CreatePropertyDto, Property, UpdatePropertyDto } from '@/types';
 import type { ActivationBlocker, ComplianceWizardStep } from '@/types/compliance.types';
 import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 
-/**
- * Steps of the activation wizard in display order (ids of `GET /properties/:id/compliance/activation`). The last one is the step of a property in Switzerland, where the card of the
- * regime of its canton is (E29/F02/US02/T01).
- */
 export const ACTIVATION_STEP_ORDER = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical', GUEST_REGISTRATION_STEP_ID] as const;
 
-/**
- * Last step, only in the frontend: summary of every step, blockers, terms acceptance and "Completa". The terms are
- * accepted here, right before completing (A5-18 c), never in a step the host may not reach.
- */
 export const REVIEW_STEP_ID = 'review';
 
-/** Steps of the wizard: the known ones in order, the ones this frontend does not know yet, then the review. */
 export function wizardStepIds(steps: ComplianceWizardStep[]): string[] {
   const apiIds = steps.map((s) => s.id);
   const known = ACTIVATION_STEP_ORDER.filter((id) => apiIds.includes(id));
@@ -29,7 +20,6 @@ export function wizardStepIds(steps: ComplianceWizardStep[]): string[] {
   return [...known, ...unknown, REVIEW_STEP_ID];
 }
 
-/** A blocking step not complete yet: it keeps the property from being activated. */
 export function isOpenBlocker(step: ComplianceWizardStep): boolean {
   return step.blocker && step.status !== 'complete';
 }
@@ -40,15 +30,10 @@ export function isOpenBlocker(step: ComplianceWizardStep): boolean {
  */
 export const REMINDER_STEP_IDS: readonly string[] = ['documents', 'safety'];
 
-/** The reminders still open, as the server reports them (a step that does not block and is not complete). */
 export function openReminders(steps: readonly ComplianceWizardStep[]): ComplianceWizardStep[] {
   return steps.filter((step) => REMINDER_STEP_IDS.includes(step.id) && !step.blocker && step.status !== 'complete');
 }
 
-/**
- * What still blocks the activation according to the server: the blockers of every open blocking step, or one
- * generic entry (empty code) for a blocking step that does not list them.
- */
 export function knownBlockers(steps: ComplianceWizardStep[]): ActivationBlocker[] {
   return wizardStepIds(steps)
     .map((id) => steps.find((s) => s.id === id))
@@ -68,17 +53,12 @@ export function initialStepId(steps: ComplianceWizardStep[]): string {
 
 type Exists = (key: string) => boolean;
 
-/** Title of a step translated by id, or the label sent by the API for a step this frontend does not know. */
 export function stepTitle(stepId: string, steps: ComplianceWizardStep[], t: TFunction, exists: Exists): string {
   const key = `compliance.activation.steps.${stepId}`;
   if (exists(key)) return t(key);
   return steps.find((s) => s.id === stepId)?.label ?? stepId;
 }
 
-/**
- * Text of a blocker in the UI language, from its stable code: the activation codes, then the safety checklist codes
- * (CO-07); the message localized by the server for a code unknown here; a generic text for a step without details.
- */
 export function blockerText(
   blocker: ActivationBlocker,
   steps: ComplianceWizardStep[],
@@ -95,7 +75,6 @@ export function blockerText(
   return t('compliance.activation.blockerList.stepIncomplete', { step: stepTitle(blocker.step, steps, t, exists) });
 }
 
-/** API body the property form sends for the property as it is stored (the base of "what changed"). */
 export function propertyFormPayload(property: Property): CreatePropertyDto {
   return toPropertyPayload(propertyFormDefaults(property, 'short-rent') as PropertyFormValues, 'short-rent');
 }
@@ -131,10 +110,6 @@ export function changedPropertyFields(stored: CreatePropertyDto, submitted: Crea
 /** The query parameter that remembers the step the host came from when it opens the step of Switzerland, so that step can lead back to it. */
 export const ORIGIN_STEP_PARAM = 'from';
 
-/**
- * URL of an activation step, shared by progress and review links. `from` is the step the link is on: it is kept only for the step of Switzerland (the card is a detour from
- * what the host was doing, and its «Torna a» goes back to it); every other step has the plain address it always had.
- */
 export function stepHref(stepId: string, from?: string) {
   const origin = stepId === GUEST_REGISTRATION_STEP_ID && from && from !== stepId ? `&${ORIGIN_STEP_PARAM}=${encodeURIComponent(from)}` : '';
   return { search: `?step=${encodeURIComponent(stepId)}${origin}` };

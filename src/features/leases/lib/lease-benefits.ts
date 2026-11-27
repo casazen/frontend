@@ -8,15 +8,10 @@ import type { LeaseDetail } from '@/types';
  */
 export const BENEFIT_DOCUMENTS = ['contract', 'attestation', 'receipt'] as const;
 
-/**
- * When the file that holds the contract holds its attestation too (CF-DOCS-REAL: the file the guided service delivers), the documents are two:
- * the contract with its attestation, which is one file, and the receipt of the registration.
- */
 export const BENEFIT_DOCUMENTS_TOGETHER = ['contractWithAttestation', 'receipt'] as const;
 
 export type BenefitDocument = (typeof BENEFIT_DOCUMENTS)[number] | (typeof BENEFIT_DOCUMENTS_TOGETHER)[number];
 
-/** The kind a document is given when it is uploaded among the documents of the lease. */
 export const BENEFIT_DOCUMENT_KIND: Readonly<Record<BenefitDocument, LeaseDocumentKind>> = {
   contract: 'Contract',
   contractWithAttestation: 'Contract',
@@ -32,29 +27,18 @@ export const BENEFIT_TEXT: Readonly<Record<BenefitDocument, { nameKey: string; u
   receipt: { nameKey: 'leaseRound.document.receipt.name', uploadKey: 'leaseRound.document.receipt.upload' },
 };
 
-/** Where the file of a document is downloaded from: the signed copy or the receipt of the lease itself, or a document uploaded to it. */
 export type BenefitSource = { from: 'signed' } | { from: 'receipt' } | { from: 'document'; document: LeaseDocument };
 
-/** What a screen needs of a lease to tell which of the three documents it has (`isConcordatoFacileSource`: the lease of the guided service, CF-DONE). */
 type BenefitLease = Pick<LeaseDetail, 'hasSignedPdf' | 'registration' | 'isConcordatoFacileSource'>;
 
-/**
- * A contract of canone concordato, whoever made it: by type, and always the one the guided service prepared (it only prepares those).
- * Libero and transitorio contracts have no attestation and none of these benefits, so nothing about them is asked or told.
- */
 export function isConcordatoLease(lease: Pick<LeaseDetail, 'contractType' | 'isConcordatoFacileSource'>): boolean {
   return lease.contractType === 'Concordato' || lease.isConcordatoFacileSource === true;
 }
 
-/** The follow-up of a registration is told once the contract is registered, and only for a canone concordato. */
 export function showsBenefits(lease: Pick<LeaseDetail, 'status' | 'contractType' | 'isConcordatoFacileSource'>): boolean {
   return lease.status === 'Registered' && isConcordatoLease(lease);
 }
 
-/**
- * The last document of a kind uploaded to the lease (the one the person sent after the others, so the one they mean), if any. Of two sent
- * at the same moment it is the first in the list, which the server sends newest first.
- */
 export function newestDocument(documents: readonly LeaseDocument[], kind: LeaseDocumentKind): LeaseDocument | undefined {
   let newest: LeaseDocument | undefined;
   for (const document of documents) {
@@ -79,12 +63,10 @@ export function contractWithAttestation(documents: readonly LeaseDocument[], via
   );
 }
 
-/** Whether the lease has its attestation: the document of that kind, or the contract file that holds it (`viaService`: see {@link contractWithAttestation}). */
 export function hasAttestation(documents: readonly LeaseDocument[], viaService = false): boolean {
   return newestDocument(documents, 'Attestation') !== undefined || contractWithAttestation(documents, viaService) !== undefined;
 }
 
-/** The documents to bring after a registration: three, or two when the contract file holds the attestation (while the list is not known, three). */
 export function benefitDocuments(documents: readonly LeaseDocument[] | undefined, viaService = false): readonly BenefitDocument[] {
   return documents && contractWithAttestation(documents, viaService) ? BENEFIT_DOCUMENTS_TOGETHER : BENEFIT_DOCUMENTS;
 }

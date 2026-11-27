@@ -99,7 +99,6 @@ function DayBlock({ label, date, hint, locale }: { label: string; date: string; 
 
 interface StayTicketProps {
   outcome: CheckoutOutcome;
-  /** The public record of the house: the photo, the zone and the hours. The ticket is complete without it. */
   property: PublicPropertyDetailDto | undefined;
   view: OutcomeView;
   variant: ConfirmationVariant;

@@ -73,11 +73,9 @@ describe('what each step saves', () => {
   it('sends no order while every active service is chosen, and the slugs otherwise, the ones already shown keeping their place', () => {
     expect(servicesPatch(values(), {}, catalog)).toBeNull();
     expect(servicesPatch(values({ services: ['pulizie', 'giardino'] }), {}, catalog)).toEqual({ serviceOrder: ['pulizie', 'giardino'] });
-    // A custom order of the editor is kept for the ones that stay, the one that comes back goes last.
     expect(servicesPatch(values({ services: ['giardino', 'pulizie', 'bucato'] }), { serviceOrder: ['giardino', 'pulizie'] }, catalog)).toEqual({
       serviceOrder: ['giardino', 'pulizie', 'bucato'],
     });
-    // Everything chosen again, with an order of the editor that left one out, is the catalog again: the order is cleared.
     expect(servicesPatch(values(), { serviceOrder: ['pulizie', 'bucato'] }, catalog)).toEqual({ serviceOrder: null });
   });
 });

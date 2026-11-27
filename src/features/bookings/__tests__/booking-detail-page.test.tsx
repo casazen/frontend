@@ -22,7 +22,6 @@ vi.mock('@/api/bookings.api', () => ({
   bookingsApi: { getById: vi.fn(), approveRequest: vi.fn(), getCancellationQuote: vi.fn(), checkIn: vi.fn() },
 }));
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn() } }));
-// The block «Cosa succede ora» reads the lights of the stay's compliance items from the summary of the adempimenti (NF-52): none here (tests: booking-next-step-lights.test.tsx).
 vi.mock('@/api/compliance.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/compliance.api')>()),
   fetchComplianceSummary: vi.fn().mockResolvedValue({
@@ -37,7 +36,6 @@ vi.mock('@/api/compliance.api', async (importOriginal) => ({
 vi.mock('@/features/alloggiati/components/alloggiati-booking-panel', () => ({
   AlloggiatiBookingPanel: () => createElement('div', { 'data-testid': 'alloggiati-panel-stub' }),
 }));
-// The real service request hooks around mocked network calls (SU-07: which query the stay uses).
 vi.mock('@/api/service-requests.api', () => ({
   fetchServiceRequests: vi.fn(),
   createServiceRequest: vi.fn(),
@@ -51,7 +49,6 @@ vi.mock('@/api/invoice-data.api', () => ({
   getInvoiceData: vi.fn().mockResolvedValue({ bookingId: 'b0c1d2e3-0000-4000-8000-000000000001', invoiceRequested: false }),
   saveInvoiceData: vi.fn(),
 }));
-// ...and «Incassi» (FIS-05), which reads the ledger of the booking: kept off the network here too.
 vi.mock('@/api/payment-ledger.api', () => ({
   getBookingLedger: vi.fn().mockResolvedValue({ bookingId: 'b0c1d2e3-0000-4000-8000-000000000001', bookingCode: '', channel: '', currency: 'EUR', lines: [], degraded: false }),
   listLedger: vi.fn(),
@@ -69,8 +66,6 @@ interface HeaderAction {
   onClick?: () => void;
   testId?: string;
 }
-// The real header keeps `secondary` in the menu "⋯" (a closed menu has no items in the page): here they are plain buttons and links.
-// `status` is the state under the title (the badge of the booking), `action` what sits beside it.
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title, status, action, secondary }: { title: string; status?: React.ReactNode; action?: React.ReactNode; secondary?: (HeaderAction | { separator: true })[] }) =>
     createElement(
@@ -94,7 +89,6 @@ vi.mock('@/components/shared/breadcrumb', () => ({ Breadcrumb: () => null }));
 const WAIT = { timeout: 5000 };
 const BOOKING_ID = 'b0c1d2e3-0000-4000-8000-000000000001';
 
-/** `canEdit` as the API answers it (SR-05a): a booking can be changed only when it is the host's own, not cancelled and not started. */
 const editabilityOf = ({ status, source }: Pick<Booking, 'status' | 'source'>): NonNullable<Booking['canEdit']> => {
   if (status === 'Cancelled') return { allowed: false, reason: 'Cancelled' };
   if (status === 'CheckedIn' || status === 'CheckedOut') return { allowed: false, reason: 'Started' };
@@ -137,7 +131,6 @@ function axiosError(status: number, data: unknown): AxiosError {
   });
 }
 
-/** Stay dates (ISO, midnight UTC) relative to today in Europe/Rome. */
 const stayDay = (days: number) => `${addDays(todayInRome(), days)}T00:00:00Z`;
 
 function renderPage(
@@ -159,7 +152,6 @@ beforeEach(async () => {
   denied.clear();
   vi.mocked(serviceRequestsApi.fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
   vi.mocked(fetchServiceCategories).mockResolvedValue(['cleaning', 'maintenance']);
-  // The block "what happens now" of a confirmed stay also reads whether the guest data are complete (the wizard "Guest check-in").
   vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: true } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
   await i18n.changeLanguage('it');
 });
@@ -182,7 +174,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Airbnb', otaSource: 'Airbnb', otaReviewReason: 'BlockRemoved' }));
 
     const stay = renderPage();
-    // The notice has buttons that act on the stay: it is in the tab of the stay, above what the tab says, and nowhere above the tabs.
     const notice = await screen.findByTestId('ota-review-notice', undefined, WAIT);
     expect(within(screen.getByRole('tabpanel')).getByTestId('ota-review-notice')).toBe(notice);
     expect(within(notice).getByTestId('ota-review-resolve')).toBeInTheDocument();
@@ -223,7 +214,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
-    // A booking made from a link the agency copied shows «Sito dell'agenzia» (NF-123); the answer says it, the page never works it out.
     expect(await screen.findByTestId('booking-origin-badge', undefined, WAIT)).toHaveTextContent(word);
     expect(screen.getAllByTestId('booking-origin-badge')).toHaveLength(1);
   });
@@ -238,7 +228,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
   });
 
   it('BookingDetailPage_PendingManualBooking_ConfirmsItFromTheDialog', async () => {
-    // The detail is read again after the confirmation: the second read returns the confirmed booking.
     vi.mocked(bookingsApi.getById)
       .mockResolvedValueOnce(booking({ status: 'Pending' }))
       .mockResolvedValue(booking({ status: 'Confirmed' }));
@@ -307,7 +296,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
   });
 
   it('BookingDetailPage_ConfirmedBookingFromTheBookingSite_OffersCancelButNotEditNorConfirmAndSaysWhy', async () => {
-    // SR-05c: the API refuses to change the dates of a booking from the booking site (`canEdit`, SR-D5): the page offers no "Modifica".
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct' }));
 
     renderPage();
@@ -319,7 +307,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
   });
 
   it('BookingDetailPage_ConfirmedBookingFromTheBookingSite_OffersEditWhenTheApiSaysItMayBeChanged', async () => {
-    // E08/F02/US01: a confirmed booking of the booking site is changed, with its money settled: `changeOptions` and `canEdit` say so, and the page follows them.
     vi.mocked(bookingsApi.getById).mockResolvedValue(
       booking({ source: 'Direct', changeOptions: { canEdit: true, canCancel: true }, canEdit: { allowed: true, reason: null } }),
     );
@@ -355,7 +342,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
       expect(guidance).toHaveTextContent("Per cancellare questa prenotazione di Airbnb chiedi all'ospite di annullarla su Airbnb.");
       expect(screen.queryByTestId('edit-booking')).not.toBeInTheDocument();
       expect(screen.queryByTestId('open-cancel-booking')).not.toBeInTheDocument();
-      // The sentence of the channel replaces the one that would send the host to cancel a booking that cannot be cancelled here.
       expect(screen.queryByTestId('booking-edit-locked')).not.toBeInTheDocument();
     });
 
@@ -411,7 +397,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
   });
 
   it('BookingDetailPage_CheckedInStay_OffersTheCheckOutWizard', async () => {
-    // Before the departure day too: an early departure is checked out like any other (CO-08).
     vi.mocked(bookingsApi.getById).mockResolvedValue(
       booking({ status: 'CheckedIn', checkInDate: stayDay(-1), checkOutDate: stayDay(3) }),
     );
@@ -471,7 +456,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
   });
 
   it('BookingDetailPage_ConfirmedStayRegisteredLate_RegistersTheArrivalAndWarnsAboutMissingGuestData', async () => {
-    // CO-08: the check-in day was yesterday; the host registers the arrival today, with the guest data incomplete.
     const stay = { checkInDate: stayDay(-1), checkOutDate: stayDay(2) };
     vi.mocked(bookingsApi.getById)
       .mockResolvedValueOnce(booking({ status: 'Confirmed', ...stay }))
@@ -490,7 +474,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
       'href',
       `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
     );
-    // Missing data never block the arrival.
     fireEvent.click(within(dialog).getByTestId('register-arrival-submit'));
 
     await waitFor(() => expect(bookingsApi.checkIn).toHaveBeenCalledWith(BOOKING_ID));
@@ -577,7 +560,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     fireEvent.click(await screen.findByRole('tab', { name: i18n.t('booking.detailPage.tabs.payment') }, WAIT));
 
-    // (450 base - 50 cleaning) / 4 nights = 100 per night; the total 462 includes cleaning and 12 of tourist tax.
     expect(screen.getByTestId('booking-price-per-night')).toHaveTextContent(
       i18n.t('booking.detailPage.lodgingPerNight', { count: 4, perNight: '100,00 €' }),
     );
@@ -614,7 +596,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage(undefined, client);
 
-    // The error screen is for a page that has nothing to show: a booking already in hand stays on screen.
     await waitFor(() => expect(bookingsApi.getById).toHaveBeenCalledTimes(1), WAIT);
     expect(await screen.findByTestId('booking-detail-status', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('booking-load-error')).not.toBeInTheDocument();
@@ -638,8 +619,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     expect(await screen.findByText(i18n.t('booking.detailPage.notFound'), undefined, WAIT)).toBeInTheDocument();
   });
-
-  // ─── SU-07 (D2): a stay's supplier requests, the same ones the app shows ───
 
   it('BookingDetailPage_ServiceRequests_ListedForThisStayLikeTheApp', async () => {
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
@@ -669,7 +648,6 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     renderPage();
 
     expect(await screen.findByTestId('service-request-sr-stay', undefined, WAIT)).toHaveTextContent('Pulizie Express Srl');
-    // By stay, as the app's booking screen: never the whole property (other stays' requests).
     expect(serviceRequestsApi.fetchServiceRequests).toHaveBeenCalledWith({ bookingId: BOOKING_ID, pageSize: 50 });
     for (const [params] of vi.mocked(serviceRequestsApi.fetchServiceRequests).mock.calls) {
       expect(params).not.toHaveProperty('propertyId');

@@ -4,16 +4,10 @@ import i18n from '@/i18n/config';
 import { EMPTY_DETAILS, type DetailsValues } from '../checkout-model';
 import { StepDetails } from '../step-details';
 
-// The step reads the check-in window of the property only to offer arrival hours: none here.
 vi.mock('@/features/public-booking/booking/booking-context', () => ({
   useBooking: () => ({ property: { checkInFrom: null, checkInTo: null } }),
 }));
 
-/**
- * The second step of the checkout and the consents it collects (NF-90, AC-NF90-4, AC-NF90-6): the two boxes exist only when the site has the
- * version of the consent text, they start unticked, WhatsApp waits for a phone number and is refused without one, and the soft opt-in notice
- * is a paragraph that asks nothing and blocks nothing.
- */
 const FILLED: DetailsValues = { ...EMPTY_DETAILS, firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', country: 'IT' };
 
 interface Props {
@@ -59,7 +53,6 @@ describe('StepDetails consents (NF-90)', () => {
     expect(emailBox()).toHaveAttribute('aria-checked', 'false');
     expect(whatsappBox()).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByLabelText('E-mail')).toBe(emailBox());
-    // The hint of the box stays: the guest can unsubscribe whenever they want.
     expect(screen.getByTestId('checkout-offers')).toHaveTextContent('Puoi cancellarti quando vuoi.');
   });
 
@@ -92,7 +85,6 @@ describe('StepDetails consents (NF-90)', () => {
     expect(whatsappBox()).toHaveAttribute('aria-checked', 'true');
     fireEvent.change(phone, { target: { value: '' } });
 
-    // A box already ticked stays free, so the guest can untick it; the form will not go on while it is ticked with no number.
     expect(whatsappBox()).toBeEnabled();
     expect(await screen.findByTestId('checkout-offers-whatsapp-error')).toHaveTextContent('scrivi il tuo numero di telefono');
     fireEvent.click(screen.getByTestId('checkout-next'));
@@ -116,7 +108,6 @@ describe('StepDetails consents (NF-90)', () => {
     fireEvent.click(whatsappBox());
     fireEvent.click(screen.getByTestId('checkout-next'));
 
-    // The server would put its own calling code in front of it and record the consent for somebody else's number.
     expect(await screen.findByTestId('checkout-offers-whatsapp-error')).toHaveTextContent('con il prefisso internazionale');
     await waitFor(() => expect(whatsappBox()).toHaveAttribute('aria-invalid', 'true'));
     expect(onNext).not.toHaveBeenCalled();

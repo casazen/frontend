@@ -12,10 +12,6 @@ import { usePublicSiteCalendar } from '../use-public-site-calendar';
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getOrgPropertyCalendar: vi.fn() } }));
 vi.mock('@/api/public-site-search.api', () => ({ publicSiteSearchApi: { getSiteCalendar: vi.fn(), getPlatformCalendar: vi.fn() } }));
 
-/**
- * CHF-MONEY, the calendar hooks: the currency of the calendar is the one the server says. While the nights load and when they cannot be read there is no
- * currency (`null`, and no price is drawn): never a euro made up for the time being. A server that answers with a calendar that says none keeps it so.
- */
 const propertyCalendar: PublicCalendarDto = {
   propertyId: 'p-1',
   startDate: '2026-11-02',

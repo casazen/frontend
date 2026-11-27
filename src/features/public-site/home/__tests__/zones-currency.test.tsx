@@ -6,17 +6,12 @@ import type { PublicStayCard } from '@/types/public-stays.types';
 import { zonesOf } from '../home-model';
 import { ZonesSection } from '../zones-section';
 
-// The map draws SVG from data loaded on demand: the zones are the list next to it, and that is what these tests read.
 vi.mock('@/features/site-maps', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/features/site-maps')>();
   const { createElement } = await import('react');
   return { ...actual, RegionMap: () => createElement('div', { 'data-testid': 'region-map-stub' }) };
 });
 
-/**
- * CHF-MONEY, the zones of the home of the site: the lowest night of a zone is written in the currency the homes of the zone say (francs for Lugano), and
- * homes whose data says none leave the zone with none: its price is written with no symbol and the phrase that says so, never in a euro nobody said.
- */
 function card(id: string, comune: string, currency: string | undefined, perNightCents = 14500): PublicStayCard {
   return {
     id,
@@ -31,7 +26,6 @@ function card(id: string, comune: string, currency: string | undefined, perNight
     amenities: [],
     tags: [],
     availability: { available: true },
-    // `currency` is a required text in the answer of the server: what these tests give it is what a malformed answer would carry.
     price: { currency: currency as string, perNightCents },
   };
 }

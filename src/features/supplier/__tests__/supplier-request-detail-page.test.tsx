@@ -33,7 +33,6 @@ vi.mock('@/components/layout/page-header', () => ({
 
 const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 
-/** A new short-rent request: comune, zone, day and stay dates; no address nor host contact before the take. */
 const NEW_REQUEST: SupplierServiceRequestDetail = {
   id: ID,
   rentalContext: 'ShortRent',
@@ -59,7 +58,6 @@ const NEW_REQUEST: SupplierServiceRequestDetail = {
   history: [{ status: 'Richiesto', at: '2026-09-20T08:00:00Z', actor: 'Host', actorName: null, reason: null }],
 };
 
-/** The same request once taken: 23:30 UTC of 24 September is 01:30 of 25 September in Rome. */
 const TAKEN_REQUEST: SupplierServiceRequestDetail = {
   ...NEW_REQUEST,
   status: 'PresoInCarico',
@@ -73,7 +71,6 @@ const TAKEN_REQUEST: SupplierServiceRequestDetail = {
   ],
 };
 
-/** The supplier profile the console reads its status from (SU-12): an admin may suspend it. */
 const PROFILE: SupplierProfile = {
   orgId: 'org-1',
   status: 'Active',
@@ -127,10 +124,8 @@ describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
     expect(supplierApi.fetchSupplierInboxItem).toHaveBeenCalledWith(ID);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Pulizie');
     expect(screen.getByTestId('supplier-request-where')).toHaveTextContent('Roma (00184)');
-    // «Indirizzo e contatti» right under the facts says that the address comes after the take: the facts do not say it twice (UX round 2026-11).
     expect(screen.getByTestId('supplier-request-where')).not.toHaveTextContent('Indirizzo dopo che accetti');
     expect(screen.getByTestId('supplier-request-when')).toHaveTextContent('lunedì 12 ottobre 2026');
-    // The urgency is said once, beside the day: the job group has no row of its own for it.
     expect(screen.getByTestId('supplier-request-when')).toHaveTextContent('Urgenza: Alta');
     expect(screen.getByTestId('supplier-request-job')).not.toHaveTextContent('Urgenza');
     expect(screen.getByTestId('supplier-request-stay')).toHaveTextContent('Dal 9 ottobre 2026 al 12 ottobre 2026');
@@ -140,7 +135,6 @@ describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
     );
     expect(screen.queryByTestId('supplier-request-address')).not.toBeInTheDocument();
     expect(screen.queryByTestId('supplier-request-host-phone')).not.toBeInTheDocument();
-    // What to do now: take or reject, not complete.
     expect(screen.getByTestId('supplier-request-now')).toHaveTextContent('Rispondi alla richiesta');
     expect(screen.getByTestId('supplier-request-take')).toBeEnabled();
     expect(screen.getByTestId('supplier-request-reject')).toBeEnabled();
@@ -175,7 +169,6 @@ describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
       expect(requested).toHaveTextContent('10:00');
       expect(requested).toHaveTextContent('Il cliente');
       expect(taken).toHaveTextContent('Hai accettato la richiesta');
-      // 23:30 UTC of 24 September: 01:30 of 25 September in Rome, whatever the browser's time zone.
       expect(taken).toHaveTextContent('25 set');
       expect(taken).toHaveTextContent('01:30');
       expect(taken).toHaveTextContent('Mario Rossi');
@@ -296,8 +289,6 @@ describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
     expect(screen.getByTestId('supplier-request-take')).toHaveTextContent('Accept');
   });
 
-  // ─── SU-12: a suspended supplier performs no action ───
-
   it('SupplierRequestDetailPage_SuspendedSupplierNewRequest_DisablesTakeAndRejectAndExplainsWhy', async () => {
     supplierApi.fetchSupplierProfile.mockResolvedValue({ ...PROFILE, status: 'Suspended' });
     renderPage();
@@ -340,7 +331,6 @@ describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
     renderPage();
     const take = await screen.findByTestId('supplier-request-take');
     expect(take).toBeEnabled();
-    // An admin suspends the supplier while the page is open.
     supplierApi.fetchSupplierProfile.mockResolvedValue({ ...PROFILE, status: 'Suspended' });
 
     fireEvent.click(take);

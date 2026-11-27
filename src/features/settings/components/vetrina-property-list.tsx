@@ -7,7 +7,6 @@ import type { Property } from '@/types';
 interface VetrinaPropertyListProps {
   properties: Property[];
   isLoading: boolean;
-  /** Where the links of the site are (its own host or the platform), for the links the rows copy. */
   bookingSite: OrgBookingSite;
   selectedId: string | null;
   onSelect: (id: string) => void;

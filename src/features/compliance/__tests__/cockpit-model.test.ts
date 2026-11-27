@@ -7,7 +7,6 @@ import type { Property } from '@/types/property.types';
 import { buildCockpit, deadlineNote, focusBodyOf, focusToneOf, thenOf, type CockpitContext, type CockpitRow } from '../lib/cockpit-model';
 import { fineCount } from '../lib/compliance-tiers';
 
-// 12:00 UTC of 24 September 2026: 14:00 in Rome (CEST), the same day. The clock is handed in, never read.
 const NOW = new Date('2026-09-24T12:00:00Z');
 const hoursFromNow = (hours: number) => new Date(NOW.getTime() + hours * 3_600_000).toISOString();
 
@@ -34,7 +33,6 @@ const booking = (action: ComplianceCockpitAction, id: string, label: string, due
   dueAt,
 });
 const property = (id: string, label: string): ComplianceSummaryItem => ({ id, label, action: 'ActivateProperty', propertyId: id, bookingId: null });
-/** An item with its light, as the API sends it with the traffic light on. */
 const lit = (item: ComplianceSummaryItem, light: ComplianceSummaryItem['light'], reason?: string): ComplianceSummaryItem => ({ ...item, light, reason });
 /** An item about a month of a property (ISTAT, tourist tax) or about its connection. */
 const period = (action: ComplianceCockpitAction, propertyId: string, month: string): ComplianceSummaryItem => ({
@@ -62,7 +60,6 @@ describe('buildCockpit levels', () => {
       }),
     );
 
-    // No deadline is known: the failure first, then the communication to send, then the data it needs (the order of the sections).
     expect(subjects(model.fine.rows)).toEqual(['Carla Neri', 'Mario Rossi', 'Anna Verdi']);
     expect(subjects(model.start.rows)).toEqual(['Villa Test']);
     expect(subjects(model.chore.rows)).toEqual(['Luigi Bianchi', 'Villa Test · Paolo Gialli']);
@@ -119,10 +116,8 @@ describe('buildCockpit order and focus', () => {
       alloggiatiManualRequired: { count: 1, items: [booking('SendAlloggiati', 'b1', 'Dal riepilogo', hoursFromNow(100))] },
     });
 
-    // The Home's "Da fare" says it is late, the summary says it is in four days: the summary knows every row, the Home only the first ones.
     const [row] = build(summary, { todo }).fine.rows;
     expect(row.note?.tone).toBe('neutral');
-    // The Home still says where the stay is.
     expect(row.sub).toBe('Casa Como');
   });
 
@@ -208,7 +203,6 @@ describe('deadlineNote', () => {
   });
 
   it.each([
-    // The start of a day (the arrival day of a guest) is the end of the day before.
     ['2026-09-24T22:00:00Z', 'Entro oggi', 'danger'],
     ['2026-09-25T22:00:00Z', 'Entro domani', 'warning'],
     ['2026-09-26T22:00:00Z', 'Entro il 26 settembre', 'warning'],
@@ -270,16 +264,13 @@ describe('focus, then and the number of the menu', () => {
   });
 
   it('fineCount_TrafficLightOn_CountsTheRedStaysThatTheLightMovedOutOfTheOldSection', () => {
-    // With the light on, a stay to send by hand or with its receipt awaited is in the new sections: the menu keeps counting it while it is red.
     const summary = summaryOf({
       alloggiatiManualRequired: { count: 1, items: [booking('SendAlloggiati', 'b0', 'Anna Verdi')] },
       manualSendsRequired: { count: 3, items: [lit(booking('SendAlloggiatiManually', 'b1', 'Mario Rossi'), 'Red'), lit(booking('SendAlloggiatiManually', 'b2', 'Carla Neri'), 'Yellow')] },
       receiptsToUpload: { count: 1, items: [lit(booking('UploadAlloggiatiReceipt', 'b3', 'Luigi Bianchi'), 'Red'), lit(booking('UploadAlloggiatiReceipt', 'b4', 'Paolo Gialli'), 'Green')] },
-      // The identity of the guest is the upkeep of a stay, not what the law dates: it is on the page, not on the menu.
       identityPending: { count: 1, items: [lit(booking('VerifyIdentity', 'b5', 'Marta Rosa'), 'Red')] },
     });
 
-    // The one of the old section, and the two reds of the new ones: not the yellow, not the green, not the identity.
     expect(fineCount(summary)).toBe(3);
   });
 
@@ -340,7 +331,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
       }),
     );
 
-    // The deadline orders inside a light, never across lights.
     expect(subjects(model.fine.rows)).toEqual(['Rossa lontana', 'Gialla', 'Senza luce']);
     expect(model.fine.rows.map((row) => row.light)).toEqual(['red', 'yellow', 'unknown']);
   });
@@ -362,7 +352,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     expect(model.fine.total).toBe(1);
     expect(model.fine.hidden).toBe(0);
     expect(model.total).toBe(1);
-    // The green one is named for what it is (nothing is asked), has no button and its page is the title.
     expect(subjects(model.green)).toEqual(['Mario Rossi']);
     expect(model.green[0]).toMatchObject({ light: 'green', quiet: true, title: 'Ricevuta di Alloggiati Web: Mario Rossi', reason: 'La ricevuta è archiviata.' });
     expect(model.green[0].note).toBeUndefined();
@@ -376,7 +365,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     ];
     const model = build(summaryOf({ manualSendsRequired: { count: 5, items } }));
 
-    // Five need attention and two are listed: three are not, whatever the three green ones listed say.
     expect(model.fine.total).toBe(5);
     expect(model.fine.hidden).toBe(3);
     expect(model.fine.rows).toHaveLength(2);
@@ -411,7 +399,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
 
     const [row] = model.fine.rows;
     expect(row).toMatchObject({ light: 'yellow', to: '/app/short-rent/bookings/b1?tab=alloggiati' });
-    // Still something the host may do (it opens the stay with a button), unlike an item that is done.
     expect(row.quiet).toBeUndefined();
     expect(row.title).toBe('Carica la ricevuta di Alloggiati Web: Mario Rossi');
     expect(focusToneOf(row)).toBe('info');
@@ -446,7 +433,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     expect(model.fine.rows.map((row) => row.title)).toEqual(
       expect.arrayContaining(['Carica la prova ISTAT di agosto 2026: Casa Como', 'Carica la prova ISTAT di settembre 2026: Casa Como']),
     );
-    // Each opens the archive on its own month.
     expect(model.fine.rows.map((row) => row.to).sort()).toEqual([
       '/app/short-rent/alloggiati/reports?kind=IstatProof&property=p1&period=2026-08',
       '/app/short-rent/alloggiati/reports?kind=IstatProof&property=p1&period=2026-09',
@@ -469,7 +455,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     );
 
     expect(model.focus?.subject).toBe('Da chiudere');
-    // Without lights the level decides, as it always did.
     const legacy = build(
       summaryOf({
         receiptsToUpload: { count: 1, items: [booking('UploadAlloggiatiReceipt', 'b1', 'Della legge')] },
@@ -493,7 +478,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     const withLight = build(summaryOf({ alloggiatiFailures: { count: 1, items: [lit(booking('ResolveAlloggiatiFailure', 'b1', 'Mario Rossi'), 'Red', 'alloggiati_failed')] } }));
     const withoutLight = build(summaryOf({ alloggiatiFailures: { count: 1, items: [booking('ResolveAlloggiatiFailure', 'b1', 'Mario Rossi')] } }));
 
-    // One pill, not two: the reason says what the badge said once the light is the API's.
     expect(withLight.fine.rows[0].badge).toBeUndefined();
     expect(withoutLight.fine.rows[0].badge).toEqual({ kind: 'alloggiati', status: 'Errore' });
   });
@@ -508,7 +492,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     expect(model.green[0].note).toBeUndefined();
   });
 
-  // E30/F02/US03/T02: the day of a Ticino property to notify to the police is a row of the law, and its button opens the layer of the notification over the cockpit (never a page of its own).
   it('buildCockpit_ADayToNotifyToTheTicinoPolice_IsARowOfTheLawWhoseButtonOpensTheLayerOnThatDay', () => {
     const ticino = (day: string) => ({ ...period('NotifyTicinoPolice', 'p1', day), dueAt: hoursFromNow(5) });
     const model = build(summaryOf({ ticinoNotifications: { count: 2, items: [ticino('2026-09-23'), ticino('2026-09-24')] } }));
@@ -519,15 +502,12 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
       '/app/short-rent/compliance?detail=ticino:p1:2026-09-23',
       '/app/short-rent/compliance?detail=ticino:p1:2026-09-24',
     ]);
-    // «Notifica» for who may declare it, «Apri» for who may only look: the layer is the same.
     expect(model.fine.rows[0].cta).toBe('Notifica');
     const readOnly = buildCockpit(summaryOf({ ticinoNotifications: { count: 1, items: [ticino('2026-09-23')] } }), {}, { ...context, hasPermission: (_area, permission) => permission !== 'alloggiati.submit' }, NOW);
     expect(readOnly.fine.rows[0].cta).toBe('Apri');
     expect(readOnly.fine.rows[0].to).toBe('/app/short-rent/compliance?detail=ticino:p1:2026-09-23');
   });
 
-  // E31/F02/US02/T02 (NF-131): the day of a property in another canton to notify to the authority is a row of the law too, its button opens the layer of the assisted notification on that day, and the
-  // item is counted in the red number of the menu.
   it('buildCockpit_ADayToNotifyToTheAuthorityOfAnotherCanton_IsARowOfTheLawWhoseButtonOpensTheLayerOnThatDay', () => {
     const swiss = (day: string) => ({ ...period('NotifyGuestsAuthority', 'p1', day), dueAt: hoursFromNow(5) });
     const model = build(summaryOf({ swissNotifications: { count: 2, items: [swiss('2026-09-23'), swiss('2026-09-24')] } }));
@@ -539,19 +519,16 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
       '/app/short-rent/compliance?detail=swiss-notification:p1:2026-09-24',
     ]);
     expect(model.fine.rows[0].title).toBe('Notifica all\'autorità gli ospiti arrivati il 23 settembre: Casa Como');
-    // «Notifica» for who may declare it, «Apri» for who may only look: the layer is the same.
     expect(model.fine.rows[0].cta).toBe('Notifica');
     const readOnly = buildCockpit(summaryOf({ swissNotifications: { count: 1, items: [swiss('2026-09-23')] } }), {}, { ...context, hasPermission: (_area, permission) => permission !== 'alloggiati.submit' }, NOW);
     expect(readOnly.fine.rows[0].cta).toBe('Apri');
     expect(readOnly.fine.rows[0].to).toBe('/app/short-rent/compliance?detail=swiss-notification:p1:2026-09-23');
   });
 
-  // The sources of Basel-Stadt, Fribourg, Neuchâtel, Thurgau and Zurich give no deadline: the row says so, and a time is never made up.
   it('buildCockpit_ADayOfACantonWithNoDeadline_SaysTheDeadlineIsNotKnownAndNeverADate', () => {
     const model = build(summaryOf({ swissNotifications: { count: 1, items: [{ ...period('NotifyGuestsAuthority', 'p1', '2026-09-23'), dueAt: null }] } }));
 
     expect(model.fine.rows[0].note).toEqual({ text: 'Scadenza non nota', tone: 'neutral' });
-    // The same item with a deadline says the deadline; nothing else of the law says «non nota» (the others have their deadline or none to tell).
     const dated = build(summaryOf({ swissNotifications: { count: 1, items: [{ ...period('NotifyGuestsAuthority', 'p1', '2026-09-23'), dueAt: hoursFromNow(-30) }] } }));
     expect(dated.fine.rows[0].note?.text).toBe('Scaduto da 1 giorno');
     const ticino = build(summaryOf({ ticinoNotifications: { count: 1, items: [period('NotifyTicinoPolice', 'p1', '2026-09-23')] } }));
@@ -562,12 +539,10 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     const open = summaryOf({ swissNotifications: { count: 3, items: [] }, ticinoNotifications: { count: 1, items: [] } });
     const afterDeclaration = summaryOf({ swissNotifications: { count: 2, items: [] }, ticinoNotifications: { count: 1, items: [] } });
 
-    // The menu counter and the page read the same summary: once it is read again the declared day is not counted, and the Ticino ones are counted as they were.
     expect(fineCount(open)).toBe(4);
     expect(fineCount(open) - fineCount(afterDeclaration)).toBe(1);
   });
 
-  // E29/F02/US02/T01: a property in Switzerland kept from starting by its municipality or its structure number says so like any other step (the item carries the reason as `code`, the step as `field`).
   it('buildCockpit_SwissPropertyToActivate_NamesTheNotificationOfTheGuestsAsWhatItLacks', () => {
     const swiss = { ...property('p1', 'Casa Lugano'), missing: [{ code: 'ticino_structure_id_missing', field: 'guest-registration' }] };
     const model = build(summaryOf({ propertiesPending: { count: 1, items: [swiss] } }));
@@ -579,7 +554,6 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     const open = summaryOf({ ticinoNotifications: { count: 2, items: [] } });
     const afterDeclaration = summaryOf({ ticinoNotifications: { count: 1, items: [] } });
 
-    // The menu counter and the page read the same summary: once it is read again the declared day is not counted.
     expect(fineCount(open) - fineCount(afterDeclaration)).toBe(1);
   });
 

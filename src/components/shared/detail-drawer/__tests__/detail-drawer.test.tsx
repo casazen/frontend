@@ -108,7 +108,6 @@ function renderPage(initial = '/app/page') {
 }
 
 const where = () => screen.getByTestId('where').textContent;
-/** Radix starts listening for a press outside the dialog one tick after it opens. */
 const afterTick = () =>
   act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -435,7 +434,6 @@ describe('Detail drawer (UI-15)', () => {
       fireEvent.click(within(dialog).getByRole('button', { name: "Vai all'altro" }));
       await waitFor(() => expect(where()).toContain('probe-wide:z-9'));
 
-      // The old container (and the place it was scrolled to) goes with the old content; the control that had the focus is gone.
       const after = within(screen.getByRole('dialog')).getByTestId('detail-drawer-body');
       expect(after).not.toBe(before);
       await waitFor(() => expect(after).toHaveFocus());
@@ -465,7 +463,6 @@ describe('Detail drawer (UI-15)', () => {
       expect(dialog).toHaveAttribute('data-detail-sheet');
       expect(dialog).toHaveClass('max-md:inset-x-0', 'max-md:bottom-0', 'max-md:max-h-[92dvh]', 'max-md:rounded-t-2xl');
       expect(dialog).toHaveClass('md:inset-y-0', 'md:right-0', 'md:max-w-xl');
-      // The motion of a panel is for the panel only: a sheet from the bottom moves with its own CSS (`styles/sheet-bottom.css`).
       expect(dialog).toHaveClass('md:data-[state=open]:slide-in-from-right');
       expect(dialog.className).not.toMatch(/(^|\s)(data-\[state=open\]:animate-in|slide-in-from-right)/);
     });
@@ -473,7 +470,6 @@ describe('Detail drawer (UI-15)', () => {
     it('DetailDrawerHost_Header_KeepsTheTitleClearOfTheCloseButtonOnThePhoneAndFromMd', async () => {
       renderPage('/app/page?detail=probe:abc-1');
 
-      // `md:px-6` alone would take the room away again from `md` up: the right padding is said for both.
       const header = (await screen.findByRole('heading', { level: 2 })).parentElement;
       expect(header).toHaveClass('pr-16', 'md:pr-16');
     });
@@ -493,7 +489,6 @@ describe('Detail drawer (UI-15)', () => {
 
       fireEvent.pointerDown(grip, { pointerId: 1, pointerType: 'touch', clientY: 400 });
       fireEvent.pointerMove(grip, { pointerId: 1, pointerType: 'touch', clientY: 540 });
-      // The sheet follows the finger: it is the drawer itself that is moved.
       expect(dialog.style.transform).toBe('translateY(140px)');
       fireEvent.pointerUp(grip, { pointerId: 1, pointerType: 'touch', clientY: 540 });
 
@@ -514,7 +509,6 @@ describe('Detail drawer (UI-15)', () => {
       const note = await within(dialog).findByTestId('note');
       fireEvent.change(note, { target: { value: 'portare il seggiolone' } });
 
-      // The phone is turned (390 px to 844 px) and the window is stretched (to 1280 px).
       act(() => viewport.resize(844));
       act(() => viewport.resize(1280));
 
@@ -528,7 +522,6 @@ describe('Detail drawer (UI-15)', () => {
     it('DetailDrawerHost_ContentLoadingItsData_ShowsAPlaceholderThatIsAnnounced', async () => {
       renderPage('/app/page?detail=probe-lazy:l-1');
 
-      // A lazy content shows the placeholder of the drawer while its chunk comes, then the content.
       expect(await screen.findByText('Contenuto pigro l-1')).toBeInTheDocument();
     });
 
@@ -539,9 +532,7 @@ describe('Detail drawer (UI-15)', () => {
 
       const alert = await screen.findByRole('alert');
       expect(alert).toHaveTextContent('Impossibile mostrare il dettaglio');
-      // The page is behind the dialog, hidden from assistive technology while it is open.
       expect(screen.getByRole('heading', { name: 'Pagina', hidden: true })).toBeInTheDocument();
-      // The drawer still has a name and a way to close.
       expect(screen.getByRole('dialog')).toHaveAccessibleName('Dettaglio');
 
       failing = false;

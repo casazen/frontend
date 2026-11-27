@@ -9,13 +9,10 @@ import type { PublicDestination, PublicStayCard } from '@/types/public-stays.typ
  */
 
 export interface SiteRating {
-  /** Reviews of all the homes of the site. */
   count: number;
-  /** The average of the marks of all of them, one decimal. */
   average: number;
 }
 
-/** The mark of the whole site, from the marks of its homes (each weighs as many reviews as it has); `null` while nobody reviewed. */
 export function siteRating(cards: readonly Pick<PublicStayCard, 'rating'>[]): SiteRating | null {
   let count = 0;
   let sum = 0;
@@ -27,13 +24,11 @@ export function siteRating(cards: readonly Pick<PublicStayCard, 'rating'>[]): Si
   return count > 0 ? { count, average: Math.round((sum / count) * 10) / 10 } : null;
 }
 
-/** Most guests any home of the site takes: the search never offers more people than that. `undefined` while the homes are not known. */
 export function maxGuestsOf(cards: readonly Pick<PublicStayCard, 'maxGuests'>[]): number | undefined {
   const most = Math.max(0, ...cards.map((card) => card.maxGuests));
   return most > 0 ? most : undefined;
 }
 
-/** The comuni of the homes, each once, in the order of the list. */
 export function comuniOf(cards: readonly Pick<PublicStayCard, 'comune'>[]): string[] {
   const seen = new Set<string>();
   for (const { comune } of cards) {
@@ -43,7 +38,6 @@ export function comuniOf(cards: readonly Pick<PublicStayCard, 'comune'>[]): stri
   return [...seen];
 }
 
-/** `Ostuni, Polignano a Mare e Lecce`: a list in the words of the language of the page. */
 export function listOfPlaces(places: readonly string[], locale: string): string {
   if (places.length === 0) return '';
   try {
@@ -53,26 +47,17 @@ export function listOfPlaces(places: readonly string[], locale: string): string 
   }
 }
 
-/** The places for the «Dove» field, each with how many homes it has (the label is the comune; `sub` is filled by the page, in words). */
 export function destinationOptions(destinations: readonly PublicDestination[] | undefined, sub: (count: number) => string): Destination[] {
   return (destinations ?? []).map((destination) => ({ id: destination.id, label: destination.label, sub: sub(destination.count) }));
 }
 
-/** A zone of the home page: the comune, its homes, the lowest night among them and where to put the pin. */
 export interface HomeZone {
-  /** The id of the destination of the comune (the value of the `where` filter), as the server writes it. */
   id: string;
   name: string;
   count: number;
-  /** The lowest night of its homes, in cents. */
   fromPerNightCents: number;
   currency: string;
-  /** The photo of the first home of the zone. */
   photo?: string;
-  /**
-   * The middle of its homes that have a position, already rounded to two decimals (about a kilometre): a map never gets a more exact
-   * position. `0, 0` (how the data say «not set») when none of them has one: the map then puts the pin at the comune.
-   */
   lat: number;
   lon: number;
 }
@@ -102,7 +87,6 @@ export function zonesOf(cards: readonly PublicStayCard[], destinations: readonly
       name: comune,
       count: homes.length,
       fromPerNightCents: Math.min(...homes.map((home) => home.price.perNightCents)),
-      // What the first home says, as it says it: a home that says none leaves the zone with none, and the price is then written with the phrase that says so.
       currency: homes[0].price.currency,
       photo: homes.flatMap((home) => home.photos)[0],
       lat: middle((home) => home.latitude),

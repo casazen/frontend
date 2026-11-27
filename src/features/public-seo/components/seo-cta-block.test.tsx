@@ -23,7 +23,6 @@ describe('SeoCtaBlock (SE-04, #300 AC8)', () => {
 
     const link = screen.getByTestId('seo-cta-signup');
     expect(link).toHaveAttribute('href', expect.stringContaining('/signup?comune=como'));
-    // The click must not be cancelled: the browser still follows the link.
     const notPrevented = fireEvent.click(link);
 
     expect(notPrevented).toBe(true);

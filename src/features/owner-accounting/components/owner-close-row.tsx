@@ -23,24 +23,16 @@ interface OwnerCloseRowProps {
   period: Period;
   owner: OwnerPeriodReadiness;
   name: string;
-  /** The month is over: only then can it be closed. */
   monthOver: boolean;
 }
 
-/**
- * One owner of the month (E06/F05/US02/T04): the name, where the statement stands, the balance it closes on, what is wrong, and the next step as
- * one button (the others in «⋯»). The versions of the owner are read here, for the owners that have one, and the payouts for the ones whose statement is approved or published
- * (a statement already paid is not asked to be paid again: its next step is the close): nothing is posted, regenerated or closed by reading them.
- */
 export function OwnerCloseRow({ period, owner, name, monthOver }: OwnerCloseRowProps) {
   const { t } = useTranslation();
   const { money } = useOwnerFormat();
   const hasVersion = owner.latestVersion !== null;
   const versions = useOwnerVersions(period.year, period.month, owner.ownerId, hasVersion);
-  // The newest version that is not superseded: a new version supersedes the one before, so it is the first of the list.
   const latest = versions.data?.find((version) => version.status !== 'Superseded') ?? null;
   const versionIds = (versions.data ?? []).map((version) => version.id);
-  // The payments matter from the approval on, until the month is closed.
   const paid = owner.status !== 'Closed' && (latest?.status === 'Approved' || latest?.status === 'Published');
   const payouts = useOwnerPayouts(owner.ownerId, paid);
   const settled = paid && latest !== null && payouts.isSuccess && isSettled(latest, payouts.data, versionIds);
@@ -48,7 +40,6 @@ export function OwnerCloseRow({ period, owner, name, monthOver }: OwnerCloseRowP
   const ctx: ActionContext = { period, ownerId: owner.ownerId, ownerName: name, version: latest, versionIds };
   const controller = useOwnerActions(ctx);
   const actions = actionsOf({ status: owner.status, version: latest, isDirty: owner.isDirty, issues: owner.issues, monthOver, settled });
-  // Until the versions and the payments are read (or when the versions could not be), no action is offered: what is not known is not asked.
   const waiting = (hasVersion && versions.isPending) || (paid && payouts.isPending);
   const failed = hasVersion && versions.isError;
   const paymentsFailed = paid && payouts.isError;

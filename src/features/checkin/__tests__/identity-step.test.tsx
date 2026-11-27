@@ -27,10 +27,8 @@ configure({ asyncUtilTimeout: 5_000 });
 
 const TOKEN = 'tok-identity';
 
-/** The version the registry serves for the consent: what the guest agrees to is this text, and this is what the consent sends back. */
 const CONSENT_VERSION = 'checkin-biometric-2026-11';
 
-/** What the registry serves for a stay: the consent and, for a property that keeps no document, the Ticino notice. */
 const servedTexts = (overrides: { notice?: boolean; draft?: boolean } = {}): CheckInLegalTextsResponse => ({
   language: 'it',
   texts: [
@@ -62,7 +60,6 @@ const state = (overrides: Partial<IdentityVerificationState> = {}): IdentityVeri
   ...overrides,
 });
 
-/** The page gives the step the cache of the queries: the legal texts are asked with it. */
 const withQueries = (children: ReactNode) => (
   <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}>{children}</QueryClientProvider>
 );
@@ -80,7 +77,6 @@ function Harness({ initial }: { initial: IdentityVerificationState }) {
 
 const renderStep = (initial: IdentityVerificationState = state()) => render(withQueries(<Harness initial={initial} />));
 
-/** What the page does: it keeps the state of the check and shows the step only while the guest is on it; «Back» takes the step away and leaves the state. */
 function PageHarness({ initial }: { initial: IdentityVerificationState }) {
   const identity = useIdentityVerification(TOKEN, initial);
   const [onTheStep, setOnTheStep] = useState(true);
@@ -102,7 +98,6 @@ function httpError(status?: number, data?: unknown, code?: string): AxiosError {
 
 const stage = () => screen.getByTestId('checkin-identity-step').getAttribute('data-stage');
 
-/** A camera that works: a stream with one track, and a video that has a picture (4000 x 3000). */
 function stubCamera() {
   const stop = vi.fn();
   const stream = { getTracks: () => [{ stop }] } as unknown as MediaStream;
@@ -130,7 +125,6 @@ function pickDocument() {
   fireEvent.change(screen.getByTestId('checkin-identity-document-file'), { target: { files: [photoFile()] } });
 }
 
-/** The guest picks a photo of the document that weighs `size` bytes (only the size is made up). */
 function pickDocumentOfSize(size: number) {
   const photo = photoFile();
   Object.defineProperty(photo, 'size', { value: size });
@@ -138,7 +132,6 @@ function pickDocumentOfSize(size: number) {
   return photo;
 }
 
-/** A browser that can draw a photo again: the bitmap of a 4000 x 3000 photo, a canvas and a JPEG that comes out of it. */
 function stubRedraw() {
   vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 4000, height: 3000, close: vi.fn() }));
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn(), fillRect: vi.fn() } as unknown as CanvasRenderingContext2D);
@@ -168,7 +161,6 @@ beforeEach(async () => {
   await i18n.changeLanguage('it');
 });
 
-/** The text of the consent is on the screen: the guest can agree to it. */
 const waitForTheConsentText = () => waitFor(() => expect(screen.getByTestId('checkin-biometric-accept')).toBeEnabled());
 
 afterEach(() => {
@@ -184,16 +176,13 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
 
     expect(stage()).toBe('consent');
     expect(screen.getByTestId('checkin-biometric-consent')).toBeInTheDocument();
-    // The words are the registry's: until they are on the screen there is nothing to agree to.
     expect(screen.getByTestId('checkin-biometric-accept')).toBeDisabled();
     await waitForTheConsentText();
     expect(screen.getByTestId('checkin-consent-text')).toHaveTextContent('Il tuo selfie non viene mai salvato.');
     expect(screen.getByTestId('checkin-biometric-accept')).toBeEnabled();
     expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
-    // Nothing is captured before the guest answers: no camera, no file.
     expect(screen.queryByTestId('checkin-selfie-capture')).not.toBeInTheDocument();
     expect(document.querySelector('input[type="file"]')).toBeNull();
-    // Only the guest who leaves the document takes part: the text says it.
     expect(screen.getByText(i18n.t('checkin.identity.intro'))).toBeInTheDocument();
   });
 
@@ -215,7 +204,6 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
     expect(screen.getByTestId('identity-operator-text')).toHaveTextContent(i18n.t('checkin.identity.result.operator.text'));
     expect(screen.getByTestId('identity-operator-requested')).toBeInTheDocument();
     expect(screen.queryByTestId('identity-lock-code')).not.toBeInTheDocument();
-    // A person has it: the step is over and the page may go on.
     expect(screen.getByTestId('harness-concluded')).toHaveTextContent('true');
   });
 
@@ -233,7 +221,6 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
     fireEvent.click(screen.getByTestId('checkin-biometric-accept'));
 
     await waitFor(() => expect(stage()).toBe('document'));
-    // The version is the one the registry served with the text that was on the screen: the page has none of its own.
     expect(publicCheckinApi.postBiometricConsent).toHaveBeenCalledWith(TOKEN, { consentGiven: true, consentVersion: CONSENT_VERSION });
     expect(CONSENT_VERSION.length).toBeLessThanOrEqual(50);
     expect(screen.getByTestId('checkin-identity-document')).toBeInTheDocument();
@@ -284,7 +271,6 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
   });
 
   it('IdentityStep_TheTextsCannotBeRead_SaysSoNeverOffersTheConsentAndAnotherTryReadsThemAgain', async () => {
-    // A network failure is tried once more by the query (a second later) before the guest is told.
     vi.mocked(publicCheckinApi.getLegalTexts).mockRejectedValue(httpError(undefined, undefined, AxiosError.ERR_NETWORK));
     renderStep();
 
@@ -319,7 +305,6 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
     fireEvent.click(screen.getByTestId('checkin-biometric-accept'));
 
     expect(await screen.findByTestId('checkin-identity-problem')).toHaveTextContent(i18n.t('checkin.identity.problem.consent_text_changed'));
-    // The texts were asked again: what is on the screen now is the version the registry serves.
     await waitFor(() => expect(screen.getByTestId('checkin-consent-version')).toHaveTextContent('checkin-biometric-2026-12'));
     expect(stage()).toBe('consent');
   });
@@ -358,7 +343,6 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
 
 
     expect(await screen.findByTestId('checkin-identity-problem')).toHaveTextContent(i18n.t('checkin.identity.problem.network'));
-    // Nobody was told: the step is not over, and the guest tries again.
     expect(screen.getByTestId('harness-concluded')).toHaveTextContent('false');
     expect(screen.getByTestId('identity-ask-operator')).toBeEnabled();
     fireEvent.click(screen.getByTestId('identity-ask-operator'));
@@ -402,7 +386,6 @@ describe('IdentityStep: the document (AC-NF51-1, AC-NF51-2)', () => {
     expect(within(guidance).getByText(i18n.t('checkin.identity.guidance.avoid_glare'))).toBeInTheDocument();
     expect(within(guidance).getByText(i18n.t('checkin.identity.guidance.show_whole_document'))).toBeInTheDocument();
     expect(stage()).toBe('document');
-    // The button now asks to photograph it again; the way to a person is there too.
     expect(screen.getByTestId('checkin-identity-document-pick')).toHaveTextContent(i18n.t('checkin.identity.document.pickAgain'));
     expect(screen.getByTestId('checkin-identity-document-operator')).toBeInTheDocument();
   });
@@ -418,7 +401,6 @@ describe('IdentityStep: the document (AC-NF51-1, AC-NF51-2)', () => {
     await waitFor(() => expect(stage()).toBe('selfie'));
     expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(1);
     expect(vi.mocked(publicCheckinApi.postDocument).mock.calls[0][0]).toBe(TOKEN);
-    // The selfie step has no file input at all.
     expect(document.querySelector('input[type="file"]')).toBeNull();
   });
 
@@ -446,7 +428,6 @@ describe('IdentityStep: the document (AC-NF51-1, AC-NF51-2)', () => {
 
 describe('IdentityStep: a photo being made ready (one call at a time)', () => {
   it('IdentityStep_AHeavyPhotoIsBeingMadeReady_EveryButtonAndTheFileInputAreDisabledAndTheStepIsBusyUntilItIsSent', async () => {
-    // A photo over 9 MB is decoded and redrawn in the browser, which takes seconds: the bitmap is held back here, so no call is in flight yet.
     let decoded: (bitmap: unknown) => void = () => undefined;
     vi.stubGlobal(
       'createImageBitmap',
@@ -466,7 +447,6 @@ describe('IdentityStep: a photo being made ready (one call at a time)', () => {
 
     pickDocumentOfSize(9_500_000);
 
-    // Nothing can be started while it is made ready: not a second photo, not a person asked, and the page keeps Back and Next disabled (it reads busy).
     await waitFor(() => expect(screen.getByTestId('checkin-identity-document-pick')).toBeDisabled());
     expect(screen.queryByTestId('checkin-identity-document-operator')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkin-identity-document-file')).toBeDisabled();
@@ -513,7 +493,6 @@ describe('IdentityStep: the selfie (AC-NF50-1, ADR-013-R11, R12)', () => {
     expect(problem).toHaveTextContent(i18n.t('checkin.biometric.capture.cameraDenied'));
     expect(problem).toHaveTextContent(i18n.t('checkin.biometric.capture.noFile'));
     expect(screen.getByTestId('selfie-camera-retry')).toBeInTheDocument();
-    // Never a file picker, in any form.
     expect(document.querySelector('input[type="file"]')).toBeNull();
     expect(document.querySelector('input')).toBeNull();
 
@@ -637,7 +616,6 @@ describe('IdentityStep: the selfie (AC-NF50-1, ADR-013-R11, R12)', () => {
     expect(within(reasons).getByText(i18n.t('checkin.identity.guidance.move_closer'))).toBeInTheDocument();
     expect(within(reasons).getByText(i18n.t('checkin.identity.guidance.more_light'))).toBeInTheDocument();
     expect(screen.getByTestId('identity-attempts-left')).toHaveTextContent('Tentativi rimasti: 2');
-    // No code for any answer but `ok`.
     expect(screen.queryByText('9876')).not.toBeInTheDocument();
     expect(screen.queryByTestId('identity-lock-code')).not.toBeInTheDocument();
     // The button to ask a person is always there after a retry, and the page does not go on yet.
@@ -707,7 +685,6 @@ describe('IdentityStep: the selfie (AC-NF50-1, ADR-013-R11, R12)', () => {
 
     expect(await screen.findByTestId('checkin-identity-problem')).toHaveTextContent(i18n.t('checkin.identity.problem.network'));
     expect(stage()).toBe('selfie');
-    // The picture is still on the screen: the same button sends it again.
     fireEvent.click(screen.getByTestId('selfie-send'));
 
     await waitFor(() => expect(stage()).toBe('done'));
@@ -744,7 +721,6 @@ describe('IdentityStep: a property in Ticino (ADR-013-R6, R15)', () => {
 
     expect(screen.getByTestId('checkin-document-not-archived')).toHaveTextContent('Il documento non sarà archiviato.');
     expect(await screen.findByTestId('checkin-ticino-notice')).toHaveTextContent('Il documento non viene archiviato.');
-    // The consent and the notice are read before the guest answers: both are on the screen when the buttons work.
     await waitForTheConsentText();
     expect(screen.getByTestId('checkin-consent-text')).toBeInTheDocument();
   });
@@ -785,7 +761,6 @@ describe('IdentityStep: a property in Ticino (ADR-013-R6, R15)', () => {
     vi.mocked(publicCheckinApi.postDocument).mockResolvedValue({ success: true, acceptable: true, guidanceCodes: [], documentStored: false, documentNotArchived: true });
     renderStep(state({ step: 'document', consentRecorded: true, documentNotArchived: true }));
 
-    // 6 MB is under the 9 MB of one picture and over what leaves room for a selfie in the same request (the API refuses the whole body over 10 MB).
     const photo = pickDocumentOfSize(6_000_000);
 
     await waitFor(() => expect(stage()).toBe('selfie'));
@@ -843,10 +818,8 @@ describe('IdentityStep: nothing of the pictures or of the code is kept', () => {
 describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)', () => {
   const selfieState = state({ step: 'selfie', consentRecorded: true, documentChecked: true });
 
-  /** The live preview is on: the camera is open (the button to take the picture is ready). */
   const waitForPreview = () => waitFor(() => expect(screen.getByTestId('selfie-take')).toBeEnabled());
 
-  /** The guest takes the picture: it is on the canvas at the size of the camera (4000 x 3000 here). */
   async function takePicture() {
     await waitFor(() => expect(screen.getByTestId('selfie-take')).toBeEnabled());
     fireEvent.click(screen.getByTestId('selfie-take'));
@@ -889,7 +862,6 @@ describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)'
     const view = renderStep(selfieState);
     await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(1));
 
-    // The guest leaves while the browser is still asking for the camera: there is no stream to switch off yet.
     view.unmount();
     expect(stop).not.toHaveBeenCalled();
     await act(async () => {
@@ -910,7 +882,6 @@ describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)'
     fireEvent.click(await screen.findByTestId('selfie-send'));
     await screen.findByTestId('identity-lock-code');
 
-    // Nothing of the picture stays on a canvas a phone could keep.
     expect(canvas.width).toBe(0);
     expect(canvas.height).toBe(0);
   });
@@ -934,7 +905,6 @@ describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)'
     const { getUserMedia, stop } = stubCamera();
     renderStep(selfieState);
     const canvas = await takePicture();
-    // Taking the picture switches the camera off: the picture is all that is left.
     expect(stop).toHaveBeenCalledTimes(1);
 
     fireEvent.click(await screen.findByTestId('selfie-retake'));
@@ -1012,7 +982,6 @@ describe('IdentityStep in the other languages', () => {
     await waitForTheConsentText();
     expect(screen.getByTestId('checkin-biometric-accept')).toHaveTextContent('I agree to the face check');
     expect(publicCheckinApi.getLegalTexts).toHaveBeenCalledWith(TOKEN, 'en');
-    // The registry served Italian files for an English page: the guest is told which language the texts are in.
     expect(screen.getByTestId('checkin-consent-text-language')).toHaveTextContent('Italiano');
     await i18n.changeLanguage('it');
   });

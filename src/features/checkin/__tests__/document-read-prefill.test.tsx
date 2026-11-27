@@ -24,7 +24,6 @@ configure({ asyncUtilTimeout: 15_000 });
 
 const TOKEN = 'tok-prefill';
 
-/** The numbers and names of the document that was read: nothing of it may be found in a storage, an address or a log afterwards. */
 const READ_VALUES = ['CA12345AB', '1990-05-15', 'Roma', '2022-03-11', '2032-03-11'];
 
 const booker: PublicCheckInGuestPrefill = {
@@ -53,7 +52,6 @@ const openContext: PublicCheckInContextDto = {
   availableCodeTables: [],
 };
 
-/** What the server answers for the front of the Italian card with the self-hosted flow on: the reading as it always was, the values by zone, what is missing, and the source. */
 function zonedAnswer(overrides: Partial<CheckInDocumentReadResult> = {}): CheckInDocumentReadResult {
   return {
     read: true,
@@ -87,7 +85,6 @@ function zonedAnswer(overrides: Partial<CheckInDocumentReadResult> = {}): CheckI
   };
 }
 
-/** The answer of before: none of `fields`, `missing` and `source` (the flow is off). */
 function legacyAnswer(): CheckInDocumentReadResult {
   const { fields, missing, source, ...rest } = zonedAnswer();
   void fields;
@@ -149,7 +146,6 @@ describe('document-read-prefill: the answer of the server and what the page make
       { name: 'documentIssuedOn', value: '2022-03-11', source: null },
       { name: 'documentExpiresOn', value: '2032-03-11', source: null },
     ]);
-    // Nothing of the rows is asked again.
     expect(prefill?.missing).toEqual(['lastName', 'firstName', 'issuePlace']);
     expect(prefill?.missing.some((name) => prefill.rows.some((row) => row.name === name))).toBe(false);
   });
@@ -181,7 +177,6 @@ describe('document-read-prefill: the answer of the server and what the page make
   });
 
   it('buildPrefill_AValueTheFormCannotTake_IsAskedLikeOneThatWasNotRead', () => {
-    // A birth place with no word on whether it is in Italy, and a sex that is neither of the two of the form.
     const prefill = buildPrefill(
       zonedAnswer({
         guest: { birthPlace: 'Roma', gender: 'Other' },
@@ -219,12 +214,10 @@ describe('document-read-prefill: the answer of the server and what the page make
 
     expect(confirmed.guest?.dateOfBirth).toBe('1991-06-16');
     expect(confirmed.guest?.documentNumber).toBe('CA99999ZZ');
-    // A value the guest cleared never overwrites what the form holds.
     expect(confirmed.guest?.gender).toBeNull();
     expect(confirmed.guest?.citizenship).toBe('Italia');
     expect(confirmed.guestPosition).toBe(0);
     expect(confirmed.side).toBe('front');
-    // The answer that was given is not changed.
     expect(answer.guest?.dateOfBirth).toBe('1990-05-15');
   });
 
@@ -291,7 +284,6 @@ describe('document-read-prefill: the data step shows what was read (AC4)', () =>
       expect(control).toBeEnabled();
       expect(control).not.toHaveAttribute('readonly');
       expect(control).toHaveValue(row.value);
-      // Each value has its label, and the marker is read with it.
       expect(within(panel).getByLabelText(text(prefillFieldKey(row.name)))).toBe(control);
       expect(control).toHaveAccessibleDescription(expect.stringContaining(text('checkin.prefill.readFromDocument')));
     }
@@ -313,7 +305,6 @@ describe('document-read-prefill: the data step shows what was read (AC4)', () =>
     const asked = screen.getByTestId('checkin-prefill-missing');
     const items = within(asked).getAllByTestId('checkin-prefill-missing-item');
     expect(items.map((item) => item.textContent)).toEqual([text('checkin.prefill.field.lastName'), text('checkin.prefill.field.firstName'), text('checkin.prefill.field.issuePlace')]);
-    // Not one of the data that were read is in the list.
     expect(asked).not.toHaveTextContent(text('checkin.prefill.field.dateOfBirth'));
     expect(asked).not.toHaveTextContent(text('checkin.prefill.field.documentNumber'));
     expect(asked).toHaveTextContent(text('checkin.prefill.missingText'));
@@ -362,7 +353,6 @@ describe('document-read-prefill: the data step shows what was read (AC4)', () =>
     const input = screen.getByTestId('checkin-prefill-value-documentNumber');
     const allowed = fireEvent.keyDown(input, { key: 'Enter' });
 
-    // The key was cancelled (a form is sent by the implicit submit of the browser after an unhandled Enter) and nothing was confirmed.
     expect(allowed).toBe(false);
     expect(view.props.onConfirmPrefill).not.toHaveBeenCalled();
   });
@@ -442,7 +432,6 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
   });
 
   it('document-read-prefill: no storage write', { timeout: 30_000 }, async () => {
-    // The proof of the privacy rule of the task: what a document says is never persisted in the browser.
     const setItem = vi.spyOn(Storage.prototype, 'setItem');
     const consoleCalls = [vi.spyOn(console, 'log'), vi.spyOn(console, 'info'), vi.spyOn(console, 'debug')];
     renderPage();
@@ -475,14 +464,11 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
     chooseDocument();
     const panel = await screen.findByTestId('checkin-prefill');
 
-    // The photo went to the one call that reads it, and its values are on the screen, marked.
     expect(publicCheckinApi.readDocument).toHaveBeenCalledTimes(1);
     expect(within(panel).getByTestId('checkin-prefill-marker-documentNumber')).toHaveTextContent('Letto dal documento');
     expect(within(panel).getByTestId('checkin-prefill-value-dateOfBirth')).toHaveValue('1990-05-15');
-    // Only the issue place is asked: the names come from the booking and the form already holds them.
     const asked = within(panel).getAllByTestId('checkin-prefill-missing-item');
     expect(asked.map((item) => item.textContent)).toEqual(['Luogo di rilascio']);
-    // Nothing is in the form yet: the guest has not confirmed, so there is nothing read to go on with.
     expect(screen.queryByTestId('checkin-scan-continue')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkin-document-message')).not.toBeInTheDocument();
 
@@ -533,7 +519,6 @@ describe('document-read-prefill: on the page of the guest (AC4, privacy)', () =>
     fireEvent.click(within(first).getByTestId('checkin-prefill-confirm'));
     await screen.findByTestId('checkin-document-message');
 
-    // The back says the issue place; the answer for this photo says it lacks the date of birth, which the first photo already gave.
     vi.mocked(publicCheckinApi.readDocument).mockResolvedValue(
       zonedAnswer({ side: 'back', guest: { issuePlace: 'Roma' }, fields: [], missing: ['dateOfBirth', 'gender', 'issuePlace'] }),
     );

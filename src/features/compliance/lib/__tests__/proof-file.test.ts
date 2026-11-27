@@ -6,7 +6,6 @@ const entry = (change: Partial<Parameters<typeof proofFileName>[0]> = {}) => ({ 
 describe('proofFileName', () => {
   it('proofFileName_TheServerGaveAName_IsThatNameMadeSafe', () => {
     expect(proofFileName(entry(), 'application/pdf', 'attachment; filename="ricevuta-agosto.pdf"')).toBe('ricevuta-agosto.pdf');
-    // A name with a path in it stays inside the folder it is saved to.
     expect(proofFileName(entry(), 'application/pdf', 'attachment; filename="../../etc/passwd"')).not.toContain('/');
   });
 

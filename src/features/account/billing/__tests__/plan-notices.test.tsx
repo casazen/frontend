@@ -7,10 +7,6 @@ import i18n from '@/i18n/config';
 import { PlanCompare } from '../plan-compare';
 import { PlanFocus } from '../plan-focus';
 
-/**
- * What the plan page says about the open access (INC-21: it changes the level of the plan, never the payments or the modules) and about the
- * modules of Starter with the guided registration (INC-23).
- */
 const portal = { open: vi.fn(), pending: false };
 const subscription = { status: 'none', planTier: 'Starter' } as never;
 
@@ -59,7 +55,6 @@ describe('the plan page', () => {
 
     const notice = screen.getByTestId('account-billing-notice');
     expect(notice).toHaveTextContent(i18n.t(pricesPending ? 'accountBilling.plan.notice.openAccessPricesPending' : 'accountBilling.plan.notice.openAccess'));
-    // The old words promised «nothing is charged» and «every function is unlocked»: neither is true (subscriptions, payments and modules are untouched).
     expect(notice.textContent).not.toMatch(/non addebitiamo nulla|tutte le funzioni sono sbloccate/i);
     expect(notice).toHaveTextContent('continua a essere addebitato');
     expect(notice).toHaveTextContent('moduli a pagamento restano quelli che hai acquistato');

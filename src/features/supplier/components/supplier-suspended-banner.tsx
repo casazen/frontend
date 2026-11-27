@@ -2,10 +2,6 @@ import { Ban } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSupplierSuspended } from '@/queries/supplier/use-profile';
 
-/**
- * Shown on every page of the supplier console while an admin has suspended the supplier (SU-12): no new requests, and no
- * action on the existing ones. The reason of the suspension is an internal note and is not shown.
- */
 export function SupplierSuspendedBanner() {
   const { t } = useTranslation();
   if (!useSupplierSuspended()) return null;

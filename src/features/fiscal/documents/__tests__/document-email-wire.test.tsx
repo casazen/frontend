@@ -21,7 +21,6 @@ vi.setConfig({ testTimeout: 30_000 });
 type Reply = { status: number; data?: unknown } | 'no-answer';
 let reply: () => Reply;
 let requests: string[];
-/** While it is set the transport does not answer: the call is «on its way». */
 let hold: Promise<void> | null;
 const onForbidden = vi.fn();
 const realAdapter = axiosInstance.defaults.adapter;
@@ -55,7 +54,6 @@ function renderBar() {
   );
 }
 
-/** Presses the button of the e-mail and confirms it in the dialog; gives the dialog. */
 async function askToSend() {
   fireEvent.click(screen.getByTestId('fiscal-document-email'));
   const dialog = await screen.findByRole('dialog');
@@ -94,7 +92,6 @@ describe('the e-mail of an issued document to its guest, through the real client
     expect(told).toContain('E-mail in coda');
     expect(told).toMatch(/19 dic/);
     expect(told).not.toMatch(/consegnat/i);
-    // The dialog closes, and the button now offers to send it again.
     await waitFor(() => expect(dialog).not.toBeInTheDocument());
     expect(screen.getByTestId('fiscal-document-email-queued')).toHaveTextContent('E-mail in coda');
     expect(screen.getByTestId('fiscal-document-email')).toHaveTextContent('Rinvia e-mail');
@@ -137,7 +134,6 @@ describe('the e-mail of an issued document to its guest, through the real client
     expect(problem).toHaveAttribute('data-retry', 'false');
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.queryByTestId('fiscal-document-email-queued')).not.toBeInTheDocument();
-    // Asking again would be refused the same way: no «Riprova», and the confirmation is off until the dialog is closed and what the words name is fixed.
     expect(within(dialog).queryByRole('button', { name: RETRY() })).not.toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: CONFIRM() })).toBeDisabled();
     expect(requests).toEqual([SEND]);
@@ -150,7 +146,6 @@ describe('the e-mail of an issued document to its guest, through the real client
     const dialog = await askToSend();
 
     expect(await within(dialog).findByTestId('fiscal-document-email-problem')).toHaveTextContent(i18n.t('apiErrors.forbidden'));
-    // A refused write keeps the person on the page: the shared handler of the 403 on a read is not called.
     expect(onForbidden).not.toHaveBeenCalled();
     expect(toast.success).not.toHaveBeenCalled();
     expect(within(dialog).getByRole('button', { name: CONFIRM() })).toBeDisabled();
@@ -182,7 +177,6 @@ describe('the e-mail of an issued document to its guest, through the real client
 
     const dialog = await askToSend();
 
-    // The free text of a 5xx is never shown: the sentence says the e-mail was not queued and that the call may be repeated.
     expect(await within(dialog).findByTestId('fiscal-document-email-problem')).toHaveTextContent(i18n.t('fiscalDocuments.email.failed'));
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.queryByTestId('fiscal-document-email-queued')).not.toBeInTheDocument();

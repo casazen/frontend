@@ -16,22 +16,15 @@ export type GuestStay = {
 
 const euro = (amount: number) => new RegExp(`${amount.toLocaleString('it-IT', { minimumFractionDigits: 2 }).replace('.', '\\.')}\\s*€`);
 
-/**
- * Anonymous guest on the public booking site: picks the dates, checks the summary (dates, nights, total), fills the
- * checkout and pays (card in the Stripe Payment Element) or asks to pay at the property. Returns the booking id.
- */
 export async function guestBooksStay(page: Page, stay: GuestStay): Promise<string> {
-  // The stay travels in the address (deep link); the booking card asks the quote of the server and, once the total is in, "Prenota"
-  // is a link to the checkout carrying the same stay.
   await page.goto(`/book/${stay.orgSlug}/property/${stay.propertySlug}?checkin=${stay.checkIn}&checkout=${stay.checkOut}&guests=2`);
-  await page.getByRole('button', { name: 'Accetta' }).click().catch(() => undefined); // cookie banner (essential only)
+  await page.getByRole('button', { name: 'Accetta' }).click().catch(() => undefined);
   await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', /\/checkout\?/, { timeout: 30_000 });
   await page.getByTestId('booking-cta').click();
 
   await expect(page).toHaveURL(new RegExp(`checkin=${stay.checkIn}&checkout=${stay.checkOut}`));
   await expect(page.getByTestId('checkout-stay-summary')).toContainText(`${stay.nights} notti`);
 
-  // Step 1: how to book (the title of the card is the stable text of the choice); step 2: the guest; step 3: consent and the booking.
   await page.getByText(stay.payment === 'card' ? 'Prenotazione immediata' : 'Su richiesta', { exact: true }).click();
   await expect(page.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 30_000 });
   await page.getByTestId('checkout-next').click();
@@ -46,16 +39,12 @@ export async function guestBooksStay(page: Page, stay: GuestStay): Promise<strin
   await page.getByTestId('checkout-submit').click();
 
   if (stay.payment === 'card') {
-    // Stripe test card in the Payment Element (iframe served by js.stripe.com, the only external call of the suite).
     const frame = page.frameLocator('iframe[name^="__privateStripeFrame"]').first();
-    // Stable input names of the card fields of the Payment Element (labels depend on the Stripe locale).
     await frame.locator('input[name="number"]').fill('4242424242424242', { timeout: 60_000 });
     await frame.locator('input[name="expiry"]').fill('12 / 34');
     await frame.locator('input[name="cvc"]').fill('123');
     await page.getByRole('button', { name: 'Paga ora', exact: true }).click();
-    // The page shows the backend's state: "confirmed" only after the webhook confirmed the booking.
     await expect(page).toHaveURL(new RegExp(`/book/${stay.orgSlug}/booking/`), { timeout: 60_000 });
-    // Stable test ids, not the words of the title: the title greets the guest by name.
     await expect(page.getByTestId('checkout-confirmation')).toBeVisible({ timeout: 90_000 });
   } else {
     await expect(page).toHaveURL(new RegExp(`/book/${stay.orgSlug}/booking/`), { timeout: 30_000 });
@@ -69,14 +58,12 @@ export async function guestBooksStay(page: Page, stay: GuestStay): Promise<strin
   return bookingId;
 }
 
-/** The guest opens the email link and clicks the confirmation (mail scanners that open links confirm nothing). */
 export async function guestConfirmsEmail(page: Page, link: string): Promise<void> {
   await page.goto(link);
   await page.getByRole('button', { name: /Conferma e invia la richiesta/ }).click();
   await expect(page.getByText('Email confermata')).toBeVisible({ timeout: 20_000 });
 }
 
-/** Guest check-in portal: the document photo, then two guests, the head of the family's identity document, the privacy notice and the submit. */
 export async function guestCompletesCheckIn(page: Page, link: string): Promise<void> {
   await page.goto(link);
   await page.getByTestId('checkin-enter-manually').click();
@@ -84,7 +71,6 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
     { first: 'Giulia', gender: 'Femmina', born: '1990-05-12' },
     { first: 'Marco', gender: 'Maschio', born: '1988-03-02' },
   ];
-  // Guest 0's ROMA and ITALIA answers stay fresh for five minutes, so guest 1 does not ask again.
   const seenCodes = new Map<string, unknown[]>();
   for (const [i, g] of guests.entries()) {
     const first = page.locator(`#guest-${i}-firstName`);
@@ -95,14 +81,12 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
     await page.locator(`#guest-${i}-dateOfBirth`).fill(g.born);
     await page.locator(`#guest-${i}-bornInItaly`).selectOption({ label: 'In Italia' });
     const birth = await chooseOfficialCode(page, `guest-${i}-birthComuneName`, 'ROMA', /^ROMA\b/i, undefined, seenCodes);
-    // An empty comuni list leaves the typed Roma and does not fill the province. Born in Italy needs one.
     if (birth === 'empty') await page.locator(`#guest-${i}-birthProvince`).fill('RM');
     await chooseOfficialCode(page, `guest-${i}-citizenship`, 'ITALIA', /Ital/i, undefined, seenCodes);
   }
   await page.getByRole('button', { name: 'Avanti' }).click();
   await pickHeadOfFamilyDocumentType(page, seenCodes);
   await page.locator('#guest-0-documentNumber').fill('CA12345AB');
-  // Place of issue searches comuni and states. The golden-journey seed has Stati, not Comuni, so the official row is Italia.
   await chooseOfficialCode(page, 'guest-0-documentIssuePlaceName', 'ITALIA', /^ITALIA\b/i, undefined, seenCodes);
   await page.getByRole('button', { name: 'Avanti' }).click();
   // An organization that offers the tourist tax online (its own setting, flag `touristTaxOnlinePayment`) has the step «Tassa di soggiorno» here, between the document and the invoice:
@@ -128,7 +112,6 @@ async function pickHeadOfFamilyDocumentType(page: Page, seenCodes: Map<string, u
   await chooseOfficialCode(page, 'guest-0-documentType', OFFICIAL_IDENTITY_CARD_QUERY, /CARTA DI IDENTITA/i, FALLBACK_SELECT_LABEL, seenCodes);
 }
 
-/** Same field on the next guest shares one codes answer. The guest index is not part of the key. */
 function seenCodeKey(id: string, query: string): string {
   return `${id.replace(/guest-\d+-/, '')}:${query.toUpperCase()}`;
 }
@@ -153,10 +136,6 @@ async function chooseOfficialCode(
   }
   const cacheKey = seenCodeKey(id, query);
   const alreadySeen = seenCodes?.has(cacheKey) === true;
-  // Official descriptions are uppercase (ROMA, ITALIA, CARTA DI IDENTITA). The list opens while the
-  // field is focused and closes on blur, so the search is waited for and the field is focused again.
-  // A query already answered for this check-in is not requested again (staleTime five minutes),
-  // including when that answer was an empty list.
   let rows: unknown[];
   if (alreadySeen) {
     await field.focus();
@@ -178,8 +157,6 @@ async function chooseOfficialCode(
     rows = Array.isArray(body) ? body : [];
     seenCodes?.set(cacheKey, rows);
   }
-  // A table that was not imported answers []. The typed name stays. A table that was imported
-  // (Stati, Documenti on the golden-journey stack) has a row, and that row is chosen.
   if (rows.length === 0) return 'empty';
   await field.focus();
   const choice = page.locator(`#${id}-listbox`).getByRole('option', { name: option });

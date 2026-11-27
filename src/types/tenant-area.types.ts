@@ -1,11 +1,9 @@
 import type { RentLedgerComponent } from './rent.types';
 
-/** Role of the signed-in person on the contract they can open. */
 type TenantAccessRole = 'TenantPrimary' | 'Tenant';
 
 type TenantDeclarationStatus = 'Submitted' | 'Verified' | 'Rejected' | 'Superseded';
 
-/** What the tenant is allowed to see of a maintenance request. Never a supplier price or a commercial term. */
 export type TenantMaintenanceStatus =
   | 'Sent'
   | 'InReview'
@@ -40,7 +38,6 @@ export interface TenantContract {
   role: TenantAccessRole;
 }
 
-/** Bank details of one due. The amount is what to transfer; it does not mark the installment paid. */
 export interface TenantBankDetails {
   accountHolder: string;
   iban: string;
@@ -67,7 +64,6 @@ export interface TenantDue {
   amount: number;
   amountPaid: number | null;
   residual: number | null;
-  /** Installment state. A declaration never changes this to `Paid`. */
   status: string;
   isOverdue: boolean;
   components: RentLedgerComponent[] | null;
@@ -82,7 +78,6 @@ export interface TenantDocument {
   name: string;
   kind: TenantDocumentKind | string;
   sharedAt: string | null;
-  /** Extraordinary documents stay hidden until someone accepts them. */
   accepted?: boolean;
 }
 
@@ -96,7 +91,6 @@ export interface TenantEmergency {
   contacts: TenantEmergencyContact[];
 }
 
-/** `GET /tenant-area/contracts/:leaseId`: only this contract and its property. */
 interface TenantCondominiumReport {
   id: string; periodLabel: string; periodEnd: string; recoverable: number; advances: number; prior: number; balance: number;
 }

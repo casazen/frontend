@@ -1,6 +1,5 @@
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-/** "2 ore", "1 ora e 30 minuti", "45 minuti". */
 export function formatWorkDuration(minutes: number, t: Translate): string {
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;

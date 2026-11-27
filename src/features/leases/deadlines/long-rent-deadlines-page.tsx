@@ -32,7 +32,6 @@ import {
 } from './deadlines-model';
 
 const LEASE_CREATE_PATH = '/app/long-rent/leases/new';
-/** The quick filter is in the address like the quick filters of the lists (`?chip=renewals`). */
 const FILTER_PARAM = 'chip';
 
 function DeadlineGroup({ title, count, items, context }: { title: string; count?: number; items: readonly LongRentDeadline[]; context: DeadlineContext }) {

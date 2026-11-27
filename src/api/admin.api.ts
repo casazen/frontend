@@ -1,7 +1,6 @@
 import { ApiClient } from '@/api/client';
 import type { AdminStats, CinComplianceItem, JobStatus, Entitlement } from '@/types';
 
-/** Backend PagedResultDto<T> (camelCase JSON) */
 interface BackendPagedResult<T> {
   items: T[];
   totalCount: number;

@@ -18,7 +18,6 @@ export function OnboardingPathCard() {
   const { t } = useTranslation();
   const { path } = useVisibleOnboardingPath();
   const next = path?.next ?? null;
-  // The step is made of parts and only the plan tells which one is still to do: «Continua» waits for it (or for its failure: then it opens the first part).
   const plan = useOnboardingPlan({ enabled: next !== null });
 
   if (!path || (next !== null && plan.isPending)) return null;

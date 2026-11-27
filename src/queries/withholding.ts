@@ -8,9 +8,6 @@ import type { RecordPaymentRequest } from '@/types';
 
 const WITHHOLDING_KEY = 'withholding';
 
-/**
- * The withholding of a month by owner (ADR-018). Read again every time the page opens and soon after: a payout confirmed in the month-end close changes it.
- */
 export function useWithholdingSummary(month: number, year: number) {
   return useQuery({
     queryKey: [WITHHOLDING_KEY, 'summary', month, year],

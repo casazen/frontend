@@ -48,7 +48,6 @@ vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
 }));
 
-// A whole wizard is rendered in some of these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
@@ -58,7 +57,6 @@ const ADDRESS = `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`;
 const VERSION = '2026-11-v1';
 const ADMIN = 'org.billing.admin';
 
-/** A property whose sender is the channel manager already, with the delegation accepted: the host comes here only for the setting. */
 function senderOf(change: Partial<PropertySender> = {}): PropertySender {
   return {
     propertyId: PROPERTY_ID,
@@ -102,7 +100,6 @@ beforeEach(async () => {
 
 afterEach(cleanup);
 
-// E20/F01/US02 (decision O1): the setting is the organization's, and only its administrator changes it.
 describe('the request that carries the automatic send of the guests', () => {
   it('toSwitchRequest_AdministratorChangesTheSetting_CarriesItWithTheChannelManager', () => {
     const request = toSwitchRequest(values({ autoSendGuests: true }), senderOf(), { canChangeAutoSend: true });
@@ -121,7 +118,6 @@ describe('the request that carries the automatic send of the guests', () => {
     expect('autoSendGuestsToOctorate' in toSwitchRequest(values({ autoSendGuests: false }), senderOf(), { canChangeAutoSend: true })).toBe(false);
   });
 
-  // The permission rule: a person who is not the organization administrator never sends the setting, whatever the form holds (the server would refuse the whole request).
   it('toSwitchRequest_PersonWhoIsNotTheAdministrator_NeverSendsTheSettingWhateverTheFormHolds_Test', () => {
     const asked = values({ autoSendGuests: true });
 
@@ -186,7 +182,6 @@ describe('SenderSummaryStep: the setting «Invia gli ospiti da solo…»', () =>
     const toggle = screen.getByRole('switch', { name: "Invia gli ospiti da solo quando i dati sono completi e l'identità è verificata" });
     expect(toggle).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByTestId('sender-auto-send-consequence')).toHaveTextContent('solo quando confermi tu il check-in');
-    // Nothing is changed yet: the line about the sender says so.
     expect(screen.getByTestId('sender-switch-none')).toHaveTextContent('non cambia nulla');
 
     fireEvent.click(toggle);
@@ -194,10 +189,8 @@ describe('SenderSummaryStep: the setting «Invia gli ospiti da solo…»', () =>
     expect(toggle).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByTestId('held')).toHaveTextContent('true');
     expect(screen.getByTestId('sender-auto-send-consequence')).toHaveTextContent('senza che tu confermi il check-in');
-    // Something is changed now, and the summary never says «non cambia nulla» right under the switch the person has just moved.
     expect(screen.getByTestId('sender-switch-none')).toHaveTextContent('cambia solo questa impostazione');
     expect(screen.getByTestId('sender-switch-none').textContent ?? '').not.toMatch(/non cambia nulla/);
-    // No name of a supplier in the words of the setting.
     expect(screen.getByTestId('sender-auto-send').textContent ?? '').not.toMatch(/octorate/i);
   });
 
@@ -225,7 +218,6 @@ describe('SenderSummaryStep: the setting «Invia gli ospiti da solo…»', () =>
   });
 });
 
-// The result says what the setting is now, from what the server holds; the green check is for a result that is done, never for one that is not complete.
 describe('SenderWizardDone: the line about the automatic send', () => {
   function renderDone(sender: PropertySender) {
     vi.mocked(propertySenderApi.get).mockResolvedValue(sender);
@@ -259,7 +251,6 @@ describe('SenderWizardDone: the line about the automatic send', () => {
 });
 
 describe('SenderWizardPage: the setting is saved with the summary and the wizard stays', () => {
-  /** What the server holds: the fake applies the rules of the endpoint (the setting changes only with the request that carries it). */
   let server: PropertySender;
 
   function installServer() {
@@ -322,7 +313,6 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
 
     await waitFor(() => expect(propertySenderApi.switch).toHaveBeenCalledTimes(1), WAIT);
     expect(propertySenderApi.switch).toHaveBeenCalledWith(PROPERTY_ID, { sender: 'ChannelManager', confirmed: false, delegationConsent: false, autoSendGuestsToOctorate: true });
-    // The result is told from what the server answered, and the wizard goes on to its next step without leaving the page.
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('compliance.sender.autoSend.saved.on')), WAIT);
     await waitFor(() => expect(wizard()).toHaveAttribute('data-step', 'credentials'), WAIT);
     expect(screen.getByTestId('location')).toHaveTextContent(ADDRESS);
@@ -337,7 +327,6 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
     fireEvent.click(screen.getByRole('switch'));
     next();
 
-    // The request is on its way: the switch cannot be moved meanwhile, so what is on screen is what was sent.
     await waitFor(() => expect(screen.getByRole('switch')).toBeDisabled(), WAIT);
     expect(propertySenderApi.switch).toHaveBeenCalledTimes(1);
 
@@ -398,7 +387,6 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
     client.setQueryData([PROPERTY_SENDER_KEY, PROPERTY_ID], senderOf({ autoSendGuestsToOctorate: false }));
     await toTheSummary(client);
 
-    // The read that came in after the page opened says on, and the switch follows it.
     await waitFor(() => expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true'), WAIT);
     next();
 
@@ -418,7 +406,6 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
     next();
 
     await waitFor(() => expect(propertySenderApi.switch).toHaveBeenCalledTimes(1), WAIT);
-    // The setting belongs to the organization: what the sender of another property cached before is not the setting any more.
     await waitFor(() => expect(client.getQueryState(other)?.isInvalidated).toBe(true), WAIT);
   });
 
@@ -429,7 +416,6 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
 
     fireEvent.click(screen.getByTestId('sender-wizard-save-exit'));
 
-    // Nothing was changed by leaving; the draft holds the answers of the wizard and not the setting of the whole organization, which anyone may have changed meanwhile.
     expect(propertySenderApi.switch).not.toHaveBeenCalled();
     await waitFor(() => expect(wizardDraftApi.save).toHaveBeenCalled(), WAIT);
     const [, body] = vi.mocked(wizardDraftApi.save).mock.calls.at(-1)!;

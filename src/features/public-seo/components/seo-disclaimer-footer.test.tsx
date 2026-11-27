@@ -35,7 +35,6 @@ describe('SeoDisclaimerFooter (#258 AC7, SE-05 A8-19 A8-27)', () => {
   });
 
   it('SeoDisclaimerFooter_DateInTheLateEveningUtc_IsTheDateInRome', () => {
-    // 23:30 UTC of 24 September is already 25 September in Rome (QA-CLOCK-FE): the page says the Italian day.
     render(<SeoDisclaimerFooter lastRefreshedAt="2026-09-24T23:30:00Z" aiGenerated={false} />);
 
     expect(screen.getByTestId('seo-last-updated')).toHaveTextContent('25 settembre 2026');

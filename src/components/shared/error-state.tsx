@@ -5,11 +5,8 @@ import { supportConfig } from '@/config/support.config';
 import { getProblemMessage } from '@/lib/api-errors';
 
 interface ErrorStateProps {
-  /** What failed to load, already translated ("Impossibile caricare ..."). */
   title: string;
-  /** The error of the failed query: its server message (localized by the API) is shown under the title when there is one. */
   error?: unknown;
-  /** Reloads the data: the "Riprova" button is shown only with it. */
   onRetry?: () => void;
   /**
    * Under the retry button, how to reach support when the problem persists: the e-mail of the build configuration

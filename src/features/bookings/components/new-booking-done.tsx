@@ -28,7 +28,6 @@ import {
 
 const BOOKINGS_PATH = '/app/short-rent/bookings';
 
-/** How a line stands. It is said in words (a hidden label) and by an icon, never by a color alone. */
 type Tone = 'done' | 'working' | 'problem' | 'todo';
 
 const TONE_ICON: Record<Tone, LucideIcon> = {
@@ -57,13 +56,11 @@ interface ResultLineProps {
   testId: string;
   tone: Tone;
   title: string;
-  /** The state the line is in (`data-state`), for the tests and for whoever reads the page. */
   state: string;
   children: ReactNode;
   action?: ReactNode;
 }
 
-/** One line of the result: what it is about, how it stands and, when the host can do something about it, the button. */
 function ResultLine({ testId, tone, title, state, children, action }: ResultLineProps) {
   const { t } = useTranslation();
   const Icon = TONE_ICON[tone];
@@ -116,10 +113,8 @@ const NEXT_STEP: Record<NextStepKey, { key: string; icon: LucideIcon }> = {
   checkIn: { key: 'booking.create.done.checkin', icon: Mail },
 };
 
-/** The payment link the host can still copy: it exists on this screen only (a credential: it is in no address, no draft and no cache that outlives it). */
 interface IssuedLink {
   url: string;
-  /** The e-mail to the guest was queued; `null` when it is not known (the answer of the creation does not say). */
   emailSent: boolean | null;
 }
 
@@ -148,8 +143,6 @@ export function NewBookingDone({ result, values }: { result: NewBookingResult; v
   const fullName = values.guest.name.trim().replace(/\s+/g, ' ') || t('booking.create.done.guestFallback');
   const portal = activeLink(values);
 
-  // The channel manager. Read only where it can be: a property that is mirrored (or not known to be), the connector on, and a caller who may read the
-  // booking (a read they may not make would send them to the page of no access).
   const now = useNow(5_000);
   const [watch, setWatch] = useState(() => ({ since: Date.now(), retried: false }));
   const watchOver = now - watch.since >= MIRROR_WATCH_MS;
@@ -171,7 +164,6 @@ export function NewBookingDone({ result, values }: { result: NewBookingResult; v
     void detail.refetch();
   };
 
-  // The payment link.
   const [link, setLink] = useState<IssuedLink | null>(() => (booking.paymentLinkUrl ? { url: booking.paymentLinkUrl, emailSent: null } : null));
   const [copy, setCopy] = useState<'idle' | 'copied' | 'failed'>('idle');
   const paymentLink = useCreatePaymentLink();
@@ -191,12 +183,10 @@ export function NewBookingDone({ result, values }: { result: NewBookingResult; v
       setCopy('copied');
       setTimeout(() => setCopy('idle'), 2500);
     } catch {
-      // The browser would not copy: the link is then shown in a field to select by hand.
       setCopy('failed');
     }
   };
 
-  // The buttons of the card stay off while any of its requests is on its way: a second press would not be a second try, it would be a second link.
   const busy = retry.isPending || paymentLink.isPending;
   const next = NEXT_STEP[nextStepOf(mirror, payment)];
 
@@ -266,7 +256,6 @@ interface PaymentLineProps {
   portalName: string;
   link: IssuedLink | null;
   copy: 'idle' | 'copied' | 'failed';
-  /** The code that stopped the link after the booking was written (`payment_link_unavailable`, `payment_provider_error`), if any. */
   error: string | null | undefined;
   busy: boolean;
   working: boolean;
@@ -276,7 +265,6 @@ interface PaymentLineProps {
   onSend: () => void;
 }
 
-/** How the guest pays: the link (to copy, and to send again: the new one replaces the old), what the host records by hand, or the portal that collects. */
 function PaymentLine({ kind, portalName: portal, link, copy, error, busy, working, failure, canSend, onCopy, onSend }: PaymentLineProps) {
   const { t } = useTranslation();
 
@@ -318,7 +306,6 @@ function PaymentLine({ kind, portalName: portal, link, copy, error, busy, workin
   ) : undefined;
 
   if (kind === 'linkMissing') {
-    // The booking is written and the guest got nothing: said as it is, with the reason the API gave, and the way to send it from here.
     const reason = translateErrorCode(error, t);
     return (
       <ResultLine testId="booking-done-payment" tone="problem" state="linkMissing" title={t('booking.create.done.paymentLink.title')} action={sendButton}>
@@ -333,7 +320,6 @@ function PaymentLine({ kind, portalName: portal, link, copy, error, busy, workin
     );
   }
 
-  // The link was made. When the e-mail did not go out (known only after sending it again) the host is told to pass it on.
   const notEmailed = link?.emailSent === false;
   return (
     <ResultLine

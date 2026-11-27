@@ -27,7 +27,6 @@ vi.mock('@/hooks/use-workspace', async () => {
   return { useWorkspace: () => ({ contexts: env.contexts, hasPermission: predicateOf(env.contexts) }) };
 });
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
-// The header of the page of the request is the shell of the app (breadcrumbs, the tabs of the section): only its title matters to these tests, as in the tests of the list of the interventions.
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
 }));
@@ -38,7 +37,6 @@ const REQUEST_ID = 'cccccccc-1111-4111-8111-cccccccccccc';
 const PROPERTY_ID = 'dddddddd-2222-4222-8222-dddddddddddd';
 const PATH = `/service-requests/${REQUEST_ID}/cleaning-vat`;
 
-/** The question as the API answers it: a Swiss cleaning on a day the table has the 8.1% for, that nobody answered, for a caller of the whole organization. */
 const question = (overrides: Record<string, unknown> = {}) => ({
   serviceRequestId: REQUEST_ID,
   propertyId: PROPERTY_ID,
@@ -59,7 +57,6 @@ const question = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-/** What the server stores for an answer: the same question with the answer in it. */
 const answered = (answer: string, overrides: Record<string, unknown> = {}) =>
   question({ answer, answerRatePercent: answer === 'Applied' ? 8.1 : null, statedAnswer: answer, statedRatePercent: answer === 'Applied' ? 8.1 : null, ...overrides });
 
@@ -71,7 +68,6 @@ interface Request {
 }
 let reply: (request: Request) => Reply;
 let requests: Request[];
-/** While it is a promise, the answers (POST) wait for it: a call that is on its way. */
 let hold: Promise<void> | null;
 const onForbidden = vi.fn();
 const onAccountInactive = vi.fn();
@@ -98,7 +94,6 @@ const transport: AxiosAdapter = async (config) => {
   throw new AxiosError(`Request failed with status code ${status}`, status >= 500 ? AxiosError.ERR_BAD_RESPONSE : AxiosError.ERR_BAD_REQUEST, config, {}, response);
 };
 
-/** The answers of a server that is in order: the question, and for each answer the question with that answer in it. */
 function serverInOrder({ method, path, body }: Request): Reply {
   if (path !== PATH) return { status: 404, data: { code: 'not_found' } };
   if (method === 'GET') return { status: 200, data: question() };
@@ -116,7 +111,6 @@ function Probe() {
 
 const pageOfTheRequest = (search: string) => `/app/short-rent/interventions/${REQUEST_ID}${search}`;
 
-/** The page of the request in the interventions, with the question open on it as the «Da fare» leaves it. */
 function renderPage(options: { search?: string; client?: QueryClient } = {}) {
   const client = options.client ?? new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
   const invalidate = vi.spyOn(client, 'invalidateQueries');
@@ -140,7 +134,6 @@ function renderPage(options: { search?: string; client?: QueryClient } = {}) {
 
 const ANSWER_IDS = ['Applied', 'NotApplied', 'Unknown'].map((answer) => `cleaning-vat-answer-${answer}`);
 
-/** The button of an answer, once the question is on screen and the button can be pressed. */
 async function answerButton(answer: 'Applied' | 'NotApplied' | 'Unknown') {
   const button = await screen.findByTestId(`cleaning-vat-answer-${answer}`);
   await waitFor(() => expect(button).toBeEnabled());
@@ -183,7 +176,6 @@ describe('the question of the VAT of a cleaning: what it shows (AC: «Sì» carr
     expect(within(dialog).getByTestId('cleaning-vat-answer-Applied')).toHaveTextContent('Sì, 8,1%');
     expect(within(dialog).getByTestId('cleaning-vat-answer-NotApplied')).toHaveTextContent('No, senza IVA');
     expect(within(dialog).getByTestId('cleaning-vat-answer-Unknown')).toHaveTextContent('Non lo so');
-    // «Non lo so» is explained in one line, and nothing is sent by opening the question.
     expect(within(dialog).getByTestId('cleaning-vat-hint-Unknown')).toHaveTextContent(i18n.t('ownerAccounting.cleaningVat.unknownHint'));
     expect(calls('GET')).toHaveLength(1);
     expect(calls('POST')).toHaveLength(0);
@@ -200,7 +192,6 @@ describe('the question of the VAT of a cleaning: what it shows (AC: «Sì» carr
     expect(screen.getByTestId('cleaning-vat-answer-Unknown')).toHaveTextContent("I don't know");
   });
 
-  // A data rule: the rate is the server's (the table with the validity of each rate), never a number of the console. With none for the day «Sì» cannot be given, and says why.
   it('CleaningVat_StandardRatePercentNull_DisablesSiWithTheSentenceOfWhy_AndTheOtherTwoAnswersStayAvailable', async () => {
     reply = (request) => (request.method === 'GET' ? { status: 200, data: question({ standardRatePercent: null }) } : serverInOrder(request));
     renderPage();
@@ -232,13 +223,11 @@ describe('the answers (AC: the three answers send exactly the payload, «Ricorda
       const { invalidate } = renderPage();
 
       await screen.findByTestId('cleaning-vat-form');
-      // «Ricorda per questa ditta» is there for who may, and nobody ticked it.
       expect(rememberBox()).toHaveAttribute('aria-checked', 'false');
       fireEvent.click(await answerButton(answer));
 
       await waitFor(() => expect(posts()).toHaveLength(1));
       expect(posts()[0]).toEqual({ answer, remember: false });
-      // The answer of the server closes the dialog (the address loses the question and keeps the page), tells it in words and reads the «Da fare» again.
       await waitFor(() => expect(screen.queryByTestId('cleaning-vat-dialog')).toBeNull());
       expect(screen.getByTestId('address')).toHaveTextContent('');
       expect(toast.success).toHaveBeenCalledTimes(1);
@@ -251,7 +240,6 @@ describe('the answers (AC: the three answers send exactly the payload, «Ricorda
   it.each([
     ['Applied', { answer: 'Applied', remember: true }],
     ['NotApplied', { answer: 'NotApplied', remember: true }],
-    // «Non lo so» is never remembered for the company (the server refuses it): the box does not make it travel.
     ['Unknown', { answer: 'Unknown', remember: false }],
   ] as const)('CleaningVat_WithTheBoxTicked_%s_Sends_%j', async (answer, expected) => {
     renderPage();
@@ -289,7 +277,6 @@ describe('the answers (AC: the three answers send exactly the payload, «Ricorda
     const yes = await answerButton('Applied');
     fireEvent.click(yes);
 
-    // A request is on its way: no answer, no box and no way out is available, and a second click sends nothing.
     await waitFor(() => expect(posts()).toHaveLength(1));
     for (const id of ANSWER_IDS) await waitFor(() => expect(screen.getByTestId(id)).toBeDisabled());
     expect(box).toBeDisabled();
@@ -328,13 +315,11 @@ describe('the refusals and the failures of an answer (AC: told as such, never as
     const problem = await screen.findByTestId('cleaning-vat-problem');
     expect(problem).toHaveAttribute('data-problem', kind);
     expect(problem).toHaveTextContent(problemText(kind));
-    // Nothing says it was saved, the dialog is where it was, and the app is not sent to the page of no access.
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.getByTestId('cleaning-vat-dialog')).toBeInTheDocument();
     expect(screen.getByTestId('address')).toHaveTextContent(`cleaningVat=${REQUEST_ID}`);
     expect(onForbidden).not.toHaveBeenCalled();
     expect(posts()).toEqual([{ answer: 'Applied', remember: false }]);
-    // What was refused for good cannot be asked again as it is: a request that is not there, a person who may not answer, a cleaning not completed. «Sì» alone is off with no rate for the day.
     const off = ['notFound', 'forbidden', 'notCompleted'].includes(kind);
     for (const id of ANSWER_IDS) expect(screen.getByTestId(id)).toHaveProperty('disabled', off || (kind === 'rateUnknown' && id === 'cleaning-vat-answer-Applied'));
   });
@@ -355,7 +340,6 @@ describe('the refusals and the failures of an answer (AC: told as such, never as
     fireEvent.click(await answerButton('NotApplied'));
 
     expect(await screen.findByTestId('cleaning-vat-problem')).toHaveAttribute('data-problem', 'rememberForbidden');
-    // The box is gone (the caller may not tick it), the answers can be given again, and nothing was said to be saved.
     expect(screen.queryByRole('checkbox')).toBeNull();
     expect(toast.success).not.toHaveBeenCalled();
     fireEvent.click(await answerButton('NotApplied'));
@@ -385,7 +369,6 @@ describe('the refusals and the failures of an answer (AC: told as such, never as
     const problem = await screen.findByTestId('cleaning-vat-problem');
     expect(problem).toHaveAttribute('data-problem', 'changed');
     expect(problem).toHaveAttribute('role', 'alert');
-    // The question on screen is the one the server has now, and nothing is shown as saved.
     await waitFor(() => expect(screen.getByTestId('cleaning-vat-answer-Applied')).toHaveTextContent('Sì, 22%'));
     expect(calls('GET')).toHaveLength(2);
     expect(toast.success).not.toHaveBeenCalled();
@@ -423,7 +406,6 @@ describe('the refusals and the failures of an answer (AC: told as such, never as
     expect(toast.success).toHaveBeenCalledTimes(1);
   });
 
-  // A data rule: a success is the 200 of the endpoint with the question and the answer that was sent. Anything else is a call whose outcome is not known.
   it.each([
     ['an empty body', { status: 200, data: '' }],
     ['the question with another answer in it', { status: 200, data: answered('NotApplied') }],
@@ -448,14 +430,12 @@ describe('the question that cannot be read (data rule: a refusal or a failure of
     const problem = await screen.findByTestId('cleaning-vat-problem');
     expect(problem).toHaveAttribute('data-problem', 'forbidden');
     expect(problem).toHaveTextContent(problemText('forbidden'));
-    // The shared handler of the 403 on a read is not called, and nothing of the question is drawn.
     expect(onForbidden).not.toHaveBeenCalled();
     expect(screen.queryByTestId('cleaning-vat-form')).toBeNull();
     expect(screen.queryByTestId('cleaning-vat-answer-Applied')).toBeNull();
     expect(calls('POST')).toHaveLength(0);
   });
 
-  // A data rule: a 404 is «not found» whatever the cache still holds (a query keeps the old data when a read fails).
   it('CleaningVat_Read404WithTheOldQuestionInTheCache_IsNotFound_NeverTheOldForm', async () => {
     reply = (request) => (request.method === 'GET' ? { status: 404, data: { code: 'service_request_not_found' } } : serverInOrder(request));
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false } } });
@@ -513,7 +493,6 @@ describe('the question that cannot be read (data rule: a refusal or a failure of
 });
 
 describe('who is offered the question (permission rule, with the real role keys: it is answered with `property.write`)', () => {
-  // The «Da fare» as the server sends it: the item is about the cleaning request.
   const todo: TodoActivity = {
     id: 'a-1',
     activityType: 'CleaningVatToState',
@@ -527,7 +506,6 @@ describe('who is offered the question (permission rule, with the real role keys:
     createdAt: '2026-11-20T08:00:00Z',
   };
 
-  /** The list of the «Da fare» with its card, and the page of the interventions that the button leads to, as the router of the app has them. */
   function renderFromTheTodo() {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
     const hasPermission = workspacePredicateOf(env.contexts);
@@ -561,7 +539,6 @@ describe('who is offered the question (permission rule, with the real role keys:
     const card = await screen.findByTestId('todo-activity');
     expect(card).toHaveAttribute('data-action', 'StateCleaningVat');
     if (!mayWrite) {
-      // A role that only reads the properties gets no button, and the question is never asked of the server.
       expect(screen.queryByTestId('todo-do-now')).toBeNull();
       expect(requests).toEqual([]);
       return;
@@ -580,19 +557,15 @@ describe('who is offered the question (permission rule, with the real role keys:
 
     renderPage();
 
-    // The page is the page (the collaborator reads it), the dialog is not there and the server is not asked: a link or a bookmark gives no way in.
     expect(await screen.findByTestId('address')).toHaveTextContent(`cleaningVat=${REQUEST_ID}`);
     expect(screen.queryByTestId('cleaning-vat-dialog')).toBeNull();
     expect(requests).toEqual([]);
   });
 });
 
-// The wiring of the first criterion: «Fallo ora» leads to the page of the request in the interventions, and it is that page (the real `InterventionDetailPage` of the route, not a stand-in) that carries the question over
-// it, for who may answer. What the page says of the request is incidental: it reads a request of Affitti brevi and says «not found» for one of Affitti lunghi, and the dialog (its own endpoint) works over both.
 describe('the page of the request carries the question (AC: the «Da fare» opens the question for its request, offered only to who may answer)', () => {
   const PAGE_PATH = `/service-requests/${REQUEST_ID}`;
 
-  /** The cleaning request as the host reads it: a completed one of Affitti brevi. */
   const cleaning: ServiceRequest = {
     id: REQUEST_ID,
     orgId: 'org-1',
@@ -611,7 +584,6 @@ describe('the page of the request carries the question (AC: the «Da fare» open
     availableActions: ['pay', 'cancel'],
   };
 
-  /** The server as the page needs it: the request is read (or is not found), and the question is answered as in the tests above. */
   const serverWithThePage =
     (found: boolean) =>
     (request: Request): Reply =>
@@ -621,7 +593,6 @@ describe('the page of the request carries the question (AC: the «Da fare» open
           : { status: 404, data: { code: 'service_request_not_found' } }
         : serverInOrder(request);
 
-  /** The real page of the route `/app/short-rent/interventions/:id`, opened at an address. */
   function renderTheRealPage(search: string) {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
     render(
@@ -648,16 +619,13 @@ describe('the page of the request carries the question (AC: the «Da fare» open
 
     renderTheRealPage(`?cleaningVat=${REQUEST_ID}`);
 
-    // The page of the request is there for every role that reads the properties ...
     expect(await screen.findByTestId('intervention-page')).toBeInTheDocument();
     if (!mayWrite) {
-      // ... and for a role that only reads them the address that asks the question opens nothing and asks nothing of the server.
       expect(screen.getByTestId('address')).toHaveTextContent(`cleaningVat=${REQUEST_ID}`);
       expect(screen.queryByTestId('cleaning-vat-dialog')).toBeNull();
       expect(calls('GET')).toHaveLength(0);
       return;
     }
-    // For a role that writes them the question is over the page: the one the page itself mounts.
     expect(await screen.findByRole('dialog', { name: i18n.t('ownerAccounting.cleaningVat.title') })).toBeInTheDocument();
     await screen.findByTestId('cleaning-vat-form');
     expect(calls('GET')).toHaveLength(1);
@@ -669,7 +637,6 @@ describe('the page of the request carries the question (AC: the «Da fare» open
 
     renderTheRealPage(`?cleaningVat=${REQUEST_ID}`);
 
-    // The page says it is not found, as it does for a request of Affitti lunghi, and the question (read by its own endpoint) is over it all the same.
     expect(await screen.findByText(i18n.t('interventions.detail.notFound'))).toBeInTheDocument();
     expect(await screen.findByRole('dialog', { name: i18n.t('ownerAccounting.cleaningVat.title') })).toBeInTheDocument();
     await screen.findByTestId('cleaning-vat-form');

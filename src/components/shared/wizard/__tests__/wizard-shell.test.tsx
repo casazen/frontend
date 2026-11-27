@@ -31,7 +31,6 @@ const WAIT_FOR_DRAFT_MS = 450;
 
 // Explicit conditions only; a generous ceiling so that a loaded CI machine does not fail a correct test (waitFor default is 1 s).
 configure({ asyncUtilTimeout: 5_000 });
-// The vitest default of 5 s per test is not enough when the unit job runs on a loaded CI runner (5014 ms seen on the fiscal PR).
 vi.setConfig({ testTimeout: 30_000 });
 
 const field = (form: UseFormReturn<Values>, name: keyof Values, label: string) => (
@@ -87,7 +86,6 @@ function LocationProbe() {
   return (
     <div>
       <p data-testid="location">{`${location.pathname}${location.search}`}</p>
-      {/* Moves the address the way a link, the back button or a typed address does. */}
       <button type="button" data-testid="go-bare" onClick={() => navigate(location.pathname)}>
         bare
       </button>
@@ -144,7 +142,6 @@ describe("WizardShell steps and address", () => {
     expect(screen.getByText("Il nome e il codice fiscale.")).toBeInTheDocument();
     expect(location()).toBe("/app/short-rent/properties/new");
     expect(screen.getByTestId("wizard-shell")).toHaveAttribute("data-step", "person");
-    // The compact stepper of the phone says where the person is.
     expect(screen.getAllByText("Passo 1 di 3").length).toBeGreaterThan(0);
   });
 
@@ -174,7 +171,6 @@ describe("WizardShell steps and address", () => {
     await waitFor(() => expect(location()).toBe("/app/short-rent/properties/new?immobile=abc&step=home"));
     const heading = screen.getByRole("heading", { level: 2, name: "La casa" });
     expect(heading).toBeInTheDocument();
-    // The focus goes to the new heading: a screen reader reads where it is (an effect that runs just after the new step is drawn).
     await waitFor(() => expect(heading).toHaveFocus());
   });
 
@@ -215,7 +211,6 @@ describe("WizardShell steps and address", () => {
     renderWizard({ initialStepId: "home" });
 
     expect(screen.getByRole("heading", { level: 2, name: "La casa" })).toBeInTheDocument();
-    // Moving on writes `?step=`; the bare address (the browser's back button) is the step the page opened on, not the first.
     next();
     await screen.findByRole("heading", { level: 2, name: "Controlla e conferma" });
     expect(location()).toBe("/app/short-rent/properties/new?step=review");
@@ -289,12 +284,9 @@ describe("WizardShell steps and address", () => {
     type("Nome", "Anna");
     const below = screen.getByTestId("below");
     const bar = screen.getByTestId("wizard-next").closest("div.sticky")!;
-    // After the bar of the buttons and never inside the form above it: on a phone the page scrolls the message of a refused finish in and the toast comes up over the room
-    // of the bar, so whatever sits between that message and the bar pushes the buttons down into the toast.
     expect(bar.compareDocumentPosition(below) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(below.closest("form")).toBeNull();
     expect(container.querySelector("form")!.contains(below)).toBe(false);
-    // The form and the step are in its reach all the same.
     fireEvent.click(below);
     expect(onPress).toHaveBeenCalledWith({ step: "person", name: "Anna" });
   });
@@ -322,7 +314,6 @@ describe("WizardShell steps and address", () => {
     expect(screen.getByTestId("wizard-back")).toBeDisabled();
     expect(screen.getByTestId("wizard-skip")).toBeDisabled();
     expect(screen.queryByRole("button", { name: /Persona/ })).not.toBeInTheDocument();
-    // The main button has its own switch (`nextDisabled`): this one is not about it.
     expect(screen.getByTestId("wizard-next")).toBeEnabled();
 
     fireEvent.click(screen.getByTestId("wizard-back"));
@@ -344,11 +335,9 @@ describe("WizardShell validation", () => {
     expect(within(summary).getByText("Campo obbligatorio")).toBeInTheDocument();
     expect(location()).toBe("/app/short-rent/properties/new");
     expect(screen.getByRole("heading", { level: 2, name: "Chi sei" })).toBeInTheDocument();
-    // The field says it too, and the focus is on it.
     const name = screen.getByLabelText("Nome");
     expect(name).toHaveAttribute("aria-invalid", "true");
     await waitFor(() => expect(name).toHaveFocus());
-    // Announced: a polite status with the number of problems.
     expect(screen.getAllByRole("status").some((node) => node.textContent === "C'è 1 campo da controllare")).toBe(true);
   });
 
@@ -422,7 +411,6 @@ describe("WizardShell finishing", () => {
 
     fireEvent.click(screen.getByTestId("wizard-finish"));
 
-    // Nobody typed a name: the person step is opened, with its problem.
     await screen.findByRole("heading", { level: 2, name: "Chi sei" });
     expect(await screen.findByTestId("wizard-error-summary")).toBeInTheDocument();
     expect(screen.getByLabelText("Nome")).toHaveAttribute("aria-invalid", "true");
@@ -455,7 +443,6 @@ describe("WizardShell finishing", () => {
     fireEvent.click(screen.getByTestId("wizard-finish"));
 
     const error = await screen.findByTestId("wizard-finish-error");
-    // The button that was busy has lost the focus: it goes to the message (which a phone scrolls in above the buttons).
     await waitFor(() => expect(error).toHaveFocus());
     expect(screen.queryByTestId("done")).not.toBeInTheDocument();
     expect(screen.getByTestId("wizard-finish")).toHaveTextContent("Crea la casa");
@@ -493,7 +480,6 @@ describe("WizardShell finishing", () => {
     fireEvent.click(screen.getByTestId("wizard-finish"));
     await screen.findByTestId("done");
 
-    // The back button, or a link, would return to the form: the wizard puts the confirmation back.
     fireEvent.click(screen.getByTestId("go-review"));
     await waitFor(() => expect(location()).toBe("/app/short-rent/properties/new?step=fatto"));
     expect(screen.getByTestId("done")).toBeInTheDocument();
@@ -552,7 +538,6 @@ describe("WizardShell draft", () => {
     await settleDraft();
     first.unmount();
 
-    // A reload: the address is the bare one, the draft is in the session.
     renderWizard();
 
     expect(screen.getByLabelText("Nome")).toHaveValue("Anna");
@@ -719,7 +704,6 @@ describe("WizardShell on a phone", () => {
 
     const bar = screen.getByTestId("wizard-next").closest("div.sticky");
     expect(bar).not.toBeNull();
-    // Sticky above the bottom bar and its home indicator; an ordinary block from `md`.
     expect(bar?.className).toContain("bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom,0px))]");
     expect(bar?.className).toContain("md:static");
     // Long names wrap instead of pushing the page sideways.
@@ -745,21 +729,18 @@ describe("WizardShell on a wide screen", () => {
     next();
     const heading = await screen.findByRole("heading", { level: 2, name: "La casa" });
 
-    // One list of steps, one under the other, after the step and outside it: not the bar of the phone above the title.
     const steps = screen.getByRole("list", { name: "Passaggi" });
     expect(steps.closest('[data-orientation="vertical"]')).not.toBeNull();
     expect(heading.compareDocumentPosition(steps) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(steps.closest("form")).toBeNull();
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     expect(screen.getAllByText("Passo 2 di 3")).toHaveLength(1);
-    // A done step is still the way back to it.
     fireEvent.click(within(steps).getByRole("button", { name: /Persona/ }));
     await screen.findByRole("heading", { level: 2, name: "Chi sei" });
 
     const input = screen.getByLabelText("Nome");
     act(() => viewport.resize(1440));
 
-    // Under `2xl` the steps are the bar above the title again; the form is the same one, with what was typed.
     const above = screen.getByRole("list", { name: "Passaggi" });
     expect(above.closest('[data-orientation="vertical"]')).toBeNull();
     expect(above.compareDocumentPosition(screen.getByRole("heading", { level: 2, name: "Chi sei" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

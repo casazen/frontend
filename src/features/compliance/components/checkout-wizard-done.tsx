@@ -10,7 +10,6 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import type { CheckoutResultTone, CheckoutWizardCompleteResult } from '@/types/compliance.types';
 import { NEXT_STEP_KEYS, checkoutNextStepOf, checkoutResultLines } from '../lib/checkout-result';
 
-/** The icon of a point that is not done: the check mark is for what is done (the default of the screen). */
 const TONE_ICON: Record<Exclude<CheckoutResultTone, 'done'>, LucideIcon> = {
   attention: Clock,
   problem: AlertTriangle,
@@ -35,11 +34,9 @@ export function CheckoutDone({
   bookingId: string;
   guestName: string;
   result: CheckoutWizardCompleteResult;
-  /** The booking is on the channel manager for sure (`channelManagerLinked` of its mirror). */
   channelManager: boolean;
 }) {
   const { t } = useTranslation();
-  // With the connector of the channel manager off nothing is passed on to it: nothing is said about it.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
 
   const workspace = useContext(WorkspaceContext);

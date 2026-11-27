@@ -1,5 +1,3 @@
-/** Wire values of a maintenance request on `POST/GET /leases/{leaseId}/maintenance-requests`. */
-
 export const MAINTENANCE_URGENCIES = ['bassa', 'normale', 'urgente'] as const;
 export type MaintenanceUrgency = (typeof MAINTENANCE_URGENCIES)[number];
 
@@ -26,7 +24,6 @@ export interface CreateMaintenanceRequestInput {
   photo?: File | null;
 }
 
-/** C# `JsonStringEnumConverter` member names. The screen keeps bassa, normale, urgente. */
 export const MAINTENANCE_URGENCY_WIRE = {
   bassa: 'Normal',
   normale: 'High',
@@ -71,7 +68,6 @@ export function parseMaintenanceStatus(value: unknown): MaintenanceRequestStatus
   return 'pending';
 }
 
-/** One request. Unknown shapes become null so a list can drop them. */
 export function parseMaintenanceRequest(value: unknown): MaintenanceRequest | null {
   const record = recordOf(value);
   const body = recordOf(record?.data) ?? record;
@@ -93,7 +89,6 @@ export function parseMaintenanceRequest(value: unknown): MaintenanceRequest | nu
   };
 }
 
-/** A bare array, or `{ items | requests | maintenanceRequests }`. */
 export function parseMaintenanceRequestList(value: unknown): MaintenanceRequest[] {
   const record = recordOf(value);
   const rows = Array.isArray(value)
@@ -111,7 +106,6 @@ export function parseMaintenanceRequestList(value: unknown): MaintenanceRequest[
   });
 }
 
-/** The tenant never approves or pays. The landlord pays only after an approval. */
 export function canPayMaintenance(audience: 'tenant' | 'landlord', status: MaintenanceRequestStatus): boolean {
   return audience === 'landlord' && status === 'approved';
 }

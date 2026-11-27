@@ -49,7 +49,6 @@ function renderPage(search = '', client = new QueryClient({ defaultOptions: { qu
   return { ...view, client };
 }
 
-/** What the server answers to a refusal: the status and the problem with its code. */
 function reviewProfile(dialog: HTMLElement) {
   for (let step = 0; step < 6 && !within(dialog).queryByTestId('profile-review'); step += 1) fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
   expect(within(dialog).getByTestId('profile-review')).toBeInTheDocument();
@@ -65,7 +64,6 @@ beforeEach(async () => {
   api.getOnboardingReadiness.mockResolvedValue(null);
   api.listFiscalProfiles.mockResolvedValue([profile()]);
   api.listPolicies.mockResolvedValue([policy()]);
-  // The mandate and the address of the owner (E13/F02/US01/T01) are read by the page too: none here.
   api.listMandates.mockResolvedValue([]);
   api.getAddress.mockResolvedValue(null);
 });
@@ -77,17 +75,14 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     renderPage();
     const facts = await screen.findByTestId('profile-facts');
 
-    // The identifiers, the address and the account are exactly what the server answered: masked. There is no control that asks for more.
     expect(facts.querySelector('dl')).toHaveAttribute('data-masked', 'true');
     expect(within(facts).getByTestId('profile-value-fiscalCode')).toHaveTextContent('••••••••••••3456');
     expect(within(facts).getByTestId('profile-value-bankAccountReference')).toHaveTextContent('•••••••••••••••••••••3456');
     expect(within(facts).getByTestId('profile-value-legalName')).toHaveTextContent('•••••••••ossi');
     expect(screen.queryByTestId('profile-reveal')).toBeNull();
     expect(screen.getByTestId('profile-masked-notice')).toHaveTextContent(text('ownerProfile.maskedNotice'));
-    // Who sees masked values may not change the profile either: no way to save a new version.
     expect(screen.queryByTestId('profile-new-version')).toBeNull();
     expect(screen.queryByTestId('policy-new')).toBeNull();
-    // The page never asks for more: nothing here reads the full IBAN of the registry or writes anything.
     expect(Object.keys(api)).not.toContain('getOwnerIban');
     for (const write of [api.saveFiscalProfile, api.approvePolicy, api.createPolicy]) expect(write).not.toHaveBeenCalled();
   });
@@ -97,7 +92,6 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     renderPage();
     const facts = await screen.findByTestId('profile-facts');
 
-    // Received in full, shown masked: a screen left open does not show the IBAN of the owner.
     expect(within(facts).getByTestId('profile-value-fiscalCode')).toHaveTextContent(maskValue('RSSMRT80A01H501U') as string);
     expect(within(facts).getByTestId('profile-value-fiscalCode')).not.toHaveTextContent('RSSMRT80A01H501U');
     expect(within(facts).getByTestId('profile-value-bankAccountReference')).not.toHaveTextContent('IT60X0542811101000000123456');
@@ -127,7 +121,6 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     fireEvent.click(screen.getByTestId('profile-focus-approve'));
     const dialog = await screen.findByRole('dialog');
     const confirm = within(dialog).getByRole('button', { name: text('ownerProfile.approveDialog.confirm') });
-    // CasaZen does not approve a rule: it records who did. Without a name nothing is sent.
     expect(confirm).toBeDisabled();
     fireEvent.change(within(dialog).getByTestId('policy-approver'), { target: { value: 'Dott. Bianchi' } });
     fireEvent.click(confirm);
@@ -179,11 +172,9 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     await within(section).findByTestId('profile-onboarding-reasons');
     expect(within(section).getByText(text('ownerProfile.reason.mandateMissing'))).toBeInTheDocument();
     expect(section).toHaveTextContent('Casa Mare');
-    // A reason of a later version is told by its code, never dropped.
     expect(section).toHaveTextContent(text('ownerProfile.reason.other', { code: 'something_new' }));
     expect(within(section).getByTestId('profile-onboarding-link')).toHaveAttribute('href', OWNER_ONBOARDING_PATH);
 
-    // The periods where the shares of the property are wrong, with what they add up to.
     const issues = within(section).getByTestId('profile-ownership-issues');
     const lines = within(issues).getAllByRole('listitem');
     expect(lines).toHaveLength(2);
@@ -233,7 +224,6 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
   });
 
   it('OwnerProfile_NotTheFinanceAdministrator_IsToldWhoToAsk_AndNothingIsRead', async () => {
-    // The protection of the page is the role, checked before anything is read: a refused read is taken by the global handler of the app, never by the page.
     workspace.contexts = [{ contextKey: 'account', roleKey: 'org_manager' }];
     renderPage();
 
@@ -244,7 +234,6 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
 
 describe('the profile is personal data, and nothing of it outlives the page (E06/F05/US02/T04)', () => {
   const full = () => profile({ masked: false, legalName: 'Marta Rossi', fiscalCode: 'RSSMRT80A01H501U', bankAccountReference: 'IT60X0542811101000000123456' });
-  /** The cache of the app: minutes for a query, minutes for a mutation. A query or a mutation that wants less says so itself. */
   const appClient = () => new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 
   async function openNewVersion() {
@@ -257,7 +246,6 @@ describe('the profile is personal data, and nothing of it outlives the page (E06
     api.saveFiscalProfile.mockResolvedValue(full());
     const { client, unmount } = renderPage('', appClient());
     await screen.findByTestId('profile-facts');
-    // While the page is open the profile is there: it is what the page shows.
     expect(client.getQueryCache().findAll({ queryKey: ['owner-accounting', 'profiles'] })).toHaveLength(1);
 
     const dialog = await openNewVersion();
@@ -265,7 +253,6 @@ describe('the profile is personal data, and nothing of it outlives the page (E06
     fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
     await waitFor(() => expect(api.saveFiscalProfile).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.queryByTestId('profile-dialog')).toBeNull());
-    // The form is closed: the command with the identifiers, the address and the bank account is not kept by the mutations.
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
 
     unmount();
@@ -289,10 +276,8 @@ describe('the profile is personal data, and nothing of it outlives the page (E06
     const dialog = await openNewVersion();
     reviewProfile(dialog);
     fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
-    // The form still says what the server said (the field it names)...
     expect(await within(dialog).findByTestId('profile-dialog-error')).toHaveTextContent('legalName');
 
-    // ...and what the cache of the mutations keeps of the failure is the answer, never the request: no identifier, no bank account.
     const kept = client.getMutationCache().getAll()[0]?.state.error as AxiosError;
     expect(kept.response?.status).toBe(422);
     expect(kept.response?.data).toMatchObject({ code: 'owner_fiscal_profile_invalid', field: 'legalName' });
@@ -357,7 +342,6 @@ describe('the days a profile covers (E06/F05/US02/T04)', () => {
     renderPage();
 
     const dialog = await openNewVersion();
-    // Not today: a profile that starts today leaves the month that is over without a profile, and it cannot be moved back later.
     expect(within(dialog).getByTestId('profile-valid-from')).toHaveValue(startOfPeriod(defaultPeriod(todayInRome())));
   });
 
@@ -370,7 +354,6 @@ describe('the days a profile covers (E06/F05/US02/T04)', () => {
     expect(from).toHaveValue(todayInRome());
     expect(within(dialog).getByTestId('profile-dialog-submit')).toBeEnabled();
 
-    // The day of the profile in force, or an earlier one: the server answers 409 (a profile cannot start on a day that is not later), and the form does not send it.
     fireEvent.change(from, { target: { value: '2025-06-01' } });
     expect(within(dialog).getByTestId('profile-dialog-submit')).toBeDisabled();
     expect(dialog).toHaveTextContent('1 giugno 2025');
@@ -394,7 +377,6 @@ describe('the days a profile covers (E06/F05/US02/T04)', () => {
     expect(screen.getAllByRole('region').filter((region) => region.getAttribute('data-tone') === 'success')).toHaveLength(0);
     unmount();
 
-    // A month the data cover, or no month at all (the page opened on its own): «ready», nothing to warn about.
     renderPage('?period=2025-04');
     expect(await screen.findByTestId('profile-focus')).toHaveAttribute('data-tone', 'success');
     expect(screen.getByTestId('profile-focus')).not.toHaveAttribute('data-month-not-covered');
@@ -425,7 +407,6 @@ describe('what a profile and a rule send to the server (E06/F05/US02/T04)', () =
     reviewProfile(dialog);
     fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
 
-    // The form starts from the profile in force, and a new version starts today: the one in force ends the day before.
     await waitFor(() => expect(api.saveFiscalProfile).toHaveBeenCalledTimes(1));
     expect(api.saveFiscalProfile.mock.calls[0][0]).toBe(OWNER_ID);
     expect(api.saveFiscalProfile.mock.calls[0][1]).toMatchObject({
@@ -462,7 +443,6 @@ describe('what a profile and a rule send to the server (E06/F05/US02/T04)', () =
     type('policy-retention', '10');
     fireEvent.click(within(dialog).getByTestId('policy-dialog-submit'));
 
-    // Nothing is proposed by CasaZen: the rate, the code, the source and its fingerprint are the ones typed, and the rule goes with no approval.
     await waitFor(() => expect(api.createPolicy).toHaveBeenCalledTimes(1));
     expect(api.createPolicy.mock.calls[0][0]).toEqual({
       jurisdiction: 'IT',
@@ -492,7 +472,6 @@ describe('what a profile and a rule send to the server (E06/F05/US02/T04)', () =
     fireEvent.click(await screen.findByTestId('policy-new'));
     const dialog = await screen.findByTestId('policy-dialog');
     expect(within(dialog).getByTestId('policy-dialog-submit')).toBeDisabled();
-    // No source, no fingerprint, no rounding: the rule has nothing the accountant gave.
     fireEvent.change(within(dialog).getByTestId('policy-jurisdiction'), { target: { value: 'IT' } });
     fireEvent.change(within(dialog).getByTestId('policy-rule-code'), { target: { value: 'IT-X' } });
     fireEvent.change(within(dialog).getByTestId('policy-version'), { target: { value: '1' } });

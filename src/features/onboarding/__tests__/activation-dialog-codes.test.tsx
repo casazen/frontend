@@ -54,7 +54,6 @@ afterEach(() => {
 
 describe('ActivationDialog, what a property still lacks (E10/F01/US04/T01 codes)', () => {
   it('ActivationDialog_UnmetPrerequisitesOfTheNewFlows_AreToldInPlainWordsAndAnUnknownOneNeverPrintsItsKey', async () => {
-    // The server checked the prerequisites again and found three of the new ones lacking, one this version of the app has never heard of, and a repeat of it.
     vi.mocked(onboardingApi.activateFlow).mockResolvedValue({
       flow: 'Reports',
       outcomes: [
@@ -76,7 +75,6 @@ describe('ActivationDialog, what a property still lacks (E10/F01/US04/T01 codes)
     expect(line).toHaveTextContent(i18n.t('onboardingPlan.summary.prerequisites.messageSync'));
     expect(line).toHaveTextContent(i18n.t('onboardingPlan.summary.prerequisites.issuer'));
     expect(line).toHaveTextContent(i18n.t('onboardingPlan.summary.prerequisites.bookings'));
-    // The two keys of this version's future read as the same neutral phrase, said once; no key of the i18n file is ever printed.
     expect(line).toHaveTextContent(i18n.t('onboardingPlan.summary.prerequisites.unknown'));
     expect(line.textContent?.split(i18n.t('onboardingPlan.summary.prerequisites.unknown')).length).toBe(2);
     expect(dialog.textContent).not.toContain('onboardingPlan.');

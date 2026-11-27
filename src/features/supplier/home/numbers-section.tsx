@@ -10,11 +10,9 @@ import { useSupplierOverview } from '@/queries/supplier/use-inbox';
 import { formatMoney } from '../services/lib/service-money';
 import { numbersOf, PERIOD_PARAM, PERIODS, periodOf } from './home-model';
 
-/** What a figure that does not exist says: a dash, never a number made up. */
 const NO_VALUE = '—';
 const sign = (change: number) => (change > 0 ? '+' : '−');
 
-// On a phone the three numbers scroll sideways, one at a time (the same strip as the Home of Affitti brevi).
 const CAROUSEL =
   'max-sm:[&>ul]:flex max-sm:[&>ul]:snap-x max-sm:[&>ul]:snap-mandatory max-sm:[&>ul]:overflow-x-auto max-sm:[&>ul>li]:w-[78%] max-sm:[&>ul>li]:shrink-0 max-sm:[&>ul>li]:snap-start';
 

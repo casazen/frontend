@@ -7,7 +7,6 @@ import { formatSlotLabel } from '@/lib/supplier-site/format';
 import { BookingField } from '../booking/booking-field';
 import { usePanelFocus } from './use-panel-focus';
 
-/** What the server allows to say about the money, as the customer reads it. */
 const STATUS_ICON: Record<PublicBookingPayment['status'], typeof Lock> = {
   awaiting_card: Lock,
   authorized: Lock,
@@ -18,7 +17,6 @@ const STATUS_ICON: Record<PublicBookingPayment['status'], typeof Lock> = {
   review: CircleAlert,
 };
 
-/** What the customer wrote, what happened to it, and what it may do: the complaint as the server states it (never the supplier's reply). */
 function DisputeNote({ dispute, supplierName }: { dispute: PublicBookingDispute; supplierName: string }) {
   const { t, i18n } = useTranslation();
   const when = (instant: string) => formatSlotLabel(instant, t, i18n.language);
@@ -47,24 +45,16 @@ function DisputeNote({ dispute, supplierName }: { dispute: PublicBookingDispute;
 
 interface PaymentBlockProps {
   view: PublicBookingView;
-  /** The customer may take its complaint back. */
   onWithdraw: () => void;
   pending: boolean;
 }
 
-/**
- * "Il pagamento": where the money of a booking paid inside CasaZen is — blocked, charged and held, released, given back — in words that
- * say exactly what is true (D24: no date of accounting, no fee, no promise of a time), and the complaint if there is one. Everything comes
- * from `payment` of the booking; the page adds up nothing.
- */
 export function PaymentBlock({ view, onWithdraw, pending }: PaymentBlockProps) {
   const { t, i18n } = useTranslation();
   const payment = view.payment;
   if (!payment) return null;
   const Icon = STATUS_ICON[payment.status];
   const name = view.supplier.name;
-  // The offer of a request on measure is already agreed by the supplier: until the card is through the money is only blocked, and it is
-  // charged when the time is still free, not "if the professional accepts" (which is what a booking says).
   const own = payment.status === 'awaiting_card' || (view.kind === 'Custom' && payment.status === 'authorized') ? 'supplierSite.inquiry.payment.status' : 'supplierSite.request.payment.status';
   const amount = formatMoney(payment.amountCents, i18n.language);
   const refunded = formatMoney(payment.refundedCents > 0 ? payment.refundedCents : payment.amountCents, i18n.language);
@@ -126,19 +116,16 @@ export function ConfirmOkPanel({ supplierName, pending, onConfirm, onBack }: Con
   );
 }
 
-/** What the customer may write: the server takes 1000 characters. */
 const TEXT_MAX = 1000;
 
 interface ReportProblemPanelProps {
   supplierName: string;
-  /** Until when the customer may report, from the server (`payment.releaseAtUtc`), already said in words; empty when it is not known. */
   deadline: string;
   pending: boolean;
   onConfirm: (reason: string, text: string) => void;
   onBack: () => void;
 }
 
-/** "Segnala un problema": a reason among five and the customer's own words (required for "other"). Text only. */
 export function ReportProblemPanel({ supplierName, deadline, pending, onConfirm, onBack }: ReportProblemPanelProps) {
   const { t } = useTranslation();
   const titleId = useId();

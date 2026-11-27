@@ -16,7 +16,6 @@ const active = { status: 'Active', cinStatus: 'Valid', photoCount: 3, canWrite: 
 
 describe('property nextStepOf with the compliance lights (NF-52, AC-NF52-9)', () => {
   it('nextStepOf_NoLines_IsTheStepOfAlways', () => {
-    // An older API, the traffic light off, lights not read: nothing changes, and nothing is told as in order by the lights.
     expect(nextStepOf(active)).toBe('allInOrder');
     expect(nextStepOf({ ...active, compliance: [] })).toBe('allInOrder');
     expect(nextStepOf({ ...active, photoCount: 0 })).toBe('addPhotos');

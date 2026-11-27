@@ -10,7 +10,6 @@ import en from '@/i18n/locales/en.json';
  */
 const SUPPLIER = /concordato\s*facile/i;
 
-/** Where the guided form is told to the person: there nobody is a «partner» either (the word is for the OTA and payment partners elsewhere). */
 const OF_THE_FLOW = [
   'concordatofacile',
   'guidedContract',
@@ -25,7 +24,6 @@ const OF_THE_FLOW = [
   'apiErrors.codes.concordatofacileAlreadyPurchased',
 ];
 
-/** Every text of a locale file with the path of its key (arrays count, their items have `[n]` in the path). */
 function texts(node: unknown, path = ''): Array<[string, string]> {
   if (typeof node === 'string') return [[path, node]];
   if (Array.isArray(node)) return node.flatMap((item, index) => texts(item, `${path}[${index}]`));
@@ -43,7 +41,6 @@ const LOCALES = [
 describe('no name of the supplier of the guided form in the texts (CF-FLOW)', () => {
   it.each(LOCALES)('%s.json: no text names the supplier', (_language, locale) => {
     const all = texts(locale);
-    // The scan really covers the file.
     expect(all.length).toBeGreaterThan(5000);
 
     const named = all.filter(([, text]) => SUPPLIER.test(text)).map(([key, text]) => `${key}: ${text}`);
@@ -52,7 +49,6 @@ describe('no name of the supplier of the guided form in the texts (CF-FLOW)', ()
 
   it.each(LOCALES)('%s.json: the texts of the flow do not call the supplier a «partner» either', (_language, locale) => {
     const inTheFlow = texts(locale).filter(([key]) => OF_THE_FLOW.some((prefix) => key === prefix || key.startsWith(`${prefix}.`)));
-    // The scan really reaches them.
     expect(inTheFlow.length).toBeGreaterThan(80);
 
     const named = inTheFlow.filter(([, text]) => /partner/i.test(text)).map(([key, text]) => `${key}: ${text}`);
@@ -67,10 +63,8 @@ describe('no name of the supplier of the guided form in the texts (CF-FLOW)', ()
  */
 const SOFTWARE_SUPPLIER = /hoko|unisys|u-stay|feratel|chekin|stellar\s*check-?in|chargeautomation|smoobu|lodgify|octorate|concordato\s*facile|\bavs\b/i;
 
-/** Where the regimes of the registration of the guests are told to the person. */
 const OF_THE_REGIMES = [
   'guestRegistration',
-  // E31/F02/US02: the guest register of a Swiss property and the assisted notification of the cantons other than Ticino, and the sentences of the bell about the second.
   'guestRegister',
   'swissNotification',
   'notifications.types.swissNotificationDue',
@@ -96,7 +90,6 @@ const OF_THE_REGIMES = [
 describe('no name of a supplier of software or of a cantonal system in the texts of the regimes (E29/F02/US02/T01)', () => {
   it.each(LOCALES)('%s.json: the texts of the regimes name no supplier', (_language, locale) => {
     const inTheRegimes = texts(locale).filter(([key]) => OF_THE_REGIMES.some((prefix) => key === prefix || key.startsWith(`${prefix}.`)));
-    // The scan really reaches them: the card, its enums and its sentences are well over fifty texts.
     expect(inTheRegimes.length).toBeGreaterThan(50);
 
     const named = inTheRegimes.filter(([, text]) => SOFTWARE_SUPPLIER.test(text)).map(([key, text]) => `${key}: ${text}`);
@@ -106,7 +99,6 @@ describe('no name of a supplier of software or of a cantonal system in the texts
   it.each(LOCALES)('%s.json: the texts of the regimes keep the words of the authorities and say it is not legal advice', (language, locale) => {
     const all = Object.fromEntries(texts(locale));
 
-    // The rule the host reads next to every certainty: «check with the municipality or the police», and that CasaZen gives no legal advice.
     for (const certainty of ['Verified', 'Partial', 'Unverified']) {
       const text = all[`guestRegistration.certainty.${certainty}.text`] ?? '';
       expect(text, certainty).toMatch(language === 'it' ? /comune o la polizia/ : /municipality or the police/);

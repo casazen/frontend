@@ -43,7 +43,6 @@ export function makeService(overrides: Partial<SupplierService> = {}): SupplierS
   };
 }
 
-/** A draft that only has a name and a category: what the first step of the creation saves. */
 export function makeDraft(overrides: Partial<SupplierService> = {}): SupplierService {
   return makeService({
     id: '0a0a0a0a-2222-4333-8444-555566667777',
@@ -65,26 +64,20 @@ export function listOf(items: SupplierService[], limit = 30): SupplierServiceLis
   return { items, total: items.length, limit };
 }
 
-/** A failed call, as axios raises it, with the body of the API (ProblemDetails). */
 export function problem(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
-/** Where the test is: path and query of the address, for an assertion. */
 function Probe() {
   const location = useLocation();
   return <output data-testid="location">{`${location.pathname}${location.search}`}</output>;
 }
 
 export interface Routed {
-  /** Where the test starts (`/app/supplier/services/new?bozza=…`). */
   at: string;
-  /** The pages: the one under test first. Any other address shows its own path, so a test sees where a link went. */
   routes: { path: string; element: ReactElement }[];
-  /** Runs the pages under `<StrictMode>`, as the app does in development: the effects run twice. */
   strict?: boolean;
-  /** Puts things in the cache before the pages open (a service the person looked at some time ago). */
   seed?: (client: QueryClient) => void;
 }
 
@@ -116,19 +109,11 @@ export function renderRouted({ at, routes, strict = false, seed }: Routed) {
   return { ...view, client };
 }
 
-/** The address now, as `/app/supplier/services/new?bozza=…`. */
 export const addressNow = (screen: { getByTestId: (id: string) => HTMLElement }) => screen.getByTestId('location').textContent ?? '';
-
-// ─── A catalog that behaves like the API ──────────────────────────────────────────────────────────────────────────────
 
 const CATEGORIES = ['cleaning', 'maintenance', 'plumbing', 'laundry', 'linen', 'check-in', 'gardening', 'events', 'rental', 'excursions', 'electrical'];
 const noControl = (text: string) => !/\p{Cc}/u.test(text);
 
-/**
- * The fields the API refuses in a body, named as it names them (`SupplierServiceListingRules.Normalize`): a draft may be
- * incomplete, but whatever it holds has to be valid, a supplement without a name or an amount of 0 included. A fake that took
- * anything would let the tests pass while the real API answers 422.
- */
 function invalidFields(body: SaveSupplierServiceBody): string[] {
   const invalid: string[] = [];
   const add = (field: string) => {
@@ -159,7 +144,6 @@ function invalidFields(body: SaveSupplierServiceBody): string[] {
   return invalid;
 }
 
-/** What the API does first with a body: a category that is not one of the catalog's is 422 `invalid_service_category`, then the other fields. */
 function refuseBody(body: SaveSupplierServiceBody) {
   if (!CATEGORIES.includes(body.category)) throw problem(422, { code: 'invalid_service_category' });
   const invalid = invalidFields(body);
@@ -217,11 +201,8 @@ export function createFakeCatalog(initial: SupplierService[] = [], limit = 30) {
   });
 
   const catalog = {
-    /** The services as they are now. */
     items: () => [...store.values()],
-    /** What the API would answer to a `GET` of the list. */
     list: () => listOf([...store.values()], limit),
-    /** Changes a service behind the back of the screen (another tab, another user): its version moves on. */
     touch: (id: string, changes: Partial<SupplierService> = {}) => put({ ...get(id), ...changes, version: get(id).version + 1 }),
     fetchList: vi.fn(async () => catalog.list()),
     fetchOne: vi.fn(async (id: string) => get(id)),
@@ -270,7 +251,6 @@ export function createFakeCatalog(initial: SupplierService[] = [], limit = 30) {
   return catalog;
 }
 
-/** The functions of `@/api/supplier-services.api`, as mocks the test declared with `vi.hoisted`, answered by a fake catalog. */
 export interface ServicesApiMocks {
   fetchSupplierServices: Mock;
   fetchSupplierService: Mock;

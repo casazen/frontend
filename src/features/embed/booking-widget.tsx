@@ -5,7 +5,6 @@ import { SearchResultsPage } from '@/features/public-site/search/site-search-pag
 import type { SearchScope } from '@/features/public-site/search/search-scope';
 import type { PublicOrgDto } from '@/types';
 
-/** What the shell of the frame gives its widget (the same `{ org }` as `PublicSiteShell` gives the pages of the booking site). */
 interface EmbedOutletContext {
   org: PublicOrgDto;
 }

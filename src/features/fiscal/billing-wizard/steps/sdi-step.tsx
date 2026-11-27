@@ -13,11 +13,9 @@ import type { PropertyOwnerSummary, SdiIssuerRegistration } from '@/types';
 import { sdiConnectionOf } from '../billing-wizard-model';
 
 interface SdiStepProps {
-  /** The organization is on the agency plan and the person is its administrator: the owners are theirs to read (anyone else is refused the registry, so nothing is asked). */
   agency: boolean;
 }
 
-/** The registration of an issuer at the channel, in a word with the colour of the state: the word says it to everyone and the colour at a glance. */
 function RegistrationBadge({ state }: { state: string }) {
   const { t, i18n } = useTranslation();
   const known = i18n.exists(`billingWizard.sdi.registration.${state}.label`);
@@ -42,7 +40,6 @@ export function SdiStep({ agency }: SdiStepProps) {
   const { org } = useCurrentUser();
 
   if (issuers.isPending) return <SkeletonCard lines={3} label={t('billingWizard.sdi.loading')} />;
-  // A failed read keeps the old answer: the connection is never told from data that is no longer the server's.
   if (issuers.isError || !issuers.data) return <ErrorState title={t('billingWizard.sdi.loadError')} error={issuers.error} onRetry={() => void issuers.refetch()} testId="billing-sdi-error" />;
 
   const { providerConfigured, issuers: list } = issuers.data;
@@ -97,7 +94,6 @@ export function SdiStep({ agency }: SdiStepProps) {
   );
 }
 
-/** What a registration state means, in one sentence; a state this client does not know (the server is newer) says nothing that is not true. */
 function registrationText(t: TFunction, state: string): string {
   return state === 'registered' || state === 'pending' || state === 'unknown' ? t(`billingWizard.sdi.registration.${state}.text`) : t('billingWizard.sdi.registration.otherText');
 }

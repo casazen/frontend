@@ -22,7 +22,6 @@ export function useSiteDocuments(enabled = true) {
   });
 }
 
-/** After a change: the console copy of that kind, and the public pages cached in this tab. */
 function useApplyState() {
   const queryClient = useQueryClient();
   return (state: OrgSiteDocumentState) => {
@@ -57,7 +56,6 @@ export function useWithdrawSiteDocument(kind: OrgSiteDocumentKind) {
   });
 }
 
-/** One earlier version with its text, fetched when the host asks to start from it. */
 export function useLoadSiteDocumentVersion(kind: OrgSiteDocumentKind) {
   return useMutation<OrgSiteDocumentVersion, unknown, number>({
     mutationFn: (version) => OrgsApi.getSiteDocumentVersion(kind, version),

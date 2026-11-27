@@ -3,7 +3,6 @@ import { COMUNE_SEARCH_MIN_LENGTH, ComuniApi } from '@/api/comuni.api';
 
 const COMUNI_KEY = 'comuni';
 
-/** The list changes with an import by an admin, a few times a year: checked once per session and on a new mount after 10 minutes. */
 const STATUS_STALE_TIME_MS = 10 * 60 * 1000;
 
 /** Whether the official ISTAT list is imported (the pickers say so when it is not). */
@@ -17,7 +16,6 @@ export function useComuneDatasetStatus() {
   });
 }
 
-/** Search as the user types (`query` is already debounced by the caller); idle below the minimum length. */
 export function useComuneSearch(query: string, enabled = true) {
   const trimmed = query.trim();
   return useQuery({

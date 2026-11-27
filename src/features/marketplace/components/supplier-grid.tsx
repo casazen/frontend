@@ -5,10 +5,6 @@ import { MARKETPLACE_SUPPLIER_DRAWER_KIND } from '../marketplace-supplier-drawer
 import { supplierCardRows } from '../lib/supplier-labels';
 import { SupplierCard } from './supplier-card';
 
-/**
- * Suppliers as cards that line up, a row of the grid after another (`AlignedCard`: the name, the categories, the facts and the
- * description of the cards of a line start at the same height). A card opens the supplier in the drawer; one column on a phone.
- */
 export function SupplierGrid({ suppliers, testId = 'marketplace-supplier-grid' }: { suppliers: readonly SupplierPicker[]; testId?: string }) {
   const { t, i18n } = useTranslation();
   const drawer = useDetailDrawer();

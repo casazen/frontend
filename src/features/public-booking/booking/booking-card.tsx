@@ -17,10 +17,8 @@ import { siteLocale } from '@/lib/site-language';
 import { cn } from '@/lib/utils';
 import '@/features/public-booking/booking/booking.css';
 
-/** What a call to action can ask to open or reach: the dates or the guests. */
 export type OpenSheet = 'dates' | 'guests' | null;
 
-/** The price at the top of the card: «da 145 € / notte» before the dates, the total of the server for the dates chosen after them. */
 function PriceHead() {
   const { t, i18n } = useTranslation();
   const { quote, fromPriceCents, currency, nights } = useBooking();
@@ -57,7 +55,6 @@ function PriceHead() {
           </>
         ) : null}
       </p>
-      {/* «Scegli le date» only while there are none: with a problem (the dates are chosen, the stay cannot be had) the problem says what to do. */}
       {quote.status === 'loading' || quote.status === 'none' ? (
         <p className="pp-price__sub">{quote.status === 'loading' ? t('propertyBooking.price.calculating') : t('propertyBooking.price.chooseDates')}</p>
       ) : null}
@@ -79,7 +76,6 @@ function ModeLine() {
   );
 }
 
-/** Arrival and departure as one button (they open the same calendar), and the guests as another under it. */
 function FieldButtons({ open, onOpenChange }: { open: OpenSheet; onOpenChange: (next: OpenSheet) => void }) {
   const { t, i18n } = useTranslation();
   const { stay, setStay, calendar, property, petsAllowed } = useBooking();
@@ -136,7 +132,6 @@ function FieldButtons({ open, onOpenChange }: { open: OpenSheet; onOpenChange: (
   );
 }
 
-/** The same choices already open, for the sheet of the phone: the calendar and the guests one under the other. */
 function InlinePickers() {
   const { t } = useTranslation();
   const uid = useId();
@@ -161,7 +156,6 @@ function InlinePickers() {
   );
 }
 
-/** Why the stay cannot be booked yet, or what to do next: always in a live region, so the change is heard. */
 function Messages() {
   const { t, i18n } = useTranslation();
   const { quote, online, stay, nights, acceptsBookings } = useBooking();
@@ -169,7 +163,7 @@ function Messages() {
 
   let content: ReactNode = null;
   if (!acceptsBookings) {
-    content = null; // said by the call to action, with the way to write to the host
+    content = null;
   } else if (!online) {
     content = (
       <div className="pp-msg pp-msg--info" data-testid="booking-offline">
@@ -245,7 +239,6 @@ function Cta({ onChoose }: { onChoose: (what: Exclude<OpenSheet, null>) => void 
   switch (quote.status) {
     case 'ready':
       if (!checkoutHref) return null;
-      // In the frame of an embeddable widget the way out is a link that takes the whole page to the checkout (a payment is never made inside a frame).
       return embed ? (
         <EmbedCheckoutLink className={base} />
       ) : (
@@ -267,7 +260,6 @@ function Cta({ onChoose }: { onChoose: (what: Exclude<OpenSheet, null>) => void 
       );
     case 'problem': {
       if (quote.problem === 'notBookable') return null;
-      // The guests (their number or their pet) are what to change; every other problem is about the dates.
       const aboutGuests = quote.problem === 'tooManyGuests' || quote.problem === 'petsNotAllowed';
       return (
         <button type="button" className={base} onClick={() => onChoose(aboutGuests ? 'guests' : 'dates')} data-testid="booking-cta">
@@ -284,7 +276,6 @@ function Cta({ onChoose }: { onChoose: (what: Exclude<OpenSheet, null>) => void 
   }
 }
 
-/** The call to action with the line under it: what the bar and the sheet of the phone show, and the card of the desktop. */
 export function BookingCta({ onChoose }: { onChoose: (what: Exclude<OpenSheet, null>) => void }) {
   const { t } = useTranslation();
   const { quote } = useBooking();
@@ -301,14 +292,12 @@ export function BookingCta({ onChoose }: { onChoose: (what: Exclude<OpenSheet, n
   );
 }
 
-/** Three reasons to trust the booking, each only if it is true for this stay. */
 function Trust() {
   const { t, i18n } = useTranslation();
   const { quote, property, acceptsBookings } = useBooking();
   const locale = siteLocale(i18n.language);
   const ready = quote.status === 'ready' ? quote.quote : null;
 
-  // The cancellation, in the dates of this stay when there are some, else in the words of the policy; nothing if the policy never refunds.
   let cancel: string | null = null;
   const dates = ready?.cancellation;
   const policyFull = property.cancellationPolicy ? policyStages(property.cancellationPolicy).full : null;
@@ -350,7 +339,6 @@ function Trust() {
 }
 
 interface BookingCardProps {
-  /** `aside`: the fixed card of the desktop. `sheet`: the same card inside the sheet of the phone, with the calendar and the guests open. */
   variant?: 'aside' | 'sheet';
 }
 
@@ -370,7 +358,6 @@ export function BookingCard({ variant = 'aside' }: BookingCardProps) {
 
   return (
     <div className={cn('pp-book', sheet && 'pp-book--sheet')} data-testid={sheet ? 'booking-card-sheet' : 'booking-card'} aria-busy={quote.status === 'loading' || undefined}>
-      {/* The new total is read out when it arrives, once: the figures in the card change without moving the focus. */}
       <p role="status" aria-live="polite" className="sr-only" data-testid="booking-announce">
         {quote.status === 'ready'
           ? t('propertyBooking.announce.total', {

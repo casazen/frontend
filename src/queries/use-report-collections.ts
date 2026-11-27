@@ -28,10 +28,6 @@ export function useCollectionsReport(period: ReportPeriod, propertyId: string, e
   });
 }
 
-/**
- * The stays that still have something to collect, as of today (NF-97): the list does not depend on a period, only on the property.
- * `enabled` is false while the person may not read payments. The data is `null` on a 403.
- */
 export function useBalancesToCollect(propertyId: string, enabled: boolean) {
   return useQuery({
     queryKey: [REPORT_COLLECTIONS_KEY, 'balances-to-collect', propertyId],

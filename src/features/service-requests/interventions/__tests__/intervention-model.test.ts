@@ -26,7 +26,6 @@ describe('the list of the interventions asks the server (SR-08)', () => {
 
   it('interventionListParams_EveryChip_IsAViewOfTheApi', () => {
     for (const chip of INTERVENTION_CHIPS) expect(interventionListParams(state({ chip })).view).toBe(chip);
-    // An address with a chip that does not exist opens the plain list.
     expect(interventionListParams(state({ chip: 'nope' })).view).toBe('all');
   });
 

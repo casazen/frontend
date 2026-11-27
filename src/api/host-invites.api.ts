@@ -10,7 +10,6 @@ import type {
   HostInvitesParams,
 } from '@/types/host-invites';
 
-/** Who calls: the platform admin (all invites) or a host (only their own, with a daily quota). */
 export type HostInviteScope = 'admin' | 'host';
 
 const BASE: Record<HostInviteScope, string> = {
@@ -34,7 +33,6 @@ export async function fetchHostInvites(
   });
 }
 
-/** Sends an invite again: new link and expiry, the old link stops working. */
 export async function resendHostInvite(scope: HostInviteScope, id: string): Promise<HostInviteResult> {
   return ApiClient.post<HostInviteResult>(`${BASE[scope]}/${encodeURIComponent(id)}/resend`);
 }
@@ -49,11 +47,9 @@ export async function fetchHostInviteQuota(): Promise<HostInviteQuota> {
 
 /** Anonymous: what the link of an invite is worth. The token is a secret of the link: never logged or tracked. */
 export async function lookupHostInvite(token: string): Promise<HostInviteLookup> {
-  // POST with the token in the body: a query string would put the secret in access logs.
   return ApiClient.post<HostInviteLookup>('/host-invites/lookup', { token }, { public: true });
 }
 
-/** Signed in: binds the invite to the account (204, no body). */
 export async function acceptHostInvite(token: string): Promise<void> {
   await axios.post('/host-invites/accept', { token });
 }

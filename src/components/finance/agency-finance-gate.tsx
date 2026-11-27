@@ -11,15 +11,12 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { AgencyAdminRequired } from './agency-admin-required';
 
-/** The page where an organization changes its plan (the billing page of the account area). */
 const PLAN_PATH = '/app/account/billing';
 
 interface AgencyFinanceGateProps {
-  /** The test id of the page, kept whatever the gate says. */
   testId: string;
   title: string;
   description: string;
-  /** What the skeleton says while the plan of the organization is on its way. */
   loadingLabel: string;
   children: ReactNode;
 }

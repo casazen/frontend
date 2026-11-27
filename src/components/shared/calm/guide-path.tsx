@@ -5,35 +5,22 @@ import { cn } from '@/lib/utils';
 import { CalmActionButton, type CalmAction } from './calm-action';
 import type { CalmTone } from './calm-tone';
 
-/** Where a step of a path stands: behind the person, the one to do now, or ahead. */
 export type GuidePathState = 'done' | 'current' | 'upcoming';
 
 export interface GuidePathStep {
-  /** Unique in the path. */
   id: string;
-  /** What the step is, as a short sentence ("Collega Octorate"). */
   title: string;
-  /** One line under it: on what, or why ("Prenotazione · Villa del Lago"). */
   detail?: string;
-  /** A short note: when it is due or how long it takes ("Scaduta: mer 23 set", "5 minuti"), already translated. */
   note?: string;
-  /**
-   * The tone of the note, and only of the note: a deadline that has passed is told by its words and their color, never by painting the
-   * whole step (a tinted block reads as an error). Default `neutral`.
-   */
   noteTone?: CalmTone;
-  /** A few words above the title, already translated ("Adesso"). */
   kicker?: string;
   state: GuidePathState;
-  /** The way to do the step: a full button on the current step, a quiet one on the others. */
   action?: CalmAction;
 }
 
 export interface GuidePathProps extends Omit<React.HTMLAttributes<HTMLOListElement>, 'children'> {
-  /** The name of the path for a screen reader ("I tuoi prossimi passi"). */
   label: string;
   steps: readonly GuidePathStep[];
-  /** Smaller markers and type, for a panel or a dialog. */
   density?: 'regular' | 'compact';
 }
 
@@ -118,7 +105,6 @@ export function GuidePath({ label, steps, density = 'regular', className, ...pro
             <div
               className={cn(
                 'flex min-w-0 flex-1 flex-col gap-2',
-                // Beside the text from `sm`: the button of every step at the same place, so the eye runs down the path.
                 compact ? null : 'sm:flex-row sm:items-start sm:justify-between sm:gap-4',
               )}
             >

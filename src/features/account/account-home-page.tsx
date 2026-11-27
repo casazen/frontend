@@ -50,15 +50,10 @@ function describeItem(item: HomeItem, t: TFunction): { title: string; body?: str
   }
 }
 
-/** The log sends UTC instants; one without a zone mark would be read as local time. */
 function asInstant(when: string): string {
   return /(?:Z|[+-]\d{2}:?\d{2})$/i.test(when) ? when : `${when}Z`;
 }
 
-/**
- * Where "Niente di urgente" leads: the people or the properties of the account once those pages exist; until then the first area the
- * person works in, and the profile for who works in none.
- */
 function onwardAction(reach: Reach, getDefaultRoute: (area: AppContextKey) => string, t: TFunction): CalmAction {
   const entry = reachableEntry([ACCOUNT_PEOPLE_PATH, ACCOUNT_PROPERTIES_PATH], reach);
   if (entry) return { label: t('account.home.open', { name: getNavLabel(entry, t) }), href: entry.path };
@@ -109,7 +104,6 @@ function RecentActivity({ entries, reach }: { entries: OrgActivityEntry[]; reach
     return byUserId;
   }, [members.data]);
 
-  // Names that cannot be read would turn every person into a "former member": better no list than a wrong one.
   if (members.isError) return null;
 
   const logHref = reachableEntry([ACCOUNT_ACTIVITY_PATH], reach)?.path;
@@ -146,7 +140,6 @@ function HomeBody({ overview }: { overview: OrgOverview }) {
   const portal = useOpenBillingPortal();
   const reach: Reach = { contexts, hasPermission };
 
-  // What each item can do: the failed payment opens the billing portal of Stripe; the others lead to a page, if the page is there.
   const resolved: { item: HomeItem; action: CalmAction | null }[] = buildHomeItems(overview).map((item) => {
     const entry = item.kind === 'billing' ? undefined : reachableEntry(item.destinations, reach);
     const action: CalmAction | null =
@@ -158,7 +151,6 @@ function HomeBody({ overview }: { overview: OrgOverview }) {
     return { item, action };
   });
 
-  // "Adesso" is the first thing that has a way out. One that has none yet waits below, as a sentence.
   const now = resolved.find((candidate): candidate is { item: HomeItem; action: CalmAction } => candidate.action !== null);
   const later = resolved.filter((candidate) => candidate !== now);
   const nowText = now ? describeItem(now.item, t) : null;
@@ -215,12 +207,6 @@ function HomeBody({ overview }: { overview: OrgOverview }) {
   );
 }
 
-/**
- * Home of the account area (AM-04): what asks for a look now, the few numbers of the account and what the team did lately, from the
- * one overview the backend gives to the owner and the administrators (`GET /api/orgs/me/overview`). A single highlighted block
- * (`FocusBlock`), the rest quiet. Every link is to a page that exists for this person; what the next tasks bring (people, the
- * properties of the account, the log) lights up here by itself when its page enters the route manifest.
- */
 export function AccountHomePage() {
   const { t } = useTranslation();
   const overview = useOrgOverview();

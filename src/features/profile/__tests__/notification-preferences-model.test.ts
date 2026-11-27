@@ -13,7 +13,6 @@ import {
 } from '../notification-preferences-model';
 import { defaultPreferences } from './notification-preferences-fixtures';
 
-/** Browser push cannot deliver yet; the other three can. */
 const AVAILABILITY: ChannelAvailability = { MobilePush: true, BrowserPush: false, Email: true, CounterOnly: true };
 
 describe('the rows of the page (E05/F03/US02)', () => {
@@ -31,7 +30,6 @@ describe('the rows of the page (E05/F03/US02)', () => {
       'ScheduledMessageIssue',
     ]);
     expect(rows.every((row) => row.isDefault)).toBe(true);
-    // PO-10: a new guest message is a push and the counter.
     expect(rows[0].channels).toEqual(['MobilePush', 'CounterOnly']);
   });
 
@@ -85,7 +83,6 @@ describe('what a switch can do (E05/F03/US02, AC-NF65-3)', () => {
       disabled: true,
       lock: 'last-legal-channel',
     });
-    // The others of the row can still be switched on.
     expect(channelCell('LegalDeadline', ['Email'], 'MobilePush', AVAILABILITY)).toEqual({ checked: false, disabled: false, lock: null });
   });
 
@@ -95,9 +92,7 @@ describe('what a switch can do (E05/F03/US02, AC-NF65-3)', () => {
   });
 
   it('channelCell_ChannelStoredThatCannotDeliver_DoesNotCountAsAChannelOfTheLegalDeadline', () => {
-    // Browser push is stored next to the email: only the email delivers, so it is the last channel.
     expect(channelCell('LegalDeadline', ['BrowserPush', 'Email'], 'Email', AVAILABILITY).lock).toBe('last-legal-channel');
-    // Only browser push is stored: nothing delivers, so the email can be switched on.
     expect(channelCell('LegalDeadline', ['BrowserPush'], 'Email', AVAILABILITY)).toEqual({ checked: false, disabled: false, lock: null });
   });
 
@@ -129,13 +124,11 @@ describe('the channels a switch saves (E05/F03/US02, AC-NF65-1 and AC-NF65-3)', 
 
   it('withChannel_LegalDeadlineWouldEndWithNoChannel_IsRefusedAndNothingIsSent', () => {
     expect(withChannel('LegalDeadline', ['Email'], 'Email', false, AVAILABILITY)).toBeNull();
-    // With a second channel on the same switch is fine.
     expect(withChannel('LegalDeadline', ['Email', 'CounterOnly'], 'Email', false, AVAILABILITY)).toEqual(['CounterOnly']);
   });
 
   it('withChannel_ChannelThatCannotDeliver_IsRefusedAndNeverSent', () => {
     expect(withChannel('NewBooking', ['MobilePush'], 'BrowserPush', true, AVAILABILITY)).toBeNull();
-    // A stored channel that cannot deliver is not written back with the change of another one: the server refuses the whole save for it.
     expect(withChannel('NewBooking', ['MobilePush', 'BrowserPush'], 'Email', true, AVAILABILITY)).toEqual(['MobilePush', 'Email']);
   });
 

@@ -90,7 +90,6 @@ describe('bank import: the review', () => {
     rows[1] = { ...rows[1], checked: false };
 
     expect(selectionsOf(rows)).toEqual([{ fingerprint: 'a', installmentId: 'i1' }]);
-    // A row ticked with no installment chosen is nothing yet.
     expect(selectionsOf([{ ...rows[3], checked: true }])).toEqual([]);
   });
 
@@ -148,7 +147,6 @@ describe('bank import: the columns', () => {
   });
 
   it('initialMappingChoice_ARowOfTitlesTheLandlordCannotSee_IsNotAssumed', () => {
-    // The server saw titles below the rows it sent back: with nothing to look at, the landlord is not told there are titles.
     expect(initialMappingChoice({ ...problem, headerRow: 7 }).hasTitles).toBe(false);
   });
 
@@ -157,7 +155,6 @@ describe('bank import: the columns', () => {
 
     expect(mappingOf(problem, choice)).toEqual({ headerRow: 0, date: 0, description: 1, amount: 2 });
     expect(mappingOf(problem, { ...choice, hasTitles: false })).toEqual({ headerRow: -1, date: 0, description: 1, amount: 2 });
-    // The titles the landlord says there are, where the server saw none: the first row.
     expect(mappingOf({ ...problem, headerRow: -1 }, choice)).toEqual({ headerRow: 0, date: 0, description: 1, amount: 2 });
   });
 

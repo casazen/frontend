@@ -19,38 +19,24 @@ import { QuoteSheet } from './quote-sheet';
 import { RecordPaymentDialog } from './record-payment-dialog';
 
 export interface RequestActions {
-  /** A suspended supplier performs no action (SU-12): the buttons stay, disabled, and the banner says why. */
   suspended: boolean;
-  /** An action is going on: a second tap is ignored. */
   busy: boolean;
-  /** Which request an action is going on for, to show the spinner on its button. */
   takingId: string | null;
-  /** The request a backup is saying it would take the job of (SP-BKP). */
   acceptingBackupId: string | null;
   completingId: string | null;
-  /** The request a reminder for the payment is going out for. */
   remindingId: string | null;
   take: (id: string) => void;
-  /** A backup says it would take the job if the primary supplier does not (SP-BKP): the request stays new and holds nothing of the agenda. */
   acceptBackup: (id: string) => void;
   complete: (id: string) => void;
-  /** Opens the dialog that asks why, then refuses the request. */
   askReject: (id: string) => void;
-  /** Opens the dialog that asks why, then cancels the job the supplier took and has not started (SP-16c-c). */
   askCancel: (id: string) => void;
-  /** Opens the sheet of the quote (SP-04b): empty to answer a new request, filled to change the quote that waits (the new one replaces it). */
   askQuote: (request: SupplierServiceRequest) => void;
-  /** Asks to confirm, then takes the quote back: the request is «da rispondere» again. */
   askWithdrawQuote: (id: string) => void;
-  /** Asks the payer for the payment of a completed job again (SP-15a): one e-mail with a new link, at most one a day. */
   remindPayment: (id: string) => void;
-  /** Opens the confirmation that records a payment received outside CasaZen (SP-15a). */
   askRecordPayment: (request: SupplierServiceRequest) => void;
-  /** The dialog of the refusal, of the cancellation, of the quote or of the payment: render it once, anywhere in the page. */
   dialog: ReactNode;
 }
 
-/** What the supplier is being asked about, if anything: one dialog at a time. */
 type Asking =
   | { kind: 'reject'; id: string }
   | { kind: 'cancel'; id: string }
@@ -77,8 +63,6 @@ export function useRequestActions(onChanged?: () => void): RequestActions {
   const recordPayment = useRecordOfflineServiceRequestPayment();
   const suspended = useSupplierSuspended();
   const [asking, setAsking] = useState<Asking | null>(null);
-  // `mutate` of TanStack Query keeps its identity: with a caller that does not change `onChanged`, the actions are the same
-  // functions on every render, so a list definition that holds them is not built again for nothing.
   const { mutate: mutateTake } = take;
   const { mutate: mutateAcceptBackup } = acceptBackup;
   const { mutate: mutateComplete } = complete;

@@ -24,14 +24,9 @@ interface ListPanelProps {
   footer?: ReactNode;
   onCloseAutoFocus?: (event: Event) => void;
   testId?: string;
-  /** A drawer wide enough for a page of detail; the panels of the filters are narrower. */
   wide?: boolean;
 }
 
-/**
- * A panel at the side of the list: a drawer from the right on a screen with room, a sheet from the bottom on a phone (the
- * responsive `Dialog`). The filters, the detail of a row and the other choices of the list all open in it.
- */
 export function ListPanel({ open, onOpenChange, title, description, children, footer, onCloseAutoFocus, testId, wide = false }: ListPanelProps) {
   const isPhone = useMediaQuery(PHONE_QUERY);
 
@@ -62,8 +57,6 @@ export function ListPanel({ open, onOpenChange, title, description, children, fo
     </Sheet>
   );
 }
-
-/* ------------------------------------------------------------------------------------------------------------- Filters */
 
 interface FilterFieldProps<Row> {
   filter: ListFilter<Row>;
@@ -159,14 +152,12 @@ interface ListFilterPanelProps<Row> {
   mode: ListMode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The filters, as the person set them. */
   onApply: (filters: Record<string, string>) => void;
   onCloseAutoFocus?: (event: Event) => void;
 }
 
 function FilterForm<Row>({ list, rows, state, mode, onApply, onClose }: Pick<ListFilterPanelProps<Row>, 'list' | 'rows' | 'state' | 'mode' | 'onApply'> & { onClose: () => void }) {
   const { t } = useTranslation();
-  // The draft starts from the filters now in force; it is the person's until they press the button.
   const [draft, setDraft] = useState<Record<string, string>>({ ...state.filters });
 
   const clean = Object.fromEntries(Object.entries(draft).filter(([, value]) => value !== ''));
@@ -175,7 +166,6 @@ function FilterForm<Row>({ list, rows, state, mode, onApply, onClose }: Pick<Lis
     const { from, to } = parseDateRange(clean[filter.id] ?? '');
     return Boolean(from && to && from > to);
   });
-  // The number of results is only known where the list does the filtering itself.
   const count = mode === 'client' ? filterListRows(list, rows, state, { filters: clean }).length : null;
 
   const apply = (filters: Record<string, string>) => {
@@ -206,7 +196,6 @@ function FilterForm<Row>({ list, rows, state, mode, onApply, onClose }: Pick<Lis
   );
 }
 
-/** The filters of the list, in a drawer (a sheet on a phone), with the number of results the choice would give. */
 export function ListFilterPanel<Row>({ list, rows, state, mode, open, onOpenChange, onApply, onCloseAutoFocus }: ListFilterPanelProps<Row>) {
   const { t } = useTranslation();
   return (
@@ -222,8 +211,6 @@ export function ListFilterPanel<Row>({ list, rows, state, mode, open, onOpenChan
     </ListPanel>
   );
 }
-
-/* -------------------------------------------------------------------------------------------------------------- Columns */
 
 interface ColumnsDialogProps<Row> {
   list: ListDefinition<Row>;
@@ -281,7 +268,6 @@ function ColumnsForm<Row>({ list, state, onApply, onClose }: Pick<ColumnsDialogP
   );
 }
 
-/** Which columns the table shows, to choose from the ones the list has. */
 export function ListColumnsDialog<Row>({ list, state, open, onOpenChange, onApply, onCloseAutoFocus }: ColumnsDialogProps<Row>) {
   const { t } = useTranslation();
   return (
@@ -296,8 +282,6 @@ export function ListColumnsDialog<Row>({ list, state, open, onOpenChange, onAppl
     </Dialog>
   );
 }
-
-/* ----------------------------------------------------------------------------------------------------------------- Sort */
 
 const DIRECTIONS = ['asc', 'desc'] as const;
 
@@ -350,7 +334,6 @@ function SortForm<Row>({ list, state, onApply, onClose }: Pick<SortDialogProps<R
   );
 }
 
-/** The order of the list, to choose where there are no column headers to press (a phone). */
 export function ListSortDialog<Row>({ list, state, open, onOpenChange, onApply, onCloseAutoFocus }: SortDialogProps<Row>) {
   const { t } = useTranslation();
   return (
@@ -366,15 +349,11 @@ export function ListSortDialog<Row>({ list, state, open, onOpenChange, onApply, 
   );
 }
 
-/* ------------------------------------------------------------------------------------------------------- Saved views */
-
 interface SaveViewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The view the list is in now, as a query string: what is kept under the name. */
   query: string;
   onSave: UseSavedViews['save'];
-  /** Called after the view was kept, with its name. */
   onSaved: (name: string) => void;
   onCloseAutoFocus?: (event: Event) => void;
 }
@@ -427,7 +406,6 @@ function SaveViewForm({ query, onSave, onSaved, onClose }: Pick<SaveViewDialogPr
   );
 }
 
-/** Asks for a name and keeps the view the list is in now. */
 export function ListSaveViewDialog({ open, onOpenChange, query, onSave, onSaved, onCloseAutoFocus }: SaveViewDialogProps) {
   const { t } = useTranslation();
   return (
@@ -451,7 +429,6 @@ interface DeleteViewsDialogProps {
   onCloseAutoFocus?: (event: Event) => void;
 }
 
-/** The views the person saved, each one with the button that removes it. */
 export function ListDeleteViewsDialog({ open, onOpenChange, views, onDelete, onCloseAutoFocus }: DeleteViewsDialogProps) {
   const { t } = useTranslation();
   return (

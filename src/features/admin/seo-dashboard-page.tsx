@@ -33,10 +33,6 @@ const SEO_PAGE_SIZE = 20;
 
 type StatusFilter = '' | LegalReviewStatus;
 
-/**
- * Admin SEO dashboard (US-020, SE-01): paginated pages with their publication state, review with preview and explicit
- * approval of the revision read, withdrawal, link to the public page, AI generation (drafts only) and AI budget.
- */
 export function SeoDashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();

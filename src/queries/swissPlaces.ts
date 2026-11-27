@@ -3,10 +3,6 @@ import { SWISS_SEARCH_MIN_LENGTH, SwissPlacesApi } from '@/api/swiss-places.api'
 
 const SWISS_PLACES_KEY = 'swiss-places';
 
-/**
- * The directory changes with the yearly refresh of the official list, not while a host fills in a form: an answer is kept for ten
- * minutes. It is reference data (no list or detail of the host's own data), so nothing here has to be read again on mount.
- */
 const DIRECTORY_STALE_TIME_MS = 10 * 60 * 1000;
 
 /**
@@ -24,10 +20,6 @@ export function useSwissLocalitySearch(query: string, enabled = true) {
   });
 }
 
-/**
- * The municipality of a stored BFS number (name and canton), for a record that does not carry them. 404 = the directory has no such
- * number (read `isError` before `data`: TanStack Query keeps the old data on an error).
- */
 export function useSwissMunicipality(municipalityCode: string | null | undefined) {
   return useQuery({
     queryKey: [SWISS_PLACES_KEY, 'municipality', municipalityCode],

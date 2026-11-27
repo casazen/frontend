@@ -24,7 +24,6 @@ import { bookingSourceName } from '../lib/ota-stay';
 
 const PUBLISHED_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 
-/** Where the reply to a review stands, in the words of the list of the booking: it is never «published» until the channel says so. */
 function replyWords(state: OtaReviewActionState, t: TFunction): string {
   switch (state) {
     case 'Sent':
@@ -38,7 +37,6 @@ function replyWords(state: OtaReviewActionState, t: TFunction): string {
   }
 }
 
-/** One review of the booking: the stars in words, the channel, when it was published, the first words, where the reply stands, and the way to the review in the messages. */
 function BookingReviewItemRow({ item }: { item: BookingReviewItem }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -78,7 +76,6 @@ function BookingReviewItemRow({ item }: { item: BookingReviewItem }) {
 
 interface BookingReviewsSectionProps {
   booking: Booking;
-  /** The host may write the bookings (`booking.write`): asking the guest of the site for a review needs it. */
   canWrite: boolean;
 }
 
@@ -119,14 +116,12 @@ function BookingReviewsBody({ booking, canWrite, kind, inviteEnabled }: BookingR
     );
   }
 
-  // A reading that failed says so: it is never the reviews of the reading before (TanStack Query keeps the old data on an error).
   const data = reviews.isError ? undefined : reviews.data;
   const items = data?.items ?? [];
   const limit = data && !data.channelCapabilities.canRead ? data.channelCapabilities.reason : null;
   const inviteStatus = inviteEnabled && !invite.isError ? invite.data : undefined;
   const inviteView = reviewInviteViewOf(inviteStatus);
 
-  // Nothing to say: a booking with no reviews at all, or a stay of the site that nobody asked about and nobody reviewed.
   const showReviews = kind !== null && limit !== 'no_reviews_for_booking_source';
   if (!inviteView && (!showReviews || (data && kind === 'direct' && items.length === 0))) return null;
 
@@ -146,7 +141,6 @@ function BookingReviewsBody({ booking, canWrite, kind, inviteEnabled }: BookingR
       ) : null}
 
       {!showReviews ? null : reviews.isError && getHttpStatus(reviews.error) === 404 ? (
-        // A 404 is told as a 404, whatever an older reading holds: the reviews of a booking that is gone, or out of the reach of the caller, are not shown.
         <p className="max-w-prose text-sm text-foreground/70" role="status" data-testid="booking-reviews-not-found">
           {t('reviews.booking.notFound')}
         </p>
@@ -164,7 +158,6 @@ function BookingReviewsBody({ booking, canWrite, kind, inviteEnabled }: BookingR
           {t('reviews.booking.loadError')}
         </Alert>
       ) : limit ? (
-        // The channel gives no review and takes no reply: the one sentence, never a placeholder review.
         <p className="max-w-prose text-sm text-foreground/70" data-testid="booking-reviews-limit">
           {reasonText(limit, t, bookingSourceName(booking, t)) ?? t('reviews.booking.limit')}
         </p>

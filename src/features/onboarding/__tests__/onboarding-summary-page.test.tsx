@@ -44,7 +44,6 @@ function row(flow: OnboardingFlowKey, propertyId: string, name: string, override
   return { propertyId, name, city: 'Rimini', flow, state: 'active', reason: null, action: null, prerequisites: [], ...overrides };
 }
 
-/** What the server answers for each flow: the same two properties, the first connected and the second still missing things. */
 function answer(flow: OnboardingFlowKey, state?: string): PagedFlowProperties {
   const byFlow: Record<OnboardingFlowKey, FlowPropertyStatus[]> = {
     Listings: [row('Listings', P1, 'Casa del Mare'), row('Listings', P2, 'Villa Rosa', { state: 'toComplete', reason: 'channel_content_to_fix', action: 'fixListing' })],
@@ -134,25 +133,20 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
         i18n.t('onboardingPlan.summary.table.property'),
         ...ONBOARDING_FLOW_KEYS.map((flow) => i18n.t(`onboardingPlan.flows.names.${flow}`)),
       ]);
-      // Active: a word, no reason, no button.
       expect(within(cell(P1, 'Listings')).getByTestId('flow-state')).toHaveTextContent(i18n.t('onboardingPlan.flows.states.active'));
       expect(within(cell(P1, 'Listings')).queryByRole('link')).not.toBeInTheDocument();
-      // To complete: the reason in plain words and «Fai ora», which is the page that fixes it for THAT property.
       expect(within(cell(P2, 'Bookings')).getByTestId('flow-state')).toHaveAttribute('data-state', 'toComplete');
       expect(cell(P2, 'Bookings')).toHaveTextContent(i18n.t('onboardingPlan.reasons.property.mapping_unconfirmed'));
       expect(screen.getByTestId(`flow-cell-${P2}-Bookings-do`)).toHaveAttribute('href', '/app/short-rent/integrations/octorate?step=mapping');
       expect(screen.getByTestId(`flow-cell-${P2}-Listings-do`)).toHaveAttribute('href', `/app/short-rent/properties/${P2}/edit`);
-      // The action «activate» is done on this very page: for the administrator a button, not a link to the page they are on.
       expect(screen.queryByTestId(`flow-cell-${P1}-Bookings-do`)).not.toBeInTheDocument();
       expect(screen.getByTestId(`flow-cell-${P1}-Bookings-activate`).tagName).toBe('BUTTON');
-      // Not available: the why, no button.
       expect(cell(P1, 'Documents')).toHaveTextContent(i18n.t('onboardingPlan.reasons.property.content_managed_on_channel'));
       expect(within(cell(P1, 'Documents')).queryByRole('link')).not.toBeInTheDocument();
       expect(within(cell(P1, 'Documents')).getByTestId('flow-state')).toHaveTextContent(i18n.t('onboardingPlan.flows.states.notAvailable'));
     });
 
     it('FlowStatusTable_ActionWhoseTargetHasNoPageForThePerson_SaysNotAvailableYetNeverADeadLink', async () => {
-      // A reader of the properties cannot open the page of the activation of a property: the cell says so, with no link.
       workspace.hasPermission = (...args) => args[1] === 'property.read';
       renderPage();
 
@@ -167,7 +161,6 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
 
       fireEvent.click(screen.getByTestId(`flow-cell-${P1}-Bookings-activate`));
 
-      // The dialog of the activation, as from the button of the page: the summary before the action, nothing done yet.
       const dialog = await screen.findByTestId('activation-dialog');
       expect(within(dialog).getByTestId('activation-confirm')).toBeInTheDocument();
       expect(onboardingApi.activateFlow).not.toHaveBeenCalled();
@@ -178,7 +171,6 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       renderPage();
 
       await screen.findByTestId('flow-table');
-      // The reason is told, and who activates is told below the table; nothing to press, and no link to the page the person is on.
       expect(cell(P1, 'Bookings')).toHaveTextContent(i18n.t('onboardingPlan.reasons.property.flow_not_activated'));
       expect(screen.queryByTestId(`flow-cell-${P1}-Bookings-activate`)).not.toBeInTheDocument();
       expect(screen.queryByTestId(`flow-cell-${P1}-Bookings-do`)).not.toBeInTheDocument();
@@ -196,7 +188,6 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       await waitFor(() => expect(within(screen.getByTestId('flow-table')).getAllByRole('columnheader')).toHaveLength(2));
       expect(screen.getByTestId('flow-column-CheckInCompliance')).toBeInTheDocument();
       expect(screen.getByTestId('flow-strip-CheckInCompliance')).toHaveAttribute('aria-pressed', 'true');
-      // The state filter belongs to a flow: now it can be used.
       expect(screen.getByTestId('flow-filter-state')).toBeEnabled();
       fireEvent.change(screen.getByTestId('flow-filter-state'), { target: { value: 'toComplete' } });
       await waitFor(() => expect(onboardingApi.getFlowProperties).toHaveBeenCalledWith('CheckInCompliance', expect.objectContaining({ state: 'toComplete' })));
@@ -208,7 +199,6 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       renderPage();
       await screen.findByTestId('flow-table');
 
-      // One read for each flow, the same page of twenty: 250 properties never load at once (the choice of the property of the test reads at most a hundred).
       const asked = vi.mocked(onboardingApi.getFlowProperties).mock.calls;
       expect(asked.filter(([, query]) => query?.pageSize === 20)).toHaveLength(ONBOARDING_FLOW_KEYS.length);
       for (const flow of ONBOARDING_FLOW_KEYS) expect(onboardingApi.getFlowProperties).toHaveBeenCalledWith(flow, { page: 1, pageSize: 20, search: undefined });
@@ -253,7 +243,6 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       });
       renderPage();
       await screen.findByTestId('final-test-panel');
-      // Before the test and after it: nothing is sent.
       expect(screen.getByTestId('test-no-effect')).toHaveTextContent('Nessun effetto: non viene inviato nulla');
 
       await waitFor(() => expect(screen.getByTestId('test-property')).toHaveValue(P1));
@@ -265,7 +254,6 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       expect(within(result).getByTestId('test-check-CheckInCompliance')).toHaveTextContent(i18n.t('onboardingPlan.test.reasons.sender_missing'));
       expect(within(result).getByTestId('test-check-CheckInCompliance')).toHaveAttribute('data-outcome', 'fail');
       expect(within(result).getByTestId('test-check-Messages')).toHaveAttribute('data-outcome', 'skipped');
-      // A pass can carry information: the guest data are often given at the check-in.
       expect(within(result).getByTestId('test-check-Documents')).toHaveTextContent(i18n.t('onboardingPlan.test.reasons.guest_data_missing'));
       expect(screen.getByTestId('test-no-effect')).toBeInTheDocument();
     });
@@ -290,7 +278,6 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       fireEvent.click(screen.getByTestId('summary-activate'));
 
       const dialog = await screen.findByTestId('activation-dialog');
-      // By default the flows with something ready are ticked, and the dialog says it before it does it (UX-05).
       await waitFor(() => expect(within(dialog).getByTestId('activation-flow-Bookings')).toBeChecked());
       expect(within(dialog).getByTestId('activation-flow-Listings')).not.toBeChecked();
       expect(within(dialog).getByTestId('activation-summary')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.willActivate', { count: 1 }));
@@ -310,7 +297,6 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
           { propertyId: P2, outcome: 'prerequisitesNotMet', unmetPrerequisites: ['singleSender'], reason: 'sender_missing' },
         ],
       });
-      // Both properties of the flow wait only for the activation when the dialog reads them.
       vi.mocked(onboardingApi.getFlowProperties).mockImplementation((flow, query) => {
         if (flow === 'Bookings' && query?.state === 'toComplete' && query.pageSize === 100) {
           return Promise.resolve({
@@ -331,11 +317,9 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       fireEvent.click(within(dialog).getByTestId('activation-confirm'));
 
       const result = await within(dialog).findByTestId('activation-result');
-      // The server was asked for the properties that were read, by name and in one call; the flows that were not ticked were not called.
       expect(onboardingApi.activateFlow).toHaveBeenCalledTimes(1);
       expect(onboardingApi.activateFlow).toHaveBeenCalledWith('Bookings', [P1, P2]);
       expect(within(result).getByTestId('activation-result-Bookings')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.activated', { count: 1 }));
-      // What was not activated, and what it lacks, in plain words; and the one next step.
       expect(within(result).getByTestId(`activation-not-Bookings-${P2}`)).toHaveTextContent('Villa Rosa');
       expect(within(result).getByTestId(`activation-not-Bookings-${P2}`)).toHaveTextContent(i18n.t('onboardingPlan.summary.prerequisites.singleSender'));
       expect(within(result).getByTestId('activation-next-step')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.nextTodo'));
@@ -344,14 +328,12 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
 
     it('ActivationDialog_AFlowThatFailsMidWay_KeepsWhatTheOthersSwitchedOnAndSaysWhichOneStoppedAndWhy', async () => {
       vi.mocked(onboardingApi.bulkProgress).mockResolvedValue(progress({ Listings: 1, Bookings: 1 }));
-      // Both flows have a property that waits only for the activation when the dialog reads them.
       vi.mocked(onboardingApi.getFlowProperties).mockImplementation((flow, query) => {
         if ((flow === 'Listings' || flow === 'Bookings') && query?.state === 'toComplete' && query.pageSize === 100) {
           return Promise.resolve({ items: [row(flow, P1, 'Casa del Mare', { state: 'toComplete', reason: 'flow_not_activated', action: 'activate' })], totalCount: 1, page: 1, pageSize: 100 });
         }
         return Promise.resolve(answer(flow, query?.state));
       });
-      // The first flow goes through and is switched on on the server; the next one is refused.
       vi.mocked(onboardingApi.activateFlow).mockImplementation((flow) =>
         flow === 'Listings'
           ? Promise.resolve({ flow, outcomes: [{ propertyId: P1, outcome: 'activated', unmetPrerequisites: [], reason: null }] })
@@ -366,11 +348,9 @@ describe('OnboardingSummaryPage, the traffic light, the final test and the activ
       fireEvent.click(within(dialog).getByTestId('activation-confirm'));
 
       const result = await within(dialog).findByTestId('activation-result');
-      // What the flow before it switched on is in the result: an error does not hide it.
       expect(onboardingApi.activateFlow).toHaveBeenCalledTimes(2);
       expect(within(result).getByTestId('activation-result-Listings')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.activated', { count: 1 }));
       expect(within(result).queryByTestId('activation-failed-Listings')).not.toBeInTheDocument();
-      // The flow that stopped says so, with the reason the server gave, and nothing of it is counted as done.
       expect(within(result).getByTestId('activation-result-Bookings')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.activated', { count: 0 }));
       expect(within(result).getByTestId('activation-failed-Bookings')).toHaveTextContent(i18n.t('onboardingPlan.summary.activation.flowFailed'));
       expect(within(result).getByTestId('activation-failed-Bookings')).toHaveTextContent('Il servizio ha rifiutato la richiesta.');

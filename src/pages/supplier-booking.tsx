@@ -7,7 +7,6 @@ import { useSupplierSite } from '@/components/supplier-site/site-context';
 import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 import '@/styles/supplier-site-booking.css';
 
-/** The site takes no bookings now (not opened, or the payments are not ready): said plainly, with where to look instead. */
 function BookingsClosed({ slug }: { slug: string }) {
   const { t } = useTranslation();
   return (
@@ -28,10 +27,6 @@ function BookingsClosed({ slug }: { slug: string }) {
   );
 }
 
-/**
- * The booking in five steps, `/fornitori/:slug/prenota` (SP-12b): the page that the cards, the finder and the buttons of the site send the
- * customer to with what it already chose. It exists with the booking flag on and, in the page, only while the site takes bookings.
- */
 export function SupplierBookingPage() {
   const { model } = useSupplierSite();
   return <ShowcaseBookingGate>{model.bookingsOpen ? <BookingWizard /> : <BookingsClosed slug={model.slug} />}</ShowcaseBookingGate>;

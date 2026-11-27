@@ -10,18 +10,10 @@ import type { AppContextKey } from './route-manifest';
  */
 export interface AreaDefinition {
   key: AppContextKey;
-  /** i18n key of the name (`areas.<area>.name`). */
   nameKey: string;
-  /** i18n key of what the area is for (`areas.<area>.description`). */
   descriptionKey: string;
-  /** Name of the icon in `NAV_ICONS`. */
   icon: string;
-  /**
-   * Accent of the area: the `data-area` of `<html>` while the user is in it (UI-01), which sets `--color-primary` to the
-   * accent when the redesign is on. Same value as the area key; `account` shares the amethyst of `admin` (`styles/tokens.css`).
-   */
   accent: AppContextKey;
-  /** i18n key of the line at the bottom of the sidebar, when the area has its own (default: the version). */
   footerKey?: string;
 }
 
@@ -64,14 +56,12 @@ export const AREAS: Record<AppContextKey, AreaDefinition> = {
   },
 };
 
-/** Order of the areas in the selector: the customer's areas, then the staff console. */
 export const AREA_ORDER: readonly AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'account', 'admin'];
 
 export function getArea(key: AppContextKey): AreaDefinition {
   return AREAS[key];
 }
 
-/** The areas of `contexts` (the ones the user can open), in {@link AREA_ORDER}; unknown keys are left out. */
 export function getAccessibleAreas(contexts: readonly { contextKey: string }[]): AreaDefinition[] {
   return AREA_ORDER.filter((key) => contexts.some((context) => context.contextKey === key)).map((key) => AREAS[key]);
 }

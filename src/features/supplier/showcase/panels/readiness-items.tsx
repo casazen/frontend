@@ -4,10 +4,6 @@ import { AlertCircle, CheckCircle2, Info } from 'lucide-react';
 import type { ShowcaseDocument, ShowcaseReadinessItem } from '@/types/supplier-showcase';
 import { fixPathOf, halfFilledRows, stepOfRow, stepPath, type HalfFilledRow } from '../showcase-model';
 
-/**
- * The checks the server makes before a publication, as the rows of a list: done (a tick), advised (an info) or to do (an alert), each
- * said in words as well as by the icon, with "Sistema" to the page where it is put right when that page exists. The `ul` is the caller's.
- */
 export function ReadinessItems({ items }: { items: readonly ShowcaseReadinessItem[] }) {
   const { t } = useTranslation();
   return (
@@ -37,7 +33,6 @@ export function ReadinessItems({ items }: { items: readonly ShowcaseReadinessIte
   );
 }
 
-/** How a half-filled row is called ("Domanda 2"). */
 function rowName(row: HalfFilledRow, t: (key: string, options?: Record<string, unknown>) => string): string {
   const n = row.index + 1;
   switch (row.section) {
@@ -54,16 +49,11 @@ function rowName(row: HalfFilledRow, t: (key: string, options?: Record<string, u
   }
 }
 
-/** The steps where half-filled rows are put right, with the key of what is said of each. */
 const HALF_FILLED_STEPS = [
   { step: 'texts', messageKey: 'supplier.showcase.editor.publish.halfFilled' },
   { step: 'works', messageKey: 'supplier.showcase.editor.publish.halfFilledWorks' },
 ] as const;
 
-/**
- * The rows of the texts and of the jobs that are half filled (the server refuses them at publication): one line per step where they are
- * put right, with the way there. Nothing when there are none.
- */
 export function HalfFilledItems({ doc }: { doc: ShowcaseDocument }) {
   const { t } = useTranslation();
   const halfFilled = halfFilledRows(doc);

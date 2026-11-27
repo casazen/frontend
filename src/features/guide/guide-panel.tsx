@@ -17,14 +17,11 @@ import { todoActionRoute } from '@/features/todo/activity-card';
 import { TODO_LIST_PATH, describeTodo } from '@/features/todo/lib/todo-model';
 import { useSetupJourney, type SetupJourney } from './use-setup-journey';
 
-/** How many items of «Da fare» the panel shows as a road: the one to do now and the next ones. */
 const PANEL_TODO_ITEMS = 5;
 
-/** Classes of a quiet link of the panel: the accent of the area, at least 44 px high. */
 const PANEL_LINK =
   'inline-flex min-h-11 items-center gap-1.5 rounded-md text-sm font-medium text-primary-text outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring';
 
-/** The setup of the host as a road: how far it is, the steps, «Continua» on the one to do now and the page with every step. */
 function SetupSection({ journey }: { journey: SetupJourney }) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -58,7 +55,6 @@ function SetupSection({ journey }: { journey: SetupJourney }) {
   );
 }
 
-/** «Da fare» as a road: the item to do now and the next ones, each with its «Fallo ora», and the way to the whole list. */
 function TodoSection() {
   const { t, i18n } = useTranslation();
   const titleId = useId();
@@ -117,7 +113,6 @@ function TodoSection() {
   );
 }
 
-/** Where to find more help: the guide of the product, and CasaZen support when an address is set. */
 function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -131,7 +126,6 @@ function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
       <h3 id={titleId} className="text-base font-semibold">
         {t('guide.help.title')}
       </h3>
-      {/* «Scrivici» only where the button that writes to support is: without an address the text stops at the manual. */}
       <p className="text-sm text-foreground/70">{helpEmail ? t('guide.help.text') : t('guide.help.textNoSupport')}</p>
       <div className="flex flex-col items-start">
         <Link to={manual} state={returnState} className={PANEL_LINK} data-testid="guide-help-manual">
@@ -177,7 +171,6 @@ function GuidePanel({ contextKey }: GuidePanelProps) {
   const { journey } = useSetupJourney({ enabled: shortRent });
   const canReadTodo = shortRent && hasPermission('short-rent', 'property.read');
 
-  // A link of the panel changed the page: the panel has done its job and leaves the page to the person.
   const lastPath = useRef(pathname);
   useEffect(() => {
     if (lastPath.current === pathname) return;

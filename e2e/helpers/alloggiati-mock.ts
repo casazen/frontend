@@ -119,7 +119,6 @@ export const demoAlloggiatiGuestSummary: AlloggiatiGuestSummaryDto = {
       citizenship: 'Italiana',
       requiresDocument: true,
       documentType: 'IdentityCard',
-      // Only the last characters are visible: the full number is revealed on request (audited, CO-02).
       documentNumberMasked: '*****45AB',
       documentIssuePlace: 'Comune di Milano',
       codes: {
@@ -204,7 +203,6 @@ export async function mockAlloggiatiApi(page: Page): Promise<void> {
     });
   });
 
-  // Same contract as the backend (CO-11): the host declares the manual submission, never "Inviato".
   await page.route(`**/api/alloggiati/${DEMO_BOOKING_ID}/mark-sent-manually`, async (route) => {
     if (route.request().method() !== 'POST') {
       await route.fallback();

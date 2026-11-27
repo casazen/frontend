@@ -20,8 +20,6 @@ function setup() {
   return { wrapper };
 }
 
-// The Home («Rispondi a…») and the tab «Messaggi» read the conversations through the hub (NF-61); the tab Messaggi of a booking and its
-// drawer (SR-12) write to the same conversation through the older endpoints. What they do must reach the hub at once, not at the next minute.
 describe('an answer or a read given from the booking changes the hub too (NF-61, SR-12)', () => {
   beforeEach(() => {
     vi.clearAllMocks();

@@ -54,17 +54,13 @@ function BookingsListPage() {
 
   const list = useBookingsList({ canWrite, properties: Array.isArray(properties.data) ? properties.data : NO_PROPERTIES, handlers });
   const { state } = useListState(list);
-  // The property of an old address (`?propertyId=`) is a choice of the filter: the first request waits until the filter knows it.
   const ready = !properties.isLoading;
   const rows = useBookingList(bookingListParams(state), { enabled: ready });
   const counts = useBookingCounts(bookingFilterParams(state), { enabled: ready });
 
-  // The list cannot tell "no booking at all" from "none in this chip" (it starts from "In arrivo", not from its first chip), and
-  // its toolbar goes away with it: the page says it from the counters, which count every chip.
   const narrowed = state.q.trim() !== '' || Object.keys(state.filters).length > 0;
   const nothingAtAll = !narrowed && counts.data?.all === 0 && !counts.isPlaceholderData;
   const { icon: emptyIcon, ...empty } = list.empty;
-  // A list narrowed to a property offers a booking for that property (the form takes `?propertyId=`).
   const createPath = state.filters.property
     ? `${BOOKINGS_PATH}/create?propertyId=${encodeURIComponent(state.filters.property)}`
     : `${BOOKINGS_PATH}/create`;
@@ -127,10 +123,6 @@ function BookingsListPage() {
   );
 }
 
-/**
- * `/app/short-rent/bookings`. An address of the list as it was before (`?status=Confirmed`, `?propertyId=…`, which the page of a
- * property still links to) becomes the address of this one (`?chip=upcoming`, `?f_property=…`) and the list opens on it.
- */
 export function BookingsPage() {
   const [address] = useSearchParams();
   const current = currentBookingsSearch(address);

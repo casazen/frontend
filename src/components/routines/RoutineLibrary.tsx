@@ -10,31 +10,18 @@ import type { RoutineLibraryTemplate } from '@/types';
 
 interface RoutineLibraryProps {
   suggested?: string | null;
-  /** What the catalog says of each action: a template that holds an action that cannot run yet cannot be switched on, only created in test mode. */
   availability?: ActionAvailability;
   onConfigure: (template: RoutineLibraryTemplate) => void;
-  /**
-   * Opens the layer that says who cleans for many properties at once. The ready cleaning routine acts on every property that has a cleaner (a property with none is left as it is), so its card
-   * offers it: with it the agency can set the cleaner of its properties. Not offered when it is not given.
-   */
   onSetupCleaners?: () => void;
 }
 
 interface LibraryEntry {
   template: RoutineLibraryTemplate;
   icon: LucideIcon;
-  /** What the card says besides its description, when the template needs the host to set something first. */
   noteKey?: string;
-  /** The card offers «Imposta chi pulisce» (the cleaner of the properties, for many at once). */
   setsCleaners?: boolean;
 }
 
-/**
- * The ready routines (AC-NF26-12, AC-NF26-13). Each one is a valid routine of the API as it stands: the configuration of every action is the one its type takes
- * (`RoutineActionRules`) and the condition, when it has one, is on a field a routine reads. The cleaning is the action `CreateCleaningRequest` (E24/F01/US01/T02): at the time of the check-out it makes the
- * cleaning for whoever cleans the property (a supplier at the agreed price, or a member of the staff), once for each stay; a property with no cleaner is left as it is. The review is the action
- * `RequestReview` (E26/F01/US01/T01): a day after the check-out, once for each direct booking. The message routines start in test mode so the host can first choose a template.
- */
 function buildTemplates(t: TFunction): LibraryEntry[] {
   return [
     {
@@ -46,7 +33,6 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
         agentObjective: t('aiSettings.cleaningGoal'),
         description: t('routines.library.cleaningDescription'),
         eventType: 'AfterCheckout',
-        // No delay: the cleaning is made at the time of the check-out of the property, as the server expects the ready routine (`{ hours: 0 }`).
         eventConfig: { days: 0, hours: 0 },
         actions: [{ type: 'CreateCleaningRequest', config: {} }],
       },
@@ -74,8 +60,6 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
       },
     },
     {
-      // No condition: a routine does not read whether the documents were uploaded (the fields it reads are the property, the channel and the counts of the booking), so
-      // the reminder goes to every guest, and the description says so.
       icon: FileWarning,
       template: {
         name: t('routines.library.documentReminderTitle'),

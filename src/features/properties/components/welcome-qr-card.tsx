@@ -19,13 +19,6 @@ interface WelcomeQrCardProps {
   propertyName: string;
 }
 
-/**
- * «QR di benvenuto» of a property (E07/F04/US02/T02, NF-90, CRM-03): the QR code the host prints and puts in the house, which opens the welcome
- * page (`/benvenuto/{token}`) where a guest leaves a contact and chooses what to receive. It shows the QR and the link with a copy button,
- * «Stampa il cartello» (a clean sheet with the code and a line in Italian and in English, as the QR of the stay verification does) and «Crea un
- * nuovo QR», which asks first: the printed code stops working at once. A property with no link offers to make one. The property detail
- * mounts it only with the flag `crmMarketing` on and the permission `property.write`, which is what the API behind it asks.
- */
 export function WelcomeQrCard({ propertyId, propertyName }: WelcomeQrCardProps) {
   const { t, i18n } = useTranslation();
   const link = useWelcomeLink(propertyId);
@@ -49,12 +42,10 @@ export function WelcomeQrCard({ propertyId, propertyName }: WelcomeQrCardProps) 
       await navigator.clipboard.writeText(url);
       setCopied(true);
     } catch {
-      // No clipboard (insecure context, permission denied): the host copies the address by hand.
       toast.error(t('property.detail.welcomeQr.copyFailed'));
     }
   };
 
-  // The sign is for the guests, in both languages whatever the language of the host's screen.
   const print = () => {
     if (!image) return;
     const italian = i18n.getFixedT('it');
@@ -72,7 +63,6 @@ export function WelcomeQrCard({ propertyId, propertyName }: WelcomeQrCardProps) 
     setConfirmRenew(true);
   };
 
-  // The dialog closes only when the new code exists; on a failure it stays open (the dialog catches it) with the reason in it.
   const renew = async () => {
     await rotate.mutateAsync();
     setCopied(false);
@@ -117,7 +107,6 @@ export function WelcomeQrCard({ propertyId, propertyName }: WelcomeQrCardProps) 
       </div>
     );
   } else if (url === '') {
-    // A link exists but the public address of the web app is not set up here, so there is nothing to put in a code.
     body = (
       <Alert variant="warning" data-testid="welcome-qr-no-address">
         {t('property.detail.welcomeQr.noAddress')}

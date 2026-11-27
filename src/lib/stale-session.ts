@@ -1,6 +1,5 @@
 import { parseRolesFromAccessToken } from '@/lib/auth-roles';
 
-/** True when the access token carries no CasaZen roles (stale or incomplete Auth0 session). */
 export async function hasNoWorkspaceRoles(
   getAccessToken: () => Promise<string | undefined>,
 ): Promise<boolean> {

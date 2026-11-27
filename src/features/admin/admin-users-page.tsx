@@ -23,7 +23,6 @@ export function AdminUsersPage() {
   const [isActive, setIsActive] = useState<ActiveFilter>('');
   const [page, setPage] = useState(1);
 
-  // A1-26: the search box no longer fires one request per keystroke.
   useEffect(() => {
     const handle = window.setTimeout(() => {
       setSearch(searchInput);

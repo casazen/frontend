@@ -4,7 +4,6 @@ import { nextStepOf, type FlowFacts } from '../lib/booking-next-step';
 
 type Stay = Pick<Booking, 'status' | 'source' | 'onSiteRequestState' | 'checkInDate' | 'checkOutDate'>;
 
-/** A stay from the 10th to the 12th of January 2099. */
 function stay(status: Booking['status']): Stay {
   return {
     status,

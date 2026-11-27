@@ -20,12 +20,10 @@ import { LATE_EVENING_UTC, NOON_UTC, freezeClock, withBrowserTimeZone } from '@/
 
 describe('todayInRome', () => {
   it('todayInRome_LateEveningUtcInSummer_ReturnsNextCalendarDay', () => {
-    // 22:30 UTC is 00:30 of the next day in Rome (CEST, UTC+2).
     expect(todayInRome(new Date('2026-09-23T22:30:00Z'))).toBe('2026-09-24');
   });
 
   it('todayInRome_LateEveningUtcInWinter_ReturnsNextCalendarDay', () => {
-    // 23:30 UTC is 00:30 of the next day in Rome (CET, UTC+1).
     expect(todayInRome(new Date('2026-01-15T23:30:00Z'))).toBe('2026-01-16');
   });
 
@@ -36,7 +34,6 @@ describe('todayInRome', () => {
 
 describe('todayInZurich', () => {
   it('uses the Zurich calendar date, which is the next day late in the UTC evening', () => {
-    // 23:30 UTC is 00:30 the next day in Zurich (CET, UTC+1). The UTC date is still the 15th.
     expect(todayInZurich(new Date('2026-01-15T23:30:00Z'))).toBe('2026-01-16');
     expect(new Date('2026-01-15T23:30:00Z').toISOString().slice(0, 10)).toBe('2026-01-15');
   });
@@ -68,7 +65,6 @@ describe('stay date helpers', () => {
   });
 
   it('formatStayDate_ReusesItsFormatter_NotOneForEveryDate', () => {
-    // A Timeline writes the name of every day of every row: the formatter is made once for a language and its options.
     const original = Intl.DateTimeFormat;
     let made = 0;
     Intl.DateTimeFormat = function (...args: ConstructorParameters<typeof Intl.DateTimeFormat>) {
@@ -80,7 +76,6 @@ describe('stay date helpers', () => {
       expect(made).toBeLessThanOrEqual(1);
       expect(formatStayDate('2026-09-12', 'it', { day: 'numeric', month: 'long' })).toBe('12 settembre');
       expect(formatStayDate('2026-09-12', 'en', { day: 'numeric', month: 'long' })).toBe('September 12');
-      // Other options, other formatter: nothing is mixed up.
       expect(formatStayDate('2026-09-12', 'it', { weekday: 'short' })).toBe('sab');
     } finally {
       Intl.DateTimeFormat = original;
@@ -114,7 +109,6 @@ describe('todayInRome with the system clock (QA-CLOCK-FE)', () => {
     withBrowserTimeZone('America/New_York');
 
     it('todayInRome_BrowserStillOnThe24th_ReturnsRomeDate', () => {
-      // 19:30 of the 24th in New York, 01:30 of the 25th in Rome.
       freezeClock(LATE_EVENING_UTC);
 
       expect(new Date().getDate()).toBe(24);
@@ -129,7 +123,6 @@ describe('toStayDate (QA-CLOCK-FE)', () => {
 
     it('toStayDate_LocalMidnight_KeepsTheCalendarDate', () => {
       const localMidnight = new Date(2026, 8, 25);
-      // The bug being fixed: the UTC date of a local midnight in Rome is the day before.
       expect(localMidnight.toISOString()).toBe('2026-09-24T22:00:00.000Z');
 
       expect(toStayDate(localMidnight)).toBe('2026-09-25');
@@ -145,7 +138,6 @@ describe('toStayDate (QA-CLOCK-FE)', () => {
     withBrowserTimeZone('America/Los_Angeles');
 
     it('toStayDate_LocalLateEvening_KeepsTheCalendarDate', () => {
-      // 23:30 of the 25th in Los Angeles is already the 26th in UTC.
       expect(toStayDate(new Date(2026, 8, 25, 23, 30))).toBe('2026-09-25');
     });
   });
@@ -213,7 +205,6 @@ describe('calendar widget helpers (PC-08)', () => {
     withBrowserTimeZone('America/Los_Angeles');
 
     it('stayDateToLocalDate_StayDate_ReturnsLocalMidnightOfThatDay', () => {
-      // new Date('2026-09-30') would be the evening of the 29th in Los Angeles.
       const date = stayDateToLocalDate('2026-09-30');
 
       expect(date?.getFullYear()).toBe(2026);
@@ -225,12 +216,10 @@ describe('calendar widget helpers (PC-08)', () => {
   });
 
   it('romeWallClock_SummerMidnight_IsPreviousUtcEvening', () => {
-    // 13 October 2026 00:00 Rome is still CEST: 22:00 UTC on the 12th.
     expect(romeWallClock('2026-10-12T22:00:00.000Z')).toEqual({ date: '2026-10-13', hour: 0, minute: 0 });
   });
 
   it('romeWallTimeToUtc_SummerTime_IsTwoHoursBehindRome', () => {
-    // 12 October 2026 is still summer time: 10:00 in Rome is 08:00 UTC.
     expect(romeWallTimeToUtc('2026-10-12', '10:00')).toBe('2026-10-12T08:00:00.000Z');
   });
 

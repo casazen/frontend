@@ -84,7 +84,6 @@ test.describe('Guest check-in portal', () => {
   });
 
   test('shows invalid link for unknown token', async ({ page }) => {
-    // L2 has no backend: the API answers 404 for a token it does not know, as the real one does.
     await page.route('**/api/public/checkin/**', async (route) => {
       await route.fulfill({
         status: 404,
@@ -175,7 +174,6 @@ test.describe('Guest check-in portal', () => {
 });
 
 test('confirms a misread name, reuses the front after consent and submits the verified guest', async ({ page }) => {
-  // The browser exercises camera capture with generated pixels. The API outcomes below are fixtures.
   await page.addInitScript(() => {
     Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { value: async () => {
       const canvas = document.createElement('canvas');

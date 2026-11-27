@@ -40,7 +40,6 @@ export function useConnectPayments(enabled = true) {
 
 export type ConnectPayments = ReturnType<typeof useConnectPayments>;
 
-/** The status is known and the account cannot take payments yet: not connected, or connected and still being verified. */
 export function isPaymentsMissing(payments: Pick<ConnectPayments, 'status' | 'uiStatus'>): boolean {
   return payments.status !== undefined && payments.uiStatus !== 'active';
 }

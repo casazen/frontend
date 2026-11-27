@@ -9,12 +9,6 @@ import { usePeopleList } from './people-list';
 import { usePeopleRows } from './people-rows';
 import { ACCOUNT_INVITE_PATH, ACCOUNT_ROLES_PATH } from './team-paths';
 
-/**
- * Persone, in the Amministrazione (AM-04b): the people who work with the owner, in the unified list. One row for each member and for
- * each invitation that waits for an answer, with its role, the areas and the state; the name opens the drawer that says what the
- * person can see. Everything is read from the endpoints that are there (`GET /orgs/me/members`, `/invitations`, `/roles`). The one
- * main action of the page is «Invita» (AM-04c): the wizard that brings a new person in.
- */
 export function PeoplePage() {
   const { t } = useTranslation();
   const { data: profile } = useMe();

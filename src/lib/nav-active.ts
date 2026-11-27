@@ -1,9 +1,5 @@
 import type { RouteManifestEntry } from '@/config/route-manifest';
 
-/**
- * The root pages of an area: every other page of the area starts with their address, so they are highlighted only on
- * their own page.
- */
 const EXACT_MATCH_PATHS = new Set(['/app/short-rent', '/app/long-rent', '/app/admin', '/app/account']);
 
 function matchesPathname(pathname: string, entry: RouteManifestEntry): boolean {
@@ -39,9 +35,6 @@ export function resolveActiveNavEntry(
   return best;
 }
 
-/**
- * Returns true when `entry` should appear selected for `pathname` (see {@link resolveActiveNavEntry}).
- */
 export function isNavEntryActive(
   pathname: string,
   entry: RouteManifestEntry,

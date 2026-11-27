@@ -10,10 +10,8 @@ import { CRM_CHANNELS } from '@/features/crm/lib/crm-labels';
 import type { CrmProfileSort } from '@/types/crm.types';
 import { PROFILE_SORTS, type EmailFilter, type ProfileFilterPatch, type ProfileFilterState } from './profile-filter-state';
 
-/** How long a text waits after the last key before it goes to the address, ms. */
 const TEXT_DEBOUNCE_MS = 350;
 
-/** The minimum of stays the filter offers. */
 const MIN_STAYS_CHOICES = [1, 2, 3, 5, 10];
 
 /**
@@ -23,8 +21,6 @@ const MIN_STAYS_CHOICES = [1, 2, 3, 5, 10];
  */
 function useCommittedText(value: string, onCommit: (text: string) => void) {
   const [draft, setDraft] = useState(value);
-  // What this field last sent to the address, and the address it last saw: together they tell a change that came back from here from
-  // one that came from elsewhere.
   const [sent, setSent] = useState(value);
   const [seen, setSeen] = useState(value);
   if (value !== seen) {
@@ -63,12 +59,10 @@ interface TextFilterProps {
   value: string;
   onCommit: (text: string) => void;
   placeholder?: string;
-  /** What the filter finds, under the field. */
   hint?: string;
   maxLength?: number;
 }
 
-/** A text filter of the panel (country, tag). */
 function TextFilter({ label, value, onCommit, placeholder, hint, maxLength }: TextFilterProps) {
   const { draft, setDraft, flush } = useCommittedText(value, onCommit);
   return (
@@ -88,7 +82,6 @@ function TextFilter({ label, value, onCommit, placeholder, hint, maxLength }: Te
   );
 }
 
-/** The search box: a part of a name, or a whole e-mail address or phone number. Its hint says so. */
 function SearchBox({ value, onCommit }: { value: string; onCommit: (text: string) => void }) {
   const { t } = useTranslation();
   const { draft, setDraft, flush } = useCommittedText(value, onCommit);
@@ -122,7 +115,6 @@ function SearchBox({ value, onCommit }: { value: string; onCommit: (text: string
   );
 }
 
-/** What the filters tell the page: what changed, and whether it replaces the step of the history (a text being typed) or adds one. */
 type OnFilterChange = (patch: ProfileFilterPatch, options?: { replace?: boolean }) => void;
 
 interface FilterPanelProps {
@@ -131,10 +123,8 @@ interface FilterPanelProps {
   onChange: OnFilterChange;
 }
 
-/** The filters that are not always in sight: country, language, the channel booked on, a tag, the minimum of stays, the e-mail. */
 function FilterPanel({ id, filters, onChange }: FilterPanelProps) {
   const { t } = useTranslation();
-  // The choices of the minimum, and the one the address asks for when it is not among them (a link written by hand).
   const minStays = [...new Set([...MIN_STAYS_CHOICES, ...(filters.minStays === null ? [] : [filters.minStays])])].sort((a, b) => a - b);
 
   return (
@@ -200,9 +190,7 @@ function FilterPanel({ id, filters, onChange }: FilterPanelProps) {
 
 interface ProfileFiltersProps {
   filters: ProfileFilterState;
-  /** How many filters of the panel are on. */
   activeCount: number;
-  /** The search or a filter is on. */
   hasFilters: boolean;
   onChange: OnFilterChange;
   onClear: () => void;

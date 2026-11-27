@@ -10,7 +10,6 @@
 /** One TD17 of the list: the holder, the foreign portal that charges the commission, the month, the day it is to be issued by, the amounts and the state towards the SDI. */
 export interface SelfBillingListItem {
   id: string;
-  /** Who holds the account of the portal and so is the issuer of the TD17 (backend `SelfBillingHolderKind`): `Agency` (V2) or `Owner` (V1, a company); any other code is shown as an unknown holder. */
   holderKind: string;
   holderOwnerId: string | null;
   holderName: string;
@@ -21,7 +20,6 @@ export interface SelfBillingListItem {
   dueDate: string;
   number: string | null;
   issueDate: string | null;
-  /** `Draft`, `Issued` or `Discarded` (backend `FiscalDocumentStatus`). */
   status: string;
   taxableBase: number;
   vatAmount: number;
@@ -33,25 +31,12 @@ export interface SelfBillingListItem {
    * The server decides it; the client never works it out from the other members.
    */
   canCorrect: boolean;
-  /** This draft (or the TD17 issued from it) replaces that rejected TD17 and holds its series and number; `null` on every other row. */
   replacesDocumentId: string | null;
-  /** This TD17 is the rejected original that a correction discarded (`status` `Discarded`, `sdiStatus` `rejected`, its number kept): the draft that replaces it is that id. It is history, never an action. */
   replacedByDocumentId: string | null;
-  /**
-   * Why a draft that holds the number of a rejected TD17 is kept: `portal_not_configured`, `issuer_profile_incomplete`, `owner_issuer_missing` or `ledger_gives_no_td17` (a code this client does not know is shown as it
-   * came). Such a draft cannot be issued and cannot be discarded: it leaves by being closed as «non più dovuta» (`closedReason`); `null` on every other row.
-   */
   keptReason: string | null;
-  /**
-   * Why the replacement draft of a rejected TD17 was closed as «non più dovuta» (`POST api/fiscal/self-billing/{id}/close-not-due`): `portal_credit_note`, `holder_no_longer_subject` or `duplicate_or_error` (a code this
-   * client does not know is shown as it came). Set only on that closed draft (`status` `Discarded`, its number kept and reserved); `null` on every other row, and so are the three members that follow.
-   */
   closedReason: string | null;
-  /** The instant the draft was closed (UTC). */
   closedAt: string | null;
-  /** The NAME of the person who closed it; `null` when that person is not known any more: nothing is shown then, never an id. */
   closedBy: string | null;
-  /** The free note the person left (at most 500 characters), when there is one. */
   closedNote: string | null;
 }
 
@@ -77,7 +62,6 @@ export interface SelfBillingDetail {
   lines: SelfBillingLine[];
 }
 
-/** One TD17 of a generation: `result` is `created`, `updated` or `already_issued`. */
 export interface SelfBillingOutcome {
   documentId: string;
   holderKind: string;
@@ -89,7 +73,6 @@ export interface SelfBillingOutcome {
   changedSinceIssue: boolean;
 }
 
-/** A holder that needs a TD17 and cannot get one: the code of the reason and the fields its issuer profile misses. */
 export interface SelfBillingFailure {
   holderKind: string;
   holderOwnerId: string | null;
@@ -98,7 +81,6 @@ export interface SelfBillingFailure {
   fields: string[];
 }
 
-/** Commissions of the month that are not self-billed: the reason, the channel, the number of stays and their commission. */
 export interface SelfBillingNotDue {
   reason: string;
   channel: string;
@@ -107,10 +89,6 @@ export interface SelfBillingNotDue {
   currency: string;
 }
 
-/**
- * A draft that holds the number of a rejected TD17 and that nothing gives now: the drafts of the month keep it, never drop it, and say why (`reason`, the codes of `SelfBillingListItem.keptReason`). It can be neither issued
- * nor discarded: what its number is for is the accountant's decision.
- */
 export interface SelfBillingKept {
   documentId: string;
   holderKind: string;
@@ -139,15 +117,10 @@ export interface SelfBillingGeneration {
   ledgerPosted: boolean;
 }
 
-/** `POST api/fiscal/self-billing/{id}/issue`: the confirmation, and the acceptance of the estimated part of the amount when there is one (without it the server refuses and numbers nothing). */
 export interface SelfBillingIssueRequest {
   acceptEstimate: boolean;
 }
 
-/**
- * `POST api/fiscal/self-billing/{id}/close-not-due`: why the replacement draft of a rejected TD17 is closed as «non più dovuta» (`reason`, mandatory: one of the codes of `SelfBillingListItem.closedReason`) and, when the
- * person wrote one, a free `note` of at most 500 characters. The user and the day are the server's, never a value of the request.
- */
 export interface SelfBillingCloseRequest {
   reason: string;
   note?: string;

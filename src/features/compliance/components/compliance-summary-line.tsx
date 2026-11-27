@@ -5,19 +5,13 @@ import { NoteLine } from '@/features/dashboard/components/note-line';
 import type { NoteTone, RowNote } from '@/features/dashboard/lib/home-model';
 import type { LightSummary } from '../lib/compliance-light';
 
-/** The page of the adempimenti, where the rest of the list is. */
 const COMPLIANCE_PATH = '/app/short-rent/compliance';
 
 interface ComplianceSummaryLineProps {
-  /** What the lights of the summary say (`summarizeLights`): counted from what the API sends, never worked out here. */
   lights: LightSummary;
-  /**
-   * `page`: above the list, with what each light counts. `home`: the one line of the Home, with the way to the page. The words are the same.
-   */
   variant?: 'page' | 'home';
 }
 
-/** How the line feels: red when something has to be done, amber while it is in hand, calm when nothing could be told (or all is in order). */
 function toneOf(lights: LightSummary): NoteTone {
   if (lights.needs === 0) return 'success';
   if (lights.red > 0) return 'danger';
@@ -39,7 +33,6 @@ export function ComplianceSummaryLine({ lights, variant = 'page' }: ComplianceSu
   if (lights.needs === 0 && !lights.lightsOn) return null;
 
   const todo = t('compliance.summary.line.todo', { count: lights.needs });
-  // The parts only when they tell more than the total does: all of them one kind is the total again.
   const parts = [
     lights.red > 0 ? t('compliance.summary.line.red', { count: lights.red }) : null,
     lights.yellow > 0 ? t('compliance.summary.line.yellow', { count: lights.yellow }) : null,

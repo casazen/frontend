@@ -3,7 +3,6 @@ import { onboardingApi } from '@/api/onboarding.api';
 import type { OnboardingPartKey } from '@/types/onboarding.types';
 import { invalidateOnboarding } from './use-onboarding-plan';
 
-/** The integration settings of the org (`GET /onboarding/integration`): the connection, the parts that can be reopened, the senders and the channels. */
 const ONBOARDING_INTEGRATION_KEY = ['onboarding', 'integration'] as const;
 
 /**
@@ -22,12 +21,6 @@ export function useOnboardingIntegration(options?: { enabled?: boolean }) {
   });
 }
 
-/**
- * Reopens a part of the plan (`POST /onboarding/parts/{key}/reopen`): the deferral is cleared and its «Da fare» closed, and the answer says where to
- * continue (the wizard that owns the part and, for the compliance wizard, `sender`). It changes no data of the part: the wizard does. The overview, the plan, the
- * path and the activation checklist are read again after it, also after a refusal (422 `onboarding_part_not_reopenable`: the part may have changed). Organization
- * administrator only.
- */
 export function useReopenPart() {
   const queryClient = useQueryClient();
 

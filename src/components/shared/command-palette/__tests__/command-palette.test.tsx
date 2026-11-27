@@ -86,7 +86,6 @@ describe('CommandPalette (UI-06)', () => {
 
     it('Palette_Escape_ClosesItAndTheFocusGoesBackToTheSearchThatOpenedIt', async () => {
       const shell = renderShell();
-      // A click does not give a button the focus in every browser (Safari): the palette notes the button itself.
       fireEvent.click(shell.trigger());
       await waitFor(() => expect(box()).toHaveFocus());
 
@@ -100,7 +99,6 @@ describe('CommandPalette (UI-06)', () => {
       renderShell();
       const field = screen.getByTestId('page-field');
       field.focus();
-      // The shortcut works from a text field: it does not use Ctrl+K.
       ctrlK(field);
       await waitFor(() => expect(box()).toHaveFocus());
 
@@ -150,7 +148,6 @@ describe('CommandPalette (UI-06)', () => {
       const shell = await open();
       expect(shell.location()).toBe('/app/short-rent');
 
-      // The page behind is hidden from assistive technology, but a Back button or a link of the app can still act.
       fireEvent.click(screen.getByText('Cambia pagina'));
       await waitFor(() => expect(maybeDialog()).not.toBeInTheDocument());
       expect(shell.location()).toBe('/app/short-rent/elsewhere');
@@ -168,7 +165,6 @@ describe('CommandPalette (UI-06)', () => {
 
       await waitFor(() => expect(maybeDialog()).not.toBeInTheDocument());
       expect(shell.location()).toBe('/app/short-rent/bookings');
-      // The heading of the new page takes the focus (RouteFocus): the palette does not take it back to the search.
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(shell.trigger()).not.toHaveFocus();
     });
@@ -183,7 +179,6 @@ describe('CommandPalette (UI-06)', () => {
 
       await waitFor(() => expect(maybeDialog()).not.toBeInTheDocument());
       expect(shell.location()).toBe('/app/short-rent');
-      // The page does not change, so no heading is going to take the focus: it goes back to where it was.
       await waitFor(() => expect(shell.trigger()).toHaveFocus());
     });
   });
@@ -211,7 +206,6 @@ describe('CommandPalette (UI-06)', () => {
         expect.stringContaining('Registra un pagamento'),
       ]);
       expect(labelsOf(group('Pagine'))[0]).toContain('Cruscotto');
-      // The actions of the account are found by typing and are not offered here.
       expect(within(dialog()).queryByText('Esci')).not.toBeInTheDocument();
       expect(within(dialog()).getByRole('status')).toHaveTextContent('');
     });
@@ -301,7 +295,6 @@ describe('CommandPalette (UI-06)', () => {
       const home = fireEvent.keyDown(box(), { key: 'Home' });
       const end = fireEvent.keyDown(box(), { key: 'End' });
 
-      // Not prevented: the caret moves in the text, as it does in any field.
       expect(home && end).toBe(true);
     });
 
@@ -364,7 +357,6 @@ describe('CommandPalette (UI-06)', () => {
 
       fireEvent.pointerMove(second, { clientX: 10, clientY: 20 });
       expect(selected()).toBe(1);
-      // A move without a movement (a list that scrolled under the mouse) is not the person pointing.
       fireEvent.pointerMove(options()[0], { clientX: 10, clientY: 20 });
       expect(selected()).toBe(1);
       fireEvent.pointerMove(options()[0], { clientX: 11, clientY: 22 });
@@ -445,8 +437,6 @@ describe('CommandPalette (UI-06)', () => {
       ctrlK();
       await waitFor(() => expect(box()).toHaveFocus());
 
-      // The page of the calendar needs the permission, and so do the bookings of the cache. ("Canali e calendari" (SR-10b) only needs
-      // the properties, which this role may read: it is found by the same word, the Calendario is not.)
       type('calendario');
       expect(options().some((option) => /^Calendario\b/.test(option.textContent ?? ''))).toBe(false);
       type('rossi');
@@ -480,14 +470,11 @@ describe('CommandPalette (UI-06)', () => {
       press('Enter');
       await waitFor(() => expect(maybeDialog()).not.toBeInTheDocument());
 
-      // The next time the palette opens (on another page: it closes when the address changes).
       ctrlK();
       await waitFor(() => expect(box()).toHaveFocus());
 
       expect(within(group('Recenti')).getAllByRole('option')[0]).toHaveTextContent('Prenotazioni');
-      // A screen reader is told what each recent is: they are of different kinds.
       expect(within(group('Recenti')).getAllByRole('option')[0]).toHaveTextContent('Pagina: Prenotazioni');
-      // What is kept: the id, in this browser, for this user in this area.
       const kept = Object.entries(localStorage).filter(([key]) => key.startsWith('casazen:palette'));
       expect(kept).toHaveLength(1);
       expect(kept[0][0]).toBe('casazen:palette:recent:auth0%7Ctest-user:short-rent');
@@ -547,7 +534,6 @@ describe('CommandPalette (UI-06)', () => {
       expect(screen.getByTestId('command-palette-empty')).toHaveTextContent('No results for “qwxz”');
     });
 
-    // Three passes of axe: more than the 5 s a test has by default when the machine is loaded.
     it('Palette_WithSuggestionsResultsAndNothingFound_HasNoAccessibilityViolationThatJsdomCanFind', async () => {
       await open();
       await expectNoAxeViolations(dialog());

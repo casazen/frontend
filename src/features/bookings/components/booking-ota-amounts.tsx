@@ -5,7 +5,6 @@ import { formatCurrency } from '@/lib/utils';
 import type { Booking } from '@/types';
 import { Amount, Fact, Facts } from './booking-facts';
 
-/** A figure the channel sent is a number; a figure it did not send is `null` (or missing), and is never shown as 0. */
 const isFigure = (value: number | null | undefined): value is number => typeof value === 'number' && Number.isFinite(value);
 
 /**

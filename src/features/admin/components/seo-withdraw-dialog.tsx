@@ -16,12 +16,10 @@ import type { SeoPageAdmin } from '@/types/seo.types';
 import { SEO_REVIEW_NOTE_MAX_LENGTH } from './seo-review-helpers';
 
 interface SeoWithdrawDialogProps {
-  /** Page to withdraw; null closes the dialog. Mount it with `key` so the note restarts for each page. */
   page: SeoPageAdmin | null;
   onClose: () => void;
 }
 
-/** Confirmation of "Ritira" (SE-01, A8-21): the page goes back to draft and leaves the public site and the sitemap. */
 export function SeoWithdrawDialog({ page, onClose }: SeoWithdrawDialogProps) {
   const { t } = useTranslation();
   const withdrawMutation = useWithdrawSeoPage();

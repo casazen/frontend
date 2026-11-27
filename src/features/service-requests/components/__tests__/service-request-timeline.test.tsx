@@ -20,7 +20,6 @@ const api = vi.hoisted(() => ({
   getBookings: vi.fn(),
 }));
 
-// The drawer of the app is on the shell, not in this list: its door is a mock, to see when the list uses it.
 const drawer = vi.hoisted(() => ({ open: vi.fn(), close: vi.fn(), current: null }));
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -41,7 +40,6 @@ vi.mock('@/api/bookings.api', async (importOriginal) => {
 
 const STEP = {
   requested: { status: 'Richiesto', at: '2026-09-20T08:00:00Z', actor: 'Host' },
-  // 23:30 UTC of 24 September is 01:30 of 25 September in Rome.
   taken: { status: 'PresoInCarico', at: '2026-09-24T23:30:00Z', actor: 'Supplier' },
   completed: { status: 'Completato', at: '2026-09-26T10:15:00Z', actor: 'Supplier' },
   paid: { status: 'Pagato', at: '2026-09-27T09:00:00Z', actor: 'Host' },
@@ -88,7 +86,6 @@ const REJECTED: ServiceRequest = {
   ],
 };
 
-/** A request cancelled by `actor` on the day `day` of October (the ones of an automatic test run, or of a host who changed its mind). */
 function cancelled(id: string, day: number, actor: 'Host' | 'Supplier' | 'System' = 'Supplier', reason: string | null = 'E2E cleanup'): ServiceRequest {
   const at = `2026-10-${String(day).padStart(2, '0')}T18:21:46Z`;
   return {
@@ -113,7 +110,6 @@ const SUPPLIERS = {
   pageSize: 2,
 };
 
-/** Where the router is: a click on the name of a request either goes to its page or leaves the address as it was (the drawer opens). */
 function LocationProbe() {
   return <p data-testid="location">{useLocation().pathname}</p>;
 }
@@ -136,7 +132,6 @@ function problem(status: number, code: string, detail: string) {
   return Object.assign(new Error(detail), { isAxiosError: true, response: { status, data: { code, detail } } });
 }
 
-/** The closed requests are kept out of the way: this opens (or closes) them. */
 function toggleClosed() {
   fireEvent.click(screen.getByTestId('service-requests-closed-toggle'));
 }
@@ -159,8 +154,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
   afterEach(() => {
     vi.useRealTimers();
   });
-
-  // ─── The requests to follow are the list; the ones that are over are behind a button ───
 
   it('ServiceRequestTimeline_OpenAndOverRequests_ListsTheOpenOnesAndKeepsTheOthersBehindAButton', () => {
     renderTimeline({ requests: [PAID, BASE, cancelled('sr-old', 3)] });
@@ -207,7 +200,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
 
     const shown = () => within(screen.getByTestId('service-requests-closed')).getAllByRole('listitem');
     expect(shown()).toHaveLength(5);
-    // The one closed last (the 17th of the month) comes first.
     expect(shown()[0]).toHaveAttribute('data-testid', 'service-request-sr-c17');
     expect(shown()[4]).toHaveAttribute('data-testid', 'service-request-sr-c13');
     expect(screen.getByTestId('service-requests-closed-more')).toHaveTextContent('Mostra altre 10');
@@ -222,7 +214,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(shown()).toHaveLength(17);
     expect(screen.queryByTestId('service-requests-closed-more')).not.toBeInTheDocument();
 
-    // Hidden and opened again, it starts from five.
     toggleClosed();
     toggleClosed();
     expect(shown()).toHaveLength(5);
@@ -237,8 +228,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(rows.map((row) => row.getAttribute('data-testid'))).toEqual(['service-request-sr-sooner', 'service-request-sr-later']);
   });
 
-  // ─── What a row says ───
-
   it('ServiceRequestTimeline_RequestWithATime_SaysTheDayTheHoursAndTheSupplier', () => {
     const timed: ServiceRequest = { ...BASE, scheduledStart: '2026-10-05T08:00:00Z', scheduledEnd: '2026-10-05T10:00:00Z' };
     renderTimeline({ requests: [timed] });
@@ -247,7 +236,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(row).toHaveTextContent('Pulizie');
     expect(row).toHaveTextContent('Pulizie Express Srl');
     expect(row).toHaveTextContent('5 ott');
-    // 08:00Z and 10:00Z are 10:00 and 12:00 in Rome, two hours.
     expect(row).toHaveTextContent('10:00–12:00');
     expect(row).toHaveTextContent('Richiesto');
   });
@@ -271,10 +259,8 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     const row = screen.getByTestId('service-request-sr-1');
     expect(row).toHaveTextContent('Pagato');
     expect(row).toHaveTextContent('Da te');
-    // 09:00 UTC of 27 September is 11:00 in Rome.
     expect(row).toHaveTextContent('27 set');
     expect(row).toHaveTextContent('11:00');
-    // Nothing left to wait for once it is paid.
     expect(screen.queryByTestId('service-request-waiting-sr-1')).not.toBeInTheDocument();
   });
 
@@ -400,8 +386,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(screen.queryByTestId('service-request-no-stay-sr-1')).not.toBeInTheDocument();
   });
 
-  // ─── The name of a request opens it ───
-
   it('ServiceRequestTimeline_NameOfARequest_OpensItsDrawerWhenThePageHasOne', () => {
     drawer.open.mockReturnValue(true);
     renderTimeline({ requests: [BASE] });
@@ -411,7 +395,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     fireEvent.click(link);
 
     expect(drawer.open).toHaveBeenCalledWith('intervention', 'sr-1', { opener: link });
-    // The click is the drawer's: the link does not go to the page as well.
     expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/);
   });
 
@@ -428,7 +411,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     drawer.open.mockReturnValue(true);
     renderTimeline({ requests: [BASE] });
     const link = screen.getByTestId('service-request-open-sr-1');
-    // The new tab is the browser's doing: here it only must not be the drawer's.
     link.addEventListener('click', (event) => event.preventDefault(), { once: true });
 
     fireEvent.click(link, { ctrlKey: true });
@@ -448,8 +430,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     expect(drawer.open).not.toHaveBeenCalled();
     expect(screen.getByTestId('location')).toHaveTextContent('/app/long-rent/service-requests/sr-1');
   });
-
-  // ─── "Segna pagato" asks for confirmation ───
 
   it('ServiceRequestTimeline_MarkPaid_AsksForConfirmationBeforeCallingTheApi', async () => {
     renderTimeline({ requests: [COMPLETED] });
@@ -523,11 +503,8 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
 
     expect(screen.queryByTestId('mark-paid-sr-1')).not.toBeInTheDocument();
     expect(screen.queryByTestId('request-other-supplier-sr-rejected')).not.toBeInTheDocument();
-    // The list itself is still readable.
     expect(screen.getByTestId('service-request-rejection-sr-rejected')).toBeInTheDocument();
   });
-
-  // ─── Ask another supplier after a rejection ───
 
   it('ServiceRequestTimeline_RequestAnotherSupplier_OpensTheFormForTheSameStayWithoutTheSupplierThatRejected', async () => {
     api.getBookings.mockResolvedValue([
@@ -547,7 +524,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     const dialog = await screen.findByTestId('service-request-dialog');
     expect(dialog).toHaveTextContent('Richiedi ad altro fornitore');
     expect(dialog).toHaveTextContent('Il fornitore che ha rifiutato non è nell\'elenco.');
-    // The stay is the one of the rejected request: the form does not ask for it again. Same category and notes.
     expect(within(dialog).queryByTestId('service-request-stay')).not.toBeInTheDocument();
     const supplier = await within(dialog).findByTestId('service-request-supplier');
     expect(api.fetchSuppliersByProperty).toHaveBeenCalledWith('prop-1', 'cleaning');
@@ -642,7 +618,6 @@ describe('ServiceRequestTimeline (SU-09, A4-28)', () => {
     };
     renderTimeline({ requests: [replacement, REJECTED] });
 
-    // The refusal is over once the job was asked of another supplier: it moves to the closed ones, with the note.
     expect(screen.queryByTestId('service-request-sr-rejected')).not.toBeInTheDocument();
     toggleClosed();
 

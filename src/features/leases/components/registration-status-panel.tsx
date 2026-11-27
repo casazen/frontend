@@ -23,32 +23,15 @@ interface RegistrationStatusPanelProps {
   leaseId: string;
   leaseStatus: LeaseStatus;
   registration?: LeaseRegistration | null;
-  /**
-   * Legal deadline of the registration as computed by the API (LT-04: min(stipula, start) + 30 days); shown, never
-   * recomputed here. Null while it is to be determined.
-   */
   registrationDeadline: string | null;
-  /** The provider path exists (flag on and configured provider, from the RLI checklist). */
   providerFilingAvailable: boolean;
   onSubmitToProvider?: () => void;
   isSubmittingToProvider?: boolean;
   onStartCheckout?: () => void;
   isStartingCheckout?: boolean;
-  /**
-   * The contract was prepared by the guided service (`isConcordatoFacileSource`, CF-END): the service registers it, so the panel gives no
-   * steps to register it oneself and no way to send it to a provider (that would be a second registration); it says who registers and
-   * offers the declaration, with the receipt the service sent.
-   */
   viaService?: boolean;
 }
 
-/**
- * RLI registration of a lease (LT-01, A7-01). Honest states: "to register" (with the steps to register on the official
- * channel and the manual declaration), "in progress" (provider only: not registered yet), "registered" (details and
- * receipt) and "failed" (reason and the ways forward). Nothing is presented as registered before the registration is
- * recorded with its receipt. For a contract made with the guided service (CF-END) the steps and the provider button give way to one
- * sentence (the service registers; when the receipt arrives, upload it among the documents and declare the registration here).
- */
 export function RegistrationStatusPanel({
   leaseId,
   leaseStatus,

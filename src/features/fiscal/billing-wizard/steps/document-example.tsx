@@ -7,15 +7,11 @@ import type { FiscalTaxRule } from '@/types';
 import { amountLocale, exampleDocument, plainAmount } from '../billing-wizard-model';
 
 interface DocumentExampleProps {
-  /** The tax rule in force for the issuer (`issuer-preview`); `undefined` while there is none. */
   rule: FiscalTaxRule | undefined;
-  /** The preview is on its way, or could not be read: the example is not drawn from a rate nobody approved. */
   state: 'loading' | 'error' | 'ready';
-  /** The currency of the issuer (`CHF` for Switzerland); `null` while the country is not known: the amounts are then written with no symbol, and the example says why. */
   currency: string | null;
 }
 
-/** A percent as the rule says it, with up to two decimals: «3,8%». */
 function percentText(percent: number, locale: string): string {
   return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(percent)}%`;
 }

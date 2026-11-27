@@ -14,15 +14,11 @@ import { rentBreakdown } from '../lib/rent-breakdown';
 import { reminderKey } from '../lib/rent-register';
 import { RentComposition } from './rent-composition';
 
-/** The most the landlord can add to the e-mail (the server refuses a longer note). */
 const MAX_NOTE_LENGTH = 300;
 
 interface RentReminderDialogProps {
-  /** The installment to remind the tenants of. */
   row: RentRegisterRow;
-  /** The org accepts rent online: the e-mail then carries the link to pay. */
   onlinePaymentsAvailable: boolean;
-  /** The least time between two reminders of the same installment, as the server says it. */
   intervalHours: number;
   onClose: () => void;
 }
@@ -42,7 +38,6 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
   const tenant = leaseTenantName(row, t);
   const parts = rentBreakdown(row);
   const amount = formatCurrency(parts.total, row.currency);
-  // The dates as the e-mail writes them.
   const dueDate = formatDate(row.dueDate);
 
   function send() {
@@ -56,7 +51,6 @@ export function RentReminderDialog({ row, onlinePaymentsAvailable, intervalHours
         toast.success(t('longRentRents.reminder.sent', { count: result.recipientCount }));
       },
     });
-    // The same reminder is already on its way (the row says so too): tell, never a click that seems to do nothing.
     if (!started) toast.info(t('longRentRents.alreadyHeld'));
     onClose();
   }

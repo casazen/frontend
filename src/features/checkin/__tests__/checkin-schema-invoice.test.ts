@@ -15,7 +15,6 @@ const FISCAL_CODE = 'RSSMRA80A01H501U';
 
 const step = (overrides: Partial<InvoiceStepValues> = {}): InvoiceStepValues => ({ ...emptyInvoiceStep('yes'), ...overrides });
 
-/** A guest of the stay who typed what the form needs, with the given invoice step. */
 function form(invoice?: InvoiceStepValues): PublicCheckInFormValues {
   return {
     guests: [
@@ -38,22 +37,16 @@ function form(invoice?: InvoiceStepValues): PublicCheckInFormValues {
   };
 }
 
-/**
- * The invoice block of the check-in request (FIS-01, E06/F02/US01/T03 of the server): optional, sent only for a «yes», never alone with a kind
- * (the server asks for an identification as soon as it has any data), and checked with the shared rules of the invoice data.
- */
 describe('invoice block of the check-in request', () => {
   it('toPublicCheckInInvoice_NoAnswerOrANo_IsNoBlock', () => {
     expect(toPublicCheckInInvoice(undefined)).toBeUndefined();
     expect(toPublicCheckInInvoice(emptyInvoiceStep())).toBeUndefined();
     expect(toPublicCheckInInvoice(emptyInvoiceStep('no'))).toBeUndefined();
-    // What a guest typed before saying no is kept in the form and never sent.
     expect(toPublicCheckInInvoice(step({ answer: 'no', name: 'Mario Rossi', fiscalCode: FISCAL_CODE }))).toBeUndefined();
   });
 
   it('toPublicCheckInInvoice_AYesWithNothingWritten_IsTheYesAlone', () => {
     expect(toPublicCheckInInvoice(step())).toEqual({ needInvoice: true });
-    // The kind and the country alone are no data.
     expect(toPublicCheckInInvoice(step({ recipientKind: 'Company', countryCode: 'DE' }))).toEqual({ needInvoice: true });
     expect(toPublicCheckInInvoice(step({ name: '   ' }))).toEqual({ needInvoice: true });
   });
@@ -81,7 +74,6 @@ describe('invoice block of the check-in request', () => {
 
     expect(Object.keys(request)).not.toContain('invoice');
     expect(Object.keys(toPublicCheckInSubmitRequest(form(emptyInvoiceStep('no'))))).not.toContain('invoice');
-    // The contract sample of the backend has no invoice block: a guest who skips the step sends the request it always sent.
     expect(Object.keys(sample)).not.toContain('invoice');
   });
 
@@ -103,7 +95,6 @@ describe('invoice step of the form', () => {
   it('schema_NoStepOrNoAnswerOrANo_IsNeverCheckedSoItNeverBlocksTheCheckIn', () => {
     expect(issuesOf()).toEqual([]);
     expect(issuesOf(emptyInvoiceStep())).toEqual([]);
-    // Even data that would be refused is not checked once the guest says no.
     expect(issuesOf(step({ answer: 'no', fiscalCode: 'XYZ', pec: 'no' }))).toEqual([]);
   });
 

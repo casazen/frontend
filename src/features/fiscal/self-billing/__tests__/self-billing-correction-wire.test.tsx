@@ -12,8 +12,6 @@ import axiosInstance, { setApiAuthHandlers, setApiForbiddenHandler } from '@/lib
 import { SelfBillingPage } from '../self-billing-page';
 import { NUMBER, REJECTED_ID, REPLACEMENT_ID, detail, generation, original, rejected, rejectedState, replacement } from './self-billing-fixtures';
 
-// These tests use the real client of the app, with its interceptors and its handler of the 403, and the real API of the self-billed invoices: only the transport is replaced. What they prove is what the page does with the
-// answers of the correction of a rejected TD17 (201, 422, 404, 403, a call that fails) and with the new members of the lists, as in the browser.
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
     contexts: [{ contextKey: 'account', roleKey: 'org_admin' }],
@@ -37,7 +35,6 @@ interface Request {
 }
 let reply: (request: Request) => Reply;
 let requests: Request[];
-/** Whether the server has corrected the rejected TD17: from then on its list holds the original (history) and the replacement. */
 let corrected: boolean;
 const onForbidden = vi.fn();
 const realAdapter = axiosInstance.defaults.adapter;
@@ -57,7 +54,6 @@ const LIST = '/fiscal/self-billing';
 const CORRECT = `${LIST}/${REJECTED_ID}/correct`;
 const DRAFTS = `${LIST}/drafts`;
 
-/** The answers of a server that is in order: the list (before and after the correction), the details, the state of the rejected TD17 and the correction itself. */
 function serverInOrder({ method, path }: Request): Reply {
   if (method === 'GET' && path === LIST) return { status: 200, data: corrected ? [original(), replacement()] : [rejected()] };
   if (method === 'GET' && path === `${LIST}/${REPLACEMENT_ID}`) return { status: 200, data: detail(replacement()) };
@@ -77,7 +73,6 @@ function renderPage() {
   return render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(SelfBillingPage))));
 }
 
-/** Presses «Correggi e rimanda» on the only row of the list and gives the dialog back, with its confirm button on. */
 async function openCorrection() {
   const row = await screen.findByTestId('self-billing-row');
   fireEvent.click(within(row).getByTestId('self-billing-row-correct'));
@@ -113,15 +108,12 @@ describe('the correction of a rejected TD17 through the real client (data rule: 
     expect(calls('POST', CORRECT)).toHaveLength(0);
     fireEvent.click(confirm);
 
-    // One call, no body, to the address of the rejected invoice.
     await waitFor(() => expect(calls('POST', CORRECT)).toHaveLength(1));
     expect(calls('POST', CORRECT)[0].body).toBeUndefined();
-    // The replacement is shown: the draft that says which invoice it replaces, with the issue of the page and no discard.
     expect(await screen.findByTestId('self-billing-replaces')).toHaveTextContent(NUMBER);
     expect(screen.getByTestId('self-billing-issue')).toBeEnabled();
     expect(screen.queryByTestId('self-billing-discard')).toBeNull();
     expect(toast.success).toHaveBeenCalledTimes(1);
-    // The list was read again: the discarded original is history (no action, a reference to its replacement) next to the draft.
     await waitFor(() => expect(screen.getAllByTestId('self-billing-row')).toHaveLength(2));
     expect(calls('GET', LIST).length).toBeGreaterThanOrEqual(2);
     const history = screen.getAllByTestId('self-billing-row').find((row) => row.getAttribute('data-id') === REJECTED_ID) as HTMLElement;
@@ -146,22 +138,18 @@ describe('the correction of a rejected TD17 through the real client (data rule: 
     const problem = await within(dialog).findByTestId('self-billing-correct-problem');
     expect(problem).toHaveAttribute('data-problem', kind);
     expect(problem).toHaveTextContent(i18n.t(`selfBilling.correct.problem.${kind}`));
-    // Nothing says it was corrected, nothing is shown as the replacement, and the app is not sent to the page of no access.
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.queryByTestId('self-billing-replaces')).toBeNull();
     expect(onForbidden).not.toHaveBeenCalled();
-    // What the server refused is not offered again: the confirmation is off, and the dialog can be left.
     await waitFor(() => expect(within(dialog).getByRole('button', { name: i18n.t('selfBilling.correct.confirm') })).toBeDisabled());
     expect(within(dialog).getByRole('button', { name: i18n.t('shared.cancel') })).toBeEnabled();
     expect(calls('POST', CORRECT)).toHaveLength(1);
-    // The list is read again (a refusal of a state that changed is not left stale), and it is still a list, not an empty page.
     await waitFor(() => expect(calls('GET', LIST).length).toBeGreaterThanOrEqual(2));
     expect(screen.getAllByTestId('self-billing-row')).toHaveLength(1);
     expect(screen.queryByTestId('self-billing-empty')).toBeNull();
   });
 
   it('theClientOfTheApp_A403OnARead_SendsTheAppToNoAccess_SoItsSilenceOnTheCorrectionIsTheDoingOfAWrite', async () => {
-    // The control of the test above: the handler is wired and the transport rejects as the real one does.
     reply = () => ({ status: 403, data: '' });
 
     await expect(axiosInstance.get('/payments')).rejects.toBeDefined();
@@ -182,7 +170,6 @@ describe('the correction of a rejected TD17 through the real client (data rule: 
     expect(problem).toHaveTextContent(i18n.t('selfBilling.correct.problem.failed'));
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.queryByTestId('self-billing-replaces')).toBeNull();
-    // A call that failed can be asked again, and the button says so.
     const retry = within(dialog).getByRole('button', { name: i18n.t('shared.errorState.retry') });
     await waitFor(() => expect(retry).toBeEnabled());
     failing = false;
@@ -209,7 +196,6 @@ describe('the correction of a rejected TD17 through the real client (data rule: 
     await waitFor(() => expect(toast.warning).toHaveBeenCalledWith(i18n.t('selfBilling.correct.unreadable')));
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.queryByTestId('self-billing-detail')).toBeNull();
-    // The list is read again and shows what the server holds.
     await waitFor(() => expect(screen.getAllByTestId('self-billing-row')).toHaveLength(2));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
@@ -218,7 +204,6 @@ describe('the correction of a rejected TD17 through the real client (data rule: 
     ['200 with the page of the app in place of the API', 200, '<!doctype html><html></html>'],
     ['204 with no content', 204, ''],
   ] as const)('SelfBillingCorrection_Answer%s_IsNotThe201OfTheServer_ToldAsACallThatFailedWithRiprova_NeverAsDone', async (_name, status, body) => {
-    // Only a 201 proves the server acted: this answer is not the endpoint's, the correction was not made (the server's list is the one it had), and it can be asked again.
     reply = (request) => (request.method === 'POST' && request.path === CORRECT ? { status, data: body } : serverInOrder(request));
     renderPage();
 
@@ -228,7 +213,6 @@ describe('the correction of a rejected TD17 through the real client (data rule: 
     const problem = await within(dialog).findByTestId('self-billing-correct-problem');
     expect(problem).toHaveAttribute('data-problem', 'failed');
     expect(problem).toHaveTextContent(i18n.t('selfBilling.correct.problem.failed'));
-    // Nothing says «done», not even «done, but we cannot read the answer»: that is the words of a 201 only.
     expect(toast.success).not.toHaveBeenCalled();
     expect(toast.warning).not.toHaveBeenCalled();
     expect(screen.queryByTestId('self-billing-replaces')).toBeNull();
@@ -236,7 +220,6 @@ describe('the correction of a rejected TD17 through the real client (data rule: 
     const retry = within(dialog).getByRole('button', { name: i18n.t('shared.errorState.retry') });
     await waitFor(() => expect(retry).toBeEnabled());
     expect(calls('POST', CORRECT)).toHaveLength(1);
-    // The list is read again and still holds the rejected invoice, with its action.
     await waitFor(() => expect(calls('GET', LIST).length).toBeGreaterThanOrEqual(2));
     expect(screen.getAllByTestId('self-billing-row')).toHaveLength(1);
     expect(screen.getByTestId('self-billing-row-correct')).toBeInTheDocument();
@@ -289,7 +272,6 @@ describe('the members the correction adds to the answers of the server (additive
     await waitFor(() => expect(again).toBeEnabled());
     fireEvent.click(again);
 
-    // The answer cannot be read: it is told as a failure of the call, and no report of «done» is drawn over it.
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('selfBilling.drafts.failed')));
     expect(screen.queryByTestId('self-billing-report')).toBeNull();
   });

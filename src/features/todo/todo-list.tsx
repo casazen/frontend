@@ -14,9 +14,7 @@ import { useProperties } from '@/queries/use-properties';
 import { TodoActivityCard, todoActionRoute } from './activity-card';
 import { TODO_LIST_LIMIT, countUrgent, isTruncatedList, typeTitle, urgentCountOf } from './lib/todo-model';
 
-/** The value of a filter that lets everything through. */
 const ALL = 'all';
-/** The property filter's value for the items of the whole account, the ones that name no property. */
 const ACCOUNT = 'account';
 
 /**
@@ -38,8 +36,6 @@ export function TodoListPage() {
   const [property, setProperty] = useState(ALL);
 
   const items = useMemo(() => (Array.isArray(activities.data) ? activities.data : []), [activities.data]);
-  // An answer that is not a list (a server or a proxy that sends a page where the API should be) is a failed load: "nothing to do" would
-  // reassure about a list that may hold a deadline of the law.
   const notAList = activities.data !== undefined && !Array.isArray(activities.data);
   const propertyNames = useMemo(
     () => new Map((Array.isArray(properties.data) ? properties.data : []).map((candidate) => [candidate.id, candidate.name] as const)),
@@ -49,18 +45,14 @@ export function TodoListPage() {
   const propertyIds = useMemo(() => [...new Set(items.flatMap((item) => (item.propertyId ? [item.propertyId] : [])))], [items]);
   const hasAccountItems = items.some((item) => !item.propertyId);
 
-  // `filter` keeps the order of the array it is given.
   const visible = items.filter(
     (item) =>
       (type === ALL || item.activityType === type) &&
       (property === ALL || (property === ACCOUNT ? !item.propertyId : item.propertyId === property)),
   );
   const filtered = type !== ALL || property !== ALL;
-  // One filled "Fallo ora" on the page: the first card that has one (the most urgent the server sent), the others outlined.
   const firstWithAction = visible.find((item) => todoActionRoute(item, hasPermission) !== null)?.id;
-  // The line counts the whole list while no filter is on, and its urgent items are the ones of the menu; with a filter it counts what is left.
   const urgent = filtered ? countUrgent(visible) : urgentCountOf(items, urgentActivities.data?.count);
-  // A list of the length the server cuts at may have more items behind it: it is told as "the first 50", never as a total.
   const truncated = isTruncatedList(items.length);
   let summary: string;
   if (!truncated) summary = t('activity.todo.summary.total', { count: visible.length });
@@ -89,8 +81,6 @@ export function TodoListPage() {
   } else {
     content = (
       <>
-        {/* The count is no callout any more (UX round 2026-11): the cards show it, the menu counts the urgent ones and the description
-            says when the list is cut. It stays for a screen reader, which hears how many items a filter leaves. */}
         <p className="sr-only" aria-live="polite" data-testid="todo-summary">
           {summary}
           {urgent !== null && urgent > 0 ? (

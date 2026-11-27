@@ -1,7 +1,6 @@
 import { isValidDetailKind } from '@/lib/detail-address';
 import { isDrawerDetail, LIST_MAX_DEFAULT_COLUMNS, type ListDefinition } from './list-types';
 
-/** Ids go in the address and in lists separated by a comma or a colon: they stay plain. */
 const PLAIN_ID = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 
 function fail(key: string, problem: string): never {

@@ -47,10 +47,8 @@ const RENTAL_TYPES: RentalType[] = ['ShortTerm', 'LongTerm', 'Both'];
 
 const WIZARD_STEPS: WizardStep[] = ['role', 'consents'];
 
-/** 422 code of `PUT /users/onboarding` from a user without org and without consents (backend A1-01). */
 const CONSENTS_REQUIRED_CODE = 'consents_required';
 
-/** Two screens at most: the rental type, then the legal consents. The plan is never asked here: the org starts on Starter. */
 type WizardStep = 'role' | 'consents';
 
 interface PendingAccess {
@@ -68,10 +66,7 @@ export function OnboardingPage() {
 function OnboardingRoute({ profile }: { profile: UserDetail | undefined }) {
   const [params] = useSearchParams();
   const roles = useUserRoles();
-  // A profile refetch may observe a settled payment before the workspace check finishes. Keep this visit on its confirmation screen.
   const [startedInPayment] = useState(profile?.commercialSetupRequired === true);
-  // Back from Stripe (`?checkout=success`) after the webhook already cleared `commercialSetupRequired`: still open the commercial
-  // wizard so «Entra e inizia la configurazione» is shown — not the legacy rental-type choice (GJ L3 / commercial-signup.ts).
   const returningFromCheckout =
     params.get('checkout') === 'success' && !!profile?.commercialSignup && !needsConsentRenewal(profile);
   const commercial =
@@ -93,7 +88,6 @@ export function ExistingOnboardingPage() {
   const isEditMode = searchParams.get('mode') === 'edit';
   const locationState = location.state as { from?: string; completeStep?: boolean } | null;
   const from = locationState?.from ?? null;
-  // The activation checklist sent the user here to finish a step it still shows as "todo": stay, never bounce to the home.
   const completingChecklistStep = locationState?.completeStep === true;
   const { refreshAccessToken } = useAuth();
   const client = useQueryClient();
@@ -110,7 +104,6 @@ export function ExistingOnboardingPage() {
   const [step, setStep] = useState<WizardStep>('role');
   const [selectedType, setSelectedType] = useState<RentalType | null>(null);
   const [consents, setConsents] = useState<OnboardingConsentsPayload | null>(null);
-  // Remounts the consents step (checkboxes cleared) when the accepted versions turned out to be outdated (A1-39).
   const [consentsAttempt, setConsentsAttempt] = useState(0);
   const [failedType, setFailedType] = useState<RentalType | null>(null);
   const [consentsForced, setConsentsForced] = useState(false);
@@ -124,24 +117,17 @@ export function ExistingOnboardingPage() {
   const { roles, isResolved: rolesResolved } = useUserRoleState();
   const hasRoles = roles.length > 0;
   const hasOrg = !needsOrgSetup(profile);
-  // Linked in the database (invite, registration, claim) even when the Supplier role is not in the token yet.
   const linkedSupplier = isLinkedSupplier(profile);
   const homeRoute = getHomeRouteForUser({ [ROLES_CLAIM]: roles }, profile);
   // A host the server has set up owns its workspace through the persisted memberships even while the access token has no role claims
   // (issued before the memberships existed, or the roles could not be synced): back from the payment the claims must not keep it on
   // this wizard. Its area is the one of its rental type, which the claims of the token cannot say.
   const setUpHostRentalType = !hasRoles && rolesResolved ? getRentalTypeOfHostSetUpByServer(profile) : null;
-  // Where a user who has finished the onboarding belongs; `null` while nothing says it.
   const finishedRoute = hasRoles || linkedSupplier ? homeRoute : setUpHostRentalType ? getHomeRouteForRentalType(setUpHostRentalType) : null;
-  // PL-02: the backend withholds the host features until the onboarding and the current consents.
   const hostAccessWithheld = profile?.onboardingRequired === true;
-  // A completed onboarding whose legal documents changed: only the consents step, then the same rental type.
   const renewsConsents = needsConsentRenewal(profile) && !isEditMode;
-  // A1-01: PUT (no consents) only when the backend already has a completed onboarding with an org and current consents.
-  // Any other case, with JWT roles or not, goes through the consents step and the POST.
   const isUpdate = canEditOnboarding(profile) && !consentsForced && !lacksCurrentConsents(profile);
   const needsConsentsStep = !isUpdate;
-  // Admins and supplier-only users do not need a host org: they may leave the wizard.
   const canSkip = !isEditMode && isExemptFromHostOnboarding(roles) && (!hasOrg || hostAccessWithheld);
 
   useEffect(() => {
@@ -152,8 +138,6 @@ export function ExistingOnboardingPage() {
       return;
     }
 
-    // A linked supplier belongs to the supplier console, never to the host wizard (A4-02). A host whose host features
-    // are withheld by the backend (PL-02) stays here: its home would answer onboarding_required again.
     if (
       !isEditMode &&
       !completingChecklistStep &&
@@ -196,7 +180,6 @@ export function ExistingOnboardingPage() {
       // Host policies and this bootstrap both resolve persisted DB memberships. Auth0 role synchronization is
       // separate: a failed M2M call must not block a workspace the server has already authorized.
       await confirmWorkspaceAccess(client, target);
-      // Keep SDK claims fresh when possible, without forcing a new sign-in or delaying access.
       void refreshAccessToken().catch(() => undefined);
       navigate(target, { replace: true });
     } catch {
@@ -234,7 +217,6 @@ export function ExistingOnboardingPage() {
       });
     } catch (error) {
       if (isAxiosError(error) && getProblemCode(error.response?.data) === CONSENTS_REQUIRED_CODE) {
-        // The profile was stale: the backend has no org for this user yet, which needs the consents first.
         setConsentsForced(true);
         setStep('consents');
         toast.error(t('onboarding.consentRequiredToast'));
@@ -256,8 +238,6 @@ export function ExistingOnboardingPage() {
     }
 
     if (result.orgProvisioned) {
-      // SE-03: the first onboarding created the org, the attribution captured on /signup can be sent now. Awaited
-      // before leaving (the page reloads); a failure keeps it for the next page load, never blocks the onboarding.
       markSignupAttributionReady();
       await syncSignupAttribution();
     }
@@ -271,7 +251,6 @@ export function ExistingOnboardingPage() {
 
   const handleRentalSelect = (rentalType: RentalType) => {
     setSelectedType(rentalType);
-    // In edit mode the choice is confirmed with the save button of the role step.
     if (isEditMode) return;
     if (needsConsentsStep) {
       setStep('consents');

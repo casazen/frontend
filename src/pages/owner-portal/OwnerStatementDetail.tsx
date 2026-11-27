@@ -60,7 +60,6 @@ export function OwnerStatementDetail() {
     );
   }
 
-  // The error comes before the data: TanStack Query keeps the answer of an earlier read when a later one fails, and a statement the server now refuses is not drawn.
   if (read.isError) {
     return (
       <div className="space-y-4">
@@ -140,8 +139,6 @@ export function OwnerStatementDetail() {
         </p>
       )}
 
-      {/* A newer version is the thing to do here: it is the one block «what now» of the page, not a notice with a button in it
-          (UX round 2026-11). Without the newer one to open it stays a notice. */}
       {statement.superseded && statement.supersededByStatementId ? (
         <FocusBlock
           tone="info"

@@ -19,7 +19,6 @@ const TODO_KEY = [INTERNAL_ACTIVITIES_KEY, 'todo'] as const;
 let queryClient: QueryClient;
 const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 
-/** Every query a change of a part touches, read once and so fresh. */
 function seedFreshQueries() {
   for (const key of [ONBOARDING_PLAN_KEY, ONBOARDING_PATH_KEY, ONBOARDING_STATUS_KEY, TODO_KEY]) queryClient.setQueryData(key, { seeded: true });
 }
@@ -38,7 +37,6 @@ describe('the hooks of the plan of the activation (E10/F03/US01/T02)', () => {
 
     const { result } = renderHook(() => useOnboardingPlan(), { wrapper });
 
-    // Fresh data in the cache does not stop the read: `refetchOnMount: 'always'`.
     await waitFor(() => expect(onboardingApi.getPlan).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(result.current.isFetching).toBe(false));
     expect(result.current.data).toEqual(PLAN);

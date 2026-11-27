@@ -27,9 +27,7 @@ describe('hostCalendarRange', () => {
   });
 
   it('hostCalendarRange_WeekViewAcrossMonths_ReturnsMondayToSunday', () => {
-    // Wednesday 30 September 2026: its week goes from Monday 28 September to Sunday 4 October.
     expect(hostCalendarRange('week', '2026-09-30')).toEqual({ startDate: '2026-09-28', endDate: '2026-10-04' });
-    // A Sunday belongs to the week that started the Monday before.
     expect(hostCalendarRange('week', '2026-10-04')).toEqual({ startDate: '2026-09-28', endDate: '2026-10-04' });
   });
 
@@ -47,7 +45,6 @@ describe('toHostCalendarEvents', () => {
 
       expect(toStayDate(event.start)).toBe('2026-09-30');
       expect(event.start.getHours()).toBe(0);
-      // The bar ends at the local midnight of the departure day (exclusive): nights of the 30th and of the 1st.
       expect(toStayDate(event.end)).toBe('2026-10-02');
       expect(event).toMatchObject({ arrival: '2026-09-30', departure: '2026-10-02', nights: 2, allDay: true });
     });

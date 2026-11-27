@@ -83,14 +83,12 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     const table = within(await findTable());
     expect(table.getByRole('rowheader', { name: /Mario Rossi/ })).toBeInTheDocument();
     expect(table.getByText('3')).toBeInTheDocument();
-    // Italian groups the thousands from five digits on, English from four: either way the amount is there, in euro.
     expect(table.getByText(/1\.?240,00/)).toBeInTheDocument();
     expect(table.getByText('14 set 2026')).toBeInTheDocument();
     expect(table.getByText('Sito diretto')).toBeInTheDocument();
     expect(table.getByText('Airbnb')).toBeInTheDocument();
     expect(table.getByText('vip')).toBeInTheDocument();
     expect(table.getByTestId('contact-state-badge')).toHaveAttribute('data-state', 'consent');
-    // The address is masked by the server, and the page shows it as it came.
     expect(table.getByText('m***@example.it')).toBeInTheDocument();
     expect(CrmApi.getGuests).toHaveBeenCalledWith(expect.objectContaining({ page: 1, pageSize: 20, sort: 'lastStay' }));
   });
@@ -99,7 +97,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     renderList('/app/short-rent/crm/guests?country=IT');
 
     await findTable();
-    // The panel of the filters is open (a filter is on): every control of the page is on screen.
     expect(screen.getByTestId('crm-filters-panel')).toBeInTheDocument();
     const text = document.body.textContent ?? '';
     expect(text).not.toMatch(/document|nascita|birth|passaporto|passport/i);
@@ -144,7 +141,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
 
     renderList();
 
-    // The mark is there (a profile with a duplicate is worth a look), and says who decides; the page of the duplicates is not named.
     const mark = within(await findTable()).getByTestId('crm-merge-mark');
     expect(mark).toHaveAttribute('title', i18n.t('crm.list.mergeProposalHintReadOnly'));
     expect(mark.getAttribute('title')).not.toMatch(/duplicati/);
@@ -191,7 +187,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
 
     await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'mario' }));
     expect(screen.getByTestId('where')).toHaveTextContent('?q=mario');
-    // The host is still typing "mario rossi": the space they typed is not taken away under their fingers.
     expect(box).toHaveValue('mario ');
   });
 
@@ -203,7 +198,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     fireEvent.change(box, { target: { value: text } });
 
     await waitFor(() => expect(lastAsked()).toMatchObject({ search: text, page: 1, sort: 'spend' }));
-    // The rest of the view is in the address; the e-mail address or the phone number is not (history of the browser, shared link).
     expect(screen.getByTestId('where')).toHaveTextContent(/^\/app\/short-rent\/crm\/guests\?sort=spend$/);
     expect(box).toHaveValue(text);
   });
@@ -241,7 +235,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     fireEvent.change(box, { target: { value: 'mario.rossi@example.it' } });
     await waitFor(() => expect(lastAsked()).toMatchObject({ search: 'mario.rossi@example.it' }));
 
-    // The search is on, so the way out is there even though the address has nothing.
     fireEvent.click(await screen.findByTestId('crm-filters-clear'));
 
     await waitFor(() => expect(box).toHaveValue(''));
@@ -293,7 +286,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
       sort: 'name',
       page: 1,
     });
-    // The panel is open with what the address asks for.
     expect(screen.getByLabelText(i18n.t('crm.filters.channel.label'))).toHaveValue('BookingCom');
     expect(screen.getByLabelText(i18n.t('crm.filters.country.label'))).toHaveValue('IT');
     expect(screen.getByRole('searchbox', { name: i18n.t('crm.filters.search.label') })).toHaveValue('rossi');
@@ -324,7 +316,6 @@ describe('GuestList: the CRM profiles of the host (E07/F01/US04/T01)', () => {
     renderList('/app/short-rent/crm/guests?tag=nessuno');
 
     expect(await screen.findByText(i18n.t('crm.list.noMatch.title'))).toBeInTheDocument();
-    // The way out is also in the empty state itself, not only in the bar of the filters.
     fireEvent.click(within(screen.getByTestId('crm-profiles')).getByRole('button', { name: i18n.t('crm.list.noMatch.action') }));
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(/^\/app\/short-rent\/crm\/guests$/));
   });

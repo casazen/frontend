@@ -5,29 +5,19 @@ import { cn } from '@/lib/utils';
 import { calendarDayOf } from './calm-day';
 
 export interface WeekStripDay {
-  /**
-   * The calendar day: `YYYY-MM-DD`, or an instant with its `Z` or offset (the day it falls on in Europe/Rome; see
-   * `calendarDayOf`). The caller chooses the seven days (a week from Monday, the next seven days...).
-   */
   date: string;
-  /** How many things there are that day. A day with some gets a dot; a screen reader is told the number. */
   count?: number;
 }
 
 export interface WeekStripProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'defaultValue' | 'onChange' | 'children'> {
   days: readonly WeekStripDay[];
-  /** The day that is chosen (`YYYY-MM-DD`), when the page decides it. Without it the strip remembers the choice itself. */
   value?: string;
-  /** The day that is chosen until the person chooses one (default: today, if it is among the days). */
   defaultValue?: string;
   onValueChange?: (date: string) => void;
-  /** The day taken as today (`YYYY-MM-DD`), marked on the strip. Default: today in Europe/Rome. */
   today?: string;
-  /** The name of the group for a screen reader. Default: "Giorni della settimana". */
   label?: string;
 }
 
-/** The identity of a day in the strip: the calendar day it says, or its text when it says none (what `onValueChange` gives back). */
 const idOf = (date: string) => calendarDayOf(date) || date;
 
 const SHORT = { weekday: 'short' } as const;
@@ -52,7 +42,6 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
   // finds its own default instead of a day that is no longer there.
   const [chosen, setChosen] = React.useState<string | undefined>(undefined);
 
-  // What the strip says about each day is worked out when the days, the language or today change, not at every choice.
   const cells = React.useMemo(
     () =>
       days.map((day) => {
@@ -90,7 +79,6 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
   const known = (id: string | undefined): id is string => id !== undefined && cells.some((cell) => cell.id === id);
   const fallback = [defaultValue === undefined ? undefined : idOf(defaultValue), cells.find((cell) => cell.isToday)?.id].find(known);
   const selected = value === undefined ? (known(chosen) ? chosen : fallback) : idOf(value);
-  // The Tab order enters on the chosen day, or on the first one when none of the days is chosen.
   const tabStop = known(selected) ? selected : cells[0].id;
 
   const choose = (id: string) => {
@@ -100,7 +88,6 @@ export function WeekStrip({ days, value, defaultValue, onValueChange, today, lab
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     onKeyDown?.(event);
-    // Alt, Ctrl and Cmd with an arrow, Home or End are the browser's (Back, Forward, the start and the end of the page).
     if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
     const radios = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]'));
     const from = (event.target as HTMLElement).closest<HTMLElement>('[role="radio"]');

@@ -39,7 +39,6 @@ function partner(code: string, serviceCategories: string[]): MarketplaceCatalogE
   };
 }
 
-// The ids of the groups are written as the backend may write them (member names): the module reads them as the page spells them.
 const CATALOG = {
   octorate: { enabled: true, connected: false },
   groups: [
@@ -54,7 +53,6 @@ const CATALOG = {
         partner('cleaners-one', ['cleaning']),
         partner('checkin-one', ['check-in']),
         partner('both-one', ['cleaning', 'maintenance']),
-        // Partners that list no service (an empty list, none at all): they are in the catalog and are returned for no kind of work.
         partner('silent-one', []),
         { ...partner('mute-one', []), serviceCategories: null },
       ],
@@ -94,7 +92,6 @@ beforeEach(async () => {
   vi.clearAllMocks();
   workspace.canReadBookings = true;
   await i18n.changeLanguage('it');
-  // The defaults of the app: what was read in the last 5 minutes is not read again when a page opens.
   queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5 * 60_000, refetchOnMount: false }, mutations: { retry: false } } });
   get.mockImplementation(((url: string) => Promise.resolve(answer(url))) as never);
 });
@@ -182,7 +179,6 @@ describe('useMarketplaceEntry', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(get).toHaveBeenCalledWith('/marketplace/entries/Channel/AIRBNB', { propertyId: PROPERTY_ID, lang: 'it' });
-    // The lists the card draws are always lists, whatever the server leaves out.
     expect(result.current.data?.activation.requirements).toEqual([]);
     expect(result.current.data?.dataShared).toEqual([]);
     expect(result.current.data?.faq).toEqual([]);
@@ -204,7 +200,6 @@ describe('useMarketplaceEntry', () => {
   ])('useMarketplaceEntry_%s_SendsNoRequest', async (_name, kind, code) => {
     const { result } = renderHook(() => useMarketplaceEntry(kind, code, PROPERTY_ID), { wrapper });
 
-    // Let a query that was not started have its chance to start.
     await act(async () => {
       await Promise.resolve();
     });
@@ -233,7 +228,6 @@ describe('usePartnersByServiceCategory', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // A partner does not depend on a property: the catalog is read without one.
     expect(get).toHaveBeenCalledWith('/marketplace/catalog', { propertyId: undefined, lang: 'it' });
     expect(result.current.partnersFor('cleaning').map((entry) => entry.code)).toEqual(['cleaners-one', 'both-one']);
     expect(result.current.partnersFor('maintenance').map((entry) => entry.code)).toEqual(['both-one']);
@@ -260,7 +254,6 @@ describe('usePartnersByServiceCategory', () => {
   });
 
   it('usePartnersByServiceCategory_PersonWhoMayNotReadTheCatalog_NeverAsksForIt', async () => {
-    // A read they may not make would send them to the page of no access, out of the request they are making.
     workspace.canReadBookings = false;
 
     const { result } = renderHook(() => usePartnersByServiceCategory(), { wrapper });
@@ -278,7 +271,6 @@ describe('usePartnersByServiceCategory', () => {
     await waitFor(() => expect(first.result.current.isLoading).toBe(false));
     first.unmount();
 
-    // The steps of the wizard each ask for the partners: one read serves them all.
     const second = renderHook(() => usePartnersByServiceCategory(), { wrapper });
 
     expect(second.result.current.isLoading).toBe(false);

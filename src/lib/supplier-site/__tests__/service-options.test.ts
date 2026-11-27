@@ -47,7 +47,6 @@ describe('service options: what is picked on the card of a service', () => {
       comune: '058091',
     });
 
-    // The `sqm30` supplement is never picked: it follows `surfaceSqm`. A supplement with no units is not sent.
     expect(body).toEqual({
       service: 'pulizia-standard',
       surfaceSqm: 90,

@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 
-/** A code of the channel manager read as a plain name: `hometogo_xml` is «Hometogo». For a channel this app has no name for yet. */
 function humanizeChannel(code: string): string {
   const words = code.replace(/_xml$/, '').replace(/[_-]+/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);

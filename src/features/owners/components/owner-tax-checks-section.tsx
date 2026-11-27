@@ -14,13 +14,8 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { useDeclareExternalUnits, useOwnerUnitsCheck } from '@/queries/use-owner-tax-checks';
 import type { OwnerUnitsCheck } from '@/types';
 
-/** The most apartments an owner can declare outside the agency (the backend refuses more: 422 `owner_external_units_invalid`). */
 const MAX_UNITS = 1000;
 
-/**
- * The number typed, or `null` for anything that is not a whole number from 0 to 1000. An empty field is not a 0: the backend refuses a request without the number, and so does the form, so «none» is a thing the
- * person writes and never one they leave out.
- */
 function unitsOf(raw: string): number | null {
   const text = raw.trim();
   if (!/^\d{1,4}$/.test(text)) return null;
@@ -79,15 +74,9 @@ function UnitsForm({ ownerId, check }: { ownerId: string; check: OwnerUnitsCheck
 
 interface OwnerTaxChecksSectionProps {
   ownerId: string;
-  /** Who may write the finances of the owner (`agency.owner.financial.manage`): the others read the number and cannot change it. */
   canManage: boolean;
 }
 
-/**
- * «Affitti brevi fuori dall'agenzia» of an owner (E18/F01/US03/T01, NF-117, ⚖ I8): how many apartments the owner lets short outside the agency and the limit of a private person, counting the ones the agency manages
- * for it. Past the limit the owner is presumed to run a business: its stays get no withholding of the short lets, and the page says so in words, beside the numbers and not as a guess. It exists only behind the flag
- * `taxReportingExports` (the backend answers 404 without it), the number is saved only by who manages the owners' finances and is never a 0 by omission, and a refused read is told as such, never as «within the limit».
- */
 export function OwnerTaxChecksSection({ ownerId, canManage }: OwnerTaxChecksSectionProps) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
@@ -97,7 +86,6 @@ export function OwnerTaxChecksSection({ ownerId, canManage }: OwnerTaxChecksSect
 
   let content;
   if (getHttpStatus(check.error) === 404) {
-    // A 404 is «not found» whatever the cache still holds (a failed read keeps the old data).
     content = (
       <p className="break-words text-sm text-foreground/70" data-testid="owner-units-not-found">
         {t('ownerProfile.units.notFound')}

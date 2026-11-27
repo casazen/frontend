@@ -26,12 +26,10 @@ vi.mock('@/api/octorate-compliance-handoff.api', () => ({
   octorateComplianceHandoffApi: { start: vi.fn() },
 }));
 
-// The property of a stay is read from its booking when the button is pressed.
 vi.mock('@/api/bookings.api', () => ({
   bookingsApi: { getById: vi.fn() },
 }));
 
-// The Home's «Da fare» tells nothing here: the action does not depend on it (the real one never lists the receipts or the sends by hand).
 vi.mock('@/queries/use-dashboard', () => ({
   useDashboardToday: () => ({ data: undefined }),
 }));
@@ -64,7 +62,6 @@ const summary: ComplianceSummaryResult = {
     items: [{ id: CHECKIN_BOOKING_ID, label: 'Anna Verdi', action: 'CompleteGuestCheckIn', propertyId: null, bookingId: CHECKIN_BOOKING_ID }],
   },
   checkoutsDue: empty,
-  // To send and failed: CasaZen knows their outcome, there is nothing to read in the connected area (no topic).
   alloggiatiManualRequired: {
     count: 1,
     items: [{ id: SEND_BOOKING_ID, label: 'Luca Bruni', action: 'SendAlloggiati', propertyId: null, bookingId: SEND_BOOKING_ID, light: 'Red', reason: 'alloggiati_not_sent' }],
@@ -77,7 +74,6 @@ const summary: ComplianceSummaryResult = {
   receiptsToUpload: {
     count: 2,
     items: [
-      // Entrusted to the channel manager: its outcome is only there (yellow), and the same once the term has passed without a receipt (red).
       {
         id: RECEIPT_BOOKING_ID,
         label: 'Giulia Blu',
@@ -98,7 +94,6 @@ const summary: ComplianceSummaryResult = {
         reason: 'receipt_missing',
         handoffTopic: 'Alloggiati',
       },
-      // In order: never an action, whatever else the item says.
       {
         id: GREEN_BOOKING_ID,
         label: 'Sara Verde',
@@ -111,7 +106,6 @@ const summary: ComplianceSummaryResult = {
       },
     ],
   },
-  // The host sends by hand: no connected area to read (no topic).
   manualSendsRequired: {
     count: 1,
     items: [
@@ -127,7 +121,6 @@ const summary: ComplianceSummaryResult = {
       },
     ],
   },
-  // Two months of one property: the first is sent by the channel manager (its outcome is there), the second the host sends by hand.
   periodItems: {
     count: 2,
     items: [
@@ -147,7 +140,6 @@ const summary: ComplianceSummaryResult = {
   },
 };
 
-/** The same summary as an older server sends it: no `handoffTopic` on any item. */
 function withoutTopics(result: ComplianceSummaryResult): ComplianceSummaryResult {
   const strip = (items: ComplianceSummaryItem[]) =>
     items.map((item) => {
@@ -176,13 +168,11 @@ const HANDOFF: ComplianceHandoff = {
   guide: { code: 'alloggiati_daily', menuPath: 'Strutture, poi Questura', check: 'Controlla che il soggiorno risulti inviato.' },
 };
 
-/** A failed call as axios builds it. */
 function answered(status: number, data?: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   return new AxiosError('failed', 'ERR_BAD_RESPONSE', config, undefined, { status, statusText: '', headers: {}, config, data });
 }
 
-// The button of the yellow row (red ones come first in the list): the name of the row is in its label.
 const yellowButton = () => screen.findByRole('button', { name: 'Verifica nel tuo Cassetto Compliance: Giulia Blu' });
 
 const readBooking = vi.mocked(bookingsApi.getById);
@@ -224,7 +214,6 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
     expect(receipts).toHaveLength(2);
     expect(receipts[0]).toHaveTextContent('Verifica nel tuo Cassetto Compliance');
     expect(screen.getAllByTestId('compliance-summary-periods-drawer')).toHaveLength(1);
-    // The button of the row is where it was: the action is one more, not a replacement.
     expect(screen.getAllByTestId('compliance-summary-receipts-link')).toHaveLength(2);
     expect(screen.getAllByTestId('compliance-summary-periods-link')).toHaveLength(2);
     expect(screen.getAllByTestId(/-drawer$/)).toHaveLength(3);
@@ -234,11 +223,9 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
     renderWidget();
 
     await screen.findAllByTestId('compliance-summary-receipts-drawer');
-    // To send, failed, sent by hand and the month the host sends: the outcome is not only in the connected area, so there is nothing to go and read.
     expect(screen.queryByTestId('compliance-summary-alloggiati-manual-drawer')).not.toBeInTheDocument();
     expect(screen.queryByTestId('compliance-summary-alloggiati-drawer')).not.toBeInTheDocument();
     expect(screen.queryByTestId('compliance-summary-manual-sends-drawer')).not.toBeInTheDocument();
-    // Their own buttons are where they were.
     expect(screen.getByTestId('compliance-summary-alloggiati-manual-link')).toBeInTheDocument();
     expect(screen.getByTestId('compliance-summary-alloggiati-link')).toBeInTheDocument();
     expect(screen.getByTestId('compliance-summary-manual-sends-link')).toBeInTheDocument();
@@ -254,7 +241,6 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
 
   it('widget_StayOfTheSummary_ReadsItsPropertyFromTheBookingWhenPressedThenAsksForTheStayAndTheRouteOfThePage', async () => {
     renderWidget();
-    // Nothing is read, and nothing asked, until the button is pressed.
     const yellow = await yellowButton();
     expect(readBooking).not.toHaveBeenCalled();
     expect(startHandoff).not.toHaveBeenCalled();
@@ -282,7 +268,6 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
 
     fireEvent.click(yellow);
 
-    // The dialog says it is preparing, the button is busy and a second press asks for nothing more.
     expect(await screen.findByTestId('compliance-drawer-loading')).toBeInTheDocument();
     expect(yellow).toHaveAttribute('aria-busy', 'true');
     fireEvent.click(yellow);
@@ -316,7 +301,6 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
 
     const failed = await screen.findByTestId('compliance-drawer-failed');
     expect(within(failed).getByTestId('compliance-drawer-error')).toHaveTextContent('Non riusciamo a preparare la verifica');
-    // Not a success, and not silence: the guide of the topic is there, and the one way forward is to ask again.
     expect(within(failed).getByTestId('compliance-drawer-fallback')).toBeInTheDocument();
     expect(startHandoff).not.toHaveBeenCalled();
 
@@ -338,7 +322,6 @@ describe('ComplianceSummaryWidget: «Verifica nel tuo Cassetto Compliance»', ()
 
     fireEvent.click(await screen.findByTestId('compliance-summary-periods-drawer'));
 
-    // The month the host reads is the one the server names, written as a month.
     expect(await screen.findByTestId('compliance-drawer-period')).toHaveTextContent(/ottobre 2026/i);
     expect(readBooking).not.toHaveBeenCalled();
     expect(startHandoff).toHaveBeenCalledWith({

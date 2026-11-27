@@ -93,7 +93,7 @@ describe('MarkSentManuallyButton (CO-11)', () => {
     fireEvent.click(button);
 
     const dateInput = screen.getByTestId('alloggiati-sent-on') as HTMLInputElement;
-    expect(dateInput.value).toBe('2026-10-11'); // today in Europe/Rome
+    expect(dateInput.value).toBe('2026-10-11');
     expect(dateInput.min).toBe('2026-10-10');
     expect(dateInput.max).toBe('2026-10-11');
     const submit = screen.getByTestId('alloggiati-mark-sent-confirm');

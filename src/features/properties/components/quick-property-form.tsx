@@ -37,7 +37,6 @@ interface QuickPropertyFormProps {
   onSubmit: (dto: CreatePropertyDto) => Promise<void>;
   isLoading: boolean;
   disabled?: boolean;
-  /** Link to the complete form, for a host who prefers to fill in everything now. */
   onFullForm: () => void;
 }
 
@@ -89,7 +88,6 @@ export function QuickPropertyForm({ variant, onSubmit, isLoading, disabled, onFu
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="space-y-6" data-testid="quick-property-form">
       <Card className="rounded-2xl">
-        {/* The name and the comune, and beside them once the card is wide the address and the numbers (under each other when it is not). */}
         <CardContent className="@container pt-6">
           <div className={FIELD_COLUMNS}>
             <div className="min-w-0 space-y-5">

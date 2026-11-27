@@ -40,7 +40,6 @@ function WaitingCard({ title }: { title: string }) {
   );
 }
 
-/** A link that does not work, and why when the server said. The only way on is CasaZen itself: an owner who already accepted finds the portal there. */
 function UnusableCard({ reason }: { reason: OwnerInvitationUnusable }) {
   const { t } = useTranslation();
   return (
@@ -69,10 +68,6 @@ interface SignedOutCardProps {
   token: string;
 }
 
-/**
- * Not signed in: the page says what the invitation is and offers the sign-up and the sign-in. Back to this page without the secret in the address: it travels in
- * the `appState` of the login, which the SDK gives back after the redirect.
- */
 function SignedOutCard({ token }: SignedOutCardProps) {
   const { t } = useTranslation();
   const { login } = useAuth();
@@ -96,7 +91,6 @@ function SignedOutCard({ token }: SignedOutCardProps) {
   );
 }
 
-/** What the page shows once the server answered and the invitation is not (yet) in use: every state says what is not done and what to do, never a bare success. */
 type Stage = 'opening' | 'claimsPending' | 'tokenPending';
 
 /**
@@ -121,12 +115,9 @@ export function OwnerInvitationPage() {
   useNoReferrer();
   useSeoMeta({ title: t('ownerInvitation.pageTitle'), noindex: true });
 
-  // Read once, when the page opens: the link of the e-mail, or the one handed over after the sign-in. A link that carries a `token` that is not one does not work,
-  // and an older token is not put in its place.
   const [token] = useState(() => (searchParams.has('token') ? normalizeOwnerInvitationToken(searchParams.get('token')) : peekOwnerInvitationToken()));
   const [resumingPortal] = useState(() => !searchParams.has('token') && searchParams.get('resume') === 'portal');
 
-  // The secret leaves the address bar (and the history entry) as soon as the page has it. It waits in memory for the sign-in.
   useEffect(() => {
     if (!searchParams.has('token')) return;
     if (token) stashOwnerInvitationToken(token);
@@ -135,15 +126,11 @@ export function OwnerInvitationPage() {
     setSearchParams(rest, { replace: true });
   }, [searchParams, setSearchParams, token]);
 
-  // `mutateAsync` and not `mutate`: the answer is read from the promise, so it does not depend on the observer of the mutation, which the second run of the effects
-  // in development (StrictMode) detaches from a mutation started by the first.
   const { mutateAsync, reset } = useAcceptOwnerInvitation();
   const started = useRef(false);
   const [stage, setStage] = useState<Stage | null>(null);
   const [failure, setFailure] = useState<OwnerInvitationFailure | null>(null);
 
-  // True while the secret waits in memory on purpose for another try: the claims of the portal did not reach the identity provider, the request has to be sent again, or another
-  // account has to sign in with it. A person who leaves the page (a link, the back button) takes it with them: the link of the e-mail still works and brings it back.
   const keepsSecret = useRef(false);
   // And false once the person has left, so that the answer of a request still on its way does not keep a secret for somebody who is gone.
   const onPage = useRef(false);
@@ -166,8 +153,6 @@ export function OwnerInvitationPage() {
       () => {
         if (!onPage.current) return;
         if (!afterLogin) {
-          // A top-level Auth0 session can issue a fresh token even when the browser blocks silent auth.
-          // Resume the access check without carrying or submitting the accepted invitation again.
           login({ returnTo: PORTAL_LOGIN_RETURN });
           return;
         }
@@ -178,7 +163,6 @@ export function OwnerInvitationPage() {
 
   const finish = useCallback(
     (accepted: OwnerInvitationAccepted) => {
-      // The variables of the mutation (the secret) are dropped with every answer.
       reset();
       if (!claimsArePublished(accepted.claimsRefresh)) {
         // Accepted, but the portal would refuse the person (no claims in the token): not a success. The server repeats the hand-over of the claims at every acceptance of
@@ -188,7 +172,6 @@ export function OwnerInvitationPage() {
         setStage('claimsPending');
         return;
       }
-      // Claims were published. Forget the secret before checking access with a fresh session.
       keepsSecret.current = false;
       clearOwnerInvitationToken();
       if (onPage.current) {
@@ -204,8 +187,6 @@ export function OwnerInvitationPage() {
       started.current = true;
       mutateAsync(secret).then(finish, (error: unknown) => {
         reset();
-        // A link that does not work is final: the secret is forgotten. It is kept (in memory, until the person leaves) for a request worth sending again, for an account whose
-        // e-mail is not verified yet and for an account that is not the invited one: the link is good, and the person can sign in with the right account and come back with it.
         const refused = ownerInvitationFailureOf(error);
         const kept = (refused.kind === 'retry' || refused.kind === 'other' || refused.kind === 'emailNotVerified' || refused.kind === 'emailMismatch') && onPage.current;
         if (!kept) clearOwnerInvitationToken();
@@ -239,8 +220,6 @@ export function OwnerInvitationPage() {
   if (authLoading || stage === 'opening') return <WaitingCard title={t('ownerInvitation.opening')} />;
 
   if (stage === 'claimsPending') {
-    // The invitation is accepted but the claims of the portal did not reach the identity provider: the portal would refuse the person, so this is not a success and
-    // opening it is no remedy. The remedy is to accept again, which hands the claims over again.
     return (
       <InviteAcceptCard tone="attention" title={t('ownerInvitation.claimsPending.title')} description={t('ownerInvitation.claimsPending.description')}>
         <Button className={TOUCH_TARGET} onClick={again} data-testid="owner-invitation-retry">
@@ -252,7 +231,6 @@ export function OwnerInvitationPage() {
   }
 
   if (stage === 'tokenPending') {
-    // Auth0 returned but the API still did not confirm access.
     return (
       <InviteAcceptCard tone="attention" title={t('ownerInvitation.tokenPending.title')} description={t('ownerInvitation.tokenPending.description')}>
         <Button className={TOUCH_TARGET} onClick={() => login({ returnTo: PORTAL_LOGIN_RETURN, authorizationParams: { prompt: 'login' } })} data-testid="owner-invitation-open-portal">
@@ -279,8 +257,6 @@ export function OwnerInvitationPage() {
 
   // A new sign-in carries the secret again, in the `appState`, because the page is loaded again when the person comes back.
   const signInAgain = () => login({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: token } });
-  // Another account for the same invitation: Auth0 asks for the sign-in again although a session exists (`prompt=login`, as `forceReauth` does) and the secret goes with it in the
-  // `appState`, like in every other sign-in of this page. A sign-out would send the person to the home page without the secret, and nothing there says to open the link again.
   const switchAccount = () =>
     login({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: token }, authorizationParams: { prompt: 'login' } });
   if (failure) return <FailureCard failure={failure} onRetry={again} onSwitchAccount={switchAccount} onNewLogin={signInAgain} />;
@@ -294,14 +270,12 @@ interface FailureCardProps {
   onNewLogin: () => void;
 }
 
-/** The refusal of the acceptance, by what the person has to do about it. */
 function FailureCard({ failure, onRetry, onSwitchAccount, onNewLogin }: FailureCardProps) {
   const { t } = useTranslation();
 
   if (failure.kind === 'unusable') return <UnusableCard reason={failure.reason} />;
 
   if (failure.kind === 'notFound') {
-    // The owner portal is off: the page is «not found», never an error that invites to try again.
     return <InviteAcceptCard tone="broken" title={t('ownerInvitation.notFound.title')} description={t('ownerInvitation.notFound.description')} />;
   }
 

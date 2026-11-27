@@ -13,37 +13,23 @@ interface OutsideChangeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   propertyId: string;
-  /** The channels whose content changed outside CasaZen (`changedOutside` of their row). */
   rows: readonly ListingChannelStatus[];
-  /**
-   * Told what the server holds of the texts once the host took the descriptions of the channel manager («Prendi la nuova versione»): a
-   * form that edits them starts from these again, or its next save would send the old texts back over the ones just adopted.
-   */
   onAdopted?: (adopted: AdoptedTexts) => void;
 }
 
-/** The choice the person is about to confirm: which channel and what they picked. */
 interface Pending {
   row: ListingChannelStatus;
   choice: OutsideChangeChoice;
 }
 
-/**
- * «Modificato fuori da CasaZen» (NF-27, ADR-027): someone changed the content of a channel directly on it after the last publication. Nothing
- * is overwritten without a choice: «Tieni la versione di CasaZen» publishes CasaZen's again, «Prendi la nuova versione» adopts the
- * descriptions held by the channel manager (offered only when the descriptions are the only group that changed — the server refuses the rest).
- * Both ask first, and say what is lost.
- */
 export function OutsideChangeDialog({ open, onOpenChange, propertyId, rows, onAdopted }: OutsideChangeDialogProps) {
   const { t, i18n } = useTranslation();
   const channelName = useChannelName();
   const resolve = useResolveOutsideChange(propertyId);
   const [pending, setPending] = useState<Pending | null>(null);
   const [error, setError] = useState<unknown>(null);
-  /** The choice «Prendi la nuova versione» went through but the texts could not be read again: the page must be opened again to edit them. */
   const [rereadFailed, setRereadFailed] = useState(false);
 
-  // A group the server names and this version has no words for (a newer backend) is shown as it came, never as a raw key.
   const groupNames = (groups: readonly string[]) =>
     groups.map((group) => (i18n.exists(`listingStatus.groups.${group}`) ? t(`listingStatus.groups.${group}`) : group)).join(', ');
 
@@ -64,12 +50,10 @@ export function OutsideChangeDialog({ open, onOpenChange, propertyId, rows, onAd
       const result = await resolve.mutateAsync({ channelCode: pending.row.channel, choice: pending.choice });
       setPending(null);
       if (result.adopted) onAdopted?.(result.adopted);
-      // The texts of the form are the old ones until the page is opened again: it is said, and the dialog stays to say it.
       if (result.rereadFailed) {
         setRereadFailed(true);
         return;
       }
-      // The last channel to be decided closes the dialog; the others stay for their own choice.
       if (rows.length <= 1) onOpenChange(false);
     } catch (failure) {
       setError(failure);

@@ -4,14 +4,8 @@ import { formatCurrency } from '@/lib/utils';
 import type { RentRegisterCounters } from '@/types';
 import { isRentMonth, monthName, rentRegisterPath } from '../lib/rent-register';
 
-/**
- * «Canoni di ottobre»: the three numbers of the rent of the month, without charts: what came in against what was expected, what is
- * late, and what is still to come. Each number leads to the installments it is made of, and the section to the register. The
- * numbers are the server's, the same as the register of the month has.
- */
 export function RentNumbers({ rents, rentMonth, currentMonth }: { rents: RentRegisterCounters; rentMonth: string; currentMonth: string }) {
   const { t, i18n } = useTranslation();
-  // The server says which month the numbers are for (the current one); a value this version cannot read is the month of today.
   const month = isRentMonth(rentMonth) ? rentMonth : currentMonth;
   const name = monthName(month, i18n.language, false);
   const late = rents.overdue.count > 0;

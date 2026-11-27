@@ -52,7 +52,6 @@ describe('useMediaQuery (UI-04b)', () => {
 
     unmount();
 
-    // A resize after the unmount reaches nobody and breaks nothing.
     expect(() => viewport.resize(1280)).not.toThrow();
   });
 });

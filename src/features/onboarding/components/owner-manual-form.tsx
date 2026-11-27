@@ -11,16 +11,12 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 const EMPTY: ManualOwnerValues = { property: '', ownerKey: '', legalName: '', email: '', entityKind: 'person', fiscalCode: '', sharePercent: '', ownershipStart: '' };
 
-/** The fields the form needs before it asks the server: the rest is judged by the server, row by row, in words. */
 const REQUIRED: readonly (keyof ManualOwnerValues)[] = ['property', 'legalName', 'sharePercent', 'ownershipStart'];
 
 interface OwnerManualFormProps {
-  /** A request of the card is in flight: the form waits. */
   disabled: boolean;
   propertyRef?: string;
-  /** The one row as a file, to be checked exactly as a file chosen from the computer is: the check, then the confirmed import; with the row as the confirmation will name it. */
   onFile: (file: File, row: ManualOwnerRow) => void;
-  /** A field of the form changed: the file that was made of it before (and its check) is not what the form holds any more. */
   onEdit: () => void;
 }
 
@@ -37,7 +33,6 @@ export function OwnerManualForm({ disabled, onFile, onEdit, propertyRef }: Owner
 
   const set = (key: keyof ManualOwnerValues) => (value: string) => {
     setValues((current) => ({ ...current, [key]: value }));
-    // What was checked is the row as it was sent: a change makes that check be about another row, so the panel forgets it and asks for a new one.
     onEdit();
   };
 

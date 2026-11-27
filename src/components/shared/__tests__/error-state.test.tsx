@@ -3,7 +3,6 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import i18n from '@/i18n/config';
 import { ErrorState } from '../error-state';
 
-// The e-mail comes from the build configuration (VITE_SUPPORT_EMAIL); the tests choose it.
 const support = vi.hoisted(() => ({ email: null as string | null }));
 vi.mock('@/config/support.config', () => ({ supportConfig: support }));
 

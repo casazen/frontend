@@ -1,9 +1,7 @@
 import type { BookingOctorateSync } from '@/types';
 
-/** How often a page that waits for the channel manager asks the booking again. */
 export const SYNC_POLL_MS = 3_000;
 
-/** The same, once the first minute is over and the push is still going on: a push that failed is tried again by itself, minutes later, and the page stays right. */
 const SYNC_SLOW_POLL_MS = 15_000;
 
 /**
@@ -12,20 +10,13 @@ const SYNC_SLOW_POLL_MS = 15_000;
  */
 export const SYNC_WATCH_MS = 60_000;
 
-/**
- * How long, from the opening of the page, a push that is still under way (`Pending`) is waited for. A push that stopped halfway leaves the row `Pending`, and the host
- * cannot ask again from there (only `Failed` and `Conflict` are retried), so a page that went on asking for ever would say "being sent" for good. After this the page stops
- * asking and says that there is no answer yet, with «Check again» (which waits for one more minute).
- */
 export const SYNC_PENDING_LIMIT_MS = 10 * 60_000;
 
-/** What a page that waits for the channel manager knows: when it opened and when the host last asked for something to be sent (`null` if they did not). */
 export interface SyncWatch {
   openedAt: number;
   askedAt: number | null;
 }
 
-/** The moment from which a page gives up waiting for a push that is still `Pending`: the limit from its opening, or the end of the minute after the host's last asking if later. */
 export function syncWaitEndsAt(watch: SyncWatch): number {
   return Math.max(watch.openedAt + SYNC_PENDING_LIMIT_MS, watch.askedAt === null ? 0 : watch.askedAt + SYNC_WATCH_MS);
 }
@@ -41,7 +32,6 @@ export function syncPollInterval(sync: BookingOctorateSync | null | undefined, w
   return now - watch.openedAt < SYNC_WATCH_MS ? SYNC_POLL_MS : SYNC_SLOW_POLL_MS;
 }
 
-/** Why a push failed, in the words of the screen: the sentence of each stable code of the API (`booking.syncReason.*`); a code this client does not know has a generic one. */
 const SYNC_REASON_KEYS: Readonly<Record<string, string>> = {
   octorate_dates_unavailable: 'booking.syncReason.datesUnavailable',
   octorate_not_mirrored: 'booking.syncReason.notMirrored',
@@ -53,7 +43,6 @@ const SYNC_REASON_KEYS: Readonly<Record<string, string>> = {
   octorate_unavailable: 'booking.syncReason.unavailable',
 };
 
-/** The key of the sentence that says why a push failed (`errorCode` of the mirror). */
 export function syncReasonKey(code: string | null | undefined): string {
   return (code ? SYNC_REASON_KEYS[code] : undefined) ?? 'booking.syncReason.unknown';
 }
@@ -65,7 +54,6 @@ export function syncReasonKey(code: string | null | undefined): string {
  */
 const SELF_RETRIED_CODES: readonly string[] = ['octorate_unavailable'];
 
-/** Whether the server tries a push that failed with `code` again without being asked. */
 export function syncRetriesByItself(code: string | null | undefined): boolean {
   return !!code && SELF_RETRIED_CODES.includes(code);
 }

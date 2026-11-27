@@ -15,12 +15,6 @@ import { emptyFlow, leaseEditPath, registeredSteps, stepKey, visibleSteps } from
 const FIRST_FIELD = 'lw-property';
 const NOTHING_TO_LINK = () => '';
 
-/**
- * The first step of a contract that does not exist yet (LR-06a): the property. The contract is born at the first press of the main
- * button: the draft is created on the server with the origin and the type chosen at the start, and the wizard goes on from the second
- * step on that draft (`/leases/:id/edit`). Until then there is nothing to save, so nothing is: leaving costs nothing. With no property
- * chosen the button is pressable all the same: it puts the focus on the list, and the line under it says what is missing.
- */
 export function NewLeaseStep({
   origin,
   contractType,
@@ -52,7 +46,6 @@ export function NewLeaseStep({
       focusProperty();
       return;
     }
-    // A second click must not create another contract, or save the type a second time as a different step.
     if (started.current) return;
     started.current = true;
     try {
@@ -60,7 +53,6 @@ export function NewLeaseStep({
       navigate(leaseEditPath(leaseId, 2), { replace: true });
     } catch {
       started.current = false;
-      // useCreateLeaseDraft.onError says why; the property stays chosen to try again.
     }
   };
 

@@ -49,7 +49,6 @@ describe('ActivityList (UI-16)', () => {
 
   it('ActivityList_DateWithoutWhen_IsDayMonthAndTimeInRomeInTheLanguageOfTheApp', async () => {
     const { unmount } = render(<ActivityList items={ITEMS.slice(1, 2)} />);
-    // 08:12 UTC of 16 October is 10:12 in Rome (summer time).
     expect(screen.getByRole('listitem').querySelector('time')).toHaveTextContent(/^16 ott.*10:12$/);
     unmount();
 
@@ -62,7 +61,6 @@ describe('ActivityList (UI-16)', () => {
     render(<ActivityList items={[{ id: 'a', at: '2025-03-05T09:00:00Z', text: 'un anno fa' }, { id: 'b', at: '2026-03-05T09:00:00Z', text: 'quest’anno' }]} />);
 
     const times = screen.getAllByRole('listitem').map((item) => item.querySelector('time')?.textContent);
-    // This year (2026, the clock is fixed): no year. Another year: with it.
     expect(times[0]).toMatch(/^5 mar\D+10:00$/);
     expect(times[1]).toMatch(/^5 mar 2025\D+10:00$/);
   });
@@ -116,7 +114,6 @@ describe('ActivityList (UI-16)', () => {
     expect(box).toHaveClass('mt-4');
     expect(within(box).getByRole('list')).toBeInTheDocument();
     expect(within(box).getByRole('button', { name: 'Mostra altro' })).toBeInTheDocument();
-    // The list keeps its own id, the one the button controls.
     expect(within(box).getByRole('button')).toHaveAttribute('aria-controls', within(box).getByRole('list').id);
     expect(within(box).getByRole('list').id).not.toBe('history');
   });

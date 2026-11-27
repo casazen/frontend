@@ -30,16 +30,12 @@ import { ChoosePropertyFirst } from './choose-property-first';
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** «Mi serve aiuto»: the request for help of the guided step, under the words of the fallback of a result CasaZen cannot read. */
 const HELP_LABEL = 'needHelp';
 
-/** Who can do the step on the panel of the channel manager: the organization administrator, and only while the guided steps of the activation are on. */
 export type PanelAvailability = 'ready' | 'notAdmin' | 'unavailable' | 'staff';
 
-/** The guided steps of the panel the wizard reads for the access step (`usePanelSteps`), and whether this person can do them. */
 export interface PanelAccess {
   availability: PanelAvailability;
-  /** The steps of the organization; `undefined` while they are read. */
   steps: readonly PanelStep[] | undefined;
 }
 
@@ -48,14 +44,12 @@ interface PanelAccessSectionProps {
   propertyIds: readonly string[];
   panel: PanelAccess;
   onSaveAndExit: () => void;
-  /** A read of an activation began or ended: the page asks again whether «Continue» may be pressed. */
   onActivationsRead: () => void;
 }
 
 interface PanelNotGivenProps {
   context: ActivationContext;
   propertyId: string;
-  /** The activation whose access the channel manager does not show: it is read again by «Check again». */
   activationId: string | null;
   onSaveAndExit: () => void;
 }
@@ -120,7 +114,6 @@ function PanelAccessSection({ context, propertyIds, panel, onSaveAndExit, onActi
   const stepOf = (propertyId: string) => findPanelStep(panel.steps, { kind: 'channelAccess', propertyId, channelCode: context.code });
   const stepDone = propertyIds.map((propertyId) => isPanelStepDone(stepOf(propertyId)));
 
-  // The channel manager is asked only for the properties whose activation exists, and only for who can do the step.
   const activationIds = propertyIds.map((propertyId) => (available ? (context.plans.get(propertyId)?.activationId ?? null) : null));
   const reads = useActivations(activationIds);
   const readKey = reads.map((read) => `${read.dataUpdatedAt}:${read.fetchStatus}`).join('|');
@@ -242,16 +235,12 @@ function PanelAccessSection({ context, propertyIds, panel, onSaveAndExit, onActi
 
 interface AccessStepProps {
   context: ActivationContext;
-  /** The username and the password of the portal: the state of the page, never a value of the wizard, so never in its draft or in the storage of the browser. */
   credentials: PortalCredentials;
   onCredentialsChange: (next: PortalCredentials) => void;
-  /** The person pressed «Continue» with something missing: the fields that lack it say so. */
   showErrors: boolean;
   panel: PanelAccess;
   onSaveAndExit: () => void;
-  /** The access on the panel was read for an activation: the page asks again whether «Continue» may be pressed. */
   onActivationsRead: () => void;
-  /** Goes back to the step where the properties are chosen. */
   onChoose: () => void;
 }
 

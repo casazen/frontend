@@ -9,7 +9,6 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { swissDay } from '@/features/compliance/swiss/__tests__/swiss-fixtures';
 import i18n from '@/i18n/config';
 import { settleDrawer } from '@/test/drawer';
-// The one file the shell loads to register the kinds of the drawer: the layer must be there with no other help.
 import '@/config/detail-kinds';
 
 vi.mock('@/api/swissCompliance.api', () => ({ swissComplianceApi: { getSwissDay: vi.fn(), declareSwissDay: vi.fn(), undeclareSwissDay: vi.fn() } }));
@@ -23,7 +22,6 @@ vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), err
 
 const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const DAY = '2026-11-19';
-/** The layer is a chunk that loads when the drawer opens: the first time it is also compiled, which is slow on a loaded machine. */
 const CHUNK = { timeout: 20_000 };
 const SLOW_TEST = { timeout: 40_000 };
 
@@ -61,7 +59,6 @@ describe('the layer of the assisted notification in the detail drawer (E31/F02/U
   it('SwissLayerDrawer_AddressWithThePropertyAndTheDay_OpensTheLayerOverTheCockpitNamedAfterTheProperty', SLOW_TEST, async () => {
     renderAt(`/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}:${DAY}`);
 
-    // The layer opens over the page that is open: the address is the cockpit and the drawer is in its `?detail=`.
     expect(await screen.findByRole('dialog', { name: 'Notifica degli ospiti: Casa Sciaffusa' }, CHUNK)).toBeInTheDocument();
     expect(await screen.findByTestId('swiss-layer', {}, CHUNK)).toBeInTheDocument();
     expect(swissComplianceApi.getSwissDay).toHaveBeenCalledWith(PROPERTY_ID, DAY);
@@ -81,7 +78,6 @@ describe('the layer of the assisted notification in the detail drawer (E31/F02/U
     fireEvent.click(await screen.findByTestId('swiss-later', {}, CHUNK));
 
     await waitFor(() => expect(screen.queryByTestId('detail-drawer')).not.toBeInTheDocument());
-    // The other parameters of the page stay as they were.
     expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/compliance?foo=bar');
     expect(screen.getByTestId('where')).not.toHaveTextContent('detail=');
   });

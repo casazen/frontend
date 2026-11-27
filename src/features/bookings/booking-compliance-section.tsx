@@ -21,7 +21,6 @@ const RECEIPT_ONLY: readonly ComplianceProofKind[] = ['AlloggiatiReceipt'];
 const NO_PROPERTIES: Property[] = [];
 
 interface BookingComplianceSectionProps {
-  /** The stay: its property, and its arrival day (the day the receipt is filed for). The arrival day is missing in the few places that know no more than the id: the receipt is then not offered. */
   booking: Pick<Booking, 'id' | 'propertyId'> & Partial<Pick<Booking, 'checkInDate' | 'propertyName'>>;
 }
 
@@ -77,7 +76,6 @@ export function BookingComplianceSection({ booking }: BookingComplianceSectionPr
 interface BookingReceiptUploadProps {
   propertyId: string;
   propertyName?: string;
-  /** The arrival day of the stay (`yyyy-MM-dd`): the day the receipt starts from. */
   day: string;
   onClose: () => void;
 }
@@ -94,7 +92,6 @@ function BookingReceiptUpload({ propertyId, propertyName, day, onClose }: Bookin
   const properties = useProperties({ mode: 'short' }, { fresh: true });
   const archive = useComplianceEvidence({ propertyId, pageSize: 1 });
   const known = Array.isArray(properties.data) ? properties.data : NO_PROPERTIES;
-  // The flat of the stay is always among the choices, even before the list comes (or when it cannot be read): the receipt of this stay can always be filed.
   const flats = known.some((flat) => flat.id === propertyId) ? known : [{ id: propertyId, name: propertyName ?? t('compliance.drawer.section.thisProperty') }, ...known];
 
   return (

@@ -48,7 +48,6 @@ describe('ConsentsStep subprocessors', () => {
   it('ConsentsStep_AiProviderWithMissingLegalDetails_ListsItAsPending', () => {
     renderStep();
 
-    // FD-21 (A8-15): an active AI provider is declared even before its legal details are known, never with "()".
     const ai = screen.getByTestId('subprocessor-DeepSeek');
     expect(ai).toHaveTextContent('DeepSeek — AI text generation');
     expect(ai).toHaveTextContent(i18n.t('onboarding.subprocessorDetailsPending'));
@@ -60,7 +59,6 @@ describe('ConsentsStep subprocessors', () => {
   it('ConsentsStep_DocumentsWithoutText_LinkTheirPagesAndSayTextInPreparation', () => {
     renderStep();
 
-    // PL-14 (A1-06): every accepted document can be read on its public page (new tab, the onboarding stays open).
     expect(screen.getByTestId('consent-tos-read')).toHaveAttribute('href', '/legale/termini');
     expect(screen.getByTestId('consent-tos-read')).toHaveAttribute('target', '_blank');
     expect(screen.getByTestId('consent-privacy-read')).toHaveAttribute('href', '/legale/privacy');

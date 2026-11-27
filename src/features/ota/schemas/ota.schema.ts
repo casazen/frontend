@@ -17,7 +17,6 @@ export const otaIntegrationFormSchema = z.object({
 
 export type OtaIntegrationFormValues = z.infer<typeof otaIntegrationFormSchema>;
 
-/** Local brand assets shared by the connection form and the integration overview. */
 export const PLATFORM_LOGO = {
   AIRBNB: '/integrations/ota/airbnb.svg',
   BOOKING_COM: '/integrations/ota/booking-com.svg',

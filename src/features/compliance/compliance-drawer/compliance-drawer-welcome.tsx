@@ -5,7 +5,6 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { clearArrival, getArrival, subscribeArrival, takeArrival } from './compliance-drawer-return';
 
-/** How long a return that never reached its page (the route led somewhere else) is kept before it is forgotten. */
 const UNREACHED_MS = 10_000;
 
 /**
@@ -29,7 +28,6 @@ export function ComplianceDrawerReturn() {
   const reached = useRef(false);
   const restored = useRef<string | null>(null);
 
-  // Once when the shell is mounted, and again when the browser brings the page back from its memory (the back button of a page that left in the same tab).
   useEffect(() => {
     takeArrival();
     const onShow = (event: PageTransitionEvent) => {
@@ -39,7 +37,6 @@ export function ComplianceDrawerReturn() {
     return () => window.removeEventListener('pageshow', onShow);
   }, []);
 
-  // A new return starts from the beginning: the page is not reached yet, and a return that never reaches it is forgotten.
   useEffect(() => {
     reached.current = false;
     if (!returning) return undefined;
@@ -49,8 +46,6 @@ export function ComplianceDrawerReturn() {
     return () => window.clearTimeout(timer);
   }, [returning, origin, route, filters]);
 
-  // Back on the page, with its filters: once for each return (moving on to another page afterwards must not bring the host back), and only
-  // when the host is not already there.
   useEffect(() => {
     if (route === undefined || filters === undefined) {
       restored.current = null;
@@ -62,7 +57,6 @@ export function ComplianceDrawerReturn() {
     if (pathname !== route || search !== filters) navigate(`${route}${filters}`, { replace: true });
   }, [origin, route, filters, pathname, search, navigate]);
 
-  // The host has moved on from the page they were put back on: the return is over.
   useEffect(() => {
     if (route === undefined) return;
     if (pathname === route) reached.current = true;

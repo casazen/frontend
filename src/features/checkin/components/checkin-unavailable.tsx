@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 
-/** What the guest sees when the link is not valid any more, or when the check-in could not be loaded (with the way to try again). */
 export function CheckInUnavailable({ invalidLink, isFetching, refetch }: { invalidLink: boolean; isFetching: boolean; refetch: () => unknown }) {
   const { t } = useTranslation();
   return (

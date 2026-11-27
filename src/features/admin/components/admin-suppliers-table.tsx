@@ -12,7 +12,6 @@ const STATUS_VARIANT: Record<AdminSupplierStatus, 'success' | 'secondary' | 'des
 };
 const DATE_ONLY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/** The suppliers of one page, with the actions on each: suspend or reactivate, and its audit trail (SU-12). */
 export function AdminSuppliersTable({
   suppliers,
   busyOrgId,
@@ -21,7 +20,6 @@ export function AdminSuppliersTable({
   onHistory,
 }: {
   suppliers: AdminSupplier[];
-  /** The supplier an action is running for: its buttons are disabled. */
   busyOrgId?: string | null;
   onSuspend: (supplier: AdminSupplier) => void;
   onReactivate: (supplier: AdminSupplier) => void;

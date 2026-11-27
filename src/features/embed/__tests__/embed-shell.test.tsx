@@ -25,7 +25,6 @@ import { EmbedShell } from '../embed-shell';
  * names the origin of the page that frames it only in the strict form of an origin.
  */
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn(), getOrgProperty: vi.fn(() => new Promise(() => undefined)) } }));
-// The widgets are the real ones: the booking widget asks the search of the site, and none of the calls reaches the network here (this file is about the shell).
 vi.mock('@/api/public-site-search.api', () => ({
   publicSiteSearchApi: {
     getStays: vi.fn(() => new Promise(() => undefined)),
@@ -55,7 +54,6 @@ function httpError(status: number): AxiosError {
 
 interface RenderOptions {
   mode?: EmbedHostMode;
-  /** The global flag `siteEmbed` (the CasaZen domain); the agency's domain follows `embedEnabled` of the host. */
   siteEmbed?: boolean;
   flagsLoading?: boolean;
   flagsFailed?: boolean;
@@ -113,23 +111,18 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
 
     expect(shell).toHaveAttribute('data-widget', widget);
     expect(shell).toHaveAttribute('data-state', 'ready');
-    // The theme of the site of the org: its theme, its font pair and its color, with the text color derived from it.
     expect(shell).toHaveAttribute('data-theme', 'mare');
     expect(shell).toHaveAttribute('data-font', 'moderno');
     expect(shell.style.getPropertyValue('--cz-public-primary')).toBe('#1a6b8f');
     expect(shell.style.getPropertyValue('--cz-public-on-primary')).not.toBe('');
     expect(shell).toHaveClass('public-site-root');
-    // Transparent, no margin, no horizontal scroll, and a height that is the one of the content.
     expect(shell.style.background).toBe('transparent');
-    // The margin and the scroll of the document are set by an effect of the shell, after the commit that shows the widget: waited for, never read at once.
     await waitFor(() => {
       expect(document.body.style.margin).toBe('0px');
       expect(document.documentElement.style.overflowX).toBe('hidden');
     });
     expect(shell.className).not.toMatch(/min-h-screen|h-screen|\bvh\b/);
-    // No header, footer, cookie banner, skip link or favourites: none of the frame of the booking site.
     expect(screen.queryByTestId('public-site-shell')).not.toBeInTheDocument();
-    // The wrapper holds the widget (`main`) and nothing else: no header or footer of the site around it. (A widget may have a header of its own, inside `main`.)
     expect([...shell.children].map((child) => child.tagName)).toEqual(['MAIN']);
     expect(screen.queryByRole('contentinfo')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cookie-consent-banner')).not.toBeInTheDocument();
@@ -142,7 +135,6 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
   it('embedShell_PutsTheDocumentBackWhenItGoes', async () => {
     renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`);
     await screen.findByTestId('embed-widget-booking');
-    // What the shell puts on the document is written by effects: it has to be there before there is something to put back.
     await waitFor(() => {
       expect(document.documentElement.style.overflowX).toBe('hidden');
       expect(document.body.style.margin).toBe('0px');
@@ -157,9 +149,7 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
   });
 
   it('embedShell_ShellStyles_NeverUseTheHeightOfTheWindow', () => {
-    // The frame is as tall as its content: a rule in `vh` would make the frame grow without end.
     for (const file of ['embed-shell.tsx', 'embed-states.tsx', 'booking-widget.tsx', 'property-widget.tsx', 'guest-access-widget.tsx']) {
-      // The code, not the comments that say what it avoids.
       const code = readFileSync(resolve(process.cwd(), 'src/features/embed', file), 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/\/\/.*$/gm, '');
@@ -174,13 +164,10 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
     const [frame, ...others] = buildEmbedRoutes(mode);
 
     expect(others).toEqual([]);
-    // The layout has no path of its own: it never matches by itself, so `/embed` alone is not a page of a widget.
     expect(frame.path).toBeUndefined();
     expect(frame.index).toBeUndefined();
-    // The three widgets and, last, the splat that takes every other address of `/embed` (it names no widget).
     expect(frame.children?.map((child) => child.path)).toEqual([...paths, EMBED_CATCH_ALL_PATH]);
     expect(frame.children?.map((child) => embedWidgetOf([child]))).toEqual(['booking', 'property', 'guest-access', null]);
-    // The redesign of the console (`data-ui="v2"`) never reaches a page of guests.
     expect(isNotRedesignedMatch([{ route: frame }])).toBe(true);
   });
 
@@ -195,7 +182,6 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
     });
     await screen.findByTestId('embed-widget-property');
 
-    // The same element: the conversation with the page (the first `ready`, the bridge that is attached) is not started again.
     expect(screen.getByTestId('embed-shell')).toBe(shell);
     expect(shell).toHaveAttribute('data-widget', 'property');
     expect(getPublicOrg).toHaveBeenCalledTimes(1);
@@ -294,7 +280,6 @@ describe('the parent parameter (the proof of the strict origin)', () => {
   });
 });
 
-/** A widget that says what the shell gave it. */
 function Probe() {
   const embed = useEmbed();
   const outlet = useOutletContext<{ org?: PublicOrgDto }>();
@@ -364,7 +349,6 @@ describe('what the shell gives the widget it frames', () => {
 });
 
 describe('the language of the page (AC4)', () => {
-  // The entry of the guest area is the widget that asks the server for nothing: what the language of the page does is seen in its words.
   it('embedShell_LangEn_GivesEnglishTextsAndTheLangOfTheDocument', async () => {
     renderEmbed(`/embed/villa-rossi/guest-access?lang=en&${ADDRESS}`);
 
@@ -377,7 +361,6 @@ describe('the language of the page (AC4)', () => {
 
   it.each([['?lang=de&'], ['?lang=&'], ['?']])('embedShell_AddressWith%s_GivesItalian', async (query) => {
     await i18n.changeLanguage('en');
-    // The page that frames the widget was in English: the document ends in Italian only if the shell puts it there.
     document.documentElement.lang = 'en';
     renderEmbed(`/embed/villa-rossi/guest-access${query}${ADDRESS}`);
 
@@ -417,7 +400,6 @@ describe('the states of the shell (AC7)', () => {
     expect(await screen.findByTestId('embed-not-found')).toBeInTheDocument();
     expect(screen.queryByTestId('embed-error')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    // The loading state before it had written a `noindex` already: the title is what says that the effect of THIS state ran.
     await waitFor(() => {
       expect(document.title).toBe(i18n.t('embed.notFound.title'));
       expect(robots()).toBe('noindex,nofollow');
@@ -425,7 +407,6 @@ describe('the states of the shell (AC7)', () => {
   });
 
   it('embedShell_Org404WithAnOlderAnswerInTheCache_IsStillNotFound', async () => {
-    // TanStack Query keeps the data of an earlier answer on an error: a 404 must not show the site it used to be.
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['public-org', 'villa-rossi'], ORG);
     getPublicOrg.mockRejectedValue(httpError(404));
@@ -442,7 +423,6 @@ describe('the states of the shell (AC7)', () => {
     const retry = await screen.findByRole('button', { name: i18n.t('shared.errorFallback.tryAgain') });
     expect(screen.getByTestId('embed-error')).toHaveAttribute('role', 'alert');
     expect(screen.queryByTestId('embed-not-found')).not.toBeInTheDocument();
-    // The loading state before it had written a `noindex` already: the title is what says that the effect of THIS state ran.
     await waitFor(() => {
       expect(document.title).toBe(i18n.t('embed.error.title'));
       expect(robots()).toBe('noindex,nofollow');
@@ -465,8 +445,6 @@ describe('the states of the shell (AC7)', () => {
     renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`);
     await screen.findByTestId('embed-widget-booking');
 
-    // The title and the `noindex` are written by an effect, after the commit that shows the widget, and the loading state had written a `noindex` already:
-    // the title is what says that the effect of THIS state has run, so the two are waited for together.
     await waitFor(() => {
       expect(document.title).toBe('Prenota · Villa Rossi');
       expect(robots()).toBe('noindex,nofollow');
@@ -476,13 +454,11 @@ describe('the states of the shell (AC7)', () => {
 
 describe('the agency domain (AC1, AC2: the proof of the isolation)', () => {
   const HOST = { host: 'prenota.villa-rossi.example.test', slug: 'villa-rossi', displayName: 'Villa Rossi' };
-  /** The route table of an agency's domain with a stand-in for the booking site of the app. */
   const hostRoutes = () => buildHostSiteRoutes([{ path: '/book/:orgSlug', element: <p data-testid="booking-site" /> }]);
 
   beforeEach(() => setHostSite({ ...HOST, embedEnabled: true }));
 
   it.each(WIDGETS)('embedRoutes_hostDomain_servesOnlyTheHostOrg_%s', async (widget, path) => {
-    // Whatever the address says, the org is the one of the host: there is no parameter that names another.
     renderEmbed(`/embed/${path}?${ADDRESS}&org=other-org&orgSlug=other-org`, { mode: 'host', routes: hostRoutes() });
 
     await screen.findByTestId(`embed-widget-${widget}`);
@@ -573,7 +549,6 @@ describe('the agency domain (AC1, AC2: the proof of the isolation)', () => {
       kind: 'site',
       site: { ...HOST, embedEnabled: true, tracking: { gtmContainerId: 'GTM-ABC123' } },
     });
-    // An answer without the fields (an older backend) is the site as it was: the pages stay off.
     const older = await resolveHostSite(HOST.host, vi.fn().mockResolvedValue({ ...resolved, embedEnabled: undefined, tracking: undefined }));
     expect(older).toEqual({ kind: 'site', site: HOST });
   });
@@ -605,7 +580,6 @@ describe('the route table of the CasaZen domain', () => {
   ])('appRoutes_%s_IsTheCatchAllOfTheFrameNeverThe404PageOfTheApp', (path) => {
     const matches = matchRoutes(appRoutes, path);
 
-    // The splat of the frame, not the `*` of the app: that one is a page with links, which the router follows inside the frame of another website.
     expect(matches?.at(-1)?.route.path).toBe(EMBED_CATCH_ALL_PATH);
     expect(embedWidgetOf(matches?.map(({ route }) => route) ?? [])).toBeNull();
     expect(isNotRedesignedMatch(matches)).toBe(true);
@@ -627,12 +601,9 @@ describe('an address under /embed that is no widget: the frame never leads to th
     '/embed/v1/embed.js',
     '/embed/v1/anything',
   ])('embedShell_%s_OnTheCasazenDomain_SaysThereIsNothingHere_WithNoLinkAndAsksNothing', async (path) => {
-    // The routes of the CasaZen domain as the app has them: the frame, then the `*` of the app, a 404 page with links (`NotFoundPage`).
     const routes: RouteObject[] = [...buildEmbedRoutes('platform'), { path: '*', element: <a href="/">home of the app</a> }];
     renderEmbed(`${path}${path.includes('?') ? '&' : '?'}${ADDRESS}`, { routes });
 
-    // The address is served as a frame like the others (`vercel.json`): a link of the 404 page is a navigation of the router inside that frame, which no
-    // header looks at again, and it would bring the whole site (the guest area, the checkout) into the frame of another website.
     const shell = await screen.findByTestId('embed-shell');
     expect(shell).toHaveAttribute('data-state', 'unavailable');
     expect(screen.getByTestId('embed-unavailable')).toBeInTheDocument();

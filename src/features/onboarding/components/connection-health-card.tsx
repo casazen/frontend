@@ -27,10 +27,6 @@ const STATE_VIEW: Record<ConnectionStateKey, { tone: StatusTone; Icon: LucideIco
   unknown: { tone: 'warning', Icon: CircleHelp },
 };
 
-/**
- * The state of the connection as the card says it. A connection never made (`null`) is told as such; a status this version of the app does not know (the
- * server is newer) is never read as «connected»: it says the state is not available.
- */
 function stateOf(status: ConnectionHealth['status'] | string | undefined): ConnectionStateKey {
   if (status === null || status === undefined) return 'never';
   if (status === 'Connected') return 'connected';

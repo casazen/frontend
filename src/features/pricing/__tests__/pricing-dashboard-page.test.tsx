@@ -31,7 +31,6 @@ vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children?: React.ReactNode }) => createElement('div', null, children),
 }));
 
-// The page reads only a few fields of each hook result: partial objects are cast to the full type.
 type ConfigResult = ReturnType<typeof pricingQueries.usePricingAdapterConfig>;
 type SuggestionsResult = ReturnType<typeof pricingQueries.useSeasonalSuggestions>;
 type SaveResult = ReturnType<typeof pricingQueries.useSavePricingAdapterConfig>;
@@ -259,7 +258,6 @@ describe('PricingDashboardPage', () => {
 
     renderPage();
     fireEvent.click(screen.getByTestId('pricing-open-rules'));
-    // September moves to the high season, August leaves it; +40% in high season.
     fireEvent.click(screen.getByTestId('high-month-9'));
     fireEvent.click(screen.getByTestId('high-month-8'));
     fireEvent.change(screen.getByTestId('high-season-multiplier'), { target: { value: '1.4' } });

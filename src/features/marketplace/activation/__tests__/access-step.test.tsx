@@ -17,7 +17,6 @@ import {
   renderActivation,
 } from './activation-fixtures';
 
-/** Who the person is and whether the guided steps of the activation are on: the access step reads both. */
 const host = vi.hoisted(() => ({ administrator: true, guidedSteps: true }));
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
@@ -35,20 +34,17 @@ vi.mock('@/hooks/use-workspace', () => ({
 }));
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { octorateOnboarding: host.guidedSteps } }) }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const ACCESS_STEP_URL = `${ACTIVATION_PATH}?propertyId=prop-1&step=access`;
 const SECRET_USERNAME = 'host-login-4711';
 const SECRET_PASSWORD = 'Pa$$-4711-secret';
 
-/** The host has one property, linked to the channel manager, and the portal asks for what `requirements` says. */
 function givenAPortalThatAsksFor(requirements: string[]) {
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property()]);
   vi.mocked(getActivationPlan).mockImplementation(async (_kind, _code, propertyId) => plan({ propertyId, requirements }));
 }
 
-/** Everything the browser keeps for this tab and for the origin, as one text. */
 function everythingTheBrowserKeeps(): string {
   const dump = (storage: Storage) => Array.from({ length: storage.length }, (_, index) => storage.key(index) ?? '').map((key) => `${key}=${storage.getItem(key)}`);
   return [...dump(sessionStorage), ...dump(localStorage)].join('\n');
@@ -76,7 +72,6 @@ describe('the access step: it asks only for what the portal asks for', () => {
     expect(screen.getByTestId('activation-username')).toBeInTheDocument();
     expect(screen.getByTestId('activation-password')).toBeInTheDocument();
     expect(screen.queryByTestId('activation-panel-access')).not.toBeInTheDocument();
-    // The channel manager is named by nobody here, and the channel is the one of the catalog.
     expect(screen.getByLabelText(i18n.t('marketplace.activation.access.hotelId.label', { property: 'Casa Rosa', name: 'Booking.com' }))).toBeInTheDocument();
   });
 
@@ -102,7 +97,6 @@ describe('the access step: it asks only for what the portal asks for', () => {
     givenAPortalThatAsksFor([]);
     renderActivation(ACCESS_STEP_URL);
 
-    // The address names the access step, which this portal does not have: the wizard opens on the first step.
     await onStep('property');
     expect(screen.queryByText(i18n.t('marketplace.activation.steps.access.label'))).not.toBeInTheDocument();
   });
@@ -116,18 +110,14 @@ describe('the access step: what the person types is not kept', () => {
     fireEvent.change(await screen.findByTestId('activation-hotel-id-prop-1', {}, WAIT), { target: { value: '5551234' } });
     fireEvent.change(screen.getByTestId('activation-username'), { target: { value: SECRET_USERNAME } });
     fireEvent.change(screen.getByTestId('activation-password'), { target: { value: SECRET_PASSWORD } });
-    // What was typed is on the screen (the state of the page)...
     expect(screen.getByTestId('activation-username')).toHaveValue(SECRET_USERNAME);
     expect(screen.getByTestId('activation-password')).toHaveValue(SECRET_PASSWORD);
-    // ...and in no address.
     expect(currentLocation()).not.toContain(SECRET_USERNAME);
     expect(currentLocation()).not.toContain(encodeURIComponent(SECRET_PASSWORD));
 
-    // The person leaves: the shell writes the draft as the page goes away.
     cleanup();
 
     const draft = readWizardDraft(WIZARD_DRAFT_ID, SCOPE);
-    // What is not a secret is the draft (the identifier of the property on the channel): the scan does cover the draft.
     expect(draft?.values.hotelIds).toEqual({ 'prop-1': '5551234' });
     expect(draft?.step).toBe('access');
     for (const kept of [JSON.stringify(draft), everythingTheBrowserKeeps()]) {
@@ -135,7 +125,6 @@ describe('the access step: what the person types is not kept', () => {
       expect(kept).not.toContain(SECRET_PASSWORD);
     }
 
-    // The same wizard opens again (a reload, a return from the panel): the draft is back, the login is not.
     renderActivation(ACCESS_STEP_URL);
     expect(await screen.findByTestId('activation-username', {}, WAIT)).toHaveValue('');
     expect(screen.getByTestId('activation-password')).toHaveValue('');
@@ -163,7 +152,6 @@ describe('the access step: the access on the panel of the channel manager', () =
     givenAPortalThatAsksFor(['panelAccess']);
     renderActivation(ACCESS_STEP_URL);
 
-    // The sentence of the guided steps that says who does this step, and nothing that would meet a 403.
     expect(await screen.findByTestId('activation-panel-admin-only', {}, WAIT)).toHaveTextContent(i18n.t('onboardingPlan.panel.adminOnly'));
     expect(primaryButton()).toBeDisabled();
   });

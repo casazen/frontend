@@ -5,7 +5,6 @@ import { getProblemCode } from '@/lib/api-errors';
 import type { LeaseDraftSaved, LeaseOrigin } from '@/types';
 import { stepPayload, type DataStep, type SentParties, type WizardValues } from './wizard-model';
 
-/** A change is sent this long after the last one, so a word typed letter by letter is one save. */
 const SAVE_DELAY_MS = 350;
 
 /**
@@ -17,16 +16,13 @@ export type DraftSaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error' 
 export interface SavedStep {
   step: DataStep;
   saved: LeaseDraftSaved;
-  /** The rows sent, for the step of the parties. */
   parties?: SentParties;
 }
 
 interface SaverOptions {
   leaseId: string;
-  /** The version the draft was read on. */
   version: number;
   origin: LeaseOrigin;
-  /** The form as it is now: the saver sends what the form holds when it sends, not what it held when the change was queued. */
   getValues: () => WizardValues;
   onSaved: (result: SavedStep) => void;
 }
@@ -35,13 +31,6 @@ function problemCodeOf(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
 }
 
-/**
- * Saves the draft of a lease on the server while it is typed (`PATCH /leases/:id/draft`): a change is queued by step, sent after a
- * short pause, one request at a time, and the last value typed wins. Every request carries the version of the draft; the answer gives
- * the next one. A value that is wrong is saved all the same (the server says what is missing). When the version is stale (another
- * tab or device saved first, `lease_draft_conflict`) nothing is written, saving stops and `status` says `conflict`: the person
- * reloads the draft, nothing is overwritten. Leaving the page sends what is still waiting.
- */
 export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSaved }: SaverOptions) {
   const [status, setStatus] = useState<DraftSaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -58,10 +47,6 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
   const stopped = useRef(false);
   const sending = useRef(false);
 
-  /**
-   * A stale version or a lease that is not a draft any more stops the saving for good (and says so in `status`): true for those two.
-   * Any other error is a save that will be tried again.
-   */
   const stopOn = useCallback((error: unknown): boolean => {
     const code = problemCodeOf(error);
     if (code !== 'lease_draft_conflict' && code !== 'lease_not_draft') return false;
@@ -70,7 +55,6 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
     return true;
   }, []);
 
-  /** Sends every step that is waiting, lowest first, until none is; false at the first request that fails (it stays waiting). */
   const drain = useCallback(async (): Promise<boolean> => {
     if (stopped.current) return false;
     if (waiting.current.size === 0) return true;
@@ -103,7 +87,6 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
     return chain.current;
   }, [drain]);
 
-  /** A change in `step`: it is sent after the pause. */
   const queue = useCallback(
     (step: DataStep) => {
       if (stopped.current) return;
@@ -115,21 +98,17 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
     [run],
   );
 
-  /** Sends what is waiting now and says whether everything is saved. */
   const flush = useCallback((): Promise<boolean> => {
     clearTimeout(timer.current);
     return run();
   }, [run]);
 
-  /** The version after a change made outside the saver (the confirmation of the review): the next save is made on it. */
   const adopt = useCallback((next: number) => {
     versionRef.current = next;
   }, []);
 
-  /** The version the next save, or the confirmation of the review, is made on. */
   const getVersion = useCallback(() => versionRef.current, []);
 
-  // Leaving the page (or the step of another draft) sends what is waiting; nothing typed is lost.
   useEffect(
     () => () => {
       clearTimeout(timer.current);
@@ -138,7 +117,6 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
     [run],
   );
 
-  // A change that is not saved yet is not lost silently when the tab is closed.
   const unsaved = status === 'pending' || status === 'saving' || status === 'error';
   useEffect(() => {
     if (!unsaved) return undefined;

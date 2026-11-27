@@ -21,7 +21,6 @@ const QUICK_ACTIONS: ReadonlyArray<{ part: OnboardingPartKey; focus?: LaunchFocu
   { part: 'properties', labelKey: 'onboardingPlan.integration.quick.properties' },
 ];
 
-/** The senders in the order the page lists them, with the key of their words. */
 const SENDER_ROWS: ReadonlyArray<{ field: keyof SenderCounts; labelKey: string }> = [
   { field: 'channelManager', labelKey: 'onboardingPlan.integration.senders.channelManager' },
   { field: 'casaZen', labelKey: 'onboardingPlan.integration.senders.casaZen' },
@@ -31,7 +30,6 @@ const SENDER_ROWS: ReadonlyArray<{ field: keyof SenderCounts; labelKey: string }
 
 const CHANNEL_STATUSES: ReadonlySet<string> = new Set(['Draft', 'Sending', 'Accepted', 'Published', 'ToFix', 'ManagedOnChannel']);
 
-/** The parts of the overview this version knows, in the order of the plan and once each: a part it does not know has no title to show, never a bare key. */
 function knownIntegrationParts(parts: readonly IntegrationPart[] | undefined): IntegrationPart[] {
   if (!Array.isArray(parts)) return [];
   const seen = new Set<string>();
@@ -44,7 +42,6 @@ function knownIntegrationParts(parts: readonly IntegrationPart[] | undefined): I
   return known.sort((a, b) => a.order - b.order);
 }
 
-/** A count the server sent as a number; anything else is 0 (never `NaN` on screen). */
 function count(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 }
@@ -82,7 +79,6 @@ export function ReopenPartsList({ parts, senders, channels }: ReopenPartsListPro
     setUnavailablePart(null);
     reopen.mutate(code, {
       onSuccess: (answer) => {
-        // The wizard of the part, and for the compliance wizard the step of the sender the server names (or the one the quick action is about).
         const target = resolveLaunchTarget(answer.launchTarget, answer.focus === 'sender' ? 'sender' : (focus ?? null), null, hasPermission, undefined, flags);
         if (target) navigate(target.to);
         else setUnavailablePart(code);

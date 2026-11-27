@@ -4,10 +4,6 @@ import { demoUrl } from './helpers/demo-profile';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import { test } from './test';
 
-/**
- * The contract a host creates, from the first question to the saved sheet, for every type the wizard lists.
- * Demo API (the L2 stack). The Railway test API needs Auth0, which this environment does not have.
- */
 const PROPERTY = buildCreatedProperty({
   id: 'prop-contract-e2e',
   name: 'Casa Trastevere',

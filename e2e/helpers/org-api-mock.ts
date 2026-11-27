@@ -42,7 +42,6 @@ function buildDemoMeBody(profile: string) {
       isActive: true,
       createdAt: '2026-01-01T00:00:00Z',
       updatedAt: '2026-01-01T00:00:00Z',
-      // No onboardingCompletedAt for onboarding profile (#277)
       onboardingCompletedAt: null,
       orgId: null,
       org: null,
@@ -68,7 +67,6 @@ function buildDemoMeBody(profile: string) {
     isActive: true,
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: '2026-01-01T00:00:00Z',
-    // Set onboardingCompletedAt for all completed profiles (#277)
     onboardingCompletedAt: '2026-01-01T00:00:00Z',
     orgId: DEMO_ORG.id,
     org: DEMO_ORG,
@@ -121,10 +119,6 @@ interface MockOrgOptions {
   orgId?: string;
 }
 
-/**
- * Mocks GET /api/users/me so the caller profile carries an Org (#202, AC9/AC11).
- * Non-GET verbs fall through. Register before navigation.
- */
 export async function mockCurrentUserWithOrg(page: Page, options: MockOrgOptions = {}): Promise<void> {
   const org = {
     id: options.orgId ?? 'org-e2e-0001',
@@ -169,7 +163,6 @@ interface MockEntitlementOptions {
   orgId?: string;
 }
 
-/** Mocks GET /api/orgs/me/entitlement (#202, AC8) — limits, usage, and create gating. */
 export async function mockEntitlement(page: Page, options: MockEntitlementOptions = {}): Promise<void> {
   const maxProperties = options.maxProperties ?? 3;
   const properties = options.properties ?? maxProperties;
@@ -217,7 +210,6 @@ const DEFAULT_PLANS = [
   },
 ];
 
-/** Mocks GET /api/orgs/plans — plan catalogue for onboarding and settings. */
 export async function mockPlansCatalog(page: Page): Promise<void> {
   await page.route('**/api/orgs/plans', async (route) => {
     if (route.request().method() !== 'GET') {
@@ -239,7 +231,6 @@ const DEFAULT_BILLING_PLANS = [
   { tier: 'Scale', displayName: 'Scale', priceMonthly: 199, currency: 'EUR', unitAllowance: -1, features: [], purchasable: true },
 ];
 
-/** Mocks GET /api/billing/plans (plans page, PL-12). */
 export async function mockBillingPlans(page: Page): Promise<void> {
   await page.route('**/api/billing/plans', async (route) => {
     if (route.request().method() !== 'GET') {
@@ -251,7 +242,6 @@ export async function mockBillingPlans(page: Page): Promise<void> {
   });
 }
 
-/** Mocks GET /api/billing/subscription with the given status (`none` = never subscribed). */
 export async function mockBillingSubscription(
   page: Page,
   options: { planTier?: PlanTier; status?: string } = {},
@@ -277,7 +267,6 @@ export async function mockBillingSubscription(
   });
 }
 
-/** Mocks PATCH /api/admin/orgs/{id}/plan for admin plan changes. */
 export async function mockAdminUpdateOrgPlan(page: Page): Promise<void> {
   await page.route('**/api/admin/orgs/*/plan', async (route) => {
     if (route.request().method() !== 'PATCH') {

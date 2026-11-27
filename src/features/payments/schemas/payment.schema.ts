@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-/** A payment the host received outside CasaZen (SR-06b): cash or a bank transfer, on the day it came in. */
 export const paymentFormSchema = z.object({
   bookingId: z.string().min(1, 'payment.validation.bookingId.required'),
   amount: z.number().min(0.01, 'payment.validation.amount.min'),
@@ -11,9 +10,6 @@ export const paymentFormSchema = z.object({
 
 export type PaymentFormValues = z.infer<typeof paymentFormSchema>;
 
-// Payment status labels are now resolved via getPaymentStatusLabel() from @/lib/i18n-labels.
-// Payment method labels are now resolved via getPaymentMethodLabel() from @/lib/i18n-labels.
-// Variants stay here as a UI-only concern.
 export const PAYMENT_STATUS_VARIANTS: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'secondary'> = {
   Pending: 'warning',
   Processing: 'default',

@@ -1,7 +1,6 @@
 import { AxiosError } from 'axios';
 import { planPagePath, type BillingContextKey } from './billing-routes';
 
-// Re-exported from i18n-labels.ts — canonical home for i18n-aware label functions
 export { getPlanLimitMessage, getPlanUpgradeCta } from './i18n-labels';
 
 /**

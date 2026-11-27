@@ -26,18 +26,15 @@ export const SEARCH_PARAMS = {
   favorites: 'favorites',
 } as const;
 
-/** The amenities of the filter, as the names of the `PropertyAmenity` enum the server takes, in the order they are offered. */
 export const FILTER_AMENITIES = ['Pool', 'FreeParking', 'WiFi', 'AirConditioning', 'Terrace', 'Washer', 'Crib'] as const;
 export type FilterAmenity = (typeof FILTER_AMENITIES)[number];
 
-/** The rules of the house the filter knows (`rules` of the API): the home allows all that are asked. */
 export const FILTER_RULES = ['pets', 'children', 'selfCheckin', 'smoking', 'parties'] as const;
 export type FilterRule = (typeof FILTER_RULES)[number];
 
 export const SORTS: readonly PublicStaysSort[] = ['recommended', 'priceAsc', 'priceDesc', 'rating', 'largest'];
 
 export interface SearchFilters {
-  /** Price per night, in the currency of the homes (`SearchFacets.currency`). */
   minPrice: number | null;
   maxPrice: number | null;
   bedrooms: number | null;
@@ -49,12 +46,10 @@ export interface SearchFilters {
 }
 
 export interface SearchState {
-  /** The id of the place (a destination of the site), empty for everywhere. */
   where: string;
   filters: SearchFilters;
   sort: PublicStaysSort;
   view: 'list' | 'map';
-  /** Only the homes saved with the heart on this device. */
   onlyFavorites: boolean;
 }
 
@@ -81,12 +76,10 @@ function readList<T extends string>(params: URLSearchParams, key: string, allowe
   return allowed.filter((item) => wanted.has(item));
 }
 
-/** The search as the address says it; what is not understood is left out. */
 export function readSearch(params: URLSearchParams): SearchState {
   let minPrice = readInt(params, SEARCH_PARAMS.minPrice, 0, 100_000);
   let maxPrice = readInt(params, SEARCH_PARAMS.maxPrice, 0, 100_000);
   if (minPrice !== null && maxPrice !== null && maxPrice < minPrice) {
-    // A range upside down means nothing: keep the lower bound, which is the one a person moves first.
     maxPrice = null;
     minPrice = minPrice > 0 ? minPrice : null;
   }
@@ -115,10 +108,6 @@ function setOrDelete(params: URLSearchParams, key: string, value: string | null)
   else params.delete(key);
 }
 
-/**
- * `params` with the changes of `patch` written; the stay and anything else in the address stay as they are. A value that is the
- * default (no filter, the recommended sort, the list view) is not written, so the address of an untouched search is short.
- */
 export function writeSearch(params: URLSearchParams, patch: Partial<Omit<SearchState, 'filters'>> & { filters?: Partial<SearchFilters> }): URLSearchParams {
   const current = readSearch(params);
   const next = new URLSearchParams(params);
@@ -140,7 +129,6 @@ export function writeSearch(params: URLSearchParams, patch: Partial<Omit<SearchS
   return next;
 }
 
-/** How many filters are on: the number on the «Filtri» button. The place, the sort and the hearts are not filters of the sheet. */
 export function activeFilterCount(filters: SearchFilters): number {
   return (
     (filters.minPrice || filters.maxPrice ? 1 : 0) +
@@ -152,7 +140,6 @@ export function activeFilterCount(filters: SearchFilters): number {
   );
 }
 
-/** The call to the server for this stay and this search: the filters travel as the API names them. */
 export function toStaysQuery(stay: StayState, search: SearchState): PublicStaysQuery {
   const { filters } = search;
   return {

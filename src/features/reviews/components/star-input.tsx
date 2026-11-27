@@ -5,21 +5,13 @@ import { cn } from '@/lib/utils';
 import { REVIEW_MAX_RATING } from '@/types';
 
 interface StarInputProps {
-  /** The mark chosen, 1 to 5; 0 while there is none. */
   value: number;
   onChange: (value: number) => void;
-  /** What the mark is about, for the group ("Com'è andato il soggiorno?"). */
   legend: string;
-  /** Why the mark is missing, when it is: told to a screen reader at once. */
   error?: string;
   disabled?: boolean;
 }
 
-/**
- * The mark of a review as five stars, a group of radio buttons: Tab enters it, the arrows choose a star (and say "4 stelle su 5"),
- * a click or a tap chooses it. Real radio buttons under the pictures, so the keyboard and the screen reader get the behaviour of the
- * browser and not a copy of it. Every star is a 44 px target; the filled shape, not the colour alone, shows the mark.
- */
 export function StarInput({ value, onChange, legend, error, disabled }: StarInputProps) {
   const { t } = useTranslation();
   const name = useId();

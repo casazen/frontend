@@ -20,7 +20,6 @@ const open = { expected: true, read: 'ok', watchOver: false, retrying: false } a
 
 describe('the line of the channel manager', () => {
   it('mirrorLineOf_PropertyNotConnected_HasNoLineAtAll', () => {
-    // Nothing is said about a connection that is not there: a read that finds no mirror on a property that is not mirrored is no line.
     expect(mirrorLineOf({ ...open, expected: false, sync: null })).toBeNull();
     expect(mirrorLineOf({ ...open, expected: null, sync: null })).toBeNull();
     expect(mirrorLineOf({ ...open, expected: false, read: 'idle', sync: undefined })).toBeNull();
@@ -55,12 +54,10 @@ describe('the line of the channel manager', () => {
   });
 
   it('mirrorLineOf_CreationRefusedBecauseTheDatesAreTaken_IsSaidAsThatAndKeepsItsRetryOnlyWhereTheApiOffersIt', () => {
-    // The channel manager already has the nights, so there is no reservation of CasaZen on it that could differ from the booking.
     const taken = { state: 'Conflict', errorCode: 'octorate_dates_unavailable' } as const;
 
     expect(mirrorLineOf({ ...open, sync: sync({ ...taken, canRetry: true }) })).toEqual({ kind: 'datesTaken', reasonKey: null, canRetry: true });
     expect(mirrorLineOf({ ...open, sync: sync({ ...taken, canRetry: false }) })?.canRetry).toBe(false);
-    // A conflict of another kind (the reservation changed there) is still a difference between the two versions.
     expect(mirrorLineOf({ ...open, sync: sync({ state: 'Conflict', errorCode: 'octorate_reservation_changed', canRetry: true }) })?.kind).toBe('conflict');
   });
 
@@ -91,7 +88,6 @@ describe('the line of the channel manager', () => {
   });
 
   it('mirrorLineOf_StillBeingSentWhenTheResultStoppedFollowingIt_SaysNoAnswerHasComeInsteadOfClaimingItIsOnItsWay', () => {
-    // The last read said "being sent" a minute and a half ago and nobody asks any more: the line must not go on saying it as if it knew.
     expect(mirrorLineOf({ ...open, sync: sync({ state: 'Pending' }), watchOver: false })?.kind).toBe('pending');
     expect(mirrorLineOf({ ...open, sync: sync({ state: 'Pending' }), watchOver: true })?.kind).toBe('waiting');
   });
@@ -106,7 +102,6 @@ describe('the line of the channel manager', () => {
   });
 
   it('mirrorLineOf_NotFound_IsNotFoundWhateverTheCacheStillHolds', () => {
-    // A query keeps its old data when a later read fails: a 404 must not show the state of the booking it used to be.
     expect(mirrorLineOf({ ...open, sync: sync({ state: 'Synced' }), read: 'notFound' })?.kind).toBe('notFound');
     expect(mirrorLineOf({ ...open, sync: sync({ state: 'Pending' }), read: 'notFound' })?.kind).toBe('notFound');
   });
@@ -147,14 +142,12 @@ describe('when the result keeps asking', () => {
   });
 
   it('shouldWatchMirror_PropertyOfWhichNothingIsKnownAndNoRowYet_KeepsAskingWhileTheTimeIsNotOver', () => {
-    // The push writes the row a moment after the booking: a read made before it finds none, which is no answer for a property not known to be unconnected.
     expect(shouldWatchMirror({ ...watch, expected: null, sync: null })).toBe(true);
     expect(shouldWatchMirror({ ...watch, expected: null, sync: undefined })).toBe(true);
     expect(shouldWatchMirror({ ...watch, expected: null, sync: null, watchOver: true })).toBe(false);
   });
 
   it('mirrorLineOf_PropertyOfWhichNothingIsKnownAndNoRowYet_HasNoLineWhileItAsks', () => {
-    // Asking is not saying: with no row and nothing known there is no line to show, as before.
     expect(mirrorLineOf({ ...open, expected: null, sync: null })).toBeNull();
     expect(mirrorLineOf({ ...open, expected: null, sync: null, watchOver: true })).toBeNull();
   });
@@ -205,7 +198,6 @@ describe('how the guest pays, as the result tells it', () => {
     [{ arrangement: 'onSite', portal: false, hasLink: false }, 'onSite'],
     [{ arrangement: 'bankTransfer', portal: false, hasLink: false }, 'bankTransfer'],
     [{ arrangement: '', portal: false, hasLink: false }, 'none'],
-    // The portal collects whatever was chosen before the reservation was linked.
     [{ arrangement: 'paymentLink', portal: true, hasLink: true }, 'portal'],
   ] as const)('paymentLineOf_%j_Is_%s', (input, expected) => {
     expect(paymentLineOf(input)).toBe(expected);
@@ -229,7 +221,6 @@ describe('the one next step', () => {
   });
 
   it('nextStepOf_DatesTakenOnTheChannelManager_IsToCheckTheCalendarsNeverToRetry', () => {
-    // A new try meets the same refusal: the button, where the API offers it, stays on the line, and the host is sent to the calendars.
     expect(nextStepOf(line('datesTaken', true), 'onSite')).toBe('checkChannelManager');
     expect(nextStepOf(line('datesTaken', false), 'linkMissing')).toBe('checkChannelManager');
   });

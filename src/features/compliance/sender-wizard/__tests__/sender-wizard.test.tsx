@@ -53,7 +53,6 @@ vi.mock('@/components/layout/page-header', () => ({
     createElement('div', null, createElement('h1', null, title), description ? createElement('p', { 'data-testid': 'page-description' }, description) : null),
 }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
@@ -122,7 +121,6 @@ function problem(status: number, data: unknown): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
-/** What the server holds: the sender and the answer of the test. The fake applies the same rules as the endpoints it stands for (the sender in effect is the one set, `Active` only when the test verified). */
 let server: PropertySender;
 let testResult: SenderConnectionTest;
 
@@ -194,12 +192,10 @@ async function onStep(step: string) {
 
 async function open(url?: string) {
   const view = renderWizard(url);
-  // The shell shows a spinner under its own test id until the draft of the server is read: the wizard is open when its first step is.
   await screen.findByTestId('sender-choice-step', undefined, WAIT);
   return view;
 }
 
-/** From the first step to the test of a channel manager that was not the sender: the consent, the confirmation of the change, the credentials left out and the panel passed. */
 async function toTheTest() {
   click('sender-option-ChannelManager');
   await waitFor(() => expect(screen.getByTestId('sender-delegation-consent')).toBeInTheDocument(), WAIT);
@@ -228,7 +224,6 @@ beforeEach(async () => {
 
 afterEach(cleanup);
 
-// E03/F01/US02/T02 (NF-42, NF-49, NF-04, NF-05).
 describe('SenderWizardPage: the way into the wizard', () => {
   it('SenderWizardPage_PersonWhoMayNotWriteTheProperties_AsksNothingOfTheServerAndSaysSo', async () => {
     workspace.permissions = ['property.read'];
@@ -249,7 +244,6 @@ describe('SenderWizardPage: the way into the wizard', () => {
   });
 
   it('SenderWizardPage_PropertyTheCallerDoesNotReach_IsSaidNotFoundAndNeverAWizard', async () => {
-    // A property of the organization outside the reach of the caller answers 403 to the read, which the API turns into `null`: «not found», never the no-access page, never a wizard.
     vi.mocked(propertySenderApi.get).mockResolvedValue(null);
     renderWizard();
 
@@ -262,7 +256,6 @@ describe('SenderWizardPage: the way into the wizard', () => {
     const { client } = await open();
     expect(wizard()).toBeInTheDocument();
 
-    // The property is gone (or no longer the caller's): the query keeps the last good answer next to the error, and the page does not show it.
     vi.mocked(propertySenderApi.get).mockRejectedValue(problem(404, { code: 'property_not_found' }));
     await act(async () => {
       await client.invalidateQueries({ queryKey: ['property-sender', PROPERTY_ID] });
@@ -305,11 +298,9 @@ describe('SenderWizardPage: who sends (NF-42, NF-49)', () => {
     expect(screen.getByTestId('sender-option-CasaZen')).toBeDisabled();
     expect(screen.getByTestId('sender-option-Manual')).toBeChecked();
     expect(screen.getByTestId('sender-option-Manual').closest('label')).toHaveTextContent(text('compliance.sender.choice.options.Manual.title'));
-    // CasaZen says why it cannot be chosen (the direct send is activated from the page of the property), and nothing in the wizard names the channel manager's supplier.
     expect(screen.getByTestId('sender-option-CasaZen').closest('label')).toHaveTextContent(text('compliance.sender.choice.options.CasaZen.unavailable'));
     expect(screen.getByTestId('sender-option-CasaZen').closest('label')).toHaveTextContent("si attiva dalla scheda dell'immobile");
     expect(wizard().textContent ?? '').not.toMatch(/octorate/i);
-    // The same wizard: the choice and the summary, and no panel to pass through.
     expect(screen.queryByTestId('sender-delegation')).not.toBeInTheDocument();
   });
 
@@ -327,7 +318,6 @@ describe('SenderWizardPage: who sends (NF-42, NF-49)', () => {
   });
 
   it('SenderWizardPage_DirectSendInForce_NoWayIsOfferedAndTheCardsSayItChangesOnlyWithTheSupportNotThatItIsNotAvailableYet', async () => {
-    // With the direct send of CasaZen in force the server offers no way to choose (`availableSenders` is empty): «Lo faccio io» is not «Non ancora disponibile», it cannot be changed from here.
     server = senderOf({ sender: 'CasaZen', source: 'Stored', state: 'Unverified', verification: 'Unverifiable', channelManagerAvailable: false, availableSenders: [] });
     await open();
 
@@ -351,7 +341,6 @@ describe('SenderWizardPage: who sends (NF-42, NF-49)', () => {
     await open();
 
     expect(screen.getByTestId('sender-option-ChannelManager')).toBeChecked();
-    // What is true now is told on the first step, and it is not «Attivo».
     expect(screen.getByTestId('sender-current-state')).toHaveAttribute('data-state', 'unverified');
   });
 
@@ -399,9 +388,7 @@ describe('SenderWizardPage: the change of the sender (NF-05)', () => {
     fireEvent.click(primary());
     await onStep('summary');
 
-    // The summary says what goes off and asks the host to confirm it; nothing is sent before.
     expect(screen.getByTestId('sender-switch-confirmation')).toHaveTextContent(text('compliance.sender.summary.switch.toManual'));
-    // The exact effect: the daily sending of the channel manager is the host's to switch off in its panel, or the data would go out twice.
     expect(screen.getByTestId('sender-switch-confirmation')).toHaveTextContent(/spegni l'invio automatico anche nel suo pannello/i);
     fireEvent.click(primary());
     expect(await screen.findByTestId('wizard-error-summary')).toHaveTextContent(text('compliance.sender.errors.confirmRequired'));
@@ -411,7 +398,6 @@ describe('SenderWizardPage: the change of the sender (NF-05)', () => {
     fireEvent.click(primary());
 
     await waitFor(() => expect(propertySenderApi.switch).toHaveBeenCalledTimes(1), WAIT);
-    // The host's own send needs no consent: none is sent, and no version of a text with it.
     expect(propertySenderApi.switch).toHaveBeenCalledWith(PROPERTY_ID, { sender: 'Manual', confirmed: true, delegationConsent: false });
     const done = await screen.findByTestId('sender-wizard-done');
     expect(done).toHaveAttribute('data-outcome', 'manual');
@@ -425,7 +411,6 @@ describe('SenderWizardPage: the change of the sender (NF-05)', () => {
     fireEvent.click(primary());
     await onStep('summary');
 
-    // After the change the state can still be «Non verificato» or «Non attivo»: the host keeps sending until it is «Attivo».
     const confirmation = screen.getByTestId('sender-switch-confirmation');
     expect(confirmation).toHaveTextContent(text('compliance.sender.summary.switch.manualToAutomatic'));
     expect(confirmation).toHaveTextContent(/finché lo stato non è «Attivo» continui a inviarli tu/i);
@@ -462,7 +447,6 @@ describe('SenderWizardPage: the test and «Attivo» (NF-42)', () => {
     await open();
     await toTheTest();
 
-    // Before the test nothing is «Attivo» and there is nothing to conclude.
     expect(screen.getByTestId('sender-test-state')).not.toHaveAttribute('data-state', 'active');
     expect(screen.getByTestId('sender-finish')).toBeDisabled();
 
@@ -493,7 +477,6 @@ describe('SenderWizardPage: the test and «Attivo» (NF-42)', () => {
     expect(screen.queryByTestId('sender-declare')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('sender-finish'));
 
-    // The result is the host's word, with the tone of what is not complete: «Dichiarato attivo», never the green «Attivo».
     const done = await screen.findByTestId('sender-wizard-done');
     expect(done).toHaveAttribute('data-outcome', 'declared');
     expect(screen.getByTestId('sender-done-title')).toHaveTextContent(text('compliance.sender.done.declared.title'));
@@ -552,7 +535,6 @@ describe('SenderWizardPage: the test and «Attivo» (NF-42)', () => {
     click('sender-test-run');
 
     await waitFor(() => expect(screen.getByTestId('sender-test-run')).toBeDisabled(), WAIT);
-    // The way between the steps is shut too: a request that must not meet a change of step is on its way. So is the way out of the wizard.
     expect(screen.getByTestId('sender-back')).toBeDisabled();
     expect(screen.getByTestId('sender-finish')).toBeDisabled();
     expect(screen.getByTestId('sender-wizard-save-exit')).toBeDisabled();
@@ -564,7 +546,6 @@ describe('SenderWizardPage: the test and «Attivo» (NF-42)', () => {
   });
 });
 
-// «Salva ed esci» and «Aiuto» are buttons of the card like the others: none of the requests of the wizard leaves them open.
 describe('SenderWizardPage: every request of the wizard shuts the way out too', () => {
   const exitIs = (locked: boolean) => {
     for (const id of ['sender-wizard-save-exit', 'sender-wizard-help']) {
@@ -596,7 +577,6 @@ describe('SenderWizardPage: every request of the wizard shuts the way out too', 
     fireEvent.click(primary());
 
     await waitFor(() => exitIs(true), WAIT);
-    // Pressed meanwhile, it leaves nothing: the person is still on the summary.
     fireEvent.click(screen.getByTestId('sender-wizard-save-exit'));
     expect(screen.queryByTestId('property-page')).not.toBeInTheDocument();
     release();
@@ -662,7 +642,6 @@ describe('SenderWizardPage: the credentials of the portal never stay anywhere', 
     fireEvent.click(primary());
     await onStep('credentials');
 
-    // The fields are fields of a password, and nothing offers to remember them.
     const password = screen.getByLabelText(text('questuraCredentials.fields.password'));
     const key = screen.getByLabelText(text('questuraCredentials.fields.wsKey'));
     expect(password).toHaveAttribute('type', 'password');
@@ -673,7 +652,6 @@ describe('SenderWizardPage: the credentials of the portal never stay anywhere', 
     fireEvent.change(screen.getByLabelText(text('questuraCredentials.fields.username')), { target: { value: 'host@example.com' } });
     fireEvent.change(password, { target: { value: SECRET } });
     fireEvent.change(key, { target: { value: 'ws-key-123' } });
-    // Typed and not yet saved: they are in no draft either.
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     click('sender-credentials-save');
@@ -683,7 +661,6 @@ describe('SenderWizardPage: the credentials of the portal never stay anywhere', 
     expect(screen.getByLabelText(text('questuraCredentials.fields.wsKey'))).toHaveValue('');
     expect(screen.getByLabelText(text('questuraCredentials.fields.username'))).toHaveValue('');
 
-    // The mutation is dropped (`gcTime: 0`) and keeps no variables; neither storage of the browser nor any draft sent to the server holds the values.
     await waitFor(() => expect(client.getMutationCache().getAll().filter((mutation) => JSON.stringify(mutation.state.variables ?? null).includes(SECRET))).toEqual([]), WAIT);
     const stored = [...Array(localStorage.length).keys()].map((index) => localStorage.getItem(localStorage.key(index) ?? '')).concat([...Array(sessionStorage.length).keys()].map((index) => sessionStorage.getItem(sessionStorage.key(index) ?? '')));
     expect(JSON.stringify(stored)).not.toContain(SECRET);
@@ -717,12 +694,10 @@ describe('SenderWizardPage: the credentials of the portal never stay anywhere', 
       .getAll()
       .map((mutation) => mutation.state.error as AxiosError | null)
       .filter((error): error is AxiosError => error !== null);
-    // What a failure keeps is its answer: the request that was sent (which holds the body) is not in it.
     for (const error of errors) expect(JSON.stringify(error.config?.data ?? null)).not.toContain(SECRET);
   });
 });
 
-/** From the first step to the credentials of a channel manager that was not the sender: the consent and the confirmation of the change given. */
 async function toTheCredentials() {
   click('sender-option-ChannelManager');
   await screen.findByTestId('sender-delegation-consent');
@@ -742,21 +717,18 @@ function typeCredentials({ username = 'host@example.com', password = SECRET, wsK
 
 const TYPED = { username: 'host@example.com', password: SECRET, wsKey: 'ws-key-123' };
 
-// The credentials are in no draft, so what leaves the step with them typed and unsaved is lost: nothing does it in silence.
 describe('SenderWizardPage: the credentials that were typed are never lost in silence', () => {
   it('SenderWizardPage_CredentialsTypedAndTheMainButton_SavesThemBeforeTheStepIsLeft', async () => {
     const { client } = await open();
     await toTheCredentials();
     typeCredentials();
 
-    // The main button says what it does.
     expect(primary()).toHaveTextContent(text('compliance.sender.steps.credentials.saveAndNext'));
     fireEvent.click(primary());
 
     await waitFor(() => expect(questuraCredentialsApi.set).toHaveBeenCalledWith(PROPERTY_ID, TYPED), WAIT);
     await onStep('panel');
     expect(questuraCredentialsApi.set).toHaveBeenCalledTimes(1);
-    // They left with the save: no field, no mutation, no draft and no storage holds them.
     expect(document.body.innerHTML).not.toContain(SECRET);
     await waitFor(() => expect(client.getMutationCache().getAll().filter((mutation) => JSON.stringify(mutation.state.variables ?? null).includes(SECRET))).toEqual([]), WAIT);
     expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain(SECRET);
@@ -774,7 +746,6 @@ describe('SenderWizardPage: the credentials that were typed are never lost in si
     expect(wizard()).toHaveAttribute('data-step', 'credentials');
     expect(screen.getByLabelText(text('questuraCredentials.fields.password'))).toHaveAttribute('aria-invalid', 'true');
     expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
-    // What was typed is still in its field, to be completed.
     expect(screen.getByLabelText(text('questuraCredentials.fields.username'))).toHaveValue('host@example.com');
   });
 
@@ -792,7 +763,6 @@ describe('SenderWizardPage: the credentials that were typed are never lost in si
     expect(toast.error).toHaveBeenCalled();
     expect(wizard()).toHaveAttribute('data-step', 'credentials');
     expect(screen.getByLabelText(text('questuraCredentials.fields.password'))).toHaveValue(SECRET);
-    // Whatever the end, the mutation keeps nothing of what was sent: neither its variables nor the request in its error.
     await waitFor(
       () =>
         expect(
@@ -810,7 +780,6 @@ describe('SenderWizardPage: the credentials that were typed are never lost in si
     await toTheCredentials();
     typeCredentials();
 
-    // The fields are in the form of the wizard: its Enter would submit it and go on with the credentials left behind. Here Enter is the save, and nothing else.
     const notPrevented = fireEvent.keyDown(screen.getByLabelText(text('questuraCredentials.fields.wsKey')), { key: 'Enter', code: 'Enter' });
 
     expect(notPrevented).toBe(false);
@@ -893,7 +862,6 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     expect(notice).toHaveTextContent('Lombardia');
     expect(notice).toHaveTextContent('Ross1000');
     expect(istatApi.getCoverage).toHaveBeenCalledWith(PROPERTY_ID);
-    // The channel manager is never named.
     expect(wizard().textContent ?? '').not.toMatch(/octorate/i);
   });
 
@@ -905,7 +873,6 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     const block = await screen.findByTestId('sender-istat-credentials');
     const notice = await within(block).findByTestId('istat-coverage-notice', undefined, WAIT);
     expect(notice).toHaveAttribute('data-coverage', 'toVerify');
-    // It comes before the fields where the credentials are typed, and the region is not said to be covered.
     expect(notice.compareDocumentPosition(within(block).getByTestId('sender-istat-fields')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(notice).not.toHaveTextContent(text('istatCoverage.title.covered'));
   });
@@ -925,7 +892,6 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     expect(notice.querySelector('a[href]')).toBeNull();
     expect(screen.queryByTestId('istat-coverage-panel-step')).not.toBeInTheDocument();
     expect(within(notice).getByTestId('istat-coverage-panel-step-later')).toHaveTextContent(text('istatCoverage.action.panelStepInWizard'));
-    // What was typed in the step is still in its fields.
     expect(screen.getByLabelText(text('questuraCredentials.fields.password'))).toHaveValue(SECRET);
     expect(screen.getByLabelText(text('questuraCredentials.fields.username'))).toHaveValue(TYPED.username);
   });
@@ -1005,12 +971,10 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
 
     const block = await screen.findByTestId('sender-istat-credentials');
     await waitFor(() => expect(within(block).getByTestId('sender-istat-status')).toHaveAttribute('data-configured', 'true'), WAIT);
-    // Write-only: the fields are empty whatever is stored, the password is a password field, and nothing offers to remember it.
     expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveAttribute('type', 'password');
     expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveAttribute('autocomplete', 'off');
     expect(screen.getByLabelText(text('istatCredentials.fields.username'))).toHaveValue('');
     expect(within(block).getByTestId('sender-istat-save')).toHaveTextContent(text('istatCredentials.replace'));
-    // The step is the same one: the police credentials are still there and the supplier of the channel manager is still not named.
     expect(screen.getByLabelText(text('questuraCredentials.fields.wsKey'))).toBeInTheDocument();
     expect(wizard().textContent ?? '').not.toMatch(/octorate/i);
   });
@@ -1022,14 +986,12 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     const block = await screen.findByTestId('sender-istat-credentials');
     await waitFor(() => expect(within(block).getByTestId('sender-istat-status')).toHaveAttribute('data-configured', 'true'), WAIT);
 
-    // The property is not found any more: a query keeps the older answer when a read fails (a 404 included), and the step must not go on saying «salvate» on it.
     vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockRejectedValue(problem(404, { code: 'property_not_found' }));
     await act(async () => {
       await client.invalidateQueries({ queryKey: ['istat-credentials', PROPERTY_ID] });
     });
 
     await waitFor(() => expect(within(block).queryByTestId('sender-istat-status')).not.toBeInTheDocument(), WAIT);
-    // The fields are still there to be typed in, and the button does not say «Sostituisci» on an answer nobody can trust.
     expect(within(block).getByTestId('sender-istat-save')).toHaveTextContent(text('istatCredentials.save'));
   });
 
@@ -1039,7 +1001,6 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     await screen.findByTestId('sender-istat-credentials');
     typeIstat();
 
-    // The main button says what it does, and the police credentials, which nobody typed, are not sent.
     expect(primary()).toHaveTextContent(text('compliance.sender.steps.credentials.saveAndNext'));
     fireEvent.click(primary());
 
@@ -1047,7 +1008,6 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     await onStep('panel');
     expect(onboardingAssistApi.setIstatCredentials).toHaveBeenCalledTimes(1);
     expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
-    // They left with the save: no field, no mutation, no draft and no storage holds them.
     expect(document.body.innerHTML).not.toContain(SECRET);
     await waitFor(() => expect(client.getMutationCache().getAll().filter((mutation) => JSON.stringify(mutation.state.variables ?? null).includes(SECRET))).toEqual([]), WAIT);
     expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain(SECRET);
@@ -1082,7 +1042,6 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     expect(wizard()).toHaveAttribute('data-step', 'credentials');
     expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveAttribute('aria-invalid', 'true');
     expect(onboardingAssistApi.setIstatCredentials).not.toHaveBeenCalled();
-    // What was typed is still in its field, to be completed.
     expect(screen.getByLabelText(text('istatCredentials.fields.username'))).toHaveValue('istat-user-77');
   });
 
@@ -1146,7 +1105,6 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
   });
 });
 
-// The change is about one property: the header, the summary and the result say which.
 describe('SenderWizardPage: which property it is about', () => {
   it('SenderWizardPage_Header_SaysWhichPropertyTheSenderIsChangedFor', async () => {
     await open();
@@ -1186,7 +1144,6 @@ describe('SenderWizardPage: which property it is about', () => {
   });
 
   it('SenderWizardPage_PropertyTheCallerDoesNotReach_NeverHasItsNameAsked', async () => {
-    // Every read of such a property answers 403, and a 403 on a read sends the whole app to the no-access page: its name is not asked.
     vi.mocked(propertySenderApi.get).mockResolvedValue(null);
     renderWizard();
 
@@ -1210,7 +1167,6 @@ describe('SenderWizardPage: leaving and coming back (NF-04, NF-06)', () => {
     await waitFor(() => expect(screen.getByTestId('property-page')).toBeInTheDocument(), WAIT);
     expect(screen.getByTestId('location')).toHaveTextContent(`/app/short-rent/properties/${PROPERTY_ID}?section=connection-health`);
     expect(toast.success).toHaveBeenCalledWith(text('compliance.sender.exit.saved'));
-    // Nothing was changed by leaving; the draft is the property's, and the confirmation of a change is not part of it.
     expect(propertySenderApi.switch).not.toHaveBeenCalled();
     await waitFor(() => expect(wizardDraftApi.save).toHaveBeenCalled(), WAIT);
     const [type, body] = vi.mocked(wizardDraftApi.save).mock.calls.at(-1)!;
@@ -1228,14 +1184,12 @@ describe('SenderWizardPage: leaving and coming back (NF-04, NF-06)', () => {
     fireEvent.click(primary());
     await onStep('summary');
 
-    // The consent was given on the choice, with the text in front of the person: it is in no draft, neither the browser's nor the server's.
     await waitFor(() => expect(wizardDraftApi.save).toHaveBeenCalled(), WAIT);
     const stored = [...Array(sessionStorage.length).keys()].map((index) => sessionStorage.getItem(sessionStorage.key(index) ?? ''));
     expect(stored.length).toBeGreaterThan(0);
     expect(JSON.stringify(stored)).not.toContain('delegationConsentVersion');
     expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain('delegationConsentVersion');
 
-    // Back in the same browser, the draft is resumed straight at the summary: the consent is not there, and the change cannot be made without it.
     first.unmount();
     await open();
     click('wizard-draft-resume');
@@ -1246,7 +1200,6 @@ describe('SenderWizardPage: leaving and coming back (NF-04, NF-06)', () => {
     expect(await screen.findByTestId('wizard-error-summary')).toHaveTextContent(text('compliance.sender.errors.consentRequired'));
     expect(propertySenderApi.switch).not.toHaveBeenCalled();
 
-    // On the choice the box is empty and the text is shown: the consent is given again.
     click('sender-back');
     await onStep('choice');
     expect(screen.getByTestId('sender-delegation-text')).toBeInTheDocument();

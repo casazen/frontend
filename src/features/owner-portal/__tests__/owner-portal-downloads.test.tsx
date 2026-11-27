@@ -17,13 +17,11 @@ import { ownerPortalApi } from '@/api/ownerPortal.api';
 
 const api = vi.mocked(ownerPortalApi);
 
-/** A refusal as the API client raises it: the status and a ProblemDetails body with the code. */
 function refusal(status: number, code: string): AxiosError {
   const config = { headers: new AxiosHeaders() };
   return new AxiosError('refused', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: { status, code } });
 }
 
-/** A mandate with two versions: the one in force, whose file carries a double extension, and the one it replaced. */
 const DOCUMENT: OwnerDocument = {
   id: 'd1',
   orgId: 'o1',
@@ -77,16 +75,13 @@ describe('the documents of the owner: the version in force, its dates and its ex
     expect(card.textContent).toContain('Mandato di gestione');
     expect(card.textContent).toContain('Mandato');
     expect(card.textContent).toContain('Casa Mare');
-    // The expiry of the document, and the state of the version in force with its number, the day it holds from, the day it lapses and the size of its file.
     expect(within(card).getByTestId('owner-document-expiry').textContent).toMatch(/In scadenza il 1 dic\.? 2026/);
     expect(card.textContent).toContain('Versione 2');
     expect(card.textContent).toMatch(/In vigore dal 1 gen\.? 2026/);
     expect(card.textContent).toMatch(/Scade il 1 dic\.? 2026/);
     expect(card.textContent).toContain('2 KB');
-    // The version in force is what the card is: no «In vigore» pill on it, the line above says «In vigore dal …» (UX round 3).
     expect(within(card).queryByText('In vigore')).toBeNull();
     expect(within(card).queryByTestId('owner-document-version-state')).toBeNull();
-    // The version it replaced is kept, with its own word.
     expect(card.textContent).toContain('1 versione precedente');
     expect(card.textContent).toContain('Sostituita');
     expect(card.textContent).toContain('Versione 1');
@@ -113,7 +108,6 @@ describe('the documents of the owner: the version in force, its dates and its ex
     const empty = screen.getByTestId('owner-documents-empty');
     expect(empty).toHaveTextContent('Nessun documento');
     expect(empty).toHaveTextContent('Qui compariranno i documenti.');
-    // Under the heading of a section: one level below it.
     expect(within(empty).getByRole('heading', { level: 3, name: 'Nessun documento' })).toBeInTheDocument();
   });
 
@@ -125,12 +119,10 @@ describe('the documents of the owner: the version in force, its dates and its ex
     fireEvent.click(screen.getByTestId('owner-document-download'));
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(1));
 
-    // The version in force is asked for by its id (the audit of the download is the server's), and its file is saved under the name of the agency made safe: no second extension.
     expect(api.downloadDocument).toHaveBeenCalledWith('d1', 'v2');
     expect(saveBlobAs).toHaveBeenCalledWith(blob, 'mandato_pdf.pdf');
     cleanup();
 
-    // The older version has its own button, and its own file.
     const older = new Blob(['%PDF-1.3']);
     api.downloadDocument.mockResolvedValue(older);
     renderDocuments();
@@ -150,7 +142,6 @@ describe('the documents of the owner: the version in force, its dates and its ex
     fireEvent.click(buttons[0]);
     await waitFor(() => expect(buttons[0]).toBeDisabled());
     expect(buttons[1]).toBeDisabled();
-    // A click on the other one while the first works asks for nothing.
     fireEvent.click(buttons[1]);
     expect(api.downloadDocument).toHaveBeenCalledTimes(1);
 
@@ -165,7 +156,6 @@ describe('the documents of the owner: the version in force, its dates and its ex
 
     fireEvent.click(screen.getByTestId('owner-document-download'));
 
-    // News about a click, said in a toast (UX round 2026-11): no red box stays in the list.
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Questo documento non è disponibile')));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(saveBlobAs).not.toHaveBeenCalled();

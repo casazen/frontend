@@ -22,7 +22,6 @@ import { ShowcasePreview } from './showcase-preview';
 import { useShowcaseDraft, type SaveStatus } from './use-showcase-draft';
 import { useShowcasePublish } from './use-showcase-publish';
 
-/** What the line under the steps says of the draft: saved at a time, being saved, kept for later, or refused. */
 function SaveLine({ status, savedAt, onRetry }: { status: SaveStatus; savedAt: string | null; onRetry: () => void }) {
   const { t, i18n } = useTranslation();
   const time = savedAt ? formatRomeDateTime(savedAt, i18n.language, { hour: '2-digit', minute: '2-digit' }) : null;
@@ -49,35 +48,25 @@ function SaveLine({ status, savedAt, onRetry }: { status: SaveStatus; savedAt: s
 }
 
 interface ShowcaseWorkPageProps {
-  /** The content as the overview read it: the editor starts from its draft and its version. */
   content: ShowcaseContent;
   step: EditorStep;
 }
 
-/**
- * The work view of the editor (SP-13d, `?step=style|texts|publish`): the panel of the step on the left and the live preview on the right
- * (on a phone the preview opens in a sheet), the steps above, and the draft saving itself. Leaving the view sends what is left; before
- * a publication what waits is sent and the publication refuses to go on while the server has not got the draft as it is on screen.
- */
 export function ShowcaseWorkPage({ content, step }: ShowcaseWorkPageProps) {
   const { t } = useTranslation();
   const draft = useShowcaseDraft(content);
-  // Every save puts the document the server sent in the cache: the checks and the state follow the draft.
   const live = useShowcaseContent().data ?? content;
   const profile = useSupplierProfile();
-  // A publication (and its undo) changes the row on the server: the draft takes the new version, or its next save would be a "stale" one.
   const publish = useShowcasePublish(draft.adopt);
   const phone = useMediaQuery(PHONE_QUERY);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [reloading, setReloading] = useState(false);
-  // After a reload the panels start again from what the server has (a field with its own typed text would keep the old one).
   const [generation, setGeneration] = useState(0);
 
   const stepLabel = t(`supplier.showcase.editor.steps.${step}`);
   const categories = profile.data?.categories ?? [];
 
   const publishNow = async () => {
-    // What is written goes first; if the server does not have it as it is on screen, nothing is published.
     if (await draft.flush()) publish.run(draft.getVersion());
   };
 
@@ -124,7 +113,6 @@ export function ShowcaseWorkPage({ content, step }: ShowcaseWorkPageProps) {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] xl:items-start">
         <section key={generation} className="min-w-0 rounded-xl border p-4 sm:p-6" aria-label={stepLabel}>
-          {/* While a publication is on its way nothing can be written: a save in that moment would carry the version it is replacing. */}
           <fieldset disabled={publish.isPending} className="m-0 min-w-0 border-0 p-0">
             {panel}
           </fieldset>

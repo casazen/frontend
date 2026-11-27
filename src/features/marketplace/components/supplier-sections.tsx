@@ -14,7 +14,6 @@ import { VerifiedBadge } from './verified-badge';
  * ones, so that what the drawer says is what the page says. Nothing about a commission (D3), nothing that is not measured (D24).
  */
 
-/** Up to three photos of the supplier. */
 export function SupplierPhotos({ supplier }: { supplier: SupplierPicker }) {
   const { t } = useTranslation();
   const urls = displayableMediaUrls(supplier.photoUrls).slice(0, 3);
@@ -35,7 +34,6 @@ export function SupplierPhotos({ supplier }: { supplier: SupplierPicker }) {
   );
 }
 
-/** What can be trusted about the supplier: «Verificato» with what it means, and how fast it answers, only when that is measured. */
 export function SupplierTrust({ supplier }: { supplier: SupplierPicker }) {
   const { t } = useTranslation();
   const response = responseLabel(supplier, t);
@@ -69,7 +67,6 @@ export function SupplierAbout({ supplier }: { supplier: SupplierPicker }) {
   );
 }
 
-/** The services of the supplier with «da {prezzo}» and how long they take («Su preventivo» when it gave no price). */
 export function SupplierServices({ supplier }: { supplier: SupplierPicker }) {
   const { t, i18n } = useTranslation();
   const services = supplier.services ?? [];
@@ -95,7 +92,6 @@ export function SupplierServices({ supplier }: { supplier: SupplierPicker }) {
   );
 }
 
-/** What the supplier does and where. */
 export function SupplierCoverage({ supplier }: { supplier: SupplierPicker }) {
   const { t } = useTranslation();
 

@@ -36,7 +36,6 @@ describe('recents of the palette (UI-06)', () => {
 
     const stored = Object.entries(localStorage);
 
-    // One entry, which is a list of ids: no name of a guest, no label, no text of a search.
     expect(stored).toHaveLength(1);
     expect(JSON.parse(stored[0][1])).toEqual(['guest:g1']);
   });

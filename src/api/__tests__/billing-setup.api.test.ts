@@ -7,7 +7,6 @@ import { ApiClient } from '../client';
 vi.mock('../client');
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
 
-/** The section the server answers a save that carries no field: the section as it is. */
 const ISSUER_SECTION = { section: 'issuer', applies: true, complete: false, values: { countryCode: 'IT' }, missing: [{ key: 'legal_name_missing', section: 'issuer', reason: 'required' }] };
 
 function refused(status: number, data: unknown): AxiosError {
@@ -19,15 +18,12 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// Permission rule: the setup is the organization's, and nothing of it says whose reach the person has. The wizard learns it the one way the server answers it, with a save that
-// carries no field (the server changes nothing for it, and refuses with 403 `fiscal_settings_need_whole_org` before it reads anything when the reach is only some of the properties).
 describe('canChangeBillingSetup: whether the reach of the person is the whole organization (E11/F02/US01/T01)', () => {
   it('CanChangeBillingSetup_AnswersYesWhenTheServerAnswersTheSectionAndSendsNoFieldAtAll', async () => {
     vi.mocked(ApiClient.put).mockResolvedValueOnce(ISSUER_SECTION);
 
     await expect(canChangeBillingSetup()).resolves.toBe(true);
 
-    // One save to the issuer section with an empty body: it reads and writes nothing of the setup.
     expect(ApiClient.put).toHaveBeenCalledTimes(1);
     expect(ApiClient.put).toHaveBeenCalledWith('/billing-setup/issuer', {});
     expect(ApiClient.get).not.toHaveBeenCalled();
@@ -55,14 +51,12 @@ describe('canChangeBillingSetup: whether the reach of the person is the whole or
   });
 
   it('CanChangeBillingSetup_ABodyThatIsNotASection_IsAFailedReadAndNeverAYes', async () => {
-    // The `index.html` of the SPA behind a wrong rewrite is a 200 with no section in it.
     vi.mocked(ApiClient.put).mockResolvedValueOnce('<!doctype html><html></html>');
 
     await expect(canChangeBillingSetup()).rejects.toBeInstanceOf(UnexpectedApiResponseError);
   });
 });
 
-/** The section `touristTax` the server answers a confirmation with: the pairs as saved, with the questions that are left. */
 const TOURIST_TAX_SECTION = {
   section: 'touristTax',
   applies: false,
@@ -75,8 +69,6 @@ const TOURIST_TAX_SECTION = {
   missing: [],
 };
 
-// Data rule: the confirmation of a portal in a comune is the WHOLE list of the pairs (the server replaces the list it had), sent to the endpoint of the comuni, and what the server answers
-// is the section as saved. An answer that is not that section is a failure: the person would be told «confirmed» for something nobody saved.
 describe('confirmPortalTouristTaxComuni: the portals that collect the tourist tax in a comune (FIX/FE-IT-TOURISTTAX-PROPOSALS)', () => {
   const REQUEST = { comuni: [{ channel: 'Airbnb', comuneIstat: '015146' }] };
 
@@ -90,7 +82,6 @@ describe('confirmPortalTouristTaxComuni: the portals that collect the tourist ta
   });
 
   it('ConfirmPortalTouristTaxComuni_AnEmptyList_IsSentAsAnEmptyList', async () => {
-    // It takes every confirmation away: the list is sent, never left out (a request without it is a 422).
     vi.mocked(ApiClient.put).mockResolvedValueOnce({ ...TOURIST_TAX_SECTION, values: { ...TOURIST_TAX_SECTION.values, confirmedPortalTouristTaxComuni: [] } });
 
     await confirmPortalTouristTaxComuni({ comuni: [] });

@@ -8,10 +8,8 @@ import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 
 interface SubflowProps {
   bookingId: string;
-  /** The panel is open. It is mounted only while it is, so each visit starts clean: nothing typed, nothing saved. */
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** What the layer says it is for, when the page that opens it is not the check-out wizard (the default speaks of the answers of the check-out). */
   description?: string;
 }
 
@@ -36,10 +34,8 @@ function SubflowLayer({ bookingId, description, onClose }: { bookingId: string; 
   const [dirty, setDirty] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showUnsaved, setShowUnsaved] = useState(false);
-  // The buttons stay off while any request is on its way: the layer must not close over a save that has not answered.
   const busy = useIsMutating() > 0;
 
-  // Leaving by any way but "Cancel" never throws away what the host typed: it says so and stays.
   const leave = () => {
     if (busy) return;
     if (dirty) {
@@ -55,7 +51,6 @@ function SubflowLayer({ bookingId, description, onClose }: { bookingId: string; 
       setShowUnsaved(true);
       return;
     }
-    // The status is read again whether the guests were saved here or not: the step and the notice that opened this layer show what the server holds now.
     void queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY, 'status', bookingId] });
     onClose();
   };
@@ -69,7 +64,6 @@ function SubflowLayer({ bookingId, description, onClose }: { bookingId: string; 
     >
       <DialogContent
         className="max-h-[90dvh] max-w-3xl overflow-y-auto"
-        // A form with this many fields is not closed by a stray click outside it.
         onInteractOutside={(event) => event.preventDefault()}
         data-testid="checkout-guest-data-subflow"
       >

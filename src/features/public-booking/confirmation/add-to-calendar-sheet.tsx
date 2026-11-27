@@ -7,7 +7,6 @@ import { usePortalRootProps } from '@/features/public-site/site-appearance-conte
 import { cn } from '@/lib/utils';
 import './confirmation.css';
 
-/** Gives the browser a text file to save. Nothing is sent anywhere: the file is made here, from the data of the booking. */
 function saveTextFile(fileName: string, text: string): void {
   const url = URL.createObjectURL(new Blob([text], { type: 'text/calendar;charset=utf-8' }));
   const link = document.createElement('a');
@@ -23,9 +22,7 @@ interface AddToCalendarSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   stay: CalendarStay;
-  /** The name of the downloaded file (`soggiorno-XXXXX-XXXXX.ics`). */
   fileName: string;
-  /** What the sheet says about the house: its name and the days. */
   home: string;
   days: string;
 }
@@ -43,7 +40,6 @@ export function AddToCalendarSheet({ open, onOpenChange, stay, fileName, home, d
   const outlook = outlookCalendarUrl(stay);
 
   const download = () => {
-    // The `UID` ends with the site the guest booked on: the one of this page, never a domain written in the code.
     const file = buildIcs({ ...stay, uidHost: window.location.hostname }, new Date());
     if (!file) return;
     saveTextFile(fileName, file);

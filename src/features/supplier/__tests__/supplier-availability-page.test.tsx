@@ -90,7 +90,6 @@ describe('SupplierAvailabilityPage today (QA-CLOCK-FE)', () => {
     await i18n.changeLanguage('it');
     mutateAsync.mockResolvedValue({ updated: 1 });
     mockFreeEvents();
-    // The check of the jobs to come (SP-03b) finds nothing wrong.
     vi.mocked(useSupplierConflicts).mockReturnValue({
       data: { from: '2026-09-24', to: '2026-10-24', timeZone: 'Europe/Rome', items: [], total: 0, truncated: false, limit: 200 },
       isLoading: false,

@@ -2,7 +2,6 @@ import { normalizeText } from '@/components/shared/command-palette/search';
 import { isStayDate } from '@/lib/stay-dates';
 import type { DashboardToday, DashboardTodayStay } from '@/types/dashboard.types';
 
-/** This read reuses the server's BookingRead policy and HostScope. The client can only narrow the returned rows. */
 export const arrivalsCapability = {
   id: 'arrivals.incompleteToday',
   interaction: 'read',
@@ -32,7 +31,6 @@ export interface ArrivalsAnswer {
   partial: boolean;
 }
 
-/** Two rows that read the same need a booking reference, including in the link's accessible name. */
 export function disambiguatingBookingReference(row: ArrivalReference, rows: ArrivalReference[]): string | null {
   const sameStayDates = rows.some(
     (other) =>
@@ -50,8 +48,6 @@ export function manualArrivalsPath(propertyId: string | null) {
   return `/app/short-rent?${query}`;
 }
 
-// Admit only a supported read with a known scope. A different date, a named property or an
-// instruction to send something must never be silently interpreted as the suggested question.
 const supportedQuestions = new Set([
   'quali arrivi di oggi hanno il check in incompleto',
   'quali arrivi di oggi hanno il check in da completare',
@@ -108,7 +104,6 @@ export function summarizeArrivals(data: DashboardToday, propertyId: string | nul
     if (stay.checkIn?.dataComplete === true) continue;
     const state =
       stay.checkIn?.dataComplete === false && knownStates.includes(stay.checkIn.state) ? stay.checkIn.state : 'unknown';
-    // No names, messages, financial data or guest records in the assistant result.
     rows.push({
       bookingId: stay.bookingId,
       bookingCode: stay.bookingCode,

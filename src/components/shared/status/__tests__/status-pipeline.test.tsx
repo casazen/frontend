@@ -33,7 +33,6 @@ describe("StatusPipeline", () => {
     expect(items[0]).toHaveTextContent("(completato)");
     expect(items[2]).toHaveTextContent("(stato attuale)");
     expect(items[3]).toHaveTextContent("(da fare)");
-    // A check on the done step; every step has an icon.
     for (const item of items) expect(item.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
     expect(items[0].querySelector("svg")?.getAttribute("class")).toContain("lucide-check");
     expect(items[2].className).toContain("font-semibold");

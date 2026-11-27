@@ -11,21 +11,13 @@ import { formatRomeDateTime } from '@/lib/stay-dates';
 import { todoActionRoute } from './activity-card';
 import { TODO_LIST_LIMIT, TODO_LIST_PATH, describeTodo, isTruncatedList, type TodoText } from './lib/todo-model';
 
-/** How many items the path shows: the one to do now and the next three. */
 export const TODO_PATH_ITEMS = 4;
 
 interface TodoPathProps {
-  /** The items in the order the server sent them (ADR-026-R5): the first can be current once its planned time has come. */
   items: readonly TodoActivity[];
-  /** How many urgent items wait: the number of the server (it counts them all, the list is cut). `null` when it is not known. */
   urgent: number | null;
   propertyNames: ReadonlyMap<string, string>;
-  /** Decides whether the person may open the page «Fallo ora» leads to. */
   hasPermission?: PermissionPredicate;
-  /**
-   * Whether the first item is the step to do now (the one highlighted thing of the Home). False while what carries a risk of a sanction holds
-   * the highlight (the block of the adempimenti): the items are then the road ahead, none of them current.
-   */
   focus?: boolean;
   limit?: number;
   className?: string;
@@ -48,7 +40,6 @@ export function TodoPath({ items, urgent, propertyNames, hasPermission, focus = 
   const titleId = useId();
   const now = useNow();
   const context = { t, exists: (key: string) => i18n.exists(key), locale: i18n.language, propertyNames };
-  // A list of the length the server cuts at may have more items behind it: no total is told from it.
   const truncated = isTruncatedList(items.length);
 
   const steps: GuidePathStep[] = items.slice(0, limit).map((activity, index) => {
@@ -61,7 +52,6 @@ export function TodoPath({ items, urgent, propertyNames, hasPermission, focus = 
     return {
       id: activity.id,
       title: text.title,
-      // The step to do now says why it matters; the others only what they are about, so the road stays short.
       detail: current && text.why ? `${text.why} · ${text.object}` : text.object,
       note: programmed
         ? t('activity.todo.path.scheduledFor', { when: formatRomeDateTime(activity.scheduledAt!, i18n.language) })
@@ -69,7 +59,6 @@ export function TodoPath({ items, urgent, propertyNames, hasPermission, focus = 
       noteTone: noteToneOf(text),
       kicker: current ? t('activity.todo.path.now') : programmed ? t('activity.todo.path.scheduled') : undefined,
       state: current ? 'current' : 'upcoming',
-      // The button is the way in. An item whose page the person cannot open leads to the list, where it is told in full.
       action: route
         ? {
             label: t(programmed ? 'activity.todo.path.open' : 'activity.todo.actions.doNow'),

@@ -13,7 +13,6 @@ import { costTextOf, functionOf, licenseSummary, requestPhase, type LicensedCont
 import { LicenseProblem } from './license-problem';
 import { useDefaultProperty } from './use-default-property';
 
-/** Who invoices the cost: the words of the cards of the marketplace. */
 const INVOICER_TEXT: Readonly<Record<MarketplaceCostInvoicer, string>> = {
   Unknown: 'marketplace.card.invoicedBy.Unknown',
   Partner: 'marketplace.card.invoicedBy.Partner',

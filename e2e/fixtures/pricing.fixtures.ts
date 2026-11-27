@@ -30,7 +30,6 @@ export const configDisabled: PricingAdapterConfig = {
   nextRunOn: null,
 };
 
-/** Suggestions of a property at 180 EUR a night with the example rule, from 2026-05-30. */
 function buildSuggestions(count: number): SeasonalSuggestion[] {
   const start = Date.UTC(2026, 4, 30);
   return Array.from({ length: count }, (_, index) => {
@@ -54,7 +53,6 @@ export const suggestionsData: SeasonalSuggestionsResponse = {
   items: buildSuggestions(90),
 };
 
-/** Subset used when tests only need a few rows. */
 export const suggestionsDataMinimal: SeasonalSuggestionsResponse = {
   ...suggestionsData,
   items: buildSuggestions(7),

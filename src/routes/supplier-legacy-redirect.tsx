@@ -1,6 +1,5 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
-/** Maps legacy `/supplier/*` paths to canonical `/app/supplier/*` routes. */
 export function SupplierLegacyPathRedirect() {
   const location = useLocation();
   const { '*': rest } = useParams();

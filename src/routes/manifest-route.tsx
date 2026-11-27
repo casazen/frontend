@@ -17,7 +17,6 @@ export function ManifestRoute({ entry }: { entry: RouteManifestEntry }) {
   if (!commercialRouteAllowed(user, entry.path)) return <section className="mx-auto max-w-xl space-y-4 p-8"><h1 className="text-2xl font-semibold">{t('commercial.moduleRequired')}</h1><p>{t('commercial.moduleRequiredText')}</p><Button asChild><Link to="/app/account/billing">{t('commercial.managePlan')}</Link></Button></section>;
   const Component = LAZY_ROUTE_COMPONENTS[entry.path];
   return (
-    // Inside the content region of the shell (it scrolls with the window): the spinner fills it, not the viewport.
     <Suspense fallback={<LoadingScreen className="h-auto flex-1" />}>
       <Component />
     </Suspense>

@@ -2,18 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { truncateDescription, useSeoMeta } from '@/lib/seo-meta';
 import type { PublicOrgDto, PublicPropertyDetailDto } from '@/types';
 
-/** `og:image` must be an absolute https URL: a relative, `data:` or `blob:` image is of no use to a link preview. */
 function httpsImage(url: string | null | undefined): string | null {
   return url?.startsWith('https://') ? url : null;
 }
 
-/** Where a path under `/book/:orgSlug` leads: the landing page, a property page or any other (private) page. */
 export type OrgSitePage = 'landing' | 'property' | 'other';
 
-/**
- * Classifies `pathname` (`/book/:orgSlug[/rest]`): the landing page has no rest, a property page is
- * `property/:slugOrId`; the checkout, the guest's bookings, the outcome pages and the legacy links are `other`.
- */
 export function classifyOrgSitePage(pathname: string): OrgSitePage {
   const rest = pathname.split('/').filter(Boolean).slice(2);
   if (rest.length === 0) return 'landing';
@@ -21,12 +15,6 @@ export function classifyOrgSitePage(pathname: string): OrgSitePage {
   return 'other';
 }
 
-/**
- * Title, description, canonical and Open Graph tags of an org booking site (BK-15, A3-20), for the people who read the
- * tab title and for the browsers that share the page. Crawlers get the same data from the backend (`api/seo.ts`).
- * The landing page is indexable; the pages of a booking in progress or of a guest are `noindex`. A property page sets
- * its own tags (`usePropertySeoMeta`): the shell does nothing there.
- */
 export function useOrgSeoMeta(org: PublicOrgDto | undefined, pathname: string) {
   const { t } = useTranslation();
   const page = classifyOrgSitePage(pathname);
@@ -44,7 +32,6 @@ export function useOrgSeoMeta(org: PublicOrgDto | undefined, pathname: string) {
   );
 }
 
-/** Title (`{name} · {city} — {org}`), description (first 155 characters), canonical and Open Graph of a property page. */
 export function usePropertySeoMeta(org: PublicOrgDto | undefined, property: PublicPropertyDetailDto | undefined) {
   const { t } = useTranslation();
 

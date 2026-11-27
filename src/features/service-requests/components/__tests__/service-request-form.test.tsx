@@ -16,7 +16,6 @@ const api = vi.hoisted(() => ({
   getBookings: vi.fn(),
 }));
 
-// Real query hooks around mocked network calls: the form behaves as in the app.
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: api.fetchServiceCategories }));
 vi.mock('@/api/service-requests.api', () => ({
@@ -82,8 +81,6 @@ describe('ServiceRequestForm', () => {
     await i18n.changeLanguage('en');
   });
 
-  // ─── D2 (SU-07): short-rent requests are for a stay ───
-
   it('ServiceRequestForm_MarketplaceSupplierWithoutStay_AsksTheStayAndSendsItsBookingId', async () => {
     const onOpenChange = vi.fn();
     api.getBookings.mockResolvedValue([stay('b-next', '2099-10-01', '2099-10-05')]);
@@ -91,7 +88,6 @@ describe('ServiceRequestForm', () => {
 
     const staySelect = await screen.findByTestId('service-request-stay');
     expect(api.getBookings).toHaveBeenCalledWith({ propertyId: 'prop-1', page: 1, pageSize: 100 });
-    // No stay chosen yet: nothing can be sent without one.
     expect(screen.getByTestId('submit-service-request')).toBeDisabled();
 
     fireEvent.change(staySelect, { target: { value: 'b-next' } });
@@ -117,8 +113,6 @@ describe('ServiceRequestForm', () => {
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 
-  // The page of a supplier in the marketplace asks for one of its services (MKT): the request keeps that service, so a wrong id, category
-  // or duration would put another price and another slot on it.
   it('ServiceRequestForm_ForAServiceOfTheSupplier_SendsItsIdWithItsCategoryAndItsOwnDuration', async () => {
     api.getBookings.mockResolvedValue([stay('b-next', '2099-10-01', '2099-10-05')]);
     renderForm({
@@ -127,7 +121,6 @@ describe('ServiceRequestForm', () => {
     });
 
     const staySelect = await screen.findByTestId('service-request-stay');
-    // The service fixes the category (it is not asked) and its duration, even an unusual one, is where the form starts.
     expect(screen.getByTestId('service-request-service')).toHaveTextContent('Deep cleaning');
     expect(screen.queryByLabelText(i18n.t('serviceRequest.category'))).not.toBeInTheDocument();
     expect(screen.getByTestId('service-request-duration')).toHaveValue('150');
@@ -183,7 +176,6 @@ describe('ServiceRequestForm', () => {
     expect(screen.queryByTestId('service-request-stay')).not.toBeInTheDocument();
     expect(api.getBookings).not.toHaveBeenCalled();
     expect(api.fetchSuppliersByProperty).toHaveBeenCalledWith('prop-1', 'cleaning');
-    // The supplier is chosen by the host, never the first result by default.
     expect(screen.getByTestId('submit-service-request')).toBeDisabled();
 
     fireEvent.change(supplierSelect, { target: { value: 'sup-2' } });
@@ -243,13 +235,10 @@ describe('ServiceRequestForm', () => {
     expect(api.getBookings).not.toHaveBeenCalled();
   });
 
-  // ─── Catalog and AI (SU-03, FD-21) ───
-
   it('ServiceRequestForm_Opened_ShowsNoAiMatchOrExternalSuggestions', async () => {
     renderForm({ bookingId: 'b-detail', supplierOrgId: 'sup-chosen' });
 
     await screen.findByLabelText(i18n.t('serviceRequest.category'));
-    // D11: AI supplier discovery is off; nothing presents LLM output as "top rated on Google".
     expect(screen.queryByTestId('ai-recommended-supplier')).not.toBeInTheDocument();
     expect(screen.queryByText(/Google/i)).not.toBeInTheDocument();
     expect(screen.getByText(i18n.t('serviceRequest.stayScopedDescription'))).toBeInTheDocument();

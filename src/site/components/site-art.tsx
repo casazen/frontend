@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PUBLIC_SITE_THEME_PALETTES } from '@/lib/public-site-themes';
 
-/** The host workspace and guest check-in, using the product's own demo captures. */
 export function HeroArt() {
   const { t } = useTranslation();
   const [scene, setScene] = useState<'cockpit' | 'lease'>('cockpit');
@@ -29,10 +28,6 @@ export function HeroArt() {
   );
 }
 
-/**
- * The three looks of the booking site (`terra`, `mare`, `citta`: the themes a host can choose), drawn with their own
- * colors as three small pages.
- */
 export function ThemeSwatches() {
   const palettes = Object.values(PUBLIC_SITE_THEME_PALETTES);
   return (

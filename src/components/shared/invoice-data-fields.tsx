@@ -42,7 +42,6 @@ const OPTION_FIELDS = [
 /** The longest a fiscal code or a VAT number may be typed: the server's limit is on the normalized value, and a pasted one has spaces. */
 const IDENTIFIER_INPUT_MAX_LENGTH = 40;
 
-/** What goes under a field that is hard to fill: why it is asked and, after it, an example. */
 function Explanation({ why, exampleLabel, example }: { why: string; exampleLabel: string; example?: string }) {
   return (
     <>
@@ -58,15 +57,11 @@ function Explanation({ why, exampleLabel, example }: { why: string; exampleLabel
 }
 
 export interface InvoiceDataFieldsProps {
-  /** The set of texts to read (`INVOICE_FIELDS_COPY`): the words follow the person who reads them. */
   copy: InvoiceFieldsCopy;
-  /** Start of the `id` and of the `data-testid` of every control: two sets of fields on one page never share an id. */
   idPrefix: string;
   values: InvoiceDataFormValues;
-  /** The failure of each field by its code, from the schema or from a 422 of the server: the words are the ones of `copy`. */
   errors?: InvoiceDataFieldErrors;
   onChange: (field: InvoiceDataField, value: string) => void;
-  /** While something is saved: nothing can be typed. */
   disabled?: boolean;
 }
 
@@ -83,7 +78,6 @@ export interface InvoiceDataFieldsProps {
  */
 export function InvoiceDataFields({ copy, idPrefix, values, errors = {}, onChange, disabled }: InvoiceDataFieldsProps) {
   const { t, i18n } = useTranslation();
-  // The texts of this set of fields, by the end of their key: `text['fiscalCode.label']`.
   const text = useMemo(
     () =>
       Object.fromEntries(INVOICE_FIELDS_COPY_SUFFIXES.map((suffix) => [suffix, t(`${copy}.${suffix}`)])) as Record<InvoiceFieldsCopySuffix, string>,
@@ -93,8 +87,6 @@ export function InvoiceDataFields({ copy, idPrefix, values, errors = {}, onChang
   const company = values.recipientKind === 'Company';
   const nameLabel = text[`name.${values.recipientKind}`];
   const optionProblem = OPTION_FIELDS.some((field) => (field === 'vatNumber' && company ? false : Boolean(errors[field])));
-  // The options (the address included) are open when they hold something (a draft, saved data) or a problem, and stay as the person leaves them:
-  // they do not close under the cursor of whoever empties a field. The country is something only when it is not the default one.
   const [opened, setOpened] = useState(() =>
     OPTION_FIELDS.some((field) => {
       if (field === 'vatNumber' && company) return false;
@@ -114,7 +106,6 @@ export function InvoiceDataFields({ copy, idPrefix, values, errors = {}, onChang
   const explain = (why: InvoiceFieldsCopySuffix, example?: string): ReactNode => (
     <Explanation why={text[why]} exampleLabel={text.example} example={example} />
   );
-  // The props of a plain text control, as `register` of a form library gives them: spread on the `Input` of the field.
   const register = (field: Exclude<InvoiceDataField, 'recipientKind' | 'countryCode'>) => ({
     id: idOf(field),
     value: values[field],

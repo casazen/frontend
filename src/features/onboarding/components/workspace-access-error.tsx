@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-/** Recovery only when the persisted profile or server authorization could not be confirmed. No role-sync gate. */
 export function WorkspaceAccessError({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (

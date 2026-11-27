@@ -10,26 +10,16 @@ import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-erro
 import { saveBlobAs } from '@/lib/file-download';
 import type { DeclareSwissDayRequest, DeclareTicinoDayRequest, TicinoNotificationRequest, UploadSwissReceiptForm } from '@/types/swissCompliance.types';
 
-/** The root of the days of the Ticino police notification (`GET …/swiss/ticino-notification`): an event about the property reads them again (`use-notifications-realtime.ts`). */
 export const TICINO_POLICE_KEY = 'ticino-police';
 
-/** The key of one arrival day of a property (`date` empty: the one the server picks, the oldest still to notify). */
 export const ticinoDayKey = (propertyId: string, date?: string) => [TICINO_POLICE_KEY, propertyId, date ?? ''] as const;
 
-/** The code of the 409 of a file of a day that is declared uploaded (or has a receipt) and was asked without the person's confirmation. */
 const ALREADY_DECLARED_CODE = 'ticino_day_already_declared';
 
-/** Whether a failure is the 409 that asks the person to confirm a new file of a closed day (another host closed the day while the layer was open). */
 export function isAlreadyDeclaredConflict(error: unknown): boolean {
   return isAxiosError(error) && getHttpStatus(error) === 409 && getProblemCode(error.response?.data) === ALREADY_DECLARED_CODE;
 }
 
-/**
- * One arrival day of the Ticino police notification of a property (casazen/backend#979); `date` empty = the oldest day still to notify. The guests of a day change
- * from other screens (a check-in, a booking edited, a co-host declaring it), where this one is not watched: it is read again every time it opens, and what was read a
- * moment ago is not asked twice. The reader looks at a refusal (404, 403, 422) before `data`: TanStack Query keeps the old data of a read that fails, and a 404 is «not found» with it
- * too. A read that fails for another reason (the line, a 5xx) with the day on screen leaves the day where it is, with a line to read it again.
- */
 export function useTicinoDay(propertyId: string, date?: string) {
   return useQuery({
     queryKey: ticinoDayKey(propertyId, date),
@@ -40,7 +30,6 @@ export function useTicinoDay(propertyId: string, date?: string) {
   });
 }
 
-/** What changed when the day moved on: the days of the property and the cockpit with the counter of the menu (the days still to notify are a section of its summary). */
 function refreshAfterChange(queryClient: QueryClient, propertyId: string): void {
   void queryClient.invalidateQueries({ queryKey: [TICINO_POLICE_KEY, propertyId] });
   void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
@@ -64,7 +53,6 @@ export function useDownloadTicinoFile(propertyId: string) {
       }
     },
     onSuccess: () => {
-      // How many times the file of the day was generated is on the day: a file asked for again later is known to be another one.
       void queryClient.invalidateQueries({ queryKey: [TICINO_POLICE_KEY, propertyId] });
       toast.success(i18n.t('swiss.file.downloaded'));
     },
@@ -78,7 +66,6 @@ export function useDownloadTicinoFile(propertyId: string) {
   });
 }
 
-/** Downloads the sheet of a group of six or more persons (decision D11): the personal data of its members, saved and let go. */
 export function useDownloadGroupSheet(propertyId: string) {
   return useMutation({
     gcTime: 0,
@@ -99,10 +86,6 @@ export function useDownloadGroupSheet(propertyId: string) {
   });
 }
 
-/**
- * The host says the file of the day was uploaded to the portal (E30/F02/US02/T01, NF-128): the day leaves the days to notify, the cockpit and the counter of the
- * menu read again, and the other hosts of the property are told by the server. A day declared already (by a co-host) is not an error: the answer says `created: false`.
- */
 export function useDeclareTicinoDay(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -146,10 +129,8 @@ export function useUndeclareTicinoDay(propertyId: string) {
   });
 }
 
-/** The root of the days of the assisted notification of the cantons other than Ticino (`GET …/swiss/notification-day`): an event about the property reads them again (`use-notifications-realtime.ts`). */
 export const SWISS_NOTIFICATION_KEY = 'swiss-notification';
 
-/** The key of one arrival day of a property (`date` empty: the one the server picks, the oldest still to notify). */
 export const swissDayKey = (propertyId: string, date?: string) => [SWISS_NOTIFICATION_KEY, propertyId, date ?? ''] as const;
 
 /**
@@ -169,17 +150,11 @@ export function useSwissDay(propertyId: string, date?: string, options: { enable
   });
 }
 
-/** What changed when a day moved on: the days of the property and the cockpit with the counter of the menu (the days still to notify are a section of its summary). */
 function refreshSwissAfterChange(queryClient: QueryClient, propertyId: string): void {
   void queryClient.invalidateQueries({ queryKey: [SWISS_NOTIFICATION_KEY, propertyId] });
   void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
 }
 
-/**
- * The host says the guests of the day were notified to the authority (E31/F02/US02/T02, NF-131, decision D10): the day leaves the days to notify, the cockpit and the counter of the menu
- * read again (so the item and the red number go with no reload), and the other hosts of the property are told by the server. A day declared already (by a co-host) is not an error: the
- * answer says `created: false`. The answer holds no guest data; the mutation is dropped as soon as nothing watches it and a refusal is kept without the request.
- */
 export function useDeclareSwissDay(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -201,7 +176,6 @@ export function useDeclareSwissDay(propertyId: string) {
   });
 }
 
-/** The host takes the declaration back (the notification was not made after all): the day is to notify again. */
 export function useUndeclareSwissDay(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -240,7 +214,6 @@ export function useRecordTicinoDocument(propertyId: string) {
           await swissComplianceApi.declareTicinoDay(propertyId, { arrivalDay: form.reportDate, receiptId: receipt.id });
           return { type: form.type, declared: true };
         } catch {
-          // The receipt is filed and it closes the day by itself: only who declared it, and when, is missing. The person is told so.
           return { type: form.type, declared: false };
         }
       } catch (error) {

@@ -41,7 +41,6 @@ afterEach(() => {
 });
 
 describe('SwissRegistrationGuidance, the card of the regime or the guidance it replaces (E29/F02/US02/T01)', () => {
-  // AC4: the old guidance disappears when the flag is on; with it off nothing changes and nothing is asked of the server.
   it('SwissRegistrationGuidance_FlagOff_IsTheGuidanceItAlwaysWasAndAsksNothing', () => {
     renderGuidance(false);
 

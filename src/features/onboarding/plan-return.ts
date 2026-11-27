@@ -19,7 +19,6 @@ export function inventoryPlanPart(params: URLSearchParams): InventoryPart | null
   return isInventoryPart(value) ? value : null;
 }
 
-/** Only inventory destinations that provide a way back receive the originating part. */
 export function withPlanPart(to: string, part: unknown): string {
   if (!isInventoryPart(part)) return to;
   const [pathname, search] = to.split('?');
@@ -29,7 +28,6 @@ export function withPlanPart(to: string, part: unknown): string {
   return `${pathname}?${params}`;
 }
 
-/** A return always points to a known section of this app's plan. A regular inventory visit keeps its original destination. */
 export function usePlanReturn() {
   const [params] = useSearchParams();
   const part = inventoryPlanPart(params);
@@ -40,7 +38,6 @@ export function usePlanReturn() {
     ? planResumeHref(part) : null;
 }
 
-/** The OAuth provider uses a fixed callback address. Carry only the originating part through that same-tab round trip. */
 export function connectReturnScope(userId: string | undefined, orgId: string | undefined): string | null {
   return userId && orgId ? `casazen:octorate-plan-return:${encodeURIComponent(userId)}:${encodeURIComponent(orgId)}` : null;
 }

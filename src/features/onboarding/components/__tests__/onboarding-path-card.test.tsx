@@ -50,7 +50,6 @@ describe('OnboardingPathCard, the path «Inizia con CasaZen» on the home (UX-10
     await i18n.changeLanguage('it');
     workspace.contexts = OWNER;
     flags.octorateOnboarding = true;
-    // The connection is done: what hangs from the properties (listings, prices, compliance) can be done now.
     vi.mocked(onboardingApi.getPath).mockReset().mockResolvedValue(path(done('connectChannels')));
     vi.mocked(onboardingApi.getPlan)
       .mockReset()
@@ -99,12 +98,10 @@ describe('OnboardingPathCard, the path «Inizia con CasaZen» on the home (UX-10
 
       const card = await screen.findByTestId('onboarding-path-card');
 
-      // The connection is done, the properties are not: not the first part of the step, the one that is left (the channels wait for the properties).
       expect(within(card).getByTestId('onboarding-path-continue')).toHaveAttribute('href', '/app/short-rent/onboarding/parts/properties');
     });
 
     it('Card_NextStepWhoseOnlyPartsLeftWaitForAnotherPart_ShowsTheStepAndNoContinue', async () => {
-      // Nobody provides the match of the properties, so the channels, which need it, wait for good: the server names the step, there is no part to open.
       const stuck = plan({ properties: { state: 'notAvailable', reason: 'mapping_unavailable' } });
       expect(stuck.path.next).toBe('connectChannels');
       vi.mocked(onboardingApi.getPath).mockResolvedValue(stuck.path);
@@ -114,7 +111,6 @@ describe('OnboardingPathCard, the path «Inizia con CasaZen» on the home (UX-10
       const card = await screen.findByTestId('onboarding-path-card');
 
       expect(within(card).getByText(`Prossimo: ${i18n.t('onboardingPlan.path.steps.connectChannels.title')}`)).toBeInTheDocument();
-      // The plan page gives those parts no way in either: a link would lead nowhere useful.
       expect(within(card).queryByTestId('onboarding-path-continue')).not.toBeInTheDocument();
       expect(within(card).getByTestId('onboarding-path-all')).toHaveAttribute('href', '/app/short-rent/onboarding');
     });

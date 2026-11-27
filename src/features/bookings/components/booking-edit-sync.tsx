@@ -7,21 +7,14 @@ import { stayDateOf } from '../lib/booking-price';
 import { syncReasonKey, syncRetriesByItself } from '../lib/octorate-sync';
 
 interface BookingEditSyncProps {
-  /** The booking as the detail reads it: its `octorateSync` is what the channel manager holds of the last thing CasaZen sent. */
   booking: Booking;
-  /** Another call of the same page is under way (the save, the quote, asking again): nothing here can be started meanwhile. */
   busy: boolean;
-  /** What the call that asked again answered when it refused (404, 409...), as a sentence; `null` when it did not. */
   retryError: string | null;
   /** "Retry now" asks for the push again; `overwrite` writes CasaZen's version over the one that changed in the channel manager. */
   onRetry: (overwrite: boolean) => void;
-  /** The host chooses the version of the channel manager after a conflict: the page opens the form with its dates and guests. Missing when the form cannot take them. */
   onUseChannelVersion?: () => void;
-  /** The page has stopped asking for a push that is still `Pending` (`useSyncWatch`): the line says that there is no answer yet, and offers «Check again». */
   waitOver?: boolean;
-  /** «Check again» reads the booking once more and waits for one more minute. */
   onCheckAgain?: () => void;
-  /** The booking is being read again (what «Check again» asked for). */
   checking?: boolean;
 }
 
@@ -38,8 +31,6 @@ export function BookingEditSync({ booking, busy, retryError, onRetry, onUseChann
   if (!sync || sync.state === 'Synced') return null;
 
   if (sync.state === 'Pending') {
-    // A push that is still `Pending` when the page stopped asking is not "being sent" any more as far as this page knows: it says that nothing has come back, which is
-    // neither a success nor a failure, and lets the host look again.
     if (waitOver) {
       return (
         <Alert
@@ -85,9 +76,6 @@ export function BookingEditSync({ booking, busy, retryError, onRetry, onUseChann
     </Button>
   );
 
-  // Two versions can be in conflict only for a change CasaZen sent (`Update`): the reservation changed in the channel manager after CasaZen read it. The refusal of anything
-  // else is no booking changed over there: a creation whose dates are taken in the channel manager (`octorate_dates_unavailable`) has no reservation to differ from. It is
-  // a failure like the others: it says why, and the choice is to ask again once the problem is sorted out.
   const versionsInConflict = sync.state === 'Conflict' && sync.lastOperation === 'Update';
 
   if (sync.state === 'Failed' || (sync.state === 'Conflict' && !versionsInConflict)) {
@@ -114,7 +102,6 @@ export function BookingEditSync({ booking, busy, retryError, onRetry, onUseChann
     );
   }
 
-  // `Conflict` of a change: the reservation changed in the channel manager after CasaZen read it. Both versions are shown and neither is lost until the host decides.
   const day = (value: string | null | undefined) =>
     value ? formatStayDate(stayDateOf(value), i18n.language, { day: 'numeric', month: 'short', year: 'numeric' }) : t('booking.edit.conflict.notAvailable');
   const stay = (checkIn: string | null | undefined, checkOut: string | null | undefined) => `${day(checkIn)} → ${day(checkOut)}`;

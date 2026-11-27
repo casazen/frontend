@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-/** Explicit confirmation of an admin action on a supplier or an invite (reactivate, revoke, resend). */
 export function ConfirmAdminActionDialog({
   title,
   description,

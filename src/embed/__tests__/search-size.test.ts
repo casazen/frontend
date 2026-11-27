@@ -2,14 +2,8 @@
 import { gzipSync } from 'node:zlib';
 import { build } from 'vite';
 import { describe, expect, it } from 'vitest';
-// The build script is a plain `.mjs`: the test builds the bundles with the very options `npm run build` uses.
 import { ENTRIES, embedBuildConfig } from '../../../scripts/build-embed.mjs';
 
-/**
- * The size and the content of the bundle of the search bar (E41/F02/US01/T02, NF-146): at most 16 KB gzip, while the core loader keeps its 6 KB; and,
- * as for the loader, nothing in it that stores, calls a server, evaluates text as code or writes HTML or a style attribute as text. The bar draws no
- * frame and loads no image either. The bundles are built in memory, the same way the build writes them.
- */
 const MAX_SEARCH_GZIP_BYTES = 16384;
 const MAX_LOADER_GZIP_BYTES = 6144;
 const BUILD_TIMEOUT = 120_000;
@@ -26,7 +20,6 @@ async function bundleOf(name: string): Promise<string> {
 
 const gzipBytes = (code: string) => gzipSync(Buffer.from(code, 'utf8')).length;
 
-/** What the bar must not contain, each with the reason. */
 const FORBIDDEN: [string, RegExp][] = [
   ['the network (fetch)', /\bfetch\(/],
   ['the network (XMLHttpRequest)', /XMLHttpRequest/],
@@ -78,7 +71,6 @@ describe('search.js: size and content (AC5, AC8)', () => {
       expect(code.startsWith('(function(){')).toBe(true);
       expect(code).not.toMatch(/^\s*(var|let|const)\s/);
       expect(code).not.toMatch(/CasaZenEmbed\s*=\s*\(function/);
-      // It reaches the loader through the global it keeps, to register itself, and writes nothing to it.
       expect(code).toContain('CasaZenEmbed');
       expect(code).toContain('register');
     },
@@ -93,7 +85,6 @@ describe('search.js: size and content (AC5, AC8)', () => {
       expect(code).toContain('Verifica disponibilità');
       expect(code).toContain('Check availability');
       expect(code).toContain('czs-');
-      // The protocol and the frames are the loader's: the bar does not carry them.
       expect(code).not.toContain('casazen:event');
       expect(code).not.toContain('postMessage');
       expect(code).not.toContain('MutationObserver');
@@ -108,7 +99,6 @@ describe('search.js: size and content (AC5, AC8)', () => {
       const code = await bundleOf('embed');
 
       expect(gzipBytes(code)).toBeLessThanOrEqual(MAX_LOADER_GZIP_BYTES);
-      // Nothing of the bar travels in the core.
       expect(code).not.toContain('Verifica disponibilità');
       expect(code).not.toContain('Check availability');
       expect(code).not.toContain('czs-');

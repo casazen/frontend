@@ -11,7 +11,6 @@ import '@/features/public-booking/checkout/checkout.css';
 
 interface PaymentPanelProps {
   booking: DirectBookingResponse;
-  /** Where Stripe sends the guest back after a redirect method: the outcome page of this booking. */
   returnUrl: string;
   error: string | null;
   onError: (message: string) => void;

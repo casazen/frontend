@@ -1,19 +1,9 @@
-/**
- * Demo mode build rules (A9-38). Pure module without Vite or DOM types: `vite.config.ts` runs it at build time and
- * `demo.config.ts` reads the mode name at runtime.
- */
-
-/** Vite mode of the demo build (`npm run build:demo` → `vite build --mode demo`). */
 export const DEMO_BUILD_MODE = 'demo';
 
 export interface DemoBuildInput {
-  /** Vite command: `build` for a bundle, `serve` for the dev server (Playwright, `npm run dev:demo`). */
   command: 'build' | 'serve';
-  /** Vite mode (`production` for `npm run build`, `demo` for `npm run build:demo`). */
   mode: string;
-  /** Value of `VITE_DEMO_MODE` seen by Vite (process environment or `.env` files). */
   demoFlag: string | undefined;
-  /** Value of `VERCEL_ENV` on Vercel (`production`, `preview`, `development`), undefined elsewhere. */
   vercelEnv: string | undefined;
 }
 

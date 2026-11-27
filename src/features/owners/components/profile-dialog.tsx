@@ -17,11 +17,8 @@ interface ProfileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ownerId: string;
-  /** The profile in force, in full: the form starts from it (a new version of the same owner). `null` for the first profile. */
   from: OwnerFiscalProfile | null;
-  /** The rule sets of the agency: the profile picks one. */
   policies: readonly OwnerAccountingPolicy[];
-  /** The day the FIRST profile of the owner starts by default: the first day of the month to close (a profile never covers the days before its start). */
   suggestedFrom: string;
   /** The start of the newest profile of the owner: a new one must start after it, since the server refuses a day that is not later (409). `null` for the first profile. */
   latestStart: string | null;
@@ -75,7 +72,6 @@ const REVIEW_FIELDS = ['legalName', 'entityKind', 'taxResidenceCountry', 'fiscal
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const JURISDICTION = /^[A-Za-z]{2}(-[A-Za-z0-9]{1,5})?$/;
 
-/** A field that is a code: the values the accounting knows, and the one stored when it is none of them. */
 function ChoiceField({ field, value, onChange }: { field: ProfileOptionField; value: string; onChange: (patch: Partial<Record<ProfileOptionField, string>>) => void }) {
   const { t } = useTranslation();
   const known: readonly string[] = PROFILE_OPTIONS[field];
@@ -94,15 +90,8 @@ function ChoiceField({ field, value, onChange }: { field: ProfileOptionField; va
   );
 }
 
-/** The text of a field, or nothing: the server stores an empty field as none. */
 const text = (value: string): string | undefined => (value.trim() === '' ? undefined : value.trim());
 
-/**
- * A new version of the fiscal profile of an owner (E06/F05/US02/T01, T04): who the owner is for the statements, the payouts and the tax evidence,
- * how they are paid, the mandate, how revenue and costs are recognized and which jurisdiction and approved rule set apply. It takes effect from the
- * day given; the one in force ends the day before, and nothing already posted changes. The country does not choose the rule: the person does, and
- * the server blocks a rule that is not approved, not in force or of another jurisdiction.
- */
 export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, suggestedFrom, latestStart }: ProfileDialogProps) {
   const { t, i18n } = useTranslation();
   const { date } = useOwnerFormat();
@@ -118,7 +107,6 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, sug
   const currencyOk = form.settlementCurrency.trim() === '' || /^[A-Za-z]{3}$/.test(form.settlementCurrency.trim());
   const jurisdictionOk = form.taxJurisdiction.trim() === '' || JURISDICTION.test(form.taxJurisdiction.trim());
   const mandateOk = form.mandateFrom === '' || form.mandateTo === '' || form.mandateTo >= form.mandateFrom;
-  // The server refuses a profile that does not start after the newest one (409 `owner_fiscal_profile_overlap`): the form says so before it is sent.
   const startsAfterTheLast = latestStart === null || !DAY.test(form.validFrom) || form.validFrom > latestStart;
   const valid = DAY.test(form.validFrom) && startsAfterTheLast && countryOk && currencyOk && jurisdictionOk && mandateOk;
 

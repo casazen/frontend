@@ -72,7 +72,6 @@ describe('the model of the card of the regime of the registration of the guests 
     it('certaintyView_TheDayTheEntryWasRead_IsWrittenInTheLanguageOfThePageWithoutShiftingTheDay', () => {
       expect(certaintyView(regime({ verifiedOn: '2026-11-20' }), it_, 'it').text).toContain('20 novembre 2026');
       expect(certaintyView(regime({ verifiedOn: '2026-11-20' }), en, 'en').text).toContain('November 20, 2026');
-      // A date that is not one never prints «undefined» or an invalid date.
       expect(certaintyView(regime({ verifiedOn: 'soon' }), it_, 'it').text).not.toMatch(/undefined|Invalid/);
     });
 
@@ -125,7 +124,6 @@ describe('the model of the card of the regime of the registration of the guests 
     expect(DUTY_ANSWERS).toEqual(['Required', 'NotRequired']);
   });
 
-  // The words of the card, in both languages: every member of every enum the API writes has its sentence (a missing one would read as the raw value).
   describe.each(['it', 'en'])('the texts in %s', (language) => {
     it('EveryMemberOfEveryEnum_HasItsText', () => {
       const groups: Array<[string, readonly string[]]> = [
@@ -142,7 +140,6 @@ describe('the model of the card of the regime of the registration of the guests 
         expect(i18n.exists(`guestRegistration.certainty.${certainty}.label`, { lng: language }), certainty).toBe(true);
         expect(i18n.exists(`guestRegistration.certainty.${certainty}.text`, { lng: language }), certainty).toBe(true);
       }
-      // The three duties are told by the duty block, with the words of its two answers.
       expect(GUEST_REGISTRATION_DUTIES).toEqual(['Required', 'NotRequired', 'Ask']);
       for (const key of ['required', 'answeredRequired', 'answeredNotRequired', 'askTitle', 'askQuestion', 'mustNotify', 'mustNotNotify', 'change', 'reversible', 'saveFailed']) {
         expect(i18n.exists(`guestRegistration.duty.${key}`, { lng: language }), key).toBe(true);

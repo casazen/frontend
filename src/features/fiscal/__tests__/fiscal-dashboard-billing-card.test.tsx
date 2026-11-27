@@ -63,7 +63,6 @@ describe('FiscalDashboardPage: the card «Fatturazione» (E11/F02/US01/T01)', ()
     expect(within(card).getByText(i18n.t('billingWizard.card.description'))).toBeInTheDocument();
     expect(screen.getByTestId('fiscal-billing-card-cta')).toHaveAttribute('href', BILLING_SETUP_PATH);
     expect(screen.getByTestId('fiscal-billing-card-cta')).toHaveTextContent(i18n.t('billingWizard.card.action'));
-    // The one highlighted block of the page stays the one that was there.
     expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
   });
 
@@ -76,7 +75,6 @@ describe('FiscalDashboardPage: the card «Fatturazione» (E11/F02/US01/T01)', ()
     expect(screen.queryByTestId('fiscal-billing-card-cta')).not.toBeInTheDocument();
   });
 
-  // Flag rule: with the issuance off the wizard is not there (its address leads to the home of the area), so the card is not there either.
   it('FiscalDashboard_BillingCard_WithTheIssuanceOffIsNotThereForAnyone', async () => {
     permissions.issuance = false;
     renderPage();

@@ -15,13 +15,11 @@ import { useOwnerNames } from '@/queries/use-owner-accounting';
 import { OwnerDataMaskedError, useCreateOwnerIssuerFromOwnerData, useOwnerIssuerProfile } from '@/queries/use-owner-issuer-profile';
 import type { OwnerIssuerProfile, PropertyOwnerSummary } from '@/types';
 
-/** The owners drawn before «Mostra tutti»: each row reads its own profile, so a long registry does not ask for all of them at once. */
 const VISIBLE_OWNERS = 20;
 
 const nameOf = (owner: PropertyOwnerSummary, unnamed: (id: string) => string): string => `${owner.firstName} ${owner.lastName}`.trim() || unnamed(shortId(owner.id));
 
 interface OwnerIssuersStepProps {
-  /** How many owners the billing setup still says have no issuer profile that can issue (the item `owner_issuer_missing`): `0` when it says none. The server's count, never one worked out from the rows. */
   missing: number;
 }
 
@@ -41,7 +39,6 @@ export function OwnerIssuersStep({ missing }: OwnerIssuersStepProps) {
   if (owners.isPending) {
     list = <SkeletonCard lines={3} label={t('billingWizard.ownerIssuers.loading')} />;
   } else if (owners.isError || !owners.data || getHttpStatus(owners.error) === 404) {
-    // A failed read keeps the old list: a 404 is still «not found» and any failure is told as one, never as an empty registry.
     list = <OwnerAccountingError error={owners.error} title={t('billingWizard.ownerIssuers.loadError')} onRetry={() => void owners.refetch()} />;
   } else if (owners.data.length === 0) {
     list = (
@@ -85,10 +82,6 @@ export function OwnerIssuersStep({ missing }: OwnerIssuersStepProps) {
   );
 }
 
-/**
- * One owner: its name, where it stands as an issuer, and what can be done. The profile is read here, for the rows on screen. The buttons of the row wait while the quick creation of the row is on its way. The
- * profile that cannot be changed by this person (the server masked it) has no button, and a profile of another country is left as it is.
- */
 function OwnerIssuerRow({ owner }: { owner: PropertyOwnerSummary }) {
   const { t } = useTranslation();
   const profile = useOwnerIssuerProfile(owner.id);
@@ -97,13 +90,10 @@ function OwnerIssuerRow({ owner }: { owner: PropertyOwnerSummary }) {
   const [problem, setProblem] = useState<string | null>(null);
   const name = nameOf(owner, (id) => t('ownerAccounting.owner.unnamed', { id }));
   const gone = getHttpStatus(profile.error) === 404;
-  // What the row draws and offers comes from the last answer only while it is a good one: a query keeps its old answer when a later read fails, and a profile that is not found (404: the owner is not among the owners any
-  // more) or that could not be read is not one whose old data are still there to be shown, completed or created over.
   const data = profile.isError ? undefined : profile.data;
   // The form in the layer follows the last answer that was read, even if a later read failed (a read that fails does not take the form from under the person's hands), but never the one of a profile that is not found.
   const editable = gone ? undefined : profile.data;
   const state = data ? issuerStateOf(data) : null;
-  // What the profile misses, by the fields this client has words for: a field it has none for is not shown as a key.
   const missingFields = data ? missingFieldsOf(data) : [];
 
   const createFromData = async () => {
@@ -182,7 +172,6 @@ function OwnerIssuerRow({ owner }: { owner: PropertyOwnerSummary }) {
   );
 }
 
-/** Where the profile stands, in a word with the colour of the state: the word says it to everyone and the colour at a glance. */
 function OwnerIssuerStateBadge({ profile }: { profile: OwnerIssuerProfile }) {
   const { t } = useTranslation();
   const state = issuerStateOf(profile);
@@ -200,7 +189,6 @@ interface OwnerIssuerDialogProps {
   onClose: () => void;
 }
 
-/** The form of the issuer profile of the owner in a layer over the wizard: it saves and closes, or the person gives up, and the wizard stays where it was. */
 function OwnerIssuerDialog({ ownerId, ownerName, profile, onClose }: OwnerIssuerDialogProps) {
   const { t } = useTranslation();
   return (

@@ -11,14 +11,8 @@ import {
   type TouristTaxCollection,
 } from '@/types/compliance.types';
 
-/** Category proposed for the request of step 3 (backend catalog code, SU-03). */
 export const DEFAULT_CLEANING_CATEGORY = 'cleaning';
 
-/**
- * What the host answered in the check-out wizard (CO-17, A5-24). The wizard (`WizardShell`) holds them as the values of
- * its form and saves them as progress on the server when the host lands on another step: a reload, or the app, opens the
- * wizard on the same step with the same answers. The step is not one of them: it lives in the address (`?step=`).
- */
 export interface CheckoutAnswers {
   departureConfirmed: boolean;
   cleaningChoice: CheckoutCleaningChoice | null;
@@ -34,15 +28,10 @@ function isCheckoutStepId(value: string | null | undefined): value is CheckoutWi
   return (CHECKOUT_WIZARD_STEPS as readonly string[]).includes(value ?? '');
 }
 
-/** The step the server says the wizard is on, or the first when it says something this app does not know. */
 export function stepFromState(state: CheckoutWizardState): CheckoutWizardStepId {
   return isCheckoutStepId(state.currentStep) ? state.currentStep : CHECKOUT_WIZARD_STEPS[0];
 }
 
-/**
- * The answers as the server saved them. The tax of a booking paid online on the booking site is proposed as
- * "collected online" (the host still confirms it by moving on); nothing else is assumed.
- */
 export function answersFromState(state: CheckoutWizardState): CheckoutAnswers {
   return {
     departureConfirmed: state.stay.departureConfirmed,
@@ -93,7 +82,6 @@ function textOrNull(value: string): string | null {
   return trimmed ? trimmed : null;
 }
 
-/** Body of `PUT checkout-wizard/progress` for the answers, on `step`. */
 export function progressCommand(answers: CheckoutAnswers, step: CheckoutWizardStepId): CheckoutWizardProgressCommand {
   const request = answers.cleaningChoice === 'Request';
   return {
@@ -109,10 +97,6 @@ export function progressCommand(answers: CheckoutAnswers, step: CheckoutWizardSt
   };
 }
 
-/**
- * Body of `POST checkout-wizard/complete`: the cleaning request of step 3 (or "skip"), the tax collection of step 4 and
- * the readiness of step 5 exactly as answered. A property "not ready yet" stays a turnover in the cockpit.
- */
 export function completeCommand(answers: CheckoutAnswers): CheckoutWizardCompleteCommand {
   const request = answers.cleaningChoice === 'Request';
   return {

@@ -26,7 +26,6 @@ test.describe('Plan management (#202 extension)', () => {
     await mockPlansCatalog(page);
   });
 
-  // The signup selects a plan and requires confirmation before entering the workspace.
   test('onboarding completes payment and opens the first property', async ({ page }) => {
     await page.goto(demoUrl(ONBOARDING_URL, 'onboarding'));
 

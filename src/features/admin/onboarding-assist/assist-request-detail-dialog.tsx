@@ -10,7 +10,6 @@ import { assistRequestTitle } from '../lib/assist-request-title';
 import { AssistChecklist } from './assist-checklist';
 
 interface AssistRequestDetailDialogProps {
-  /** The request of the row that was opened: it names the dialog until the server's answer (with the checklist) is here. */
   request: AdminAssistRequest;
   onClose: () => void;
 }

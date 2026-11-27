@@ -54,13 +54,11 @@ describe("StatusBadge content", () => {
     rerender(<StatusBadge kind="request" status="Completato" perspective="supplier" />);
     expect(screen.getByText("In attesa di pagamento")).toBeInTheDocument();
 
-    // A state the supplier sees the same way keeps its name.
     rerender(<StatusBadge kind="request" status="InCorso" perspective="supplier" />);
     expect(screen.getByText("In corso")).toBeInTheDocument();
   });
 
   it("StatusBadge_UnknownValueFromTheServer_ShowsTheValueNotARawKeyNorABlank", () => {
-    // A backend newer than the app: it must not show "status.booking.Teleported.label" nor break.
     render(<StatusBadge kind="booking" status={"Teleported" as never} />);
 
     const badge = screen.getByText("Teleported").closest("span[data-status]") as HTMLElement;
@@ -81,7 +79,6 @@ describe("StatusBadge content", () => {
   });
 
   it("StatusBadge_EarningStateTheAppDoesNotKnow_IsNeutralWithTheWordsOfThePage", () => {
-    // The set of the server is open: a state it adds later is neutral and says what the page says, and carries its raw value for the tests.
     const { container } = render(<StatusBadge kind="earning" status={"held" as never} label="Vedi la richiesta" />);
 
     const badge = container.querySelector("span[data-status]") as HTMLElement;
@@ -91,7 +88,6 @@ describe("StatusBadge content", () => {
   });
 
   it("StatusBadge_PhaseOfAPage_TakesItsOwnWordsToneAndIconAndKeepsThePhaseAsItsStatus", () => {
-    // A phase of a request (a time proposed, a quote sent) is not a state of the API: the badge is the shared one with the words, the tone and the icon of the page.
     const { container } = render(
       <StatusBadge kind="request" status="Richiesto" perspective="supplier" label="In attesa del cliente" tone="info" icon="hourglass" data-status="QuotePending" />,
     );
@@ -112,7 +108,6 @@ describe("StatusBadge content", () => {
           const { container, unmount } = render(<StatusBadge kind={kind} status={status as never} />);
           const text = container.textContent ?? "";
           expect(text.trim().length, `${kind}.${status}`).toBeGreaterThan(0);
-          // A key that was not found would show itself.
           expect(text, `${kind}.${status}`).not.toMatch(/^status\./);
           expect(container.querySelector("svg"), `${kind}.${status}`).not.toBeNull();
           unmount();

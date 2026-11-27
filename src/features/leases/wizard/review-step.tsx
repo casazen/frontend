@@ -27,7 +27,6 @@ const ICONS: Record<LeaseReviewSeverity, { Icon: LucideIcon; tone: string }> = {
 function CheckLine({ check, href }: { check: LeaseReviewCheck; href?: string }) {
   const { t, i18n } = useTranslation();
   const { Icon, tone } = ICONS[check.severity];
-  // Another lease on the same days (LR-OVERLAP): the check says which one, and the link opens it.
   const conflictId =
     check.code === PERIOD_CONFLICT_CHECK && typeof check.params?.conflictingLeaseId === 'string' ? check.params.conflictingLeaseId : null;
   return (
@@ -52,7 +51,6 @@ function CheckLine({ check, href }: { check: LeaseReviewCheck; href?: string }) 
   );
 }
 
-/** «650 €», «1.234,50 €»: the cents only when there are some. */
 function money(amount: number, language: string): string {
   return new Intl.NumberFormat(language, {
     style: 'currency',
@@ -89,7 +87,6 @@ export function ReviewStep({
 }: {
   review: UseQueryResult<LeaseReview>;
   hrefOfStep: (step: number) => string;
-  /** What the form holds: the review is reached when the steps before it are saved, so these are the values of the contract. */
   values: WizardValues;
   rules: LongRentRules;
 }) {
@@ -110,7 +107,6 @@ export function ReviewStep({
   const day = (date: string) => formatStayDate(date, language);
   const length = (months: number) => (months % 12 === 0 ? t('leaseWizard.dates.years', { count: months / 12 }) : t('leaseWizard.dates.months', { count: months }));
 
-  // ---- the story: one short sentence for each thing the contract says
   const story = contractStory(values, rules, property?.name ?? '');
   const sentences: string[] = [];
   if (story.tenants.length > 0) {
@@ -151,7 +147,6 @@ export function ReviewStep({
     );
   }
 
-  // ---- the data, in four groups; each one is edited at its own step
   const people = (rows: WizardValues['landlords']) =>
     rows.filter((row) => !isBlankRow(row)).map((row) => [partyName(row), row.fiscalCode.trim().toUpperCase()].filter(Boolean).join(' · '));
   const groups: DataGroup[] = [
@@ -222,7 +217,6 @@ export function ReviewStep({
         </p>
       ) : null}
 
-      {/* A thing still missing comes first: it is what there is to do. */}
       {checksOf(BLOCK)}
 
       {sentences.length > 0 ? (

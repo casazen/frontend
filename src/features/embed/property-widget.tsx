@@ -9,7 +9,6 @@ import { PropertyPageSkeleton } from '@/features/public-booking/components/prope
 import { useOrgPublicProperty } from '@/queries/use-public-org';
 import type { PublicOrgDto } from '@/types';
 
-/** What the shell of the frame gives its widget (the same `{ org }` as `PublicSiteShell` gives the pages of the booking site). */
 interface EmbedOutletContext {
   org: PublicOrgDto;
 }
@@ -32,17 +31,14 @@ export function PropertyWidget() {
   const embed = useEmbed();
   const { send } = useEmbedBridge();
   const orgSlug = embed?.orgSlug ?? org.slug;
-  // Asked again every time the widget opens: the guest moves between the results and the homes without the frame being loaded afresh.
   const { data: property, isError, isPaused, error, refetch } = useOrgPublicProperty(orgSlug, propertySlugOrId, { fresh: true });
 
-  // A 404 is «not found», and so is an address that names no home to ask for (no org, no home: nothing is asked).
   const notFound = (isError && isAxiosError(error) && error.response?.status === 404) || !orgSlug || !propertySlugOrId;
   // A read that waits for the network (the browser is offline: TanStack Query pauses it, it is not loading) has no home to show and the server has said nothing: it is an
   // error with a retry like any other failure, never «not found» (and the page that frames the widget is told `load_failed`, not `not_found`). It goes on by itself
   // when the connection comes back.
   const failed = !notFound && !property && (isError || isPaused);
 
-  // The frame has nothing to show: the page is told, once for each time the widget gets there.
   useEffect(() => {
     if (notFound) send.error('not_found');
     else if (failed) send.error('load_failed');

@@ -51,7 +51,6 @@ export function PaymentDetailPage() {
   const statusLabel = getPaymentStatusLabel(payment.status, t);
   const statusVariant = PAYMENT_STATUS_VARIANTS[payment.status] || PAYMENT_STATUS_VARIANTS.Pending;
   const methodLabel = getPaymentMethodLabel(payment.method, t);
-  // Refunds go to Stripe (BK-02): only collected Stripe payments, only with payment.write.
   const isStripePayment = Boolean(payment.stripePaymentIntentId);
   const canRefund =
     isStripePayment &&
@@ -86,7 +85,6 @@ export function PaymentDetailPage() {
         />
 
         <div className="grid gap-6 md:grid-cols-3">
-          {/* Main Details */}
           <div className="md:col-span-2 space-y-6">
             <Card>
               <CardHeader>
@@ -172,7 +170,6 @@ export function PaymentDetailPage() {
             )}
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
             {isStripePayment && <PaymentRefundsCard paymentId={payment.id} currency={payment.currency} />}
 

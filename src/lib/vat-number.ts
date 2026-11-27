@@ -15,15 +15,12 @@ const RECIPIENT_CODE = /^[A-Z0-9]{7}$/;
 const EMAIL_ADDRESS =
   /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
 
-/** The longest PEC the server keeps (`BookingInvoiceData.PecMaxLength`). */
 export const PEC_MAX_LENGTH = 254;
 
-/** The country of the data when nothing is said (`BookingInvoiceData.DefaultCountryCode`). */
 export const DEFAULT_COUNTRY_CODE = 'IT';
 
 const isAsciiDigit = (character: string) => character >= '0' && character <= '9';
 
-/** Upper case with no white space, dot, dash or slash: the way a code is compared (the server's `Compact`). */
 export function compactCode(value: string | null | undefined): string {
   return (value ?? '').replace(/[\s./-]+/g, '').toUpperCase();
 }
@@ -57,7 +54,6 @@ export function normalizeVatNumber(vatNumber: string | null | undefined, country
   return (country === 'GR' ? 'EL' : country) + vat;
 }
 
-/** The code of the recipient trimmed and in upper case. */
 export function normalizeRecipientCode(code: string | null | undefined): string {
   return (code ?? '').trim().toUpperCase();
 }
@@ -67,12 +63,10 @@ export function isValidRecipientCode(code: string | null | undefined): boolean {
   return code != null && RECIPIENT_CODE.test(code);
 }
 
-/** The PEC trimmed and in lower case. */
 export function normalizePec(pec: string | null | undefined): string {
   return (pec ?? '').trim().toLowerCase();
 }
 
-/** True for an e-mail address of at most 254 characters: one at sign, a name before it and a domain with a dot after it. */
 export function isValidPec(pec: string | null | undefined): boolean {
   if (!pec || pec.length > PEC_MAX_LENGTH || !EMAIL_ADDRESS.test(pec)) return false;
 

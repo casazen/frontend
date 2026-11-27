@@ -40,11 +40,9 @@ const USERS = {};
 const userFor = (email) => {
   if (!/^[a-z0-9._+-]+@example\.test$/.test(email)) return undefined;
   const name = email.split('@')[0];
-  // The platform operator who invites suppliers is provisioned out of band in production (Auth0 dashboard).
   return (USERS[email] ??= { email, sub: `auth0|${name}`, name, roles: name.startsWith('gj-admin-') ? ['Admin'] : [] });
 };
 
-// Signing key = the throw-away TLS key (RSA): a restarted mock keeps signing with the key the backend already cached.
 const privateKey = createPrivateKey(readFileSync(process.env.E2E_TLS_KEY));
 const jwk = { ...createPublicKey(privateKey).export({ format: 'jwk' }), kid: 'e2e-1', alg: 'RS256', use: 'sig' };
 const b64u = (b) => Buffer.from(b).toString('base64url');
@@ -56,8 +54,8 @@ function sign(payload) {
   return `${head}.${body}.${b64u(sig)}`;
 }
 
-const codes = new Map(); // code -> { email, clientId, redirectUri, challenge, nonce, scope }
-const refreshTokens = new Map(); // token -> { email, clientId, scope }
+const codes = new Map();
+const refreshTokens = new Map();
 
 function tokensFor(email, clientId, nonce, scope) {
   const user = userFor(email);
@@ -172,7 +170,6 @@ async function idpHandler(req, res) {
     return json(res, 400, { error: 'unsupported_grant_type' });
   }
 
-  // Management API (M2M): the role assignment the backend does at onboarding and supplier registration.
   if (url.pathname.startsWith('/api/v2/')) {
     const rest = url.pathname.slice('/api/v2/'.length);
     if (rest === 'roles' && req.method === 'GET') {
@@ -211,7 +208,6 @@ async function mailHandler(req, res) {
   if (req.method === 'POST' && url.pathname === '/emails') {
     const body = await readBody(req);
     outbox.push({ at: new Date().toISOString(), to: [].concat(body.to ?? []), subject: body.subject, html: body.html });
-    // The Resend client reads the id as a GUID.
     return json(res, 200, { id: randomUUID() });
   }
   if (req.method === 'GET' && url.pathname === '/__outbox') return json(res, 200, outbox);

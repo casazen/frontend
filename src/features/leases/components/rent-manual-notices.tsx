@@ -9,10 +9,6 @@ type NoticeChannel = 'Email' | 'WhatsApp';
 
 const NOTICE_CHANNELS: readonly NoticeChannel[] = ['Email', 'WhatsApp'];
 
-/**
- * Budgets and settlements the landlord may send. Nothing leaves on open: the post runs only from «Invia», after at least
- * one channel is chosen.
- */
 export function RentManualNotices({ leaseId, notices, canSend = true }: { leaseId: string; notices: RentManualNotice[]; canSend?: boolean }) {
   const { t } = useTranslation();
   const [pending, setPending] = useState<RentManualNotice | null>(null);

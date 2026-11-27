@@ -34,7 +34,6 @@ describe('who wrote a message (NF-61)', () => {
     expect(senderOf(msg({ id: '1', direction: 'Outbound', origin: 'Assistant', senderName: 'Marco' }), 'Sofia', LABELS)).toBe('Assistente CasaZen');
   });
 
-  // E23/F01/US01/T01: the check-in link that CasaZen writes in the chat of the portal has no person behind it: it is never «Tu» and never a name the channel puts on it.
   it('senderOf_AutomaticMessage_IsNeverAPersonWhateverTheName', () => {
     expect(senderOf(msg({ id: '1', direction: 'Outbound', origin: 'Automation' }), 'Sofia', LABELS)).toBe('Messaggio automatico');
     expect(senderOf(msg({ id: '1', direction: 'Outbound', origin: 'Automation', senderName: 'Marco Bianchi' }), 'Sofia', LABELS)).toBe('Messaggio automatico');
@@ -73,7 +72,6 @@ describe('a refused message offered again (NF-63, AC-NF63-6)', () => {
     expect(resendKeyOf(id)).toBe(`resend-${id}`);
     expect(resendKeyOf(id)).toBe(resendKeyOf(id));
     expect(resendKeyOf(id)).not.toBe(resendKeyOf('7a2d0b63-2222-4333-8444-a55566667777'));
-    // 8 to 64 letters, digits, «-» or «_»: a Guid after the seven characters of the prefix fits.
     expect(resendKeyOf(id)).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
   });
 
@@ -92,7 +90,6 @@ describe('a refused message offered again (NF-63, AC-NF63-6)', () => {
   it('resentMessageIds_RefusedMessageNothingFollows_IsNotResent', () => {
     const messages = [host({ id: 'a', deliveryState: 'Error' }), msg({ id: 'b', text: 'Dalle 15.' }), host({ id: 'c', text: 'Altro testo' })];
 
-    // The guest wrote the same words, and the host wrote other ones: neither is the host's message again.
     expect(resentMessageIds(messages).size).toBe(0);
   });
 
@@ -115,7 +112,6 @@ describe('the sentence for a send that did not go (NF-63)', () => {
   it.each([
     [httpError(409, { code: 'thread_closed' }), 'La conversazione è chiusa: non si possono più scrivere messaggi.'],
     [httpError(409, { code: 'mapping_not_confirmed' }), "L'annuncio non è ancora collegato a un tuo immobile: il messaggio non è stato inviato."],
-    // E23/F01/US01/T03: the chat of the listing is not in the license of the channel manager yet: nothing was sent, and the sentence says what to do.
     [
       httpError(409, { code: 'chat_not_licensed' }),
       'La chat dei portali non è ancora attiva per questo annuncio: il messaggio non è stato inviato. Per attivarla devi dare il permesso nel tuo channel manager.',
@@ -140,8 +136,6 @@ describe('the sentence for a send that did not go (NF-63)', () => {
   });
 });
 
-// PRIVACY (E23/F01): the page of the guest check-in is `{site}/checkin/{token}`, and the token is a secret that opens it: the text of an automatic message holds it, and a reader who may not
-// copy the link (no `booking.write`) reads that text without it.
 describe('the check-in link in the text of an automatic message', () => {
   const HIDDEN = '[nascosto]';
 

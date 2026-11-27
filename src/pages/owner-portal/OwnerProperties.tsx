@@ -71,7 +71,6 @@ export function OwnerProperties() {
             {t('ownerPortal.properties.backToDashboard')}
           </Link>
         </Button>
-        {/* The head of every page of the portal, in the colors of the theme (it was a title in a fixed green). */}
         <PortalPageHeading
           icon={Building2}
           title={property.propertyName}
@@ -95,14 +94,12 @@ export function OwnerProperties() {
         />
       </div>
 
-      {/* Property summary: one number, said as a line (a card for a single number is only a box around it) */}
       <h2 className="sr-only">{t('ownerPortal.properties.summaryTitle')}</h2>
       <p className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-sm" data-testid="owner-property-total-bookings">
         <span className="text-muted-foreground">{t('ownerPortal.properties.totalBookings')}</span>
         <span className="text-xl font-semibold tabular-nums">{property.totalBookings}</span>
       </p>
 
-      {/* Recent bookings: dates, channel and state only, never a guest and never an amount (the answer has no currency and no share of the owner) */}
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">{t('ownerPortal.properties.recentBookings')}</CardTitle>
@@ -117,7 +114,6 @@ export function OwnerProperties() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm">
                       <Calendar aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      {/* The answer writes a booking day as an instant (the stored UTC midnight of the day, `…T00:00:00Z`): the day is read as written, never as an instant in the browser time zone. */}
                       <span className="font-medium">
                         {formatStayDate(parseStayDate(booking.checkInDate), locale)} - {formatStayDate(parseStayDate(booking.checkOutDate), locale)}
                       </span>

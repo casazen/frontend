@@ -83,10 +83,8 @@ describe('ComplianceUrgentBlock (the Home)', () => {
     );
     renderBlock();
 
-    // What only keeps a property from starting is on the page of the adempimenti: the Home keeps the red block for the law, and says the rest in one line.
     const line = await screen.findByTestId('home-compliance-line');
     expect(screen.queryByTestId('home-compliance-block')).not.toBeInTheDocument();
-    // An item with no light is not in order: it is counted as something to do, never as «tutto in regola».
     expect(line).toHaveTextContent('21 cose da fare');
     expect(line).not.toHaveTextContent('Tutto in regola');
     expect(screen.getByTestId('home-compliance-all')).toHaveAttribute('href', '/app/short-rent/compliance');
@@ -107,7 +105,6 @@ describe('ComplianceUrgentBlock (the Home)', () => {
     expect(screen.queryByText('Tutto in regola')).not.toBeInTheDocument();
   });
 
-  // E03/F03/US01/T02 (NF-52, AC-NF52-8): with the traffic light on the compliance reaches the "Adesso" block through the unified "Da fare".
   describe('with the traffic light on', () => {
     const lit = (item: ComplianceSummaryItem, light: ComplianceSummaryItem['light'], reason = 'alloggiati_not_sent'): ComplianceSummaryItem => ({ ...item, light, reason });
 
@@ -118,7 +115,6 @@ describe('ComplianceUrgentBlock (the Home)', () => {
       renderBlock();
 
       const line = await screen.findByTestId('home-compliance-line');
-      // The same item is in the "Da fare" (the feeder): this block adds neither a second path to the highlighted block nor the item twice.
       expect(screen.queryByTestId('home-compliance-block')).not.toBeInTheDocument();
       expect(screen.queryByTestId('home-compliance-cta')).not.toBeInTheDocument();
       expect(line).toHaveTextContent('1 cosa da fare');

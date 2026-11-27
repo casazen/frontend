@@ -31,7 +31,6 @@ export function PlanCard({
     return t('plan.upToProperties', { count: maxProperties });
   }
 
-  // Four rows, the same in every card of the grid (`AlignedCard`): a longer description moves the limit and the button of all the cards.
   return (
     <AlignedCard
       rows={4}

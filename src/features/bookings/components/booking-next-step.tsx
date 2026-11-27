@@ -24,7 +24,6 @@ import { useBookingFlowSettings } from '../use-booking-flow-settings';
 
 interface BookingNextStepProps {
   booking: Booking;
-  /** The host may act on the booking (`booking.write`): without it the block says what is going on and leads back to the list. */
   canWrite: boolean;
   viewingCheckIn?: boolean;
   useGuestPortal?: boolean;
@@ -33,7 +32,6 @@ interface BookingNextStepProps {
   onArrival: () => void;
 }
 
-/** What the block says and offers for one step. */
 interface StepView {
   title: string;
   body?: ReactNode;
@@ -56,7 +54,6 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
   const session = useBookingCheckInSession(needs === 'checkIn' ? booking.id : '');
   const alloggiati = useAlloggiatiStatus(booking.id, needs === 'alloggiati');
   const sendLink = useSendCheckInLink();
-  // Whether the guest data of a confirmed stay are complete: if not, the wizard "Guest check-in" is where the host completes them.
   const guestData = useAlloggiatiStatus(booking.id, needs !== 'alloggiati' && booking.status === 'Confirmed' && canWrite);
   // The compliance lights of the stay (identity, Alloggiati Web, the receipt: NF-52, AC-NF52-9) come from the summary of the adempimenti. Only
   // whoever may read the bookings asks for it (the API asks that, and a bare 403 on a GET takes the user to «nessun accesso»), and only for a stay
@@ -67,8 +64,6 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
   const summary = lightsOf(lights);
   const lightsFailed = wantsLights && lightsCouldNotBeRead(lights);
   const lines = useMemo(() => (summary ? stayLinesOf(summary, booking.id) : []), [summary, booking.id]);
-  // casazen/backend#978: what the booking flow of the org does by itself (the link, the arrival, the departure) is said as CasaZen's turn, not the host's. Read once and
-  // kept for minutes; until it is read (or when it cannot be) the step is the host's, as it always was.
   const wantsFlow = wantsLights && (booking.status === 'Confirmed' || booking.status === 'CheckedIn');
   const flowSettings = useBookingFlowSettings(wantsFlow);
 
@@ -96,11 +91,8 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
         }
       : undefined,
   };
-  // The lights can take back a step that says «tutto in ordine»: until they are read, that is not said (a step that asks something is said at once).
   if (wantsLights && lights.isLoading && claimsAllInOrder(nextStepOf(booking, today, facts))) return <NextStepLoading />;
   const step = nextStepOf(booking, today, { ...facts, compliance: lines });
-  // A read of the lights that failed (not a 404, which is the traffic light off) never lets the block say that all is well: it says it does not know, and
-  // offers to try again. A step that asks something is said as it is.
   if (lightsFailed && claimsAllInOrder(step)) {
     return (
       <ComplianceUnavailable kicker={t('booking.next.heading')} testId="booking-next-step" onRetry={() => void lights.refetch()} retrying={lights.isFetching} />
@@ -114,14 +106,12 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
   const myTurn = canWrite ? t('booking.next.whoHost') : undefined;
   const guestTurn = t('booking.next.whoGuest');
 
-  // What a person who may not write is offered: the way back to the list, which every block has.
   const toBookings: CalmAction = { label: t('booking.next.toBookings'), href: BOOKINGS_PATH };
   const confirm: CalmAction = { label: t('booking.confirm.action'), onClick: onConfirm, testId: 'open-confirm-booking' };
   const checkOut: CalmAction | null =
     canWrite && canOpenCheckOut(booking, today)
       ? { label: t('booking.list.actions.departure'), href: `${BOOKINGS_PATH}/${booking.id}/checkout`, testId: 'open-checkout-wizard' }
       : null;
-  // The host may fill the guest data in himself, whoever the link is waiting for: a stay whose data are incomplete leads to the wizard.
   const completeInWizard: CalmAction | null =
     canWrite && hasPermission('short-rent', 'alloggiati.submit') && booking.status === 'Confirmed' && guestData.data?.dataComplete === false
       ? { label: t('booking.next.completeGuestData.action'), href: checkInWizardPath(booking.id, viewingCheckIn), testId: 'booking-next-check-in-wizard' }
@@ -251,7 +241,6 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
       case 'allInOrder':
         return { title: t('booking.next.allInOrder.title'), body: t('booking.next.allInOrder.body', { guest, date: arrival }), primary: toBookings };
       case 'compliance': {
-        // The worst compliance item of the stay when the step has nothing else to ask (NF-52): red is the host's to do, yellow is in hand.
         const line = step.line;
         if (!line) return { title: t('booking.next.compliance.waiting.title'), primary: toBookings };
         const route = complianceActionRoute(line.item, hasPermission);
@@ -274,7 +263,6 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
     }
   };
 
-  // The lights of the other items of the stay, under what the block says: the same `ComplianceLight` and words as the page of the adempimenti.
   const view = viewOfStep();
   const lineView = viewOfLines(lines, { skip: step.line?.id });
   const body = hasLinesToShow(lineView) ? (
@@ -297,9 +285,6 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
   }
 
   const requiresComplianceAction = step.kind === 'sendAlloggiati' || (step.kind === 'compliance' && step.line?.state === 'red');
-  // The next action of the stay is a button in view, next to the title of the page (register the arrival, confirm, send the
-  // link…), not a step hidden behind the hint: the hint keeps the why, the who and the when, with the same button. Where there
-  // is nothing to do but wait, the action is the way back to the list: then the hint alone says what is going on.
   const directAction = view.primary === toBookings ? null : view.primary;
   return (
     <>
@@ -316,7 +301,6 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
   );
 }
 
-/** Reserve room for the guidance control while its data loads. */
 function NextStepLoading() {
   const { t } = useTranslation();
   return (

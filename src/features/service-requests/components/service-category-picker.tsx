@@ -86,12 +86,10 @@ interface ServiceCategorySelectProps {
   id?: string;
   value: string;
   onChange: (code: string) => void;
-  /** Label of an empty first option ("all categories"); without it a category is always selected. */
   emptyOptionLabel?: string;
   'data-testid'?: string;
 }
 
-/** Single choice of a service category from the backend catalog, with loading and error states. */
 export function ServiceCategorySelect({
   id,
   value,

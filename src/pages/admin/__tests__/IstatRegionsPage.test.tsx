@@ -57,7 +57,6 @@ function problem(status: number, data: unknown = {}): AxiosError {
 
 const text = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
 
-/** What the server holds: the fake of the endpoints applies the save to it, as the real one does (it replaces the row). */
 let table: IstatRegionRule[];
 
 function renderPage() {
@@ -75,7 +74,6 @@ async function openDialog(rowId: string) {
 
 beforeEach(async () => {
   vi.clearAllMocks();
-  // Only the clock: the timers stay real, so the dialog and the queries settle as they do.
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-11-15T10:00:00Z'));
   await i18n.changeLanguage('it');
@@ -105,7 +103,6 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// E21/F01/US02/T01 (NF-44, NF-52): the staff page of the region table.
 describe('IstatRegionsPage', () => {
   it('IstatRegionsPage_Table_ShowsEveryRowWithItsCoverageAndWhatIsNotVerifiedAsToVerify', async () => {
     renderPage();
@@ -118,7 +115,6 @@ describe('IstatRegionsPage', () => {
     expect(within(lombardia).getByText(text('istatRegions.deadline.monthly', { day: 5 }))).toBeInTheDocument();
     expect(within(lombardia).getByTestId('istat-region-portal-link-03')).toHaveAttribute('href', 'https://ross1000.example.com/guida');
 
-    // The autonomous province has its own row, named with its plate code, and what the staff verified says so.
     const bolzano = screen.getByTestId('istat-region-row-04-BZ');
     expect(bolzano).toHaveTextContent('Bolzano (BZ)');
     expect(within(bolzano).getByTestId('istat-region-coverage-04-BZ')).toHaveTextContent(text('istatRegions.coverage.Covered'));
@@ -151,7 +147,6 @@ describe('IstatRegionsPage', () => {
     renderPage();
     const dialog = await openDialog('03');
 
-    // The form starts from the row, and the day of the check starts as today.
     expect(within(dialog).getByTestId('istat-region-system')).toHaveValue('Ross1000');
     expect(within(dialog).getByTestId('istat-region-source')).toHaveValue('https://fonte.example.com/lombardia');
     expect(within(dialog).getByTestId('istat-region-verified-at')).toHaveValue('2026-11-15');
@@ -161,7 +156,6 @@ describe('IstatRegionsPage', () => {
     fireEvent.click(within(dialog).getByTestId('istat-region-save'));
 
     await waitFor(() => expect(istatApi.saveRegion).toHaveBeenCalledTimes(1));
-    // A save REPLACES the row: everything it holds goes, so nothing is erased by leaving it out («not verified» stays null, not an empty list).
     expect(istatApi.saveRegion).toHaveBeenCalledWith({
       regionIstatCode: '03',
       provinceCode: null,
@@ -177,7 +171,6 @@ describe('IstatRegionsPage', () => {
     });
     await waitFor(() => expect(screen.queryByTestId('istat-region-dialog')).not.toBeInTheDocument());
     expect(toast.success).toHaveBeenCalledTimes(1);
-    // The table shows the row as saved: verified today and not covered.
     await waitFor(() => expect(screen.getByTestId('istat-region-coverage-03')).toHaveTextContent(text('istatRegions.coverage.NotCovered')));
     expect(screen.getByTestId('istat-region-verified-03')).toHaveTextContent('15/11/2026');
   });
@@ -252,7 +245,6 @@ describe('IstatRegionsPage', () => {
     expect(screen.getByTestId('istat-region-dialog')).toBeInTheDocument();
     expect(within(screen.getByTestId('istat-region-dialog')).getByTestId('istat-region-notes')).toHaveValue('Nota di prova');
     expect(toast.success).not.toHaveBeenCalled();
-    // Nothing of the table changed: the row is still «da verificare».
     expect(screen.getByTestId('istat-region-coverage-03')).toHaveTextContent(text('istatRegions.coverage.Unknown'));
   });
 
@@ -264,7 +256,6 @@ describe('IstatRegionsPage', () => {
 
     fireEvent.click(within(dialog).getByTestId('istat-region-save'));
 
-    // The table is read again before the save: the save is on its way once it was.
     await waitFor(() => expect(istatApi.saveRegion).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(within(dialog).getByTestId('istat-region-save')).toBeDisabled());
     expect(within(dialog).getByTestId('istat-region-cancel')).toBeDisabled();
@@ -276,14 +267,12 @@ describe('IstatRegionsPage', () => {
     await waitFor(() => expect(screen.queryByTestId('istat-region-dialog')).not.toBeInTheDocument());
   });
 
-  // A save replaces the whole row, the API has no version and the save stamps the row «verified today»: a form made from an old read would put old values back as checked.
   describe('a save is never made from an old read of the table', () => {
     const LATER = '2026-11-15T17:30:00Z';
 
     it('IstatRegionsPage_Edit_StartsFromTheRowTheServerHoldsNowAndNotFromTheOlderRead', async () => {
       renderPage();
       await screen.findByTestId('istat-regions-table');
-      // Another member of the staff saved the row after this page read the table.
       table[0] = { ...table[0], system: 'Ross1000 bis', updatedAt: LATER };
 
       const dialog = await openDialog('03');
@@ -300,7 +289,6 @@ describe('IstatRegionsPage', () => {
 
       await waitFor(() => expect(toast.error).toHaveBeenCalledWith(text('istatRegions.toast.rereadFailed')));
       expect(screen.queryByTestId('istat-region-dialog')).not.toBeInTheDocument();
-      // A failed read is an error, never the rows of the older read.
       expect(await screen.findByTestId('istat-regions-error')).toBeInTheDocument();
       expect(screen.queryByTestId('istat-regions-table')).not.toBeInTheDocument();
     });
@@ -309,7 +297,6 @@ describe('IstatRegionsPage', () => {
       renderPage();
       const dialog = await openDialog('03');
       fireEvent.change(within(dialog).getByTestId('istat-region-notes'), { target: { value: 'Nota di prova' } });
-      // Another member of the staff saves the row while the form is open.
       table[0] = { ...table[0], octorateCoverage: 'NotCovered', updatedAt: LATER };
 
       fireEvent.click(within(dialog).getByTestId('istat-region-save'));
@@ -318,7 +305,6 @@ describe('IstatRegionsPage', () => {
       expect(within(dialog).getByTestId('istat-region-stale')).toHaveTextContent(text('istatRegions.stale.changed'));
       expect(istatApi.saveRegion).not.toHaveBeenCalled();
       expect(within(dialog).getByTestId('istat-region-save')).toBeDisabled();
-      // The form stays open with what was typed, and the table shows what the server holds.
       expect(within(dialog).getByTestId('istat-region-notes')).toHaveValue('Nota di prova');
       expect(toast.success).not.toHaveBeenCalled();
     });

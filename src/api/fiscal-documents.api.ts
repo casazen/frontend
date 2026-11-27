@@ -30,22 +30,14 @@ import { headerOf } from '@/api/response-helpers';
 const PATH = '/fiscal/documents';
 const SETTINGS_PATH = `${PATH}/settings`;
 
-/** The most documents the server gives in a page of the list. */
 const MAX_PAGE_SIZE = 100;
 
-/** The most pages read to find the drafts of a period: a period with this many drafts that are not for a bulk issue is told as having more. */
 const MAX_DRAFT_PAGES = 10;
 
-/** A PDF or an XML is a few hundred kB: more than the 30 s of every other call, on a connection that is not fast. */
 const DOWNLOAD_TIMEOUT_MS = 120_000;
 
-/** A file of the list is built while the server reads the documents: it may take a while on a long period. */
 const EXPORT_TIMEOUT_MS = 5 * 60_000;
 
-/**
- * A bulk issue works through up to 200 documents one after the other in a single call, each in its own transaction: it takes far more than the 30 s of every other call. Cut at 30 s the page would
- * tell a failure and lose the answer of every document (the server, which stops when the client leaves, would have issued only some).
- */
 const BATCH_TIMEOUT_MS = 5 * 60_000;
 
 /**
@@ -53,15 +45,11 @@ const BATCH_TIMEOUT_MS = 5 * 60_000;
  * own words (`apiErrors.codes.*`). `schemaUnavailable` is the 422 of the issue while the FatturaPA schema is not installed: it is never a generic error and never a success.
  */
 export const FISCAL_DOCUMENT_ERROR = {
-  /** 404: no document with that id for the caller (another organization's, one out of its reach and a missing one are the same answer). */
   notFound: 'fiscal_document_not_found',
-  /** 404: the document is not a CasaZen invoice or credit note that was issued, so it has no XML. */
   xmlUnavailable: 'fiscal_document_xml_unavailable',
-  /** 404: the channel manager holds no PDF of the imported document, or it cannot be read now. */
   octoratePdfUnavailable: 'octorate_pdf_unavailable',
   /** 422: the FatturaPA schema is not installed yet, so no XML is made: an operator adds it. */
   schemaUnavailable: 'fatturapa_schema_unavailable',
-  /** 422: the e-mail of a document to its guest could not be queued (no e-mail provider, no public address of the web app, the queue is down): nothing was sent, and the call may be repeated. */
   emailNotSent: 'document_email_not_sent',
 } as const;
 
@@ -81,18 +69,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** A member the API leaves out when it is empty: missing, `null` or a text. */
 const isOptionalText = (value: unknown) => value === undefined || value === null || typeof value === 'string';
 
-/** The text of an optional member, `null` for what is empty. */
 const textOf = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null);
 
 const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
-/** An amount the API leaves out when it does not apply: missing, `null` or a number. */
 const isOptionalAmount = (value: unknown) => value === undefined || value === null || isFiniteNumber(value);
 
-/** A whole number the API leaves out when it has none: anything else is read as none (a member this client does not need must never fail the whole answer). */
 const integerOf = (value: unknown): number | null => (typeof value === 'number' && Number.isInteger(value) ? value : null);
 
 /**
@@ -141,14 +125,12 @@ function entryOf(value: unknown): FiscalDocumentEntry | null {
     sdiErrorCode: textOf(value.sdiErrorCode),
     hasXml: value.hasXml === true,
     octoratePdfAvailable: value.octoratePdfAvailable === true,
-    // What the document is for, the rejected document it replaces and who issued it: only when the server says them (an older server says none, and nothing is made up).
     purpose: textOf(value.purpose) ?? undefined,
     replacesDocumentId: textOf(value.replacesDocumentId) ?? undefined,
     issuerName: textOf(value.issuerName) ?? undefined,
   };
 }
 
-/** A body that is not a page of documents (the SPA's `index.html` behind a wrong rewrite) is a load error, never an empty list. */
 function ensurePage(data: unknown): FiscalDocumentPage {
   const page = isRecord(data) ? data : null;
   const items = page !== null && Array.isArray(page.items) ? page.items.map(entryOf) : null;
@@ -235,13 +217,11 @@ function detailOf(value: unknown): FiscalDocumentDetail | null {
     lines: (lines as FiscalDocumentLine[]).sort((a, b) => a.lineNumber - b.lineNumber),
     paymentChannel: textOf(value.paymentChannel),
     issuer: issuerOf(value.issuer),
-    // What the portal collected and the tourist tax still to pay at the property: only when the server says them, as it wrote them (the client works nothing out, and an older server says none).
     ...(isFiniteNumber(value.amountPaidViaPortal) ? { amountPaidViaPortal: value.amountPaidViaPortal } : {}),
     ...(isFiniteNumber(value.amountToCollectAtProperty) ? { amountToCollectAtProperty: value.amountToCollectAtProperty } : {}),
   };
 }
 
-/** What a write answers: the document and its number. An answer that is not a document is no failure of the write (the write was done): the screens read the list again. */
 function changeOf(value: unknown): FiscalDocumentChange | null {
   return isRecord(value) && typeof value.id === 'string' ? { id: value.id, number: textOf(value.number) } : null;
 }
@@ -251,10 +231,6 @@ function batchRowOf(value: unknown): FiscalDocumentBatchRow | null {
   return { id: value.id, issued: value.issued, number: textOf(value.number), errorCode: textOf(value.errorCode) };
 }
 
-/**
- * The answer of a bulk issue. What was issued and what was not is what the ROWS say, one per document: the counts are made from them, so a count can never say «all issued» over a row
- * that failed. An answer that is not rows is a load error: it is never read as a success.
- */
 function batchResultOf(data: unknown): FiscalDocumentBatchResult | null {
   if (!isRecord(data) || !Array.isArray(data.rows)) return null;
   const rows = data.rows.map(batchRowOf);
@@ -295,7 +271,6 @@ function bookingDocumentOf(value: unknown): BookingFiscalDocument | null {
   };
 }
 
-/** What is empty is not sent: the API reads a missing parameter as «no limit», and an empty one as a mistake. */
 function paramsOf(criteria: FiscalDocumentCriteria): Record<string, string> {
   const params: Record<string, string> = {};
   for (const key of ['from', 'to', 'kind', 'source', 'status'] as const) {
@@ -305,10 +280,6 @@ function paramsOf(criteria: FiscalDocumentCriteria): Record<string, string> {
   return params;
 }
 
-/**
- * The address of the PDF of a document: the one CasaZen makes for its own documents, the one that serves the PDF the channel manager holds for an imported one (through
- * CasaZen, never as an address of the channel manager).
- */
 export function pdfPathOf(document: Pick<FiscalDocumentEntry, 'id' | 'source'>): string {
   const id = encodeURIComponent(document.id);
   return document.source === 'Octorate' ? `${PATH}/${id}/octorate-pdf` : `${PATH}/${id}/pdf`;
@@ -325,18 +296,12 @@ async function readFile(path: string, params: object | undefined, timeout: numbe
   }
 }
 
-/**
- * One page of the documents of the caller (`GET api/fiscal/documents`), newest first: `from` and `to` are Europe/Rome days of the issue, `page` counts from 1 and
- * `pageSize` is 20 when missing and 100 at most. The server narrows the list in SQL to the properties the caller reaches. Needs `payment.read`: a caller who may not
- * read payments gets a 403, which is thrown as an error with its response (no redirect to the no-access page).
- */
 export async function listDocuments(criteria: FiscalDocumentCriteria, page: number, pageSize: number): Promise<FiscalDocumentPage> {
   const response = await axios.get<unknown>(PATH, { params: { ...paramsOf(criteria), page, pageSize }, validateStatus: acceptsRefusal });
   if (response.status === 403) throw refusalOf(response);
   return ensurePage(response.data);
 }
 
-/** The PDF of a document, through CasaZen: its own (`/pdf`) or the one of the channel manager (`/octorate-pdf`). */
 export function downloadPdf(document: Pick<FiscalDocumentEntry, 'id' | 'source'>): Promise<FiscalDocumentFile> {
   return readFile(pdfPathOf(document), undefined, DOWNLOAD_TIMEOUT_MS);
 }
@@ -374,15 +339,10 @@ export async function getDocumentsContext(): Promise<FiscalDocumentsContext> {
     mode: typeof data.mode === 'string' ? data.mode : null,
     casazenIssuanceEnabled: data.casazenIssuanceEnabled,
     sdiProviderConfigured: data.sdi.providerConfigured,
-    // The setting says the pattern of the series (empty: the year); an answer without the issuer says nothing of it.
     guestDocumentSeries: issuer === null ? null : typeof series === 'string' ? series.trim() : '',
   };
 }
 
-/**
- * One document with its lines (`GET api/fiscal/documents/{id}`), reduced to what the detail shows. Like the list it needs `payment.read`, and a 403 is thrown as the refusal it is (no redirect
- * to the no-access page); a document of another organization, one out of the reach of the caller and a missing one are all a 404.
- */
 export async function getDocument(id: string): Promise<FiscalDocumentDetail> {
   const path = `${PATH}/${encodeURIComponent(id)}`;
   const response = await axios.get<unknown>(path, { validateStatus: acceptsRefusal });
@@ -392,16 +352,11 @@ export async function getDocument(id: string): Promise<FiscalDocumentDetail> {
   return detail;
 }
 
-/**
- * The draft of a booking (`POST api/fiscal/documents`), or the one it has, made again. The writes need `payment.write` and the `FiscalDocumentIssuance` flag of the server (404 while it is
- * off); the answer says why a document cannot be made with a code (`document_invoice_data_missing`, `document_rule_not_configured`, `issuer_profile_incomplete`...).
- */
 export async function createDraft(bookingId: string): Promise<FiscalDocumentChange | null> {
   const response = await axios.post<unknown>(PATH, { bookingId });
   return changeOf(response.data);
 }
 
-/** The draft made again from the current price and data of its booking (`POST api/fiscal/documents/{id}/refresh`). */
 export async function refreshDraft(id: string): Promise<FiscalDocumentChange | null> {
   const response = await axios.post<unknown>(`${PATH}/${encodeURIComponent(id)}/refresh`);
   return changeOf(response.data);
@@ -416,22 +371,16 @@ export async function issueDocument(id: string): Promise<FiscalDocumentChange | 
   return changeOf(response.data);
 }
 
-/**
- * A credit note of an issued document (`POST api/fiscal/documents/{id}/credit-note`), issued at once in its series: the whole document when `amount` is left out. The server checks that
- * the amount is above zero and not above what is left to credit (422 `credit_amount_exceeds`), and that the document can be credited at all (422 `document_not_creditable`).
- */
 export async function createCreditNote(id: string, request: FiscalCreditNoteRequest): Promise<FiscalDocumentChange | null> {
   const body = request.amount === undefined ? { reason: request.reason, confirm: true } : { amount: request.amount, reason: request.reason, confirm: true };
   const response = await axios.post<unknown>(`${PATH}/${encodeURIComponent(id)}/credit-note`, body);
   return changeOf(response.data);
 }
 
-/** The draft discarded (`DELETE api/fiscal/documents/{id}`): no number was consumed. */
 export async function discardDraft(id: string): Promise<void> {
   await axios.delete(`${PATH}/${encodeURIComponent(id)}`);
 }
 
-/** An instant of the server (a UTC time, `...Z`) kept as it came, or `null` when it is not an instant: the day a link stops opening is never made up. */
 const instantOf = (value: unknown): string | null => (typeof value === 'string' && !Number.isNaN(new Date(value).getTime()) ? value : null);
 
 /**
@@ -451,10 +400,6 @@ export async function sendDocumentEmail(id: string): Promise<FiscalDocumentEmail
   return { documentId: data.documentId, linkExpiresAt };
 }
 
-/**
- * The bulk issue (`POST api/fiscal/documents/issue-batch`) of the drafts named, at most 200 at a time: each one through the issue path of the API in its own transaction. The answer has one row
- * per document and says why each one that failed did; an empty selection is a 422 and is never read as «all».
- */
 export async function issueBatch(documentIds: readonly string[]): Promise<FiscalDocumentBatchResult> {
   const path = `${PATH}/issue-batch`;
   const response = await axios.post<unknown>(path, { documentIds }, { timeout: BATCH_TIMEOUT_MS });
@@ -463,10 +408,6 @@ export async function issueBatch(documentIds: readonly string[]): Promise<Fiscal
   return result;
 }
 
-/**
- * The drafts of the filters of the list that a bulk issue takes, at most `limit` of them, newest first: `isEligible` says which of the drafts the screen offers. `more` is true when there are drafts
- * beyond the limit (or beyond the pages this reads), so the screen can say that it did not take them all.
- */
 export async function listDraftsForBatch(
   criteria: FiscalDocumentCriteria,
   isEligible: (document: FiscalDocumentEntry) => boolean,
@@ -485,10 +426,6 @@ export async function listDraftsForBatch(
   return { drafts, more: true };
 }
 
-/**
- * The documents of a booking (`GET api/bookings/{id}/fiscal-documents`), newest first, a discarded draft not among them: what the card of the tab Pagamento shows. It needs `payment.read` and the
- * booking must be one the caller reaches (404 for any other). A 403 is thrown as the refusal it is, as for the list.
- */
 export async function listBookingDocuments(bookingId: string): Promise<BookingFiscalDocument[]> {
   const path = `/bookings/${encodeURIComponent(bookingId)}/fiscal-documents`;
   const response = await axios.get<unknown>(path, { validateStatus: acceptsRefusal });
@@ -498,9 +435,6 @@ export async function listBookingDocuments(bookingId: string): Promise<BookingFi
   return documents as BookingFiscalDocument[];
 }
 
-// ---------------------------------------------------------------------------------------------------------------------------------
-// The SDI: state, submission, declaration, correction (E17/F01/US02, E17/F03/US01/T02, NF-116, NF-86)
-
 const SDI_ISSUERS_PATH = '/fiscal/sdi/issuers';
 
 /** The address of the SDI state of a document: the guest documents and the self-billed invoices are on the fiscal documents, an owner invoice on its own endpoints (the first answers 422 `document_owner_invoice`). */
@@ -509,10 +443,6 @@ function sdiPathOf(id: string, scope: SdiScope): string {
   return scope === 'owner' ? `/owner-invoices/${encoded}/sdi` : `${PATH}/${encoded}/sdi`;
 }
 
-/**
- * The state of a document the screens can draw without guessing: the state, the three things that can be done and whether a channel is connected are there and are of the right type. A body that is not one
- * (the `index.html` of a wrong rewrite) is a load error, never «nothing to do»: the buttons of the panel come from `canSubmit`, `canDeclare` and `canCorrect`, so a made-up state would offer an action the server would refuse.
- */
 function sdiStateFrom(value: unknown): FiscalDocumentSdiState | null {
   if (
     !isRecord(value) ||
@@ -611,7 +541,6 @@ export async function getSdiIssuers(): Promise<SdiIssuers> {
       ? { issuerProfileId: item.issuerProfileId, propertyOwnerId: textOf(item.propertyOwnerId), state: item.state }
       : null,
   );
-  // An issuer that is not one is a load error for the whole answer, never a row left out: a list that silently misses an issuer could be read as one that is in order.
   if (issuers.some((issuer) => issuer === null)) throw new UnexpectedApiResponseError(SDI_ISSUERS_PATH);
   return { providerConfigured: data.providerConfigured, issuers: issuers as SdiIssuerRegistration[] };
 }

@@ -4,7 +4,6 @@ import { focusBodyOf, focusToneOf } from '@/features/compliance/lib/cockpit-mode
 import { useCockpit } from '@/features/compliance/use-cockpit';
 import { ComplianceSummaryLine } from './compliance-summary-line';
 
-/** The page of the adempimenti, where the rest of the list is. */
 const COMPLIANCE_PATH = '/app/short-rent/compliance';
 
 /**

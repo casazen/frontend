@@ -9,7 +9,6 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { useSetAccessCode } from '@/queries/use-access-codes';
 import type { AccessCodeStatusItem } from '@/types';
 
-/** A lock code is a few digits, sometimes with letters or a `#`; this leaves room for a short note ("gate 1234, door 5678") and no more. */
 const LOCK_CODE_MAX_LENGTH = 64;
 
 interface LockCodeBodyProps {
@@ -20,9 +19,7 @@ interface LockCodeBodyProps {
 function LockCodeBody({ property, onClose }: LockCodeBodyProps) {
   const { t } = useTranslation();
   const save = useSetAccessCode();
-  // Whether there was a code when the window opened: the list changes behind the window as soon as the code is saved, its words must not.
   const [hadCode] = useState(property.accessCodeSet);
-  // Write-only: it starts empty every time, even to change a code that exists, and nothing ever puts a stored code in it.
   const [code, setCode] = useState('');
   const clean = code.trim();
 
@@ -45,7 +42,6 @@ function LockCodeBody({ property, onClose }: LockCodeBodyProps) {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (clean === '' || save.isPending) return;
-    // What was typed is dropped as soon as it is saved: the window keeps no copy of what it sent.
     save.mutate({ propertyId: property.propertyId, code: clean }, { onSuccess: () => setCode('') });
   };
 
@@ -73,7 +69,6 @@ function LockCodeBody({ property, onClose }: LockCodeBodyProps) {
           autoCapitalize="off"
           autoCorrect="off"
           spellCheck={false}
-          // The code is not a password of the host: no manager of passwords should offer to keep it.
           data-1p-ignore
           data-lpignore="true"
           className="pointer-coarse:h-11 font-mono"
@@ -96,7 +91,6 @@ function LockCodeBody({ property, onClose }: LockCodeBodyProps) {
 }
 
 interface LockCodeDialogProps {
-  /** The property whose code is being written. It stays while the window closes, so the window does not empty out while it fades. */
   property: AccessCodeStatusItem | undefined;
   open: boolean;
   onClose: () => void;

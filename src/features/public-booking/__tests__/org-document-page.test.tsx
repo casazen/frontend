@@ -114,7 +114,6 @@ describe('OrgDocumentPage (BK-14, A3-21)', () => {
     const notice = screen.getByTestId('org-document-not-published');
     expect(notice).toHaveTextContent('Villa Parco');
     expect(notice).toHaveTextContent(expected);
-    // No text of CasaZen's stands in for the operator's.
     expect(screen.queryByTestId('org-document-body')).not.toBeInTheDocument();
     expect(screen.queryByTestId('org-document-contact')).not.toBeInTheDocument();
   });

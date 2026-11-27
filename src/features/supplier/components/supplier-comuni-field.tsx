@@ -15,10 +15,8 @@ export interface SupplierComuniValue {
 }
 
 interface SupplierComuniFieldProps {
-  /** Id of the picker input (the caller's `<Label htmlFor>`). */
   id: string;
   value: SupplierComuniValue;
-  /** The chosen comuni the API already described (`profile.operatingComuni`): name, province, region. */
   known?: Comune[];
   onChange: (value: SupplierComuniValue) => void;
   disabled?: boolean;

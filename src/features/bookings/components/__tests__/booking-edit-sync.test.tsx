@@ -84,7 +84,6 @@ describe('BookingEditSync (where the push of an edit stands, NF-75 and NF-74)', 
     const onCheckAgain = vi.fn();
     renderSync(booking(sync({ state: 'Pending' })), { waitOver: true, onCheckAgain });
 
-    // Neither "being sent" nor a failure nor a success: what the page knows is that nothing has come back.
     expect(screen.getByTestId('booking-sync-waiting')).toHaveTextContent('non ha ancora risposto');
     expect(screen.getByTestId('booking-sync-waiting')).toHaveTextContent("l'invio non risulta ancora concluso");
     expect(screen.queryByTestId('booking-sync-pending')).not.toBeInTheDocument();
@@ -214,7 +213,6 @@ describe('BookingEditSync (where the push of an edit stands, NF-75 and NF-74)', 
       fireEvent.click(screen.getByRole('button', { name: 'Usa la versione del channel manager' }));
 
       expect(onUseChannelVersion).toHaveBeenCalledTimes(1);
-      // Choosing the other version writes nothing: neither version is lost before the host decides.
       expect(onRetry).not.toHaveBeenCalled();
     });
 
@@ -228,7 +226,6 @@ describe('BookingEditSync (where the push of an edit stands, NF-75 and NF-74)', 
 
     it.each(['Create', 'Payment', 'Cancel'] as const)('render_ConflictOf%s_IsAFailureThatSaysWhyAndOffersRetryNowOnly', (lastOperation) => {
       const onRetry = vi.fn();
-      // The dates of a creation are taken in the channel manager: there is no reservation over there that changed, and no version of it to choose.
       const refused = sync({ state: 'Conflict', lastOperation, errorCode: 'octorate_dates_unavailable', canRetry: true });
       renderSync(booking(refused), { onRetry, onUseChannelVersion: vi.fn() });
 

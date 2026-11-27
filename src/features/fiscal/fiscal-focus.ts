@@ -1,24 +1,16 @@
 import type { FiscalPropertyRow, FiscalRegimeSnapshot } from '@/api/fiscal.api';
 import type { FiscalRegimeStatus } from '@/lib/status-dictionary';
 
-/**
- * The state of the regime of a property for the tax year, from what the backend sent: chosen and confirmed, detected but not
- * yet confirmed (`recommendedRegime`: it is never applied on its own), or not chosen.
- */
 export function fiscalRegimeStatus(row: Pick<FiscalPropertyRow, 'assignedRegime' | 'regimeConfirmed' | 'recommendedRegime'>): FiscalRegimeStatus {
   if (row.regimeConfirmed && row.assignedRegime) return 'Confirmed';
   return row.recommendedRegime ? 'ToConfirm' : 'NotChosen';
 }
 
-/** What the page puts first: the one thing to do about the fiscal regime of the year, or that nothing is left to do. */
 export type FiscalFocus =
   /** A taxpayer is over the threshold and no partita IVA is on record: the tax profile comes first. */
   | { kind: 'vat' }
-  /** Assignment is handled in the property list. */
   | { kind: 'properties' }
-  /** Every property has its regime. */
   | { kind: 'ok' }
-  /** Nothing the person can do here (no right to change, or nothing can be chosen): the reports are what is left. */
   | { kind: 'reports' };
 
 /** A taxpayer over the short-rental threshold is presumed to run a business, and the business regimes need a partita IVA. */

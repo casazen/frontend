@@ -8,21 +8,13 @@ import { useShowcaseUpload } from './use-showcase-upload';
 
 interface MediaUploadProps {
   kind: ShowcaseMediaKind;
-  /** Told the image the server stored, with the address to put into the content. */
   onStored: (media: ShowcaseMedia) => void;
-  /** What the zone invites to do ("Carica una nuova foto"). */
   title: string;
-  /** The button that opens the file picker ("Scegli un file"). */
   buttonLabel: string;
   disabled?: boolean;
   'data-testid'?: string;
 }
 
-/**
- * The place to upload one image of the showcase (SP-13b): a drop zone with its button (the way in for the keyboard and the phone), the
- * rules in one line, and under it what is happening to the file: being prepared, on its way with how much has gone and a way to stop it,
- * or stopped with the reason and the way to try again. One file at a time; the zone is off while one is on its way.
- */
 export function MediaUpload({ kind, onStored, title, buttonLabel, disabled = false, 'data-testid': testId = 'supplier-showcase-media-upload' }: MediaUploadProps) {
   const { t } = useTranslation();
   const upload = useShowcaseUpload(kind, onStored);

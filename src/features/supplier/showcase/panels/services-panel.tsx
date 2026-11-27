@@ -13,12 +13,6 @@ import { planServices, SECTION_KEYS, sectionsOf, serviceOrderOf } from '../showc
 import { InactiveServices } from './inactive-services';
 import type { PanelProps } from './panel-types';
 
-/**
- * "Servizi e sezioni" (SP-13d): which of the active services the page shows and in what order (an empty order is every active service in
- * the order of the catalog, so a service added later shows up by itself), and which blocks of the home are shown. A draft or a paused
- * service cannot be shown: it is listed apart with the reason and the way to "Servizi e prezzi". Moving is done with buttons; the
- * page says the new place and the focus stays on the button that was pressed.
- */
 export function ServicesPanel({ doc, change }: PanelProps) {
   const { t } = useTranslation();
   const services = useSupplierServices();
@@ -30,7 +24,6 @@ export function ServicesPanel({ doc, change }: PanelProps) {
   const pressed = useRef<{ id: string; action: 'up' | 'down' } | null>(null);
   const orderKey = plan ? plan.shown.map((service) => service.id).join(',') : '';
 
-  // A moved row keeps the focus on the button that moved it (at the end of the list the other one takes it).
   useEffect(() => {
     const wanted = pressed.current;
     pressed.current = null;
@@ -87,7 +80,6 @@ export function ServicesPanel({ doc, change }: PanelProps) {
         <Switch
           id={switchId}
           checked={isShown}
-          // The page cannot show none: an empty order means every service.
           disabled={isShown && onlyOne}
           onCheckedChange={(on) => (on ? show(service) : hide(service))}
         />

@@ -7,11 +7,6 @@ import { SupplierSearchBox } from './components/supplier-search-box';
 import { MARKETPLACE_PATH, MARKETPLACE_QUERY_PARAM } from './lib/marketplace-paths';
 import { useSupplierFilters } from './lib/use-supplier-filters';
 
-/**
- * Cerca (MKT): the suppliers in the account’s service areas that match the words of the search, found by the name of the supplier, by what it
- * offers (the name of a service) and by the category, in Italian or English, without minding capitals or accents (SR-09a-FU2). The
- * words are in the address (`?q=`), so a search can be shared; with none, every supplier in those areas is listed.
- */
 export function MarketplaceSearchPage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();

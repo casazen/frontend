@@ -6,24 +6,18 @@
  * by the list, the emphasised ones) are never moved or grouped and are placed first; the others work around them.
  */
 export interface PinBox {
-  /** Position in px inside the frame. */
   x: number;
   y: number;
-  /** Size of the pill in px. */
   w: number;
   h: number;
-  /** Never moved nor grouped. */
   keep: boolean;
 }
 
 export interface Placement {
-  /** Shift of every pin in px. */
   shifts: { dx: number; dy: number }[];
-  /** For every pin, the pin that stands for its group: itself if it is alone or if it is the first of a group. */
   group: number[];
 }
 
-/** Rough size of a pill from its text: 8 px a character and the padding, at least a touch target. */
 export const pillSize = (label: string): { w: number; h: number } => ({ w: Math.max(44, label.length * 8 + 36), h: 44 });
 
 const overlaps = (a: PinBox, b: PinBox): boolean => Math.abs(a.x - b.x) < (a.w + b.w) / 2 + 2 && Math.abs(a.y - b.y) < (a.h + b.h) / 2 + 2;

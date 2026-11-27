@@ -23,12 +23,9 @@ vi.mock('@/hooks/use-feature-flags', async () => {
 vi.setConfig({ testTimeout: 30_000 });
 
 const text = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
-/** Intl writes a no-break space between a figure and its currency: the page text is compared with plain spaces. */
 const plain = (value: string) => value.replace(/\s/g, ' ');
 const money = (amount: number, currency: string) => plain(new Intl.NumberFormat('it-IT', { style: 'currency', currency }).format(amount));
-/** What the server answers to a refusal: the status and the problem with its code. */
 const problem = (status: number, code: string) => Object.assign(new Error(code), { isAxiosError: true, response: { status, data: { code } } });
-/** A promise settled from outside: the request that is on its way. */
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((done) => {
@@ -42,7 +39,6 @@ function renderPanel(status: 'Approved' | 'Superseded' = 'Approved') {
   return render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(OwnerInvoicePanel, { version: version({ status }) }))));
 }
 
-/** The invoices the server holds: the writes of the test change them, and the list answers with what is there. */
 let held: OwnerInvoiceListItem[] = [];
 
 beforeEach(async () => {
@@ -69,15 +65,12 @@ describe('the invoice of the property manager in the statement: who may write it
     session.ownerInvoicing = false;
     renderPanel();
 
-    // With `ownerInvoicing` off nothing changes: no panel and no read (a query that was enabled has called the server by the time `render` returns).
     expect(screen.queryByTestId('owner-invoice-panel')).toBeNull();
     for (const call of Object.values(api)) expect(call).not.toHaveBeenCalled();
-    // The flag is off until the server says it is on.
     expect(DEFAULT_FEATURE_FLAGS.ownerInvoicing).toBe(false);
   });
 
   it('OwnerInvoicePanel_WithoutAgencyStatementManage_ShowsTheState_ButOffersNoWrite', async () => {
-    // The owner and the administrators hold `agency.statement.manage`; a property manager, a collaborator or an accountant do not.
     session.contexts = [{ contextKey: 'account', roleKey: 'org_manager' }];
     renderPanel();
 
@@ -89,7 +82,6 @@ describe('the invoice of the property manager in the statement: who may write it
     held = [listItem()];
     renderPanel();
     expect(await screen.findByTestId('owner-invoice-draft')).toBeInTheDocument();
-    // A draft is shown with its total, and neither reviewed nor issued by who may not.
     for (const id of ['owner-invoice-review', 'owner-invoice-issue', 'owner-invoice-create']) expect(screen.queryByTestId(id)).toBeNull();
     for (const write of [api.createDraft, api.issue]) expect(write).not.toHaveBeenCalled();
   });
@@ -111,7 +103,6 @@ describe('the invoice of the property manager in the statement: who may write it
     await waitFor(() => expect(create).toBeEnabled());
     fireEvent.click(create);
     await waitFor(() => expect(api.createDraft).toHaveBeenCalledWith(VERSION_ID));
-    // While the draft is made the button says it works and a second click changes nothing.
     expect(create).toHaveAttribute('aria-busy', 'true');
     fireEvent.click(create);
     expect(api.createDraft).toHaveBeenCalledTimes(1);
@@ -126,7 +117,6 @@ describe('the invoice of the property manager in the statement: who may write it
     expect(plain(rates.textContent ?? '')).toContain(money(89.1, 'CHF'));
     expect(plain(within(lines).getByTestId('owner-invoice-total').textContent ?? '')).toBe(money(1239.1, 'CHF'));
 
-    // The confirmation shows the series and the total, and says the number is given at the issue.
     const issue = await screen.findByTestId('owner-invoice-issue');
     await waitFor(() => expect(issue).toBeEnabled());
     fireEvent.click(issue);
@@ -140,7 +130,6 @@ describe('the invoice of the property manager in the statement: who may write it
     await waitFor(() => expect(api.issue).toHaveBeenCalledTimes(1));
     expect(api.issue).toHaveBeenCalledWith(INVOICE_ID);
 
-    // Issued: its number and day, the PDF, and that the statement covers it.
     const issued = await screen.findByTestId('owner-invoice-issued');
     expect(within(issued).getByTestId('owner-invoice-number')).toHaveTextContent('FPM-2025-0001');
     expect(within(issued).getByTestId('owner-invoice-payment')).toHaveTextContent(text('ownerInvoice.settlement.offset'));
@@ -153,7 +142,6 @@ describe('the invoice of the property manager in the statement: who may write it
     api.issue.mockRejectedValue(problem(409, 'document_draft_outdated'));
     renderPanel();
 
-    // A page opened later has the totals only: reviewing makes the draft again from the version and the mandate of now.
     fireEvent.click(await screen.findByTestId('owner-invoice-review'));
     await screen.findByTestId('owner-invoice-lines');
     fireEvent.click(await screen.findByTestId('owner-invoice-issue'));
@@ -161,7 +149,6 @@ describe('the invoice of the property manager in the statement: who may write it
     fireEvent.click(within(dialog).getByRole('button', { name: text('ownerInvoice.issue.confirm') }));
 
     await waitFor(() => expect(api.issue).toHaveBeenCalledTimes(1));
-    // Nothing was issued: the reason is said, the dialog is closed, and the issue is not offered again before the draft is reviewed again.
     expect(await screen.findByTestId('owner-invoice-notice')).toHaveTextContent(text('apiErrors.codes.documentDraftOutdated'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.queryByTestId('owner-invoice-issue')).toBeNull();

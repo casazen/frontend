@@ -11,13 +11,9 @@ import type { WizardStepId } from '../property-wizard-model';
 import { ChannelsSummary } from './channels-summary';
 
 interface SummarySectionProps {
-  /** The property as the server has it: what was saved at each step, not what the form shows. */
   property: Property | undefined;
-  /** Steps of the activation, for the state of the safety sheet. */
   steps: ComplianceWizardStep[] | undefined;
-  /** The channel manager is connected to this CasaZen (its flag is on): the summary says what happens on each channel. */
   showChannels?: boolean;
-  /** The channels the host chose not to publish to. */
   leftOutChannels?: readonly string[];
 }
 
@@ -43,7 +39,6 @@ export function SummarySection({ property, steps, showChannels = false, leftOutC
   const [searchParams] = useSearchParams();
   const policies = useCancellationPolicies(Boolean(property?.cancellationPolicyId));
   const amenityLabel = useAmenityLabels();
-  // The English headline lives in the site profile, not in the property (NF-31).
   const profile = useSiteProfile(property?.id);
   const englishTitle = profile.data?.translations?.en?.title?.trim();
   if (!property) return null;

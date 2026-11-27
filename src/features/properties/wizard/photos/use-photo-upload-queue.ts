@@ -7,12 +7,10 @@ import { validatePhotoFile, type PhotoUploadRules } from '../../photo-selection'
 
 export type QueuedPhotoStatus = 'waiting' | 'uploading' | 'failed';
 
-/** A file the person chose, on its way to the property or stopped with the reason. */
 export interface QueuedPhoto {
   id: number;
   file: File;
   status: QueuedPhotoStatus;
-  /** Why it was not uploaded, in the person's language; only with `failed`. */
   error?: string;
 }
 
@@ -30,7 +28,6 @@ export function usePhotoUploadQueue(propertyId: string, uploaded: number, rules:
   const { t } = useTranslation();
   const { mutateAsync } = useUploadOnePropertyPhoto(propertyId);
   const [items, setItems] = useState<readonly QueuedPhoto[]>([]);
-  // The queue lives in a ref, which the loop that sends reads, and is mirrored in the state, which the screen draws.
   const queue = useRef<QueuedPhoto[]>([]);
   const running = useRef(false);
   const mounted = useRef(true);
@@ -54,7 +51,6 @@ export function usePhotoUploadQueue(propertyId: string, uploaded: number, rules:
     if (running.current) return;
     running.current = true;
     try {
-      // It goes on when the person has left the step: the files they chose are theirs to find in the gallery, not lost with the screen.
       for (;;) {
         const next = queue.current.find((item) => item.status === 'waiting');
         if (!next) break;
@@ -65,7 +61,6 @@ export function usePhotoUploadQueue(propertyId: string, uploaded: number, rules:
         } catch (error) {
           const reason = getProblemMessage(error, t) ?? t('propertyWizard.photos.queue.failedFile', { name: next.file.name });
           patch(next.id, { status: 'failed', error: reason });
-          // Nobody is looking at the list any more: say it where it is seen.
           if (!mounted.current) toast.error(`${next.file.name}: ${reason}`);
         }
       }

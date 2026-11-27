@@ -26,7 +26,6 @@ import { useTenantContractPage } from './use-tenant-contract';
 
 const PAY_BUTTON = 'h-auto min-h-11 w-full whitespace-normal sm:w-auto';
 
-/** Below one cent the due is settled: a credit that covers the installment is not a payment to start. */
 const CENT = 0.01;
 
 function notable(value: number | null): value is number {
@@ -45,7 +44,6 @@ function dueStatusKey(status: string): string {
   return ['Scheduled', 'Processing', 'Paid', 'Failed', 'Cancelled'].includes(status) ? status : 'Scheduled';
 }
 
-/** Still to be paid: not closed and not in balance. */
 function openDue(due: TenantDue): boolean {
   return !closedDue(due) && !settledDue(rentBreakdown(due));
 }
@@ -70,7 +68,6 @@ export function TenantDuesPage() {
         <p className="text-sm">{t('condoBook.tenantAdjustment')}</p>
         {dues.filter(due => due.periodStart > report.periodEnd && due.components?.some(c => c.kind === 'CondominiumAdvance' && c.description?.includes('conguaglio esercizio precedente'))).slice(0, 1).map(due => <p key={due.id} className="font-medium">{t('condoBook.tenantNewAmount', { date: formatDate(due.periodStart), advance: formatCurrency(rentBreakdown(due).condominiumAdvance ?? 0, due.currency), total: formatCurrency(due.amount, due.currency) })}</p>)}
       </section>)}
-      {/* The totals say something only when there is more than one due open: with one, the due itself is the number. */}
       {open.length > 1 ? <PaymentReport dues={dues} open={open} /> : null}
       {dueId && !selected ? (
         <p role="alert" data-testid="tenant-due-missing" className="text-sm">
@@ -93,7 +90,6 @@ export function TenantDuesPage() {
           ))}
         </ul>
       )}
-      {/* How to pay by itself (the automatic debit) is set once, after the dues: it is not what the tenant came to do. */}
       <TenantSepaSettings leaseId={area.contract.id} />
     </div>
   );
@@ -278,7 +274,6 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
           <h2 id="tenant-manual-title" className="text-base font-semibold">
             {t('tenantArea.dues.manualTitle')}
           </h2>
-          {/* The details of the landlord come from the server: with none, the hint must not send the tenant to «these details». */}
           <p className="text-sm text-foreground/70">{due.bank ? t('tenantArea.dues.manualHint') : t('tenantArea.dues.manualHintNoBank')}</p>
           {due.bank ? <TenantBankDetailsCard bank={due.bank} currency={due.currency} /> : (
             <p role="status" className="text-sm" data-testid="tenant-no-bank">
@@ -292,8 +287,6 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
             </p>
           ) : null}
           {canDeclare ? (
-            // One filled button per screen: «Paga con SEPA» is it when SEPA is offered; the declaration is the primary only when it is the
-            // one way left to pay (a due that is not in euro, or one the debit is not offered for).
             <DeclarationForm key={due.id} due={due} primary={!showStripe} onSubmit={(input) => declare.mutate(input)} pending={declare.isPending} />
           ) : null}
           {canDeclare ? (

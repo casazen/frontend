@@ -15,7 +15,6 @@ import type { PropertyWizardValues } from '../property-wizard-model';
 type Snapshot = Pick<PropertyWizardValues, 'listingTitle' | 'description' | 'houseRules' | 'texts'>;
 const FIELDS = ['title', 'description', ...LISTING_EXTRA_FIELDS] as const;
 
-/** Suggestions remain in a preview until explicitly applied. A failed language never changes the host's draft. */
 export function ListingAiDialog({ form, propertyId, photos }: { form: UseFormReturn<PropertyWizardValues>; propertyId: string; photos: readonly string[] }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);

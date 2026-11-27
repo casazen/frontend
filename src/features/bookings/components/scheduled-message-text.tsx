@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import { PLACEHOLDER_KEYS, splitPlaceholders } from '../lib/scheduled-messages';
 
 interface ScheduledMessageTextProps {
-  /** The text of the message as the server gives it: the check-in link, the access code and the review link are `[check_in_link]`, `[access_code]` and `[review_link]`. */
   text: string;
   className?: string;
 }

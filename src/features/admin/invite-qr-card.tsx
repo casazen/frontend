@@ -8,7 +8,6 @@ import { AlignedCard, CardDescription, CardTitle } from '@/components/ui/card';
 
 const QR_SIZE_PX = 640;
 
-/** PNG (data URL) of the QR of `url`; error correction M: it still scans when printed small or a bit worn. */
 function useQrDataUrl(url: string): { image: string | null; failed: boolean } {
   const [dataUrl, setDataUrl] = useState<{ url: string; image: string | null } | null>(null);
   useEffect(() => {
@@ -25,7 +24,6 @@ function useQrDataUrl(url: string): { image: string | null; failed: boolean } {
   return { image: dataUrl?.url === url ? dataUrl.image : null, failed: dataUrl?.url === url && dataUrl.image === null };
 }
 
-/** Opens a clean page with the code and the invitation, and prints it: the console around it never reaches the paper. */
 function printSheet(title: string, subtitle: string, image: string, url: string, popupBlocked: string) {
   const sheet = window.open('', '_blank', 'width=720,height=900');
   if (!sheet) {
@@ -76,8 +74,6 @@ export function InviteQrCard({
     }
   };
 
-  // The two cards are subgrids of the grid, four rows: the title with its line, the code, the address and the buttons. An address on
-  // two lines, or a line under the title that wraps, moves the code and the buttons of both cards alike.
   return (
     <AlignedCard rows={4} data-testid={testId}>
       <div className="mb-6 space-y-1.5">

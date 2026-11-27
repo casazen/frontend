@@ -23,7 +23,6 @@ interface LeaseSigningPanelProps {
   lease: Pick<LeaseDetail, 'id' | 'status' | 'stipulaDate' | 'hasSignedPdf' | 'origin'>;
 }
 
-/** Why the final contract cannot be downloaded, as an i18n key; the BOZZA preview is always available. */
 function contractUnavailableKey(code: string | null): string {
   switch (code) {
     case 'contract_template_not_approved':

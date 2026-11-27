@@ -19,10 +19,8 @@ import { NEW_SERVICE_PATH } from '../services/lib/service-paths';
 import { AVAILABILITY_PATH, HOME_DAYS, hasNotBegun, todayRows } from './home-model';
 
 const TIME: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-/** The day of a job that has none yet ("da concordare") has nothing to write in the first column. */
 const NO_DAY = '—';
 
-/** `?oggi=` of the address: which kind of row the block shows. Nothing is every kind. */
 const FILTER_PARAM = 'oggi';
 type Kind = 'requests' | 'jobs';
 const KIND_PARAMS: Record<Kind, string> = { requests: 'richieste', jobs: 'lavori' };
@@ -36,12 +34,10 @@ function whenOf(request: SupplierServiceRequest, today: string, locale: string):
   const start = request.scheduledStart;
   const clock = start ? romeWallClock(start) : null;
   if (day !== today || !start || !clock) return { day };
-  // The words follow the language of the app ("10:00", "10:00 AM"); the machine value of the `<time>` is always 24 hours.
   const hhmm = `${String(clock.hour).padStart(2, '0')}:${String(clock.minute).padStart(2, '0')}`;
   return { day, date: formatRomeDateTime(start, locale, TIME), dateTime: `${clock.date}T${hhmm}` };
 }
 
-/** A link of the foot of the block: quiet, as high as a finger. */
 function MoreLink({ to, children }: { to: string; children: string }) {
   return (
     <Link
@@ -54,12 +50,6 @@ function MoreLink({ to, children }: { to: string; children: string }) {
   );
 }
 
-/**
- * "Oggi e prossimi giorni", the one highlighted block of the home: the requests that wait for the answer (each with its "Accetta"), then
- * the jobs of the next days. A row opens the request in the drawer of the shell; "Accetta" is the same action as in the list of the
- * requests, and the server may refuse it (409) when the supplier already has a job in that time: the toast says why. The chips show one
- * kind of row without leaving the page.
- */
 export function TodaySection({ actions }: { actions: RequestActions }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -79,7 +69,6 @@ export function TodaySection({ actions }: { actions: RequestActions }) {
   const open = (id: string) => drawer.open(REQUEST_DRAWER_KIND, id);
 
   if (requests.length === 0 && jobs.length === 0 && moreRequests === 0) {
-    // Nothing to do. For a supplier who has not begun (no service, no working hours) that is the moment to say where to begin.
     if (inbox.isPending || checklist.isLoading) return <SkeletonCard lines={2} />;
     if (inbox.isError) return <MoreLink to={INBOX_PATH}>{t('supplier.home.menu.requests')}</MoreLink>;
     if (hasNotBegun(checklist.data)) {
@@ -121,7 +110,6 @@ export function TodaySection({ actions }: { actions: RequestActions }) {
       data-testid="supplier-today"
       className="min-w-0 overflow-hidden rounded-xl border border-border bg-card"
     >
-      {/* The same quiet head as the day of the host (UX round 2026-11): no tint, so the block «what now» stays the one highlight. */}
       <header className="space-y-3 border-b border-border px-4 py-4 sm:px-5">
         <h2 id="supplier-today-title" className="break-words text-xl font-bold tracking-tight">
           {t('supplier.home.today.title')}
@@ -170,7 +158,6 @@ export function TodaySection({ actions }: { actions: RequestActions }) {
 interface RowContext {
   t: Translate;
   locale: string;
-  /** Today in Europe/Rome, as the server says it. */
   today: string;
   open: (id: string) => boolean;
 }
@@ -187,7 +174,7 @@ function requestRow(request: SupplierServiceRequest, { t, locale, today, actions
   const phase = phaseOf(request);
   const waitsForPrimary = phase === 'backupWaiting' || phase === 'backupAccepted';
   const action: DayListItem['action'] = isInquiry(request)
-    ? // A request on measure of the showcase (SP-10b) is never taken as it is: it is answered on its page, with the conversation and an offer.
+    ?
       { label: t('supplier.inquiry.action.answer'), ariaLabel: t('supplier.inquiry.action.answerAria', { name }), href: requestPath(request.id), testId: `answer-${request.id}` }
     : phase === 'backupAccepted'
       ? undefined
@@ -222,7 +209,6 @@ function requestRow(request: SupplierServiceRequest, { t, locale, today, actions
   };
 }
 
-/** A job of the next days: the property and what is to be done, and where it is (its hours, "in corso", "finito"). */
 function jobRow(job: SupplierServiceRequest, { t, locale, today, open }: RowContext): DayListItem {
   const name = requestTitle(job, t);
   const phase = phaseOf(job);

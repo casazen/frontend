@@ -18,7 +18,6 @@ vi.mock('@/api/public-booking.api', () => ({
   publicBookingApi: { quoteDirectBooking: vi.fn() },
 }));
 
-// The page lazy-loads the amenity list: explicit conditions only, with a generous ceiling.
 configure({ asyncUtilTimeout: 5_000 });
 
 const TODAY = '2026-10-05';
@@ -77,7 +76,6 @@ function renderPage(search = '', publicOrg = org) {
 describe('PublicPropertyPage', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    // Only the clock: "today" in Europe/Rome is 5 October 2026, timers stay real.
     freezeClock(`${TODAY}T10:00:00Z`);
     await i18n.changeLanguage('it');
     vi.mocked(publicOrgApi.getOrgProperty).mockResolvedValue(property);
@@ -96,9 +94,7 @@ describe('PublicPropertyPage', () => {
     await screen.findByRole('heading', { level: 1, name: 'Villa Mare' });
     await waitFor(() => expect(publicOrgApi.getOrgPropertyCalendar).toHaveBeenCalledTimes(1));
     expect(publicOrgApi.getOrgProperty).toHaveBeenCalledWith('demo-casazen', PROPERTY_SLUG);
-    // The route of the calendar takes the slug of the page as well as the id (DB-03b).
     expect(vi.mocked(publicOrgApi.getOrgPropertyCalendar).mock.calls[0][1]).toBe(PROPERTY_SLUG);
-    // With no dates chosen there is nothing to price: the server is not asked.
     expect(publicBookingApi.quoteDirectBooking).not.toHaveBeenCalled();
   });
 
@@ -149,7 +145,6 @@ describe('PublicPropertyPage', () => {
     renderPage();
 
     await screen.findByRole('heading', { level: 1, name: 'Villa Mare' });
-    // A home with nothing but the basics has no energy scale, plan, zone or rules block: nothing is shown that the host did not say.
     expect(screen.queryByTestId('property-energy')).not.toBeInTheDocument();
     expect(screen.queryByTestId('property-floor-plan')).not.toBeInTheDocument();
     expect(screen.queryByTestId('property-zone')).not.toBeInTheDocument();

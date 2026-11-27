@@ -8,14 +8,8 @@ import { parseStayDate } from '@/lib/stay-dates';
 import type { LeaseSummary } from '@/types';
 import { longRentLeasePath } from './paths';
 
-/** The lease that started last first: the one that holds the property now, then the ones before it. */
 const startedLast = (a: LeaseSummary, b: LeaseSummary) => parseStayDate(b.startDate).localeCompare(parseStayDate(a.startDate));
 
-/**
- * The leases of the property (LR-07d), read from `GET /leases?propertyId=`: who, in what state, for how long and for how much,
- * and the one thing that cannot wait (a rent that is late). Each row opens its lease. A list without a box around it; nothing at
- * all when the property has no lease (the highlighted block of the page says so).
- */
 export function LongRentPropertyLeases({ leases }: { leases: readonly LeaseSummary[] }) {
   const { t, i18n } = useTranslation();
   if (leases.length === 0) return null;

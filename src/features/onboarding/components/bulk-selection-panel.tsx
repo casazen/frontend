@@ -28,7 +28,6 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 const SENDERS: readonly ComplianceSenderType[] = ['ChannelManager', 'CasaZen', 'Manual'];
 
-/** The two ways to say which properties: all of them (asked for by name), or a filter. */
 const SCOPES = ['all', 'filter'] as const;
 
 /** How each outcome of an apply looks: a tone, an icon and its words, so that it is never told by color alone (UX-09). */
@@ -38,21 +37,17 @@ const OUTCOME_VIEW: Record<string, { tone: StatusTone; Icon: LucideIcon; key: st
   refused: { tone: 'danger', Icon: Ban, key: 'refused' },
   wouldChange: { tone: 'info', Icon: CircleDashed, key: 'wouldChange' },
 };
-/** An outcome this version does not know is never read as done: it is shown as not understood. */
 const UNKNOWN_OUTCOME = { tone: 'warning', Icon: CircleHelp, key: 'unknown' } as const;
 
-/** The stage the check and the apply have reached for the selection and the choice on screen: a stage of other values is dropped, never reused. */
 type Stage =
   | { signature: string; kind: 'checked'; result: BulkApplyResult }
   | { signature: string; kind: 'applied'; result: BulkApplyResult }
   | { signature: string; kind: 'uncertain' };
 
-/** A count the server sent as a number; anything else is 0. */
 function count(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 }
 
-/** The properties of an apply or a check, one by one, a page at a time: the name, the outcome and, for a refusal, the reason in plain words. */
 function ItemsTable({ items, testId }: { items: readonly BulkApplyItem[]; testId: string }) {
   const { t } = useTranslation();
   const [page, setPage] = useState(1);
@@ -143,7 +138,6 @@ export function BulkSelectionPanel() {
   const selectionSignature = selection ? JSON.stringify(selection) : null;
   const signature = selection && choice ? JSON.stringify({ selection, choice }) : null;
 
-  // What was previewed, checked or applied counts only for the selection and the choice on screen now.
   const currentPreview = previewed && previewed.signature === selectionSignature ? previewed.result : null;
   const current = stage && stage.signature === signature ? stage : null;
   const check = current?.kind === 'checked' ? current.result : null;
@@ -173,16 +167,13 @@ export function BulkSelectionPanel() {
   }
 
   async function applyNow() {
-    // The confirmed call is sent once: a second press while it is on its way (or before the page has drawn that it is) does nothing.
     if (inFlight.current || !selection || !choice || !signature || !check) return;
     inFlight.current = true;
     const asked = signature;
     try {
       const result = await apply.mutateAsync({ selection, choice, confirmed: true });
-      // An answer that says nothing was written is not an apply: it is told as not done, never as a success.
       setStage(result.dryRun ? { signature: asked, kind: 'uncertain' } : { signature: asked, kind: 'applied', result });
     } catch {
-      // The call failed: some properties may have changed before it did. The check is gone, and the person is told to check again.
       setStage({ signature: asked, kind: 'uncertain' });
     } finally {
       inFlight.current = false;
@@ -452,8 +443,6 @@ export function BulkSelectionPanel() {
       <ConfirmationDialog
         open={confirming}
         onOpenChange={(open) => {
-          // A press on «Annulla», on the outside or a focus that leaves the dialog while the call is on its way does not drop it (the ref, not the state: the
-          // handler may be the one of the render before the call started): the dialog closes when the answer is in.
           if (!inFlight.current) setConfirming(open);
         }}
         title={t('onboardingPlan.bulk.selection.confirmTitle', { count: toChange })}

@@ -2,7 +2,6 @@ import { stayDateOf } from '@/features/bookings/lib/booking-price';
 import { formatStayDate } from '@/lib/stay-dates';
 import type { Booking } from '@/types';
 
-/** Where the stay in focus is: the guest is in the property now, is about to arrive, or has left. */
 type GuestStayPhase = 'inProgress' | 'upcoming' | 'past';
 
 interface GuestFocusStay {
@@ -10,12 +9,10 @@ interface GuestFocusStay {
   phase: GuestStayPhase;
 }
 
-/** The stays of a guest, the latest check-in first (the API already sends them so; the page does not rely on it). */
 export function sortStays(bookings: readonly Booking[]): Booking[] {
   return [...bookings].sort((a, b) => stayDateOf(b.checkInDate).localeCompare(stayDateOf(a.checkInDate)));
 }
 
-/** The guest is in the property: the arrival is registered and the departure is not, or the stay is under way by its dates. */
 function isInProgress(booking: Booking, today: string): boolean {
   if (booking.status === 'CheckedIn') return true;
   return booking.status === 'Confirmed' && stayDateOf(booking.checkInDate) < today && stayDateOf(booking.checkOutDate) >= today;
@@ -41,10 +38,6 @@ export function focusStayOf(bookings: readonly Booking[], today: string): GuestF
   return past ? { booking: past, phase: 'past' } : null;
 }
 
-/**
- * "12 ott → 15 ott" for the dates of a stay, with the year when a date is not in this year. Stay dates are calendar days: they
- * are read as written, never moved by a time zone.
- */
 export function stayRangeText(booking: Pick<Booking, 'checkInDate' | 'checkOutDate'>, language: string, today: string): string {
   const thisYear = today.slice(0, 4);
   const day = (value: string) => {

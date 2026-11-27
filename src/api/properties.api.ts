@@ -18,13 +18,11 @@ import type {
 } from '@/types';
 
 export const propertiesApi = {
-  /** `view: 'overview'` (SR-07a) adds to each short-stay row the state, what is missing, the nights, the cover and the site. */
   getAll: (params?: Record<string, string | number | boolean | undefined>) =>
     ApiClient.get<Property[]>('/properties', params),
 
   getById: (id: string) => ApiClient.get<Property>(`/properties/${id}`),
 
-  /** How many properties the org has of how many its plan allows (SR-07a): readable by whoever may read properties. */
   getPlanUsage: () => ApiClient.get<PlanUsage>('/properties/plan-usage'),
 
   getCancellationPolicies: () =>
@@ -33,16 +31,11 @@ export const propertiesApi = {
   create: (data: CreatePropertyDto) =>
     ApiClient.post<Property>('/properties', data),
 
-  /** PATCH semantics on PUT (A2-04): fields left out keep their stored value. Answers 204. */
   update: (id: string, data: UpdatePropertyDto) =>
     ApiClient.put<void>(`/properties/${id}`, data),
 
   delete: (id: string) => ApiClient.delete<void>(`/properties/${id}`),
 
-  /**
-   * Puts a member in charge of the property (AM-03), or nobody with `null` (the creator is told again). 422
-   * `property_responsible_invalid` when the person is not an active member of the org who reaches the property. Answers 204.
-   */
   setResponsible: (id: string, userId: string | null) =>
     ApiClient.put<void>(`/properties/${id}/responsible`, { userId }),
 
@@ -54,7 +47,6 @@ export const propertiesApi = {
   pause: (id: string) => ApiClient.post<PropertyPauseStatus>(`/properties/${id}/pause`),
   activate: (id: string) => ApiClient.post<PropertyPauseStatus>(`/properties/${id}/activate`),
 
-  /** Public search across orgs (BK-20): every filter of `PropertySearchParams` is sent, none is silently dropped. */
   search: (params: PropertySearchParams) => {
     const apiParams: Record<string, string | number | undefined> = {};
     if (params.city?.trim()) apiParams.city = params.city.trim();
@@ -90,27 +82,17 @@ export const propertiesApi = {
   deleteDocument: (id: string, docId: string) =>
     ApiClient.delete<void>(`/properties/${id}/documents/${docId}`),
 
-  /** Cadastral identification of the unit (LT-10): used by the lease contract. */
   updateCadastral: (id: string, data: PropertyCadastralData) =>
     ApiClient.put<void>(`/properties/${id}/cadastral`, data),
 
-  /** Code and energy class printed on an APE document (LT-10): stated in the lease contract. */
   updateApeIdentification: (id: string, docId: string, data: ApeIdentification) =>
     ApiClient.put<PropertyDocumentDto>(`/properties/${id}/documents/${docId}/ape`, data),
 
-  /**
-   * Reads the code and the energy class of a stored APE again (OCR of the file and, for a code it does not show, the public register
-   * of the region): fills only what is empty. The OCR of a photographed certificate takes up to two minutes, as an upload does.
-   */
   readApeIdentification: async (id: string, docId: string): Promise<PropertyDocumentDto> => {
     const response = await axios.post<PropertyDocumentDto>(`/properties/${id}/documents/${docId}/ape/read`, undefined, { timeout: 120_000 });
     return response.data;
   },
 
-  /**
-   * Documents are in the private storage bucket: the file is fetched through the authenticated
-   * endpoint (bearer token, tenant/ownership check), never through a public link.
-   */
   downloadDocument: async (id: string, docId: string): Promise<Blob> => {
     try {
       const response = await axios.get<Blob>(`/properties/${id}/documents/${docId}/download`, {

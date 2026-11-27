@@ -15,15 +15,10 @@ import { ContactStateBadge } from './contact-state-badge';
 
 const CHANNEL_ICONS: Record<string, LucideIcon> = { Email: Mail, Phone, WhatsApp: MessageCircle };
 
-/** The `code` of the problem a failed call answered with, or `undefined` (no answer, or one without a code). */
 function errorCodeOf(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
 }
 
-/**
- * A contact that has the guest's consent for marketing and was never confirmed: the host can ask for the double opt-in e-mail. A contact
- * that is already confirmed, a soft opt-in, a service-only address or a forward address of a channel has nothing to confirm.
- */
 function needsConfirmation(contact: CrmContact): boolean {
   return contact.channel === 'Email' && contact.legalBasis === 'Consent' && contact.confirmation !== 'Confirmed' && !contact.isOtaForward;
 }
@@ -34,11 +29,9 @@ interface ContactItemProps {
   canWrite: boolean;
 }
 
-/** One contact of the profile: its channel and value, where it came from, what it may be used for, and why it may or may not be written to. */
 function ContactItem({ contact, profileId, canWrite }: ContactItemProps) {
   const { t, i18n } = useTranslation();
   const send = useSendContactConfirmation();
-  // The server does not say how many requests were sent: the limit is known when it answers 409, and the button waits from then on.
   const [limitReached, setLimitReached] = useState(false);
 
   const Icon = CHANNEL_ICONS[contact.channel] ?? Mail;
@@ -150,9 +143,7 @@ function ContactItem({ contact, profileId, canWrite }: ContactItemProps) {
 interface ProfileContactsProps {
   profileId: string;
   contacts: CrmContact[];
-  /** The guest record of the profile, where the consent of the guest is withdrawn; `null` for a lead that has none. */
   primaryGuestId: string | null;
-  /** The caller may ask for a confirmation (`guest.write`). */
   canWrite: boolean;
 }
 

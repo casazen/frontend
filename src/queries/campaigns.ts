@@ -14,7 +14,6 @@ const SEGMENTS_KEY = 'segments';
 const CAMPAIGNS_KEY = 'campaigns';
 const FIELDS_KEY = 'campaign-fields';
 
-// Segments
 export function useSegments() {
   return useQuery({
     queryKey: [SEGMENTS_KEY],
@@ -45,7 +44,6 @@ export function usePreviewCount(segmentId: string, propertyId?: string) {
   });
 }
 
-// Field catalog
 export function useFields() {
   return useQuery({
     queryKey: [FIELDS_KEY],
@@ -53,7 +51,6 @@ export function useFields() {
   });
 }
 
-// Campaigns
 export function useCampaigns() {
   return useQuery({
     queryKey: [CAMPAIGNS_KEY],

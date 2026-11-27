@@ -7,10 +7,6 @@ import { Button } from '@/components/ui/button';
 import { BrandHero } from '@/features/public-site/components/brand-hero';
 import type { SeoPublishedPage } from '@/types/seo.types';
 
-/**
- * Hub of the published SEO pages (`/p/affitti-brevi`, SE-02 / A8-02), linked from the public footer. It lists exactly
- * the pages of the sitemap, as returned by the backend: no text is written here besides the headings.
- */
 export function SeoHubPage() {
   const { t } = useTranslation();
   const { data, isLoading, isError, refetch, isFetching } = usePublishedSeoPages();
@@ -19,7 +15,6 @@ export function SeoHubPage() {
     title: t('publicSeo.hub.metaTitle'),
     description: t('publicSeo.hub.metaDescription'),
     canonicalUrl: data?.canonicalUrl,
-    // A hub that failed to load or lists nothing is as thin as the empty guides: not indexed (BK-15, like the sitemap).
     noindex: isError || (data !== undefined && data.pages.length === 0),
   });
 
@@ -31,13 +26,11 @@ export function SeoHubPage() {
     );
   }
 
-  // Only routes of this app: the backend answers /p/... paths.
   const pages = (data?.pages ?? []).filter((page) => page.path.startsWith('/p/'));
   const guides = pages.filter((page) => page.pageType === 'ComplianceGuide');
   const calculators = pages.filter((page) => page.pageType === 'TouristTaxCalc');
 
   return (
-    // Inside the `<main>` of the public shell: a second one would be a second landmark.
     <div className="mx-auto max-w-4xl space-y-8" data-testid="seo-hub-page">
       <BrandHero title={t('publicSeo.hub.title')} />
 
@@ -74,10 +67,6 @@ interface HubSectionProps {
   icon: LucideIcon;
 }
 
-/**
- * The pages of one kind as cards: the title is the link (a whole-card link, so the card opens in a new tab and a screen
- * reader reads the title alone), the comune sits next to it.
- */
 function HubSection({ heading, pages, testId, icon: Icon }: HubSectionProps) {
   if (pages.length === 0) return null;
 

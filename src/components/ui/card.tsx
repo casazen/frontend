@@ -81,13 +81,7 @@ const FROM = {
 } as const;
 
 interface AlignedCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** The sections of the card (an icon, a title, a text, a list, a button...): one row each, the same number in every card of the grid. */
   rows: keyof typeof ROW_SPANS;
-  /**
-   * The width from which the grid has more than one column (`sm`, `md` or `lg`, the one of its `sm:grid-cols-2`). Below it the card
-   * is a plain column, where a section that a card has not, an empty `<div />`, takes no room. Without it the card is a subgrid at
-   * every width, which is right when every card has every section.
-   */
   from?: keyof typeof FROM;
 }
 

@@ -1,15 +1,9 @@
-/**
- * Numeric helpers of the schematic map engine (DB-19a): pseudo-random generators, value noise and the small string helpers the SVG
- * writers need. Pure functions: no DOM, no module state, so the same input always gives the same drawing.
- */
-
 export const PI = Math.PI;
 export const DEG = PI / 180;
 
 export const clamp = (v: number, a: number, b: number): number => (v < a ? a : v > b ? b : v);
 export const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 
-/** FNV-1a: a stable 32-bit hash of a string. */
 export function hashStr(s: string): number {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
@@ -32,7 +26,6 @@ function mulberry32(seed: number): Rand {
   };
 }
 
-/** A deterministic generator seeded by one or more parts (strings or numbers). */
 export const rngOf = (...parts: (string | number)[]): Rand => mulberry32(hashStr(parts.join('|')));
 
 export function hash2(ix: number, iy: number, s: number): number {
@@ -42,7 +35,6 @@ export function hash2(ix: number, iy: number, s: number): number {
   return (h >>> 0) / 4294967296;
 }
 
-/** Smooth value noise in 0..1. */
 export function vnoise(x: number, y: number, s = 0): number {
   const ix = Math.floor(x);
   const iy = Math.floor(y);
@@ -53,20 +45,17 @@ export function vnoise(x: number, y: number, s = 0): number {
   return lerp(lerp(hash2(ix, iy, s), hash2(ix + 1, iy, s), u), lerp(hash2(ix, iy + 1, s), hash2(ix + 1, iy + 1, s), u), v);
 }
 
-/** Compact number (fixed decimals, never «-0»). */
 export const num = (v: number, d = 1): string => {
   const k = 10 ** d;
   const r = Math.round(v * k) / k;
   return String(Object.is(r, -0) ? 0 : r);
 };
 
-/** Escapes text for an SVG text node or attribute. */
 export const esc = (s: unknown): string =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 const COMBINING = new RegExp(`[${String.fromCharCode(0x300)}-${String.fromCharCode(0x36f)}]`, 'g');
 
-/** Lower-case ASCII id with hyphens: «Monte Sant'Angelo» becomes «monte-sant-angelo». */
 export const slug = (s: unknown): string =>
   String(s)
     .normalize('NFD')

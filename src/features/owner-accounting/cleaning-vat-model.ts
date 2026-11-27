@@ -9,11 +9,9 @@ import type { CleaningVatAnswer } from '@/types';
  */
 export const CLEANING_VAT_PARAM = 'cleaningVat';
 
-/** The area and the permission of the answer: the question is answered with what writing the properties asks (`property.write`, the policy of the endpoint), in the area of the page that opens it. */
 export const CLEANING_VAT_AREA: AppContextKey = 'short-rent';
 export const CLEANING_VAT_PERMISSION = 'property.write';
 
-/** The answers, in the order the buttons come. */
 export const CLEANING_VAT_ANSWERS: readonly CleaningVatAnswer[] = ['Applied', 'NotApplied', 'Unknown'];
 
 /**
@@ -54,12 +52,10 @@ export function cleaningVatProblemOf(error: unknown): CleaningVatProblem {
   return 'failed';
 }
 
-/** The problems after which the same answer cannot be sent again as it is: the question is not there, the person may not answer it or the cleaning is not completed. */
 export function isFinalProblem(problem: CleaningVatProblem): boolean {
   return problem === 'notFound' || problem === 'forbidden' || problem === 'notCompleted';
 }
 
-/** The rate «Sì» carries: the one the server gives, and only when it is a number above zero. `null` is no rate, and «Sì» is not offered. */
 export function yesRateOf(standardRatePercent: number | null): number | null {
   return typeof standardRatePercent === 'number' && Number.isFinite(standardRatePercent) && standardRatePercent > 0 ? standardRatePercent : null;
 }

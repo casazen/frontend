@@ -17,7 +17,6 @@ import { CONNECTION_HEALTH_SECTION, describeHealthLine, formatRunTime, healthDet
 import { useIstatClaim } from '../lib/use-istat-claim';
 import { IstatCoverageNotice } from './istat-coverage-notice';
 
-/** The look of a state: an icon, a word and a colour together (the colour is never the only sign). The tones are the semantic tokens, with an AA fallback. */
 const STATE_LOOK: Record<ConnectionHealthState, { Icon: LucideIcon; tone: string }> = {
   Active: {
     Icon: CheckCircle2,
@@ -46,12 +45,10 @@ interface HealthRowProps {
   wizardPath: string | null;
 }
 
-/** One communication: who sends it, whether it works, when it last ran and, when it does not, what to do. */
 function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath, sharedDetail = false }: HealthRowProps & { sharedDetail?: boolean }) {
   const { t, i18n } = useTranslation();
   const view = describeHealthLine(line, applies);
   const { Icon, tone } = STATE_LOOK[view.state];
-  // The last run is told in the time zone of the property.
   const lastRun = view.lastRunAt ? formatRunTime(view.lastRunAt, i18n.language, timeZone) : '';
   const instructions = healthInstructionsKey(view);
 
@@ -99,7 +96,6 @@ function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath, sha
             </p>
           ) : null}
           {view.checkInChannelManager ? (
-            // The compliance drawer (E03/F05/US02): the outcome of this communication of this property is the channel manager's to tell; it is offered where the connector is on.
             <ComplianceDrawerButton target={{ topic, propertyId }} subject={t(`connectionHealth.topic.${topic}`)} className="min-h-11" testId={`connection-health-${topic}-verify`} />
           ) : null}
         </div>
@@ -151,7 +147,6 @@ function CredentialsLine({ stored, usable, archivePath }: { stored: boolean; usa
 
 interface ConnectionHealthPanelProps {
   propertyId: string;
-  /** The time zone of the property (IANA name): the last automatic run is told in it. */
   timeZone?: string;
 }
 
@@ -177,7 +172,6 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
   let body: ReactNode;
 
   if (health.isError) {
-    // A 404 is «not found» whatever the cache still holds of an older read (the query keeps the last data on an error).
     body =
       getHttpStatus(health.error) === 404 ? (
         <p className="text-sm text-muted-foreground" data-testid="connection-health-not-found">
@@ -198,7 +192,6 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
     const data = health.data;
     const wizardPath = senderWizardPath(propertyId, hasPermission);
     const istatRow = !(data.applies && istatClaim === 'seeNotice');
-    // Both sent by hand: the one sentence that says what that means goes once under the two rows, not twice (UX round 2026-11).
     const bothManual =
       data.applies &&
       istatRow &&
@@ -233,7 +226,6 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
   }
 
   return (
-    // `tabIndex={-1}`: the link of the cockpit (`?section=connection-health`) takes the focus here, so a screen reader says where it led.
     <PlainSection id={CONNECTION_HEALTH_SECTION} tabIndex={-1} className="scroll-mt-6 outline-none" title={title} data-testid="connection-health-panel">
       <p className="text-sm text-muted-foreground">{t('connectionHealth.description')}</p>
       {body}

@@ -33,7 +33,6 @@ export function IssueDialog({ detail, onClose, onRedoDrafts }: { detail: SelfBil
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        // While the call is on its way the dialog stays (Esc, the cross and a click outside included): closed, it would leave a failure with nowhere to be told.
         if (!open && !issue.isPending) onClose();
       }}
       title={t('selfBilling.detail.issue.title')}

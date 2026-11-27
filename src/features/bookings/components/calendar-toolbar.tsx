@@ -18,26 +18,17 @@ import {
 
 interface CalendarToolbarProps {
   properties: readonly { id: string; name: string }[];
-  /** The property shown; empty is every property, which only the Timeline can show. */
   propertyId: string;
   onPropertyChange: (propertyId: string) => void;
   view: CalendarPageView;
-  /** How many days the Timeline shows. */
   zoom: TimelineZoom;
-  /** The day the view is around (`YYYY-MM-DD`); in the Timeline, its first day. */
   date: string;
   onViewChange: (view: CalendarPageView) => void;
   onZoomChange: (zoom: TimelineZoom) => void;
   onDateChange: (date: string) => void;
-  /** The period is not offered while the calendar cannot be shown (the load failed): only the property is. */
   showPeriod: boolean;
 }
 
-/**
- * The filters of the calendar, in one row like the lists of the redesign: the property, how it is shown (the Timeline of every
- * property, or the month, the week or the day of one), for the Timeline how many days, and where (back, today, forward, with what
- * is on show said in words). The property is still the `<select id="calendar-property">` that the end-to-end tests drive.
- */
 export function CalendarToolbar({
   properties,
   propertyId,

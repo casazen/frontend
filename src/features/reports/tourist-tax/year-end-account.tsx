@@ -38,7 +38,6 @@ function AccountFigures({ year, by, account }: FiguresProps) {
   );
 
   if (rows.length === 0) {
-    // Said in words: a year with no stay in Italy and no payment has no row.
     return (
       <p className="text-sm text-foreground/70" data-testid="year-end-account-empty">
         {t('reports.touristTax.yearEnd.account.empty', { year })}
@@ -79,7 +78,6 @@ function AccountFigures({ year, by, account }: FiguresProps) {
           <tbody key={group.comune} className="border-b border-border" data-testid="year-end-account-comune">
             <tr>
               <th scope="rowgroup" colSpan={7} className="px-3 pb-1 pt-3 text-left font-semibold">
-                {/* The name of the comune stays where the first column is while the table scrolls sideways on a phone. */}
                 <div className="sticky left-0 w-[min(100%,calc(100vw-3rem))] break-words">{group.comune}</div>
               </th>
             </tr>
@@ -161,10 +159,6 @@ interface AccountSectionProps {
   query: UseQueryResult<TouristTaxAgentAccount>;
 }
 
-/**
- * The account of the agent of the year, on screen: what the second file of the page holds (E18/F01/US02/T03, NF-117), cut by month or by quarter. The cut is the one the file below is made in (one choice for both), and it
- * stays on the page whatever the read does, so a person can change it after a failure.
- */
 export function AgentAccountSection({ year, by, onByChange, query }: AccountSectionProps) {
   const { t } = useTranslation();
   return (

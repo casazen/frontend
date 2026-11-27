@@ -5,11 +5,9 @@ import type { SupplierService } from '@/types/supplier-services';
 
 interface ServiceThumbProps {
   service: Pick<SupplierService, 'photoUrls'>;
-  /** The size and the shape, as classes (default: a 48 px square). */
   className?: string;
 }
 
-/** The cover photo of a service, or a picture with a line through it when it has none. It is decoration: the name is always next to it. */
 export function ServiceThumb({ service, className }: ServiceThumbProps) {
   const cover = service.photoUrls.find(isDisplayableMediaUrl);
   return (

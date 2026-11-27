@@ -2,12 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders, isAxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-/**
- * The failure of a call without the request that failed. An error of axios holds the body that was sent (`config.data`), and the body of the start of an activation holds
- * the username and the password of the portal: whatever keeps the error (the state of a step, the cache of the mutations) would keep them. What a screen needs of a failure
- * stays (the status, the code and the body of the answer, which it turns into words, and whether the call was anonymous: `public`, a flag and not data, without which a 401 or a
- * 403 of a guest who is not signed in would be read as a session that expired); the request does not. An error that is not one of axios is given back as it is.
- */
 export function withoutRequest(error: unknown): unknown {
   if (!isAxiosError(error)) return error;
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
@@ -24,24 +18,16 @@ export function withoutRequest(error: unknown): unknown {
 }
 
 interface SequentialRunOptions {
-  /** The items, in the order they are done: the properties the person chose. */
   ids: readonly string[];
-  /** Nothing starts before what the runs depend on has been read. */
   ready: boolean;
-  /** The item needs no run (the server already has it, or it cannot be run now): it is skipped. */
   isDone: (id: string) => boolean;
-  /** Does the work of one item. A rejection is the failure of that item only. */
   run: (id: string) => Promise<unknown>;
 }
 
 interface SequentialRun {
-  /** The item being worked on now, or `null`. */
   running: string | null;
-  /** The items whose run failed, with what failed: they are not run again by themselves. */
   failures: ReadonlyMap<string, unknown>;
-  /** Runs a failed item once more (and, after it, the ones that wait). */
   retry: (id: string) => void;
-  /** The items whose run has ended in this visit, whether it worked or not: what tells «not yet tried» from «tried, and the server does not show it». */
   settled: ReadonlySet<string>;
   /** This visit has run something (it worked or it failed): what a step that goes on by itself waits for, so that a visit that only finds the work done does not jump forward. */
   ran: boolean;

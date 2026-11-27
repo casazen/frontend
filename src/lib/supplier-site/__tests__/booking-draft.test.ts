@@ -37,7 +37,6 @@ describe('the draft of a booking on the device (privacy)', () => {
   });
 
   it('readBookingDraft_AFileWithConsentOrPasswordInIt_BringsNeitherBack', () => {
-    // Whatever else a stored file carries (an old version, a hand edit), only the members of the draft are read back.
     window.localStorage.setItem(
       'casazen.supplier-booking.rossi',
       JSON.stringify({ v: 1, savedAt: NOW, draft: { ...typed, privacyAccepted: true, consent: true, password: 'secret', privacyNoticeVersion: 'v1' } }),
@@ -75,7 +74,6 @@ describe('the draft of a booking on the device (privacy)', () => {
     expect(draft.service).toBe('giardino');
     expect(draft.options).toEqual({});
     expect(draft.startUtc).toBeNull();
-    // What the person typed about itself stays.
     expect(draft.fullName).toBe('Anna Rossi');
   });
 });

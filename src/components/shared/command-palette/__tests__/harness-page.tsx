@@ -1,7 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CommandPaletteTrigger } from '../command-palette-trigger';
 
-/** The page of the shell of the tests: where the location is shown, a field, a button that changes page, and the search of the header. */
 export function HarnessPage({ extra }: { extra: React.ReactNode }) {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();

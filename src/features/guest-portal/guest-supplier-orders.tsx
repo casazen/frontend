@@ -80,7 +80,6 @@ export function GuestSupplierOrders({ path, language, checkIn, checkOut }: {
       {Object.keys(submittedOrders).length > 0 && <p role="status" className="stay-card stay-content">{text.sent} <a href="#guest-service-orders">{text.orders}</a></p>}
       {offers.map((offer) => <OfferForm key={`${offer.id}:${submittedOrders[offer.id] ?? ''}`} offer={offer} language={language} sandbox={sandbox} earliestDate={earliestDate} latestDate={checkOut?.slice(0, 10)}
         busy={change.isPending} submit={(body) => change.mutate({ suffix: '', body })} />)}
-      {/* The orders are a part of the page only once there is one: before that the catalogue is all there is to see. */}
       {query.data.orders.length > 0 && <h2 id="guest-service-orders" tabIndex={-1}>{text.orders}</h2>}
       {query.data.orders.map((order) => (
         <article className="stay-card stay-content" key={order.id}>

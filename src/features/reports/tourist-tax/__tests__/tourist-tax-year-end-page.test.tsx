@@ -11,9 +11,6 @@ import type { TouristTaxSummary } from '@/types';
 import { TouristTaxYearEndPage } from '../tourist-tax-year-end-page';
 import { summaryOf, yearEndJsonOf } from './tourist-tax-year-end-fixtures';
 
-// The page with the real hooks, the real API module and the real download code: only the HTTP client, the permissions, the frame of the app and the saving of a file are replaced. What is under test is what the page
-// shows (the years, the figures of the server in the currency of the answer, what the caller is told about the reasons of the exemptions) and what it asks the server for. The three results on screen have their own tests
-// (`tourist-tax-year-end-details.test.tsx`); here the server simply answers their JSON in order.
 const granted = vi.hoisted(() => new Set<string>());
 const saved = vi.hoisted(() => vi.fn());
 
@@ -40,7 +37,6 @@ const file = (name: string) => ({ status: 200, data: new Blob(['a;b'], { type: '
 
 type Params = { params?: Record<string, string> };
 
-/** What a server that is in order answers to a read: the summary of the year that was asked for, the JSON of a year-end result (`format=json`), or a file for each export. */
 function answerOf(path: string, config?: Params, summary: (year: number) => TouristTaxSummary = summaryOf) {
   if (path === SUMMARY_PATH) return { status: 200, data: summary(Number(config?.params?.from.slice(0, 4))), headers: {} };
   if (path.startsWith('/tourist-tax/year-end/')) {
@@ -53,10 +49,8 @@ function serverInOrder(summary: (year: number) => TouristTaxSummary = summaryOf)
   get.mockImplementation(async (path: string, config?: Params) => answerOf(path, config, summary));
 }
 
-/** The reads made so far as the address says them (`path?query`), in alphabetical order: the page asks several at once, and the order they leave in is not what is under test. */
 const readsMade = () => get.mock.calls.map(([path, config]) => `${path}?${new URLSearchParams(config?.params as Record<string, string> | undefined).toString()}`).sort();
 
-/** The files asked for so far: every read that is neither the summary nor the JSON of a result. */
 const filesAsked = () => get.mock.calls.filter(([path, config]) => path !== SUMMARY_PATH && (config?.params as Record<string, string> | undefined)?.format !== 'json');
 
 function renderPage() {
@@ -66,7 +60,6 @@ function renderPage() {
   );
 }
 
-/** Presses the button of one file once it is enabled and waits until the file is saved (`saves` is how many files were saved by then), so the next press finds the page ready. */
 async function makeFile(testId: string, saves: number) {
   await waitFor(() => expect(screen.getByTestId(testId)).toBeEnabled());
   fireEvent.click(screen.getByTestId(testId));
@@ -76,7 +69,6 @@ async function makeFile(testId: string, saves: number) {
 beforeEach(async () => {
   vi.resetAllMocks();
   granted.clear();
-  // 24 September 2026 is «today» in Rome in these tests: the page opens on this year.
   freezeClock(NOON_UTC);
   await i18n.changeLanguage('it');
   serverInOrder();
@@ -97,14 +89,12 @@ describe('the year of the page (a declaration is for one year, and the figures o
 
     await screen.findByTestId('year-end-figures');
     await screen.findByTestId('year-end-ticino-table');
-    // The days of the whole year and the JSON of the three results (the account by month, the cut it opens on): the year, the format and the cut, nothing else in an address.
     expect(readsMade()).toEqual([
       `${SUMMARY_PATH}?from=2026-01-01&to=2026-12-31`,
       '/tourist-tax/year-end/2026/agent-account?by=month&format=json',
       '/tourist-tax/year-end/2026/declaration?format=json',
       '/tourist-tax/year-end/2026/ticino?format=json',
     ]);
-    // No file is asked for until someone presses its button.
     expect(filesAsked()).toEqual([]);
   });
 
@@ -132,7 +122,6 @@ describe('the year of the page (a declaration is for one year, and the figures o
 
     answer({ status: 200, data: summaryOf(2025, { currency: 'EUR' }), headers: {} });
     expect(await screen.findByTestId('year-end-figures')).toBeInTheDocument();
-    // The whole of the year that was chosen, and the three results of that year too.
     expect(readsMade()).toEqual(expect.arrayContaining([`${SUMMARY_PATH}?from=2025-01-01&to=2025-12-31`, '/tourist-tax/year-end/2025/declaration?format=json', '/tourist-tax/year-end/2025/ticino?format=json']));
   });
 });
@@ -178,7 +167,6 @@ describe('the figures of the year (money rule: the server\'s figures, in the cur
 
     expect(await screen.findByTestId('year-end-empty')).toHaveTextContent(i18n.t('reports.touristTax.yearEnd.figures.empty', { year: 2026 }));
     expect(screen.queryByTestId('year-end-owed')).toBeNull();
-    // The count of Ticino does not depend on the Italian stays: the files are still there.
     expect(screen.getByTestId('year-end-ticino-xlsx')).toBeEnabled();
   });
 
@@ -257,14 +245,12 @@ describe('the files of the year (one at a time, each in the format and for the y
       ['/tourist-tax/year-end/2026/agent-account', { by: 'quarter', format: 'xlsx' }],
       ['/tourist-tax/year-end/2026/ticino', { format: 'csv' }],
     ]);
-    // The Ticino row says when the count is due and where a property with no known canton is completed.
     expect(screen.getByTestId('year-end-ticino')).toHaveTextContent('5 gennaio 2027');
     expect(within(screen.getByTestId('year-end-ticino-canton')).getByRole('link')).toHaveAttribute('href', '/app/short-rent/properties');
   });
 
   it('YearEndFiles_ADoubleClickAsksOnce_AndWhileOneIsOnItsWayNoOtherFileCanBeAsked', async () => {
     let finish!: (value: ReturnType<typeof file>) => void;
-    // Only the files wait: the figures on screen are answered at once.
     get.mockImplementation(async (path: string, config?: Params) =>
       path === SUMMARY_PATH || config?.params?.format === 'json' ? answerOf(path, config) : new Promise((done) => (finish = done)),
     );

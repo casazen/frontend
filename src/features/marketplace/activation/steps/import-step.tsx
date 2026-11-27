@@ -36,14 +36,11 @@ const ITEM_ICON: Readonly<Record<ImportItemState, typeof Circle>> = { queued: Ci
 
 interface ImportStepProps {
   context: ActivationContext;
-  /** Opens the step where the person can change what is wrong (the connection, the access). */
   onFix: (step: ActivationStepId) => void;
-  /** Goes on to the mapping: the rooms of every chosen property are in. */
   onAdvance: () => void;
   onChoose: () => void;
 }
 
-/** Requests and checks imported rooms for each property before the mapping step. */
 export function ImportStep({ context, onFix, onAdvance, onChoose }: ImportStepProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -55,7 +52,6 @@ export function ImportStep({ context, onFix, onAdvance, onChoose }: ImportStepPr
 
   const activationIds = propertyIds.map((propertyId) => plans.get(propertyId)?.activationId ?? null);
   const requestedAt = (index: number) => activationIds[index] !== null && isImportRequested(queryClient, activationIds[index] ?? '');
-  // The rooms are read once the import was asked, and again until they are there.
   const mappings = useActivationMappings(
     activationIds.map((id, index) => ({ id, enabled: requestedAt(index) })),
     { pollUntilRooms: true },
@@ -78,7 +74,6 @@ export function ImportStep({ context, onFix, onAdvance, onChoose }: ImportStepPr
 
   const allRoomsIn = propertyIds.length > 0 && propertyIds.every((_, index) => roomsInAt(index));
   const working = running !== null || propertyIds.some((_, index) => requestedAt(index) && !roomsInAt(index));
-  // The rooms are in and this visit asked for the import: the wizard goes on by itself, once. A visit that finds them there leaves the button to the person.
   const advanced = useRef(false);
   useEffect(() => {
     if (running !== null || !ran || !allRoomsIn || advanced.current) return;
@@ -98,7 +93,6 @@ export function ImportStep({ context, onFix, onAdvance, onChoose }: ImportStepPr
       <ul className="space-y-3" role="list" data-testid="activation-import-list">
         {propertyIds.map((propertyId, index) => {
           const activationId = activationIds[index];
-          // A plan that is still being read says nothing yet: it is not «no connection».
           if (!plans.has(propertyId)) {
             return (
               <li key={propertyId} className="min-w-0 space-y-2 rounded-lg border p-4" data-testid={`activation-import-${propertyId}`} data-rooms="not-yet" aria-busy="true">

@@ -52,7 +52,6 @@ function renderWith(contexts: ContextBootstrapDto[]) {
   );
 }
 
-// TN-3 / PL-12: the org billing administrator is derived from the contexts, like the backend policy OrgBillingAdmin.
 describe('WorkspaceProvider org billing administrator', () => {
   afterEach(() => {
     cleanup();
@@ -67,7 +66,6 @@ describe('WorkspaceProvider org billing administrator', () => {
   });
 
   it('hasPermission_LongTermLandlordOnly_IsOrgBillingAdmin', async () => {
-    // PL-16 (A1-36): the backend policy OrgBillingAdmin admits the long-rent owner, so the menu shows plan and billing.
     renderWith([context('long-rent', ['property.read', 'lease.read'])]);
 
     expect(await screen.findByTestId('long-rent')).toHaveTextContent('true');
@@ -80,8 +78,6 @@ describe('WorkspaceProvider org billing administrator', () => {
     expect(screen.getByTestId('short-rent')).toHaveTextContent('false');
   });
 
-  // AM-00 (S1): a collaborator of the org has the rental context with real permissions, but not the owner's role key:
-  // the backend refuses it plan and billing, so the menu must not offer them.
   it.each(MEMBER_ROLE_KEYS)('hasPermission_MemberWithRoleKey_%s_IsNotOrgBillingAdmin', async (roleKey) => {
     renderWith([
       context('short-rent', ['property.read', 'property.write', 'payment.read'], roleKey),

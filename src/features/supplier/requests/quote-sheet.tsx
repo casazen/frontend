@@ -12,12 +12,6 @@ import { requestWhen, workMinutes } from './request-model';
 
 const T = 'supplier.requests.quote';
 
-/**
- * The sheet where the supplier answers a new request with a quote (SP-04b), or changes the one that waits: lines (what and how much, from 1
- * to 20), the live total, a note and, if it wants, another time. It is a dialog in the middle of the screen and a sheet from the bottom on a
- * phone. Nothing leaves before «Invia il preventivo»; the time is not held for the customer until they accept. The lines and the note are
- * `QuoteLinesFields`, which the sheet of the offer on a request on measure (SP-08e) uses too.
- */
 export function QuoteSheet({
   request,
   isPending,
@@ -34,7 +28,6 @@ export function QuoteSheet({
   const editing = Boolean(request.quote);
   const showcase = request.source === 'showcase';
   const [form, setForm] = useState<QuoteForm>(() => (request.quote ? quoteFormOf(request.quote, decimal) : emptyQuoteForm()));
-  // The mistakes are told after the first try to send, not while the person is still writing the first line.
   const [tried, setTried] = useState(false);
 
   const problems = problemsOf(form);
@@ -45,7 +38,6 @@ export function QuoteSheet({
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    // The sheet is drawn outside the page but sits inside it for React: the form around a page must not hear this submit.
     event.stopPropagation();
     if (isPending) return;
     setTried(true);

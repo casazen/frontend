@@ -8,10 +8,6 @@ interface AgencyGuardProps {
   children: React.ReactNode;
 }
 
-/**
- * Route guard that requires Agency tier (ADR-010-R6).
- * Redirects to dashboard with a toast message if the org is not on Agency tier.
- */
 export function AgencyGuard({ children }: AgencyGuardProps) {
   const { t } = useTranslation();
   const { isAgency, isLoading } = useOrg();

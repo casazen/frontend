@@ -23,11 +23,8 @@ interface RequestViewProps {
   view: PublicBookingView;
   failure: RequestFailure | null;
   pending: boolean;
-  /** One action on the booking: the page gives the call, the hook gives the credentials and keeps the answer. */
   act: (call: (access: PublicBookingAccess) => Promise<PublicBookingView>) => Promise<boolean>;
-  /** A call that does not disturb the page (a message, an answer to an offer, the card): used by the request on measure (SP-12c). */
   quiet: QuietCall;
-  /** What of the supplier's site the request on measure needs (the typical time to answer, the color of the buttons). */
   site?: InquirySiteInfo;
 }
 
@@ -47,7 +44,6 @@ const PHASE_ICON: Record<RequestPhase, ReactNode> = {
   offerLapsed: <Hourglass />,
 };
 
-/** The sentence at the top, from the phase and the facts the server gave (the supplier's own deadlines, its own words, its own price). */
 function useHeroText(view: PublicBookingView, phase: RequestPhase) {
   const { t, i18n } = useTranslation();
   const name = view.supplier.name;
@@ -56,7 +52,6 @@ function useHeroText(view: PublicBookingView, phase: RequestPhase) {
 
   switch (phase) {
     case 'waiting': {
-      // A proposal or a quote the customer can no longer answer: the request waits for the job that cancels it.
       if (view.proposal || view.quote) return { title: t('supplierSite.request.phases.lapsed.title'), lead: t('supplierSite.request.phases.lapsed.lead') };
       return {
         title: t('supplierSite.request.phases.waiting.title'),
@@ -90,7 +85,6 @@ function useHeroText(view: PublicBookingView, phase: RequestPhase) {
     case 'done':
       return {
         title: t('supplierSite.request.phases.done.title'),
-        // With the money held by CasaZen the customer has two things to say: all fine, or a problem.
         lead: view.actions.canConfirmOk || view.actions.canReportProblem ? t('supplierSite.request.phases.done.leadHeld', { name }) : t('supplierSite.request.phases.done.lead', { name }),
       };
     case 'paid':
@@ -109,7 +103,6 @@ function useHeroText(view: PublicBookingView, phase: RequestPhase) {
     case 'cancelled': {
       const by = view.cancellation?.by ?? 'system';
       if (view.kind === 'Custom') {
-        // A request on measure has no time to give back: the words are its own. Who did not answer is said as it was (D24).
         if (by === 'customer') return { title: t('supplierSite.inquiry.phases.closedByCustomer.title'), lead: t('supplierSite.inquiry.phases.closedByCustomer.lead') };
         if (by === 'supplier') {
           const reason = view.cancellation?.reason;
@@ -184,14 +177,9 @@ function Countdown({ until, who, supplierName }: { until: string | null | undefi
   );
 }
 
-/**
- * The ticket beside the sentence: the code, the service, when, where, and the price as the server states it (never computed here). A
- * request on measure has no time and no price until the supplier makes an offer: then the ticket carries the offer's.
- */
 function Ticket({ view }: { view: PublicBookingView }) {
   const { t, i18n } = useTranslation();
   const { price, place } = view;
-  // New and on measure: the day it was made stands in for the time (the server says to ignore it), and the offer, if any, brings the real one.
   const noTime = view.kind === 'Custom' && view.status === 'Richiesto';
   const offer = noTime ? (view.offer ?? null) : null;
   const where = [place.address, place.floor, place.city].filter(Boolean).join(', ');
@@ -223,7 +211,6 @@ function Ticket({ view }: { view: PublicBookingView }) {
   );
 }
 
-/** The path of the request, from "Richiesta" to the end; a refused or cancelled one is outside it and says so. */
 function Pipeline({ view, onRefresh, pending }: { view: PublicBookingView; onRefresh: () => void; pending: boolean }) {
   const { t } = useTranslation();
   const index = stageIndexOf(view.status);
@@ -261,7 +248,6 @@ function Pipeline({ view, onRefresh, pending }: { view: PublicBookingView; onRef
   );
 }
 
-/** What the customer said to the supplier's offer, in the words of the offer: the proposed time with its message, or the quote with its lines. */
 function Offer({ view, phase }: { view: PublicBookingView; phase: RequestPhase }) {
   const { t, i18n } = useTranslation();
   if (phase === 'proposal' && view.proposal?.message) {
@@ -295,15 +281,9 @@ function Offer({ view, phase }: { view: PublicBookingView; phase: RequestPhase }
   return null;
 }
 
-/**
- * "La mia richiesta" (SP-12b): at the top one sentence of where the request is and **one** thing to do, with the ticket beside it; then
- * the path; then, if it is still allowed, "Modifica o annulla". What may be done is the server's `actions`, never worked out here.
- */
 export function RequestView({ view, failure, pending, act, quiet, site }: RequestViewProps) {
   const { t, i18n } = useTranslation();
   const [panel, setPanel] = useState<'cancel' | 'reschedule' | 'confirmOk' | 'report' | null>(null);
-  // The answer to an offer (SP-12c) goes through the quiet call: it is the one press that moves the request, so it keeps its own "working"
-  // and remembers which offer it failed on (a time that went is true of that offer only).
   const [answering, setAnswering] = useState(false);
   const [tried, setTried] = useState<{ offerSentAt: string; failure: RequestFailure } | null>(null);
   const phase = phaseOf(view);
@@ -319,7 +299,6 @@ export function RequestView({ view, failure, pending, act, quiet, site }: Reques
       ? buildBookingPath(supplierSlug, { service: serviceSlug })
       : buildBookingPath(supplierSlug);
   const offer = view.offer ?? null;
-  // The time of the offer went (409): nothing changed and nothing was charged, but accepting it again would say the same.
   const slotGone = tried?.failure.kind === 'slotTaken' && offer !== null && tried.offerSentAt === offer.sentAt;
   const busy = pending || answering;
 
@@ -328,12 +307,10 @@ export function RequestView({ view, failure, pending, act, quiet, site }: Reques
     const done = await act(call);
     if (done) {
       setPanel(null);
-      // What was in focus may be gone (the buttons of an answered offer): the sentence at the top takes it.
       document.getElementById('vf-title')?.focus();
     }
   };
 
-  /** Accepts or turns down the offer that is on the screen, by its version; when it was replaced meanwhile the page reads the new one. */
   const answerOffer = async (answer: 'accept' | 'decline') => {
     if (!offer) return;
     setAnswering(true);
@@ -344,7 +321,6 @@ export function RequestView({ view, failure, pending, act, quiet, site }: Reques
     else setTried({ offerSentAt: offer.sentAt, failure: outcome.failure });
   };
 
-  /** From the note of a time that went: the person writes to the supplier, in the box of the conversation. */
   const writeToSupplier = () => {
     const box = document.querySelector<HTMLElement>(`#${CONVERSATION_ID} textarea`);
     box?.scrollIntoView({ block: 'center' });
@@ -414,7 +390,6 @@ export function RequestView({ view, failure, pending, act, quiet, site }: Reques
       </>
     );
   } else if (phase === 'cardPending' && offer) {
-    // The card is asked below; the one thing left to say here is "not any more", which releases the block.
     primary = (
       <button type="button" className="vz-linkbtn" disabled={busy} onClick={() => void answerOffer('decline')} data-testid="supplier-inquiry-offer-decline">
         {t('supplierSite.inquiry.offer.decline')}
@@ -434,7 +409,6 @@ export function RequestView({ view, failure, pending, act, quiet, site }: Reques
       </Link>
     );
   }
-  // The money: "Tutto a posto" is the one thing to do when it can be done; a problem is said with a quieter button.
   const payButtons =
     actions.canConfirmOk || actions.canReportProblem ? (
       <>
@@ -452,7 +426,6 @@ export function RequestView({ view, failure, pending, act, quiet, site }: Reques
     ) : null;
   const canManage = actions.canCancel || (actions.canReschedule && serviceSlug !== null);
 
-  // What went wrong is the last thing the person tried: an action of the page, or the answer to an offer.
   const shownFailure = tried?.failure ?? failure;
   let failureText: string | null = null;
   if (shownFailure) {
@@ -466,7 +439,6 @@ export function RequestView({ view, failure, pending, act, quiet, site }: Reques
     else failureText = t('supplierSite.request.errors.other');
   }
 
-  // The problem is said where the person is looking: at the top, or in the panel it has open.
   const failureNote = failureText ? (
     <p className="vb-note vb-note--warn" role="alert">
       <CircleAlert aria-hidden="true" />

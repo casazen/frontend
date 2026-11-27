@@ -34,23 +34,19 @@ import { isListAvailable, type CodeTableSource, type CodeTableValue } from './co
 export const selectClassName =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
-/** The controls added for NF-40 are at least 44 px high (touch target, WCAG 2.2 AA). */
 const touchSelectClassName = selectClassName.replace('h-10', 'h-11');
 const TOUCH_INPUT = 'h-11';
 
-/** Shape shared by the guest portal and the host form: the guests of the stay at `guests`. */
 export interface StayGuestsFormShape {
   guests: StayGuestFormValues[];
 }
 
-/** The plate of the car, a field of the stay: the key of the forms that ask it (the guest portal, the wizard of the host, the editor of the guests). */
 export interface StayVehiclePlateFormShape {
   vehiclePlate?: string;
 }
 
 type GuestField = keyof StayGuestFormValues;
 
-/** Field names used for ids and errors (kept out of the JSX). */
 const FIELD = {
   type: 'type',
   firstName: 'firstName',
@@ -86,7 +82,6 @@ type CodedCodeField =
   | 'documentTypeCode'
   | 'documentIssuePlaceCode';
 
-/** The label of each statistical field (an i18n key, written out for the i18n test). */
 const STATISTICAL_LABEL_KEYS: Record<StatisticalGuestField, string> = {
   tourismType: 'checkin.tourismType.label',
   travelWay: 'checkin.travelWay.label',
@@ -119,12 +114,7 @@ interface StayGuestPersonalFieldsProps {
    * they have to be chosen. None by default, as the host form of the guests of the Alloggiati tab has none.
    */
   requiredFields?: readonly StatisticalGuestField[];
-  /**
-   * What a property in Switzerland asks on top of the record (NF-132): the home (street, postal code, town and the state of residence, all optional)
-   * replaces the Italian residence, which is never asked of a Swiss stay. Nothing by default: the form of an Italian stay does not change.
-   */
   swiss?: SwissStayRules;
-  /** First guest only: the kind of the whole stay changed (single, family, group). */
   onLeaderTypeChange?: (type: StayGuestType) => void;
   bookedName?: { firstName?: string | null; lastName?: string | null };
   onRemove?: () => void;
@@ -153,7 +143,6 @@ export function StayGuestPersonalFields({
   const minor = isMinorOn(guest.dateOfBirth, arrivalDate);
   const typeRegistration = register(`guests.${index}.type`);
   const swissResidence = asksSwissResidence(swiss);
-  // Each box of the home is there only where the regime names it.
   const asksStreet = swiss.asked.has('residenceStreet');
   const asksPostalCode = swiss.asked.has('residencePostalCode');
   const asksCity = swiss.asked.has('residenceCityName');
@@ -463,17 +452,9 @@ export function StayGuestPersonalFields({
 interface StayGuestDocumentFieldsProps {
   index: number;
   source: CodeTableSource;
-  /**
-   * How much of the document this guest gives: `full` (the default, as ever) for a single guest or a head of family or group; `basic` for the other
-   * guests a Swiss police file notifies (NF-132): only the type and the number are asked, not the place of issue nor the days.
-   */
   level?: DocumentLevel;
 }
 
-/**
- * Identity document of a single guest or of a head of family or group: kind (or official type), number, place of issue, and the
- * issue and expiry days (optional). The `basic` level, for a guest of a Swiss stay the police file notifies, has the kind and the number only.
- */
 export function StayGuestDocumentFields({ index, source, level = 'full' }: StayGuestDocumentFieldsProps) {
   const { t } = useTranslation();
   const { register, setValue, id, errorOf, a11y, setCoded } = useGuestField(index);
@@ -482,7 +463,6 @@ export function StayGuestDocumentFields({ index, source, level = 'full' }: StayG
 
   const documentTable = isListAvailable(source, 'documenti');
   const full = level === 'full';
-  // Masked number on file (CO-02): a hint only, the guest types the full number again.
   const maskedDocumentNumber = guest.documentNumberOnFile;
 
   return (
@@ -578,10 +558,6 @@ export function StayGuestDocumentFields({ index, source, level = 'full' }: StayG
   );
 }
 
-/**
- * The plate of the car of the stay (NF-132): one optional field for the whole stay, asked only where the regime says so (`askVehiclePlate`). It is a
- * key of the form of whoever mounts it (`vehiclePlate`), next to the guests. Spaces and case are the API's to normalize: the text is kept as typed.
- */
 export function VehiclePlateField() {
   const { t } = useTranslation();
   const { register, formState } = useFormContext<StayVehiclePlateFormShape>();

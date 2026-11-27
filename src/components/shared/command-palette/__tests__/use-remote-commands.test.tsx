@@ -11,7 +11,6 @@ interface Call {
   reject: (error: Error) => void;
 }
 
-/** A server search that the test answers by hand, call by call. */
 function fakeSource(extra: Partial<RemoteCommandSource> = {}) {
   const calls: Call[] = [];
   const source: RemoteCommandSource = {
@@ -119,7 +118,6 @@ describe('useRemoteCommands: the hook of the server search (UI-06, UI-13)', () =
     expect(first.signal.aborted).toBe(true);
     expect(calls).toHaveLength(2);
 
-    // The old request answers anyway: what it says is not for this text.
     await act(async () => first.resolve([item('guest:old', 'Mario Verdi', { kind: 'guest' })]));
     expect(view.result.current.items).toEqual([]);
     expect(view.result.current.pending).toBe(true);

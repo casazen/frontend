@@ -18,15 +18,8 @@ import { OwnerAccountingError } from '@/features/owner-accounting/components/own
 import { OWNER_ONBOARDING_PATH, mandateOfRow, ownerFinancialPath, shortId } from '@/features/owner-accounting/owner-accounting-model';
 import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
 
-/** The owners drawn before «Mostra tutti»: a long registry is not a wall of rows (the rows that need the versions of their mandate read them only when they are drawn). */
 const VISIBLE_OWNERS = 20;
 
-/**
- * «Proprietari» of the Amministrazione (E13/F02/US01/T01, NF-110, NF-115): the owners of the properties the agency manages, each with its kind, its settlement currency, its properties and the
- * mandate in force (the commission, or «manca il mandato»), and the way to its financial page, where the mandate and the billing address are written. It is the page of the agency plan and of the
- * owner and the administrators of the organization, like the other pages of the agency's money: the role and the plan are checked before anything is read (`AgencyFinanceGate`). The list is
- * what the server decides for the person: with a partial reach it holds only the owners they can open.
- */
 export function OwnersListPage() {
   const { t } = useTranslation();
   return (
@@ -53,7 +46,6 @@ function OwnersBody() {
       </div>
     );
   }
-  // A failed read keeps the old list: a 404 is still «not found», and any failure is told as one, never as an empty registry.
   if (owners.isError || !owners.data || getHttpStatus(owners.error) === 404) {
     return (
       <div className="space-y-6" data-testid="owners-page">
@@ -108,8 +100,6 @@ function OwnerRow({ owner }: { owner: PropertyOwnerSummary }) {
   const name = nameOf(owner, (id) => t('ownerAccounting.owner.unnamed', { id }));
   const state = mandateOfRow(settled, mandates.isError ? undefined : mandates.data, today);
 
-  // What the list says of the profile and the properties. `null` is the server saying the owner has no profile, and it is told; an absent member is a server that did not write it (one older than
-  // the list), and nothing is told of it: a fact that was not read is never said as «no profile».
   const facts: string[] = [];
   if (owner.entityKind === null) facts.push(t('owners.row.noProfile'));
   else if (owner.entityKind !== undefined) {

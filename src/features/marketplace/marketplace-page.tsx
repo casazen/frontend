@@ -22,7 +22,6 @@ import { CHANNEL_MANAGER_GROUP_IDS, channelManagerAvailable, findMarketplaceGrou
 import { MARKETPLACE_QUERY_PARAM, MARKETPLACE_SEARCH_PATH, marketplaceHref } from './lib/marketplace-paths';
 import { useIntegrations, type Integration, type IntegrationId } from './lib/use-integrations';
 
-/** Where each of CasaZen's own integrations stands among the groups: the calendars are a sales channel, the card payments a tool. */
 const BUILT_IN_GROUP: Record<IntegrationId, MarketplaceGroupId> = { calendars: 'salesChannels', payments: 'connectedTools' };
 
 const BUILT_IN_STATUS: Record<'active' | 'pending' | 'inactive', MarketplaceCardStatus> = {
@@ -84,7 +83,6 @@ export function MarketplacePage() {
   );
 }
 
-/** The card of one of CasaZen's own integrations: an entry in the format of the catalog, with its icon, its page and its status. */
 function integrationCardProps(integration: Integration, t: TFunction) {
   const key = `marketplace.integrations.items.${integration.id}`;
   const status = integration.status === 'loading' || integration.status === 'unknown' ? null : BUILT_IN_STATUS[integration.status];
@@ -94,7 +92,6 @@ function integrationCardProps(integration: Integration, t: TFunction) {
     name: t(`${key}.title`),
     logoUrl: null,
     benefit: t(`${key}.summary`),
-    // CasaZen has no price for them in the page: it is not specified, never invented.
     cost: { text: null, invoicedBy: 'Unknown' },
     status: status ?? 'NotActive',
     statusScope: 'Org',
@@ -114,7 +111,6 @@ function integrationCardProps(integration: Integration, t: TFunction) {
   };
 }
 
-/** The first three groups. They use the statuses across the account scope. */
 function ChannelManagerGroups() {
   const catalog = useMarketplaceCatalog(undefined);
   const integrations = useIntegrations();
@@ -136,7 +132,6 @@ function ChannelManagerGroups() {
 interface CatalogGroupProps {
   id: MarketplaceGroupId;
   catalog: CatalogQuery;
-  /** CasaZen's own integrations of this group: they are there whatever the catalog says. */
   integrations: Integration[];
 }
 
@@ -193,13 +188,11 @@ function CatalogGroup({ id, catalog, integrations }: CatalogGroupProps) {
   );
 }
 
-/** «Fornitori CasaZen», the group that kept its flow: one tile for each category, with its suppliers across the account’s service areas. */
 function HomeServicesGroup() {
   const { t } = useTranslation();
   const suppliers = useMarketplaceSuppliers({ accountScope: true });
   const catalog = useServiceCategories();
   const marketplace = useMarketplaceCatalog(undefined);
-  // The sentence that sends the person to the Partners group is there only when that group has cards to show (the same read as the group's).
   const partnersBelow = (findMarketplaceGroup(marketplace.data, 'partners')?.entries.length ?? 0) > 0;
   const items = suppliers.data?.items ?? [];
   const counts = countByCategory(items);
@@ -233,7 +226,6 @@ function HomeServicesGroup() {
   );
 }
 
-/** The last group: the external partners the administrator of CasaZen put in the catalog. None is written in the page. */
 function PartnersGroup() {
   const { t } = useTranslation();
   const catalog = useMarketplaceCatalog(undefined);

@@ -4,7 +4,6 @@ import { contextsApi } from '@/api/contexts';
 import type { UserDetail } from '@/types';
 
 export const PAYMENT_REQUIRED = 'onboarding_payment_required';
-/** Confirm persisted access, never manufacture roles from the submitted onboarding answers or a stale ID token. */
 export async function confirmWorkspaceAccess(client: QueryClient, destination: string | ((me: UserDetail) => string)): Promise<string> {
   await client.cancelQueries({ queryKey: ['me'] });
   const me = await UsersApi.getMe();
@@ -12,8 +11,6 @@ export async function confirmWorkspaceAccess(client: QueryClient, destination: s
     throw new Error('onboarding_access_not_ready');
   }
   if (me.commercialSetupRequired === true) {
-    // The mutation's background profile refetch was cancelled above. Publish the verified payment gate so the
-    // parent can switch to billing, but never interpret that transition as permission to enter a host workspace.
     client.setQueryData(['me'], me);
     throw new Error(PAYMENT_REQUIRED);
   }

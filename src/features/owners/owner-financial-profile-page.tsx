@@ -52,10 +52,8 @@ const FACT_GROUPS = [
 
 const NEW_POLICY_TEST_ID = 'policy-new';
 
-/** The fields of a profile that identify a person or reach their money: shown masked until a person who may asks for them. */
 const SENSITIVE = new Set(['legalName', 'legalAddress', 'fiscalCode', 'vatNumber', 'foreignTaxId', 'bankAccountReference']);
 
-/** The reasons the activation reports that the app has words for (`OwnerReadinessReasons` of the API); another one is shown by its code. */
 const KNOWN_REASONS = [
   'legal_name_missing',
   'entity_kind_missing',
@@ -123,8 +121,6 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
   const ownerName = owner ? `${owner.firstName} ${owner.lastName}`.trim() : t('ownerAccounting.owner.unnamed', { id: shortId(ownerId) });
   const title = t('ownerProfile.title', { owner: ownerName });
   const today = todayInRome();
-  // The month that sent the person here (`?period=2026-10`, from the month-end close), else the month to close: the first profile of an owner starts by default on the first day
-  // of it, and the page says when the data does not reach back to it.
   const fromMonth = params.has('period');
   const period = parsePeriod(params.get('period'), defaultPeriod(todayInRome()));
   const backTo = fromMonth ? closePath(period.year, period.month) : OWNER_CLOSE_PATH;
@@ -134,7 +130,6 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
   const readiness = useMemo<OwnerReadiness | null>(() => (profiles.data && policies.data ? ownerReadinessOn(profileList, policyList, today) : null), [profiles.data, policies.data, profileList, policyList, today]);
   const current = profileList.find((profile) => profile.validFrom <= today && (profile.validTo === null || profile.validTo >= today)) ?? profileList[0] ?? null;
   const policyOfCurrent = current?.accountingPolicyId ? (policyList.find((policy) => policy.id === current.accountingPolicyId) ?? null) : null;
-  // The person who may not see the values in full may not change them either: the first profile of an owner is the one case where the form is offered blind.
   const canEdit = current ? !current.masked : true;
 
   const newVersion = canEdit && readiness ? { label: t('ownerProfile.newVersion'), onClick: () => setDialog('profile'), testId: 'profile-new-version' } : undefined;
@@ -143,7 +138,6 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
   if (profiles.isPending || policies.isPending) {
     content = <SkeletonCard lines={5} label={t('ownerProfile.loading')} />;
   } else if (getHttpStatus(profiles.error) === 404) {
-    // An owner that does not exist (or that belongs to another organization) is «not found», however the page got here: the way out is the month.
     content = (
       <Alert
         variant="warning"
@@ -172,7 +166,6 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
   } else {
     const ownerEntry = onboarding.data?.owners.find((candidate) => candidate.ownerId === ownerId);
     const properties = onboarding.data?.properties ?? [];
-    // The data covers the months from `from`: a month before it that sent the person here stays blocked, and nothing on this page can move the data back to it.
     const startsAfterTheMonth = fromMonth && readiness.ready && readiness.from > startOfPeriod(period);
     content = (
       <div className="space-y-8">
@@ -238,10 +231,8 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
 
 interface ReadinessFocusProps {
   readiness: OwnerReadiness;
-  /** The month that sent the person here when the data start after it: it stays blocked, and that is what the block says. */
   uncovered: Period | null;
   canEdit: boolean;
-  /** Where the way back goes: the month-end close, on the month that sent the person here when there is one. */
   backTo: string;
   onEdit: () => void;
   onApprove: (policy: OwnerAccountingPolicy) => void;
@@ -413,7 +404,6 @@ interface PolicyPanelProps {
   onNew: () => void;
 }
 
-/** The rule set the profile follows and the approval of the accountant: the parameters as data, the source, and who approved it and when. */
 function PolicyPanel({ policy, all, canManage, onApprove, onNew }: PolicyPanelProps) {
   const { t } = useTranslation();
   const { date, dateTime, percent } = useOwnerFormat();
@@ -474,22 +464,17 @@ function PolicyPanel({ policy, all, canManage, onApprove, onNew }: PolicyPanelPr
 }
 
 interface OnboardingFactsProps {
-  /** The activation answered (even to say it is not available). */
   loaded: boolean;
-  /** The activation module is on: its readiness exists. */
   available: boolean;
   reasons: readonly OwnerOnboardingReason[];
-  /** The properties of the activation: the periods where their shares are wrong. */
   properties: readonly OwnerOnboardingProperty[];
 }
 
-/** What the activation still misses on this owner (the registry, the shares, the mandate, the payment data): the facts are completed there, and each says so with a link. */
 function OnboardingFacts({ loaded, available, reasons, properties }: OnboardingFactsProps) {
   const { t } = useTranslation();
   const { date } = useOwnerFormat();
   if (!loaded) return null;
   const propertyNames = new Map(properties.map((property) => [property.propertyId, property.name] as const));
-  // The shares of the properties this owner is missing something on, by period: where the owner's ownership and its shares are wrong.
   const shareProblems = properties.filter((property) => reasons.some((reason) => reason.propertyId === property.propertyId) && property.issues.length > 0);
   const periodOf = (issue: OwnershipIssue) => (issue.to ? t('ownerProfile.ownership.until', { date: date(issue.to) }) : t('ownerProfile.ownership.onward'));
 

@@ -3,7 +3,6 @@ import { ConnectApi } from '@/api/connect.api';
 
 export const CONNECT_STATUS_KEY = ['connect', 'status'] as const;
 
-/** `enabled` false reads nothing: a page that shows the payments only to some people asks for the status only for them. */
 export function useConnectStatus(refresh = true, enabled = true) {
   return useQuery({
     queryKey: [...CONNECT_STATUS_KEY, refresh],
@@ -12,10 +11,6 @@ export function useConnectStatus(refresh = true, enabled = true) {
   });
 }
 
-/**
- * Starts (or resumes) the Stripe Connect onboarding: the API creates the account when missing and returns the
- * Account Link, whose return pages it builds itself. Errors are shown by the page (with "Riprova" when retryable).
- */
 export function useStartConnectOnboarding() {
   const queryClient = useQueryClient();
 
@@ -36,7 +31,6 @@ export function useStartConnectOnboarding() {
 export function useOpenStripeDashboard() {
   return useMutation({
     mutationFn: () => ConnectApi.createDashboardLink(),
-    // The link is a credential: the mutation does not keep its answer once nobody watches it (`gcTime: 0`).
     gcTime: 0,
     onSuccess: (data) => {
       window.location.assign(data.url);

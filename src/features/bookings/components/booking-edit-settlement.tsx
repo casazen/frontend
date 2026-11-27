@@ -7,11 +7,6 @@ interface BookingEditSettlementProps {
   quote: BookingEditQuote;
 }
 
-/**
- * The money consequence of an edit, read before it is saved (E08/F03/US02, NF-75): the price from and to, and what is done with the difference: the guest gets a
- * link to pay it, the saved card is charged, it goes back on the card, or nothing moves from here. A part of an overpayment that cannot go back online (paid in
- * cash or by transfer) is said as what the host gives back. Nothing was done yet: the host confirms or goes back to the form.
- */
 export function BookingEditSettlement({ quote }: BookingEditSettlementProps) {
   const { t } = useTranslation();
   const money = (value: number) => formatCurrency(value, quote.currency);
@@ -34,7 +29,6 @@ export function BookingEditSettlement({ quote }: BookingEditSettlementProps) {
           ? t('booking.edit.settlement.preview.priceChanges', { from: money(quote.previousTotal), to: money(quote.newTotal) })
           : t('booking.edit.settlement.preview.priceSame')}
       </p>
-      {/* No money and the same price is the whole answer: "The price does not change". */}
       {(quote.action !== 'none' || priceChanges) && (
         <p data-testid="booking-edit-settlement-action" data-action={quote.action}>
           {actionText}

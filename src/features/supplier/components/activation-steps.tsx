@@ -23,7 +23,6 @@ const MAX_BIO_LENGTH = 2000;
 
 interface StepProps {
   profile: SupplierProfile;
-  /** Called after the data of the step is saved on the server: the wizard moves on. */
   onSaved: () => void;
 }
 
@@ -171,7 +170,6 @@ export function ServicesStep({ profile, onSaved }: StepProps) {
   );
 }
 
-/** Photos of the showcase (optional): the upload endpoint stores them on the profile at once. */
 function PhotosSection({ profile }: { profile: SupplierProfile }) {
   const { t } = useTranslation();
   const uploadPhotos = useUploadSupplierPhotos();
@@ -236,7 +234,6 @@ function PhotosSection({ profile }: { profile: SupplierProfile }) {
   );
 }
 
-/** Step 3: how the supplier presents itself to the hosts: the description (required) and the photos (optional). */
 export function PresentationStep({ profile, onSaved }: StepProps) {
   const { t } = useTranslation();
   const updateProfile = useUpdateSupplierProfile();

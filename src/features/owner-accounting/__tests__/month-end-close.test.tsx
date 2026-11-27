@@ -79,7 +79,6 @@ vi.mock('@/components/layout/page-header', () => ({
     ),
 }));
 
-// Whole pages with dialogs are rendered here: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const text = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
@@ -90,11 +89,8 @@ function renderPage(path: string, routePath: string, element: ReactElement, clie
   );
 }
 
-/** What the server answers to a refusal: the status and the problem with its code (and what it adds). */
 const problem = (status: number, code: string, extra: Record<string, unknown> = {}) => Object.assign(new Error(code), { isAxiosError: true, response: { status, data: { code, ...extra } } });
-/** What axios throws when there is no answer at all. */
 const networkError = () => Object.assign(new Error('Network Error'), { isAxiosError: true, code: 'ERR_NETWORK' });
-/** A promise settled from outside: the request that is on its way. */
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((done) => {
@@ -160,18 +156,15 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     expect(await screen.findByTestId('statement-focus')).toBeInTheDocument();
     await screen.findByTestId('statement-file');
 
-    // A published statement has no way to be changed in place: nothing to approve, publish or edit, only its file, and the next steps of the month.
     expect(screen.queryByRole('button', { name: new RegExp(`^(${text('ownerAccounting.actions.approve.label')}|${text('ownerAccounting.actions.publish.label')}|modifica)$`, 'i') })).toBeNull();
     expect(screen.queryByTestId('statement-menu-approve')).toBeNull();
     expect(screen.queryByTestId('statement-menu-publish')).toBeNull();
     expect(screen.queryByTestId('statement-menu-regenerate')).toBeNull();
     expect(screen.getByTestId('statement-file-download')).toBeInTheDocument();
     expect(screen.getByTestId('statement-focus')).toHaveAttribute('data-tone', 'success');
-    // Opening the page changed nothing.
     for (const call of [api.approveVersion, api.publishVersion, api.generateVersion, api.closeMonth, api.confirmPayout]) expect(call).not.toHaveBeenCalled();
 
     cleanup();
-    // The ledger changed after the version: the only change on offer is a NEW version, which supersedes the published one, after a confirmation.
     api.getReadiness.mockResolvedValue(readiness([ownerReadiness({ isDirty: true, issues: [{ code: 'period_dirty', ownerId: OWNER_ID, propertyId: null, sourceId: null, blocking: true }], ready: false })]));
     api.generateVersion.mockResolvedValue(version({ id: 'new-version', version: 3, status: 'Draft', supersedesVersionId: VERSION_ID }));
     renderStatement();
@@ -186,7 +179,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: text('ownerAccounting.step.regenerate.confirm') }));
 
     await waitFor(() => expect(api.generateVersion).toHaveBeenCalledWith(YEAR, MONTH, OWNER_ID));
-    // The published version was never approved, published or closed again: it stays as it was.
     for (const call of [api.approveVersion, api.publishVersion, api.closeMonth]) expect(call).not.toHaveBeenCalled();
   });
 
@@ -195,13 +187,11 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     renderStatement();
 
     const focus = await screen.findByTestId('statement-focus');
-    // The notice «sostituita» is part of the block (no alert of its own), and the block leads to the newer version.
     expect(focus).toHaveAttribute('data-tone', 'warning');
     expect(focus).toHaveTextContent(text('ownerAccounting.statement.superseded'));
     expect(within(focus).getByTestId('statement-open-latest')).toHaveTextContent(text('ownerAccounting.statement.openLatest'));
     expect(within(focus).getByTestId('statement-open-latest').getAttribute('href')).toContain(VERSION_ID);
     expect(screen.queryByTestId('statement-superseded')).toBeNull();
-    // The permanent notice that the statement is not a fiscal document comes after the block, also on a phone (the order of the page).
     expect(focus.compareDocumentPosition(screen.getByTestId('statement-non-fiscal')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
@@ -223,14 +213,12 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     for (const status of screen.getAllByTestId('filing-status')) expect(status).toHaveAttribute('data-label', 'generated');
     expect(screen.queryByText(/inviat[oa]/i)).toBeNull();
     expect(screen.queryByText(/accettat[oa]/i)).toBeNull();
-    // The only step that can follow a generated file is its review.
     expect(screen.getAllByTestId('filing-step-Reviewed')).toHaveLength(2);
     expect(screen.queryByTestId('filing-step-Submitted')).toBeNull();
     expect(api.setF24FilingState).not.toHaveBeenCalled();
     expect(api.generateF24).not.toHaveBeenCalled();
 
     view.unmount();
-    // A state the server sent without its proof (no handoff, no receipt) is never called by the word.
     api.getF24.mockResolvedValue(f24({ filingState: 'Submitted' }));
     api.getAnnualDataset.mockResolvedValue(dataset({ filingState: 'Accepted', handoffReference: 'Commercialista' }));
     renderTax();
@@ -242,7 +230,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     expect(screen.getAllByTestId('filing-missing-proof')).toHaveLength(2);
 
     cleanup();
-    // With the proof the word is allowed, and the evidence is shown.
     api.getF24.mockResolvedValue(f24({ filingState: 'Submitted', handoffReference: 'Commercialista, 16/02' }));
     api.getAnnualDataset.mockResolvedValue(dataset({ filingState: 'Accepted', handoffReference: 'Commercialista', receiptReference: 'RIC-77' }));
     renderTax();
@@ -269,7 +256,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
 
     fireEvent.click(within(rows[0]).getByTestId('statement-line-explain'));
     const drawer = await screen.findByTestId('ledger-line-drawer');
-    // The line opens its booking by id, never by a name.
     expect(within(drawer).getByTestId('line-open-source')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}`);
     expect(within(drawer).getByTestId('line-open-payment')).toHaveAttribute('href', '/app/short-rent/payments/f0000000-0000-4000-8000-000000000001');
 
@@ -310,18 +296,15 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     renderMonth();
 
     await screen.findByTestId('close-readiness');
-    // Three of the four statements have no anomaly that blocks them; the statement still to prepare is not an anomaly, it is a group.
     expect(screen.getByTestId('close-readiness-percent')).toHaveTextContent('75%');
     for (const group of ['toPrepare', 'toVerify', 'approved', 'published']) expect(within(screen.getByTestId(`group-${group}`)).getAllByTestId('owner-row')).toHaveLength(1);
     expect(within(screen.getByTestId('group-toPrepare')).getByText('Anna Alfa')).toBeInTheDocument();
     expect(within(screen.getByTestId('group-published')).getByText('Dario Delta')).toBeInTheDocument();
-    // The anomaly says what it is and what resolves it.
     const anomalies = screen.getAllByTestId('anomaly');
     expect(anomalies).toHaveLength(1);
     expect(anomalies[0]).toHaveAttribute('data-code', 'fx_missing');
     expect(within(anomalies[0]).getByRole('button', { name: text('ownerAccounting.anomalies.actions.fx') })).toBeInTheDocument();
 
-    // Opening the month read it and nothing else: no posting, no new version, no approval, no publication, no close.
     expect(api.getReadiness).toHaveBeenCalledWith(YEAR, MONTH);
     for (const call of [api.postPeriod, api.generateVersion, api.approveVersion, api.publishVersion, api.closeMonth, api.confirmPayout, api.generateF24]) expect(call).not.toHaveBeenCalled();
   });
@@ -335,7 +318,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     fireEvent.click(check);
 
     await waitFor(() => expect(api.postPeriod).toHaveBeenCalledWith(YEAR, MONTH));
-    // The readiness is read again after it, so the page shows what the posting changed.
     await waitFor(() => expect(api.getReadiness.mock.calls.length).toBeGreaterThan(1));
   });
 
@@ -346,14 +328,12 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     fireEvent.click(await screen.findByTestId('statement-close'));
 
     const dialog = await screen.findByRole('dialog');
-    // The reconciliation is on the screen before the person confirms: 800 owed, 500 paid.
     await within(dialog).findByTestId('reconciliation-difference');
     expect(within(dialog).getByTestId('reconciliation-verdict')).toHaveAttribute('data-reconciled', 'false');
     const confirm = within(dialog).getByRole('button', { name: text('ownerAccounting.close.confirm') });
     expect(confirm).toBeDisabled();
 
     fireEvent.change(within(dialog).getByTestId('confirmation-input'), { target: { value: text('ownerAccounting.close.word') } });
-    // The word is not enough with a difference: the reason of the waiver is asked too.
     expect(confirm).toBeDisabled();
     fireEvent.change(within(dialog).getByTestId('close-waiver-reason'), { target: { value: 'Differenza concordata con il proprietario' } });
     expect(confirm).toBeEnabled();
@@ -411,7 +391,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     fireEvent.click(await screen.findByTestId('statement-payout'));
 
     const dialog = await screen.findByTestId('payout-form');
-    // What is paid is the balance of the statement, and the facts the withholding is decided on are the server's: shown, never asked.
     await within(dialog).findByTestId('payout-facts');
     expect(api.getPayoutPreview).toHaveBeenCalledWith(VERSION_ID, todayInRome());
     expect(within(dialog).getByTestId('payout-balance')).toHaveTextContent('800,00');
@@ -419,7 +398,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     expect(within(dialog).getByTestId('payout-decision')).toHaveAttribute('data-decision', 'Applicable');
     expect(within(dialog).getByTestId('payout-withholding-euro')).toHaveTextContent('168,00');
     expect(within(dialog).getByTestId('payout-net')).toHaveTextContent('632,00');
-    // The profiles of the owner, which come with the identifiers and the bank account in full, are never read for a payment.
     expect(api.listFiscalProfiles).not.toHaveBeenCalled();
 
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
@@ -427,7 +405,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     await waitFor(() => expect(api.confirmPayout).toHaveBeenCalledTimes(1));
     const sent = api.confirmPayout.mock.calls[0][0] as Record<string, unknown>;
     expect(sent).toMatchObject({ ownerId: OWNER_ID, statementVersionId: VERSION_ID, currency: 'EUR', paidOn: todayInRome() });
-    // The page sends neither an amount nor a fact nor a withholding: they are the ledger's and the server's.
     for (const member of ['grossAmount', 'agencyCollected', 'qualifyingShortLet', 'components', 'withholdingAmount']) expect(sent).not.toHaveProperty(member);
     const evidence = await screen.findByTestId('tax-evidence');
     expect(evidence).toHaveAttribute('data-decision', 'Applicable');
@@ -435,7 +412,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
   });
 
   it('MonthEndClose_Payout_WithoutAnApprovedRule_IsNotOffered', async () => {
-    // The server says what blocks the owner on the day, in the preview of the payout: the payment is not offered, and the way out is the owner's data.
     api.getPayoutPreview.mockResolvedValue(
       payoutPreview({ decision: null, reasonCode: null, grossBase: null, ratePercent: null, rounding: null, withholdingInEuro: null, taxCode: null, withholdingAmount: null, netAmount: null, blockingCode: 'owner_fiscal_policy_not_approved' }),
     );
@@ -446,7 +422,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     expect(blocked).toHaveTextContent(text('ownerAccounting.payout.blocked.policy_not_approved'));
     expect(screen.getByTestId('payout-confirm')).toBeDisabled();
     expect(within(blocked).getByRole('link')).toHaveAttribute('href', `/app/account/owners/${OWNER_ID}/financial?period=${YEAR}-01`);
-    // A rule that does not decide leaves no withholding on the screen to read as decided.
     expect(screen.queryByTestId('payout-decision')).toBeNull();
     expect(api.confirmPayout).not.toHaveBeenCalled();
   });
@@ -456,7 +431,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     renderStatement();
     fireEvent.click(await screen.findByTestId('statement-payout'));
 
-    // A network error says nothing of the owner: it is told as a failure to read, never as a rule that is missing.
     const failed = await screen.findByTestId('payout-preview-error');
     expect(screen.queryByTestId('payout-rule-blocked')).toBeNull();
     expect(screen.getByTestId('payout-confirm')).toBeDisabled();
@@ -476,11 +450,9 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
       ],
     });
     renderStatement();
-    // The opening balance is under the closing one in the figures; the line that added the figures up again is gone (UX round 3).
     const figures = await screen.findByTestId('statement-figures');
     expect(figures).toHaveTextContent(/saldo di apertura/i);
     expect(screen.queryByTestId('version-formula')).toBeNull();
-    // What changed is what was posted after the previous cut-off, and the figures that moved.
     const changes = await screen.findByTestId('statement-changes');
     await within(changes).findAllByTestId('statement-change-figure');
     expect(changes).toHaveTextContent(text('ownerAccounting.line.type.OwnerCharge'));
@@ -493,7 +465,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
   });
 
   it('MonthEndClose_NotTheFinanceAdministrator_IsToldWhoToAsk_AndNothingIsRead', async () => {
-    // A person who is not the owner or an administrator (an accountant of the org, a collaborator) sees the notice: no endpoint of the money is called.
     workspace.contexts = [{ contextKey: 'account', roleKey: 'org_accountant' }];
     renderMonth();
 
@@ -508,8 +479,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
   });
 
   it('MonthEndClose_TheProtectionIsTheRole_NoReadStartsForAnyoneElse_OnAnyPageOfTheAccounting', async () => {
-    // The owner accounting spans every property of the org, and a read refused with no code is taken by the global handler of the app (the «nessun accesso» page) before a
-    // page could answer: what keeps the others out is the role, checked before anything is read. Not one endpoint of the money is called for a collaborator, an accountant, a manager.
     const everything = Object.values(api);
     for (const roleKey of ['org_accountant', 'org_manager', 'staff', 'accountant', 'property_manager']) {
       workspace.contexts = [{ contextKey: 'account', roleKey }];
@@ -535,7 +504,6 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
   });
 
   it('MonthEndClose_TheListOfOwners_IsReadAgainEveryTimeThePageOpens', async () => {
-    // The activation adds owners: a list kept fresh for minutes would show «Proprietario 1A2B3C» for one that was just named.
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5 * 60_000 }, mutations: { retry: false } } });
     const month = () => renderPage(`/app/account/owner-close?period=${YEAR}-01`, '/app/account/owner-close', createElement(MonthEndClosePage), client);
 
@@ -560,7 +528,6 @@ describe('the controlled close, step by step (E06/F05/US02/T04)', () => {
 
     fireEvent.click(await screen.findByTestId(`row-${OWNER_ID}-approve`));
     const dialog = await screen.findByRole('dialog');
-    // What happens and what is not possible afterwards is said before the person confirms; nothing is sent by opening it.
     expect(within(dialog).getByText(text('ownerAccounting.step.approve.consequence1'))).toBeInTheDocument();
     expect(within(dialog).getByText(text('ownerAccounting.step.approve.consequence2'))).toBeInTheDocument();
     expect(api.approveVersion).not.toHaveBeenCalled();
@@ -583,7 +550,6 @@ describe('the controlled close, step by step (E06/F05/US02/T04)', () => {
 
     fireEvent.click(within(dialog).getByRole('button', { name: text('ownerAccounting.step.publish.confirm') }));
     await waitFor(() => expect(api.publishVersion).toHaveBeenCalledWith(VERSION_ID));
-    // Publishing is not approving: the approval is not asked again.
     expect(api.approveVersion).not.toHaveBeenCalled();
   });
 
@@ -591,7 +557,6 @@ describe('the controlled close, step by step (E06/F05/US02/T04)', () => {
     api.postCorrection.mockResolvedValue(entry());
     renderStatement();
 
-    // Charged to the owner: it is taken off the balance, so the line is negative.
     fireEvent.click(await screen.findByTestId('statement-menu-correction'));
     let dialog = await screen.findByTestId('correction-dialog');
     fireEvent.change(within(dialog).getByTestId('correction-direction'), { target: { value: 'fromOwner' } });
@@ -602,7 +567,6 @@ describe('the controlled close, step by step (E06/F05/US02/T04)', () => {
     expect(api.postCorrection.mock.calls[0][0]).toEqual({ ownerId: OWNER_ID, amount: -50, currency: 'EUR', date: todayInRome(), description: 'Pulizia pagata due volte' });
     await waitFor(() => expect(screen.queryByTestId('correction-dialog')).toBeNull());
 
-    // In favour of the owner: it is added to the balance, so the line is positive (the amount is typed without a sign).
     fireEvent.click(await screen.findByTestId('statement-menu-correction'));
     dialog = await screen.findByTestId('correction-dialog');
     fireEvent.change(within(dialog).getByTestId('correction-amount'), { target: { value: '12,50' } });
@@ -611,7 +575,6 @@ describe('the controlled close, step by step (E06/F05/US02/T04)', () => {
     await waitFor(() => expect(api.postCorrection).toHaveBeenCalledTimes(2));
     expect(api.postCorrection.mock.calls[1][0]).toMatchObject({ amount: 12.5, description: 'Rimborso dovuto' });
 
-    // A correction with no reason is not sent: it is the reason that tells whoever checks the month why.
     fireEvent.click(await screen.findByTestId('statement-menu-correction'));
     dialog = await screen.findByTestId('correction-dialog');
     fireEvent.change(within(dialog).getByTestId('correction-amount'), { target: { value: '5' } });
@@ -620,7 +583,6 @@ describe('the controlled close, step by step (E06/F05/US02/T04)', () => {
 });
 
 describe('the payment that was made once (E06/F05/US02/T04)', () => {
-  /** Opens the dialog of the payment on the statement and waits for the preview of the server, which is what the person confirms. */
   async function openPayout() {
     fireEvent.click(await screen.findByTestId('statement-payout'));
     const dialog = await screen.findByTestId('payout-form');
@@ -633,7 +595,6 @@ describe('the payment that was made once (E06/F05/US02/T04)', () => {
     api.confirmPayout.mockRejectedValueOnce(networkError()).mockRejectedValueOnce(networkError()).mockResolvedValue(payout());
     renderStatement();
 
-    // The answer was lost: the person asks again in the same dialog, and the same request is sent.
     let dialog = await openPayout();
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
     await within(dialog).findByTestId('payout-error');
@@ -642,7 +603,6 @@ describe('the payment that was made once (E06/F05/US02/T04)', () => {
     await within(dialog).findByTestId('payout-error');
     expect(keyOf(1)).toBe(keyOf(0));
 
-    // The dialog is closed and opened again with the same facts: still the same request.
     fireEvent.click(within(dialog).getByRole('button', { name: text('shared.cancel') }));
     await waitFor(() => expect(screen.queryByTestId('payout-form')).toBeNull());
     dialog = await openPayout();
@@ -651,7 +611,6 @@ describe('the payment that was made once (E06/F05/US02/T04)', () => {
     expect(api.confirmPayout).toHaveBeenCalledTimes(3);
     expect(keyOf(2)).toBe(keyOf(0));
 
-    // Confirmed: the same balance on the same day is another payment, and it gets another key (the first one would answer with the payout that already exists).
     fireEvent.click(within(screen.getByTestId('payout-done')).getByRole('button', { name: text('shared.close') }));
     await waitFor(() => expect(screen.queryByTestId('payout-done')).toBeNull());
     dialog = await openPayout();
@@ -667,16 +626,13 @@ describe('the payment that was made once (E06/F05/US02/T04)', () => {
     renderStatement();
 
     const dialog = await openPayout();
-    // Two submits in the same tick (a click and the Enter of the form): the second is stopped before the state of the mutation says a request is on its way.
     fireEvent.submit(dialog);
     fireEvent.submit(dialog);
     await waitFor(() => expect(api.confirmPayout).toHaveBeenCalledTimes(1));
-    // A second click once the button is busy does nothing either.
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
     await new Promise((done) => setTimeout(done, 0));
     expect(api.confirmPayout).toHaveBeenCalledTimes(1);
 
-    // The dialog is not left while the request is on its way (Escape, the cross, a click outside): nobody opens another one for a payment that may be recorded already.
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape', code: 'Escape' });
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: text('shared.close') }));
     expect(screen.getByTestId('payout-form')).toBeInTheDocument();
@@ -706,7 +662,6 @@ describe('the payment that was made once (E06/F05/US02/T04)', () => {
     expect(api.getPayoutPreview).toHaveBeenCalledTimes(1);
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
 
-    // What the person saw is not what the server has: it says so, and the facts are read again so the dialog tells what is true now.
     expect(await within(dialog).findByTestId('payout-error')).toHaveTextContent(text('apiErrors.codes.ownerPayoutExceedsBalance'));
     await waitFor(() => expect(api.getPayoutPreview.mock.calls.length).toBeGreaterThan(1));
   });
@@ -714,13 +669,11 @@ describe('the payment that was made once (E06/F05/US02/T04)', () => {
 
 describe('the next step of an owner whose statement is published (E06/F05/US02/T04)', () => {
   it('MonthEndClose_AStatementAlreadyPaid_PutsTheCloseFirst_NotAnotherPayment', async () => {
-    // 800 owed, 800 paid: the one highlighted step of the row is the close; the payment stays in the menu.
     api.listPayouts.mockResolvedValue([payout({ grossAmount: 800 })]);
     renderMonth();
 
     expect(await screen.findByTestId(`row-${OWNER_ID}-close`)).toBeInTheDocument();
     expect(screen.queryByTestId(`row-${OWNER_ID}-payout`)).toBeNull();
-    // The payment is still there for an extra one, in the menu of the row.
     expect(screen.getByTestId(`row-${OWNER_ID}-more`)).toBeInTheDocument();
   });
 
@@ -736,7 +689,6 @@ describe('the next step of an owner whose statement is published (E06/F05/US02/T
     api.listPayouts.mockRejectedValue(networkError());
     renderMonth();
 
-    // Not known: the payments are not read, so the row says so with the way to try again, and the step it can still offer is the one it always offered.
     expect(await screen.findByTestId(`row-${OWNER_ID}-payments-error`)).toBeInTheDocument();
     expect(screen.getByTestId(`row-${OWNER_ID}-payout`)).toBeInTheDocument();
   });
@@ -766,7 +718,6 @@ describe('the tax year, told for what it is (E06/F05/US02/T04, AC-NF110-5)', () 
     const year = await checked();
     expect(year).toHaveAttribute('data-verdict', 'f24Matches');
     expect(year).toHaveTextContent(/F24/);
-    // The annual data do not exist: they are not said to match.
     expect(year).not.toHaveTextContent(/annual/i);
   });
 
@@ -838,7 +789,6 @@ describe('the tax year, told for what it is (E06/F05/US02/T04, AC-NF110-5)', () 
     await waitFor(() => expect(api.setF24FilingState).toHaveBeenCalledWith(f24().id, { state: 'Submitted', handoffReference: 'Commercialista, 16/02' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
-    // The receipt of the annual data: «accettato» needs the receipt of the authority.
     fireEvent.click(await screen.findByTestId('filing-step-Accepted'));
     dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('button', { name: text('ownerAccounting.filing.dialog.Accepted.confirm') })).toBeDisabled();
@@ -847,7 +797,6 @@ describe('the tax year, told for what it is (E06/F05/US02/T04, AC-NF110-5)', () 
     await waitFor(() => expect(api.setDatasetFilingState).toHaveBeenCalledWith(dataset().id, { state: 'Accepted', receiptReference: 'RIC-77' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
-    // A rejection needs its reason.
     fireEvent.click(await screen.findByTestId('filing-step-Rejected'));
     dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('button', { name: text('ownerAccounting.filing.dialog.Rejected.confirm') })).toBeDisabled();
@@ -917,7 +866,6 @@ describe('the buttons of a card while a step of it is on its way (E06/F05/US02/T
     renderStatement();
 
     fireEvent.click(await screen.findByTestId('external-verify'));
-    // Unlinking, or linking another invoice, would act on a link that is changing.
     await waitFor(() => expect(screen.getByTestId('external-remove')).toBeDisabled());
     expect(screen.getByTestId('external-add')).toBeDisabled();
     expect(screen.getByTestId('external-verify')).toBeDisabled();

@@ -34,7 +34,6 @@ describe('assertDemoBuildAllowed (A9-38)', () => {
   });
 
   it('assertDemoBuildAllowed_DemoModeWithoutFlag_Throws', () => {
-    // `vite build --mode demo` without the variable would silently produce a normal build (the old build:demo bug).
     expect(() =>
       assertDemoBuildAllowed({ command: 'build', mode: DEMO_BUILD_MODE, demoFlag: undefined, vercelEnv: undefined }),
     ).toThrow(/VITE_DEMO_MODE=true/);

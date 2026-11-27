@@ -33,10 +33,8 @@ import { useComplianceEvidence, useCoverageReport, useDownloadProof, useExportCo
 import { useProperties } from '@/queries/use-properties';
 import { COMPLIANCE_PROOF_KINDS, type ComplianceProofKind, type Property } from '@/types';
 
-/** Proofs in a page of the list. */
 const PAGE_SIZE = 25;
 
-/** The formats the coverage report is downloaded in. */
 const REPORT_FORMATS = ['pdf', 'csv'] as const;
 
 const NO_PROPERTIES: Property[] = [];
@@ -70,11 +68,8 @@ export function AlloggiatiPage() {
   const kind = readableKinds.find((candidate) => candidate === address.kind);
   const canUpload = (candidate: ComplianceProofKind) => uploadKinds.includes(candidate);
 
-  // The short-rent flats only: the proofs of the archive are of short stays, and the dialog of a receipt offers these flats to cover (never one let long-term).
   const properties = useProperties({ mode: 'short' }, { fresh: true });
   const propertyList = Array.isArray(properties.data) ? properties.data : NO_PROPERTIES;
-  // The queries wait for the properties, which the address is checked against (a property that is not one of the caller's is no filter), and for the
-  // flags, which decide whether the page has a summary: before they are read the page would show the proofs for a moment and then the summary.
   const ready = !properties.isLoading && !features.isLoading;
   const propertyId = address.propertyId && (properties.isError || propertyList.some((property) => property.id === address.propertyId)) ? address.propertyId : undefined;
 
@@ -83,7 +78,6 @@ export function AlloggiatiPage() {
   const download = useDownloadProof();
   const exportZip = useExportProofs();
   const exportReport = useExportCoverageReport();
-  // Every button of the page waits while any of these is under way: one file at a time.
   const busy = download.isPending || exportZip.isPending || exportReport.isPending;
   const [uploading, setUploading] = useState<ProofUploadPrefill | null>(null);
 
@@ -103,7 +97,6 @@ export function AlloggiatiPage() {
     ...listedMonths(today).map((month) => ({ value: month, label: formatPeriod(month, language) })),
     ...listedYears(today).map((year) => ({ value: year, label: t('complianceArchive.filters.wholeYear', { year }) })),
   ];
-  // A day or a month the address asks for that the list does not offer is still the one in use.
   if (current && !periodOptions.some((option) => option.value === current)) periodOptions.push({ value: current, label: formatPeriod(current, language) });
 
   const startUpload = (prefill?: ProofUploadPrefill) =>
@@ -189,7 +182,6 @@ export function AlloggiatiPage() {
       {!ready || list.isLoading ? (
         <ListSkeleton label={t('complianceArchive.proofs.loading')} />
       ) : list.isError ? (
-        // An error is never an empty list, and a 404 is «not found» whatever the cache still holds of an older read.
         <ErrorState
           testId="archive-proofs-error"
           title={t(getHttpStatus(list.error) === 404 ? 'complianceArchive.proofs.notFound' : 'complianceArchive.proofs.loadError')}
@@ -214,7 +206,6 @@ export function AlloggiatiPage() {
           ) : null}
         </div>
       ) : (
-        // No file is not «everything is fine»: the page says only that none is archived for these filters, and where one can be added.
         <EmptyState
           icon={Archive}
           title={t('complianceArchive.proofs.emptyTitle')}
@@ -311,7 +302,6 @@ export function AlloggiatiPage() {
   );
 }
 
-/** The list while it loads: the shape of the rows, announced once, with no spinner in the middle of nothing. */
 function ListSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="space-y-3" data-testid="archive-loading">

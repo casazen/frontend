@@ -9,14 +9,6 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 import type { PublicPropertyDto } from '../src/types';
 import type { PublicStayCard, PublicStaysResult } from '../src/types/public-stays.types';
 
-/**
- * Cards of a row look the same: their sections (the title, the text, the list, the button...) start at the same height even when
- * a title wraps on two lines or a card has less to say than its neighbours. The cards of a grid are subgrids of it
- * (`AlignedCard`, and the same utilities where a card is not a `Card`), so each section is a row of the grid and a row is as
- * tall as its tallest section.
- */
-
-/** `top` or `bottom` of the box of each element: one number per element, in px from the top of the viewport. */
 async function edges(elements: Locator[], edge: 'top' | 'bottom'): Promise<number[]> {
   return Promise.all(
     elements.map(async (element) => {
@@ -27,7 +19,6 @@ async function edges(elements: Locator[], edge: 'top' | 'bottom'): Promise<numbe
   );
 }
 
-/** The lines a text takes (the box of the element is the row of the grid, as tall as the longest title of the row). */
 async function linesOf(element: Locator): Promise<number> {
   return element.evaluate((node) => {
     const range = document.createRange();
@@ -36,18 +27,12 @@ async function linesOf(element: Locator): Promise<number> {
   });
 }
 
-/**
- * Replaces the text of an element, to make a name as long (or as short) as a test needs. How many lines a copy takes depends on
- * the font of the machine (the same page wraps differently on a laptop and on the CI), so a test that needs a title on one line
- * next to a title on several does not trust the copy: it writes both.
- */
 async function setText(element: Locator, text: string): Promise<void> {
   await element.evaluate((node, value) => {
     node.textContent = value;
   }, text);
 }
 
-/** The elements start (or end) at the same height: a pixel is the rounding of a fractional line height, not a difference. */
 async function expectAligned(elements: Locator[], what: string, edge: 'top' | 'bottom' = 'top'): Promise<void> {
   expect(elements.length, `${what}: at least two cards to compare`).toBeGreaterThan(1);
   const values = await edges(elements, edge);
@@ -57,7 +42,6 @@ async function expectAligned(elements: Locator[], what: string, edge: 'top' | 'b
 test.describe('Aligned cards', () => {
   test.beforeEach(async ({ page }) => {
     await pinE2eLocale(page, 'it');
-    // The cookie banner is not what these specs are about.
     await page.addInitScript(() => localStorage.setItem('casazen_cookie_consent', 'rejected'));
   });
 
@@ -125,7 +109,6 @@ test.describe('Aligned cards', () => {
       },
     ];
 
-    /** The same three homes as the search of the site lists them (the home of a host, DB-07b). */
     function stayCards(): PublicStayCard[] {
       return properties.map((property) => ({
         id: property.id,
@@ -184,14 +167,11 @@ test.describe('Aligned cards', () => {
       });
     }
 
-    /** The cards of the home of a host are subgrids of it: the name, the place, the facts and the price start at the same height. */
     async function expectHomeCardsAligned(page: Page): Promise<void> {
       const cards = page.getByTestId('house-card');
       await expect(cards).toHaveCount(3);
       const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
 
-      // The first name is long and the second short, whatever the font of the machine: the one on more lines used to push down
-      // the facts and the price of its own card only.
       await setText(cards.nth(0).locator('h3 a'), 'Attico panoramico con terrazza privata sul centro storico di Roma e sui Fori Imperiali');
       await setText(cards.nth(1).locator('h3 a'), 'Loft Duomo');
       expect(await linesOf(cards.nth(0).locator('h3'))).toBeGreaterThan(await linesOf(cards.nth(1).locator('h3')));
@@ -210,9 +190,6 @@ test.describe('Aligned cards', () => {
 
       await expectHomeCardsAligned(page);
     });
-
-    // The public search (`/search`) lists the homes as rows of the results of a site (DB-07c), one under the other: there is no grid
-    // to line up, so it has no test here.
   });
 
   test.describe('Plans page (billing)', () => {
@@ -220,7 +197,6 @@ test.describe('Aligned cards', () => {
       await mockCurrentUserWithOrg(page, { name: 'Acme Stays', planTier: 'Starter' });
       await mockEntitlement(page, { planTier: 'Starter', maxProperties: 3, properties: 1 });
       await mockBillingSubscription(page, { status: 'none' });
-      // The Pro plan cannot be bought: its button is disabled and a line says why. The lists have different lengths.
       await page.route('**/api/billing/plans', async (route) => {
         const plan = (tier: string, unitAllowance: number, features: string[], purchasable: boolean) => ({
           tier,
@@ -253,7 +229,6 @@ test.describe('Aligned cards', () => {
         cards.map((card) => card.getByRole('button')),
         'button',
       );
-      // The hint is above the button of its plan, not under it.
       const [hint, button] = await Promise.all([
         cards[1].getByText('Questo piano non è acquistabile al momento.').boundingBox(),
         cards[1].getByRole('button').boundingBox(),
@@ -311,7 +286,6 @@ test.describe('Aligned cards', () => {
       const cards = page.getByTestId('featured-property');
       await expect(cards).toHaveCount(3);
       const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
-      // The first name is on three lines, the others on one: the facts, the price and the button of those used to sit higher.
       expect(await linesOf(each('h3')[0])).toBeGreaterThanOrEqual(3);
       expect(await linesOf(each('h3')[1])).toBe(1);
 
@@ -346,7 +320,6 @@ test.describe('Aligned cards', () => {
       await expect(cards).toHaveCount(6);
       const row = (first: number) => [first, first + 1, first + 2].map((index) => cards.nth(index));
 
-      // Three across from a laptop: a line of four and two alone left empty cells on the right.
       await expectAligned(row(0), 'first row', 'top');
       await expectAligned(row(3), 'second row', 'top');
       const [firstRow, secondRow] = await Promise.all([cards.nth(0).boundingBox(), cards.nth(3).boundingBox()]);
@@ -359,7 +332,6 @@ test.describe('Aligned cards', () => {
 
   test.describe('Plan cards of the admin dialog (change the plan of an org)', () => {
     test('the limit and the button of the three cards line up whatever the length of the descriptions', async ({ page }) => {
-      // Three descriptions of one, two and four lines in the width of the dialog.
       await page.route('**/api/orgs/plans', async (route) => {
         const plan = (tier: string, maxProperties: number, description: string) => ({ tier, displayName: tier, maxProperties, description });
         const plans = [
@@ -460,7 +432,6 @@ test.describe('Aligned cards', () => {
           updatedAt: '2026-01-01T00:00:00Z',
           ...extra,
         });
-        // One has a sync status, one has a status and an error, one is not connected and has neither.
         const channels = [
           integration('AIRBNB', { lastSyncStatus: 'COMPLETED', lastSyncAt: new Date(Date.now() - 12 * 60_000).toISOString() }),
           integration('BOOKING_COM', {
@@ -481,7 +452,6 @@ test.describe('Aligned cards', () => {
       await expectAligned(each('h3'), 'name');
       await expectAligned(each('button'), 'button');
       await expectAligned(each('button'), 'button', 'bottom');
-      // "Ultima sync" is under the sync status in the cards that have one, and at the same height in the one that has not.
       await expectAligned(
         [0, 1, 2].map((index) => cards.nth(index).getByText('Ultima sync', { exact: true })),
         'last sync',
@@ -534,8 +504,6 @@ test.describe('Aligned cards', () => {
 
       const cards = page.getByTestId('marketplace-supplier-grid').locator('> div');
       await expect(cards).toHaveCount(2);
-      // The suppliers have the whole width of the page now (SR-09a), so how many lines a name takes depends on the font even more:
-      // the first name is made long on purpose (see `setText`), the second is one line; only the first supplier has a bio.
       await setText(
         cards.nth(0).getByTestId('supplier-name'),
         'Servizi Integrati di Pulizia e Manutenzione per Strutture Ricettive del Lago di Como e della Brianza, con Lavanderia Industriale, Giardinaggio, Assistenza Tecnica Specializzata e Gestione Completa degli Ospiti S.r.l.',
@@ -543,10 +511,8 @@ test.describe('Aligned cards', () => {
       expect(await linesOf(cards.nth(0).getByTestId('supplier-name'))).toBeGreaterThanOrEqual(3);
       expect(await linesOf(cards.nth(1).getByTestId('supplier-name'))).toBe(1);
 
-      // The categories are one line of words («Pulizie · Manutenzione»), a row of the card like the others (UX round 2026-11).
       await expectAligned([0, 1].map((index) => cards.nth(index).getByTestId('marketplace-supplier-categories')), 'categories');
       await expectAligned([0, 1].map((index) => cards.nth(index)), 'card', 'bottom');
-      // The first supplier has four categories and the second one: both are told, in words.
       await expect(cards.nth(0).getByTestId('marketplace-supplier-categories')).toContainText('Pulizie');
       await expect(cards.nth(1).getByTestId('marketplace-supplier-categories')).toHaveText('Pulizie');
     });
@@ -584,7 +550,6 @@ test.describe('Aligned cards', () => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto('/dev/calm-blocks');
 
-      // "Prenotazioni in arrivo" and its chevron are on more lines than the first name: its number used to be lower than the others.
       const strip = page.getByTestId('strip-4');
       const tiles = strip.getByRole('listitem');
       await expect(tiles).toHaveCount(4);
@@ -595,7 +560,6 @@ test.describe('Aligned cards', () => {
       const each = (selector: string) => [0, 1, 2, 3].map((index) => tiles.nth(index).locator(selector).first());
       await expectAligned(each('span.flex'), 'name');
       await expectAligned(each('.text-2xl'), 'number');
-      // The names of one line stay at the top, as the first line of the longer one.
       const [short, long] = await Promise.all([each('span.flex > span.min-w-0')[0].boundingBox(), each('span.flex > span.min-w-0')[1].boundingBox()]);
       expect(Math.abs(short!.y - long!.y)).toBeLessThanOrEqual(1);
     });
@@ -638,7 +602,6 @@ test.describe('Aligned cards', () => {
         };
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(overview) });
       });
-      // A laptop with the sidebar open: each of the four columns is about 170 px.
       await page.setViewportSize({ width: 1040, height: 900 });
       await page.goto(demoUrl('/app/short-rent', 'short-stay'));
 
@@ -651,14 +614,12 @@ test.describe('Aligned cards', () => {
       const tiles = numbers.getByRole('listitem').filter({ has: page.locator('.text-2xl') });
       await expect(tiles).toHaveCount(3);
       await expect(numbers.getByTestId('home-next-arrivals')).toBeVisible();
-      // Whether "Prenotazioni in arrivo" fits on one line at 170 px depends on the font, so the third name is made long on purpose.
       const names = [0, 1, 2].map((index) => tiles.nth(index).locator('span.flex > span.min-w-0'));
       await setText(names[2], 'Prenotazioni in arrivo e da confermare');
       expect(await linesOf(names[2])).toBeGreaterThan(await linesOf(names[0]));
 
       await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('span.flex')), 'name');
       await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('.text-2xl')), 'number');
-      // The list of arrivals is not made of those rows: it starts at the top, at the height of the names, and does not make them taller.
       await expectAligned([tiles.nth(0).locator('span.flex'), numbers.getByTestId('home-next-arrivals').locator('p').first()], 'name and list title');
       const [name, value, list, ...all] = await Promise.all([
         tiles.nth(0).locator('span.flex').boundingBox(),
@@ -673,13 +634,6 @@ test.describe('Aligned cards', () => {
   });
 
   test.describe('Public site (src/site)', () => {
-    // The site has its own stylesheet, which finds its classes by scanning src/site/ only: a class written anywhere else would
-    // not be there, and the cards would not line up. So this is checked on the page, not only on the markup.
-
-    /**
-     * The dev server serves the template of a page, not the prerendered page: it is given the root element that the browser entry
-     * of the site renders into (as `scripts/prerender-site.mjs` does at build time).
-     */
     async function openSitePage(page: Page, id: 'home' | 'features' | 'suppliers'): Promise<void> {
       await page.route('**/__site/*', async (route) => {
         const url = new URL(route.request().url());
@@ -692,7 +646,6 @@ test.describe('Aligned cards', () => {
       await page.goto(`/__site/${id}`);
     }
 
-    /** The cards of the grid under the heading `name`. */
     function cardsUnder(page: Page, name: string): Locator {
       return page.locator('section', { has: page.getByRole('heading', { name, exact: true }) }).locator('div.grid > div');
     }
@@ -705,7 +658,6 @@ test.describe('Aligned cards', () => {
       await expect(cards).toHaveCount(4);
       const each = (selector: string) => [0, 1, 2, 3].map((index) => cards.nth(index).locator(selector).first());
 
-      // The titles are made as different as can be, whatever the font and the copy: a word on one line, a sentence on several.
       await setText(each('h3')[0], 'Host');
       await setText(each('h3')[2], 'Proprietari di affitti lunghi, con tanti contratti e inquilini da seguire');
       expect(await linesOf(each('h3')[2])).toBeGreaterThan(await linesOf(each('h3')[0]));

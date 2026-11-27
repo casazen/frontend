@@ -8,7 +8,6 @@ import { useQueryWriter } from './use-query-writer';
 
 export type { BookingSearchParams };
 
-/** Stay selected on the public site (dates and guests), kept in the URL query. */
 export function useBookingSearchParams() {
   const { searchParams, write } = useQueryWriter();
 

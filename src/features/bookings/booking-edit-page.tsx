@@ -21,16 +21,11 @@ import type { BookingEditQuote, BookingEditSettlement as SavedSettlement, Update
 import { channelGuidanceOf, channelVersionChange, settlementHasMoney, stayChanged, stayLockOf } from './lib/booking-change';
 import { useSyncWatch } from './lib/use-sync-watch';
 
-/**
- * Where the host is: the form; what the change does with the money, read before it is saved (a booking of the booking site, NF-75); or the result of the save.
- * Going back from the money to the form keeps what was typed (`formValues`).
- */
 type Step =
   | { name: 'form' }
   | { name: 'review'; change: UpdateBookingDto; quote: BookingEditQuote }
   | { name: 'saved'; settlement: SavedSettlement | undefined };
 
-/** The values of the form as the API takes them: dates, guests (and the ages of the minors when the tourist tax asks for them) and notes. */
 function changeOf(data: BookingFormSubmit): UpdateBookingDto {
   return {
     checkInDate: data.checkInDate,
@@ -54,7 +49,6 @@ export function BookingEditPage() {
   const navigate = useNavigate();
   const { hasPermission } = useWorkspace();
   const watch = useSyncWatch();
-  // The form starts from the booking as it is now, not from the one an earlier page left in the cache, and the channel manager answers a few seconds after a save.
   const query = useBooking(id!, { fresh: true, refetchInterval: (current) => watch.interval(current?.octorateSync) });
   const { data: booking, isLoading, isError, error, refetch } = query;
   const updateBooking = useUpdateBooking();
@@ -68,7 +62,6 @@ export function BookingEditPage() {
   const [retryError, setRetryError] = useState<string | null>(null);
   const detailPath = `/app/short-rent/bookings/${id}`;
   const busy = updateBooking.isPending || editQuote.isPending || retry.isPending;
-  // A booking read after the page opened: the one of an earlier visit is shown by no screen that edits it.
   const readAfterOpen = query.dataUpdatedAt >= watch.openedAt;
 
   const askAgain = (overwrite: boolean) => {
@@ -83,7 +76,6 @@ export function BookingEditPage() {
     );
   };
 
-  // The page stopped asking for a push that never answered: «Check again» reads the booking once more and waits for one more minute.
   const checkAgain = () => {
     watch.ask();
     void refetch();
@@ -93,8 +85,6 @@ export function BookingEditPage() {
     return <LoadingScreen message={t('booking.edit.loading')} className="h-auto flex-1" />;
   }
 
-  // An API error is never shown as "not found" (only a 404 is), and a 404 is "not found" whatever the cache still holds of the booking: the query keeps the old data
-  // when a read fails. A failed read of a page that is already open (the one that waits for the channel manager) leaves the page as it is.
   const gone = isError && getHttpStatus(error) === 404;
   if (isError && !gone && !readAfterOpen) {
     return (
@@ -125,9 +115,7 @@ export function BookingEditPage() {
   const modifyGuidance = channelGuidanceOf(booking.changeOptions, 'modify');
   // The money of an edit is the business of who may read payments: the quote is asked only for them (the API refuses it otherwise), and so is what the save did with it.
   const canReadPayments = hasPermission('short-rent', 'payment.read');
-  // The money of an edit is read before it is saved for a booking of the booking site, by who may read payments, and only when the stay moves: the notes alone have none.
   const reviewsMoney = booking.source === 'Direct' && stayLock === null && canReadPayments;
-  // The version of the channel manager can be put in the form only while the form takes dates and guests.
   const channelChange = stayLock === null ? channelVersionChange(booking, booking.octorateSync?.octorateVersion) : null;
   const chooseChannelVersion = channelChange
     ? () => {
@@ -139,11 +127,7 @@ export function BookingEditPage() {
     : undefined;
 
   const afterSave = (answered: SavedSettlement | undefined) => {
-    // The answer of the save carries the amounts of the money (what was moved, what is left to give back by hand) to everyone who may write the booking: a person who may
-    // not read payments is not told them, and the page does not keep them (the quote is refused to that person for the same reason).
     const settlement = canReadPayments ? answered : undefined;
-    // A booking that is mirrored on the channel manager has its push to follow, and the money of an edit has its outcome: both are said on this page. Any other edit
-    // has nothing to add to the toast, and the host is taken back to the booking.
     if (settlementHasMoney(settlement) || booking.octorateSync != null) {
       watch.ask();
       setStep({ name: 'saved', settlement });
@@ -152,8 +136,6 @@ export function BookingEditPage() {
     }
   };
 
-  // Only dates, guests and notes go to the API (PC-07, A2-07): status and prices are never sent. A 409 (dates taken) or 422 (e.g. a booking of a channel) stays next to the
-  // form, or on the page that shows the money when it was the second call that refused.
   const save = async (change: UpdateBookingDto, from: 'form' | 'review') => {
     if (!id) return;
     try {
@@ -289,18 +271,15 @@ interface EditReviewProps {
   /** The caller may write payments: a change that moves money needs it (403 `booking_edit_payment_permission_required` otherwise). */
   canMoveMoney: boolean;
   busy: boolean;
-  /** What refused the save from this page (Stripe refused the money, a payment is still being processed...). */
   error: string | null;
   language: string;
   onConfirm: () => void;
   onBack: () => void;
 }
 
-/** What the change does, in plain words, before it is saved: the new stay, the money, and the two choices. Nothing is done until "Confirm and save". */
 function EditReview({ change, quote, canMoveMoney, busy, error, language, onConfirm, onBack }: EditReviewProps) {
   const { t } = useTranslation();
   const day = (value: string) => formatStayDate(value, language, { day: 'numeric', month: 'short', year: 'numeric' });
-  // The money of the change needs `payment.write`, which the server asks again at the save: the host is told here, not after a refusal.
   const blocked = quote.action !== 'none' && !canMoveMoney;
 
   return (
@@ -310,7 +289,6 @@ function EditReview({ change, quote, canMoveMoney, busy, error, language, onConf
         <CardDescription>{t('booking.edit.review.description')}</CardDescription>
       </CardHeader>
       <CardContent className="@container space-y-4">
-        {/* The new stay and, beside it once the card is wide, what happens to the money (under each other when it is not). */}
         <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
           <dl className="min-w-0 space-y-3 rounded-xl border bg-muted/40 p-4 text-sm">
             <div className="flex justify-between gap-4">

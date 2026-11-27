@@ -5,7 +5,6 @@
  */
 export function maskIban(iban: string): string {
   const compact = iban.replace(/[\s-]/g, '').toUpperCase();
-  // Too short to hide anything and still say something: the caller shows nothing of it.
   if (compact.length < 9) return '••••';
   return `${compact.slice(0, 4)} •••• ${compact.slice(-4)}`;
 }

@@ -7,14 +7,12 @@ import type { PayoutFacts, PayoutStayFact } from '@/types';
 import { factWords } from '../payout-facts-model';
 import { useOwnerFormat } from '../use-owner-format';
 
-/** The page where the decision about a company tenant is recorded: the withholding page opens its dialog on the stay named by `?decision=`. */
 const WITHHOLDING_PATH = '/app/account/withholding';
 
 interface StayRowProps {
   stay: PayoutStayFact;
   facts: PayoutFacts;
   propertyName: string | undefined;
-  /** The decision about a company tenant exists (the tax exports are on): a stay that waits for one has the way to it. */
   canDecide: boolean;
 }
 
@@ -66,12 +64,7 @@ function StayRow({ stay, facts, propertyName, canDecide }: StayRowProps) {
 
 interface PayoutFactsViewProps {
   facts: PayoutFacts;
-  /** The names of the properties of the agency, by id: a stay carries the id only. */
   propertyNames: ReadonlyMap<string, string>;
-  /**
-   * What an empty list of stays says. `none`: the facts were read and there is no stay to evaluate. `blocked`: the payout is blocked, and a server that could not read the facts (a stay it cannot judge, no
-   * rate of the day) answers the same empty list, so «no stay» is not a thing to say: it says that it cannot be told.
-   */
   whenNoStays?: 'none' | 'blocked';
 }
 

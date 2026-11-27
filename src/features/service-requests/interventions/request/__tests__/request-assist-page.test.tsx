@@ -37,7 +37,6 @@ vi.mock('@/api/service-requests.api', () => ({
 }));
 vi.mock('@/api/host-supplier-catalog.api', () => ({ fetchHostSupplierServices: vi.fn(), fetchHostSupplierSlots: vi.fn() }));
 vi.mock('@/api/service-request-assist.api', () => ({ serviceRequestAssistApi: { getAvailability: vi.fn(), assist: vi.fn() } }));
-// The partners come from the catalog of the marketplace: one, made up, for the cleaning.
 vi.mock('@/queries/use-marketplace', () => {
   const partner = {
     kind: 'Partner',
@@ -123,7 +122,6 @@ function renderPage(query = `propertyId=${PROPERTY_ID}`) {
 const next = () => fireEvent.click(screen.getByTestId('request-next'));
 const stepIs = (id: string) => waitFor(() => expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', id), WAIT);
 
-/** Opens the box of the AI and asks it about `text`; resolves with the answer on screen (a proposal or the reason there is none). */
 async function describeTheJob(text = WORDS) {
   fireEvent.click(await screen.findByTestId('request-assist-open', undefined, WAIT));
   fireEvent.change(await screen.findByTestId('request-assist-text', undefined, WAIT), { target: { value: text } });
@@ -183,11 +181,9 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
   it('RequestAssist_DescribingTheJob_ProposesTheService_AndTheHostTakesTheProposal', async () => {
     renderPage();
 
-    // Under the two choices, quiet: the host opens it only if they want to tell the job in words.
     expect(await screen.findByTestId('request-assist', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('request-assist-text')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('request-assist-open'));
-    // Too few words: nothing to ask yet.
     expect(await screen.findByTestId('request-assist-submit')).toBeDisabled();
     fireEvent.change(screen.getByTestId('request-assist-text'), { target: { value: 'perde' } });
     expect(screen.getByTestId('request-assist-submit')).toBeDisabled();
@@ -203,20 +199,16 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     expect(within(result).getByTestId('request-assist-who')).toHaveTextContent('2 fornitori disponibili nella tua zona');
     expect(within(result).getByTestId('request-assist-note')).toHaveTextContent('Il rubinetto della cucina perde acqua: serve un intervento domani mattina.');
     expect(result).toHaveTextContent('Una perdita al rubinetto è un lavoro da idraulico');
-    // It says that an AI wrote it.
     expect(screen.getByTestId('ai-content-notice')).toBeInTheDocument();
-    // Nothing is decided yet: the wizard has not moved and nothing was sent.
     expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');
     expect(createServiceRequest).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByTestId('request-assist-use'));
 
-    // The wizard goes on from the proposals, with the service and the channel the AI proposed.
     await stepIs('proposals');
     expect(await screen.findByTestId('request-ai-choice')).toHaveTextContent("L'AI ha scelto: Idraulico.");
     expect(vi.mocked(fetchSuppliersByProperty).mock.calls.some((call) => call[1] === 'plumbing')).toBe(true);
 
-    // The urgency and the sentence for the supplier are the answers of the details, which the host can still change.
     fireEvent.click(await screen.findByTestId(`request-supplier-${SUPPLIER_ID}`, undefined, WAIT));
     next();
     await stepIs('details');
@@ -238,12 +230,10 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     await stepIs('partners');
     expect(await screen.findByTestId('request-partners', undefined, WAIT)).toBeInTheDocument();
     expect(screen.getByTestId('request-ai-choice')).toHaveTextContent("L'AI ha scelto: Pulizie.");
-    // The path of the partners sends nothing to CasaZen.
     expect(createServiceRequest).not.toHaveBeenCalled();
   });
 
   it('RequestAssist_ExternalProposalForAServiceNoPartnerCovers_IsNotFollowed_AndSaysThereIsNoPartner', async () => {
-    // The catalog has a partner for the cleaning only: for the plumbing the proposal of the external channel leads to a step with nobody in it.
     vi.mocked(serviceRequestAssistApi.assist).mockResolvedValue({ ...PLUMBING, channel: 'external', casazenSuppliers: 0 });
     renderPage();
 
@@ -251,12 +241,10 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
 
     const result = await screen.findByTestId('request-assist-result', undefined, WAIT);
     expect(within(result).getByTestId('request-assist-who')).toHaveTextContent('Un partner esterno');
-    // «Vedi i partner» is not offered and the card says why; the other two ways on are still there.
     expect(screen.queryByTestId('request-assist-use')).not.toBeInTheDocument();
     expect(within(result).getByTestId('request-assist-no-partners')).toHaveTextContent("non c'è ancora nessun servizio esterno");
     expect(screen.getByTestId('request-assist-edit')).toBeInTheDocument();
     expect(screen.getByTestId('request-assist-skip')).toBeInTheDocument();
-    // Nobody was taken to the partners: the wizard stays where it was, and nothing was sent.
     expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');
     expect(createServiceRequest).not.toHaveBeenCalled();
   });
@@ -270,7 +258,6 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     fireEvent.click(await screen.findByTestId('request-ai-choice-change', undefined, WAIT));
 
     await stepIs('service');
-    // What the AI chose is chosen, and the host picks another one.
     expect(await screen.findByTestId('request-category-plumbing', undefined, WAIT)).toBeChecked();
     fireEvent.click(screen.getByTestId('request-category-cleaning'));
     next();
@@ -290,7 +277,6 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     expect(screen.queryByTestId('request-assist-retry')).not.toBeInTheDocument();
     expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');
 
-    // «Cambia le parole»: the box comes back with what was written.
     fireEvent.click(screen.getByTestId('request-assist-edit'));
     expect(await screen.findByTestId('request-assist-text')).toHaveValue('Mi serve una cosa per la casa');
   });
@@ -330,7 +316,6 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
       const none = await screen.findByTestId('request-assist-none', undefined, WAIT);
       expect(none).toHaveTextContent('non è disponibile al momento');
       expect(screen.queryByTestId('request-assist-retry')).not.toBeInTheDocument();
-      // «Scelgo io» folds the box away: the two choices are what is left.
       fireEvent.click(screen.getByTestId('request-assist-skip'));
       expect(await screen.findByTestId('request-assist-open')).toBeInTheDocument();
       expect(screen.getByTestId('request-channel-casazen')).toBeInTheDocument();
@@ -360,7 +345,6 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     next();
     await stepIs('details');
 
-    // The host rewrote the notes, went back to the first steps and asked the AI again: their own words stay.
     fireEvent.change(await screen.findByTestId('request-notes', undefined, WAIT), { target: { value: 'Le chiavi sono dal portiere.' } });
     fireEvent.click(screen.getByTestId('request-back'));
     await stepIs('proposals');
@@ -368,7 +352,6 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     await stepIs('service');
     fireEvent.click(screen.getByTestId('request-back'));
     await stepIs('channel');
-    // The words come back in the box.
     const box = await screen.findByTestId('request-assist-text', undefined, WAIT);
     expect(box).toHaveValue(WORDS);
     fireEvent.change(box, { target: { value: `${WORDS}, anche il lavandino` } });

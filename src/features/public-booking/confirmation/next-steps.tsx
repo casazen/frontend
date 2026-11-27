@@ -27,19 +27,15 @@ interface StepContext {
   locale: string;
   money: (amount: number, currency?: string) => string;
   outcome: CheckoutOutcome;
-  /** How the host is named on the site, or an empty string. */
   hostLabel: string;
-  /** The address the guest booked with, only when the checkout handed it over (never read from the address bar). */
   guestEmail?: string;
   arrivalFrom: string;
   departureBy: string;
 }
 
-/** The title and the sentence of a step, from the data of the booking and nothing else. */
 function describe(step: NextStep, context: StepContext): { title: string; text: string } {
   const { t, language, locale, money, outcome, hostLabel, guestEmail, arrivalFrom, departureBy } = context;
   const deadline = outcome.expiresAt ? formatRomeDateTime(outcome.expiresAt, language) : '';
-  // The name of the host starts a sentence or a title here: «l'host» (the fallback) takes its capital.
   const hostName = hostLabel || t('siteConfirm.hostFallback');
   const host = hostName.charAt(0).toLocaleUpperCase(language) + hostName.slice(1);
 
@@ -111,10 +107,6 @@ interface NextStepsProps {
   departureBy: string;
 }
 
-/**
- * «Cosa succede ora» (DB-06b): what comes after this page, as steps with their real days, the one that is happening marked (by
- * its word as well as by its color). A step the backend gives no day for shows «Adesso» or «Poi», not a made-up time (D24).
- */
 export function NextSteps({ steps, outcome, hostLabel, guestEmail, arrivalFrom, departureBy }: NextStepsProps) {
   const { t, i18n } = useTranslation();
   const money = useSiteMoney();

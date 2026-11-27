@@ -6,7 +6,6 @@ const PROPERTY_ID = '5b1c0e5a-7f43-4d7e-9a41-2c6f1d8a9b10';
 
 describe('the period of the guest register (E31/F02/US02/T01, NF-130)', () => {
   it('defaultRegisterPeriod_IsTheLast30DaysEndingTodayOnTheClockOfSwitzerland', () => {
-    // 23:30 UTC of 20 November is already the 21st in Zurich: the register is for the arrivals in progress, and today is the Swiss today.
     const period = defaultRegisterPeriod(new Date('2026-11-20T23:30:00Z'));
 
     expect(period).toEqual({ from: '2026-10-23', to: '2026-11-21' });
@@ -26,7 +25,6 @@ describe('the period of the guest register (E31/F02/US02/T01, NF-130)', () => {
   });
 
   it('periodProblemOf_TheLimit_IsTheOneOfTheServer', () => {
-    // `GuestRegisterFile.MaxPeriodDays` of the backend: 366 days, so the screen says no before it asks.
     expect(GUEST_REGISTER_MAX_DAYS).toBe(366);
   });
 
@@ -76,7 +74,6 @@ describe('parseGuestRegisterCsv, the file of the register as the printed sheet r
   });
 
   it('parseGuestRegisterCsv_TheApostropheThatGuardsAFormula_IsNotPartOfTheText', () => {
-    // `CsvWriter` writes a leading apostrophe before a text a spreadsheet would run as a formula; a name that starts with an apostrophe of its own is left alone.
     const { rows } = parseGuestRegisterCsv(`${HEADER}\r\n19.11.2026;22.11.2026;'=Rossi;'Ali;\r\n`);
 
     expect(rows[0]).toEqual(['19.11.2026', '22.11.2026', '=Rossi', "'Ali", '']);

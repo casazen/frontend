@@ -4,15 +4,11 @@ import type { SupplierServiceRequest } from '@/types/service-request';
 import { formatMoney } from '../services/lib/service-money';
 import { phaseOf, requestWhen, respondByText } from './request-model';
 
-/** The cells of the list of the requests (`supplier-requests-list`): each one is the little piece of the row it names. */
-
-/** Who asks, under the name of the job (the name is the link that opens the row, and the list draws it). */
 export function RequestWho({ request }: { request: SupplierServiceRequest }) {
   const sub = [request.clientName, request.propertyName].filter(Boolean).join(' · ');
   return sub ? <span className="block break-words text-sm font-normal text-foreground/70">{sub}</span> : null;
 }
 
-/** The day and the hours of the job; for a new request, until when to answer. */
 export function WhenCell({ request }: { request: SupplierServiceRequest }) {
   const { t, i18n } = useTranslation();
   const when = requestWhen(request, i18n.language);
@@ -41,7 +37,6 @@ export function WhereCell({ request }: { request: SupplierServiceRequest }) {
   );
 }
 
-/** What the server says the job is worth, as it says it: nothing is worked out here. While a quote waits, it is the total of the quote. */
 export function PriceCell({ request }: { request: SupplierServiceRequest }) {
   const { t, i18n } = useTranslation();
   const price = phaseOf(request) === 'quotePending' && request.quote ? request.quote.totalCents : request.price?.amountCents;

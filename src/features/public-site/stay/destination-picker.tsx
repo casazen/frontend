@@ -3,24 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { Compass, MapPin } from 'lucide-react';
 import './stay-pickers.css';
 
-/** A place the guest can look for homes in: a zone where the host has some (`DB-07a` lists them for a site). */
 export interface Destination {
   id: string;
   label: string;
-  /** A few words under the name ("Mare, campagna e città"). */
   sub?: string;
   icon?: ReactNode;
 }
 
 export interface DestinationPickerProps {
   destinations: readonly Destination[];
-  /** The id of the destination chosen; empty for "all". */
   value: string;
   onChange: (id: string) => void;
-  /** The first line, "everything" (default: all the destinations of the site). */
   allLabel?: string;
   allSub?: string;
-  /** Names the list for a screen reader. */
   label: string;
 }
 

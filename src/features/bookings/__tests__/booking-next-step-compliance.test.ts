@@ -28,7 +28,6 @@ const line = (state: ComplianceLine['state'], action: ComplianceLine['action'] =
 
 describe('nextStepOf with the compliance lights of the stay (NF-52, AC-NF52-9)', () => {
   it('nextStepOf_NoLines_IsTheStepOfAlways', () => {
-    // An older API, the traffic light off, a stay the summary does not list: nothing changes, and nothing is told as in order.
     expect(nextStepOf(checkedOut, TODAY, { alloggiati: { status: 'Inviato' as never, isOverdue: false } }).kind).toBe('completed');
     expect(nextStepOf(checkedOut, TODAY, { compliance: [] }).kind).toBe('completed');
     expect(nextStepOf(checkedOut, TODAY, { compliance: undefined }).kind).toBe('completed');
@@ -45,7 +44,6 @@ describe('nextStepOf with the compliance lights of the stay (NF-52, AC-NF52-9)',
     const late = line('red', 'UploadAlloggiatiReceipt', '2099-01-09T10:00:00Z');
 
     expect(nextStepOf(checkedOut, TODAY, { compliance: [late] }).tone).toBe('danger');
-    // The day itself is not late yet.
     expect(nextStepOf(checkedOut, TODAY, { compliance: [line('red', 'UploadAlloggiatiReceipt', '2099-01-11T10:00:00Z')] }).tone).toBe('warning');
   });
 
@@ -63,7 +61,6 @@ describe('nextStepOf with the compliance lights of the stay (NF-52, AC-NF52-9)',
   it('nextStepOf_AStepThatAsksSomething_KeepsItWhateverTheLightsSay', () => {
     const red = line('red');
 
-    // The answer owed, the arrival, the documents and the departure are the host's first: a light never takes them.
     expect(nextStepOf({ ...confirmed, status: 'Pending', source: 'Manual' } as Facts, TODAY, { compliance: [red] }).kind).toBe('confirmManual');
     expect(nextStepOf(confirmed, '2099-01-10', { compliance: [red] }).kind).toBe('registerArrival');
     expect(nextStepOf(confirmed, '2098-12-01', { checkIn: { status: null, canIssueLink: true }, compliance: [red] }).kind).toBe('sendLink');

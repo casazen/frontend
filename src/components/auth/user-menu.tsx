@@ -24,15 +24,8 @@ import type { AppContextKey } from '@/config/route-manifest';
 import type { AppLocale } from '@/i18n/config';
 import { profilePathForContext } from '@/lib/profile-path';
 
-// Every row is at least 44 px tall on a phone and for a finger (the menu items of Radix are 32 px).
 const ITEM_CLASS = 'min-h-9 gap-2 px-3 max-md:min-h-11 pointer-coarse:min-h-11';
 
-/**
- * The menu of the profile (header, UI-05): who is signed in, the profile page of the area the user is in, the language of the
- * interface, the areas the user can go to (only when there is more than one) and "Esci". There is no row for the theme until
- * the dark theme exists (D26). A Radix menu: it opens with Enter, Space or the arrow down, the arrows move through the rows,
- * Enter takes one and Esc closes it with the focus back on the avatar.
- */
 export function UserMenu() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
@@ -51,7 +44,6 @@ export function UserMenu() {
   return (
     <>
     <DropdownMenu>
-      {/* The trigger is only an avatar: it needs a name of its own (UI-03, a11y) and a visible focus ring. */}
       <DropdownMenuTrigger
         ref={avatar}
         aria-label={displayName ? t('appShell.userMenuNamed', { name: displayName }) : t('appShell.userMenu')}
@@ -96,7 +88,6 @@ export function UserMenu() {
             <DropdownMenuRadioGroup
               value={activeContext ?? ''}
               onValueChange={(value) => {
-                // The area the user is in stays where it is: the menu just closes.
                 if (value !== activeContext) setActiveContext(value as AppContextKey);
               }}
             >

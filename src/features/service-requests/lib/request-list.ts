@@ -2,23 +2,17 @@ import type { ServiceRequest } from '@/types/service-request';
 import { isClosedRequest } from '../long-rent/long-rent-request-model';
 import { hasReplacement } from './request-history';
 
-/** How many of the closed requests are shown when they are opened. */
 export const CLOSED_FIRST = 5;
 
-/** How many more each press of «Mostra altre» adds. */
 export const CLOSED_STEP = 10;
 
 export interface RequestGroups {
-  /** What the host still follows: the open requests and the refused ones nobody asked again, the nearest job first. */
   toFollow: ServiceRequest[];
-  /** What is over: paid, cancelled, or refused and already asked of another supplier. The latest first. */
   closed: ServiceRequest[];
 }
 
 export interface LastStep {
-  /** When it happened, an ISO instant; `null` when the request carries no date for it. */
   at: string | null;
-  /** Who made it: `Host`, `Supplier`, `System`… A word this version does not know is kept as it came. */
   actor: string | null;
 }
 
@@ -28,10 +22,6 @@ function timeOf(instant: string | null | undefined): number | null {
   return Number.isFinite(time) ? time : null;
 }
 
-/**
- * The last step a request went through, when and by whom. The history is the server's (oldest first); an answer without it falls back on the
- * dates the request keeps, and the author of a cancellation is the one it names.
- */
 export function lastStep(request: ServiceRequest): LastStep {
   const history = request.history ?? [];
   const last = history[history.length - 1];
@@ -47,16 +37,11 @@ export function lastStep(request: ServiceRequest): LastStep {
   }
 }
 
-/**
- * A request the host still has something to do or wait for: one that is not over, and a refused one nobody replaced (the host decides what
- * comes next: ask another supplier).
- */
 export function isToFollow(request: ServiceRequest, requests: readonly ServiceRequest[]): boolean {
   if (!isClosedRequest(request.status)) return true;
   return request.status === 'Rifiutato' && !hasReplacement(request, requests);
 }
 
-/** The job that comes first goes first; a request with no time goes after the ones that have it, the newest of them first. */
 function byJob(a: ServiceRequest, b: ServiceRequest): number {
   const startA = timeOf(a.scheduledStart);
   const startB = timeOf(b.scheduledStart);
@@ -65,7 +50,6 @@ function byJob(a: ServiceRequest, b: ServiceRequest): number {
   return (timeOf(b.createdAt) ?? 0) - (timeOf(a.createdAt) ?? 0);
 }
 
-/** The one closed last goes first. */
 function byClosing(a: ServiceRequest, b: ServiceRequest): number {
   return (timeOf(lastStep(b).at) ?? 0) - (timeOf(lastStep(a).at) ?? 0);
 }

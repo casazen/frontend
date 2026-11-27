@@ -9,7 +9,6 @@ import { useCancelIntervention } from '@/queries/use-service-requests';
 import type { ServiceRequest } from '@/types/service-request';
 import { supplierRef } from '../long-rent/long-rent-request-model';
 
-/** Longest reason the API accepts (`CancelServiceRequestRequest.Reason`, SP-04). */
 const CANCEL_REASON_MAX_LENGTH = 500;
 
 interface CancelInterventionDialogProps {
@@ -37,7 +36,6 @@ export function CancelInterventionDialog({ request, onClose }: CancelInterventio
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    // The window is drawn outside the page but sits inside it for React, which hands an event to the parents of a portal.
     event.stopPropagation();
     if (trimmed && !cancel.isPending) cancel.mutate({ id: request.id, reason: trimmed }, { onSuccess: onClose });
   };

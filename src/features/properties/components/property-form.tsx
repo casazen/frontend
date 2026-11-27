@@ -39,15 +39,12 @@ import { isDuplicateAddressError } from '../property-errors';
 const selectClassName =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
-/** Number inputs: an empty field is NaN, reported by the schema with the field's own message. */
 const asNumber = { valueAsNumber: true } as const;
 
-/** Optional override: blank means the catalog policy window, not zero. */
 const optionalNumber = {
   setValueAs: (value: unknown) => (value === '' || value == null ? null : Number(value)),
 } as const;
 
-/** IANA time zones of the browser, Europe/Rome first; the current value is always an option. */
 function timeZoneOptions(current: string | undefined): string[] {
   let zones: string[] = [];
   try {
@@ -61,10 +58,6 @@ function timeZoneOptions(current: string | undefined): string[] {
 
 interface PropertyFormProps {
   property?: Property;
-  /**
-   * The API body: every field the form shows (the update keeps the others, A2-04). May return the promise of the save: a
-   * 409 `duplicate_property_address` is then shown under the unit field (the mutation already toasted it).
-   */
   onSubmit: (data: CreatePropertyDto) => void | Promise<unknown>;
   onCancel?: () => void;
   isLoading?: boolean;
@@ -75,7 +68,6 @@ interface PropertyFormProps {
    * already on the property are kept as they are.
    */
   variant?: 'short-rent' | 'long-rent';
-  /** Called when the form gets or loses unsaved changes (the activation wizard keeps them across its steps). */
   onDirtyChange?: (dirty: boolean) => void;
 }
 
@@ -112,7 +104,6 @@ export function PropertyForm({
       await onSubmit(toPropertyPayload(values, variant));
     } catch (error) {
       if (isDuplicateAddressError(error)) {
-        // Another apartment of the same building needs its own interno / scala: say it where it is fixed.
         setError('unit', { type: 'server', message: 'property.validation.unit.duplicate' });
         return;
       }
@@ -120,7 +111,6 @@ export function PropertyForm({
     }
   };
   const currentTimezone = watch('timezone');
-  // Same option elements between renders: the ~400 zones are not re-rendered at every keystroke.
   const timezoneOptionElements = useMemo(
     () => timeZoneOptions(currentTimezone).map((zone) => <option key={zone} value={zone}>{zone}</option>),
     [currentTimezone],
@@ -130,14 +120,10 @@ export function PropertyForm({
   const comuneIstatCode = watch('comuneIstatCode') || null;
   const swissMunicipalityCode = watch('swissMunicipalityCode') || null;
   const country = watch('country');
-  // The prices are asked in the currency of the country (CHF-MONEY): francs for a house in Switzerland.
   const currency = country === 'CH' ? 'CHF' : 'EUR';
-  // The Swiss place picker works on a property that exists: a create has no country (the API makes the property Italian and refuses a
-  // municipality), so there the city and the postal code stay free text and the place is confirmed when the property is edited.
   const swissPlaceProperty = country === 'CH' ? property : undefined;
   const swissPlaceConfirmed = !!swissPlaceProperty && !!swissMunicipalityCode;
 
-  // Changing the country to Italy clears the Swiss place (E29/F01/US02/T01): a municipality of the Swiss directory says nothing of an Italian house.
   const onCountryChange = (event: ChangeEvent<HTMLSelectElement>) => {
     if (event.target.value !== 'CH') setValue('swissMunicipalityCode', '', { shouldDirty: true });
   };
@@ -150,14 +136,11 @@ export function PropertyForm({
     setValue('amenities', updated, { shouldDirty: true });
   };
 
-  // Auto-update currency when country changes
   useEffect(() => {
     setValue('currency', currency, { shouldDirty: true });
   }, [currency, setValue]);
 
-  // noValidate: the schema validates with translated messages; min/step only drive the number spinners.
   return (
-    // The columns follow the width of the form, not the one of the screen: the form is also a step of the activation wizard, in a card.
     <form onSubmit={handleSubmit(submit)} className="@container space-y-6" noValidate>
       <div className={CONTAINER_COLUMNS}>
         <div className={PAGE_COLUMN}>
@@ -229,7 +212,6 @@ export function PropertyForm({
                   disabled={disabled}
                   describedBy="comune-hint"
                   onChange={(comune) => {
-                    // The comune chosen from the official list gives the city (its name) and, through the API, the region.
                     setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldDirty: true, shouldValidate: true });
                     if (comune) setValue('city', comune.name, { shouldDirty: true, shouldValidate: true });
                   }}
@@ -429,7 +411,6 @@ export function PropertyForm({
               <CardTitle className="flex items-center gap-3"><ListChecks className="size-5 shrink-0 text-primary" aria-hidden="true" />{t('property.form.amenities.title')}</CardTitle>
               <CardDescription>{t('property.form.amenities.description')}</CardDescription>
             </CardHeader>
-            {/* The columns follow the width of the card (it is half a page on a wide screen), not the one of the screen. */}
             <CardContent className="@container">
               <AmenityChecklist selected={selectedAmenities} onToggle={toggleAmenity} />
             </CardContent>
@@ -451,7 +432,6 @@ interface SwissPlaceFieldProps {
   control: Control<PropertyFormValues>;
   setValue: UseFormSetValue<PropertyFormValues>;
   property: Property;
-  /** BFS number the host confirmed in the form; null when none is. */
   municipalityCode: string | null;
   disabled: boolean;
   error?: { message?: string };
@@ -464,7 +444,6 @@ interface SwissPlaceFieldProps {
  */
 function SwissPlaceField({ control, setValue, property, municipalityCode, disabled, error }: SwissPlaceFieldProps) {
   const { t } = useTranslation();
-  // Only this field follows what is typed in the postal code and the city: the form around it does not render at every key.
   const [postalCode, city] = useWatch({ control, name: ['postalCode', 'city'] });
 
   return (
@@ -483,7 +462,6 @@ function SwissPlaceField({ control, setValue, property, municipalityCode, disabl
         disabled={disabled}
         describedBy="swiss-place-hint"
         onChange={(place) => {
-          // The place chosen from the official directory gives the postal code, the city (the name of the locality) and the municipality.
           setValue('swissMunicipalityCode', place?.municipalityCode ?? '', { shouldDirty: true, shouldValidate: true });
           if (place) {
             setValue('city', place.name, { shouldDirty: true, shouldValidate: true });
@@ -498,16 +476,11 @@ function SwissPlaceField({ control, setValue, property, municipalityCode, disabl
 }
 
 interface CancellationPolicyFieldProps {
-  /** Selected policy id, '' for none. */
   value: string;
   onChange: (value: string) => void;
   error?: { message?: string };
 }
 
-/**
- * Cancellation policy of the property, from the policies of the API. The select is controlled, so the value never
- * changes while the options load; a load error is shown as such (never as "no policy") and the value is kept.
- */
 function CancellationPolicyField({ value, onChange, error }: CancellationPolicyFieldProps) {
   const { t } = useTranslation();
   const policies = useCancellationPolicies();
@@ -556,9 +529,6 @@ interface CancellationOverridesProps {
   errors: FieldErrors<PropertyFormValues>;
 }
 
-/**
- * Host customisation of catalog refund windows and type. Stays of 28 nights or more keep the catalog policy.
- */
 function CancellationOverrides({ register, watch, setValue, errors }: CancellationOverridesProps) {
   const { t } = useTranslation();
   const refundType = watch('cancellationRefundType') ?? 'Percent';

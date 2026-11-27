@@ -50,7 +50,6 @@ export function PropertyActivationWizard() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const propertyId = id!;
-  // The popup alerts wait in their queue while the activation is on screen, its loading included (ADR-025-R7): this page has no `WizardShell`.
   useWizardOpenFlag();
 
   const propertyQuery = useProperty(propertyId, { fresh: true });
@@ -58,8 +57,6 @@ export function PropertyActivationWizard() {
 
   const failed = propertyQuery.isError || activationQuery.isError;
   const fetching = propertyQuery.isFetching || activationQuery.isFetching;
-  // The steps are always read again from the server before the wizard starts (never a stale cache). Once started,
-  // the wizard stays mounted: a failed refresh never drops what the host typed in the steps.
   const ready =
     !!propertyQuery.data && !!activationQuery.data && activationQuery.isFetchedAfterMount && !activationQuery.isError;
   const [started, setStarted] = useState(false);
@@ -140,7 +137,6 @@ function ActivationWizardContent({
   const updateCin = useUpdatePropertyCin();
   const { flags } = useFeatureFlags();
 
-  // Opens on the first blocking step still open, or on the summary when everything is complete (from the server).
   const [initialStep] = useState(() => initialStepId(steps));
   const requestedStep = searchParams.get('step');
   const currentStepId =
@@ -151,7 +147,6 @@ function ActivationWizardContent({
         : stepIds[0];
   const currentIdx = stepIds.indexOf(currentStepId);
   const currentStep = steps.find((s) => s.id === currentStepId);
-  // The step of a property in Switzerland (the server adds it for those only) and the step the host came from when it opened it: its «Torna a» goes back there.
   const swissStep = steps.find((s) => s.id === GUEST_REGISTRATION_STEP_ID);
   const originId = searchParams.get(ORIGIN_STEP_PARAM);
   const origin =
@@ -159,7 +154,6 @@ function ActivationWizardContent({
       ? { id: originId, title: texts.title(originId) }
       : null;
 
-  // Base data: the form starts from the stored property and sends only what the host changed.
   const [baseSnapshot, setBaseSnapshot] = useState(property);
   const [baseFormVersion, setBaseFormVersion] = useState(0);
   const [baseDirty, setBaseDirty] = useState(false);
@@ -169,7 +163,6 @@ function ActivationWizardContent({
     setBaseFormVersion((v) => v + 1);
   }
 
-  // CIN: null = not edited, the input shows the stored CIN.
   const [cinDraft, setCinDraft] = useState<string | null>(null);
   const [cinError, setCinError] = useState<string | null>(null);
   const cinChanged = cinDraft !== null && normalizeCin(cinDraft) !== normalizeCin(property.cinCode);
@@ -186,7 +179,6 @@ function ActivationWizardContent({
     openBlockers.length === 0 && tosAccepted && (!remindersOpen || remindersAccepted) && !completeActivation.isPending;
 
   const onNavigate = () => {
-    // The 409 list refers to the last attempt: after a step is opened the summary shows the fresh server state.
     setBlockedBlockers(null);
     refetchActivation();
   };
@@ -196,7 +188,6 @@ function ActivationWizardContent({
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.set('step', stepId);
-      // The step the host leaves is remembered only for the step of Switzerland; going anywhere else forgets it.
       if (stepId !== GUEST_REGISTRATION_STEP_ID) next.delete(ORIGIN_STEP_PARAM);
       else if (stepId !== currentStepId) next.set(ORIGIN_STEP_PARAM, currentStepId);
       return next;
@@ -219,7 +210,7 @@ function ActivationWizardContent({
       try {
         await updateProperty.mutateAsync({ id: propertyId, data: changes });
       } catch {
-        return; // Toast from the mutation (getProblemMessage); the form keeps what the host typed.
+        return;
       }
       setBaseDirty(false);
     }
@@ -246,7 +237,7 @@ function ActivationWizardContent({
     try {
       await updateCin.mutateAsync({ propertyId, cinCode: normalized });
     } catch {
-      return; // Toast from the mutation (getProblemMessage), the input keeps the value.
+      return;
     }
     setCinDraft(normalized ?? '');
     goNext();
@@ -271,7 +262,6 @@ function ActivationWizardContent({
             : blocked.incompleteBlockers.map((step) => ({ step, code: '', message: '' })),
         );
       }
-      // Other errors: toast from the mutation with getProblemMessage.
       refetchActivation();
     }
   };
@@ -306,7 +296,6 @@ function ActivationWizardContent({
           </div>
         )}
 
-        {/* With the regimes on the card is in its own step, inside the wizard; with them off it is the guidance it always was, above the steps. */}
         {!requiresItalianCin(property.country) && !flags.guestRegistrationRegimes ? <SwissRegistrationGuidance propertyId={propertyId} variant="wizard" /> : null}
 
         <StepIndicator

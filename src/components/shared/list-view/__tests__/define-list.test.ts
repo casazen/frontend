@@ -84,7 +84,6 @@ describe('defineList', () => {
     expect(() => defineList(definition(named, { rowHref: () => '/x' }))).not.toThrow();
     expect(() => defineList(definition(named, { detail: { title: () => 't', render: () => null } }))).not.toThrow();
     for (const extra of [{ rowHref: () => '/x' }, { detail: { title: () => 't', render: () => null } }]) {
-      // No name column at all, or one the person can hide.
       expect(() => defineList(definition([column('a', { default: true })], extra))).toThrow(/needs a `rowHeader` column that is `always`/);
       expect(() => defineList(definition([column('name', { default: true, rowHeader: true })], extra))).toThrow(/needs a `rowHeader` column that is `always`/);
     }

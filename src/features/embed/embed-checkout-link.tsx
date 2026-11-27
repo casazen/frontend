@@ -42,7 +42,6 @@ export function EmbedCheckoutLink({ className }: { className: string }) {
     if (!bridge.attached) return;
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    // Money: the total of the quote of the server, in the currency the quote is in (the home's own, never converted); nothing personal.
     bridge.send.event('begin_checkout', {
       ...beginCheckoutEvent({
         propertyId: property.id,

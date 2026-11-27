@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { requireE2eCredentials } from './helpers/env';
 
-// Use the same-origin Vite proxy as the app; Railway does not allow localhost browser origins.
 const STAGING_API = '/api';
 
 const PROTECTED_ENDPOINTS = [

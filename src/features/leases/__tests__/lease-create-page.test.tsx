@@ -22,13 +22,10 @@ vi.mock('@/queries/use-properties', () => ({
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getDocuments: vi.fn() } }));
 vi.mock('@/api/leases.api', () => ({ leasesApi: { createDraft: vi.fn(), createCfDraft: vi.fn(), saveDraft: vi.fn(), getRules: vi.fn() } }));
 
-/** What a save of a step answers: the version it made, the flow again and the ids of the parties. */
 const SAVED = { version: 2, flow: { steps: [] }, landlordIds: [], tenantIds: [] };
 
-/** What the route of the draft for the partner answers: the draft (an imported one, marked as the partner's) with its id. */
 const CF_DRAFT = { id: 'lease-cf-1', propertyId: 'prop-1', status: 'Draft' } as const;
 
-/** The rules of the area as the server gives them today: the transitory type is made in CasaZen too, with the official model. */
 const RULES: LongRentRules = {
   termMonths: { Libero: 48, Concordato: 36 },
   renewalMonths: { Libero: 48, Concordato: 24 },
@@ -42,7 +39,6 @@ const RULES: LongRentRules = {
   transitoryBandFromInhabitants: 10000,
 };
 
-/** The sheet of the contract, where a canone concordato started from zero lands (CF-FLOW): the payment and the guided form follow from it. */
 function LeaseSheetStub() {
   const { id } = useParams();
   return <p data-testid="lease-page">{id}</p>;
@@ -104,26 +100,22 @@ describe('LeaseCreatePage', () => {
     expect(screen.getAllByRole('radio')).toHaveLength(3);
     expect(screen.queryByLabelText(i18n.t('leases.form.monthlyRentLabel'))).not.toBeInTheDocument();
 
-    // Not disabled: a closed button explains nothing. It puts the focus on the first answer and one line says what to do (LR-WIZ-1).
     expect(screen.getByTestId('lease-kind-continue')).toBeEnabled();
     expect(screen.queryByTestId('lease-kind-choose')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('lease-kind-continue'));
     expect(screen.getByTestId('lease-kind-choose')).toHaveTextContent(i18n.t('leaseWizardGuide.start.which.choose'));
     expect(screen.getAllByRole('radio')[0]).toHaveFocus();
-    // Nothing was answered: the address is still the bare one.
     expect(screen.getByTestId('search')).toBeEmptyDOMElement();
   });
 
   it('says in a line what each type is and how to choose, and the second question names where its button leads', async () => {
     renderPage();
 
-    // A line under each answer, and «Quale scegliere?» that compares them (shut until it is asked for).
     expect(screen.getByText(i18n.t('leaseWizardGuide.start.kind.libero'))).toBeInTheDocument();
     expect(screen.getByText(i18n.t('leaseWizardGuide.start.which.help.summary'))).toBeInTheDocument();
 
     chooseKind('libero');
     await waitFor(() => expect(screen.getByTestId('lease-way-casazen')).toBeEnabled());
-    // Nothing chosen: the button says only «Continua», and pressing it asks for an answer; once chosen it says where it goes.
     expect(screen.getByTestId('lease-way-continue')).toHaveTextContent(i18n.t('leaseWizardGuide.start.how.continue.none'));
     fireEvent.click(screen.getByTestId('lease-way-continue'));
     expect(screen.getByTestId('lease-way-choose')).toBeInTheDocument();
@@ -135,16 +127,13 @@ describe('LeaseCreatePage', () => {
     vi.mocked(leasesApi.getRules).mockResolvedValue({ ...RULES, transitoryTermMonths: { min: 2, max: 12 } });
     renderPage();
 
-    // The term is the server's (here 2 to 12), not written in the interface; until the rules arrive the card has the bare name.
     expect(await screen.findByText('Transitorio (da 2 a 12 mesi)')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).not.toHaveFocus();
 
-    // Next question: the card that was clicked is gone from under the person, the focus is on the title (read by a screen reader).
     chooseKind('transitorio');
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
     expect(screen.getByText('Transitorio (da 2 a 12 mesi)')).toBeInTheDocument();
 
-    // And back to the first question: the same.
     fireEvent.click(screen.getByTestId('lease-start-back'));
     expect(await screen.findByTestId('lease-kind-choice')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
@@ -171,14 +160,10 @@ describe('LeaseCreatePage', () => {
     expect(screen.getByTestId('search')).toHaveTextContent('?propertyId=prop-1&tipo=concordato');
     chooseWay('zero');
     expect(screen.getByTestId('search')).toHaveTextContent('?propertyId=prop-1&tipo=concordato&come=zero');
-    // The property of the link "new contract" of a property page is already chosen.
     await waitFor(() => expect(screen.getByLabelText(i18n.t('leases.form.propertyLabel'))).toHaveValue('prop-1'));
     fireEvent.click(screen.getByTestId('concordato-draft-create'));
 
     expect(await screen.findByTestId('lease-page')).toHaveTextContent('lease-cf-1');
-    // The sheet is the centre (the only route of the test that matches): its main button leads on to the privacy notice, the payment and the form.
-    // One call to the route of the draft for the partner (an imported draft marked as theirs, typed as a concordato by the server):
-    // not the generic draft, and nothing saved after it.
     expect(leasesApi.createCfDraft).toHaveBeenCalledWith('prop-1');
     expect(leasesApi.createDraft).not.toHaveBeenCalled();
     expect(leasesApi.saveDraft).not.toHaveBeenCalled();

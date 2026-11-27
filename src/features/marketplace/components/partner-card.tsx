@@ -6,12 +6,6 @@ import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import type { MarketplaceCatalogEntry } from '@/types';
 import { httpsUrlOrNull } from '../lib/marketplace-entry';
 
-/**
- * An external partner of the catalog, in the guided request of home services: what it does (its `benefit`, in the language of the
- * interface), the service categories it works for, and «Scopri», which opens ITS site in a new tab. Nothing of the host or of its
- * guests goes along (the address is the partner's home page, as the administrator entered it), and nothing says that CasaZen runs the
- * partner or has an agreement with it. A site that is not an `https` address is not offered.
- */
 export function PartnerCard({ partner }: { partner: MarketplaceCatalogEntry }) {
   const { t } = useTranslation();
   const website = httpsUrlOrNull(partner.websiteUrl);

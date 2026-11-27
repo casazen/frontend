@@ -22,7 +22,6 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// A row of the official ISTAT list (ISTAT, 21/02/2026).
 const MILANO: Comune = {
   istatCode: '015146',
   cadastralCode: 'F205',
@@ -68,7 +67,6 @@ describe('AdminSupplierInviteForm', () => {
 
     await waitFor(() => expect(invite.mutateAsync).toHaveBeenCalledTimes(1));
     expect(invite.mutateAsync.mock.calls[0][0]).toMatchObject({ email: 'idraulico@example.com', comuneCode: '015146' });
-    // The text field of old is only the fallback.
     expect(screen.queryByTestId('invite-comune-input')).not.toBeInTheDocument();
   });
 

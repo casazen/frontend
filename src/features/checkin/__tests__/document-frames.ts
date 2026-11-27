@@ -11,18 +11,13 @@ export interface SyntheticFrame {
 }
 
 interface FrameOptions {
-  /** The size of the frame. The default is the size the page works on for a camera of 16:9. */
   width?: number;
   height?: number;
-  /** The gray of the table around the card. */
   background?: number;
-  /** The gray of the card. */
   card?: number;
-  /** How much the stripes that stand for the printed text differ from the gray of the card: 0 is a card with nothing on it (a blurred picture has no detail left). */
   texture?: number;
   /** Where the card is, in the pixels of the frame: by default exactly on the outline of the overlay, so that its four edges are where the guide looks for them. */
   cardRect?: { left: number; top: number; width: number; height: number };
-  /** The share of the outline that a reflection paints white. */
   glare?: number;
 }
 
@@ -42,7 +37,6 @@ export function makeFrame(options: FrameOptions = {}): SyntheticFrame {
     for (let x = 0; x < width; x += 1) {
       let gray = background;
       if (x >= left && x < right && y >= top && y < bottom) {
-        // Stripes two pixels wide, in both directions: detail everywhere on the card, like text.
         gray = ((x >> 1) + (y >> 1)) % 2 === 0 ? card + texture : card - texture;
         if (glare > 0 && y < glareBottom) gray = 255;
       }
@@ -56,22 +50,16 @@ export function makeFrame(options: FrameOptions = {}): SyntheticFrame {
   return { width, height, data };
 }
 
-/** The frame of a card that is the right size for the outline, with no fault. */
 export const goodFrame = (): SyntheticFrame => makeFrame();
 
-/** Too little light: the table and the card are nearly black. */
 export const darkFrame = (): SyntheticFrame => makeFrame({ background: 8, card: 40, texture: 6 });
 
-/** Too much light: the table and the card are nearly white (without a saturated pixel: that is the reflection). */
 export const brightFrame = (): SyntheticFrame => makeFrame({ background: 225, card: 238, texture: 8 });
 
-/** A reflection that covers a seventh of the outline. */
 export const glareFrame = (): SyntheticFrame => makeFrame({ glare: 0.15 });
 
-/** A card with no detail left: what a blurred picture looks like to the checks. */
 export const blurredFrame = (): SyntheticFrame => makeFrame({ texture: 0 });
 
-/** The card is much smaller than the outline: none of its edges is where the guide looks for it. */
 export const farFrame = (): SyntheticFrame => {
   const outline = overlayOf(480, 270);
   const inset = 0.2;
@@ -85,5 +73,4 @@ export const farFrame = (): SyntheticFrame => {
   });
 };
 
-/** The phone is held upright: the frame is taller than it is wide. */
 export const uprightFrame = (): SyntheticFrame => makeFrame({ width: 270, height: 480 });

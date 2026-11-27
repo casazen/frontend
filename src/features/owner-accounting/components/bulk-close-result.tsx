@@ -27,18 +27,11 @@ const BADGES: Record<RowKind, 'destructive' | 'warning' | 'success' | 'outline'>
 };
 
 interface BulkCloseResultProps {
-  /** A run that is over (`isRunOver`): what it comes to, and every owner that was not done or carries anomalies, by name and with the reason. */
   run: OwnerBulkRun;
-  /** The month of the run: the pages that resolve a reason open knowing it. */
   period: Period;
   nameOf: (ownerId: string) => string;
 }
 
-/**
- * The result of a bulk step, owner by owner (E13/F02/US03/T01, AC-NF110-1). The line on top says what the run comes to from its ROWS (`verdictOf`): «fatto per tutti» only when the run is over,
- * every owner has a row and not one failed or has anomalies. Every owner that was not done is listed, all of them, with the reason in words, the facts of a close that does not reconcile and
- * the page that resolves it; so is every owner whose statement was made with anomalies. The owners that are done, or were already where the step leads, wait under one line: nothing to do there.
- */
 export function BulkCloseResult({ run, period, nameOf }: BulkCloseResultProps) {
   const { t, i18n } = useTranslation();
   const verdict = verdictOf(run);
@@ -124,7 +117,6 @@ interface ResultGroupProps {
   children: ReactNode;
 }
 
-/** A list of owners that need a look: a heading with how many, and one row each, none left out. */
 function ResultGroup({ title, count, testId, children }: ResultGroupProps) {
   const titleId = useId();
   return (
@@ -145,10 +137,6 @@ interface ResultRowProps {
   period: Period;
 }
 
-/**
- * One owner of the run: the name and what happened, the reason in words (the code of the row, never a blank), the blocking issues behind it, the figures of a close that does not reconcile
- * (the amounts come with no currency: they are shown with no symbol and a line that says so) and the page that resolves it, when there is one.
- */
 function ResultRow({ row, name, period }: ResultRowProps) {
   const { t, i18n } = useTranslation();
   const { amount } = useOwnerFormat();

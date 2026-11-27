@@ -13,10 +13,8 @@ import { useCurrentUser } from '@/queries/use-users';
 import { useWizardOpenFlag } from '@/store/use-wizard-open-flag';
 import { useSetupJourney, type SetupJourney } from './use-setup-journey';
 
-/** The welcome has been seen (or put off) on this device by this person: it opens by itself only once. */
 const SEEN_PREFIX = 'casazen:welcome-seen:';
 
-/** The Home of Affitti brevi, the one page where the welcome opens. */
 const SHORT_RENT_HOME = '/app/short-rent';
 
 /** At least 44 px high on every device, and a long label wraps instead of pushing the dialog sideways. */
@@ -30,7 +28,6 @@ function hasSeen(userId: string): boolean {
   try {
     return window.localStorage.getItem(seenKey(userId)) === '1';
   } catch {
-    // Storage refused (private mode): the welcome would come back at every page; better not to insist.
     return true;
   }
 }
@@ -45,7 +42,6 @@ function markSeen(userId: string): void {
 
 type Screen = 'welcome' | 'path';
 
-/** While the dialog is on screen it counts as a wizard: the popup alerts wait for it (ADR-025-R7). */
 function WizardFlag() {
   useWizardOpenFlag();
   return null;
@@ -144,13 +140,10 @@ export function FirstRunWizard() {
   const { user, org } = useCurrentUser();
   const { contexts } = useWorkspace();
   const { pathname } = useLocation();
-  // Like the guide, it can be rendered where there is no query client (an isolated test of the shell): there is then no setup to read.
   const hasQueryClient = useContext(QueryClientContext) !== undefined;
   const userId = user?.id ? String(user.id) : null;
-  // Only on the Home: never over a form or a wizard (a new host is first sent to the short form of the first property, and arrives here after it).
   const onHome = pathname.replace(/\/+$/, '') === SHORT_RENT_HOME;
   if (!hasQueryClient || !userId || !onHome || !isOrgBillingAdmin(contexts)) return null;
-  // Keyed by the person: another account on the same device starts from what that person has seen.
   return <FirstRunWelcome key={userId} userId={userId} orgId={org?.id} organization={org?.name ?? null} firstName={user?.firstName?.trim() || null} />;
 }
 
@@ -162,11 +155,9 @@ function FirstRunWelcome({ userId, orgId, firstName, organization }: { userId: s
   const showWelcome = !seen && !resume.pending && !resume.step;
   const { journey } = useSetupJourney({ enabled: showWelcome });
 
-  // Open while the setup has a step to do now and the welcome was not seen: closing it marks it seen, which closes it.
   if (!showWelcome || !journey?.current || (!journey.current.href && !journey.allHref)) return null;
   if (journey.source === 'path' && !hasPermission('short-rent', 'property.read')) return null;
 
-  // «Più tardi», Esc or a tap outside: it does not come back by itself, and the same road waits in the «Guida» of the header (the welcome says so).
   const close = () => {
     markSeen(userId);
     setSeen(true);

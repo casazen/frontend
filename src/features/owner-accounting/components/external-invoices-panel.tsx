@@ -21,7 +21,6 @@ interface ExternalInvoicesPanelProps {
   version: OwnerStatementVersion;
 }
 
-/** The SHA-256 of a file, in hex, read in the browser: the file is never sent anywhere, only its fingerprint is kept with the link. */
 async function sha256Hex(file: File): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -40,7 +39,6 @@ export function ExternalInvoicesPanel({ version }: ExternalInvoicesPanelProps) {
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<OwnerExternalDocument | null>(null);
   const canLink = version.status === 'Approved' || version.status === 'Published';
-  // A link is being checked: no other button of the card can be pressed until the server has answered (unlinking or linking now would act on a link that is changing).
   const busy = verify.isPending;
   const onVerify = (link: OwnerExternalDocument) =>
     verify.mutate(link.id, {
@@ -87,9 +85,7 @@ export function ExternalInvoicesPanel({ version }: ExternalInvoicesPanelProps) {
 
 interface LinkRowProps {
   link: OwnerExternalDocument;
-  /** A link of the card is being checked: none of the buttons can be pressed. */
   busy: boolean;
-  /** This link is the one being checked. */
   verifying: boolean;
   onVerify: () => void;
   onRemove: () => void;

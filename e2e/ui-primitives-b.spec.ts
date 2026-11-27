@@ -24,7 +24,6 @@ async function openGallery(page: Page, width: number, height = 800, search = '')
   await expect(page.getByRole('heading', { level: 1, name: 'Primitive UI B' })).toBeVisible();
 }
 
-/** Opens the dialog of the calendar and waits until it has stopped moving. */
 async function openCalendarDialog(page: Page) {
   await page.getByTestId('open-dialog').click();
   const dialog = page.getByRole('dialog', { name: 'Collega il calendario' });
@@ -91,8 +90,6 @@ test.describe('axe, in a real browser (colors and contrast included)', () => {
     await openGallery(page, 1280);
     for (const state of ['Caricamento', 'Vuoto', 'Errore']) {
       await page.getByRole('group', { name: "Stato dell'elenco" }).getByRole('button', { name: state }).click();
-      // The words under the title of an empty list are those of `EmptyState`, which is not of this task (UI-02 reworks it):
-      // it still reads them in `muted-foreground`, 4.4:1 on white in the colors of today, a hair under what a text needs.
       await expectNoAxeViolations(page, { exclude: state === 'Vuoto' ? ['[data-testid="guests-view"] p.max-w-sm'] : [] });
     }
   });
@@ -126,7 +123,6 @@ test.describe('Dialog (responsive)', () => {
       const close = await box(dialog.getByRole('button', { name: 'Chiudi' }));
       expect(close.width, 'the close button is 44 px wide').toBeGreaterThanOrEqual(44);
       expect(close.height, 'the close button is 44 px tall').toBeGreaterThanOrEqual(44);
-      // At the top right of the sheet.
       expect(close.y).toBeLessThan(sheet.y + 12);
       expect(close.x + close.width).toBeLessThanOrEqual(width);
 
@@ -147,7 +143,6 @@ test.describe('Dialog (responsive)', () => {
       await expect(dialog).toHaveCSS('border-top-left-radius', '20px');
       await expect(page.getByTestId('sheet-handle')).toBeHidden();
       const close = await box(dialog.getByRole('button', { name: 'Chiudi' }));
-      // The icon is small and where it has always been; its target is 44 px wide and tall.
       expect(close.width).toBeLessThanOrEqual(20);
       expect(close.x + close.width, 'in the right corner').toBeGreaterThan(centered.x + centered.width - 24);
     });
@@ -162,7 +157,6 @@ test.describe('Dialog (responsive)', () => {
     await untilStill(page);
 
     expect((await box(dialog)).width).toBeLessThanOrEqual(512);
-    // The same dialog, not a new one: what was typed in it is not lost by turning the phone.
   });
 
   test('what is typed in the dialog is not lost when the phone is turned to landscape', async ({ page }) => {
@@ -239,7 +233,6 @@ test.describe('Dialog (responsive)', () => {
     await page.mouse.move(x, y);
     await page.mouse.down();
     await page.mouse.move(x, y + 40, { steps: 4 });
-    // It follows the finger.
     const during = await box(dialog);
     expect(during.y, 'the sheet moved down with the grip').toBeGreaterThan(844 - during.height + 20);
     await page.mouse.move(x, y + 160, { steps: 6 });
@@ -258,7 +251,6 @@ test.describe('Dialog (responsive)', () => {
     await page.mouse.move(x, y);
     await page.mouse.down();
     await page.mouse.move(x, y + 30, { steps: 5 });
-    // Slowly: a flick is a quick pull, this one is not.
     await page.waitForTimeout(700);
     await page.mouse.up();
 
@@ -271,7 +263,6 @@ test.describe('Dialog (responsive)', () => {
     await page.getByTestId('open-confirmation').click();
     const dialog = page.getByRole('dialog', { name: "Eliminare l'ospite?" });
     await expect(dialog).toBeVisible();
-    // The first thing to type in has the focus, not the close button.
     await expect(page.getByTestId('confirmation-input')).toBeFocused();
 
     for (let index = 0; index < 8; index += 1) {
@@ -297,7 +288,6 @@ test.describe('Dialog (responsive)', () => {
       await expect(dialog).toHaveCSS('animation-name', 'none');
 
       await page.keyboard.press('Escape');
-      // No closing animation to wait for: Radix removes it in the same frame.
       await expect(dialog).toHaveCount(0, { timeout: 400 });
     });
   }
@@ -417,7 +407,6 @@ test.describe('HelpTip', () => {
 
     const icon = await box(trigger);
     expect(icon.width).toBeLessThanOrEqual(24);
-    // Clicking 20 px away from the icon, still inside the target, opens it.
     await page.mouse.click(icon.x + icon.width / 2 - 18, icon.y + icon.height / 2);
     await expect(page.getByRole('dialog', { name: 'Codice CIN' })).toBeVisible();
   });
@@ -437,7 +426,6 @@ test.describe('HelpTip', () => {
     await tipOf(page, 'iCal').click();
     const bubble = page.getByRole('dialog', { name: 'iCal' });
     await expect(bubble).toBeVisible();
-    // The bubble is not cut by the dialog: it may go over its edge.
     await expectInsideTheScreen(page, bubble, 'the bubble in the dialog');
 
     await page.keyboard.press('Escape');
@@ -482,7 +470,6 @@ test.describe('HelpTip', () => {
     const sheet = page.getByRole('dialog', { name: 'iCal' });
     await expect(sheet).toBeVisible();
     await untilStill(page);
-    // Over the dialog: its top is higher than the one of the dialog? Not necessarily; it must be on top and reachable.
     await expect(sheet.getByRole('link', { name: 'Scopri di più' })).toBeInViewport();
 
     await page.keyboard.press('Escape');
@@ -534,7 +521,6 @@ test.describe('Tabs', () => {
 
     await page.keyboard.press('ArrowRight');
     await expect(page.getByRole('tab', { name: 'Ospite' })).toBeFocused();
-    // Moving is not opening.
     await expect(page.getByRole('tab', { name: 'Dettagli' })).toHaveAttribute('aria-selected', 'true');
     await expect(page).toHaveURL(/\/dev\/primitives$/);
 
@@ -550,7 +536,6 @@ test.describe('Tabs', () => {
     await expect(page.getByRole('tab', { name: 'Alloggiati' })).toHaveAttribute('aria-selected', 'true');
     await expect(tabs.getByRole('tab', { name: 'Alloggiati' })).toBeFocused();
 
-    // One Tab leaves the list: the other tabs are not stops.
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => document.activeElement?.getAttribute('role'))).not.toBe('tab');
   });
@@ -632,12 +617,10 @@ test.describe('Segmented, ChoiceCard and Qty', () => {
     await expect(ordinario).toBeChecked();
     await expect(cedolare).not.toBeChecked();
 
-    // The arrows of a group of radio buttons, native.
     await ordinario.focus();
     await page.keyboard.press('ArrowUp');
     await expect(cedolare).toBeChecked();
 
-    // The chosen one has a thick outline and a tick; the other has an empty disc. (The tick fades: wait for it to be still.)
     await untilStill(page);
     const chosen = page.locator('label', { has: cedolare });
     const other = page.locator('label', { has: ordinario });
@@ -696,10 +679,8 @@ test.describe('Segmented, ChoiceCard and Qty', () => {
     await plus.click();
     await expect(live).toContainText('Adulti: 4');
     await expect(plus).toHaveAttribute('aria-disabled', 'true');
-    // Playwright treats `aria-disabled` as disabled and waits for it to end: a finger would press it anyway.
     await plus.click({ force: true });
     await expect(live).toContainText('Adulti: 4');
-    // The button at the limit keeps the focus: the user is not thrown out of it.
     await expect(plus).toBeFocused();
 
     await minus.click();
@@ -808,7 +789,6 @@ test.describe('DataView', () => {
     const loading = page.getByTestId('guests-view-loading').getByRole('status');
     await expect(loading).toHaveCount(1);
     await expect(loading).toContainText("Caricamento dell'elenco");
-    // The list one (round avatars), not the table one, which has no room here.
     await expect(loading.locator('.rounded-full').first()).toBeVisible();
     await expectNothingSticksOut(page, '390 px, loading');
   });
@@ -831,8 +811,6 @@ test.describe('DataView', () => {
     const states = page.getByRole('group', { name: "Stato dell'elenco" });
 
     await states.getByRole('button', { name: 'Caricamento' }).click();
-    // The skeleton of each representation is in the page and a media query shows one: at this width the table's is read
-    // (the list's is `display: none`, so it is not in the accessibility tree).
     const loading = page.getByTestId('guests-view-loading').getByRole('status');
     await expect(loading).toHaveCount(1);
     await expect(loading).toHaveAttribute('aria-busy', 'true');
@@ -910,7 +888,6 @@ test.describe('toastUndo', () => {
     const found = await box(undo);
     expect(found.height, 'the visible button').toBeLessThan(44);
 
-    // 8 px under the button: inside the invisible box around it.
     await page.mouse.click(found.x + found.width / 2, found.y + found.height + 8);
 
     await expect(page.getByTestId('undo-state')).toContainText('Archiviato: no');

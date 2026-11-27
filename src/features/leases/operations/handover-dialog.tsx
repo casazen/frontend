@@ -27,7 +27,6 @@ function HandoverBody({ lease, operations, onClose }: Omit<HandoverDialogProps, 
   const min = parseStayDate(handover.minOn);
   const max = parseStayDate(handover.maxOn);
   const [handoverOn, setHandoverOn] = useState(() => parseStayDate(handover.suggestedOn));
-  // The day is optional: without it the minutes leave it to complete. A day that is typed has to be one this lease can have.
   const dateValid = handoverOn === '' || (isStayDate(handoverOn) && (min === '' || handoverOn >= min) && (max === '' || handoverOn <= max));
 
   return (
@@ -88,13 +87,6 @@ function HandoverBody({ lease, operations, onClose }: Omit<HandoverDialogProps, 
   );
 }
 
-/**
- * «Riconsegna dell'immobile» (LR-OPS-1c): the window of the minutes of the handover, offered once the lease is ending (a notice is recorded, it was
- * ended early, or it is of a type that ends by itself). It says what to do on the day in three lines, asks for the day (optional: the server
- * suggests the last day of the lease) and downloads the draft, a PDF with the parties, the property and the contract, and the state of the
- * property, the readings of the meters and the keys as lines to fill in by hand. The minutes are signed on the day and not sent, so there is no
- * «Segna come inviata». Controlled by the address (`?operazione=riconsegna`); its content is forgotten when it closes.
- */
 export function HandoverDialog({ open, lease, operations, onClose }: HandoverDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>

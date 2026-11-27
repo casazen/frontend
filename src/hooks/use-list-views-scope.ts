@@ -11,7 +11,6 @@ import type { ListViewsScope } from '@/components/shared/list-view/list-types';
 export function useListViewsScope(): ListViewsScope | null {
   const { user } = useAuth();
   const { activeContext } = useWorkspace();
-  // Auth0 knows the person by `sub`; the user of the demo mode has only an e-mail.
   const identity = user as { sub?: string; email?: string } | undefined;
   const userId = identity?.sub ?? identity?.email ?? null;
 

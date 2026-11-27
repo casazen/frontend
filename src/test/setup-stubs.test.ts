@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// The browser APIs that jsdom lacks and that setup.ts stands in for, once for all the test files (UI-00).
 describe('shared jsdom stubs of src/test/setup.ts', () => {
   afterEach(() => {
     vi.unstubAllGlobals();

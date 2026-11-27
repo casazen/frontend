@@ -14,9 +14,7 @@ import { useDeletePropertyDocument, useDownloadPropertyDocument } from '@/querie
 interface PropertyDocumentsSectionProps {
   propertyId: string;
   documents: PropertyDocumentDto[];
-  /** Type preselected in the upload dialog (the long-term property page asks for the APE first). */
   defaultUploadType?: PropertyDocumentType;
-  /** A part of a page without a box around it (a title and its content), for a page made of plain sections; default: a card. */
   plain?: boolean;
 }
 
@@ -24,9 +22,7 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
   const { t } = useTranslation();
   const titleId = useId();
   const deleteMutation = useDeletePropertyDocument();
-  // Private bucket: download through the authenticated API (token), saved from the blob.
   const downloadMutation = useDownloadPropertyDocument();
-  // The APE a contract states: the one whose missing code and class are read by themselves (an older APE only on request).
   const latestApe = latestApeDocument(documents);
 
   const upload = <DocumentUploadDialog propertyId={propertyId} defaultDocumentType={defaultUploadType} />;
@@ -95,7 +91,6 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
 
   return (
     <Card>
-      {/* Wraps: with a font wider than the one tested the title and the upload button do not fit a phone in one line (UI-05). */}
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
         <CardTitle>{t('property.documents.title')}</CardTitle>
         {upload}

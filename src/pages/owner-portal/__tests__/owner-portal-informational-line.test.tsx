@@ -23,13 +23,8 @@ import { ownerPortalApi } from '@/api/ownerPortal.api';
 
 const api = vi.mocked(ownerPortalApi);
 
-/** Intl writes a no-break space between a figure and its currency: the text of the page is compared with plain spaces. */
 const plain = (value: string | null) => (value ?? '').replace(/\s/g, ' ');
 
-/**
- * The Swiss month of an agency that holds the accounts of the portals and does not recharge their commissions (decision 1 of 20/11/2026), as the owner portal reads it: the commission of
- * the portal is a line for information only of -67.50 (flags `(false, true, false, true)`), and the totals are the server's, WITHOUT it: the net is 450 - 103.77 - 80 = 266.23.
- */
 const STATEMENT: OwnerPortalStatement = {
   ...CHF_STATEMENT,
   totals: { gross: 450, channelFees: 0, withholding: 0, commission: -103.77, charges: -80, corrections: 0, net: 266.23, payments: 0, openingBalance: 0, closingBalance: 266.23 },
@@ -78,8 +73,6 @@ afterEach(() => {
 });
 
 describe('an informational line is shown in its part and is in no total of the owner portal (FIX/FE-V2-INFORMATIONAL-WAIVER)', () => {
-  // Money rule: the commission the agency bears is a line of -67.50 in the part of the channel fees. The page shows it (as the PDF does, a positive figure, quiet) and every total it writes is
-  // the server's, the sum WITHOUT the line: the part of the channel fees is 0, the net is 266.23.
   it('OwnerPortal_AnInformationalLineOfMinus6750_IsShown_AndEveryTotalIsTheSumWithoutIt', async () => {
     renderStatement();
 
@@ -93,28 +86,23 @@ describe('an informational line is shown in its part and is in no total of the o
     expect(plain(within(detail).getByTestId('owner-statement-net').textContent)).toBe(money(266.23));
     expect(plain(within(detail).getByTestId('owner-statement-total-closingBalance').textContent)).toBe(money(266.23));
 
-    // Each part shows the total the server gives it, and that is the sum of the lines that count: the informational line is in none of them.
     for (const part of SECTIONS.filter((candidate) => candidate.lines.length > 0)) {
       const counted = part.lines.filter((candidate) => !isInformationalLine(candidate)).reduce((sum, candidate) => sum + Math.round(candidate.amount * 100), 0) / 100;
       expect(counted, part.section).toBe(part.total);
       expect(plain(within(within(detail).getByTestId(`owner-statement-section-${part.section}`)).getByTestId(`owner-statement-section-${part.section}-total`).textContent), part.section).toBe(money(counted));
     }
 
-    // The line is there, in the part of the channel fees, with its amount as a positive figure and the words that say what it is.
     const fees = within(detail).getByTestId('owner-statement-section-channelFees');
     const row = within(fees).getByTestId('owner-statement-line');
     expect(row).toHaveAttribute('data-informational', 'true');
     expect(plain(within(row).getByTestId('owner-statement-line-amount').textContent)).toBe(money(67.5));
     expect(within(row).getByTestId('owner-statement-line-note')).toHaveTextContent('Commissione del portale sostenuta dall’agenzia, non addebitata al proprietario');
     expect(row).toHaveTextContent(i18n.t('ownerPortal.accounting.line.informational'));
-    // Quiet: not the bold of an amount that counts, and never the minus of a deduction anywhere in the part.
     expect(within(row).getByTestId('owner-statement-line-amount')).not.toHaveClass('font-semibold');
     expect(plain(fees.textContent)).not.toMatch(/-\s*67,50/);
-    // The lines that count keep the bold and the sign of the ledger.
     const stays = within(within(detail).getByTestId('owner-statement-section-stays')).getByTestId('owner-statement-line-amount');
     expect(stays).toHaveClass('font-semibold');
     expect(plain(within(within(detail).getByTestId('owner-statement-section-commission')).getByTestId('owner-statement-line-amount').textContent)).toBe(money(-103.77));
-    // No other line of the page is told as informational.
     expect(within(detail).getAllByTestId('owner-statement-line').filter((candidate) => candidate.hasAttribute('data-informational'))).toHaveLength(1);
   });
 
@@ -129,7 +117,6 @@ describe('an informational line is shown in its part and is in no total of the o
   });
 
   it('OwnerPortal_AServerOlderThanTheRule_WithNoInformationalMember_ShowsTheLinesAsToday', async () => {
-    // The members of the rule are absent: a channel fee the owner is charged, in the totals, with no note and the sign of the ledger.
     const fee = statementLine('l2', { type: 'ChannelFee', amount: -67.5, sharePercent: 50 });
     api.getStatement.mockResolvedValue(
       statementDetail(
@@ -148,7 +135,6 @@ describe('an informational line is shown in its part and is in no total of the o
 });
 
 describe('the four flags of a line of the owner portal give the right label for each combination (data rule)', () => {
-  // `(channelFeeRechargedByAgency, channelFeeBilledToAgencyNotRecharged, channelFeeChargedOnAgencyAccount, informational)`: the four combinations the server writes, and the one an older server did.
   const COMBINATIONS: ReadonlyArray<{ name: string; flags: Partial<OwnerPortalStatementLine>; note: PortalFeeNote | null; informational: boolean }> = [
     { name: 'V1, the account of the owner: all four false', flags: {}, note: null, informational: false },
     {
@@ -169,7 +155,6 @@ describe('the four flags of a line of the owner portal give the right label for 
       note: 'chargedOnAgencyAccount',
       informational: false,
     },
-    // A server older than the rule wrote the old flag alone for a commission the owner WAS charged (in the totals): it is that, never the commission the agency bears.
     { name: 'a server older than the rule: the old flag alone, (false, true, -, -)', flags: { channelFeeBilledToAgencyNotRecharged: true }, note: 'chargedOnAgencyAccount', informational: false },
   ];
 
@@ -191,7 +176,6 @@ describe('the four flags of a line of the owner portal give the right label for 
 
     expect(portalFeeNoteOf(line)).toBe(note);
     expect(isInformationalLine(line)).toBe(informational);
-    // A line for information only is the commission as a positive figure; every other line keeps the sign of the ledger.
     expect(shownLineAmount(line)).toBe(informational ? 67.5 : -67.5);
   });
 
@@ -203,13 +187,11 @@ describe('the four flags of a line of the owner portal give the right label for 
 
       const row = screen.getByTestId('owner-statement-line');
       if (note === null) {
-        // V1: the line says nothing more than it always did.
         expect(within(row).queryByTestId('owner-statement-line-note'), language).toBeNull();
       } else {
         const shown = within(row).getByTestId('owner-statement-line-note');
         expect(shown, language).toHaveAttribute('data-note', note);
         expect(shown.textContent, language).toBe(TEXTS[language][note]);
-        // Each combination has its own words: no other combination's label is on the line.
         for (const other of Object.keys(TEXTS[language]) as PortalFeeNote[]) if (other !== note) expect(row.textContent, `${language} ${other}`).not.toContain(TEXTS[language][other]);
       }
       expect(row.hasAttribute('data-informational'), language).toBe(informational);

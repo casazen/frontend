@@ -1,7 +1,6 @@
 import type { Page } from '@playwright/test';
 import { requireE2eCredentials } from './env';
 
-/** True once Auth0 has written a token, or the signed-in app (area picker, shell, onboarding) is on screen. */
 function sessionIsReady(): boolean {
   if (document.querySelector('[data-testid="app-ready"], [data-testid="onboarding-consents-step"]')) return true;
   if (/Da dove vuoi iniziare|Come vuoi usare CasaZen/i.test(document.body?.innerText ?? '')) return true;
@@ -13,7 +12,6 @@ function sessionIsReady(): boolean {
   return false;
 }
 
-/** Auth0, or a session that is already on this browser. Neither wait is left running after the answer. */
 async function waitForAuth0OrSession(page: Page): Promise<'auth0' | 'session' | 'neither'> {
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
@@ -29,7 +27,6 @@ async function waitForAuth0OrSession(page: Page): Promise<'auth0' | 'session' | 
 export async function loginViaAuth0(page: Page): Promise<void> {
   const { email, password } = requireE2eCredentials();
 
-  // Capture browser console for debugging blank page issues
   const consoleLogs: string[] = [];
   page.on('console', (msg) => {
     if (msg.type() === 'error' || msg.text().includes('[DEBUG]') || msg.text().includes('Error')) {
@@ -40,8 +37,6 @@ export async function loginViaAuth0(page: Page): Promise<void> {
     consoleLogs.push(`[PAGE_ERROR] ${err.message}`);
   });
 
-  // `/login` has no page of its own. A signed-out browser is sent straight to Auth0. A browser that already
-  // has the staging project's saved session is sent to the area picker: that is a session, not a failed redirect.
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
   const arrived = await waitForAuth0OrSession(page);
@@ -55,8 +50,6 @@ export async function loginViaAuth0(page: Page): Promise<void> {
   }
   await page.waitForLoadState('domcontentloaded');
 
-  // New Universal Login sometimes shows a database-connection picker first.
-  // Avoid "Forgot password" / generic Email links — those divert into reset flows.
   const preIdentifier = page
     .getByRole('button', { name: /continue with (email|password)|accedi con email/i })
     .or(page.locator('button[data-provider="auth0"]'))
@@ -65,7 +58,6 @@ export async function loginViaAuth0(page: Page): Promise<void> {
     await preIdentifier.click();
   }
 
-  // Auth0 Universal Login — username/email field (classic + New UL + identifier-first)
   const usernameSelectors = [
     'input#username',
     'input[name="username"]',
@@ -97,7 +89,6 @@ export async function loginViaAuth0(page: Page): Promise<void> {
   const passwordVisible = await passwordField.isVisible({ timeout: 3_000 }).catch(() => false);
 
   if (!passwordVisible) {
-    // Identifier-first: only the primary Continue action — never Forgot/Reset.
     const continueBtn = page
       .getByRole('button', { name: /^(continue|continua|next|avanti|log in|login|accedi)$/i })
       .or(page.locator('button[data-action-button-primary="true"]'))
@@ -131,8 +122,6 @@ export async function loginViaAuth0(page: Page): Promise<void> {
   await finalSubmit.click();
 
   await page.waitForURL((url) => !url.hostname.includes('auth0.com'), { timeout: 60_000 });
-  // Leaving the Auth0 hostname is the callback, not a session. Navigating again before the token
-  // is stored drops the code and the next protected page shows the login button.
   try {
     await page.waitForFunction(sessionIsReady, undefined, { timeout: 60_000 });
   } catch {
@@ -290,12 +279,6 @@ export async function readAuth0Roles(page: Page): Promise<string[]> {
   });
 }
 
-/**
- * The page of a signed-in user is up: the workspace is loaded and a screen of the app is on display, which carries
- * `data-testid="app-ready"` (UI-00): the header of the shells, or the area picker of a user with several areas. Or the
- * onboarding wizard is on display, for a user who has not finished it. The title of a page ("Cruscotto") is no signal of
- * readiness: it changes with the language and whenever a page is renamed.
- */
 export async function waitForAppReady(page: Page): Promise<void> {
   await page
     .getByTestId('app-ready')

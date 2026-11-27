@@ -3,36 +3,23 @@ import { z } from 'zod';
 import { optionalCinSchema } from '@/lib/cin-format';
 import type { CreatePropertyDto, Property } from '@/types';
 
-/** Time zone of a new property: the platform is for Italian rentals. */
 export const DEFAULT_PROPERTY_TIMEZONE = 'Europe/Rome';
 
-/**
- * Property form (short stays). Types and limits are the API ones (A2-27): whole bathrooms (the API stores an int),
- * 0 bedrooms for a studio flat. Country and currency fields added per ADR-001-R7.
- */
 export const propertyFormSchema = z.object({
   name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
   description: z.string().min(10, 'property.validation.description.minLength').max(LISTING_DESCRIPTION_MAX, 'property.validation.description.maxLength'),
   address: z.string().min(5, 'property.validation.address.required'),
-  /** Interno / scala (PC-06): optional, the limit of the API. */
   unit: z.string().max(30, 'property.validation.unit.maxLength').optional(),
   city: z.string().min(2, 'property.validation.city.required'),
   /** ISTAT code of the comune chosen from the official list (SU-04); '' = none chosen. */
   comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'property.validation.comuneIstatCode.format').or(z.literal('')),
-  /**
-   * BFS number (one to four digits, text) of the Swiss municipality the host confirmed from the official directory (E29/F01/US02/T01);
-   * '' = none confirmed. Optional on purpose: a Swiss property whose place is not confirmed (old data, a directory that is not loaded)
-   * is saved all the same.
-   */
   swissMunicipalityCode: z
     .string()
     .regex(/^[0-9]{1,4}$/, 'property.validation.swissMunicipalityCode.format')
     .or(z.literal(''))
     .optional(),
   postalCode: z.string().min(3, 'property.validation.postalCode.required'),
-  /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
   country: z.enum(['IT', 'CH']),
-  /** ISO 4217 currency code (ADR-001-R7), auto-derived from country. */
   currency: z.enum(['EUR', 'CHF']),
   latitude: z
     .number({ error: 'property.validation.latitude.range' })
@@ -66,7 +53,6 @@ export const propertyFormSchema = z.object({
     .max(50000, 'property.validation.damageDeposit.range'),
   houseRules: z.string().max(1000, 'property.validation.houseRules.maxLength'),
   timezone: z.string().min(1, 'property.validation.timezone.required').max(50, 'property.validation.timezone.required'),
-  /** '' = no cancellation policy. */
   cancellationPolicyId: z.string(),
   cancellationFullRefundHours: z.preprocess(
     (value) => (typeof value === 'number' && Number.isFinite(value) ? value : null),
@@ -109,10 +95,6 @@ export const longRentPropertyFormSchema = propertyFormSchema.extend({
   slug: z.string().optional(),
 });
 
-/**
- * Initial values of the form: the property being edited, or an empty property. The long-term form keeps the
- * short-stay fields hidden with these values and never sends them.
- */
 export function propertyFormDefaults(
   property: Property | undefined,
   variant: PropertyFormVariant,
@@ -139,7 +121,6 @@ export function propertyFormDefaults(
       swissMunicipalityCode: '',
       country: 'IT' as const,
       currency: 'EUR' as const,
-      // Long-term property: no short-stay rate nor guests until the owner lists it for short stays.
       ...(variant === 'long-rent' ? { nightlyRate: 0, maxGuests: 0 } : {}),
     };
   }
@@ -165,19 +146,13 @@ export function propertyFormDefaults(
   };
 }
 
-/**
- * API body of the form: every field the form shows (the API keeps the others, A2-04). Photos are not a form field
- * and are never sent from here, so a save cannot drop a photo uploaded meanwhile.
- */
 export function toPropertyPayload(values: PropertyFormValues, variant: PropertyFormVariant): CreatePropertyDto {
   const payload: CreatePropertyDto = {
     name: values.name,
     description: values.description,
     address: values.address,
-    // Blank = no unit (the API clears it on an update and stores none on a create).
     unit: values.unit?.trim() ? values.unit.trim() : null,
     city: values.city,
-    // The comune chosen from the official list; null clears it (and the region that follows it), see UpdatePropertyRequest.
     comuneIstatCode: values.comuneIstatCode || null,
     postalCode: values.postalCode,
     latitude: values.latitude,
@@ -211,6 +186,4 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
     slug: values.slug ?? '',
   };
 }
-
-// The amenities a property can carry, and their labels and groups, are the catalog of `GET /api/public/amenities` (NF-33):
-// `useAmenityCatalog()` in `@/queries/use-amenity-catalog`, the one source of them.
+

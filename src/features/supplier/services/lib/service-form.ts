@@ -14,48 +14,36 @@ import type { PriceInput } from './service-labels';
 import { SERVICE_LIMITS } from './service-limits';
 import { centsToInput, parseEuros } from './service-money';
 
-/** How the supplier asks to be paid: the three ways of the form, over the unit and the quote flag of the API. */
 export type PriceMode = 'fixed' | 'hourly' | 'quote';
-/** The units a fixed price can have: "per hour" is its own way of asking (`hourly`). */
 export type FixedPriceUnit = (typeof FIXED_PRICE_UNITS)[number];
 
 export const FIXED_PRICE_UNITS = ['PerJob', 'PerSet', 'PerSquareMeter'] as const;
 
-/** One supplement in the form: the amounts are what the person typed, the API gets cents. */
 export interface SupplementFormValue {
-  /** The stable identifier of a supplement that already exists; empty for a new one (it comes from the label when saved). */
   code: string;
   label: string;
-  /** Euros, as typed. */
   amount: string;
   per: SupplierSupplementUnit;
-  /** The most units a customer can pick, as typed; empty is no limit. */
   max: string;
 }
 
-/** The answers of the four steps of the creation and of the page of a service: one set of values for both. */
 export interface ServiceFormValues {
   name: string;
   category: string;
   summary: string;
   description: string;
-  /** One entry per line. */
   included: string;
-  /** One entry per line. */
   excluded: string;
   priceMode: PriceMode;
   fixedUnit: FixedPriceUnit;
-  /** Euros, as typed; unused for a service on quote. */
   amount: string;
   pricesIncludeVat: boolean;
   supplements: SupplementFormValue[];
   durationMinutes: number | null;
-  /** `null` is the notice of the availability rules. */
   minNoticeHours: number | null;
   weekdays: SupplierServiceWeekday[];
 }
 
-/** What a new service starts as: every day (the availability decides the rest), two hours, no price chosen yet. */
 export function emptyServiceForm(): ServiceFormValues {
   return {
     name: '',
@@ -75,13 +63,10 @@ export function emptyServiceForm(): ServiceFormValues {
   };
 }
 
-/** A text of one line: the API refuses control characters in it (a tab pasted from a spreadsheet), so each one becomes a space. */
 const oneLine = (text: string): string => text.replace(/\p{Cc}/gu, ' ').trim();
 
-/** A text of several lines keeps its line breaks and tabs (the API accepts them there) and loses the other control characters. */
 const manyLines = (text: string): string => text.replace(/(?![\n\r\t])\p{Cc}/gu, ' ').trim();
 
-/** The lines of a text box as a list: trimmed, without the blank ones or the repeated ones (as the API does). */
 export function splitLines(text: string): string[] {
   const seen = new Set<string>();
   const lines: string[] = [];
@@ -95,7 +80,6 @@ export function splitLines(text: string): string[] {
   return lines;
 }
 
-/** A readable identifier for a label: lowercase letters, digits and single hyphens, at most `maxLength` long. */
 function slugify(label: string, maxLength: number): string {
   const slug = label
     .normalize('NFD')
@@ -108,7 +92,6 @@ function slugify(label: string, maxLength: number): string {
   return slug;
 }
 
-/** The code of a new supplement: its label as a slug, with `-2`, `-3`… when another supplement of the service has it. */
 function newSupplementCode(label: string, taken: Set<string>): string {
   const base = slugify(label, SERVICE_LIMITS.supplementCodeMaxLength) || 'supplemento';
   let code = base;
@@ -120,7 +103,6 @@ function newSupplementCode(label: string, taken: Set<string>): string {
   return code;
 }
 
-/** The supplements of the form as the API wants them: cents, a code for each, no `max` where it makes no sense (a flat amount). */
 function toSupplementBodies(rows: readonly SupplementFormValue[]): SupplierServiceSupplement[] {
   const taken = new Set(rows.map((row) => row.code).filter(Boolean));
   return rows.map((row) => {
@@ -137,10 +119,6 @@ function toSupplementBodies(rows: readonly SupplementFormValue[]): SupplierServi
 
 const emptyToNull = (text: string): string | null => (text === '' ? null : text);
 
-/**
- * The price the form describes, as the API holds it: a service on quote has no price and the default unit, "per hour" is a
- * unit of its own, a fixed price has the unit that was chosen. The amount is `null` while it is blank or not an amount.
- */
 export function priceInputOf(values: Pick<ServiceFormValues, 'priceMode' | 'fixedUnit' | 'amount'>): PriceInput {
   const quote = values.priceMode === 'quote';
   return {
@@ -175,10 +153,6 @@ export function toServiceBody(values: ServiceFormValues): SaveSupplierServiceBod
   };
 }
 
-/**
- * The saved service as the body of a save, with `photoUrls` where the photos change (order, removal). A photo action does
- * not save what is typed in the form but not yet saved: it replaces the photos of the service as the server has it.
- */
 export function bodyFromService(service: SupplierService, photoUrls: readonly string[]): SaveSupplierServiceBody {
   return {
     name: service.name,
@@ -199,10 +173,6 @@ export function bodyFromService(service: SupplierService, photoUrls: readonly st
   };
 }
 
-/**
- * The form of a saved service. A service that asks for a quote is "on quote" whatever else it carries (the form has no
- * "from" price for it), and a unit the form has no choice for (per hour on a fixed price) becomes "per job".
- */
 export function serviceToForm(service: SupplierService, decimalSeparator: ',' | '.'): ServiceFormValues {
   const priceMode: PriceMode = service.requiresQuote ? 'quote' : service.priceUnit === 'PerHour' ? 'hourly' : 'fixed';
   const fixedUnit = FIXED_PRICE_UNITS.find((unit) => unit === service.priceUnit) ?? 'PerJob';
@@ -230,14 +200,11 @@ export function serviceToForm(service: SupplierService, decimalSeparator: ',' | 
   };
 }
 
-// ─── Rules ────────────────────────────────────────────────────────────────────────────────────────────────────────
-
 interface Issue {
   path: (string | number)[];
   message: string;
 }
 
-/** What is wrong with an amount a person typed, as the key of the message; `null` when it is fine. */
 function amountProblem(text: string, blankMessage: string): string | null {
   const { cents, problem } = parseEuros(text);
   if (problem === 'blank') return blankMessage;
@@ -274,7 +241,6 @@ const supplementSchema = z
     const amount = amountProblem(supplement.amount, 'supplier.services.errors.supplementAmountRequired');
     if (amount) issues.push({ path: ['amount'], message: amount });
     const max = supplement.max.trim();
-    // A flat amount is added once: it has no quantity to limit.
     if (supplement.per !== 'flat' && max !== '') {
       const count = Number(max);
       if (!/^\d+$/.test(max) || count < 1 || count > SERVICE_LIMITS.maxSupplementQuantity) {
@@ -284,7 +250,6 @@ const supplementSchema = z
     addIssues(context, issues);
   });
 
-/** The first step: what the service is. */
 export const serviceStepSchema = z.object({
   name: z
     .string()
@@ -298,7 +263,6 @@ export const serviceStepSchema = z.object({
   excluded: linesSchema,
 });
 
-/** The second step: the price and its supplements. */
 export const priceStepSchema = z
   .object({
     priceMode: z.enum(['fixed', 'hourly', 'quote']),
@@ -313,7 +277,6 @@ export const priceStepSchema = z
     if (problem) addIssues(context, [{ path: ['amount'], message: problem }]);
   });
 
-/** The third step: how long it takes and when it is offered. */
 export const bookingStepSchema = z.object({
   durationMinutes: z
     .number({ error: 'supplier.services.errors.durationRequired' })
@@ -324,19 +287,12 @@ export const bookingStepSchema = z.object({
   weekdays: z.array(z.enum(SUPPLIER_SERVICE_WEEKDAYS)).min(1, 'supplier.services.errors.weekdaysRequired'),
 });
 
-/** The three steps with the fields each one answers for. */
 const STEPS = [
   { schema: serviceStepSchema, fields: ['name', 'category', 'summary', 'description', 'included', 'excluded'] },
   { schema: priceStepSchema, fields: ['priceMode', 'fixedUnit', 'amount', 'pricesIncludeVat', 'supplements'] },
   { schema: bookingStepSchema, fields: ['durationMinutes', 'minNoticeHours', 'weekdays'] },
 ] as const satisfies readonly { schema: z.ZodType; fields: readonly (keyof ServiceFormValues)[] }[];
 
-/**
- * What a draft save may send. The creation saves at every step, but the form holds all the steps: a step that was left with
- * something half typed (a supplement without a name, a price of 0, a list that is too long: "Back" and the stepper do not check)
- * would make the API refuse the whole save and the person could not go on. So a step that does not hold keeps what was saved
- * for it before (`saved`, the form of the service as the server has it, or of an empty one); the steps that hold are saved as typed.
- */
 export function draftValues(values: ServiceFormValues, saved: ServiceFormValues): ServiceFormValues {
   const draft = { ...values };
   for (const { schema, fields } of STEPS) {

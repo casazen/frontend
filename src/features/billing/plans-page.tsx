@@ -37,15 +37,10 @@ import { SubscriptionPaymentNotice } from './components/subscription-status-noti
 
 type PlanAction = 'current' | 'portal' | 'unavailable' | 'checkout';
 
-/** The return of a checkout is settled once Stripe reports a paid plan or a payment problem. */
 function isCheckoutSettled(subscription: BillingSubscription | undefined): boolean {
   return !!subscription && (isPaidStatus(subscription.status) || needsPaymentAction(subscription.status));
 }
 
-/**
- * Plans and Stripe Checkout of the org (spec-saas-billing AC10, PL-12) in the short-rent shell. Also the default return
- * page of the checkout (`?checkout=success|cancel`) and of the billing portal (backend PL-11).
- */
 export function PlansPage() {
   return (
     <AppShell>
@@ -91,18 +86,15 @@ function ClassicPlansPageContent() {
       checkoutReturn === 'success' && !confirmTimedOut && !isCheckoutSettled(data) ? CHECKOUT_CONFIRM_POLL_MS : false,
   });
   const { pathname } = useLocation();
-  // The portal links back to this page, in the shell the user is in (PL-16).
   const portal = useOpenBillingPortal(toBillingReturnPath(pathname));
   const refreshPlan = useRefreshPlanAfterPayment();
 
   const subscription = subscriptionQuery.data;
   const status = subscription?.status ?? 'none';
   const confirmed = checkoutReturn === 'success' && !!subscription && isPaidStatus(subscription.status);
-  // An answer that is not an entitlement (an HTML page where the API is not reachable) has no usage: the summary is left out.
   const usedProperties = entitlement?.usage?.properties;
   const maxProperties = entitlement?.limits?.maxProperties;
 
-  // The Stripe return parameter is read once, then removed: a reload does not show the outcome again.
   useEffect(() => {
     if (!searchParams.has(CHECKOUT_RETURN_PARAM)) return;
     const next = new URLSearchParams(searchParams);
@@ -116,7 +108,6 @@ function ClassicPlansPageContent() {
     return () => window.clearTimeout(timer);
   }, [checkoutReturn]);
 
-  // Paid plan confirmed by the backend: the profile badge and the limits are read again.
   useEffect(() => {
     if (confirmed) refreshPlan();
   }, [confirmed, refreshPlan]);
@@ -165,7 +156,6 @@ function ClassicPlansPageContent() {
         </Banner>
       );
     }
-    // A payment problem is explained by the payment notice below.
     if (isCheckoutSettled(current)) return null;
     if (!confirmTimedOut) {
       return (

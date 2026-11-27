@@ -65,7 +65,6 @@ describe('the kind of the address', () => {
   });
 
   it('connectionKindOfSlug_AnythingElse_IsNotAKindOfThisWizard', () => {
-    // A function of the license and a partner have wizards of their own.
     expect(connectionKindOfSlug('licensedfunction')).toBeNull();
     expect(connectionKindOfSlug('partner')).toBeNull();
     expect(connectionKindOfSlug('')).toBeNull();
@@ -96,7 +95,6 @@ describe('the steps the portal needs', () => {
 
   it('requirementsOf_CodesTheServerSends_AreTheThreeThingsAPortalAsks', () => {
     expect(requirementsOf(['hotelId', 'panelAccess'])).toEqual({ hotelId: true, credentials: false, panelAccess: true });
-    // A code this version does not know asks nothing.
     expect(requirementsOf(['somethingNew'])).toEqual({ hotelId: false, credentials: false, panelAccess: false });
     expect(asksForAccess(requirementsOf(['somethingNew']))).toBe(false);
   });
@@ -114,7 +112,6 @@ describe('the access data', () => {
 
   it('missingAccess_PortalAsksForNothing_NothingIsMissing', () => {
     expect(isAccessComplete(missingAccess(requirementsOf([]), ['p1'], {}, NO_CREDENTIALS))).toBe(true);
-    // The panel access is not asked here: it is a step of its own, read from the server.
     expect(isAccessComplete(missingAccess(requirementsOf(['panelAccess']), ['p1'], {}, NO_CREDENTIALS))).toBe(true);
   });
 
@@ -195,7 +192,6 @@ describe('a problem and the step it leads back to', () => {
       status: 'ToFix',
       errorCode: 'connection_not_enabled',
     });
-    // Still Pending is not Active: the result never says more than the server did.
     expect(outcomeOfState('p1', state({ status: 'Pending' })).status).toBe('ToFix');
   });
 
@@ -226,7 +222,6 @@ describe('the mapping of the rooms', () => {
   it('roomChoices_RoomThatIsMappedAlready_IsNeverSkipped_TheSaveCannotRemoveAMapping', () => {
     const mapped = room({ channelRoomId: 'r1', mappedProductId: 'p-doppia', proposedProductId: 'p-suite' });
 
-    // A skip that gets here anyway leaves the mapping as it is; a change to another product still counts.
     expect(roomChoices([mapped], { r1: SKIP_ROOM })).toEqual({ r1: 'p-doppia' });
     expect(roomChoices([mapped], { r1: 'p-suite' })).toEqual({ r1: 'p-suite' });
     expect(roomChoices([room({ channelRoomId: 'r2' })], { r2: SKIP_ROOM })).toEqual({ r2: SKIP_ROOM });
@@ -279,10 +274,8 @@ describe('the access on the panel of the channel manager', () => {
   });
 
   it('panelAccessStatus_NoActivationYetOrItCannotBeRead_TheGuidedStepIsAllThereIs', () => {
-    // The first pass: nothing exists that the channel manager could be asked about.
     expect(panelAccessStatus(evidence({ hasActivation: false, stepDone: true }))).toBe('given');
     expect(panelAccessStatus(evidence({ hasActivation: false, stepDone: false }))).toBe('toDo');
-    // A read that failed has no word to give.
     expect(panelAccessStatus(evidence({ panelAccessDone: undefined, reading: false, stepDone: true }))).toBe('given');
   });
 });
@@ -307,7 +300,6 @@ describe('the way back from the panel of the channel manager', () => {
   });
 
   it('activationResumePath_StepOfAnotherWizard_IsNotOurs', () => {
-    // The connect wizard of the existing listings stores its own point, which the page of the step already knows.
     expect(activationResumePath(started({ wizardType: 'OnboardingActivation', stepCode: 'existingInventoryAccess' }))).toBeNull();
     expect(activationResumePath(started({ wizardType: null, stepCode: null }))).toBeNull();
     expect(activationResumePath(undefined)).toBeNull();

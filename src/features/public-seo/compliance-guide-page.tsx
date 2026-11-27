@@ -24,7 +24,7 @@ export function ComplianceGuidePage() {
           canonicalUrl: page.canonicalUrl,
           ogType: 'article',
         }
-      : // A page that is not published or failed to load is never indexed (BK-15, A8-09: soft 404).
+      :
         isError
         ? { title: t('publicSeo.notFound'), noindex: true }
         : null,
@@ -50,7 +50,6 @@ export function ComplianceGuidePage() {
   }
 
   return (
-    // Inside the `<main>` of the public shell: a second one would be a second landmark.
     <div className="mx-auto max-w-3xl" data-testid="compliance-guide-page">
       <div className="mb-6">
         <BrandHero

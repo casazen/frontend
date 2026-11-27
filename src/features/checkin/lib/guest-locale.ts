@@ -10,7 +10,6 @@ export const GUEST_LOCALES = ['it', 'en', 'de', 'fr', 'es'] as const;
 
 export type GuestLocale = (typeof GUEST_LOCALES)[number];
 
-/** The language when nothing else is known. */
 export const DEFAULT_GUEST_LOCALE: GuestLocale = 'it';
 
 /**
@@ -25,7 +24,6 @@ export const GUEST_LOCALE_OPTIONS: ReadonlyArray<{ locale: GuestLocale; nameKey:
   { locale: 'es', nameKey: 'checkin.language.names.es' },
 ];
 
-/** `it` and `en` come with the app; the other three are loaded when the guest chooses them. */
 type LazyGuestLocale = Exclude<GuestLocale, 'it' | 'en'>;
 
 const LAZY_BUNDLES: Record<LazyGuestLocale, () => Promise<{ default: Record<string, unknown> }>> = {
@@ -38,35 +36,21 @@ function isGuestLocale(value: string): value is GuestLocale {
   return (GUEST_LOCALES as readonly string[]).includes(value);
 }
 
-/** The language of the page a tag stands for (as the API writes it, `de`, or as a browser does, `de-CH`), or null for any other. */
 function knownLocaleOf(language: string): GuestLocale | null {
   const primary = language.trim().toLowerCase().split(/[-_]/)[0];
   return isGuestLocale(primary) ? primary : null;
 }
 
-/**
- * The language of the page from what the API resolved (the guest's earlier choice, else the one of the browser): a language the
- * page offers, as the API wrote it (`de`) or as a browser does (`de-CH`), else Italian. Pure.
- */
 export function resolveGuestLocale(language: string | null | undefined): GuestLocale {
   return knownLocaleOf(language ?? '') ?? DEFAULT_GUEST_LOCALE;
 }
 
-/**
- * The languages the guest can choose: those of `supportedLanguages` that the page has texts for, in the order of the page; all five
- * when the API says nothing (a page that is not an open session).
- */
 export function offeredGuestLocales(supportedLanguages: readonly string[] | null | undefined): GuestLocale[] {
   const all = GUEST_LOCALE_OPTIONS.map((option) => option.locale);
   const offered = new Set((supportedLanguages ?? []).map(knownLocaleOf).filter((locale): locale is GuestLocale => locale !== null));
   return offered.size === 0 ? all : all.filter((locale) => offered.has(locale));
 }
 
-/**
- * Makes the texts of `locale` available: nothing for Italian and English, the subset file of the page (only the keys of the `checkin`
- * namespace) for the other three, added to the app's i18n instance the first time they are chosen. A key a subset file lacks falls
- * back to English, then Italian (`src/i18n/config.ts`).
- */
 export async function ensureGuestLocale(locale: GuestLocale): Promise<void> {
   if (locale === 'it' || locale === 'en') return;
   if (i18n.hasResourceBundle(locale, 'translation')) return;
@@ -84,8 +68,6 @@ export async function ensureGuestLocale(locale: GuestLocale): Promise<void> {
  * receives that language so the page can show it again and tell the guest. It must be stable (a `useCallback`): it is a dependency.
  */
 export function useGuestPageLocale(locale: GuestLocale, onLoadFailed?: (stayedIn: GuestLocale) => void): void {
-  // The app's own instance, not the one `useTranslation` hands back: that one is a new object for each language, and an effect that
-  // depends on it would run again (and undo) every time the language changes.
   const opened = useRef(i18n.language);
 
   useEffect(() => {

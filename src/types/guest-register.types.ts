@@ -4,21 +4,16 @@
  * download how many lines it has. Both are behind `Features:GuestRegistrationRegimes` and ask `guest.read`. CasaZen never stores the file and gives no legal advice.
  */
 
-/** The first and the last day of the period, both included, by arrival day (`yyyy-MM-dd`): at most 366 days. */
 export interface GuestRegisterPeriod {
   from: string;
   to: string;
 }
 
-/** What the register of a period holds, before it is downloaded: counts, a number of years and a code, no guest. */
 export interface GuestRegisterInfo {
   propertyId: string;
   from: string;
   to: string;
-  /** The lines of the register, the header not counted: the guests, adults and minors, of the stays that arrived in the period. */
   rowCount: number;
-  /** How many years the regime of the property asks the host to keep the register; `null` when the sources do not say. */
   retentionYears: number | null;
-  /** The regime of the property: `CH-TI`, `CH-ZH`… or `CH-UNKNOWN` while its municipality is not known. */
   regimeCode: string;
 }

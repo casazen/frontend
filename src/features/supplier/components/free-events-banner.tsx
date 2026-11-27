@@ -13,7 +13,6 @@ import { describeFreeEventWhen } from '../lib/free-events';
 interface FreeEventsBannerProps {
   items: readonly PendingFreeEvent[];
   pendingCount: number;
-  /** A sync is running (it was queued by an "Available" answer): the days are about to be refreshed. */
   syncing?: boolean;
 }
 

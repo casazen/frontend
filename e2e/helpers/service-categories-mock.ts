@@ -1,6 +1,5 @@
 import type { Page } from '@playwright/test';
 
-/** Codes served by the backend catalog `GET /api/service-categories` (ServiceCategories.All, SU-03). */
 export const SERVICE_CATEGORY_CODES = [
   'cleaning',
   'maintenance',

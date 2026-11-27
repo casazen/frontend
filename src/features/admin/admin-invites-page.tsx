@@ -4,7 +4,6 @@ import { PAGE_COLUMNS_WIDE } from '@/components/layout/page-columns';
 import { HostInviteForm } from '@/features/invites/host-invite-form';
 import { HostInvitesList } from '@/features/invites/host-invites-list';
 
-/** Super admin invites the founder of a new agency. Teams are managed by the agency itself. */
 export function AdminInvitesPage() {
   const { t } = useTranslation();
   return (

@@ -37,10 +37,6 @@ function readStoredContext(): AppContextKey | null {
   return null;
 }
 
-/**
- * The API may list a context the app has no area for (the `account` one had none until AM-04). The list is sorted by key, so an
- * unknown one could come first and become the active context: only the contexts of an area of the app are kept.
- */
 function isKnownContext(context: ContextBootstrapDto): boolean {
   return AREA_ORDER.includes(context.contextKey);
 }
@@ -57,7 +53,6 @@ function resolveActiveContext(
   return available[0]?.contextKey ?? null;
 }
 
-/** The areas whose home the backend names wrongly for some roles (below): their home is worked out here, from the menu. */
 const AREAS_WITH_THEIR_OWN_HOME: readonly AppContextKey[] = ['account', 'long-rent'];
 
 /**
@@ -75,12 +70,6 @@ function withAreaHomes(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
   });
 }
 
-/**
- * The contexts as the workspace keeps them: the account and long-rent ones with their own home, and the account one last. The API
- * lists them sorted by key, so `account` would come first, and the first context is where a person with no saved area starts
- * (`resolveActiveContext`, and the guard and the legacy redirect, read `contexts[0]`): a person with another area starts there,
- * as before, and the account area stays one click away in the area selector.
- */
 function arrangeContexts(contexts: ContextBootstrapDto[]): ContextBootstrapDto[] {
   const withHome = withAreaHomes(contexts);
   return [
@@ -124,8 +113,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading: authLoading, getAccessToken } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  // Contexts depend only on the roles: reload them when the role set changes,
-  // not whenever the user object identity changes (e.g. after a token refresh).
   const roleSignature = useMemo(() => {
     const authUser = isDemoMode ? getDemoUser() : user;
     return getUserRoles(authUser).slice().sort().join('|');
@@ -177,8 +164,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         if (!mounted) return;
-        // Deactivated account (PL-03): the API handler opens the dedicated page; the roles still in the token must not
-        // bring back a workspace whose every call is refused.
         if (isAccountInactiveError(error)) {
           applyResolvedContext([], null, setContexts, setActiveContextState);
           return;
@@ -220,8 +205,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // The area in the address is the active one, supplier console included (UI-00). The old `/supplier/...` addresses
-    // never get here: they are redirected to `/app/supplier/...` by routes outside this provider.
     const appMatch = location.pathname.match(/^\/app\/(short-rent|long-rent|admin|supplier|account)(?:\/|$)/);
     if (appMatch) {
       const fromUrl = appMatch[1] as AppContextKey;

@@ -39,7 +39,6 @@ vi.mock('@/api/checkin.api', () => ({
 
 const TOKEN = 'tok-retry';
 
-/** The codes the document step of the self-hosted flow adds to the contract (E71/F01/US03/T01). */
 const NEW_CODES = [
   'document_not_found',
   'document_edges_not_visible',
@@ -111,7 +110,6 @@ function renderStep(initial: IdentityVerificationState = state()) {
 
 beforeEach(async () => {
   vi.clearAllMocks();
-  // No camera on these screens: the photo comes from the file of the phone, which is the second way of a self-hosted capture.
   Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: undefined });
   await i18n.changeLanguage('it');
 });
@@ -133,7 +131,6 @@ describe('identity-document-retry: every guidance code has its own words (E71/F0
     expect(line).toHaveTextContent(text(guidanceKey(code, 'front')));
     expect(line).not.toHaveTextContent(text('checkin.identity.guidance.other'));
     expect(text(guidanceKey(code, 'front')).length).toBeGreaterThan(10);
-    // A picture next to the words, decorative: the words say it all.
     expect(line.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });
 
@@ -189,7 +186,6 @@ describe('identity-document-retry: every guidance code has its own words (E71/F0
   });
 
   it('IdentityDocumentCapture_ATargetedCodeAndTheOlderCodeThatSaysTheSame_AreOneLineAndAnOlderCodeOnItsOwnStillIsAline', () => {
-    // The server sends the targeted codes first and then the codes of the capture checks of before: a reflection or a blur found by both is said once.
     const { rerender } = render(
       <IdentityDocumentCapture
         refused
@@ -257,7 +253,6 @@ describe('identity-document-retry: every guidance code has its own words (E71/F0
       });
       expect(missing, `${language}: guidance without words`).toEqual([]);
     }
-    // The new codes are translated, not copied from English, in every language that is not English.
     for (const language of ['it', 'de', 'fr', 'es'] as const) {
       const same = NEW_CODES.filter((code) => read(bundles[language], guidanceKey(code)) === read(bundles.en, guidanceKey(code)));
       expect(same, `${language}: left in English`).toEqual([]);
@@ -313,11 +308,9 @@ describe('identity-document-retry: the codes that end with a person (AC2)', () =
 
     await waitFor(() => expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'operator'));
     expect(screen.getByTestId('identity-operator-reason')).toHaveTextContent(text(guidanceKey(code)));
-    // The picture of the code, the same as in the lines of a refusal, is next to its words (decorative: the words say it all).
     expect(screen.getByTestId('identity-operator-reason').querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByTestId('identity-operator-text')).toHaveTextContent(text('checkin.identity.result.operator.text'));
     expect(screen.getByTestId('identity-operator-requested')).toBeInTheDocument();
-    // The server has the verification closed with a person: no capture, no file, no second call to ask for one.
     expect(screen.queryByTestId('checkin-identity-document')).not.toBeInTheDocument();
     expect(container.querySelector('input[type="file"]')).toBeNull();
     expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
@@ -340,7 +333,6 @@ describe('identity-document-retry: the codes that end with a person (AC2)', () =
 });
 
 describe('identity-document-retry: the difference hash of a side (AC3)', () => {
-  /** The pixels of an image of `cell` by `cell` pixels for each of the 9 by 8 cells, each cell as bright as `grayOf(row, column)`. */
   function cells(grayOf: (row: number, column: number) => number, cell = 1) {
     const width = 9 * cell;
     const height = 8 * cell;
@@ -358,7 +350,6 @@ describe('identity-document-retry: the difference hash of a side (AC3)', () => {
   const ROW = [10, 20, 15, 15, 30, 5, 5, 6, 1];
 
   it('differenceHash_ARowOfCells_GivesOneBitForEachPairInReadingOrderTheFirstBeingTheMostSignificant', () => {
-    // 10>20 no, 20>15 yes, 15>15 no (a tie is 0), 15>30 no, 30>5 yes, 5>5 no, 5>6 no, 6>1 yes: 01001001 = 0x49 in each of the 8 rows.
     expect(differenceHash(cells((_row, column) => ROW[column]))).toBe('4949494949494949');
   });
 
@@ -425,7 +416,6 @@ describe('identity-document-retry: the difference hash of a side (AC3)', () => {
     source.height = 720;
 
     expect(fingerprintOfCanvas(source)).toBe('4949494949494949');
-    // The copy of 90 by 80 pixels is emptied; the canvas it was given is the caller's and is left as it was.
     expect(copies.at(-1)?.width).toBe(0);
     expect(source.width).toBe(1280);
   });
@@ -462,7 +452,6 @@ describe('identity-document-retry: the front that was taken is remembered for th
     expect(result.current.looksLikeTheFront(frontHash)).toBe(true);
     expect(result.current.looksLikeTheFront(closeToIt)).toBe(true);
     expect(result.current.looksLikeTheFront(farFromIt)).toBe(false);
-    // The hash is in a reference, never in what the page reads of the step.
     expect(JSON.stringify(result.current.progress)).not.toContain(frontHash);
   });
 

@@ -62,7 +62,6 @@ describe('CookieConsentBanner', () => {
   });
 });
 
-// DB-02b: the third answer. What the panel stores decides whether anything is measured, so it is the one thing proved here.
 describe('CookieConsentBanner, "Scegli tu" (DB-02b)', () => {
   beforeEach(() => {
     useCookiePreferencesStore.setState({ open: false, opener: null });

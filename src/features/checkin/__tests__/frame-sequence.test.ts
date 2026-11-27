@@ -1,14 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSequenceRecorder, FRAME_JPEG_QUALITY, fitLongSide, phaseAt, releaseSequence, secondsLeft, totalDurationMs } from '../lib/frame-sequence';
 
-/** What the canvas was asked to encode, one entry for each `toBlob`. */
 let encoded: Array<{ width: number; height: number; type: string | undefined; quality: unknown }> = [];
-/** What was drawn on the canvas, one entry for each `drawImage`. */
 let drawn: Array<{ width: number; height: number }> = [];
-/** How the browser answers `toBlob`: at once, later (a timer), or with nothing (it could not encode). */
 let encoder: { mode: 'now' | 'later' | 'fails'; failFirst: number; delayMs: number } = { mode: 'now', failFirst: 0, delayMs: 0 };
 
-/** A video that has a picture of `size` (change `size` to change the picture, as a phone that is turned does). */
 function fakeVideo(size = { width: 640, height: 480 }) {
   const video = document.createElement('video');
   Object.defineProperty(video, 'videoWidth', { configurable: true, get: () => size.width });
@@ -25,7 +21,6 @@ function recorderOf(overrides: Partial<Parameters<typeof createSequenceRecorder>
   return { recorder, canvas, video, onFull, onResized };
 }
 
-/** Lets the timers run for `ms` (and the promises they settle). */
 const run = (ms: number) => vi.advanceTimersByTimeAsync(ms);
 
 beforeEach(() => {
@@ -91,7 +86,6 @@ describe('frame-sequence: the recorder takes timed frames (E72/F02/US01/T01, AC3
     await run(1_000);
     const sequence = await recorder.finish();
 
-    // At 0 ms and then at 100, 200 ... 1000 ms.
     expect(sequence.timestamps).toEqual([0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]);
   });
 
@@ -128,7 +122,6 @@ describe('frame-sequence: the recorder takes timed frames (E72/F02/US01/T01, AC3
     const { recorder } = recorderOf({ now: () => now, targetFps: 10 });
 
     recorder.start();
-    // The timer fires again but the clock has not moved: those are not frames.
     await run(300);
     now = 100;
     await run(100);
@@ -177,7 +170,6 @@ describe('frame-sequence: the recorder takes timed frames (E72/F02/US01/T01, AC3
     for (const call of encoded) expect(call).toEqual({ width: 320, height: 240, type: 'image/jpeg', quality: 0.7 });
     for (const size of drawn) expect(size).toEqual({ width: 320, height: 240 });
     for (const frame of sequence.frames) expect(frame.type).toBe('image/jpeg');
-    // The canvas is empty once the sequence is out.
     expect(canvas.width).toBe(0);
     expect(canvas.height).toBe(0);
   });
@@ -203,7 +195,6 @@ describe('frame-sequence: the recorder takes timed frames (E72/F02/US01/T01, AC3
     await run(300);
     await recorder.finish();
 
-    // The server names the moves by this picture: nothing is done to it between the camera and the JPEG.
     expect(calls.length).toBeGreaterThan(1);
     expect(new Set(calls)).toEqual(new Set(['drawImage']));
   });
@@ -267,7 +258,6 @@ describe('frame-sequence: the recorder takes timed frames (E72/F02/US01/T01, AC3
     await run(500);
     const sequence = await recorder.finish();
 
-    // The first two frames (0 and 100 ms) failed: the sequence starts at the third, and that is 0.
     expect(sequence.timestamps).toEqual([0, 100, 200, 300]);
     expect(sequence.frames).toHaveLength(4);
   });
@@ -325,7 +315,6 @@ describe('frame-sequence: nothing of the frames is kept', () => {
     await run(250);
     recorder.discard();
     const taken = encoded.length;
-    // The frames that were being encoded come back after the discard: nobody keeps them.
     await run(1_000);
 
     expect(encoded).toHaveLength(taken);
@@ -366,7 +355,6 @@ describe('frame-sequence: nothing of the frames is kept', () => {
 });
 
 describe('frame-sequence: requestVideoFrameCallback when the browser has it', () => {
-  /** A video that calls back for each of its frames, every `everyMs`, the way a camera does. */
   function videoWithFrameCallbacks(everyMs: number) {
     const { video } = fakeVideo();
     const pending = new Map<number, () => void>();
@@ -422,7 +410,6 @@ describe('frame-sequence: requestVideoFrameCallback when the browser has it', ()
     const sequence = await recorder.finish();
     source.stop();
 
-    // About ten frames in a second, not thirty.
     expect(sequence.frames.length).toBeGreaterThanOrEqual(8);
     expect(sequence.frames.length).toBeLessThanOrEqual(12);
     for (let index = 1; index < sequence.timestamps.length; index += 1) {

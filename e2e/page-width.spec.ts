@@ -13,7 +13,6 @@ import { pinE2eLocale } from './helpers/locale';
  */
 const VIEWPORT = { width: 1600, height: 900 };
 
-/** Width of the content region of the shell, without its padding, and the one of the block that holds the page. */
 async function widths(page: Page, selector: string) {
   return page.evaluate((sel) => {
     const main = document.getElementById('main-content') as HTMLElement;
@@ -25,7 +24,6 @@ async function widths(page: Page, selector: string) {
   }, selector);
 }
 
-/** The step of a wizard (its form, under the title of the step) and the list of its steps beside it, on the right. */
 async function expectStepsBesideTheStep(page: Page, pageSelector: string) {
   const steps = page.getByRole('list', { name: 'Passaggi' });
   await expect(steps).toBeVisible();
@@ -36,7 +34,6 @@ async function expectStepsBesideTheStep(page: Page, pageSelector: string) {
   expect(step.width, 'the step keeps a comfortable width').toBeGreaterThan(700);
 }
 
-/** Under `2xl` (here between `xl` and `2xl`) the steps are the bar above the step again, as they always were. */
 async function expectStepsAboveTheStep(page: Page, pageSelector: string) {
   await page.setViewportSize({ width: 1400, height: 900 });
   await expect

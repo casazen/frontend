@@ -6,10 +6,6 @@ import i18n from '@/i18n/config';
 import type { PublicBookingView } from '@/api/public-supplier-booking.api';
 import { RequestView } from '../request-view';
 
-/**
- * The two presses that move money or stop it (SP-15c-d): "Tutto a posto" releases the funds to the supplier at once and closes the time
- * to complain, "Segnala un problema" stops the release. Neither may happen on the first touch of a button.
- */
 const none = { canCancel: false, canReschedule: false, canRespondToProposal: false, canRespondToQuote: false, canConfirmOk: false, canReportProblem: false, canWithdrawProblem: false };
 
 const heldView: PublicBookingView = {

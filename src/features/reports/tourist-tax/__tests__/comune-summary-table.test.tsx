@@ -19,7 +19,6 @@ const REMITTANCE: TouristTaxRemittance = {
 
 const WITHOUT_RECEIPT: TouristTaxRemittance = { ...REMITTANCE, id: 'r-2', amount: 5, amountCents: 500, reference: null, hasReceipt: false };
 
-/** Milano: 30 EUR recorded on three stays, one more stay with no tax recorded, 18 EUR paid. */
 const MILANO: TouristTaxComuneSummary = {
   comune: 'Milano',
   stays: 4,
@@ -36,7 +35,6 @@ const MILANO: TouristTaxComuneSummary = {
   remittances: [REMITTANCE, WITHOUT_RECEIPT],
 };
 
-/** Como: nothing recorded on its only stay and nothing paid. */
 const COMO: TouristTaxComuneSummary = {
   comune: 'Como',
   stays: 1,
@@ -53,7 +51,6 @@ const COMO: TouristTaxComuneSummary = {
   remittances: [],
 };
 
-/** Lecco: owed and paid are the same, every stay has its tax. */
 const LECCO: TouristTaxComuneSummary = {
   comune: 'Lecco',
   stays: 2,
@@ -91,7 +88,6 @@ const SUMMARY: TouristTaxSummary = {
   },
 };
 
-/** What a caller who reaches only some of the properties gets: the owed side, and nothing about the payments. */
 const HIDDEN: TouristTaxSummary = {
   ...SUMMARY,
   paymentsHidden: true,
@@ -128,7 +124,6 @@ describe('ComuneSummaryTable (NF-100)', () => {
     renderTable(SUMMARY, true);
 
     const milano = rowOf('Milano');
-    // Every figure is the one the server sent, in whole cents: 30 owed, 23 paid, 7 left.
     expect(within(milano).getByText(/30,00\s*€/)).toBeInTheDocument();
     expect(within(milano).getByText(/23,00\s*€/)).toBeInTheDocument();
     expect(within(milano).getByText(/7,00\s*€/)).toBeInTheDocument();
@@ -144,7 +139,6 @@ describe('ComuneSummaryTable (NF-100)', () => {
   it('Table_StaysWithoutAnAmount_AreNeverShownAsZeroTax', () => {
     renderTable(SUMMARY, true);
 
-    // Next to the owed amount and next to the state of every comune that counts such stays, and in the total.
     expect(within(rowOf('Milano')).getAllByTestId('tourist-tax-incomplete')).toHaveLength(2);
     expect(within(rowOf('Como')).getAllByTestId('tourist-tax-incomplete')).toHaveLength(2);
     expect(within(rowOf('Lecco')).queryByTestId('tourist-tax-incomplete')).toBeNull();
@@ -186,7 +180,6 @@ describe('ComuneSummaryTable (NF-100)', () => {
     expect(screen.queryByTestId('tourist-tax-delete')).toBeNull();
     expect(screen.queryByRole('columnheader', { name: 'Azioni' })).toBeNull();
 
-    // The payments are listed, the one with a receipt offers it and the other says it has none.
     expect(screen.getAllByTestId('tourist-tax-remittance')).toHaveLength(2);
     expect(screen.getByTestId('tourist-tax-no-receipt')).toHaveTextContent('Nessuna ricevuta');
     fireEvent.click(screen.getByTestId('tourist-tax-receipt'));
@@ -196,7 +189,6 @@ describe('ComuneSummaryTable (NF-100)', () => {
   it('Table_CallerWhoReachesSomePropertiesOnly_SeesWhatIsOwedAndNoPaymentAtAll', () => {
     renderTable(HIDDEN, true);
 
-    // Owed side alone: no paid, balance or state, no payments, and no way to record or delete one, whatever the permission says.
     expect(screen.getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Comune', 'Soggiorni', 'Dovuta']);
     expect(screen.queryByTestId('tourist-tax-status')).toBeNull();
     expect(screen.queryByTestId('tourist-tax-remittances')).toBeNull();
@@ -204,7 +196,6 @@ describe('ComuneSummaryTable (NF-100)', () => {
     expect(screen.queryByTestId('tourist-tax-delete')).toBeNull();
     expect(screen.queryByTestId('tourist-tax-receipt')).toBeNull();
     expect(within(rowOf('Milano')).getByText(/30,00\s*€/)).toBeInTheDocument();
-    // A stay with no amount is still said apart.
     expect(within(rowOf('Milano')).getAllByTestId('tourist-tax-incomplete')).toHaveLength(1);
   });
 });

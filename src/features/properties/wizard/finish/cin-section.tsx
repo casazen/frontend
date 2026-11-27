@@ -10,13 +10,11 @@ import { useUpdatePropertyCin } from '@/queries/use-cin';
 
 interface CinSectionProps {
   propertyId: string;
-  /** The CIN the property has, as the server stores it. */
   storedCin: string | null;
   /** The page where the CIN is asked for, as the activation gives it (`linkUrl` of its `cin` step). */
   guidanceUrl?: string | null;
 }
 
-/** Id of the input: «Correggi» of the missing list puts the focus here. */
 export const CIN_INPUT_ID = 'property-wizard-cin';
 
 /**
@@ -27,7 +25,6 @@ export function CinSection({ propertyId, storedCin, guidanceUrl }: CinSectionPro
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const update = useUpdatePropertyCin();
-  // null = not touched: the field shows the stored CIN.
   const [draft, setDraft] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const changed = draft !== null && normalizeCin(draft) !== normalizeCin(storedCin);
@@ -40,7 +37,7 @@ export function CinSection({ propertyId, storedCin, guidanceUrl }: CinSectionPro
     try {
       await update.mutateAsync({ propertyId, cinCode: normalizeCin(draft) });
     } catch {
-      return; // The toast of the mutation tells why; the field keeps what was typed.
+      return;
     }
     setDraft(null);
     void queryClient.invalidateQueries({ queryKey: ['compliance', 'activation', propertyId] });

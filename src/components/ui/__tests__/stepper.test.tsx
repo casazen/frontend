@@ -16,7 +16,6 @@ beforeEach(async () => {
 
 afterEach(cleanup);
 
-/** The extended version (from `md` up); the compact one is a different block of the same component. */
 const extended = () => screen.getByRole('list', { name: 'Passaggi' });
 const itemsOf = () => within(extended()).getAllByRole('listitem');
 
@@ -27,7 +26,6 @@ describe('Stepper extended', () => {
     expect(extended().tagName).toBe('OL');
     const items = itemsOf();
     expect(items).toHaveLength(4);
-    // Every item reads "name (state)"; the number is drawn for the eyes.
     expect(items[0]).toHaveTextContent('Dati (completato)');
     expect(items[1]).toHaveTextContent('Immobile (passo attuale)');
     expect(items[2]).toHaveTextContent('Documenti (da fare)');
@@ -51,7 +49,6 @@ describe('Stepper extended', () => {
     expect(done.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     expect(within(current).getByText(/passo attuale/)).toHaveClass('sr-only');
     expect(within(todo).getByText(/da fare/)).toHaveClass('sr-only');
-    // To do and current steps show their number, never a check.
     expect(current.querySelector('svg')).toBeNull();
     expect(within(todo).getByText('4')).toBeInTheDocument();
   });
@@ -62,7 +59,6 @@ describe('Stepper extended', () => {
 
     const buttons = within(extended()).getAllByRole('button');
     expect(buttons).toHaveLength(2);
-    // The name is the label followed by the state (browsers put a space between them, jsdom does not).
     expect(buttons[1]).toHaveAccessibleName(/^Immobile ?\(completato\)$/);
     expect(buttons[0]).toHaveAccessibleName(/^Dati ?\(completato\)$/);
 
@@ -81,7 +77,6 @@ describe('Stepper extended', () => {
       expect(button).toHaveAttribute('type', 'button');
       expect(button).not.toHaveAttribute('tabindex', '-1');
     }
-    // The steps that are not done are plain blocks: no role, no tab stop.
     expect(itemsOf()[1].querySelector('[tabindex]')).toBeNull();
     expect(itemsOf()[3].querySelector('[tabindex]')).toBeNull();
   });
@@ -156,8 +151,6 @@ describe('Stepper compact', () => {
   it('Stepper_TwoVersions_AreSwitchedByTheBreakpointNotShownTogether', () => {
     const { container } = render(<Stepper steps={STEPS} current={1} />);
 
-    // Below `md` only the compact block is displayed, from `md` up only the list: `display: none` takes the other out of
-    // the accessibility tree, so a screen reader reads one version.
     const compact = screen.getByRole('progressbar').closest('.md\\:hidden');
     expect(compact).not.toBeNull();
     expect(compact).toHaveClass('md:hidden');
@@ -171,7 +164,6 @@ describe('Stepper vertical', () => {
     const onStepSelect = vi.fn();
     render(<Stepper steps={STEPS} current={2} onStepSelect={onStepSelect} orientation="vertical" />);
 
-    // No bar of the phone and no list hidden under `md`: "Step 3 of 4" above the steps, one under the other.
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getAllByText('Passo 3 di 4')).toHaveLength(1);
     expect(extended()).not.toHaveClass('hidden');

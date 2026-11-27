@@ -12,7 +12,6 @@ const KIND_STYLE: Record<CalendarRun['kind'], string> = {
   ownerStay: 'border-l-sky-600',
 };
 
-/** The kinds of the summary, in the order they are told. */
 const SUMMARY_KINDS = ['available', 'occupied', 'blocked', 'ownerStay'] as const;
 
 const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };

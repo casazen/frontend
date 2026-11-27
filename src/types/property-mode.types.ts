@@ -6,27 +6,22 @@ import type { RentalMode } from './property.types';
  * with `parseStayDate`, never with `new Date()`); the instants are UTC.
  */
 
-/** Where a change is (`PropertyModeChangeStatus`): only a `Scheduled` one can be cancelled; the others are history. */
 type PropertyModeChangeStatus = 'Scheduled' | 'Applied' | 'Cancelled' | 'Failed';
 
-/** A change of mode of a property (`PropertyModeChangeDto`). */
 export interface PropertyModeChange {
   id: string;
   propertyId: string;
   fromMode: RentalMode;
   toMode: RentalMode;
-  /** First day in the new mode. */
   effectiveDate: string;
   status: PropertyModeChangeStatus;
   createdAt: string;
   appliedAt: string | null;
   cancelledAt: string | null;
   failedAt: string | null;
-  /** Stable code of the rule that stopped the job (`property_mode_blocked_by_bookings`), never a text. */
   failureReason: string | null;
 }
 
-/** What stands in the way of a change (`PropertyModeBlockerKind`). */
 export type PropertyModeBlockerKind = 'Stay' | 'ImportedBlock' | 'Lease' | 'DraftLease';
 
 /**
@@ -45,28 +40,20 @@ export interface PropertyModeBlocker {
   source: string | null;
 }
 
-/** `GET /properties/{id}/mode/preview`: what a change to `targetMode` on `date` would meet today. */
 export interface PropertyModePreview {
   propertyId: string;
   currentMode: RentalMode;
   targetMode: RentalMode;
-  /** Today, Europe/Rome. */
   today: string;
-  /** The first day a change can start: tomorrow, or the day after the last thing in its way. */
   earliestDate: string;
-  /** The day evaluated: the one asked for, or `earliestDate` when none was. */
   date: string;
   canSchedule: boolean;
-  /** The stable error codes the creation would answer on `date` (`property_mode_blocked_by_bookings`…). Empty = it can be scheduled. */
   issues: string[];
-  /** What stands in the way of `date`, by start. */
   blockers: PropertyModeBlocker[];
-  /** For a change to long-term: the first free day after the dates the change closes. */
   calendarClosedUntil: string | null;
   scheduledChange: PropertyModeChange | null;
 }
 
-/** `GET /properties/{id}/mode`: the mode now, the change waiting for its day and the last one that is over. */
 export interface PropertyModeState {
   propertyId: string;
   rentalMode: RentalMode;
@@ -74,7 +61,6 @@ export interface PropertyModeState {
   lastChange: PropertyModeChange | null;
 }
 
-/** Body of `POST /properties/{id}/mode/change`. */
 export interface SchedulePropertyModeChangeDto {
   to: RentalMode;
   effectiveDate: string;

@@ -6,7 +6,6 @@ import { useListReturn } from '../use-list-return';
 
 const BOOKINGS = '/app/short-rent/bookings';
 
-/** A list page: the filters are in its address, and the buttons stand for the user changing them. */
 function List() {
   useListReturn(BOOKINGS);
   const navigate = useNavigate();
@@ -68,7 +67,6 @@ describe('useListReturn (UI-05)', () => {
     );
     expect(recallList(BOOKINGS)).toBe('?status=Confirmed');
 
-    // The user opened "Prenotazioni" from the menu: the list is the plain one, and that is what is remembered.
     fireEvent.click(screen.getByText('all'));
 
     expect(recallList(BOOKINGS)).toBe('');
@@ -81,7 +79,6 @@ describe('useListReturn (UI-05)', () => {
       </MemoryRouter>,
     );
 
-    // The user opened a booking: the list is gone, and its state is what BackLink and the breadcrumb lead back to.
     unmount();
 
     expect(recallList(BOOKINGS)).toBe('?status=Confirmed&q=rossi');

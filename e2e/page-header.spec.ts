@@ -16,13 +16,11 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 const PROPERTY_ID = 'prop-lr-1';
 const PROPERTY_PATH = `/app/long-rent/properties/${PROPERTY_ID}`;
 
-/** `search`: the tab of the page to open (`?tab=data` is where the cadastral data are, LR-07d). */
 async function openPilot(page: Page, search = '') {
   await mockLeasesApiEmpty(page);
   await mockPropertiesApi(page, [
     buildCreatedProperty({ id: PROPERTY_ID, name: 'Bilocale Monza', city: 'Monza', address: 'Via Italia 1', postalCode: '20900', description: '' }),
   ]);
-  // Registered after the mock above: the documents of the property (the properties mock leaves them to the spec).
   await page.route(`**/api/properties/${PROPERTY_ID}/documents`, async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
@@ -34,7 +32,6 @@ async function openPilot(page: Page, search = '') {
   await expect(page.getByRole('heading', { level: 1, name: 'Bilocale Monza' })).toBeVisible();
 }
 
-/** The box of an element that slides into place (a toast does): once it has stopped. */
 async function settled(locator: Locator) {
   let previous = '';
   await expect
@@ -49,7 +46,6 @@ async function settled(locator: Locator) {
   return (await locator.boundingBox())!;
 }
 
-/** True when the page scrolls sideways: nothing of the header may make it do that. */
 const scrollsSideways = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
 
@@ -68,7 +64,6 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
       await expect(trail).toBeVisible();
       await expect(trail.getByRole('listitem')).toHaveText(['Affitti lunghi', 'Immobili', 'Bilocale Monza']);
       await expect(trail.getByText('Bilocale Monza')).toHaveAttribute('aria-current', 'page');
-      // The way back of a phone is not there.
       await expect(page.getByTestId('back-link')).toBeHidden();
 
       await trail.getByRole('link', { name: 'Immobili' }).click();
@@ -78,7 +73,6 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
     test('the lease to make is the button of the highlighted block, the other actions are in the menu of the three dots', async ({ page }) => {
       await openPilot(page);
 
-      // One focal point: no primary action in the header, the next step of a free property is in the block under it.
       await expect(page.getByTestId('page-header-primary')).toHaveCount(0);
       const next = page.getByTestId('long-rent-property-new-lease');
       await expect(next).toBeVisible();
@@ -119,7 +113,6 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
     test('the header and the title stay in place under the sticky header when the page is anchored', async ({ page }) => {
       await openPilot(page);
 
-      // The header is the one height of the app (--header-height), and the page header starts below it.
       const header = await page.locator('header').boundingBox();
       const title = await page.getByRole('heading', { level: 1, name: 'Bilocale Monza' }).boundingBox();
       expect(header!.height).toBe(64);
@@ -157,8 +150,6 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
       test('nothing makes the page scroll sideways with letters much wider than the ones of this machine', async ({ page }) => {
         await openPilot(page);
 
-        // Verdana with extra spacing is far wider than Segoe UI and than the fonts of the Linux machines of the CI: the check does
-        // not depend on the fonts installed (the header, the buttons of the cards and the bar all have to give way).
         await page.addStyleTag({
           content: '* { font-family: Verdana, "DejaVu Sans", sans-serif !important; letter-spacing: 0.04em !important; word-spacing: 0.1em !important; }',
         });
@@ -168,9 +159,7 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
       });
 
       test('a toast comes up above the bottom bar, not behind it', async ({ page }) => {
-        // The cadastral data are on the tab "Dati" of the page.
         await openPilot(page, '?tab=data');
-        // A save that fails shows the server's reason in a toast (the form of the cadastral data).
         await page.route(`**/api/properties/${PROPERTY_ID}/cadastral`, async (route) => {
           await route.fulfill({
             status: 422,
@@ -185,7 +174,6 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
         const toast = page.locator('[data-sonner-toast]').first();
         await expect(toast).toBeVisible();
         const box = await settled(toast);
-        // Over the bar: the whole stack is clear of the bottom of the screen.
         expect(box.y + box.height).toBeLessThan(page.viewportSize()!.height - 64);
       });
 
@@ -199,7 +187,6 @@ test.describe('PageHeader v2: the pilot page (UI-05)', () => {
 
         await more.click();
         const item = page.getByRole('menuitem', { name: 'Modifica' });
-        // The menu grows into place as it opens (UI-07 turned on the `animate-in` classes): measured after it stopped.
         const box = await settled(item);
         expect(box.height).toBeGreaterThanOrEqual(44);
         expect(box.x).toBeGreaterThanOrEqual(0);
@@ -224,7 +211,6 @@ test.describe('The title of the tab (UI-05)', () => {
     await page.getByRole('complementary', { name: 'Navigazione principale' }).getByRole('link', { name: 'Prenotazioni' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeVisible();
     await expect(page).toHaveTitle('Prenotazioni · Affitti brevi · CasaZen');
-    // And what the screen reader announces at the change of page is the heading, as before.
     await expect(page.getByTestId('route-announcer')).toHaveText('Prenotazioni');
   });
 });

@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { cn } from '@/lib/utils';
 
-/** How the card feels: an invitation to open, one that is done, one that does not work, one that needs something from the person. */
 export type InviteCardTone = 'invite' | 'done' | 'broken' | 'attention';
 
 const TONES: Record<InviteCardTone, { icon: LucideIcon; disc: string }> = {
@@ -18,7 +17,6 @@ interface InviteAcceptCardProps {
   tone?: InviteCardTone;
   title: string;
   description?: string;
-  /** Invitation details stay above the actions on phones and beside them on wider screens. */
   summary?: ReactNode;
   children?: ReactNode;
 }

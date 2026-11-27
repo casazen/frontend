@@ -21,12 +21,6 @@ interface StatementDetailProps {
 
 type Step = 'approve' | 'publish';
 
-/**
- * One statement of an owner, as the server has it: every amount in the currency of the statement and exactly as the server wrote it (nothing is added up,
- * rounded or signed here), the step it is at and the next one. Approving and publishing cannot be undone, so each asks to be confirmed with what it does; the
- * PDF and the CSV are the files the server stores (only an approved or a published statement has them). While any request of this statement is on its way
- * every button of it waits.
- */
 export function StatementDetail({ statement, onBack }: StatementDetailProps) {
   const { t } = useTranslation();
   const { dateTime, locale } = useOwnerFormat();
@@ -38,7 +32,6 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
   const [step, setStep] = useState<Step | null>(null);
 
   const busy = approveStatement.isPending || publishStatement.isPending || downloadPdf.isPending || downloadCsv.isPending;
-  // The server refuses a file for a draft (422 `statement_not_exportable`): the button is not offered for it.
   const exportable = statement.status !== 'Draft';
   const fileName = `rendiconto-${statement.year}-${String(statement.month).padStart(2, '0')}-${statement.id.replace(/-/g, '')}`;
   const period = `${statement.month}/${statement.year}`;
@@ -66,7 +59,6 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
     }
   };
 
-  /** The step is the person's word, after the confirmation. Whatever the server answers the dialog is done: the hook tells a failure and the list is read again. */
   const confirmStep = async () => {
     try {
       if (step === 'approve') await approveStatement.mutateAsync(statement.id);
@@ -80,7 +72,6 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
   };
 
   const dismissStep = (open: boolean) => {
-    // The request is on its way: the dialog stays until the server has answered, so nobody asks for the same step twice.
     if (!open && !busy) setStep(null);
   };
 
@@ -130,7 +121,6 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
       </div>
 
       <div className="grid gap-6">
-        {/* Summary Section */}
         <div className="border rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">{t('statement.summary')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -176,7 +166,6 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex flex-wrap gap-4">
           {statement.status === 'Draft' && (
             <Button onClick={() => setStep('approve')} disabled={busy} data-testid="statement-approve">
@@ -203,7 +192,6 @@ export function StatementDetail({ statement, onBack }: StatementDetailProps) {
           </p>
         )}
 
-        {/* Additional Info */}
         {statement.publishedAt && (
           <div className="border rounded-lg p-4 bg-muted/30">
             <p className="text-sm">

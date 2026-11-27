@@ -42,7 +42,6 @@ interface RoutineEditorProps {
   initialObjective?: string;
   routine?: Routine;
   template?: RoutineLibraryTemplate;
-  /** What the catalog says of each action (`GET api/routines/actions`): the ones that cannot run yet are disabled, and a routine that holds one is not switched on. */
   availability?: ActionAvailability;
   onSave: (dto: CreateRoutineDto | UpdateRoutineDto) => void;
   onCancel: () => void;
@@ -58,7 +57,6 @@ function offsetOf(eventConfig: string | undefined): { days: string; hours: strin
 export function RoutineEditor({ routine, template, availability, onSave, onCancel, isSaving, initialObjective }: RoutineEditorProps) {
   const { t } = useTranslation();
 
-  // The initial values come from the routine once: the editor is mounted again each time its dialog opens, so it starts from the stored routine every time.
   const [initial] = useState(() => {
     const read = readCondition(routine?.conditionJson ?? JSON.stringify(template?.condition));
     const steps = routine ? parseActions(routine.actionsJson) : template?.actions ?? [];
@@ -105,7 +103,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
   });
   const unavailable = unavailableActionTypes(availability, actions.flatMap(({ type }) => type ? [{ type }] : []));
   const anyActionUnavailableInCatalog = ACTION_TYPES.some((action) => isActionUnavailable(availability, action.type));
-  // A routine that runs for real holds only actions that can run: it is switched off for the person, who is told why, and can still save it (in test mode it runs as a simulation).
   const activationBlocked = unavailable.length > 0 && !testMode;
   const effectiveActive = active && !activationBlocked;
 
@@ -126,7 +123,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
     event.preventDefault();
     if (!valid) return;
 
-    // A condition the editor cannot show whole is left out, so the server keeps it as it is; "none" is an empty object.
     const conditionToSend: RoutineCondition | Record<string, never> | undefined = initial.conditionUnsupported ? undefined : (builtCondition ?? {});
 
     const dto: CreateRoutineDto | UpdateRoutineDto = {
@@ -144,7 +140,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-      {/* Name */}
       <div className="space-y-2">
         <Label htmlFor="routine-name">{t('routines.name')}</Label>
         <Input
@@ -166,7 +161,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
         <p id="agent-objective-hint" className="text-xs text-muted-foreground">{t('aiSettings.hint')}</p>
       </div>
 
-      {/* Event Type */}
       <div className="space-y-2">
         <Label htmlFor="event-type">{t('routines.eventType')}</Label>
         <Select id="event-type" value={eventType} onChange={(e) => setEventType(e.target.value as RoutineEventType)} data-testid="event-type-select">
@@ -178,7 +172,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
         </Select>
       </div>
 
-      {/* Timing for time-based events */}
       {isTimeBasedEvent && (
         <div className="space-y-2">
           <Label>{t('routines.timing')}</Label>
@@ -226,7 +219,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
         </div>
       )}
 
-      {/* Conditions: the five fields a routine reads */}
       <div className="space-y-2">
         <Label>{t('routines.conditions')}</Label>
         {initial.conditionUnsupported ? (
@@ -251,7 +243,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
         )}
       </div>
 
-      {/* Actions */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label>{t('routines.actions')}</Label>
@@ -279,7 +270,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
                     <Select
                       aria-label={t('routines.actionOf', { position: index + 1 })}
                       value={action.type}
-                      // Another type starts from nothing: what was typed for the old one means nothing for the new one.
                       onChange={(e) => changeAction(action.key, (draft) => newActionDraft(draft.key, e.target.value as RoutineActionType))}
                       data-testid={`action-type-select-${index}`}
                     >
@@ -329,7 +319,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
                   </div>
                 )}
 
-                {/* Action-specific configuration */}
                 {action.type === 'Wait' && (
                   <div className="mt-3 space-y-1">
                     <div className="flex gap-4">
@@ -453,7 +442,6 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
         )}
       </div>
 
-      {/* Toggles */}
       {template ? <p className="rounded-lg bg-muted p-4 text-sm">{t('routines.flow.savedPaused')}</p> : <div className="space-y-4 border-t pt-4">
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">

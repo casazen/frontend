@@ -11,7 +11,6 @@ function Where() {
   return <output data-testid="where">{location.pathname + location.search}</output>;
 }
 
-/** The button that opens a row, in the table (the cards of a phone are in the page too, and a media query shows one of the two). */
 const nameInTable = (name: string) => within(screen.getByRole('table', { name: 'Prenotazioni' })).getByRole('button', { name });
 
 function renderPage(entry = '/dev/detail-drawer') {
@@ -54,7 +53,6 @@ describe('DetailDrawerPage (UI-15, the page of the detail drawer for developers)
     expect(await within(dialog).findByTestId('dev-booking-content', undefined, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByTestId('where')).toHaveTextContent('/dev/detail-drawer?detail=dev-booking:ZS-1002');
     expect(screen.getByTestId('current-drawer')).toHaveTextContent('Aperto: dev-booking:ZS-1002');
-    // The timeline inside the drawer shows four of the six events and offers the rest.
     expect(within(dialog).getByRole('list', { name: 'Cronologia della prenotazione' }).children).toHaveLength(4);
     expect(within(dialog).getByTestId('timeline-show-more')).toBeInTheDocument();
   });

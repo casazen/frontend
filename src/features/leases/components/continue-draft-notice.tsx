@@ -4,10 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { leaseEditPath } from '../wizard/wizard-model';
 
-/**
- * A draft is the contract itself, saved on the server as it is typed (LR-06a): the sheet offers to go on with it, from the first step
- * that is not done, on this device or on another.
- */
 export function ContinueDraftNotice({ leaseId }: { leaseId: string }) {
   const { t } = useTranslation();
   const titleId = useId();

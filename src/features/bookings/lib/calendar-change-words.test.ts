@@ -35,7 +35,6 @@ describe('what a change of the calendar says about itself (E08/F05/US03/T02, T03
     const accepted = change({ state: 'Sent', properties: [property({ state: 'Accepted' })] });
     expect(line({ change: accepted }).kind).toBe('accepted');
     expect(line({ change: change({ state: 'Confirmed', properties: [property({ state: 'Confirmed' })] }) }).kind).toBe('confirmed');
-    // Some chunks accepted and the rest still to send: not completed, said as sending.
     expect(line({ change: change({ state: 'Sending', properties: [property({ state: 'Accepted' })] }) }).kind).toBe('sending');
   });
 
@@ -43,7 +42,6 @@ describe('what a change of the calendar says about itself (E08/F05/US03/T02, T03
     const failed = change({ state: 'Failed', properties: [property({ state: 'Failed', errorCode: 'octorate_unavailable' })] });
     expect(line({ change: failed })).toEqual({ kind: 'failed', reasonKey: 'booking.syncReason.unavailable', canRetry: true });
     expect(line({ change: failed, mayRetry: false }).canRetry).toBe(false);
-    // A change that is waiting cannot be retried (409): the button is not offered.
     const waiting = change({ state: 'Queued', properties: [property({ state: 'Failed' })] });
     expect(line({ change: waiting }).canRetry).toBe(false);
     expect(line({ change: change({ state: 'PartiallySent', properties: [property({ state: 'Failed' })] }) }).canRetry).toBe(true);
@@ -70,7 +68,6 @@ describe('what a change of the calendar says about itself (E08/F05/US03/T02, T03
   });
 
   it('propertyLineOf_A404_IsNotFound_WhateverTheCacheHolds', () => {
-    // The change is in the cache as accepted, and the last read said 404.
     const cached = change({ state: 'Sent', properties: [property({ state: 'Accepted' })] });
     expect(line({ change: cached, read: 'notFound' }).kind).toBe('notFound');
     expect(changeReadOf({ enabled: true, isError: true, notFound: true, hasData: true })).toBe('notFound');

@@ -259,7 +259,6 @@ describe('Tabs (UI-07)', () => {
       });
 
       const requests = tab(/Richieste/);
-      // The number is for the eyes; the ears get what it counts, once.
       expect(requests).toHaveAccessibleName(/^Richieste.*da approvare$/);
       expect(requests).toHaveTextContent('3');
       expect(within(requests).getByText('3')).toHaveAttribute('aria-hidden', 'true');

@@ -10,15 +10,9 @@ import type { CalendarDaysQuery } from '@/types/calendar-days.types';
 export const CALENDAR_DAYS_KEY = ['bookings', 'calendar', 'days'] as const;
 
 interface CalendarDaysOptions {
-  /** `false` reads nothing: the days need `property.read`, and a read the caller may not make is never sent. */
   enabled?: boolean;
 }
 
-/**
- * The price and the rules of every night in a range, for the properties the caller reaches (E08/F05/US01/T02). The previous range stays on screen while the next one
- * loads. Other screens change what it holds (a block, a booking, a change made in the panel), and the client does not read an unobserved query again by default
- * (`refetchOnMount: false`), so it is read again whenever the calendar is shown.
- */
 export function useCalendarDays(query: CalendarDaysQuery | undefined, options: CalendarDaysOptions = {}) {
   return useQuery({
     queryKey: [...CALENDAR_DAYS_KEY, query],

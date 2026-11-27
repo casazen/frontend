@@ -26,10 +26,6 @@ interface PropertyOverviewTabProps {
   publicPath: string | null;
 }
 
-/**
- * The tab Panoramica (SR-07d): the photos, the data of the property, its prices and what it has. Sections without a box, a
- * title and what it says; the changes are links to the pages that make them (the form, the photos, the suggestions).
- */
 export function PropertyOverviewTab({ property, canWrite, publicPath }: PropertyOverviewTabProps) {
   const { t } = useTranslation();
   // The listing on the channels (E02/F03/US01/T04) is told only where the channel manager is connected: its endpoints answer 404 otherwise.

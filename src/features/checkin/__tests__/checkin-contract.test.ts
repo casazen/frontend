@@ -55,7 +55,6 @@ describe('public check-in request contract', () => {
           bornInItaly: 'no',
           birthCountryName: 'Francia',
           citizenshipName: 'Italia',
-          // Typed by mistake for a family member: never sent, members have no document in the record.
           documentNumber: 'XX999',
         },
       ],

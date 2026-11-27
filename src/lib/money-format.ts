@@ -8,26 +8,21 @@ import type { TFunction } from 'i18next';
  * throw a `RangeError`, and a render that throws blanks the page).
  */
 
-/** What an ISO 4217 code looks like: three letters. `Intl` takes every such code, known or not, and throws for anything else. */
 const CURRENCY_CODE = /^[A-Za-z]{3}$/;
 
-/** The code in the shape `Intl` takes (three letters, upper case), or `null` when the data gives none or gives something that is not a code. Nothing is guessed. */
 export function currencyCodeOf(currency: string | null | undefined): string | null {
   if (typeof currency !== 'string') return null;
   const code = currency.trim();
   return CURRENCY_CODE.test(code) ? code.toUpperCase() : null;
 }
 
-/** How many decimals an amount is written with. Without it a currency writes its own (two for the euro and the franc). */
 export interface MoneyDigits {
   minimumFractionDigits: number;
   maximumFractionDigits: number;
 }
 
-/** An amount with no currency still is money: it keeps its cents. */
 const BARE_DIGITS: MoneyDigits = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
 
-/** The formats are kept: a calendar writes hundreds of prices at every render and an `Intl.NumberFormat` is slow to make. */
 const formats = new Map<string, Intl.NumberFormat>();
 
 function numberFormat(locale: string, code: string | null, digits: MoneyDigits | undefined): Intl.NumberFormat {

@@ -20,7 +20,6 @@ test.describe('Lease flow (long-term landlord)', () => {
     page,
   }) => {
     const calls = await mockLeaseFlowApi(page);
-    // The draft is already on the server (the wizard of its creation is LR-06a's own): the flow starts from its sheet.
     await page.goto(demoUrl(`/app/long-rent/leases/${FLOW_LEASE_ID}`, 'long-term'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('lease-continue-draft')).toBeVisible();
 
@@ -37,13 +36,11 @@ test.describe('Lease flow (long-term landlord)', () => {
     await expect(page.getByTestId('rent-not-signed')).toBeVisible();
     await page.getByTestId('lease-tab-documenti').click();
 
-    // The contract to sign is requested from the API.
     const downloadPromise = page.waitForEvent('download');
     await signing.getByRole('button', { name: 'Scarica contratto da firmare' }).click();
     await downloadPromise;
     expect(calls.contractDownloads).toBe(1);
 
-    // Manual signature: the submit stays disabled until the file and the declaration are there.
     await signing.getByRole('button', { name: 'Carica contratto firmato' }).click();
     const dialog = page.getByTestId('signed-contract-dialog');
     const submit = dialog.getByRole('button', { name: 'Salva la firma' });
@@ -57,11 +54,9 @@ test.describe('Lease flow (long-term landlord)', () => {
 
     await expect(page.getByTestId('lease-signing-state')).toHaveText('Firmato');
     expect(calls.signedUploads).toEqual([{ stipulaDate: '2026-08-20', hasPdf: true }]);
-    // The registration and its deadline are in the tab of the deadlines.
     await page.getByTestId('lease-tab-scadenze').click();
     await expect(page.getByTestId('rli-registration-deadline')).toContainText('19/09/2026');
 
-    // Manual RLI: the receipt number and date come from the landlord; the registration is shown only after the API saved it.
     await expect(page.getByTestId('rli-registration-state')).toHaveText('Da registrare');
     await page.getByRole('button', { name: 'Inserisci estremi di registrazione' }).click();
     const rli = page.getByTestId('rli-manual-dialog');
@@ -83,7 +78,6 @@ test.describe('Lease flow (long-term landlord)', () => {
     expect(calls.receiptDownloads).toBe(1);
 
 
-    // Rent: the schedule is generated from the lease (48 monthly installments), all to collect.
     await page.getByTestId('lease-tab-pagamenti').click();
     const rent = page.getByTestId('rent-schedule-panel');
     await expect(page.getByTestId('rent-not-signed')).toHaveCount(0);
@@ -99,7 +93,6 @@ test.describe('Lease flow (long-term landlord)', () => {
     if (trackFrom !== undefined) expect(trackFrom).toMatch(/^\d{4}-\d{2}-01$/);
     await expect(rent.getByTestId('rent-installment-status').first()).toHaveText('Da incassare');
 
-    // Offline payment of the first installment: only that one becomes paid.
     await rent.getByRole('button', { name: 'Segna come pagata' }).first().click();
     const paidDialog = page.getByTestId('mark-rent-paid-dialog');
     await paidDialog.getByLabel('Data del pagamento').fill('2026-09-05');
@@ -119,7 +112,6 @@ test.describe('Lease flow (long-term landlord)', () => {
     await page.goto(demoUrl('/app/long-rent/leases/new?tipo=libero&come=casazen', 'long-term'), { waitUntil: 'domcontentloaded' });
     await page.getByLabel(/Immobile/).selectOption(FLOW_PROPERTY.id);
     await expect(page.getByText(/Per creare il contratto serve l’APE/)).toBeVisible();
-    // The APE is uploaded in a window over the page, which stays where it is (it used to open the property page).
     await page.getByRole('button', { name: "Carica l'APE" }).click();
     await expect(page.getByRole('dialog').getByTestId('document-drop-zone')).toBeVisible();
     await expect(page).toHaveURL(/\/leases\/new\?tipo=libero&come=casazen/);

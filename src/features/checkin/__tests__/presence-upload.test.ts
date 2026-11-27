@@ -14,7 +14,6 @@ function httpError(status?: number, code?: string): AxiosError {
 const networkError = () => httpError(undefined, AxiosError.ERR_NETWORK);
 const timeoutError = () => httpError(undefined, AxiosError.ECONNABORTED);
 
-/** An environment the test drives: whether the browser is online, the waits that were asked for, the sleeps that were asked for. */
 function environment(options: { online?: boolean } = {}) {
   const connection = { online: options.online ?? true };
   const waiters: Array<(online: boolean) => void> = [];
@@ -37,12 +36,10 @@ function environment(options: { online?: boolean } = {}) {
     connection,
     sleeps,
     waitForOnline,
-    /** The connection is back: whoever waits for it goes on. */
     comeBack: () => {
       connection.online = true;
       waiters.splice(0).forEach((resolve) => resolve(true));
     },
-    /** The wait for the connection ran out. */
     giveUpWaiting: () => waiters.splice(0).forEach((resolve) => resolve(false)),
   };
 }
@@ -276,7 +273,6 @@ describe('presence-upload: the environment of the browser', () => {
     window.dispatchEvent(new Event('online'));
 
     await expect(waiting).resolves.toBe(true);
-    // The timer of the wait went with it.
     expect(vi.getTimerCount()).toBe(0);
   });
 
@@ -313,7 +309,6 @@ describe('presence-upload: the environment of the browser', () => {
 });
 
 describe('presence-upload: the guest stops the upload (E72/F02/US01/T02)', () => {
-  /** What the waits of the upload are while the test holds them: a pause and a wait for the connection that end only when the test says so. */
   function heldEnvironment(options: { online?: boolean } = {}) {
     const rig = environment({ online: options.online });
     const paused: Array<() => void> = [];
@@ -343,7 +338,6 @@ describe('presence-upload: the guest stops the upload (E72/F02/US01/T02)', () =>
   it('uploadPresence_ARequestThatFailsBecauseItWasCancelled_IsNotANetworkFailureAndIsNotRepeated', async () => {
     const rig = heldEnvironment();
     const stop = new AbortController();
-    // What axios does with a request whose signal is aborted: it rejects with a cancellation, which is neither a refusal nor a failure of the network.
     const send = vi.fn(
       () =>
         new Promise<string>((_resolve, reject) => {
@@ -368,7 +362,6 @@ describe('presence-upload: the guest stops the upload (E72/F02/US01/T02)', () =>
     const upload = uploadPresence(send, KEY, rig.env, stop.signal);
     await vi.waitFor(() => expect(rig.sleeps).toEqual([1_000]));
     stop.abort();
-    // The pause ends later on its own: the upload does not go on.
     rig.endThePause();
 
     await expect(upload).resolves.toEqual({ kind: 'cancelled' });

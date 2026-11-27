@@ -42,7 +42,6 @@ import { NEW_SERVICE_PATH, SERVICES_PATH, draftPath, servicePath } from './lib/s
 
 const T = 'supplier.services.wizard';
 
-/** The four steps, in the order of the address (`?step=`): what the service is, what it costs, when it is offered, how it looks. */
 const FIRST_STEP = 'service';
 
 interface WizardResult {
@@ -50,7 +49,6 @@ interface WizardResult {
   published: boolean;
 }
 
-/** Hands the form of the wizard to the page, which needs it to mark the fields that the API refused. */
 function FormBridge({ onForm }: { onForm: (form: UseFormReturn<ServiceFormValues>) => void }) {
   const form = useFormContext<ServiceFormValues>();
   useEffect(() => {
@@ -59,7 +57,6 @@ function FormBridge({ onForm }: { onForm: (form: UseFormReturn<ServiceFormValues
   return null;
 }
 
-/** The last step: the photos on the real endpoints, the preview the customers would see, and the choice to publish or keep a draft. */
 function PhotosStep({ service, publishNow, onPublishNow }: { service: SupplierService | undefined; publishNow: boolean; onPublishNow: (value: boolean) => void }) {
   const { t } = useTranslation();
   return (
@@ -87,7 +84,6 @@ function PhotosStep({ service, publishNow, onPublishNow }: { service: SupplierSe
   );
 }
 
-/** The confirmation: what was done, and what happens now, in the true things only. */
 function Done({ result }: { result: WizardResult | undefined }) {
   const { t } = useTranslation();
   if (!result) return <Navigate to={SERVICES_PATH} replace />;
@@ -130,7 +126,6 @@ function WizardBody({ initial, onStarted }: { initial?: SupplierService; onStart
 
   const decimal = i18n.language.startsWith('it') ? ',' : '.';
   const [serviceId, setServiceId] = useState<string | undefined>(initial?.id);
-  // What the screen has of the service is what the API last answered: the cache, kept up by every answer.
   const { data: service } = useSupplierService(serviceId);
   const idRef = useRef(serviceId);
   const formRef = useRef<UseFormReturn<ServiceFormValues> | null>(null);
@@ -138,9 +133,6 @@ function WizardBody({ initial, onStarted }: { initial?: SupplierService; onStart
   const [publishNow, setPublishNow] = useState(true);
   const [defaults] = useState(() => (initial ? serviceToForm(initial, decimal) : emptyServiceForm()));
 
-  // From the first save the address is the one of the draft (a reload, or another day, opens it again). It is written once the
-  // wizard has moved to the next step (the address then has `?step=`), not when the save ends: `setSearchParams` with a function
-  // starts from the address of the last render, so written earlier it would take the step of the wizard away.
   const stepInAddress = searchParams.get('step') !== null;
   useEffect(() => {
     if (!serviceId || searchParams.get('bozza') === serviceId || !(initial || stepInAddress)) return;
@@ -158,7 +150,6 @@ function WizardBody({ initial, onStarted }: { initial?: SupplierService; onStart
     formRef.current = form;
   }, []);
 
-  /** The service as the last answer left it: its `version` is the one the next save has to carry. */
   const latest = () => (idRef.current ? client.getQueryData<SupplierService>(supplierServiceKeys.detail(idRef.current)) : undefined);
 
   const remember = (saved: SupplierService) => {
@@ -166,7 +157,6 @@ function WizardBody({ initial, onStarted }: { initial?: SupplierService; onStart
     setServiceId(saved.id);
   };
 
-  /** Tells the person what the API refused, marks the fields, and stops the step (the wizard shows `problem` as the message of the failure). */
   const refuse = async (error: unknown): Promise<never> => {
     const found = describeServiceError(error, t);
     if (found.kind === 'changed' && idRef.current) {
@@ -180,10 +170,6 @@ function WizardBody({ initial, onStarted }: { initial?: SupplierService; onStart
     throw new Error(found.message);
   };
 
-  /**
-   * Saves the draft. A step is saved as typed only when it holds (`draftValues`); `complete` is the last button, which has
-   * checked every step already and must send everything as it is.
-   */
   const save = async (values: ServiceFormValues, { complete = false } = {}): Promise<SupplierService> => {
     setProblem(null);
     const current = latest();
@@ -193,7 +179,6 @@ function WizardBody({ initial, onStarted }: { initial?: SupplierService; onStart
       const saved = current
         ? await update.mutateAsync({ id: current.id, body: { ...body, version: current.version } })
         : await create.mutateAsync(body);
-      // The draft exists from here: it counts among the services of the list, and that must not turn the wizard into the limit message.
       if (!current) onStarted?.();
       remember(saved);
       return saved;
@@ -278,7 +263,6 @@ function WizardBody({ initial, onStarted }: { initial?: SupplierService; onStart
       finishLabel={t(publishNow ? `${T}.publish` : `${T}.saveDraft`)}
       finishFailedMessage={problem ?? t(`${T}.failed`)}
       onFinish={finish}
-      // The draft is the service on the server: nothing is kept in the browser, and no old draft of the session can be laid over it.
       draft={false}
       onExit={() => navigate(SERVICES_PATH)}
       renderDone={({ result }) => <Done result={result} />}
@@ -301,12 +285,10 @@ function WizardBody({ initial, onStarted }: { initial?: SupplierService; onStart
  */
 function OpenedDraft({ initial }: { initial: SupplierService }) {
   const [opened] = useState(initial);
-  // A service already on offer (or paused) is not a draft: its page has every field.
   if (opened.status !== 'Draft') return <Navigate to={servicePath(opened.id)} replace />;
   return <WizardBody initial={opened} />;
 }
 
-/** A draft reopened (`?bozza=`): loaded once, and only then the wizard starts, from what the server has. */
 function DraftLoader({ id, onStartNew }: { id: string; onStartNew: () => void }) {
   const { t } = useTranslation();
   const { data, isLoading, isError, error } = useSupplierService(id);
@@ -320,7 +302,6 @@ function DraftLoader({ id, onStartNew }: { id: string; onStartNew: () => void })
           icon={Pencil}
           title={t(`${T}.draftErrorTitle`)}
           description={found.kind === 'notFound' ? found.message : t(`${T}.draftErrorDescription`)}
-          // The page stays where it is when only its address changes: the wizard has to forget the draft that is not there.
           action={{ label: t(`${T}.startNew`), href: NEW_SERVICE_PATH, onClick: onStartNew }}
           secondaryAction={{ label: t(`${T}.done.back`), href: SERVICES_PATH }}
         />
@@ -330,15 +311,11 @@ function DraftLoader({ id, onStartNew }: { id: string; onStartNew: () => void })
   return <OpenedDraft key={data.id} initial={data} />;
 }
 
-/** The copy of a service (`?duplica=`): made once, then the address is the one of its draft. */
 function DuplicateStarter({ sourceId }: { sourceId: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { mutateAsync } = useDuplicateSupplierService();
   const started = useRef(false);
-  // The promise, not the `onSuccess` and `isError` of the mutation: with React StrictMode (development) the effect runs twice and
-  // the mutation observer is detached from the call the first run started, so the page stayed on "Preparing the copy…" with the
-  // copy already made. A promise settles the page whatever the observers do.
   const [failed, setFailed] = useState<{ error: unknown } | null>(null);
 
   useEffect(() => {
@@ -370,14 +347,11 @@ function WizardEntry() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
   const [draftId, setDraftId] = useState(() => params.get('bozza'));
-  // A link to a step of a service that was never started has nothing to show: it begins where everything begins.
   const [lostAtOpening] = useState(() => {
     const step = params.get('step');
     return !params.get('bozza') && step !== null && ![FIRST_STEP, '1', 'fatto'].includes(step);
   });
   const [started, setStarted] = useState(false);
-  // Once the address has been cleaned (no step in it) the page is not lost any more, and neither is it once the wizard has saved
-  // its first draft: from then on the step in the address is the wizard's own, written before the address of the draft.
   const lost = lostAtOpening && !started && params.get('step') !== null && !params.get('bozza');
   const list = useSupplierServices();
   const atLimit = !draftId && !started && list.data !== undefined && list.data.total >= (list.data.limit || SERVICE_LIMITS.maxServices);
@@ -399,10 +373,6 @@ function WizardEntry() {
   return <WizardBody onStarted={() => setStarted(true)} />;
 }
 
-/**
- * Aggiungi un servizio (SP-06): four steps — the service, the price, duration and days, photos and preview — on the wizard kit
- * (`WizardShell`, UI-11). The page header has no primary action of its own: the wizard has the one main button.
- */
 export function SupplierServiceWizardPage() {
   const { t } = useTranslation();
   const [params] = useSearchParams();

@@ -11,15 +11,11 @@
 
 import { isWithoutVatIdChosen, normalizeVatId } from '../site/site-gate';
 
-/** Value of `VERCEL_ENV` for which the variables below are required. */
 const VERCEL_RELEASE_ENVIRONMENTS = ['preview', 'production'] as const;
 
 export interface VercelBuildEnvInput {
-  /** Value of `VERCEL_ENV` on Vercel (`production`, `preview`, `development`), undefined elsewhere. */
   vercelEnv: string | undefined;
-  /** True for the demo build (`npm run build:demo`): it opens without Auth0 and calls no API. */
   demoBuild: boolean;
-  /** `VITE_*` values seen by Vite (process environment or `.env` files). */
   env: Record<string, string | undefined>;
 }
 
@@ -74,8 +70,6 @@ export function findVercelBuildEnvProblems({ vercelEnv, demoBuild, env }: Vercel
     problems.push('VITE_AUTH0_CLIENT_ID: missing (SPA client id of the Auth0 tenant of this Vercel environment)');
   }
 
-  // Preview and Production can share one tenant: the API identifier is then the only thing that tells the backends apart,
-  // and the code default (src/config/env.config.ts) is the production one. A silent default is not acceptable here.
   if (!readValue(env.VITE_AUTH0_AUDIENCE)) {
     problems.push('VITE_AUTH0_AUDIENCE: missing (API identifier of this Vercel environment; it must equal Auth0__Audience of the matching Railway environment)');
   }
@@ -103,7 +97,6 @@ export function findVercelBuildEnvProblems({ vercelEnv, demoBuild, env }: Vercel
   return problems;
 }
 
-/** Throws, naming every problem, when a Vercel preview or production build lacks its variables. */
 export function assertVercelBuildEnv(input: VercelBuildEnvInput): void {
   const problems = findVercelBuildEnvProblems(input);
   if (problems.length === 0) return;

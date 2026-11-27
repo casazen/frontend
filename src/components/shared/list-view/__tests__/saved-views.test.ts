@@ -108,7 +108,6 @@ describe('withSavedView', () => {
     expect(withSavedView(views, { name: 'Long', query: 'x'.repeat(900) }, 'x')).toEqual({ ok: false, reason: 'too-long' });
     const full = Array.from({ length: SAVED_VIEWS_LIMIT }, (_, index) => ({ id: String(index), name: `V${index}`, query: '' }));
     expect(withSavedView(full, { name: 'One more', query: '' }, 'x')).toEqual({ ok: false, reason: 'limit' });
-    // An update is not "one more".
     expect(withSavedView(full, { name: 'v0', query: 'q=a' }, 'x').ok).toBe(true);
   });
 

@@ -53,12 +53,10 @@ vi.mock('@/queries/use-properties', () => ({
   useProperties: () => ({ data: env.properties, isPending: false, isError: false, error: null, refetch: vi.fn() }),
 }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
 
-/** The organization's own administrator (the owner of the account context) and a collaborator who writes the setup but does not administer the organization. */
 const ADMIN = [{ contextKey: 'account', roleKey: 'org_owner' }];
 const COLLABORATOR = [{ contextKey: 'short-rent', roleKey: 'property_manager' }];
 
@@ -70,7 +68,6 @@ const RULES: ChannelCommissionRuleSet = {
   ],
 };
 
-/** A Swiss agency that has said everything but the commissions of the portals, the standard mandate (3 owners without one), the tourist tax and the issuing. */
 function agencySetup(): BillingSetup {
   return setupOf(
     swissSetup().sections.map((entry) => {
@@ -102,13 +99,11 @@ async function onStep(step: string) {
   await waitFor(() => expect(wizard()).toHaveAttribute('data-step', step), WAIT);
 }
 
-/** «Continua», once the button is enabled: a click on a button that is still switched off does nothing, and the test would then wait for a step that never comes. */
 async function next() {
   await waitFor(() => expect(screen.getByTestId('fiscal-billing-next')).toBeEnabled(), WAIT);
   fireEvent.click(screen.getByTestId('fiscal-billing-next'));
 }
 
-/** Nothing of the agency was asked of the server, and the wizard has no step of the portals or of the mandate. */
 async function expectNoAgencyAtAll(step: string) {
   await onStep(step);
   expect(wizard()).not.toHaveAttribute('data-step', 'channels');
@@ -144,14 +139,11 @@ afterEach(() => {
   cleanup();
 });
 
-// Permission rule: the steps of the portals and of the mandate are the administrator's of an organization on the agency plan, and so are the endpoints behind them. The backend
-// answers every `agency.*` read with a bare 403 to anyone else, and a refused read sends the whole app to the page of no access: nobody else must even ask.
 describe('the steps of the agency are only for the administrator of an organization on the agency plan (E11/F02/US01/T01)', () => {
   it('BillingWizard_ACollaboratorOfAnAgency_HasNoStepOfThePortalsOrOfTheMandateAndAsksNothingOfTheAgency', async () => {
     env.contexts = COLLABORATOR;
     renderWizard('channels');
 
-    // The address names a step that this person does not have: the wizard opens where it would without it.
     await expectNoAgencyAtAll('tourist-tax');
     expect(useAgencyPlan).not.toHaveBeenCalled();
   });
@@ -176,14 +168,11 @@ describe('the steps of the agency are only for the administrator of an organizat
     renderWizard('channels');
     await onStep('channels');
 
-    // The step of the mandate is in the list of the steps, the one after the portals.
     expect(screen.getAllByText(i18n.t('billingWizard.steps.mandate.label')).length).toBeGreaterThan(0);
     await waitFor(() => expect(api.getChannelCommissionRules).toHaveBeenCalled(), WAIT);
   });
 });
 
-// Flag rule: who holds the accounts of the portals is behind `ownerInvoicing`, on the server too (404 while it is off). With the flag off the step says so, nothing is asked and nothing
-// of the holders is saved; the commission percents of the portals do not depend on it.
 describe('the account holders of the portals follow the flag ownerInvoicing (E14/F01/US01/T01)', () => {
   it('BillingWizard_ChannelsStepWithOwnerInvoicingOff_AsksNoHolderAndSavesOnlyTheCommissionsOnContinua', async () => {
     renderWizard('channels');
@@ -196,7 +185,6 @@ describe('the account holders of the portals follow the flag ownerInvoicing (E14
     await next();
     await onStep('mandate');
 
-    // Accepting the percents on screen is what confirms the step: each is saved as the rule of the agency, from today.
     expect(api.saveChannelCommissionRules).toHaveBeenCalledTimes(1);
     const rules = vi.mocked(api.saveChannelCommissionRules).mock.calls[0][0];
     expect(rules.map((rule) => [rule.channel, rule.percent])).toEqual([
@@ -217,7 +205,6 @@ describe('the account holders of the portals follow the flag ownerInvoicing (E14
     expect(api.getChannelAccountHolders).toHaveBeenCalled();
     expect(screen.queryByTestId('billing-holders-unavailable')).not.toBeInTheDocument();
 
-    // The listing Casa 1 has its own holder on Airbnb: the agency's, where the default of the organization is the owner's.
     fireEvent.change(screen.getByTestId('billing-holder-p1-Airbnb'), { target: { value: 'Agency' } });
     await next();
     await onStep('mandate');
@@ -238,7 +225,6 @@ describe('the standard mandate is applied by its own action and never by «Conti
     expect(await screen.findByTestId('billing-mandate-count')).toHaveTextContent(i18n.t('billingWizard.mandate.apply.withoutMandate', { count: 3 }));
     fireEvent.change(screen.getByTestId('billing-mandate-percent'), { target: { value: '20' } });
 
-    // Asked for, not yet done: nothing is sent before the confirmation.
     await waitFor(() => expect(screen.getByTestId('billing-mandate-apply-button')).toBeEnabled(), WAIT);
     fireEvent.click(screen.getByTestId('billing-mandate-apply-button'));
     expect(await screen.findByTestId('billing-mandate-confirm')).toBeInTheDocument();
@@ -249,7 +235,6 @@ describe('the standard mandate is applied by its own action and never by «Conti
     expect(vi.mocked(api.applyMandateTemplate).mock.calls[0][0]).toMatchObject({ commissionPercent: 20, commissionBase: 'GrossExclTouristTax', commissionIncludesVat: false });
     expect(await screen.findByTestId('billing-mandate-result')).toHaveTextContent(i18n.t('billingWizard.mandate.apply.result', { count: 3, skipped: 0 }));
 
-    // «Continua» only moves on: the mandate was applied once, by the action, and the step has nothing else to save.
     await next();
     await onStep('issuing');
     expect(api.applyMandateTemplate).toHaveBeenCalledTimes(1);
@@ -267,13 +252,11 @@ describe('the standard mandate is applied by its own action and never by «Conti
   });
 });
 
-/** «Salva ed esci» on the step on screen, once the button is enabled. */
 async function saveAndExit() {
   await waitFor(() => expect(screen.getByTestId('billing-save-exit')).toBeEnabled(), WAIT);
   fireEvent.click(screen.getByTestId('billing-save-exit'));
 }
 
-// «Salva ed esci» keeps what is valid and changed, and the word «Salvato» is for what is true: the terms of the mandate are saved by no step, and a percent that is not one is left out.
 describe('«Salva ed esci» on the steps of the agency says what it kept (E11/F02/US01/T01)', () => {
   it('SaveAndExit_MandateStepWithTheTermsWritten_SaysTheyAreNotSavedFromHereAndAppliesNothing', async () => {
     renderWizard('mandate');
@@ -311,7 +294,6 @@ describe('«Salva ed esci» on the steps of the agency says what it kept (E11/F0
     await saveAndExit();
 
     await waitFor(() => expect(toast.warning).toHaveBeenCalledWith(i18n.t('billingWizard.exit.savedPartly')), WAIT);
-    // The percent the person wrote is the agency's rule; the one that is only shown (BookingCom, the default of the configuration) is not an answer.
     expect(api.saveChannelCommissionRules).toHaveBeenCalledTimes(1);
     expect(vi.mocked(api.saveChannelCommissionRules).mock.calls[0][0].map((rule) => [rule.channel, rule.percent])).toEqual([['Airbnb', 16]]);
     expect(toast.success).not.toHaveBeenCalled();

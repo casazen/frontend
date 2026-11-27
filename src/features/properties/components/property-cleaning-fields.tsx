@@ -19,36 +19,25 @@ import {
   type SupplierChoice,
 } from '../lib/property-cleaning-model';
 
-/** A member of the staff that can be chosen. */
 export interface StaffChoice {
   userId: string;
   name: string;
 }
 
-/** How a list the form waits for stands: being read, read, not readable, or not for this person to read (the team, for who may not manage it). */
 export type ChoicesState = 'loading' | 'ready' | 'error' | 'unavailable';
 
 interface PropertyCleaningFieldsProps {
-  /** Tells apart the ids of two forms on the same page. */
   idPrefix: string;
   form: CleaningForm;
   onChange: (patch: Partial<CleaningForm>) => void;
-  /** What is wrong with the form: shown when the person has tried to save. */
   problems: CleaningProblems;
-  /** The currency of the property (of every property chosen, in the dialog): the one of the price, from the data. */
   currency: string;
-  suppliers: { state: ChoicesState; choices: SupplierChoice[]; /** The name of the supplier the setup holds, for the case it is not among the ones to choose from now. */ storedName: string | null; onRetry: () => void };
+  suppliers: { state: ChoicesState; choices: SupplierChoice[]; storedName: string | null; onRetry: () => void };
   staff: { state: ChoicesState; choices: StaffChoice[]; onRetry: () => void };
-  /** Where the time comes from when it is left empty (the check-out time of the property, or the default one when it has none); `null` when it is not one property (the dialog) or not known. */
   timeSource: CleaningTimeSource | null;
-  /** A save is on its way: nothing of the form can be changed. */
   disabled: boolean;
 }
 
-/**
- * The fields of the cleaner of a property, the same in the card of one property and in the dialog for many (E24/F01/US02/T01): who cleans (a supplier or a member of the staff), the price agreed
- * in the currency of the property, the time, the length and whether the automation uses it. The suppliers work in euro only: a property in another currency takes a member of the staff.
- */
 export function PropertyCleaningFields({ idPrefix, form, onChange, problems, currency, suppliers, staff, timeSource, disabled }: PropertyCleaningFieldsProps) {
   const { t } = useTranslation();
   const supplierWorks = currency === SUPPLIER_CURRENCY;

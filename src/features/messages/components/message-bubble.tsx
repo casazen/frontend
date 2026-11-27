@@ -15,35 +15,26 @@ import type { HubThreadItem } from '../lib/thread-items';
 import { formatMessageTime } from '../lib/thread-format';
 import { TranslateButton } from './translate-button';
 
-/** The files the API serves as a picture: they are shown; any other is a download. */
 const IMAGE_TYPES: readonly string[] = ['image/jpeg', 'image/png'];
 
-/** What the host can do about a message, handed by the page that holds the send. */
 export interface BubbleActions {
-  /** Sends the text of a message the channel refused again, as a new message. */
   onResend: (message: MessageHubMessage) => void;
-  /** Reads the conversation again: the channel may have told by now whether it received the message. */
   onCheck: () => void;
   checking: boolean;
-  /** Sends a message that did not leave this page again, with the same key (the server writes it once). */
   onRetryPending: (key: string) => void;
-  /** Takes a message the API refused back to the box, to be changed. */
   onEditPending: (item: PendingThreadMessage) => void;
 }
 
 interface MessageBubbleProps {
   item: HubThreadItem;
   threadKey: string;
-  /** The language the host reads: the messages of the guest are translated into it. */
   hostLanguage: string;
   /** Answering asks `booking.write`: without it there is nothing to retry or to send again. */
   canWrite: boolean;
-  /** The messages the host already sent again after the channel refused them: their button is gone. */
   resent: ReadonlySet<string>;
   actions: BubbleActions;
 }
 
-/** A picture of a message: read through the API, shown from the memory of the page, never from an address of the channel. */
 function AttachmentImage({ blob, alt }: { blob: Blob; alt: string }) {
   const image = useRef<HTMLImageElement>(null);
   useEffect(() => {
@@ -122,8 +113,6 @@ function MessageAttachment({ messageId, contentType }: { messageId: string; cont
 function DeliveryProblem({ message, canWrite, resent, actions }: { message: MessageHubMessage; canWrite: boolean; resent: boolean; actions: BubbleActions }) {
   const { t } = useTranslation();
   if (message.deliveryState === 'Error') {
-    // An automatic message (the check-in link) is not sent again by hand: the host's copy would be a message of a person, which answers the guest's last
-    // question for good, and the link already waits in the «Da fare» list with «Copia link» (E23/F01/US01/T01).
     const automatic = message.origin === 'Automation';
     return (
       <div className="max-w-[85%] space-y-1 px-1 text-xs text-destructive" role="alert" data-testid="delivery-error">
@@ -157,7 +146,6 @@ function DeliveryProblem({ message, canWrite, resent, actions }: { message: Mess
   return null;
 }
 
-/** The message that did not leave this page: the sentence for what happened, and the one thing to do about it. */
 function PendingProblem({ pending, actions }: { pending: PendingThreadMessage; actions: BubbleActions }) {
   const { t } = useTranslation();
   const retry = canRetryReply(pending.error);
@@ -193,10 +181,7 @@ export function MessageBubble({ item, threadKey, hostLanguage, canWrite, resent,
   const { message, pending } = item;
   const sending = pending?.status === 'sending';
   const state = message?.deliveryState;
-  // An automatic message of CasaZen (the check-in link) is the host's side of the conversation but nobody's words: it is told apart by its name, and drawn neutral, not as the host's own.
   const automatic = message?.origin === 'Automation';
-  // The text of that message holds the link to the page of the guest, a secret that the host gets only if it may copy it (`booking.write`, as in the guest panel of the booking): a reader
-  // who may not copy it reads the message without the link.
   const text = automatic && !canWrite ? hideCheckInLink(item.text, t('messages.thread.linkHidden')) : item.text;
   const hasText = text.trim().length > 0;
 

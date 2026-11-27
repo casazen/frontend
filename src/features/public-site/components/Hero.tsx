@@ -8,11 +8,6 @@ interface HeroProps {
   onCta?: () => void;
 }
 
-/**
- * Cover of the public site. With a photo the caption sits on a dark band (white text, at least 5.7:1 even on a white
- * photo); without one the hero is the primary color with the text color chosen for it (BK-13: AA for any host color).
- * Both variants have the same size, so the page does not jump when a fallback photo arrives.
- */
 export function Hero({ imageUrl, title, tagline, ctaLabel, onCta }: HeroProps) {
   const hasImage = Boolean(imageUrl);
 

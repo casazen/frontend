@@ -5,34 +5,24 @@ import { Button } from '@/components/ui/button';
 import { supportConfig } from '@/config/support.config';
 import type { AppContextKey } from '@/config/route-manifest';
 
-/** Label of the way back, by area: the home of each area is "Oggi" or "Panoramica" in the redesign. */
 const BACK_TO_HOME: Record<AppContextKey, { labelKey: string }> = {
   'short-rent': { labelKey: 'appShell.reserved.backToToday' },
   supplier: { labelKey: 'appShell.reserved.backToToday' },
   'long-rent': { labelKey: 'appShell.reserved.backToOverview' },
   admin: { labelKey: 'appShell.reserved.backToOverview' },
-  // The first page of the area the role may open is not always a "home" (the accountant's is the profile, for now).
   account: { labelKey: 'appShell.reserved.backToStart' },
 };
 
 interface ReservedPageProps {
   contextKey: AppContextKey;
-  /** The home of the area, where the way back leads. */
   homePath: string;
 }
 
-/**
- * What `ContextRouteGuard` shows, inside the shell, when the user works in the area but the role has no permission for
- * the page (UI-03). It used to be a silent redirect to the home. It says that the page is reserved, leads back to the
- * home and, only when a support address is configured, lets the user ask for access by e-mail: no other channel is
- * ever suggested (`config/support.config.ts`).
- */
 export function ReservedPage({ contextKey, homePath }: ReservedPageProps) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const supportEmail = supportConfig.email;
 
-  // On the home itself (a role without the permission of its own home) the way back would lead to this same page.
   const showBack = homePath !== pathname;
   const mailto = supportEmail
     ? `mailto:${supportEmail}?subject=${encodeURIComponent(t('appShell.reserved.mailSubject'))}&body=${encodeURIComponent(

@@ -27,7 +27,6 @@ const COLLECTIONS = {
 
 const BALANCES = { title: 'Saldi da incassare', basis: 'balances', asOf: '2026-10-09', since: '2024-10-09', rows: [], totals: [] };
 
-/** The error axios throws for a failed answer: its body is a Blob when the call asked for one. */
 function failure(status: number, body: unknown, asBlob: boolean): AxiosError {
   const data = asBlob ? new Blob([JSON.stringify(body)], { type: 'application/problem+json' }) : body;
   return new AxiosError('failed', undefined, undefined, undefined, { status, statusText: '', data, headers: {}, config: { headers: new AxiosHeaders() } });
@@ -56,7 +55,6 @@ describe('reportCollectionsApi (NF-97)', () => {
     expect(get.mock.calls[0]![1]?.params).toEqual({ from: '2026-10-01', to: '2026-10-31', propertyId: 'p-1' });
   });
 
-  // Permission: a 403 is an answer of the page, not a reason to send the whole app to the page of the missing access.
   it('GetCollections_403_ResolvesToNullAndTheClientAcceptsTheStatus', async () => {
     get.mockResolvedValueOnce({ status: 403, data: { code: 'forbidden' } });
 
@@ -104,8 +102,6 @@ describe('reportCollectionsApi (NF-97)', () => {
     await expect(reportCollectionsApi.getBalancesToCollect('')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
   });
 
-  // Data / privacy: the file is read from the authenticated API (the client adds the token), as a Blob, and is named after the report and
-  // its days: no property, guest or owner in the name.
   it.each([
     { name: 'DownloadCsv', run: () => reportCollectionsApi.downloadCsv(PERIOD, 'p-1'), format: 'csv' },
     { name: 'DownloadXlsx', run: () => reportCollectionsApi.downloadXlsx(PERIOD, 'p-1'), format: 'xlsx' },
@@ -133,7 +129,6 @@ describe('the files of the money reports', () => {
     await expect(reportCollectionsApi.downloadCsv(PERIOD, '')).rejects.toBeInstanceOf(ReportAccessDeniedError);
   });
 
-  // The 422 of a file with too many rows comes as a JSON Blob: its code must be readable so the person is told to narrow the period.
   it('DownloadXlsx_422TooManyRows_KeepsTheCodeAndIsToldInWords', async () => {
     get.mockRejectedValueOnce(failure(422, { code: 'xlsx_too_many_rows', title: 'Unprocessable Entity' }, true));
 

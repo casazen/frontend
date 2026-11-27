@@ -22,7 +22,6 @@ interface GetUsersParams {
   search?: string;
 }
 
-// Backend returns our PagedResultDto<T> directly (not wrapped in the standard PaginatedResponse shape)
 interface BackendPagedResult<T> {
   items: T[];
   totalCount: number;
@@ -50,18 +49,15 @@ export const UsersApi = {
   updateMe: (body: UpdateProfileRequest): Promise<UserDetail> =>
     ApiClient.put<UserDetail>('/users/me', body),
 
-  /** Roles the user currently holds, restricted to the ones an admin can manage (A1-17). */
   getRoles: (id: string): Promise<UserRolesResponse> =>
     ApiClient.get<UserRolesResponse>(`/users/${encodeURIComponent(id)}/roles`),
 
-  /** Sets the user's exact admin-manageable role set (A1-17): grants and revokes the difference. */
   updateRoles: (id: string, roles: UserRole[]): Promise<UserRolesResponse> =>
     ApiClient.put<UserRolesResponse>(`/users/${encodeURIComponent(id)}/roles`, { roles }),
 
   deactivateUser: (id: string): Promise<UserActivationResponse> =>
     ApiClient.delete<UserActivationResponse>(`/users/${encodeURIComponent(id)}`),
 
-  /** Permanently removes the account (`DELETE /users/{id}/account`). Auth0 is deleted first. */
   deleteRegisteredUser: (id: string): Promise<void> =>
     ApiClient.delete<void>(`/users/${encodeURIComponent(id)}/account`),
 
@@ -74,7 +70,6 @@ export const UsersApi = {
   putOnboarding: (body: OnboardingRequest): Promise<OnboardingResponse> =>
     ApiClient.put<OnboardingResponse>('/users/onboarding', body),
 
-  /** SE-03: where the signup came from, sent once after the first onboarding (the backend keeps the first one). */
   recordSignupAttribution: (body: SignupAttribution): Promise<SignupAttributionResult> =>
     ApiClient.post<SignupAttributionResult>('/users/me/signup-attribution', body),
 };

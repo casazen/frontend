@@ -20,11 +20,8 @@ type PanelAction = 'block' | 'price' | 'restrictions';
 interface DayPanelProps {
   selection: DaySelection;
   propertyName: string;
-  /** The day layer of the property (its currency and its nights), when the caller may read it: the current values and the taken nights are told from it. */
   layer?: DayLayerProperty;
-  /** Today in the calendar (Europe/Rome): the days before it cannot be changed. */
   today: string;
-  /** The panel is closed (Escape, the close button, "Close"): the selection is dropped. */
   onClose: () => void;
   /** The focus goes into the panel when it opens. Not when the days are selected from the keyboard on the calendar: the focus stays on the day, so that Shift plus arrow goes on extending the selection. */
   moveFocus?: boolean;
@@ -44,7 +41,6 @@ export function DayPanel({ selection, propertyName, layer, today, onClose, moveF
   const phone = useMediaQuery(PHONE_QUERY);
   const [action, setAction] = useState<PanelAction>('block');
   const apply = useApplyCalendarChange();
-  // A block of the days is a request of its own (the form owns it) and is on its way: the panel keeps its tabs and its close off, as for a change of price or rules.
   const [blocking, setBlocking] = useState(false);
   const busy = apply.isPending || blocking;
   const [applied, setApplied] = useState<{ key: string; change: CalendarChange } | null>(null);
@@ -54,7 +50,6 @@ export function DayPanel({ selection, propertyName, layer, today, onClose, moveF
   const futureDays = useMemo(() => days.filter((day) => day >= today), [days, today]);
   const pastCount = days.length - futureDays.length;
   const allPast = futureDays.length === 0;
-  // What the days hold now, for the nights that change; the nights taken by a booking, a hold, a request or a block, for the note of the block.
   const layerDays = useMemo(() => (layer ? futureDays.map((day) => layer.days.get(day)).filter((day): day is CalendarDayInfo => day !== undefined) : undefined), [layer, futureDays]);
   const takenCount = layerDays?.filter((day) => day.taken).length ?? 0;
 
@@ -72,14 +67,12 @@ export function DayPanel({ selection, propertyName, layer, today, onClose, moveF
       open
       modal={false}
       onOpenChange={(open) => {
-        // A request on its way is not abandoned by a press of Escape: the panel stays until it has answered.
         if (!open && !busy) onClose();
       }}
     >
       <SheetContent
         side={phone ? 'bottom' : 'right'}
         overlay={false}
-        // The calendar beside the panel stays in use (the next click extends the selection): a press outside does not close it.
         onInteractOutside={(event) => event.preventDefault()}
         onOpenAutoFocus={(event) => {
           if (!moveFocus) event.preventDefault();

@@ -6,7 +6,6 @@ const codes = (list: { code: string }[]) => list.map((entry) => entry.code);
 
 describe('splitMainChannels («i principali» and «Visualizza altri»)', () => {
   it('splitMainChannels_ShowsTheMainChannelsInTheirOrder_AndKeepsTheOthersInTheCatalogOrder', () => {
-    // The catalog's order (preferred first, then by name) is not the order of the main channels.
     const catalog = ['271', '274', '142', '277', '4', '518', '235', '333', '369', '596'].map(portal);
 
     const split = splitMainChannels(catalog);

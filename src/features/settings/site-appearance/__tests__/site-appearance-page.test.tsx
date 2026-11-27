@@ -67,7 +67,6 @@ function problemError(status: number, data: Record<string, unknown> = {}): Axios
   });
 }
 
-/** The user's contexts as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
 function mockContexts(contextKeys: AppContextKey[], roleKey?: string) {
   vi.mocked(useWorkspace).mockReturnValue({
     contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
@@ -118,7 +117,6 @@ describe('SiteAppearancePage', () => {
     expect(OrgsApi.getBranding).not.toHaveBeenCalled();
   });
 
-  // AM-00 (S1): a collaborator of the org has the rental context but not the owner's role key.
   it.each(MEMBER_ROLE_KEYS)(
     'SiteAppearancePage_MemberWithRoleKey_%s_ShowsAdminRequiredWithoutCallingTheApi',
     (roleKey) => {
@@ -248,7 +246,6 @@ describe('SiteAppearancePage', () => {
     renderPage();
 
     await screen.findByTestId('site-appearance-form');
-    // Nothing chosen: the font of the theme is the one that is checked.
     expect(screen.getByTestId('site-font-editoriale')).toBeChecked();
     fireEvent.click(screen.getByTestId('site-font-classico'));
     expect(screen.getByTestId('site-preview-root')).toHaveAttribute('data-font', 'classico');

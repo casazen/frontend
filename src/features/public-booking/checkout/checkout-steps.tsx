@@ -16,15 +16,10 @@ function stateOf(number: CheckoutStep, step: CheckoutStep): StepState {
 
 interface CheckoutStepsProps {
   step: CheckoutStep;
-  /** The steps the guest can go back to (a step already done); none once the booking is made, when the stay and the data are fixed. */
   canGoBack: boolean;
   onGo: (step: CheckoutStep) => void;
 }
 
-/**
- * «Il soggiorno · I tuoi dati · Pagamento» (DB-05): where the guest is in the three steps. On a tablet and a desktop a row with the
- * done steps as buttons to go back to; on a phone «Passo 2 di 3» with a bar. The step in progress is `aria-current`.
- */
 export function CheckoutSteps({ step, canGoBack, onGo }: CheckoutStepsProps) {
   const { t } = useTranslation();
 

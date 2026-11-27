@@ -54,10 +54,6 @@ function todo(overrides: Partial<TodoActivity> & { id: string }): TodoActivity {
   };
 }
 
-/**
- * The array as the server sends it. The least urgent item is the first on purpose: the page keeps the order of the answer, it does
- * not sort by urgency or by deadline itself (ADR-026-R5).
- */
 const LIST: TodoActivity[] = [
   todo({
     id: 'a',
@@ -99,7 +95,6 @@ function answer(overrides: Record<string, unknown>) {
   } as unknown as ReturnType<typeof useActivities>);
 }
 
-/** The number of the menu (`GET /api/me/activities/count`): how many urgent items the account has, the whole of them. */
 function menuCount(count: number | undefined) {
   vi.mocked(useActivityCount).mockReturnValue({ data: count === undefined ? undefined : { count } } as unknown as ReturnType<typeof useActivityCount>);
 }
@@ -131,7 +126,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
   it('TodoListPage_Answer_IsRenderedInTheOrderTheServerSent_NeverSortedAgain', () => {
     renderPage();
 
-    // Low, High, Medium, High: neither by urgency nor by deadline, the array as it came (ADR-026-R5).
     expect(urgencies()).toEqual(['Low', 'High', 'Medium', 'High']);
     expect(cards().map((card) => within(card).getByTestId('todo-title').textContent)).toEqual([
       'Ricevuta da recuperare',
@@ -145,12 +139,9 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     renderPage();
 
     const [receipt, alloggiati, checkIn, channels] = cards();
-    // On which object: the kind of entity and the property, whose name the list of properties gives (the item carries the id only).
     expect(within(receipt).getByTestId('todo-object')).toHaveTextContent('Prenotazione · Villa Monti');
     expect(within(alloggiati).getByTestId('todo-object')).toHaveTextContent('Prenotazione · Casa Mare');
-    // An item of the whole account names no property.
     expect(within(channels).getByTestId('todo-object')).toHaveTextContent('Il tuo account');
-    // By when: a deadline in the future, one that has passed (said in red and in words), and none.
     expect(within(receipt).getByTestId('todo-deadline').textContent).toMatch(/^Entro /);
     expect(within(alloggiati).getByTestId('todo-deadline').textContent).toMatch(/^Scaduta: /);
     expect(within(alloggiati).getByTestId('todo-deadline')).toHaveAttribute('data-overdue', 'true');
@@ -163,7 +154,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
   it('TodoListPage_Urgency_OnlyTheUrgentItemsSaySo_WithAWordAndNotWithColorAlone', () => {
     renderPage();
 
-    // The list is already in the order of urgency: a badge on every card was noise (UX round 2026-11), the urgent ones keep theirs.
     expect(cards().map((card) => within(card).queryByTestId('todo-urgency')?.textContent ?? null)).toEqual([
       null,
       'Urgente',
@@ -177,7 +167,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     renderPage();
 
     const links = screen.getAllByTestId('todo-do-now');
-    // The card of an action unknown to this version has no button: the first one that has it is the filled one, the rest are outlined.
     expect(within(cards()[0]).queryByTestId('todo-do-now')).not.toBeInTheDocument();
     expect(links[0]).toHaveClass('bg-primary');
     for (const link of links.slice(1)) expect(link).not.toHaveClass('bg-primary');
@@ -192,7 +181,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
   });
 
   it('TodoListPage_TypeOfALaterTask_UsesItsOwnWordsFromTheLocaleFilesAndTheGenericOnesWhenItHasNone', () => {
-    // The task that raises a new type adds `activity.todo.type.<Type>.title` (and `.why`) to the locale files: this page needs no change.
     i18n.addResource('it', 'translation', 'activity.todo.type.LaterKind.title', 'Cosa nuova da fare');
     answer({ data: [todo({ id: 'n1', activityType: 'LaterKind' }), todo({ id: 'n2', activityType: 'KindWithoutWords' })] });
     renderPage();
@@ -206,7 +194,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
 
     const [, alloggiati, checkIn] = cards();
     expect(within(alloggiati).getByRole('link', { name: /^Fallo ora/ })).toHaveAttribute('href', '/app/short-rent/alloggiati');
-    // The check-in of a stay is done in the wizard of the booking (E03/F01/US04/T02).
     expect(within(checkIn).getByRole('link', { name: /^Fallo ora/ })).toHaveAttribute('href', '/app/short-rent/bookings/b-3/check-in');
   });
 
@@ -227,7 +214,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
   });
 
   it('TodoListPage_ListCutByTheServer_SaysTheFirstOnesAndTakesTheUrgentCountFromTheMenu', () => {
-    // The server sends 50 items at most while `/count` counts every urgent one: the page tells no total and counts nothing from the array.
     answer({ data: Array.from({ length: 50 }, (_, index) => todo({ id: `cut-${index}`, propertyId: index % 2 === 0 ? 'p-1' : 'p-2' })) });
     menuCount(61);
     renderPage();
@@ -236,7 +222,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     expect(screen.getByTestId('todo-urgent-count')).toHaveTextContent('61 urgenti');
     expect(screen.getByTestId('todo-page-description')).toHaveTextContent('Le prime 50 cose da fare');
 
-    // A filter leaves out items of those 50: the line counts what is left, and the number of the menu is not about them.
     fireEvent.change(screen.getByTestId('todo-filter-property'), { target: { value: 'p-1' } });
     expect(screen.getByTestId('todo-summary')).toHaveTextContent('25 tra le prime 50 attività da fare');
     expect(screen.queryByTestId('todo-urgent-count')).not.toBeInTheDocument();
@@ -261,7 +246,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
       'Check-in da completare',
     ]);
 
-    // The items of the whole account have their own choice.
     fireEvent.change(screen.getByTestId('todo-filter-property'), { target: { value: 'account' } });
     expect(cards().map((card) => within(card).getByTestId('todo-title').textContent)).toEqual(['Riconnetti il gestionale dei canali']);
   });
@@ -302,7 +286,6 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
   });
 
   it('TodoListPage_RoleThatOnlyReads_SeesTheItemsButHasNoMarkAsDone', () => {
-    // Read-only roles keep the list, and completion still follows the source process.
     workspace.hasPermission = (context, permission) => context === 'short-rent' && ['property.read', 'booking.read'].includes(permission);
     renderPage();
 

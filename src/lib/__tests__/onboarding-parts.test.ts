@@ -154,7 +154,6 @@ describe('deferOptions: when to be reminded, on the clock of Rome (UX-06)', () =
     withBrowserTimeZone('America/Los_Angeles');
 
     it('Winter_EveningTomorrowAndNextWeek_AreEightPmNineAmAndNineAmInRome', () => {
-      // 11:00 in Rome (CET, UTC+1).
       expect(at(deferOptions(new Date('2026-11-12T10:00:00Z')))).toEqual({
         evening: '2026-11-12T19:00:00.000Z',
         tomorrow: '2026-11-13T08:00:00.000Z',
@@ -163,7 +162,6 @@ describe('deferOptions: when to be reminded, on the clock of Rome (UX-06)', () =
     });
 
     it('Summer_UsesTheSummerOffsetOfRome', () => {
-      // 12:00 in Rome (CEST, UTC+2).
       expect(at(deferOptions(new Date('2026-07-12T10:00:00Z')))).toEqual({
         evening: '2026-07-12T18:00:00.000Z',
         tomorrow: '2026-07-13T07:00:00.000Z',
@@ -172,7 +170,6 @@ describe('deferOptions: when to be reminded, on the clock of Rome (UX-06)', () =
     });
 
     it('ClockChangeBetween_TheOffsetIsTheOneOfEachDay', () => {
-      // 24 October 2026, 12:00 in Rome (CEST). Summer time ends on the night of the 25th: tomorrow and next week are CET (UTC+1).
       expect(at(deferOptions(new Date('2026-10-24T10:00:00Z')))).toEqual({
         evening: '2026-10-24T18:00:00.000Z',
         tomorrow: '2026-10-25T08:00:00.000Z',
@@ -181,7 +178,6 @@ describe('deferOptions: when to be reminded, on the clock of Rome (UX-06)', () =
     });
 
     it('ShortlyAfterMidnightInRome_TodayIsTheDayOfRomeNotTheUtcDay', () => {
-      // 23:30 UTC of the 24th is 01:30 of the 25th in Rome: this evening is the evening of the 25th.
       expect(at(deferOptions(new Date(LATE_EVENING_UTC)))).toEqual({
         evening: '2026-09-25T18:00:00.000Z',
         tomorrow: '2026-09-26T07:00:00.000Z',
@@ -191,7 +187,6 @@ describe('deferOptions: when to be reminded, on the clock of Rome (UX-06)', () =
   });
 
   it('ThisEvening_IsOfferedOnlyWhileItIsStillToCome', () => {
-    // 19:59 in Rome: still to come. 20:00 sharp and after: the server refuses a reminder in the past, so it is not offered.
     expect(deferOptions(new Date('2026-11-12T18:59:00Z')).map((option) => option.choice)).toEqual(['evening', 'tomorrow', 'nextWeek']);
     expect(deferOptions(new Date('2026-11-12T19:00:00Z')).map((option) => option.choice)).toEqual(['tomorrow', 'nextWeek']);
     expect(deferOptions(new Date('2026-11-12T22:45:00Z')).map((option) => option.choice)).toEqual(['tomorrow', 'nextWeek']);
@@ -215,7 +210,6 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
     const known = knownPathSteps({ steps: [pathStep('pricesCalendar'), unknown, leadsNowhere, mixed, pathStep('pricesCalendar')] });
 
     expect(codes(known)).toEqual(['connectChannels', 'pricesCalendar']);
-    // The parts of a step are reduced to the ones the app knows.
     expect(known[0].parts).toEqual(['properties']);
   });
 
@@ -227,13 +221,11 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
     expect(isPathIncomplete(knownPathSteps(path({ connectChannels: 'done' })))).toBe(true);
     const complete = Object.fromEntries(ONBOARDING_PATH_STEP_CODES.map((code) => [code, 'done'])) as Parameters<typeof path>[0];
     expect(isPathIncomplete(knownPathSteps(path(complete)))).toBe(false);
-    // A step nobody provides is not something to do either.
     expect(isPathIncomplete(knownPathSteps(path({ ...complete, messagesAi: 'notAvailable' })))).toBe(false);
   });
 
   it('PathProgress_CountsTheStepsDoneOverTheStepsThatApply', () => {
     expect(pathProgress(knownPathSteps(path({ connectChannels: 'done', checkListings: 'done' })))).toEqual({ done: 2, total: 6 });
-    // A step the server says is not available can never be done: it does not keep the bar from its end.
     expect(pathProgress(knownPathSteps(path({ connectChannels: 'done', messagesAi: 'notAvailable', fiscalDocuments: 'notAvailable' })))).toEqual({ done: 1, total: 4 });
     expect(pathProgress([])).toEqual({ done: 0, total: 0 });
   });
@@ -258,7 +250,6 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
     });
 
     it('AStepThisVersionDoesNotKnow_FallbackSkipsTheStepsThatWaitForAnotherPart', () => {
-      // The connection is put off, so the listings, the prices and the compliance wait for the properties: the first step that can be done is the messages.
       const given = { ...path({ connectChannels: 'deferred' }), next: 'timeTravel' as never };
 
       expect(nextPathStep(given, knownPathSteps(given))?.code).toBe('messagesAi');
@@ -278,22 +269,18 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
 
       expect(stepAfterPart(steps, 'listings')?.code).not.toBe('checkListings');
       expect(stepAfterPart(steps, 'channels')?.code).not.toBe('connectChannels');
-      // The listings are the next step once the connection is done.
       expect(stepAfterPart(knownPathSteps(path({ connectChannels: 'done' })), 'channels')?.code).toBe('checkListings');
     });
 
     it('SkipsAStepThatWaitsForAnotherPart_TheConnectionComesBeforeTheStepsThatHangFromIt', () => {
-      // A property is added before the connection is complete: the listings, the prices and the compliance wait for the properties (`blocked`).
       const steps = knownPathSteps(path({ messagesAi: 'notAvailable', fiscalDocuments: 'notAvailable' }));
       expect(steps.filter((step) => step.state === 'blocked').map((step) => step.code)).toEqual(['checkListings', 'pricesCalendar', 'checkInCompliance']);
 
-      // Not «Prezzi e calendario», which is after the listings in the path and cannot be done yet: the step that is left to do, the connection.
       expect(stepAfterPart(steps, 'listings')?.code).toBe('connectChannels');
       expect(stepAfterPart(steps, 'pricesRules')?.code).toBe('connectChannels');
     });
 
     it('SkipsAStepThatWaitsForAnotherPart_WhateverComesAfterItInThePath', () => {
-      // The messages can be done now: they are suggested, the blocked steps between are not.
       const steps = knownPathSteps(path({ fiscalDocuments: 'notAvailable' }));
 
       expect(stepAfterPart(steps, 'listings')?.code).toBe('messagesAi');
@@ -327,7 +314,6 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
     });
 
     it('NothingLeftToSuggest_IsNull', () => {
-      // Only the step of the wizard itself is left, or everything else is put off.
       expect(stepAfterPart(knownPathSteps(path({ checkListings: 'done', pricesCalendar: 'done', checkInCompliance: 'done', messagesAi: 'done', fiscalDocuments: 'done', connectChannels: 'done' })), 'listings')).toBeNull();
       const onlyCurrent = knownPathSteps(path({ connectChannels: 'done', pricesCalendar: 'done', checkInCompliance: 'done', messagesAi: 'done', fiscalDocuments: 'done' }));
       expect(stepAfterPart(onlyCurrent, 'listings')).toBeNull();
@@ -356,7 +342,6 @@ describe('the connected path «Inizia con CasaZen» (UX-10, NF-10)', () => {
     });
 
     it('OnlyPartsThatWaitAreLeft_IsNullBecauseThereIsNothingToOpen', () => {
-      // The properties are not provided, so the channels, which need them, wait for good: no part to open (a link would lead nowhere useful).
       const parts = [part('octorateConnection', { state: 'done' }), part('properties', { state: 'notAvailable', reason: 'mapping_unavailable' }), part('channels', { state: 'blocked' })];
 
       expect(stepTargetPart(connect, parts)).toBeNull();
@@ -421,7 +406,6 @@ describe('the words of the plan, in both languages', () => {
   });
 });
 
-// E29/F02/US01/T02, E29/F02/US02/T01: the part «Notifica degli ospiti» (Switzerland) lists what each active Swiss property still lacks.
 describe('the part «Notifica degli ospiti» of the plan', () => {
   const MISSING = { propertyId: '9d4f6a0e-2c1b-4c5d-8e7f-3a2b1c0d9e8f', reason: 'ticino_structure_id_missing', code: 'guest-registration' };
 
@@ -443,7 +427,6 @@ describe('the part «Notifica degli ospiti» of the plan', () => {
   it('MissingReasonKey_TheTwoReasonsOfThePart_HaveTheTextOfAPropertyAndAnyOtherIsANeutralLine', () => {
     expect(missingReasonKey('ticino_structure_id_missing')).toBe('onboardingPlan.reasons.property.ticino_structure_id_missing');
     expect(missingReasonKey('swiss_municipality_missing')).toBe('onboardingPlan.reasons.property.swiss_municipality_missing');
-    // A reason of another part is not one of this list, and a reason nobody knows is never printed as it came.
     expect(missingReasonKey('sender_missing')).toBe('onboardingPlan.reasons.property.unknown');
     expect(missingReasonKey('something_new')).toBe('onboardingPlan.reasons.property.unknown');
     expect(missingReasonKey(null)).toBe('onboardingPlan.reasons.property.unknown');
@@ -451,12 +434,10 @@ describe('the part «Notifica degli ospiti» of the plan', () => {
 
   it('PartAppliesToOrg_OnlyThePartOfSwitzerlandWithNoActiveSwissProperty_IsLeftOutOfTheList', () => {
     expect(partAppliesToOrg(part('guestRegistration', { state: 'notAvailable', reason: 'no_swiss_property' }))).toBe(false);
-    // Open, done, put off or not available for another reason: it applies.
     expect(partAppliesToOrg(part('guestRegistration', { state: 'open', reason: 'swiss_municipality_missing' }))).toBe(true);
     expect(partAppliesToOrg(part('guestRegistration', { state: 'done', reason: null }))).toBe(true);
     expect(partAppliesToOrg(part('guestRegistration', { state: 'deferred', reason: 'ticino_structure_id_missing' }))).toBe(true);
     expect(partAppliesToOrg(part('guestRegistration', { state: 'notAvailable', reason: 'not_provided' }))).toBe(true);
-    // Every other part stays whatever its state, as it always did.
     expect(partAppliesToOrg(part('partners', { state: 'notAvailable', reason: 'no_swiss_property' }))).toBe(true);
     expect(partAppliesToOrg(part('partners', { state: 'notAvailable', reason: 'not_provided' }))).toBe(true);
   });

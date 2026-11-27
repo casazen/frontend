@@ -30,7 +30,6 @@ const DOCUMENT = {
   sizeBytes: 1024,
 };
 
-/** What a failed call of the axios client looks like when the body is a Blob (`responseType: 'blob'`). */
 function blobError(status: number, body: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), responseType: 'blob' } as InternalAxiosRequestConfig;
   const data = new Blob([JSON.stringify(body)], { type: 'application/problem+json' });
@@ -41,7 +40,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// NF-99: the API reads a repeated `type`, and axios writes an array as `type[]=a`, which the API does not read: the words go as `type=a&type=b`.
 describe('archiveListParams (NF-99)', () => {
   it('ArchiveListParams_SeveralTypes_AreWrittenAsARepeatedWord', () => {
     const params = archiveListParams({ types: ['contract', 'touristTax'], page: 2, pageSize: 50 });
@@ -85,7 +83,6 @@ describe('archiveExportParams (NF-99)', () => {
   });
 });
 
-// A call the person stopped is not a failure: it is read by its code, which stays when the mutations keep the failure without its request.
 describe('isArchiveCallCancelled (NF-99)', () => {
   it('IsArchiveCallCancelled_TheCallWasAborted_IsCancelledWithOrWithoutItsRequest', () => {
     const aborted = new CanceledError('canceled');
@@ -164,7 +161,6 @@ describe('documentArchiveApi.download and export (NF-99)', () => {
     expect(config).toMatchObject({ responseType: 'blob' });
   });
 
-  // The API exposes `Content-Disposition` to the page (CORS): the name the server gave the file comes with it, whatever the case of the header's name.
   it.each([
     ['a plain object, as the name came', { 'Content-Disposition': `attachment; filename*=UTF-8''F24.pdf` }],
     ['a plain object in lower case', { 'content-disposition': `attachment; filename*=UTF-8''F24.pdf` }],
@@ -177,7 +173,6 @@ describe('documentArchiveApi.download and export (NF-99)', () => {
     expect(download.contentDisposition).toBe(`attachment; filename*=UTF-8''F24.pdf`);
   });
 
-  // Where the API does not expose the header to this origin the page does not see it: no name, and no error.
   it.each([
     ['no headers at all', undefined],
     ['other headers only', { 'content-type': 'application/pdf' }],
@@ -224,7 +219,6 @@ describe('documentArchiveApi.download and export (NF-99)', () => {
   });
 });
 
-// NF-99, AC-NF99-4: the 422 says which limit the period went over (too many files, or too large), and the page tells it; any other error is not that case.
 describe('archiveExportTooLarge (NF-99)', () => {
   const MEGABYTE = 1024 * 1024;
 
@@ -239,7 +233,6 @@ describe('archiveExportTooLarge (NF-99)', () => {
     expect(archiveExportTooLarge(refused)).toEqual({ limit: 'files', fileCount: 412, maxFiles: 300 });
   });
 
-  // A document that stores no size counts as 10 MB in the cap of the bytes: 21 property documents are 210 MB, over the 200 MB, with far fewer than 300 files.
   it('ArchiveExportTooLarge_FewFilesOverTheBytes_IsTooLargeNotTooManyFiles', async () => {
     const refused = await refusedWith({ fileCount: 21, maxFiles: 300, maxBytes: 200 * MEGABYTE });
 

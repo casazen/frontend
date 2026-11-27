@@ -23,10 +23,8 @@ interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
-/** 404 of the guest area: nothing matches the code and the proof (email, or the last four digits of the phone) on this site (the same answer whatever does not match). */
 const NOT_FOUND_CODE = 'guest_booking_not_found';
 
-/** Nothing matches: an empty state, not an error. */
 function isNotFound(error: unknown): boolean {
   return (
     isAxiosError(error) &&
@@ -50,7 +48,6 @@ const STATUS_LABEL_KEYS: Record<GuestBookingStatus, string> = {
   StayCompleted: 'publicBooking.guestBookings.status.StayCompleted',
 };
 
-/** Description of a state; `[withTime, withoutTime]` for the states that wait until `expiresAt`. */
 const STATUS_DESCRIPTION_KEYS: Record<GuestBookingStatus, string | [string, string]> = {
   Confirmed: 'publicBooking.guestBookings.statusDescription.Confirmed',
   AwaitingPayment: [
@@ -87,7 +84,6 @@ const WAITING_STATUSES: GuestBookingStatus[] = [
   'AwaitingHostApproval',
 ];
 
-/** The message of a failed call of the guest area: the minutes to wait after a 429 when the answer says, else the generic one. */
 function useFailureMessage() {
   const { t } = useTranslation();
   return (error: unknown): string => {
@@ -118,7 +114,6 @@ export function GuestBookingsPage() {
   const { org } = useOutletContext<PublicBookingContext>();
   const [searchParams] = useSearchParams();
   const { flags } = useFeatureFlags();
-  // The words of the page change with the flag, never what the page does with the flag off.
   const proofChoice = flags.whiteLabelHost;
   const siteSlug = org?.slug || orgSlug;
   const { session, openSession, closeSession } = useGuestSession(siteSlug);
@@ -130,10 +125,8 @@ export function GuestBookingsPage() {
       if (isNotFound(error)) openSession.mutate(payload);
     },
   });
-  // What the guest typed to open the session. The email is only here, in memory: the online check-in link asks for it again.
   const [credentials, setCredentials] = useState<GuestBookingLookupPayload | null>(null);
 
-  // The link of an email names its booking: when it is not the one of the session, the form comes first.
   const linkedCode = formatBookingCode(searchParams.get('code'));
   const activeSession = session && (linkedCode === null || linkedCode === session.bookingCode) ? session : null;
   const booking = useGuestBooking(siteSlug, activeSession);

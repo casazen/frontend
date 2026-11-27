@@ -1,6 +1,5 @@
 import type { FiscalTaxProfile, FiscalTaxProfileUpdate } from '@/api/fiscal.api';
 
-/** Partita IVA: 11 digits. */
 export const PARTITA_IVA = /^\d{11}$/;
 /** Codice fiscale: 16 characters for a person, 11 digits for an entity (same rule as the backend). */
 export const FISCAL_CODE = /^([A-Z0-9]{16}|\d{11})$/;

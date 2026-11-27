@@ -16,7 +16,6 @@ export const ISTAT_CREDENTIAL_FIELDS: readonly { field: IstatCredentialsField; t
 
 export const EMPTY_ISTAT_CREDENTIALS: SetIstatCredentialsRequest = { username: '', password: '', structureCode: '' };
 
-/** Client checks mirroring the API (required, maximum length); the API validates again. The messages are i18n keys. */
 export function validateIstatCredentials(values: SetIstatCredentialsRequest): IstatCredentialsErrors {
   const errors: IstatCredentialsErrors = {};
   for (const { field, required } of ISTAT_CREDENTIAL_FIELDS) {

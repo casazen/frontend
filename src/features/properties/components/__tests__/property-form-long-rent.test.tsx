@@ -4,12 +4,10 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { PropertyForm } from '../property-form';
 
-// The short-stay form lists the cancellation policies of the API.
 vi.mock('@/queries/use-properties', () => ({
   useCancellationPolicies: () => ({ data: [], isLoading: false, isError: false, error: null }),
 }));
 
-// The amenities of the form come from the catalog (`useAmenityCatalog`): a small one here, the catalog is not under test.
 vi.mock('@/queries/use-amenity-catalog', () => ({
   useAmenityCatalog: () => ({
     data: {
@@ -36,7 +34,6 @@ function fill(label: string, value: string | number) {
   fireEvent.change(screen.getByLabelText(i18n.t(label)), { target: { value } });
 }
 
-// Whole-form interactions: generous timeout for loaded CI machines, as the other form suites.
 describe('PropertyForm long-rent variant (A7-06)', { timeout: 20_000 }, () => {
   beforeEach(() => {
     void i18n.changeLanguage('it');
@@ -73,7 +70,6 @@ describe('PropertyForm long-rent variant (A7-06)', { timeout: 20_000 }, () => {
       nightlyRate: 0,
       maxGuests: 0,
     });
-    // Short-stay fields are not sent: the API keeps what the property has (A2-04).
     for (const field of ['cinCode', 'slug', 'isActive', 'cleaningFee', 'damageDeposit', 'houseRules', 'timezone', 'cancellationPolicyId']) {
       expect(onSubmit.mock.calls[0][0]).not.toHaveProperty(field);
     }

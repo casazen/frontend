@@ -31,7 +31,6 @@ export function normalizeVatId(value: unknown): string | null {
 }
 
 export interface PublicSiteGateInput {
-  /** `VERCEL_ENV` (`production`, `preview`, `development`), undefined outside Vercel. */
   vercelEnv: string | undefined;
   legalName: unknown;
   legalVatId: unknown;

@@ -9,10 +9,8 @@ import { usePublicReviewsPreview } from '@/queries/use-public-stays';
 import type { PublicStayCard } from '@/types/public-stays.types';
 import type { SiteRating } from './home-model';
 
-/** Reviews the home shows: three is a glance, the page of a home has all of them. */
 const SHOWN = 3;
 
-/** The home with the most reviews: its latest ones speak for the site. */
 function mostReviewed(cards: readonly PublicStayCard[]): PublicStayCard | undefined {
   return cards.reduce<PublicStayCard | undefined>(
     (best, card) => ((card.rating?.count ?? 0) > (best?.rating?.count ?? 0) ? card : best),
@@ -20,12 +18,6 @@ function mostReviewed(cards: readonly PublicStayCard[]): PublicStayCard | undefi
   );
 }
 
-/**
- * «Cosa dicono gli ospiti» (DB-07b): the mark of the whole site with its number of reviews and the latest reviews of the home that
- * has most of them, with «Verificata» and the answer of the host. A review is the guest's word, so none is chosen or shortened:
- * the host cannot pick them yet (there is no such choice in the data), and each card says whose home it is about. The section
- * is not there while nobody reviewed (no stars, no «0 recensioni», D36); if the reviews cannot be read, the mark stays alone.
- */
 export function HomeReviews({ slug, cards, rating }: { slug: string; cards: readonly PublicStayCard[]; rating: SiteRating }) {
   const { t, i18n } = useTranslation();
   const home = mostReviewed(cards);

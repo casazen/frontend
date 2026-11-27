@@ -26,22 +26,12 @@ import type { EntryScope, useSaveKnowledgeEntry } from '@/queries/use-assistant-
 import { KNOWLEDGE_ENTRY_KINDS, KNOWLEDGE_TOPICS, type KnowledgeEntry, type KnowledgeEntryKind, type KnowledgeTopic } from '@/types/assistant-settings.types';
 
 interface KnowledgeEntryDialogProps {
-  /** Closed while `null`; `{ entry: null, topic }` is a new answer (for the topic that is missing, when it comes from «Add»); `{ entry }` is a change. */
   target: { entry: KnowledgeEntry | null; topic?: KnowledgeTopic } | null;
   scope: EntryScope;
-  /**
-   * The mutation belongs to the list, not to the dialog: the host may close the dialog (the X, Esc, a tap outside) while a request goes on, the request must
-   * still end the way it started, and every button of the list waits until it is over.
-   */
   save: ReturnType<typeof useSaveKnowledgeEntry>;
   onClose: () => void;
 }
 
-/**
- * Add or change an answer the assistant may use (NF-66, AC-NF66-1): a question with its answer (a FAQ), a fact or a rule, for a topic, with the language it is
- * written in (or any) and a switch. The text is the host's own words and can hold a password: it stays in this form, is not logged and is not kept after the dialog
- * closes. The rules are the ones of the server (a text of 1 to 1,000 characters, a FAQ with its question); the server stays the judge and a 422 stays on the form.
- */
 export function KnowledgeEntryDialog({ target, scope, save, onClose }: KnowledgeEntryDialogProps) {
   return (
     <Dialog
@@ -67,7 +57,6 @@ function EntryDialogBody({ target, scope, save, onClose }: Omit<KnowledgeEntryDi
     attempted && problem?.field === field ? t(problem.key, problem.max === undefined ? undefined : { max: problem.max }) : undefined;
 
   const handleSubmit = (event: FormEvent) => {
-    // The dialog is in a portal, and a submit would also reach any form that holds the list in React's tree.
     event.preventDefault();
     event.stopPropagation();
     setAttempted(true);

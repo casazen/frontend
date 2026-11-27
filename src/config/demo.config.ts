@@ -90,15 +90,10 @@ function resolveRuntimeDemoProfile(href?: string): ExtendedDemoProfile | null {
   return null;
 }
 
-/**
- * Demo persona key: `?demoProfile=` query (E2E), `window.__E2E_DEMO_PROFILE`, or `VITE_DEMO_PROFILE`.
- * `href` is the URL whose query is read (default: the current location).
- */
 export function getDemoProfileKey(href?: string): ExtendedDemoProfile {
   return resolveRuntimeDemoProfile(href) ?? resolveDemoProfile();
 }
 
-/** Demo user (name, roles) of the current persona, see {@link getDemoProfileKey}. */
 export function getDemoUser(href?: string) {
   return buildDemoUser(getDemoProfileKey(href));
 }

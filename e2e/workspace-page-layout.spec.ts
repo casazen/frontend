@@ -21,7 +21,6 @@ async function expectShellEdges(element: Locator, fullWidth = true) {
   }).toBeLessThan(2);
 }
 
-// Each scenario visits several lazy-loaded routes on the demo development server.
 test.describe.configure({ timeout: 90_000 });
 
 for (const width of [390, 1920]) {

@@ -1,7 +1,6 @@
 import { ApiClient } from '@/api/client';
 import type { LegalDocumentKey, LegalDocumentMeta, SubprocessorsDocument } from '@/types/onboarding.types';
 
-/** Public legal documents (PL-14): `lang` picks the language of the text, Italian when no translation exists. */
 export const LegalApi = {
   getDocument: (key: LegalDocumentKey, lang?: string): Promise<LegalDocumentMeta> =>
     ApiClient.get<LegalDocumentMeta>(`/legal/${key}`, lang ? { lang } : undefined, { public: true }),

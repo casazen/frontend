@@ -29,7 +29,6 @@ import {
   type OwnerIssuerForm,
 } from '../owner-issuer-model';
 
-/** The state of the profile in words: it can issue, or it says what it still misses. A profile that does not exist is told apart from one that misses something. */
 function OwnerIssuerState({ profile }: { profile: Pick<OwnerIssuerProfile, 'exists' | 'canIssue' | 'missingFields'> }) {
   const { t } = useTranslation();
   if (!profile.exists) {
@@ -56,11 +55,8 @@ function OwnerIssuerState({ profile }: { profile: Pick<OwnerIssuerProfile, 'exis
 
 interface OwnerIssuerProfileFormProps {
   ownerId: string;
-  /** The profile as the server holds it, with the personal data in clear (`masked: false`): the form is for who may change it. */
   profile: OwnerIssuerProfile;
-  /** The profile was saved. */
   onSaved?: () => void;
-  /** The person gives up (a dialog): nothing is saved. */
   onCancel?: () => void;
 }
 
@@ -76,8 +72,6 @@ export function OwnerIssuerProfileForm({ ownerId, profile, onSaved, onCancel }: 
   const save = useSaveOwnerIssuerProfile(ownerId);
   const stored = formOf(profile);
   const [form, setForm] = useState<OwnerIssuerForm>(stored);
-  // What the form was last built from. A read that brings the same data changes nothing: the window coming back (a read more than half a minute old is read again) must never throw away what the person is
-  // typing. When the server holds something else (another person's change) the fields nobody typed in follow it, and what was typed stays.
   const [base, setBase] = useState<OwnerIssuerForm>(stored);
   if (isChanged(stored, base)) {
     setBase(stored);
@@ -90,21 +84,18 @@ export function OwnerIssuerProfileForm({ ownerId, profile, onSaved, onCancel }: 
 
   const set = (patch: Partial<OwnerIssuerForm>) => {
     setForm((current) => ({ ...current, ...patch }));
-    // What was refused is told on its field until the person changes it.
     const touched = Object.keys(patch) as OwnerIssuerField[];
     setRefused((current) => (current.some((field) => touched.includes(field)) ? current.filter((field) => !touched.includes(field)) : current));
   };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    // The form may sit in a dialog drawn outside the page but inside it for React: its submit must not reach a form around it.
     event.stopPropagation();
     if (save.isPending || (!changed && profile.exists)) return;
     setProblem(null);
     setRefused([]);
     try {
       const saved = await save.mutateAsync(requestOf(form));
-      // The form shows what the server holds now (it cuts and capitalizes what was typed), as it did when it started again after every read.
       setForm(formOf(saved));
       toast.success(saved.canIssue ? t('ownerIssuer.saved.ready') : t('ownerIssuer.saved.incomplete'));
       onSaved?.();
@@ -246,15 +237,10 @@ function regimeCodeHint(profile: Pick<OwnerIssuerProfile, 'effectiveRegimeCode'>
   return profile.effectiveRegimeCode === null ? t('ownerIssuer.fields.fatturaPaRegimeCode.hint') : t('ownerIssuer.fields.fatturaPaRegimeCode.hintCode', { code: profile.effectiveRegimeCode });
 }
 
-/**
- * The profile as the person who may not change it sees it (the server masks the personal data for them: `••••1234`): the regime, the data as they come, the sezionale and the reference of the stamp
- * duty, read-only, with the state of the profile above them. No form, and nothing that could be saved.
- */
 export function OwnerIssuerProfileFacts({ profile }: { profile: OwnerIssuerProfile }) {
   const { t } = useTranslation();
   const address = [[profile.addressStreet, profile.addressCivic].filter(Boolean).join(' '), [profile.postalCode, profile.city].filter(Boolean).join(' '), profile.province ?? ''].filter(Boolean).join(', ');
   const rows: [string, string | null][] = [
-    // A regime this client has no words for (the server is newer) is shown as it came.
     ['regime', profile.regime === null ? null : (OWNER_ISSUER_REGIMES as readonly string[]).includes(profile.regime) ? t(`ownerIssuer.regime.${profile.regime}.title`) : profile.regime],
     ['legalName', profile.legalName],
     ['fiscalCode', profile.fiscalCode],
@@ -340,7 +326,6 @@ function SectionBody({ ownerId }: { ownerId: string }) {
       </div>
     );
   } else {
-    // The form starts from what the server holds and follows it (see the form): it is never started again by a read that brings the same data, so what is typed survives the window coming back. One owner, one form.
     content = <IssuerEditor key={ownerId} ownerId={ownerId} profile={data} />;
   }
 

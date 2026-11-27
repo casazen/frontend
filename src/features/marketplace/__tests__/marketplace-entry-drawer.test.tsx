@@ -10,7 +10,6 @@ import type { MarketplaceCatalogEntry, MarketplaceEntryDetail } from '@/types';
 import { MarketplaceEntryCard } from '../components/marketplace-entry-card';
 import { MarketplaceEntryDrawer } from '../components/marketplace-entry-drawer';
 
-// The drawer reads the entry through its hook and the property through the page's hook: the test gives their answers.
 const hooks = vi.hoisted(() => ({ entry: vi.fn() }));
 vi.mock('@/queries/use-marketplace', () => ({
   useMarketplaceEntry: (kind?: string, code?: string, propertyId?: string) => hooks.entry(kind, code, propertyId),
@@ -54,7 +53,6 @@ const CARD: MarketplaceCatalogEntry = {
   reason: null,
 };
 
-/** What `useMarketplaceEntry` answers. */
 function entryAnswer(data: MarketplaceEntryDetail | undefined, extra: Record<string, unknown> = {}) {
   return { data, isLoading: false, isError: false, error: null, refetch: vi.fn(), ...extra };
 }
@@ -118,7 +116,6 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     expect(requirements.map((item) => item.textContent)).toEqual(['The id of your listing on the portal.', 'Access to the panel of the portal.']);
     expect(within(dialog).getByTestId('marketplace-detail-data')).toHaveTextContent('The bookings that come from the portal.');
     expect(within(dialog).getByTestId('marketplace-detail-deactivation')).toHaveTextContent('Remove the connection from the settings of the property.');
-    // The status is said at the top, with its word.
     expect(within(dialog).getByTestId('marketplace-entry-detail-status')).toHaveTextContent('Non attivo');
   });
 
@@ -128,7 +125,6 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     const cost = within(await screen.findByRole('dialog')).getByTestId('marketplace-detail-cost');
     expect(cost).toHaveTextContent('Costo non specificato');
     expect(cost.textContent).not.toMatch(/\d/);
-    // Nobody said who invoices: nothing is claimed.
     expect(cost).not.toHaveTextContent(/fatturato/i);
   });
 
@@ -193,7 +189,6 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     expect(within(dialog).getByTestId('marketplace-detail-what')).toHaveTextContent('Non specificato');
     expect(within(dialog).getByTestId('marketplace-detail-audience')).toHaveTextContent('Non specificato');
     expect(within(dialog).getByTestId('marketplace-detail-requirements')).toHaveTextContent('Non sono indicati requisiti particolari.');
-    // What data is shared is a privacy statement: when nobody wrote it, the card does not say that none is.
     expect(within(dialog).getByTestId('marketplace-detail-data')).toHaveTextContent('Non specificato');
     expect(within(dialog).getByTestId('marketplace-detail-deactivation')).toHaveTextContent('Non specificato');
     expect(within(dialog).queryByTestId('marketplace-detail-faq')).not.toBeInTheDocument();
@@ -221,7 +216,6 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     ['api', 'Channel', 'PORTAL1', 'Active'],
     ['partnerSite', 'Partner', 'test-cleaners', 'Pending'],
   ] as const)('MarketplaceEntryDrawer_OnTheActiveTab_%s_%s_%s_HasNoManageButtonToThePageItIsOn', async (type, kind, code, status) => {
-    // «Gestisci» leads to the Active tab: opened from the Active tab itself it would only shut the card, so the card has no foot there.
     hooks.entry.mockReturnValue(entryAnswer({ ...DETAIL, kind, code, status, activation: { ...DETAIL.activation, type } }));
     renderDrawer(`/app/short-rent/marketplace/mine?propertyId=prop-1&entry=${kind}:${code}`);
 
@@ -324,7 +318,6 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     expect(hooks.entry).not.toHaveBeenCalled();
   });
 
-  // The address is typed and shared, and its kind and code end up in the path of a request: nothing that could carry a path opens.
   it.each(['Channel:../../admin', 'Channel:a/b', 'Channel:', ':PORTAL1', 'Channel', 'Chan nel:PORTAL1', 'Channel:PORTAL1?x=1', 'Channel1:PORTAL1'])(
     'MarketplaceEntryDrawer_%j_IsNotAValidEntryAndOpensNothing',
     (value) => {
@@ -348,7 +341,6 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'TEST Portal' });
     expect(new URLSearchParams(screen.getByTestId('where').textContent ?? '').get('entry')).toBe('Channel:PORTAL1');
-    // The focus is inside the drawer: a keyboard user starts reading it.
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
 
     fireEvent.keyDown(dialog, { key: 'Escape' });

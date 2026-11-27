@@ -12,14 +12,12 @@ import { MergeCandidateCard } from './merge-candidate-card';
 
 const LIST_PATH = '/app/short-rent/crm/guests';
 
-/** The page of the address (`?page=2`, from 2); anything that is not a whole number from 1 is the first. */
 function pageOf(params: URLSearchParams): number {
   const raw = params.get('page')?.trim() ?? '';
   const page = /^\d+$/.test(raw) ? Number(raw) : 1;
   return Number.isSafeInteger(page) && page >= 1 ? page : 1;
 }
 
-/** The query string of the page `page`: the first is the default and is not written. */
 function searchOfPage(params: URLSearchParams, page: number): URLSearchParams {
   const next = new URLSearchParams(params);
   if (page > 1) next.set('page', String(page));
@@ -27,12 +25,6 @@ function searchOfPage(params: URLSearchParams, page: number): URLSearchParams {
   return next;
 }
 
-/**
- * The merge proposals of the CRM (E07/F01/US04/T03, NF-88, CRM-01): the pairs of guests the matching thinks may be one person, one card
- * each, the surest first, 20 to a page. Nothing merges by itself: the host decides every pair, merging it or saying it is two people. The
- * server lists only the pairs the caller reaches in full, and answers a pair that was decided or is out of reach with an error that the
- * card tells in plain words. The page is reachable only with the CRM flag on and the permission `guest.write`.
- */
 export function MergePage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -43,7 +35,6 @@ export function MergePage() {
   const pageSize = data?.pageSize ?? 0;
   const lastPage = pageSize > 0 ? Math.max(1, Math.ceil(totalCount / pageSize)) : 1;
 
-  // A page that is not there any more (the last pair of it was decided): the list goes to the last one that is.
   if (data && !isPlaceholderData && data.items.length === 0 && totalCount > 0 && page > lastPage) {
     return <Navigate replace to={{ search: searchOfPage(searchParams, lastPage).toString() }} />;
   }

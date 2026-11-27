@@ -48,7 +48,6 @@ beforeEach(async () => {
   env.permissions = new Set(WRITE);
   env.flags = { fiscalDocumentIssuance: true };
   await i18n.changeLanguage('it');
-  // The list the page reads is a Swiss draft in francs; the newest issued documents (what the numbering reads) are the invoices 2026/3 and 2026/4 in the series «2026».
   vi.mocked(api.listDocuments).mockImplementation(async (criteria) =>
     criteria.status === 'Issued'
       ? page([
@@ -62,7 +61,6 @@ beforeEach(async () => {
   vi.mocked(api.listBookingDocuments).mockResolvedValue([bookingDocument()]);
 });
 
-/** Whatever is drawn for a document in francs says francs and never a euro: no sign, no code, no icon of one. */
 function expectFrancsOnly(text: string | null | undefined) {
   expect(text).toContain('CHF');
   expect(text).not.toContain('€');
@@ -89,7 +87,6 @@ describe('a document in francs is shown in francs wherever it is drawn (money ru
     ];
     expect(figures.length).toBeGreaterThan(8);
     for (const figure of figures) expectFrancsOnly(plain(figure.textContent));
-    // The whole detail: not a euro anywhere (the icon of «pagato» is a check, not a euro sign).
     expect(drawer.textContent).not.toContain('€');
   });
 
@@ -103,10 +100,8 @@ describe('a document in francs is shown in francs wherever it is drawn (money ru
     expectFrancsOnly(plain(within(summary).getByTestId('fiscal-document-issue-total').textContent));
     expect(plain(within(summary).getByTestId('fiscal-document-issue-total').textContent)).toBe('736,00 CHF');
     expect(within(summary).getByTestId('fiscal-document-issue-series')).toHaveTextContent('2026');
-    // The next number is the one after the highest of the series, and it says it is an expectation.
     expect(await within(summary).findByText(i18n.t('fiscalDocuments.issue.numberExpected', { number: '2026/5' }))).toBeInTheDocument();
     expect(screen.getByTestId('fiscal-document-issue-last')).toHaveTextContent('2026/4');
-    // The number comes from the documents the person sees, which may be only some of them: the confirmation says it is an indication.
     expect(screen.getByTestId('fiscal-document-issue-note')).toHaveTextContent(i18n.t('fiscalDocuments.issue.numberNote'));
   });
 
@@ -117,13 +112,11 @@ describe('a document in francs is shown in francs wherever it is drawn (money ru
     const [row] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
     fireEvent.click(within(row).getByTestId('fiscal-document-issue'));
 
-    // A credit note is issued in the series of the document it corrects, which may be another year's: no series of today and no number are told.
     const summary = await screen.findByTestId('fiscal-document-issue-summary');
     expect(within(summary).getByTestId('fiscal-document-issue-series')).toHaveTextContent(i18n.t('fiscalDocuments.issue.seriesOfOriginal'));
     expect(within(summary).getByTestId('fiscal-document-issue-number')).toHaveTextContent(i18n.t('fiscalDocuments.issue.numberUnknown'));
     expect(screen.queryByTestId('fiscal-document-issue-note')).not.toBeInTheDocument();
     expectFrancsOnly(plain(within(summary).getByTestId('fiscal-document-issue-total').textContent));
-    // The issued documents are not even read for it.
     expect(api.listDocuments).not.toHaveBeenCalledWith({ status: 'Issued', source: 'CasaZen' }, 1, 100);
   });
 

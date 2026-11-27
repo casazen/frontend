@@ -9,10 +9,6 @@ import { BookingOriginBadge } from '../components/booking-origin-badge';
 import { bookingFilterParams } from '../lib/booking-list-query';
 import { bookingOriginName } from '../lib/ota-stay';
 
-/**
- * Where a booking came from, in the four words the host reads (E27/F01/US02, NF-123): the badge of the list and of the booking, and the filter of the list.
- * What the badge says is the `origin` the API works out; the screen never works it out itself.
- */
 const handlers = { accept: vi.fn(), arrival: vi.fn(), decline: vi.fn(), cancel: vi.fn(), sendLink: vi.fn() };
 
 const item = (overrides: Partial<BookingListItem> = {}): BookingListItem => ({
@@ -72,7 +68,6 @@ describe('bookingOriginName', () => {
     const t = i18n.getFixedT('it');
 
     expect(bookingOriginName({ origin: 'Portal', originChannel: 'OtherChannel', source: 'OtherChannel', channelLabel: 'Hotels Mare' }, t)).toBe('Portale Hotels Mare');
-    // No name to add: «Portale Altro portale» says no more than «Portale».
     expect(bookingOriginName({ origin: 'Portal', originChannel: 'OtherChannel', source: 'OtherChannel', channelLabel: null }, t)).toBe('Portale');
     expect(bookingOriginName({ origin: 'Portal', originChannel: null, source: undefined }, t)).toBe('Portale');
   });
@@ -120,7 +115,6 @@ describe('the list of bookings and the origin', () => {
   });
 
   it('BookingsList_RowWithNoOriginInTheAnswer_HasNoOriginBadge', () => {
-    // An older answer has no `origin` at all: the row is what it always was.
     renderChannelCell(item());
 
     expect(screen.queryByTestId('booking-origin-badge')).toBeNull();
@@ -139,7 +133,6 @@ describe('the list of bookings and the origin', () => {
 describe('bookingFilterParams (origin)', () => {
   it('bookingFilterParams_OriginsChosen_AreAskedByTheirNamesAndNoOriginIsNoFilter', () => {
     expect(bookingFilterParams({ q: '', filters: { origin: 'Portal,AgencySite' } }).origin).toBe('Portal,AgencySite');
-    // The counters of the chips take the same filters as the rows, so they count what the rows show.
     expect(bookingFilterParams({ q: 'rossi', filters: { origin: 'AgencySite', channel: 'Direct' } })).toMatchObject({ q: 'rossi', origin: 'AgencySite', channel: 'Direct' });
     expect(bookingFilterParams({ q: '', filters: {} }).origin).toBeUndefined();
   });
@@ -157,7 +150,6 @@ describe('the texts of the origin', () => {
 
     expect(Object.keys(texts.booking.origin).sort()).toEqual([...BOOKING_ORIGINS, 'PortalNamed'].sort());
     expect(texts.booking.origin.PortalNamed).toContain('{{name}}');
-    // The booking engine of the manager of the rooms is «Sito dell'agenzia» (or «Agency site»): the name of the supplier is never in a text for hosts or guests.
     const everyText = [...Object.values(texts.booking.origin), texts.booking.list.filters.origin, ...Object.values(texts.directBooking.bookingLink)];
     for (const text of everyText) {
       expect(text.trim()).not.toBe('');

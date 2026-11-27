@@ -26,7 +26,6 @@ import { useSubmitWelcomeConsent, useWelcomePage } from '@/queries/welcome';
 import type { WelcomePageData } from '@/types/welcome.types';
 import { MarketingLinkCard } from './marketing-link-card';
 
-/** Same limits as the API (`WelcomeConsentRequest`). */
 const EMAIL_MAX_LENGTH = 255;
 const PHONE_MAX_LENGTH = 40;
 
@@ -55,7 +54,6 @@ const welcomeFormSchema = z
     if (!values.consentEmail && !values.consentWhatsApp) {
       context.addIssue({ code: 'custom', path: ['consentEmail'], message: 'marketing.welcome.errors.channelRequired' });
     }
-    // A guest who only wants WhatsApp types no address: it would be asked for nothing and never sent.
     if (values.consentEmail && values.email === '') {
       context.addIssue({ code: 'custom', path: ['email'], message: 'publicBooking.validation.emailRequired' });
     } else if (values.consentEmail && !z.regexes.email.test(values.email)) {
@@ -64,8 +62,6 @@ const welcomeFormSchema = z
     if (values.consentWhatsApp && values.phone === '') {
       context.addIssue({ code: 'custom', path: ['consentWhatsApp'], message: 'publicBooking.validation.whatsAppNeedsPhone' });
     } else if (values.consentWhatsApp && isValidPhone(values.phone) && !hasInternationalPrefix(values.phone)) {
-      // The server puts its own calling code in front of a number that does not say its country (`+` or `00`): the consent would be for a
-      // stranger's number. A number that is not a number at all is told on the phone field.
       context.addIssue({ code: 'custom', path: ['consentWhatsApp'], message: 'publicBooking.validation.whatsAppNeedsPrefix' });
     }
     if (!values.adultConfirmed) {
@@ -81,12 +77,10 @@ type WelcomeState = 'loading' | 'inactive' | 'error' | 'welcome' | 'ask' | 'done
 
 interface WelcomeFormProps {
   page: WelcomePageData;
-  /** The version of the consent text the page shows, which the consent sent back names. */
   version: string;
   submit: ReturnType<typeof useSubmitWelcomeConsent>;
 }
 
-/** The guest's form: e-mail, optional phone, the two channel boxes, the declaration of age and the text of the consent with its version. */
 function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
   const { t, i18n } = useTranslation();
   const {
@@ -98,7 +92,6 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
     formState: { errors },
   } = useForm<WelcomeFormValues>({ resolver: zodResolver(welcomeFormSchema), mode: 'onTouched', defaultValues: EMPTY_FORM });
 
-  // The WhatsApp box waits for a number (a box already ticked stays free, so it can be unticked).
   const phoneTyped = useWatch({ control, name: 'phone' }).trim() !== '';
   const channelError = translateValidationMessage(errors.consentEmail?.message, t, i18n);
   const whatsAppError = translateValidationMessage(errors.consentWhatsApp?.message, t, i18n);
@@ -108,7 +101,6 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
   const send = handleSubmit((values) => {
     submit.mutate(
       {
-        // What is not consented to is not sent: the address only with the e-mail box, the number only with the WhatsApp box.
         ...(values.consentEmail ? { email: values.email } : {}),
         ...(values.consentWhatsApp ? { phone: values.phone } : {}),
         consentEmail: values.consentEmail,
@@ -118,7 +110,6 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
         language,
       },
       {
-        // The text changed while the guest was reading: what they ticked was for the old one. The page shows the new text, unticked.
         onError: (error) => {
           if (isAxiosError(error) && getProblemCode(error.response?.data) === CONSENT_OUTDATED_CODE) {
             reset({ ...values, consentEmail: false, consentWhatsApp: false, adultConfirmed: false });
@@ -142,7 +133,6 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
         />
       </Field>
       <Field label={t('publicBooking.phone')} hint={t('marketing.welcome.phoneHint')} optional error={errors.phone}>
-        {/* A number typed or cleared changes what the WhatsApp box may do: its message is checked again at once, not at the next press. */}
         <Input
           id="welcome-phone"
           type="tel"
@@ -165,7 +155,6 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
                 checked={field.value}
                 onCheckedChange={(checked) => {
                   field.onChange(checked === true);
-                  // The address is needed only with this box: a message already on it is checked again at once, not at the next press.
                   if (errors.email) void trigger('email');
                 }}
                 aria-describedby={channelError ? 'welcome-channels-error' : undefined}
@@ -221,7 +210,6 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
         </p>
       </fieldset>
 
-      {/* The page collects an address and a number from a person who may not have booked: the privacy notice is one click away before anything is sent. */}
       <p className="text-xs leading-relaxed text-muted-foreground" data-testid="welcome-privacy">
         <Trans
           i18nKey="marketing.welcome.privacyNotice"
@@ -317,7 +305,6 @@ export function WelcomePage() {
   }
 
   const names = { property: page.data?.propertyName ?? '', host: page.data?.orgName ?? '' };
-  // The words of the end depend on what the guest chose (no e-mail to check for who chose WhatsApp only), never on what the server answered.
   const confirmedByEmail = submit.variables?.consentEmail === true;
   const cards = {
     inactive: { tone: 'broken', icon: Link2Off, title: t('marketing.welcome.inactive.title'), description: t('marketing.welcome.inactive.description') },
@@ -356,7 +343,6 @@ export function WelcomePage() {
           </Button>
         </>
       ) : null}
-      {/* A guest from abroad reads the page in their own language: the same switch the app has, and the consent goes in the language of the page. */}
       <div className="flex justify-center pt-1">
         <LanguageSwitcher />
       </div>

@@ -81,7 +81,6 @@ describe('ThreadList (NF-61)', () => {
       const rows = screen.getAllByTestId('message-thread-row');
       expect(rows).toHaveLength(2);
       expect(rows[0]).toHaveAttribute('data-kind', 'review');
-      // The row opens the review under its key, with the filter of the list (so the list beside the review is the one of the reviews).
       expect(rows[0]).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent(OTA_REVIEW_KEY)}?view=reviews`);
       expect(within(rows[0]).getByTestId('review-row-rating')).toHaveTextContent('4,5 su 5');
       expect(rows[0]).toHaveTextContent('Casa pulita e host gentilissimo.');
@@ -90,7 +89,6 @@ describe('ThreadList (NF-61)', () => {
       expect(rows[1]).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent(SITE_REVIEW_KEY)}?view=reviews`);
       expect(rows[1]).toHaveTextContent('Diretto');
       expect(within(rows[1]).queryByTestId('review-row-not-answered')).not.toBeInTheDocument();
-      // A review is not a conversation: nothing about unread messages.
       expect(within(rows[0]).queryByText(/da leggere/)).not.toBeInTheDocument();
     });
 
@@ -113,7 +111,6 @@ describe('ThreadList (NF-61)', () => {
 
     const rows = screen.getAllByTestId('message-thread-row');
     expect(rows).toHaveLength(3);
-    // The key is escaped in the address, and the filters of the list go with it.
     expect(rows[0]).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent(OTA_KEY)}?view=all`);
     expect(rows[1]).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent(DIRECT_KEY)}?view=all`);
     expect(within(rows[0]).getByTestId('channel-badge')).toHaveTextContent('Airbnb');
@@ -146,7 +143,6 @@ describe('ThreadList (NF-61)', () => {
     expect(within(screen.getAllByTestId('message-thread-row')[1]).getByText('Tu: Ti aspettiamo.')).toBeInTheDocument();
   });
 
-  // PRIVACY (E23/F01): the preview of an automatic message holds the check-in link, a secret the host gets only if it may copy it (`booking.write`). Who may not (the default) reads it without.
   it('ThreadList_PreviewOfAnAutomaticMessageWithTheCheckInLink_IsHiddenToWhoCannotCopyItAndShownToWhoCan', () => {
     const preview = 'Ecco il link: https://casazen.test/checkin/secret-token-123 Valido fino al 20/11.';
     const page: MessageHubPage = { ...PAGE, items: [thread({ threadKey: OTA_KEY, lastMessageOrigin: 'Automation', preview, unreadCount: 0 })], totalCount: 1 };

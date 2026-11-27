@@ -43,7 +43,6 @@ type Hook<T extends (...args: never[]) => unknown> = ReturnType<T>;
 
 const PROPERTY_ID = 'prop-1';
 
-/** A house in Lugano, already active or not: the wizard reads only these fields of it. */
 const property = {
   id: PROPERTY_ID,
   name: 'Casa Lugano',
@@ -73,7 +72,6 @@ function step(id: string, patch: Partial<ComplianceWizardStep> = {}): Compliance
   return { id, label: id, status: blocker ? 'complete' : 'warning', blocker, blockers: [], ...patch };
 }
 
-/** The step of a property in Switzerland as the server sends it: pending and blocking, with what it lacks. */
 function swissStep(missing: string[]): ComplianceWizardStep {
   return step('guest-registration', {
     label: 'Notifica degli ospiti',
@@ -175,20 +173,16 @@ describe('PropertyActivationWizard, the step «Notifica degli ospiti» of a prop
     cleanup();
   });
 
-  // AC3: the Swiss step is in the wizard, inside the layer, with the card; AC4: the old guidance is gone when the flag is on.
   it('Wizard_SwissPropertyWithTheRegimesOn_OpensOnTheSwissStepWithTheCardAndNoOldGuidance', async () => {
     const { container } = renderWizard('', true);
 
-    // The first blocking step that is still open is the one of Switzerland: the wizard opens on it, with its title in the progress.
     expect(stepButton('guest-registration')).toHaveAttribute('aria-current', 'step');
     expect(stepButton('guest-registration')).toHaveTextContent(t('compliance.activation.steps.guest-registration'));
     expect(panel('guest-registration')).toBeVisible();
     expect(await within(panel('guest-registration')).findByTestId('guest-registration-summary')).toBeInTheDocument();
     expect(within(panel('guest-registration')).getByTestId('guest-registration-card')).toHaveAttribute('data-variant', 'wizard');
-    // What is missing is in the panel, once: the header of the step does not repeat it.
     expect(within(panel('guest-registration')).getByTestId('guest-registration-missing')).toHaveTextContent(t('guestRegistration.missing.ticino_structure_id_missing'));
     expect(screen.queryByTestId('activation-step-blockers-guest-registration')).not.toBeInTheDocument();
-    // The old guidance is gone, and nothing in the wizard leads out of it: no link opens another tab.
     expect(screen.queryByText(t('property.swissRegistration.title'))).not.toBeInTheDocument();
     expect(container.querySelector('a[target="_blank"]')).toBeNull();
     expect(guestRegistrationApi.get).toHaveBeenCalledWith(PROPERTY_ID);
@@ -203,7 +197,6 @@ describe('PropertyActivationWizard, the step «Notifica degli ospiti» of a prop
 
   it('Wizard_TheHostLeavesForTheSwissStepFromAnotherStep_TheWayBackToThatStepIsAtHand', async () => {
     renderWizard('?step=base-data', true);
-    // Nothing leads back while the host is where they started.
     expect(screen.queryByTestId('guest-registration-back-to-origin')).not.toBeInTheDocument();
 
     fireEvent.click(stepButton('guest-registration'));
@@ -217,7 +210,6 @@ describe('PropertyActivationWizard, the step «Notifica degli ospiti» of a prop
 
     expect(panel('base-data')).toBeVisible();
     expect(panel('guest-registration')).not.toBeVisible();
-    // The step it came back to forgets where it was: the address has no `from`.
     expect(screen.getByTestId('where')).not.toHaveTextContent('from=');
     expect(screen.queryByTestId('guest-registration-back-to-origin')).not.toBeInTheDocument();
   });
@@ -241,7 +233,6 @@ describe('PropertyActivationWizard, the step «Notifica degli ospiti» of a prop
     expect(screen.queryByTestId('guest-registration-back-to-origin')).not.toBeInTheDocument();
   });
 
-  // «Resumable, nothing typed is lost»: the step stays mounted while another one is shown.
   it('Wizard_TheNumberTypedInTheSwissStep_SurvivesGoingToAnotherStepAndBack', async () => {
     renderWizard('', true);
     const input = await within(panel('guest-registration')).findByLabelText(t('swiss.structureId.label'));
@@ -263,7 +254,6 @@ describe('PropertyActivationWizard, the step «Notifica degli ospiti» of a prop
 
     await waitFor(() => expect(updateProperty).toHaveBeenCalledWith({ id: PROPERTY_ID, data: { ticinoStructureId: 'NL-12345678' } }));
     await waitFor(() => expect(refetchActivation).toHaveBeenCalled());
-    // The host is still where they were: the step did not send them anywhere.
     expect(panel('guest-registration')).toBeVisible();
   });
 
@@ -286,10 +276,8 @@ describe('PropertyActivationWizard, the step «Notifica degli ospiti» of a prop
     it('Wizard_SwissPropertyWithTheRegimesOff_TheOldGuidanceIsAboveTheStepsAndTheStepAsksWhatItLacksWithoutTheCard', async () => {
       renderWizard('', false);
 
-      // The guidance it always was, above the steps; nothing is asked of the regimes.
       expect(screen.getByText(t('property.swissRegistration.title'))).toBeInTheDocument();
       expect(guestRegistrationApi.get).not.toHaveBeenCalled();
-      // The step does not depend on the flag: it lists what is missing and has the field of the number, so the host can finish.
       expect(panel('guest-registration')).toBeVisible();
       expect(within(panel('guest-registration')).queryByTestId('guest-registration-card')).not.toBeInTheDocument();
       expect(within(panel('guest-registration')).getByTestId('guest-registration-missing')).toHaveTextContent(t('guestRegistration.missing.ticino_structure_id_missing'));

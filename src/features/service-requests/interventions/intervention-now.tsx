@@ -14,10 +14,8 @@ const DATE_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', h
 interface InterventionNowProps {
   request: ServiceRequest;
   steps: InterventionSteps;
-  /** A step is running: the button of the block waits. */
   busy: boolean;
   permissions: HostPermissions;
-  /** A card payment was sent to Stripe and the backend has not said it is paid yet: «Paga» waits for it. */
   paymentSent?: boolean;
 }
 
@@ -31,27 +29,17 @@ interface BlockProps {
   turn: 'you' | 'supplier' | null;
 }
 
-/**
- * «Prossimo passo» of an intervention (SR-08), in the drawer and on the page: the one highlighted block. What it offers is what the server
- * says the host can do (`hostAction`, `availableActions`): the block names the case, says whose turn it is and gives the one button, and has
- * no state logic of its own. Where the host has nothing to do, or may not do it (a collaborator without `property.write`), the button leads to
- * the list. Nothing is written to the supplier but by the host's press: a reminder, an answer to a time, a payment.
- *
- * The words are those of the long-rent page (`longRentRequests.next.*`): the same sentences say the same things in both areas.
- */
 export function InterventionNow({ request, steps, busy, permissions, paymentSent = false }: InterventionNowProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   const kind = hostActionKind(request);
   const names = supplierRef(request, t);
   const when = whenText(request, language, t, true);
-  /** "venerdì 30 ottobre, 10:00–12:30 · 2 ore": the day and, when the request has one, the time. */
   const line = (w: { day: string | null; time: string | null }) => [w.day, w.time].filter(Boolean).join(', ');
   const money = (cents: number | null | undefined) => (cents === null || cents === undefined ? null : formatMoney(cents, language));
   const amount = money(request.price?.amountCents);
   const phone = request.supplierContact?.phone?.trim();
 
-  // A block always has a way to go on: where the host has nothing to do (or may not do it), the list of the interventions.
   const allRequests: CalmAction = { label: t('longRentRequests.next.allRequests'), href: INTERVENTIONS_PATH };
   const ifAllowed = (action: string, calm: CalmAction): CalmAction => (mayDo(action, permissions) ? calm : allRequests);
   const contact: CalmAction | undefined = phone ? { label: t('interventions.action.contact'), href: phoneHref(phone) } : undefined;
@@ -71,7 +59,6 @@ export function InterventionNow({ request, steps, busy, permissions, paymentSent
     />
   );
 
-  /** A new request nobody answered yet: the reminder when the server offers it, and when it will offer it again when it does not. */
   const waiting = () => {
     const respondBy = instantToCome(request.respondBy);
     const by = respondBy ? formatRomeDateTime(respondBy, language, DATE_TIME) : null;
@@ -90,7 +77,6 @@ export function InterventionNow({ request, steps, busy, permissions, paymentSent
         <>
           <span className="block">{t('longRentRequests.next.waiting.body')}</span>
           {by ? <span className="mt-1 block">{t('longRentRequests.next.waiting.respondBy', { when: by })}</span> : null}
-          {/* SP-BKP: the request went to backup suppliers too; the group below says who they are. */}
           {request.group?.phase === 'PrimaryWindow' || request.group?.phase === 'BackupWindow' ? (
             <span className="mt-1 block text-foreground/70" data-testid="intervention-next-step-backups">
               {t(request.group.phase === 'PrimaryWindow' ? 'interventions.group.waitingNote' : 'interventions.group.waitingNoteOpen')}
@@ -218,7 +204,6 @@ export function InterventionNow({ request, steps, busy, permissions, paymentSent
       break;
   }
 
-  // Nothing is asked of the host: the supplier is at work, or it is over.
   switch (request.status) {
     case 'Richiesto':
       return waiting();

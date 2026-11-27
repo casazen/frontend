@@ -19,7 +19,6 @@ import type { SiteModel } from '@/lib/supplier-site/site-model';
 import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 import { useSupplierService } from '@/queries/use-public-supplier';
 
-/** The same words for a service that does not exist, one that is a draft or paused, one that is deleted and one the supplier does not show. */
 function ServiceMissing({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   return (
@@ -53,7 +52,6 @@ function ServiceLoading() {
   );
 }
 
-/** "Come si calcola il prezzo": the catalog of the supplier as it is (the base price and each supplement), never added up here. */
 function PriceExplain({ service }: { service: PublicSupplierServiceDetail }) {
   const { t, i18n } = useTranslation();
   const onQuote = service.requiresQuote || service.priceFromCents === null;
@@ -104,7 +102,6 @@ function PriceExplain({ service }: { service: PublicSupplierServiceDetail }) {
   );
 }
 
-/** On a phone, the price and the one action stay at the bottom while the details are read. */
 function ServiceBar({ model, service }: { model: SiteModel; service: PublicSupplierServiceDetail }) {
   const { t, i18n } = useTranslation();
   const onQuote = service.requiresQuote || service.priceFromCents === null;
@@ -130,11 +127,6 @@ function ServiceBar({ model, service }: { model: SiteModel; service: PublicSuppl
   );
 }
 
-/**
- * One service of the supplier, `/fornitori/:slug/servizi/:serviceSlug` (SP-09-FE-b): the photos, what it is, what is and is not
- * included, how the price is made, what to do before the supplier arrives and the questions it answered, with the card of the booking
- * beside it (the estimate follows the options). Only a service the supplier shows; anything else is the same "not found".
- */
 export function SupplierServicePage() {
   const { t } = useTranslation();
   const { model } = useSupplierSite();
@@ -142,7 +134,6 @@ export function SupplierServicePage() {
   const listed = model.services?.find((candidate) => candidate.slug === serviceSlug);
   const { data: service, isLoading, isError, error, refetch } = useSupplierService(model.slug, serviceSlug, !!listed);
 
-  // Without the list of services (the bookings flag is off) there is no service to show.
   if (model.services === null) return <Navigate to={supplierSitePaths.home(model.slug)} replace />;
   if (!listed) return <ServiceMissing model={model} />;
   if (isLoading) return <ServiceLoading />;

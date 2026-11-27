@@ -20,7 +20,6 @@ test('the manifest has exactly the shape of the contract', () => {
     loader: '/embed/v1/embed.js',
     search: '/embed/v1/search.js',
   });
-  // The order of the members is the one of §6 of the analysis: the plugin and the people who read the file expect it.
   assert.deepEqual(Object.keys(manifest), ['v', 'apiBase', 'widgets', 'loader', 'search']);
 });
 
@@ -112,9 +111,7 @@ test('the build writes its files and the manifest and leaves every other file as
   assert.deepEqual(JSON.parse(await readFile(join(outDir, 'manifest.json'), 'utf8')), buildManifest({ apiBase: 'https://casazen-api.example.test/api' }));
   const loader = await readFile(join(outDir, 'embed.js'), 'utf8');
   assert.ok(loader.includes('CasaZenEmbed'));
-  // The search bar is written next to the loader, and registers itself with it.
   assert.ok((await readFile(join(outDir, 'search.js'), 'utf8')).includes('register'));
-  // Nothing else was written, and nothing was deleted.
   assert.deepEqual((await readdir(outDir)).sort(), ['embed.js', 'keep.txt', 'later', 'manifest.json', 'search.js']);
   assert.equal(await readFile(join(outDir, 'keep.txt'), 'utf8'), 'kept');
   assert.equal(await readFile(join(outDir, 'later', 'other.js'), 'utf8'), '// kept too');

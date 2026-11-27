@@ -33,7 +33,6 @@ describe('CalmBlocksPage (UI-16, the page of the calm blocks for developers)', (
     renderPage();
 
     const home = within(screen.getByTestId('home-example'));
-    // The composition the README shows: one highlighted block, three sections, three numbers, one checklist.
     expect(home.getAllByRole('region').filter((region) => region.hasAttribute('data-tone'))).toHaveLength(1);
     expect(home.getAllByRole('listitem').filter((item) => item.closest('[role="group"]'))).toHaveLength(3);
   });
@@ -62,7 +61,6 @@ describe('CalmBlocksPage (UI-16, the page of the calm blocks for developers)', (
   });
 
   it('CalmBlocksPage_WeekStrip_MovesTheChoiceToTheNextDayWhenAnArrowIsPressed', () => {
-    // Whatever day it is: Tuesday is not special.
     freezeClock('2026-10-13T10:00:00Z');
     renderPage();
 

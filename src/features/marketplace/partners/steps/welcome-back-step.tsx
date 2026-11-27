@@ -50,9 +50,7 @@ export function WelcomeBackStep({ context }: WelcomeBackStepProps) {
 
 interface PartnerResultStepProps {
   context: PartnerContext;
-  /** The activation the declaration made; `undefined` when the screen is opened again (a reload): the wizard is over and there is nothing to report but where to look. */
   activation: MarketplacePartnerActivation | undefined;
-  /** Where the closing button leads: the page the wizard was opened from, else the Marketplace. */
   exitPath: string;
   language: string;
 }

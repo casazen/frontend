@@ -7,7 +7,6 @@ import { OwnerImportPanel } from '@/features/onboarding/components/owner-import-
 import { useOwnerReadiness } from '@/queries/use-owner-onboarding';
 import { propertyHasOwner } from '../owner-step-model';
 
-/** Assignment stays in the property flow; the existing checked import is portalled outside the wizard's form. */
 export function OwnerStep({ propertyId, canAssign }: { propertyId: string; canAssign: boolean }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);

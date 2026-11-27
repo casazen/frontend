@@ -8,14 +8,12 @@ import { FOCUS_PARAM, ISSUE_FIELD_LABEL_KEYS, ISSUE_TEXT_KEYS, issueTarget, sort
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
-/** The name of the guest an issue is about: their name, or "Guest N" while it is not known. */
 function guestLabel(state: CheckInWizardState, position: number | null, t: TranslateFn): string {
   const guest = position === null ? undefined : state.guests.find((candidate) => candidate.position === position);
   const name = `${guest?.firstName ?? ''} ${guest?.lastName ?? ''}`.trim();
   return name || t('checkin.guestHeading', { index: (position ?? 0) + 1 });
 }
 
-/** One issue in plain words: what is missing or odd, and for whom. Unknown codes and fields still read as a sentence. */
 function issueSentence(issue: CheckInIssue, state: CheckInWizardState, t: TranslateFn): string {
   if (issue.field === 'guests') return t('checkin.wizard.checks.issue.noGuests');
   const registered = state.guests.filter((guest) => guest.saved).length;

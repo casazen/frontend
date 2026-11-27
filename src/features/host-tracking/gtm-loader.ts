@@ -7,15 +7,12 @@ import type { HostSite } from '@/lib/host-site';
  * calls `loadGtm` has checked the consent of the visitor, and a page that may not measure never calls it. No cookie is written here.
  */
 
-/** `window` as far as the tag manager is concerned: the queue of messages it reads (`dataLayer`). */
 export type DataLayerWindow = Window & { dataLayer?: unknown[] };
 
 const GTM_SCRIPT_ADDRESS = 'https://www.googletagmanager.com/gtm.js';
 
-/** The mark on the script this module inserted: where it is, every later call (a re-render, a route change, another page of the site) does nothing. */
 const GTM_SCRIPT_MARK = 'data-casazen-gtm';
 
-/** `GTM-` and 4 to 12 letters or digits: the rule of the backend (`GtmContainerIds`), which is what the agency's id was checked against when it was saved. */
 const CONTAINER_ID = /^GTM-[A-Z0-9]{4,12}$/;
 const MAX_CONTAINER_ID_LENGTH = 16;
 
@@ -39,15 +36,8 @@ export function normalizeGtmContainerId(value: unknown): string | null {
   return CONTAINER_ID.test(candidate) ? candidate : null;
 }
 
-/**
- * The pages of the booking site that a guest opens with the link of an e-mail, where the ADDRESS is the key to a booking: the code in `/my-bookings?code=…`, and the token in
- * `/requests/<id>/confirm?token=…`, `/booking/<id>/review?token=…` and `/bookings/<id>/cancel?token=…` (this one takes it out of the address as soon as it opens, but it is in it
- * when the page starts). With or without the `/book/<slug>` of the router: an agency's own domain writes `my-bookings`, `requests` and `booking` without it (`HOST_SITE_SEGMENTS`).
- * The outcome page `/booking/<id>?token=…` is not one of them: the `purchase` is reported there (the risk and its follow-up are in the pull request).
- */
 const KEY_ADDRESS_PAGE = /^(?:\/book\/[^/]+)?\/(?:my-bookings|requests|booking\/[^/]+\/review|bookings\/[^/]+\/cancel)(?:\/|$)/i;
 
-/** Whether the address `pathname` is one of `KEY_ADDRESS_PAGE`. The comparison ignores the case, as the router does. */
 function isKeyAddressPath(pathname: string): boolean {
   return KEY_ADDRESS_PAGE.test(pathname.split(/[?#]/, 1)[0] ?? '');
 }
@@ -64,17 +54,11 @@ export function gtmContainerOf(site: Pick<HostSite, 'embedEnabled' | 'tracking'>
   return normalizeGtmContainerId(site.tracking?.gtmContainerId);
 }
 
-/** The queue of messages of the tag manager: the page's own, created on first use. */
 export function dataLayerOf(win: DataLayerWindow = window): unknown[] {
   win.dataLayer ||= [];
   return win.dataLayer;
 }
 
-/**
- * The standard snippet of Tag Manager, without the `noscript` part: `dataLayer` gets `{ 'gtm.start': <now>, event: 'gtm.js' }` and one async `script` loads the
- * container, `https://www.googletagmanager.com/gtm.js?id=<id>` with the id URL-encoded. The script is marked, so a second call does nothing. An id that is not
- * a container id inserts nothing, touches nothing and throws nothing. Returns true only when it inserted the script now.
- */
 export function loadGtm(containerId: string, win: DataLayerWindow = window): boolean {
   const id = normalizeGtmContainerId(containerId);
   if (id === null) return false;

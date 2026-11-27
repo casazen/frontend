@@ -8,11 +8,6 @@ import { onboardingApi } from '@/api/onboarding.api';
 import type { ActivationStep, OnboardingStatus } from '@/types/onboarding.types';
 import { ActivationChecklist } from '../activation-checklist';
 
-/**
- * The next step of the activation checklist is the shared `NextStepCard` of the calm blocks (UI-16). The card has its own test;
- * this one pins what the checklist hands it: the words, the order of the parts, the button, who does not get it, the state of
- * the link, and that the title is not a heading of the page (the checklist has its own).
- */
 vi.mock('@/api/onboarding.api', () => ({ onboardingApi: { getStatus: vi.fn() } }));
 
 const permissions = vi.hoisted(() => ({ canWrite: true, orgAdmin: true }));
@@ -82,7 +77,6 @@ describe('ActivationChecklist, the next step (UI-16)', () => {
 
     const next = await screen.findByTestId('activation-next-step');
 
-    // The elements and the order of the markup it had before it was shared: four paragraphs and the button.
     expect(Array.from(next.children).map((child) => child.tagName)).toEqual(['P', 'P', 'P', 'P', 'A']);
     expect(Array.from(next.children).map((child) => child.textContent)).toEqual([
       i18n.t('activation.next.kicker'),

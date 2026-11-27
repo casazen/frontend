@@ -19,7 +19,6 @@ const { flags, createMock, saveMock, saveTextsMock, ownerReadinessMock, entitlem
   saveMock: vi.fn(),
   saveTextsMock: vi.fn(),
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
-  // What the server holds after the host took the descriptions of the channel manager («Prendi la nuova versione»).
   ADOPTED: {
     property: { listingTitle: 'Trullo con piscina', description: 'Descrizione presa dal canale', houseRules: 'Regole prese dal canale' },
     siteProfile: { translations: { en: { title: 'Trullo with pool', description: 'Description taken from the channel' } } },
@@ -63,8 +62,6 @@ vi.mock('@/queries/use-comuni', () => ({
   useComuneSearch: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
   useComune: () => ({ data: undefined, isError: false }),
 }));
-// The steps that talk about the texts are not under test here, only what the wizard keeps of them between one step and the next: the
-// channels step stands in for the choice about a change made outside CasaZen, the other two have no fields (the form holds the values).
 vi.mock('../steps/channels-step', () => ({
   ChannelsStep: (props: { onAdopted?: (adopted: unknown) => void; goTo: (stepId: string) => void }) => (
     <div>
@@ -130,9 +127,7 @@ function open(search = '') {
   );
 }
 
-/** The wizard reopened on a property that is already on the channels, at the step of the channels. */
 function openOnTheChannels() {
-  // The wizard keeps the property in the address of the browser (not the router's): in a test they must say the same, or `?step=` is dropped.
   window.history.replaceState({}, '', '/app/short-rent/properties/create?propertyId=p1&step=channels');
   return render(
     <MemoryRouter initialEntries={['/app/short-rent/properties/create?propertyId=p1&step=channels']}>
@@ -213,14 +208,12 @@ describe('PropertyWizard (E02/F03/US01)', () => {
     fireEvent.click(screen.getByTestId('property-wizard-save-close'));
 
     expect(screen.getByText('Elenco immobili')).toBeInTheDocument();
-    // Nothing is created by leaving, and the host is not told that something was saved.
     expect(createMock).not.toHaveBeenCalled();
     expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('Le risposte del primo passo restano qui'));
   });
 
   it('steps_TheChannelsStepIsThereOnlyWhereTheChannelManagerIsConnected', () => {
     const { unmount } = open();
-    // Not connected (the production default): the wizard has the steps it always had, plus the texts.
     for (const label of ['Dati base', 'Foto', 'Dotazioni', 'Testi', 'Regole', 'Prezzi', 'Attivazione']) {
       expect(screen.getAllByText(label).length, label).toBeGreaterThan(0);
     }
@@ -233,13 +226,11 @@ describe('PropertyWizard (E02/F03/US01)', () => {
   });
 
   it('descriptions_TheTextsAreRequiredOnlyWhereTheChannelManagerIsConnected', () => {
-    // Not connected (the production default): the step can be left out, as the title and the description of the photos step always could.
     const { unmount } = open('?step=descriptions');
     expect(step()).toBe('descriptions');
     expect(screen.getByTestId('wizard-skip')).toBeInTheDocument();
     unmount();
 
-    // Connected: the channels take no listing without them, so the step cannot be skipped.
     flags.octorateConnector = true;
     open('?step=descriptions');
     expect(step()).toBe('descriptions');
@@ -247,7 +238,6 @@ describe('PropertyWizard (E02/F03/US01)', () => {
   });
 
   it('descriptionsEmpty_WithTheChannelManagerOff_AvantiAsksNothing_WithItOnItNamesWhatIsMissing', async () => {
-    // The wizard reopened on a property with no title and no description at all, at the step of the texts.
     const empty = { ...PROPERTY, listingTitle: null, description: '', houseRules: null } as unknown as Property;
     window.history.replaceState({}, '', '/app/short-rent/properties/create?propertyId=p1&step=descriptions');
     const reopen = () =>
@@ -262,7 +252,6 @@ describe('PropertyWizard (E02/F03/US01)', () => {
     const { unmount } = reopen();
     fireEvent.click(screen.getByTestId('property-wizard-next'));
     await waitFor(() => expect(step()).toBe('rules'));
-    // Nothing was asked for, and the host's empty texts are saved as they are (the listing then uses the name).
     expect(saveMock).toHaveBeenCalledWith({ id: 'p1', data: { listingTitle: null, description: '' } });
     unmount();
 
@@ -278,7 +267,6 @@ describe('PropertyWizard (E02/F03/US01)', () => {
     openOnTheChannels();
     expect(step()).toBe('channels');
 
-    // «Prendi la nuova versione»: the server now holds the texts of the channel manager; then the host goes back to read them.
     fireEvent.click(screen.getByTestId('stub-take'));
     fireEvent.click(screen.getByTestId('stub-to-texts'));
     await waitFor(() => expect(step()).toBe('descriptions'));
@@ -286,7 +274,6 @@ describe('PropertyWizard (E02/F03/US01)', () => {
     fireEvent.click(screen.getByTestId('property-wizard-next'));
     await waitFor(() => expect(step()).toBe('rules'));
     expect(saveMock).toHaveBeenCalledWith({ id: 'p1', data: { listingTitle: 'Trullo con piscina', description: 'Descrizione presa dal canale' } });
-    // The texts of the other languages are the ones the server holds as well: nothing to send.
     expect(saveTextsMock).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByTestId('property-wizard-next'));

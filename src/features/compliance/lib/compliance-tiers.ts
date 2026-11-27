@@ -12,7 +12,6 @@ import { lightStateOf, sectionItems, type SectionField } from './compliance-ligh
  */
 export type CockpitTier = 'fine' | 'start' | 'chore';
 
-/** The sections of `GET api/compliance/summary` that carry a deadline of the law, whatever the stay. */
 export const FINE_FIELDS = [
   'alloggiatiFailures',
   'alloggiatiManualRequired',

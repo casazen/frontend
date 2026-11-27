@@ -39,7 +39,6 @@ it('publishes the saved payment-gated profile after cancelling a pending invalid
   vi.mocked(UsersApi.getMe).mockImplementation(async () => {
     if (!provisioned) return initial;
     savedReads += 1;
-    // onSuccess starts an invalidation that is still in flight when the explicit continuation cancels it.
     if (savedReads === 1) return new Promise<UserDetail>(() => undefined);
     return saved;
   });

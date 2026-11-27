@@ -5,13 +5,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-/** Longest reason the API accepts (`RejectServiceRequestRequest.Reason`, SU-10). */
 export const REJECT_REASON_MAX_LENGTH = 500;
 
-/**
- * Asks the supplier why it rejects a request (`reject`) or cancels a job it took and has not started (`cancel`, SP-16c-c): the reason is
- * required and shown to the host or the customer. Used by the inbox list, the drawer and the request detail (SU-08).
- */
 export function RejectServiceRequestDialog({
   open,
   isPending,

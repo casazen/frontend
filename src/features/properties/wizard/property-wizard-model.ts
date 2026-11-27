@@ -41,81 +41,51 @@ import { MAX_STAY_DISCOUNTS, stayDiscountDraftsFromServer, stayDiscountProblem, 
 import { WIZARD_STEP_IDS, type WizardStepId } from './property-setup-progress';
 export { WIZARD_STEP_IDS, type WizardStepId } from './property-setup-progress';
 
-/** Name of the query parameter that carries the property once it exists on the server (the end of the first step). */
 export const PROPERTY_ID_PARAM = 'propertyId';
 
-/**
- * What the host answers in the wizard. `WizardShell` holds them as the values of its form; the step lives in the address
- * (`?step=`) and the property, once created, in `?propertyId=`.
- */
 export interface PropertyWizardValues {
-  // 1 · Dati base
   accommodationType: AccommodationType | '';
   name: string;
   address: string;
-  /** Piano e interno, optional. */
   unit: string;
-  /** ISTAT code of the comune chosen from the official list. */
   comuneIstatCode: string;
-  /** The comune's name: what is stored as the city of the property. */
   city: string;
   country: 'IT' | 'CH' | '';
-  /** Optional: an Italian postal code, 5 digits. */
   postalCode: string;
   maxGuests: number;
-  /** Counters of the spaces; once the unit has a room they are read from the rooms (`rooms`) and the host does not type them. */
   bedrooms: number;
   beds: number;
   bathrooms: number;
   /** Optional, whole square metres; text because it is typed. */
   areaSqm: string;
-  /** The rooms with their beds (NF-34); empty = the host gave the counters only. At least one bed in all when there is a room. */
   rooms: RoomDraft[];
-  // 2 · Foto (the photos themselves are on the server, not in the form)
-  /** The caption (Italian and English) and the room of the photos that have one (NF-32). */
   photoMeta: PhotoMetaDraft[];
-  // 3 · Dotazioni (the ones the host chooses here; PetFriendly and SmokingAllowed follow the house rules)
   amenities: string[];
-  // 4 · Descrizioni. Italian is the columns of the property, every other language the site profile (NF-31).
-  /** The headline of the listing in Italian (required to publish). */
   listingTitle: string;
-  /** The description of the listing in Italian (required to publish). */
   description: string;
-  /** The headline and the description in the other languages by language code; English is required to publish, the others are optional. */
   texts: Record<string, ListingTextDraft>;
-  // 5 · Regole. Times are `HH:mm`; blank = the host did not say.
   checkInFrom: string;
   checkOutBy: string;
   smokingPolicy: SmokingPolicy | '';
   petsPolicy: PetsPolicy | '';
   partiesPolicy: PartiesPolicy | '';
   childrenPolicy: ChildrenPolicy | '';
-  /** Quiet hours come as a pair: both or none. */
   quietHoursFrom: string;
   quietHoursTo: string;
-  /** Euros a night for each extra guest, as typed; blank = extra guests are not accepted. */
   extraGuestFee: string;
-  /** One of the catalog; blank = none chosen (the refund then follows the default rule of the booking site). */
   cancellationPolicyId: string;
   houseRules: string;
-  // 6 · Prezzi. The amounts are typed, so they are text here and numbers in what is sent.
   nightlyRate: string;
-  /** Percent on the nights that start on a Friday or a Saturday; blank = none. */
   weekendSurcharge: string;
   cleaningFee: string;
-  /** 1 = no minimum. */
   minNights: number;
-  /** The length-of-stay discounts, at most 5 (NF-35); a row left empty is not sent. */
   stayDiscounts: StayDiscountDraft[];
-  // 7 · Canali (E02/F03/US01/T04). The codes of the channels the host chose not to publish to; none = all the ones that receive content.
   skipChannels: string[];
-  // 8 · «Mostra la casa sul sito» (PublishedOnSite). It never publishes by itself: the activation decides what can be shown.
   publishedOnSite: boolean;
 }
 
 type StepSchema = ZodType<unknown, FieldValues>;
 
-/** A civic number, or «snc» (senza numero civico), somewhere in the address. */
 const CIVIC_NUMBER = /\d|\bsnc\b|\bs\.\s?n\.\s?c\.?/i;
 
 const roomSchema = z.object({
@@ -126,10 +96,6 @@ const roomSchema = z.object({
     .max(BED_TYPES.length, 'propertyWizard.validation.rooms.bedCount'),
 });
 
-/**
- * The rooms (NF-34): at most 20, and once there is a room at least one bed in all and no more than 100, as the API asks. An empty list is
- * fine: the host gave the counters only.
- */
 const roomsSchema = z
   .array(roomSchema)
   .max(MAX_ROOMS, 'propertyWizard.validation.rooms.max')
@@ -140,7 +106,6 @@ const roomsSchema = z
     else if (beds > MAX_TOTAL_BEDS) context.addIssue({ code: 'custom', message: 'propertyWizard.validation.rooms.tooManyBeds' });
   });
 
-/** The limits are the ones of the API and of the form of today (`property.schema.ts`): whole numbers, a studio flat has 0 bedrooms. */
 export const baseStepSchema: StepSchema = z.object({
   accommodationType: z.enum(ACCOMMODATION_TYPES).or(z.literal('')),
   name: z.string().trim().min(3, 'propertyWizard.validation.name.min').max(100, 'propertyWizard.validation.name.max'),
@@ -195,10 +160,6 @@ const listingExtraShape = { spaces: z.string().max(1000).optional(), access: z.s
 const listingTitleOf = (message: string) => z.string().trim().min(1, message).max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle');
 const listingTextOf = (message: string) => z.string().trim().min(1, message).max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description');
 
-/**
- * The headline and the description of the listing (step 4, NF-31): Italian and English are both required — the channels will not take a
- * listing without them — and say what is missing, one message for each. The other languages are optional and have the same limits.
- */
 export const descriptionsStepSchema: StepSchema = z.object({
   listingTitle: listingTitleOf('propertyWizard.validation.descriptions.itTitle'),
   description: listingTextOf('propertyWizard.validation.descriptions.itDescription'),
@@ -238,10 +199,8 @@ export const descriptionsLengthsSchema: StepSchema = z.object({
   ),
 });
 
-/** The steps whose «Salva e chiudi» asks less than their «Avanti» does. */
 export const SAVE_AND_CLOSE_SCHEMAS: Partial<Record<string, StepSchema>> = { descriptions: descriptionsLengthsSchema };
 
-/** An amount in euros as typed (a comma or a point for the cents): the number, or `null` when it is not one. */
 export function parseAmount(text: string): number | null {
   const value = text.trim();
   return /^\d{1,6}([.,]\d{1,2})?$/.test(value) ? Number(value.replace(',', '.')) : null;
@@ -256,10 +215,6 @@ const amount = (min: number, max: number, message: string) =>
 
 const time = z.string().regex(/^(\d{2}:\d{2})?$/, 'propertyWizard.validation.time');
 
-/**
- * The house rules (step 4). Everything is optional — a rule the host leaves blank is a rule nobody states — but the quiet hours are a
- * pair: the server refuses one without the other (422 `property_quiet_hours_incomplete`), so it is said here, on the field.
- */
 export const rulesStepSchema: StepSchema = z
   .object({
     checkInFrom: time,
@@ -284,12 +239,6 @@ export const rulesStepSchema: StepSchema = z
     }
   });
 
-/**
- * The prices (step 5), with the limits of the API: the rate and the cleaning in euros (a rate of 0 is no rate, so one is asked for from
- * 1), the weekend surcharge from 0 to 100 percent, the minimum stay from 1 to 30 nights. Blank is allowed: a property without a rate is
- * saved and stays «Da completare» — the activation says so. The length-of-stay discounts (NF-35) are at most 5 tiers, each from 2 to 365
- * nights with a percentage above 0 and at most 100, and no two with the same nights; a row left empty is not a tier.
- */
 export const pricesStepSchema: StepSchema = z.object({
   nightlyRate: amount(1, 100000, 'propertyWizard.validation.nightlyRate'),
   weekendSurcharge: amount(0, 100, 'propertyWizard.validation.weekendSurcharge'),
@@ -310,7 +259,6 @@ export const pricesStepSchema: StepSchema = z.object({
     }),
 });
 
-/** What a new property starts from (the defaults of the design): the host changes them, nothing is asked twice. */
 export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   accommodationType: 'Apartment',
   name: '',
@@ -351,16 +299,8 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   publishedOnSite: true,
 };
 
-/**
- * The amenities the house rules decide (SR-07a): the step «Regole» turns them on and off from the answers about pets and smoking,
- * so they are not asked here. A property that has them keeps them when this step saves its list.
- */
 export const RULE_AMENITIES: readonly string[] = ['PetFriendly', 'SmokingAllowed'];
 
-/**
- * The listing data the server already has for a property the wizard reopens on (`?propertyId=`): the rooms, the discounts, the texts of
- * the other languages and the captions of the photos. The wizard starts from them; a property the wizard creates starts with none.
- */
 export interface WizardListingSeed {
   rooms: readonly PropertyRoom[];
   stayDiscounts: readonly StayDiscountTier[];
@@ -368,10 +308,8 @@ export interface WizardListingSeed {
   photoMeta: readonly PropertyPhotoMeta[];
 }
 
-/** What a property starts from when it has no listing data yet. */
 export const EMPTY_LISTING_SEED: WizardListingSeed = { rooms: [], stayDiscounts: [], siteProfile: null, photoMeta: [] };
 
-/** The rule about children of a property that never stated one: what its site profile already says (`childrenWelcome`), or the default of the design. */
 function childrenPolicyOf(property: Property, siteProfile: SiteProfile | null): ChildrenPolicy | '' {
   if (property.childrenPolicy) return property.childrenPolicy;
   if (siteProfile?.childrenWelcome === true) return 'Yes';
@@ -379,13 +317,8 @@ function childrenPolicyOf(property: Property, siteProfile: SiteProfile | null): 
   return NEW_PROPERTY_DEFAULTS.childrenPolicy;
 }
 
-/** The fields of the form that «Prendi la nuova versione» can rewrite on the server: the headline, the description, the house rules and the texts of the other languages. */
 export type AdoptableFields = Pick<PropertyWizardValues, 'listingTitle' | 'description' | 'houseRules' | 'texts'>;
 
-/**
- * Those fields as the server has them. One place for both the opening of the wizard and the moment after the host took the descriptions of
- * the channel manager (the form then starts from them again, or its next save would send the old texts back, E02/F03/US01/T04, NF-27).
- */
 export function adoptableFieldsOf(property: Pick<Property, 'listingTitle' | 'description' | 'houseRules'>, siteProfile: SiteProfile | null): AdoptableFields {
   return {
     listingTitle: property.listingTitle ?? '',
@@ -395,7 +328,6 @@ export function adoptableFieldsOf(property: Pick<Property, 'listingTitle' | 'des
   };
 }
 
-/** The values the wizard opens with: a new property's defaults, or the property as the server has it. */
 export function wizardDefaults(property?: Property, seed: WizardListingSeed = EMPTY_LISTING_SEED): PropertyWizardValues {
   if (!property) return NEW_PROPERTY_DEFAULTS;
   const rooms = roomDraftsFromServer(seed.rooms);
@@ -409,22 +341,16 @@ export function wizardDefaults(property?: Property, seed: WizardListingSeed = EM
     city: property.city,
     country: property.country,
     postalCode: property.postalCode ?? '',
-    // 0 = not set for a property that was never let for short stays: the counters start from the smallest valid value.
     maxGuests: Math.max(1, property.maxGuests),
-    // With rooms the counters are the rooms' (the server sets them from the rooms at every save); without, the property's own.
     bedrooms: rooms.length > 0 ? bedroomCount(rooms) : property.bedrooms,
-    // A property that never stated its beds starts the counter from its bedrooms (one bed each, at least one): shown, never hidden.
     beds: rooms.length > 0 ? totalBeds(rooms) : (property.beds ?? Math.max(1, property.bedrooms)),
     bathrooms: Math.max(1, property.bathrooms),
     areaSqm: property.areaSqm ? String(property.areaSqm) : '',
     rooms,
     photoMeta: photoMetaDraftsFromServer(seed.photoMeta),
-    // Every amenity but the two the house rules decide: the catalog gives the host what to choose from, and one the property has that the
-    // catalog does not know stays in the list (the step never takes away what it cannot show).
     amenities: property.amenities.filter((amenity) => !RULE_AMENITIES.includes(amenity)),
     checkInFrom: toHourMinute(property.checkInFrom) || NEW_PROPERTY_DEFAULTS.checkInFrom,
     checkOutBy: toHourMinute(property.checkOutBy) || NEW_PROPERTY_DEFAULTS.checkOutBy,
-    // A property that never stated a rule starts from what its amenities already say (an old one may list PetFriendly): shown, never hidden.
     smokingPolicy: property.smokingPolicy ?? (property.amenities.includes('SmokingAllowed') ? 'Yes' : NEW_PROPERTY_DEFAULTS.smokingPolicy),
     petsPolicy: property.petsPolicy ?? (property.amenities.includes('PetFriendly') ? 'Yes' : NEW_PROPERTY_DEFAULTS.petsPolicy),
     partiesPolicy: property.partiesPolicy ?? NEW_PROPERTY_DEFAULTS.partiesPolicy,
@@ -443,19 +369,16 @@ export function wizardDefaults(property?: Property, seed: WizardListingSeed = EM
   };
 }
 
-/** `15:00:00` as the API serves a time, or `15:00`, as `15:00`; blank when the property has none. */
 function toHourMinute(time: string | null | undefined): string {
   return time ? time.slice(0, 5) : '';
 }
 
 const toAreaSqm = (value: string): number | null => (value.trim() === '' ? null : Number(value));
 
-/** The fields of the first step that are the same when the property is created and when it is saved again. */
 function baseFields(values: PropertyWizardValues) {
   return {
     name: values.name.trim(),
     address: values.address.trim(),
-    // Blank = no unit: the API clears it on an update and stores none on a create.
     unit: values.unit.trim() === '' ? null : values.unit.trim(),
     city: values.city,
     country: values.country === '' ? undefined : values.country,
@@ -470,37 +393,23 @@ function baseFields(values: PropertyWizardValues) {
   };
 }
 
-/**
- * The body that creates the property at the end of the first step. The rate is 0 (the prices come at their own step): the API takes
- * it and the property is «Da completare» until it has one. The rental mode is sent by the hook that creates (`useCreateProperty('Short')`).
- */
 export function createPayload(values: PropertyWizardValues): CreatePropertyDto {
   return { ...baseFields(values), description: '', nightlyRate: 0, timezone: DEFAULT_PROPERTY_TIMEZONE };
 }
 
-/** The first step saved again (PATCH: description, rate and everything else of the property are left as they are). */
 export function baseUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
   return baseFields(values);
 }
 
-/**
- * The Italian headline and description, saved by the descriptions step into the columns of the property (the other languages go to the site
- * profile). A blank headline is cleared: the listing then uses the name (the step does not let it be blank, a saved one is never left so).
- */
 export function descriptionsUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
   const listingTitle = values.listingTitle.trim();
   return { listingTitle: listingTitle === '' ? null : listingTitle, description: values.description.trim(), ...(values.texts.it?.rules !== undefined ? { houseRules: values.houseRules.trim() } : {}) };
 }
 
-/**
- * The house rules saved by step 4. A blank time or rule is left out (PATCH: the stored value stays), a blank fee is `null` (extra
- * guests are not accepted, and a fee set before is taken off), a blank policy is left out — the wizard cannot un-choose one.
- */
 export function rulesUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
   const payload: UpdatePropertyDto = {
     extraGuestFeePerNight: parseAmount(values.extraGuestFee),
     houseRules: values.houseRules.trim(),
-    // The pair is kept whole: both go, or both are cleared.
     quietHoursFrom: values.quietHoursFrom || null,
     quietHoursTo: values.quietHoursTo || null,
   };
@@ -514,10 +423,6 @@ export function rulesUpdatePayload(values: PropertyWizardValues): UpdateProperty
   return payload;
 }
 
-/**
- * The prices saved by step 5. A blank rate is left out (the stored one stays); a blank surcharge or cleaning is 0 (the API turns the
- * surcharge off with 0 and leaving it out keeps it); one night as a minimum is no minimum, which the API calls `null`.
- */
 export function pricesUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
   const nightlyRate = parseAmount(values.nightlyRate);
   return {
@@ -533,25 +438,16 @@ export function visibilityUpdatePayload(showOnSite: boolean): UpdatePropertyDto 
   return { publishedOnSite: showOnSite };
 }
 
-/**
- * The amenities saved by the step: the ones chosen here plus, untouched, the ones the house rules decide that the property already
- * has (the list of the API is replaced as a whole).
- */
 export function amenitiesUpdatePayload(values: PropertyWizardValues, stored: Pick<Property, 'amenities'>): UpdatePropertyDto {
   const kept = stored.amenities.filter((amenity) => RULE_AMENITIES.includes(amenity));
   return { amenities: [...values.amenities, ...kept] };
 }
 
-/** True when the property has what the first step asks for — a name, an address, a city and guests — as the server counts it. */
 function baseFieldsAreSet(property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'> & Partial<Pick<Property, 'country'>>): boolean {
   return property.name.trim() !== '' && property.address.trim() !== '' && property.city.trim() !== '' && property.maxGuests > 0 &&
     (property.country === undefined || property.country.length > 0);
 }
 
-/**
- * Where the open `base-data` blocker is fixed: the first step when the name, the address, the city or the guests are missing, the
- * prices when only the rate is. Used by the reopening of the wizard and by the «Correggi» of the last step.
- */
 export function baseDataStepFor(property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'> & Partial<Pick<Property, 'country'>>): 'base' | 'prices' {
   return baseFieldsAreSet(property) ? 'prices' : 'base';
 }

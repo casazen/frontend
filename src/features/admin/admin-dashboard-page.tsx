@@ -39,7 +39,6 @@ function AdminOverview() {
       />
 
       {isLoading ? (
-        // The six numbers below, three across from a laptop (two rows of three, not four and two alone).
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-32" />

@@ -3,16 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import type { SupplierPickerSort } from '@/types/service-request';
 import { MARKETPLACE_SORT_PARAM, MARKETPLACE_VERIFIED_PARAM } from './marketplace-paths';
 
-/** The orders of a list of suppliers, as the API takes them (`?sort=`): the first is the one a list starts from (the ranking, SP-REL). */
 export const SUPPLIER_SORTS: readonly SupplierPickerSort[] = ['recommended', 'name', 'price', 'response'];
 
 export interface SupplierFilters {
   sort: SupplierPickerSort;
-  /** «Solo verificati». */
   verifiedOnly: boolean;
   setSort: (sort: SupplierPickerSort) => void;
   setVerifiedOnly: (verifiedOnly: boolean) => void;
-  /** How many of the two are not at their start: the number on the button of the filters of a phone. */
   active: number;
 }
 

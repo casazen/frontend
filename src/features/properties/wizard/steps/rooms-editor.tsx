@@ -13,25 +13,15 @@ import { MAX_BEDS_OF_A_KIND, MAX_ROOMS, bedroomCount, newRoomDraft, nextFreeBedT
 
 interface RoomsEditorProps {
   form: UseFormReturn<PropertyWizardValues>;
-  /**
-   * How many rooms the server has for the property. The server takes no empty list of rooms (a unit has a bed): taking off the last room
-   * that is saved would change nothing there, and it would come back — so it cannot be taken off, and the editor says so.
-   */
   storedRoomCount?: number;
 }
 
-/**
- * The rooms of the unit with the beds of each (NF-34), in the first step under the counters of the spaces: a room has a type and one entry
- * for each kind of bed with how many. Once there is a room the counters «Camere da letto» and «Letti» are read from the rooms (the API sets
- * them from the rooms at every save), so the host never states the same thing twice. Without rooms the counters are the host's, as before.
- */
 export function RoomsEditor({ form, storedRoomCount = 0 }: RoomsEditorProps) {
   const { t, i18n } = useTranslation();
   const rooms = form.watch('rooms');
   const problem = form.formState.errors.rooms?.message;
   const lastIsSaved = storedRoomCount > 0 && rooms.length === 1;
 
-  /** One place changes the rooms, so the counters follow them whichever control was used. */
   const update = (next: RoomDraft[]) => {
     form.setValue('rooms', next, { shouldDirty: true });
     if (next.length > 0) {
@@ -55,7 +45,6 @@ export function RoomsEditor({ form, storedRoomCount = 0 }: RoomsEditorProps) {
         </p>
       </div>
 
-      {/* The rooms side by side once the step is wide (a container, as the counters above): a card of a room never runs across the whole screen. */}
       <div className="@container min-w-0">
       <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-2 @4xl:items-start">
       {rooms.map((room, index) => {

@@ -8,52 +8,30 @@ import type { View } from '../engine/view';
  */
 export interface MapPinData {
   id: string;
-  /**
-   * The position, two decimals at most. `0, 0` is how the data say that a house has none (its host never gave the coordinates): the
-   * pin is then put at `place`, and a pin that has neither is not drawn.
-   */
   lat: number;
   lon: number;
-  /** The comune of the house or zone: the town of that name on the map is where its pin goes when it has no position of its own. */
   place?: string;
-  /** What the pill says: the price of the stay, or the name of a zone. */
   label: string;
-  /** The name of the house or zone: it is in the accessible name of the pin and in its card. */
   name: string;
-  /** The page of the house. */
   href?: string;
-  /** Free for the dates asked: `false` greys the pin out (with an icon and in the accessible name). Default `true`. */
   available?: boolean;
-  /** Why it is not free («Non libera dal 12 ottobre»); the accessible name says «non libera» when this is missing. */
   unavailableNote?: string;
-  /** `zone` pins (a place to explore) have no card. Default `house`. */
   tone?: 'house' | 'zone';
-  /** What the card shows besides the name and the price. */
   card?: { zone?: string; photoUrl?: string; rating?: number; priceLabel?: string };
 }
 
 export interface RegionMapProps {
   pins: readonly MapPinData[];
-  /** The selected pin; without it the map keeps the selection itself. */
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
   /** The pin lit because the same item of the list is hovered or focused (see `useMapLink`), and the way back. */
   activeId?: string | null;
   onActiveChange?: (id: string | null) => void;
-  /**
-   * The map does not draw the card of the selected pin (over the map, or a sheet from the bottom of the window on a phone): the page that asks it
-   * shows the card where it wants (`MapCard` with `layout="flow"`), for a page whose window is as tall as its content.
-   */
   hideCard?: boolean;
-  /** Pins to emphasise. */
   highlightIds?: readonly string[];
-  /** The frame to start from; without it the map is fitted to the pins, with a margin. */
   view?: View;
-  /** Names of the towns on the map. */
   labels?: LabelMode;
-  /** Towns to emphasise on the map (ids or names). */
   highlightTowns?: readonly string[];
-  /** Width over height of the box: a fixed ratio, so the page does not jump while the map loads. Without it the map fills its parent, which has to have a height. */
   aspect?: number;
   className?: string;
 }

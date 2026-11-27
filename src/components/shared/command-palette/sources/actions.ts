@@ -12,7 +12,6 @@ import { openablePage, splitKeywords } from './availability';
  */
 interface QuickAction {
   id: string;
-  /** A page of the route manifest. */
   path: string;
   icon: LucideIcon;
   labelKey: string;
@@ -64,13 +63,11 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
   },
 ];
 
-/** Going to another area: the label says which one ("Vai ad Affitti lunghi"), the keywords are the name of the area and the words for "area". */
 const SWITCH_AREA = {
   labelKey: 'commandPalette.actions.switchArea.label',
   keywordsKey: 'commandPalette.actions.switchArea.keywords',
 };
 
-/** The language to offer is the other one: its name is the label (the keys exist for the language switch of the profile). */
 const SWITCH_LANGUAGE: Record<AppLocale, { labelKey: string; keywordsKey: string }> = {
   en: { labelKey: 'language.switchToEnglish', keywordsKey: 'commandPalette.actions.switchLanguage.keywords' },
   it: { labelKey: 'language.switchToItalian', keywordsKey: 'commandPalette.actions.switchLanguage.keywords' },
@@ -83,11 +80,6 @@ const SUPPORT = {
   keywordsKey: 'commandPalette.actions.support.keywords',
 };
 
-/**
- * The actions of the palette: start something (a page of the manifest the user may open), go to another area, change the
- * language, sign out, write to the support when the build has an address. There is no "change theme" (the dark theme does
- * not exist yet, UI-10) and no help centre (UI-08 registers its own command when it exists).
- */
 function actionCommands(context: CommandContext): CommandItem[] {
   const { t } = context;
   const severalAreas = context.areas.length > 1;

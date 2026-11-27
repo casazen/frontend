@@ -25,18 +25,11 @@ interface ThreadRowProps {
   /** The query string the row keeps, so that the page of the conversation draws the same list. */
   search: string;
   now: Date;
-  /** The words «Da rispondere» on the row: the view «Da rispondere» says it for all of them. */
   showNeedsReply: boolean;
   compact: boolean;
-  /** The reader may copy the check-in link (`booking.write`): without it the link in the preview of an automatic message is hidden. */
   canWrite: boolean;
 }
 
-/**
- * One conversation of the list: the guest, the start of the last message, when it was, the channel in one word, the booking code or
- * «Richiesta» when there is no booking yet, the property and the days of the stay, and how many messages wait to be read. The whole
- * row opens the conversation.
- */
 function ThreadRow({ thread, selected, search, now, showNeedsReply, compact, canWrite }: ThreadRowProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -50,7 +43,6 @@ function ThreadRow({ thread, selected, search, now, showNeedsReply, compact, can
         : origin === 'Automation'
           ? t('messages.thread.sender.automation')
           : null;
-  // The preview of an automatic message of CasaZen (the check-in link) holds the link, a secret that the host gets only if it may copy it (`booking.write`): who may not reads it without.
   const start = thread.preview?.trim();
   const text = start && origin === 'Automation' && !canWrite ? hideCheckInLink(start, t('messages.thread.linkHidden')) : start;
   const preview = text ? (prefix ? `${prefix}: ${text}` : text) : t('messages.thread.fileOnly');
@@ -104,24 +96,15 @@ function ThreadRow({ thread, selected, search, now, showNeedsReply, compact, can
 
 interface ThreadListProps {
   page: MessageHubPage | undefined;
-  /** The first reading: there is no row to show yet. */
   loading: boolean;
   error: unknown;
   onRetry: () => void;
   state: InboxState;
-  /** The query string every row keeps (`?view=unread`). */
   search: string;
-  /** The conversation that is open beside the list: its row is the marked one. */
   selectedKey?: string;
-  /** The column beside an open conversation: shorter rows. */
   compact?: boolean;
   onChange: (changes: Partial<InboxState>) => void;
-  /** What stands in for an empty list when it is the one of a booking that has no conversation yet (how the guest can be reached). */
   noConversation?: ReactNode;
-  /**
-   * The reader may copy the check-in link (`booking.write`, the rule of the guest panel of the booking). Without it (the default) the link that the preview of an automatic message
-   * of CasaZen holds is hidden: it is a secret the server gives only to who may copy it.
-   */
   canWrite?: boolean;
 }
 
@@ -142,7 +125,6 @@ export function ThreadList({ page, loading, error, onRetry, state, search, selec
   if (items.length === 0) {
     const className = compact ? 'py-8' : undefined;
     if (state.bookingId && noConversation) return <>{noConversation}</>;
-    // The reviews are not conversations (E05/F06/US02): their list says so in its own words.
     const reviews = state.view === 'reviews';
     if (hasInboxFilters(state)) {
       return (
@@ -188,7 +170,6 @@ export function ThreadList({ page, loading, error, onRetry, state, search, selec
       ) : null}
       <ul aria-label={t('messages.inbox.listLabel')} className="divide-y divide-border">
         {items.map((thread) =>
-          // A review opens its own detail, never the endpoints of a conversation: the list under «Recensioni» is the only place it is in.
           thread.kind === 'Review' ? (
             <ReviewRow key={thread.threadKey} thread={thread} selected={thread.threadKey === selectedKey} search={search} now={now} compact={compact} />
           ) : (

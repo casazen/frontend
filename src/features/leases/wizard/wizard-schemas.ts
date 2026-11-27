@@ -23,7 +23,6 @@ const party = z.object({
   contactPhone: z.string().refine((value) => empty(value) || PHONE.test(value.replace(/[\s().-]/g, '')), 'leaseWizard.validation.phone'),
 });
 
-/** An amount in Italian (`95,50`, `1.234,50`) or with a dot (`95.50`). */
 const amount = (positive: boolean, message: string) =>
   z.string().refine((value) => {
     const text = value.trim();

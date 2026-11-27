@@ -17,11 +17,6 @@ const STATUS_VIEW = {
   paid: { icon: CheckCheck, tone: 'bg-success-soft text-success-foreground' },
 } as const;
 
-/**
- * The landlord or the agency reads each request, approves or rejects it with a reason, and pays only after approval.
- * A pending request has no pay button. A rejection shows why, in Italian.
- * The property sheet embeds the same list (`heading` off): the route keeps the page title.
- */
 export function LandlordMaintenanceList({ leaseId, heading = false }: { leaseId: string; heading?: boolean }) {
   const { t } = useTranslation();
   const list = useMaintenanceRequests(leaseId);

@@ -37,14 +37,11 @@ export function useCfCompletion(lease: CompletionLease): { state: CfSyncState | 
   const queryClient = useQueryClient();
   const { flags } = useFeatureFlags();
   const workspace = useContext(WorkspaceContext);
-  // Without a workspace (a page rendered on its own) nothing is hidden: the server decides.
   const allowed = workspace ? workspace.hasPermission('long-rent', 'lease.sign') && workspace.hasPermission('long-rent', 'lease.register') : true;
   const sync = useCfSync(lease.id, { enabled: flags.concordatoFacile && allowed && followsThePractice(lease) });
 
   const answer = sync.data;
   const marked = lease.isConcordatoFacileSource === true;
-  // The lease is not what the server says: it has another status now, or it has just been marked as the service's (only a lease of the
-  // service gets another answer than «not applicable»).
   const moved = answer !== undefined && (answer.leaseStatus !== lease.status || (!marked && answer.state !== 'NotApplicable'));
   const leaseId = lease.id;
 

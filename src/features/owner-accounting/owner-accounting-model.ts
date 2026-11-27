@@ -22,31 +22,19 @@ import type {
 import { getProblemMessage, toCamelCase } from '@/lib/api-errors';
 import { addDays, endOfMonth, startOfMonth } from '@/lib/stay-dates';
 
-/** The path of the month-end close (E06/F05/US02/T04): a page of the Amministrazione. */
 export const OWNER_CLOSE_PATH = '/app/account/owner-close';
 
-/** The page of one version of an owner's statement. */
 export const statementPath = (versionId: string) => `${OWNER_CLOSE_PATH}/versions/${versionId}`;
 
-/** The month-end page on a month (`?period=2026-10`). */
 export const closePath = (year: number, month: number) => `${OWNER_CLOSE_PATH}?period=${periodParam({ year, month })}`;
 
-/**
- * The page of the fiscal profile of an owner, with its rule set and the accountant's approval. From the month being closed it carries that month (`?period=2026-10`): the first
- * profile of an owner then starts by default on the first day of it, so the month that sent the person here is covered.
- */
 export const ownerFinancialPath = (ownerId: string, period?: Period) => `/app/account/owners/${ownerId}/financial${period ? `?period=${periodParam(period)}` : ''}`;
 
-/** The first day of a month. */
 export const startOfPeriod = (period: Period): string => `${periodParam(period)}-01`;
 
-/** Where the facts of an owner that are missing (the registry, the shares, the mandate) are completed: «Inizia con CasaZen», short rent. */
 export const OWNER_ONBOARDING_PATH = '/app/short-rent/onboarding/owners';
 
-/** What each portal keeps when its reservation carries no commission (E13/F02/US03/T01): a tab of the month-end close, where the stays held back for a missing commission are found. */
 export const CHANNEL_COMMISSIONS_PATH = '/app/account/channel-commissions';
-
-// ── Periods ───────────────────────────────────────────────────────────────────────────────────────────────────────
 
 export interface Period {
   year: number;
@@ -57,7 +45,6 @@ export function periodParam({ year, month }: Period): string {
   return `${year}-${String(month).padStart(2, '0')}`;
 }
 
-/** `2026-10` as a period; the fallback for anything else (a month that does not exist, an empty or hand-made address). */
 export function parsePeriod(value: string | null | undefined, fallback: Period): Period {
   const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(value ?? '');
   if (!match) return fallback;
@@ -65,7 +52,6 @@ export function parsePeriod(value: string | null | undefined, fallback: Period):
   return year >= 2000 && year <= 2100 ? { year, month: Number(match[2]) } : fallback;
 }
 
-/** The month to close is the one that is over: the month before today (Europe/Rome). */
 export function defaultPeriod(today: string): Period {
   const lastOfPrevious = addDays(startOfMonth(today), -1);
   return { year: Number(lastOfPrevious.slice(0, 4)), month: Number(lastOfPrevious.slice(5, 7)) };
@@ -76,25 +62,17 @@ export function shiftPeriod({ year, month }: Period, months: number): Period {
   return { year: Math.floor(index / 12), month: (index % 12) + 1 };
 }
 
-/** The month is over when its last day is before today: closing it earlier would leave out what is paid after the close. */
 export function isPeriodOver({ year, month }: Period, today: string): boolean {
   return endOfMonth(`${year}-${String(month).padStart(2, '0')}-01`) < today;
 }
 
-// ── Money ─────────────────────────────────────────────────────────────────────────────────────────────────────────
-
-/** Euros and cents as whole cents: amounts are compared in cents, never as floats. */
 export const toCents = (amount: number): number => Math.round(amount * 100);
 
-/** The locale of the amounts and the dates: the language of the app, with the English of the United Kingdom. */
 export const localeOf = (language: string): string => (language.startsWith('en') ? 'en-GB' : 'it-IT');
 
-/** An instant of the API (UTC, with or without its `Z`) as a date and a time in Europe/Rome. */
 export function asInstant(value: string): string {
   return value.includes('T') && !/(?:Z|[+-]\d{2}(?::?\d{2})?)$/i.test(value) ? `${value}Z` : value;
 }
-
-// ── The month: who is where, and what is wrong ────────────────────────────────────────────────────────────────
 
 /**
  * The four groups of the page: what the person does next. `toPrepare` has no statement yet; `toVerify` has one to check (a draft, or one the
@@ -114,47 +92,31 @@ export function groupOf(status: OwnerStatementVersionStatus | null | undefined):
     case 'Published':
       return 'published';
     default:
-      // No version yet, or only a superseded one (it never is the latest): the statement is still to be made.
       return 'toPrepare';
   }
 }
 
-/**
- * The codes that say where the statement stands (not made, not approved, closed), not what is wrong with it: the group tells them. They are not
- * anomalies, and a month with nothing else to fix is ready for the next step.
- */
 const LIFECYCLE_CODES: ReadonlySet<string> = new Set(['statement_missing', 'statement_not_approved', 'period_closed']);
 
-/** The anomalies of the month: every issue that is not a step of the statement itself. */
 export function anomaliesOf(issues: readonly OwnerReadinessIssue[]): OwnerReadinessIssue[] {
   return issues.filter((issue) => !LIFECYCLE_CODES.has(issue.code));
 }
 
 export const blockingAnomalies = (issues: readonly OwnerReadinessIssue[]): OwnerReadinessIssue[] => anomaliesOf(issues).filter((issue) => issue.blocking);
 
-/**
- * The same fact as the server tells it twice: an issue of a property that no owner is credited for is listed under the month, and again under every
- * owner of that property (it holds back each of their statements). A person counts and reads it once.
- */
 const issueKey = (issue: OwnerReadinessIssue): string => `${issue.code}|${issue.propertyId ?? ''}|${issue.sourceId ?? ''}`;
 
 export interface CloseSummary {
   owners: number;
-  /** Owners with no blocking anomaly. */
   ready: number;
-  /** `ready` out of `owners`, rounded; 0 with no owner. */
   percent: number;
   closed: number;
-  /** Blocking anomalies of the owners, plus the ones of the org. */
   blocking: number;
-  /** Anomalies that do not block (a negative balance, a source that arrived after the close). */
   warnings: number;
-  /** Blocking anomalies that belong to no owner: a source with nobody to credit. */
   orgBlocking: number;
   groups: Record<OwnerGroup, number>;
 }
 
-/** What the page says at the top: how many statements are ready to go on, and how many anomalies stop the others. */
 export function summarize(readiness: OwnerCloseReadiness): CloseSummary {
   const groups: Record<OwnerGroup, number> = { toPrepare: 0, toVerify: 0, approved: 0, published: 0 };
   const toldOfTheMonth = new Set(readiness.issues.map(issueKey));
@@ -165,7 +127,6 @@ export function summarize(readiness: OwnerCloseReadiness): CloseSummary {
   for (const owner of readiness.owners) {
     groups[groupOf(owner.latestStatus)] += 1;
     if (owner.status === 'Closed') closed += 1;
-    // An issue of a property holds back the owner (not ready) even though it is counted once, under the month.
     const anomalies = anomaliesOf(owner.issues);
     if (!anomalies.some((issue) => issue.blocking)) ready += 1;
     const own = anomalies.filter((issue) => !toldOfTheMonth.has(issueKey(issue)));
@@ -179,17 +140,13 @@ export function summarize(readiness: OwnerCloseReadiness): CloseSummary {
 
 export interface AnomalyGroup {
   key: string;
-  /** The owner it is about; `null` for an issue of the whole month (a source nobody is credited for). */
   ownerId: string | null;
   code: string;
   blocking: boolean;
-  /** How many issues of this code the owner has (twelve payments not posted are one line, «12»). */
   count: number;
-  /** The first of them: what its action opens. */
   issue: OwnerReadinessIssue;
 }
 
-/** The anomalies of the month as lines a person reads: one for each owner and code, the blocking ones first, an issue of a property only once. */
 export function groupAnomalies(readiness: OwnerCloseReadiness): AnomalyGroup[] {
   const groups = new Map<string, AnomalyGroup>();
   const add = (ownerId: string | null, issue: OwnerReadinessIssue) => {
@@ -206,12 +163,10 @@ export function groupAnomalies(readiness: OwnerCloseReadiness): AnomalyGroup[] {
   return [...groups.values()].sort((a, b) => Number(b.blocking) - Number(a.blocking) || a.code.localeCompare(b.code) || (a.ownerId ?? '').localeCompare(b.ownerId ?? ''));
 }
 
-/** The owners of a group, by the order the server sent them (by id): the page sorts them by name. */
 export function ownersOf(readiness: OwnerCloseReadiness, group: OwnerGroup): OwnerPeriodReadiness[] {
   return readiness.owners.filter((owner) => groupOf(owner.latestStatus) === group);
 }
 
-/** How an issue is resolved: the button or the page that does it. Nothing here resolves one on its own. */
 export type IssueAction =
   | { kind: 'post' }
   | { kind: 'prepare' }
@@ -225,7 +180,6 @@ export type IssueAction =
   | { kind: 'payment'; paymentId: string }
   | { kind: 'none' };
 
-/** Every code the API sends for the readiness of the month (besides the unknown ones of a later version, which say so in words of their own). */
 export const ISSUE_CODES = [
   'channel_commission_missing',
   'duplicate_entry',
@@ -255,7 +209,6 @@ export const ISSUE_CODES = [
 
 export type IssueCode = (typeof ISSUE_CODES)[number];
 
-/** `fx_missing` → `fxMissing`: the key of the texts of the code. */
 export const camelCode = toCamelCase;
 
 export function isKnownIssue(code: string): code is IssueCode {
@@ -296,7 +249,6 @@ export function actionForIssue(issue: OwnerReadinessIssue): IssueAction {
     case 'ownership_missing':
     case 'ownership_share_gap':
       return { kind: 'onboarding' };
-    // The portal's reservation brings no commission and the agency has no rule for it (the owners of the property are held back): the rule is written in the channel commissions.
     case 'channel_commission_missing':
       return { kind: 'channelRules' };
     case 'source_amount_missing':
@@ -306,12 +258,8 @@ export function actionForIssue(issue: OwnerReadinessIssue): IssueAction {
   }
 }
 
-// ── What a row of the month may do ────────────────────────────────────────────────────────────────────────────
-
 export interface RowActions {
-  /** Make the statement (there is none). */
   prepare: boolean;
-  /** Make a new version: the ledger changed after the last one, or its anomalies were resolved. */
   regenerate: boolean;
   approve: boolean;
   publish: boolean;
@@ -319,9 +267,7 @@ export interface RowActions {
   close: boolean;
   /** The month cannot be closed yet because it is not over. */
   closeWaitsForTheEnd: boolean;
-  /** The ledger changed after the version: it cannot be approved or published as it is, a new version is needed. */
   stale: boolean;
-  /** The confirmed payouts already cover what the statement says is owed: paying again is not the next step, closing the month is. */
   settled: boolean;
 }
 
@@ -336,7 +282,6 @@ export function actionsOf(input: {
   isDirty: boolean;
   issues: readonly OwnerReadinessIssue[];
   monthOver: boolean;
-  /** The payments already cover the balance (`isSettled`); unknown (the payments not read yet) is `false`. */
   settled?: boolean;
 }): RowActions {
   const none: RowActions = { prepare: false, regenerate: false, approve: false, publish: false, payout: false, close: false, closeWaitsForTheEnd: false, stale: false, settled: false };
@@ -360,34 +305,19 @@ export function actionsOf(input: {
   }
 }
 
-/**
- * Nothing is left to pay on the statement: the confirmed payouts of the month cover what it says is owed (the difference is not positive: it is paid, or there is nothing owed).
- * Then the next step is the close, and a payment is only an extra one.
- */
 export function isSettled(version: Pick<OwnerStatementVersion, 'closingBalance' | 'currency'>, payouts: readonly OwnerPayout[], versionIds: readonly string[]): boolean {
   return toCents(previewReconciliation(version, payouts, versionIds).difference) <= 0;
 }
 
-// ── Reconciliation ───────────────────────────────────────────────────────────────────────────────────────────
-
 export interface ReconciliationPreview {
-  /** What the approved closing balance says is owed. */
   due: number;
-  /** What the confirmed payouts of the month's versions settle, in the currency of the version. */
   paid: number;
   difference: number;
-  /** The month does not reconcile, or the balance is negative: closing needs a reason and the finance permission. */
   needsWaiver: boolean;
-  /** No confirmed payout: the close counts the wires marked as paid, which this page cannot see, so `paid` is a floor. */
   wiresCountInstead: boolean;
   payouts: OwnerPayout[];
 }
 
-/**
- * The reconciliation the close will make, as far as the page can see it: the closing balance of the version against the gross of the confirmed
- * payouts of the month's versions. The close reads it again on the server and answers with its own figures (`owner_close_unreconciled`): those
- * are the ones that count.
- */
 export function previewReconciliation(version: Pick<OwnerStatementVersion, 'closingBalance' | 'currency'>, payouts: readonly OwnerPayout[], versionIds: readonly string[]): ReconciliationPreview {
   const confirmed = payouts.filter((payout) => payout.status === 'Confirmed' && versionIds.includes(payout.statementVersionId));
   const paidCents = confirmed.filter((payout) => payout.currency === version.currency).reduce((sum, payout) => sum + toCents(payout.grossAmount), 0);
@@ -402,8 +332,6 @@ export function previewReconciliation(version: Pick<OwnerStatementVersion, 'clos
     payouts: confirmed,
   };
 }
-
-// ── The rule that decides a payout ───────────────────────────────────────────────────────────────────────────
 
 export type RuleBlock = 'profile_missing' | 'profile_incomplete' | 'policy_missing' | 'policy_not_approved' | 'policy_not_effective' | 'policy_jurisdiction_mismatch';
 
@@ -420,21 +348,12 @@ const RULE_BLOCK_OF_CODE: Readonly<Record<string, RuleBlock>> = {
   owner_fiscal_policy_jurisdiction_mismatch: 'policy_jurisdiction_mismatch',
 };
 
-/**
- * What the `owner_fiscal_*` code of a payout says blocks the owner on a day: the `blockingCode` of the preview of a payout, or the code of the refusal of its confirmation. `null` for any other code (the balance
- * that is gone, a fact the rule could not resolve): that is not a rule that is missing and is told with its own words.
- */
 export function ruleBlockOfCode(code: string | null | undefined): RuleBlock | null {
   return code ? (RULE_BLOCK_OF_CODE[code] ?? null) : null;
 }
 
 const inForce = (from: string, to: string | null, day: string) => from <= day && (to === null || to >= day);
 
-/**
- * The profile of the owner and the approved rule set that apply on a day, as the server finds them before it decides a payout. The page needs it
- * to ask only the facts the rule needs (and to say what is missing before the person fills a form that would be refused); the server resolves it
- * again, and its answer is the one that counts. Nothing here knows a rate, a code or a jurisdiction: they are the ones the rule set says.
- */
 export function resolveRule(profiles: readonly OwnerFiscalProfile[], policies: readonly OwnerAccountingPolicy[], day: string): RuleResolution {
   const profile = profiles.find((candidate) => inForce(candidate.validFrom, candidate.validTo, day));
   if (!profile) return { ok: false, reason: 'profile_missing' };
@@ -446,7 +365,6 @@ export function resolveRule(profiles: readonly OwnerFiscalProfile[], policies: r
   return { ok: true, profile, policy, parameters: policy.parameters };
 }
 
-/** The values the profile offers for the fields that are codes: the ones the accounting knows. A value stored outside the list stays in it. */
 export const PROFILE_OPTIONS = {
   mandateRole: ['owner', 'usufructuary', 'landlord'],
   revenueRecognitionRule: ['cash', 'stay'],
@@ -456,11 +374,6 @@ export const PROFILE_OPTIONS = {
 
 export type ProfileOptionField = keyof typeof PROFILE_OPTIONS;
 
-/**
- * What a profile still needs to be used (the same six facts the server asks): the legal name, the tax residence, the jurisdiction, one fiscal
- * identifier, the settlement currency and the revenue recognition rule. A masked value still says whether there is one, so the answer is the same
- * for who sees the values in full and who does not.
- */
 export function profileGaps(profile: OwnerFiscalProfile): string[] {
   const empty = (value: string | null) => value === null || value.trim() === '';
   const gaps: string[] = [];
@@ -474,14 +387,9 @@ export function profileGaps(profile: OwnerFiscalProfile): string[] {
 }
 
 export type OwnerReadiness =
-  /** `from`: the day from which the profile in force and its rule set both apply. Months before it are not covered by this data, whatever today says. */
   | { ready: true; profile: OwnerFiscalProfile; policy: OwnerAccountingPolicy; from: string }
   | { ready: false; reason: RuleBlock; gaps: string[]; profile: OwnerFiscalProfile | null; policy: OwnerAccountingPolicy | null };
 
-/**
- * Whether the owner can be used on a day, in the order the server decides it: the profile in force, its missing facts, then its rule set (chosen,
- * approved by the accountant, in force, of the jurisdiction of the profile). It says what blocks and where; it never decides a tax.
- */
 export function ownerReadinessOn(profiles: readonly OwnerFiscalProfile[], policies: readonly OwnerAccountingPolicy[], day: string): OwnerReadiness {
   const profile = profiles.find((candidate) => inForce(candidate.validFrom, candidate.validTo, day)) ?? null;
   if (!profile) return { ready: false, reason: 'profile_missing', gaps: [], profile: null, policy: null };
@@ -494,21 +402,15 @@ export function ownerReadinessOn(profiles: readonly OwnerFiscalProfile[], polici
     : { ready: false, reason: resolved.reason, gaps: [], profile, policy };
 }
 
-/** The newest start among the profiles of an owner: a new profile must start after it (a day that is not later is refused, 409 `owner_fiscal_profile_overlap`). */
 export function latestProfileStart(profiles: readonly Pick<OwnerFiscalProfile, 'validFrom'>[]): string | null {
   return profiles.reduce<string | null>((latest, profile) => (latest === null || profile.validFrom > latest ? profile.validFrom : latest), null);
 }
 
-/** The last four characters of a value and a dot for each one before them: how a value that was received in full is shown until the person asks for it. */
 export function maskValue(value: string | null): string | null {
   if (value === null || value === '') return value;
   return value.length <= 4 ? '•'.repeat(value.length) : '•'.repeat(value.length - 4) + value.slice(-4);
 }
 
-/**
- * What a payout is, for its key: who is paid, on which version of the statement, how much (the balance the preview showed, in cents: it is never typed and never sent, the server pays what the version still owes)
- * and on which day.
- */
 export interface PayoutIntent {
   ownerId: string;
   statementVersionId: string;
@@ -534,17 +436,14 @@ export function payoutKeyFor(intent: PayoutIntent): string {
   return created;
 }
 
-/** The payout was confirmed: the same facts asked again are another payout (two payments of the same amount on the same day), with another key. */
 export function settlePayoutKey(intent: PayoutIntent): void {
   payoutKeys.delete(intentKey(intent));
 }
 
-/** Forgets every key not yet confirmed (the tests start from none). */
 export function forgetPayoutKeys(): void {
   payoutKeys.clear();
 }
 
-/** What the person writes of a payout: the day it was paid and its reference. Nothing else: the amount and the facts of the withholding are the ledger's. */
 export interface PayoutForm {
   paidOn: string;
   reference: string;
@@ -552,15 +451,9 @@ export interface PayoutForm {
 
 export type PayoutFormErrors = Partial<Record<'paidOn' | 'reference', string>>;
 
-/**
- * The payout the form describes, or what is wrong with it (the keys of the texts). The command carries no amount and no fact of the withholding (E18/F01/US01/T01): the server pays the
- * balance the version still owes and reads the stays, their collection and their qualifying short let from the owner ledger. The withholding is not computed here either: the server
- * decides it, on the approved rule in force on the day, when the payout is confirmed. `ctx.balance` is the balance of the preview the person saw: it only makes the key of the request.
- */
 export function buildPayoutCommand(
   form: PayoutForm,
   ctx: Pick<ActionContext, 'ownerId'> & { versionId: string; currency: string; balance: number },
-  /** The key of the request, or what makes it from the payout (`payoutKeyFor`). */
   key: string | ((intent: PayoutIntent) => string),
 ): { command: OwnerPayoutCommand } | { errors: PayoutFormErrors } {
   const errors: PayoutFormErrors = {};
@@ -584,15 +477,12 @@ export function buildPayoutCommand(
 // ── The version: what changed since the one before ────────────────────────────────────────────────────────────
 
 export interface VersionChanges {
-  /** The lines posted after the cut-off of the previous version: what is new in this one. */
   added: OwnerLedgerEntry[];
-  /** The figures that moved, each with what it was and what it is. */
   moved: { key: 'revenue' | 'channelFees' | 'commission' | 'charges' | 'payments' | 'corrections' | 'openingBalance' | 'closingBalance'; before: number; after: number }[];
 }
 
 const FIGURES = ['revenue', 'channelFees', 'commission', 'charges', 'payments', 'corrections', 'openingBalance', 'closingBalance'] as const;
 
-/** Which lines and which figures differ from the previous version of the same month: ledger lines are never edited, so a change is a line posted later. */
 export function changesSince(current: OwnerStatementVersion, previous: OwnerStatementVersion, entries: readonly OwnerLedgerEntry[]): VersionChanges {
   const cutoff = new Date(asInstant(previous.cutoffAt)).getTime();
   const added = entries.filter((entry) => new Date(asInstant(entry.postedAt)).getTime() > cutoff);
@@ -600,7 +490,6 @@ export function changesSince(current: OwnerStatementVersion, previous: OwnerStat
   return { added, moved };
 }
 
-/** The issues the server stored on a version when it generated it (blocking ones made it «Flagged»). */
 export function issuesOfVersion(version: Pick<OwnerStatementVersion, 'issuesJson'>): OwnerReadinessIssue[] {
   if (!version.issuesJson) return [];
   try {
@@ -620,9 +509,6 @@ export function issuesOfVersion(version: Pick<OwnerStatementVersion, 'issuesJson
   }
 }
 
-// ── A line of the ledger ─────────────────────────────────────────────────────────────────────────────────────
-
-/** Where the page that shows the source of a line is: a booking, a payment, the wire transfers; none for a charge or a manual line (they carry their own text). */
 export function sourcePathOf(entry: Pick<OwnerLedgerEntry, 'source' | 'sourceId' | 'sourceReference'>): string | null {
   switch (entry.source) {
     case 'Booking':
@@ -638,18 +524,15 @@ export function sourcePathOf(entry: Pick<OwnerLedgerEntry, 'source' | 'sourceId'
   }
 }
 
-/** The payment of a line of revenue, when the line comes from one. */
 export function paymentPathOf(entry: Pick<OwnerLedgerEntry, 'source' | 'sourceId'>): string | null {
   return entry.source === 'Payment' && entry.sourceId ? `/app/short-rent/payments/${entry.sourceId}` : null;
 }
 
-/** `0b1c…` (32 hex digits, no hyphens) as the guid the booking page takes; `null` for anything else. */
 function guidOfCompact(value: string | null | undefined): string | null {
   const hex = /^[0-9a-f]{32}$/i.exec(value ?? '')?.[0];
   return hex ? `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`.toLowerCase() : null;
 }
 
-/** An address of the attachment of a charge or a correction that is safe to open (https only); anything else is shown as text. */
 export function attachmentUrlOf(reference: string | null | undefined): string | null {
   if (!reference) return null;
   try {
@@ -661,13 +544,9 @@ export function attachmentUrlOf(reference: string | null | undefined): string | 
 }
 
 export interface LineSteps {
-  /** The line is credited to the owner (positive) or debited (negative). */
   credit: boolean;
-  /** The line is the owner's share of the source (the share is under 100%). */
   shared: boolean;
-  /** The source and the statement are in the same currency: no rate is applied. */
   sameCurrency: boolean;
-  /** The line undoes an earlier one. */
   isReversal: boolean;
 }
 
@@ -680,14 +559,10 @@ export function stepsOf(entry: OwnerLedgerEntry): LineSteps {
   };
 }
 
-/** The lines of a version in the order a reader follows them: by the day they count for, then by when they were posted. */
 export function sortedEntries(entries: readonly OwnerLedgerEntry[]): OwnerLedgerEntry[] {
   return [...entries].sort((a, b) => a.recognitionDate.localeCompare(b.recognitionDate) || a.postedAt.localeCompare(b.postedAt) || a.id.localeCompare(b.id));
 }
 
-// ── Tax files: calculated, generated, reviewed, submitted, accepted ───────────────────────────────────────
-
-/** What a tax file may be called. `submitted` and `accepted` need the proof (the handoff and the receipt): without it the file is never called so. */
 export type FilingLabel = 'calculated' | 'generated' | 'reviewed' | 'submitted' | 'submittedWithoutProof' | 'accepted' | 'acceptedWithoutProof' | 'rejected';
 
 export interface FilingEvidence {
@@ -720,7 +595,6 @@ export function filingLabelOf(file: FilingEvidence | null): FilingLabel {
   }
 }
 
-/** The moves a file can make from where it is (the same chain the server allows: it answers 409 for any other). */
 export function nextFilingStates(file: FilingEvidence): ('Reviewed' | 'Submitted' | 'Accepted' | 'Rejected')[] {
   switch (file.filingState) {
     case 'Generated':
@@ -734,15 +608,11 @@ export function nextFilingStates(file: FilingEvidence): ('Reviewed' | 'Submitted
   }
 }
 
-// ── The year of the withholdings against the F24 and the annual data ───────────────────────────────────────
-
-/** What the year's reconciliation says, told for each of the two things the withholdings are checked against. */
 export interface TaxYearCheck {
   /** `none`: no withholding and no F24 in the year; `matches`: every F24 is what the withholdings of its month say; `differs`: at least one is not. */
   f24: 'none' | 'matches' | 'differs';
   /** The months where the F24 is not what the withholdings say, or where there are withholdings and no F24 yet. */
   months: { month: number; obligations: number; f24: number | null }[];
-  /** The annual data of the year with whether it is what the withholdings of the year say; `null` while there is none (then nothing is said about it). */
   annual: { total: number; matches: boolean } | null;
 }
 
@@ -770,27 +640,17 @@ export function taxYearVerdict(check: TaxYearCheck): TaxYearVerdict {
   return check.annual === null ? 'f24Matches' : 'reconciled';
 }
 
-// ── Errors ───────────────────────────────────────────────────────────────────────────────────────────────────
-
-/**
- * The code of the 409 the server answers when the lines of a version no longer give the totals it stores (`owner_ledger_immutable`): the version is not shown, and no file is made from it, rather
- * than a wrong net. It is not a failure of the connection: it has its own words, and trying again does not change it.
- */
 export const LEDGER_IMMUTABLE_CODE = 'owner_ledger_immutable';
 
 export interface ProblemFacts {
   status: number | undefined;
   code: string | undefined;
-  /** The field the server names (`field`), or the first of `fields`. */
   field: string | undefined;
   fields: string[];
-  /** The blocking issues of a refused close (`issues`: the codes). */
   issues: string[];
-  /** The figures of a close that does not reconcile. */
   figures: { due: number; paid: number; difference: number } | null;
 }
 
-/** What the server says about a refusal, beside its text: the stable code and the extensions of the problem (`field`, `issues`, `due`, `paid`, `difference`). */
 export function problemFacts(error: unknown): ProblemFacts {
   const none: ProblemFacts = { status: undefined, code: undefined, field: undefined, fields: [], issues: [], figures: null };
   if (!isAxiosError(error)) return none;
@@ -812,15 +672,10 @@ export function problemFacts(error: unknown): ProblemFacts {
   };
 }
 
-/** The text of a failed call for the person: the translated code or the sentence of the server, else the generic one of the page. */
 export function messageOf(error: unknown, t: TFunction): string {
   return getProblemMessage(error, t) ?? t('ownerAccounting.errors.generic');
 }
 
-/**
- * The text of a refused write for a dialog: what the server says, and the field it names (`field` of a 422) in the words of the form. A name the
- * app has no words for is shown as it came: the person can still tell which one the server means.
- */
 export function failureText(error: unknown, t: TFunction, exists: (key: string) => boolean): string {
   const message = messageOf(error, t);
   const field = problemFacts(error).field;
@@ -828,7 +683,6 @@ export function failureText(error: unknown, t: TFunction, exists: (key: string) 
   return t('ownerAccounting.errors.withField', { message, field: fieldNameOf(field, t, exists) });
 }
 
-/** The name of a field the server names (the `field` of a 422) in the words of the form, or as it came: the person can still tell which one the server means. */
 export function fieldNameOf(field: string | null | undefined, t: TFunction, exists: (key: string) => boolean): string {
   if (!field) return '';
   const root = field.split('.')[0] ?? field;
@@ -841,7 +695,6 @@ export function newIdempotencyKey(): string {
   return globalThis.crypto?.randomUUID?.() ?? `payout-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 }
 
-/** An exchange rate typed with a comma or a dot, at most eight decimals as the API stores it; `null` for anything that is not a positive number. */
 export function parseRate(raw: string): number | null {
   const text = raw.trim().replace(',', '.');
   if (!/^\d+(\.\d{1,8})?$/.test(text)) return null;
@@ -849,36 +702,28 @@ export function parseRate(raw: string): number | null {
   return rate > 0 ? rate : null;
 }
 
-/** The first characters of an id, for a person who has no name to show. */
 export const shortId = (id: string): string => id.replace(/-/g, '').slice(0, 6).toUpperCase();
 
-/** The steps a person can ask for on an owner's month. */
 export type ActionKey = 'prepare' | 'regenerate' | 'approve' | 'publish' | 'payout' | 'close';
 
-/** What the actions of an owner's month need to know: the month, the owner and the version they work on. */
 export interface ActionContext {
   period: Period;
   ownerId: string;
   ownerName: string;
-  /** The latest version that is not superseded; `null` while there is none. */
   version: OwnerStatementVersion | null;
-  /** Every version of the month: the payouts of the month are the ones made on any of them. */
   versionIds: string[];
 }
 
-/** Which action the person should take next, if any: the one the row of the month puts forward. The others are in its menu. */
 export function primaryActionOf(actions: RowActions): ActionKey | null {
   if (actions.prepare) return 'prepare';
   if (actions.regenerate) return 'regenerate';
   if (actions.approve) return 'approve';
   if (actions.publish) return 'publish';
-  // A statement that is already paid is not asked to be paid again: the close is the next step (or nothing, while the month is not over).
   if (actions.payout && !actions.settled) return 'payout';
   if (actions.close) return 'close';
   return null;
 }
 
-/** The actions in the order of the menu, without the one that is already the button. */
 export function otherActionsOf(actions: RowActions): ActionKey[] {
   const primary = primaryActionOf(actions);
   const all: ActionKey[] = [];
@@ -891,22 +736,14 @@ export function otherActionsOf(actions: RowActions): ActionKey[] {
   return all.filter((action) => action !== primary);
 }
 
-// ── The mandate of an owner (E13/F02/US01/T01) ────────────────────────────────────────────────────────────────
-
-/** True when the version is in force on `day` (`yyyy-MM-dd`, its first and last day included): the one definition the server applies (`OwnerMandateRules.Covers`). */
 export const mandateCovers = (mandate: Pick<OwnerMandate, 'validFrom' | 'validTo'>, day: string): boolean =>
   mandate.validFrom <= day && (mandate.validTo === null || mandate.validTo >= day);
 
 /** What a row of the list of the owners draws of a mandate: the day it starts, the commission and whether the VAT is in it. */
 export type MandateTerms = Pick<OwnerMandate, 'validFrom' | 'commissionPercent' | 'commissionIncludesVat'>;
 
-/** The mandate of an owner on a day: the version in force, or the first one that starts later, or none. The page never says «none» for a mandate it could not read. */
 export type MandateState = { kind: 'active'; mandate: MandateTerms } | { kind: 'upcoming'; mandate: MandateTerms } | { kind: 'missing' };
 
-/**
- * Which version of the mandate applies to an owner on `day`: the one in force (the latest start when more are, as the server decides), else the first one that starts after it, else
- * none. The versions the API writes cover every property of the owner; one of a single ownership, of before E13, is looked at only when the owner has none of its own.
- */
 export function mandateStateOn(mandates: readonly OwnerMandate[], day: string): MandateState {
   const ofTheOwner = mandates.filter((mandate) => mandate.ownershipId === null);
   const candidates = ofTheOwner.length > 0 ? ofTheOwner : mandates;
@@ -931,10 +768,7 @@ export function latestMandateStart(mandates: readonly Pick<OwnerMandate, 'validF
   return mandates.reduce<string | null>((latest, mandate) => (latest === null || mandate.validFrom > latest ? mandate.validFrom : latest), null);
 }
 
-/** The highest flat fee the server stores (`decimal(10,2)`): above it is a typing mistake (422 `owner_mandate_invalid`). */
 export const MAX_FLAT_FEE = 99_999_999.99;
-
-// ── The statement as the owner reads it (E13/F02/US01/T02) ─────────────────────────────────────────────────────
 
 /**
  * The parts of a statement, in the order of its PDF and its CSV: the stays (the gross without the tourist tax), what the channels kept, the withholding, the commission of the property
@@ -943,7 +777,6 @@ export const MAX_FLAT_FEE = 99_999_999.99;
  */
 export type StatementSection = 'stays' | 'channelFees' | 'withholding' | 'commission' | 'recharges' | 'corrections' | 'payments' | 'other';
 
-/** The part of the statement each type of ledger line is in: the same table as the server's (`OwnerStatementLayout.SectionOf`). Every type has one, so a new type fails to compile here. */
 const SECTION_OF: Record<OwnerLedgerEntryType, StatementSection> = {
   BookingRevenue: 'stays',
   ChannelFee: 'channelFees',
@@ -976,27 +809,19 @@ export function shownAmount(entry: Pick<OwnerLedgerEntry, 'type' | 'informationa
 
 export interface StatementGroup {
   section: StatementSection;
-  /** The signed total of its lines that count, in the currency of the statement: positive is owed to the owner. A line for information only is never in it. */
   amount: number;
-  /** How many lines are in `amount`. */
   count: number;
-  /** The lines of the part that are for information only: how many, and what they come to written as the PDF writes it (the commission the agency bears, a positive figure). In no total. */
   informational: { amount: number; count: number };
 }
 
 export interface StatementGroups {
-  /** The parts that make the total of the period, in the order of the PDF: the withholding, the corrections and the unknown lines only when there are some. */
   groups: StatementGroup[];
-  /** The total of the period: every part but the payments. */
   period: number;
-  /** What was paid between the agency and the owner (a payment to the owner is negative). */
   payments: StatementGroup;
   opening: number;
-  /** What the agency owes the owner at the end of the month, as the version stored it. */
   closing: number;
 }
 
-/** The parts in the order of the PDF. The stays, the channels, the commission and the recharges are always there; the others only when a line is in them. */
 const PARTS_IN_ORDER: readonly StatementSection[] = ['stays', 'channelFees', 'withholding', 'commission', 'recharges', 'corrections', 'other'];
 const ALWAYS_SHOWN: ReadonlySet<StatementSection> = new Set(['stays', 'channelFees', 'commission', 'recharges']);
 

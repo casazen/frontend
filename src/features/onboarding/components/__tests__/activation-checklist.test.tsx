@@ -30,7 +30,6 @@ const done = (key: ActivationStep['key'], extra: Partial<ActivationStep> = {}): 
   ...extra,
 });
 
-/** A host who just signed up: nothing but the account is done, everything else says why. */
 const NEW_HOST: ActivationStep[] = [
   done('account'),
   { key: 'organization', state: 'todo', reason: 'org_profile_incomplete' },
@@ -127,7 +126,6 @@ describe('ActivationChecklist (PL-15, PLG-AC10)', () => {
     );
     expect(screen.getByTestId('activation-step-sitePublished')).toHaveAttribute('data-state', 'blocked');
     expect(screen.getByTestId('activation-step-sitePublished-state')).toHaveTextContent('In attesa');
-    // The state is also a label, not only an icon or a color.
     expect(screen.getByTestId('activation-step-account-state')).toHaveTextContent('Completato');
     const next = screen.getByTestId('activation-next-step');
     expect(next).toHaveTextContent('Nome e indirizzo dell\'organizzazione');

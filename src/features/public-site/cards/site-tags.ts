@@ -23,7 +23,6 @@ export function isSiteTag(value: string): value is SiteTag {
   return (SITE_TAGS as readonly string[]).includes(value);
 }
 
-/** The labels of a list of homes that the page knows, with how many homes carry each, in the order of the vocabulary. */
 export function countTags(cards: readonly { tags: readonly string[] }[]): { tag: SiteTag; count: number }[] {
   const counts = new Map<SiteTag, number>();
   for (const card of cards) {

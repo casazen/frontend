@@ -13,7 +13,6 @@ import { InvoiceData } from './invoice-data';
 import { PaymentsFocus } from './payments-focus';
 import { PAYMENTS_TAB, stripeMarkOf } from './payments-model';
 
-/** "Controlliamo con Stripe…": said while the account is read from Stripe, announced once to a screen reader. */
 function CheckingNote() {
   const { t } = useTranslation();
   return (
@@ -36,7 +35,6 @@ function CheckingNote() {
 export function SupplierPaymentsPanel() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Read once: the marks leave the address below, and the outcome they stand for stays on the page.
   const [mark] = useState(() => stripeMarkOf(searchParams));
   const marksInAddress = stripeMarkOf(searchParams) !== null;
   const account = useSupplierPaymentsAccount(mark !== null);
@@ -48,7 +46,6 @@ export function SupplierPaymentsPanel() {
       (params) => {
         params.delete('stripe_return');
         params.delete('stripe_refresh');
-        // The marks were what said "payments" to the page: without them the tab has to be in the address.
         params.set('tab', PAYMENTS_TAB);
         return params;
       },
@@ -86,11 +83,8 @@ export function SupplierPaymentsPanel() {
     );
   }
 
-  // Once the account is on the page its block says where it stands, and «Controlla di nuovo» turns while Stripe is asked again: the line
-  // «Controlliamo con Stripe…» is only for the first read (UX round 2026-11).
   return (
     <div className="space-y-8" data-testid="supplier-payments-page">
-      {/* The account and, beside it from `xl`, the data on the invoices (under each other on a narrower screen). */}
       <div className={cn(PAGE_COLUMNS, 'gap-8')}>
         <PaymentsFocus account={data} mark={mark} checking={account.askingStripe} onCheckAgain={account.askStripeAgain} />
         <InvoiceData />

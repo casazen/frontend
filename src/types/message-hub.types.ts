@@ -5,34 +5,18 @@
  */
 import type { BookingStatus } from './booking.types';
 
-/**
- * Where the conversation lives: the one with the guest of a direct booking, or one of a channel. `Review` and `OtaReview` are the reviews of the guests (E05/F06): the booking site's
- * and a channel's. They are not conversations: the list shows them only under the filter «Recensioni» and a row of them opens its own detail (`ReviewThread`).
- */
 type MessageHubSource = 'Direct' | 'Ota' | 'Storefront' | 'Review' | 'OtaReview';
 
-/** The channel of a conversation: the direct one, or one of the four channels that have an integrated chat. */
 export type MessageHubChannel = 'Direct' | 'Airbnb' | 'Booking' | 'Vrbo' | 'Expedia' | 'Storefront';
 
 export const MESSAGE_HUB_CHANNELS: readonly MessageHubChannel[] = ['Direct', 'Airbnb', 'Booking', 'Vrbo', 'Expedia', 'Storefront'];
 
-/** What the row is about: a reservation, a request with no booking yet (an inquiry), or a review of a guest (only under the filter «Recensioni», never in the default view). */
 type MessageHubThreadKind = 'Reservation' | 'Request' | 'Review';
 
-/** Whether the conversation is still being worked on. */
 type MessageHubThreadState = 'Open' | 'Closed' | 'Archived';
 
-/**
- * Who wrote a message: the guest, a person of the host side, the assistant of CasaZen, or an automatic message of CasaZen that no person wrote
- * (`Automation`: the check-in link in the chat of the portal). An automatic message is never shown as a person's and never counts as an answer.
- */
 type MessageHubOrigin = 'Guest' | 'Person' | 'Assistant' | 'Automation';
 
-/**
- * One conversation of the list (`GET /api/messages?includeOta=true`). `threadKey` is the opaque key every other call takes: the client
- * hands back what the server gave it and never builds one. A conversation whose listing is not yet linked to a property has no
- * property (`unassigned`).
- */
 export interface MessageHubThread {
   threadKey: string;
   source: MessageHubSource;
@@ -43,26 +27,18 @@ export interface MessageHubThread {
   propertyName?: string | null;
   unassigned: boolean;
   bookingId?: string | null;
-  /** `XXXXX-XXXXX` */
   bookingCode?: string | null;
   guestName?: string | null;
-  /** `YYYY-MM-DD` (Rome date). */
   checkInDate?: string | null;
-  /** `YYYY-MM-DD` (Rome date). */
   checkOutDate?: string | null;
-  /** UTC instant. */
   lastMessageAt: string;
   lastMessageOrigin?: MessageHubOrigin | null;
-  /** The start of the last message, for the host only; `null` for a message that is only a file. */
   preview?: string | null;
   unreadCount: number;
-  /** Open, with the guest's message last: the conversation of the «Da rispondere» list. For a review: published and not answered. */
   needsReply: boolean;
-  /** The stars of a review (`kind` `Review`), 1 to 5; absent for a conversation. `lastMessageAt` is then when the review was published and `preview` its first words. */
   rating?: number | null;
 }
 
-/** A page of `GET /api/messages?includeOta=true`. */
 export interface MessageHubPage {
   items: MessageHubThread[];
   totalCount: number;
@@ -70,9 +46,7 @@ export interface MessageHubPage {
   pageSize: number;
 }
 
-/** The filters of the list, all optional and combined with AND. `q` matches the guest, the booking code and the property, never the words of a message. */
 export interface MessageHubFilters {
-  /** True keeps the open conversations that wait for the host's answer. */
   needsReply?: boolean;
   propertyId?: string;
   channel?: MessageHubChannel;
@@ -84,19 +58,16 @@ export interface MessageHubFilters {
   pageSize?: number;
 }
 
-/** One conversation with something unread: counters only, no name and no text. */
 interface MessageHubUnreadItem {
   threadKey: string;
   bookingId?: string | null;
   unreadCount: number;
 }
 
-/** `GET /api/messages/unread?includeOta=true`. */
 export interface MessageHubUnread {
   items: MessageHubUnreadItem[];
 }
 
-/** Who a message is for: the guest wrote an `Inbound` one, the host side an `Outbound` one. */
 type MessageHubDirection = 'Inbound' | 'Outbound';
 
 /**
@@ -106,30 +77,23 @@ type MessageHubDirection = 'Inbound' | 'Outbound';
  */
 type MessageHubDeliveryState = 'Created' | 'WaitingAuthorization' | 'Sent' | 'Error' | 'ManualVerify';
 
-/** The file of a message: its type only. It is opened through the API, never by an address of the channel. */
 interface MessageHubAttachment {
   contentType: string;
 }
 
-/** One message of a conversation: plain text, shown as text, never as markup or links. */
 export interface MessageHubMessage {
   id: string;
   direction: MessageHubDirection;
   origin: MessageHubOrigin;
-  /** The situation an assistant message answered. */
   ruleCode?: string | null;
-  /** The name the channel gives the person who wrote it; absent for a message written in CasaZen. */
   senderName?: string | null;
   text: string;
-  /** UTC instant. */
   sentAt: string;
   readAt?: string | null;
-  /** Only on an outbound message of a channel. */
   deliveryState?: MessageHubDeliveryState | null;
   attachment?: MessageHubAttachment | null;
 }
 
-/** The amounts of the booking in the currency of its card. A figure that is not available is absent, never zero; the whole object is absent for who may not read payments. */
 export interface MessageBookingAmounts {
   total?: number;
   paid?: number;
@@ -138,44 +102,34 @@ export interface MessageBookingAmounts {
   balance?: number;
 }
 
-/** The booking beside a conversation. */
 export interface MessageBookingCard {
   bookingId: string;
-  /** `XXXXX-XXXXX` */
   bookingCode: string;
   guestName: string;
-  /** `YYYY-MM-DD` (Rome date). */
   checkInDate: string;
-  /** `YYYY-MM-DD` (Rome date). */
   checkOutDate: string;
   guests: number;
   adults: number;
   children: number;
   status: BookingStatus;
-  /** `Direct`, `Airbnb`, `BookingCom`, … or `OtherChannel` (then {@link channelLabel} names the portal). */
   source: string;
   channelLabel?: string | null;
   currency: string;
   amounts?: MessageBookingAmounts | null;
 }
 
-/** What the host may do in the conversation; all false with a `reason` while it can be read and not answered. */
 interface MessageThreadActions {
   canReply: boolean;
-  /** False on a request before the booking: no link, address or number may be written. */
   contactDetailsAllowed: boolean;
   attachmentsAllowed: boolean;
   autoReplyAllowed: boolean;
-  /** `mapping_not_confirmed`, `thread_closed` or `chat_not_licensed` (the chat of the portal is not active for the listing yet) when nothing is allowed. */
   reason?: string | null;
 }
 
-/** The link to the profile of the customer: the id of the guest of the booking (the route is built by the client). */
 export interface MessageCustomer {
   guestId: string;
 }
 
-/** One conversation with everything the screen shows beside it (`GET /api/messages/threads/{threadKey}`). */
 export interface MessageHubThreadDetail {
   threadKey: string;
   source: MessageHubSource;
@@ -189,24 +143,19 @@ export interface MessageHubThreadDetail {
   visitorEmail?: string | null;
   unreadCount: number;
   needsReply: boolean;
-  /** The guest asked for the erasure of its data: the names are gone. */
   anonymized: boolean;
   booking?: MessageBookingCard | null;
   customer?: MessageCustomer | null;
   allowedActions: MessageThreadActions;
-  /** The latest messages, oldest first. */
   messages: MessageHubMessage[];
-  /** There are older messages than the ones the answer carries. */
   hasEarlierMessages: boolean;
 }
 
-/** What is still unread after the host marked the conversation as read. */
 export interface MessageHubRead {
   threadKey: string;
   unreadCount: number;
 }
 
-/** How a guest can be written to from CasaZen. */
 export type MessageContactChannel = 'None' | 'Ota' | 'Direct' | 'Email';
 
 /**
@@ -222,10 +171,6 @@ export interface MessageHubReply {
   errorCode?: string | null;
 }
 
-/**
- * How the guest of a booking can be written to now (`GET /api/bookings/{id}/contact-options`). Never an address or a number: only
- * whether they exist. `reason` is a stable code when there is no channel.
- */
 export interface MessageContactOptions {
   channel: MessageContactChannel;
   threadKey?: string | null;
@@ -234,31 +179,22 @@ export interface MessageContactOptions {
   phoneAvailable: boolean;
 }
 
-/**
- * Synchronization state of a listing's chat. `pending_sync` means no pass has succeeded or failed yet.
- * `waiting_permission` means chat is not licensed, and `error` is any other reported synchronization failure.
- */
 export type MessageChannelStatusCode = 'pending_sync' | 'available' | 'waiting_permission' | 'error';
 
-/** The chat of one listing with a confirmed link to a property (`GET /api/messages/channel-status`). Never a name of a guest or an address. */
 export interface MessageChannelStatusItem {
   propertyId: string;
   propertyName: string;
   status: MessageChannelStatusCode;
-  /** UTC instant of the last pass that reached the listing; `null` while none did. */
   lastCheckedAt?: string | null;
 }
 
-/** `GET /api/messages/channel-status`: one item per listing the caller reaches, ordered by property name. */
 export interface MessageChannelStatus {
   items: MessageChannelStatusItem[];
 }
 
-/** A template of the host (`api/message-templates`): the text with its variables, in the language it is written in. */
 export interface HostMessageTemplate {
   id: string;
   name: string;
-  /** One of the 14 languages of the listing, lower case. */
   language: string;
   body: string;
   isActive: boolean;
@@ -266,28 +202,23 @@ export interface HostMessageTemplate {
   updatedAt: string;
 }
 
-/** A template the channel keeps for a conversation: read only, to copy into the composer. */
 export interface ChannelMessageTemplate {
   name: string;
   language?: string | null;
   text: string;
 }
 
-/** The text of a template for a conversation, with the variables filled in. */
 export interface RenderedMessageTemplate {
   text: string;
 }
 
-/** What to translate: a message of the conversation, or a text the host is writing. */
 export interface MessageTranslationRequest {
   threadKey: string;
   messageId?: string;
   text?: string;
-  /** One of the 14 languages of the listing. */
   targetLanguage: string;
 }
 
-/** A translation, for the screen only: it is always a machine translation and never replaces the original. */
 export interface MessageTranslation {
   text: string;
   targetLanguage: string;

@@ -4,10 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { MemoryRouter, Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { RouteFocus } from '../route-focus';
 
-/**
- * The focus and the announcement at every change of page (UI-03): a content region with the page of the route in it,
- * and `RouteFocus` beside it, as `AppShellLayout` puts them.
- */
 const DESTINATIONS = ['b', 'b2', 'plain', 'slow', 'form'] as const;
 
 function Shell() {
@@ -28,7 +24,6 @@ function Shell() {
   );
 }
 
-/** A page whose heading appears after a delay, like a page that waits for its data before drawing anything. */
 function SlowPage() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -109,7 +104,6 @@ describe('RouteFocus', () => {
     expect(heading).toHaveFocus();
     expect(heading).toHaveAttribute('tabindex', '-1');
     expect(focus).toHaveBeenCalledWith({ preventScroll: true });
-    // The announcement follows the focus by a moment: the region is emptied first and filled after.
     expect(announcer()).toBeEmptyDOMElement();
     advance(60);
     expect(announcer()).toHaveTextContent('Pagina B');
@@ -133,7 +127,6 @@ describe('RouteFocus', () => {
     advance(60);
     expect(announcer()).toHaveTextContent('Pagina B');
 
-    // Same title as a moment ago: the region is emptied again, or a screen reader would not say it twice.
     go('b2');
     expect(announcer()).toBeEmptyDOMElement();
     advance(60);
@@ -147,7 +140,6 @@ describe('RouteFocus', () => {
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
     expect(screen.getByTestId('main')).not.toHaveFocus();
 
-    // The page draws its heading at 700 ms; the next look at the page, 100 ms later, finds it.
     advance(700);
     const heading = screen.getByRole('heading', { level: 1, name: 'Pagina lenta' });
     expect(heading).not.toHaveFocus();
@@ -185,7 +177,6 @@ describe('RouteFocus', () => {
 
   it('RouteFocus_ModalStillHidingThePage_WaitsUntilTheAppIsVisibleToAssistiveTechnology', () => {
     renderShell();
-    // What Radix does to the app while a dialog (the mobile menu) is open or closing.
     const root = screen.getByTestId('app-root');
     root.setAttribute('aria-hidden', 'true');
 
@@ -208,7 +199,6 @@ describe('RouteFocus', () => {
 
     go('b');
     const heading = screen.getByRole('heading', { level: 1, name: 'Pagina B', hidden: true });
-    // A dialog that stays open longer than the wait: the heading is already in the page.
     advance(5200);
     expect(heading).not.toHaveFocus();
     expect(screen.getByTestId('main')).not.toHaveFocus();
@@ -233,7 +223,6 @@ describe('RouteFocus', () => {
     expect(announcer()).toBeEmptyDOMElement();
 
     root.removeAttribute('aria-hidden');
-    // The wait for a heading starts once the app is visible again.
     advance(150);
     expect(screen.getByTestId('main')).not.toHaveFocus();
     advance(5200);
@@ -251,7 +240,6 @@ describe('RouteFocus', () => {
     const heading = screen.getByRole('heading', { level: 1, name: 'Pagina B' });
     expect(heading).toHaveFocus();
     advance(2000);
-    // The page left behind never takes the focus back.
     expect(heading).toHaveFocus();
   });
 });

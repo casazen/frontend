@@ -41,9 +41,7 @@ describe('lastPossibleDate', () => {
   });
 
   it('lastPossibleDate_TwentyNinthOfFebruary_GoesToTheTwentyEighthLikeTheBackend', () => {
-    // 2028 is a leap year, 2038 is not: DateTime.AddYears(10) of 29 February lands on 28 February.
     expect(lastPossibleDate('2028-02-29')).toBe('2038-02-28');
-    // 2020 -> 2030: neither is a problem for a normal day.
     expect(lastPossibleDate('2020-02-28')).toBe('2030-02-28');
   });
 
@@ -85,7 +83,6 @@ describe('modeStepSchemas', () => {
   });
 
   it('modeStepSchemas_OnlyTheDateAndTheChecksHaveRules_TheChoiceAndTheConfirmationHaveNone', () => {
-    // The only choice is already made, and the confirmation has nothing to check: the wizard gives them no schema.
     expect(Object.keys(modeStepSchemas(bounds))).toEqual(['date', 'checks']);
   });
 

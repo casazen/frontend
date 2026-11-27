@@ -13,7 +13,6 @@ import { HostInvitePage } from '../host-invite-page';
 vi.mock('@/hooks/use-auth', () => ({ useAuth: vi.fn() }));
 vi.mock('@/api/host-invites.api', () => ({ lookupHostInvite: vi.fn(), acceptHostInvite: vi.fn() }));
 
-// A new token per test: the page remembers the tokens it already accepted.
 let TOKEN = '';
 let counter = 0;
 const login = vi.fn();
@@ -63,8 +62,6 @@ describe('HostInvitePage', () => {
     vi.mocked(acceptHostInvite).mockResolvedValue(undefined);
   });
 
-  // ─── Anonymous visitor ───
-
   it('HostInvitePage_ValidInviteAnonymous_ShowsInviterAndMaskedEmailNeverTheWholeOne', async () => {
     renderPage();
 
@@ -106,8 +103,6 @@ describe('HostInvitePage', () => {
     expect(await screen.findByText('Sei stato invitato su CasaZen')).toBeInTheDocument();
     expect(screen.queryByTestId('host-invite-masked-email')).not.toBeInTheDocument();
   });
-
-  // ─── Unusable states ───
 
   it.each([
     ['Expired', 'Invito scaduto'],
@@ -157,8 +152,6 @@ describe('HostInvitePage', () => {
 
     expect(await screen.findByTestId('host-invite-signup')).toBeInTheDocument();
   });
-
-  // ─── Signed in ───
 
   it('HostInvitePage_SignedInWithValidInvite_AcceptsOnceAndForgetsTheStoredToken', async () => {
     sessionStorage.setItem('cz-host-invite', TOKEN);

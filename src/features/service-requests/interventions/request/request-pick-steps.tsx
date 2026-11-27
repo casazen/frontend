@@ -28,10 +28,8 @@ import { AssistChoiceLine, RequestAssistCard } from './request-assist-card';
 import { assign, NO_SUPPLIER } from './request-form';
 import type { RequestChannel, RequestValues } from './request-model';
 
-/** Where a step sends the wizard: another channel, and the step it goes on from (one change of the address, never two that cancel each other). */
 export type ChangeChannel = (channel: RequestChannel, goToStep?: string) => void;
 
-/** The property the wizard is about, from the list of the host's properties. */
 function useWizardProperty(propertyId: string) {
   const properties = useProperties({ mode: 'short' });
   return (Array.isArray(properties.data) ? properties.data : []).find((candidate) => candidate.id === propertyId);
@@ -45,9 +43,6 @@ function coveredByPartners(catalog: readonly string[], partnersFor: (serviceCate
   return catalog.filter((code) => partnersFor(code).length > 0);
 }
 
-/* ---------------------------------------------------------------------------------------------------- ① Immobile */
-
-/** Step ①: the property the work is for. A request is for the house: a stay is a link the host may add at the end. */
 export function PropertyStep() {
   const { t } = useTranslation();
   const { register, setValue, formState } = useFormContext<RequestValues>();
@@ -55,7 +50,6 @@ export function PropertyStep() {
   const list = Array.isArray(properties.data) ? properties.data : [];
   const field = register('propertyId');
 
-  // A flex column with a gap, not `space-y-*`: the group is a `fieldset` with its own margin, which the spacing of the siblings would not move.
   return (
     <div className="flex flex-col gap-3">
       <ChoiceGroup legend={t('requestWizard.property.legend')} minCardWidth={15}>
@@ -70,7 +64,6 @@ export function PropertyStep() {
             {...field}
             onChange={(event) => {
               void field.onChange(event);
-              // The stay belongs to the property: another property has other stays, and other suppliers cover it.
               setValue('bookingId', '', { shouldDirty: true });
               assign(setValue, NO_SUPPLIER);
             }}
@@ -82,11 +75,8 @@ export function PropertyStep() {
   );
 }
 
-/* ------------------------------------------------------------------------------------------------------- ② Chi */
-
 interface ChannelStepProps {
   channel: RequestChannel;
-  /** The address names the channel: the host (or the wizard, once) chose it, so it is not steered again. */
   explicit: boolean;
   onChannel: ChangeChannel;
 }
@@ -114,7 +104,6 @@ export function ChannelStep({ channel, explicit, onChannel }: ChannelStepProps) 
   const partnersAhead = hasPartners || partnersLoading;
   const offerExternal = partnersAhead || channel === 'external';
 
-  // Nobody of CasaZen around: the partners are the way, and the host is shown them without having to find out (once the catalog has some).
   useEffect(() => {
     if (noNetwork && !explicit && channel !== 'external' && hasPartners) onChannel('external');
   }, [noNetwork, explicit, channel, hasPartners, onChannel]);
@@ -165,18 +154,11 @@ export function ChannelStep({ channel, explicit, onChannel }: ChannelStepProps) 
         </Alert>
       ) : null}
 
-      {/* Optional, and only where an AI is in effect: the host tells the job in words and the wizard goes on from what the AI proposes. */}
       <RequestAssistCard onUse={onChannel} />
     </div>
   );
 }
 
-/* ---------------------------------------------------------------------------------------------------- ③ Servizio */
-
-/**
- * Step ③: the kind of service, as big tiles with their icon. With CasaZen each says how many suppliers work around the property; with
- * a partner only the services a partner covers are there, and the tile names them.
- */
 export function ServiceStep({ channel }: { channel: RequestChannel }) {
   const { t } = useTranslation();
   const { register, setValue, control, formState } = useFormContext<RequestValues>();
@@ -213,7 +195,6 @@ export function ServiceStep({ channel }: { channel: RequestChannel }) {
             {...field}
             onChange={(event) => {
               void field.onChange(event);
-              // The suppliers and their services depend on the kind of work.
               assign(setValue, NO_SUPPLIER);
             }}
           />
@@ -224,9 +205,6 @@ export function ServiceStep({ channel }: { channel: RequestChannel }) {
   );
 }
 
-/* ---------------------------------------------------------------------------------------------------- ④ Proposte */
-
-/** The line a supplier card says under its name: the price and the answer time when they are known, a few of its services. */
 function supplierDescription(supplier: SupplierPicker, t: TFunction, language: string): ReactNode {
   const facts = supplierFacts(supplier, t, language) ?? t('requestWizard.who.priceOnRequest');
   const services = (supplier.services ?? []).slice(0, 3).map((service) => service.name);
@@ -260,11 +238,6 @@ export function CleaningBrief() {
   );
 }
 
-/**
- * Step ④ with CasaZen: the suppliers that cover the comune of the property for the kind of work, in the order of the ranking the server
- * gives (SP-REL: load and reliability), the first one marked «Consigliato» when it is strictly ahead. With none the page says so and puts
- * the partners of that service next to the sentence, with a way to go on with them.
- */
 export function ProposalsStep({ onChannel, goTo }: { onChannel: ChangeChannel; goTo: (stepId: string) => void }) {
   const { t, i18n } = useTranslation();
   const { control, setValue, formState } = useFormContext<RequestValues>();
@@ -364,12 +337,6 @@ export function ProposalsStep({ onChannel, goTo }: { onChannel: ChangeChannel; g
   );
 }
 
-/* ----------------------------------------------------------------------------------------------------- ④ Partner */
-
-/**
- * Step ④ with an external partner, the last one: the partners of the service, each with its own site. The work is organised there, so
- * CasaZen sends nothing and says so.
- */
 export function PartnersStep({ goTo }: { goTo: (stepId: string) => void }) {
   const { t } = useTranslation();
   const { control } = useFormContext<RequestValues>();

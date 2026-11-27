@@ -35,10 +35,8 @@ import {
   type Numbering,
 } from './document-model';
 
-/** What the confirmation of a credit note says of its series and its number: nothing. */
 const NO_NUMBERING: Numbering = { series: null, last: null, next: null };
 
-/** What a dialog needs to know of the document it is about: its kind and number for its name, and its total in its own currency. */
 export interface DialogDocument {
   id: string;
   kind: string;
@@ -52,7 +50,6 @@ interface DialogProps {
   onClose: () => void;
 }
 
-/** One line of the summary of a dialog: what it is and what it says. */
 function SummaryRow({ label, children, testId }: { label: string; children: ReactNode; testId?: string }) {
   return (
     <div className="flex min-w-0 items-baseline justify-between gap-4">
@@ -77,7 +74,6 @@ export function IssueDocumentDialog({ document, onClose, onIssued, replaces }: D
   const { hasPermission } = useWorkspace();
   const issue = useIssueFiscalDocument();
   const [problem, setProblem] = useState<string | null>(null);
-  // The setting that holds the series is read by who may read payments and properties, like the page of the documents.
   const canReadSetting = hasPermission('short-rent', 'payment.read') && hasPermission('short-rent', 'property.read');
   // A credit note is issued in the series of the document it corrects, which may be another year's: nothing is said of its series or number, and nothing is read for them.
   // The replacement of an invoice the SDI rejected (`replaces`, E17/F03/US01/T02) holds the number of the rejected one from the start: the issue gives it that number and not the next one, so no number is
@@ -93,7 +89,6 @@ export function IssueDocumentDialog({ document, onClose, onIssued, replaces }: D
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        // While the call is on its way the dialog stays (Esc, the cross and a click outside included): closed, it would leave a failure with nowhere to be told.
         if (!open && !issue.isPending) onClose();
       }}
       title={t('fiscalDocuments.issue.title')}
@@ -106,7 +101,6 @@ export function IssueDocumentDialog({ document, onClose, onIssued, replaces }: D
         try {
           await issue.mutateAsync({ documentId: document.id });
         } catch (error) {
-          // The dialog stays open (the confirmation does not close on a rejection) and says why.
           setProblem(getProblemMessage(error, t) ?? t('fiscalDocuments.issue.failed'));
           throw error;
         }
@@ -136,7 +130,6 @@ export function IssueDocumentDialog({ document, onClose, onIssued, replaces }: D
           {t('fiscalDocuments.issue.lastNumber', { number: numbering.last })}
         </p>
       ) : null}
-      {/* What was told of the number comes from the documents the person sees in the list: it may leave some out, so it is an indication and says so. */}
       {numbering.next || numbering.last ? (
         <p className="text-sm text-foreground/70" data-testid="fiscal-document-issue-note">
           {t('fiscalDocuments.issue.numberNote')}
@@ -151,7 +144,6 @@ export function IssueDocumentDialog({ document, onClose, onIssued, replaces }: D
   );
 }
 
-/** What a draft that is dropped says: it consumed no number, and the booking may have a new draft. */
 export function DiscardDraftDialog({ document, onClose, onDiscarded }: DialogProps & { onDiscarded?: (id: string) => void }) {
   const { t } = useTranslation();
   const discard = useDiscardFiscalDocument();
@@ -224,7 +216,6 @@ export function SendDocumentEmailDialog({
         try {
           onQueued?.(await send.mutateAsync({ documentId: document.id }));
         } catch (error) {
-          // The dialog stays open (the confirmation does not close on a rejection) and says why.
           setProblem(emailProblemOf(error, t));
           throw error;
         }
@@ -251,13 +242,11 @@ export function CreditNoteDialog({ document, onClose, onCredited }: DialogProps 
   const [form, setForm] = useState<CreditForm>({ scope: 'whole', amount: '', reason: '' });
   const [asked, setAsked] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  // What is wrong is told once the person has pressed the button, not while they are still typing.
   const check: CreditProblem | null = asked ? creditProblemOf(form, document.total) : null;
   const total = formatDocumentAmount(document.total, document.currency, i18n.language);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    // The dialog is drawn outside the page but sits inside it for React: its submit must not reach a form around it.
     event.stopPropagation();
     setAsked(true);
     if (creditProblemOf(form, document.total) !== null || credit.isPending) return;

@@ -23,7 +23,6 @@ export function HomeSkeleton() {
   );
 }
 
-/** The homes could not be read: said as it is, with a way to try again, never as «no home published». */
 export function HomeError({ onRetry, retrying }: { onRetry: () => void; retrying: boolean }) {
   const { t } = useTranslation();
   return (
@@ -41,10 +40,6 @@ export function HomeError({ onRetry, retrying }: { onRetry: () => void; retrying
   );
 }
 
-/**
- * No home is published: a quiet page that says the next season is being prepared and gives the way to ask (write to the host, call
- * if they published a number). The page of a site that is not there at all is another one; this site exists and has nothing to book.
- */
 export function HomeEmpty({ org, slug }: { org: PublicOrgDto; slug: string }) {
   const { t } = useTranslation();
   const hostName = org.hostName?.trim() || org.displayName;

@@ -8,7 +8,6 @@ import type { ServiceRequestContextKey, ServiceRequestListResponse } from '@/typ
 import { ServiceRequestTimeline } from './service-request-timeline';
 
 interface ServiceRequestsCardProps {
-  /** A list query of `useServiceRequests` (stay or property) or `useLongRentServiceRequests` (property). */
   query: {
     data?: ServiceRequestListResponse;
     isLoading: boolean;
@@ -17,16 +16,12 @@ interface ServiceRequestsCardProps {
     isFetching?: boolean;
     refetch: () => unknown;
   };
-  /** Translated text of the empty state. */
   emptyText: string;
   context?: ServiceRequestContextKey;
-  /** Header action, e.g. the "request a supplier" dialog trigger. */
   action?: ReactNode;
   showStay?: boolean;
-  /** The caller may pay and re-request (`property.write` of the context); default true. */
   canManage?: boolean;
   testId?: string;
-  /** A part of a page without a box around it (a title and its content), for a page made of plain sections; default: a card. */
   plain?: boolean;
 }
 

@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useAppShell } from '@/components/layout/app-shell-context';
 import { getArea } from '@/config/areas';
 
-/** The titles the pages on screen asked for, the latest last, and the title the document had before the first one. */
 const claims: Array<{ title: string }> = [];
 let titleBeforeTheFirstClaim = '';
 
-/** Puts `title` on the tab until the returned function is called; then the title of the previous claim, or the original. */
 function claimTitle(title: string): () => void {
   if (claims.length === 0) titleBeforeTheFirstClaim = document.title;
   const claim = { title };

@@ -6,7 +6,6 @@ import { getProblemMessage, isTransientRequestError } from '@/lib/api-errors';
 import { addDays, parseStayDate, todayInRome } from '@/lib/stay-dates';
 import type { StayCalendarData } from './use-public-calendar';
 
-/** The range asked when nothing else is: a year from today (the endpoint takes 13 months at most). */
 const DEFAULT_MONTHS_AHEAD = 12;
 
 /**
@@ -36,7 +35,6 @@ export function usePublicSiteCalendar(
     enabled: Boolean(platform) || Boolean(orgSlug),
     staleTime: 30_000,
     refetchOnMount: true,
-    // Changing the guests asks for the nights again: the calendar that is open keeps the ones it has until the new ones arrive.
     placeholderData: keepPreviousData,
     retry: (failureCount, error) => isTransientRequestError(error) && failureCount < 2,
   });

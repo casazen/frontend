@@ -16,13 +16,9 @@ import { LabeledField } from '@/components/ui/labeled-field';
 
 interface Props {
   propertyId: string;
-  /** Lease start date (`YYYY-MM-DD` or ISO): the backend derives the term from the dates (A7-12). */
   startDate?: string;
-  /** Lease end date, inclusive. */
   endDate?: string;
-  /** What the lease already says about the unit (the characteristics it was created with): the form starts from them. */
   initial?: ConcordatoCharacteristics | null;
-  /** The monthly rent of the contract: with it the result is a sentence («il canone rientra nei limiti»). */
   rent?: number;
 }
 
@@ -50,22 +46,14 @@ function toDateOnly(value: string | undefined): string {
   return value ? value.slice(0, 10) : '';
 }
 
-/** A measure the lease already knows, as the text of its field; the starting value of the field when it knows none. */
 function startingValue(value: number | undefined, fallback: string): string {
   return value !== undefined && value > 0 ? String(value) : fallback;
 }
 
-/**
- * Canone concordato range (LT-10), asked in LR-GUIDE-1 as «Il canone rientra nei limiti dell'accordo?». The backend computes it from the
- * unit characteristics and the lease dates (the same computation runs again when the lease is created); any change of an input or of the
- * dates discards the range shown (A7-12). The form starts from what the lease already says about the unit, and the result is a sentence
- * about the rent of the contract; the range, the reasons and the warnings are one click away.
- */
 export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, initial, rent }: Props) {
   const { t } = useTranslation();
   const eligibility = useCanoneConcordatoEligibility();
   const zones = useCanoneConcordatoZones(propertyId);
-  // Without a unit described by the lease nothing is pre-filled (A7-24): surface empty, every count at 0, until the landlord describes it.
   const [sqm, setSqm] = useState(() => startingValue(initial?.sqm, ''));
   const [garageSqm, setGarageSqm] = useState(() => startingValue(initial?.garageSqm, '0'));
   const [balconySqm, setBalconySqm] = useState(() => startingValue(initial?.balconySqm, '0'));
@@ -87,7 +75,6 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, ini
   const datesReady = start.length === 10 && end.length === 10;
   const surfaceReady = toNumber(sqm) > 0;
   const zoneOptions = zones.data?.zones ?? [];
-  // A comune with a single zone (Seveso: the whole territory) needs no choice.
   const selectedZone = zoneOptions.length === 1 ? zoneOptions[0].name : zone;
 
   const characteristics = useMemo<ConcordatoCharacteristics>(
@@ -112,7 +99,6 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, ini
       qualifyingDCount, stoveHeating, furnished, airConditioning, selectedZone, foglio],
   );
 
-  // A range belongs to the exact inputs and dates it was computed with (A7-12): it is shown only while they are unchanged.
   const inputKey = useMemo(
     () => JSON.stringify([characteristics, start, end, propertyId]),
     [characteristics, start, end, propertyId],
@@ -148,7 +134,6 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, ini
         },
       });
     } catch {
-      // Shown below from eligibility.error; the previous band no longer applies.
       setComputed(null);
       setFailedKey(key);
       return;
@@ -358,7 +343,6 @@ export function CanoneConcordatoCalculator({ propertyId, startDate, endDate, ini
   );
 }
 
-/** The answer to the question the tool is asked with: where the rent of the contract stands against the range, in one sentence. */
 function Answer({ result, rent }: { result: CanoneConcordatoEligibility; rent: number | undefined }) {
   const { t } = useTranslation();
   const min = result.canoneMinMensile;
@@ -382,10 +366,6 @@ function Answer({ result, rent }: { result: CanoneConcordatoEligibility; rent: n
   );
 }
 
-/**
- * Zones of the agreement from the API (A7-24): never free text, so the value always matches the agreement. Loading,
- * error and "no zones" are distinct states; with no agreement data the calculator still answers "data unavailable".
- */
 function ZoneSelect({
   id,
   zones,

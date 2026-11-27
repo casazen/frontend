@@ -9,25 +9,18 @@ import { GUEST_MESSAGE_MAX_LENGTH, LISTING_LANGUAGES } from '@/types';
 import { TemplatePicker } from './template-picker';
 import { TranslateButton } from './translate-button';
 
-/** From this many characters the composer shows how many are left. */
 const COUNTER_FROM = 1800;
 
-/** The language a draft is translated into when the host has not chosen another: the guests of the channels mostly read English. */
 const DEFAULT_GUEST_LANGUAGE = 'en';
 
 interface ReplyComposerProps {
   threadKey: string;
-  /** The conversation is one of a channel: the channel's own templates are offered too. */
   withChannelTemplates: boolean;
   value: string;
   onChange: (value: string) => void;
-  /** Hands the text, trimmed, to the send; the caller empties the box. */
   onSend: (text: string) => void;
-  /** A message is on its way: the button waits for it, so a second click cannot send it twice. */
   busy: boolean;
-  /** Why nothing can be sent now (offline): the button is off and what was typed stays. */
   disabledReason?: string | null;
-  /** False on a request before the booking: no link, address or number may be written. */
   contactDetailsAllowed: boolean;
 }
 

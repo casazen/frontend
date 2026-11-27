@@ -1,13 +1,10 @@
 import type { OrgRole } from '@/types/org-team.types';
 import type { PersonRow } from './people-rows';
 
-/** Why a person has no actions for the one who looks, when it is worth a line: the owner, the person itself, an administrator. */
 export type ActionsLockedBy = 'owner' | 'me' | 'admin';
 
-/** What the one who looks may do to a person of the list. */
 export interface PersonActions {
   changeRole: boolean;
-  /** Areas and properties. */
   editAccess: boolean;
   deactivate: boolean;
   reactivate: boolean;

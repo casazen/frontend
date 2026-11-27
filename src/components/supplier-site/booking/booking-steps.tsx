@@ -6,13 +6,10 @@ import type { BookingStep } from '@/lib/supplier-site/booking-flow';
 interface BookingStepsProps {
   steps: BookingStep[];
   current: BookingStep;
-  /** A step already done can be gone back to; the ones ahead cannot be jumped to. */
   onGo: (step: BookingStep) => void;
-  /** False once the hold is made: the steps done are only read, no longer links back. */
   interactive?: boolean;
 }
 
-/** Where the person is in the booking: the steps in a row on a wide screen, "Passo 2 di 5" with a bar on a phone. */
 export function BookingSteps({ steps, current, onGo, interactive = true }: BookingStepsProps) {
   const { t } = useTranslation();
   const index = steps.indexOf(current);

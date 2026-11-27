@@ -4,20 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 export interface QtyProps {
-  /** What is counted ("Adulti", "Camere"). It names the group and the two buttons, and the value when it is read out. */
   label: string;
   value: number;
   onChange: (value: number) => void;
-  /** Default 0. */
   min?: number;
-  /** Default 99. */
   max?: number;
-  /** How much each press adds or takes away. Default 1. */
   step?: number;
-  /** With a name the control also puts its value in a form (a hidden field). */
   name?: string;
   disabled?: boolean;
-  /** What a screen reader says when the value changes. Default "{label}: {value}". */
   valueText?: (value: number) => string;
   className?: string;
   testId?: string;
@@ -62,8 +56,6 @@ export function Qty({ label, value, onChange, min = 0, max = 99, step = 1, name,
     change(moves[event.key]);
   };
 
-  // The outline of the disc is a ring, not a border: the border color of every element is fixed by a rule of `globals.css`
-  // that the utilities cannot beat, and it is too pale to see where to press.
   const buttonClass = cn(
     'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-background text-foreground ring-1 ring-inset ring-muted-foreground/70 transition-colors',
     'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

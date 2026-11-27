@@ -13,7 +13,6 @@ import type { ListingLanguage, TextOrigin } from '@/types';
 import type { PropertyWizardValues } from '../property-wizard-model';
 import { ListingTextCard } from './listing-text-card';
 
-/** The two languages the listing cannot be published without: they are the tabs. */
 const REQUIRED_TABS = ['it', 'en'] as const;
 type RequiredTab = (typeof REQUIRED_TABS)[number];
 
@@ -23,7 +22,6 @@ const ORIGIN_ICONS: Record<TextOrigin, LucideIcon> = {
   ModifiedAfterTranslation: Pencil,
 };
 
-/** Who wrote a text, said in words next to it (NF-31): written by the host, translated by a machine, or edited after a translation. */
 function OriginNote({ origin, testId }: { origin: TextOrigin | null; testId: string }) {
   const { t } = useTranslation();
   if (!origin) return null;
@@ -40,13 +38,10 @@ function OriginNote({ origin, testId }: { origin: TextOrigin | null; testId: str
 interface LanguageFieldsProps {
   form: UseFormReturn<PropertyWizardValues>;
   language: ListingLanguage;
-  /** The origins and the stored texts the server has, to tell what the save will make of what is typed. */
   profile: Parameters<typeof shownOrigin>[0];
-  /** The fields may be left empty: they say so. */
   optional?: boolean;
 }
 
-/** The headline and the description in one language other than Italian. Errors sit on the field they are about. */
 function LanguageFields({ form, language, profile, optional = false }: LanguageFieldsProps) {
   const { t } = useTranslation();
   const { register, watch, formState } = form;
@@ -107,13 +102,6 @@ interface DescriptionsStepProps {
   required?: boolean;
 }
 
-/**
- * Step 4 · «Racconta la casa» (NF-31): the headline and the description of the listing in Italian and in English — both required, the
- * channels take no listing without them — in two tabs, and the other twelve languages of the channel manager in an accordion, optional.
- * The origin of each text is told next to it (written by the host, translated automatically, edited after the translation). Italian is
- * the columns of the property and carries the AI suggestion of «Il tuo annuncio»; the other languages are the site profile. A tab that has
- * a problem opens by itself, so the message and the field are where the host looks.
- */
 export function DescriptionsStep({ form, propertyId, required = true }: DescriptionsStepProps) {
   const { t } = useTranslation();
   const baseId = useId();
@@ -129,7 +117,6 @@ export function DescriptionsStep({ form, propertyId, required = true }: Descript
     it: Boolean(errors.listingTitle || errors.description),
     en: Boolean(errors.texts?.en),
   };
-  // The tab with the first problem opens when a problem appears (state set while rendering, from what the render read: no effect).
   const firstProblem: RequiredTab | null = problemIn.it ? 'it' : problemIn.en ? 'en' : null;
   const [seenProblem, setSeenProblem] = useState<RequiredTab | null>(null);
   if (firstProblem !== seenProblem) {

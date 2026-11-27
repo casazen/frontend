@@ -14,7 +14,6 @@ describe('Badge (UI-01: semantic colors under the redesign, the same look withou
     ['warning', ['bg-yellow-500', 'text-white', 'hover:bg-yellow-600'], ['v2:bg-warning-soft', 'v2:text-warning-foreground', 'v2:border-warning-border']],
   ] as const)('Badge_%s_KeepsItsClassesAndAddsTheRedesignOnes', (variant, legacy, redesign) => {
     const classes = classesOf(variant);
-    // Without data-ui="v2" the `v2:` classes match nothing, so the badge is the one of today.
     for (const name of legacy) expect(classes).toContain(name);
     for (const name of redesign) expect(classes).toContain(name);
   });

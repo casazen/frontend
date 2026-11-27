@@ -6,16 +6,12 @@ import {
   normalizeFiscalCode,
 } from '../fiscal-code';
 
-// Same vectors as the backend ItalianFiscalCodeTests (LT-14): keep the two in step.
 describe('fiscal-code', () => {
   it.each([
     ['RSSMRA85T10A562S', 'person'],
     ['RSSMRA80A01H501U', 'person'],
-    // Woman (day + 40).
     ['VRDGLI85B42F205E', 'person'],
-    // Omocodia: the last digit of the place code (2) written as N.
     ['RSSMRA85T10A56NH', 'person'],
-    // 11 digits with the check digit (companies, provisional codes).
     ['12345678903', 'numeric'],
     ['00123456782', 'numeric'],
   ] as const)('classifyFiscalCode_Valid_%s_Is%s', (code, kind) => {

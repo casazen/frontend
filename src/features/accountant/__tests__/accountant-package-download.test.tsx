@@ -14,8 +14,6 @@ import { freezeClock, NOON_UTC } from '@/test/clock';
 import { AccountantPackagePage } from '../accountant-package-page';
 import { mixedSummary } from './accountant-package-fixtures';
 
-// The agency sees the summary of a month or a year and downloads the package from one page (acceptance criterion of E15/F02/US01/T01). The page with the real hooks, the HTTP layer, the
-// permissions, the flag, the saving of the file and the frame of the app replaced: what is under test is what the page asks, what it saves and what it says of every answer.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
@@ -45,7 +43,6 @@ function failure(status: number, body: unknown = {}, asBlob = false): AxiosError
   return new AxiosError('failed', undefined, undefined, undefined, { status, statusText: '', data, headers: {}, config: { headers: new AxiosHeaders() } });
 }
 
-/** What the server answers: the summary of any period, and the ZIP (`file`). */
 function serve({ summary = () => Promise.resolve(ok(mixedSummary())), file = () => Promise.reject(new Error('no file served')) }: { summary?: () => Answer; file?: (config: Config) => Answer }) {
   get.mockImplementation(((url: string, config?: Config) => (url === SUMMARY_URL ? summary() : url === PACKAGE_URL ? file(config) : Promise.reject(new Error(`unexpected ${url}`)))) as never);
 }
@@ -66,7 +63,6 @@ const periodOf = (call: unknown[]) => (call[1] as Config)?.params?.period;
 describe('the page «Commercialista» (E15/F02/US01/T01)', () => {
   beforeEach(async () => {
     vi.resetAllMocks();
-    // 24 September 2026 is "today" in Rome: the page opens on August, the month that is over.
     freezeClock(NOON_UTC);
     await i18n.changeLanguage('it');
   });
@@ -100,7 +96,6 @@ describe('the page «Commercialista» (E15/F02/US01/T01)', () => {
       await screen.findByTestId('accountant-summary');
 
       expect(reads(SUMMARY_URL).map(periodOf)).toEqual(['2019']);
-      // A year older than the ones the choice offers is added to it: the choice always shows what the page is about.
       expect(screen.getByTestId('accountant-period')).toHaveValue('2019');
       expect(screen.getByTestId('accountant-package-focus')).toHaveTextContent(i18n.t('accountantPackage.focus.kicker', { period: i18n.t('accountantPackage.period.year', { year: 2019 }) }));
     });
@@ -146,10 +141,8 @@ describe('the page «Commercialista» (E15/F02/US01/T01)', () => {
 
       fireEvent.click(button);
 
-      // It goes through the authenticated client, for the period of the address, as a blob.
       await waitFor(() => expect(reads(PACKAGE_URL)).toHaveLength(1));
       expect(reads(PACKAGE_URL)[0]![1]).toMatchObject({ params: { period: '2026-07' }, responseType: 'blob' });
-      // While it comes the page says how much arrived, the button is busy and the period cannot change; a second click sends nothing.
       await waitFor(() => expect(screen.getByTestId('accountant-download-progress')).toHaveTextContent(i18n.t('accountantPackage.download.received', { size: formatFileSize(2048, 'it') })));
       expect(button).toHaveAttribute('aria-busy', 'true');
       expect(screen.getByTestId('accountant-period')).toBeDisabled();
@@ -189,7 +182,6 @@ describe('the page «Commercialista» (E15/F02/US01/T01)', () => {
 
       expect(await screen.findByTestId('accountant-download-problem')).toHaveTextContent(i18n.t('accountantPackage.download.tooLarge', { files: 1500, max: 1000 }));
       expect(save).not.toHaveBeenCalled();
-      // The failure belongs to the period it came from: another period shows none of it.
       const select = screen.getByTestId('accountant-period');
       await waitFor(() => expect(select).toBeEnabled());
       fireEvent.change(select, { target: { value: '2026-05' } });
@@ -197,7 +189,6 @@ describe('the page «Commercialista» (E15/F02/US01/T01)', () => {
     });
 
     it('Download_StoppedByThePerson_IsNotAFailureAndTheChoiceOfThePeriodIsFreeAgain', async () => {
-      // The call ends the way axios ends a call whose signal was aborted.
       serve({
         file: (config) =>
           new Promise((_, reject) => {
@@ -234,7 +225,6 @@ describe('the page «Commercialista» (E15/F02/US01/T01)', () => {
 
   describe('the summary that is read', () => {
     it('Summary_NotFoundWhileFiguresAreInTheCache_IsSaidAndNoFigureStaysOnScreen', async () => {
-      // The query keeps the old data on an error: a 404 (the module is off at the server) is «not found» whatever the cache holds, and the download is not offered.
       const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
       client.setQueryData(accountantPackageKeys.summary('2026-08'), mixedSummary());
       serve({ summary: () => Promise.reject(failure(404)) });
@@ -268,7 +258,6 @@ describe('the page «Commercialista» (E15/F02/US01/T01)', () => {
     });
 
     it('Summary_ABodyThatIsNotTheSummary_IsALoadErrorNeverAnEmptyPeriod', async () => {
-      // The index.html of a wrong rewrite answers 200: it is no summary.
       serve({ summary: () => Promise.resolve(ok('<!doctype html><html></html>')) });
       renderPage();
 

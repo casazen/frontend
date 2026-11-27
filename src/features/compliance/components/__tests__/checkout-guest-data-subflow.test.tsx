@@ -17,7 +17,6 @@ vi.mock('@/api/checkin-wizard.api', () => ({
 }));
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getGuestSummary: vi.fn(), searchCodes: vi.fn(), getStatus: vi.fn() } }));
 
-// The real guests editor of the check-in wizard: a form this size takes a few seconds in jsdom, more on a loaded runner.
 configure({ asyncUtilTimeout: 15_000 });
 const FORM_TEST_TIMEOUT_MS = 40_000;
 
@@ -119,17 +118,14 @@ describe('CheckoutGuestDataSubflow with the real guests editor of the check-in w
     vi.mocked(checkInWizardApi.saveGuests).mockResolvedValue(wizardState());
     const { invalidate, onOpenChange } = renderPanel();
 
-    // The editor of the check-in wizard, for this booking (not a copy: it reads the state of the check-in wizard).
     const card = await screen.findByTestId('stay-guest-0');
     expect(checkInWizardApi.getState).toHaveBeenCalledWith(BOOKING_ID);
 
-    // Something typed and not saved: "Done" does not close over it, and says why.
     fireEvent.change(within(card).getByLabelText(/^Nome/), { target: { value: 'Anna' } });
     fireEvent.click(screen.getByTestId('checkout-guest-data-done'));
     expect(await screen.findByTestId('checkout-guest-data-unsaved')).toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled();
 
-    // Saved with the "Save guests" of the editor (the editor on its own asks the document too): the check-in endpoint takes the list.
     fireEvent.change(within(await screen.findByTestId('stay-guest-0-document')).getByLabelText(/^Numero documento/), { target: { value: 'CA12345AB' } });
     fireEvent.click(screen.getByTestId('guests-editor-save'));
     await waitFor(() => expect(checkInWizardApi.saveGuests).toHaveBeenCalledTimes(1));
@@ -157,14 +153,12 @@ describe('CheckoutGuestDataSubflow with the real guests editor of the check-in w
   it('Panel_Closed_KeepsNothingOfTheGuestsInTheCache', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     const { client, unmount } = renderPanel();
     await screen.findByTestId('stay-guest-0');
-    // What the editor read of the guests: the state of the check-in wizard and the summary of the record of the portal (names, birth, citizenship, document).
     await waitFor(() => expect(alloggiatiApi.getGuestSummary).toHaveBeenCalledWith(BOOKING_ID));
     const summaryKey = [ALLOGGIATI_KEY, 'guest-summary', BOOKING_ID];
     const stateKey = ['checkin-wizard', BOOKING_ID];
     expect(client.getQueryCache().find({ queryKey: summaryKey })).toBeDefined();
     expect(client.getQueryCache().find({ queryKey: stateKey })).toBeDefined();
 
-    // The panel is closed: nothing of the guests stays in the cache (the default would keep the summary for ten minutes).
     unmount();
 
     await waitFor(() => expect(client.getQueryCache().find({ queryKey: summaryKey })).toBeUndefined());

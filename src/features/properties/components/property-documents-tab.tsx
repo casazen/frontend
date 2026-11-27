@@ -22,7 +22,6 @@ interface PropertyDocumentsTabProps {
   onEditCin: () => void;
 }
 
-/** Property documents, registration details and the institutional portals applicable to the property's country. */
 export function PropertyDocumentsTab({ property, canWrite, onEditCin }: PropertyDocumentsTabProps) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
@@ -46,13 +45,11 @@ export function PropertyDocumentsTab({ property, canWrite, onEditCin }: Property
       {property.isInTicino ? (
         <PlainSection title={t('swiss.property.title')}>
           <p className="mb-3 text-sm text-foreground/70">{t('swiss.property.description')}</p>
-          {/* With the regimes on the structure number is in the card above, with what is still missing: it is never asked twice on the page. */}
           {flags.guestRegistrationRegimes ? null : canWrite ? (
             <TicinoStructureIdForm propertyId={property.id} value={property.ticinoStructureId} />
           ) : (
             <p className="text-sm">{property.ticinoStructureId ?? t('swiss.property.noId')}</p>
           )}
-          {/* The guided notification is a layer of the app (E30/F02/US03/T02): it opens over this page, and the address of the cockpit with the layer open is the way for a page with no drawer. */}
           <Link
             to={ticinoLayerPath(property.id)}
             onClick={(event) => {

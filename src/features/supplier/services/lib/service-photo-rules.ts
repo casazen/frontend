@@ -4,11 +4,6 @@ import { SERVICE_LIMITS, SERVICE_PHOTO_TYPES } from './service-limits';
 const T = 'supplier.services.photos';
 const EXTENSIONS = /\.(jpe?g|png|webp)$/i;
 
-/**
- * What is wrong with the files a person picked, in words, before anything goes up (the API checks the content again and
- * refuses all of them if one is not good): no room left, too many for the room, not a photo, empty or too large. `null`
- * when they can go. A file whose type the browser does not know is judged by its extension.
- */
 export function refuseFiles(files: readonly File[], current: number, t: TFunction): string | null {
   const room = SERVICE_LIMITS.maxPhotos - current;
   if (room <= 0) return t(`${T}.errors.full`, { max: SERVICE_LIMITS.maxPhotos });

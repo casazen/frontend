@@ -9,13 +9,6 @@ import { WhyAsk } from '../wizard/why-ask';
 import { CONTRACT_KINDS, kindTitle, type ContractKind } from '../lib/contract-kind';
 import { ChoiceList } from './choice-list';
 
-/**
- * The one question a new contract starts with: «Che contratto vuoi fare?», answered with a type. Everything after it depends on the
- * answer: the second screen asks how it is made (`StartWayChoice`). Nothing is chosen at first. The answers are one quiet list with a
- * line under each (LR-WIZ-1) and a «Quale scegliere?» that compares them in three lines; the main button is pressable at once: with
- * nothing chosen it puts the focus on the list and a line says to choose. The term the transitory answer names is the server's (`rules`);
- * the question does not wait for it.
- */
 export function ContractKindChoice({ onChoose }: { onChoose: (kind: ContractKind) => void }) {
   const { t } = useTranslation();
   const rules = useLongRentRules();

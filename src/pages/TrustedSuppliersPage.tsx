@@ -25,7 +25,6 @@ export function TrustedSuppliersPage() {
   const { data: suppliers, isLoading, isError, error, refetch } = useTrustedSuppliers();
   const inviteSupplier = useInviteSupplier();
   const removeSupplier = useRemoveSupplier();
-  // The host picks the properties by name (bug #977: the dialog asked for their ids); none picked = all of them.
   const properties = useProperties();
   const propertyList = properties.data ?? [];
   const propertyNames = new Map(propertyList.map((property) => [property.id, property.name]));

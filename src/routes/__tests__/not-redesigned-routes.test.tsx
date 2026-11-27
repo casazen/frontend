@@ -36,12 +36,9 @@ describe('routes that keep the current look (NOT_REDESIGNED_ROUTE_HANDLE)', () =
     '/checkin/abc123',
     '/rent/pay/installment-1',
     '/service/pay/payment-1',
-    // The document a guest got by e-mail (E12/F02/US02) is a guest's page too.
     '/documents/view/document-1',
-    // The pages the marketing e-mails link to (CRM-08, CRM-03) are pages of guests too.
     UNSUBSCRIBE_PATH,
     MARKETING_CONFIRM_PATH,
-    // The welcome page behind the QR code in a house (CRM-03) too.
     '/benvenuto/TEST-benvenuto-villa-lago',
   ])('Route_%s_KeepsTheCurrentLook', (path) => {
     expect(matchRoutes(appRoutes, path), `${path} matches a route`).not.toBeNull();
@@ -62,7 +59,6 @@ describe('routes that keep the current look (NOT_REDESIGNED_ROUTE_HANDLE)', () =
     '/app/long-rent/leases',
     '/app/admin',
     '/app/supplier/inbox',
-    // Help for the console users (the iCal link of a calendar) and the 404 are CasaZen's own pages.
     '/help/ical',
     '/a/page/that/does/not/exist',
   ])('Route_%s_GetsTheRedesign', (path) => {
@@ -70,7 +66,6 @@ describe('routes that keep the current look (NOT_REDESIGNED_ROUTE_HANDLE)', () =
   });
 
   it('HostSiteRoutes_OrgSite_KeepsTheMarker', () => {
-    // On an org's own host `UiVersionSync` stays off through `getHostSite()`; the marker is also on the route it serves.
     const [orgSite] = buildHostSiteRoutes(appRoutes);
     expect(orgSite.handle).toEqual(NOT_REDESIGNED_ROUTE_HANDLE);
   });

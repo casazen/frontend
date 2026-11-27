@@ -5,7 +5,6 @@ import type { SeoPagePublic } from '@/types/seo.types';
 import { ComplianceGuidePage } from './compliance-guide-page';
 import { TouristTaxCalculatorPage } from './tourist-tax-calculator-page';
 
-// A8-08: a body that slipped past the backend must still be neutralised before dangerouslySetInnerHTML.
 const { page } = vi.hoisted(() => {
   const bodyHtml =
     '<h2>Guida Como</h2><img src=x onerror=alert(1)><svg/onload=alert(1)>' +
@@ -60,7 +59,6 @@ function expectSanitizedBody(body: HTMLElement) {
     }
   }
 
-  // Legitimate editorial content survives.
   expect(body.querySelector('h2')).toHaveTextContent('Guida Como');
   expect(body.querySelector('ul > li')).toHaveTextContent('CIN');
   const links = Array.from(body.querySelectorAll('a'));
@@ -97,7 +95,6 @@ describe('public SEO pages render the body through the allowlist sanitizer', () 
   });
 });
 
-// SE-05 (A8-27): the AI Act notice is mounted on the public pages and follows the flag of the API, never a constant.
 describe('public SEO pages and the AI Act transparency notice', () => {
   function renderGuide() {
     return render(
@@ -147,7 +144,6 @@ describe('public SEO pages and the AI Act transparency notice', () => {
   });
 });
 
-// SEO-INVITE: CasaZen is on private invitation, so the backend sends `cta: null` and the pages show no sign-up button.
 describe('public SEO pages and the sign-up call to action', () => {
   const originalCta = page.cta;
 

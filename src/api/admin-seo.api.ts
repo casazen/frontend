@@ -32,7 +32,6 @@ export const AdminSeoApi = {
       pageSize: res.pageSize ?? 20,
     })),
 
-  /** Review screen: published and pending text (sanitized) and the review audit. */
   getPage: (pageId: string): Promise<SeoPageAdminDetail> =>
     ApiClient.get<SeoPageAdminDetail>(`/admin/seo/pages/${pageId}`),
 
@@ -60,7 +59,6 @@ export const AdminSeoApi = {
   listComuni: (): Promise<SeoComuneRegistryItem[]> =>
     ApiClient.get<SeoComuneRegistryItem[]>('/admin/seo/comuni'),
 
-  /** Comuni by CTA clicks of the SEO pages in the last `days` days, with their started signups and signups (SE-04, AC9). */
   getTopComuni: (days = 30): Promise<SeoTopComuniResponse> =>
     ApiClient.get<SeoTopComuniResponse>('/admin/seo/top-comuni', { days }),
 };

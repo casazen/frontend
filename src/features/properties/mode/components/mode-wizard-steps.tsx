@@ -26,10 +26,6 @@ import {
 import { useDayLabel, useModeName } from '../use-mode-labels';
 import { BlockerList } from './blocker-list';
 
-/**
- * Step 1, "What do you want to do?": the one thing a property can do, the other mode (the mode is exclusive). It is a choice
- * card, so the step reads like the others and the answer is part of the form, but there is nothing to pick: it is already chosen.
- */
 export function ChoiceStep({ target }: { target: RentalMode }) {
   const { t } = useTranslation();
   const { register } = useFormContext<ModeWizardValues>();
@@ -52,15 +48,9 @@ export function ChoiceStep({ target }: { target: RentalMode }) {
 interface DateStepProps {
   target: RentalMode;
   bounds: DateBounds;
-  /** What the server found for tomorrow: what stands in the way of the first days, which is why the first day possible is what it is. */
   firstPreview: PropertyModePreview | undefined;
 }
 
-/**
- * Why the first day possible is not tomorrow: the stay, the dates of a portal or the lease that frees the property last. A draft
- * lease frees nothing (no day does: it is deleted), so it is named on its own, and "nothing stands in the way" is said only
- * when there is neither.
- */
 function DateReason({ target, bounds, blockers }: { target: RentalMode; bounds: DateBounds; blockers: readonly PropertyModeBlocker[] }) {
   const { t } = useTranslation();
   const dayLabel = useDayLabel();
@@ -81,11 +71,6 @@ function DateReason({ target, bounds, blockers }: { target: RentalMode; bounds: 
   );
 }
 
-/**
- * Step 2, "From when?": a day, from the first possible (worked out by the server, with the reason why) to ten years ahead. The
- * button puts the first possible day in the field and checks it, so an error the field already showed goes away. Changing the
- * day throws away the result of the checks: they were of another day.
- */
 export function DateStep({ target, bounds, firstPreview }: DateStepProps) {
   const { t } = useTranslation();
   const dayLabel = useDayLabel();
@@ -96,7 +81,6 @@ export function DateStep({ target, bounds, firstPreview }: DateStepProps) {
   const pickEarliest = () => {
     setValue('date', bounds.earliest, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
     setValue('checksOk', false);
-    // The button goes away with the click (the field has the day now): the focus goes to the field, not to the top of the page.
     setFocus('date');
   };
 
@@ -111,7 +95,6 @@ export function DateStep({ target, bounds, firstPreview }: DateStepProps) {
           type="date"
           min={bounds.earliest}
           max={bounds.latest}
-          // 44 px on a phone, like every control the thumb has to hit.
           className="max-md:min-h-11 pointer-coarse:min-h-11"
           data-testid="property-mode-date"
           {...register('date', { onChange: () => setValue('checksOk', false) })}
@@ -137,7 +120,6 @@ interface ChecksStepProps {
   target: RentalMode;
 }
 
-/** One line of the checks that passed, with its tick. */
 function Passed({ children }: { children: React.ReactNode }) {
   return (
     <p className="flex items-start gap-2 text-sm" data-testid="property-mode-check-passed">
@@ -147,7 +129,6 @@ function Passed({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** What was found, by what it is about, for the day asked. */
 function ChecksResult({ preview, propertyId, target, onPick }: { preview: PropertyModePreview; propertyId: string; target: RentalMode; onPick: (date: string) => void }) {
   const { t } = useTranslation();
   const dayLabel = useDayLabel();
@@ -199,7 +180,6 @@ function ChecksResult({ preview, propertyId, target, onPick }: { preview: Proper
         <Passed>{t('propertyMode.checks.leases.none', { date })}</Passed>
       )}
 
-      {/* A draft lease frees no day: it has to be deleted, whatever the direction says. */}
       {drafts.length > 0 && (
         <section className="space-y-2" aria-label={t('propertyMode.checks.drafts.title')} data-testid="property-mode-drafts">
           <p className="text-sm font-medium">{t('propertyMode.checks.drafts.found')}</p>
@@ -247,8 +227,6 @@ export function ChecksStep({ propertyId, target }: ChecksStepProps) {
   const settled = preview.isSuccess && !preview.isFetching && data?.date === date;
   const passed = settled && data?.canSchedule === true;
 
-  // The step opens the way only while the answer in front of the person says yes for the day that is in the field. Written before
-  // the browser paints (a layout effect): whoever sees the result also finds the way open, never the other way round.
   useLayoutEffect(() => {
     setValue('checksOk', passed);
   }, [passed, setValue]);
@@ -256,7 +234,6 @@ export function ChecksStep({ propertyId, target }: ChecksStepProps) {
   const pick = (day: string) => {
     setValue('date', day, { shouldDirty: true, shouldTouch: true });
     setValue('checksOk', false);
-    // The button that was pressed goes away with the old answer: the focus stays in the step, on the place the new answer fills.
     region.current?.focus();
   };
 
@@ -278,7 +255,6 @@ export function ChecksStep({ propertyId, target }: ChecksStepProps) {
       </Alert>
     );
   } else if (!data || preview.isFetching) {
-    // The spinner is a `div` that announces itself (`role="status"`): it cannot be inside a `p`, and the line next to it is the text.
     content = (
       <div className="flex items-center gap-3 text-sm text-muted-foreground" data-testid="property-mode-checks-loading">
         <Spinner size="sm" />

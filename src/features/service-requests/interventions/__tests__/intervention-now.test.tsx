@@ -75,7 +75,6 @@ describe('InterventionNow (SR-08)', () => {
     renderBlock(request, COLLABORATOR);
 
     fireEvent.click(screen.getByRole('button', { name: 'Segna come pagato' }));
-    // The window that asks first (the flag cannot be undone) belongs to the steps, not to the block.
     expect(steps.markPaid).toHaveBeenCalledWith(request);
   });
 

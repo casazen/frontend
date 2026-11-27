@@ -13,7 +13,6 @@ import type { IdentityVerificationController } from './use-identity-verification
 
 interface IdentityStepProps {
   identity: IdentityVerificationController;
-  /** The token of the check-in link: the legal texts of the stay are asked with it. */
   token: string;
   takeFront?: () => File | null;
 }
@@ -38,23 +37,18 @@ export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) 
   const selfHosted = progress?.selfHosted === true;
   const language = resolveGuestLocale(i18n.language);
 
-  // The legal texts are asked while the guest is at the consent: it is the text on the screen that is agreed to, and its version is what is sent back.
   const texts = useGuestLegalTexts(token, language, stage === 'consent');
   const readTextsAgain = texts.refetch;
   const textsChanged = identity.problem === 'consent_text_changed';
   useEffect(() => {
-    // The registry no longer serves the version that was on the screen: the guest reads what it serves now before answering.
     if (textsChanged) void readTextsAgain();
   }, [textsChanged, readTextsAgain]);
 
-  // The version of the text of the consent the guest is reading now: only a text that is settled counts (not an older answer while a newer one is on its way, and never what an error left in memory).
   const shownConsentVersion = texts.isSuccess && !texts.isFetching ? (legalTextOf(texts.data?.texts, BIOMETRIC_CONSENT_KIND)?.version ?? null) : null;
   useEffect(() => {
-    // The identity step of a self-hosted verification is opened with that version. The hook makes the call once per page load, so a new render, a new language or a return to this step never repeats it.
     if (!selfHosted || stage !== 'consent' || shownConsentVersion === null) return;
     void openNotice(shownConsentVersion, async () => {
       const again = await readTextsAgain();
-      // A read that failed leaves the older answer in memory, and that is the version the server has just refused: it says nothing about the one in force, so it is not used (the hook tries again with the next text that settles).
       if (!again.isSuccess || again.isFetching) throw new Error('The legal texts could not be read again');
       return legalTextOf(again.data.texts, BIOMETRIC_CONSENT_KIND)?.version ?? null;
     });
@@ -75,12 +69,9 @@ export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) 
 
   if (!progress) return null;
 
-  // An error is an error even when an older answer is still in memory: the texts of a link that is no longer valid are never shown as if they were.
   const textsStatus = texts.isError ? 'error' : texts.isSuccess ? 'ready' : 'loading';
-  // A text the server does not take as the one in force (the opening was refused, and reading the texts again did not help) is not offered to agree to: the face check is not offered, a person verifies.
   const consentText = textsStatus === 'ready' && !identity.automaticUnavailable ? legalTextOf(texts.data?.texts, BIOMETRIC_CONSENT_KIND) : null;
   const noticeText = textsStatus === 'ready' ? legalTextOf(texts.data?.texts, TICINO_NOTICE_KIND) : null;
-  // The way to a person under the document and the recording of a self-hosted verification; the photo of a document that was refused has its own button for it.
   const assistedPathVisible = selfHosted && (progress.stage === 'selfie' || progress.stage === 'presence' || (progress.stage === 'document' && !progress.documentRefused));
 
   return (

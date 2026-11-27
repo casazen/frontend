@@ -77,8 +77,6 @@ describe('MessageBubble: the state of a message and what can be done about it (N
     expect(actions.onResend).toHaveBeenCalledWith(msg);
   });
 
-  // E23/F01/US01/T01: the check-in link that CasaZen writes in the chat of the portal is nobody's words. It is told apart, and a refused one is not sent again by hand (the copy would be
-  // the message of a person, which answers the guest's last question for good): the link waits in the «Da fare» list with «Copia link».
   it('MessageBubble_AutomaticMessageTheChannelRefused_IsToldApartSaysWhatHappenedAndIsNotSentAgainByHand', () => {
     const msg = message({ origin: 'Automation', deliveryState: 'Error', text: 'Ecco il link del check-in' });
     const actions = renderBubble(itemOf(msg, 'Messaggio automatico'));
@@ -194,7 +192,6 @@ describe('MessageBubble: files and translation of a message', () => {
 
     expect(await screen.findByTestId('message-attachment-unavailable')).toHaveTextContent('Allegato non più disponibile');
     expect(screen.queryByTestId('message-attachment-image')).not.toBeInTheDocument();
-    // It was asked through the API, by the id of the message: no address of the channel is in the page.
     expect(messageHubApi.openAttachment).toHaveBeenCalledWith('m-1');
   });
 
@@ -216,7 +213,6 @@ describe('MessageBubble: files and translation of a message', () => {
     expect(await screen.findByTestId('message-translation')).toHaveTextContent('Che ore sono il check-in?');
     expect(screen.getByTestId('message-translation')).toHaveTextContent('Traduzione automatica');
     expect(messageHubApi.translate).toHaveBeenCalledWith({ threadKey: THREAD, messageId: 'm-1', targetLanguage: 'it' });
-    // The original stays; the button now hides the translation, and asks nothing again.
     expect(screen.getByText('What time is check-in?')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('translate-button'));
     await waitFor(() => expect(screen.queryByTestId('message-translation')).not.toBeInTheDocument());

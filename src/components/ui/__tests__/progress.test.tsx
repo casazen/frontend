@@ -11,10 +11,8 @@ beforeEach(async () => {
 
 afterEach(cleanup);
 
-/** The fill (first child) is the only thing that moves. */
 const fillOf = (bar: HTMLElement) => bar.firstElementChild as HTMLElement;
 
-/** Every transition and animation class of the element must sit behind `motion-safe:`. */
 function expectNoMotionWithoutPermission(element: Element) {
   const classes = (element.getAttribute('class') ?? '').split(/\s+/);
   const moving = classes.filter((c) => /(^|:)(transition|duration|ease|animate)/.test(c));
@@ -84,7 +82,6 @@ describe('Progress', () => {
     const { rerender } = render(<Progress value={50} label="Avanzamento" />);
     const track = themeColor('muted');
 
-    // Default: the primary of the area. 3:1 is the minimum for a graphic that carries information (WCAG 1.4.11).
     expect(fillOf(screen.getByRole('progressbar'))).toHaveClass('bg-primary');
     expect(contrastRatio(themeColor('primary'), track)).toBeGreaterThanOrEqual(3);
 
@@ -109,7 +106,6 @@ describe('Ring', () => {
     expect(ring).toHaveAttribute('aria-valuenow', '62');
     expect(ring).toHaveAttribute('aria-valuemin', '0');
     expect(ring).toHaveAttribute('aria-valuemax', '100');
-    // The number is drawn for the eyes; assistive technology already has the value.
     expect(screen.getByText('62%')).toHaveAttribute('aria-hidden', 'true');
     expect(ring.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
   });

@@ -6,14 +6,8 @@ interface PropertyStructuredDataProps {
   org: PublicOrgDto;
 }
 
-/**
- * JSON-LD structured data for a property page (schema.org VacationRental, AC-NF25-1).
- * The script is added to the `<head>` and removed on unmount: crawlers read the data,
- * link previews may show rich snippets. Only properties with a canonical URL are indexed.
- */
 export function PropertyStructuredData({ property, org }: PropertyStructuredDataProps) {
   useEffect(() => {
-    // Only when the property has a canonical URL (the public domain is configured): without it, the page is not indexed.
     if (!property.canonicalUrl) {
       return;
     }
@@ -86,7 +80,6 @@ export function PropertyStructuredData({ property, org }: PropertyStructuredData
         : {}),
     };
 
-    // JSON for a <script> element: `<` is escaped so no value can close the element.
     const jsonForScript = JSON.stringify(structuredData).replace(/</g, '\\u003c');
 
     const script = document.createElement('script');

@@ -115,14 +115,12 @@ describe('ContextSidebar (UI-04a)', () => {
     const nav = screen.getByRole('navigation', { name: 'Menu Affitti brevi' });
     expect(within(nav).getAllByRole('link')).toHaveLength(9);
     expect(within(nav).getByRole('link', { name: 'Messaggi' })).toHaveAttribute('href', '/app/short-rent/messages');
-    // The adempimenti are in the main menu, not tucked in "Altro".
     expect(within(within(nav).getByRole('group', { name: 'Ogni giorno' })).getByRole('link', { name: /Adempimenti/ })).toBeInTheDocument();
     const groups = within(nav).getAllByRole('group');
     expect(groups).toHaveLength(3);
     expect(groups[0]).toHaveAccessibleName('Ogni giorno');
     expect(groups[1]).toHaveAccessibleName('La tua offerta');
     expect(groups[2]).toHaveAccessibleName('Gestione');
-    // No "Altro": the queues are tabs of the Cruscotto and the settings are pinned under the menu.
     expect(within(nav).queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
     const foot = screen.getByRole('navigation', { name: 'Impostazioni e inviti' });
     expect(within(foot).getAllByRole('link').map((link) => link.textContent)).toEqual(['Impostazioni']);
@@ -142,7 +140,6 @@ describe('ContextSidebar (UI-04a)', () => {
     renderSidebar('short-rent');
 
     expect(within(screen.getByRole('link', { name: /Prenotazioni/ })).getByTestId('nav-count')).toHaveTextContent('2');
-    // The hook is given the entries of the menu: it asks for a count only where the menu has an entry that shows it.
     const entries = vi.mocked(useNavCounts).mock.calls[0][0];
     expect(entries.map((entry) => entry.path)).toContain('/app/short-rent/bookings');
     expect(entries.some((entry) => entry.navCount === 'bookingRequests')).toBe(true);
@@ -157,7 +154,6 @@ describe('ContextSidebar (UI-04a)', () => {
     const pill = within(link).getByTestId('nav-count');
     expect(pill).toHaveTextContent('4');
     expect(pill).toHaveAttribute('data-count-kind', 'compliance');
-    // Red, not the accent of the area: what the law dates is not a thing to answer like the others.
     expect(pill).toHaveClass('bg-destructive');
     expect(link).toHaveAccessibleName('Adempimenti, 4 adempimenti con rischio di sanzione');
   });
@@ -193,12 +189,10 @@ describe('ContextSidebar (UI-04a)', () => {
       expect(aside).toHaveClass('w-[4.5rem]');
       expect(aside).not.toHaveClass('w-64');
       expect(screen.getByTestId('sidebar-collapse-toggle')).toHaveAccessibleName('Espandi menu');
-      // Names stay for screen readers; the footer line and the group names go.
       expect(screen.getByRole('link', { name: 'Cruscotto' })).toBeInTheDocument();
       expect(screen.getByText('Cruscotto')).toHaveClass('sr-only');
       expect(screen.queryByText('v1.0.0 · casazen.io')).not.toBeInTheDocument();
       expect(screen.queryByText('Ogni giorno')).not.toBeInTheDocument();
-      // The area switcher keeps working on the icon alone.
       expect(screen.getByRole('button', { name: 'Area attuale: Affitti brevi. Cambia area' })).not.toHaveTextContent('Affitti brevi');
 
       fireEvent.click(screen.getByTestId('sidebar-collapse-toggle'));
@@ -214,7 +208,6 @@ describe('ContextSidebar (UI-04a)', () => {
       expect(JSON.parse(kept).state).toEqual({ sidebarCollapsed: true });
       unmount();
 
-      // A new visit: the memory starts empty and the store reads what the browser kept.
       useUiStore.setState({ sidebarCollapsed: false });
       window.localStorage.setItem(UI_STORE_STORAGE_KEY, kept);
       await act(async () => {
@@ -247,7 +240,6 @@ describe('ContextSidebar (UI-04a)', () => {
     });
   });
 
-  // UI-04b: from `md` to `lg` the sidebar is the rail of icons, with the names as tooltips on hover and on focus.
   describe('rail of a tablet', () => {
     it('ContextSidebar_Tablet_IsTheRailOfIconsEvenIfTheUserNeverReducedIt', () => {
       stubViewportWidth(820);
@@ -261,7 +253,6 @@ describe('ContextSidebar (UI-04a)', () => {
       expect(screen.getByText('Cruscotto')).toHaveClass('sr-only');
       expect(screen.queryByText('Ogni giorno')).not.toBeInTheDocument();
       expect(within(aside).getByRole('link', { name: 'Cruscotto' })).toBeInTheDocument();
-      // The settings pinned at the foot stay on the rail too, as icons with their names for screen readers.
       expect(within(aside).getByRole('link', { name: 'Impostazioni' })).toBeInTheDocument();
       expect(screen.getByText('Impostazioni')).toHaveClass('sr-only');
     });
@@ -271,7 +262,6 @@ describe('ContextSidebar (UI-04a)', () => {
       arrange(['short-rent']);
       renderSidebar('short-rent');
 
-      // Nothing to toggle: the width of the window decides. The version line does not fit in 72 px either.
       expect(screen.queryByTestId('sidebar-collapse-toggle')).not.toBeInTheDocument();
       expect(screen.queryByText('v1.0.0 · casazen.io')).not.toBeInTheDocument();
     });

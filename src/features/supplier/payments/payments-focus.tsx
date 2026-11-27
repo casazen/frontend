@@ -9,7 +9,6 @@ import { isRetryableConnectError } from '@/types/connect.types';
 import { resolveSupplierPaymentsState, type SupplierPaymentsAccount } from '@/types/supplier-payments';
 import { requirementGroups, type StripeMark } from './payments-model';
 
-/** What Stripe still asks for, in words and not in its own field names. Nothing when it asks for nothing. */
 function Requirements({ fields }: { fields: readonly string[] }) {
   const { t } = useTranslation();
   const groups = requirementGroups(fields);
@@ -37,7 +36,6 @@ function Requirements({ fields }: { fields: readonly string[] }) {
 
 interface ActionErrorProps {
   error: unknown;
-  /** Said when the server gave nothing better. */
   fallback: string;
   onRetry: () => void;
   retrying: boolean;
@@ -67,9 +65,7 @@ function ActionError({ error, fallback, onRetry, retrying, testId }: ActionError
 
 interface PaymentsFocusProps {
   account: SupplierPaymentsAccount;
-  /** What Stripe sent the supplier back with, if anything: it changes the words, not what the account is. */
   mark: StripeMark | null;
-  /** Stripe is being asked again (the button that asks is busy). */
   checking: boolean;
   onCheckAgain: () => void;
 }

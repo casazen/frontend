@@ -117,7 +117,6 @@ describe('SupplierCalendarSyncPage (SU-15)', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
-  // UI-07: the "?" beside the label of the dialog is a HelpTip now; its link still opens the help page inside the console (SU-16).
   it('helpTip_InTheIcalDialog_SaysWhereToFindTheLinkAndLeadsToTheHelpPageOfTheConsole', async () => {
     vi.mocked(fetchCalendarSyncStatus).mockResolvedValue(notLinked);
 

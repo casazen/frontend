@@ -52,7 +52,6 @@ describe('reading the code and the class of an APE by itself (LT-10)', () => {
 
     expect(propertiesApi.readApeIdentification).toHaveBeenCalledTimes(1);
     expect(propertiesApi.readApeIdentification).toHaveBeenCalledWith('p-1', 'doc-ape');
-    // The documents shown are read again before the reading is done, so they already carry what was found.
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['properties', 'p-1', 'documents'] });
     expect(client.getQueryState(['ape-read', 'doc-ape'])?.status).toBe('success');
     expect(apeReadFoundNothing('doc-ape')).toBe(false);
@@ -75,7 +74,6 @@ describe('reading the code and the class of an APE by itself (LT-10)', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(apeReadFoundNothing('doc-ape')).toBe(true);
 
-    // Another visit of the same browser (a new cache): the same file would give the same answer, a minute of server for nothing.
     const second = setup();
     renderHook(() => useApeAutoRead('p-1', APE), { wrapper: second.wrapper });
 
@@ -123,7 +121,6 @@ describe('reading the code and the class of an APE by itself (LT-10)', () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(toast.error).toHaveBeenCalledWith(i18n.t('toast.apeReadFailed'));
-    // A failure is not an answer: the file is not remembered as one that gives nothing.
     expect(apeReadFoundNothing('doc-ape')).toBe(false);
   });
 });

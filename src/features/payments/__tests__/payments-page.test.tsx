@@ -24,7 +24,6 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('@/features/bookings/components/bookings-section-tabs', () => ({ BookingsSectionTabs: () => null }));
 
-/** Today in these tests (Europe/Rome): 1 November 2026. */
 const NOW = new Date('2026-11-01T10:00:00Z');
 
 function payment(overrides: Partial<PaymentListItem>): PaymentListItem {
@@ -90,7 +89,6 @@ function renderPage(rows: PaymentListItem[], initial = '/app/short-rent/payments
   );
 }
 
-/** The guests of the rows in the table, in the order of `GUESTS`. */
 async function shownGuests(): Promise<string[]> {
   const table = await screen.findByRole('table', { name: 'Pagamenti' });
   const cells = within(table).getAllByRole('rowheader').map((cell) => cell.textContent ?? '');
@@ -117,10 +115,8 @@ describe('PaymentsPage, the quick filters (SR-04c)', { timeout: 20000 }, () => {
   it('PaymentsPage_Opens_OnInArrivoWithTheStaysThatAreComingOrOn', async () => {
     renderPage(ALL_ROWS);
 
-    // The stay that ends today is still on; the past ones, the cancelled and the refunded are not here.
     expect(await shownGuests()).toEqual(['Anna Futura', 'Bruno Presto', 'Carla Oggi']);
     expect(screen.getByTestId('list-chip-incoming')).toHaveAttribute('aria-pressed', 'true');
-    // The page opens on it without a word in the address.
     expect(address()).toBe('');
   });
 
@@ -159,7 +155,6 @@ describe('PaymentsPage, the quick filters (SR-04c)', { timeout: 20000 }, () => {
 
     fireEvent.click(screen.getByTestId('list-chip-toCollect'));
 
-    // «In arrivo» does not have Elena (her stay is over); «Da incassare» does.
     expect(await shownGuests()).toEqual(['Bruno Presto', 'Carla Oggi', 'Elena Scaduta']);
   });
 

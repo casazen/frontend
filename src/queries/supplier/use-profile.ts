@@ -29,7 +29,6 @@ export function useCompleteSupplierActivation() {
 }
 
 
-/** Saves the wizard step; the activation status is not refetched (the wizard keeps its own step while it is open). */
 export function useSaveSupplierActivationStep() {
   return useMutation({ mutationFn: saveSupplierActivationStep });
 }
@@ -51,8 +50,6 @@ export function useUpdateSupplierProfile() {
   return useMutation({
     mutationFn: updateSupplierProfile,
     onSuccess: (updated) => {
-      // Update the profile cache immediately with the response from the server.
-      // This avoids a stale-data window caused by staleTime + refetchOnMount.
       queryClient.setQueryData(['supplier', 'profile'], updated);
       queryClient.invalidateQueries({ queryKey: ['supplier'] });
     },
@@ -60,10 +57,6 @@ export function useUpdateSupplierProfile() {
 }
 
 
-/**
- * True while the caller's supplier profile is suspended (SU-12): the console then shows a banner and offers no action
- * on the requests. Unknown (loading, error) counts as not suspended: the API refuses the action anyway.
- */
 export function useSupplierSuspended(): boolean {
   const { data } = useSupplierProfile();
   return data?.status === 'Suspended';

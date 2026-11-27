@@ -47,22 +47,12 @@ export function ReadingProvider({
 }
 
 interface ReadMarkProps {
-  /** The step the field is in: once the person has been through it the note goes (its values were looked at). */
   step: 2 | 3 | 4;
-  /** The names the server gave to what it read, for this block of the screen. */
   fields: readonly string[];
-  /** The entry of the draft when the block is a person; none for a value of the contract. */
   partyId?: string;
-  /** The field (or the group of fields) of the form: once the person changes it the note goes. */
   name: FieldPath<WizardValues>;
 }
 
-/**
- * A quiet line under a value, or a person, that the contract filled in: «letto dal contratto — controlla»; and, where the contract says
- * something else than what the person had typed, that it does (the typed value stays). Nothing when the contract was not read, when it
- * agrees, when the step is done or when the person already changed the value — also after the draft is read again, which makes the saved
- * value the starting point of the form (NL-DOCS-FU9: the change is remembered for the tab, see `reading-seen`).
- */
 export function ReadMark({ step, fields, partyId, name }: ReadMarkProps) {
   const { t } = useTranslation();
   const context = useContext(ReadingContext);
@@ -97,14 +87,8 @@ export function ReadMark({ step, fields, partyId, name }: ReadMarkProps) {
   );
 }
 
-/** The codes the server gives to a document it could not read; each has its sentence. */
 const FAILURES: ReadonlySet<string> = new Set(['file_missing', 'no_text', 'nothing_found', 'ocr_unavailable', 'unreadable']);
 
-/**
- * What the person is told once, on top of the wizard, about the contract they uploaded. `held`: the reading ended while the wizard was
- * already open, so its values are on the server and not yet in the form (NL-DOCS-FU8): the wizard says so with `ReadingArrivedNotice`,
- * and this does not claim that the data are filled in.
- */
 export function ReadingBanner({ reading, flow, held = false }: { reading: LeaseReading | undefined; flow: LeaseDraftFlow; held?: boolean }) {
   const { t } = useTranslation();
   if (!reading || reading.state === 'None') return null;
@@ -140,17 +124,11 @@ export function ReadingBanner({ reading, flow, held = false }: { reading: LeaseR
           {t('leaseWizard.documents.read.banner')}
         </Alert>
       ) : null}
-      {/* What the file turned out to hold (the contract, its attestation, its calculation sheet) and what to check (CF-DOCS-REAL). */}
       <ReadingSections reading={reading} />
     </>
   );
 }
 
-/**
- * The reading of the contract ended while the person was filling the wizard in by hand: nothing of what they wrote is touched and the
- * draft is not read again under their hands (that lost their last keystrokes, or gave a conflict of version). The values read are shown
- * when the person asks (NL-DOCS-FU8).
- */
 export function ReadingArrivedNotice({ onShow, busy }: { onShow: () => void; busy: boolean }) {
   const { t } = useTranslation();
   return (

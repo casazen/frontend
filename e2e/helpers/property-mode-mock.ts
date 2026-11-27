@@ -9,32 +9,20 @@ import type {
   SchedulePropertyModeChangeDto,
 } from '../../src/types/property-mode.types';
 
-/**
- * L2 mock of the change of rental mode (PM-02): the four endpoints of `/api/properties/{id}/mode`, stateful like the server
- * (one change at a time, withdrawn or programmed). The day of the preview is worked out from the clock of the machine, in
- * Rome, as the product does.
- */
-
 type Mode = RentalMode;
 
 export interface PropertyModeMockOptions {
   propertyId: string;
-  /** The mode the property is in. */
   rentalMode?: Mode;
-  /** A change that already waits for its day. */
   scheduledFor?: string;
 }
 
 export interface PropertyModeMock {
-  /** The bodies of the `POST .../mode/change` the page sent. */
   schedules: SchedulePropertyModeChangeDto[];
-  /** The ids of the changes withdrawn. */
   cancels: string[];
-  /** The last day a stay (to long-term) or a lease (to short stays) stands in the way of; `null` when nothing does. */
   busyUntil: string | null;
 }
 
-/** Installs the mock; call it after `mockPropertiesApi` (the property itself) and before opening the page. */
 export async function mockPropertyModeApi(page: Page, options: PropertyModeMockOptions): Promise<PropertyModeMock> {
   const { propertyId } = options;
   const mode: Mode = options.rentalMode ?? 'Short';

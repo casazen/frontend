@@ -4,19 +4,11 @@
  * approvals (`GET api/approval-queue`), where it waits for the host.
  */
 
-/** How soon a person must look at a message, as the assistant judged it (`AssistantUrgency`). */
 type AssistantUrgency = 'Normal' | 'High' | 'Urgent';
 
-/**
- * The answer of `POST api/assistant/threads/{threadKey}/draft`: the `decision` (`Drafted` with the item of the queue, `Escalated` with the «To do» raised,
- * `NotHandled` with its `reason` code), the situation the assistant recognised (the stable `situationCode`, the key of the label the screen shows), the
- * urgency and the confidence score. No text.
- */
 export interface AssistantDraftOutcome {
   inboundMessageId: string;
-  /** `Drafted`, `Escalated`, `NotHandled`, or a value a later version adds. */
   decision: string;
-  /** The stable code of a decision that is not a draft (`thread_closed`, `assistant_disabled`, `mode_escalate`…). */
   reason: string | null;
   situation: string | null;
   situationCode: string | null;

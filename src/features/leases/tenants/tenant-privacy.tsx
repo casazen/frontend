@@ -14,18 +14,9 @@ import { tenantName } from './tenant-format';
 
 interface TenantPrivacySectionProps {
   tenant: TenantRow;
-  /** The answer of the server to the request, to be told to the person in a window that outlives this section. */
   onErased: (result: TenantErasureResult) => void;
 }
 
-/**
- * «Privacy» on the sheet of a person (LR-09), closed until asked for: the copy of their data and the request to erase them, the two
- * duties the law puts on the landlord. Both are for who may create a lease (the data are in clear and the erasure cannot be taken back).
- * The copy is a file with the person's own data on every lease of theirs, and nobody else's. The erasure is asked for after a
- * confirmation that says what it does lease by lease, and nothing is removed from a lease that has not ended: its data wait for the day
- * after it ends. The identity of the person is their fiscal code, and the page says so: written differently in two leases it makes two
- * people.
- */
 export function TenantPrivacySection({ tenant, onErased }: TenantPrivacySectionProps) {
   const { t } = useTranslation();
   const download = useDownloadTenantData();
@@ -54,7 +45,6 @@ export function TenantPrivacySection({ tenant, onErased }: TenantPrivacySectionP
     }
   }
 
-  // What the confirmation says it will do: the same rules as the button of a lease, written for the leases of this person.
   const consequences = [
     t('longRentTenants.privacy.erasure.consequences.ended'),
     running.length > 0

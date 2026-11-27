@@ -10,7 +10,6 @@ import { ContextSidebar } from '../../src/components/layout/context-sidebar';
 import { PeoplePage } from '../../src/features/team/people-page';
 import { InvitePage } from '../../src/features/team/invite/invite-page';
 
-// The issued account context is separate from the demo's rental and platform staff profiles.
 const account = { contextKey: 'account', roleKey: 'org_owner', displayName: 'Amministrazione', permissions: ['org.members.manage'], defaultRoute: '/app/account' };
 const workspace = {
   contexts: [account], activeContext: 'account', isReady: true, setActiveContext: () => {},

@@ -27,7 +27,6 @@ const BOOKING: CalendarItemDto = {
   type: 'booking',
   id: 'b1',
   propertyId: 'p1',
-  // Stay dates without time zone (backend MO-06): arrival on the 30th, departure on 2 October.
   startDate: '2026-09-30T00:00:00',
   endDate: '2026-10-02T00:00:00',
   startDateUtc: '2026-09-30T00:00:00Z',
@@ -74,7 +73,6 @@ async function expectRange(startDate: string, endDate: string) {
   await waitFor(() => expect(lastRange()).toEqual({ propertyId: 'p1', startDate, endDate }));
 }
 
-/** The entries of the range are on screen: while they load the calendar shows none, so an absence proves nothing. */
 async function waitForEntries() {
   await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
 }
@@ -110,7 +108,6 @@ describe('CalendarPage navigation and entries (PC-08)', () => {
   });
 
   it('CalendarPage_WeekAndDayViews_AskForTheWeekAndTheDayShown', async () => {
-    // Thursday 24 September 2026.
     freezeClock(NOON_UTC);
     renderPage();
     await expectRange('2026-09-01', '2026-09-30');
@@ -139,7 +136,6 @@ describe('CalendarPage navigation and entries (PC-08)', () => {
   });
 
   describe('in a browser west of UTC', () => {
-    // new Date('2026-09-30') is the evening of the 29th in Los Angeles: the entries must not move.
     withBrowserTimeZone('America/Los_Angeles');
 
     it('CalendarPage_BookingArrivingOn30September_ShowsOnTheNightsFromThe30th', async () => {
@@ -153,7 +149,6 @@ describe('CalendarPage navigation and entries (PC-08)', () => {
       await waitForEntries();
       expect(screen.getByText('Mario Rossi')).toBeInTheDocument();
 
-      // The API answers with the same entry for every range: only its dates decide the days it is on.
       fireEvent.click(screen.getByRole('button', { name: 'Indietro' }));
       await expectRange('2026-09-29', '2026-09-29');
       await waitForEntries();
@@ -165,7 +160,6 @@ describe('CalendarPage navigation and entries (PC-08)', () => {
       await waitForEntries();
       expect(screen.getByText('Mario Rossi')).toBeInTheDocument();
 
-      // Departure day: the guest leaves in the morning, the day is free for the next arrival.
       fireEvent.click(screen.getByRole('button', { name: 'Avanti' }));
       await expectRange('2026-10-02', '2026-10-02');
       await waitForEntries();

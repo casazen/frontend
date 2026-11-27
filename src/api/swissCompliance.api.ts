@@ -17,14 +17,9 @@ import type {
 const swissPath = (propertyId: string) => `/properties/${encodeURIComponent(propertyId)}/swiss`;
 
 export const swissComplianceApi = {
-  /** One arrival day of the Ticino police notification (casazen/backend#979); without `date` the oldest day still to notify, else today. */
   getTicinoDay: (propertyId: string, date?: string) =>
     ApiClient.get<TicinoNotificationDay>(`/properties/${propertyId}/swiss/ticino-notification`, date ? { date } : undefined),
 
-  /**
-   * The file of the day for notifiche.ti.ch, in the official CSV (default) or XML: bytes, never JSON. A day that is declared uploaded (or has a receipt) answers 409
-   * `ticino_day_already_declared` until the request carries `confirmRegenerate: true`.
-   */
   downloadTicinoFile: async (propertyId: string, request: TicinoNotificationRequest): Promise<Blob> => {
     try {
       const response = await axios.post<Blob>(`/properties/${propertyId}/swiss/ticino-notification`, request, { responseType: 'blob' });
@@ -34,7 +29,6 @@ export const swissComplianceApi = {
     }
   },
 
-  /** The sheet of a group of six or more persons of a stay (decision D11): the CSV the host keeps five years. Its name is the server's. */
   downloadGroupSheet: (propertyId: string, bookingId: string): Promise<DownloadedFile> =>
     fileApi.get(`/properties/${propertyId}/swiss/ticino-notification/group-sheet`, { bookingId }),
 
@@ -49,11 +43,6 @@ export const swissComplianceApi = {
   undeclareTicinoDay: (propertyId: string, arrivalDay: string) =>
     ApiClient.delete<void>(`/properties/${propertyId}/swiss/ticino-notification/declare?arrivalDay=${encodeURIComponent(arrivalDay)}`),
 
-  /**
-   * One arrival day of the assisted notification of a canton other than Ticino (E31/F02/US01/T01, NF-131): the guests as data ready to copy, what they lack, the portal, the deadline and
-   * who declared the day. Without `date` the oldest day still to notify, else today. Behind `Features:GuestRegistrationRegimes` (404 `not_found` while it is off); asks `guest.read`.
-   * 422 `swiss_notification_not_applicable` for a property the notification does not cover (not Swiss, Ticino, a canton that only keeps a register, a place not known).
-   */
   getSwissDay: (propertyId: string, date?: string) => ApiClient.get<SwissNotificationDay>(`${swissPath(propertyId)}/notification-day`, date ? { date } : undefined),
 
   /**
@@ -66,7 +55,6 @@ export const swissComplianceApi = {
   undeclareSwissDay: (propertyId: string, arrivalDay: string) =>
     ApiClient.delete<void>(`${swissPath(propertyId)}/notification-declare?arrivalDay=${encodeURIComponent(arrivalDay)}`),
 
-  /** Records a document of the Swiss archive: the receipt of the portal, the authorization of the parents or the sheet of a group. */
   uploadReceipt: async (propertyId: string, form: UploadSwissReceiptForm): Promise<SwissReceiptResponse> => {
     const formData = new FormData();
     formData.append('type', form.type);

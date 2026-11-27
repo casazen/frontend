@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 
-/** A state of the page of the verification link that is not the success: one icon, one sentence of what happened, the way on. */
 export function Outcome({ icon, tone, title, text, actions, testId }: { icon: ReactNode; tone?: 'error'; title: string; text: string; actions?: ReactNode; testId: string }) {
   return (
     <div className="vz-container" data-testid={testId}>

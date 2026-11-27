@@ -23,7 +23,6 @@ import {
 import type { DraftPatch } from '../use-showcase-draft';
 import { CountedField } from './counted-field';
 
-/** The label of each member, the same words the field of the panel has. */
 const FIELD_LABEL: Record<ShowcaseTextField, string> = {
   tagline: 'supplier.showcase.editor.texts.tagline',
   intro: 'supplier.showcase.editor.texts.intro',
@@ -33,17 +32,13 @@ const FIELD_LABEL: Record<ShowcaseTextField, string> = {
 
 const NO_ANSWERS: AiAnswerInputs = { about: '', years: '', specialties: '', differentiator: '' };
 
-/** More zones than this are said as «e altre N». */
 const ZONES_SHOWN = 3;
 
 interface AiTextsBlockProps {
   doc: ShowcaseDocument;
   change: (patch: DraftPatch) => void;
-  /** Told which members went into the draft from the AI: the panel marks them as a draft until the supplier changes them. */
   onApplied: (applied: AppliedAi) => void;
-  /** Told which members were taken back with «Annulla»: the mark goes with them. */
   onTakenBack: (fields: ShowcaseTextField[]) => void;
-  /** The static starter, when there is one to offer: a way to it under the button, for who prefers a text that is ready. */
   onUseStarter?: () => void;
 }
 
@@ -198,7 +193,6 @@ interface SuggestionResultProps {
   busy: boolean;
 }
 
-/** The draft: each member with a box to take it, ticked where the supplier has written nothing, and the line that says what it was written from. */
 function SuggestionResult({ doc, suggestion, chosen, onChosen, onApply, onAgain, onClose, busy }: SuggestionResultProps) {
   const { t } = useTranslation();
   const fields = suggestedFields(suggestion);
@@ -266,7 +260,6 @@ function SuggestionResult({ doc, suggestion, chosen, onChosen, onApply, onAgain,
   );
 }
 
-/** «Basato su: Pulizie, Giardinaggio · Cesano Maderno, Seveso · 2 servizi · le tue righe»: only what was really used. */
 function BasedOn({ suggestion }: { suggestion: ShowcaseTextSuggestion }) {
   const { t } = useTranslation();
   const { categories, zones, services, answers } = suggestion.basis;

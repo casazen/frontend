@@ -165,7 +165,6 @@ function renderPage() {
 describe('FiscalReportsPage (CO-19)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    // Fixed clock: the default tax year is the current year in Europe/Rome.
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-09-25T10:00:00Z'));
     await i18n.changeLanguage('it');

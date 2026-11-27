@@ -24,7 +24,6 @@ describe('isPositionSet', () => {
 
   it('isPositionSet_ARealPlace_IsAPosition', () => {
     expect(isPositionSet(45.81, 9.08)).toBe(true);
-    // One zero is a real line of the globe (the Greenwich meridian, the equator): only both together mean «not set».
     expect(isPositionSet(51.48, 0)).toBe(true);
     expect(isPositionSet(0, 9.1)).toBe(true);
   });

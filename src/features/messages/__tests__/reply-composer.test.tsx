@@ -24,7 +24,6 @@ interface HarnessProps {
   onSend: (text: string) => void;
 }
 
-/** The page owns the draft: the composer is controlled, as it is inside `ThreadPage`. */
 function Harness({ initial = '', busy = false, contactDetailsAllowed = true, withChannelTemplates = true, disabledReason = null, onSend }: HarnessProps) {
   const [value, setValue] = useState(initial);
   return (
@@ -210,7 +209,6 @@ describe('ReplyComposer (NF-63)', () => {
     expect(translation).toHaveTextContent('Check-in is from 3 pm.');
     expect(translation).toHaveTextContent('Traduzione automatica');
     expect(messageHubApi.translate).toHaveBeenCalledWith({ threadKey: KEY, text: 'Il check-in è dalle 15.', targetLanguage: 'en' });
-    // The translation is not in the draft until it is chosen, and nothing was sent.
     expect(textbox()).toHaveValue('Il check-in è dalle 15.');
     fireEvent.click(within(translation).getByRole('button', { name: 'Usa la traduzione' }));
     expect(textbox()).toHaveValue('Check-in is from 3 pm.');

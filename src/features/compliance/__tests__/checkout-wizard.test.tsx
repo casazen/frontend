@@ -55,7 +55,6 @@ const BOOKING_ID = 'c0c1d2e3-0000-4000-8000-000000000008';
 const PROPERTY_ID = 'c0c1d2e3-0000-4000-8000-0000000000aa';
 const SUPPLIER_ID = 'c0c1d2e3-0000-4000-8000-0000000000bb';
 
-// Clock fixed at noon of 24/09/2026 in Rome: the stay 22/09 → 24/09 departs today.
 const booking = (overrides: Partial<Booking> = {}): Booking => ({
   id: BOOKING_ID,
   propertyId: PROPERTY_ID,
@@ -73,7 +72,6 @@ const booking = (overrides: Partial<Booking> = {}): Booking => ({
   ...overrides,
 });
 
-/** `checkout-wizard/start` as the API answers it (CO-17). */
 function wizardState(overrides: Partial<CheckoutWizardState> = {}): CheckoutWizardState {
   return {
     bookingId: BOOKING_ID,
@@ -148,7 +146,6 @@ const next = () => fireEvent.click(screen.getByTestId('checkout-step-next'));
  */
 const settle = () => act(async () => undefined);
 
-/** The wizard is on `step`, settled there, with its main button ready: only then does a click get the rules of that step. */
 async function onStep(step: string) {
   await waitFor(() => expect(screen.getByTestId('checkout-wizard-form')).toHaveAttribute('data-step', step), WAIT);
   await settle();
@@ -162,8 +159,6 @@ beforeEach(async () => {
   await i18n.changeLanguage('it');
   vi.mocked(alloggiatiApi.getStatus).mockResolvedValue({ dataComplete: true } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
   vi.mocked(startCheckoutWizard).mockResolvedValue(wizardState());
-  // The server answers a saved step with the wizard it started, now on the step the host moved to, and the page keeps that answer as the
-  // wizard on screen: an answer that is another wizard (other tax, other stay) would change the page under a test that already looked at it.
   vi.mocked(saveCheckoutProgress).mockImplementation(async (_id, command) => {
     const started = await vi.mocked(startCheckoutWizard).mock.results.at(-1)?.value;
     return { ...(started ?? wizardState()), currentStep: command.currentStep };
@@ -204,7 +199,6 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
 
     renderPage();
 
-    // 1. Stay summary: nothing moves on until the host confirms the departure, and the page says what is missing.
     await onStep('stay-summary');
     expect(screen.getByTestId('checkout-stay-property')).toHaveTextContent('Villa Aurora');
     expect(screen.getByTestId('checkout-step-next')).toBeEnabled();
@@ -223,11 +217,9 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     expect(screen.queryByTestId('checkout-alloggiati-link')).not.toBeInTheDocument();
     next();
 
-    // 3. Cleaning: a supplier of the property's comune for the category.
     await onStep('cleaning');
     expect(await screen.findByTestId('checkout-cleaning-existing-empty', undefined, WAIT)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('checkout-cleaning-request'));
-    // A request needs its supplier: the step does not close without one.
     next();
     expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(
       i18n.t('compliance.checkout.errors.cleaningSupplier'),
@@ -242,15 +234,12 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     });
     next();
 
-    // 4. Tourist tax: the amount recorded with the booking, collected at the property.
     await onStep('tourist-tax');
     expect(screen.getByTestId('checkout-tourist-tax-amount')).toHaveTextContent('12,00');
     fireEvent.click(screen.getByTestId('checkout-tourist-tax-CollectedAtProperty'));
     next();
 
-    // 5. Property ready, with notes, then the stay is closed.
     await onStep('property-ready');
-    // The last button checks the step too, and what the host answered before is in the summary, each answer with its link.
     fireEvent.click(screen.getByTestId('checkout-complete-button'));
     expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(
       i18n.t('compliance.checkout.errors.propertyReady'),
@@ -276,13 +265,11 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
         propertyNotes: 'Tutto in ordine',
       }),
     );
-    // Same path as the app and POST /check-out: start first, then complete.
     expect(startCheckoutWizard).toHaveBeenCalledTimes(1);
     expect(startCheckoutWizard).toHaveBeenCalledWith(BOOKING_ID);
     expect(vi.mocked(startCheckoutWizard).mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(completeCheckoutWizard).mock.invocationCallOrder[0],
     );
-    // The stay is closed: the wizard says what happens now, with two ways on, and nothing is left in the draft.
     expect(
       await screen.findByRole('heading', { level: 2, name: i18n.t('compliance.checkout.done.title') }, WAIT),
     ).toBeInTheDocument();
@@ -335,7 +322,6 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     renderPage();
 
     await onStep('tourist-tax');
-    // The steps behind the one on screen can be opened again; the ones ahead cannot (the answers they depend on are not given yet).
     const progress = screen.getByRole('list', { name: i18n.t('ui.stepper.label') });
     expect(within(progress).getByRole('button', { name: /Soggiorno/ })).toBeInTheDocument();
     expect(within(progress).getByRole('button', { name: /Pulizie/ })).toBeInTheDocument();
@@ -369,7 +355,6 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     await onStep('cleaning');
     fireEvent.click(screen.getByTestId('checkout-cleaning-skip'));
     next();
-    // Paid online on the booking site: "online" is proposed, the host confirms it by moving on.
     await onStep('tourist-tax');
     expect(screen.getByTestId('checkout-tourist-tax-paid-online')).toBeInTheDocument();
     expect(screen.getByTestId('checkout-tourist-tax-CollectedOnline')).toBeChecked();
@@ -389,7 +374,6 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
         }),
       ),
     );
-    // Not ready and no cleaning asked: what is still up to the host is said, never a promise that was not made.
     expect(await screen.findByText(i18n.t('compliance.checkout.done.propertyNotReady'), undefined, WAIT)).toBeInTheDocument();
     expect(screen.getByText(i18n.t('compliance.checkout.done.alloggiatiToSend'))).toBeInTheDocument();
     expect(screen.queryByText(i18n.t('compliance.checkout.done.cleaningRequested'))).not.toBeInTheDocument();
@@ -411,7 +395,6 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     await onStep('tourist-tax');
     expect(screen.getByTestId('checkout-tourist-tax-unknown')).toBeInTheDocument();
     expect(screen.queryByTestId('checkout-tourist-tax-amount')).not.toBeInTheDocument();
-    // The host has to say how it was collected, whatever the amount: the step does not close without it.
     next();
     expect(await screen.findByTestId('wizard-error-summary', undefined, WAIT)).toHaveTextContent(
       i18n.t('compliance.checkout.errors.taxCollection'),
@@ -442,7 +425,6 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
     expect(await screen.findByTestId('checkout-complete-error', undefined, WAIT)).toHaveTextContent(
       i18n.t('apiErrors.codes.checkoutWizardNotStarted'),
     );
-    // Still on the last step, with its answers, and able to try again: no confirmation of something that did not happen.
     await onStep('property-ready');
     expect(screen.queryByRole('heading', { name: i18n.t('compliance.checkout.done.title') })).not.toBeInTheDocument();
     expect(screen.getByTestId('checkout-complete-button')).toBeEnabled();
@@ -471,7 +453,6 @@ describe('CheckoutWizardPage (CO-17, A5-24)', { timeout: 30000 }, () => {
 
     renderPage();
 
-    // Not a dead end: the arrival can be confirmed here, with the missing guest data flagged but not blocking.
     expect(await screen.findByTestId('checkout-arrival-missing', undefined, WAIT)).toBeInTheDocument();
     expect(await screen.findByTestId('guest-data-incomplete', undefined, WAIT)).toBeInTheDocument();
     expect(screen.queryByTestId('checkout-wizard-form')).not.toBeInTheDocument();
@@ -572,7 +553,6 @@ describe('CheckoutWizardPage as a WizardShell', { timeout: 30000 }, () => {
   it('CheckoutWizardPage_Reload_GivesBackTheNotesAndOffersToResumeFromTheStepReached', async () => {
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
 
-    // The host goes on to the last step and types a note...
     const first = renderPage();
     await onStep('stay-summary');
     fireEvent.click(screen.getByTestId('checkout-confirm-departure'));
@@ -590,7 +570,6 @@ describe('CheckoutWizardPage as a WizardShell', { timeout: 30000 }, () => {
     await settleDraft();
     first.unmount();
 
-    // ...and reloads the page: the server opens the first step (it answers with its own start), the draft remembers the rest.
     renderPage();
     await onStep('stay-summary');
     const banner = await screen.findByTestId('wizard-draft-banner', undefined, WAIT);
@@ -605,7 +584,6 @@ describe('CheckoutWizardPage as a WizardShell', { timeout: 30000 }, () => {
 
   it('CheckoutWizardPage_ServerAheadOfTheDraft_IgnoresTheOlderDraftAndKeepsTheAnswersOfTheServer', async () => {
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
-    // The host answered the first steps on the web a while ago (draft at the second step) and went on in the app (server at the fourth).
     const owner = { userId: 'user-1', orgId: 'org-1' };
     writeWizardDraft(
       `checkout-${BOOKING_ID}`,
@@ -625,12 +603,10 @@ describe('CheckoutWizardPage as a WizardShell', { timeout: 30000 }, () => {
 
     await onStep('tourist-tax');
     expect(screen.queryByTestId('wizard-draft-banner')).not.toBeInTheDocument();
-    // The old draft is gone, not waiting to come back.
     expect(readWizardDraft(`checkout-${BOOKING_ID}`, owner)).toBeNull();
     fireEvent.click(screen.getByTestId('checkout-tourist-tax-CollectedAtProperty'));
     next();
     await onStep('property-ready');
-    // The notes and the answers are the server's, not the old draft's.
     expect(screen.getByTestId('checkout-property-notes')).toHaveValue('nota di oggi');
     expect(screen.getByTestId('checkout-property-ready-yes')).toBeChecked();
   });
@@ -679,11 +655,9 @@ describe('CheckoutWizardPage as a WizardShell', { timeout: 30000 }, () => {
     fireEvent.click(screen.getByTestId('checkout-complete-button'));
 
     await screen.findByRole('heading', { level: 2, name: i18n.t('compliance.checkout.done.title') }, WAIT);
-    // The booking is checked out now (the page read it again), and the confirmation is still there, not the "already done" card.
     await waitFor(() => expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBeGreaterThan(1), WAIT);
     expect(screen.queryByTestId('checkout-already-done')).not.toBeInTheDocument();
     expect(screen.getByText(i18n.t('compliance.checkout.done.propertyReady'))).toBeInTheDocument();
-    // One way back to the booking, the one of the confirmation: the page does not repeat it.
     expect(screen.getAllByRole('link', { name: i18n.t('compliance.checkout.backToBooking') })).toHaveLength(1);
   });
 

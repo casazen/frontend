@@ -19,7 +19,6 @@ const PLATFORM: BookingSite = { orgSlug: 'villa-rossi', baseUrl: 'https://sito.t
 
 const BOOKING: EmbedSnippetInput = { widget: 'booking', base: 'https://prenota.agenzia.test', org: null };
 
-/** The element of the snippet as the loader reads it: its `data-casazen-*` attributes, by the name of the option. */
 function attributesOf(snippet: string): Record<string, string> {
   const page = document.createElement('div');
   page.innerHTML = snippet;
@@ -44,7 +43,6 @@ describe('buildEmbedSnippet (E41/F03/US01, NF-147)', () => {
   it('embedSnippet_CasazenDomain_NamesTheOriginOfCasazenAndTheSlugOfTheOrg', () => {
     const snippet = buildEmbedSnippet({ ...BOOKING, ...resolveEmbedBase(PLATFORM) });
 
-    // The origin only: the `/book/<slug>` of the platform path is not part of where the loader and the frames live.
     expect(snippet).toContain(`<script src="https://sito.test${EMBED_LOADER_PATH}" async></script>`);
     expect(attributesOf(snippet)).toEqual({ widget: 'booking', base: 'https://sito.test', org: 'villa-rossi', lang: 'auto' });
   });
@@ -65,7 +63,6 @@ describe('buildEmbedSnippet (E41/F03/US01, NF-147)', () => {
   });
 
   it('embedSnippet_AttributesOfAnotherWidget_AreLeftOut', () => {
-    // A property or a target typed for another widget never leaks into the code of this one.
     const snippet = buildEmbedSnippet({ ...BOOKING, widget: 'booking', property: 'casa-mare', target: 'https://www.agenzia.test/x', destinations: [{ id: 'a', label: 'A' }] });
 
     expect(attributesOf(snippet)).toEqual({ widget: 'booking', base: 'https://prenota.agenzia.test', lang: 'auto' });
@@ -81,14 +78,12 @@ describe('buildEmbedSnippet (E41/F03/US01, NF-147)', () => {
       destinations: [{ id: 'lugano', label: `L"ug'ano <b>&` }],
     });
 
-    // No value ends its attribute or opens a tag: the only `<` of the code are the ones of its own two tags (`<script>` and `<div>` with their closing tags).
     const [scriptTag, rest] = snippet.split('</script>\n');
     expect(scriptTag).toBe('<script src="https://prenota.agenzia.test/embed/v1/embed.js" async>');
     expect(rest?.match(/</g)).toHaveLength(2);
     expect(snippet).toContain('data-casazen-org="x&quot; onload=&quot;alert(1)&#39; &lt;script&gt;&amp;amp;&lt;/script&gt;"');
     expect(snippet).toContain('&lt;i&gt;');
 
-    // What the browser reads back is exactly what was written: the page that holds the code gets the values, not a second element or a second attribute.
     const attributes = attributesOf(snippet);
     expect(attributes.org).toBe(hostile);
     expect(Object.keys(attributes).sort()).toEqual(['base', 'destinations', 'lang', 'org', 'target', 'widget']);
@@ -106,7 +101,6 @@ describe('buildEmbedSnippet (E41/F03/US01, NF-147)', () => {
   });
 
   it('embedSnippet_containsOnlyPublicValues', () => {
-    // Whatever else the caller holds (an id, an e-mail, a token, the settings of the domain) is not read: only the members named in the input go in.
     const input = {
       ...BOOKING,
       widget: 'property',
@@ -138,7 +132,6 @@ describe('buildEmbedMountOptions: the preview is what the snippet produces', () 
   ] as const)('mountOptions_Widget_%s_AreTheAttributesOfTheSnippet', (widget, extra) => {
     const input: EmbedSnippetInput = { ...BOOKING, ...resolveEmbedBase(PLATFORM), widget, ...extra };
 
-    // Only the search bar is a preview (it never leaves the console); the rest are the values a pasted snippet gives the loader.
     const { preview, ...options } = buildEmbedMountOptions(input);
     expect(options).toEqual(attributesOf(buildEmbedSnippet(input)));
     expect(preview).toBe(widget === 'search' ? true : undefined);
@@ -224,7 +217,6 @@ describe('pluginDownloadUrl (PLG-FE-CONSOLE, NF-200)', () => {
   });
 
   it.each(['preview', 'development', '', undefined, null, 'staging', 'Production'])('pluginDownloadUrl_Build_%s_IsTheAssetOfTheDevelopChannel', (deployEnv) => {
-    // Only a Vercel Production build is the main channel; a preview, a local or a CI build, or a name nobody knows, is develop.
     expect(pluginDownloadUrl(undefined, deployEnv)).toBe(DEVELOP);
   });
 
@@ -243,7 +235,6 @@ describe('pluginDownloadUrl (PLG-FE-CONSOLE, NF-200)', () => {
   it.each([undefined, null, '', '   ', 42, 'not an address', 'http://agenzia.test/casazen.zip', 'ftp://agenzia.test/casazen.zip', 'https://user:pw@agenzia.test/casazen.zip', 'javascript:alert(1)'])(
     'pluginDownloadUrl_InvalidOverride_%s_IsIgnoredAndTheChannelStands',
     (override) => {
-      // An override that is not an address on https is never shown: the link is the one of the channel, in a production build and in any other.
       expect(pluginDownloadUrl(override, 'production')).toBe(MAIN);
       expect(pluginDownloadUrl(override, 'preview')).toBe(DEVELOP);
     },

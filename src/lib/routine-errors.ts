@@ -3,10 +3,8 @@ import type { TFunction } from 'i18next';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { actionLabelKey } from '@/lib/routine-model';
 
-/** The code the API answers with (422) when a routine that runs for real holds an action that cannot run yet (`RoutineCodes.ActionNotAvailable`). */
 const ROUTINE_ACTION_NOT_AVAILABLE = 'routine_action_not_available';
 
-/** The names, as the host reads them, of the actions a 422 `routine_action_not_available` lists in its `actions` (the types, by their name in the API). */
 function listedActions(data: unknown, t: TFunction): string[] {
   const listed = typeof data === 'object' && data !== null ? (data as { actions?: unknown }).actions : undefined;
   if (!Array.isArray(listed)) return [];

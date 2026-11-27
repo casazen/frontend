@@ -29,11 +29,6 @@ function isPdf(file: File): boolean {
   return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 }
 
-/**
- * "Segna come comunicata" (LT-07): the landlord sent the communication to the public-security authority and declares
- * its date (not after today in Europe/Rome), with an optional receipt PDF, and confirms the declaration. Only this ticks
- * the checklist item. The server checks the date and the PDF content again.
- */
 export function QuesturaCommunicationDialog({ leaseId, open, onOpenChange }: QuesturaCommunicationDialogProps) {
   const { t } = useTranslation();
   const markDone = useMarkQuesturaCommunicationDone();

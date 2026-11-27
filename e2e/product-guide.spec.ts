@@ -6,7 +6,6 @@ test('guide opens from the header and remains usable on a phone', async ({ page 
   await pinE2eLocale(page, 'it');
   await setDemoProfile(page, 'short-stay');
   await page.goto(demoUrl('/app/short-rent', 'short-stay'));
-  // The «Guida» of the header opens the panel of the guide; the manual is one link of it.
   await page.getByTestId('guide-button').click();
   await page.getByTestId('guide-panel').getByRole('link', { name: 'Apri il manuale di CasaZen' }).click();
   await expect(page).toHaveURL(/\/app\/short-rent\/help/);

@@ -10,17 +10,11 @@ import { FormDialog } from './form-dialog';
 interface FxRateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The day the rate is for: the last day of the month being closed, by default. */
   defaultDate: string;
 }
 
 const CURRENCY = /^[A-Za-z]{3}$/;
 
-/**
- * Adds an exchange rate of the agency (resolves `fx_missing`): CasaZen fetches none and guesses none, so the line that needs one stays out of the
- * statement until the agency has entered the rate with its source. One unit of the first currency is the rate in the second, on the day
- * given and the seven days after it.
- */
 export function FxRateDialog({ open, onOpenChange, defaultDate }: FxRateDialogProps) {
   const { t, i18n } = useTranslation();
   const add = useAddFxRate();

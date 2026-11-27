@@ -16,10 +16,8 @@ import { cn } from '@/lib/utils';
 import type { OwnerOnboardingProperty, OwnerOnboardingReason, OwnershipIssue } from '@/types/owner-accounting.types';
 import type { OwnerPortalState, OwnerReadinessFlags, OwnerReadinessOwner } from '@/types/owner-onboarding.types';
 
-/** At least 44 px high on every device (the product rule). */
 const TOUCH_LINK = 'inline-flex min-h-11 items-center underline underline-offset-4';
 
-/** The six things the readiness tells apart, as the server names them (`dimension` of a reason, a key of `ready`). */
 export type OwnerDimension = keyof OwnerReadinessFlags;
 
 const DIMENSION_TITLE_KEYS: Record<OwnerDimension, string> = {
@@ -47,7 +45,6 @@ interface MarkProps {
   testId?: string;
 }
 
-/** A state told three ways, never by color alone: a tint, an icon and words. */
 export function Mark({ tone, Icon, label, testId }: MarkProps) {
   return (
     <span
@@ -60,7 +57,6 @@ export function Mark({ tone, Icon, label, testId }: MarkProps) {
   );
 }
 
-/** Ready or to complete: one dimension of one owner. */
 export function ReadyMark({ ready, testId }: { ready: boolean; testId?: string }) {
   const { t } = useTranslation();
   return ready ? (
@@ -70,7 +66,6 @@ export function ReadyMark({ ready, testId }: { ready: boolean; testId?: string }
   );
 }
 
-/** Where the portal invitation of an owner stands, in words. A state this version does not know reads as «not ready». */
 export function PortalStateMark({ state, testId }: { state: unknown; testId?: string }) {
   const { t } = useTranslation();
   const known = normalizePortalState(state);
@@ -78,7 +73,6 @@ export function PortalStateMark({ state, testId }: { state: unknown; testId?: st
   return <Mark tone={tone} Icon={Icon} label={t(ownerPortalStateKey(known))} testId={testId} />;
 }
 
-/** The facts of one reason in words: what is missing and, when the server says, the field it is about; never a value and never a bare code. */
 export function ReasonLine({ reason, propertyName }: { reason: OwnerOnboardingReason; propertyName?: string | null }) {
   const { t } = useTranslation();
   const textKey = ownerReasonKey(reason.code);
@@ -92,7 +86,6 @@ export function ReasonLine({ reason, propertyName }: { reason: OwnerOnboardingRe
   );
 }
 
-/** The days of a stretch where the shares of a property are wrong, in words: from a day, to a day or «without an end». Days are `yyyy-MM-dd`. */
 function IssueLine({ issue }: { issue: OwnershipIssue }) {
   const { t } = useTranslation();
   return (
@@ -104,34 +97,19 @@ function IssueLine({ issue }: { issue: OwnershipIssue }) {
 
 interface OwnerReadinessTableProps {
   owners: readonly OwnerReadinessOwner[];
-  /** The columns: the dimensions of the owners this phase is about. */
   dimensions: readonly OwnerDimension[];
-  /** The properties the readiness names, to put a name on a reason that is about a property. */
   properties: readonly OwnerOnboardingProperty[];
-  /**
-   * The person manages the owners' finances: each owner links to the page where what is missing is completed by hand («Dati finanziari»: the fiscal profile, the payment data and
-   * the mandate). `true` links every owner of the table; a list of dimensions links only the owners that are not ready for one of them (the mandate is completed there, the shares
-   * are not: they are put right with the file).
-   */
   canComplete?: boolean | readonly OwnerDimension[];
-  /** What to say when the owners listed are all ready. */
   allReadyLabel: string;
   testId: string;
 }
 
-/** Whether the owner of a row has the link to where what is missing is completed by hand. */
 function hasCompleteLink(canComplete: OwnerReadinessTableProps['canComplete'], owner: OwnerReadinessOwner): boolean {
   if (canComplete === undefined || canComplete === false) return false;
   if (canComplete === true) return true;
   return canComplete.some((dimension) => !owner.ready[dimension]);
 }
 
-/**
- * The owners of an agency and, for the dimensions of one phase, where each stands and the exact facts that are missing (E10/F03/US05/T01, NF-109, AC-NF109-3):
- * the field in words, the property when the fact is about one. It shows only what the server answers for the agency's own registry (the owner's name, ready or
- * to complete, codes and field names): it renders a fixed list of fields, so nothing else of an answer (a fiscal code, an IBAN, anything of a guest) can reach the
- * page. An owner that has nothing to complete is not listed again: the phase says so once.
- */
 export function OwnerReadinessTable({ owners, dimensions, properties, canComplete, allReadyLabel, testId }: OwnerReadinessTableProps) {
   const { t } = useTranslation();
   const names = new Map(properties.map((property) => [property.propertyId, property.name] as const));
@@ -211,10 +189,6 @@ interface PropertyShareListProps {
   testId: string;
 }
 
-/**
- * The properties whose shares are not right (E10/F03/US05/T01, AC-NF109-2): no owner at all, or shares that do not add up to exactly 100% on some days, each with
- * the stretch of days and what the shares add up to. A property never reads as ready here: the ones the server lists are the ones to complete.
- */
 export function PropertyShareList({ properties, allReadyLabel, testId }: PropertyShareListProps): ReactNode {
   const { t } = useTranslation();
   if (properties.length === 0) {

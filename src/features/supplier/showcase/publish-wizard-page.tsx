@@ -30,28 +30,19 @@ import { PresentationStep, ServicesStep, StyleStep, SummaryStep } from './wizard
 const T = 'supplier.showcase.wizard';
 
 interface WizardBodyProps {
-  /** The showcase as the page found it: the wizard starts from its draft and its version. */
   opened: ShowcaseContent;
   services: SupplierService[];
   categories: string[];
 }
 
-/**
- * The four steps on the kit of the guided flows (`WizardShell`): the draft is the **server's** (the same as the editor), nothing is kept
- * in the browser. Each "Continua" saves its own part as a merge patch with the version the last answer carried, so a stale one is a 409
- * said in words and nothing is lost silently; the last button publishes, and the toast of an Annulla is not needed here: the
- * confirmation says what happened and the overview undoes it for a few minutes.
- */
 function WizardBody({ opened, services, categories }: WizardBodyProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const store = useStoreShowcaseContent();
   const publish = usePublishShowcase();
-  // The showcase as the server has it now: every save puts its answer in the cache, the checks of the last step read it.
   const live = useShowcaseContent().data ?? opened;
   const [start] = useState(() => wizardStart(opened.draft, categories, services));
 
-  // What the next save is compared with and sent after: the draft and the version of the last answer.
   const version = useRef(opened.version);
   const draft = useRef(opened.draft);
 
@@ -90,7 +81,6 @@ function WizardBody({ opened, services, categories }: WizardBodyProps) {
       id: 'services',
       ...text('services'),
       schema: servicesStepSchema,
-      // With no active service there is nothing to choose: the step says where to make one.
       nextDisabled: activeServices === 0,
       beforeNext: (values) => save(servicesPatch(values, draft.current, services)),
       render: () => <ServicesStep services={services} />,
@@ -98,7 +88,6 @@ function WizardBody({ opened, services, categories }: WizardBodyProps) {
     {
       id: 'summary',
       ...text('summary'),
-      // The server judges the checks again when it publishes; a button that is off here only saves a refusal.
       nextDisabled: !live.readiness.canPublish || halfFilledRows(live.draft).length > 0,
       render: () => <SummaryStep content={live} services={services} />,
     },
@@ -112,7 +101,6 @@ function WizardBody({ opened, services, categories }: WizardBodyProps) {
       finishLabel={t(`${T}.publish`)}
       finishFailedMessage={t(`${T}.failed`)}
       onFinish={finish}
-      // The draft is the one of the server: no old draft of the browser can be laid over it.
       draft={false}
       onExit={() => navigate(OVERVIEW_PATH)}
       renderDone={({ result }) => <WizardPublished content={result ?? live} />}
@@ -121,11 +109,6 @@ function WizardBody({ opened, services, categories }: WizardBodyProps) {
   );
 }
 
-/**
- * What the wizard starts from, found once: the showcase as it is when the page opens. A showcase that is already published (or paused,
- * or has changes) is not "to create": its page is the overview, except for the confirmation, which stays open after the publication
- * (and when it is opened again by a reload).
- */
 function WizardEntry({ content, services, categories }: { content: ShowcaseContent; services: SupplierService[]; categories: string[] }) {
   const [params] = useSearchParams();
   const [opened] = useState(content);
@@ -134,11 +117,6 @@ function WizardEntry({ content, services, categories }: { content: ShowcaseConte
   return <WizardBody opened={opened} services={services} categories={categories} />;
 }
 
-/**
- * "Crea la tua vetrina" (SP-13e), `/app/supplier/showcase/publish`: the style, two lines of presentation, the services to show and the
- * publication, in four steps. Pressing "Continua" at every step publishes a valid showcase; the page loads what it starts from (the
- * showcase, the catalog and the profile) before the wizard begins, so its first screen already holds the answers.
- */
 export function SupplierShowcasePublishWizardPage() {
   const { t } = useTranslation();
   const content = useShowcaseContent();

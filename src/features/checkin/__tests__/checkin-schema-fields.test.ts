@@ -11,7 +11,6 @@ import {
 } from '../schemas/checkin.schema';
 import { NOON_UTC, freezeClock } from '@/test/clock';
 
-/** A guest who passes every rule with no statistical field required (the day is the 24th of September 2026, noon UTC). */
 function validGuest(overrides: Partial<StayGuestFormValues> = {}): StayGuestFormValues {
   return {
     ...stayGuestDefaults('SingleGuest'),
@@ -82,7 +81,6 @@ describe('stayGuestFormSchema with the new fields (NF-40)', () => {
       'documentExpiresOn: checkin.validation.documentExpiresOn.beforeIssue',
     ]);
     expect(issuesOf(validGuest({ documentIssuedOn: '2020-05-10', documentExpiresOn: '2020-05-10' }))).toEqual([]);
-    // An expired document is accepted: the check-in only warns about it.
     expect(issuesOf(validGuest({ documentExpiresOn: '2001-01-01' }))).toEqual([]);
   });
 
@@ -113,7 +111,6 @@ describe('stayGuestFormSchema with the new fields (NF-40)', () => {
       'educationLevel: checkin.validation.educationLevel.required',
     ]);
     expect(issuesOf(validGuest({ tourismType: 'holiday', educationLevel: 'degree' }), ['tourismType', 'educationLevel'])).toEqual([]);
-    // A value outside the closed list is not a choice.
     expect(issuesOf(validGuest({ tourismType: 'tourism' }), ['tourismType'])).toEqual([
       'tourismType: checkin.validation.tourismType.required',
     ]);
@@ -142,10 +139,8 @@ describe('what the guest page sends (NF-40)', () => {
     const guest = validGuest({ tourismType: 'holiday' });
 
     const body = toStayGuestSubmit(guest, { keepStatistical: true });
-    // What the guest has is sent back; what is empty and not required is not sent.
     expect(body.tourismType).toBe('holiday');
     expect(body).not.toHaveProperty('travelWay');
-    // The guest portal never sends back a field the region does not require.
     expect(toStayGuestSubmit(guest)).not.toHaveProperty('tourismType');
   });
 

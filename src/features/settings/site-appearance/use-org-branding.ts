@@ -17,7 +17,6 @@ export function useOrgBranding(enabled = true) {
   });
 }
 
-/** After a change: the console copy, and the anonymous public-site read model if it is cached in this tab. */
 function useApplyBranding() {
   const queryClient = useQueryClient();
   return (branding: OrgBranding) => {

@@ -54,8 +54,6 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
     await i18n.changeLanguage('it');
     workspace.contexts = OWNER;
     flags.octorateOnboarding = true;
-    // The host has just finished the listings (the step «Controlla gli annunci»); the connection is done, the prices are next. The path is the one
-    // the server derives from that plan.
     const connected = plan({ properties: { state: 'done' }, channels: { state: 'done' }, listings: { state: 'open' }, pricesRules: { state: 'open' }, compliance: { state: 'open' } });
     vi.mocked(onboardingApi.getPath).mockReset().mockResolvedValue(connected.path);
     vi.mocked(onboardingApi.getPlan).mockReset().mockResolvedValue(connected);
@@ -83,7 +81,6 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
     });
 
     it('Suggestion_NeverIsTheStepTheHostHasJustBeenThrough_EvenWhenItIsNotDoneYet', async () => {
-      // The listings are not complete yet: the path still names «Controlla gli annunci» as the next step.
       renderSuggestion('listings');
 
       const card = await screen.findByTestId('wizard-next-step');
@@ -92,7 +89,6 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
     });
 
     it('Suggestion_ConnectionNotCompleteYet_IsTheConnectionAndNotAStepThatWaitsForIt', async () => {
-      // A property is added before the connection is complete: the listings, the prices and the compliance wait for the properties (`blocked`).
       const early = plan();
       expect(early.path.steps.filter((step) => step.state === 'blocked').map((step) => step.code)).toEqual(['checkListings', 'pricesCalendar', 'checkInCompliance']);
       vi.mocked(onboardingApi.getPath).mockResolvedValue(early.path);
@@ -101,7 +97,6 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
 
       const card = await screen.findByTestId('wizard-next-step');
 
-      // Not «Prezzi e calendario» (the next step in the path, which cannot be done yet): «Collega i canali», through the part that is left of it.
       expect(within(card).getByRole('heading', { level: 3 })).toHaveTextContent(stepTitle('connectChannels'));
       expect(within(card).getByRole('heading', { level: 3 })).toHaveTextContent('Collega i canali');
       expect(card.textContent).not.toContain(stepTitle('pricesCalendar'));
@@ -172,7 +167,6 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
 
       fireEvent.click(await screen.findByRole('button', { name: i18n.t('onboardingPlan.nextStep.later') }));
 
-      // The part of the step, put off with no moment of its own: the server reminds tomorrow at 09:00 in Rome.
       await waitFor(() => expect(onboardingApi.deferPart).toHaveBeenCalledTimes(1));
       expect(vi.mocked(onboardingApi.deferPart).mock.calls[0]).toEqual(['pricesRules']);
       expect(onboardingApi.exitPart).not.toHaveBeenCalled();
@@ -182,7 +176,6 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
       const confirmation = await screen.findByTestId('wizard-next-step-later');
       expect(confirmation).toHaveTextContent(i18n.t('onboardingPlan.nextStep.laterDone'));
       expect(confirmation).toHaveFocus();
-      // Nothing else is suggested, not even after the path is read again: the card, its buttons and the next step are gone.
       expect(screen.queryByTestId('wizard-next-step')).not.toBeInTheDocument();
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
       expect(screen.queryByRole('link')).not.toBeInTheDocument();
@@ -196,7 +189,6 @@ describe('WizardNextStep, the next step at the end of a wizard (UX-10, AC-NF10-2
 
       fireEvent.click(await screen.findByRole('button', { name: i18n.t('onboardingPlan.nextStep.later') }));
 
-      // The properties are what the channels, the prices and the compliance wait for: «Lo faccio dopo» is refused for them, «Salva ed esci» is not.
       await waitFor(() => expect(onboardingApi.exitPart).toHaveBeenCalledWith('properties'));
       expect(onboardingApi.deferPart).not.toHaveBeenCalled();
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.nextStep.laterToast')));

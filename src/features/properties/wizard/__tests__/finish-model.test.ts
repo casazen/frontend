@@ -29,7 +29,6 @@ const activation = (status: ComplianceActivationResult['complianceStatus'], open
 
 describe('the last step of the wizard', () => {
   it('finishActions_BlockerOpen_SendsNothingWhateverTheSwitchSays', () => {
-    // «Mostra la casa sul sito» never gets around the blockers, and «Finisci dopo» never activates.
     const blocked = finishStage(activation('Pending', ['cin']));
     expect(blocked).toBe('blocked');
     expect(finishActions(blocked, true, false)).toEqual([]);
@@ -40,13 +39,11 @@ describe('the last step of the wizard', () => {
   it('finishActions_NothingBlocks_WritesTheSwitchFirstAndThenActivates', () => {
     const ready = finishStage(activation('Pending', []));
     expect(ready).toBe('ready');
-    // A «no» is in place before the property goes live; a switch left as it was is not written; an active property is not activated again.
     expect(finishActions(ready, false, true)).toEqual(['visibility', 'activate']);
     expect(finishActions(ready, true, true)).toEqual(['activate']);
     const active = finishStage(activation('Active', []));
     expect(finishActions(active, false, true)).toEqual(['visibility']);
     expect(finishActions(active, true, true)).toEqual([]);
-    // A suspended property whose blockers are gone is activated again.
     expect(finishStage(activation('Suspended', []))).toBe('ready');
   });
 
@@ -59,7 +56,6 @@ describe('the last step of the wizard', () => {
     expect(fixTargetFor('cin', complete)).toEqual({ kind: 'section', section: 'cin' });
     expect(fixTargetFor('documents', complete)).toEqual({ kind: 'section', section: 'documents' });
     expect(fixTargetFor('ical', complete)).toEqual({ kind: 'section', section: 'calendars' });
-    // The notification of the guests of a property in Switzerland (E29/F02/US02/T01): its card is in the last step, so «Correggi» goes there.
     expect(fixTargetFor('guest-registration', complete)).toEqual({ kind: 'section', section: 'guest-registration' });
     expect(fixTargetFor('tourist-tax', complete)).toBeNull();
   });

@@ -35,10 +35,6 @@ export function clearOwnerPortalCache(client: QueryClient): void {
   client.removeQueries({ queryKey: [OWNER_PORTAL_KEY] });
 }
 
-/**
- * The failure of a write without the request that carried it: the words of a message, the address and the name of a contact are in the body that was sent, and
- * whatever keeps the error (the cache of the mutations) would keep them. The status and the body of the answer stay, which is what a screen turns into words.
- */
 async function personal<T>(run: () => Promise<T>): Promise<T> {
   try {
     return await run();
@@ -47,12 +43,6 @@ async function personal<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-// ---------------------------------------------------------------- the numbers and the properties
-
-/**
- * List properties with occupancy and revenue (ADR-011-R8).
- * Always fresh: read from server on mount.
- */
 export function useOwnerProperties() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'properties'],
@@ -76,7 +66,6 @@ export function useOwnerOverview(query: OwnerPortalReportQuery) {
   });
 }
 
-/** The same figures week by week or month by month (NF-96), each bucket next to its days one year earlier when asked. */
 export function useOwnerTrend(query: OwnerPortalReportQuery) {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'trend', query],
@@ -86,9 +75,6 @@ export function useOwnerTrend(query: OwnerPortalReportQuery) {
   });
 }
 
-// ---------------------------------------------------------------- calendar and owner stays
-
-/** The runs of nights of a property: dates and a neutral kind, from the server. Not read without a property. */
 export function useOwnerCalendar(propertyId: string | undefined, from: string, to: string) {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'calendar', propertyId ?? null, from, to],
@@ -98,7 +84,6 @@ export function useOwnerCalendar(propertyId: string | undefined, from: string, t
   });
 }
 
-/** The owner stays of the owner profiles the person follows. */
 export function useOwnerStays() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'stays'],
@@ -107,7 +92,6 @@ export function useOwnerStays() {
   });
 }
 
-/** The rule a request on the property follows, and the nights already held this year. */
 export function useOwnerStayRule(propertyId: string | undefined) {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'stay-rule', propertyId ?? null],
@@ -123,7 +107,6 @@ function invalidateStays(client: QueryClient) {
   void client.invalidateQueries({ queryKey: [OWNER_PORTAL_KEY, 'stay-rule'] });
 }
 
-/** Asks for an owner stay: a request, never a confirmed stay (the agency, or the rule, approves; the block must be acknowledged before it reads confirmed). */
 export function useRequestOwnerStay() {
   const client = useQueryClient();
   return useMutation({
@@ -133,7 +116,6 @@ export function useRequestOwnerStay() {
   });
 }
 
-/** Withdraws an owner stay. */
 export function useCancelOwnerStay() {
   const client = useQueryClient();
   return useMutation({
@@ -143,9 +125,6 @@ export function useCancelOwnerStay() {
   });
 }
 
-// ---------------------------------------------------------------- documents and accounting
-
-/** The documents the agency shares and the published statement versions. */
 export function useOwnerDocuments() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'documents'],
@@ -154,7 +133,6 @@ export function useOwnerDocuments() {
   });
 }
 
-/** The links of the invoices the agency issued elsewhere for the published statement versions of the owner. */
 export function useOwnerExternalDocuments() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'external-documents'],
@@ -163,7 +141,6 @@ export function useOwnerExternalDocuments() {
   });
 }
 
-/** The published statements of the owner with their totals (E13/F02/US02/T01): read again at every visit, and gone from the cache when the person leaves the portal. */
 export function useOwnerStatements() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'statements'],
@@ -172,10 +149,6 @@ export function useOwnerStatements() {
   });
 }
 
-/**
- * The withholding of the owner in a year and the Certificazione Unica the agency reviewed (E18/F02/US01/T01): read again at every visit, and gone from the cache when the person leaves the portal. It is not read while the
- * tax exports are off (`enabled`): the server answers its empty summary then, which says nothing the page needs to show. One key for each year: the figures of a year are never shown under another.
- */
 export function useOwnerWithholding(year: number, enabled: boolean) {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'withholding', year],
@@ -185,7 +158,6 @@ export function useOwnerWithholding(year: number, enabled: boolean) {
   });
 }
 
-/** One published statement with its lines and its tourist tax box. Not read without an id; a 404 is «not found» whatever an earlier answer left (the page asks `isError` first). */
 export function useOwnerStatement(statementId: string | undefined) {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'statement', statementId ?? null],
@@ -195,7 +167,6 @@ export function useOwnerStatement(statementId: string | undefined) {
   });
 }
 
-/** The invoices the property manager issued to the owner. */
 export function useOwnerInvoices() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'invoices'],
@@ -203,8 +174,6 @@ export function useOwnerInvoices() {
     ...PERSONAL,
   });
 }
-
-// ---------------------------------------------------------------- the documents issued in the name of the owner (E17/F03/US01/T03)
 
 /**
  * The documents CasaZen issued in the name of the owner (the receipts of a private owner, the invoices of a company, their credit notes): the number, the day, the kind, the total in its currency and the
@@ -219,16 +188,11 @@ export function useOwnerIssuedDocuments(period?: string) {
   });
 }
 
-/** What the download of the ZIP for the accountant needs besides the period: a way to stop it. */
 interface IssuedExportRequest {
   period: string;
   signal?: AbortSignal;
 }
 
-/**
- * Downloads the ZIP for the accountant of the owner and saves it under the name the server gave it. It holds documents and the data of the owner, so nothing of it is kept: the mutation is dropped as soon as
- * nothing watches it (`gcTime: 0`), the file goes to the disk inside its function (never into the cache of the mutations) and a failure keeps only the answer of the server, without its request.
- */
 export function useOwnerIssuedDocumentsExport() {
   return useMutation({
     gcTime: 0,
@@ -236,9 +200,6 @@ export function useOwnerIssuedDocumentsExport() {
   });
 }
 
-// ---------------------------------------------------------------- delegated contacts
-
-/** The contacts of the owner. A 403 `owner_contact_owner_only` is the answer for a person who is itself a contact. */
 export function useOwnerContacts() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'contacts'],
@@ -301,18 +262,12 @@ export function useRevokeOwnerContact() {
   });
 }
 
-/**
- * The signed-in account accepts the invitation of a contact. The secret of the link is a variable of this mutation: it is not kept after it (`gcTime: 0`, and the page
- * resets the mutation when it is done), and a refusal is kept without the request that carried it.
- */
 export function useAcceptOwnerContact() {
   return useMutation({
     gcTime: 0,
     mutationFn: (token: string) => personal(() => ownerPortalApi.acceptContact(token)),
   });
 }
-
-// ---------------------------------------------------------------- inbox
 
 export function useOwnerConversations() {
   return useQuery({
@@ -354,7 +309,6 @@ export function usePostOwnerMessage(conversationId: string) {
   });
 }
 
-/** Whether the person gets an e-mail when the agency writes. */
 export function useOwnerInboxPreferences() {
   return useQuery({
     queryKey: [OWNER_PORTAL_KEY, 'inbox-preferences'],

@@ -25,13 +25,8 @@ import { MoreSheet } from './more-sheet';
 import { RouteFocus } from './route-focus';
 import { SkipLink } from './skip-link';
 
-/** `id` of the content region: target of the skip link and of the focus at every change of page. */
 const MAIN_CONTENT_ID = 'main-content';
 
-/**
- * What the window keeps free at the top when it scrolls something into view: the height of the sticky header, which
- * `globals.css` says once (`--header-height`) and the header takes as its own (UI-05).
- */
 const HEADER_HEIGHT = 'var(--header-height)';
 
 interface AppShellLayoutProps {
@@ -55,12 +50,9 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
   const viewKey = user?.id ? JSON.stringify([user.id, org?.id ?? null, contextKey]) : undefined;
   const compact = useUiStore(state => viewKey ? state.workspaceViews[viewKey]?.compact : false);
   const shell = useMemo(() => ({ contextKey, viewKey }), [contextKey, viewKey]);
-  // A page that fixes its primary action above the bottom bar of the phone (`PageHeader`, UI-05) needs room under its content.
   const mobilePrimaryVisible = useUiStore((state) => state.mobilePrimaryVisible);
 
   useEffect(() => {
-    // The window scrolls and the header is sticky: an anchor (`#panel`) or an element that takes the focus must not land
-    // under it. Set on the root, which is what the window scrolls, and only while a shell is on the page.
     const root = document.documentElement;
     const previous = root.style.scrollPaddingTop;
     root.style.scrollPaddingTop = HEADER_HEIGHT;
@@ -72,7 +64,6 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
   return (
     <AppShellContext.Provider value={shell}>
       <AskProvider area={contextKey} userId={user?.id ?? null} orgId={org?.id ?? null} orgName={organizationName}>
-        {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
         <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
           <SkipLink targetId={MAIN_CONTENT_ID} />
           <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey} data-density={compact ? 'compact' : undefined}>
@@ -80,7 +71,6 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
             <MoreSheet contextKey={contextKey} organizationName={organizationName} />
             <div className="flex min-w-0 flex-1 flex-col lg:has-[>main>[data-app-viewport]]:h-dvh">
               <DemoBanner />
-              {/* The notifications bell (UI-12) and the guide (the help of UI-08 is inside it) are handed to the header here too, each only when its function exists. */}
               <Header
                 search={(
                   <div className="flex items-center gap-1 md:gap-3">
@@ -112,11 +102,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
             </div>
           </div>
           <RouteFocus mainRef={mainRef} />
-          {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
           <DetailDrawerHost />
-          {/* The popup alerts (ADR-025): one at a time, over the content, and not while a wizard is open. Only for a signed-in user of the real app (the bell's conditions). */}
           <AlertPopup />
-          {/* «Inizia con CasaZen» as the first wizard of a new host: a layer of its own, once, at the first access to Affitti brevi. */}
           {contextKey === 'short-rent' ? <FirstRunWizard /> : null}
         </CommandPaletteProvider>
       </AskProvider>

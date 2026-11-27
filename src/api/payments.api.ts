@@ -12,7 +12,6 @@ import type {
 } from '@/types';
 
 export const paymentsApi = {
-  /** All the payments of the host, newest first (SR-03). `propertyId`, `bookingId`, `from` and `to` narrow them. */
   getAll: (params?: Record<string, unknown>) =>
     ApiClient.get<PaymentListItem[]>('/payments', params),
 
@@ -25,10 +24,6 @@ export const paymentsApi = {
   create: ({ idempotencyKey, ...body }: RecordPaymentInput) =>
     ApiClient.post<Payment>('/payments', body, { headers: { 'Idempotency-Key': idempotencyKey } }),
 
-  /**
-   * Refund on Stripe (BK-02). The answer is the refund as Stripe left it: only `Succeeded` means
-   * the money went back; `Pending` is confirmed later (poll `getRefunds`).
-   */
   refund: (id: string, data: RefundPaymentDto = {}) =>
     ApiClient.post<PaymentRefund>(`/payments/${id}/refund`, data),
 

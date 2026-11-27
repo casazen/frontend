@@ -7,7 +7,6 @@ import { PENDING_ALERTS_KEY, useDismissAlert, usePendingAlerts, useRemindAlert }
 import type { PendingAlert } from '@/types/alert';
 
 interface Options {
-  /** The signed-in user of the real app: the popup is never mounted for a guest, a public page, the demo or a signed-out session. */
   userId: string;
   getAccessToken: () => Promise<string | undefined>;
 }
@@ -29,16 +28,10 @@ export function useAlertSignalr({ userId, getAccessToken }: Options) {
     enabled: true,
     userId,
     getAccessToken,
-    // The notifications of the bell are fed by the bell's own use of the channel.
     alertsOnly: true,
     onAlert: (alert) => {
       queryClient.setQueryData<PendingAlert[]>(PENDING_ALERTS_KEY, (alerts) => upsertAlert(alerts ?? [], alert));
-      // A read of the list that started before this alert would put its older answer over the queue and take the alert out of it (with
-      // the channel up nothing else reads the list again). Reading it again, which the server can answer with the alert already in it,
-      // drops the answer in flight.
       void queryClient.invalidateQueries({ queryKey: PENDING_ALERTS_KEY });
-      // A stay that needs the host (`BookingNeedsReview`) comes with its «Da fare»: the cleaning at check-out that could not be made («Pulizia da richiedere») or whose dates changed («Pulizia da
-      // rivedere», E24/F01/US01/T02). The list and the number of the menu are read at once, so the page open in front of the host shows the item without waiting for the next read.
       if (alert.alertType === 'BookingNeedsReview') void queryClient.invalidateQueries({ queryKey: [INTERNAL_ACTIVITIES_KEY] });
     },
   });

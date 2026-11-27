@@ -18,10 +18,6 @@ const STEPS = ['what', 'urgency', 'note', 'photo', 'confirm'] as const;
 type WizardStep = (typeof STEPS)[number];
 type Phase = 'browse' | 'wizard' | 'sent';
 
-/**
- * Phone wizard for the tenant: what is broken, how urgent, a note, an optional photo, then a clear confirm.
- * After send the request is "In attesa". This screen never approves and never pays.
- */
 export function TenantMaintenanceRequestPage() {
   const { t } = useTranslation();
   const { leaseId = '' } = useParams();
@@ -37,7 +33,6 @@ export function TenantMaintenanceRequestPage() {
 
   const items = list.data ?? [];
   const visible = sent && !items.some((item) => item.id === sent.id) ? [sent, ...items] : items;
-  // An empty cache after a send is not "there is nothing to show": the wizard must not come back filled.
   const writing = phase === 'wizard' || (phase === 'browse' && !sent && !list.isLoading && !list.isError && items.length === 0);
 
   function clearDraft() {

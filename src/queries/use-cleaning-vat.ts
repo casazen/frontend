@@ -12,11 +12,6 @@ export const cleaningVatKeys = {
   question: (requestId: string) => [CLEANING_VAT_KEY, requestId] as const,
 };
 
-/**
- * The question of a completed cleaning request: the rate of «Sì», the answer given, what the invoice uses and whether the caller may remember. It changes on other screens (another person answered, the request changed) and the
- * client does not read again on mount by default, so every time the dialog opens it reads again and nothing is fresh for long. `null` when the server refuses it to the caller (403); a 404 is an error, which the dialog
- * tells as «not found» whatever an earlier answer left in the cache.
- */
 export function useCleaningVatQuestion(requestId: string) {
   return useQuery({
     queryKey: cleaningVatKeys.question(requestId),

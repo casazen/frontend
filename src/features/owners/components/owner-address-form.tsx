@@ -32,7 +32,6 @@ export function OwnerAddressSection({ ownerId, canManage }: OwnerAddressSectionP
   if (!canManage || address.data === null) {
     content = <p className="break-words text-sm text-foreground/70" data-testid="owner-address-read-only">{t('ownerAddress.notForYou')}</p>;
   } else if (getHttpStatus(address.error) === 404) {
-    // A 404 is «not found» whatever the cache still holds (a failed read keeps the old data).
     content = <p className="break-words text-sm text-foreground/70" data-testid="owner-address-not-found">{t('ownerAddress.notFound')}</p>;
   } else if (address.isPending) {
     content = (
@@ -43,7 +42,6 @@ export function OwnerAddressSection({ ownerId, canManage }: OwnerAddressSectionP
   } else if (address.isError || !address.data) {
     content = <OwnerAccountingError error={address.error} title={t('ownerAddress.loadError')} onRetry={() => void address.refetch()} />;
   } else {
-    // The form starts from what the server holds and starts again when that is read again (after a save): no effect copies it into the state.
     content = <AddressEditor key={ownerId} ownerId={ownerId} saved={address.data} />;
   }
 
@@ -89,7 +87,6 @@ const fromAddress = (address: OwnerAddress): FormState => ({
   country: address.country ?? '',
 });
 
-/** The text of a part of the address, or nothing: the server stores a blank optional part as none. */
 const text = (value: string): string | undefined => (value.trim() === '' ? undefined : value.trim());
 
 function AddressForm({ ownerId, saved, onSaved }: { ownerId: string; saved: OwnerAddress; onSaved: () => void }) {
@@ -101,7 +98,6 @@ function AddressForm({ ownerId, saved, onSaved }: { ownerId: string; saved: Owne
 
   const country = form.country.trim();
   const countryOk = /^[A-Za-z]{2}$/.test(country);
-  // Italy needs the province (the two letters) on the documents: the same rule the server applies.
   const provinceOk = country.toUpperCase() !== 'IT' || form.province.trim() !== '';
   const required = form.street.trim() !== '' && form.postalCode.trim() !== '' && form.town.trim() !== '';
   const valid = required && countryOk && provinceOk;

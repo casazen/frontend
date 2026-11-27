@@ -16,10 +16,6 @@ import { FirstRunWizard } from '../first-run-wizard';
 import { supportConfig } from '@/config/support.config';
 import { GuideButton } from '../guide-panel';
 
-/**
- * The guide (the answer to «non lasciare l'utente da solo… qualcosa che colleghi tutte le operazioni»): the panel of the header with the setup and
- * the «Da fare» list as roads, its button with the urgent count, and the welcome of the first access («Inizia con CasaZen» as the first wizard).
- */
 vi.mock('@/api/onboarding.api', () => ({
   onboardingApi: { getStatus: vi.fn(), getPath: vi.fn(), getPlan: vi.fn() },
 }));
@@ -164,7 +160,6 @@ describe('the guide of the header', () => {
 
     const panel = await screen.findByTestId('guide-panel');
     expect(within(panel).getByTestId('guide-help-manual')).toHaveAttribute('href', '/app/supplier/help');
-    // The full manual (static pages, own tab) is one click from the panel in every area.
     const fullManual = within(panel).getByTestId('guide-help-full-manual');
     expect(fullManual).toHaveAttribute('href', '/guida/');
     expect(fullManual).toHaveAttribute('target', '_blank');

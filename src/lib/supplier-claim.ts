@@ -11,7 +11,6 @@
  * ignored: the claim then relies on the `appState` of the login redirect.
  */
 
-/** Page that links the signed-in account to the pending supplier profile. */
 export const SUPPLIER_CLAIM_PATH = '/register/claim';
 
 const STORAGE_KEY = 'cz-supplier-claim';
@@ -19,13 +18,10 @@ const TOKEN_PATTERN = /^[0-9a-f]{64}$/;
 
 export interface PendingSupplierClaim {
   token: string;
-  /** Email of the registration: the account to sign in with. */
   email: string;
-  /** ISO UTC expiry of the token. */
   expiresAt: string;
 }
 
-/** A well-formed, not yet expired claim, or null. */
 export function parsePendingSupplierClaim(value: unknown, now: Date = new Date()): PendingSupplierClaim | null {
   if (typeof value !== 'object' || value === null) return null;
   const { token, email, expiresAt } = value as Record<string, unknown>;
@@ -46,7 +42,6 @@ export function savePendingSupplierClaim(claim: PendingSupplierClaim): void {
   }
 }
 
-/** The stored claim when still usable; an expired or unreadable one is removed. */
 export function readPendingSupplierClaim(now: Date = new Date()): PendingSupplierClaim | null {
   let raw: string | null;
   try {

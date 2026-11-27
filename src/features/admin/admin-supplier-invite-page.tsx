@@ -16,7 +16,6 @@ import { ComunePicker } from '@/components/shared/comune-picker';
 
 const ISTAT_CODE = /^[0-9]{6}$/;
 
-/** Form of a supplier invite (email, comune, categories, message), inside the invites section of the admin. */
 export function AdminSupplierInviteForm() {
   const { t } = useTranslation();
   const invite = useInviteSupplier();
@@ -31,7 +30,6 @@ export function AdminSupplierInviteForm() {
       const result = await invite.mutateAsync({
         email,
         comuneCode,
-        // Optional: an invite without categories leaves the choice to the supplier's wizard.
         categories: categories.length > 0 ? keepKnownCategories(categories, categoryCodes) : undefined,
         message: message || undefined,
       });
