@@ -1,11 +1,12 @@
 import { useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Camera, Copy, FileX, FlipHorizontal2, Focus, LayoutTemplate, Maximize, RotateCw, ScanLine, ScanText, Sun, UserRound, type LucideIcon } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { DocumentSide } from '@/types/public-checkin.types';
 import { guidanceKey, listedGuidance } from '../lib/identity-model';
 import { DocumentCameraGuide } from './document-camera-guide';
+import { GUIDANCE_ICONS } from './guidance-icons';
 import { MrzPositionIllustration } from './mrz-position-illustration';
 
 interface IdentityDocumentCaptureProps {
@@ -36,24 +37,6 @@ interface IdentityDocumentCaptureProps {
   /** The guest asks for a person: the way out of a document that cannot be read (GDPR art. 22). */
   onRequestOperator: () => void;
 }
-
-/**
- * A picture for each of the targeted codes of the document step: what the code is about, in one drawing, next to the words (decorative: the words say it all). A code with no drawing (the older
- * ones) has none, and its line is the one it always was.
- */
-const GUIDANCE_ICONS: Readonly<Record<string, LucideIcon>> = {
-  document_not_found: ScanLine,
-  document_edges_not_visible: Maximize,
-  document_layout_mismatch: LayoutTemplate,
-  document_orientation: RotateCw,
-  document_portrait_missing: UserRound,
-  document_side_duplicate: Copy,
-  document_wrong_side: FlipHorizontal2,
-  document_format_unsupported: FileX,
-  document_glare: Sun,
-  document_blur: Focus,
-  document_unreadable: ScanText,
-};
 
 /**
  * The photo of the identity document of the guest who verifies (CHK-14, E22/F02/US01/T01): after each photo the page says, in plain words from the guidance codes,

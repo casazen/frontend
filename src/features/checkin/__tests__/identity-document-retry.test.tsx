@@ -313,6 +313,8 @@ describe('identity-document-retry: the codes that end with a person (AC2)', () =
 
     await waitFor(() => expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'operator'));
     expect(screen.getByTestId('identity-operator-reason')).toHaveTextContent(text(guidanceKey(code)));
+    // The picture of the code, the same as in the lines of a refusal, is next to its words (decorative: the words say it all).
+    expect(screen.getByTestId('identity-operator-reason').querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByTestId('identity-operator-text')).toHaveTextContent(text('checkin.identity.result.operator.text'));
     expect(screen.getByTestId('identity-operator-requested')).toBeInTheDocument();
     // The server has the verification closed with a person: no capture, no file, no second call to ask for one.

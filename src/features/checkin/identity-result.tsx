@@ -2,6 +2,7 @@ import { useEffect, useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Clock, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GUIDANCE_ICONS } from './components/guidance-icons';
 import { assistedReasonOf, guidanceKey, LOCK_CODE_HELD_TOURIST_TAX, retakeTargetOf } from './lib/identity-model';
 
 interface IdentityResultProps {
@@ -87,6 +88,7 @@ export function IdentityResult({
 
   const retakeLabel = retakeTargetOf(guidanceCodes) === 'document' ? 'checkin.identity.result.retry.againDocument' : 'checkin.identity.result.retry.again';
   const assistedReason = kind === 'operator' ? assistedReasonOf(guidanceCodes) : null;
+  const AssistedIcon = assistedReason ? GUIDANCE_ICONS[assistedReason] : undefined;
 
   return (
     <section className="space-y-4" aria-labelledby={titleId} data-testid={kind === 'retry' ? 'identity-result-retry' : 'identity-result-operator'}>
@@ -128,8 +130,9 @@ export function IdentityResult({
         <>
           {/* A document the page cannot take (a format it does not know, a photo that could not be read as many times as allowed): the reason, in its own words, before the way of a person (E71/F02/US01/T02). */}
           {assistedReason && (
-            <p className="text-sm font-medium" data-testid="identity-operator-reason">
-              {t(guidanceKey(assistedReason))}
+            <p className="flex items-start gap-2 text-sm font-medium" data-testid="identity-operator-reason">
+              {AssistedIcon && <AssistedIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />}
+              <span>{t(guidanceKey(assistedReason))}</span>
             </p>
           )}
           <p className="text-sm" data-testid="identity-operator-text">
