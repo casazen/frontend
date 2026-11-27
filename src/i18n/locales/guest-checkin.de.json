@@ -135,6 +135,7 @@
     "next": "Weiter",
     "back": "Zurück",
     "submit": "Check-in absenden",
+    "submitHint": "Zum Absenden kreuzen Sie bitte zuerst die Pflichtkästchen oben an.",
     "fixHighlightedFields": "Einige Angaben sind ungültig: Bitte korrigieren Sie die markierten Felder und senden Sie erneut ab.",
     "successTitle": "Check-in abgeschlossen!",
     "successDescription": "Die Unterkunft hat Ihre Angaben zum Aufenthalt erhalten. Für Korrekturen kontaktieren Sie die Unterkunft über Ihre Buchung.",
@@ -327,6 +328,18 @@
       "SingleGuest": "Einzelgast"
     },
     "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "Eine Person prüft Ihre Identität, ganz ohne automatischen Gesichtsvergleich. Eine Einwilligung zur Gesichtsprüfung ist nicht nötig.",
+          "label": "Überprüfung durch eine Person",
+          "switch": "Zur Überprüfung durch eine Person wechseln"
+        },
+        "automatic": {
+          "hint": "Sie fotografieren Ihr Ausweisdokument und zeigen Ihr Gesicht in die Kamera. Dafür brauchen wir Ihre Einwilligung, die oben steht.",
+          "label": "Automatische Überprüfung"
+        },
+        "title": "Wie möchten Sie überprüft werden?"
+      },
       "document": {
         "back": {
           "fileLabel": "Foto der Rückseite des Ausweisdokuments",
@@ -409,6 +422,10 @@
           "noReason": "Die Prüfung war diesmal nicht erfolgreich.",
           "title": "Wir konnten Sie noch nicht bestätigen"
         }
+      },
+      "unsupported": {
+        "text": "Diese Seite kann diesen Schritt der Überprüfung noch nicht durchführen. Sie können darum bitten, dass eine Person Ihre Identität prüft: Die Unterkunft wird benachrichtigt.",
+        "title": "Für diesen Schritt ist eine Person nötig"
       }
     },
     "invoice": {

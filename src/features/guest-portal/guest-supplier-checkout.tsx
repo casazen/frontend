@@ -102,7 +102,7 @@ export function GuestSupplierCheckout({ endpoint, order, language, returned, upd
             }
           }}
           onSubmitted={() => { checkout.reset(); setMessage(''); verify(); }} />
-      : <button type="button" disabled={checkout.isPending || (setup && !consent)}
+      : <button type="button" className="stay-action-primary" disabled={checkout.isPending || (setup && !consent)}
           onClick={() => { setMessage(''); checkout.mutate(); }}>{button}</button>)}
   </div>;
 }

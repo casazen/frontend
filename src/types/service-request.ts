@@ -306,6 +306,13 @@ export interface SendServiceRequestQuoteDto {
  * status are empty while there is no record. The console shows these figures as they come and promises no payout date.
  */
 export interface SupplierRequestPayment {
+  /** Commercial terms of an explicit host sale. Older and showcase payments omit this breakdown. */
+  hostDocuments?: {
+    grossCents: number;
+    refundedCents: number;
+    commissionCents: number;
+    commissionRefundedCents: number;
+  } | null;
   /** `Requested`, `Processing`, `Paid`, `Failed`, `PartiallyRefunded`, `Refunded`, `NeedsReview`: an open set. */
   status?: string | null;
   amountCents?: number | null;

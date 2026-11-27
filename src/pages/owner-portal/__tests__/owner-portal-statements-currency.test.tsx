@@ -26,7 +26,9 @@ vi.mock('@/api/ownerPortal.api', () => ({
 }));
 vi.mock('@/lib/file-download', () => ({ saveBlobAs: vi.fn(), withJsonErrorBody: vi.fn() }));
 vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ logout: vi.fn() }) }));
+vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
+import { toast } from 'sonner';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 
 const api = vi.mocked(ownerPortalApi);
@@ -223,12 +225,11 @@ describe('the PDF of a statement and of an invoice (one at a time, said in words
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(invoiceBlob, 'fattura-2026-0042.pdf'));
     expect(api.downloadInvoicePdf).toHaveBeenCalledWith('inv-chf', 'it');
 
-    // A PDF the server does not have is said in words under its statement; nothing is saved and the buttons come back.
+    // A PDF the server does not have is said in words, in a toast (UX round 2026-11); nothing is saved and the buttons come back.
     api.downloadStatementPdf.mockRejectedValueOnce(refusal(404, 'owner_statement_pdf_not_available'));
     await waitFor(() => expect(statementButton).toBeEnabled());
     fireEvent.click(statementButton);
-    const failed = await screen.findByTestId('owner-statement-download-failed');
-    expect(failed.textContent).toContain('Il PDF di questo rendiconto non è disponibile');
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Il PDF di questo rendiconto non è disponibile')));
     expect(saveBlobAs).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(statementButton).toBeEnabled());
   });

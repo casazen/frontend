@@ -3,7 +3,6 @@ import { useState } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { isFeatureEnabled } from '@/config/feature-flags';
 import { IssuedDocumentsExport } from '@/features/owners/components/issued-documents-export';
@@ -83,7 +82,7 @@ function IssuedDocumentsBody() {
 
       {filesOpen ? (
         <section aria-labelledby="owner-issued-export-title" className="space-y-3">
-          <h2 id="owner-issued-export-title" className="text-xl font-semibold text-[#1f3a3d]">
+          <h2 id="owner-issued-export-title" className="text-xl font-semibold">
             {t('ownerPortal.issued.export.title')}
           </h2>
           <IssuedDocumentsExport
@@ -96,7 +95,7 @@ function IssuedDocumentsBody() {
       ) : null}
 
       <section aria-labelledby="owner-issued-list-title" className="space-y-3">
-        <h2 id="owner-issued-list-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-issued-list-title" className="text-xl font-semibold">
           {t('ownerPortal.issued.listTitle')}
         </h2>
         {documents.isLoading ? (
@@ -129,14 +128,13 @@ function IssuedDocumentsBody() {
 /** One document issued in the name of the owner: its kind and number, its day, the agency that issues it for the owner, its total in its own currency, where it stands with the SDI and its files. */
 function IssuedDocumentCard({ document, downloads }: { document: OwnerPortalIssuedDocument; downloads: ReturnType<typeof useOwnerDownload> }) {
   const { t, i18n } = useTranslation();
-  const { download, busyKey, failure } = downloads;
+  const { download, busyKey } = downloads;
   const language = i18n.language;
   const kind = invoiceKindOf(document.kind);
   const title = t('ownerPortal.issued.cardTitle', { kind: t(`ownerPortal.accounting.pmInvoices.kind.${kind}`), number: document.number, date: formatStayDate(document.issueDate, language, DATE) });
   const stem = document.number.replace(/[^A-Za-z0-9_-]+/g, '-');
   const pdfKey = `issued:${document.documentId}:pdf`;
   const xmlKey = `issued:${document.documentId}:xml`;
-  const failed = failure !== null && (failure.key === pdfKey || failure.key === xmlKey) ? failure : null;
   const sdiKnown = Object.hasOwn(SDI_TONE, document.sdiStatus);
 
   return (
@@ -181,11 +179,6 @@ function IssuedDocumentCard({ document, downloads }: { document: OwnerPortalIssu
           />
         ) : null}
       </div>
-      {failed ? (
-        <Alert variant="danger" data-testid="owner-issued-download-failed">
-          {failed.message}
-        </Alert>
-      ) : null}
     </li>
   );
 }

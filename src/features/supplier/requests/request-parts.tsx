@@ -259,8 +259,15 @@ function Fact({ label, value, note, testId }: { label: string; value: ReactNode;
   );
 }
 
-/** When, where, who and how much: four short facts, in two columns in a narrow place (the drawer). The street address is for after the take (decision D9). */
-export function RequestFacts({ request, compact = false }: { request: SupplierServiceRequest; compact?: boolean }) {
+/** The two boxes of the side of the request page share one look: the same corners and the same thin line, no shadow. */
+const SIDE_BOX = 'rounded-xl bg-card ring-1 ring-inset ring-border';
+
+/**
+ * When, where, who and how much: four short facts, in two columns in a narrow place (the drawer). The street address is for after the take (decision D9).
+ * `withDetails` is the request page, where «Indirizzo e contatti» sits right under the facts: the line under «Dove» (the address, or that it comes after
+ * you accept) is said there once, not twice (UX round 2026-11). The source is said only for a request of the supplier's own site, as the list does.
+ */
+export function RequestFacts({ request, compact = false, withDetails = false }: { request: SupplierServiceRequest; compact?: boolean; withDetails?: boolean }) {
   const { t, i18n } = useTranslation();
   const phase = phaseOf(request);
   const when = requestWhen(request, i18n.language, true);
@@ -273,7 +280,7 @@ export function RequestFacts({ request, compact = false }: { request: SupplierSe
   const showcase = request.source === 'showcase';
 
   return (
-    <dl className={cn('grid grid-cols-1 gap-x-4 gap-y-4 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2', !compact && 'lg:grid-cols-4')} data-testid="supplier-request-facts">
+    <dl className={cn('grid grid-cols-1 gap-x-4 gap-y-4 p-4 sm:grid-cols-2', SIDE_BOX, !compact && 'lg:grid-cols-4')} data-testid="supplier-request-facts">
       <Fact
         testId="supplier-request-when"
         label={t('supplier.requests.facts.when')}
@@ -292,13 +299,13 @@ export function RequestFacts({ request, compact = false }: { request: SupplierSe
         testId="supplier-request-where"
         label={t('supplier.requests.facts.where')}
         value={place}
-        note={request.address ?? (request.contactDisclosed || over ? undefined : t('supplier.requests.facts.addressAfterTake'))}
+        note={withDetails ? undefined : (request.address ?? (request.contactDisclosed || over ? undefined : t('supplier.requests.facts.addressAfterTake')))}
       />
       <Fact
         testId="supplier-request-client"
         label={t('supplier.requests.facts.client')}
         value={request.clientName || t('supplier.requests.facts.clientUnknown')}
-        note={t(showcase ? 'supplier.requests.facts.fromShowcase' : 'supplier.requests.facts.fromHost')}
+        note={showcase ? t('supplier.requests.facts.fromShowcase') : undefined}
       />
       <Fact
         testId="supplier-request-price"
@@ -363,7 +370,7 @@ function JobGroup({ request, open }: { request: SupplierServiceRequest; open: bo
       <dl className="space-y-2">
         <Row label={t('supplier.requests.job.service')}>{requestTitle(request, t)}</Row>
         {request.propertyName ? <Row label={t('supplier.requests.job.property')}>{request.propertyName}</Row> : null}
-        <Row label={t('supplier.requests.job.urgency')}>{t(URGENCY_KEYS[request.urgency] ?? URGENCY_KEYS.Normal)}</Row>
+        {/* The urgency is said once, beside the day in «Quando», and only when it is not the normal one. */}
         {request.stay ? (
           <Row label={t('supplier.requests.job.stay')} testId="supplier-request-stay">
             {t('supplier.requests.job.stayDates', { from: formatStayDate(request.stay.checkIn, i18n.language), to: formatStayDate(request.stay.checkOut, i18n.language) })}
@@ -442,7 +449,9 @@ function PaymentGroup({ request }: { request: SupplierServiceRequest }) {
   if (!payment) return null;
   const money = (cents: number | null | undefined) => (cents === null || cents === undefined ? null : formatMoney(cents, i18n.language));
   const status = payment.status ? (PAYMENT_STATUSES.has(payment.status) ? payment.status : 'unknown') : null;
-  const commission = money(payment.commissionCents);
+  const plan = payment.hostDocuments;
+  const gross = money(plan?.grossCents ?? payment.amountCents);
+  const commission = plan && plan.commissionCents === 0 ? null : money(plan?.commissionCents ?? payment.commissionCents);
   const priceLines = request.price?.lines ?? [];
   const agreed = money(request.price?.quotedAmountCents);
   const how = payment.paidVia === 'Offline' ? 'paidOutside' : request.paymentMode === 'Manual' ? 'outside' : request.paymentMode === 'Online' ? 'inside' : null;
@@ -471,12 +480,14 @@ function PaymentGroup({ request }: { request: SupplierServiceRequest }) {
         {agreed && request.price?.finalAmountCents !== null && request.price?.finalAmountCents !== undefined ? (
           <Row label={t('supplier.requests.payment.agreed')}>{agreed}</Row>
         ) : null}
-        {money(payment.amountCents) ? <Row label={t('supplier.requests.payment.amount')} testId="supplier-request-payment-amount">{money(payment.amountCents)}</Row> : null}
+        {gross && <Row label={t(plan ? 'supplier.requests.payment.hostSale' : 'supplier.requests.payment.amount')} testId="supplier-request-payment-amount">{gross}</Row>}
+        {plan && plan.refundedCents > 0 && <Row label={t('supplier.requests.payment.hostSaleRefund')}>{money(plan.refundedCents)}</Row>}
         {commission ? (
-          <Row label={t('supplier.requests.payment.commission')} testId="supplier-request-payment-commission">
+          <Row label={t(plan ? 'supplier.requests.payment.hostSaleCommission' : 'supplier.requests.payment.commission')} testId="supplier-request-payment-commission">
             {payment.commissionPercent ? `${commission} (${payment.commissionPercent} %)` : commission}
           </Row>
         ) : null}
+        {plan && plan.commissionRefundedCents > 0 && <Row label={t('supplier.requests.payment.hostSaleFeeRefund')}>{money(plan.commissionRefundedCents)}</Row>}
         {money(payment.netCents) ? <Row label={t('supplier.requests.payment.net')} testId="supplier-request-payment-net">{money(payment.netCents)}</Row> : null}
         {status ? <Row label={t('supplier.requests.payment.state')} testId="supplier-request-payment-state">{t(`supplier.requests.payment.status.${status}`)}</Row> : null}
         {payment.paidAt ? <Row label={t('supplier.requests.payment.paidAt')}>{formatRomeDateTime(payment.paidAt, i18n.language, { day: 'numeric', month: 'long', year: 'numeric' })}</Row> : null}
@@ -568,7 +579,7 @@ export function RequestDetails({ request }: { request: SupplierServiceRequestDet
   const { t } = useTranslation();
   const phase = phaseOf(request);
   return (
-    <div className="divide-y overflow-hidden rounded-xl bg-card ring-1 ring-inset ring-border" data-testid="supplier-request-details">
+    <div className={cn('divide-y overflow-hidden', SIDE_BOX)} data-testid="supplier-request-details">
       <JobGroup request={request} open={phase === 'toAnswer' || isBackup(request)} />
       <ContactGroup request={request} open={phase === 'scheduled' || phase === 'inProgress'} />
       <PaymentGroup request={request} />

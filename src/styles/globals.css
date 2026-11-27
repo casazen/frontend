@@ -4,6 +4,8 @@
 @import "./fonts.css";
 @import "./tokens.css";
 @import "./workspace.css";
+/* Motion and touch feedback of every area (press, lift, dialogs on a spring, entrances): see the file. */
+@import "./motion.css";
 /*
  * The animation utilities the shadcn components ask for (`animate-in`, `fade-in-0`, `zoom-in-95`, `slide-in-from-*`): until
  * UI-07 no plugin provided them and they did nothing. Dialog, sheet, menu and tip now move when they open and close.

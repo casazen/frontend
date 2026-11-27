@@ -135,6 +135,7 @@
     "next": "Siguiente",
     "back": "Atrás",
     "submit": "Enviar el check-in",
+    "submitHint": "Para enviar, marque primero las casillas obligatorias de arriba.",
     "fixHighlightedFields": "Algunos datos no son válidos: corrija los campos resaltados y envíe de nuevo.",
     "successTitle": "¡Check-in completado!",
     "successDescription": "El alojamiento ha recibido los datos de su estancia. Para corregirlos, contacte con el alojamiento a través de su reserva.",
@@ -327,6 +328,18 @@
       "SingleGuest": "Huésped individual"
     },
     "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "Una persona comprueba su identidad, sin comparación automática del rostro. No hace falta el consentimiento para la comprobación facial.",
+          "label": "Verificación por una persona",
+          "switch": "Pasar a la verificación por una persona"
+        },
+        "automatic": {
+          "hint": "Usted fotografía su documento y muestra su cara a la cámara. Hace falta su consentimiento, que figura arriba.",
+          "label": "Verificación automática"
+        },
+        "title": "¿Cómo quiere que verifiquemos su identidad?"
+      },
       "document": {
         "back": {
           "fileLabel": "Foto del reverso del documento de identidad",
@@ -409,6 +422,10 @@
           "noReason": "La comprobación no ha salido bien esta vez.",
           "title": "Todavía no hemos podido verificarle"
         }
+      },
+      "unsupported": {
+        "text": "Esta página todavía no puede realizar este paso de la verificación. Puede pedir que una persona compruebe su identidad: se avisará al anfitrión.",
+        "title": "Este paso necesita a una persona"
       }
     },
     "invoice": {

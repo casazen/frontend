@@ -1,11 +1,9 @@
 import { useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { CalendarCheck, Inbox, Plus } from 'lucide-react';
 import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
-import { Alert } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { FocusBlock } from '@/components/shared/calm';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useSupplierActivation } from '@/queries/supplier/use-profile';
 import { useSupplierDashboard, useSupplierToday } from '@/queries/supplier/use-inbox';
@@ -24,7 +22,9 @@ const TWO_COLUMNS = 'grid gap-8 xl:has-[>:nth-child(2)]:grid-cols-[minmax(0,3fr)
 
 /**
  * An active supplier whose accepted Terms of Service are not the current version (SU-05, A4-31): says what happens and links the
- * acceptance. It stays out of the way while the status loads or fails.
+ * acceptance. It stays out of the way while the status loads or fails. It is a thing to do, so it is the one block «Cosa fare ora»
+ * of the page, as in the other areas, not a banner that reads as an error (UX round 2026-11). It never shows together with the
+ * notice of the activation: that one is for a supplier who is not active yet.
  */
 function TosReacceptanceNotice() {
   const { t } = useTranslation();
@@ -33,18 +33,13 @@ function TosReacceptanceNotice() {
   if (activation?.status !== 'Active' || !tos?.reacceptanceRequired) return null;
 
   return (
-    <Alert
-      variant="warning"
+    <FocusBlock
+      tone="warning"
       title={t('supplier.activation.reaccept.banner')}
+      body={tos.blocksActions ? t('supplier.activation.reaccept.bannerBlocking') : t('supplier.activation.reaccept.bannerSoft')}
+      primary={{ label: t('supplier.activation.reaccept.bannerAction'), href: '/app/supplier/activation' }}
       data-testid="supplier-tos-reacceptance-banner"
-      action={
-        <Button asChild size="sm" variant="outline">
-          <Link to="/app/supplier/activation">{t('supplier.activation.reaccept.bannerAction')}</Link>
-        </Button>
-      }
-    >
-      {tos.blocksActions ? t('supplier.activation.reaccept.bannerBlocking') : t('supplier.activation.reaccept.bannerSoft')}
-    </Alert>
+    />
   );
 }
 
@@ -55,15 +50,11 @@ function ActivationNotice() {
   if (dashboard?.status !== 'Pending') return null;
 
   return (
-    <Alert
-      variant="warning"
+    <FocusBlock
+      tone="warning"
       title={t('supplier.completeActivationHint')}
+      primary={{ label: t('supplier.goToActivation'), href: '/app/supplier/activation' }}
       data-testid="supplier-activation-notice"
-      action={
-        <Button asChild size="sm">
-          <Link to="/app/supplier/activation">{t('supplier.goToActivation')}</Link>
-        </Button>
-      }
     />
   );
 }

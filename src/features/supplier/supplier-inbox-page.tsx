@@ -109,7 +109,7 @@ export function SupplierInboxPage() {
       {flags.guestPortal && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'supplier' }} />}
 
       {nothingYet ? (
-        <div className="rounded-xl bg-card p-2 shadow-sm ring-1 ring-inset ring-border" data-testid="supplier-inbox-empty">
+        <div data-testid="supplier-inbox-empty">
           <EmptyState icon={emptyIcon ?? Inbox} {...empty} />
         </div>
       ) : (

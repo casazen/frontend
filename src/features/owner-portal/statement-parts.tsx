@@ -236,7 +236,7 @@ export function TouristTaxBox({ rows }: { rows: readonly OwnerPortalTouristTax[]
   return (
     <section aria-labelledby="owner-tourist-tax-title" className="space-y-3 rounded-md border bg-card p-4" data-testid="owner-tourist-tax">
       <div className="space-y-1">
-        <h2 id="owner-tourist-tax-title" className="text-lg font-semibold text-[#1f3a3d]">
+        <h2 id="owner-tourist-tax-title" className="text-lg font-semibold">
           {t('ownerPortal.accounting.touristTax.title')}
         </h2>
         <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.touristTax.description')}</p>

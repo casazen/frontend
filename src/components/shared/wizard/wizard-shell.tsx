@@ -601,8 +601,9 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
               }}
             >
               {/* `key`: a new panel at each step. Without it React reuses the inputs of one step for the next one and the form
-                  library, which tells fields apart by their element, would not put the saved answers back when coming back. */}
-              <div key={step.id} ref={panelRef} className="min-w-0 space-y-6">
+                  library, which tells fields apart by their element, would not put the saved answers back when coming back.
+                  The new panel rises into place (`cz-enter`, `styles/motion.css`), so the change of step is seen. */}
+              <div key={step.id} ref={panelRef} className="cz-enter min-w-0 space-y-6">
                 {step.render({ form, stepId: step.id, stepIndex, isLast, goTo })}
               </div>
 

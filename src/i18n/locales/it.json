@@ -57,7 +57,7 @@
     "noMatches": "Nessuna impostazione corrisponde alla ricerca."
   },
   "complianceNoDeadlines": "Nessuna scadenza in elenco",
-  "dashboardNoPending": "Nessuna priorità operativa in elenco",
+  "dashboardNoPending": "Tutto in ordine: niente da fare adesso",
   "dashboardPrioritiesPartial": "Alcune priorità non sono disponibili.",
   "dashboardPendingHeading": "Priorità operative",
   "activationStaff": {
@@ -4219,6 +4219,86 @@
     "save": "Salva",
     "saveFailed": "Impossibile salvare le impostazioni della verifica",
     "saved": "Impostazioni della verifica salvate",
+    "segments": {
+      "add": {
+        "cancel": "Annulla",
+        "channel": "Browser dell'ospite",
+        "format": "Tipo di documento",
+        "hint": "Un nuovo segmento parte sempre in osservazione.",
+        "noFormats": "Non c'è ancora nessun tipo di documento tra cui scegliere.",
+        "open": "Aggiungi un segmento",
+        "propertiesError": "Non riusciamo a leggere l'elenco delle strutture: puoi comunque scegliere «Tutte le strutture».",
+        "property": "Struttura",
+        "submit": "Aggiungi il segmento",
+        "title": "Nuovo segmento"
+      },
+      "added": "Segmento aggiunto: parte in osservazione.",
+      "allProperties": "Tutte le strutture",
+      "alreadyThere": "Questo segmento c'è già: non è cambiato nulla.",
+      "apply": "Applica",
+      "autoDisabled": "L'approvazione automatica è disattivata su tutta la piattaforma: nessun segmento approva da solo, qualunque modalità abbia.",
+      "automatic": {
+        "confirm": "Attiva l'approvazione automatica",
+        "consequences": {
+          "approves": "Quando tutte le condizioni sono soddisfatte, il sistema approva da solo l'identità degli ospiti di questo segmento, senza il controllo di una persona. Se ne manca una, decide una persona.",
+          "revocable": "Puoi tornare in osservazione o sospendere il segmento in qualsiasi momento."
+        },
+        "description": "{{name}}: confermi la modalità «Automatica»?",
+        "title": "Attivare l'approvazione automatica?"
+      },
+      "automaticNeedsQualification": "«Automatica» si può scegliere solo per un segmento qualificato.",
+      "channel": {
+        "androidChrome": "Chrome su Android",
+        "desktopChromium": "Chrome, Edge e simili su computer",
+        "desktopFirefox": "Firefox su computer",
+        "desktopSafari": "Safari su computer",
+        "iosSafari": "Safari su iPhone e iPad",
+        "other": "Qualsiasi altro browser"
+      },
+      "description": "Un segmento è una struttura (o tutte), un tipo di documento e un tipo di browser. Per ognuno scegli se la verifica resta in osservazione, se può approvare in automatico o se è sospesa.",
+      "empty": "Non c'è ancora nessun segmento: finché non ne aggiungi uno, ogni verifica resta in osservazione.",
+      "loadError": "Non riusciamo a leggere i segmenti della verifica.",
+      "mode": {
+        "automatic": "Automatica",
+        "legend": "Modalità del segmento {{name}}",
+        "observation": "Osservazione",
+        "suspended": "Sospesa"
+      },
+      "modeLabel": "Modalità",
+      "notApproving": "Per ora non approva in automatico.",
+      "observation": "In osservazione il sistema calcola una decisione automatica ma decide sempre una persona.",
+      "policy": {
+        "none": "Al momento nessuna politica di decisione è utilizzabile.",
+        "provisional": "Provvisoria",
+        "version": "Politica di decisione in uso: {{version}}."
+      },
+      "qualificationHint": "La qualificazione di un segmento la fanno gli amministratori della piattaforma, non si fa da qui. Finché un segmento non è qualificato resta in osservazione.",
+      "qualified": "Qualificato",
+      "qualifiedFor": "Qualificato per la politica {{version}}.",
+      "reason": {
+        "assurance_requires_chip": "Per questo documento una foto non basta: serve la lettura del chip, quindi decide una persona.",
+        "auto_approval_disabled": "L'approvazione automatica è disattivata su tutta la piattaforma.",
+        "other": "Il motivo non è tra quelli previsti: per ora decide una persona.",
+        "policy_provisional": "La politica in uso è provvisoria: nessun segmento approva in automatico.",
+        "policy_unavailable": "Nessuna politica di decisione è utilizzabile.",
+        "qualification_mismatch": "La qualificazione è per un'altra versione della politica o dei modelli: serve una nuova qualificazione.",
+        "segment_not_qualified": "Non è ancora qualificato: lo qualificano gli amministratori della piattaforma.",
+        "segment_observation": "Il segmento è in osservazione: decide una persona.",
+        "segment_suspended": "Il segmento è sospeso: decide una persona."
+      },
+      "retry": "Riprova",
+      "saveFailed": "Non siamo riusciti a salvare il segmento.",
+      "saved": "Segmento aggiornato",
+      "suspend": {
+        "confirm": "Sospendi il segmento",
+        "description": "{{name}}: da ora decide sempre una persona. Il motivo resta registrato e lo leggono gli amministratori della tua organizzazione.",
+        "reasonHint": "Al massimo 200 caratteri.",
+        "reasonLabel": "Motivo della sospensione",
+        "title": "Sospendere questo segmento?"
+      },
+      "suspendedReason": "Motivo della sospensione: {{reason}}",
+      "title": "Segmenti della verifica"
+    },
     "thresholdsRange": "Le soglie vanno da {{min}} a {{max}}: più il valore è alto, più il confronto è severo.",
     "title": "Verifica dell'identità"
   },
@@ -4304,6 +4384,7 @@
       "departure": "Partenza",
       "contacts": "Numeri utili",
       "localTips": "Consigli sulla zona",
+      "stepOf": "Passo {{step}} di {{total}}",
       "access": "Istruzioni di accesso",
       "wifi": "Wi-Fi",
       "save": "Salva guida",
@@ -6364,6 +6445,7 @@
     "next": "Avanti",
     "back": "Indietro",
     "submit": "Invia check-in",
+    "submitHint": "Per inviare, spunta prima le caselle obbligatorie qui sopra.",
     "fixHighlightedFields": "Alcuni dati non sono validi: correggi i campi evidenziati e invia di nuovo.",
     "successTitle": "Check-in completato!",
     "successDescription": "La struttura ha ricevuto i dati del soggiorno. Per correggerli, contattala tramite la tua prenotazione.",
@@ -6640,6 +6722,18 @@
       "SingleGuest": "Ospite singolo"
     },
     "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "Una persona controlla la tua identità, senza confronto automatico del viso. Non serve il consenso al controllo del volto.",
+          "label": "Verifica con una persona",
+          "switch": "Passa alla verifica con una persona"
+        },
+        "automatic": {
+          "hint": "Fotografi il documento e inquadri il viso con la fotocamera. Serve il tuo consenso, scritto qui sopra.",
+          "label": "Verifica automatica"
+        },
+        "title": "Come vuoi farti verificare?"
+      },
       "document": {
         "back": {
           "fileLabel": "Foto del retro del documento di identità",
@@ -6722,6 +6816,10 @@
           "noReason": "Questa volta il controllo non è andato a buon fine.",
           "title": "Non siamo ancora riusciti a verificarti"
         }
+      },
+      "unsupported": {
+        "text": "Questa pagina non può ancora svolgere questo passaggio della verifica. Puoi chiedere che sia una persona a controllare la tua identità: chi gestisce la struttura verrà avvisato.",
+        "title": "Questo passaggio richiede una persona"
       }
     },
     "invoice": {
@@ -7465,7 +7563,8 @@
       "allClear": {
         "title": "Sei in regola",
         "body": "Nessun adempimento in sospeso: gli immobili sono attivi e i soggiorni sono a posto.",
-        "cta": "Apri gli immobili"
+        "cta": "Apri gli immobili",
+        "noDeadlinesBody": "Quando una casa o un soggiorno avranno qualcosa da fare per legge, lo troverai qui."
       },
       "then": {
         "lead": "Poi: {{what}}",
@@ -7476,6 +7575,7 @@
         "chore_one": "{{count}} da chiudere",
         "chore_other": "{{count}} da chiudere"
       },
+      "why": "Perché conta",
       "fine": {
         "title": "Scadenze di legge",
         "intro": "Scadenze fissate dalla legge: Alloggiati Web va inviato entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24), poi ci sono ISTAT e l'imposta di soggiorno. Se non partono in tempo rischi una sanzione.",
@@ -29562,9 +29662,8 @@
         "service": "Servizio",
         "stay": "Soggiorno",
         "stayDates": "Dal {{from}} al {{to}}",
-        "sub": "Servizio, urgenza e note",
-        "title": "Il lavoro",
-        "urgency": "Urgenza"
+        "sub": "Servizio, immobile e note",
+        "title": "Il lavoro"
       },
       "list": {
         "columns": {
@@ -29728,6 +29827,10 @@
           "TransferFailed": "Il trasferimento non è ancora riuscito: CasaZen riprova",
           "unknown": "In verifica"
         },
+        "hostSale": "Vendita del fornitore all’host, importo lordo",
+        "hostSaleRefund": "Rimborso commerciale all’host",
+        "hostSaleCommission": "Commissione B2B di CasaZen a carico del fornitore, inclusa nel lordo",
+        "hostSaleFeeRefund": "Rettifica della commissione per il rimborso",
         "subNet": "Netto {{amount}}",
         "title": "Pagamento e compenso",
         "tooSoon": "Hai già inviato un promemoria da poco: puoi riprovare domani."
@@ -33509,6 +33612,7 @@
     "noContracts": "Non hai un contratto attivo da consultare.",
     "noContractsHint": "Il contratto compare qui quando il gestore ti aggiunge. I pagamenti stanno nella sezione Pagamenti.",
     "openContract": "Apri il contratto",
+    "signOut": "Esci",
     "nav": {
       "label": "Sezioni",
       "contracts": "Contratti",

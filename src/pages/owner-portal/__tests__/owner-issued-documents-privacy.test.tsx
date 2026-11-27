@@ -10,6 +10,7 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import i18n from '@/i18n/config';
 import { saveBlobAs } from '@/lib/file-download';
 import { OWNER_PORTAL_KEY } from '@/queries/ownerPortal';
+import { toast } from 'sonner';
 import { OwnerIssuedDocuments } from '../OwnerIssuedDocuments';
 
 const env = vi.hoisted(() => ({ flags: {} as Record<string, boolean> }));
@@ -161,7 +162,8 @@ describe('the documents issued in the name of the owner show nothing of a guest 
     const [receipt] = await screen.findAllByTestId('owner-issued-document');
     fireEvent.click(within(receipt).getByTestId('owner-issued-pdf'));
 
-    expect(await within(receipt).findByTestId('owner-issued-download-failed')).toBeInTheDocument();
+    // Said in a toast, as every download of the app (UX round 2026-11).
+    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
     const [, config] = getFile.mock.calls[0] as [string, { validateStatus: (status: number) => boolean }];
     expect(config.validateStatus(403)).toBe(true);
     expect(saveBlobAs).not.toHaveBeenCalled();

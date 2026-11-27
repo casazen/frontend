@@ -10,7 +10,10 @@ import {
   afterRetake,
   afterSelfie,
   classifyIdentityError,
+  closedStateOf,
+  identityStateOf,
   isIdentityConcluded,
+  isNoticeVersionUnknown,
   progressFromState,
   type IdentityProblem,
   type IdentityProgress,
@@ -45,6 +48,20 @@ export interface IdentityVerificationController {
   askOperator: () => Promise<void>;
   /** The guest takes again what the guidance asked for (from the screen of a `retry`). */
   retake: () => void;
+  /**
+   * The identity step of a self-hosted verification is opened with the version of the text of the consent the guest is shown (E70/F03/US01/T01, NF-188): once per page load, whatever the screen does with its
+   * renders and its steps (the server records the opening once, and every later call changes nothing). Nothing waits for it and no button depends on it: the answer to the consent opens the step too, so a call that
+   * fails changes nothing for the guest. When the server says that version is not the one in force (422), `readTextsAgain` reads the texts once more and resolves with the version of the consent the registry serves
+   * now (`null` when it serves none), or REJECTS when they could not be read (a read that failed leaves the older answer in memory, and that is the version just refused: it is no answer). The opening is tried again
+   * with the version it resolved with, and when that is refused too the page cannot say which text the guest agrees to, so `automaticUnavailable` turns on. After a read that failed nothing is concluded: the opening
+   * is tried again with the next text that settles. A text that is not the one refused for good gets an attempt of its own.
+   */
+  openNotice: (version: string, readTextsAgain: () => Promise<string | null>) => Promise<void>;
+  /**
+   * The server does not take the text on the screen as the one in force (and reading it again did not help): the face check is not offered on this page, a person verifies. It follows the last opening: an opening
+   * that is not refused turns it off again.
+   */
+  automaticUnavailable: boolean;
 }
 
 /** The photo could not be made ready in this browser: a type the API does not read, or a size it refuses that the browser could not reduce. */
@@ -63,6 +80,17 @@ type HeldPictures = Record<DocumentSide, Blob | null>;
 const NO_PICTURES: HeldPictures = { front: null, back: null };
 
 /**
+ * Where the opening of the identity step stands: not tried yet (or to be tried again), being tried, done (opened, found closed, or a failure that changes nothing for the guest), or refused for good for the text the page
+ * showed (`refused` is its version, `null` when the registry served none).
+ */
+interface NoticeOpening {
+  phase: 'idle' | 'running' | 'done' | 'refused';
+  refused: string | null;
+}
+
+const NOTICE_NOT_TRIED: NoticeOpening = { phase: 'idle', refused: null };
+
+/**
  * The identity step of the guest check-in (CHK-11, NF-50, NF-51): the calls of the four endpoints and what the page knows of them. It starts from
  * what the context of the link says (`initial`) and follows the answers of the API, so a guest who opens the link again is where the server has them.
  *
@@ -75,7 +103,9 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
   const [local, setLocal] = useState<IdentityProgress | null>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<IdentityProblem | null>(null);
+  const [automaticUnavailable, setAutomaticUnavailable] = useState(false);
   const inFlight = useRef(false);
+  const notice = useRef<NoticeOpening>(NOTICE_NOT_TRIED);
   const documentPictures = useRef<HeldPictures>(NO_PICTURES);
 
   const progress = local ?? (initial ? progressFromState(initial) : null);
@@ -97,6 +127,22 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     [initial],
   );
 
+  const letGoOfThePictures = useCallback(() => {
+    documentPictures.current = NO_PICTURES;
+  }, []);
+
+  /**
+   * The verification was found closed (the 409 `identity_already_closed`, or the answer of the opening): the guest sees where it ended and no capture is offered. The pictures held for the next selfie go with it,
+   * and nothing is said of a failure: the step is simply over.
+   */
+  const showClosed = useCallback(
+    (state: IdentityVerificationState) => {
+      letGoOfThePictures();
+      update(() => progressFromState(state));
+    },
+    [letGoOfThePictures, update],
+  );
+
   /** One call at a time. A failure never throws out of here: it becomes a problem, and the guest stays where they are. */
   const run = useCallback(
     async <T,>(call: () => Promise<T>, apply: (current: IdentityProgress, answer: T) => IdentityProgress): Promise<boolean> => {
@@ -109,6 +155,13 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
         update((current) => apply(current, answer));
         return true;
       } catch (error) {
+        // The verification is over (a picture sent from another tab, or after a reload): the server answered where it ended, and that is what the guest sees; the call is answered, and it is not a failure.
+        const closed = closedStateOf(error);
+        if (closed) {
+          showClosed(closed);
+          return true;
+        }
+
         const reason = error instanceof PhotoNotReady ? error.problem : classifyIdentityError(error);
         setProblem(reason);
         update((current) => afterProblem(current, reason));
@@ -118,12 +171,66 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
         setBusy(false);
       }
     },
-    [update],
+    [showClosed, update],
   );
 
-  const letGoOfThePictures = () => {
-    documentPictures.current = NO_PICTURES;
-  };
+  const openNotice = useCallback(
+    async (version: string, readTextsAgain: () => Promise<string | null>) => {
+      // One attempt at a time and one per page load, however often the screen renders, changes language or is left and come back to: the server records the opening once, and a repeat would only spend the rate limit of
+      // the link. The exceptions come from the server or from the texts: a refusal reads the texts again once (below), a read that failed is followed by an attempt with the next text that settles, and a text that is
+      // not the one the server refused for good gets an attempt of its own.
+      const { phase, refused } = notice.current;
+      if (phase === 'running' || phase === 'done' || (phase === 'refused' && refused === version)) return;
+      notice.current = { phase: 'running', refused: null };
+
+      /** `opened` (or found closed), `unknown` when the server says the version is not the one in force, `failed` for anything else: a failure that changes nothing for the guest, the consent opens the step too. */
+      const open = async (shown: string): Promise<'opened' | 'unknown' | 'failed'> => {
+        try {
+          const state = identityStateOf((await publicCheckinApi.openIdentity(token, shown))?.state);
+          if (state?.closed === true) showClosed(state);
+          return 'opened';
+        } catch (error) {
+          const closed = closedStateOf(error);
+          if (closed) {
+            showClosed(closed);
+            return 'opened';
+          }
+          return isNoticeVersionUnknown(error) ? 'unknown' : 'failed';
+        }
+      };
+
+      const first = await open(version);
+      if (first !== 'unknown') {
+        // Nothing the server refused: the text on the screen may be agreed to (this turns off what an earlier refusal of another text left on).
+        notice.current = { phase: 'done', refused: null };
+        setAutomaticUnavailable(false);
+        return;
+      }
+
+      // The text on the screen is not the one in force: the texts are read again, once, and the opening is tried with the version the registry serves now.
+      let served: string | null;
+      try {
+        served = await readTextsAgain();
+      } catch {
+        // The texts could not be read again, so nothing says which text is in force (and the older answer that is still in memory is the one that was just refused): nothing is concluded, and the opening is tried
+        // again with the next text that settles.
+        notice.current = NOTICE_NOT_TRIED;
+        return;
+      }
+
+      const second = served === null ? 'unknown' : await open(served);
+      if (second === 'unknown') {
+        // Still refused (or the registry serves none): the page cannot say which text the guest agrees to. The face check is not offered, and a person verifies.
+        notice.current = { phase: 'refused', refused: served };
+        setAutomaticUnavailable(true);
+        return;
+      }
+
+      notice.current = { phase: 'done', refused: null };
+      setAutomaticUnavailable(false);
+    },
+    [showClosed, token],
+  );
 
   const agree = async (consentVersion: string) => {
     await run(() => publicCheckinApi.postBiometricConsent(token, { consentGiven: true, consentVersion }), afterConsent);
@@ -196,5 +303,7 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     sendSelfie,
     askOperator,
     retake,
+    openNotice,
+    automaticUnavailable,
   };
 }

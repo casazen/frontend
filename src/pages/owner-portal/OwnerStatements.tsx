@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Landmark, ExternalLink, MessageSquare } from 'lucide-react';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DocumentsList } from '@/features/owner-portal/documents-list';
 import { currentData, isAccountingDocument, safeDownloadName, safeExternalUrl } from '@/features/owner-portal/owner-portal-model';
@@ -22,13 +21,13 @@ const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year:
 type Downloads = ReturnType<typeof useOwnerDownload>;
 
 /** A statement with its net and its totals in its own currency, the way to open its lines, its PDF and the way to ask the agency about it. */
-function StatementCard({ statement, downloads }: { statement: OwnerPortalStatement; downloads: Downloads }) {
+// `latest`: only the newest statement has the filled «Apri»; the others open with an outline button, so the list has one primary action (UX round 2026-11).
+function StatementCard({ statement, downloads, latest = false }: { statement: OwnerPortalStatement; downloads: Downloads; latest?: boolean }) {
   const { t, i18n } = useTranslation();
-  const { download, busyKey, failure } = downloads;
+  const { download, busyKey } = downloads;
   const language = i18n.language;
   const period = periodLabel(statement.year, statement.month, language);
   const key = `statement:${statement.statementId}`;
-  const failed = failure?.key === key ? failure : null;
   const month = String(statement.month).padStart(2, '0');
 
   return (
@@ -58,7 +57,7 @@ function StatementCard({ statement, downloads }: { statement: OwnerPortalStateme
       {statement.superseded ? <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.supersededNote')}</p> : null}
 
       <div className="flex flex-wrap gap-2">
-        <Button asChild className={TOUCH}>
+        <Button asChild variant={latest ? 'default' : 'outline'} className={TOUCH}>
           <Link to={ownerPortalPaths.statement(statement.statementId)} aria-label={t('ownerPortal.accounting.openAria', { period, number: statement.version })} data-testid="owner-statement-open">
             {t('ownerPortal.accounting.open')}
           </Link>
@@ -91,11 +90,6 @@ function StatementCard({ statement, downloads }: { statement: OwnerPortalStateme
           {t('ownerPortal.accounting.pdf.notAvailable')}
         </p>
       )}
-      {failed ? (
-        <Alert variant="danger" data-testid="owner-statement-download-failed">
-          {failed.message}
-        </Alert>
-      ) : null}
     </li>
   );
 }
@@ -103,7 +97,7 @@ function StatementCard({ statement, downloads }: { statement: OwnerPortalStateme
 /** An invoice of the property manager to the owner: its number, its day, its total in its own currency, and its PDF. */
 function PmInvoiceCard({ invoice, statements, downloads }: { invoice: OwnerPortalInvoice; statements: readonly OwnerPortalStatement[]; downloads: Downloads }) {
   const { t, i18n } = useTranslation();
-  const { download, busyKey, failure } = downloads;
+  const { download, busyKey } = downloads;
   const language = i18n.language;
   const kind = invoiceKindOf(invoice.kind);
   const title = t('ownerPortal.accounting.pmInvoices.cardTitle', {
@@ -119,7 +113,6 @@ function PmInvoiceCard({ invoice, statements, downloads }: { invoice: OwnerPorta
         ? periodLabel(statement.year, statement.month, language)
         : null;
   const key = `invoice:${invoice.invoiceId}`;
-  const failed = failure?.key === key ? failure : null;
   const file = t('ownerPortal.accounting.pdf.invoiceFile');
 
   return (
@@ -167,11 +160,6 @@ function PmInvoiceCard({ invoice, statements, downloads }: { invoice: OwnerPorta
           </Button>
         ) : null}
       </div>
-      {failed ? (
-        <Alert variant="danger" data-testid="owner-pm-invoice-download-failed">
-          {failed.message}
-        </Alert>
-      ) : null}
     </li>
   );
 }
@@ -222,7 +210,7 @@ function LinkedInvoicesSection({ statements }: { statements: readonly OwnerPorta
 
   return (
     <section aria-labelledby="owner-invoices-title" className="space-y-3">
-      <h2 id="owner-invoices-title" className="text-xl font-semibold text-[#1f3a3d]">
+      <h2 id="owner-invoices-title" className="text-xl font-semibold">
         {t('ownerPortal.accounting.invoicesTitle')}
       </h2>
       <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.invoicesNote')}</p>
@@ -263,7 +251,7 @@ export function OwnerStatements() {
       <PortalPageHeading icon={Landmark} title={t('ownerPortal.accounting.title')} description={t('ownerPortal.accounting.description')} />
 
       <section aria-labelledby="owner-statements-title" className="space-y-3">
-        <h2 id="owner-statements-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-statements-title" className="text-xl font-semibold">
           {t('ownerPortal.accounting.statementsTitle')}
         </h2>
         {statements.isLoading ? (
@@ -276,15 +264,15 @@ export function OwnerStatements() {
           </p>
         ) : (
           <ul className="space-y-3" data-testid="owner-statements">
-            {statementList.map((statement) => (
-              <StatementCard key={statement.statementId} statement={statement} downloads={downloads} />
+            {statementList.map((statement, index) => (
+              <StatementCard key={statement.statementId} statement={statement} downloads={downloads} latest={index === 0} />
             ))}
           </ul>
         )}
       </section>
 
       <section aria-labelledby="owner-pm-invoices-title" className="space-y-3">
-        <h2 id="owner-pm-invoices-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-pm-invoices-title" className="text-xl font-semibold">
           {t('ownerPortal.accounting.pmInvoices.title')}
         </h2>
         <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.pmInvoices.note')}</p>
@@ -310,7 +298,7 @@ export function OwnerStatements() {
       <OwnerWithholdingSection />
 
       <section aria-labelledby="owner-accounting-documents-title" className="space-y-3">
-        <h2 id="owner-accounting-documents-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-accounting-documents-title" className="text-xl font-semibold">
           {t('ownerPortal.accounting.documentsTitle')}
         </h2>
         {documents.isLoading ? (

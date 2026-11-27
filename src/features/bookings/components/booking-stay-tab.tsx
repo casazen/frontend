@@ -136,9 +136,10 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
         {guest && <section className="min-w-0 rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="stay-guest-heading">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-primary-soft font-semibold text-primary-text">{guestInitials || <UserRound className="size-5" />}</span>
+            {/* The name of the guest is the title of the page: the card says what it is about and holds the ways to reach them. */}
             <div className="min-w-0">
-              <h2 id="stay-guest-heading" className="text-sm text-muted-foreground">{t('booking.detailPage.guestInformationTitle')}</h2>
-              <p className="break-words font-semibold">{guestName}</p>
+              <h2 id="stay-guest-heading" className="font-semibold">{t('booking.detailPage.guestInformationTitle')}</h2>
+              <p className="sr-only">{guestName}</p>
             </div>
           </div>
           {(guest.email || guest.phone || country) && <ul className="mt-3 border-t pt-2 text-sm">

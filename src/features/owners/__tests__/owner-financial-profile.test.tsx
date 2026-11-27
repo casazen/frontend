@@ -384,17 +384,20 @@ describe('the days a profile covers (E06/F05/US02/T04)', () => {
     api.listPolicies.mockResolvedValue([policy({ validFrom: '2025-01-01' })]);
     const { unmount } = renderPage('?period=2025-01');
 
-    // «Ready» is judged on today and says from which day it holds; the month that sent the person here, before that day, is said to be left out.
-    expect(await screen.findByTestId('profile-focus')).toHaveTextContent('1 marzo 2025');
-    const warning = await screen.findByTestId('profile-month-not-covered');
-    expect(warning).toHaveTextContent('gennaio 2025');
-    expect(warning).toHaveTextContent('1 marzo 2025');
+    // The month that sent the person here, before the day the data hold from, is left out: the one block says it (UX round 2026-11), in the
+    // tone of a warning, instead of a green «ready» above a yellow notice that said the opposite.
+    const focus = await screen.findByTestId('profile-focus');
+    expect(focus).toHaveAttribute('data-tone', 'warning');
+    expect(focus).toHaveAttribute('data-month-not-covered', 'true');
+    expect(focus).toHaveTextContent('gennaio 2025');
+    expect(focus).toHaveTextContent('1 marzo 2025');
+    expect(screen.getAllByRole('region').filter((region) => region.getAttribute('data-tone') === 'success')).toHaveLength(0);
     unmount();
 
-    // A month the data cover, or no month at all (the page opened on its own): nothing to warn about.
+    // A month the data cover, or no month at all (the page opened on its own): «ready», nothing to warn about.
     renderPage('?period=2025-04');
-    await screen.findByTestId('profile-focus');
-    expect(screen.queryByTestId('profile-month-not-covered')).toBeNull();
+    expect(await screen.findByTestId('profile-focus')).toHaveAttribute('data-tone', 'success');
+    expect(screen.getByTestId('profile-focus')).not.toHaveAttribute('data-month-not-covered');
   });
 
   it('OwnerProfile_WithoutAMonth_SaysFromWhichDayTheDataHold_AndWarnsOfNothing', async () => {
@@ -403,7 +406,7 @@ describe('the days a profile covers (E06/F05/US02/T04)', () => {
     renderPage();
 
     expect(await screen.findByTestId('profile-focus')).toHaveTextContent('1 marzo 2025');
-    expect(screen.queryByTestId('profile-month-not-covered')).toBeNull();
+    expect(screen.getByTestId('profile-focus')).toHaveAttribute('data-tone', 'success');
   });
 });
 

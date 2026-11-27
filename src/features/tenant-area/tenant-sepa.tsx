@@ -53,7 +53,7 @@ export function TenantSepaSettings({ leaseId }: { leaseId: string }) {
             onSubmitted={(status) => { if (status === 'succeeded') setSetupDone(true); }}
             onError={() => setup.reset()} /> : setupDone || returnedFromSetup ? <>
               <p>{t('tenantSepa.chooseMode')}</p>
-              <Button disabled={mode.isPending} onClick={() => mode.mutate(false)}>{t('tenantSepa.manual')}</Button>{' '}
+              <Button variant="outline" disabled={mode.isPending} onClick={() => mode.mutate(false)}>{t('tenantSepa.manual')}</Button>{' '}
               <Button disabled={mode.isPending} onClick={() => mode.mutate(true)}>{t('tenantSepa.enableAutomatic')}</Button>
             </> : <Button disabled={setup.isPending} onClick={() => setup.mutate()}>{t('tenantSepa.authorize')}</Button>}
         </>}

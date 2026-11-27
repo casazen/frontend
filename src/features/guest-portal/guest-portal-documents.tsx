@@ -60,6 +60,20 @@ export function GuestPortalDocuments({ path, language, labels }: {
       {(docs.isPending || invoice.isPending || supplierFiles.isPending) && <p role="status">{labels.loading}</p>}
       {(docs.isError || supplierFiles.isError || invoice.isError || pdf.isError || correction.isError) && <p role="alert">{labels.failed}</p>}
       {correction.isSuccess && <p role="status">{labels.requested}</p>}
+      {/* What the guest came for first (UX round 2026-11): the documents to download; asking a correction is a plain link beside
+          the download, and the invoice question comes after the list. */}
+      {docs.data?.length === 0 && supplierFiles.data?.length === 0 && <p>{labels.empty}</p>}
+      {docs.data?.map((document) => (
+        <div key={document.id} className="stay-document">
+          <span>{document.number} · {new Intl.NumberFormat(language, { style: 'currency', currency: document.currency }).format(document.total)}</span>
+          {document.kind === 'Invoice' && (
+            <button type="button" className="stay-action-link" disabled={correction.isPending}
+              onClick={() => correction.mutate(document.id)}>{labels.correction}</button>
+          )}
+          <button disabled={pdf.isPending} onClick={() => pdf.mutate(document)}>{labels.download}</button>
+        </div>
+      ))}
+      <GuestSupplierFiles endpoint={endpoint} language={language} orders={supplierFiles.data ?? []} />
       {invoice.data && !invoice.data.issued && <>
         {invoice.data.hostManaged && <p>{t('checkin.invoiceHostManaged')}</p>}
         <GuestInvoiceForm context={invoice.data} save={async (request) => {
@@ -73,18 +87,6 @@ export function GuestPortalDocuments({ path, language, labels }: {
             await invoice.refetch();
           }} />
       </>}
-      {docs.data?.length === 0 && supplierFiles.data?.length === 0 && <p>{labels.empty}</p>}
-      {docs.data?.map((document) => (
-        <div key={document.id} className="stay-document">
-          <span>{document.number} · {new Intl.NumberFormat(language, { style: 'currency', currency: document.currency }).format(document.total)}</span>
-          {document.kind === 'Invoice' && (
-            <button type="button" disabled={correction.isPending}
-              onClick={() => correction.mutate(document.id)}>{labels.correction}</button>
-          )}
-          <button disabled={pdf.isPending} onClick={() => pdf.mutate(document)}>{labels.download}</button>
-        </div>
-      ))}
-      <GuestSupplierFiles endpoint={endpoint} language={language} orders={supplierFiles.data ?? []} />
     </section>
   );
 }

@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
+      // `cz-shimmer` (`styles/motion.css`): a soft light sweeps across the block instead of a blink; still without motion.
+      className={cn("cz-shimmer rounded-md bg-muted", className)}
       {...props}
     />
   );

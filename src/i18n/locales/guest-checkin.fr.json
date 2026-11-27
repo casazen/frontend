@@ -135,6 +135,7 @@
     "next": "Suivant",
     "back": "Retour",
     "submit": "Envoyer le check-in",
+    "submitHint": "Pour envoyer, cochez d’abord les cases obligatoires ci-dessus.",
     "fixHighlightedFields": "Certaines informations ne sont pas valides : corrigez les champs signalés puis envoyez de nouveau.",
     "successTitle": "Check-in terminé !",
     "successDescription": "L’établissement a reçu les informations sur votre séjour. Pour les corriger, contactez-le via votre réservation.",
@@ -327,6 +328,18 @@
       "SingleGuest": "Invité individuel"
     },
     "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "Une personne contrôle votre identité, sans comparaison automatique du visage. Le consentement au contrôle du visage n'est pas nécessaire.",
+          "label": "Vérification par une personne",
+          "switch": "Passer à la vérification par une personne"
+        },
+        "automatic": {
+          "hint": "Vous photographiez votre pièce d'identité et vous montrez votre visage à la caméra. Votre consentement, indiqué ci-dessus, est nécessaire.",
+          "label": "Vérification automatique"
+        },
+        "title": "Comment voulez-vous faire vérifier votre identité ?"
+      },
       "document": {
         "back": {
           "fileLabel": "Photo du verso de la pièce d'identité",
@@ -409,6 +422,10 @@
           "noReason": "La vérification n'a pas abouti cette fois.",
           "title": "Nous n'avons pas encore pu vous vérifier"
         }
+      },
+      "unsupported": {
+        "text": "Cette page ne peut pas encore effectuer cette étape de la vérification. Vous pouvez demander qu'une personne contrôle votre identité : l'hôte sera prévenu.",
+        "title": "Cette étape nécessite une personne"
       }
     },
     "invoice": {

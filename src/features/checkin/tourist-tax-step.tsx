@@ -337,10 +337,11 @@ function TouristTaxContent({ token, view, refetch, fetching, completed = false, 
         <>
           <p className="text-sm text-muted-foreground">{t('checkin.touristTax.intro')}</p>
           <TaxFigures view={view} money={money} />
+          {/* One line, not a warning box: it says why «Avanti» waits, and the payment right under it is the action. */}
           {blocksNextStep(view) && !cannotPay && (
-            <Alert variant="warning" data-testid="tourist-tax-required">
+            <p className="text-sm font-medium" data-testid="tourist-tax-required">
               {t('checkin.touristTax.requiredBeforeCode')}
-            </Alert>
+            </p>
           )}
           <PaymentArea
             token={token}

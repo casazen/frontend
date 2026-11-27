@@ -50,12 +50,13 @@ export function GuestHostExtras({ path, language }: { path: string; language: La
   const returnUrl = new URL(window.location.pathname, window.location.origin);
   returnUrl.search = new URLSearchParams({ lang: language, page: 'extras' }).toString();
 
+  // The cards sit on the page (UX round 2026-11): no padded box around them, and in an order paying is the one filled button.
   return (
-    <div className="stay-content">
+    <div className="stay-stack" data-testid="guest-host-extras">
       {content.isPending && <p role="status">{labels[1]}</p>}
       {(content.isError || reserve.isError || pay.isError || cancel.isError || confirmAuthorization.isError) && <p role="alert">{labels[8]}</p>}
       {content.isSuccess && content.data.offers.length === 0 && <p>{labels[2]}</p>}
-      <div className="grid gap-3 sm:grid-cols-2">
+      {Boolean(content.data?.offers.length) && <div className="grid gap-3 sm:grid-cols-2">
         {content.data?.offers.map((offer) => {
           const quantity = quantities[offer.id] ?? 1;
           return (
@@ -72,13 +73,13 @@ export function GuestHostExtras({ path, language }: { path: string; language: La
             </article>
           );
         })}
-      </div>
-      {content.data?.orders.length ? <h2>{labels[9]}</h2> : null}
+      </div>}
+      {content.data?.orders.length ? <h2 className="stay-stack-title">{labels[9]}</h2> : null}
       {content.data?.orders.map((order) => (
         <article className="stay-card stay-content" key={order.id}>
           <h3>{order.name}</h3>
           <p>{formatExtraPrice(language, order.amount, order.currency)} · {hostExtraStatus(language, order.status)}</p>
-          {canPayExtraOrder(order.status) && activePayment?.id !== order.id && <button type="button" disabled={pay.isPending}
+          {canPayExtraOrder(order.status) && activePayment?.id !== order.id && <button type="button" className="stay-action-primary" disabled={pay.isPending}
             onClick={() => pay.mutate(order.id)}>{order.status === 'AwaitingAuthorization' ? labels[3] : labels[6]}</button>}
           {canPayExtraOrder(order.status) && activePayment?.id === order.id && (
             <StripeIntentPayment mode="payment" {...activePayment.session} locale={stripeLocale(language)}
@@ -91,7 +92,7 @@ export function GuestHostExtras({ path, language }: { path: string; language: La
               }} onError={setPaymentError} />
           )}
           {paymentError && activePayment?.id === order.id && <p role="alert">{paymentError}</p>}
-          {(order.status === 'Requested' || canPayExtraOrder(order.status)) && <button type="button" disabled={cancel.isPending}
+          {(order.status === 'Requested' || canPayExtraOrder(order.status)) && <button type="button" className="stay-action-link" disabled={cancel.isPending}
             onClick={() => cancel.mutate(order.id)}>{labels[7]}</button>}
         </article>
       ))}

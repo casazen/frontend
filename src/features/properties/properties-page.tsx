@@ -129,7 +129,6 @@ export function PropertiesPage() {
 
       <PageHeader
         title={t('property.page.title')}
-        description={t('property.page.description')}
         crumbs="auto"
         primary={canWrite ? { label: t('property.page.addButton'), icon: Plus, to: PROPERTY_CREATE_PATH, testId: 'property-add' } : undefined}
         secondary={

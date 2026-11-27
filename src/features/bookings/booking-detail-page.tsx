@@ -221,13 +221,11 @@ export function BookingDetailPage() {
             ? [{ label: t('dashboard.today.arrivalsLabel'), to: `/app/short-rent?${new URLSearchParams(state.arrivalsSearch)}` }, { label: guestName }]
             : 'auto'}
           title={guestName}
-          description={summary}
-          action={
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <StatusBadge kind="booking" status={booking.status} size="lg" data-testid="booking-detail-status" />
-              {activeTab === 'details' && nextStep}
-            </div>
-          }
+          // The state under the name; the facts of the stay (house, dates, guests) only where the card of the stay is not shown
+          // right below with the same facts; on the right, only the next action and its why (UX round 2026-11).
+          status={<StatusBadge kind="booking" status={booking.status} data-testid="booking-detail-status" />}
+          description={activeTab === 'details' ? undefined : summary}
+          action={activeTab === 'details' ? <div className="flex min-w-0 flex-wrap items-center gap-2">{nextStep}</div> : undefined}
           secondary={menu}
         />
 

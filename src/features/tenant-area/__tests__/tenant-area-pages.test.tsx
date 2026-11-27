@@ -352,6 +352,7 @@ describe('tenant area', () => {
     renderAt('/portale-conduttore/contratti/lease-1', <TenantContractPage />);
 
     expect(await screen.findByTestId('tenant-contract-next')).toHaveTextContent('05/11/2026');
+    expect(screen.getByTestId('tenant-contract-next')).toHaveAttribute('data-tone', 'neutral');
     expect(screen.getByRole('link', { name: 'Paga la scadenza' })).toHaveAttribute(
       'href',
       '/portale-conduttore/contratti/lease-1/scadenze/due-1',
@@ -407,6 +408,9 @@ describe('tenant area', () => {
       '/portale-conduttore/contratti/lease-1/scadenze/due-later',
     );
     expect(screen.queryByRole('link', { name: 'Vedi la scadenza' })).not.toBeInTheDocument();
+    // The next payment is the one block of the page, in the tone of a warning when it is late (UX round 2026-11).
+    expect(screen.getByTestId('tenant-contract-next')).toHaveAttribute('data-tone', 'warning');
+    expect(screen.getByTestId('tenant-contract-next')).toHaveTextContent('In ritardo');
 
     cleanup();
     renderAt('/portale-conduttore/contratti/lease-1/scadenze', <TenantDuesPage />);

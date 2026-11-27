@@ -1,11 +1,41 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowUpRight, Building2, CalendarDays } from 'lucide-react';
+import { ArrowUpRight, Building2, CalendarDays, ReceiptText } from 'lucide-react';
+import { FocusBlock } from '@/components/shared/calm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { currentData } from '@/features/owner-portal/owner-portal-model';
+import { periodLabel, sortedStatements } from '@/features/owner-portal/owner-statement-model';
 import { PortalPageHeading, PortalReadProblem } from '@/features/owner-portal/portal-parts';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
-import { useOwnerProperties } from '@/queries/ownerPortal';
+import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
+import { useOwnerProperties, useOwnerStatements } from '@/queries/ownerPortal';
+
+const PUBLISHED_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+
+/**
+ * The one thing an owner comes for (UX round 2026-11): the latest statement the agency published, with the way to open it. Nothing
+ * while the list loads, fails or is empty: the page has its properties anyway, and the accounting page says the rest.
+ */
+function LatestStatementFocus() {
+  const { t, i18n } = useTranslation();
+  const statements = currentData(useOwnerStatements());
+  const latest = statements ? sortedStatements(statements).find((statement) => !statement.superseded) : undefined;
+  if (!latest) return null;
+
+  const language = i18n.language;
+  const period = periodLabel(latest.year, latest.month, language);
+  const published = t('ownerPortal.accounting.publishedOn', { date: formatStayDate(romeDateOf(latest.publishedAt), language, PUBLISHED_DATE) });
+  return (
+    <FocusBlock
+      icon={ReceiptText}
+      title={t('ownerPortal.accounting.statementTitle', { period })}
+      body={latest.agencyName ? `${published} · ${latest.agencyName}` : published}
+      primary={{ label: t('ownerPortal.accounting.open'), href: ownerPortalPaths.statement(latest.statementId), testId: 'owner-home-latest-statement' }}
+      data-testid="owner-home-focus"
+    />
+  );
+}
 
 /**
  * Owner portal overview (ADR-011-R8, E07/F07/US01/T03): the list of the owner's properties, each one a link to its page, with the number of its bookings.
@@ -24,6 +54,8 @@ export function OwnerDashboard() {
   return (
     <div className="space-y-6">
       <PortalPageHeading icon={Building2} title={t('ownerPortal.dashboard.title')} description={t('ownerPortal.dashboard.description')} />
+
+      <LatestStatementFocus />
 
       {/* Properties list */}
       <section className="space-y-4" aria-labelledby="owner-properties-title">
