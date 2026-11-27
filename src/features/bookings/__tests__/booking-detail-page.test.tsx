@@ -70,12 +70,14 @@ interface HeaderAction {
   testId?: string;
 }
 // The real header keeps `secondary` in the menu "⋯" (a closed menu has no items in the page): here they are plain buttons and links.
+// `status` is the state under the title (the badge of the booking), `action` what sits beside it.
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title, action, secondary }: { title: string; action?: React.ReactNode; secondary?: (HeaderAction | { separator: true })[] }) =>
+  PageHeader: ({ title, status, action, secondary }: { title: string; status?: React.ReactNode; action?: React.ReactNode; secondary?: (HeaderAction | { separator: true })[] }) =>
     createElement(
       'div',
       null,
       createElement('h1', null, title),
+      status,
       action,
       ...(secondary ?? []).flatMap((item, index) => {
         if ('separator' in item) return [];

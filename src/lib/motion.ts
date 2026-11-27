@@ -14,7 +14,11 @@ export const PRESS_FEEDBACK =
 /** Press feedback for a tile or a card that is chosen or opened: less than a button, it is bigger. */
 export const TILE_PRESS_FEEDBACK = 'motion-safe:active:scale-[0.985]';
 
-/** A card that opens something: it lifts under the pointer (a mouse; on a phone the press is enough). */
+/**
+ * A card that opens something: it lifts under the pointer (a mouse; on a phone the press is enough). The lift is a shadow that
+ * fades, so the focus of the card must not be a shadow too (`ring-*`): a focus ring that fades in is late for the keyboard.
+ * Give the card `focus-visible:outline-2 focus-visible:outline-ring`.
+ */
 export const CARD_LIFT =
   'transition-[box-shadow,scale,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] [@media(hover:hover)]:hover:shadow-[var(--cz-shadow-hover)] motion-safe:active:scale-[0.99]';
 
