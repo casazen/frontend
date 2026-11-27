@@ -277,7 +277,8 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
 describe('ACTION_ROUTE_MAP: the actions of the traffic light', () => {
   const stay = (action: string) => ({ action, entityType: 'Booking', entityId: BOOKING_ID, propertyId: PROPERTY_ID as string | null });
   const ofProperty = (action: string, entityType = 'Property') => ({ action, entityType, entityId: PROPERTY_ID, propertyId: PROPERTY_ID as string | null });
-  const ACTIONS_OF_THE_LIGHT = ['SendAlloggiatiManually', 'ActivateOctorateSend', 'RenewPoliceCredentials', 'EnterMunicipalityTaxRate', 'DeclareTouristTax'] as const;
+  // `EnterMunicipalityTaxRate` is not here: it has no page (it is entered in the guided check-in of a stay), so no entry and no button (below, INC-14).
+  const ACTIONS_OF_THE_LIGHT = ['SendAlloggiatiManually', 'ActivateOctorateSend', 'RenewPoliceCredentials', 'DeclareTouristTax'] as const;
 
   it.each(ACTIONS_OF_THE_LIGHT)('actionRouteMap_%s_HasAnEntryThatLeadsWhereTheCockpitLeads', (action) => {
     expect(Object.hasOwn(ACTION_ROUTE_MAP, action)).toBe(true);
@@ -296,9 +297,8 @@ describe('ACTION_ROUTE_MAP: the actions of the traffic light', () => {
 
   it.each([
     ['ActivateOctorateSend', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`],
-    ['EnterMunicipalityTaxRate', `/app/short-rent/properties/${PROPERTY_ID}`],
   ])('todoActionRoute_%s_OpensThePageOfTheProperty', (action, address) => {
-    // The police send opens the wizard that activates it, for the property of the item (E03/F01/US02/T02); the tourist tax rate has no page of its own yet.
+    // The police send opens the wizard that activates it, for the property of the item (E03/F01/US02/T02).
     expect(todoActionRoute(ofProperty(action))).toBe(address);
     // The property is the one the item names, or the entity itself.
     expect(todoActionRoute({ ...ofProperty(action), propertyId: null })).toBe(address);
@@ -610,8 +610,11 @@ const BACKEND_ACTIONS = [
   'ReviewImportedProperty',
 ] as const;
 
-/** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */
-const ACTIONS_WITHOUT_A_PAGE_YET: readonly string[] = ['ConfirmChannelMapping', 'ReviewOwnerStay', 'RenewOwnerDocument'];
+/**
+ * The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. And the tourist tax
+ * rate of the municipality: it is entered in the guided check-in of a stay, the item names no stay, so the item says where and has no button (INC-14).
+ */
+const ACTIONS_WITHOUT_A_PAGE_YET: readonly string[] = ['ConfirmChannelMapping', 'ReviewOwnerStay', 'RenewOwnerDocument', 'EnterMunicipalityTaxRate'];
 
 describe('ACTION_ROUTE_MAP and the actions of the backend', () => {
   it.each(BACKEND_ACTIONS)('actionRouteMap_BackendAction_%s_HasAnEntryOrIsInTheListOfThoseWithoutAPageYet', (action) => {

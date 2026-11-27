@@ -9,15 +9,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { FormFieldError } from '@/components/shared/form-field-error';
 import { formatCurrency } from '@/lib/utils';
-import { formatStayDate } from '@/lib/stay-dates';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useBooking, useBookingCancellationQuote, useCancelBooking, useRetryOctorateSync } from '@/queries/use-bookings';
-import { parseRefundAmount, toCents } from '@/features/payments/lib/refund-amount';
 import { RefundOutcomeMessage } from '@/features/payments/components/refund-outcome';
 import type { Booking, BookingCancellationQuote, BookingChangeOptions, CancelBookingResult } from '@/types';
 import { channelGuidanceOf, channelRefusalOf } from '../lib/booking-change';
@@ -30,8 +26,6 @@ interface CancelBookingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-type RefundChoice = 'full' | 'partial';
 
 /**
  * Host cancellation of a booking (BK-02, #51, E08/F03/US02, NF-76). The booking is read when the dialog opens, because what the host may do depends on it: a booking CasaZen holds
@@ -195,8 +189,9 @@ interface MoneyCancelProps {
 }
 
 /**
- * Host cancellation of a booking with its money on Stripe (BK-02, #51). When something was paid the host chooses a full or partial refund, never below the minimum of the rule shown to
- * the guest (free cancellation deadline, property policy) and never above what was paid. After confirming, each refund is shown as Stripe left it: confirmed, waiting for Stripe, or
+ * Host cancellation of a booking with its money on Stripe (BK-02, #51). When the host cancels, the guest always gets back everything that was paid by card, whatever the cancellation
+ * policy says (PO 2026-10-08: the server refunds it all and ignores any amount): the dialog shows the total refund and says it cannot be undone, and offers no choice of amount.
+ * After confirming, each refund is shown as Stripe left it: confirmed, waiting for Stripe, or
  * not done; and, for a booking that is mirrored on the channel manager, one line for it (E08/F03/US02, NF-76): being sent, cancelled there too, or failed with "Retry now". The
  * cancellation is made in CasaZen first: the refunds never wait for that line.
  */
@@ -205,10 +200,7 @@ function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClos
   const quote = useBookingCancellationQuote(bookingId, true);
   const cancel = useCancelBooking();
   const retry = useRetryOctorateSync();
-  const [choice, setChoice] = useState<RefundChoice>('full');
-  const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
-  const [amountError, setAmountError] = useState<string | null>(null);
   const [result, setResult] = useState<CancelBookingResult | null>(null);
   const [retryError, setRetryError] = useState<string | null>(null);
   const mirrored = booking?.octorateSync != null;
@@ -230,31 +222,9 @@ function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClos
     event.preventDefault();
     // A dialog rendered inside a form must not submit it (the portal passes the event on).
     event.stopPropagation();
-    let refundAmount: number | undefined;
+    // The host's cancellation refunds everything that was paid by card (BK-02, PO 2026-10-08): the whole refundable amount is what is asked, and nothing else can be.
+    const refundAmount = data.requiresRefundDecision ? data.refundableAmount : undefined;
 
-    if (data.requiresRefundDecision) {
-      if (choice === 'full') {
-        refundAmount = data.refundableAmount;
-      } else {
-        const parsed = parseRefundAmount(amount);
-        if (parsed === null || Number.isNaN(parsed)) {
-          setAmountError(t('booking.cancel.errors.amountInvalid'));
-          return;
-        }
-        if (toCents(parsed) < toCents(data.minimumRefundAmount) || toCents(parsed) > toCents(data.refundableAmount)) {
-          setAmountError(
-            t('booking.cancel.errors.amountOutOfRange', {
-              min: formatCurrency(data.minimumRefundAmount, data.currency),
-              max: formatCurrency(data.refundableAmount, data.currency),
-            }),
-          );
-          return;
-        }
-        refundAmount = parsed;
-      }
-    }
-
-    setAmountError(null);
     cancel.mutate(
       { id: bookingId, data: { refundAmount, reason: reason.trim() || undefined } },
       {
@@ -323,19 +293,7 @@ function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClos
               <p>{t('booking.cancel.offlinePaid', { amount: formatCurrency(data.offlinePaidAmount, data.currency) })}</p>
             )}
 
-            {data.requiresRefundDecision && (
-              <RefundDecision
-                data={data}
-                choice={choice}
-                onChoiceChange={(next) => {
-                  setChoice(next);
-                  setAmountError(null);
-                }}
-                amount={amount}
-                onAmountChange={setAmount}
-                amountError={amountError}
-              />
-            )}
+            {data.requiresRefundDecision && <FullRefund data={data} />}
 
             <div className="space-y-2">
               <Label htmlFor="cancel-reason">{t('booking.cancel.reason')}</Label>
@@ -377,32 +335,13 @@ function MoneyCancel({ bookingId, booking, watch, checking, onCheckAgain, onClos
   );
 }
 
-interface RefundDecisionProps {
-  data: BookingCancellationQuote;
-  choice: RefundChoice;
-  onChoiceChange: (choice: RefundChoice) => void;
-  amount: string;
-  onAmountChange: (amount: string) => void;
-  amountError: string | null;
-}
-
-function RefundDecision({ data, choice, onChoiceChange, amount, onAmountChange, amountError }: RefundDecisionProps) {
-  const { t, i18n } = useTranslation();
+/**
+ * What the cancellation of the host gives back: the whole of what was paid by card, said in numbers and in words, and that it cannot be undone. There is nothing to choose: the
+ * server refunds everything refundable whatever the cancellation policy says and whatever amount is sent (BK-02, PO 2026-10-08).
+ */
+function FullRefund({ data }: { data: BookingCancellationQuote }) {
+  const { t } = useTranslation();
   const money = (value: number) => formatCurrency(value, data.currency);
-  // A rule that grants everything leaves nothing to choose.
-  const partialAllowed = toCents(data.minimumRefundAmount) < toCents(data.refundableAmount);
-
-  const ruleText =
-    data.rule === 'FreeCancellationDeadline'
-      ? t('booking.cancel.rule.freeCancellation', {
-          date: formatStayDate((data.freeCancellationUntil ?? '').slice(0, 10), i18n.language),
-        })
-      : data.rule === 'PropertyCancellationPolicy'
-        ? t('booking.cancel.rule.policy', {
-            name: data.cancellationPolicyName ?? '',
-            amount: money(data.minimumRefundAmount),
-          })
-        : t('booking.cancel.rule.none', { amount: money(data.refundableAmount) });
 
   return (
     <div className="space-y-3">
@@ -429,54 +368,11 @@ function RefundDecision({ data, choice, onChoiceChange, amount, onAmountChange, 
         </div>
       </dl>
 
-      <p>{ruleText}</p>
-
-      <fieldset className="space-y-2">
-        <legend className="sr-only">{t('booking.cancel.refundChoice')}</legend>
-        <label className="flex items-center gap-2">
-          <input
-            type="radio"
-            name="refund-choice"
-            value="full"
-            checked={choice === 'full'}
-            onChange={() => onChoiceChange('full')}
-          />
-          {t('booking.cancel.refundFull', { amount: money(data.refundableAmount) })}
-        </label>
-        {partialAllowed && (
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="refund-choice"
-              value="partial"
-              checked={choice === 'partial'}
-              onChange={() => onChoiceChange('partial')}
-            />
-            {t('booking.cancel.refundPartial')}
-          </label>
-        )}
-      </fieldset>
-
-      {choice === 'partial' && partialAllowed && (
-        <div className="space-y-2">
-          <Label htmlFor="cancel-refund-amount">{t('booking.cancel.partialLabel')}</Label>
-          <Input
-            id="cancel-refund-amount"
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => onAmountChange(e.target.value)}
-            aria-invalid={amountError ? true : undefined}
-            aria-describedby="cancel-refund-amount-hint"
-          />
-          <p id="cancel-refund-amount-hint" className="text-xs text-muted-foreground">
-            {t('booking.cancel.partialHint', {
-              min: money(data.minimumRefundAmount),
-              max: money(data.refundableAmount),
-            })}
-          </p>
-          <FormFieldError message={amountError} />
-        </div>
-      )}
+      <p className="font-medium" data-testid="cancel-full-refund">
+        {t('booking.cancel.refundFull', { amount: money(data.refundableAmount) })}
+      </p>
+      <p>{t('booking.cancel.hostRefundsAll')}</p>
+      <p data-testid="cancel-irreversible">{t('booking.cancel.irreversible')}</p>
     </div>
   );
 }

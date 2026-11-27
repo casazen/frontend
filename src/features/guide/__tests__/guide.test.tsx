@@ -13,6 +13,7 @@ import { useUiStore } from '@/store/ui-store';
 import { savePlanResume } from '@/features/onboarding/plan-resume';
 import { COLLABORATOR, OWNER, path, plan } from '@/features/onboarding/__tests__/onboarding-fixtures';
 import { FirstRunWizard } from '../first-run-wizard';
+import { supportConfig } from '@/config/support.config';
 import { GuideButton } from '../guide-panel';
 
 /**
@@ -130,6 +131,31 @@ describe('the guide of the header', () => {
     // The part «Documenti fiscali» is «Fatturazione» since 2026-11-14: a stop of the road like the others, with its own words.
     expect(within(setup).getByText('Fatturazione')).toBeInTheDocument();
     expect(setup).not.toHaveTextContent('Documenti fiscali');
+  });
+
+  it('GuidePanel_HelpText_PromisesAnAnswerOnlyWhereTheButtonToWriteToSupportIs', async () => {
+    const config = supportConfig as { email: string | null };
+    const original = config.email;
+    try {
+      config.email = 'aiuto@casazen.example';
+      renderButton('supplier');
+      fireEvent.click(screen.getByTestId('guide-button'));
+      const withSupport = await screen.findByTestId('guide-help');
+      expect(within(withSupport).getByTestId('guide-help-support')).toBeInTheDocument();
+      expect(withSupport).toHaveTextContent(i18n.t('guide.help.text'));
+      cleanup();
+      act(() => useUiStore.setState({ guideOpen: false }));
+
+      config.email = null;
+      renderButton('supplier');
+      fireEvent.click(screen.getByTestId('guide-button'));
+      const withoutSupport = await screen.findByTestId('guide-help');
+      expect(within(withoutSupport).queryByTestId('guide-help-support')).not.toBeInTheDocument();
+      expect(withoutSupport).toHaveTextContent(i18n.t('guide.help.textNoSupport'));
+      expect(withoutSupport).not.toHaveTextContent(i18n.t('guide.help.text'));
+    } finally {
+      config.email = original;
+    }
   });
 
   it('GuidePanel_OtherArea_OnlyHelpsWithTheManualOfThatArea', async () => {

@@ -15,7 +15,7 @@ test('guide opens from the header and remains usable on a phone', async ({ page 
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(1);
   await page.getByRole('link', { name: 'Alloggiati e adempimenti', exact: true }).click();
   await expect(page).toHaveURL(/#guide-compliance$/);
-  await expect(page.getByText(/Nel flusso attuale CasaZen prepara/)).toBeVisible();
+  await expect(page.getByText(/Di norma CasaZen prepara i dati e il file per l.invio manuale/)).toBeVisible();
   await page.setViewportSize({ width: 375, height: 812 });
   await page.getByRole('link', { name: 'Torna agli argomenti' }).click();
   await expect(page.getByRole('searchbox', { name: 'Cerca nella guida' })).toHaveValue('ricevuta del portale');

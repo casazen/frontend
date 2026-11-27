@@ -278,7 +278,8 @@ function TenantDueDetail({ leaseId, due }: { leaseId: string; due: TenantDue }) 
           <h2 id="tenant-manual-title" className="text-base font-semibold">
             {t('tenantArea.dues.manualTitle')}
           </h2>
-          <p className="text-sm text-foreground/70">{t('tenantArea.dues.manualHint')}</p>
+          {/* The details of the landlord come from the server: with none, the hint must not send the tenant to «these details». */}
+          <p className="text-sm text-foreground/70">{due.bank ? t('tenantArea.dues.manualHint') : t('tenantArea.dues.manualHintNoBank')}</p>
           {due.bank ? <TenantBankDetailsCard bank={due.bank} currency={due.currency} /> : (
             <p role="status" className="text-sm" data-testid="tenant-no-bank">
               {t('tenantArea.dues.noBank')}

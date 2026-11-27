@@ -197,7 +197,7 @@ export const ACTION_ROUTE_MAP = {
   // - `SendAlloggiatiManually`: the Alloggiati section of the booking (the item is about the stay);
   // - `ActivateOctorateSend`: the wizard that activates the send of the property (E03/F01/US02/T02, `?property=<id>`: the police send is the property's), or, for who may not
   //   change the sender, the page of the property on the section of its connection health;
-  // - `EnterMunicipalityTaxRate`: the page of the property (the tourist tax rate is the property's; no page enters it yet);
+  // - `EnterMunicipalityTaxRate`: no entry, so no button: the tourist tax rate is the property's but it is entered in the guided check-in of a stay, and the item names no stay (INC-14);
   // - `RenewPoliceCredentials`: the Alloggiati dashboard;
   // - `DeclareTouristTax`: the archive of the proofs, on the tax declaration of the property (the month is in the entity type of the item,
   //   `PropertyPeriod:yyyy-MM`; the archive reads `kind` and `property` from the address).
@@ -210,9 +210,6 @@ export const ACTION_ROUTE_MAP = {
   },
   RenewPoliceCredentials: {
     route: { path: '/app/short-rent/alloggiati' },
-  },
-  EnterMunicipalityTaxRate: {
-    route: { path: '/app/short-rent/properties/:id', target: 'property' },
   },
   DeclareTouristTax: {
     route: { path: '/app/short-rent/alloggiati/reports', propertyParam: 'property', search: { kind: 'TouristTaxDeclaration' } },
