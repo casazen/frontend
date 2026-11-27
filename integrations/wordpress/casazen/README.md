@@ -2,7 +2,7 @@
 
 [Italiano](#italiano) · [English](#english)
 
-Chi sviluppa il plugin trova struttura, comandi, CI e rilascio in `documentazione/03-documenti-ai/runbook/frontend/wordpress-plugin.md` (project documentation folder, outside the repository). / Developers: structure, commands, CI and release are in `documentazione/03-documenti-ai/runbook/frontend/wordpress-plugin.md` (project documentation folder, outside the repository).
+Chi sviluppa il plugin trova struttura, comandi, CI e rilascio in `docs/03-documenti-ai/runbook/frontend/wordpress-plugin.md` (project documentation folder, outside the repository). / Developers: structure, commands, CI and release are in `docs/03-documenti-ai/runbook/frontend/wordpress-plugin.md` (project documentation folder, outside the repository).
 
 ## Italiano
 
