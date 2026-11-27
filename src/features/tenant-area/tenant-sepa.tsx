@@ -55,7 +55,7 @@ export function TenantSepaSettings({ leaseId }: { leaseId: string }) {
               <p>{t('tenantSepa.chooseMode')}</p>
               <Button variant="outline" disabled={mode.isPending} onClick={() => mode.mutate(false)}>{t('tenantSepa.manual')}</Button>{' '}
               <Button disabled={mode.isPending} onClick={() => mode.mutate(true)}>{t('tenantSepa.enableAutomatic')}</Button>
-            </> : <Button disabled={setup.isPending} onClick={() => setup.mutate()}>{t('tenantSepa.authorize')}</Button>}
+            </> : <Button variant="outline" disabled={setup.isPending} onClick={() => setup.mutate()}>{t('tenantSepa.authorize')}</Button>}
         </>}
       </> : null}
       {[settings.error, setup.error, mode.error].filter(Boolean).map((error, index) => <p key={index} role="alert" className="text-sm text-destructive">{getProblemMessage(error, t) ?? t('tenantSepa.error')}</p>)}

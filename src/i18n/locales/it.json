@@ -20144,7 +20144,6 @@
       "flaggedTitle": "Anomalie che hanno segnalato questa versione",
       "focusBody": "Saldo di chiusura {{balance}}. Versione tagliata il {{cutoff}}.",
       "focusTitle": "Versione {{version}} · {{status}}",
-      "formula": "Saldo di chiusura = saldo di apertura {{opening}} + incassi {{revenue}} + commissioni e costi {{costs}} + pagamenti e ritenute {{paid}} + rettifiche {{corrections}} = {{closing}}.",
       "immutableBody": "Le righe registrate non danno più i totali salvati in questa versione. Per non mostrarti cifre sbagliate non la mostriamo, e nemmeno i suoi file: riprovare non serve. Scrivi all'assistenza indicando il mese e il proprietario.",
       "immutableTitle": "Questo rendiconto non si può mostrare",
       "kicker": "Rendiconto di {{period}}",
@@ -21011,7 +21010,7 @@
         "signHint": "Gli importi positivi sono a tuo favore, quelli negativi sono a tuo carico.",
         "summaryTitle": "Riepilogo"
       },
-      "documentsTitle": "Documenti contabili",
+      "emptyHint": "Quando l’agenzia pubblica un rendiconto, lo trovi qui con i suoi importi.",
       "error": "Impossibile caricare i rendiconti",
       "invoiceOf": "Collegata al rendiconto di {{period}}",
       "invoiceStatus": {
@@ -21020,7 +21019,6 @@
       },
       "invoiceTitle": "Fattura n. {{number}} del {{date}}",
       "invoicesError": "Impossibile caricare le fatture collegate",
-      "invoicesNote": "Sono fatture che l’agenzia ha emesso fuori da CasaZen: qui trovi il collegamento che l’agenzia ha registrato.",
       "invoicesTitle": "Fatture collegate",
       "line": {
         "bookingCode": "Prenotazione {{code}}",
@@ -21036,7 +21034,6 @@
         "share": "Quota {{percent}}%"
       },
       "loading": "Caricamento della contabilità",
-      "noDocuments": "L’agenzia non ha condiviso documenti contabili con te.",
       "noInvoiceLink": "Il collegamento a questa fattura non è disponibile.",
       "noStatements": "L’agenzia non ha ancora pubblicato rendiconti per te.",
       "open": "Apri il rendiconto",
@@ -21056,6 +21053,7 @@
         "creditedInFull": "Stornata per intero",
         "currencyMissing": "La valuta di questo documento non è indicata: l’importo è mostrato senza simbolo di valuta.",
         "empty": "Il gestore non ti ha ancora emesso fatture.",
+        "emptyHint": "Le fatture che il gestore emette per i tuoi rendiconti compariranno qui, ciascuna con il suo PDF.",
         "error": "Impossibile caricare le fatture del gestore",
         "kind": {
           "CreditNote": "Nota di credito",
@@ -21063,7 +21061,6 @@
           "Other": "Documento",
           "Receipt": "Ricevuta"
         },
-        "note": "Le fatture che il gestore ti ha emesso per i rendiconti, ciascuna con il suo PDF.",
         "of": "Per il rendiconto di {{period}}",
         "title": "Fatture del gestore",
         "total": "Totale"
@@ -21230,14 +21227,9 @@
     },
     "dashboard": {
       "bookings": "Prenotazioni",
-      "description": "I tuoi immobili e le cose che puoi fare con l’agenzia: calendario, contabilità, documenti e messaggi.",
+      "emptyHint": "Quando l’agenzia ti collega un immobile, lo trovi qui con il suo calendario.",
       "error": "Impossibile caricare gli immobili",
       "noProperties": "Non ci sono immobili disponibili",
-      "numbersUnavailable": {
-        "description": "Occupazione, ricavi e andamento nel tempo non sono ancora mostrati nel portale: qui trovi solo i tuoi immobili e le loro prenotazioni. Per i numeri chiedi all’agenzia nei messaggi.",
-        "title": "I numeri dei tuoi immobili non sono ancora disponibili"
-      },
-      "recentBookings": "Prenotazioni recenti",
       "title": "Portale Proprietari",
       "yourProperties": "I tuoi immobili"
     },
@@ -21249,6 +21241,7 @@
       "downloadFailed": "Non è stato possibile scaricare il file. Riprova.",
       "effectiveFrom": "In vigore dal {{date}}",
       "empty": "L’agenzia non ha ancora condiviso documenti con te.",
+      "emptyHint": "Quando l’agenzia ti condivide un documento, per esempio il mandato o il contratto, lo trovi qui.",
       "error": "Impossibile caricare i documenti",
       "expiresOn": "Scade il {{date}}",
       "expiry": {
@@ -21418,7 +21411,6 @@
       "notFound": "Immobile non trovato",
       "openCalendar": "Calendario e soggiorni",
       "recentBookings": "Prenotazioni recenti",
-      "recentBookingsDescription": "Dati ospite mascherati per privacy (solo date, canale e stato visibili)",
       "summaryTitle": "Riepilogo dell’immobile",
       "totalBookings": "Prenotazioni totali",
       "writeToAgency": "Scrivi all’agenzia"
@@ -28864,6 +28856,32 @@
         "label": "In pausa"
       }
     },
+    "earning": {
+      "in_review": {
+        "explain": "CasaZen sta controllando questo pagamento.",
+        "label": "In verifica da CasaZen"
+      },
+      "late": {
+        "explain": "Il pagamento è stato chiesto e non è ancora arrivato.",
+        "label": "In ritardo"
+      },
+      "paid": {
+        "explain": "Il pagamento di questo lavoro è arrivato.",
+        "label": "Pagato"
+      },
+      "partially_refunded": {
+        "explain": "Una parte del pagamento è stata restituita a chi l’aveva fatto.",
+        "label": "Rimborsato in parte"
+      },
+      "refunded": {
+        "explain": "Il pagamento è stato restituito per intero a chi l’aveva fatto.",
+        "label": "Rimborsato"
+      },
+      "to_collect": {
+        "explain": "Il lavoro è completato e il pagamento non è ancora arrivato.",
+        "label": "Da incassare"
+      }
+    },
     "checkin": {
       "Inviato": {
         "label": "Link inviato",
@@ -30408,6 +30426,7 @@
       },
       "empty": {
         "description": "Servono un nome, un prezzo e una durata. Ti guidiamo in quattro passi.",
+        "how": "Come funziona",
         "steps": {
           "booking": "Quanto dura e quando lo offri",
           "photos": "Le foto: poi pubblichi",
@@ -33830,7 +33849,6 @@
     },
     "dues": {
       "title": "Pagamenti",
-      "lead": "Qui vedi se hai pagato tutto e paghi la scadenza. Canone, acconto condominiale e conguaglio sono già sommati.",
       "listLabel": "Scadenze",
       "emptyTitle": "Nessuna scadenza",
       "emptyDescription": "Quando il gestore emette una rata, la trovi qui con l'importo da versare.",
@@ -33901,6 +33919,7 @@
     "maintenance": {
       "new": "Nuova richiesta",
       "empty": "Nessuna richiesta.",
+      "emptyHint": "Se in casa c’è qualcosa che non va, scrivi una richiesta: arriva al gestore del contratto e qui ne segui lo stato.",
       "category": "Categoria",
       "urgency": "Urgenza",
       "description": "Descrizione",

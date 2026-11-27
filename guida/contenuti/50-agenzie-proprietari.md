@@ -96,7 +96,7 @@ Il menu del portale ha queste voci:
 |---|---|
 | Panoramica | I suoi immobili e le prenotazioni recenti. Aprendo un immobile vede il riepilogo, le prenotazioni recenti (con i dati degli ospiti mascherati: solo date, canale e stato) e i pulsanti «Calendario e soggiorni» e «Scrivi all'agenzia». I numeri su occupazione e ricavi non sono ancora mostrati: se ti servono, scrivi all'agenzia dai «Messaggi» |
 | Immobili e calendario | Notti libere, occupate e bloccate dei prossimi 3, 6 o 12 mesi, i suoi soggiorni e la richiesta di un nuovo soggiorno |
-| Contabilità | I rendiconti pubblicati con il PDF, le fatture del gestore, le fatture collegate, i documenti contabili e, in fondo, le ritenute dell'anno e i dati della Certificazione Unica quando l'agenzia li ha verificati |
+| Contabilità | I rendiconti pubblicati con il PDF (l'agenzia è scritta una sola volta sotto il titolo, e solo la versione sostituita da una più recente porta il segno «Sostituito»), le fatture del gestore, le fatture collegate, le ritenute dell'anno e i dati della Certificazione Unica quando l'agenzia li ha verificati e, in fondo, il collegamento a «Documenti», dove stanno anche i documenti contabili |
 | Documenti | Mandato, contratti, assicurazioni e altro che l'agenzia condivide, con versione, date e scadenza |
 | Documenti emessi | Le ricevute e le fatture che CasaZen ha emesso a nome del proprietario per i suoi soggiorni, con il file da dare al commercialista (su attivazione) |
 | Messaggi | Le conversazioni con l'agenzia, con allegati PDF, JPEG o PNG fino a 10 MB. L'agenzia riceve il tuo messaggio come avviso ma, per ora, non può rispondere da una schermata dell'app: se non ricevi risposta o è urgente, scrivile o chiamala tu |

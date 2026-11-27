@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Tags, Eye, Plus, Store, Tag } from 'lucide-react';
+import { ChevronRight, Tags, Eye, Plus, Store, Tag } from 'lucide-react';
 import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
@@ -13,7 +13,11 @@ import { useServiceActions } from './use-service-actions';
 
 const T = 'supplier.services';
 
-/** A catalog that is empty says what a service is made of and offers the way in: four steps, no form to look at yet. */
+/**
+ * A catalog that is empty says what a service is and offers the way in: the button of the state, and the four steps of the creation one tap away
+ * under «Come funziona» (a list that is always open is a form to look at before there is anything to do). The page's header has no «Aggiungi
+ * servizio» then: the state carries the one button (UX round 3).
+ */
 function EmptyCatalog() {
   const { t } = useTranslation();
   const steps = ['service', 'price', 'booking', 'photos'] as const;
@@ -26,16 +30,22 @@ function EmptyCatalog() {
         action={{ label: t(`${T}.actions.add`), href: NEW_SERVICE_PATH }}
         className="pb-4 pt-8"
       />
-      <ol className="mx-auto mb-6 grid max-w-md gap-2 px-4 text-sm" aria-label={t(`${T}.empty.stepsLabel`)}>
-        {steps.map((step, index) => (
-          <li key={step} className="flex min-w-0 items-start gap-3">
-            <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold">
-              {index + 1}
-            </span>
-            <span className="min-w-0 break-words">{t(`${T}.empty.steps.${step}`)}</span>
-          </li>
-        ))}
-      </ol>
+      <details className="group mx-auto mb-6 max-w-md px-4 text-sm" data-testid="supplier-services-how">
+        <summary className="mx-auto flex min-h-11 w-fit cursor-pointer list-none items-center gap-1 rounded-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+          <ChevronRight aria-hidden="true" className="size-4 transition-transform group-open:rotate-90 motion-reduce:transition-none" />
+          {t(`${T}.empty.how`)}
+        </summary>
+        <ol className="mt-2 grid gap-2" aria-label={t(`${T}.empty.stepsLabel`)}>
+          {steps.map((step, index) => (
+            <li key={step} className="flex min-w-0 items-start gap-3">
+              <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-xs font-semibold">
+                {index + 1}
+              </span>
+              <span className="min-w-0 break-words">{t(`${T}.empty.steps.${step}`)}</span>
+            </li>
+          ))}
+        </ol>
+      </details>
     </div>
   );
 }
@@ -44,7 +54,8 @@ function EmptyCatalog() {
  * Servizi e prezzi (SP-06, restyled in SP-SERV): the catalog of the supplier in the unified list (UI-14), filtered by state with
  * the quick filters. Each service has the one thing to do about it by state (go on with a draft, put a paused one back on offer)
  * and the rest in "⋯": edit, see how customers see it, duplicate, pause or publish, delete with a confirmation. 30 services at
- * most, so it is one request and no paging. The way to add one is the action of the header, which is the guided creation.
+ * most, so it is one request and no paging. The way to add one is the action of the header, which is the guided creation; while the catalog is
+ * empty the empty state has that button and the header has none.
  */
 export function SupplierServicesPage() {
   const { t } = useTranslation();
@@ -52,6 +63,7 @@ export function SupplierServicesPage() {
   const actions = useServiceActions();
   const limit = data?.limit || SERVICE_LIMITS.maxServices;
   const atLimit = data !== undefined && data.total >= limit;
+  const empty = data !== undefined && data.items.length === 0;
   const list = useServicesList({ atLimit, busy: actions.busy, onPublish: actions.publishService, onPause: actions.pauseService, onDelete: actions.askDelete });
 
   const header = (
@@ -61,9 +73,11 @@ export function SupplierServicesPage() {
       description={t(`${T}.description`)}
       crumbs="auto"
       primary={
-        atLimit
-          ? { label: t(`${T}.actions.add`), icon: Plus, disabled: true, onClick: () => undefined, testId: 'supplier-service-add' }
-          : { label: t(`${T}.actions.add`), icon: Plus, to: NEW_SERVICE_PATH, testId: 'supplier-service-add' }
+        empty
+          ? undefined
+          : atLimit
+            ? { label: t(`${T}.actions.add`), icon: Plus, disabled: true, onClick: () => undefined, testId: 'supplier-service-add' }
+            : { label: t(`${T}.actions.add`), icon: Plus, to: NEW_SERVICE_PATH, testId: 'supplier-service-add' }
       }
       secondary={[
         { label: t(`${T}.actions.previewAll`), icon: Eye, to: bookingPreviewPath() },
@@ -92,7 +106,7 @@ export function SupplierServicesPage() {
         </Alert>
       ) : null}
 
-      {data && data.items.length === 0 ? (
+      {empty ? (
         <EmptyCatalog />
       ) : (
         <ListView list={list} rows={data?.items ?? []} isLoading={isLoading || !data} testId="supplier-services-list" />

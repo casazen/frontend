@@ -10,6 +10,7 @@ import type { PaymentStatus } from "@/types/payment.types";
 import type { GuestCheckInSessionStatus } from "@/types/public-checkin.types";
 import type { RentInstallmentStatus } from "@/types/rent.types";
 import type { ServiceRequestStatus } from "@/types/service-request";
+import type { SupplierEarningState } from "@/types/supplier-earnings";
 import type { SupplierServiceStatus } from "@/types/supplier-services";
 
 /**
@@ -237,6 +238,15 @@ export const STATUS_DICTIONARY = {
     Draft: { tone: "neutral", icon: "pencil" },
     Active: { tone: "success", icon: "check-circle" },
     Paused: { tone: "warning", icon: "pause" },
+  }),
+  /** The payment of a job in the earnings of the supplier (UI-14), as the server says it. An open set: a value the server adds later is shown with a generic word until it is here. */
+  earning: defineKind<SupplierEarningState>({
+    to_collect: { tone: "info", icon: "hourglass" },
+    paid: { tone: "success", icon: "check-circle" },
+    late: { tone: "danger", icon: "alert-triangle" },
+    in_review: { tone: "warning", icon: "alert-circle" },
+    refunded: { tone: "neutral", icon: "undo" },
+    partially_refunded: { tone: "neutral", icon: "undo" },
   }),
 } as const;
 

@@ -63,6 +63,8 @@ export function SupplierEarningsPage() {
           onClick: () => download.mutate(params),
           disabled: download.isPending,
           testId: 'supplier-earnings-export',
+          // A page that only reads has no filled button: the numbers are its focal point, the file is a way to take them away (UX round 3).
+          variant: 'outline',
         }}
       />
 

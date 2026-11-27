@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Wrench } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,13 +13,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { formatDate } from '@/lib/utils';
 import { useCreateTenantMaintenance, useTenantMaintenance, useTenantMaintenanceRequest } from '@/queries/use-tenant-area';
-import type { TenantMaintenanceUrgency } from '@/types';
+import type { TenantMaintenanceStatus, TenantMaintenanceUrgency } from '@/types';
 import { TenantGate, TenantLoading } from './tenant-gate';
 import { tenantMaintenancePath } from './paths';
 import { useLeaseId, useTenantContractPage } from './use-tenant-contract';
 
 const URGENCIES: TenantMaintenanceUrgency[] = ['Normal', 'High', 'Emergency'];
 const FALLBACK_CATEGORIES = ['maintenance', 'plumbing', 'electrical', 'cleaning'];
+
+/** Where a request stands, as a chip: the same one in the list and under the title of the request (the detail used to say it in a line of the card). */
+function RequestStatus({ status }: { status: TenantMaintenanceStatus }) {
+  const { t } = useTranslation();
+  return (
+    <span className="rounded-full bg-muted px-3 py-1 text-sm" data-testid="tenant-request-status">
+      {t(`tenantArea.maintenance.status.${status}`)}
+    </span>
+  );
+}
 
 export function TenantMaintenanceListPage() {
   const { t } = useTranslation();
@@ -40,19 +52,21 @@ export function TenantMaintenanceListPage() {
           </Button>
         }
       />
-      {items.length === 0 ? <p className="text-sm text-muted-foreground">{t('tenantArea.maintenance.empty')}</p> : null}
-      <ul className="space-y-2">
-        {items.map((request) => (
-          <li key={request.id}>
-            <Link to={tenantMaintenancePath(leaseId, request.id)} className="flex min-h-12 flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card p-4 hover:bg-muted" data-testid={`tenant-request-${request.id}`}>
-              <span className="font-medium">{getServiceCategoryLabel(request.category, t)}</span>
-              <span className="rounded-full bg-muted px-3 py-1 text-sm" data-testid="tenant-request-status">
-                {t(`tenantArea.maintenance.status.${request.status}`)}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {items.length === 0 ? (
+        // Straight under the title of the page: the state is one level below it.
+        <EmptyState icon={Wrench} title={t('tenantArea.maintenance.empty')} titleAs="h2" description={t('tenantArea.maintenance.emptyHint')} />
+      ) : (
+        <ul className="space-y-2">
+          {items.map((request) => (
+            <li key={request.id}>
+              <Link to={tenantMaintenancePath(leaseId, request.id)} className="flex min-h-12 flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card p-4 hover:bg-muted" data-testid={`tenant-request-${request.id}`}>
+                <span className="font-medium">{getServiceCategoryLabel(request.category, t)}</span>
+                <RequestStatus status={request.status} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -154,17 +168,16 @@ export function TenantMaintenanceDetailPage() {
   }
 
   const item = request.data;
-  // The page has its title, as every page of the portal (it had none: the name of the request was the title of the card).
+  // The page has its title, as every page of the portal (it had none: the name of the request was the title of the card), and the state under it,
+  // as the list shows it. «La richiesta va al gestore» is for who is writing the request (the form), not for who reads it afterwards.
   return (
     <div className="space-y-4">
-      <PageHeader title={getServiceCategoryLabel(item.category, t)} />
+      <PageHeader title={getServiceCategoryLabel(item.category, t)} status={<RequestStatus status={item.status} />} />
       <Card data-testid="tenant-maintenance-detail">
         <CardContent className="space-y-3 pt-6 text-sm">
-          <p data-testid="tenant-request-status">{t(`tenantArea.maintenance.status.${item.status}`)}</p>
           <p>{t(`tenantArea.maintenance.urgencyLevel.${item.urgency in { Normal: 1, High: 1, Emergency: 1 } ? item.urgency : 'Normal'}`)}</p>
           <p>{item.description}</p>
           {item.submittedAt ? <p>{t('tenantArea.maintenance.submittedAt', { date: formatDate(item.submittedAt) })}</p> : null}
-          <p className="text-muted-foreground">{t('tenantArea.maintenance.sentToManager')}</p>
           {item.urgency === 'Emergency' ? <p>{t('tenantArea.maintenance.emergencyNotImmediate')}</p> : null}
           {item.attachments.length > 0 ? (
             <ul>

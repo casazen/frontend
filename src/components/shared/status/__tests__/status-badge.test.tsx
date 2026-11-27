@@ -69,6 +69,41 @@ describe("StatusBadge content", () => {
     expect(badge.className).toContain(STATUS_TONE_CLASSES.neutral);
   });
 
+  it("StatusBadge_LabelOfThePage_ReplacesTheWordsAndKeepsTheToneAndTheIconOfTheState", () => {
+    const { container } = render(<StatusBadge kind="earning" status="late" label="In ritardo di 3 giorni" />);
+
+    const badge = container.querySelector("span[data-status]") as HTMLElement;
+    expect(badge).toHaveTextContent("In ritardo di 3 giorni");
+    expect(badge).toHaveAttribute("data-status-kind", "earning");
+    expect(badge).toHaveAttribute("data-status", "late");
+    expect(badge.className).toContain(STATUS_TONE_CLASSES.danger);
+    expect(container.querySelectorAll("svg")).toHaveLength(1);
+  });
+
+  it("StatusBadge_EarningStateTheAppDoesNotKnow_IsNeutralWithTheWordsOfThePage", () => {
+    // The set of the server is open: a state it adds later is neutral and says what the page says, and carries its raw value for the tests.
+    const { container } = render(<StatusBadge kind="earning" status={"held" as never} label="Vedi la richiesta" />);
+
+    const badge = container.querySelector("span[data-status]") as HTMLElement;
+    expect(badge).toHaveTextContent("Vedi la richiesta");
+    expect(badge).toHaveAttribute("data-status", "held");
+    expect(badge.className).toContain(STATUS_TONE_CLASSES.neutral);
+  });
+
+  it("StatusBadge_PhaseOfAPage_TakesItsOwnWordsToneAndIconAndKeepsThePhaseAsItsStatus", () => {
+    // A phase of a request (a time proposed, a quote sent) is not a state of the API: the badge is the shared one with the words, the tone and the icon of the page.
+    const { container } = render(
+      <StatusBadge kind="request" status="Richiesto" perspective="supplier" label="In attesa del cliente" tone="info" icon="hourglass" data-status="QuotePending" />,
+    );
+
+    const badge = container.querySelector("span[data-status]") as HTMLElement;
+    expect(badge).toHaveTextContent("In attesa del cliente");
+    expect(badge).toHaveAttribute("data-status-kind", "request");
+    expect(badge).toHaveAttribute("data-status", "QuotePending");
+    expect(badge.className).toContain(STATUS_TONE_CLASSES.info);
+    expect(badge.className).not.toContain(STATUS_TONE_CLASSES.warning);
+  });
+
   it("StatusBadge_EveryStateOfEveryKind_RendersItsNameAndIconInBothLanguages", async () => {
     for (const language of ["it", "en"]) {
       await i18n.changeLanguage(language);

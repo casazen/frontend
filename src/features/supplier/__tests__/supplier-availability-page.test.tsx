@@ -220,7 +220,7 @@ describe('SupplierAvailabilityPage today (QA-CLOCK-FE)', () => {
     expect(screen.queryByText(i18n.t('supplier.freeEventPendingBadge'))).not.toBeInTheDocument();
   });
 
-  it('SupplierAvailabilityPage_FreeEventsLoadFails_ShowsAWarningWithRetryAndKeepsTheAgenda', () => {
+  it('SupplierAvailabilityPage_FreeEventsLoadFails_ShowsTheErrorStateWithRetryAndKeepsTheAgenda', () => {
     freezeClock(NOON_UTC);
     mockAgenda(emptyAgenda('2026-09-21', '2026-09-27'));
     const refetch = vi.fn();
@@ -228,7 +228,9 @@ describe('SupplierAvailabilityPage today (QA-CLOCK-FE)', () => {
 
     renderPage();
 
+    // The error state of the app: announced as an alert, with what failed and the retry (not a warning with a button of its own).
     expect(screen.getByTestId('free-events-error')).toHaveTextContent(i18n.t('supplier.freeEventsLoadError'));
+    expect(screen.getByTestId('free-events-error')).toHaveAttribute('role', 'alert');
     expect(screen.getByTestId('availability-2026-09-24')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: i18n.t('supplier.retry') }));
     expect(refetch).toHaveBeenCalledTimes(1);

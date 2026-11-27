@@ -55,7 +55,7 @@ const DOCUMENT: OwnerDocument = {
 function renderDocuments(documents: OwnerDocument[] = [DOCUMENT]) {
   return render(
     <MemoryRouter>
-      <DocumentsList documents={documents} emptyText="Nessun documento" />
+      <DocumentsList documents={documents} emptyText="Nessun documento" emptyHint="Qui compariranno i documenti." />
     </MemoryRouter>,
   );
 }
@@ -79,15 +79,42 @@ describe('the documents of the owner: the version in force, its dates and its ex
     expect(card.textContent).toContain('Casa Mare');
     // The expiry of the document, and the state of the version in force with its number, the day it holds from, the day it lapses and the size of its file.
     expect(within(card).getByTestId('owner-document-expiry').textContent).toMatch(/In scadenza il 1 dic\.? 2026/);
-    expect(card.textContent).toContain('In vigore');
     expect(card.textContent).toContain('Versione 2');
     expect(card.textContent).toMatch(/In vigore dal 1 gen\.? 2026/);
     expect(card.textContent).toMatch(/Scade il 1 dic\.? 2026/);
     expect(card.textContent).toContain('2 KB');
+    // The version in force is what the card is: no «In vigore» pill on it, the line above says «In vigore dal …» (UX round 3).
+    expect(within(card).queryByText('In vigore')).toBeNull();
+    expect(within(card).queryByTestId('owner-document-version-state')).toBeNull();
     // The version it replaced is kept, with its own word.
     expect(card.textContent).toContain('1 versione precedente');
     expect(card.textContent).toContain('Sostituita');
     expect(card.textContent).toContain('Versione 1');
+  });
+
+  it('OwnerDocuments_AVersionThatIsNotTheOneInForce_SaysSoWithItsPill', () => {
+    const [current] = DOCUMENT.versions;
+    renderDocuments([{ ...DOCUMENT, versions: [{ ...current, state: 'upcoming' }] }]);
+
+    expect(within(screen.getByTestId('owner-document')).getByTestId('owner-document-version-state')).toHaveTextContent('Non ancora in vigore');
+  });
+
+  it('OwnerDocuments_TheOlderVersionsAreNotABoxInsideTheCard', () => {
+    renderDocuments();
+
+    const older = screen.getByTestId('owner-document').querySelector('details');
+    expect(older).not.toBeNull();
+    expect(older?.className).not.toMatch(/\bborder\b|\bbg-/);
+  });
+
+  it('OwnerDocuments_NoDocument_IsTheEmptyStateOfTheAppWithAWordOfWhatToExpect', () => {
+    renderDocuments([]);
+
+    const empty = screen.getByTestId('owner-documents-empty');
+    expect(empty).toHaveTextContent('Nessun documento');
+    expect(empty).toHaveTextContent('Qui compariranno i documenti.');
+    // Under the heading of a section: one level below it.
+    expect(within(empty).getByRole('heading', { level: 3, name: 'Nessun documento' })).toBeInTheDocument();
   });
 
   it('OwnerDocuments_ADownloadAsksForTheVersionTheOwnerChose_AndSavesItUnderANameMadeSafe', async () => {

@@ -38,6 +38,13 @@ describe('EmptyState (existing usage)', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
+  it('EmptyState_TitleAs_PutsTheTitleOneLevelBelowTheHeadingItSitsUnder', () => {
+    renderState({ titleAs: 'h2' });
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Nessuna prenotazione' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
+  });
+
   it('EmptyState_ClassName_IsAppended', () => {
     const { container } = renderState({ className: 'py-4' });
 

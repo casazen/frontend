@@ -190,6 +190,21 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     for (const call of [api.approveVersion, api.publishVersion, api.closeMonth]) expect(call).not.toHaveBeenCalled();
   });
 
+  it('MonthEndClose_SupersededStatement_SaysSoInTheBlockOfThePage_AndTheBlockComesBeforeTheNonFiscalNotice', async () => {
+    api.getVersion.mockResolvedValue({ version: previous(), entries: [entry()] });
+    renderStatement();
+
+    const focus = await screen.findByTestId('statement-focus');
+    // The notice «sostituita» is part of the block (no alert of its own), and the block leads to the newer version.
+    expect(focus).toHaveAttribute('data-tone', 'warning');
+    expect(focus).toHaveTextContent(text('ownerAccounting.statement.superseded'));
+    expect(within(focus).getByTestId('statement-open-latest')).toHaveTextContent(text('ownerAccounting.statement.openLatest'));
+    expect(within(focus).getByTestId('statement-open-latest').getAttribute('href')).toContain(VERSION_ID);
+    expect(screen.queryByTestId('statement-superseded')).toBeNull();
+    // The permanent notice that the statement is not a fiscal document comes after the block, also on a phone (the order of the page).
+    expect(focus.compareDocumentPosition(screen.getByTestId('statement-non-fiscal')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('TaxExport_WithoutReceiptNeverShowsSubmitted_Test', async () => {
     api.getTaxReconciliation.mockResolvedValue({
       year: YEAR,
@@ -452,7 +467,7 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     await waitFor(() => expect(screen.getByTestId('payout-confirm')).toBeEnabled());
   });
 
-  it('MonthEndClose_StatementDetail_ExplainsTheFormulaAndWhatChangedSinceThePreviousVersion', async () => {
+  it('MonthEndClose_StatementDetail_ExplainsWhatChangedSinceThePreviousVersion_AndSaysTheOpeningBalanceOnceInTheFigures', async () => {
     api.getVersion.mockResolvedValue({
       version: version(),
       entries: [
@@ -461,8 +476,10 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
       ],
     });
     renderStatement();
-    const formula = await screen.findByTestId('version-formula');
-    expect(formula).toHaveTextContent(/saldo di apertura/i);
+    // The opening balance is under the closing one in the figures; the line that added the figures up again is gone (UX round 3).
+    const figures = await screen.findByTestId('statement-figures');
+    expect(figures).toHaveTextContent(/saldo di apertura/i);
+    expect(screen.queryByTestId('version-formula')).toBeNull();
     // What changed is what was posted after the previous cut-off, and the figures that moved.
     const changes = await screen.findByTestId('statement-changes');
     await within(changes).findAllByTestId('statement-change-figure');

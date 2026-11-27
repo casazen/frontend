@@ -15,7 +15,7 @@ import { readableTextOn } from '@/lib/public-site-colors';
 import { normalizeHexColor } from '@/lib/public-site-themes';
 import { LegacySupplierShowcaseRedirect } from '@/pages/supplier-showcase';
 import { GuestHostExtras } from './guest-host-extras';
-import { extraLabels, useGuestHostExtras } from './guest-host-extra-model';
+import { extraLabels } from './guest-host-extra-model';
 import { GuestPortalChat } from './guest-portal-chat';
 import { GuestPortalDocuments } from './guest-portal-documents';
 import { GuestPortalPayments } from './guest-portal-payments';
@@ -45,9 +45,6 @@ const copy = {
   guest: ['Ospite', 'Guest', 'Gast', 'Voyageur', 'Huésped'],
   everything: ['Tutto per il tuo soggiorno', 'Everything for your stay', 'Alles für deinen Aufenthalt', 'Tout pour votre séjour', 'Todo para tu estancia'],
   guideNote: ['Istruzioni e consigli per il soggiorno', 'Instructions and tips for your stay', 'Hinweise und Tipps zum Aufenthalt', 'Instructions et conseils pour le séjour', 'Instrucciones y consejos para tu estancia'],
-  servicesNote: ['Organizza il tuo arrivo', 'Plan your arrival', 'Plane deine Anreise', 'Préparez votre arrivée', 'Organiza tu llegada'],
-  chatNote: ['Scrivici se hai bisogno', 'Message us if you need help', 'Schreib uns, wenn du Hilfe brauchst', 'Écrivez-nous si besoin', 'Escríbenos si lo necesitas'],
-  documentsNote: ['Scarica i PDF del soggiorno', 'Download your stay PDFs', 'Aufenthaltsdokumente herunterladen', 'Télécharger les PDF du séjour', 'Descarga los PDF de tu estancia'],
   supplierOrders: ['Servizi e ordini', 'Services and orders', 'Dienste und Bestellungen', 'Services et commandes', 'Servicios y pedidos'],
   title: ['Il tuo soggiorno', 'Your stay', 'Dein Aufenthalt', 'Votre séjour', 'Tu estancia'],
   before: ['Prima dell’arrivo', 'Before arrival', 'Vor der Anreise', 'Avant l’arrivée', 'Antes de llegar'],
@@ -243,8 +240,6 @@ function GuestPortalPage({ token }: { token: string }) {
   const checkingIn = section === 'checkin';
   const services = section === 'services';
   const extras = section === 'extras';
-  const extraCatalog = useGuestHostExtras(path, language, Boolean(stay) && !extras);
-  const hasExtras = Boolean(extraCatalog.data?.offers?.length || extraCatalog.data?.orders?.length);
   const guide = section === 'guide';
   const details = section === 'details';
   const chat = section === 'chat' && stay?.status !== 'cancelled';
@@ -275,6 +270,9 @@ function GuestPortalPage({ token }: { token: string }) {
       ? `${text('arrivalDate')} ${new Intl.RelativeTimeFormat(language, { numeric: 'auto' }).format(daysToArrival, 'day')}`
       : text(phase);
 
+  // The check-in row of the home: a check-in that is done (to see it again, while the stay is on) or one still to do once the stay is over; while it is to do before that,
+  // the main button of «Prossimo passo» is the way in, and its words say when it cannot be done yet.
+  const showCheckInRow = overview?.checkInCompleted ? phase !== 'after' : phase === 'after' && Boolean(stay?.checkInAvailable);
   const home = !checkingIn && !services && !extras && !guide && !details && !chat && !documents && !payments
     && !supplierOrders && !review && !privacy && !cancellation;
   const channel = stay?.bookingChannel ? channelTrips[stay.bookingChannel] : undefined;
@@ -466,19 +464,15 @@ function GuestPortalPage({ token }: { token: string }) {
                   </section>
                 )}
                 {phase !== 'after' && <h2 className="stay-sections-title">{text('everything')}</h2>}
+                {/* Only what the bar (Soggiorno · Guida · Servizi · Chat · Altro) does not already lead to: the guide, the services and the chat are its tabs, so they are
+                    not rows here as well, and a row has no line under it that says what it holds (UX round 3). */}
                 <div className="stay-links">
-                  {phase !== 'after' && <>
-                    <StaySectionLink to={href('details')} icon={CalendarDays} label={text('details')} detail={stay.propertyName} />
-                    <StaySectionLink to={href('guide')} icon={BookOpen} label={text('guide')} detail={text('guideNote')} />
-                    {(hasExtras || overview?.features?.supplierServices) && <StaySectionLink to={href('services')} icon={ShoppingBag} label={text('servicesAndExtras')} detail={text('servicesNote')} />}
-                  </>}
-                  {stay.status !== 'cancelled' && <StaySectionLink to={href('chat')} icon={MessageCircle} label={text('chat')} detail={text(stay.chatOpen === false ? 'closedChat' : 'chatNote')} />}
-                  <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} detail={text('documentsNote')} />
+                  {phase !== 'after' && <StaySectionLink to={href('details')} icon={CalendarDays} label={text('details')} />}
+                  <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} />
                   {phase === 'after' && <StaySectionLink to={href('privacy')} icon={ClipboardCheck} label={text('privacy')} />}
-                  {/* Once the stay is over a check-in that is done is no news: the row stays only while there is something to do in it. */}
-                  {(phase !== 'after' || (stay.checkInAvailable && !overview?.checkInCompleted)) && (
-                    <StaySectionLink to={checkIn} icon={ClipboardCheck} label={text(overview?.checkInCompleted ? 'done' : 'checkInSection')} />
-                  )}
+                  {/* The check-in is the main button of «Prossimo passo» while it is to do (and its words say when it cannot be done yet): the row is for what has
+                      no button: a check-in that is done, to see it again, and one that is still to do after the stay. */}
+                  {showCheckInRow && <StaySectionLink to={checkIn} icon={ClipboardCheck} label={text(overview?.checkInCompleted ? 'done' : 'checkInSection')} />}
                 </div>
               </>
             )}
@@ -512,16 +506,15 @@ function GuestPortalPage({ token }: { token: string }) {
   );
 }
 
-function StaySectionLink({ to, icon: Icon, label, detail }: {
+function StaySectionLink({ to, icon: Icon, label }: {
   to: string;
   icon: typeof CalendarDays;
   label: string;
-  detail?: string;
 }) {
   return (
     <Link className="stay-card stay-section-link" to={to}>
       <Icon aria-hidden="true" />
-      <span><strong>{label}</strong>{detail && <small>{detail}</small>}</span>
+      <span><strong>{label}</strong></span>
       <ChevronRight aria-hidden="true" />
     </Link>
   );
