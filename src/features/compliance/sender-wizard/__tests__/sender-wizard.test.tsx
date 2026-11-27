@@ -305,11 +305,25 @@ describe('SenderWizardPage: who sends (NF-42, NF-49)', () => {
     expect(screen.getByTestId('sender-option-CasaZen')).toBeDisabled();
     expect(screen.getByTestId('sender-option-Manual')).toBeChecked();
     expect(screen.getByTestId('sender-option-Manual').closest('label')).toHaveTextContent(text('compliance.sender.choice.options.Manual.title'));
-    // CasaZen says why it cannot be chosen, and nothing in the wizard names the channel manager's supplier.
-    expect(screen.getByTestId('sender-choice-step')).toHaveTextContent(text('compliance.sender.choice.notAvailable'));
+    // CasaZen says why it cannot be chosen (the direct send is activated from the page of the property), and nothing in the wizard names the channel manager's supplier.
+    expect(screen.getByTestId('sender-option-CasaZen').closest('label')).toHaveTextContent(text('compliance.sender.choice.options.CasaZen.unavailable'));
+    expect(screen.getByTestId('sender-option-CasaZen').closest('label')).toHaveTextContent("si attiva dalla scheda dell'immobile");
     expect(wizard().textContent ?? '').not.toMatch(/octorate/i);
     // The same wizard: the choice and the summary, and no panel to pass through.
     expect(screen.queryByTestId('sender-delegation')).not.toBeInTheDocument();
+  });
+
+  it('SenderWizardPage_ConnectedPropertyWithTheAutomaticSendOff_SaysQuietlyThatNothingStartsByItself', async () => {
+    server = senderOf({ sender: 'ChannelManager', source: 'DefaultConnected', state: 'Unverified', verification: 'Unverifiable', autoSendGuestsToOctorate: false });
+    await open();
+
+    expect(screen.getByTestId('sender-auto-send-off')).toHaveTextContent(/Di partenza non parte nulla da solo.*Controlla lo stato in Adempimenti/);
+  });
+
+  it('SenderWizardPage_AutomaticSendOn_OrNotTheChannelManager_SaysNothingOfItNotStartingByItself', async () => {
+    server = senderOf({ sender: 'ChannelManager', source: 'Stored', state: 'Active', verification: 'Verified', autoSendGuestsToOctorate: true });
+    await open();
+    expect(screen.queryByTestId('sender-auto-send-off')).not.toBeInTheDocument();
   });
 
   it('SenderWizardPage_ConnectedProperty_StartsFromItsChannelManagerAsTheDefault', async () => {

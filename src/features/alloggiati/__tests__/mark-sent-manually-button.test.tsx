@@ -61,6 +61,17 @@ describe('MarkSentManuallyButton (CO-11)', () => {
     expect(screen.getByText('Disponibile dal giorno di arrivo')).toBeInTheDocument();
   });
 
+  it('dialog_BeforeConfirming_SaysTheAlertsStopTheGuestCheckInClosesAndItCannotBeUndone', () => {
+    renderButton('DaInviareManualmente');
+    fireEvent.click(screen.getByTestId('alloggiati-resend-button'));
+
+    const consequences = screen.getByTestId('alloggiati-mark-sent-consequences');
+    expect(consequences).toHaveTextContent('smette di avvisarti su questo soggiorno');
+    expect(consequences).toHaveTextContent("check-in online dell'ospite");
+    expect(consequences).toHaveTextContent('il link non gli viene più mandato');
+    expect(consequences).toHaveTextContent('la dichiarazione non si annulla');
+  });
+
   it('button_ToSendManually_RequiresConfirmationAndSendsTheChosenDate', async () => {
     const sent: AlloggiatiStatusDto = {
       bookingId: BOOKING_ID,

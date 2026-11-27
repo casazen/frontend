@@ -10,7 +10,7 @@ import { IstatCoverageNotice } from '@/features/compliance/components/istat-cove
 import { useIstatClaim } from '@/features/compliance/lib/use-istat-claim';
 import type { PropertySender } from '@/types';
 import { SenderStateBadge } from '../sender-state-badge';
-import { delegationTextKey, isAutomaticSender, outcomeOfSender, senderOptions, type SenderWizardValues } from '../sender-wizard-model';
+import { autoSendInForce, delegationTextKey, isAutomaticSender, outcomeOfSender, senderOptions, type SenderWizardValues } from '../sender-wizard-model';
 
 interface SenderChoiceStepProps {
   read: PropertySender;
@@ -90,6 +90,12 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
         </span>
         <SenderStateBadge outcome={outcomeOfSender(read)} testId="sender-current-state" />
       </div>
+      {/* The channel manager is the starting sender of a connected property, but the automatic send of the guests is off to begin with: one quiet sentence next to the choice, no banner. */}
+      {read.sender === 'ChannelManager' && !autoSendInForce(read) ? (
+        <p className="break-words text-sm text-foreground/70" data-testid="sender-auto-send-off">
+          {t('compliance.sender.choice.autoSendOff')}
+        </p>
+      ) : null}
 
       <ChoiceGroup legend={t('compliance.sender.choice.legend')} minCardWidth={15}>
         {options.map(({ sender, available }) => (
@@ -102,7 +108,13 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
             disabled={!available}
             onChange={() => setValue('sender', sender, { shouldDirty: true, shouldTouch: true })}
             title={t(`compliance.sender.choice.options.${sender}.title`)}
-            description={available ? t(`compliance.sender.choice.options.${sender}.description`) : t('compliance.sender.choice.notAvailable')}
+            description={
+              available
+                ? t(`compliance.sender.choice.options.${sender}.description`)
+                : sender === 'CasaZen'
+                  ? t('compliance.sender.choice.options.CasaZen.unavailable')
+                  : t('compliance.sender.choice.notAvailable')
+            }
             data-testid={`sender-option-${sender}`}
           />
         ))}

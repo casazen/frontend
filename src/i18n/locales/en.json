@@ -1861,8 +1861,8 @@
     "overdue": "Deadline passed",
     "ordinaryTerm": "24 hours from arrival",
     "shortStayTerm": "short stay: 6 hours from arrival",
-    "manualBanner": "CasaZen does not transmit to Alloggiati Web yet: send each record on the Questura portal and record the submission here.",
-    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, or upload the file you can download from this page, then mark it as sent.",
+    "manualBanner": "As a rule CasaZen does not transmit to Alloggiati Web: send each record on the Questura portal and record the submission here. Where direct sending is active, CasaZen transmits and you check the status here.",
+    "manualNotice": "For this stay CasaZen does not transmit to Alloggiati Web: direct sending is not active. Enter the record on the Questura Alloggiati Web portal with the data below, or upload the file you can download from this page, then mark it as sent.",
     "waitingArrivalNotice": "The communication is sent from the arrival day: the portal accepts only today or yesterday as arrival date.",
     "declaredNotice": "Submission declared by the host: keep the receipt issued by the Alloggiati Web portal.",
     "failureNotice": {
@@ -1880,6 +1880,7 @@
     "markSentDialog": {
       "title": "Mark as sent manually",
       "description": "Use it only after entering the record on the Questura Alloggiati Web portal. CasaZen records your statement: it transmits nothing and receives no receipt.",
+      "consequences": "When you confirm, CasaZen stops sending you alerts about this stay and treats the guest's online check-in as complete: the link is no longer sent to them. This declaration cannot be undone from here.",
       "dateLabel": "Date sent on the portal",
       "dateRange": "Choose a date between {{from}} and {{to}}.",
       "confirmation": "I confirm I sent the record of this stay on the Alloggiati Web portal.",
@@ -2311,7 +2312,7 @@
       "invalidCinFormat": "The CIN is not in the official format (e.g. IT015146C2ABCDEFGH).",
       "duplicateCin": "This CIN is already assigned to another property.",
       "documentFileMissing": "The file of this document is no longer available: please upload it again.",
-      "alloggiatiTransmissionUnavailable": "CasaZen does not transmit to Alloggiati Web yet: send the record on the Questura portal and mark it as sent manually.",
+      "alloggiatiTransmissionUnavailable": "This button does not transmit to Alloggiati Web: send the record on the Questura portal and mark it as sent manually. Where direct sending is active, CasaZen transmits with its own automatic process.",
       "alloggiatiManualDateBeforeArrival": "The sending date cannot be before the check-in date.",
       "alloggiatiManualDateInFuture": "The sending date cannot be later than today.",
       "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent.",
@@ -5522,26 +5523,15 @@
       "refunded": "Already refunded",
       "inProgress": "Refunds waiting for Stripe",
       "refundable": "Refundable now",
-      "refundChoice": "Refund to the guest",
-      "rule": {
-        "freeCancellation": "The guest was shown free cancellation until {{date}}: the refund must be full.",
-        "policy": "Cancellation terms “{{name}}”: minimum refund {{amount}}.",
-        "none": "No cancellation terms apply: you choose how much to refund, up to {{amount}}."
-      },
+      "hostRefundsAll": "When you cancel, the guest always gets back everything they paid by card, whatever the cancellation policy says: you cannot refund less.",
+      "irreversible": "The cancellation and the refund cannot be undone or withdrawn.",
       "refundFull": "Full refund ({{amount}})",
-      "refundPartial": "Partial refund",
-      "partialLabel": "Amount to refund",
-      "partialHint": "From {{min}} to {{max}}. With 0 the guest gets no refund.",
       "reason": "Reason (visible only to you)",
       "keep": "Keep booking",
       "confirm": "Cancel booking",
       "submitting": "Cancelling…",
       "close": "Close",
       "failed": "The booking was not cancelled. Try again.",
-      "errors": {
-        "amountInvalid": "Enter a valid amount, with at most two decimals.",
-        "amountOutOfRange": "The amount must be between {{min}} and {{max}}."
-      },
       "result": {
         "cancelled": "Booking cancelled.",
         "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
@@ -7063,6 +7053,7 @@
         },
         "police": {
           "AlreadySent": "The communication to the police has already been made.",
+          "CasaZen": "With direct sending CasaZen transmits the communication to the police, not this button: check the status on the Compliance page.",
           "ChannelManagerSends": "Octorate sends the communication to the police when you register the arrival.",
           "Manual": "You make the communication to the police on the Alloggiati Web portal.",
           "NotApplicable": "This stay owes no communication to the police."
@@ -7165,8 +7156,8 @@
             "short": "Booking not connected to Octorate: nothing is sent"
           },
           "senderCasaZen": {
-            "long": "You chose CasaZen as the sender, but CasaZen does not send to the police yet. For now we send nothing to Octorate: the communication is made on the Alloggiati Web portal, and after you confirm we show you the guide.",
-            "short": "For now nothing is sent to Octorate"
+            "long": "The sender is CasaZen (direct sending): we send nothing to Octorate and this button sends nothing to the police. CasaZen transmits with its own automatic process, for stays from the activation date: check the status on the Compliance page, because the communication is in order only with the receipt.",
+            "short": "Nothing is sent to Octorate"
           },
           "senderManual": {
             "long": "You are the sender: we send nothing to Octorate. You make the communication to the police on the Alloggiati Web portal, and after you confirm we show you the guide.",
@@ -7861,6 +7852,7 @@
         }
       },
       "choice": {
+        "autoSendOff": "By default nothing starts by itself: guests go to your channel manager only when you confirm the check-in. Check the status on the Compliance page.",
         "istat": "The same sender also handles the regional statistics (ISTAT), where required.",
         "istatSeeNotice": "For the ISTAT, what the notice above says applies.",
         "legend": "Who sends the guests' data to the police?",
@@ -7869,7 +7861,8 @@
         "options": {
           "CasaZen": {
             "description": "CasaZen transmits the data with the credentials of your portal.",
-            "title": "CasaZen"
+            "title": "CasaZen",
+            "unavailable": "It cannot be chosen here: where available, direct sending is activated from the property page."
           },
           "ChannelManager": {
             "description": "It sends the guests' data every day. It is the recommended choice when the property is connected.",
@@ -8349,7 +8342,7 @@
       "alloggiati": {
         "status": "Status:",
         "sentHint": "The report of this stay is sent.",
-        "toSendHint": "The report of this stay is not sent. CasaZen does not transmit it: send it on the Alloggiati Web portal and record it as sent. The check-out is not blocked.",
+        "toSendHint": "The report of this stay is not sent. If direct sending is not active for the property, CasaZen does not transmit it: send it on the Alloggiati Web portal and record it as sent. The check-out is not blocked.",
         "failedHint": "The report of this stay failed or was rejected: fix it and send it again on the portal. The check-out is not blocked.",
         "overdue": "Deadline passed on {{deadline}}.",
         "dataIncomplete": "Guest data are missing."
@@ -22273,8 +22266,8 @@
         "keywords": "police tourist tax ross1000 istat receipt",
         "steps": [
           "Check required guest details and deadlines in Alloggiati for each stay. A complete check-in is not evidence of submission.",
-          "In the current workflow CasaZen prepares the information and available file for manual submission. Sign in to Alloggiati Web, submit the report and keep the portal’s receipt.",
-          "After actually submitting, use Mark as manually submitted and enter the correct date. This records your declaration; it does not certify that CasaZen transmitted the report or received a receipt.",
+          "As a rule CasaZen prepares the information and the file for manual submission. Sign in to Alloggiati Web, submit the report and keep the portal’s receipt. Where direct sending is active, CasaZen transmits it and the item is in order only with the receipt.",
+          "After actually submitting, use Mark as manually submitted and enter the correct date. This records your declaration; it does not certify that CasaZen transmitted the report or received a receipt. From then on CasaZen stops alerting you about that stay and treats the guest’s online check-in as complete (the link is no longer sent); the declaration cannot be undone from there.",
           "Check tourist tax, exemptions and regional tourism reporting separately. Confirm applicable rates and obligations with the relevant authority: a calculation or exported file is not an already-filed declaration."
         ]
       },
@@ -23907,7 +23900,7 @@
         "linePartialToArrival": "Full refund up to {{full}} before arrival; then {{percent}}% until arrival.",
         "loadFailed": "I cannot read the cancellation policies. Try again in a moment.",
         "loading": "Loading the policies…",
-        "noneChosen": "If you do not choose a policy, the full refund applies up to 7 days before arrival; after that, you decide case by case.",
+        "noneChosen": "If you do not choose a policy, a guest who cancels on their own gets back only the tourist tax they already paid (not the price of the stay), and the site promises no free cancellation. Choose one to have clear rules.",
         "title": "If the guest cancels"
       },
       "quiet": {
@@ -25026,7 +25019,7 @@
     "retry": "Retry",
     "configuredOn": "Configured on {{date}}",
     "notConfigured": "Not configured",
-    "writeOnlyHint": "The credentials are encrypted and can no longer be viewed once saved: to change them, enter them again. CasaZen does not transmit to Alloggiati Web yet: they will be used for automatic sending once it is available.",
+    "writeOnlyHint": "The credentials are encrypted and can no longer be viewed once saved: to change them, enter them again. They are used to download the receipts automatically and, where direct sending is active, for CasaZen to transmit to Alloggiati Web; sending by hand does not need them.",
     "fields": {
       "username": "Username",
       "password": "Password",
@@ -26804,7 +26797,8 @@
     "stripeAccount": "Stripe account:",
     "verificationIncomplete": "Verification incomplete",
     "verificationIncompleteDescription": "Stripe requires additional documents. Click \"Complete verification\" to continue the onboarding.",
-    "accountActiveMessage": "Your account can accept payments. Funds are credited directly to your Stripe account — CasaZen does not hold your earnings.",
+    "accountPayoutsPending": "Transfers to your bank account are not enabled on Stripe yet: until they are, the money stays in your Stripe balance. Check on Stripe.",
+    "accountActiveMessage": "Stripe has enabled card payments on your account: guests can pay. Funds are credited directly to your Stripe account — CasaZen does not hold your earnings.",
     "managePlanIn": "Manage SaaS plan in",
     "domainLink": "Domain settings",
     "planSettings": "Plan settings"
@@ -28758,7 +28752,7 @@
       },
       "DaInviareManualmente": {
         "label": "To send manually",
-        "explain": "The communication is ready but CasaZen does not transmit it: you have to send it yourself on the Alloggiati Web portal, within 24 hours of arrival (6 hours if the stay does not exceed 24 hours).",
+        "explain": "The communication is ready. If direct sending is not active for the property, CasaZen does not transmit it: you must send it yourself on the Alloggiati Web portal, within 24 hours of arrival (6 hours if the stay does not exceed 24 hours).",
         "need": [
           "Sending on the Alloggiati Web portal",
           "Recording the sending here, with the date"
