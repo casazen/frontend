@@ -106,8 +106,9 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
       // `integrations/**` is the WordPress plugin: its tests (PHPUnit, and the Node tests of its tools) run in its own workflow.
       exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', 'integrations/**', '**/.worktrees/**'],
       // Two projects (scripts/vitest-environments.ts): the `.test.ts` files that touch no DOM run in plain Node with no setup,
-      // every other test keeps jsdom and `src/test/setup.ts` (jest-dom, i18n, stand-ins).
-      projects: vitestProjects(__dirname, ['./src/test/setup.ts']),
+      // every other test keeps jsdom and `src/test/setup.ts` (jest-dom, i18n, stand-ins). Only under vitest, which sets VITEST before it
+      // reads this file: `vite dev` and `vite build` do not scan the test files.
+      projects: process.env.VITEST ? vitestProjects(__dirname, ['./src/test/setup.ts']) : undefined,
     },
   }
 })
