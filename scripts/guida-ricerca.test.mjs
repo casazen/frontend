@@ -70,7 +70,8 @@ test('niente risultati per sole parole vuote, parole sconosciute o una sola paro
   assert.ok(g.cerca('casa', 5).length > 0);              // ma chi scrive solo «casa» vede qualcosa
 });
 
-test('sul manuale vero: il titolo di ogni voce, scritto come domanda, riporta quella voce nei primi 3 risultati', () => {
+// Oltre mille ricerche in sequenza: su una macchina carica (CI compresa) superano i 5 secondi predefiniti di vitest.
+test('sul manuale vero: il titolo di ogni voce, scritto come domanda, riporta quella voce nei primi 3 risultati', { timeout: 120_000 }, () => {
   const dir = path.join(guida, 'guida-indice.js');
   const window = {};
   new Function('window', fs.readFileSync(dir, 'utf8'))(window);
