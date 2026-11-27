@@ -37,6 +37,8 @@ const APP_PATHS = [
   '/',
   '/login',
   '/app/short-rent/bookings',
+  // The page where an administrator confirms that the plugin of a site connects to the agency (PLG-FE-CONSOLE): never framed, or a site could put its button under another.
+  '/app/connect/wordpress',
   '/checkin',
   '/p/tassa-soggiorno/milano',
   '/book',

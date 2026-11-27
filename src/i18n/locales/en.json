@@ -2674,6 +2674,8 @@
       "showcaseSupplierNotActive": "Your profile is not active yet: complete the activation to publish the showcase.",
       "showcaseUndoUnavailable": "The time to undo the publication has run out.",
       "showcaseVersionConflict": "The showcase was changed elsewhere: reload the page to see the latest version.",
+      "siteConnectionInvalidRequest": "The request to connect the site is not valid: go back to the plugin and try again.",
+      "siteConnectionNotFound": "This connected site no longer exists: the list has been refreshed.",
       "servicePaymentInFlight": "A payment for this amount is already in progress: wait a few moments.",
       "servicePaymentLinkInvalid": "This payment link is not valid or has expired.",
       "servicePaymentNotPayable": "This payment can no longer be paid: it may already be settled or withdrawn.",
@@ -6285,6 +6287,31 @@
       "Female": "Female",
       "Other": "Other"
     },
+    "prefill": {
+      "checkIt": "Check it: it was read from the printed text.",
+      "complete": "Everything this document gives was read: check it and confirm.",
+      "confirm": "Confirm these details",
+      "discard": "Take the photo again",
+      "field": {
+        "birthPlace": "Place of birth",
+        "citizenship": "Citizenship",
+        "dateOfBirth": "Date of birth",
+        "documentExpiresOn": "Expiry date",
+        "documentIssuedOn": "Issue date",
+        "documentKind": "Document type",
+        "documentNumber": "Document number",
+        "firstName": "First name",
+        "gender": "Gender",
+        "issuePlace": "Place of issue",
+        "lastName": "Last name",
+        "other": "Other details"
+      },
+      "intro": "Check the details read from the document and correct any that are wrong. In the next steps we will only ask for the ones we could not read.",
+      "missingText": "These could not be read from the photo: you will enter them in the next steps.",
+      "missingTitle": "We will still ask for",
+      "readFromDocument": "Read from the document",
+      "title": "Details read from the document"
+    },
     "validation": {
       "firstName": {
         "required": "First name is required",
@@ -6742,6 +6769,41 @@
           "pick": "Photograph the back",
           "pickAgain": "Photograph the back again"
         },
+        "camera": {
+          "captureBack": "Photograph the back",
+          "captureFront": "Photograph the front",
+          "chooseFile": "Choose a photo from your phone",
+          "chooseHint": "You can also use a photo you already took, or the camera app of your phone.",
+          "duplicate": {
+            "send": "Send it anyway",
+            "text": "This photo looks like the photo of the front. Turn the document over and take it again, or send it anyway: we check it after it is sent.",
+            "title": "It looks like the same side"
+          },
+          "heldLabel": "The photo of the document you took",
+          "hint": {
+            "blur": "The picture is blurred: hold the phone steady.",
+            "bright": "There is too much light: move to a softer light.",
+            "dark": "There is too little light: move somewhere brighter.",
+            "edges": "Show the whole document, with all four edges inside the frame.",
+            "glare": "Glare on the document: tilt it slightly or move away from the light.",
+            "orientation": "Turn your phone to landscape.",
+            "ready": "The framing is right: you can take the photo.",
+            "settling": "Hold the phone still…",
+            "waiting": "Opening the camera…"
+          },
+          "previewLabel": "Camera preview with the outline of the document",
+          "problem": {
+            "denied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try the camera again\".",
+            "fallback": "You can choose a photo of the document from your phone below, or continue with a person.",
+            "not_found": "No camera was found on this device.",
+            "title": "The camera is not available",
+            "unknown": "The camera could not be started.",
+            "unsupported": "This page cannot use the camera in this browser."
+          },
+          "retake": "Take the photo again",
+          "retryCamera": "Try the camera again",
+          "sendAgain": "Send again"
+        },
         "fileLabel": "Photo of the identity document",
         "frontReceived": "The side with your photo has arrived.",
         "instructions": "Place the document on a flat, well-lit surface. Show the whole side with your photo, without reflections. A passport has everything on one page: show the page with your photo and the two lines of letters at the bottom.",
@@ -6757,8 +6819,21 @@
         "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
         "document_back_needed": "Now photograph the back of the card, where the lines of letters are.",
         "active_pose_retry": "Take both photos again following the direction shown.",
+        "document_blur": "The photo is blurred: hold the phone steady and try again.",
+        "document_edges_not_visible": "Show the whole document, with all four edges visible.",
+        "document_format_unsupported": "Document not supported: continue with a person.",
+        "document_glare": "Glare on the photo: tilt the document slightly.",
+        "document_layout_mismatch": "We could not recognize the layout of the document: hold it straight, whole and steady, then try again.",
+        "document_not_found": "We can't see a document in this photo: place it on a flat surface and show all of it.",
         "document_not_recognized": "We could not identify a document in this photo. Upload a photo of an identity card, passport or driving licence.",
         "document_front_needed": "Photograph the side of the card with your photo.",
+        "document_orientation": "The document is turned: hold it straight, in landscape.",
+        "document_portrait_missing": "We can't see your photo on the document: show the side with the photo and don't cover it.",
+        "document_side_duplicate": "You photographed the same side twice: now photograph the other side of the document.",
+        "document_unreadable": "We could not read the document: continue with a person.",
+        "document_wrong_side": "This photo shows the other side of the document: photograph the side we asked for.",
+        "document_wrong_side_back": "This is the front: now photograph the back, where the lines of letters and numbers are.",
+        "document_wrong_side_front": "This is the back: photograph the front, where your photo is.",
         "hold_still": "Hold the phone still: the photo is blurred.",
         "less_light": "There is too much light: move to a softer light.",
         "more_light": "There is too little light: move to a brighter place.",
@@ -9968,12 +10043,19 @@
         "label": "What to embed"
       },
       "plugin": {
-        "description": "If your site runs on WordPress you do not need to paste any code.",
+        "description": "If your site runs on WordPress you do not need to paste any code: the plugin connects to your account with one button.",
         "download": "Download the plugin",
-        "step1": "Install and activate the CasaZen plugin on your WordPress site.",
-        "step2Own": "In the plugin settings, write the CasaZen address: {{address}}.",
-        "step2Slug": "In the plugin settings, write the CasaZen address ({{address}}) and the organization slug ({{slug}}).",
-        "step3": "Open the guided setup: it creates the pages “Book”, “Online check-in” and “Owner area”.",
+        "manual": {
+          "address": "CasaZen address: {{address}}",
+          "description": "If you would rather not connect the plugin, write these values by hand in the advanced settings of the plugin.",
+          "slug": "Organization identifier (slug): {{slug}}",
+          "slugNotNeeded": "Organization identifier: not needed, the domain of your agency already knows who you are.",
+          "title": "Manual setup"
+        },
+        "step1": "Download the plugin and activate it in WordPress: Plugins, Add New, Upload Plugin.",
+        "step2": "In the plugin press “Connect to CasaZen” and confirm: the address and the identifier fill in by themselves.",
+        "step3": "Still in the plugin, write the domain and create the two DNS records it shows.",
+        "step4": "Create the pages “Book”, “Online check-in” and “Owner area” with the guided setup.",
         "title": "WordPress plugin"
       },
       "preview": {
@@ -10006,6 +10088,25 @@
         "targetInvalid": "Write a full address that starts with http:// or https://, without a user name or password.",
         "targetLabel": "Page of your site with the booking engine",
         "targetPlaceholder": "https://www.example.com/book"
+      },
+      "sites": {
+        "description": "The WordPress sites connected to your account through the plugin. If you disconnect one, its plugin stops working until you connect it again.",
+        "empty": "No connected sites",
+        "lastUsed": "Last used: {{date}}",
+        "lastUsedNever": "Never used",
+        "linked": "Connected on {{date}}",
+        "loadError": "We cannot read the connected sites.",
+        "loading": "Loading the connected sites…",
+        "revoke": "Disconnect",
+        "revokeConfirm": {
+          "confirm": "Disconnect",
+          "description": "The plugin of this site stops working with your account: to make it work again you will have to connect it again from WordPress. The pages and widgets already published stay where they are.",
+          "title": "Disconnect {{site}}?"
+        },
+        "revokeFailed": "We could not disconnect the site. Try again.",
+        "revokeLabel": "Disconnect {{site}}",
+        "revoked": "Site disconnected.",
+        "title": "Connected sites"
       },
       "snippet": {
         "copied": "Copied",
@@ -27697,6 +27798,46 @@
       "confirmedNamed": "Booking confirmed, {{name}}!",
       "email": "Last step: confirm your email",
       "wait": "Request sent to {{host}}"
+    }
+  },
+  "siteConnect": {
+    "wordpress": {
+      "adminOnly": {
+        "description": "Only an administrator of the agency can connect a site. Sign in with the account of an administrator and try again from the plugin.",
+        "title": "Connection not allowed"
+      },
+      "allowed": {
+        "domain": "see and change the domain of your booking site",
+        "surfaces": "choose what passes through the domain: guest area, owner portal and links in e-mails",
+        "title": "The plugin will be able to:"
+      },
+      "cancelled": {
+        "description": "You can close this tab and go back to WordPress.",
+        "title": "Cancelled"
+      },
+      "connect": "Connect",
+      "disconnectAnytime": "You can disconnect the site at any time from the plugin or from “Embed in your site”.",
+      "failed": "The site could not be connected. Try again shortly.",
+      "invalid": {
+        "description": "Go back to the plugin and try again.",
+        "title": "Invalid request"
+      },
+      "leaving": {
+        "description": "The connection is completed on WordPress: wait a moment.",
+        "title": "Taking you back to WordPress"
+      },
+      "loading": "Preparing the connection…",
+      "notAllowed": {
+        "data": "see bookings, guests or payments",
+        "title": "The plugin will not be able to:"
+      },
+      "question": "Connect the site <strong>{{site}}</strong> to <strong>{{agency}}</strong>?",
+      "unavailable": {
+        "description": "We cannot check whether connecting sites is available. Try again.",
+        "retry": "Try again",
+        "title": "Connection not available"
+      },
+      "verifySite": "Check that the address is your site. If you do not recognise it, cancel."
     }
   },
   "siteDocuments": {
