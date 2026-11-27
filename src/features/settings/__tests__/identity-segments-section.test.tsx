@@ -475,6 +475,45 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it.each([
+    ['422 with its words', httpError(422, { code: 'identity_segment_invalid', status: 422, detail: 'Scrivi il motivo della sospensione: al massimo 200 caratteri.' }), 'Scrivi il motivo della sospensione: al massimo 200 caratteri.'],
+    ['500 with none', httpError(500), null],
+  ] as const)('IdentitySegmentsSection_TheSuspensionIsOnItsWay_TheDialogCannotBeLeftAndTheAnswer_%s_IsToldInsideIt', async (_answer, error, serverWords) => {
+    // The server's own words when it gave any; otherwise the sentence of the page that says the segment was not saved.
+    const words = serverWords ?? i18n.t('biometricSettings.segments.saveFailed');
+    let refuse: (reason: unknown) => void = () => undefined;
+    vi.mocked(biometricSettingsApi.updateSegment).mockReturnValue(
+      new Promise<IdentitySegment>((_resolve, reject) => {
+        refuse = reject;
+      }),
+    );
+    renderSection();
+    const row = await rowOf('segment-mare-android');
+    fireEvent.click(radio(row, 'Sospesa'));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: 'Motivo' } });
+    const confirm = within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.suspend.confirm') });
+    fireEvent.click(confirm);
+    await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(confirm).toBeDisabled());
+
+    // On its way: Esc and the X do not take the dialog away (a click outside comes through the same way), and so nothing can be answered where nobody looks.
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.close') }));
+    expect(screen.getByRole('dialog')).toBe(dialog);
+
+    // The answer is a refusal: it is told inside the dialog, which stays with its text, and the segment is what it was. Now the way out is open again.
+    await act(async () => {
+      refuse(error);
+    });
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(words);
+    expect(within(dialog).getByTestId('identity-segment-suspend-reason')).toHaveValue('Motivo');
+    expect(row).toHaveAttribute('data-mode', 'automatic');
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(row).toHaveAttribute('data-mode', 'automatic');
+  });
+
   it('IdentitySegmentsSection_TheServerRefusesWithoutAMessage_SaysTheSegmentWasNotSaved', async () => {
     vi.mocked(biometricSettingsApi.updateSegment).mockRejectedValue(httpError(500));
     renderSection();

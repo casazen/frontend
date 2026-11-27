@@ -180,7 +180,9 @@ function SuspendDialog({ segment, name, onClose }: SuspendDialogProps) {
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        if (!open) onClose();
+        // While the suspension is on its way the dialog cannot be left (Esc, a click outside, the X: every way out comes through here, and the button to cancel is off already): what the server answers, a refusal
+        // included, is told inside it, where it is being looked for, and never goes unseen. The close that follows a successful answer is the dialog's own, made with the state of the render of the click (nothing on its way yet).
+        if (!open && !setMode.isPending) onClose();
       }}
       title={t('biometricSettings.segments.suspend.title')}
       description={t('biometricSettings.segments.suspend.description', { name })}
