@@ -633,6 +633,32 @@ describe('identity-document-camera: a back that looks like the front (T02, AC3)'
     expect(view.looksLikeTheFront).not.toHaveBeenCalled();
     expect(view.onPhoto).toHaveBeenCalledTimes(1);
   });
+
+  it('DocumentCameraGuide_TheSideChangesWhileTheQuestionAboutAFrameIsOnTheScreen_TheFrameIsLetGoAndTheCameraOpensForTheNewSide', async () => {
+    const rig = stubCamera();
+    const view = renderCapture({ side: 'back' });
+    view.looksLikeTheFront.mockReturnValue(true);
+    await waitForTheButton();
+    fireEvent.click(button());
+    await settle();
+
+    const heldFrame = shot();
+    expect(screen.getByTestId('checkin-identity-camera-duplicate')).toBeInTheDocument();
+    expect(heldFrame.width).toBe(1280);
+
+    // The other way (the file of the phone) answered the side while the frame was held: the screen of that side goes, and its frame with it.
+    view.update({ side: 'front' });
+    await settle();
+
+    expect(screen.queryByTestId('checkin-identity-camera-duplicate')).not.toBeInTheDocument();
+    expect(heldFrame.isConnected).toBe(false);
+    expect(heldFrame.width).toBe(0);
+    expect(heldFrame.height).toBe(0);
+    expect(view.onPhoto).not.toHaveBeenCalled();
+    expect(rig.getUserMedia).toHaveBeenCalledTimes(2);
+    await advanceUntil(() => !button().disabled);
+    expect(button()).toHaveTextContent(text('checkin.identity.document.camera.captureFront'));
+  });
 });
 
 describe('identity-document-camera: nothing of the frame is kept anywhere (privacy)', () => {
@@ -830,5 +856,67 @@ describe('identity-document-camera: inside the identity step of a self-hosted ve
     expect(rearCameraCalls).toHaveLength(1);
     expect(screen.queryByTestId('checkin-identity-camera')).not.toBeInTheDocument();
     expect(rig.stop).toHaveBeenCalled();
+  });
+
+  it('IdentityStep_TheCameraSendFailedAndTheFileIsTakenAsTheFront_TheOldFrameIsLetGoAndNeverGoesUpAsTheBack', async () => {
+    const rig = stubCamera();
+    vi.mocked(publicCheckinApi.postDocument).mockRejectedValueOnce(Object.assign(new Error('Network Error'), { code: 'ERR_NETWORK', isAxiosError: true }));
+    renderStep();
+    await waitForTheButton();
+
+    fireEvent.click(button());
+    await settle();
+
+    // The send failed: the frame of the front waits on the screen to be sent again.
+    const heldFrame = shot();
+    expect(screen.getByTestId('checkin-identity-camera-failed')).toBeInTheDocument();
+    expect(heldFrame.width).toBe(1280);
+    expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(1);
+
+    // The guest chooses the file of the phone instead: the server takes it as the front and asks for the back.
+    vi.mocked(publicCheckinApi.postDocument).mockResolvedValueOnce({
+      success: true,
+      acceptable: false,
+      guidanceCodes: ['document_back_needed'],
+      documentStored: true,
+      documentNotArchived: false,
+      side: 'front',
+      sides: ['front'],
+    });
+    fireEvent.change(screen.getByTestId('checkin-identity-document-file'), { target: { files: [new File(['front'], 'front.jpg', { type: 'image/jpeg' })] } });
+    await settle();
+
+    expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(publicCheckinApi.postDocument).mock.calls[1][2]).toBe('front');
+    expect(screen.getByTestId('checkin-identity-document')).toHaveAttribute('data-side', 'back');
+    // The frame of the front goes with the screen of the front: nothing offers to send it again (as the back), and its pixels are let go.
+    expect(screen.queryByTestId('checkin-identity-camera-failed')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-identity-camera-send-again')).not.toBeInTheDocument();
+    expect(heldFrame.isConnected).toBe(false);
+    expect(heldFrame.width).toBe(0);
+    expect(heldFrame.height).toBe(0);
+    expect(screen.getByTestId('checkin-identity-camera')).toHaveAttribute('data-held', 'none');
+
+    // The camera is open for the back, and the only photo that can go up as the back is a new one.
+    await waitForTheButton();
+    expect(rig.getUserMedia).toHaveBeenCalledTimes(2);
+    expect(button()).toHaveTextContent(text('checkin.identity.document.camera.captureBack'));
+    vi.mocked(publicCheckinApi.postDocument).mockResolvedValueOnce({
+      success: true,
+      acceptable: true,
+      guidanceCodes: [],
+      documentStored: true,
+      documentNotArchived: false,
+      side: 'back',
+      sides: ['front', 'back'],
+    });
+    fireEvent.click(button());
+    await settle();
+
+    expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(3);
+    expect(vi.mocked(publicCheckinApi.postDocument).mock.calls[2][2]).toBe('back');
+    // Two frames were ever encoded: the one that failed, and the new one of the back.
+    expect(encoded).toHaveLength(2);
+    expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'selfie');
   });
 });

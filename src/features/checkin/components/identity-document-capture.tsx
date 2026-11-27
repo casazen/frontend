@@ -143,6 +143,9 @@ export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided
 
       {selfHosted && (
         <DocumentCameraGuide
+          // One camera screen for each side: a frame held for one side (a send that failed, the question before a back that looks like the front) is let go when the side changes, so that it is never offered
+          // again as the photo of the other one (the file of the phone can answer the side while the frame is still on the screen).
+          key={side}
           side={side}
           busy={busy}
           onPhoto={async (photo, fingerprint) => (await onPhoto(photo, fingerprint)) !== false}
