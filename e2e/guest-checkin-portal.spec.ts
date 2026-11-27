@@ -176,7 +176,7 @@ test.describe('Guest check-in portal', () => {
 });
 
 test('confirms a misread name, reuses the front after consent and submits the verified guest', async ({ page }) => {
-  // The browser exercises camera capture with generated pixels (`helpers/fake-camera.ts`). The API outcomes below are fixtures.
+  // The browser exercises camera capture with generated pixels. The API outcomes below are fixtures.
   await installFakeCamera(page);
   const steps: string[] = [];
   const state = { step: 'consent', biometricOffered: true, consentRecorded: false, consentRefused: false,

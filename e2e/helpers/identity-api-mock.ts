@@ -13,28 +13,13 @@ import type {
   PublicCheckInContextDto,
 } from '../../src/types/public-checkin.types';
 
-/**
- * The API of the guest identity step, answered by the page itself (E74/F04/US01/T01, NF-198): a stay whose link carries the state of a self-hosted verification, the legal text of the consent, the opening of the
- * step, the consent, the two sides of a card, the reading of a photo, the challenge of the presence and the recording that answers it, and the request for a person. There is no backend, no model and no picture
- * behind it: what the server DECIDES is a script the proof gives (`presence`), and what the proof looks at is what the PAGE SENT, which is recorded call by call (method, headers, the parts of a multipart body).
- *
- * The answers follow the contract of the endpoints (E70/F02/US01/T01, E71/F01/US03/T01, E72/F01/US01/T01, E73/F01/US01/T02, repeated in E72/F02/US01/T01) as the page reads them, and the state they carry is the
- * state the server would be in: a page opened again through the same link finds the verification where it was left.
- */
-
-/** The version of the text of the consent the registry of this mock serves: the opening of the step and the consent must name it, anything else is refused as the server refuses it. */
 const CONSENT_VERSION = 'checkin-biometric-e2e-1';
 
-/** The code of the lock an approved verification hands the guest (a fixture value, the code of no lock). */
 export const LOCK_CODE = '482913';
 
-/**
- * The moves the mock asks for and for how long, as the challenge states them: a lead-in to look at the camera, then each move. Short, so that a recording that is made for real (the frames of the fake camera, in real
- * time) lasts two seconds. The challenge outlives the recording by far.
- */
+// Short on purpose: the recordings are real and last as long as the prompts.
 export const PRESENCE_PLAN = { leadInMs: 600, stepMs: 700, steps: ['turn_left', 'look_up'] } as const satisfies Pick<PresenceChallenge, 'leadInMs' | 'stepMs' | 'steps'>;
 
-/** The flags the self-hosted verification needs, on: what `GET /api/public/features` answers while the whole family is switched on. */
 const FEATURES = {
   otaPartnerApi: false,
   checkInIdentityVerification: true,
@@ -43,54 +28,34 @@ const FEATURES = {
   checkInIdentityReviewEvidence: true,
 };
 
-/** What the server decides at each recording, in order (the last entry is what every later one gets): a pass, one more try with its guidance, a person, or a connection that breaks before the server answers. */
 type PresenceStep = 'ok' | 'retry' | 'operator' | 'abort';
 
-/** The token of the link the mock answers for. */
 const TOKEN = 'identity-e2e-session';
 
 export interface IdentityMockOptions {
-  /** Where the link finds the verification: at the consent (a guest who opens it), at the document, or at the recording (a guest who comes back after the document, or who is sent there). */
   startAt?: 'consent' | 'document' | 'presence';
-  /** What the server decides at each recording (`ok` for all of them when it is not given). */
   presence?: PresenceStep[];
-  /** The first photo of the document cannot be compared: the codes of what to change (the following ones are read as the two sides of a card). */
   refuseFirstDocument?: string[];
-  /** How long the server takes to answer a photo of the document, in milliseconds. */
   documentDelayMs?: number;
 }
 
-/** One call the page made to the link, as the mock saw it. */
 export interface IdentityCall {
-  /** What was asked: `context` (the link itself), `legal-texts`, `identity/open`, `biometric-consent`, `document`, `read-document`, `presence-challenge`, `presence`, `request-operator`, or whatever else the page asked for. */
   endpoint: string;
   method: string;
-  /** The query string (the pictures and the data of the guest are never in it). */
   search: string;
-  /** The headers of the request, names in lower case. */
   headers: Record<string, string>;
-  /** How many parts of each name a multipart body has (`frames: 12`, `timestamps: 1`). */
   parts: Record<string, number>;
-  /** The parts of a multipart body that are text (`side`, `challengeToken`, `timestamps`), by name. */
   fields: Record<string, string>;
-  /** The JSON body, for a call that sends one. */
   json: unknown;
-  /** Every picture part of the body that came with its bytes starts with the marker of a JPEG. */
   picturesAreJpeg: boolean;
-  /** The SHA-256 of the `frames` parts, one after the other: two requests with the same one carry the same recording. `null` for a body with no frames. */
   framesDigest: string | null;
-  /** What the mock did with it: answered it, or broke the connection before the server saw it. */
   outcome: 'answered' | 'aborted';
 }
 
 export interface IdentityApiMock {
-  /** The address that opens the first step of the page (the data of the guest). */
   readonly link: string;
-  /** The address that opens the identity step straight (what the QR code of the door leads to). */
   readonly entry: string;
-  /** The calls of the page to the link, in the order they arrived: all of them, or those of one endpoint. */
   calls: (endpoint?: string) => IdentityCall[];
-  /** The tokens of the challenges issued so far, in order. */
   challenges: () => string[];
 }
 
@@ -100,30 +65,24 @@ interface Part {
   content: Buffer;
 }
 
-/**
- * The boundary of a `multipart/form-data` body, or `null` for a body that is not one. The header names it (the browser adds it when it sends a form); a body that begins with a boundary line is one even
- * when the header is not among the ones the test runner hands over.
- */
 function boundaryOf(body: Buffer, contentType: string): string | null {
   const named = /boundary=(?:"([^"]+)"|([^;\s]+))/i.exec(contentType);
   const fromHeader = named?.[1] ?? named?.[2];
   if (fromHeader) return fromHeader;
+  // The runner may not hand over the content-type header: a multipart body starts with its boundary line.
   return /^--([^\r\n]+)\r\n/.exec(body.subarray(0, 200).toString('latin1'))?.[1] ?? null;
 }
 
-/** The parts of a `multipart/form-data` body. Binary safe: the content of a part is a slice of the body. */
 function partsOf(body: Buffer, boundary: string): Part[] {
   const marker = Buffer.from(`--${boundary}`);
   const parts: Part[] = [];
   let at = body.indexOf(marker);
   while (at !== -1) {
     const start = at + marker.length;
-    // `--` straight after a boundary is the end of the body.
     if (body.subarray(start, start + 2).toString('latin1') === '--') break;
     const next = body.indexOf(marker, start);
     if (next === -1) break;
 
-    // After the boundary come a line break, the headers, an empty line and the content, which ends with a line break of its own.
     const chunk = body.subarray(start + 2, next - 2);
     const headerEnd = chunk.indexOf('\r\n\r\n');
     if (headerEnd !== -1) {
@@ -138,7 +97,6 @@ function partsOf(body: Buffer, boundary: string): Part[] {
   return parts;
 }
 
-/** What the mock writes down of a request, the moment it arrives. */
 function writeDown(request: Request, endpoint: string): IdentityCall {
   const headers = request.headers();
   const call: IdentityCall = {
@@ -168,7 +126,7 @@ function writeDown(request: Request, endpoint: string): IdentityCall {
         call.fields[part.name] = part.content.toString('utf8');
         continue;
       }
-      // A picture: a JPEG begins with the bytes FF D8. A fixture file of a proof that is not a JPEG says so here. A part that comes with no bytes says nothing: how much of a blob the test runner hands over is its business.
+      // A part that arrives with no bytes proves nothing: how much of a blob the runner hands over is not ours to judge.
       if (part.content.length >= 2 && (part.content[0] !== 0xff || part.content[1] !== 0xd8)) call.picturesAreJpeg = false;
       if (part.name === 'frames') {
         frames.update(part.content);
@@ -186,7 +144,6 @@ function writeDown(request: Request, endpoint: string): IdentityCall {
   return call;
 }
 
-/** The state of the verification at a step of the flow, as the link carries it. */
 function stateAt(stage: 'consent' | 'document' | 'presence'): IdentityVerificationState {
   const afterDocument = stage === 'presence';
   return {
@@ -214,7 +171,7 @@ function stateAt(stage: 'consent' | 'document' | 'presence'): IdentityVerificati
   };
 }
 
-/** The legal text of the consent the registry serves: a fixture, not the text of the product (the product's is the registry's, and the page has none of its own). */
+// Fixture text, not a legal text: the page shows whatever the registry serves.
 const CONSENT_TEXT: CheckInLegalTextsResponse = {
   language: 'it',
   texts: [
@@ -228,7 +185,7 @@ const CONSENT_TEXT: CheckInLegalTextsResponse = {
   ],
 };
 
-/** What a read of the front of a card gives, for the proof of the data step: values of a person who does not exist. */
+// A person who does not exist.
 const READING: CheckInDocumentReadResult = {
   read: true,
   side: 'front',
@@ -244,10 +201,6 @@ const READING: CheckInDocumentReadResult = {
   guest: { firstName: 'Luca', lastName: 'Rossi', dateOfBirth: '1992-05-15', documentKind: 'IdentityCard', documentNumber: 'CA00000AA', documentExpiresOn: '2032-03-11' },
 };
 
-/**
- * Answers every call of the identity step of one link, and writes each one down. Register it before the first `goto`. `GET /api/public/features` is answered with the flags on; the legacy selfie routes are
- * answered 404 (and recorded: a proof of the self-hosted path expects none).
- */
 export async function mockIdentityApi(page: Page, options: IdentityMockOptions = {}): Promise<IdentityApiMock> {
   const script: PresenceStep[] = options.presence && options.presence.length > 0 ? options.presence : ['ok'];
   const base = `/api/public/checkin/${TOKEN}`;
@@ -263,7 +216,6 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
     state = { ...state, ...patch };
   };
   const snapshot = (): IdentityVerificationState => ({ ...state });
-  /** The verification ends with a person: the guest asked for one, or the server sent the case there. */
   const withAPerson = () =>
     change({ step: 'operator', result: 'operator', operatorRequested: true, biometricOffered: false, closed: true, outcome: 'operator' });
 
@@ -295,11 +247,10 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
       steps: [...PRESENCE_PLAN.steps],
       stepMs: PRESENCE_PLAN.stepMs,
       leadInMs: PRESENCE_PLAN.leadInMs,
-      // Far beyond the length of the recording: the challenge never runs out under the proof.
       expiresAt: new Date(Date.now() + 120_000).toISOString(),
       targetFps: 8,
       maxFrames: 40,
-      // Small frames: the proof is about the sequence and not about the pictures, and a recording of a couple of dozen of them stays a few tens of kilobytes.
+      // Small frames keep the multipart body of a recording small.
       maxFrameSide: 160,
     };
   };
@@ -313,7 +264,7 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
     async (route) => {
       const request = route.request();
       const endpoint = new URL(request.url()).pathname.slice(base.length).replace(/^\//, '') || 'context';
-      // Written down before anything is awaited: two calls that arrive together are in the order they arrived.
+      // Written down before anything is awaited, so that calls keep their order of arrival.
       const call = writeDown(request, endpoint);
       calls.push(call);
       const method = request.method();
@@ -360,7 +311,7 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
           return reply(answer);
         }
         if (side === 'front') {
-          // The Italian electronic identity card: the face is on the front, the lines of letters on the back, and the answer asks for the back.
+          // Italian electronic identity card: the face is on the front, the lines of letters on the back, and the answer asks for the back.
           change({ documentSides: ['front'], documentSideNeeded: 'back', formatId: 'cie' });
           const answer: IdentityDocumentResponse = { success: true, acceptable: false, guidanceCodes: ['document_back_needed'], documentStored: true, documentNotArchived: false, side, sides: ['front'] };
           return reply(answer);
@@ -378,7 +329,7 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
         const step = script[Math.min(presenceCalls, script.length - 1)];
         presenceCalls += 1;
         if (step === 'abort') {
-          // The connection breaks before the server has seen the recording: nothing was decided.
+          // The connection breaks before the server sees the recording: nothing is decided.
           call.outcome = 'aborted';
           return route.abort('failed');
         }
@@ -403,7 +354,7 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
         return reply(answer);
       }
 
-      // Anything else (the selfie of the legacy path included) is a call the self-hosted flow does not make: it is written down and refused.
+      // Anything else (the legacy selfie routes included) is refused and recorded, so that a proof can assert there was none.
       return problem(404, 'not_found');
     },
   );
