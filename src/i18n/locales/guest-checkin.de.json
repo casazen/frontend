@@ -135,6 +135,7 @@
     "next": "Weiter",
     "back": "Zurück",
     "submit": "Check-in absenden",
+    "submitHint": "Zum Absenden kreuzen Sie bitte zuerst die Pflichtkästchen oben an.",
     "fixHighlightedFields": "Einige Angaben sind ungültig: Bitte korrigieren Sie die markierten Felder und senden Sie erneut ab.",
     "successTitle": "Check-in abgeschlossen!",
     "successDescription": "Die Unterkunft hat Ihre Angaben zum Aufenthalt erhalten. Für Korrekturen kontaktieren Sie die Unterkunft über Ihre Buchung.",

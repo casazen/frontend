@@ -47,7 +47,7 @@ interface HealthRowProps {
 }
 
 /** One communication: who sends it, whether it works, when it last ran and, when it does not, what to do. */
-function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath }: HealthRowProps) {
+function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath, sharedDetail = false }: HealthRowProps & { sharedDetail?: boolean }) {
   const { t, i18n } = useTranslation();
   const view = describeHealthLine(line, applies);
   const { Icon, tone } = STATE_LOOK[view.state];
@@ -73,9 +73,11 @@ function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath }: H
         </span>
       </div>
 
-      <p className="text-sm" data-testid={`connection-health-${topic}-detail`}>
-        {applies ? t(healthDetailKey(view)) : t('connectionHealth.outsideItaly')}
-      </p>
+      {sharedDetail ? null : (
+        <p className="text-sm" data-testid={`connection-health-${topic}-detail`}>
+          {applies ? t(healthDetailKey(view)) : t('connectionHealth.outsideItaly')}
+        </p>
+      )}
       {view.reasonCode ? <p className="text-sm text-muted-foreground">{t(`connectionHealth.reason.${view.reasonCode}`)}</p> : null}
       {lastRun ? (
         <p className="text-sm text-muted-foreground" data-testid={`connection-health-${topic}-last-run`}>
@@ -195,16 +197,28 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
   } else {
     const data = health.data;
     const wizardPath = senderWizardPath(propertyId, hasPermission);
+    const istatRow = !(data.applies && istatClaim === 'seeNotice');
+    // Both sent by hand: the one sentence that says what that means goes once under the two rows, not twice (UX round 2026-11).
+    const bothManual =
+      data.applies &&
+      istatRow &&
+      describeHealthLine(data.alloggiati, true).state === 'Manual' &&
+      describeHealthLine(data.istat, true).state === 'Manual';
     body = (
       <>
         <ul className="divide-y divide-border">
-          <HealthRow topic="Alloggiati" line={data.alloggiati} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
-          {data.applies && istatClaim === 'seeNotice' ? (
-            <IstatSeeNoticeRow />
+          <HealthRow topic="Alloggiati" line={data.alloggiati} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} sharedDetail={bothManual} />
+          {istatRow ? (
+            <HealthRow topic="Istat" line={data.istat} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} sharedDetail={bothManual} />
           ) : (
-            <HealthRow topic="Istat" line={data.istat} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
+            <IstatSeeNoticeRow />
           )}
         </ul>
+        {bothManual ? (
+          <p className="text-sm" data-testid="connection-health-shared-detail">
+            {t('connectionHealth.detail.Manual')}
+          </p>
+        ) : null}
         {/* What the region table says of the ISTAT of this property (E21/F01/US02/T01): whether the channel manager sends it, the deadline, the one thing to do next and the upload of the proof of the month. Behind the flag of the activation. */}
         {data.applies ? <IstatCoverageNotice propertyId={propertyId} showProof /> : null}
         {data.applies ? <CredentialsLine stored={data.credentialsInCasaZen} usable={data.credentialsUsable} archivePath={archivePath} /> : null}

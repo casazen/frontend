@@ -1,10 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Star } from 'lucide-react';
 import { ApiClient } from '@/api/client';
 import { getHttpStatus } from '@/lib/api-errors';
 
 interface Labels {
   rating: string;
+  /** The name of one star for a screen reader, with `{value}` («4 su 5»). */
+  ratingValue: string;
   comment: string;
   showName: string;
   send: string;
@@ -13,6 +16,8 @@ interface Labels {
   unavailable: string;
   submitted: string;
 }
+
+const STARS = [1, 2, 3, 4, 5] as const;
 
 export function GuestPortalReview({ path, labels, onSubmitted }: { path: string; labels: Labels; onSubmitted: () => void }) {
   const [rating, setRating] = useState('');
@@ -45,17 +50,31 @@ export function GuestPortalReview({ path, labels, onSubmitted }: { path: string;
       )}
       {review.isSuccess && !submitted && (
         <form onSubmit={submit} className="stay-chat-form">
-          <label htmlFor="stay-review-rating">{labels.rating}</label>
-          <select id="stay-review-rating" value={rating} required onChange={(event) => setRating(event.target.value)}>
-            <option value="">—</option>
-            {[1, 2, 3, 4, 5].map((value) => <option key={value} value={value}>{value}</option>)}
-          </select>
+          {/* Five stars, as a guest knows them from every booking site (UX round 2026-11): one radio each, so the arrows move
+              the choice and a screen reader says «4 su 5»; the stars up to the chosen one are filled. */}
+          <span id="stay-review-rating">{labels.rating}</span>
+          <div role="radiogroup" aria-labelledby="stay-review-rating" className="stay-stars" data-testid="guest-review-rating">
+            {STARS.map((value) => (
+              <label key={value} className="stay-star" data-on={value <= Number(rating) || undefined}>
+                <input
+                  type="radio"
+                  name="stay-review-rating"
+                  value={value}
+                  checked={rating === String(value)}
+                  required
+                  aria-label={labels.ratingValue.replace('{value}', String(value))}
+                  onChange={(event) => setRating(event.target.value)}
+                />
+                <Star aria-hidden="true" />
+              </label>
+            ))}
+          </div>
           <label htmlFor="stay-review-text">{labels.comment}</label>
           <textarea id="stay-review-text" value={text} maxLength={1500} onChange={(event) => setText(event.target.value)} />
           <label className="stay-checkbox">
             <input type="checkbox" checked={showName} onChange={(event) => setShowName(event.target.checked)} /> {labels.showName}
           </label>
-          <button disabled={!rating || send.isPending} type="submit">{labels.send}</button>
+          <button className="stay-action-primary" disabled={!rating || send.isPending} type="submit">{labels.send}</button>
         </form>
       )}
     </section>

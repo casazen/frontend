@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useActivities, useActivityCount } from '@/queries/internalActivities';
 import { useProperties } from '@/queries/use-properties';
-import { TodoActivityCard } from './activity-card';
+import { TodoActivityCard, todoActionRoute } from './activity-card';
 import { TODO_LIST_LIMIT, countUrgent, isTruncatedList, typeTitle, urgentCountOf } from './lib/todo-model';
 
 /** The value of a filter that lets everything through. */
@@ -56,6 +56,8 @@ export function TodoListPage() {
       (property === ALL || (property === ACCOUNT ? !item.propertyId : item.propertyId === property)),
   );
   const filtered = type !== ALL || property !== ALL;
+  // One filled "Fallo ora" on the page: the first card that has one (the most urgent the server sent), the others outlined.
+  const firstWithAction = visible.find((item) => todoActionRoute(item, hasPermission) !== null)?.id;
   // The line counts the whole list while no filter is on, and its urgent items are the ones of the menu; with a filter it counts what is left.
   const urgent = filtered ? countUrgent(visible) : urgentCountOf(items, urgentActivities.data?.count);
   // A list of the length the server cuts at may have more items behind it: it is told as "the first 50", never as a total.
@@ -87,14 +89,14 @@ export function TodoListPage() {
   } else {
     content = (
       <>
-        <p className="border-l-4 border-primary pl-3 text-base font-medium" aria-live="polite" data-testid="todo-summary">
+        {/* The count is no callout any more (UX round 2026-11): the cards show it, the menu counts the urgent ones and the description
+            says when the list is cut. It stays for a screen reader, which hears how many items a filter leaves. */}
+        <p className="sr-only" aria-live="polite" data-testid="todo-summary">
           {summary}
           {urgent !== null && urgent > 0 ? (
             <>
               {' · '}
-              <strong className="font-semibold text-danger-foreground" data-testid="todo-urgent-count">
-                {t('activity.todo.summary.urgent', { count: urgent })}
-              </strong>
+              <span data-testid="todo-urgent-count">{t('activity.todo.summary.urgent', { count: urgent })}</span>
             </>
           ) : null}
         </p>
@@ -141,7 +143,13 @@ export function TodoListPage() {
         {visible.length > 0 ? (
           <ul className="space-y-3" aria-label={t('activity.todo.listLabel')} data-testid="todo-list">
             {visible.map((activity) => (
-              <TodoActivityCard key={activity.id} activity={activity} propertyNames={propertyNames} hasPermission={hasPermission} />
+              <TodoActivityCard
+                key={activity.id}
+                activity={activity}
+                propertyNames={propertyNames}
+                hasPermission={hasPermission}
+                primary={activity.id === firstWithAction}
+              />
             ))}
           </ul>
         ) : (

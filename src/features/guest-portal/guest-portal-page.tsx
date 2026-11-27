@@ -101,6 +101,7 @@ const copy = {
   reviewAction: ['Scrivi una recensione', 'Write a review', 'Bewertung schreiben', 'Écrire un avis', 'Escribir una reseña'],
   review: ['Recensione', 'Review', 'Bewertung', 'Avis', 'Reseña'],
   rating: ['Valutazione', 'Rating', 'Bewertung', 'Note', 'Puntuación'],
+  ratingValue: ['{value} su 5', '{value} out of 5', '{value} von 5', '{value} sur 5', '{value} de 5'],
   comment: ['Commento facoltativo', 'Optional comment', 'Optionaler Kommentar', 'Commentaire facultatif', 'Comentario opcional'],
   showName: ['Mostra il mio nome', 'Show my first name', 'Meinen Vornamen anzeigen', 'Afficher mon prénom', 'Mostrar mi nombre'],
   reviewSubmitted: ['Recensione inviata.', 'Review submitted.', 'Bewertung gesendet.', 'Avis envoyé.', 'Reseña enviada.'],
@@ -124,6 +125,21 @@ const copy = {
   back: ['Indietro', 'Back', 'Zurück', 'Retour', 'Atrás'],
   correction: ['Chiedi una correzione', 'Request a correction', 'Eine Korrektur anfordern', 'Demander une correction', 'Solicitar una corrección'],
   language: ['Lingua', 'Language', 'Sprache', 'Langue', 'Idioma'],
+  openMaps: ['Apri nelle mappe', 'Open in maps', 'In Karten öffnen', 'Ouvrir dans les cartes', 'Abrir en mapas'],
+  phaseCancelled: ['Prenotazione cancellata', 'Booking cancelled', 'Buchung storniert', 'Réservation annulée', 'Reserva cancelada'],
+  openGuide: ['Apri la guida', 'Open the guide', 'Hausführer öffnen', 'Ouvrir le guide', 'Abrir la guía'],
+  // The sections of the house guide, in the language of the guest (the guide used to show them in the language of the app).
+  guideArrival: ['Come arrivare', 'Getting here', 'Anreise', 'Comment arriver', 'Cómo llegar'],
+  guideAccess: ['Istruzioni di accesso', 'Access instructions', 'Zugangshinweise', 'Instructions d’accès', 'Instrucciones de acceso'],
+  guideWifi: ['Wi-Fi', 'Wi-Fi', 'WLAN', 'Wi-Fi', 'Wi-Fi'],
+  guideParking: ['Parcheggio', 'Parking', 'Parken', 'Stationnement', 'Aparcamiento'],
+  guideCheckInHours: ['Orari di check-in', 'Check-in hours', 'Check-in-Zeiten', 'Horaires d’arrivée', 'Horario de entrada'],
+  guideHouse: ['La casa', 'The house', 'Die Unterkunft', 'Le logement', 'El alojamiento'],
+  guideDeparture: ['Partenza', 'Departure', 'Abreise', 'Départ', 'Salida'],
+  guideCheckOutHours: ['Orari di check-out', 'Check-out hours', 'Check-out-Zeiten', 'Horaires de départ', 'Horario de salida'],
+  guideContacts: ['Numeri utili', 'Useful numbers', 'Wichtige Nummern', 'Numéros utiles', 'Números útiles'],
+  guideLocalTips: ['Consigli sulla zona', 'Local tips', 'Tipps für die Umgebung', 'Conseils sur le quartier', 'Consejos de la zona'],
+  guideStep: ['Passo {step} di {total}', 'Step {step} of {total}', 'Schritt {step} von {total}', 'Étape {step} sur {total}', 'Paso {step} de {total}'],
 } satisfies Record<string, readonly [string, string, string, string, string]>;
 
 interface StayOverview {
@@ -209,6 +225,20 @@ function GuestPortalPage({ token }: { token: string }) {
   const shouldPayTax = taxAvailable && tax.data && guestTaxOutlook(tax.data) === 'payable';
   const nextStep = shouldPayTax ? 'payTax' : overview?.checkInCompleted ? 'guide' : 'complete';
   const text = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
+  // The house guide speaks the language of the guest, as the rest of the portal (its sections and «Passo 2 di 6»).
+  const guideLabels = {
+    arrival: text('guideArrival'),
+    access: text('guideAccess'),
+    wifi: text('guideWifi'),
+    parking: text('guideParking'),
+    checkInHours: text('guideCheckInHours'),
+    house: text('guideHouse'),
+    departure: text('guideDeparture'),
+    checkOutHours: text('guideCheckOutHours'),
+    contacts: text('guideContacts'),
+    localTips: text('guideLocalTips'),
+  };
+  const guideStepLabel = (step: number, total: number) => text('guideStep').replace('{step}', String(step)).replace('{total}', String(total));
   const section = params.get('page');
   const checkingIn = section === 'checkin';
   const services = section === 'services';
@@ -236,6 +266,14 @@ function GuestPortalPage({ token }: { token: string }) {
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' }).format(new Date());
   const phase = stay && (stay.status === 'checkedOut' || stay.status === 'cancelled' || today >= stay.checkOut)
     ? 'after' : stay && today >= stay.checkIn ? 'during' : 'before';
+  // The state of the stay in a few words (UX round 2026-11): a cancelled stay says so (it read «Dopo la partenza»), and before the
+  // arrival the pill counts the days, in the language of the guest («Arrivo tra 12 giorni», «Anreise morgen»).
+  const daysToArrival = stay ? Math.round((Date.parse(stay.checkIn.slice(0, 10)) - Date.parse(today)) / 86_400_000) : 0;
+  const phaseLabel = stay?.status === 'cancelled'
+    ? text('phaseCancelled')
+    : phase === 'before' && daysToArrival > 0
+      ? `${text('arrivalDate')} ${new Intl.RelativeTimeFormat(language, { numeric: 'auto' }).format(daysToArrival, 'day')}`
+      : text(phase);
 
   const home = !checkingIn && !services && !extras && !guide && !details && !chat && !documents && !payments
     && !supplierOrders && !review && !privacy && !cancellation;
@@ -289,7 +327,7 @@ function GuestPortalPage({ token }: { token: string }) {
         {stay && !failed && (
           <>
             <div className={home ? 'stay-intro' : checkingIn ? 'stay-checkin-intro' : undefined}>
-              {home ? <span className="stay-phase">{text(phase)}</span> : (
+              {home ? <span className="stay-phase" data-testid="guest-stay-phase">{phaseLabel}</span> : (
                 <Link to={href()} className="stay-back"><ArrowLeft aria-hidden="true" />{text('back')}</Link>
               )}
               {(!checkingIn || !stay.checkInAvailable) && <h1>{checkingIn ? text('checkInSection') : extras ? extraLabels[language][0] : text(services ? 'servicesAndExtras' : supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'booking' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>}
@@ -311,7 +349,7 @@ function GuestPortalPage({ token }: { token: string }) {
               )}
             </div>
             {checkingIn ? (
-              stay.checkInAvailable ? <GuestCheckInFlow token={`stay_${token}`} embedded onCompleted={() => {
+              stay.checkInAvailable ? <GuestCheckInFlow token={`stay_${token}`} embedded next={{ href: href('guide'), label: text('openGuide') }} onCompleted={() => {
                 void queryClient.invalidateQueries({ queryKey: ['guest-portal', token] });
                 void queryClient.invalidateQueries({ queryKey });
               }} /> : <p className="stay-card">{text(overview?.checkInCompleted ? 'done' : 'checkInWait')}</p>
@@ -323,18 +361,33 @@ function GuestPortalPage({ token }: { token: string }) {
             ) : extras ? (
               <GuestHostExtras path={path} language={language} />
             ) : guide ? (
+              // The essentials first (UX round 2026-11): where it is, the way to the map and the code to get in, then the guide in
+              // the order of the arrival day (`HouseGuideSections`), then the rules.
               <div className="stay-card stay-content">
                 <h2>{text('address')}</h2>
                 <p>{[stay.address, stay.city].filter(Boolean).join(', ')}</p>
+                {stay.address ? (
+                  <p>
+                    <a
+                      className="stay-maps-link"
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([stay.address, stay.city].filter(Boolean).join(', '))}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      data-testid="guest-guide-maps"
+                    >
+                      {text('openMaps')}
+                    </a>
+                  </p>
+                ) : null}
                 {!stay.address && phase !== 'after' && <p>{text('addressLocked')}</p>}
-                <HouseGuideSections guide={stay.guide} />
                 {stay.address && flags.checkInIdentityVerification && (
-                  <>
+                  <div className="stay-access">
                     <button type="button" disabled={accessCode.isPending} onClick={() => accessCode.mutate()}>{text('accessCode')}</button>
-                    {accessCode.data?.code && <p role="status">{accessCode.data.code}</p>}
+                    {accessCode.data?.code && <p role="status" className="stay-access-code">{accessCode.data.code}</p>}
                     {accessCode.isError && <p role="alert">{text('error')}</p>}
-                  </>
+                  </div>
                 )}
+                <HouseGuideSections guide={stay.guide} labels={guideLabels} stepLabel={guideStepLabel} />
                 {stay.houseRules && <><h2>{text('rules')}</h2><p className="stay-rules">{stay.houseRules}</p></>}
               </div>
             ) : chat ? (
@@ -364,7 +417,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 }} />
             ) : review ? (
               <GuestPortalReview path={path} onSubmitted={() => { void stayQuery.refetch(); }} labels={{
-                rating: text('rating'), comment: text('comment'), showName: text('showName'), send: text('send'),
+                rating: text('rating'), ratingValue: text('ratingValue'), comment: text('comment'), showName: text('showName'), send: text('send'),
                 loading: text('load'), failed: text('error'), submitted: text('reviewSubmitted'), unavailable: text('reviewUnavailable'),
               }} />
             ) : cancellation ? (
@@ -398,8 +451,8 @@ function GuestPortalPage({ token }: { token: string }) {
                     <p>{text('next')}</p>
                     <h2>{text(nextStep)}</h2>
                     {!overview?.checkInCompleted && <p>{text(stay.checkInAvailable ? 'checkInHelp' : 'checkInWait')}</p>}
-                    {nextStep === 'guide' && <Link to={href('guide')}>{text('guide')}</Link>}
-                    {nextStep === 'payTax' && <Link to={checkIn}>{text('payTax')}</Link>}
+                    {nextStep === 'guide' && <><p>{text('guideNote')}</p><Link to={href('guide')}>{text('openGuide')}</Link></>}
+                    {nextStep === 'payTax' && <Link to={checkIn}>{text('payNow')}</Link>}
                     {!overview?.checkInCompleted && stay.checkInAvailable && <Link to={checkIn}>{text('open')}</Link>}
                   </section>
                 )}
@@ -422,7 +475,8 @@ function GuestPortalPage({ token }: { token: string }) {
                   {stay.status !== 'cancelled' && <StaySectionLink to={href('chat')} icon={MessageCircle} label={text('chat')} detail={text(stay.chatOpen === false ? 'closedChat' : 'chatNote')} />}
                   <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} detail={text('documentsNote')} />
                   {phase === 'after' && <StaySectionLink to={href('privacy')} icon={ClipboardCheck} label={text('privacy')} />}
-                  {(phase !== 'after' || stay.checkInAvailable || overview?.checkInCompleted) && (
+                  {/* Once the stay is over a check-in that is done is no news: the row stays only while there is something to do in it. */}
+                  {(phase !== 'after' || (stay.checkInAvailable && !overview?.checkInCompleted)) && (
                     <StaySectionLink to={checkIn} icon={ClipboardCheck} label={text(overview?.checkInCompleted ? 'done' : 'checkInSection')} />
                   )}
                 </div>

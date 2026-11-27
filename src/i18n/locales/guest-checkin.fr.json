@@ -135,6 +135,7 @@
     "next": "Suivant",
     "back": "Retour",
     "submit": "Envoyer le check-in",
+    "submitHint": "Pour envoyer, cochez d’abord les cases obligatoires ci-dessus.",
     "fixHighlightedFields": "Certaines informations ne sont pas valides : corrigez les champs signalés puis envoyez de nouveau.",
     "successTitle": "Check-in terminé !",
     "successDescription": "L’établissement a reçu les informations sur votre séjour. Pour les corriger, contactez-le via votre réservation.",

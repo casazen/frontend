@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Check } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { TILE_PRESS_FEEDBACK } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 export interface ChoiceCardProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'title' | 'className'> {
@@ -20,8 +21,10 @@ export interface ChoiceCardProps extends Omit<React.InputHTMLAttributes<HTMLInpu
  * `<input type="radio">` or `<input type="checkbox">`, only not drawn: the name, the value, the keyboard (arrows in a group
  * of radios, Space on a checkbox), the form and `react-hook-form` work as with any input; the card is its label.
  *
- * What is chosen shows in more than one way, so that it does not depend on seeing a color: a thick outline, a tinted
- * background and a tick in the corner that is empty when not chosen. The one with the keyboard focus has its own outline.
+ * What is chosen shows in more than one way, so that it does not depend on seeing a color: a thick dark outline, a grey
+ * background and a dark tick in the corner that is empty when not chosen (the ink of the text, not the accent of the area: a
+ * choice reads the same in every area, as in the flows the product takes after; the accent stays for the buttons). The tile
+ * sinks a little under the finger. The one with the keyboard focus has its own outline.
  *
  * Put them in a `ChoiceGroup`, which is the `fieldset` and names the question.
  */
@@ -32,8 +35,9 @@ export const ChoiceCard = React.forwardRef<HTMLInputElement, ChoiceCardProps>(fu
   return (
     <label
       className={cn(
-        'relative flex min-h-11 min-w-0 cursor-pointer flex-col gap-2 rounded-xl border bg-background p-4 pr-11 text-left transition-colors hover:bg-muted/40',
-        'has-checked:bg-primary/5 has-checked:ring-2 has-checked:ring-primary',
+        'relative flex min-h-11 min-w-0 cursor-pointer flex-col gap-2 rounded-xl border bg-background p-4 pr-11 text-left transition-[background-color,box-shadow,scale] duration-150 hover:bg-muted/40',
+        TILE_PRESS_FEEDBACK,
+        'has-checked:bg-muted/60 has-checked:ring-2 has-checked:ring-foreground',
         'has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring',
         'has-disabled:cursor-not-allowed has-disabled:opacity-60 has-disabled:hover:bg-background',
         className,
@@ -43,7 +47,7 @@ export const ChoiceCard = React.forwardRef<HTMLInputElement, ChoiceCardProps>(fu
       {Icon ? (
         <span
           aria-hidden="true"
-          className="grid h-10 w-10 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors peer-checked:bg-primary peer-checked:text-primary-foreground"
+          className="grid h-10 w-10 place-items-center rounded-lg bg-muted text-foreground/70 transition-colors peer-checked:bg-foreground peer-checked:text-background"
         >
           <Icon className="h-5 w-5" />
         </span>
@@ -57,7 +61,7 @@ export const ChoiceCard = React.forwardRef<HTMLInputElement, ChoiceCardProps>(fu
         aria-hidden="true"
         className={cn(
           'absolute right-3 top-3 grid h-6 w-6 place-items-center text-transparent ring-2 ring-inset ring-muted-foreground transition-colors',
-          'peer-checked:bg-primary peer-checked:text-primary-foreground peer-checked:ring-primary',
+          'peer-checked:bg-foreground peer-checked:text-background peer-checked:ring-foreground',
           type === 'radio' ? 'rounded-full' : 'rounded-md',
         )}
       >

@@ -35,10 +35,11 @@ function AvailabilityNotice({ notice, listings }: { notice: ListingStatusNotice;
   const permission = notice.status === 'waiting_permission';
 
   return (
+    // One line above the inbox, every time it is opened: the why and the listings are one click away (UX round 2026-11).
     <Alert variant={notice.variant} title={t(notice.title, { count: listings.length })} data-testid={permission ? 'chat-availability-banner' : `chat-${notice.status}`}>
-      <p>{t(notice.explanation)}</p>
       <details className="mt-1" data-testid={permission ? 'chat-availability-listings' : undefined}>
         <summary className="min-h-11 cursor-pointer py-2 font-medium md:min-h-0 md:py-0">{t('messages.channelStatus.which')}</summary>
+        <p className="mt-1">{t(notice.explanation)}</p>
         <ul className="mt-1 list-disc space-y-0.5 pl-5">
           {listings.map((listing, index) => (
             // Two listings can lead to one property: the position keeps their keys apart.

@@ -82,7 +82,7 @@ export function OwnerInbox() {
       <InboxPreferences />
 
       <section aria-labelledby="owner-conversations-title" className="space-y-3">
-        <h2 id="owner-conversations-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-conversations-title" className="text-xl font-semibold">
           {t('ownerPortal.inbox.listTitle')}
         </h2>
         {conversations.isLoading ? (

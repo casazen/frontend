@@ -135,6 +135,7 @@
     "next": "Siguiente",
     "back": "Atrás",
     "submit": "Enviar el check-in",
+    "submitHint": "Para enviar, marque primero las casillas obligatorias de arriba.",
     "fixHighlightedFields": "Algunos datos no son válidos: corrija los campos resaltados y envíe de nuevo.",
     "successTitle": "¡Check-in completado!",
     "successDescription": "El alojamiento ha recibido los datos de su estancia. Para corregirlos, contacte con el alojamiento a través de su reserva.",

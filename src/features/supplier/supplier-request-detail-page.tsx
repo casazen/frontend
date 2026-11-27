@@ -42,7 +42,7 @@ export function SupplierRequestDetailPage() {
       <div className="min-w-0 space-y-6">
         <ServicePageHeader icon={ClipboardList} title={t('supplier.requests.requestTitle')} crumbs="auto" />
         {notFound ? (
-          <div className="rounded-xl bg-card p-2 shadow-sm ring-1 ring-inset ring-border" data-testid="supplier-request-not-found">
+          <div data-testid="supplier-request-not-found">
             <EmptyState
               icon={SearchX}
               title={t('supplier.requests.notFound.title')}
@@ -73,7 +73,7 @@ export function SupplierRequestDetailPage() {
           {isInquiry(request) ? <InquiryMessages request={request} actions={actions} /> : null}
         </div>
         <div className="min-w-0 space-y-4">
-          <RequestFacts request={request} compact />
+          <RequestFacts request={request} compact withDetails />
           <RequestDetails request={request} />
         </div>
       </div>

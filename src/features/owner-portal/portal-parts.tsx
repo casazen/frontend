@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '@/components/layout/page-header';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
@@ -10,18 +11,12 @@ import { cn } from '@/lib/utils';
 import { ownerReadStateOf, type OwnerReadState } from './owner-portal-model';
 import { ownerPortalPaths } from './paths';
 
-/** The title of a page of the portal and, under it, what the page is for. One `h1` for each page. */
-export function PortalPageHeading({ title, description, actions, icon: Icon }: { title: string; icon?: LucideIcon; description?: string; actions?: ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-wrap items-center gap-4 border-b border-border pb-5">
-      {Icon ? <Icon aria-hidden="true" className="size-11 shrink-0 rounded-xl bg-muted p-2.5 text-foreground" /> : null}
-      <div className="min-w-0 flex-1 basis-48 space-y-1">
-        <h1 className="workspace-title text-foreground">{title}</h1>
-        {description ? <p className="workspace-description">{description}</p> : null}
-      </div>
-      {actions ? <div className="flex min-w-0 flex-wrap gap-2">{actions}</div> : null}
-    </div>
-  );
+/**
+ * The title of a page of the portal and, under it, what the page is for. One `h1` for each page. It is the head of every page of
+ * the app (`PageHeader`, UX round 2026-11): the same icon tile, title and description as the host sees, and the title of the tab.
+ */
+export function PortalPageHeading({ title, description, actions, icon }: { title: string; icon?: LucideIcon; description?: string; actions?: ReactNode }) {
+  return <PageHeader title={title} description={description} icon={icon} action={actions} />;
 }
 
 /** A section that waits for its read: one announced placeholder, never an empty list that would say «nothing here» before the server answered. */

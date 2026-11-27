@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ReceiptText, ArrowLeft, MessageSquare } from 'lucide-react';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
+import { FocusBlock } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
@@ -35,7 +36,7 @@ export function OwnerStatementDetail() {
   const { t, i18n } = useTranslation();
   const { statementId } = useParams<{ statementId: string }>();
   const read = useOwnerStatement(statementId);
-  const { download, busyKey, failure } = useOwnerDownload();
+  const { download, busyKey } = useOwnerDownload();
   const language = i18n.language;
 
   const back = (
@@ -83,7 +84,6 @@ export function OwnerStatementDetail() {
   const period = periodLabel(statement.year, statement.month, language);
   const sections = sectionsWithLines(detail.sections);
   const key = `statement:${statement.statementId}`;
-  const failed = failure?.key === key ? failure : null;
   const month = String(statement.month).padStart(2, '0');
   const invoiceNumber = detail.ownerInvoiceNumber?.trim();
   const subtitle = [
@@ -139,27 +139,24 @@ export function OwnerStatementDetail() {
           {t('ownerPortal.accounting.pdf.notAvailable')}
         </p>
       )}
-      {failed ? (
-        <Alert variant="danger" data-testid="owner-statement-download-failed">
-          {failed.message}
-        </Alert>
-      ) : null}
 
-      {statement.superseded ? (
+      {/* A newer version is the thing to do here: it is the one block «what now» of the page, not a notice with a button in it
+          (UX round 2026-11). Without the newer one to open it stays a notice. */}
+      {statement.superseded && statement.supersededByStatementId ? (
+        <FocusBlock
+          tone="info"
+          title={t('ownerPortal.accounting.supersededNote')}
+          primary={{ label: t('ownerPortal.accounting.detail.openNewer'), href: ownerPortalPaths.statement(statement.supersededByStatementId), testId: 'owner-statement-newer' }}
+          data-testid="owner-statement-superseded"
+        />
+      ) : statement.superseded ? (
         <Alert variant="info" data-testid="owner-statement-superseded">
           <p>{t('ownerPortal.accounting.supersededNote')}</p>
-          {statement.supersededByStatementId ? (
-            <Button asChild variant="outline" className={`${TOUCH} mt-2`}>
-              <Link to={ownerPortalPaths.statement(statement.supersededByStatementId)} data-testid="owner-statement-newer">
-                {t('ownerPortal.accounting.detail.openNewer')}
-              </Link>
-            </Button>
-          ) : null}
         </Alert>
       ) : null}
 
       <section aria-labelledby="owner-statement-summary-title" className="space-y-4 rounded-md border bg-card p-4">
-        <h2 id="owner-statement-summary-title" className="text-lg font-semibold text-[#1f3a3d]">
+        <h2 id="owner-statement-summary-title" className="text-lg font-semibold">
           {t('ownerPortal.accounting.detail.summaryTitle')}
         </h2>
         <StatementNet net={statement.totals.net} currency={currency} />
@@ -184,7 +181,7 @@ export function OwnerStatementDetail() {
       ) : null}
 
       <section aria-labelledby="owner-statement-lines-title" className="space-y-4">
-        <h2 id="owner-statement-lines-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-statement-lines-title" className="text-xl font-semibold">
           {t('ownerPortal.accounting.detail.linesTitle')}
         </h2>
         {sections.length === 0 ? (

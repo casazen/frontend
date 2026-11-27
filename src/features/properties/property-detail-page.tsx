@@ -220,8 +220,9 @@ export function PropertyDetailPage() {
         <PageHeader
           crumbs="auto"
           title={property.name}
+          // The state at the start of the line of the facts (UX round 2026-11): on the right only the actions.
+          status={<StatusBadge kind="property" status={status} data-testid="property-status" />}
           description={summary}
-          action={<StatusBadge kind="property" status={status} size="lg" data-testid="property-status" />}
           secondary={menu}
         />
 
