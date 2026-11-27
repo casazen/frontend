@@ -19,7 +19,9 @@
  *     one from production to production: only an `https` origin is accepted, the ZIP is read back, and `publish-release.mjs` refuses a
  *     ZIP whose address is not the one of its channel (the ZIPs here are built for real, the GitHub commands are a stand-in of `gh`).
  *   - PERMISSION: the rolling releases are written by ONE job of the workflow, `publish`, with `contents: write` at job level only, on a
- *     push to develop or main of this repository only, and the commands it builds never force, delete, move or recreate a tag.
+ *     push to develop or main of this repository only, and the commands it builds never force, delete, move or recreate a tag. That job
+ *     builds NOTHING (no npm ci, no WP-CLI, no setup action): it downloads the ZIP that the read-only job `package` built for the channel,
+ *     so no code of third parties runs where a token can write.
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -1081,6 +1083,13 @@ function jobsOf(text) {
 	return jobs;
 }
 
+/** The steps of a job, each one as the text of its own lines (`jobText` is the lines of the job, from `name:` on). */
+function stepsOf(jobText) {
+	const marker = '\n    steps:\n';
+	const start = jobText.indexOf(marker);
+	return start < 0 ? [] : jobText.slice(start + marker.length).split(/\n(?= {6}- )/);
+}
+
 /** The indented lines of a top-level key of a workflow (`permissions:` and what is under it). */
 function topLevelBlock(text, key) {
 	const lines = codeLines(text);
@@ -1128,11 +1137,35 @@ describe('the workflow that publishes the ZIP: who may write, and when', { skip:
 		assert.match(lastStep, /run: node tools\/publish-release\.mjs --channel "\$CHANNEL" --zip "\$ZIP" --sha "\$COMMIT" --version "\$VERSION"$/m);
 	});
 
-	it('builds the ZIP of the channel in the job, from the same action that the others use', () => {
-		assert.match(publishJob, /uses: \.\/\.github\/actions\/build-wordpress-plugin\n\s+with:\n\s+channel: \$\{\{ github\.ref_name \}\}/);
-		for (const id of ['plugin-check', 'package']) {
-			assert.ok(!/channel:/.test((jobs.get(id) ?? []).join('\n')), `${id} builds the development ZIP, with no address`);
-		}
+	it('builds nothing in the job that can write: it downloads the ZIP of the job package and runs one script', () => {
+		const steps = stepsOf(publishJob);
+		assert.equal(steps.length, 3, 'the checkout, the download, the script');
+		// The only code that is not the repository's own is the checkout and the download of the artifact: both are actions of GitHub itself.
+		assert.deepEqual(steps.map((step) => /^ +(?:- )?uses: (\S+)$/m.exec(step)?.[1]).filter(Boolean), ['actions/checkout@v4', 'actions/download-artifact@v4']);
+		// The only command is the script of the tool, on one line: no npm, no WP-CLI, no composer, no download by hand, no setup of a tool.
+		assert.deepEqual(
+			steps.flatMap((step) => [...step.matchAll(/^ +run: (.+)$/gm)].map((match) => match[1])),
+			['node tools/publish-release.mjs --channel "$CHANNEL" --zip "$ZIP" --sha "$COMMIT" --version "$VERSION"']
+		);
+		assert.ok(!/run: [|>]/.test(publishJob), 'no block of script');
+		assert.ok(!/\.\/\.github\/actions|setup-|npm |npx |composer|wp-cli|\bwp i18n|curl |wget |build-zip|check-translations/.test(publishJob), 'no step of build or install');
+		assert.ok(!/steps\.build/.test(publishJob), 'nothing is read from a build step of this job');
+		// The ZIP is the artifact of the job package, of the same run, and its version is the one that job read.
+		assert.match(publishJob, /uses: actions\/download-artifact@v4\n\s+with:\n\s+name: casazen-wordpress-plugin\n\s+path: \$\{\{ runner\.temp \}\}\/casazen-zip/);
+		assert.match(publishJob, /VERSION: \$\{\{ needs\.package\.outputs\.version \}\}/);
+		assert.match(publishJob, /ZIP: \$\{\{ runner\.temp \}\}\/casazen-zip\/casazen-\$\{\{ needs\.package\.outputs\.version \}\}\.zip/);
+	});
+
+	it('has the job package, which cannot write, build the ZIP of the channel on a push to develop or main, and hand it over as an artifact', () => {
+		const pack = (jobs.get('package') ?? []).join('\n');
+		// The channel is the branch on a push to develop or main, and nothing (the development ZIP, no address) on a pull request or a manual run.
+		assert.match(pack, /^ {10}channel: \$\{\{ github\.event_name == 'push' && \(github\.ref == 'refs\/heads\/develop' \|\| github\.ref == 'refs\/heads\/main'\) && github\.ref_name \|\| '' \}\}$/m);
+		assert.match(pack, /^ {4}outputs:\n {6}version: \$\{\{ steps\.build\.outputs\.version \}\}$/m);
+		assert.match(pack, /uses: actions\/upload-artifact@v4\n\s+with:\n\s+name: casazen-wordpress-plugin\n/);
+		assert.ok(!/^ {4}permissions:/m.test(pack), 'no permission of its own: the workflow reads only');
+		assert.ok(!/publish-release|GH_TOKEN|github\.token/.test(pack), 'it publishes nothing and has no token');
+		// plugin-check still builds the development ZIP, with no address.
+		assert.ok(!/channel:/.test((jobs.get('plugin-check') ?? []).join('\n')));
 	});
 
 	it('writes the console addresses nowhere in the workflows and the action: they live in tools/publish-release.mjs, once', () => {

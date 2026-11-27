@@ -17,9 +17,9 @@ name: WordPress plugin release
 # wp-plugin-main: this workflow does not touch them.
 #
 # This workflow and the job `publish` of "WordPress plugin" are the only ones with `contents: write` (a release is written to the
-# repository). It uses no secret: the token is the one that GitHub gives to the run. The checkout does not keep it on disk
-# (`persist-credentials: false`) and only the last step has it in its environment (GH_TOKEN), so `npm ci` and the build of the blocks,
-# which run code of third parties, never see it.
+# repository). It uses no secret: the token is the one that GitHub gives to the run. Here the checkout does not keep it on disk
+# (`persist-credentials: false`) and only the last step has it in its environment (GH_TOKEN), so `npm ci` and the build of the blocks never
+# see it in theirs. (The job `publish` of the other workflow goes further: it builds nothing, it downloads the ZIP that a read-only job built.)
 
 on:
   push:

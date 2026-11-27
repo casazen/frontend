@@ -2,8 +2,8 @@ name: Build the CasaZen WordPress plugin ZIP
 description: >-
   Checks the version, builds the blocks, compiles the translations, checks that WordPress finds the texts of the block editor and writes
   integrations/wordpress/casazen/dist/casazen-<version>.zip.
-  Used by the workflows "WordPress plugin" (the package job, plugin-check and publish) and "WordPress plugin release". Needs the repository
-  checked out first. It reads no secret and publishes nothing.
+  Used by the workflows "WordPress plugin" (the package job and plugin-check; the job publish, which can write, builds nothing: it downloads the
+  ZIP of the package job) and "WordPress plugin release". Needs the repository checked out first. It reads no secret and publishes nothing.
 
 inputs:
   tag:
