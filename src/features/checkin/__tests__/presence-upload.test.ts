@@ -328,7 +328,7 @@ describe('presence-upload: the guest stops the upload (E72/F02/US01/T02)', () =>
   it('uploadPresence_TheGuestStopsWhileARequestIsOnItsWay_IsCancelledAndNothingIsSentAgain', async () => {
     const rig = heldEnvironment();
     const stop = new AbortController();
-    const send = vi.fn((_key: string) => new Promise<string>(() => undefined));
+    const send = vi.fn(() => new Promise<string>(() => undefined));
 
     const upload = uploadPresence(send, KEY, rig.env, stop.signal);
     await Promise.resolve();
@@ -345,7 +345,7 @@ describe('presence-upload: the guest stops the upload (E72/F02/US01/T02)', () =>
     const stop = new AbortController();
     // What axios does with a request whose signal is aborted: it rejects with a cancellation, which is neither a refusal nor a failure of the network.
     const send = vi.fn(
-      (_key: string) =>
+      () =>
         new Promise<string>((_resolve, reject) => {
           stop.signal.addEventListener('abort', () => reject(httpError(undefined, AxiosError.ERR_CANCELED)));
         }),
