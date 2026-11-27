@@ -22,6 +22,10 @@
  *     push to develop or main of this repository only, and the commands it builds never force, delete, move or recreate a tag. That job
  *     builds NOTHING (no npm ci, no WP-CLI, no setup action): it downloads the ZIP that the read-only job `package` built for the channel,
  *     so no code of third parties runs where a token can write.
+ *   - DATA: an old ZIP never replaces a newer one. Just before its first write, `publish-release.mjs` reads the tip of the branch: the
+ *     commit must be the tip, or the commits after it must not change the plugin (they would start no run). When a newer commit changes
+ *     the plugin the run steps aside with a notice and exit 0; a tip or a comparison that cannot be read is an error. In both cases
+ *     no command that writes is run (a stand-in of `gh` records every command).
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -35,7 +39,7 @@ import phpParser from 'php-parser';
 import { BUILD_CONFIG_PATH, blockNames, buildConfigPhp, buildZip, listZip, parseAppOrigin, parseDistignore, readBuildConfigOrigin, readZipEntry, verifyBuildConfig, verifyEntries, isIgnored } from './build-zip.mjs';
 import { builtBlockScripts, checkTranslations, parsePo, readTextDomain, scriptTranslationFileName } from './check-translations.mjs';
 import { checkVersions, readVersions, TAG_PREFIX } from './check-version.mjs';
-import { ASSET_NAME, CHANNELS, appOriginOf, channelOf, formatCommand, planPublish, probeCommand, publish, releaseExistsFrom, releaseNotes, releaseTag, shellQuote, verifyZipForChannel } from './publish-release.mjs';
+import { ASSET_NAME, CHANNELS, appOriginOf, changesCommand, channelOf, checkCurrent, formatCommand, planPublish, probeCommand, publish, readChanges, readTip, releaseExistsFrom, releaseNotes, releaseTag, shellQuote, startsPluginWorkflow, tipCommand, verifyZipForChannel } from './publish-release.mjs';
 
 const TOOLS = dirname(fileURLToPath(import.meta.url));
 const PLUGIN = resolve(TOOLS, '..');
@@ -768,12 +772,32 @@ const allPlans = () =>
 /** The words of a command without the text of the notes (which is prose, not a flag). */
 const flagsOf = (command) => command.filter((_, index) => command[index - 1] !== '--notes');
 
-/** A stand-in of `gh`: it answers the question about the release, records every command and checks the file that is uploaded. */
-function fakeGh({ releaseExists = true, probe, failOn } = {}) {
+/** What `gh api repos/.../compare/<commit>...<branch>` answers: the JSON of GitHub. A file is a name, or the object of GitHub (to give it a `previous_filename`). */
+const comparison = (files, extra = {}) => ({
+	status: 0,
+	stdout: JSON.stringify({
+		status: 'ahead',
+		ahead_by: 1,
+		total_commits: 1,
+		commits: [{ sha: 'fedcba9876543210fedcba9876543210fedcba98' }],
+		files: files.map((file) => (typeof file === 'string' ? { filename: file, status: 'modified', additions: 1, deletions: 0, changes: 1 } : file)),
+		...extra,
+	}),
+});
+
+/**
+ * A stand-in of `gh`: it answers the question about the release and the two questions about the tip of the branch (the commit at the tip is
+ * `tip`, which is the commit that is published unless a test says otherwise), records every command and checks the file that is uploaded.
+ */
+function fakeGh({ releaseExists = true, probe, failOn, tip = SHA, tipAnswer, changes } = {}) {
 	const calls = [];
 	const uploads = [];
 	const run = (command) => {
 		calls.push(command);
+		if (command[1] === 'api') {
+			if (/\/commits\//.test(command[2])) return tipAnswer ?? { status: 0, stdout: `${tip}\n` };
+			return changes ?? comparison(['src/app.tsx']);
+		}
 		if (command[2] === 'view') return probe ?? (releaseExists ? { status: 0, stdout: '{"tagName":"x"}' } : { status: 1, stderr: 'release not found' });
 		if (command[2] === 'upload') uploads.push({ name: basename(command[4]), bytes: readFileSync(command[4]) });
 		if (command[2] === failOn) return { status: 1, stderr: 'HTTP 422: something went wrong' };
@@ -781,6 +805,12 @@ function fakeGh({ releaseExists = true, probe, failOn } = {}) {
 	};
 	return { run, calls, uploads };
 }
+
+/** The `gh release` commands that a stand-in recorded (the questions about the tip of the branch are `gh api`). */
+const releaseCalls = (gh) => gh.calls.filter((command) => command[1] === 'release');
+
+/** The commands that write to GitHub: they create a release, upload an asset or edit a release. */
+const writesOf = (gh) => gh.calls.filter((command) => command[1] === 'release' && ['create', 'upload', 'edit'].includes(command[2]));
 
 describe('publish-release: the two channels of the rolling release', () => {
 	it('knows two channels: develop (the test console, a pre-release) and main (the production console, never "latest")', () => {
@@ -937,12 +967,15 @@ describe('publish-release: --dry-run prints the commands and runs none', () => {
 
 			// The commands are the lines that start with `gh` (the text of the notes spans lines inside quotes).
 			const commands = result.stdout.split('\n').filter((line) => line.startsWith('gh '));
-			assert.equal(commands.length, 5, result.stdout);
+			assert.equal(commands.length, 7, result.stdout);
 			assert.match(commands[0], new RegExp(`^gh release view wp-plugin-${channel} --json tagName$`));
-			assert.match(commands[1], new RegExp(`^gh release create wp-plugin-${channel} --target ${SHA} ${channel === 'develop' ? '--prerelease' : '--latest=false'} --title 'CasaZen WordPress plugin \\(${channel}\\)' --notes '`));
-			assert.match(commands[2], new RegExp(`^gh release upload wp-plugin-${channel} '?[^']*/casazen\\.zip'? --clobber$`));
-			assert.equal(commands[3], commands[2]);
-			assert.match(commands[4], new RegExp(`^gh release edit wp-plugin-${channel} --notes '`));
+			// The two questions about the tip of the branch (no repository in this environment: `gh` fills {owner}/{repo}); both only read.
+			assert.equal(commands[1], `gh api 'repos/{owner}/{repo}/commits/${channel}' --jq .sha`);
+			assert.equal(commands[2], `gh api 'repos/{owner}/{repo}/compare/${SHA}...${channel}'`);
+			assert.match(commands[3], new RegExp(`^gh release create wp-plugin-${channel} --target ${SHA} ${channel === 'develop' ? '--prerelease' : '--latest=false'} --title 'CasaZen WordPress plugin \\(${channel}\\)' --notes '`));
+			assert.match(commands[4], new RegExp(`^gh release upload wp-plugin-${channel} '?[^']*/casazen\\.zip'? --clobber$`));
+			assert.equal(commands[5], commands[4]);
+			assert.match(commands[6], new RegExp(`^gh release edit wp-plugin-${channel} --notes '`));
 			assert.ok(result.stdout.includes('Plugin version: 1.2.3'));
 
 			// Nothing that forces, deletes or moves a tag, in the commands or anywhere in what is printed.
@@ -976,7 +1009,7 @@ describe('publish-release: the real run, with a stand-in of gh', () => {
 		const lines = [];
 		const result = publish({ channel: 'develop', zip, sha: SHA, version: '1.2.3', run: gh.run, now: NOW, repository: 'casazen/frontend', log: (line) => lines.push(line) });
 
-		assert.deepEqual(gh.calls.map((command) => command[2]), ['view', 'create', 'upload']);
+		assert.deepEqual(releaseCalls(gh).map((command) => command[2]), ['view', 'create', 'upload']);
 		assert.equal(result.created, true);
 		// The log says where the ZIP is, at the address that the console links.
 		assert.ok(lines.includes('publish-release: https://github.com/casazen/frontend/releases/download/wp-plugin-develop/casazen.zip'), lines.join('\n'));
@@ -991,9 +1024,9 @@ describe('publish-release: the real run, with a stand-in of gh', () => {
 		const gh = fakeGh({ releaseExists: true });
 		const result = publish({ channel: 'main', zip, sha: SHA, version: '1.2.3', run: gh.run, now: NOW, log: quiet });
 
-		assert.deepEqual(gh.calls.map((command) => command[2]), ['view', 'upload', 'edit']);
+		assert.deepEqual(releaseCalls(gh).map((command) => command[2]), ['view', 'upload', 'edit']);
 		assert.equal(result.created, false);
-		assert.ok(gh.calls.every((command) => command[3] === 'wp-plugin-main'));
+		assert.ok(releaseCalls(gh).every((command) => command[3] === 'wp-plugin-main'));
 		assert.deepEqual(gh.calls.find((command) => command[2] === 'edit').slice(-1), ['--latest=false']);
 	});
 
@@ -1021,7 +1054,7 @@ describe('publish-release: the real run, with a stand-in of gh', () => {
 		const zip = await makeZip(CHANNELS.develop.appOrigin);
 		const gh = fakeGh({ releaseExists: true, failOn: 'upload' });
 		assert.throws(() => publish({ channel: 'develop', zip, sha: SHA, version: '1.2.3', run: gh.run, log: quiet }), /gh release upload wp-plugin-develop failed \(exit 1: HTTP 422/);
-		assert.deepEqual(gh.calls.map((command) => command[2]), ['view', 'upload'], 'the notes are not rewritten for an asset that was not uploaded');
+		assert.deepEqual(releaseCalls(gh).map((command) => command[2]), ['view', 'upload'], 'the notes are not rewritten for an asset that was not uploaded');
 		assert.equal(existsSync(join(dirname(zip), 'casazen.zip')), false);
 	});
 
@@ -1045,6 +1078,135 @@ describe('publish-release: the real run, with a stand-in of gh', () => {
 		assert.deepEqual(verifyZipForChannel(forMain, 'main'), []);
 		writeTree(scratch, { 'not-a-zip.zip': 'this is not a ZIP' });
 		assert.match(verifyZipForChannel(join(scratch, 'not-a-zip.zip'), 'main').join('\n'), /cannot be read as a ZIP/);
+	});
+});
+
+describe('publish-release: the commit must still be the one to publish, or nothing is written', () => {
+	const quiet = () => {};
+	/** A commit that is NOT the one that is published. */
+	const NEWER = 'fedcba9876543210fedcba9876543210fedcba98';
+	const PLUGIN_FILE = 'integrations/wordpress/casazen/includes/class-admin.php';
+
+	/** The questions about the tip of the branch that a stand-in recorded. */
+	const apiCalls = (gh) => gh.calls.filter((command) => command[1] === 'api');
+
+	it('asks for the tip of the branch of the channel, with the repository of the run, and only reads', () => {
+		for (const channel of Object.keys(CHANNELS)) {
+			const tip = tipCommand(channel, 'casazen/frontend');
+			const compare = changesCommand(channel, SHA, 'casazen/frontend');
+			assert.deepEqual(tip, ['gh', 'api', `repos/casazen/frontend/commits/${channel}`, '--jq', '.sha']);
+			assert.equal(compare[2], `repos/casazen/frontend/compare/${SHA}...${channel}`);
+			// Both are plain reads: no method, no field, no input.
+			for (const command of [tip, compare]) {
+				assert.deepEqual(command.slice(0, 2), ['gh', 'api']);
+				assert.ok(!command.some((word) => /^(?:-X|--method|-f|-F|--field|--raw-field|--input)$/.test(word)), command.join(' '));
+			}
+		}
+		// Without a repository, or with a host in front of it, `gh` fills {owner}/{repo} from GH_REPO or from the checkout.
+		assert.equal(tipCommand('main')[2], 'repos/{owner}/{repo}/commits/main');
+		assert.equal(tipCommand('main', 'github.com/casazen/frontend')[2], 'repos/{owner}/{repo}/commits/main');
+		assert.throws(() => tipCommand('staging'), /Unknown channel/);
+		assert.throws(() => changesCommand('develop', 'abc'), /--sha must be a full commit/);
+	});
+
+	it('publishes when the commit is the tip of the branch: the tip is read once, before the first write, and nothing more is asked', async () => {
+		const zip = await makeZip(CHANNELS.develop.appOrigin);
+		const gh = fakeGh({ releaseExists: true, tip: SHA });
+		const lines = [];
+		const result = publish({ channel: 'develop', zip, sha: SHA, version: '1.2.3', run: gh.run, now: NOW, repository: 'casazen/frontend', log: (line) => lines.push(line) });
+
+		assert.equal(result.skipped, undefined);
+		assert.deepEqual(apiCalls(gh), [['gh', 'api', 'repos/casazen/frontend/commits/develop', '--jq', '.sha']]);
+		assert.ok(gh.calls.indexOf(apiCalls(gh)[0]) < gh.calls.indexOf(writesOf(gh)[0]), 'the tip is read before the first write');
+		assert.equal(writesOf(gh).length, 2);
+		assert.ok(lines.includes(`publish-release: ${SHA} is the tip of develop.`), lines.join('\n'));
+	});
+
+	it('steps aside, with a notice and no error, when a newer commit changes the plugin: the run of that commit publishes, and nothing is written', async () => {
+		const zip = await makeZip(CHANNELS.develop.appOrigin);
+		const gh = fakeGh({ releaseExists: true, tip: NEWER, changes: comparison(['src/app.tsx', PLUGIN_FILE]) });
+		const lines = [];
+		// It returns (the command exits 0): two merges close together are a normal race, not a red job.
+		const result = publish({ channel: 'develop', zip, sha: SHA, version: '1.2.3', run: gh.run, now: NOW, repository: 'casazen/frontend', log: (line) => lines.push(line) });
+
+		assert.equal(result.skipped, true);
+		assert.equal(result.tip, NEWER);
+		assert.deepEqual(writesOf(gh), [], 'no command that writes');
+		assert.deepEqual(apiCalls(gh).map((command) => command[2]), ['repos/casazen/frontend/commits/develop', `repos/casazen/frontend/compare/${SHA}...develop`]);
+		const notice = lines.find((line) => line.startsWith('::notice'));
+		assert.ok(notice, lines.join('\n'));
+		assert.ok(notice.includes(`skipped: ${SHA} is no longer the tip of develop`), notice);
+		assert.ok(notice.includes(NEWER) && notice.includes(PLUGIN_FILE), notice);
+		assert.ok(notice.includes('the run of the most recent commit publishes'), notice);
+		assert.ok(!lines.some((line) => /done\.|releases\/download/.test(line)), 'it does not say that it published');
+		assert.equal(existsSync(join(dirname(zip), 'casazen.zip')), false, 'no copy of the ZIP was made');
+	});
+
+	it('publishes when the branch moved on with changes that do not touch the plugin: no run starts for them, so no other run would publish', async () => {
+		const zip = await makeZip(CHANNELS.main.appOrigin);
+		const gh = fakeGh({ releaseExists: true, tip: NEWER, changes: comparison(['src/app.tsx', 'docs/product/README.md', '.github/workflows/ci.yml']) });
+		const lines = [];
+		const result = publish({ channel: 'main', zip, sha: SHA, version: '1.2.3', run: gh.run, now: NOW, log: (line) => lines.push(line) });
+
+		assert.equal(result.skipped, undefined);
+		assert.deepEqual(releaseCalls(gh).map((command) => command[2]), ['view', 'upload', 'edit']);
+		assert.ok(lines.some((line) => line.includes(`the tip of main is ${NEWER}, newer than ${SHA}, but nothing of the plugin changed since`)), lines.join('\n'));
+	});
+
+	it('fails closed when the tip cannot be read: it is an error, nothing is written and the comparison is not even asked', async () => {
+		const zip = await makeZip(CHANNELS.develop.appOrigin);
+		for (const tipAnswer of [
+			{ status: 1, stderr: 'HTTP 502: Bad Gateway' },
+			{ status: 0, stdout: 'not a commit' },
+			{ status: 0, stdout: '' },
+			{ status: 0, stdout: `${SHA.toUpperCase()}\n` },
+			{ status: null, error: new Error('spawn gh ENOENT') },
+		]) {
+			const gh = fakeGh({ releaseExists: true, tipAnswer });
+			assert.throws(() => publish({ channel: 'develop', zip, sha: SHA, version: '1.2.3', run: gh.run, now: NOW, log: quiet }), /could not (?:read|run gh to read) the tip of the branch develop.*Nothing was published/s, JSON.stringify(tipAnswer));
+			assert.deepEqual(writesOf(gh), [], 'no command that writes');
+			assert.equal(apiCalls(gh).length, 1, 'the comparison is not asked');
+			assert.equal(existsSync(join(dirname(zip), 'casazen.zip')), false);
+		}
+	});
+
+	it('fails closed when what changed cannot be read, or cannot prove that the plugin is untouched: it is an error and nothing is written', async () => {
+		const zip = await makeZip(CHANNELS.develop.appOrigin);
+		const many = Array.from({ length: 300 }, (_, index) => `src/file-${index}.ts`);
+		for (const [changes, message] of [
+			[{ status: 1, stderr: 'HTTP 404: Not Found' }, /could not read what changed.*HTTP 404/s],
+			[{ status: 0, stdout: 'not json' }, /could not read what changed/],
+			[{ status: 0, stdout: '{"status":"ahead"}' }, /could not read what changed/],
+			[{ status: null, error: new Error('spawn gh ENOENT') }, /could not run gh to compare/],
+			// A list of files that is missing, or a count that is missing, is not "nothing changed".
+			[comparison(['src/app.tsx'], { files: undefined }), /could not read what changed/],
+			[comparison(['src/app.tsx'], { commits: undefined }), /could not read what changed/],
+			[comparison(['src/app.tsx'], { total_commits: undefined }), /could not read what changed/],
+			[comparison(['src/app.tsx'], { status: 'diverged' }), /not ahead of the commit \(GitHub says "diverged"\)/],
+			[comparison(['src/app.tsx'], { status: 'behind' }), /not ahead of the commit \(GitHub says "behind"\)/],
+			// GitHub lists at most 300 files and 250 commits: a longer comparison cannot prove that the plugin did not change.
+			[comparison(many), /too many changes/],
+			[comparison(['src/app.tsx'], { total_commits: 400 }), /too many changes/],
+		]) {
+			const gh = fakeGh({ releaseExists: true, tip: NEWER, changes });
+			assert.throws(() => publish({ channel: 'develop', zip, sha: SHA, version: '1.2.3', run: gh.run, now: NOW, log: quiet }), message, JSON.stringify(changes).slice(0, 80));
+			assert.deepEqual(writesOf(gh), [], 'no command that writes');
+			assert.equal(existsSync(join(dirname(zip), 'casazen.zip')), false);
+		}
+	});
+
+	it('decides from the answers alone: the tip is the commit, a newer commit that changes the plugin, a newer one that does not', () => {
+		assert.equal(readTip({ status: 0, stdout: `${SHA}\n` }, 'develop'), SHA);
+		assert.throws(() => readTip({ status: 0, stdout: 'abc' }, 'develop'), /could not read the tip/);
+		assert.deepEqual(readChanges(comparison(['a', 'b']), 'develop'), ['a', 'b']);
+
+		const decide = (gh) => checkCurrent({ channel: 'develop', sha: SHA, run: gh.run });
+		assert.deepEqual(decide(fakeGh({ tip: SHA })), { current: true, tip: SHA, newer: false, files: [] });
+		assert.deepEqual(decide(fakeGh({ tip: NEWER, changes: comparison([PLUGIN_FILE, 'README.md']) })), { current: false, tip: NEWER, newer: true, files: [PLUGIN_FILE] });
+		assert.deepEqual(decide(fakeGh({ tip: NEWER, changes: comparison(['README.md']) })), { current: true, tip: NEWER, newer: true, files: [] });
+		// A file that was renamed OUT of the plugin counts too: GitHub gives its old name next to the new one.
+		const renamed = { filename: 'docs/moved.md', previous_filename: PLUGIN_FILE, status: 'renamed' };
+		assert.deepEqual(decide(fakeGh({ tip: NEWER, changes: comparison([renamed]) })), { current: false, tip: NEWER, newer: true, files: [PLUGIN_FILE] });
 	});
 });
 
@@ -1166,6 +1328,33 @@ describe('the workflow that publishes the ZIP: who may write, and when', { skip:
 		assert.ok(!/publish-release|GH_TOKEN|github\.token/.test(pack), 'it publishes nothing and has no token');
 		// plugin-check still builds the development ZIP, with no address.
 		assert.ok(!/channel:/.test((jobs.get('plugin-check') ?? []).join('\n')));
+	});
+
+	it('serializes the publications of a channel with a group per channel, and cancels nothing that runs', () => {
+		assert.match(publishJob, /^ {4}concurrency:\n {6}group: wordpress-plugin-publish-\$\{\{ github\.ref_name \}\}\n {6}cancel-in-progress: false$/m);
+		// The group of the job is not the one of the run, and the run never cancels a push (only a pull request is replaced by a newer one).
+		assert.deepEqual(topLevelBlock(pipeline, 'concurrency'), ['  group: wordpress-plugin-${{ github.ref }}', "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}"]);
+		assert.deepEqual([...jobs].filter(([, lines]) => lines.some((line) => /^ {4}concurrency:/.test(line))).map(([id]) => id), ['publish'], 'only the job that writes has a group of its own');
+	});
+
+	it('keeps the list of files that start the workflow, which the check of the tip uses, in step with `on.push.paths`', () => {
+		const lines = codeLines(pipeline);
+		const push = lines.indexOf('  push:');
+		assert.ok(push >= 0, 'the workflow has a push trigger');
+		const paths = [];
+		for (const line of lines.slice(push + 1)) {
+			if (!/^ {4}/.test(line)) break;
+			const match = /^ {6}- '(.+)'$/.exec(line);
+			if (match) paths.push(match[1]);
+		}
+		assert.deepEqual(paths, ['integrations/wordpress/**', '.github/workflows/wordpress-plugin*.yml', '.github/actions/build-wordpress-plugin/**']);
+		for (const file of ['integrations/wordpress/casazen/casazen.php', '.github/workflows/wordpress-plugin.yml', '.github/workflows/wordpress-plugin-release.yml', '.github/actions/build-wordpress-plugin/action.yml']) {
+			assert.equal(startsPluginWorkflow(file), true, file);
+		}
+		for (const file of ['src/main.tsx', '.github/workflows/ci.yml', '.github/workflows/e2e.yml', '.github/actions/other/action.yml', 'docs/technical/wordpress-plugin.md', 'integrations/other/x.php', 'integrations/wordpress']) {
+			assert.equal(startsPluginWorkflow(file), false, file);
+		}
+		assert.equal(startsPluginWorkflow(undefined), false);
 	});
 
 	it('writes the console addresses nowhere in the workflows and the action: they live in tools/publish-release.mjs, once', () => {

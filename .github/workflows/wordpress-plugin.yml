@@ -291,6 +291,12 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+    # The publications of a channel never run together: a later one waits for the one that runs, and none is cancelled once it has started
+    # (`cancel-in-progress: false`), so two jobs never replace the asset at the same time. Whether a publication is still the one to make, when
+    # its turn comes, is decided by tools/publish-release.mjs (it reads the tip of the branch and steps aside for a newer commit).
+    concurrency:
+      group: wordpress-plugin-publish-${{ github.ref_name }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
