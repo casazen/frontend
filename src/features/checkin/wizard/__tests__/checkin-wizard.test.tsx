@@ -730,7 +730,33 @@ describe('CheckInWizardPage', () => {
       expect(screen.queryByTestId('checkin-wizard-register-arrival')).not.toBeInTheDocument();
     });
 
-    it('done_GuestsFailedOnOctorate_ShowsThePlainReasonAndRetryConfirmsAgain', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    it('sendStep_SenderIsCasaZen_SaysTheDirectSendIsItsOwnProcessAndNeitherOctorateNorThisButtonSendsToThePolice', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+      vi.mocked(checkInWizardApi.getState).mockResolvedValue(
+        wizardState({ sender: { alloggiatiSender: 'CasaZen', source: 'Stored', applies: true } }),
+      );
+      vi.mocked(checkInWizardApi.confirm).mockResolvedValue(
+        confirmation({
+          octorate: { state: 'NotApplicable', reason: 'sender_not_channel_manager', draft: false, correctionAfterSend: false, guests: [] },
+          alloggiati: { step: 'Manual', sender: 'CasaZen' },
+        }),
+      );
+      renderWizard('?step=send');
+
+      const route = await screen.findByTestId('checkin-wizard-send-route');
+      expect(route).toHaveAttribute('data-route', 'senderCasaZen');
+      // The direct send is a process of CasaZen's own, only on activation: the text no longer says that CasaZen does not send «yet», and promises nothing.
+      expect(route).toHaveTextContent('invio diretto');
+      expect(route).toHaveTextContent('questo pulsante non invia nulla alla Questura');
+      expect(route).not.toHaveTextContent(/non invia ancora/);
+      fireEvent.click(screen.getByTestId('checkin-wizard-confirm'));
+
+      await screen.findByTestId('checkin-wizard-done');
+      expect(screen.getByText(/Con l'invio diretto la comunicazione alla Questura la trasmette CasaZen, non questo pulsante/)).toBeInTheDocument();
+      expect(screen.queryByText(/La comunicazione alla Questura la fai tu sul portale Alloggiati Web/)).not.toBeInTheDocument();
+      expect(screen.queryByTestId('checkin-wizard-done-manual')).not.toBeInTheDocument();
+    });
+
+    it('done_GuestsFailedOnOctorate_ShowsThePlainReasonAndRetryConfirmsAgain',{ timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       vi.mocked(checkInWizardApi.confirm)
         .mockResolvedValueOnce(
           confirmation({

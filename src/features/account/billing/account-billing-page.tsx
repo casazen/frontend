@@ -151,6 +151,7 @@ function AccountBillingBody() {
               usage={usage}
               portal={portal}
               onAlreadySubscribed={() => void subscriptionQuery.refetch()}
+              showModulesNote={!!signup}
             />
             <BillingDataSection subscription={subscription} />
             <SubscriptionStates status={subscription.status} />

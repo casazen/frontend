@@ -6,14 +6,14 @@ ordine: 80
 riassunto: Il sito pubblico dove i tuoi ospiti vedono le case, scelgono le date, pagano con la carta e prenotano senza commissioni. Cosa serve prima di condividerlo (Stripe, documenti privacy e termini), come lo controlli e lo personalizzi, e cosa vede e riceve l'ospite.
 chi: [gestore, amministratore, ospite]
 dove: Affitti brevi › Sito di prenotazione · Impostazioni › Aspetto sito · Impostazioni › Documenti sito
-parole_chiave: [sito di prenotazione, Direct Booking, prenotazione diretta, link del mio sito, condividere il link, non vedo la casa sul sito, pagamenti con carta, Stripe, QR, aspetto sito, tema, caratteri, colore, logo, copertina, informativa privacy, termini di prenotazione, checkout, paga ora, paga alla scadenza, paga in struttura, Le mie prenotazioni, codice prenotazione, cancellazione, prenotare come ospite]
+parole_chiave: [sito di prenotazione, prenotazione diretta, link del mio sito, condividere il link, non vedo la casa sul sito, pagamenti con carta, Stripe, QR, aspetto sito, tema, caratteri, colore, logo, copertina, informativa privacy, termini di prenotazione, checkout, paga ora, paga alla scadenza, paga in struttura, Le mie prenotazioni, codice prenotazione, cancellazione, prenotare come ospite]
 copre: [/app/short-rent/vetrina, /app/short-rent/settings/site-appearance, /app/short-rent/settings/site-documents, /book/:orgSlug, /book/:orgSlug/search, /book/:orgSlug/property/:propertySlugOrId, /book/:orgSlug/property/:propertySlugOrId/checkout, /book/:orgSlug/booking/:bookingId, /book/:orgSlug/requests/:bookingId/confirm, /book/:orgSlug/my-bookings, /book/:orgSlug/bookings/:bookingId/cancel, /book/:orgSlug/privacy, /book/:orgSlug/termini, /book/:orgSlug/terms, /book/:orgSlug/:propertySlugOrId (non-utente)]
 stato: disponibile
 fonte_codice: [frontend/src/features/settings/vetrina-page.tsx, frontend/src/features/settings/components/vetrina-property-row.tsx, frontend/src/features/settings/components/booking-link-dialog.tsx, frontend/src/features/onboarding/components/site-publication-banner.tsx, frontend/src/features/settings/site-appearance/site-appearance-page.tsx, frontend/src/features/settings/site-appearance/branding-rules.ts, frontend/src/features/settings/site-documents/site-documents-page.tsx, frontend/src/features/settings/site-documents/site-documents-rules.ts, frontend/src/features/public-site/home/org-home-page.tsx, frontend/src/features/public-site/search/site-search-page.tsx, frontend/src/features/public-booking/public-property-page.tsx, frontend/src/features/public-booking/checkout-page.tsx, frontend/src/features/public-booking/checkout/checkout-flow.tsx, frontend/src/features/public-booking/confirmation/confirmation-screen.tsx, frontend/src/features/public-booking/guest-bookings-page.tsx, frontend/src/features/public-booking/guest-cancel-link-page.tsx, frontend/src/features/public-booking/onsite-request-confirm-page.tsx, frontend/src/features/public-booking/org-document-page.tsx, frontend/src/features/site-maps, frontend/src/routes/index.tsx, backend/Casazen.Core/Services/IPublicAvailabilityService.cs, backend/Casazen.Core/Entities/Property.cs, backend/Casazen.Web/Controllers/PublicBookingsController.cs, backend/Casazen.Web/Controllers/OrgBrandingController.cs, backend/Casazen.Web/Controllers/OrgSiteDocumentsController.cs, backend/docs/runbooks/direct-booking.md]
 ---
 
 ## In breve
-Il **sito di prenotazione** è la pagina pubblica dove i tuoi ospiti vedono le tue case, scelgono le date, pagano con la carta e prenotano direttamente da te, senza passare da un portale. Lo apri da **Affitti brevi › Sito di prenotazione** (nel menu si chiama così; in cima alla pagina il titolo è «Direct Booking»: è la stessa cosa): vedi l'anteprima, l'elenco delle case pubblicate e i link da copiare e condividere.
+Il **sito di prenotazione** è la pagina pubblica dove i tuoi ospiti vedono le tue case, scelgono le date, pagano con la carta e prenotano direttamente da te, senza passare da un portale. Lo apri da **Affitti brevi › Sito di prenotazione** (il titolo in cima alla pagina è lo stesso): vedi l'anteprima, l'elenco delle case pubblicate e i link da copiare e condividere.
 
 Tu scegli come appare (logo, copertina, tema, caratteri, colore), quali documenti legali pubblicare e dove mettere il link. L'ospite non crea nessun account: bastano nome, e-mail e un pagamento sicuro con Stripe.
 
@@ -25,7 +25,7 @@ Tu scegli come appare (logo, copertina, tema, caratteri, colore), quali document
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
 |---|---|---|---|---|---|
-| Anteprima e link del sito | Mostra il sito com'è per gli ospiti e permette di copiare il link del sito e delle singole case | Sito di prenotazione (titolo della pagina: «Direct Booking») | gestore, amministratore | Disponibile | Controllare il tuo sito e copiare il link |
+| Anteprima e link del sito | Mostra il sito com'è per gli ospiti e permette di copiare il link del sito e delle singole case | Sito di prenotazione | gestore, amministratore | Disponibile | Controllare il tuo sito e copiare il link |
 | Stato di pubblicazione di una casa | Dice per ogni casa se è «Pubblicata» o «Non pubblicata» | Sito di prenotazione › elenco «Proprietà» | gestore, amministratore | Disponibile | Capire se una casa è sul sito |
 | Avviso «Gli ospiti non possono ancora prenotare dal tuo sito» | Spiega perché il sito non può ancora prendere prenotazioni e porta alla pagina che risolve | Sito di prenotazione (in alto) | gestore, amministratore | Disponibile | Capire perché il sito non prende prenotazioni |
 | Link per il sito della tua agenzia | Crea il link di una casa con date, ospiti, lingua e nome della campagna, e il suo codice QR | Sito di prenotazione › icona del link accanto a una casa | gestore, amministratore | Disponibile | Creare un link con date e QR per il sito della tua agenzia |
@@ -118,7 +118,7 @@ Le mappe del sito sono schematiche e mostrano **posizioni indicative**: l'indiri
 
 ### Controllare il tuo sito e copiare il link
 **Ti serve:** almeno una casa «Pubblicata» e, per prendere prenotazioni, Stripe «Attivo».
-1. Apri **Affitti brevi › Sito di prenotazione** (in cima alla pagina il titolo è «Direct Booking»).
+1. Apri **Affitti brevi › Sito di prenotazione**.
 2. A sinistra, sotto **«Proprietà»**, vedi le tue case. Premi il nome di una casa per vederne l'anteprima a destra; ripremilo per tornare al sito intero. Con i pulsanti «Anteprima desktop» e «Anteprima mobile» scegli come vederla, con «Apri a schermo intero» la apri a pagina intera.
 3. Per copiare il link di **una casa** premi l'icona «Copia URL struttura» sulla riga. Per aprire la sua pagina pubblica premi «Apri pagina struttura».
 4. Per il link dell'**intero sito** apri la voce **«URL organizzazione»** in basso a sinistra e premi «Copia URL».
@@ -279,7 +279,7 @@ Sì, in qualsiasi momento: la modifica compare sul sito appena premi «Salva sti
 No. L'informativa e i termini del sito sono tuoi e li pubblichi tu in **Documenti sito**. Quelli di CasaZen sono documenti separati: [[pagine-pubbliche#i-documenti-legali-di-casazen]].
 
 ## Glossario
-- **Sito di prenotazione**: la pagina pubblica della tua organizzazione dove gli ospiti prenotano direttamente (il titolo in cima alla pagina nell'app è «Direct Booking»).
+- **Sito di prenotazione**: la pagina pubblica della tua organizzazione dove gli ospiti prenotano direttamente (si apre da Affitti brevi › Sito di prenotazione).
 - **Pubblicata**: una casa che gli ospiti possono vedere e prenotare sul sito.
 - **Prenotazione immediata**: l'ospite paga online e la prenotazione è subito confermata.
 - **Su richiesta**: l'ospite chiede di prenotare, paga all'arrivo e l'host accetta o rifiuta.

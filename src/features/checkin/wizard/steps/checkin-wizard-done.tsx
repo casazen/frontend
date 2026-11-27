@@ -87,10 +87,13 @@ export function CheckInWizardDone({ bookingId, guestName, returnPath, result }: 
         reason: tax.reason && TAX_REASON_KEYS[tax.reason] ? t(TAX_REASON_KEYS[tax.reason]) : t('checkin.wizard.done.taxReason.unknown'),
       });
 
+  // With CasaZen as sender the stay still reads «Manual» (this button hands nothing over), but the direct send is a process of CasaZen's own: the line says what really happens.
+  const policeKey = alloggiati.step === 'Manual' && alloggiati.sender === 'CasaZen' ? 'CasaZen' : alloggiati.step;
+
   const whatNext: WizardDoneProps['whatNext'] = [
     { text: octorateLine, icon: syncFailed ? CircleAlert : Users, tone: syncFailed ? 'problem' : undefined },
     { text: taxLine, icon: tax.saved ? CheckCircle2 : Info, tone: tax.saved ? undefined : 'attention' },
-    { text: t(`checkin.wizard.done.police.${alloggiati.step}`), icon: Info, tone: alloggiati.step === 'Manual' ? 'attention' : undefined },
+    { text: t(`checkin.wizard.done.police.${policeKey}`), icon: Info, tone: policeKey === 'Manual' ? 'attention' : undefined },
   ];
 
   const stay = `${BOOKINGS_PATH}/${bookingId}`;
@@ -119,7 +122,7 @@ export function CheckInWizardDone({ bookingId, guestName, returnPath, result }: 
           </Alert>
         )}
 
-        {alloggiati.step === 'Manual' && (
+        {policeKey === 'Manual' && (
           <p className="text-sm" data-testid="checkin-wizard-done-manual">
             <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`${stay}?tab=alloggiati`}>
               {t('checkin.wizard.done.manualGuide')}

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Manuale utente di CasaZen: genera le pagine HTML (public/guida) dai file Markdown di guida/contenuti.
  *

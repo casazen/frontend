@@ -320,7 +320,7 @@ describe('the plan of the organization is checked before anything is read (any o
 
     renderPage();
 
-    expect(screen.getByTestId('agency-plan-required')).toHaveTextContent('Serve il piano Agenzia');
+    expect(screen.getByTestId('agency-plan-required')).toHaveTextContent('Serve il piano Agency');
     expect(screen.getByRole('link', { name: 'Vai al piano' })).toHaveAttribute('href', '/app/account/billing');
     expect(screen.getByTestId('statements-page')).toBeInTheDocument();
     expect(api.getAll).not.toHaveBeenCalled();

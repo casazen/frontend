@@ -69,16 +69,16 @@ Per ogni ospite CasaZen tiene: tipo di ospite (ospite singolo, capofamiglia, cap
 ### Cosa ti serve per inviare: le credenziali di Alloggiati Web
 Per caricare il file sul portale servono le **credenziali di Alloggiati Web (nome utente e password)**, che rilascia la Questura. **CasaZen non le crea e non può chiederle per te.** Se non le hai ancora, chiedile alla Questura prima del primo ospite: senza non puoi inviare e il termine corre lo stesso.
 
-In CasaZen i tre campi delle credenziali («Nome utente», «Password», «Chiave web service (WSKey)») servono solo a due cose, entrambe facoltative per l'invio a mano: scaricare in automatico le **ricevute** (consigliato con il channel manager) e l'**invio diretto** da CasaZen (su attivazione). La WSKey è una chiave del servizio web del portale, diversa dalla password. Dopo il salvataggio non si rivedono più.
+In CasaZen i tre campi delle credenziali («Nome utente», «Password», «Chiave web service (WSKey)») servono a due cose: scaricare in automatico le **ricevute** (consigliato con il channel manager) e, dove l'**invio diretto** è attivo (su attivazione), far trasmettere i dati ad Alloggiati Web da CasaZen. Per l'invio a mano non servono. La WSKey è una chiave del servizio web del portale, diversa dalla password. Dopo il salvataggio non si rivedono più.
 
 ### Chi invia i dati degli ospiti
 Chi trasmette si sceglie **immobile per immobile**, nella procedura «Chi invia»:
 
 - **Lo faccio io, con il file** (invio manuale). CasaZen prepara i dati e il file; lo carichi tu sul portale Alloggiati Web e poi premi «Segna come inviato manualmente». CasaZen non riceve la ricevuta: registra la tua dichiarazione. Lo stato è «Inviato manualmente».
 - **Il tuo channel manager**. Se l'immobile è collegato a Octorate, i dati degli ospiti passano al channel manager, che li invia alla Questura ogni giorno. Lo stato è «Affidato al channel manager, in attesa della ricevuta». Per CasaZen la comunicazione è fatta (verde) solo quando la **ricevuta è archiviata**. Su attivazione.
-- **CasaZen** (invio diretto). Su attivazione, solo per gli immobili per cui è stato predisposto. Nella procedura «Chi invia» la voce «CasaZen» compare ma non si può scegliere («Non ancora disponibile»): l'attivazione si fa solo dalla scheda immobile (vedi «Attivare l'invio diretto»).
+- **CasaZen** (invio diretto). Su attivazione, solo per gli immobili per cui è stato predisposto. Nella procedura «Chi invia» la voce «CasaZen» compare ma non si sceglie da lì: sotto la voce leggi «Non si sceglie da qui: dove è disponibile, l'invio diretto si attiva dalla scheda dell'immobile» (vedi «Attivare l'invio diretto»). Quando l'invio diretto è già attivo, nessuna delle tre voci si cambia da questa procedura: sotto ognuna leggi «Non si cambia da qui: con l'invio diretto attivo serve l'assistenza».
 
-**Cosa succede se non hai mai scelto.** Per un immobile non collegato a Octorate vale «Lo faccio io, con il file». Per un immobile già collegato a Octorate (annuncio abbinato e confermato) CasaZen parte da «Il tuo channel manager»: aprilo in «Chi invia» e controlla che lo stato sia **«Attivo»**. È «Attivo» solo se Octorate conferma che invia davvero. In ogni caso una prenotazione resta «Da inviare manualmente» dal giorno di arrivo finché gli ospiti non risultano passati al channel manager o tu non dichiari l'invio: CasaZen non considera mai fatta una comunicazione senza motivo.
+**Cosa succede se non hai mai scelto.** Per un immobile non collegato a Octorate vale «Lo faccio io, con il file». Per un immobile già collegato a Octorate (annuncio abbinato e confermato) CasaZen parte da «Il tuo channel manager»: aprilo in «Chi invia» e controlla che lo stato sia **«Attivo»**. È «Attivo» solo se Octorate conferma che invia davvero. Se l'invio automatico degli ospiti è spento, sotto «Adesso» la procedura aggiunge «Di partenza non parte nulla da solo: gli ospiti vanno al tuo channel manager solo quando confermi tu il check-in. Controlla lo stato in Adempimenti.» In ogni caso una prenotazione resta «Da inviare manualmente» dal giorno di arrivo finché gli ospiti non risultano passati al channel manager o tu non dichiari l'invio: CasaZen non considera mai fatta una comunicazione senza motivo.
 
 > **Nota:** CasaZen non ti toglie la responsabilità della comunicazione: restano tue la correttezza dei dati e il rispetto della scadenza. Se scegli un invio automatico, lo dichiari in una delega che ti viene mostrata e che devi accettare.
 
@@ -89,7 +89,7 @@ Chi trasmette si sceglie **immobile per immobile**, nella procedura «Chi invia�
 |---|---|---|
 | «Scarica il file» (scheda «Documenti» della prenotazione) | Prepara il file con i dati degli ospiti, da caricare sul portale | Non invia nulla e non cambia nessuno stato |
 | «Conferma e invia» (check-in guidato, vedi [[ospiti-checkin]]) | Salva i dati confermati in CasaZen. Se il mittente è il channel manager e la prenotazione è collegata a Octorate, manda gli ospiti a Octorate | Non avvisa la Questura: lo fa Octorate, con i suoi tempi. Se il mittente sei tu, non manda niente neanche a Octorate |
-| «Segna come inviato manualmente» | Registra che hai già caricato i dati sul portale, con la data che scegli e il tuo nome utente. Spegne gli avvisi su quel soggiorno | Non trasmette nulla, non riceve la ricevuta e non rende verde la voce. Da questa schermata non si annulla |
+| «Segna come inviato manualmente» | Registra che hai già caricato i dati sul portale, con la data che scegli e il tuo nome utente. Spegne gli avvisi su quel soggiorno e chiude il check-in online dell'ospite (il link non gli viene più mandato) | Non trasmette nulla, non riceve la ricevuta e non rende verde la voce. Da questa schermata non si annulla |
 | «Carica la prova» (Report Alloggiati) | Archivia la ricevuta che hai scaricato dal portale | Non invia nulla |
 | «Gestisci con AI» | Chiede i dati agli ospiti e chiude le partenze | Non invia nulla ad Alloggiati Web o all'ISTAT |
 | Check-in online dell'ospite | L'ospite compila i suoi dati | Non comunica nulla alla Questura |
@@ -98,7 +98,7 @@ Per sapere se la Questura ha ricevuto i dati serve la **ricevuta** del portale, 
 
 ### Gli stati di una comunicazione
 - **Da inviare**: aspetta il giorno di arrivo.
-- **Da inviare manualmente**: è il giorno di arrivo (dalle 00:00 ora italiana) e la comunicazione è dovuta. Tocca a te, o al channel manager se gli ospiti non sono ancora passati da lui.
+- **Da inviare manualmente**: è il giorno di arrivo (dalle 00:00 ora italiana) e la comunicazione è dovuta. Tocca a te (se per l'immobile non è attivo l'invio diretto di CasaZen, CasaZen non la trasmette), o al channel manager se gli ospiti non sono ancora passati da lui.
 - **Inviato manualmente**: hai dichiarato tu l'invio, con la data. CasaZen non ha la ricevuta: conserva quella rilasciata dal portale.
 - **Inviato (ricevuta)**: c'è la ricevuta vera. Con l'invio diretto compare anche il pulsante «Scarica ricevuta Questura».
 - **Affidato al channel manager, in attesa della ricevuta**: gli ospiti sono partiti verso il channel manager; mancano la ricevuta o l'esito.
@@ -168,10 +168,10 @@ Un immobile in attesa non si può prenotare dal sito. La procedura guidata ha qu
 3. Controlla le schede degli ospiti: ogni scheda mostra «Completo», «N dati mancanti» oppure «Codici da completare». Se manca qualcosa, vedi «Completare i dati degli ospiti».
 4. Premi «Scarica il file». È disponibile solo se i dati e i codici ufficiali sono completi e il soggiorno non supera 30 notti. Scaricarlo **non invia nulla**.
 5. Sul portale Alloggiati Web della Questura apri il menu **File**, scegli il file, premi «Elabora» e controlla le righe corrette, poi «Prosegui». Se usi il profilo «Gestione Appartamenti» (quello del portale per chi gestisce appartamenti), scegli prima l'appartamento sul portale. Con «Prosegui» la comunicazione è fatta: il portale accetta solo arrivi di oggi o di ieri.
-6. Torna in CasaZen e premi «Segna come inviato manualmente». Scegli la data di invio sul portale (da quella di arrivo a oggi), spunta la conferma e premi «Conferma invio».
+6. Torna in CasaZen e premi «Segna come inviato manualmente». Scegli la data di invio sul portale (da quella di arrivo a oggi), spunta la conferma e premi «Conferma invio». Prima di confermare la finestra ti dice che cosa succede: CasaZen smette di avvisarti su quel soggiorno e considera concluso il check-in online dell'ospite (il link non gli viene più mandato).
 7. Il giorno dopo scarica dal portale la **ricevuta**: è pronta dal giorno dopo l'invio e resta scaricabile per 30 giorni. Caricala in **Report Alloggiati** (vedi «Caricare una ricevuta o una prova»). Finché non lo fai la voce non diventa verde.
 
-> **Attenzione:** premi «Segna come inviato manualmente» solo **dopo** aver caricato il file sul portale e controllato che le righe siano corrette. Da quel momento CasaZen non ti manda più avvisi su quel soggiorno e non controlla che l'invio sia avvenuto. Da questa schermata la dichiarazione non si annulla.
+> **Attenzione:** premi «Segna come inviato manualmente» solo **dopo** aver caricato il file sul portale e controllato che le righe siano corrette. Da quel momento CasaZen non ti manda più avvisi su quel soggiorno, considera concluso il check-in online dell'ospite (il link non gli viene più mandato) e non controlla che l'invio sia avvenuto. Da questa schermata la dichiarazione non si annulla.
 
 > **Attenzione:** il file contiene i dati dei documenti: conservalo con cura ed eliminalo dopo l'invio. Il limite «oggi o ieri» vale quando **carichi** il file sul portale: se lo carichi prima del giorno di arrivo o dopo il giorno successivo, il portale lo rifiuta.
 

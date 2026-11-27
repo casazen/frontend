@@ -40,7 +40,7 @@ fonte_codice: [frontend/src/features/messages/inbox-page.tsx, frontend/src/featu
 - **Quando non puoi rispondere.** Puoi leggere ma non scrivere se la chat del portale non è ancora attiva per quell'annuncio, se l'annuncio non è ancora collegato a un tuo immobile, se la conversazione è chiusa, se non hai il permesso di rispondere, o se l'ospite ha chiesto la cancellazione dei suoi dati.
 - **Regole dei portali.** Prima della prenotazione molti portali non permettono link, indirizzi email o numeri di telefono: toglili dal messaggio. Il testo può avere al massimo 2000 caratteri. Se mandi molti messaggi in poco tempo, ti viene chiesto di aspettare qualche minuto.
 - **Messaggi diretti.** Se scrivi a un ospite del tuo sito, l'ospite riceve un'email che lo avvisa, **senza il testo**, e legge il messaggio nell'area della sua prenotazione. Non scrivere dati di pagamento. La conversazione di una prenotazione si chiude 7 giorni dopo la partenza.
-- **Cosa non c'è.** CasaZen non manda messaggi su WhatsApp né SMS e non telefona: le conversazioni sono quelle dei portali (tramite Octorate) e quelle del tuo sito.
+- **Cosa non c'è.** Nelle conversazioni con gli ospiti CasaZen non manda messaggi su WhatsApp né SMS e non telefona: le conversazioni sono quelle dei portali (tramite Octorate) e quelle del tuo sito.
 
 ### I modelli di messaggio
 Nella casella di risposta, «Modelli» mostra due elenchi:
@@ -192,7 +192,7 @@ Si scrive una volta sola. Se il portale non conferma l'invio, compare «Da verif
 - Risposta a una recensione: una sola, pubblica, non modificabile né ritirabile. Segnalazione a CasaZen: una sola per recensione.
 - Invito a recensire: una volta per prenotazione, entro 14 giorni dalla partenza, solo per le prenotazioni del tuo sito.
 - Chi ha accesso solo ad alcuni immobili vede solo le conversazioni e le recensioni di quelli.
-- Non ci sono messaggi su WhatsApp né SMS: solo le conversazioni dei portali (tramite Octorate) e quelle del tuo sito.
+- Nelle conversazioni con gli ospiti non ci sono messaggi su WhatsApp né SMS: solo le conversazioni dei portali (tramite Octorate) e quelle del tuo sito.
 
 ## Domande frequenti
 

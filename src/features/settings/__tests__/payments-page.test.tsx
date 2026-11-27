@@ -195,4 +195,22 @@ describe('ConnectPaymentsPage (BK-09)', () => {
     );
     expect(screen.queryByTestId('connect-status-error')).not.toBeInTheDocument();
   });
+
+  it('statusQuery_ActiveWithTransfers_SaysCardPaymentsAreEnabledAndNothingAboutTransfersNotBeingReady', async () => {
+    vi.mocked(ConnectApi.getStatus).mockResolvedValue(activeStatus);
+    renderPage();
+
+    expect(await screen.findByText(i18n.t('settings.accountActiveMessage'))).toHaveTextContent('Stripe ha abilitato i pagamenti con carta');
+    expect(screen.queryByTestId('connect-payouts-pending')).not.toBeInTheDocument();
+  });
+
+  it('statusQuery_ActiveButTransfersNotEnabled_SaysTheMoneyStaysInTheStripeBalance', async () => {
+    // «Attivo» is `chargesEnabled`: the card payments work, and the transfers to the bank may not be enabled yet.
+    vi.mocked(ConnectApi.getStatus).mockResolvedValue({ ...activeStatus, payoutsEnabled: false });
+    renderPage();
+
+    expect(await screen.findByTestId('connect-status-badge')).toHaveTextContent(i18n.t('settings.connectStatusActive'));
+    expect(await screen.findByTestId('connect-payouts-pending')).toHaveTextContent(/bonifici verso il tuo conto bancario non sono ancora abilitati su Stripe/);
+    expect(screen.queryByTestId('connect-checkout-gate-banner')).not.toBeInTheDocument();
+  });
 });

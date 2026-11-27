@@ -366,6 +366,11 @@ export function ServiceRequestForm({
               <option value="High">{t('serviceRequest.urgencyHigh')}</option>
               <option value="Emergency">{t('serviceRequest.urgencyEmergency')}</option>
             </select>
+            {urgency === 'Emergency' ? (
+              <p className="text-xs text-muted-foreground" data-testid="sr-emergency-notice">
+                {t('shared.emergencyNotice')}
+              </p>
+            ) : null}
           </div>
           <div className="space-y-2">
             <Label htmlFor="sr-notes">{t('serviceRequest.notes')}</Label>

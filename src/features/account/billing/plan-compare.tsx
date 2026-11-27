@@ -123,7 +123,15 @@ interface PlanCompareProps {
   portal: PortalHandle;
   /** The backend says the org already has a subscription: the page reads it again, and the plans lead to the portal. */
   onAlreadySubscribed: () => void;
+  /**
+   * Tells that, with the guided registration, Starter has no module (INC-23): only for an org that registered that way, since the
+   * others are not held back by the modules.
+   */
+  showModulesNote?: boolean;
 }
+
+/** The modules whose features stay locked on Starter with the guided registration, in the words of «Stato dei moduli». */
+const LOCKED_MODULES = ['compliance', 'direct-booking', 'channels', 'operations'] as const;
 
 /**
  * "Confronta i piani": the plans of the catalog one under the other, the person's own marked, each with what it costs (only when
@@ -131,7 +139,7 @@ interface PlanCompareProps {
  * the one the plan pages have always had: with a subscription the Stripe portal, without one the checkout (country and VAT number,
  * then Stripe). It opens from the button of the plan block.
  */
-export function PlanCompare({ detailsRef, plansQuery, subscription, tier, usage, portal, onAlreadySubscribed }: PlanCompareProps) {
+export function PlanCompare({ detailsRef, plansQuery, subscription, tier, usage, portal, onAlreadySubscribed, showModulesNote = false }: PlanCompareProps) {
   const { t } = useTranslation();
   const [checkoutPlan, setCheckoutPlan] = useState<BillingPlan | null>(null);
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
@@ -216,6 +224,11 @@ export function PlanCompare({ detailsRef, plansQuery, subscription, tier, usage,
       {renderPlans()}
 
       <p className="break-words text-sm text-foreground/70">{t(plans?.some(plan => plan.pricesIncludeVat) ? 'commercial.compareNoteVatIncluded' : 'accountBilling.compare.note')}</p>
+      {showModulesNote ? (
+        <p data-testid="account-billing-modules-note" className="break-words text-sm text-foreground/70">
+          {t('accountBilling.compare.modulesNote', { modules: LOCKED_MODULES.map((code) => t(`commercial.addons.${code}.title`)).join(' · ') })}
+        </p>
+      ) : null}
 
       <CheckoutDialog plan={checkoutPlan} subscription={subscription} onClose={() => setCheckoutPlan(null)} onAlreadySubscribed={handleAlreadySubscribed} />
     </BillingDisclosure>
