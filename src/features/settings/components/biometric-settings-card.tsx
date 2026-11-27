@@ -33,7 +33,8 @@ import {
   type BiometricForm,
   type BiometricFormErrors,
 } from '../lib/biometric-settings-model';
-import { useBiometricModelsStatus, useBiometricSettings, useUpdateBiometricSettings } from '../use-biometric-settings';
+import { useBiometricCardBusy, useBiometricModelsStatus, useBiometricSettings, useUpdateBiometricSettings } from '../use-biometric-settings';
+import { IdentitySegmentsSection } from './identity-segments-section';
 
 /** The bounds written the way the page is read (`0,50`), in the language of the page. */
 function boundText(value: number, language: string): string {
@@ -105,6 +106,8 @@ function ModelsStatus() {
 function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
   const { t, i18n } = useTranslation();
   const update = useUpdateBiometricSettings();
+  // Any write of the card in flight (the settings, or a segment) keeps every control of the form off until it ends.
+  const busy = useBiometricCardBusy() || update.isPending;
   const [form, setForm] = useState<BiometricForm>(() => formOf(settings));
   const [synced, setSynced] = useState<BiometricSettings>(settings);
   const [tried, setTried] = useState(false);
@@ -124,7 +127,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
   const save = (event: FormEvent) => {
     event.preventDefault();
     setTried(true);
-    if (update.isPending || Object.keys(errors).length > 0 || !isChanged(form, settings)) return;
+    if (busy || Object.keys(errors).length > 0 || !isChanged(form, settings)) return;
     update.mutate(requestOf(form));
   };
 
@@ -148,7 +151,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
           aria-describedby="biometric-enabled-help"
           data-testid="biometric-enabled"
           checked={form.enabled}
-          disabled={update.isPending}
+          disabled={busy}
           onCheckedChange={(checked) => edit({ enabled: checked })}
         />
       </div>
@@ -163,7 +166,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
             min={BIOMETRIC_ESCALATE_MIN}
             max={BIOMETRIC_ACCEPT_MAX}
             value={form.accept}
-            disabled={update.isPending}
+            disabled={busy}
             onChange={(event) => edit({ accept: event.target.value })}
           />
         </Field>
@@ -177,7 +180,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
             min={BIOMETRIC_ESCALATE_MIN}
             max={BIOMETRIC_ACCEPT_MAX}
             value={form.escalate}
-            disabled={update.isPending}
+            disabled={busy}
             onChange={(event) => edit({ escalate: event.target.value })}
           />
         </Field>
@@ -196,7 +199,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
           min={BIOMETRIC_ATTEMPTS_MIN}
           max={BIOMETRIC_ATTEMPTS_MAX}
           value={form.attempts}
-          disabled={update.isPending}
+          disabled={busy}
           onChange={(event) => edit({ attempts: event.target.value })}
         />
       </Field>
@@ -223,7 +226,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
         </Alert>
       )}
 
-      <Button type="submit" loading={update.isPending} disabled={update.isPending || !isChanged(form, settings)} data-testid="biometric-save">
+      <Button type="submit" loading={update.isPending} disabled={busy || !isChanged(form, settings)} data-testid="biometric-save">
         {t('biometricSettings.save')}
       </Button>
     </form>
@@ -235,6 +238,9 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
  * the face is accepted alone, under it a person decides; at the second the attempt does not pass), the attempts of a guest, and the label «provvisorie» until a platform administrator marks the
  * calibration. Platform administrators also see the models: name, state and why one cannot be used. Only for the org billing administrator and only while the identity verification is on; with
  * the flag off the card does not exist and nothing is asked. A save the server refuses (a bound that failed) says so, and nothing is saved.
+ *
+ * While the self-hosted verification is on too (`checkInIdentitySelfHosted`, E70/F03/US01/T02) the card also holds its segments (`IdentitySegmentsSection`): where the policy only observes, where it may approve
+ * by itself and where it is suspended. With that flag off the card is the one it always was.
  */
 export function BiometricSettingsCard({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
@@ -266,6 +272,9 @@ export function BiometricSettingsCard({ compact = false }: { compact?: boolean }
       ) : (
         <BiometricSettingsForm settings={settings.data} />
       )}
+
+      {/* The segments of the self-hosted verification: it draws nothing (and asks nothing) while `checkInIdentitySelfHosted` is off. */}
+      <IdentitySegmentsSection />
 
       {isPlatformAdmin(contexts) && <ModelsStatus />}
     </div>

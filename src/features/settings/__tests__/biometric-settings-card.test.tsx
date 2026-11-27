@@ -15,17 +15,42 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { contextOf } from '@/test/org-contexts';
 import { expectNoAxeViolations } from '@/test/axe';
-import type { BiometricSettings, BiometricsStatus } from '@/types/biometric-settings.types';
+import type { BiometricSettings, BiometricsStatus, IdentitySegment, IdentitySegments } from '@/types/biometric-settings.types';
 import { BiometricSettingsCard } from '../components/biometric-settings-card';
 import { MODEL_REASON_CODES, MODEL_STATES, modelReasonKey, modelStateKey, validateBiometricForm } from '../lib/biometric-settings-model';
 import { BIOMETRIC_SETTINGS_QUERY_KEY } from '../use-biometric-settings';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/biometric-settings.api', () => ({
-  biometricSettingsApi: { get: vi.fn(), update: vi.fn(), getModelsStatus: vi.fn() },
+  biometricSettingsApi: { get: vi.fn(), update: vi.fn(), getModelsStatus: vi.fn(), getSegments: vi.fn(), createSegment: vi.fn(), updateSegment: vi.fn() },
 }));
 
 configure({ asyncUtilTimeout: 5_000 });
+
+const segment: IdentitySegment = {
+  id: 'segment-1',
+  propertyId: null,
+  propertyName: null,
+  formatId: 'it-cie',
+  channel: 'web:ios-safari',
+  mode: 'observation',
+  qualified: false,
+  qualificationReason: 'segment_not_qualified',
+  qualifiedPolicyVersion: null,
+  qualifiedAt: null,
+  autoApprovalAllowed: false,
+  autoApprovalReason: 'segment_observation',
+  requiredAssurance: 'consistency',
+  suspendedReason: null,
+};
+
+const segments: IdentitySegments = {
+  segments: [segment],
+  formats: [{ id: 'it-cie', label: "Carta d'identità elettronica italiana" }],
+  channels: ['web:ios-safari', 'web:android-chrome'],
+  activePolicy: { version: '2026.11-1', provisional: false },
+  autoApprovalEnabled: true,
+};
 
 const settings = (overrides: Partial<BiometricSettings> = {}): BiometricSettings => ({
   enabled: true,
@@ -57,12 +82,12 @@ function workspaceOf(contexts: ContextBootstrapDto[]): WorkspaceContextValue {
   return { contexts, activeContext: 'short-rent', isReady: true, setActiveContext: vi.fn(), hasPermission: () => true, getDefaultRoute: () => '/app/short-rent' };
 }
 
-function renderCard({ flag = true, contexts = [contextOf('short-rent')] }: { flag?: boolean; contexts?: ContextBootstrapDto[] } = {}) {
+function renderCard({ flag = true, selfHosted = false, contexts = [contextOf('short-rent')] }: { flag?: boolean; selfHosted?: boolean; contexts?: ContextBootstrapDto[] } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const wrap = (children: ReactNode) => (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, checkInIdentityVerification: flag }, isLoading: false }}>
+        <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, checkInIdentityVerification: flag, checkInIdentitySelfHosted: selfHosted }, isLoading: false }}>
           <WorkspaceContext.Provider value={workspaceOf(contexts)}>{children}</WorkspaceContext.Provider>
         </FeatureFlagsContext.Provider>
       </QueryClientProvider>
@@ -81,6 +106,7 @@ beforeEach(async () => {
   vi.mocked(biometricSettingsApi.get).mockResolvedValue(settings());
   vi.mocked(biometricSettingsApi.update).mockImplementation(async (request) => settings({ ...request, provisional: true }));
   vi.mocked(biometricSettingsApi.getModelsStatus).mockResolvedValue(models);
+  vi.mocked(biometricSettingsApi.getSegments).mockResolvedValue(segments);
   await i18n.changeLanguage('it');
 });
 
@@ -95,6 +121,7 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
     expect(screen.queryByTestId('biometric-settings-card')).not.toBeInTheDocument();
     expect(biometricSettingsApi.get).not.toHaveBeenCalled();
     expect(biometricSettingsApi.getModelsStatus).not.toHaveBeenCalled();
+    expect(biometricSettingsApi.getSegments).not.toHaveBeenCalled();
   });
 
   it('BiometricSettingsCard_NotTheOrgAdministrator_ShowsNothingAndAsksNothing', () => {
@@ -246,6 +273,62 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
 
     expect(await screen.findByTestId('biometric-models-error')).toBeInTheDocument();
     expect(screen.getByTestId('biometric-settings-form')).toBeInTheDocument();
+  });
+
+  it('BiometricSettingsCard_SelfHostedFlagOff_IsTheCardItAlwaysWasAndAsksNothingOfTheSegments', async () => {
+    renderCard({ selfHosted: false });
+
+    await loaded();
+    expect(screen.queryByTestId('identity-segments-section')).not.toBeInTheDocument();
+    expect(biometricSettingsApi.getSegments).not.toHaveBeenCalled();
+  });
+
+  it('BiometricSettingsCard_SelfHostedFlagOn_HoldsTheSegmentsBelowTheSettings', async () => {
+    renderCard({ selfHosted: true });
+
+    await loaded();
+    const section = await screen.findByTestId('identity-segments-section');
+    expect(within(screen.getByTestId('biometric-settings-card')).getByTestId('identity-segments-section')).toBe(section);
+    expect(await screen.findAllByTestId('identity-segment')).toHaveLength(1);
+    expect(biometricSettingsApi.getSegments).toHaveBeenCalledTimes(1);
+    // The settings and the segments are two reads: each tells for itself when it cannot be read.
+    expect(screen.getByTestId('biometric-settings-form')).toBeInTheDocument();
+  });
+
+  it('BiometricSettingsCard_SelfHostedFlagOnButNotTheOrgAdministrator_ShowsNothingAndAsksNothing', () => {
+    renderCard({ selfHosted: true, contexts: [contextOf('short-rent', 'property_manager')] });
+
+    expect(screen.queryByTestId('biometric-settings-card')).not.toBeInTheDocument();
+    expect(biometricSettingsApi.getSegments).not.toHaveBeenCalled();
+  });
+
+  it('BiometricSettingsCard_ASegmentIsBeingSaved_KeepsTheControlsOfTheSettingsOffToo', async () => {
+    let answer: (value: IdentitySegment) => void = () => undefined;
+    vi.mocked(biometricSettingsApi.updateSegment).mockReturnValue(
+      new Promise<IdentitySegment>((resolve) => {
+        answer = resolve;
+      }),
+    );
+    renderCard({ selfHosted: true });
+    await loaded();
+    typeInto('biometric-attempts', '4');
+    expect(screen.getByTestId('biometric-save')).toBeEnabled();
+
+    fireEvent.click(await screen.findByRole('radio', { name: 'Sospesa' }));
+    fireEvent.change(await screen.findByTestId('identity-segment-suspend-reason'), { target: { value: 'Prova' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Sospendi il segmento' }));
+
+    // Any write of the card in flight: the boxes and the button of the settings wait for it as well.
+    await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByTestId('biometric-save')).toBeDisabled());
+    expect(field('biometric-attempts')).toBeDisabled();
+    expect(screen.getByTestId('biometric-enabled')).toBeDisabled();
+
+    await act(async () => {
+      answer({ ...segment, mode: 'suspended', suspendedReason: 'Prova' });
+    });
+    await waitFor(() => expect(screen.getByTestId('biometric-save')).toBeEnabled());
+    expect(field('biometric-attempts').value).toBe('4');
   });
 
   it('BiometricSettingsCard_TheCard_HasNoAccessibilityViolations', async () => {

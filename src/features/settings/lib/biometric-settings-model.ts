@@ -4,7 +4,12 @@ import {
   BIOMETRIC_ATTEMPTS_MAX,
   BIOMETRIC_ATTEMPTS_MIN,
   BIOMETRIC_ESCALATE_MIN,
+  IDENTITY_SEGMENT_MODES,
+  IDENTITY_SEGMENT_REASON_MAX_LENGTH,
   type BiometricSettings,
+  type IdentitySegment,
+  type IdentitySegmentFormat,
+  type IdentitySegmentMode,
   type UpdateBiometricSettingsRequest,
 } from '@/types/biometric-settings.types';
 
@@ -103,6 +108,82 @@ export function modelReasonKey(code: string): string {
 /** The key of the words of a state, or of the generic word for one that is not known. */
 export function modelStateKey(state: string): string {
   return (MODEL_STATES as readonly string[]).includes(state) ? `biometricSettings.models.state.${state}` : 'biometricSettings.models.state.other';
+}
+
+/** The mode of a segment as the page reads it: a mode the page does not know is observation, the prudent one (the server reads it the same way). */
+export function segmentModeOf(value: string): IdentitySegmentMode {
+  return (IDENTITY_SEGMENT_MODES as readonly string[]).includes(value) ? (value as IdentitySegmentMode) : 'observation';
+}
+
+/** The key of the words of a mode of a segment (`biometricSettings.segments.mode.*`). */
+export function segmentModeKey(mode: IdentitySegmentMode): string {
+  return `biometricSettings.segments.mode.${mode}`;
+}
+
+/**
+ * Why a segment does not approve automatically (`autoApprovalReason`) or is not qualified (`qualificationReason`): the codes of the API (`IdentitySegmentReasonCodes`), each with its words in the language of the
+ * page (`biometricSettings.segments.reason.*`); a code the page does not know is shown with the generic sentence.
+ */
+export const SEGMENT_REASON_CODES = [
+  'assurance_requires_chip',
+  'auto_approval_disabled',
+  'policy_provisional',
+  'policy_unavailable',
+  'qualification_mismatch',
+  'segment_not_qualified',
+  'segment_observation',
+  'segment_suspended',
+] as const;
+
+/** The key of the words of a reason code, or of the generic sentence for a code that is not known. */
+export function segmentReasonKey(code: string): string {
+  return (SEGMENT_REASON_CODES as readonly string[]).includes(code) ? `biometricSettings.segments.reason.${code}` : 'biometricSettings.segments.reason.other';
+}
+
+/**
+ * The families of browser a segment can name (the channels of the API, `IdentityChannels`), each with the key of its words. A channel carries a colon, which a key of the catalogue cannot hold, so the words are found
+ * through this table; a channel it does not list is shown as its code.
+ */
+export const SEGMENT_CHANNEL_KEYS: Readonly<Record<string, string>> = {
+  'web:ios-safari': 'biometricSettings.segments.channel.iosSafari',
+  'web:android-chrome': 'biometricSettings.segments.channel.androidChrome',
+  'web:desktop-chromium': 'biometricSettings.segments.channel.desktopChromium',
+  'web:desktop-safari': 'biometricSettings.segments.channel.desktopSafari',
+  'web:desktop-firefox': 'biometricSettings.segments.channel.desktopFirefox',
+  'web:other': 'biometricSettings.segments.channel.other',
+};
+
+/** The label of a format of the registry, as the API gives it for the staff; the id for one the list does not hold any more. */
+export function segmentFormatLabel(formats: readonly IdentitySegmentFormat[], formatId: string): string {
+  return formats.find((format) => format.id === formatId)?.label ?? formatId;
+}
+
+const ordinal = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
+/** The order the API lists the segments in: the ones of every property first, then by property name, format and channel. */
+function sortSegments(segments: readonly IdentitySegment[]): IdentitySegment[] {
+  return [...segments].sort(
+    (a, b) =>
+      (a.propertyId === null ? 0 : 1) - (b.propertyId === null ? 0 : 1) ||
+      ordinal(a.propertyName ?? '', b.propertyName ?? '') ||
+      ordinal(a.formatId, b.formatId) ||
+      ordinal(a.channel, b.channel),
+  );
+}
+
+/** The list with `segment` in it: it replaces the one with its id, or is added where the API would list it. */
+export function withSegment(segments: readonly IdentitySegment[], segment: IdentitySegment): IdentitySegment[] {
+  const exists = segments.some((entry) => entry.id === segment.id);
+  return sortSegments(exists ? segments.map((entry) => (entry.id === segment.id ? segment : entry)) : [...segments, segment]);
+}
+
+/**
+ * The reason of a suspension as the API takes it: the text without the spaces around it, 1 to 200 characters. `null` for what the API would refuse (nothing, or too long), so that the button that suspends is
+ * not live for it.
+ */
+export function suspensionReasonOf(text: string): string | null {
+  const reason = text.trim();
+  return reason.length >= 1 && reason.length <= IDENTITY_SEGMENT_REASON_MAX_LENGTH ? reason : null;
 }
 
 /** The platform administrators of CasaZen, the only ones the status of the models is for: they hold the admin context with its platform role (the API asks `AdminOnly`). */

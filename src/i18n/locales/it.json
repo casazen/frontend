@@ -4219,6 +4219,76 @@
     "save": "Salva",
     "saveFailed": "Impossibile salvare le impostazioni della verifica",
     "saved": "Impostazioni della verifica salvate",
+    "segments": {
+      "add": {
+        "cancel": "Annulla",
+        "channel": "Browser dell'ospite",
+        "format": "Tipo di documento",
+        "hint": "Un nuovo segmento parte sempre in osservazione.",
+        "noFormats": "Non c'è ancora nessun tipo di documento tra cui scegliere.",
+        "open": "Aggiungi un segmento",
+        "propertiesError": "Non riusciamo a leggere l'elenco delle strutture: puoi comunque scegliere «Tutte le strutture».",
+        "property": "Struttura",
+        "submit": "Aggiungi il segmento",
+        "title": "Nuovo segmento"
+      },
+      "added": "Segmento aggiunto: parte in osservazione.",
+      "allProperties": "Tutte le strutture",
+      "alreadyThere": "Questo segmento c'è già: non è cambiato nulla.",
+      "autoDisabled": "L'approvazione automatica è disattivata su tutta la piattaforma: nessun segmento approva da solo, qualunque modalità abbia.",
+      "automaticNeedsQualification": "«Automatica» si può scegliere solo per un segmento qualificato.",
+      "channel": {
+        "androidChrome": "Chrome su Android",
+        "desktopChromium": "Chrome, Edge e simili su computer",
+        "desktopFirefox": "Firefox su computer",
+        "desktopSafari": "Safari su computer",
+        "iosSafari": "Safari su iPhone e iPad",
+        "other": "Qualsiasi altro browser"
+      },
+      "description": "Un segmento è una struttura (o tutte), un tipo di documento e un tipo di browser. Per ognuno scegli se la verifica resta in osservazione, se può approvare in automatico o se è sospesa.",
+      "empty": "Non c'è ancora nessun segmento: finché non ne aggiungi uno, ogni verifica resta in osservazione.",
+      "loadError": "Non riusciamo a leggere i segmenti della verifica.",
+      "mode": {
+        "automatic": "Automatica",
+        "legend": "Modalità del segmento {{name}}",
+        "observation": "Osservazione",
+        "suspended": "Sospesa"
+      },
+      "modeLabel": "Modalità",
+      "notApproving": "Per ora non approva in automatico.",
+      "observation": "In osservazione il sistema calcola una decisione automatica ma decide sempre una persona.",
+      "policy": {
+        "none": "Al momento nessuna politica di decisione è utilizzabile.",
+        "provisional": "Provvisoria",
+        "version": "Politica di decisione in uso: {{version}}."
+      },
+      "qualificationHint": "La qualificazione di un segmento la fanno gli amministratori della piattaforma, non si fa da qui. Finché un segmento non è qualificato resta in osservazione.",
+      "qualified": "Qualificato",
+      "qualifiedFor": "Qualificato per la politica {{version}}.",
+      "reason": {
+        "assurance_requires_chip": "Per questo documento una foto non basta: serve la lettura del chip, quindi decide una persona.",
+        "auto_approval_disabled": "L'approvazione automatica è disattivata su tutta la piattaforma.",
+        "other": "Il motivo non è tra quelli previsti: per ora decide una persona.",
+        "policy_provisional": "La politica in uso è provvisoria: nessun segmento approva in automatico.",
+        "policy_unavailable": "Nessuna politica di decisione è utilizzabile.",
+        "qualification_mismatch": "La qualificazione è per un'altra versione della politica o dei modelli: serve una nuova qualificazione.",
+        "segment_not_qualified": "Non è ancora qualificato: lo qualificano gli amministratori della piattaforma.",
+        "segment_observation": "Il segmento è in osservazione: decide una persona.",
+        "segment_suspended": "Il segmento è sospeso: decide una persona."
+      },
+      "retry": "Riprova",
+      "saveFailed": "Non siamo riusciti a salvare il segmento.",
+      "saved": "Segmento aggiornato",
+      "suspend": {
+        "confirm": "Sospendi il segmento",
+        "description": "{{name}}: da ora decide sempre una persona. Il motivo resta registrato e lo leggono gli amministratori della tua organizzazione.",
+        "reasonHint": "Al massimo 200 caratteri.",
+        "reasonLabel": "Motivo della sospensione",
+        "title": "Sospendere questo segmento?"
+      },
+      "suspendedReason": "Motivo della sospensione: {{reason}}",
+      "title": "Segmenti della verifica"
+    },
     "thresholdsRange": "Le soglie vanno da {{min}} a {{max}}: più il valore è alto, più il confronto è severo.",
     "title": "Verifica dell'identità"
   },
