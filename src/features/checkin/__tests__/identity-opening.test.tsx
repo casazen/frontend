@@ -90,7 +90,7 @@ function renderStep(initial: IdentityVerificationState = selfHosted()) {
     </QueryClientProvider>
   );
   const view = render(tree(initial));
-  return { ...view, renderAgain: (current: IdentityVerificationState = initial) => view.rerender(tree(current)) };
+  return { ...view, client, renderAgain: (current: IdentityVerificationState = initial) => view.rerender(tree(current)) };
 }
 
 const stage = () => screen.getByTestId('checkin-identity-step').getAttribute('data-stage');
@@ -258,6 +258,52 @@ describe('identity-opening: the step is opened with the text the guest reads (E7
     fireEvent.click(screen.getByTestId('checkin-biometric-decline'));
     await waitFor(() => expect(stage()).toBe('operator'));
     expect(publicCheckinApi.postBiometricConsent).toHaveBeenCalledWith(TOKEN, { consentGiven: false });
+  });
+
+  it('openIdentity_TheTextsCannotBeReadAgainAfterThe422_IsNotOpenedAgainWithTheVersionJustRefusedAndIsTriedAgainWithTheNextTextThatSettles', async () => {
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValueOnce(servedTexts('checkin-biometric-2026-10')).mockRejectedValue(httpError(404));
+    vi.mocked(publicCheckinApi.openIdentity).mockRejectedValueOnce(httpError(422, { code: 'notice_version_unknown' }));
+    renderStep();
+
+    // The second read of the texts fails: an error leaves the older answer in memory, and that is the version the server has just refused. The page says the texts cannot be read (with a way to try again), it does not
+    // say they are not available, and it does not open again with the older answer.
+    expect(await screen.findByTestId('checkin-consent-error')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-consent-unavailable')).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkin-biometric-accept')).toBeDisabled();
+    expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
+
+    // The guest tries again and the text in force settles: the opening is made with it, and the face check is offered (no «text not available» after a «Riprova» that worked).
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts('checkin-biometric-2026-11'));
+    fireEvent.click(screen.getByTestId('checkin-consent-retry'));
+
+    await waitFor(() => expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(publicCheckinApi.openIdentity).mock.calls.map(([, version]) => version)).toEqual(['checkin-biometric-2026-10', 'checkin-biometric-2026-11']);
+    await waitForTheConsentText();
+    expect(screen.getByTestId('checkin-consent-text')).toHaveAttribute('data-version', 'checkin-biometric-2026-11');
+    expect(screen.queryByTestId('checkin-consent-unavailable')).not.toBeInTheDocument();
+  });
+
+  it('openIdentity_RefusedForGoodAndAnotherTextSettlesLater_IsOpenedAgainWithItAndTheFaceCheckIsOfferedAgain', async () => {
+    vi.mocked(publicCheckinApi.openIdentity)
+      .mockRejectedValueOnce(httpError(422, { code: 'notice_version_unknown' }))
+      .mockRejectedValueOnce(httpError(422, { code: 'notice_version_unknown' }));
+    const { client } = renderStep();
+
+    // Refused twice, with the texts read again in between: the face check is not offered and the text of the consent is not shown.
+    expect(await screen.findByTestId('checkin-consent-unavailable')).toBeInTheDocument();
+    expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(2);
+
+    // The registry serves another text and the page reads it (the window comes back to the front): it is a text the server has not refused, so it gets an opening of its own, and it is what turns the refusal off.
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts('checkin-biometric-2026-12'));
+    await act(async () => {
+      await client.refetchQueries({ queryKey: ['checkin', TOKEN, 'legal-texts'] });
+    });
+
+    await waitFor(() => expect(publicCheckinApi.openIdentity).toHaveBeenCalledTimes(3));
+    expect(vi.mocked(publicCheckinApi.openIdentity).mock.calls[2]?.[1]).toBe('checkin-biometric-2026-12');
+    await waitFor(() => expect(screen.getByTestId('checkin-consent-text')).toHaveAttribute('data-version', 'checkin-biometric-2026-12'));
+    expect(screen.queryByTestId('checkin-consent-unavailable')).not.toBeInTheDocument();
+    await waitForTheConsentText();
   });
 });
 

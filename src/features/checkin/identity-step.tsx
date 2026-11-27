@@ -48,7 +48,12 @@ export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) 
   useEffect(() => {
     // The identity step of a self-hosted verification is opened with that version. The hook makes the call once per page load, so a new render, a new language or a return to this step never repeats it.
     if (!selfHosted || stage !== 'consent' || shownConsentVersion === null) return;
-    void openNotice(shownConsentVersion, async () => legalTextOf((await readTextsAgain()).data?.texts, BIOMETRIC_CONSENT_KIND)?.version ?? null);
+    void openNotice(shownConsentVersion, async () => {
+      const again = await readTextsAgain();
+      // A read that failed leaves the older answer in memory, and that is the version the server has just refused: it says nothing about the one in force, so it is not used (the hook tries again with the next text that settles).
+      if (!again.isSuccess || again.isFetching) throw new Error('The legal texts could not be read again');
+      return legalTextOf(again.data.texts, BIOMETRIC_CONSENT_KIND)?.version ?? null;
+    });
   }, [openNotice, readTextsAgain, selfHosted, shownConsentVersion, stage]);
 
   useEffect(() => {

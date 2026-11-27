@@ -52,10 +52,15 @@ export interface IdentityVerificationController {
    * The identity step of a self-hosted verification is opened with the version of the text of the consent the guest is shown (E70/F03/US01/T01, NF-188): once per page load, whatever the screen does with its
    * renders and its steps (the server records the opening once, and every later call changes nothing). Nothing waits for it and no button depends on it: the answer to the consent opens the step too, so a call that
    * fails changes nothing for the guest. When the server says that version is not the one in force (422), `readTextsAgain` reads the texts once more and resolves with the version of the consent the registry serves
-   * now (`null` when it serves none): the opening is tried again with it, and when that is refused too the page cannot say which text the guest agrees to, so `automaticUnavailable` turns on.
+   * now (`null` when it serves none), or REJECTS when they could not be read (a read that failed leaves the older answer in memory, and that is the version just refused: it is no answer). The opening is tried again
+   * with the version it resolved with, and when that is refused too the page cannot say which text the guest agrees to, so `automaticUnavailable` turns on. After a read that failed nothing is concluded: the opening
+   * is tried again with the next text that settles. A text that is not the one refused for good gets an attempt of its own.
    */
   openNotice: (version: string, readTextsAgain: () => Promise<string | null>) => Promise<void>;
-  /** The server does not take the text on the screen as the one in force (and reading it again did not help): the face check is not offered on this page, a person verifies. */
+  /**
+   * The server does not take the text on the screen as the one in force (and reading it again did not help): the face check is not offered on this page, a person verifies. It follows the last opening: an opening
+   * that is not refused turns it off again.
+   */
   automaticUnavailable: boolean;
 }
 
@@ -75,6 +80,17 @@ type HeldPictures = Record<DocumentSide, Blob | null>;
 const NO_PICTURES: HeldPictures = { front: null, back: null };
 
 /**
+ * Where the opening of the identity step stands: not tried yet (or to be tried again), being tried, done (opened, found closed, or a failure that changes nothing for the guest), or refused for good for the text the page
+ * showed (`refused` is its version, `null` when the registry served none).
+ */
+interface NoticeOpening {
+  phase: 'idle' | 'running' | 'done' | 'refused';
+  refused: string | null;
+}
+
+const NOTICE_NOT_TRIED: NoticeOpening = { phase: 'idle', refused: null };
+
+/**
  * The identity step of the guest check-in (CHK-11, NF-50, NF-51): the calls of the four endpoints and what the page knows of them. It starts from
  * what the context of the link says (`initial`) and follows the answers of the API, so a guest who opens the link again is where the server has them.
  *
@@ -89,7 +105,7 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
   const [problem, setProblem] = useState<IdentityProblem | null>(null);
   const [automaticUnavailable, setAutomaticUnavailable] = useState(false);
   const inFlight = useRef(false);
-  const noticeOpened = useRef(false);
+  const notice = useRef<NoticeOpening>(NOTICE_NOT_TRIED);
   const documentPictures = useRef<HeldPictures>(NO_PICTURES);
 
   const progress = local ?? (initial ? progressFromState(initial) : null);
@@ -160,34 +176,58 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
 
   const openNotice = useCallback(
     async (version: string, readTextsAgain: () => Promise<string | null>) => {
-      // Once per page load, however often the screen renders or is left and come back to: the server records the opening once, and a repeat would only spend the rate limit of the link.
-      if (noticeOpened.current) return;
-      noticeOpened.current = true;
+      // One attempt at a time and one per page load, however often the screen renders, changes language or is left and come back to: the server records the opening once, and a repeat would only spend the rate limit of
+      // the link. The exceptions come from the server or from the texts: a refusal reads the texts again once (below), a read that failed is followed by an attempt with the next text that settles, and a text that is
+      // not the one the server refused for good gets an attempt of its own.
+      const { phase, refused } = notice.current;
+      if (phase === 'running' || phase === 'done' || (phase === 'refused' && refused === version)) return;
+      notice.current = { phase: 'running', refused: null };
 
-      /** `stale` when the server says the version is not the one in force; anything else is settled (opened, closed, or a failure that changes nothing for the guest: the consent opens the step too). */
-      const open = async (shown: string): Promise<'settled' | 'stale'> => {
+      /** `opened` (or found closed), `unknown` when the server says the version is not the one in force, `failed` for anything else: a failure that changes nothing for the guest, the consent opens the step too. */
+      const open = async (shown: string): Promise<'opened' | 'unknown' | 'failed'> => {
         try {
           const state = identityStateOf((await publicCheckinApi.openIdentity(token, shown))?.state);
           if (state?.closed === true) showClosed(state);
-          return 'settled';
+          return 'opened';
         } catch (error) {
           const closed = closedStateOf(error);
           if (closed) {
             showClosed(closed);
-            return 'settled';
+            return 'opened';
           }
-          return isNoticeVersionUnknown(error) ? 'stale' : 'settled';
+          return isNoticeVersionUnknown(error) ? 'unknown' : 'failed';
         }
       };
 
-      if ((await open(version)) !== 'stale') return;
+      const first = await open(version);
+      if (first !== 'unknown') {
+        // Nothing the server refused: the text on the screen may be agreed to (this turns off what an earlier refusal of another text left on).
+        notice.current = { phase: 'done', refused: null };
+        setAutomaticUnavailable(false);
+        return;
+      }
 
       // The text on the screen is not the one in force: the texts are read again, once, and the opening is tried with the version the registry serves now.
-      const served = await readTextsAgain().catch(() => null);
-      if (served !== null && (await open(served)) !== 'stale') return;
+      let served: string | null;
+      try {
+        served = await readTextsAgain();
+      } catch {
+        // The texts could not be read again, so nothing says which text is in force (and the older answer that is still in memory is the one that was just refused): nothing is concluded, and the opening is tried
+        // again with the next text that settles.
+        notice.current = NOTICE_NOT_TRIED;
+        return;
+      }
 
-      // Still refused (or the registry serves none): the page cannot say which text the guest agrees to. The face check is not offered, and a person verifies.
-      setAutomaticUnavailable(true);
+      const second = served === null ? 'unknown' : await open(served);
+      if (second === 'unknown') {
+        // Still refused (or the registry serves none): the page cannot say which text the guest agrees to. The face check is not offered, and a person verifies.
+        notice.current = { phase: 'refused', refused: served };
+        setAutomaticUnavailable(true);
+        return;
+      }
+
+      notice.current = { phase: 'done', refused: null };
+      setAutomaticUnavailable(false);
     },
     [showClosed, token],
   );
