@@ -352,6 +352,18 @@ describe('the words of the identity step in the five languages of the page', () 
     'document_front_needed',
     'document_not_recognized',
     'active_pose_retry',
+    // The targeted codes of the document step of the self-hosted flow (E71/F01/US03/T01): what is wrong with the photo of a side.
+    'document_not_found',
+    'document_edges_not_visible',
+    'document_layout_mismatch',
+    'document_orientation',
+    'document_portrait_missing',
+    'document_side_duplicate',
+    'document_wrong_side',
+    'document_format_unsupported',
+    'document_glare',
+    'document_blur',
+    'document_unreadable',
   ];
 
   it('guidanceCodes_AreExactlyTheOnesTheApiSends', () => {

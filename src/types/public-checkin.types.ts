@@ -246,13 +246,56 @@ export interface AlloggiatiCodeEntryDto {
   citizenshipLabel?: string | null;
 }
 
-/** Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. */
+/**
+ * One value the zones of the card gave (`fields` of `read-document`, E71/F01/US03/T01, NF-190): what it is, the value, the side of the document it was read on, the zone of the format it came from and how far
+ * it is trusted. Personal data that goes to the guest who sent the photo and nowhere else: the page holds it in memory for the length of the step, never in a storage, an address or a log.
+ */
+export interface CheckInZonedField {
+  /** What the value is: `surname`, `givenNames`, `birthDate`, `birthPlace`, `sex`, `nationality`, `documentNumber`, `issueDate`, `expiryDate` or `fiscalCode`. */
+  name: string;
+  /** The value as the server reads it: names and places in upper case, dates as `yyyy-MM-dd`, `sex` as `M`, `F` or `X`, `nationality` as the three letters of the country. */
+  value: string;
+  /** The side it was read on: `front`, `back` or `single`. */
+  side: string;
+  /** The zone of the format it was read from (the name of a field zone, or `mrz`). */
+  zone: string;
+  /** How far the reading is trusted, 0 to 1. A hint for the page; it decides nothing. */
+  confidence: number;
+  /** Where the value comes from: `mrz` (the lines of letters and numbers, with their check digits) or `viz` (the printed zone). */
+  source: string;
+}
+
+/**
+ * The fields of the check-in the photo of a document can fill, in the words of the answer's `missing` (E71/F01/US03/T01): what the guest types when the photo did not give it. A name the page does not know is
+ * not an error: it is asked under a general label.
+ */
+export type CheckInPrefillFieldName =
+  | 'lastName'
+  | 'firstName'
+  | 'gender'
+  | 'dateOfBirth'
+  | 'birthPlace'
+  | 'citizenship'
+  | 'documentKind'
+  | 'documentNumber'
+  | 'issuePlace';
+
+/**
+ * Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. With the self-hosted flow on (E71/F01/US03/T01, NF-190) it also carries `fields` (what the zones of the card gave),
+ * `missing` (the fields the guest has still to type) and `source: "local"` (nothing left the server); with it off none of the three is in the answer, which is then exactly the one of before.
+ */
 export interface CheckInDocumentReadResult {
   side?: 'front' | 'back' | 'single' | null;
   guestPosition?: number | null;
   confirmGuest?: boolean;
   read: boolean;
   reason?: string | null;
+  /** The values read by zone, with their side, zone, confidence and source. Self-hosted flow only; absent otherwise. */
+  fields?: CheckInZonedField[] | null;
+  /** The fields of the check-in the photo did not give (see {@link CheckInPrefillFieldName}). Self-hosted flow only; absent otherwise. */
+  missing?: string[] | null;
+  /** `local` when the photo was read on the server and nowhere else. Self-hosted flow only; absent otherwise. */
+  source?: string | null;
   guest?: {
     firstName?: string | null;
     lastName?: string | null;

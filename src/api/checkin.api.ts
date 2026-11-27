@@ -58,7 +58,11 @@ export const publicCheckinApi = {
   searchCodes: (token: string, list: AlloggiatiCodeList, q: string) =>
     ApiClient.get<AlloggiatiCodeEntryDto[]>(`/public/checkin/${token}/codes`, { list, q }, { public: true }),
 
-  /** Reads one identity-document photo. The photo is not stored. */
+  /**
+   * Reads one identity-document photo. The photo is not stored. With the self-hosted flow on (E71/F01/US03/T01, NF-190) the answer also carries `fields` (the values read by zone, each with its side, zone,
+   * confidence and source), `missing` (the fields the guest has still to type) and `source: "local"`; with it off none of the three is in the answer. The values go only to the guest who sent the photo:
+   * the caller keeps them in memory for the step and nowhere else.
+   */
   readDocument: async (token: string, file: File) => {
     const body = new FormData();
     body.append('file', file);
