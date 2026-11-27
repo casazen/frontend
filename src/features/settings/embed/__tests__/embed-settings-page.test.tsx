@@ -11,6 +11,7 @@ import en from '@/i18n/locales/en.json';
 import it_ from '@/i18n/locales/it.json';
 import { DomainApi } from '@/api/domain.api';
 import { OrgTrackingApi } from '@/api/org-tracking.api';
+import { SiteConnectionsApi } from '@/api/site-connections.api';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { DEFAULT_FEATURE_FLAGS, isFeatureRuleEnabled } from '@/config/feature-flags';
 import { ROUTE_MANIFEST, getNavChildren, getNavSection, hasEntryPermission } from '@/config/route-manifest';
@@ -23,7 +24,15 @@ import { EmbedSettingsPage } from '../embed-settings-page';
 
 vi.mock('@/api/domain.api', () => ({ DomainApi: { getDomain: vi.fn() } }));
 vi.mock('@/api/org-tracking.api', () => ({ OrgTrackingApi: { setTracking: vi.fn() } }));
+vi.mock('@/api/site-connections.api', () => ({ SiteConnectionsApi: { list: vi.fn(), revoke: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+// The deployment the bundle was built for (`VERCEL_ENV`, written by `vite.config.ts`): a test chooses it.
+const build = vi.hoisted(() => ({ deployEnv: '' }));
+vi.mock('@/config/deploy-env', () => ({
+  get deployEnv() {
+    return build.deployEnv;
+  },
+}));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
@@ -149,6 +158,8 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     vi.mocked(useProperties).mockReturnValue({ data: HOMES, isLoading: false, isError: false, refetch: vi.fn() } as unknown as ReturnType<typeof useProperties>);
     vi.mocked(useOrgDestinations).mockReturnValue({ data: PLACES, isPending: false, isError: false, refetch: vi.fn() } as unknown as ReturnType<typeof useOrgDestinations>);
+    vi.mocked(SiteConnectionsApi.list).mockResolvedValue([]);
+    build.deployEnv = '';
     withDomain(PLATFORM);
   });
 
@@ -188,6 +199,8 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(OrgTrackingApi.setTracking).not.toHaveBeenCalled();
       expect(useProperties).not.toHaveBeenCalled();
       expect(useOrgDestinations).not.toHaveBeenCalled();
+      // Nor the connected sites: the list is the administrator's, and a refused read would send the whole app to the page of no access.
+      expect(SiteConnectionsApi.list).not.toHaveBeenCalled();
     });
 
     it('embedSettings_flagOff_hidesTheTab', () => {
@@ -661,8 +674,11 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
     });
   });
 
-  describe('the plugin for WordPress', () => {
-    it('plugin_ShowsTheThreeSteps_WithTheAddressAndNoSlugOnAnOwnDomain', async () => {
+  describe('the plugin for WordPress (PLG-FE-CONSOLE, NF-200, NF-201)', () => {
+    const MAIN = 'https://github.com/casazen/frontend/releases/download/wp-plugin-main/casazen.zip';
+    const DEVELOP = 'https://github.com/casazen/frontend/releases/download/wp-plugin-develop/casazen.zip';
+
+    it('plugin_ShowsTheFourSteps_DownloadConnectDomainAndPages', async () => {
       withDomain(OWN);
       renderPage();
       await loaded();
@@ -670,41 +686,118 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       const steps = within(screen.getByTestId('embed-plugin-steps')).getAllByRole('listitem');
       expect(steps.map((step) => step.textContent)).toEqual([
         i18n.t('embed.settings.plugin.step1'),
-        i18n.t('embed.settings.plugin.step2Own', { address: 'https://prenota.tuavilla.test' }),
+        i18n.t('embed.settings.plugin.step2'),
         i18n.t('embed.settings.plugin.step3'),
+        i18n.t('embed.settings.plugin.step4'),
       ]);
-      expect(steps[2]).toHaveTextContent('Area proprietari');
+      expect(steps[0]).toHaveTextContent('Scarica il plugin');
+      expect(steps[1]).toHaveTextContent('«Connetti a CasaZen»');
+      expect(steps[2]).toHaveTextContent('dominio');
+      expect(steps[2]).toHaveTextContent('record DNS');
+      expect(steps[3]).toHaveTextContent('Area proprietari');
     });
 
-    it('plugin_WithoutADomain_AsksTheSlugOfTheOrgToo', async () => {
+    it('plugin_Steps_NoLongerAskForTheAddressAndTheSlug_TheConnectionFillsThemIn', async () => {
       renderPage();
       await loaded();
 
-      expect(screen.getByTestId('embed-plugin-steps')).toHaveTextContent(i18n.t('embed.settings.plugin.step2Slug', { address: 'https://sito.test', slug: 'villa-mare' }));
+      const steps = screen.getByTestId('embed-plugin-steps');
+      expect(steps).not.toHaveTextContent('https://sito.test');
+      expect(steps).not.toHaveTextContent('villa-mare');
     });
 
-    it('plugin_DownloadLink_IsHiddenWhileTheAddressIsNotSet', async () => {
+    it('plugin_ManualSetup_IsACollapsedNote_WithTheAddressAndNoSlugOnAnOwnDomain', async () => {
+      withDomain(OWN);
       renderPage();
       await loaded();
 
-      expect(screen.getByTestId('embed-plugin')).toBeInTheDocument();
-      expect(screen.queryByTestId('embed-plugin-download')).not.toBeInTheDocument();
+      const manual = screen.getByTestId('embed-plugin-manual') as HTMLDetailsElement;
+      // Collapsed: the steps are the way, the manual set-up is only for whoever does not connect the plugin.
+      expect(manual.open).toBe(false);
+      expect(within(manual).getByText(i18n.t('embed.settings.plugin.manual.title'))).toBeInTheDocument();
+      expect(screen.getByTestId('embed-plugin-address')).toHaveTextContent(i18n.t('embed.settings.plugin.manual.address', { address: 'https://prenota.tuavilla.test' }));
+      // The domain of the agency knows who it is: there is no slug to write.
+      expect(screen.getByTestId('embed-plugin-slug')).toHaveTextContent(i18n.t('embed.settings.plugin.manual.slugNotNeeded'));
+      expect(screen.getByTestId('embed-plugin-slug')).not.toHaveTextContent('villa-mare');
+      // It sits under the steps, not before them.
+      expect(screen.getByTestId('embed-plugin-steps').compareDocumentPosition(manual) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
-    it('plugin_DownloadLink_IsTheAddressOfTheVariable', async () => {
+    it('plugin_ManualSetup_WithoutADomain_ShowsTheAddressAndTheSlugOfTheOrg', async () => {
+      renderPage();
+      await loaded();
+
+      expect(screen.getByTestId('embed-plugin-address')).toHaveTextContent(i18n.t('embed.settings.plugin.manual.address', { address: 'https://sito.test' }));
+      expect(screen.getByTestId('embed-plugin-slug')).toHaveTextContent(i18n.t('embed.settings.plugin.manual.slug', { slug: 'villa-mare' }));
+    });
+
+    it('plugin_DownloadLink_IsThereWithNothingSet_OnTheDevelopChannel', async () => {
+      // No variable, a local or CI build: the link is there, and it is the asset of the develop channel.
+      renderPage();
+      await loaded();
+
+      expect(screen.getByTestId('embed-plugin-download')).toHaveAttribute('href', DEVELOP);
+      expect(screen.getByTestId('embed-plugin-download')).toHaveTextContent(i18n.t('embed.settings.plugin.download'));
+    });
+
+    it('plugin_DownloadLink_ProductionBuild_IsTheAssetOfTheMainChannel', async () => {
+      build.deployEnv = 'production';
+      renderPage();
+      await loaded();
+
+      expect(screen.getByTestId('embed-plugin-download')).toHaveAttribute('href', MAIN);
+    });
+
+    it('plugin_DownloadLink_PreviewBuild_IsTheAssetOfTheDevelopChannel', async () => {
+      build.deployEnv = 'preview';
+      renderPage();
+      await loaded();
+
+      expect(screen.getByTestId('embed-plugin-download')).toHaveAttribute('href', DEVELOP);
+    });
+
+    it('plugin_DownloadLink_IsTheAddressOfTheVariable_WhenItIsSet', async () => {
       vi.stubEnv('VITE_WORDPRESS_PLUGIN_URL', 'https://downloads.tuavilla.test/casazen-1.0.0.zip');
+      build.deployEnv = 'production';
       renderPage();
       await loaded();
 
       expect(screen.getByTestId('embed-plugin-download')).toHaveAttribute('href', 'https://downloads.tuavilla.test/casazen-1.0.0.zip');
     });
 
-    it('plugin_DownloadLink_IsHiddenForAnAddressThatIsNotOnHttps', async () => {
+    it('plugin_DownloadLink_AnAddressThatIsNotOnHttps_IsIgnoredAndTheLinkOfTheChannelStays', async () => {
       vi.stubEnv('VITE_WORDPRESS_PLUGIN_URL', 'http://downloads.tuavilla.test/casazen-1.0.0.zip');
+      build.deployEnv = 'production';
       renderPage();
       await loaded();
 
-      expect(screen.queryByTestId('embed-plugin-download')).not.toBeInTheDocument();
+      expect(screen.getByTestId('embed-plugin-download')).toHaveAttribute('href', MAIN);
+    });
+
+    it('plugin_DownloadLink_IsInEveryStateOfTheDomain', async () => {
+      // The button is shown in every case: with a domain of its own, with the address of CasaZen, with a domain that waits for its DNS.
+      for (const config of [OWN, PLATFORM, { ...PLATFORM, publicHostMode: 'CustomDomain', customDomain: 'www.tuavilla.test' } as OrgDomainConfig]) {
+        withDomain(config);
+        const view = renderPage();
+        await loaded();
+
+        expect(screen.getByTestId('embed-plugin-download')).toHaveAttribute('href', DEVELOP);
+        view.unmount();
+      }
+    });
+
+    it('sites_TheConnectedSitesAreAQuietBlockOfThePage_AfterThePluginAndBeforeTheContainer', async () => {
+      vi.mocked(SiteConnectionsApi.list).mockResolvedValue([{ id: 'c1', siteUrl: 'https://www.tuavilla.test', createdAt: '2026-11-20T12:00:00Z', lastUsedAt: null }]);
+      withDomain(OWN);
+      renderPage();
+      await loaded();
+
+      expect(await screen.findByTestId('embed-site')).toHaveTextContent('https://www.tuavilla.test');
+      expect(SiteConnectionsApi.list).toHaveBeenCalledWith('org-1');
+      const order = Array.from(screen.getByTestId('embed-content').children).map((child) => child.getAttribute('data-testid'));
+      expect(order.indexOf('embed-plugin')).toBeGreaterThan(-1);
+      expect(order.indexOf('embed-sites')).toBe(order.indexOf('embed-plugin') + 1);
+      expect(order.indexOf('embed-gtm')).toBe(order.indexOf('embed-sites') + 1);
     });
   });
 

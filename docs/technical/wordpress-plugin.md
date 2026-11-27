@@ -94,6 +94,8 @@ Lo ZIP del plugin si scarica da GitHub **senza nessun rilascio e senza nessuna v
 
 Il repository è pubblico, quindi l’asset è pubblico: si scarica senza un accesso a GitHub. Gli indirizzi non cambiano mai: cambia il contenuto dell’asset.
 
+**La console li collega da sola.** La pagina «Incorpora nel tuo sito» (`src/features/settings/embed/embed-plugin-steps.tsx`) mostra **sempre** il pulsante «Scarica il plugin» e lo collega all’asset del proprio canale: `main` in una build di produzione di Vercel (`VERCEL_ENV=production`), `develop` in ogni altra build (preview, locale, CI). Il valore di `VERCEL_ENV` lo scrive `vite.config.ts` nel codice al momento della build (`define`, letto da `src/config/deploy-env.ts`): nessuno deve impostare una variabile. `VITE_WORDPRESS_PLUGIN_URL` resta come sostituzione facoltativa (solo `https`: un valore diverso è ignorato), per esempio per collegare lo ZIP di un rilascio con versione.
+
 - **Un ZIP per ambiente.** Ogni ZIP porta l’indirizzo della console del proprio canale in `includes/build-config.php`, così il plugin scaricato dalla console di test si collega al test e quello scaricato dalla produzione alla produzione. È il contratto con il plugin: un file generato, **solo nello ZIP, mai nel repository** (`.gitignore` lo esclude e `build-zip.mjs` rifiuta una cartella del plugin che ne contenga uno), che restituisce l’indirizzo:
 
   ```php
