@@ -122,7 +122,8 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       ]);
       expect(screen.getByTestId('connect-allowed')).toHaveTextContent('dominio');
       expect(screen.getByTestId('connect-not-allowed')).toHaveTextContent('prenotazioni, ospiti o pagamenti');
-      expect(screen.getByTestId('connect-wordpress-page')).toHaveTextContent('Incorpora nel tuo sito');
+      // True for everyone who may connect: «Incorpora nel tuo sito» exists only in the area of short rent, so the plugin's own «Scollega» is named first.
+      expect(screen.getByTestId('connect-wordpress-page')).toHaveTextContent('dal plugin o da «Incorpora nel tuo sito»');
     });
 
     it('page_TheHostIsShownInFull_SoALookAlikeCannotPassForTheSite', async () => {

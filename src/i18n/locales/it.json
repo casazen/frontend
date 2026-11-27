@@ -27740,7 +27740,7 @@
         "title": "Annullato"
       },
       "connect": "Collega",
-      "disconnectAnytime": "Puoi scollegare il sito in qualsiasi momento da «Incorpora nel tuo sito».",
+      "disconnectAnytime": "Puoi scollegare il sito in qualsiasi momento dal plugin o da «Incorpora nel tuo sito».",
       "failed": "Non è stato possibile collegare il sito. Riprova tra poco.",
       "invalid": {
         "description": "Torna al plugin e riprova.",

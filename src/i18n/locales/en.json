@@ -27740,7 +27740,7 @@
         "title": "Cancelled"
       },
       "connect": "Connect",
-      "disconnectAnytime": "You can disconnect the site at any time from “Embed in your site”.",
+      "disconnectAnytime": "You can disconnect the site at any time from the plugin or from “Embed in your site”.",
       "failed": "The site could not be connected. Try again shortly.",
       "invalid": {
         "description": "Go back to the plugin and try again.",
