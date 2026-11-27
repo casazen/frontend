@@ -11,6 +11,31 @@
       "Female": "Weiblich",
       "Other": "Divers"
     },
+    "prefill": {
+      "checkIt": "Bitte prüfen: aus dem gedruckten Text gelesen.",
+      "complete": "Alles, was dieses Dokument hergibt, wurde gelesen: Prüfen Sie es und bestätigen Sie.",
+      "confirm": "Angaben bestätigen",
+      "discard": "Foto erneut aufnehmen",
+      "field": {
+        "birthPlace": "Geburtsort",
+        "citizenship": "Staatsangehörigkeit",
+        "dateOfBirth": "Geburtsdatum",
+        "documentExpiresOn": "Ablaufdatum",
+        "documentIssuedOn": "Ausstellungsdatum",
+        "documentKind": "Dokumentart",
+        "documentNumber": "Dokumentnummer",
+        "firstName": "Vorname",
+        "gender": "Geschlecht",
+        "issuePlace": "Ausstellungsort",
+        "lastName": "Nachname",
+        "other": "Weitere Angaben"
+      },
+      "intro": "Prüfen Sie die aus dem Dokument gelesenen Angaben und korrigieren Sie falsche. In den nächsten Schritten fragen wir nur nach den Angaben, die wir nicht lesen konnten.",
+      "missingText": "Diese Angaben konnten dem Foto nicht entnommen werden: Sie geben sie in den nächsten Schritten ein.",
+      "missingTitle": "Wir fragen noch nach",
+      "readFromDocument": "Aus dem Dokument gelesen",
+      "title": "Aus dem Dokument gelesene Angaben"
+    },
     "validation": {
       "firstName": {
         "required": "Der Vorname ist erforderlich",
@@ -353,6 +378,11 @@
           "captureFront": "Vorderseite fotografieren",
           "chooseFile": "Foto vom Telefon auswählen",
           "chooseHint": "Sie können auch ein bereits aufgenommenes Foto oder die Kamera-App Ihres Telefons verwenden.",
+          "duplicate": {
+            "send": "Trotzdem senden",
+            "text": "Dieses Foto sieht aus wie das Foto der Vorderseite. Drehen Sie das Dokument um und nehmen Sie es erneut auf, oder senden Sie es trotzdem: Nach dem Senden prüfen wir es.",
+            "title": "Das scheint dieselbe Seite zu sein"
+          },
           "heldLabel": "Das von Ihnen aufgenommene Foto des Dokuments",
           "hint": {
             "blur": "Das Bild ist unscharf: Halten Sie das Handy ruhig.",
@@ -393,8 +423,21 @@
         "avoid_glare": "Vermeiden Sie Spiegelungen: Neigen Sie das Dokument leicht oder gehen Sie vom Licht weg.",
         "document_back_needed": "Fotografieren Sie jetzt die Rückseite der Karte, auf der die Zeilen mit Buchstaben stehen.",
         "active_pose_retry": "Nehmen Sie beide Fotos erneut in der angegebenen Richtung auf.",
+        "document_blur": "Das Foto ist unscharf: Halten Sie das Handy ruhig und versuchen Sie es erneut.",
+        "document_edges_not_visible": "Zeigen Sie das ganze Dokument mit allen vier sichtbaren Kanten.",
+        "document_format_unsupported": "Dokument nicht unterstützt: Fahren Sie mit einer Person fort.",
+        "document_glare": "Spiegelung auf dem Foto: Neigen Sie das Dokument leicht.",
+        "document_layout_mismatch": "Wir erkennen den Aufbau des Dokuments nicht: Halten Sie es gerade, vollständig und ruhig und versuchen Sie es erneut.",
+        "document_not_found": "Auf diesem Foto ist kein Dokument zu sehen: Legen Sie es auf eine ebene Fläche und zeigen Sie es ganz.",
         "document_not_recognized": "Auf diesem Foto wurde kein Ausweisdokument erkannt. Laden Sie ein Foto eines Personalausweises, Reisepasses oder Führerscheins hoch.",
         "document_front_needed": "Fotografieren Sie die Seite der Karte mit Ihrem Foto.",
+        "document_orientation": "Das Dokument ist gedreht: Halten Sie es gerade, im Querformat.",
+        "document_portrait_missing": "Ihr Foto auf dem Dokument ist nicht zu sehen: Zeigen Sie die Seite mit dem Foto und verdecken Sie es nicht.",
+        "document_side_duplicate": "Sie haben dieselbe Seite zweimal fotografiert: Fotografieren Sie jetzt die andere Seite des Dokuments.",
+        "document_unreadable": "Wir können das Dokument nicht lesen: Fahren Sie mit einer Person fort.",
+        "document_wrong_side": "Dieses Foto zeigt die andere Seite des Dokuments: Fotografieren Sie die verlangte Seite.",
+        "document_wrong_side_back": "Das ist die Vorderseite: Fotografieren Sie jetzt die Rückseite mit den Zeilen aus Buchstaben und Zahlen.",
+        "document_wrong_side_front": "Das ist die Rückseite: Fotografieren Sie die Vorderseite mit Ihrem Foto.",
         "hold_still": "Halten Sie das Handy ruhig: Das Foto ist unscharf.",
         "less_light": "Es ist zu hell: Gehen Sie an einen Ort mit weicherem Licht.",
         "more_light": "Es ist zu dunkel: Gehen Sie an einen helleren Ort.",

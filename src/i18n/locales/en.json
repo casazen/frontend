@@ -6284,6 +6284,31 @@
       "Female": "Female",
       "Other": "Other"
     },
+    "prefill": {
+      "checkIt": "Check it: it was read from the printed text.",
+      "complete": "Everything this document gives was read: check it and confirm.",
+      "confirm": "Confirm these details",
+      "discard": "Take the photo again",
+      "field": {
+        "birthPlace": "Place of birth",
+        "citizenship": "Citizenship",
+        "dateOfBirth": "Date of birth",
+        "documentExpiresOn": "Expiry date",
+        "documentIssuedOn": "Issue date",
+        "documentKind": "Document type",
+        "documentNumber": "Document number",
+        "firstName": "First name",
+        "gender": "Gender",
+        "issuePlace": "Place of issue",
+        "lastName": "Last name",
+        "other": "Other details"
+      },
+      "intro": "Check the details read from the document and correct any that are wrong. In the next steps we will only ask for the ones we could not read.",
+      "missingText": "These could not be read from the photo: you will enter them in the next steps.",
+      "missingTitle": "We will still ask for",
+      "readFromDocument": "Read from the document",
+      "title": "Details read from the document"
+    },
     "validation": {
       "firstName": {
         "required": "First name is required",
@@ -6746,6 +6771,11 @@
           "captureFront": "Photograph the front",
           "chooseFile": "Choose a photo from your phone",
           "chooseHint": "You can also use a photo you already took, or the camera app of your phone.",
+          "duplicate": {
+            "send": "Send it anyway",
+            "text": "This photo looks like the photo of the front. Turn the document over and take it again, or send it anyway: we check it after it is sent.",
+            "title": "It looks like the same side"
+          },
           "heldLabel": "The photo of the document you took",
           "hint": {
             "blur": "The picture is blurred: hold the phone steady.",
@@ -6786,8 +6816,21 @@
         "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
         "document_back_needed": "Now photograph the back of the card, where the lines of letters are.",
         "active_pose_retry": "Take both photos again following the direction shown.",
+        "document_blur": "The photo is blurred: hold the phone steady and try again.",
+        "document_edges_not_visible": "Show the whole document, with all four edges visible.",
+        "document_format_unsupported": "Document not supported: continue with a person.",
+        "document_glare": "Glare on the photo: tilt the document slightly.",
+        "document_layout_mismatch": "We could not recognize the layout of the document: hold it straight, whole and steady, then try again.",
+        "document_not_found": "We can't see a document in this photo: place it on a flat surface and show all of it.",
         "document_not_recognized": "We could not identify a document in this photo. Upload a photo of an identity card, passport or driving licence.",
         "document_front_needed": "Photograph the side of the card with your photo.",
+        "document_orientation": "The document is turned: hold it straight, in landscape.",
+        "document_portrait_missing": "We can't see your photo on the document: show the side with the photo and don't cover it.",
+        "document_side_duplicate": "You photographed the same side twice: now photograph the other side of the document.",
+        "document_unreadable": "We could not read the document: continue with a person.",
+        "document_wrong_side": "This photo shows the other side of the document: photograph the side we asked for.",
+        "document_wrong_side_back": "This is the front: now photograph the back, where the lines of letters and numbers are.",
+        "document_wrong_side_front": "This is the back: photograph the front, where your photo is.",
         "hold_still": "Hold the phone still: the photo is blurred.",
         "less_light": "There is too much light: move to a softer light.",
         "more_light": "There is too little light: move to a brighter place.",

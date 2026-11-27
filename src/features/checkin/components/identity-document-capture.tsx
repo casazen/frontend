@@ -1,6 +1,6 @@
 import { useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Camera } from 'lucide-react';
+import { Camera, Copy, FileX, FlipHorizontal2, Focus, LayoutTemplate, Maximize, RotateCw, ScanLine, ScanText, Sun, UserRound, type LucideIcon } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { DocumentSide } from '@/types/public-checkin.types';
@@ -26,11 +26,34 @@ interface IdentityDocumentCaptureProps {
    * where the page is the one it always was.
    */
   selfHosted?: boolean;
-  /** The guest took or chose a photo. Resolves `true` when the API answered and `false` when the call failed; the screen of the legacy path does not wait for it. */
-  onPhoto: (file: File) => Promise<boolean> | void;
+  /**
+   * The guest took or chose a photo. The guided camera also hands in the difference hash of the frame (a hint for the warning before a back that looks like the front). Resolves `true` when the API
+   * answered and `false` when the call failed; the screen of the legacy path does not wait for it.
+   */
+  onPhoto: (file: File, fingerprint?: string | null) => Promise<boolean> | void;
+  /** The frame the guided camera took looks like the front taken before: a hint only. */
+  looksLikeTheFront?: (fingerprint: string) => boolean;
   /** The guest asks for a person: the way out of a document that cannot be read (GDPR art. 22). */
   onRequestOperator: () => void;
 }
+
+/**
+ * A picture for each of the targeted codes of the document step: what the code is about, in one drawing, next to the words (decorative: the words say it all). A code with no drawing (the older
+ * ones) has none, and its line is the one it always was.
+ */
+const GUIDANCE_ICONS: Readonly<Record<string, LucideIcon>> = {
+  document_not_found: ScanLine,
+  document_edges_not_visible: Maximize,
+  document_layout_mismatch: LayoutTemplate,
+  document_orientation: RotateCw,
+  document_portrait_missing: UserRound,
+  document_side_duplicate: Copy,
+  document_wrong_side: FlipHorizontal2,
+  document_format_unsupported: FileX,
+  document_glare: Sun,
+  document_blur: Focus,
+  document_unreadable: ScanText,
+};
 
 /**
  * The photo of the identity document of the guest who verifies (CHK-14, E22/F02/US01/T01): after each photo the page says, in plain words from the guidance codes,
@@ -41,7 +64,7 @@ interface IdentityDocumentCaptureProps {
  * On a self-hosted verification (E71/F02/US01/T01, NF-189) the photo is taken with the guided camera: the rear camera with the outline of the card and a line that says what to change; a guest
  * with no camera (denied, missing, not supported) is told why and has the file of the phone and the way to a person, with the same checks on the photo. The server stays the authority on the photo.
  */
-export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided, frontReceived, busy, selfHosted = false, onPhoto, onRequestOperator }: IdentityDocumentCaptureProps) {
+export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided, frontReceived, busy, selfHosted = false, onPhoto, looksLikeTheFront, onRequestOperator }: IdentityDocumentCaptureProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const inputId = useId();
@@ -97,16 +120,34 @@ export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided
         <Alert variant="warning" role="alert" title={t('checkin.identity.document.notAcceptable')} data-testid="checkin-identity-document-guidance">
           {guidanceCodes.length > 0 && (
             <ul className="mt-1 list-disc space-y-0.5 pl-5">
-              {guidanceCodes.map((code) => (
-                <li key={code}>{t(guidanceKey(code))}</li>
-              ))}
+              {guidanceCodes.map((code) => {
+                const Icon = GUIDANCE_ICONS[code];
+                const words = t(guidanceKey(code, side));
+                return (
+                  <li key={code} data-testid={`checkin-identity-document-guidance-${code}`}>
+                    {Icon ? (
+                      <span className="inline-flex items-start gap-2">
+                        <Icon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                        <span>{words}</span>
+                      </span>
+                    ) : (
+                      words
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Alert>
       )}
 
       {selfHosted && (
-        <DocumentCameraGuide side={side} busy={busy} onPhoto={async (photo) => (await onPhoto(photo)) !== false} />
+        <DocumentCameraGuide
+          side={side}
+          busy={busy}
+          onPhoto={async (photo, fingerprint) => (await onPhoto(photo, fingerprint)) !== false}
+          looksLikeTheFront={looksLikeTheFront ?? (() => false)}
+        />
       )}
 
       {selfHosted ? (

@@ -11,6 +11,31 @@
       "Female": "Mujer",
       "Other": "Otro"
     },
+    "prefill": {
+      "checkIt": "Compruébelo: se ha leído del texto impreso.",
+      "complete": "Se ha leído todo lo que da este documento: revíselo y confirme.",
+      "confirm": "Confirmar estos datos",
+      "discard": "Volver a hacer la foto",
+      "field": {
+        "birthPlace": "Lugar de nacimiento",
+        "citizenship": "Nacionalidad",
+        "dateOfBirth": "Fecha de nacimiento",
+        "documentExpiresOn": "Fecha de caducidad",
+        "documentIssuedOn": "Fecha de expedición",
+        "documentKind": "Tipo de documento",
+        "documentNumber": "Número del documento",
+        "firstName": "Nombre",
+        "gender": "Sexo",
+        "issuePlace": "Lugar de expedición",
+        "lastName": "Apellidos",
+        "other": "Otros datos"
+      },
+      "intro": "Revise los datos leídos del documento y corrija los que no sean correctos. En los siguientes pasos solo le pediremos los que no hemos podido leer.",
+      "missingText": "Estos datos no se han podido leer de la foto: los introducirá en los siguientes pasos.",
+      "missingTitle": "Todavía le pediremos",
+      "readFromDocument": "Leído del documento",
+      "title": "Datos leídos del documento"
+    },
     "validation": {
       "firstName": {
         "required": "El nombre es obligatorio",
@@ -353,6 +378,11 @@
           "captureFront": "Fotografiar el anverso",
           "chooseFile": "Elegir una foto del teléfono",
           "chooseHint": "También puede usar una foto ya hecha o la cámara de su teléfono.",
+          "duplicate": {
+            "send": "Enviar de todos modos",
+            "text": "Esta foto se parece a la del anverso. Dé la vuelta al documento y vuelva a hacerla, o envíela de todos modos: la comprobamos después del envío.",
+            "title": "Parece el mismo lado"
+          },
           "heldLabel": "La foto del documento que ha hecho",
           "hint": {
             "blur": "La imagen está borrosa: mantenga quieto el teléfono.",
@@ -393,8 +423,21 @@
         "avoid_glare": "Evite los reflejos: incline un poco el documento o aléjese de la luz.",
         "document_back_needed": "Ahora fotografíe el reverso de la tarjeta, donde están las líneas de letras.",
         "active_pose_retry": "Repita las dos fotos siguiendo la dirección indicada.",
+        "document_blur": "La foto está borrosa: mantenga quieto el teléfono y vuelva a intentarlo.",
+        "document_edges_not_visible": "Muestre todo el documento, con los cuatro bordes visibles.",
+        "document_format_unsupported": "Documento no admitido: continúe con una persona.",
+        "document_glare": "Reflejo en la foto: incline un poco el documento.",
+        "document_layout_mismatch": "No reconocemos la disposición del documento: sosténgalo recto, entero y quieto, y vuelva a intentarlo.",
+        "document_not_found": "No vemos un documento en esta foto: colóquelo sobre una superficie plana y muéstrelo entero.",
         "document_not_recognized": "No se ha reconocido un documento en esta foto. Suba una foto de un documento de identidad, pasaporte o permiso de conducir.",
         "document_front_needed": "Fotografíe el lado de la tarjeta con su foto.",
+        "document_orientation": "El documento está girado: sosténgalo recto, en horizontal.",
+        "document_portrait_missing": "No vemos su foto en el documento: muestre el lado con la foto, sin taparla.",
+        "document_side_duplicate": "Ha fotografiado dos veces el mismo lado: fotografíe ahora el otro lado del documento.",
+        "document_unreadable": "No conseguimos leer el documento: continúe con una persona.",
+        "document_wrong_side": "Esta foto muestra el otro lado del documento: fotografíe el lado solicitado.",
+        "document_wrong_side_back": "Este es el anverso: fotografíe ahora el reverso, donde están las líneas de letras y números.",
+        "document_wrong_side_front": "Este es el reverso: fotografíe el anverso, donde está su foto.",
         "hold_still": "Mantenga quieto el teléfono: la foto está borrosa.",
         "less_light": "Hay demasiada luz: pase a un lugar con luz más suave.",
         "more_light": "Hay poca luz: pase a un lugar más luminoso.",

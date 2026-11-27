@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { frameToDocumentPhoto } from '@/lib/image-capture';
 import { cn } from '@/lib/utils';
 import type { DocumentSide } from '@/types/public-checkin.types';
+import { fingerprintOfCanvas } from '../lib/document-fingerprint';
 import { assessFrame, FIRST_HINT, isSteady, nextHint, overlayOf, steadySince, workingSizeOf, type GuideHint, type HintState } from '../lib/document-guidance';
 
 interface DocumentCameraGuideProps {
@@ -14,10 +15,12 @@ interface DocumentCameraGuideProps {
   /** A call of the step is in flight (this one or another): nothing can be taken or sent. */
   busy: boolean;
   /**
-   * Sends the photo. Resolves `true` when the API answered (the photo is let go at once, whatever the answer was) and `false` when the call failed (the frame stays on the screen, to be sent again
-   * without taking it again).
+   * Sends the photo, with the difference hash of the frame it was made from. Resolves `true` when the API answered (the photo is let go at once, whatever the answer was) and `false` when the call failed
+   * (the frame stays on the screen, to be sent again without taking it again).
    */
-  onPhoto: (photo: File) => Promise<boolean>;
+  onPhoto: (photo: File, fingerprint: string | null) => Promise<boolean>;
+  /** The frame looks like the front that was taken before (a hint: the guest may take it again or send it anyway). */
+  looksLikeTheFront: (fingerprint: string) => boolean;
 }
 
 /** Why the camera is not there: the browser blocked it, there is none, this page cannot use one (no secure connection, an old browser), or anything else. */
@@ -26,8 +29,8 @@ type CameraProblem = 'denied' | 'not_found' | 'unsupported' | 'unknown';
 /** Where the camera is: opening, running, stopped because a frame was taken, stopped because the page is hidden, or the reason it is not there. */
 type CameraState = 'starting' | 'live' | 'stopped' | 'paused' | CameraProblem;
 
-/** What is done with the frame that was taken: nothing (the camera is live), the send, or a send that failed. */
-type Held = 'none' | 'sending' | 'failed';
+/** What is done with the frame that was taken: nothing (the camera is live), a warning that it looks like the front, the send, or a send that failed. */
+type Held = 'none' | 'warning' | 'sending' | 'failed';
 
 const PROBLEM_TEXT: Record<CameraProblem, string> = {
   denied: 'checkin.identity.document.camera.problem.denied',
@@ -88,9 +91,10 @@ function watchForTheEnd(stream: MediaStream, onEnd: () => void) {
  *
  * The frame is drawn on a canvas, encoded as a JPEG with the limits of the document photo and sent through `onPhoto`; the canvas is emptied once the API has answered, and nothing of the frame
  * is kept anywhere else (no storage, no address, no log). Every stream is stopped when the frame is taken, when the page is hidden, when the camera fails and when this screen goes. Without a
- * camera (denied, not found, not supported) it says why and the screen around it keeps the file of the phone and the way to a person.
+ * camera (denied, not found, not supported) it says why and the screen around it keeps the file of the phone and the way to a person. A back that looks like the front just taken is held for a
+ * question first: take it again, or send it anyway.
  */
-export function DocumentCameraGuide({ side, busy, onPhoto }: DocumentCameraGuideProps) {
+export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: DocumentCameraGuideProps) {
   const { t } = useTranslation();
   const hintId = useId();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -98,6 +102,7 @@ export function DocumentCameraGuide({ side, busy, onPhoto }: DocumentCameraGuide
   const sampleRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const submitting = useRef(false);
+  const fingerprint = useRef<string | null>(null);
   const steady = useRef<number | null>(null);
   const hintState = useRef<HintState>(FIRST_HINT);
   // Where the camera is, for the one listener of the page that cannot read the state of a render.
@@ -226,9 +231,10 @@ export function DocumentCameraGuide({ side, busy, onPhoto }: DocumentCameraGuide
     return () => window.clearInterval(timer);
   }, [camera]);
 
-  /** Lets the frame that was taken go: the canvas is emptied. */
+  /** Lets the frame that was taken go: the canvas is emptied and nothing derived from it is kept. */
   const letGoOfTheShot = (canvas: HTMLCanvasElement | null = shotRef.current) => {
     emptyCanvas(canvas);
+    fingerprint.current = null;
   };
 
   const sendShot = async () => {
@@ -246,7 +252,7 @@ export function DocumentCameraGuide({ side, busy, onPhoto }: DocumentCameraGuide
         setHeld('failed');
         return;
       }
-      const answered = await onPhoto(photo);
+      const answered = await onPhoto(photo, fingerprint.current);
       if (answered) {
         letGoOfTheShot(shot);
         setHeld('none');
@@ -275,6 +281,11 @@ export function DocumentCameraGuide({ side, busy, onPhoto }: DocumentCameraGuide
     setCamera('stopped');
     setNotPrepared(false);
 
+    fingerprint.current = fingerprintOfCanvas(shot);
+    if (side === 'back' && fingerprint.current !== null && looksLikeTheFront(fingerprint.current)) {
+      setHeld('warning');
+      return;
+    }
     void sendShot();
   };
 
@@ -361,6 +372,20 @@ export function DocumentCameraGuide({ side, busy, onPhoto }: DocumentCameraGuide
         <p role="alert" className="text-sm text-destructive" data-testid="checkin-identity-camera-not-prepared">
           {t('checkin.biometric.capture.notPrepared')}
         </p>
+      )}
+
+      {held === 'warning' && (
+        <Alert variant="warning" role="alert" title={t('checkin.identity.document.camera.duplicate.title')} data-testid="checkin-identity-camera-duplicate">
+          <p>{t('checkin.identity.document.camera.duplicate.text')}</p>
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+            <Button type="button" size="lg" disabled={busy} onClick={takeItAgain} autoFocus data-testid="checkin-identity-camera-duplicate-retake">
+              {t('checkin.identity.document.camera.retake')}
+            </Button>
+            <Button type="button" size="lg" variant="outline" disabled={busy} onClick={() => void sendShot()} data-testid="checkin-identity-camera-duplicate-send">
+              {t('checkin.identity.document.camera.duplicate.send')}
+            </Button>
+          </div>
+        </Alert>
       )}
 
       {held === 'failed' && (

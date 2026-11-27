@@ -87,6 +87,7 @@ type CaptureProps = ComponentProps<typeof IdentityDocumentCapture>;
 
 function renderCapture(overrides: Partial<CaptureProps> = {}) {
   const onPhoto = vi.fn<NonNullable<CaptureProps['onPhoto']>>().mockResolvedValue(true);
+  const looksLikeTheFront = vi.fn<(fingerprint: string) => boolean>().mockReturnValue(false);
   const onRequestOperator = vi.fn();
   const props: CaptureProps = {
     refused: false,
@@ -97,11 +98,12 @@ function renderCapture(overrides: Partial<CaptureProps> = {}) {
     busy: false,
     selfHosted: true,
     onPhoto,
+    looksLikeTheFront,
     onRequestOperator,
     ...overrides,
   };
   const view = render(<IdentityDocumentCapture {...props} />);
-  return { ...view, onPhoto, onRequestOperator, update: (next: Partial<CaptureProps>) => view.rerender(<IdentityDocumentCapture {...props} {...next} />) };
+  return { ...view, onPhoto, looksLikeTheFront, onRequestOperator, update: (next: Partial<CaptureProps>) => view.rerender(<IdentityDocumentCapture {...props} {...next} />) };
 }
 
 /** The camera is open and the checks pass for long enough: the button of the photo is awake. */
@@ -297,12 +299,13 @@ describe('identity-document-camera: the photo (AC3)', () => {
     await settle();
 
     expect(view.onPhoto).toHaveBeenCalledTimes(1);
-    const [photo] = view.onPhoto.mock.calls[0];
+    const [photo, fingerprint] = view.onPhoto.mock.calls[0];
     expect(photo).toBeInstanceOf(File);
     expect(photo.type).toBe('image/jpeg');
     // The frame of the camera, at the limits of the photo of a document: 1280 px wide stays 1280, at 85 %.
     expect(encoded).toEqual([{ width: 1280, height: 720, type: 'image/jpeg', quality: DOCUMENT_JPEG_QUALITY }]);
     expect(DOCUMENT_JPEG_QUALITY).toBe(0.85);
+    expect(fingerprint).toMatch(/^[0-9a-f]{16}$/);
     // The camera was stopped at the shot, and the canvas that held the frame is emptied once the API has answered.
     expect(rig.stop).toHaveBeenCalled();
     expect(shot().width).toBe(0);
@@ -577,6 +580,61 @@ describe('identity-document-camera: without a camera the file and the person are
   });
 });
 
+describe('identity-document-camera: a back that looks like the front (T02, AC3)', () => {
+  it('DocumentCameraGuide_TheBackLooksLikeTheFront_AsksBeforeSendingAndTheGuestCanTakeItAgain', async () => {
+    const rig = stubCamera();
+    const view = renderCapture({ side: 'back' });
+    view.looksLikeTheFront.mockReturnValue(true);
+    await waitForTheButton();
+
+    fireEvent.click(button());
+    await settle();
+
+    expect(view.looksLikeTheFront).toHaveBeenCalledWith(expect.stringMatching(/^[0-9a-f]{16}$/));
+    expect(view.onPhoto).not.toHaveBeenCalled();
+    const warning = screen.getByTestId('checkin-identity-camera-duplicate');
+    expect(warning).toHaveTextContent(text('checkin.identity.document.camera.duplicate.title'));
+    // The frame that was taken is what the guest sees, and the camera is off.
+    expect(shot().width).toBe(1280);
+
+    fireEvent.click(screen.getByTestId('checkin-identity-camera-duplicate-retake'));
+    await settle();
+
+    expect(screen.queryByTestId('checkin-identity-camera-duplicate')).not.toBeInTheDocument();
+    expect(view.onPhoto).not.toHaveBeenCalled();
+    expect(shot().width).toBe(0);
+    expect(rig.getUserMedia).toHaveBeenCalledTimes(2);
+  });
+
+  it('DocumentCameraGuide_TheBackLooksLikeTheFront_TheGuestCanSendItAnywayAndTheServerDecides', async () => {
+    stubCamera();
+    const view = renderCapture({ side: 'back' });
+    view.looksLikeTheFront.mockReturnValue(true);
+    await waitForTheButton();
+    fireEvent.click(button());
+    await settle();
+
+    fireEvent.click(screen.getByTestId('checkin-identity-camera-duplicate-send'));
+    await settle();
+
+    expect(view.onPhoto).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('checkin-identity-camera-duplicate')).not.toBeInTheDocument();
+  });
+
+  it('DocumentCameraGuide_TheFrontIsTaken_NoOneAsksWhetherItLooksLikeTheFront', async () => {
+    stubCamera();
+    const view = renderCapture({ side: 'front' });
+    view.looksLikeTheFront.mockReturnValue(true);
+    await waitForTheButton();
+
+    fireEvent.click(button());
+    await settle();
+
+    expect(view.looksLikeTheFront).not.toHaveBeenCalled();
+    expect(view.onPhoto).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('identity-document-camera: nothing of the frame is kept anywhere (privacy)', () => {
   it('DocumentCameraGuide_AFullShot_WritesNothingToAnyStorageAndLogsNothing', async () => {
     stubCamera();
@@ -617,6 +675,17 @@ describe('identity-document-camera: accessibility', () => {
     await waitFor(() => expect(screen.getByTestId('checkin-identity-camera-problem')).toBeInTheDocument());
 
     await expectNoAxeViolations(container);
+  });
+
+  it('DocumentCameraGuide_TheWarningBeforeTheBack_HasNoAccessibilityViolations', async () => {
+    stubCamera();
+    const view = renderCapture({ side: 'back' });
+    view.looksLikeTheFront.mockReturnValue(true);
+    await waitFor(() => expect(button()).toBeEnabled(), { timeout: 10_000 });
+    fireEvent.click(button());
+    await screen.findByTestId('checkin-identity-camera-duplicate');
+
+    await expectNoAxeViolations(view.container);
   });
 });
 
@@ -686,6 +755,37 @@ describe('identity-document-camera: inside the identity step of a self-hosted ve
     expect(screen.getByTestId('checkin-identity-document')).toHaveAttribute('data-side', 'back');
     expect(screen.queryByTestId('checkin-identity-document-guidance')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkin-identity-camera-capture')).toHaveTextContent(text('checkin.identity.document.camera.captureBack'));
+  });
+
+  it('IdentityStep_TheBackLooksLikeTheFrontJustTaken_TheGuestIsAskedBeforeItGoesUp', async () => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.postDocument).mockResolvedValueOnce({
+      success: true,
+      acceptable: false,
+      guidanceCodes: ['document_back_needed'],
+      documentStored: true,
+      documentNotArchived: false,
+      side: 'front',
+      sides: ['front'],
+    });
+    renderStep();
+    await waitForTheButton();
+    fireEvent.click(button());
+    await settle();
+    expect(screen.getByTestId('checkin-identity-document')).toHaveAttribute('data-side', 'back');
+
+    // The camera still shows the same card: the frame of the back has the same hash as the front.
+    await advanceUntil(() => !button().disabled);
+    fireEvent.click(button());
+    await settle();
+
+    expect(screen.getByTestId('checkin-identity-camera-duplicate')).toBeInTheDocument();
+    expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByTestId('checkin-identity-camera-duplicate-send'));
+    await settle();
+    expect(publicCheckinApi.postDocument).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(publicCheckinApi.postDocument).mock.calls[1][2]).toBe('back');
   });
 
   it('IdentityStep_TheBrowserDeniesTheCamera_SaysWhyAndThePathOfAPersonIsOnTheScreen', async () => {

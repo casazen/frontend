@@ -26,7 +26,7 @@ interface IdentityStepProps {
  * On a self-hosted verification (the state says `selfHosted`, E70/F03/US01/T01, NF-188) the step is opened with the text of the consent the guest reads, the answer is the choice between two ways to be verified of equal
  * weight (the automatic check, or a person), the way to a person stays on the screen under the document and the selfie, a verification that is closed shows where it ended without any capture, and a step this page has
  * no screen for (the presence, before its capture reaches the page) shows the way to a person instead of a blank screen. With the state of the legacy path nothing of this is there.
- * The photo of the document is then taken with the guided camera (E71/F02/US01/T01, NF-189).
+ * The photo of the document is then taken with the guided camera (E71/F02/US01/T01, NF-189), and a photo the server refuses is answered with its targeted reason (E71/F02/US01/T02).
  */
 export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) {
   const { t, i18n } = useTranslation();
@@ -115,7 +115,8 @@ export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) 
           frontReceived={progress.documentSidesTaken.includes('front')}
           busy={identity.busy}
           selfHosted={selfHosted}
-          onPhoto={(file) => identity.sendDocument(file)}
+          onPhoto={(file, fingerprint) => identity.sendDocument(file, fingerprint)}
+          looksLikeTheFront={identity.looksLikeTheFront}
           onRequestOperator={() => void identity.askOperator()}
         />
       )}
