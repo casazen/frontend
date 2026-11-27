@@ -125,7 +125,7 @@ export function OwnerCalendar() {
           </div>
 
           <section aria-labelledby="owner-calendar-title" className="space-y-3">
-            <h2 id="owner-calendar-title" className="text-xl font-semibold text-[#1f3a3d]">
+            <h2 id="owner-calendar-title" className="text-xl font-semibold">
               {t('ownerPortal.calendar.sectionTitle', { property: known.name })}
             </h2>
             <p className="text-sm text-muted-foreground">{t('ownerPortal.calendar.privacyNote')}</p>
@@ -144,7 +144,7 @@ export function OwnerCalendar() {
           </section>
 
           <section aria-labelledby="owner-stay-request-title" className="space-y-3">
-            <h2 id="owner-stay-request-title" className="text-xl font-semibold text-[#1f3a3d]">
+            <h2 id="owner-stay-request-title" className="text-xl font-semibold">
               {t('ownerPortal.stays.sectionTitle')}
             </h2>
             {rule.isLoading ? (
@@ -167,7 +167,7 @@ export function OwnerCalendar() {
       ) : null}
 
       <section aria-labelledby="owner-stays-title" className="space-y-3">
-        <h2 id="owner-stays-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-stays-title" className="text-xl font-semibold">
           {t('ownerPortal.stays.listTitle')}
         </h2>
         {stays.isError ? (

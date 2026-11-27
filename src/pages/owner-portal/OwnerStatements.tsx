@@ -210,7 +210,7 @@ function LinkedInvoicesSection({ statements }: { statements: readonly OwnerPorta
 
   return (
     <section aria-labelledby="owner-invoices-title" className="space-y-3">
-      <h2 id="owner-invoices-title" className="text-xl font-semibold text-[#1f3a3d]">
+      <h2 id="owner-invoices-title" className="text-xl font-semibold">
         {t('ownerPortal.accounting.invoicesTitle')}
       </h2>
       <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.invoicesNote')}</p>
@@ -251,7 +251,7 @@ export function OwnerStatements() {
       <PortalPageHeading icon={Landmark} title={t('ownerPortal.accounting.title')} description={t('ownerPortal.accounting.description')} />
 
       <section aria-labelledby="owner-statements-title" className="space-y-3">
-        <h2 id="owner-statements-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-statements-title" className="text-xl font-semibold">
           {t('ownerPortal.accounting.statementsTitle')}
         </h2>
         {statements.isLoading ? (
@@ -272,7 +272,7 @@ export function OwnerStatements() {
       </section>
 
       <section aria-labelledby="owner-pm-invoices-title" className="space-y-3">
-        <h2 id="owner-pm-invoices-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-pm-invoices-title" className="text-xl font-semibold">
           {t('ownerPortal.accounting.pmInvoices.title')}
         </h2>
         <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.pmInvoices.note')}</p>
@@ -298,7 +298,7 @@ export function OwnerStatements() {
       <OwnerWithholdingSection />
 
       <section aria-labelledby="owner-accounting-documents-title" className="space-y-3">
-        <h2 id="owner-accounting-documents-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-accounting-documents-title" className="text-xl font-semibold">
           {t('ownerPortal.accounting.documentsTitle')}
         </h2>
         {documents.isLoading ? (

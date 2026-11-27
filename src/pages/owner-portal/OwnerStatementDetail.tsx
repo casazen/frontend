@@ -156,7 +156,7 @@ export function OwnerStatementDetail() {
       ) : null}
 
       <section aria-labelledby="owner-statement-summary-title" className="space-y-4 rounded-md border bg-card p-4">
-        <h2 id="owner-statement-summary-title" className="text-lg font-semibold text-[#1f3a3d]">
+        <h2 id="owner-statement-summary-title" className="text-lg font-semibold">
           {t('ownerPortal.accounting.detail.summaryTitle')}
         </h2>
         <StatementNet net={statement.totals.net} currency={currency} />
@@ -181,7 +181,7 @@ export function OwnerStatementDetail() {
       ) : null}
 
       <section aria-labelledby="owner-statement-lines-title" className="space-y-4">
-        <h2 id="owner-statement-lines-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-statement-lines-title" className="text-xl font-semibold">
           {t('ownerPortal.accounting.detail.linesTitle')}
         </h2>
         {sections.length === 0 ? (

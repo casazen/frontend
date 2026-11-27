@@ -82,7 +82,7 @@ function IssuedDocumentsBody() {
 
       {filesOpen ? (
         <section aria-labelledby="owner-issued-export-title" className="space-y-3">
-          <h2 id="owner-issued-export-title" className="text-xl font-semibold text-[#1f3a3d]">
+          <h2 id="owner-issued-export-title" className="text-xl font-semibold">
             {t('ownerPortal.issued.export.title')}
           </h2>
           <IssuedDocumentsExport
@@ -95,7 +95,7 @@ function IssuedDocumentsBody() {
       ) : null}
 
       <section aria-labelledby="owner-issued-list-title" className="space-y-3">
-        <h2 id="owner-issued-list-title" className="text-xl font-semibold text-[#1f3a3d]">
+        <h2 id="owner-issued-list-title" className="text-xl font-semibold">
           {t('ownerPortal.issued.listTitle')}
         </h2>
         {documents.isLoading ? (
