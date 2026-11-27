@@ -334,8 +334,9 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
           return route.abort('failed');
         }
         if (step === 'retry') {
+          // The server answers a retry with guidedRetryAvailable true (this answer offers it) while the state says the one retry is now used.
           change({ result: 'retry', guidedRetryAvailable: false });
-          const answer: IdentityPresenceResponse = { result: 'retry', guidance: ['presence_challenge_not_followed'], guidedRetryAvailable: false, state: snapshot() };
+          const answer: IdentityPresenceResponse = { result: 'retry', guidance: ['presence_challenge_not_followed'], guidedRetryAvailable: true, state: snapshot() };
           return reply(answer);
         }
         if (step === 'operator') {
