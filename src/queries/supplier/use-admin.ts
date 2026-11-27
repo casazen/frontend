@@ -1,20 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchAdminSuppliers, fetchSupplierAudit, inviteSupplier, reactivateSupplier, suspendSupplier } from '@/services/supplier-api';
+import { fetchAdminSuppliers, fetchSupplierAudit, reactivateSupplier, suspendSupplier } from '@/services/supplier-api';
 import type { AdminSuppliersParams } from '@/types/admin-suppliers';
 
-export function useInviteSupplier() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: inviteSupplier,
-    // A new invite shows up in the admin invites list.
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ADMIN_INVITES_KEY }),
-  });
-}
-
-
 const ADMIN_SUPPLIERS_KEY = ['admin', 'suppliers'] as const;
-
-const ADMIN_INVITES_KEY = ['admin', 'supplier-invites'] as const;
 
 
 /** A page of the suppliers for the platform admin (SU-12), filtered and paginated by the server. */

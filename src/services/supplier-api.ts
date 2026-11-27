@@ -145,16 +145,6 @@ export async function fetchSupplierConflicts(): Promise<SupplierConflictsRespons
   return ApiClient.get<SupplierConflictsResponse>('/supplier/calendar/conflicts');
 }
 
-export async function inviteSupplier(payload: {
-  email: string;
-  comuneCode: string;
-  categories?: string[];
-  message?: string;
-}): Promise<{ inviteId: string; expiresAt: string }> {
-  const { data } = await axios.post<{ inviteId: string; expiresAt: string }>('/admin/suppliers/invite', payload);
-  return data;
-}
-
 /** A page of the suppliers for the platform admin, filtered and paginated by the server (SU-12). */
 export async function fetchAdminSuppliers({ search, status, page = 1, pageSize = 20 }: AdminSuppliersParams): Promise<PagedResult<AdminSupplier>> {
   return ApiClient.get<PagedResult<AdminSupplier>>('/admin/suppliers', {
