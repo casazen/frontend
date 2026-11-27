@@ -29897,6 +29897,10 @@
           "TransferFailed": "The transfer has not gone through yet: CasaZen tries again",
           "unknown": "Being checked"
         },
+        "hostSale": "Supplier sale to the host, gross amount",
+        "hostSaleRefund": "Commercial refund to the host",
+        "hostSaleCommission": "CasaZen B2B commission payable by the supplier, included in the gross amount",
+        "hostSaleFeeRefund": "Commission adjustment on the refund",
         "subNet": "Net {{amount}}",
         "title": "Payment and pay",
         "tooSoon": "You sent a reminder a short while ago: you can try again tomorrow."

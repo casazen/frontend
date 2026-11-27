@@ -29897,6 +29897,10 @@
           "TransferFailed": "Il trasferimento non è ancora riuscito: CasaZen riprova",
           "unknown": "In verifica"
         },
+        "hostSale": "Vendita del fornitore all’host, importo lordo",
+        "hostSaleRefund": "Rimborso commerciale all’host",
+        "hostSaleCommission": "Commissione B2B di CasaZen a carico del fornitore, inclusa nel lordo",
+        "hostSaleFeeRefund": "Rettifica della commissione per il rimborso",
         "subNet": "Netto {{amount}}",
         "title": "Pagamento e compenso",
         "tooSoon": "Hai già inviato un promemoria da poco: puoi riprovare domani."

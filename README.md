@@ -5,12 +5,9 @@ Webapp per gestire immobili, prenotazioni, ospiti, adempimenti, affitti lunghi e
 ## Documentazione
 
 - **Utenti:** dopo il login, aprire **Guida** (icona libro nell’intestazione di ogni area). La guida include ricerca, indice e istruzioni in italiano e inglese.
-- [Indice documentazione](docs/README.md)
-- [Sviluppo locale e configurazione](docs/technical/development.md)
-- [Architettura e convenzioni](docs/technical/architecture.md)
-- [Test e rilascio](docs/technical/testing.md)
-- [Manutenzione della guida prodotto](docs/product/README.md)
-- [API e runbook condivisi](https://github.com/casazen/backend/blob/develop/docs/index.md)
+- [AGENTS.md](AGENTS.md): struttura, comandi, convenzioni, flusso di consegna e regole per chi sviluppa (anche agenti AI).
+- [docs/README.md](docs/README.md): dove sono finiti gli altri documenti (cartella `documentazione/` del workspace, fuori dai repository).
+- Runbook e riferimento API condivisi con il backend: nella cartella `documentazione/03-documenti-ai/runbook/backend/` del workspace (indice in `documentazione/03-documenti-ai/runbook/README.md`).
 
 ## Avvio rapido
 
@@ -33,7 +30,7 @@ VITE_AUTH0_AUDIENCE=https://casazen-api
 npm run dev
 ```
 
-L’app parte su `http://localhost:5173`. Il backend è un repository separato. Per esplorare l’interfaccia con dati dimostrativi: `npm run dev:demo` ([limiti e configurazione](docs/technical/demo-mode.md)).
+L’app parte su `http://localhost:5173`. Il backend è un repository separato. Per esplorare l’interfaccia con dati dimostrativi: `npm run dev:demo` (nessuna autenticazione, persistenza o integrazione reale).
 
 ## Verifica
 
@@ -44,7 +41,7 @@ npm test
 npm run build
 ```
 
-Per i test browser e gli ambienti reali seguire [la guida test](docs/technical/testing.md). Una suite demo verde non verifica le credenziali o lo staging reale.
+Per i test browser e gli ambienti reali vedere la sezione «Test» di [AGENTS.md](AGENTS.md). Una suite demo verde non verifica le credenziali o lo staging reale.
 
 ## Stack
 
