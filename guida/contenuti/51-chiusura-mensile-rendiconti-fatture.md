@@ -150,8 +150,8 @@ Per cambiare una versione già preparata usa «Rigenera come nuova versione»: l
 
 ### Leggere il rendiconto di un proprietario
 1. Dalla riga del proprietario premi il suo nome.
-2. In alto leggi «Versione N · stato» e il saldo di chiusura. Il pulsante grande è il prossimo passo.
-3. In «In breve» vedi la formula del saldo. In «Il rendiconto come lo riceve il proprietario» vedi le parti (soggiorni, commissioni dei canali, provvigione, riaddebiti e spese, rettifiche, ritenuta) e premi «PDF» o «CSV» per scaricare lo stesso file del proprietario. Il PDF di una bozza porta la filigrana di bozza.
+2. In alto leggi «Versione N · stato» e il saldo di chiusura. Il pulsante grande è il prossimo passo; su una versione sostituita il riquadro lo dice e il pulsante porta alla versione più recente («Apri la versione più recente»).
+3. In «In breve» vedi i numeri del rendiconto: incassi del proprietario, commissioni e costi, pagamenti e ritenute e saldo di chiusura (con il saldo di apertura sotto). In «Il rendiconto come lo riceve il proprietario» vedi le parti (soggiorni, commissioni dei canali, provvigione, riaddebiti e spese, rettifiche, ritenuta) e premi «PDF» o «CSV» per scaricare lo stesso file del proprietario. Il PDF di una bozza porta la filigrana di bozza.
 4. In «Righe del rendiconto» premi una riga per vedere come si arriva all'importo. Mostra le prime 25: «Mostra tutte (N)» per le altre.
 5. «Cosa è cambiato dalla versione precedente» mostra la differenza con la versione di prima. «Pagamenti e riconciliazione» mostra i pagamenti e il confronto con il saldo.
 6. «Altre azioni» in alto ha le azioni possibili, «Registra una rettifica» e «Dati finanziari del proprietario». Se il rendiconto è pubblicato c'è anche «Scarica il file pubblicato».
