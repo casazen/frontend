@@ -588,6 +588,7 @@
   "accountBilling": {
     "compare": {
       "current": "Your plan",
+      "modulesNote": "With the guided registration, the Starter plan includes no modules (for example {{modules}}): they can be added from the Pro plan onwards. Without the module, among other things, automatic Alloggiati Web and ISTAT, Stripe Connect, the site look and domain, channels and interventions stay locked.",
       "note": "Prices exclude VAT. With an active subscription the change is confirmed in the Stripe portal.",
       "overLimit_one": "You have {{count}} property and the plan includes {{allowance}}: it stays, but you will not be able to add more until you are back within the limit.",
       "overLimit_other": "You have {{count}} properties and the plan includes {{allowance}}: they all stay, but you will not be able to add more until you are back within the limit.",
@@ -622,8 +623,8 @@
       "nextCharge": "Next charge",
       "noCharge": "None",
       "notice": {
-        "openAccess": "Open access: for now we charge nothing and every feature is unlocked. The plan you choose today applies when billing restarts: we will let you know before it does.",
-        "openAccessPricesPending": "Open access: for now we charge nothing and every feature is unlocked. The prices of the plans are being defined: we will let you know before billing restarts.",
+        "openAccess": "Open access: for now properties, people and the custom domain follow a plan higher than yours. Payments do not change: an active subscription is still charged, a plan you choose now is paid from the start, and paid modules stay the ones you bought. When open access ends, the limits of the plan you pay for apply: we will tell you beforehand.",
+        "openAccessPricesPending": "Open access: for now properties, people and the custom domain follow a plan higher than yours. An active subscription is still charged and paid modules stay the ones you bought. The prices of the plans are being defined: plans cannot be bought for now, and we will tell you before open access ends.",
         "pricesPending": "The prices of the plans are being defined: they cannot be purchased yet."
       },
       "people": "People",
@@ -1861,8 +1862,8 @@
     "overdue": "Deadline passed",
     "ordinaryTerm": "24 hours from arrival",
     "shortStayTerm": "short stay: 6 hours from arrival",
-    "manualBanner": "CasaZen does not transmit to Alloggiati Web yet: send each record on the Questura portal and record the submission here.",
-    "manualNotice": "CasaZen does not transmit to Alloggiati Web yet. Enter the record on the Questura Alloggiati Web portal with the data below, or upload the file you can download from this page, then mark it as sent.",
+    "manualBanner": "As a rule CasaZen does not transmit to Alloggiati Web: send each record on the Questura portal and record the submission here. Where direct sending is active, CasaZen transmits and you check the status here.",
+    "manualNotice": "For this stay CasaZen does not transmit to Alloggiati Web: direct sending is not active. Enter the record on the Questura Alloggiati Web portal with the data below, or upload the file you can download from this page, then mark it as sent.",
     "waitingArrivalNotice": "The communication is sent from the arrival day: the portal accepts only today or yesterday as arrival date.",
     "declaredNotice": "Submission declared by the host: keep the receipt issued by the Alloggiati Web portal.",
     "failureNotice": {
@@ -1880,6 +1881,7 @@
     "markSentDialog": {
       "title": "Mark as sent manually",
       "description": "Use it only after entering the record on the Questura Alloggiati Web portal. CasaZen records your statement: it transmits nothing and receives no receipt.",
+      "consequences": "When you confirm, CasaZen stops sending you alerts about this stay and treats the guest's online check-in as complete: the link is no longer sent to them. This declaration cannot be undone from here.",
       "dateLabel": "Date sent on the portal",
       "dateRange": "Choose a date between {{from}} and {{to}}.",
       "confirmation": "I confirm I sent the record of this stay on the Alloggiati Web portal.",
@@ -2311,7 +2313,7 @@
       "invalidCinFormat": "The CIN is not in the official format (e.g. IT015146C2ABCDEFGH).",
       "duplicateCin": "This CIN is already assigned to another property.",
       "documentFileMissing": "The file of this document is no longer available: please upload it again.",
-      "alloggiatiTransmissionUnavailable": "CasaZen does not transmit to Alloggiati Web yet: send the record on the Questura portal and mark it as sent manually.",
+      "alloggiatiTransmissionUnavailable": "This button does not transmit to Alloggiati Web: send the record on the Questura portal and mark it as sent manually. Where direct sending is active, CasaZen transmits with its own automatic process.",
       "alloggiatiManualDateBeforeArrival": "The sending date cannot be before the check-in date.",
       "alloggiatiManualDateInFuture": "The sending date cannot be later than today.",
       "alloggiatiAlreadySent": "The Alloggiati communication of this booking is already recorded as sent.",
@@ -2383,6 +2385,7 @@
       "supplierInviteEmailMismatch": "The invitation is for another email: sign in with the account of the email the invitation was sent to.",
       "supplierInviteComuneMismatch": "The invitation is for another municipality: the municipality cannot be changed.",
       "supplierAccountEmailMissing": "Your account has no email, so the registration cannot be verified.",
+      "tenantEmailNotVerified": "To open the tenant area you must first confirm your e-mail address with the verification message. Once done, reload the page.",
       "supplierAccountEmailMismatch": "The registration email must be the email of your account.",
       "supplierSelfServeUnavailable": "Supplier self-registration is not available yet: you can join only with an invitation.",
       "supplierComuneNotPilot": "Self-registration is not available for this municipality: choose one from the list or ask for an invitation.",
@@ -5524,26 +5527,15 @@
       "refunded": "Already refunded",
       "inProgress": "Refunds waiting for Stripe",
       "refundable": "Refundable now",
-      "refundChoice": "Refund to the guest",
-      "rule": {
-        "freeCancellation": "The guest was shown free cancellation until {{date}}: the refund must be full.",
-        "policy": "Cancellation terms “{{name}}”: minimum refund {{amount}}.",
-        "none": "No cancellation terms apply: you choose how much to refund, up to {{amount}}."
-      },
+      "hostRefundsAll": "When you cancel, the guest always gets back everything they paid by card, whatever the cancellation policy says: you cannot refund less.",
+      "irreversible": "The cancellation and the refund cannot be undone or withdrawn.",
       "refundFull": "Full refund ({{amount}})",
-      "refundPartial": "Partial refund",
-      "partialLabel": "Amount to refund",
-      "partialHint": "From {{min}} to {{max}}. With 0 the guest gets no refund.",
       "reason": "Reason (visible only to you)",
       "keep": "Keep booking",
       "confirm": "Cancel booking",
       "submitting": "Cancelling…",
       "close": "Close",
       "failed": "The booking was not cancelled. Try again.",
-      "errors": {
-        "amountInvalid": "Enter a valid amount, with at most two decimals.",
-        "amountOutOfRange": "The amount must be between {{min}} and {{max}}."
-      },
       "result": {
         "cancelled": "Booking cancelled.",
         "intentsCanceled": "The payment that was not completed has been canceled on Stripe.",
@@ -6051,6 +6043,7 @@
       "manual": "Open the CasaZen manual",
       "support": "Write to support",
       "text": "The manual explains every area in plain words. If you get stuck, write to us: we will answer.",
+      "textNoSupport": "The manual explains every area in plain words.",
       "title": "Need a hand?"
     },
     "open": "Open the guide",
@@ -7187,6 +7180,7 @@
         },
         "police": {
           "AlreadySent": "The communication to the police has already been made.",
+          "CasaZen": "With direct sending CasaZen transmits the communication to the police, not this button: check the status on the Compliance page.",
           "ChannelManagerSends": "Octorate sends the communication to the police when you register the arrival.",
           "Manual": "You make the communication to the police on the Alloggiati Web portal.",
           "NotApplicable": "This stay owes no communication to the police."
@@ -7289,8 +7283,8 @@
             "short": "Booking not connected to Octorate: nothing is sent"
           },
           "senderCasaZen": {
-            "long": "You chose CasaZen as the sender, but CasaZen does not send to the police yet. For now we send nothing to Octorate: the communication is made on the Alloggiati Web portal, and after you confirm we show you the guide.",
-            "short": "For now nothing is sent to Octorate"
+            "long": "The sender is CasaZen (direct sending): we send nothing to Octorate and this button sends nothing to the police. CasaZen transmits with its own automatic process, for stays from the activation date: check the status on the Compliance page, because the communication is in order only with the receipt.",
+            "short": "Nothing is sent to Octorate"
           },
           "senderManual": {
             "long": "You are the sender: we send nothing to Octorate. You make the communication to the police on the Alloggiati Web portal, and after you confirm we show you the guide.",
@@ -7502,7 +7496,7 @@
       "deadlinePassed": "The {{deadline}} deadline has passed: enter the CIN as soon as possible.",
       "obligation": "The CIN is mandatory: it must be displayed outside the property and stated in every listing.",
       "penalties": "Penalties (art. 13-ter, par. 9): €800 to €8,000 for a missing CIN, €500 to €5,000 for not displaying it or not stating it in listings.",
-      "requestOnBdsr": "Request the CIN on BDSR"
+      "requestOnBdsr": "Request CIN on the portal"
     }
   },
   "commandPalette": {
@@ -7806,7 +7800,7 @@
       "guest_data_missing": "Some guest details needed for Alloggiati Web are missing.",
       "identity_missing": "The arrival is near and the guest's identity is not verified yet.",
       "identity_verified": "The guest's identity is verified.",
-      "municipality_rate_missing": "We do not know the tourist tax rate of the municipality: enter it (it is never taken as zero).",
+      "municipality_rate_missing": "We do not know the tourist tax rate of the municipality: enter it in the guided check-in of a stay, at the “Tourist tax” step (it is never taken as zero).",
       "operator_decision_required": "An operator has to decide on the identity check.",
       "over_thirty_nights_not_sent": "Over 30 nights the channel manager does not send by itself: send Alloggiati Web yourself.",
       "period_open": "The period is still open: the deadline has not come.",
@@ -7985,6 +7979,8 @@
         }
       },
       "choice": {
+        "autoSendOff": "By default nothing starts by itself: guests go to your channel manager only when you confirm the check-in. Check the status on the Compliance page.",
+        "directActive": "It cannot be changed here: with direct sending active, ask support.",
         "istat": "The same sender also handles the regional statistics (ISTAT), where required.",
         "istatSeeNotice": "For the ISTAT, what the notice above says applies.",
         "legend": "Who sends the guests' data to the police?",
@@ -7993,7 +7989,8 @@
         "options": {
           "CasaZen": {
             "description": "CasaZen transmits the data with the credentials of your portal.",
-            "title": "CasaZen"
+            "title": "CasaZen",
+            "unavailable": "It cannot be chosen here: where available, direct sending is activated from the property page."
           },
           "ChannelManager": {
             "description": "It sends the guests' data every day. It is the recommended choice when the property is connected.",
@@ -8473,7 +8470,7 @@
       "alloggiati": {
         "status": "Status:",
         "sentHint": "The report of this stay is sent.",
-        "toSendHint": "The report of this stay is not sent. CasaZen does not transmit it: send it on the Alloggiati Web portal and record it as sent. The check-out is not blocked.",
+        "toSendHint": "The report of this stay is not sent. If direct sending is not active for the property, CasaZen does not transmit it: send it on the Alloggiati Web portal and record it as sent. The check-out is not blocked.",
         "failedHint": "The report of this stay failed or was rejected: fix it and send it again on the portal. The check-out is not blocked.",
         "overdue": "Deadline passed on {{deadline}}.",
         "dataIncomplete": "Guest data are missing."
@@ -9736,7 +9733,7 @@
     }
   },
   "directBooking": {
-    "title": "Direct Booking",
+    "title": "Booking site",
     "description": "Your direct booking site. Share it with guests to receive commission-free OTA bookings.",
     "yourSite": "Your booking site",
     "visitDescription": "Visit your public site to see how your guests experience it.",
@@ -11593,7 +11590,7 @@
     "exportPrivate": "Keep it private: anyone with the link can see the dates taken.",
     "exportHowTo": "Where to paste it",
     "exportAirbnbSteps": "in your listing open Availability → Calendar sync → Import calendar, paste the link and give it a name (e.g. CasaZen).",
-    "exportBookingSteps": "in the Extranet open Rates & availability → Sync calendars, add a calendar to import and paste the link.",
+    "exportBookingSteps": "in the Extranet open Rates & availability, in the section for syncing calendars, add a calendar to import and paste the link.",
     "exportRefreshNote": "OTAs read the link again from time to time: changes do not show up at once.",
     "copyFailed": "Could not copy: select the link and copy it by hand.",
     "regenerate": "Regenerate link",
@@ -13540,7 +13537,7 @@
       "citizenshipHint": "Needed for the communication to the Questura if the tenant is not a citizen of the European Union.",
       "companyNotice": "A tenant with an 11-digit code is a company: the cedolare secca is not allowed.",
       "contactEmail": "Email",
-      "contactEmailHintTenant": "Only used to send the payment link and the reminders.",
+      "contactEmailHintTenant": "It is the address the tenant uses to open their area in CasaZen (it must be verified) and where we send the payment link and the reminders.",
       "contactPhone": "Phone number",
       "contactPhoneHintTenant": "Include the international prefix: used to contact the tenant and prepare WhatsApp reminders.",
       "countriesEu": "European Union",
@@ -19089,7 +19086,7 @@
     "tier": {
       "agency": "Agency",
       "badge": "Plan",
-      "requires_agency": "This feature requires Agency tier"
+      "requires_agency": "This feature requires the Agency plan"
     }
   },
   "orgSettings": {
@@ -22417,8 +22414,8 @@
         "keywords": "police tourist tax ross1000 istat receipt",
         "steps": [
           "Check required guest details and deadlines in Alloggiati for each stay. A complete check-in is not evidence of submission.",
-          "In the current workflow CasaZen prepares the information and available file for manual submission. Sign in to Alloggiati Web, submit the report and keep the portal’s receipt.",
-          "After actually submitting, use Mark as manually submitted and enter the correct date. This records your declaration; it does not certify that CasaZen transmitted the report or received a receipt.",
+          "As a rule CasaZen prepares the information and the file for manual submission. Sign in to Alloggiati Web, submit the report and keep the portal’s receipt. Where direct sending is active, CasaZen transmits it and the item is in order only with the receipt.",
+          "After actually submitting, use Mark as manually submitted and enter the correct date. This records your declaration; it does not certify that CasaZen transmitted the report or received a receipt. From then on CasaZen stops alerting you about that stay and treats the guest’s online check-in as complete (the link is no longer sent); the declaration cannot be undone from there.",
           "Check tourist tax, exemptions and regional tourism reporting separately. Confirm applicable rates and obligations with the relevant authority: a calculation or exported file is not an already-filed declaration."
         ]
       },
@@ -24051,7 +24048,7 @@
         "linePartialToArrival": "Full refund up to {{full}} before arrival; then {{percent}}% until arrival.",
         "loadFailed": "I cannot read the cancellation policies. Try again in a moment.",
         "loading": "Loading the policies…",
-        "noneChosen": "If you do not choose a policy, the full refund applies up to 7 days before arrival; after that, you decide case by case.",
+        "noneChosen": "If you do not choose a policy, a guest who cancels on their own gets back only the tourist tax they already paid (not the price of the stay), and the site promises no free cancellation. Choose one to have clear rules.",
         "title": "If the guest cancels"
       },
       "quiet": {
@@ -25170,7 +25167,7 @@
     "retry": "Retry",
     "configuredOn": "Configured on {{date}}",
     "notConfigured": "Not configured",
-    "writeOnlyHint": "The credentials are encrypted and can no longer be viewed once saved: to change them, enter them again. CasaZen does not transmit to Alloggiati Web yet: they will be used for automatic sending once it is available.",
+    "writeOnlyHint": "The credentials are encrypted and can no longer be viewed once saved: to change them, enter them again. They are used to download the receipts automatically and, where direct sending is active, for CasaZen to transmit to Alloggiati Web; sending by hand does not need them.",
     "fields": {
       "username": "Username",
       "password": "Password",
@@ -26948,12 +26945,14 @@
     "stripeAccount": "Stripe account:",
     "verificationIncomplete": "Verification incomplete",
     "verificationIncompleteDescription": "Stripe requires additional documents. Click \"Complete verification\" to continue the onboarding.",
-    "accountActiveMessage": "Your account can accept payments. Funds are credited directly to your Stripe account — CasaZen does not hold your earnings.",
+    "accountPayoutsPending": "Transfers to your bank account are not enabled on Stripe yet: until they are, the money stays in your Stripe balance. Check on Stripe.",
+    "accountActiveMessage": "Stripe has enabled card payments on your account: guests can pay. Funds are credited directly to your Stripe account — CasaZen does not hold your earnings.",
     "managePlanIn": "Manage SaaS plan in",
     "domainLink": "Domain settings",
     "planSettings": "Plan settings"
   },
   "shared": {
+    "emergencyNotice": "CasaZen is not an emergency service and calls no one: if there is danger (flooding water, a smell of gas, sparks), call a technician or the emergency services right away.",
     "errorBoundary": {
       "title": "Something went wrong",
       "fallbackMessage": "An unexpected error occurred",
@@ -28968,7 +28967,7 @@
       },
       "DaInviareManualmente": {
         "label": "To send manually",
-        "explain": "The communication is ready but CasaZen does not transmit it: you have to send it yourself on the Alloggiati Web portal, within 24 hours of arrival (6 hours if the stay does not exceed 24 hours).",
+        "explain": "The communication is ready. If direct sending is not active for the property, CasaZen does not transmit it: you must send it yourself on the Alloggiati Web portal, within 24 hours of arrival (6 hours if the stay does not exceed 24 hours).",
         "need": [
           "Sending on the Alloggiati Web portal",
           "Recording the sending here, with the date"
@@ -30287,10 +30286,10 @@
       ],
       "bookingTitle": "Booking.com",
       "bookingSteps": [
-        "Log in to the Extranet",
-        "Go to Rates & Availability → Calendar",
-        "Click Export",
-        "Copy the iCal URL shown in the popup",
+        "Log in to the Booking.com Extranet",
+        "In Rates & availability open the section for syncing calendars (the names of the items may change)",
+        "Choose to export the calendar",
+        "Copy the iCal address that appears",
         "Paste it in the CasaZen iCal dialog"
       ],
       "vrboTitle": "VRBO",
@@ -31474,7 +31473,7 @@
       "inviteEmailPlaceholder": "supplier@example.com",
       "inviteSend": "Send invite",
       "inviteHint": "Enter the supplier’s email address. The relationship starts when the profile owner accepts.",
-      "inviteSuccess": "Request recorded. After verification the supplier will receive a link to accept.",
+      "inviteSuccess": "Invitation sent: the supplier receives an e-mail with the link to accept.",
       "inviteError": "Unable to send invite",
       "properties": "Assigned properties",
       "propertiesHint": "If you choose none, the supplier works on all your properties.",
@@ -33874,7 +33873,8 @@
       "reportCount_other": "{{count}} dues",
       "manualTitle": "Manual transfer",
       "manualHint": "If you do not link an account, use these details and then tell the manager.",
-      "noBank": "The transfer details are not available yet.",
+      "manualHintNoBank": "If you do not link an account, pay by bank transfer as your manager told you, then let them know.",
+      "noBank": "CasaZen does not show the IBAN here: use the one your manager gave you.",
       "period": "From {{from}} to {{to}}",
       "status": {
         "Scheduled": "To pay",
@@ -33928,7 +33928,7 @@
       "sent": "Request sent to the manager.",
       "failed": "The request could not be sent.",
       "sentToManager": "The request goes to the manager of the contract. You do not assign a supplier.",
-      "emergencyNotImmediate": "Opening the request does not mean someone is already on the way.",
+      "emergencyNotImmediate": "Opening the request does not mean someone is already on the way: CasaZen is not an emergency service and calls no one. If there is danger (flooding water, a smell of gas, sparks), call a technician or the emergency services right away.",
       "submittedAt": "Sent on {{date}}",
       "urgencyLevel": {
         "Normal": "Normal",
@@ -34035,13 +34035,13 @@
     "urgency": {
       "title": "How urgent is it?",
       "hint": "Choose one level.",
-      "bassa": "Low",
-      "normale": "Normal",
-      "urgente": "Urgent",
+      "bassa": "Normal",
+      "normale": "High",
+      "urgente": "Emergency",
       "detail": {
-        "bassa": "It can wait",
-        "normale": "In the next few days",
-        "urgente": "It is needed soon"
+        "bassa": "It can be scheduled.",
+        "normale": "Needed soon.",
+        "urgente": "Needed now: it cannot wait."
       }
     },
     "note": {

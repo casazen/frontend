@@ -88,7 +88,7 @@ Dopo la registrazione la pagina si chiama «Come vuoi usare CasaZen?» e ha cinq
 
 **Quanto paghi e quando.** Prima di pagare vedi il riepilogo con piano, extra e «Totale mensile», e sotto la scritta «IVA esclusa» o «IVA inclusa». Il pagamento è con carta, su Stripe. Finché non confermi il pagamento non si attiva nulla. Nelle schermate della registrazione non c'è l'indicazione di un periodo di prova gratuito: l'importo che vedi nel riepilogo è quello del piano scelto. Dopo la registrazione piano, carta e fatture si gestiscono in **Amministrazione › Fatturazione** ([[account-team-piano#cambiare-piano]]).
 
-> **Nota:** se in Fatturazione e piano vedi l'avviso «Accesso aperto», l'app dice che per ora non addebita nulla e che le funzioni sono sbloccate, e che il piano scelto vale quando riprenderà la fatturazione (ti avvisano prima). Lo trovi spiegato in [[account-team-piano#piano-limiti-e-moduli]].
+> **Nota:** se in Fatturazione e piano vedi l'avviso «Accesso aperto», l'app dice che per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo, ma che i pagamenti non cambiano: un abbonamento già attivo continua a essere addebitato, un piano scelto ora si paga da subito e i moduli a pagamento restano quelli che hai acquistato. Quando l'accesso aperto finirà valgono i limiti del piano che paghi (ti avvisano prima). Lo trovi spiegato in [[account-team-piano#piano-limiti-e-moduli]].
 
 ### La configurazione per chi ha già un account
 Se hai già un'organizzazione (per esempio sei stato invitato) non rivedi la procedura di acquisto. Puoi comunque:
@@ -205,10 +205,10 @@ Nelle tabelle «Funzionalità» la colonna «Disponibilità» ha tre valori:
 
 **A chi chiedere.** Se la pagina dice «Aggiungi questo modulo al tuo piano»: a chi gestisce il piano (titolare o amministratore), con «Gestisci piano e moduli». Se la funzione non c'è e non c'è un modulo da aggiungere: scrivi all'assistenza di CasaZen (in alto premi **Guida** e scegli «Scrivi all'assistenza»), dicendo quale funzione ti serve e il nome della tua organizzazione. L'app non indica i tempi di attivazione. Se è «In arrivo» non c'è nulla da chiedere.
 
-> **Nota:** «Accesso aperto» (Amministrazione › Fatturazione) alza i limiti del piano per un periodo, ma non accende le funzioni che CasaZen non ha ancora attivato.
+> **Nota:** «Accesso aperto» (Amministrazione › Fatturazione) fa seguire per un periodo a immobili, persone e dominio personalizzato un piano più alto del tuo, ma non cambia i pagamenti né i moduli a pagamento che hai acquistato, e non accende le funzioni che CasaZen non ha ancora attivato.
 
 ### Assistenza: come scrivere a CasaZen
-Il pulsante **Guida** (in alto a destra; su schermi stretti è l'icona della bussola) apre il pannello «La tua guida». In fondo, sotto «Ti serve una mano?», trovi «Apri il manuale di CasaZen» e, **se la tua installazione ha un indirizzo di assistenza**, «Scrivi all'assistenza». La stessa azione c'è in **«Cerca»**: scrivi «assistenza» o «aiuto».
+Il pulsante **Guida** (in alto a destra; su schermi stretti è l'icona della bussola) apre il pannello «La tua guida». In fondo, sotto «Ti serve una mano?», trovi «Apri il manuale di CasaZen» e, **se la tua installazione ha un indirizzo di assistenza**, «Scrivi all'assistenza». La stessa azione c'è in **«Cerca»**: scrivi «assistenza» o «aiuto». Sotto il titolo il pannello dice «Il manuale spiega ogni area con parole semplici.» e, solo se c'è l'indirizzo di assistenza, aggiunge «Se ti blocchi, scrivici: ti rispondiamo noi.»
 - Premendola si apre il programma di posta del computer o del telefono con un messaggio già indirizzato all'assistenza (da «Cerca» con oggetto «Richiesta di assistenza»). Serve quindi un programma di posta impostato. Non è una chat: non parte nulla finché non invii tu il messaggio.
 - Scrivi cosa stavi facendo, cosa ti aspettavi e cosa è successo, e il nome della tua organizzazione. **Non scrivere** password, dati di carte o documenti degli ospiti.
 - Se non vedi «Scrivi all'assistenza», la tua installazione non ha un indirizzo di assistenza: rivolgiti a chi ti ha dato accesso a CasaZen o a chi amministra il tuo account.
@@ -422,7 +422,7 @@ Non c'è un numero: si scrive. In alto premi **Guida**: nel pannello, sotto «Ti
 Leggi «Il primo giorno» in questa pagina oppure [[inizia-qui]]: account, prima casa, CIN, calendari, prezzi, attivazione, sito, team. Il pulsante **Guida** in alto a destra ti dice sempre il prossimo passo.
 
 ### Devo pagare per usare CasaZen? Quanto costa?
-I piani (Starter, Pro, Scale, Agency) e i prezzi li vedi prima di pagare, al passaggio «Piano e funzionalità», e poi in **Amministrazione › Fatturazione**. Si paga con carta su Stripe. Se in «Fatturazione e piano» leggi «Accesso aperto», l'app dice che per ora non addebita nulla. Vedi «Quanto paghi e quando».
+I piani (Starter, Pro, Scale, Agency) e i prezzi li vedi prima di pagare, al passaggio «Piano e funzionalità», e poi in **Amministrazione › Fatturazione**. Si paga con carta su Stripe. Se in «Fatturazione e piano» leggi «Accesso aperto», l'app dice che per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo, ma che i pagamenti non cambiano. Vedi «Quanto paghi e quando».
 
 ### Non ho un invito: come faccio a registrarmi?
 Premi «Richiedi un invito» sul sito pubblico di CasaZen, oppure chiedi a un host che usa già CasaZen di invitarti. Passi in «Ottenere un invito a CasaZen».
@@ -454,7 +454,7 @@ Il titolare è uno solo (chi ha creato l'organizzazione), non si può togliere n
 - **In arrivo**: funzione che non c'è ancora; non si può chiedere né attivare.
 - **Modulo**: funzione extra del piano (per esempio «CRM e Marketing»); lo stato dei moduli sta in Amministrazione › Fatturazione.
 - **Piano**: l'abbonamento (Starter, Pro, Scale, Agency) che stabilisce quante case e persone puoi avere e quali funzioni usi.
-- **Accesso aperto**: avviso in «Fatturazione e piano» con cui l'app dice che per ora non addebita nulla e sblocca i limiti del piano.
+- **Accesso aperto**: avviso in «Fatturazione e piano» con cui l'app dice che per ora immobili, persone e dominio personalizzato seguono un piano più alto del tuo; i pagamenti non cambiano.
 - **Stripe**: il servizio di pagamento con carta usato da CasaZen; i dati della carta restano a Stripe.
 - **CIN**: codice nazionale che identifica ogni casa in affitto breve in Italia; va esposto fuori dalla casa e scritto negli annunci. Lo chiedi sul portale del Ministero del Turismo (BDSR).
 - **Cruscotto / Home**: la pagina iniziale di un'area; in Affitti brevi si chiama «Cruscotto».

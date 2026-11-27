@@ -43,6 +43,11 @@ export interface ComplianceActionTarget {
   fallback?: ComplianceActionRoute;
   /** The permission that does what the action asks: whoever lacks it is led to the page ("Apri"), not told to do it. */
   write: 'property.write' | 'booking.write' | 'payment.write' | 'alloggiati.submit';
+  /**
+   * The action has no screen where it is done: the item says what is to do and where (its reason) and offers no button (`complianceActionRoute` is `null` for everyone).
+   * `route` is then only the page the item belongs to.
+   */
+  noPage?: true;
 }
 
 /**
@@ -130,10 +135,13 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/alloggiati/reports', query: { kind: 'IstatProof', property: true, period: true } },
     write: 'alloggiati.submit',
   },
+  // The rate of the municipality is entered in the guided check-in of a stay, at the step «Imposta di soggiorno»: the item is the property's and names no stay, and the page of the
+  // property has no field for it. So there is no button (INC-14); the reason of the item says where to enter it.
   EnterMunicipalityTaxRate: {
     target: 'property',
     route: { path: '/app/short-rent/properties/:id' },
     write: 'property.write',
+    noPage: true,
   },
   // The receipt of a tax declaration is a record of money: whoever may not write payments is led to the archive and told "Apri".
   DeclareTouristTax: {
@@ -201,7 +209,7 @@ export function complianceActionRoute(
   hasPermission?: PermissionPredicate,
 ): string | null {
   const target = Object.hasOwn(COMPLIANCE_ACTION_TARGETS, item.action) ? COMPLIANCE_ACTION_TARGETS[item.action] : undefined;
-  if (!target) return null;
+  if (!target || target.noPage) return null;
   const id = target.target === 'property' ? item.propertyId : item.bookingId;
   if (!id) return null;
   return (
@@ -212,11 +220,10 @@ export function complianceActionRoute(
 
 /**
  * Whether an address of `complianceActionRoute` is the one the person is already at: the same page, with every parameter it carries (the tab, the
- * filters) already in the address of the page. The tourist tax rate of a property leads to the page of the property, and a card on
- * that page (it sits above every tab) that offered them would offer a button that opens the page it is on and changes nothing: the card leaves the
- * button out, and still says what is wrong and why. The police send opens the wizard that activates it, which is another page (for who may only read the property
- * it opens the section of its connection health, `?section=connection-health`, which is
- * not the address the person is on until they have opened it); the tourist tax rate has no page where it is entered yet, so its button stays out.
+ * filters) already in the address of the page. A card on the page of the property (it sits above every tab) that offered a button to that same page would offer one that
+ * opens the page it is on and changes nothing: the card leaves the button out, and still says what is wrong and why. The police send opens the wizard that activates it,
+ * which is another page (for who may only read the property it opens the section of its connection health, `?section=connection-health`, which is not the address the
+ * person is on until they have opened it). The tourist tax rate has no page of its own (it is entered in the guided check-in of a stay): it has no route at all.
  */
 export function isCurrentAddress(address: string, location: { pathname: string; search: string }): boolean {
   const [path, query = ''] = address.split('?');

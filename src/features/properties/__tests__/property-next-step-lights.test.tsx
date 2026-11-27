@@ -101,17 +101,18 @@ afterEach(() => {
 
 // E03/F03/US01/T02 (NF-52, AC-NF52-9): the property card shows the light of its compliance items, with the same component and words as the page.
 describe('PropertyNextStep and the compliance lights of the property', () => {
-  // The tourist tax rate leads to the page of the property: the card is on that page and the page has no field for it yet.
-  it('PropertyNextStep_RedEnterMunicipalityTaxRate_SaysWhatIsWrongAndOffersNoButtonThatOpensThePageItIsOn', async () => {
+  // The tourist tax rate has no page of its own (it is entered in the guided check-in of a stay): the reason says where, and there is no button (INC-14).
+  it('PropertyNextStep_RedEnterMunicipalityTaxRate_SaysWhereTheRateIsEnteredAndOffersNoButton', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('EnterMunicipalityTaxRate', 'Red', 'municipality_rate_missing')) }));
     renderStep();
 
     const block = await screen.findByTestId('property-next-step');
     await waitFor(() => expect(block).toHaveAttribute('data-next-step', 'compliance'));
     expect(block).toHaveTextContent("Inserisci l'imposta di soggiorno del comune: Casa Como");
-    expect(block).toHaveTextContent("Non conosciamo l'imposta di soggiorno del comune: inseriscila (non vale zero).");
+    // As the manual says: in the guided check-in of a stay, at the step «Imposta di soggiorno».
+    expect(block).toHaveTextContent("Non conosciamo l'imposta di soggiorno del comune: inseriscila nel check-in guidato di un soggiorno, al passo «Imposta di soggiorno» (non vale zero).");
     expect(block).toHaveAttribute('data-tone', 'warning');
-    // A button to `/properties/<id>` would open the page it is on and do nothing: the block leads back to the list and does not say «Tocca a te».
+    // No page enters the rate, so no button: the block leads back to the list and does not say «Tocca a te».
     expect(screen.queryByTestId('property-next-compliance')).not.toBeInTheDocument();
     expect(within(block).queryByRole('link', { name: /Controlla l'invio|Inserisci l'imposta/ })).not.toBeInTheDocument();
     expect(block).not.toHaveTextContent('Tocca a te');

@@ -17,7 +17,7 @@ In **Affitti brevi › Incassi** trovi tutti i pagamenti delle tue prenotazioni:
 
 Per far pagare online gli ospiti serve collegare **Stripe** in **Impostazioni › Stripe Connect** (la pagina si chiama «Incassi online»). **Finché lo stato non è «Attivo», il tuo sito non prende prenotazioni, nemmeno con «Paga in struttura»**: l'ospite legge «Le prenotazioni online sono in pausa» e può solo scriverti. Cosa serve e come si fa: [[incassi#collegare-stripe-per-ricevere-i-pagamenti-online]].
 
-> **Attenzione:** se annulli tu una prenotazione pagata con carta, CasaZen rimborsa sempre **tutto** ciò che l'ospite ha pagato con carta, qualunque importo scriva tu, e il rimborso non si può ritirare. Quando annulli tu non esiste un rimborso parziale: vedi [[incassi#annullare-una-prenotazione-e-rimborsare-chi-ha-pagato]].
+> **Attenzione:** se annulli tu una prenotazione pagata con carta, CasaZen rimborsa sempre **tutto** ciò che l'ospite ha pagato con carta, e l'annullamento e il rimborso non si possono annullare né ritirare. Quando annulli tu non esiste un rimborso parziale: vedi [[incassi#annullare-una-prenotazione-e-rimborsare-chi-ha-pagato]].
 
 ## Funzionalità
 | Funzionalità | Cosa fa | Dove si trova | Chi può usarla | Disponibilità | Come si usa |
@@ -89,7 +89,7 @@ Per ricevere pagamenti online la tua organizzazione ha un **account Stripe** col
 I tre stati, che vedi in **Impostazioni › Stripe Connect**:
 - **Non collegato**: nessun account. La pagina mostra «Sito prenotazioni non ancora attivo» e il pulsante «Collega Stripe».
 - **In verifica**: l'account esiste ma Stripe non ha ancora abilitato i pagamenti con carta: manca qualche dato, o Stripe sta ancora controllando. Se Stripe chiede altro vedi «Verifica incompleta» e il pulsante «Completa la verifica».
-- **Attivo**: Stripe ha abilitato i pagamenti con carta. Vedi il messaggio «Il tuo account può accettare pagamenti. I fondi vengono accreditati direttamente sul tuo conto Stripe — CasaZen non trattiene i tuoi incassi».
+- **Attivo**: Stripe ha abilitato i pagamenti con carta. Vedi il messaggio «Stripe ha abilitato i pagamenti con carta sul tuo account: gli ospiti possono pagare. I fondi vengono accreditati direttamente sul tuo conto Stripe — CasaZen non trattiene i tuoi incassi». «Attivo» riguarda i pagamenti con carta: se Stripe non ha ancora abilitato anche i bonifici verso il tuo conto bancario, sotto compare una seconda riga, «I bonifici verso il tuo conto bancario non sono ancora abilitati su Stripe: finché non lo sono, i soldi restano nel saldo Stripe. Controlla su Stripe.». Lo stato resta «Attivo».
 
 **Cosa succede al sito finché non è «Attivo».** Al posto del modulo di prenotazione l'ospite legge «Le prenotazioni online sono in pausa» (con il tuo nome e un pulsante per scriverti). Non può prenotare in nessun modo, nemmeno con «Paga in struttura»: anche quella richiesta ha bisogno di Stripe «Attivo».
 
@@ -116,8 +116,8 @@ Ogni immobile ha una **politica di cancellazione** scelta tra le cinque di CasaZ
 In tutte l'imposta di soggiorno, se pagata, torna sempre per intero. Il «prezzo del soggiorno» è alloggio più pulizie. Le ore si contano fino all'inizio del giorno di check-in (ora italiana). Se hai personalizzato il rimborso dell'immobile (vedi sotto), valgono i tuoi numeri.
 
 - **Se l'ospite annulla da solo** (con il link ricevuto o da «Le mie prenotazioni»): riceve la percentuale della politica applicata al prezzo del soggiorno **più tutta l'imposta di soggiorno**, mai più di quello che può essere rimborsato. Se l'immobile non ha una politica, gli viene restituita solo l'imposta di soggiorno.
-- **Se annulli tu** la prenotazione, CasaZen rimborsa **sempre tutto ciò che l'ospite ha pagato con carta** (meno quanto è già stato rimborsato), qualunque sia la politica e qualunque importo tu scriva: non puoi trattenere una parte. Nella finestra vedi solo «Rimborso totale» con l'importo; la frase sulla regola che si applica è solo informativa. Per i pagamenti in contanti o bonifico il rimborso resta a te.
-- **Se non scegli nessuna politica**: il passo dell'immobile scrive che «il rimborso totale vale fino a 7 giorni prima dell'arrivo; dopo, decidi tu caso per caso», ma non è quello che fa CasaZen quando l'ospite annulla da solo: gli restituisce soltanto l'imposta di soggiorno, e il sito non promette nessuna cancellazione gratuita. I 7 giorni servono solo a decidere il giorno dell'addebito di «Paga alla scadenza». Scegli sempre una politica.
+- **Se annulli tu** la prenotazione, CasaZen rimborsa **sempre tutto ciò che l'ospite ha pagato con carta** (meno quanto è già stato rimborsato), qualunque sia la politica: non puoi trattenere una parte. Nella finestra vedi «Rimborso totale» con l'importo e la frase che dice che non puoi rimborsare meno: non c'è nessun importo da scegliere. Per i pagamenti in contanti o bonifico il rimborso resta a te.
+- **Se non scegli nessuna politica**: il passo dell'immobile lo dice chiaro: un ospite che cancella da solo riceve indietro soltanto l'imposta di soggiorno già pagata (non il prezzo del soggiorno) e il sito non promette nessuna cancellazione gratuita. Senza politica, il giorno dell'addebito di «Paga alla scadenza» è 7 giorni prima dell'arrivo. Scegli sempre una politica.
 - **Personalizzare il rimborso**: nel modulo dell'immobile puoi cambiare le ore del rimborso totale, le ore e la percentuale del rimborso parziale, oppure segnare il soggiorno come «Non rimborsabile». Vale per i soggiorni sotto le 28 notti; dalle 28 notti in su resta la politica di CasaZen senza modifiche.
 - Il sito di prenotazione scrive «Cancellazione gratuita fino al…» solo se la politica prevede davvero un rimborso totale fino a quel giorno.
 
@@ -238,8 +238,8 @@ Se vedi «Questo pagamento non è passato da Stripe: il rimborso va fatto fuori 
 > **Attenzione:** quando annulli tu, CasaZen rimborsa **sempre tutto** ciò che l'ospite ha pagato con carta, qualunque sia la politica di cancellazione. Non si può rimborsare meno da questa finestra. L'annullamento e il rimborso **non si possono annullare né ritirare**. Se non vuoi rimborsare tutto, non confermare.
 
 1. Apri la prenotazione e premi «Annulla prenotazione».
-2. CasaZen calcola pagamenti e rimborsi e ti mostra: «Pagato con Stripe», «Già rimborsato», «Rimborsi in attesa di Stripe», «Rimborsabile ora». Se una parte è stata pagata in contanti o bonifico, vedi un avviso: il rimborso di quella parte va gestito a parte, da te.
-3. Leggi la riga sulla regola che si applica (cancellazione gratuita mostrata all'ospite, condizioni della politica o nessuna regola): è solo informativa, perché il rimborso è comunque totale. Se qualcosa è stato pagato con carta, sotto vedi «Rimborso totale» con l'importo che verrà restituito; se non è stato pagato nulla con carta vedi «Nessun rimborso richiesto» dopo l'annullamento.
+2. CasaZen calcola pagamenti e rimborsi e, se c'è qualcosa da rimborsare sulla carta, ti mostra: «Pagato con Stripe», «Già rimborsato» e «Rimborsi in attesa di Stripe» (quando ci sono), «Rimborsabile ora». Se una parte è stata pagata in contanti o bonifico, vedi un avviso: il rimborso di quella parte va gestito a parte, da te.
+3. Sotto vedi «Rimborso totale» con l'importo che verrà restituito e due frasi: quando annulli tu, l'ospite riceve sempre tutto ciò che ha pagato con carta, qualunque sia la politica di cancellazione, e non puoi rimborsare meno; l'annullamento e il rimborso non si possono annullare né ritirare. Non c'è nessun importo da scegliere. Se non c'è niente da rimborsare sulla carta questo blocco non compare e, dopo l'annullamento, vedi «Nessun rimborso richiesto».
 4. Se vuoi, scrivi il «Motivo (visibile solo a te)».
 5. Premi «Annulla prenotazione» per confermare, oppure «Non annullare» per lasciare tutto com'era.
 
@@ -253,7 +253,7 @@ Una prenotazione arrivata da un portale ha un'altra finestra, «Chiedi al tuo ch
 2. Nel passo «Quali regole valgono in casa?» cerca il blocco «Se l'ospite cancella» e scegli una delle politiche. Sotto ognuna leggi quanto rimborsi e quando.
 3. Salva.
 
-Se non scegli nessuna politica il passo scrive che il rimborso totale vale fino a 7 giorni prima dell'arrivo: non fidartene (vedi «Politiche di cancellazione e importi»). Per avere regole chiare e un rimborso automatico per gli ospiti che annullano da soli, scegli sempre una politica. Per i dettagli dell'immobile vedi [[immobili]].
+Se non scegli nessuna politica il passo lo dice chiaro: un ospite che cancella da solo riceve indietro soltanto l'imposta di soggiorno già pagata (non il prezzo del soggiorno) e il sito non promette nessuna cancellazione gratuita (vedi «Politiche di cancellazione e importi»). Per avere regole chiare e un rimborso automatico per gli ospiti che annullano da soli, scegli sempre una politica. Per i dettagli dell'immobile vedi [[immobili]].
 
 ### Personalizzare il rimborso di un immobile
 **Ti serve:** il permesso di modificare gli immobili.
@@ -342,7 +342,7 @@ Quasi sempre perché Stripe non è «Attivo». Apri **Impostazioni › Stripe Co
 Compare solo sui pagamenti con carta, già incassati o rimborsati in parte, e solo se puoi modificare i pagamenti. Per contanti e bonifico non esiste: il rimborso lo fai tu.
 
 ### Se annullo io una prenotazione, posso rimborsare solo una parte?
-No. Quando annulli tu, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, anche se scrivi un importo più basso o se la politica prevedrebbe meno. Il rimborso non si può ritirare. Per restituire una cifra a un ospite senza annullare la prenotazione usa «Rimborsa» dalla pagina del pagamento.
+No. Quando annulli tu, CasaZen rimborsa sempre tutto ciò che l'ospite ha pagato con carta, anche se la politica prevedrebbe meno: nella finestra non c'è nessun importo da scrivere. L'annullamento e il rimborso non si possono annullare né ritirare. Per restituire una cifra a un ospite senza annullare la prenotazione usa «Rimborsa» dalla pagina del pagamento.
 
 ### Cosa succede se l'addebito di «Paga alla scadenza» non riesce?
 L'ospite riceve una e-mail con il link per pagare e tu un avviso. CasaZen riprova un numero limitato di volte; se il pagamento non arriva in tempo, annulla da sola la prenotazione e libera le date.
@@ -360,7 +360,7 @@ Nella pagina del pagamento non c'è un pulsante per modificarlo. Scrivi all'assi
 No. Il «Deposito cauzionale» è solo un dato della scheda dell'immobile: non viene addebitato né bloccato sulla carta.
 
 ### Cosa succede se non scelgo una politica di cancellazione?
-Se l'ospite annulla da solo, gli viene restituita solo l'imposta di soggiorno, anche se il passo dell'immobile parla di 7 giorni. Se annulli tu, il rimborso è comunque totale. Conviene scegliere sempre una politica.
+Se l'ospite annulla da solo, gli viene restituita solo l'imposta di soggiorno già pagata e il sito non promette nessuna cancellazione gratuita. Se annulli tu, il rimborso è comunque totale. Conviene scegliere sempre una politica.
 
 ### Quanto dura un rimborso?
 Dopo l'invio, Stripe lo conferma e la banca dell'ospite lo accredita. CasaZen dice agli ospiti che di solito compare entro 5-10 giorni, ma dipende dalla banca o dall'emittente della carta.

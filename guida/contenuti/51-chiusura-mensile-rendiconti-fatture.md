@@ -130,7 +130,7 @@ Se il saldo non torna, o è negativo, si può chiudere solo con un **motivo scri
 3. Leggi il riquadro in alto, «Chiusura di» e il mese: dice quanti rendiconti sono senza anomalie (per esempio «80% pronti: 8 su 10») e «Tutto in ordine: puoi andare avanti» oppure «N anomalie da risolvere prima di chiudere».
 4. Se nel mese non c'è niente vedi «Nessun rendiconto da preparare»; se tutto è chiuso, «… è chiuso».
 
-Se vedi «Serve il piano Agenzia» (è il piano Agency) o «Serve l'amministratore dell'organizzazione», la tua organizzazione o il tuo ruolo non permettono questa pagina ([[agenzie-proprietari#capire-se-la-tua-organizzazione-ha-il-piano-agency]]).
+Se vedi «Serve il piano Agency» o «Serve l'amministratore dell'organizzazione», la tua organizzazione o il tuo ruolo non permettono questa pagina ([[agenzie-proprietari#capire-se-la-tua-organizzazione-ha-il-piano-agency]]).
 
 **Prima di chiudere il primo mese tieni pronto:** le commissioni dei portali (se le prenotazioni non le riportano), i cambi (se i proprietari sono pagati in valute diverse), il mandato e i dati finanziari di ogni proprietario validi dal primo mese da chiudere, le quote di ogni immobile al 100% e una regola fiscale approvata dal commercialista. Se manca qualcosa lo scopri comunque dalle anomalie dopo «Controlla il mese».
 

@@ -37,7 +37,12 @@ const permissions =
   (contextKey: AppContextKey, permission: string): boolean =>
     contextKey === 'short-rent' && granted.includes(permission);
 
-const EXPECTED: Record<ComplianceCockpitAction, string> = {
+/** The actions that have no screen where they are done: they offer no route to anyone (INC-14). */
+const NO_PAGE_ACTIONS = ['EnterMunicipalityTaxRate'] as const;
+type NoPageAction = (typeof NO_PAGE_ACTIONS)[number];
+const ACTIONS_WITH_A_PAGE = COMPLIANCE_COCKPIT_ACTIONS.filter((action): action is Exclude<ComplianceCockpitAction, NoPageAction> => !(NO_PAGE_ACTIONS as readonly string[]).includes(action));
+
+const EXPECTED: Record<Exclude<ComplianceCockpitAction, NoPageAction>, string> = {
   ActivateProperty: `/app/short-rent/properties/${PROPERTY_ID}/activation`,
   CompleteGuestCheckIn: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
   CheckOut: `/app/short-rent/bookings/${BOOKING_ID}/checkout`,
@@ -51,7 +56,6 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
   ActivateOctorateSend: `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`,
   SendAlloggiatiManually: `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`,
   UploadIstatProof: `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}`,
-  EnterMunicipalityTaxRate: `/app/short-rent/properties/${PROPERTY_ID}`,
   DeclareTouristTax: `/app/short-rent/alloggiati/reports?kind=TouristTaxDeclaration&property=${PROPERTY_ID}`,
   RenewPoliceCredentials: '/app/short-rent/alloggiati',
   // casazen/backend#979: the guided notification of a Ticino property to the cantonal police is a layer of the cockpit (E30/F02/US03/T02); without a day it opens on the first one to notify.
@@ -61,7 +65,7 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
 };
 
 describe('complianceActionRoute (CO-04, A5-09)', () => {
-  it.each(COMPLIANCE_COCKPIT_ACTIONS)('complianceActionRoute_%s_IsAShortRentRouteOfTheManifest', (action) => {
+  it.each(ACTIONS_WITH_A_PAGE)('complianceActionRoute_%s_IsAShortRentRouteOfTheManifest', (action) => {
     const route = complianceActionRoute(itemFor(action));
 
     expect(route).not.toBeNull();
@@ -73,8 +77,16 @@ describe('complianceActionRoute (CO-04, A5-09)', () => {
     if (tab !== null) expect(BOOKING_TABS).toContain(tab);
   });
 
-  it.each(COMPLIANCE_COCKPIT_ACTIONS)('complianceActionRoute_%s_OpensTheScreenOfTheAction', (action) => {
+  it.each(ACTIONS_WITH_A_PAGE)('complianceActionRoute_%s_OpensTheScreenOfTheAction', (action) => {
     expect(complianceActionRoute(itemFor(action))).toBe(EXPECTED[action]);
+  });
+
+  it.each(NO_PAGE_ACTIONS)('complianceActionRoute_%s_HasNoPageAndOffersNoButtonToAnyone', (action) => {
+    // The rate of the municipality is entered in the guided check-in of a stay, and the item names no stay: the reason says where, and there is no button, whoever looks at it.
+    expect(COMPLIANCE_ACTION_TARGETS[action].noPage).toBe(true);
+    expect(complianceActionRoute(itemFor(action))).toBeNull();
+    expect(complianceActionRoute(itemFor(action), permissions(['property.read', 'property.write', 'booking.read', 'booking.write']))).toBeNull();
+    expect(complianceActionRoute({ ...itemFor(action), period: '2026-09' })).toBeNull();
   });
 
   it.each(COMPLIANCE_COCKPIT_ACTIONS)('complianceActionTargets_%s_FallbackIsAManifestRoute', (action) => {
@@ -104,7 +116,7 @@ describe('complianceActionRoute (CO-04, A5-09)', () => {
   it('complianceActionRoute_WithTheWritePermissions_OpensTheScreenOfTheAction', () => {
     const writer = permissions(['property.read', 'property.write', 'booking.read', 'booking.write']);
 
-    for (const action of COMPLIANCE_COCKPIT_ACTIONS) {
+    for (const action of ACTIONS_WITH_A_PAGE) {
       expect(complianceActionRoute(itemFor(action), writer)).toBe(EXPECTED[action]);
     }
   });
@@ -226,7 +238,7 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
 
   it('complianceActionRoute_PeriodOnAnActionThatTakesNone_IsNotInTheAddress', () => {
     // Only the pages that open filtered take the month: the others are the same address whatever the item says.
-    expect(complianceActionRoute(periodItem('EnterMunicipalityTaxRate', '2026-09'))).toBe(EXPECTED.EnterMunicipalityTaxRate);
+    expect(complianceActionRoute(periodItem('ActivateOctorateSend', '2026-09'))).toBe(EXPECTED.ActivateOctorateSend);
     expect(complianceActionRoute(periodItem('SendAlloggiatiManually', '2026-09'))).toBe(EXPECTED.SendAlloggiatiManually);
   });
 
@@ -238,7 +250,6 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
     expect(complianceActionRoute(periodItem('UploadIstatProof', '2026-09'), propertyOnly)).toBeNull();
     expect(complianceActionRoute(itemFor('RenewPoliceCredentials'), propertyOnly)).toBeNull();
     expect(complianceActionRoute(itemFor('ActivateOctorateSend'), bookingOnly)).toBeNull();
-    expect(complianceActionRoute(itemFor('EnterMunicipalityTaxRate'), bookingOnly)).toBeNull();
     expect(complianceActionRoute(periodItem('UploadIstatProof', '2026-09'), bookingOnly)).toBe(
       `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}&period=2026-09`,
     );
@@ -253,18 +264,9 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
   });
 });
 
-// A card on the page of the property must not offer a button that opens the page it is on (the tourist tax rate leads there; the police send opens its wizard, or its section for who may only read).
+// A card on the page of the property must not offer a button that opens the page it is on (the police send opens its wizard, or its section for who may only read).
 describe('isCurrentAddress', () => {
   const propertyPage = `/app/short-rent/properties/${PROPERTY_ID}`;
-
-  it('isCurrentAddress_EnterMunicipalityTaxRate_IsThePageOfThePropertyWhateverTabItIsOn', () => {
-    const address = complianceActionRoute(itemFor('EnterMunicipalityTaxRate'))!;
-
-    expect(address).toBe(propertyPage);
-    expect(isCurrentAddress(address, { pathname: propertyPage, search: '' })).toBe(true);
-    // The tab is what a button may change, but the page of the property has no field for the rate in any tab: nothing to offer.
-    expect(isCurrentAddress(address, { pathname: propertyPage, search: '?tab=documents' })).toBe(true);
-  });
 
   it('isCurrentAddress_ActivateOctorateSend_IsTheWizardAndNeverThePageOfThePropertyTheCardIsOn', () => {
     const address = complianceActionRoute(itemFor('ActivateOctorateSend'))!;

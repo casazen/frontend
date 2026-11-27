@@ -118,14 +118,17 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
     cleanup();
   });
 
-  it('confirm_FullRefundByDefault_SendsWholeRefundableAmount', async () => {
-    vi.mocked(bookingsApi.getCancellationQuote).mockResolvedValue(quote());
+  it('confirm_HostCancellation_AsksForTheWholeRefundableAmountAndSaysTheRefundIsTotalAndFinal', async () => {
+    vi.mocked(bookingsApi.getCancellationQuote).mockResolvedValue(quote({ minimumRefundAmount: 400 }));
     vi.mocked(bookingsApi.cancel).mockResolvedValue(
       cancelled([{ id: 'r1', paymentId: 'p1', amount: 400, status: 'Succeeded', origin: 'BookingCancellation', createdAt: '2026-09-24T10:00:00Z' }]),
     );
     renderDialog();
 
-    expect(await screen.findByText(/scegli tu quanto rimborsare, fino a 400,00\s€/)).toBeInTheDocument();
+    // What the server does for the host (BK-02, PO 2026-10-08): everything paid by card goes back, and it cannot be taken back.
+    expect(await screen.findByTestId('cancel-full-refund')).toHaveTextContent(/Rimborso totale \(400,00\s€\)/);
+    expect(screen.getByText(/l'ospite riceve sempre tutto ciò che ha pagato con carta, qualunque sia la politica di cancellazione: non puoi rimborsare meno/)).toBeInTheDocument();
+    expect(screen.getByTestId('cancel-irreversible')).toHaveTextContent('L\'annullamento e il rimborso non si possono annullare né ritirare.');
     fireEvent.click(screen.getByRole('button', { name: 'Annulla prenotazione' }));
 
     await waitFor(() => expect(bookingsApi.cancel).toHaveBeenCalledWith(BOOKING_ID, { refundAmount: 400, reason: undefined }));
@@ -133,45 +136,34 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
     expect(screen.getByText(/Rimborso di 400,00\s€ confermato da Stripe/)).toBeInTheDocument();
   });
 
-  it('confirm_PartialRefund_SendsChosenAmountAndShowsPendingRefund', async () => {
+  it.each([
+    ['no rule', quote()],
+    ['a policy of the property', quote({ rule: 'PropertyCancellationPolicy', cancellationPolicyName: 'Moderata', minimumRefundAmount: 200 })],
+    ['a free cancellation deadline', quote({ rule: 'FreeCancellationDeadline', freeCancellationUntil: '2026-10-13T00:00:00Z', minimumRefundAmount: 400 })],
+  ])('render_HostCancellationWith_%s_OffersNoChoiceOfAmount', async (_name, answer) => {
+    vi.mocked(bookingsApi.getCancellationQuote).mockResolvedValue(answer);
+    renderDialog();
+
+    await screen.findByTestId('cancel-full-refund');
+    // The partial refund, the amount and the sentences that promised them are not in the dialog: the host cannot refund less.
+    expect(screen.queryByLabelText('Rimborso parziale')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Importo da rimborsare')).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(screen.queryByText(/scegli tu quanto rimborsare/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/rimborso minimo/)).not.toBeInTheDocument();
+  });
+
+  it('confirm_RefundStillWaitingForStripe_IsNeverShownAsConfirmed', async () => {
     vi.mocked(bookingsApi.getCancellationQuote).mockResolvedValue(quote());
     vi.mocked(bookingsApi.cancel).mockResolvedValue(
-      cancelled([{ id: 'r1', paymentId: 'p1', amount: 150, status: 'Pending', origin: 'BookingCancellation', createdAt: '2026-09-24T10:00:00Z' }]),
+      cancelled([{ id: 'r1', paymentId: 'p1', amount: 400, status: 'Pending', origin: 'BookingCancellation', createdAt: '2026-09-24T10:00:00Z' }]),
     );
     renderDialog();
 
-    fireEvent.click(await screen.findByLabelText('Rimborso parziale'));
-    fireEvent.change(screen.getByLabelText('Importo da rimborsare'), { target: { value: '150,50' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Annulla prenotazione' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Annulla prenotazione' }));
 
-    await waitFor(() => expect(bookingsApi.cancel).toHaveBeenCalledWith(BOOKING_ID, { refundAmount: 150.5, reason: undefined }));
     expect(await screen.findByText(/Stripe non l'ha ancora confermato/)).toBeInTheDocument();
     expect(screen.queryByText(/confermato da Stripe/)).not.toBeInTheDocument();
-  });
-
-  it('confirm_PartialBelowPolicyMinimum_BlocksWithoutCallingApi', async () => {
-    vi.mocked(bookingsApi.getCancellationQuote).mockResolvedValue(
-      quote({ rule: 'PropertyCancellationPolicy', cancellationPolicyName: 'Moderata', minimumRefundAmount: 200 }),
-    );
-    renderDialog();
-
-    expect(await screen.findByText(/Condizioni di cancellazione «Moderata»: rimborso minimo 200,00\s€/)).toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText('Rimborso parziale'));
-    fireEvent.change(screen.getByLabelText('Importo da rimborsare'), { target: { value: '100' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Annulla prenotazione' }));
-
-    expect(await screen.findByText(/L'importo deve essere tra 200,00\s€ e 400,00\s€/)).toBeInTheDocument();
-    expect(bookingsApi.cancel).not.toHaveBeenCalled();
-  });
-
-  it('render_FreeCancellationDeadline_OffersOnlyFullRefund', async () => {
-    vi.mocked(bookingsApi.getCancellationQuote).mockResolvedValue(
-      quote({ rule: 'FreeCancellationDeadline', freeCancellationUntil: '2026-10-13T00:00:00Z', minimumRefundAmount: 400 }),
-    );
-    renderDialog();
-
-    expect(await screen.findByText(/cancellazione gratuita fino al 13 ottobre 2026/)).toBeInTheDocument();
-    expect(screen.queryByLabelText('Rimborso parziale')).not.toBeInTheDocument();
   });
 
   it('confirm_UnpaidBookingWithIntent_CancelsWithoutRefundDecision', async () => {

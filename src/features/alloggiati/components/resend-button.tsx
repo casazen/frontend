@@ -33,9 +33,10 @@ interface MarkSentManuallyButtonProps {
 }
 
 /**
- * Former "Resend" button (CO-11). CasaZen does not transmit to Alloggiati Web yet, so there is nothing to resend:
- * the host sends the schedina on the Questura portal and declares it here, with confirmation and date. Disabled
- * once sent (receipt) or declared sent, and before the arrival day.
+ * Former "Resend" button (CO-11). The button transmits nothing, so there is nothing to resend: the host sends the schedina on the
+ * Questura portal (the direct send of CasaZen, on activation, is a process of its own and does not use it) and declares it here, with
+ * confirmation and date. Disabled once sent (receipt) or declared sent, and before the arrival day. The declaration stops the alerts and
+ * closes the guest's online check-in (the link is no longer sent), and it cannot be undone from here: the dialog says so before it is confirmed.
  */
 export function MarkSentManuallyButton({ bookingId, status, checkInDate, reportedAt }: MarkSentManuallyButtonProps) {
   const { t } = useTranslation();
@@ -95,6 +96,9 @@ export function MarkSentManuallyButton({ bookingId, status, checkInDate, reporte
             <DialogDescription>{t('alloggiati.markSentDialog.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <p className="text-sm" data-testid="alloggiati-mark-sent-consequences">
+              {t('alloggiati.markSentDialog.consequences')}
+            </p>
             <div className="space-y-2">
               <Label htmlFor={`alloggiati-sent-on-${bookingId}`}>{t('alloggiati.markSentDialog.dateLabel')}</Label>
               <Input
