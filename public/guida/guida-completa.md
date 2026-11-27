@@ -8201,7 +8201,7 @@ Funzionalità: Collegamento di un dominio proprio; Cosa fa: Verifica il dominio 
 Funzionalità: Stato e controllo del dominio; Cosa fa: Dice se il dominio è «Attivo», in attesa o non attivo; «Controlla ora»; Dove si trova: Impostazioni › Dominio pubblico › «Configurazione attuale»; Chi può usarla: amministratore; Disponibilità: Disponibile; Come si usa: Controllare lo stato del dominio
 Funzionalità: Cosa passa dal tuo dominio; Cosa fa: Area ospite, portale proprietari e link delle e-mail con il tuo indirizzo; Dove si trova: Impostazioni › Dominio pubblico › «Cosa passa dal tuo dominio»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Far passare area ospite e link dal tuo dominio
 Funzionalità: Widget da incollare; Cosa fa: Prenotazione, un alloggio, area ospite, barra di ricerca; Dove si trova: Impostazioni › Incorpora nel tuo sito; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Incollare un widget nel tuo sito
-Funzionalità: Plugin per WordPress; Cosa fa: Blocchi, shortcode e pagine già pronte per un sito WordPress; Dove si trova: Impostazioni › Incorpora nel tuo sito › «Plugin per WordPress»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Installare il plugin per WordPress
+Funzionalità: Plugin per WordPress; Cosa fa: Blocchi, shortcode e pagine già pronte per un sito WordPress; con «Connetti a CasaZen» l'indirizzo si compila da solo e il dominio si gestisce da WordPress; Dove si trova: Impostazioni › Incorpora nel tuo sito › «Plugin per WordPress»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Installare il plugin per WordPress
 Funzionalità: Google Tag Manager; Cosa fa: Carica il tuo contenitore sulle pagine di prenotazione del tuo dominio, con il consenso dell'ospite; Dove si trova: Impostazioni › Incorpora nel tuo sito › «Google Tag Manager»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Collegare Google Tag Manager
 
 ### Come funziona
@@ -8267,8 +8267,10 @@ Cosa devi sapere:
 #### Il plugin per WordPress
 
 Se il tuo sito è in WordPress (il programma con cui è fatto il sito di molti; un plugin è un componente aggiuntivo) non devi incollare codice: il plugin «CasaZen per WordPress» aggiunge blocchi e shortcode, crea per te le pagine e le voci di menu e funziona con Elementor, Polylang e WPML. Il plugin non è ancora nell'elenco di WordPress.org: lo installi da un file ZIP. Nella pagina «Incorpora nel tuo sito» trovi il link «Scarica il plugin» solo se il file è disponibile nella tua installazione; se non lo vedi, scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza») e chiedi il file ZIP.
-Requisiti: WordPress 6.4 o successivo, PHP 7.4 o successivo, un indirizzo del tuo sito di prenotazione CasaZen (meglio il tuo dominio attivo) e la funzione «Incorpora» attiva (Cosa significa «Su attivazione»?). Finché non lo è, il plugin non mostra nulla ai visitatori e avvisa solo gli amministratori del sito WordPress.
-Come lo configuri (in WordPress, Impostazioni › CasaZen):
+Requisiti: WordPress 6.4 o successivo, PHP 7.4 o successivo, la funzione «Incorpora» attiva (Cosa significa «Su attivazione»?) e, per collegare il sito, essere amministratore della tua agenzia in CasaZen. Finché la funzione non è attiva, il plugin non mostra nulla ai visitatori e avvisa solo gli amministratori del sito WordPress.
+Come lo colleghi (in WordPress, Impostazioni › CasaZen): premi «Connetti a CasaZen». Si apre CasaZen (se serve, accedi): controlla l'indirizzo del sito che chiede il collegamento e premi «Collega». Tornato su WordPress leggi «Collegato a» e il nome della tua agenzia: l'indirizzo CasaZen e l'identificativo sono già compilati e la connessione è già provata; il passo successivo è la procedura guidata. «Scollega», nella stessa schermata, toglie il collegamento (anche «Incorpora nel tuo sito» elenca i siti collegati e li può scollegare). Se CasaZen non riconosce più il sito, la schermata dice «Non più collegato» e ripropone il pulsante: le impostazioni restano. Il sito si collega se il suo indirizzo inizia con https:// e l'amministrazione di WordPress è sullo stesso indirizzo.
+Il dominio dal plugin. Con il sito collegato, nella sezione «Dominio» della stessa schermata scrivi il tuo dominio (per esempio prenota.latuaagenzia.it) e premi «Collega dominio»: compaiono i record DNS da creare, con i pulsanti per copiarne nome e valore, e lo stato, che si aggiorna da solo mentre la schermata è aperta; «Controlla ora» lo verifica subito. Quando il dominio è attivo il plugin usa da solo il suo indirizzo. Sotto scegli cosa passa dal dominio (area ospite, portale proprietari, link nelle e-mail) e premi «Salva le scelte»; «Rimuovi dominio» riporta il sito sull'indirizzo di CasaZen. Senza il piano Pro la sezione lo dice e porta alla pagina del dominio in CasaZen.
+Configurazione manuale (sezione «Avanzate: configurazione manuale», se non colleghi il sito):
 - Indirizzo CasaZen: l'indirizzo del tuo sito di prenotazione, per esempio https://prenota.latuaagenzia.it. Deve essere https.
 - Identificativo dell'organizzazione (slug): serve solo se l'indirizzo è quello di CasaZen e non un tuo dominio.
 - Associazione delle lingue: una riga per lingua del sito, per dire se un widget deve parlare italiano (it), inglese (en) o seguire la pagina (auto).
@@ -8285,8 +8287,8 @@ Procedura guidata. In Impostazioni › CasaZen, scheda «Procedura guidata», il
 Elementor. Aggiungi il widget Shortcode e incolla lo shortcode. Nell'editor di Elementor vedi un segnaposto: il widget vero compare nella pagina pubblicata.
 Lingue. Con Polylang o WPML il widget segue la lingua della pagina. Le tre pagine create dalla procedura nascono nella lingua predefinita: vanno tradotte.
 Cache e ottimizzazione. Se una pagina resta vuota e usi un plugin di cache (WP Rocket, LiteSpeed Cache, Autoptimize, SG Optimizer…), escludi dalle opzioni che ritardano, uniscono o minimizzano il JavaScript gli indirizzi che contengono /embed/v1/, poi svuota la cache.
-Privacy. Il plugin non usa cookie e non salva dati dei visitatori: il server del tuo sito contatta il tuo indirizzo CasaZen solo dalla schermata delle impostazioni e dai controlli periodici (ogni 12 ore).
-Disinstallazione. «Elimina» il plugin toglie le sue impostazioni; le pagine create e le voci di menu restano, sono tue.
+Privacy. Il plugin non usa cookie e non salva dati dei visitatori: il server del tuo sito contatta il tuo indirizzo CasaZen solo dalla schermata delle impostazioni e dai controlli periodici (ogni 12 ore). Con il sito collegato usa una credenziale propria del sito, revocabile, solo dalle schermate del plugin: non compare mai nelle pagine.
+Disinstallazione. «Elimina» il plugin restituisce a CasaZen la credenziale del sito collegato e toglie le sue impostazioni; le pagine create e le voci di menu restano, sono tue.
 
 #### Google Tag Manager
 
@@ -8344,11 +8346,11 @@ Finché la scelta non è completa (nessuna casa scelta, indirizzo mancante) non 
 
 #### Installare il plugin per WordPress
 
-Ti serve: la funzione «Incorpora nel tuo sito» attiva sulla tua installazione, un sito WordPress 6.4 o successivo (PHP 7.4 o successivo) di cui sei amministratore, il file ZIP del plugin e l'indirizzo del tuo sito di prenotazione CasaZen.
+Ti serve: la funzione «Incorpora nel tuo sito» attiva sulla tua installazione, un sito WordPress 6.4 o successivo (PHP 7.4 o successivo) di cui sei amministratore, il file ZIP del plugin e l'accesso a CasaZen come amministratore della tua agenzia.
 1. In Impostazioni › Incorpora nel tuo sito, sotto «Plugin per WordPress», premi «Scarica il plugin». Se il link non c'è, il file non è ancora disponibile nella tua installazione: scrivi all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza») e chiedi il file ZIP.
 2. In WordPress apri Plugin › Aggiungi nuovo › Carica plugin, scegli il file ZIP, premi Installa ora e poi Attiva.
-3. Apri Impostazioni › CasaZen e scrivi «Indirizzo CasaZen» (e lo slug se è l'indirizzo di CasaZen). Salva.
-4. Premi «Prova la connessione». Quando leggi «La connessione funziona» puoi andare avanti. Se il test dice che l'incorporamento «non è ancora attivo per la tua agenzia», la funzione non è attiva: scrivi all'assistenza di CasaZen e chiedi di attivare «Incorpora nel tuo sito», poi riprova.
+3. Apri Impostazioni › CasaZen e premi «Connetti a CasaZen». In CasaZen controlla l'indirizzo del sito e premi «Collega».
+4. Tornato su WordPress leggi «Collegato a» e il nome della tua agenzia: indirizzo e identificativo sono compilati e la connessione è provata. Se invece non vuoi collegare il sito, apri «Avanzate: configurazione manuale», scrivi «Indirizzo CasaZen» (e lo slug se è l'indirizzo di CasaZen), salva e premi «Prova la connessione». Se il test dice che l'incorporamento «non è ancora attivo per la tua agenzia», la funzione non è attiva: scrivi all'assistenza di CasaZen e chiedi di attivare «Incorpora nel tuo sito», poi riprova.
 5. Apri la scheda «Procedura guidata», lascia le tre pagine, scegli il menu e premi «Crea le pagine».
 6. Apri le tre pagine («Prenota», «Check-in online», «Area proprietari») e controlla che il widget compaia.
 7. Per la barra di ricerca nella tua home, aggiungi [casazen_search target="/prenota/"].
@@ -8375,7 +8377,7 @@ Ti serve: la funzione «Incorpora nel tuo sito» attiva e un contenitore Google 
 
 #### Flusso: dal tuo sito WordPress alla prenotazione
 
-1. Tu installi il plugin e provi la connessione.
+1. Tu installi il plugin e premi «Connetti a CasaZen» (oppure scrivi l'indirizzo in «Avanzate» e provi la connessione).
 2. Tu crei le pagine con la procedura guidata.
 3. L'ospite apre «Prenota» sul tuo sito, sceglie le date e preme «Prenota» nel widget.
 4. CasaZen porta l'intera pagina al checkout sul tuo indirizzo di prenotazione, con date e ospiti già scelti.
@@ -8392,6 +8394,7 @@ Ti serve: la funzione «Incorpora nel tuo sito» attiva e un contenitore Google 
 - I widget funzionano solo su siti https.
 - Il campo del contenitore di Google Tag Manager accetta solo GTM- più 4-12 lettere o cifre.
 - Il plugin richiede WordPress 6.4+ e PHP 7.4+; le sue pagine create non vengono mai cancellate dal plugin.
+- Il plugin si collega a CasaZen solo da un sito in https con l'amministrazione di WordPress sullo stesso indirizzo, e il collegamento lo conferma un amministratore dell'agenzia.
 - Widget, plugin e «Cosa passa dal tuo dominio» sono su attivazione: li accende CasaZen.
 
 ### Domande frequenti

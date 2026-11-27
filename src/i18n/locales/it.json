@@ -6287,6 +6287,31 @@
       "Female": "Femmina",
       "Other": "Altro"
     },
+    "prefill": {
+      "checkIt": "Controllalo: è letto dal testo stampato.",
+      "complete": "Hai già tutti i dati che si leggono su questo documento: controllali e conferma.",
+      "confirm": "Confermo questi dati",
+      "discard": "Rifai la foto",
+      "field": {
+        "birthPlace": "Luogo di nascita",
+        "citizenship": "Cittadinanza",
+        "dateOfBirth": "Data di nascita",
+        "documentExpiresOn": "Data di scadenza",
+        "documentIssuedOn": "Data di rilascio",
+        "documentKind": "Tipo di documento",
+        "documentNumber": "Numero del documento",
+        "firstName": "Nome",
+        "gender": "Sesso",
+        "issuePlace": "Luogo di rilascio",
+        "lastName": "Cognome",
+        "other": "Altri dati"
+      },
+      "intro": "Controlla i dati letti dal documento e correggi quelli sbagliati. Nei prossimi passi ti chiederemo solo quelli che non siamo riusciti a leggere.",
+      "missingText": "Questi dati non si leggono dalla foto: li inserirai nei prossimi passi.",
+      "missingTitle": "Ti chiederemo ancora",
+      "readFromDocument": "Letto dal documento",
+      "title": "Dati letti dal documento"
+    },
     "validation": {
       "firstName": {
         "required": "Nome obbligatorio",
@@ -6744,6 +6769,41 @@
           "pick": "Fotografa il retro",
           "pickAgain": "Fotografa di nuovo il retro"
         },
+        "camera": {
+          "captureBack": "Scatta il retro",
+          "captureFront": "Scatta il fronte",
+          "chooseFile": "Scegli una foto dal telefono",
+          "chooseHint": "Puoi anche usare una foto già scattata o la fotocamera del telefono.",
+          "duplicate": {
+            "send": "Invia comunque",
+            "text": "Questa foto assomiglia a quella del fronte. Gira il documento e rifai la foto, oppure inviala comunque: dopo l'invio la controlliamo noi.",
+            "title": "Sembra lo stesso lato"
+          },
+          "heldLabel": "La foto del documento che hai scattato",
+          "hint": {
+            "blur": "Immagine sfocata: tieni fermo il telefono.",
+            "bright": "C'è troppa luce: spostati dove la luce è più morbida.",
+            "dark": "C'è poca luce: spostati in un posto più luminoso.",
+            "edges": "Inquadra tutto il documento, con i quattro bordi dentro la cornice.",
+            "glare": "Riflesso sul documento: inclinalo leggermente o allontanati dalla luce.",
+            "orientation": "Ruota il telefono in orizzontale.",
+            "ready": "Inquadratura pronta: puoi scattare.",
+            "settling": "Tieni fermo il telefono…",
+            "waiting": "Apertura della fotocamera…"
+          },
+          "previewLabel": "Anteprima della fotocamera con la cornice del documento",
+          "problem": {
+            "denied": "Il browser ha bloccato la fotocamera. Per consentirla, tocca l'icona del lucchetto o della fotocamera accanto all'indirizzo web, scegli «Consenti» per la fotocamera e premi «Riprova con la fotocamera».",
+            "fallback": "Puoi scegliere una foto del documento dal telefono qui sotto, oppure continuare con una persona.",
+            "not_found": "Su questo dispositivo non è stata trovata nessuna fotocamera.",
+            "title": "La fotocamera non è disponibile",
+            "unknown": "Non è stato possibile avviare la fotocamera.",
+            "unsupported": "Questa pagina non può usare la fotocamera in questo browser."
+          },
+          "retake": "Rifai la foto",
+          "retryCamera": "Riprova con la fotocamera",
+          "sendAgain": "Invia di nuovo"
+        },
         "fileLabel": "Foto del documento d'identità",
         "frontReceived": "Il lato con la tua foto è arrivato.",
         "instructions": "Appoggia il documento su una superficie piana e ben illuminata. Mostra tutto il lato con la tua foto, senza riflessi. Il passaporto ha tutto in una pagina: mostra la pagina con la foto e le due righe di lettere in basso.",
@@ -6759,14 +6819,33 @@
         "avoid_glare": "Evita i riflessi: inclina un poco il documento o allontanati dalla luce.",
         "document_back_needed": "Ora fotografa il retro della carta, dove ci sono le righe di lettere.",
         "active_pose_retry": "Ripeti i due scatti seguendo la direzione mostrata.",
+        "document_blur": "La foto è sfocata: tieni fermo il telefono e riprova.",
+        "document_edges_not_visible": "Inquadra tutto il documento, con i quattro bordi visibili.",
+        "document_format_unsupported": "Documento non supportato: continua con una persona.",
+        "document_glare": "Riflesso sulla foto: inclina leggermente il documento.",
+        "document_layout_mismatch": "Non riconosciamo la disposizione del documento: tienilo dritto, intero e fermo, poi riprova.",
+        "document_not_found": "Non vediamo un documento in questa foto: appoggialo su una superficie piana e inquadralo tutto.",
         "document_not_recognized": "Questa foto non è stata riconosciuta come documento. Carica una foto della carta d’identità, del passaporto o della patente.",
         "document_front_needed": "Fotografa il lato della carta con la tua foto.",
+        "document_orientation": "Il documento è girato: tienilo dritto, in orizzontale.",
+        "document_portrait_missing": "Non vediamo la tua foto sul documento: mostra il lato con la foto, senza coprirla.",
+        "document_side_duplicate": "Hai fotografato due volte lo stesso lato: ora fotografa l'altro lato del documento.",
+        "document_unreadable": "Non riusciamo a leggere il documento: continua con una persona.",
+        "document_wrong_side": "Questa foto mostra l'altro lato del documento: fotografa il lato richiesto.",
+        "document_wrong_side_back": "Questo è il fronte: ora fotografa il retro, dove ci sono le righe di lettere e numeri.",
+        "document_wrong_side_front": "Questo è il retro: fotografa il fronte, dove c'è la tua foto.",
         "hold_still": "Tieni fermo il telefono: la foto è sfocata.",
         "less_light": "C'è troppa luce: spostati dove la luce è più morbida.",
         "more_light": "C'è poca luce: spostati in un posto più luminoso.",
         "move_closer": "Avvicinati: il tuo viso è troppo piccolo nella foto.",
         "one_face_only": "Nella foto devi esserci solo tu.",
         "other": "Scatta di nuovo la foto.",
+        "presence_again": "Ripeti la ripresa seguendo le indicazioni sullo schermo.",
+        "presence_challenge_not_followed": "Non abbiamo visto tutti i movimenti richiesti: segui le indicazioni sullo schermo, nell'ordine.",
+        "presence_quality": "La ripresa non era abbastanza chiara: cerca più luce, tieni fermo il telefono e il viso dentro l'ovale.",
+        "presence_single_face": "Nella ripresa deve esserci solo il tuo viso, sempre visibile: nessun'altra persona dietro di te.",
+        "presence_timing": "I tempi della ripresa non tornano: segui le indicazioni tutte di seguito, senza fermarti, e riprova.",
+        "presence_too_short": "La ripresa è stata troppo breve: resta davanti alla fotocamera fino alla fine delle indicazioni.",
         "retake_picture": "La foto non si legge: scattala di nuovo.",
         "retake_selfie": "Scatta di nuovo il selfie, guardando dritto la fotocamera.",
         "show_document_photo": "Inquadra il lato del documento con la tua foto.",
@@ -6784,6 +6863,41 @@
         "ask": "Chiedi la verifica di un operatore",
         "requested": "Abbiamo avvisato chi gestisce la struttura. Verificherà la tua identità e il codice di accesso ti arriva dopo la sua decisione."
       },
+      "presence": {
+        "camera": {
+          "busy": "La fotocamera è usata da un'altra app. Chiudila e premi «Riprova».",
+          "fallback": "Puoi riprovare, oppure continuare con una persona che verifica la tua identità."
+        },
+        "cancel": "Annulla e chiedi una persona",
+        "cancelling": "Interrompo l'invio…",
+        "instructions": "Mettiti in un posto ben illuminato e tieni il viso dentro l'ovale. Premi «Inizia» e segui le indicazioni sullo schermo: dovrai girare la testa e alzare o abbassare lo sguardo. Dura pochi secondi.",
+        "kept": {
+          "offline": "Connessione assente. Non siamo riusciti a inviare la tua registrazione, ma è ancora qui: quando la connessione torna premi «Invia di nuovo».",
+          "sendAgain": "Invia di nuovo",
+          "server": "Il servizio non risponde in questo momento. La tua registrazione è ancora qui: tra poco premi «Invia di nuovo»."
+        },
+        "leadIn": "Guarda la fotocamera",
+        "move": {
+          "lookDown": "Abbassa lo sguardo",
+          "lookUp": "Alza lo sguardo",
+          "turnToTheLeft": "Gira la testa a sinistra",
+          "turnToTheRight": "Gira la testa a destra"
+        },
+        "notice": {
+          "expired": "Il tempo per la verifica è scaduto. Ricominciamo con una nuova ripresa: premi «Inizia».",
+          "hidden": "La pagina è andata in secondo piano durante la ripresa, quindi l'abbiamo annullata. Premi «Inizia» per rifarla.",
+          "lost": "Non siamo riusciti a inviare la registrazione e l'abbiamo cancellata. Quando c'è connessione premi «Inizia» per rifarla, oppure continua con una persona.",
+          "not_prepared": "Non siamo riusciti a registrare le immagini. Premi «Inizia» per riprovare.",
+          "rotated": "Lo schermo è stato girato o ridimensionato durante la ripresa, quindi l'abbiamo annullata. Tieni fermo il telefono e premi «Inizia» per rifarla."
+        },
+        "preparing": "Prepariamo la verifica…",
+        "retry": "Riprova",
+        "secondsLeft": "Secondi rimasti: {{count}}",
+        "start": "Inizia",
+        "step": "Passo {{current}} di {{total}}",
+        "title": "Mostra il tuo viso alla fotocamera",
+        "waitingForConnection": "In attesa che torni la connessione…"
+      },
       "problem": {
         "consent_required": "Prima ci serve la tua risposta sul controllo del volto.",
         "consent_text_changed": "Il testo del consenso è stato aggiornato. Leggilo di nuovo prima di rispondere.",
@@ -6792,12 +6906,18 @@
         "failed": "Qualcosa non ha funzionato. Riprova.",
         "link_unavailable": "Questo link non è più valido, oppure il check-in è già completo. Chiedi un nuovo link a chi gestisce la struttura.",
         "network": "Non siamo riusciti a raggiungere il server. Non è stato salvato nulla: controlla la connessione e riprova.",
+        "presence_expired": "Il tempo per questa verifica è scaduto. Ricomincia con una nuova ripresa.",
+        "presence_invalid": "La ripresa non è valida. Riprova con una nuova ripresa, oppure chiedi la verifica di una persona.",
+        "presence_required": "Questa verifica è cambiata: ricarica la pagina oppure chiedi la verifica di una persona.",
+        "presence_too_large": "La ripresa è troppo grande per essere inviata. Riprova con una nuova ripresa.",
+        "presence_unavailable": "In questo momento la verifica automatica non è disponibile: ti verifica una persona.",
         "processing": "Non siamo riusciti a elaborare la foto. Riprova.",
         "too_large": "La foto è troppo grande. Scattala di nuovo con una risoluzione più bassa.",
         "too_many_requests": "Troppi tentativi in poco tempo. Aspetta un momento e riprova.",
         "unsupported": "Questo tipo di file non è supportato. Usa una foto JPEG o PNG."
       },
       "result": {
+        "closed": "Questa verifica era già conclusa: ecco com'è andata.",
         "ok": {
           "codeEmail": "Se la tua prenotazione ha un indirizzo email, abbiamo inviato il codice anche lì.",
           "codeHeldTouristTax": "La tua identità è verificata. Il codice di accesso ti arriverà dopo il pagamento della tassa di soggiorno.",
@@ -6813,6 +6933,7 @@
         "retry": {
           "again": "Scatta di nuovo il selfie",
           "againDocument": "Fotografa di nuovo il documento",
+          "againPresence": "Riprova",
           "attempts": "Tentativi rimasti: {{count}}",
           "intro": "Questa volta il controllo non è andato a buon fine. Ecco cosa cambiare:",
           "noReason": "Questa volta il controllo non è andato a buon fine.",

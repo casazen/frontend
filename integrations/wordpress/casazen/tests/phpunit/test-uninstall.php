@@ -131,6 +131,116 @@ class Test_Uninstall extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The requests that the uninstall made, and what the stub answers to them.
+	 *
+	 * @var array[]
+	 */
+	private $uninstall_requests = array();
+
+	/**
+	 * Stubs the network: records each request and answers with the given reply.
+	 *
+	 * @param array|WP_Error $reply The answer of every request.
+	 * @return void
+	 */
+	private function stub_network( $reply ) {
+		$this->uninstall_requests = array();
+		add_filter(
+			'pre_http_request',
+			function ( $preempt, $args, $url ) use ( $reply ) {
+				unset( $preempt );
+				$this->uninstall_requests[] = array(
+					'url'  => $url,
+					'args' => $args,
+				);
+				return $reply;
+			},
+			10,
+			3
+		);
+	}
+
+	/**
+	 * Stores a connected site, as «Connect to CasaZen» leaves it, and the transients of the connection.
+	 *
+	 * @return void
+	 */
+	private function connect_the_site() {
+		update_option(
+			'casazen_link',
+			array(
+				'token'         => 'czs_UninstallTestCredential0123456789abcdefghi',
+				'connection_id' => '6ba7b810-9dad-41d1-80b4-00c04fd430c8',
+				'org_slug'      => 'agenzia-esempio',
+				'org_name'      => 'Agenzia Esempio',
+				'site_url'      => 'https://example.org',
+				'app_origin'    => 'https://www.casazen.space',
+				'api_base'      => 'https://api.example.com/api',
+				'connected_at'  => time(),
+			),
+			false
+		);
+		set_transient( 'casazen_account', array( 'org_name' => 'Agenzia Esempio' ), HOUR_IN_SECONDS );
+		set_transient( 'casazen_connect_1', array( 'state' => 'x' ), HOUR_IN_SECONDS );
+		set_transient( 'casazen_notice_1', array( 'text' => 'x' ), HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * AC 6: the uninstall gives the credential back to CasaZen (one DELETE, the credential only in its header, 10 seconds at most,
+	 * no redirect) and removes the link and the transients of the connection.
+	 */
+	public function test_uninstall_gives_the_credential_back_and_removes_the_link() {
+		if ( wp_using_ext_object_cache() ) {
+			$this->markTestSkipped( 'The transients are only in the options table without an external object cache.' );
+		}
+		$this->connect_the_site();
+		$this->stub_network(
+			array(
+				'headers'  => array(),
+				'cookies'  => array(),
+				'filename' => null,
+				'response' => array(
+					'code'    => 204,
+					'message' => 'No Content',
+				),
+				'body'     => '',
+			)
+		);
+
+		$this->run_uninstall();
+
+		$this->assertCount( 1, $this->uninstall_requests );
+		$request = $this->uninstall_requests[0];
+		$this->assertSame( 'https://api.example.com/api/site/v1/connection', $request['url'] );
+		$this->assertSame( 'DELETE', $request['args']['method'] );
+		$this->assertSame( 'Bearer czs_UninstallTestCredential0123456789abcdefghi', $request['args']['headers']['Authorization'] );
+		$this->assertLessThanOrEqual( 10, $request['args']['timeout'] );
+		$this->assertSame( 0, $request['args']['redirection'] );
+		$this->assertTrue( $request['args']['reject_unsafe_urls'] );
+
+		$this->assertFalse( get_option( 'casazen_link' ) );
+		$this->assertSame( array(), $this->casazen_transient_rows() );
+	}
+
+	/**
+	 * AC 6: a CasaZen that does not answer never stops the uninstall: everything is removed all the same.
+	 */
+	public function test_an_unreachable_casazen_never_stops_the_uninstall() {
+		if ( wp_using_ext_object_cache() ) {
+			$this->markTestSkipped( 'The transients are only in the options table without an external object cache.' );
+		}
+		$this->connect_the_site();
+		$this->stub_network( new WP_Error( 'http_request_failed', 'Operation timed out after 10000 milliseconds' ) );
+
+		$this->run_uninstall();
+
+		$this->assertCount( 1, $this->uninstall_requests );
+		$this->assertFalse( get_option( 'casazen_link' ) );
+		$this->assertSame( 'gone', get_option( 'casazen_settings', 'gone' ) );
+		$this->assertSame( array(), $this->casazen_transient_rows() );
+	}
+
+	/**
 	 * On a network every site is cleaned.
 	 */
 	public function test_uninstall_covers_every_site_of_a_network() {

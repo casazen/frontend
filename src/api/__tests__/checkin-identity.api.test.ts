@@ -14,7 +14,7 @@ beforeEach(() => {
 /** The body and the options of the only call to `post`. */
 function postCall() {
   const [url, body, options] = vi.mocked(axios.post).mock.calls[0];
-  return { url, body, options: options as { public?: boolean; headers?: Record<string, string> } };
+  return { url, body, options: options as { public?: boolean; headers?: Record<string, string>; timeout?: number; signal?: AbortSignal } };
 }
 
 describe('the identity calls of the guest check-in (E03/F04/US03/T01)', () => {
@@ -148,5 +148,80 @@ describe('the document on two sides, the legal texts and the door (E22/F02/US01/
     // What was typed is personal data: it is in the body only, never in the address of the call.
     expect(postCall().url).not.toContain('ABC123');
     expect(postCall().url).not.toContain('2026-11-20');
+  });
+});
+
+describe('the presence of the self-hosted identity step (E72/F02/US01/T01)', () => {
+  const KEY = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
+  const jpeg = (name: string) => new Blob([name], { type: 'image/jpeg' });
+
+  it('startPresenceChallenge_AnAttempt_IsAnAnonymousPostWithoutABody', async () => {
+    const challenge = { challengeToken: 'challenge-1', steps: ['turn_left'], stepMs: 2000, leadInMs: 1000, expiresAt: '2026-11-27T10:00:00Z', targetFps: 10, maxFrames: 80, maxFrameSide: 480 };
+    vi.mocked(axios.post).mockResolvedValue({ data: challenge });
+
+    await expect(publicCheckinApi.startPresenceChallenge(TOKEN)).resolves.toEqual(challenge);
+
+    expect(postCall()).toEqual({ url: `/public/checkin/${TOKEN}/presence-challenge`, body: undefined, options: { public: true } });
+  });
+
+  it('postPresence_ASequence_IsAMultipartFormWithEveryFrameInOrderTheTimestampsAndTheToken', async () => {
+    await publicCheckinApi.postPresence(TOKEN, { frames: [jpeg('one'), jpeg('two'), jpeg('three')], timestamps: [0, 100, 201], challengeToken: 'challenge-1' }, KEY);
+
+    const { url, body } = postCall();
+    expect(url).toBe(`/public/checkin/${TOKEN}/presence`);
+    const form = body as FormData;
+    expect([...form.keys()]).toEqual(['frames', 'frames', 'frames', 'timestamps', 'challengeToken']);
+    expect(form.getAll('frames').map((part) => (part as File).type)).toEqual(['image/jpeg', 'image/jpeg', 'image/jpeg']);
+    expect(form.getAll('frames').map((part) => (part as File).name)).toEqual(['frame-0.jpg', 'frame-1.jpg', 'frame-2.jpg']);
+    expect(JSON.parse(form.get('timestamps') as string)).toEqual([0, 100, 201]);
+    expect(form.get('challengeToken')).toBe('challenge-1');
+  });
+
+  it('postPresence_TheKeyOfTheRecording_GoesInTheIdempotencyKeyHeaderAndNeverInTheBodyOrTheAddress', async () => {
+    await publicCheckinApi.postPresence(TOKEN, { frames: [jpeg('one')], timestamps: [0], challengeToken: 'challenge-1' }, KEY);
+
+    const { url, body, options } = postCall();
+    // `multipart/form-data` is said (the instance is JSON by default), the key is a header of its own, and the call is anonymous.
+    expect(options).toMatchObject({ public: true, headers: { 'Content-Type': 'multipart/form-data', 'Idempotency-Key': KEY } });
+    expect(url).not.toContain(KEY);
+    expect([...(body as FormData).values()].map(String)).not.toContain(KEY);
+    // A sequence of a few megabytes on a mobile network is given longer than the default.
+    expect(options.timeout).toBeGreaterThan(30_000);
+  });
+
+  it('postPresence_TheSignalOfTheGuestWhoStopsTheUpload_IsHandedToTheRequestAndTheTimeoutIsNotShortenedByIt', async () => {
+    const stop = new AbortController();
+
+    await publicCheckinApi.postPresence(TOKEN, { frames: [jpeg('one')], timestamps: [0], challengeToken: 'challenge-1' }, KEY, stop.signal);
+
+    const { options } = postCall();
+    expect(options.signal).toBe(stop.signal);
+    // The request is cancelled by the guest, never by a shorter wait: a slow network is given the whole time.
+    expect(options.timeout).toBeGreaterThan(30_000);
+  });
+
+  it('postPresence_NoSignal_IsTheRequestItWas_WithNoSignalInItsOptions', async () => {
+    await publicCheckinApi.postPresence(TOKEN, { frames: [jpeg('one')], timestamps: [0], challengeToken: 'challenge-1' }, KEY);
+
+    expect(postCall().options).not.toHaveProperty('signal');
+  });
+
+  it('postPresence_Ticino_SendsThePicturesOfTheDocumentAgainInTheFieldsTheApiReads', async () => {
+    await publicCheckinApi.postPresence(
+      TOKEN,
+      { frames: [jpeg('one')], timestamps: [0], challengeToken: 'challenge-1', documentPhoto: jpeg('front'), documentPhotoBack: jpeg('back') },
+      KEY,
+    );
+
+    const form = postCall().body as FormData;
+    expect([...form.keys()]).toEqual(['frames', 'timestamps', 'challengeToken', 'documentPhoto', 'documentPhotoBack']);
+    expect((form.get('documentPhoto') as File).name).toBe('document.jpg');
+    expect((form.get('documentPhotoBack') as File).name).toBe('document-back.jpg');
+  });
+
+  it('postPresence_NoPicturesOfTheDocument_NeverSendsAnEmptyField', async () => {
+    await publicCheckinApi.postPresence(TOKEN, { frames: [jpeg('one')], timestamps: [0], challengeToken: 'challenge-1', documentPhoto: null, documentPhotoBack: null }, KEY);
+
+    expect([...(postCall().body as FormData).keys()]).toEqual(['frames', 'timestamps', 'challengeToken']);
   });
 });

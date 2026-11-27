@@ -40,9 +40,13 @@ class Plugin {
 		Compat\Polylang_Wpml::init();
 		Compat\Elementor::init();
 
+		// The screens of the administrator: the settings, the guided setup, the connection to the account of the agency and its
+		// domain. Only they call the API of a connected site (admin-post, admin-ajax and the screen of the plugin itself).
 		if ( is_admin() ) {
 			Admin::init();
 			Wizard::init();
+			Connect::init();
+			Domain::init();
 		}
 	}
 

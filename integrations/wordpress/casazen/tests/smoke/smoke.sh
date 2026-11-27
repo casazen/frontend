@@ -9,8 +9,11 @@
 #   - a published page with [casazen_booking], [casazen_search] and [casazen_owner_login] prints the three elements, ONE loader
 #     script tag with `defer` and the link to the owner area;
 #   - Settings, then CasaZen, answers 200 to the administrator and shows the agency (and so does the Guided setup tab);
+#   - «Connect to CasaZen» sends the browser to the console with a state, the return from the console exchanges the code and reads
+#     the account (both against the mock), the screen says «Connected to Agenzia Esempio» and never prints the credential; a domain is
+#     saved and its DNS records are shown; «Check now» verifies it and the address of the settings becomes the domain;
 #   - nothing is asked of the network that the mock does not know;
-#   - uninstall removes what the plugin stored.
+#   - uninstall gives the credential back (a DELETE to the mock) and removes what the plugin stored.
 #
 # No outbound network: the mu-plugin tests/smoke/mu-plugins/casazen-mock-http.php, mapped into the site by .wp-env.json (in the
 # development environment only), answers the three requests of the plugin with canned JSON and refuses every other request. It also
@@ -66,6 +69,27 @@ debug_log() {
 assert_contains() {
 	local file="$1" needle="$2" message="$3"
 	grep -q -F -- "$needle" "$file" || fail "$message (looked for: $needle)"
+}
+
+assert_not_contains() {
+	local file="$1" needle="$2" message="$3"
+	if grep -q -F -- "$needle" "$file"; then
+		fail "$message (found: $needle)"
+	fi
+}
+
+# The nonce of the form of an action, read from a page of the screen: the hidden field that follows the form tag of that action.
+nonce_of() {
+	local file="$1" action="$2"
+	tr -d '\n' <"$file" \
+		| grep -o -E "action=${action}\"[^>]*>[[:space:]]*<input type=\"hidden\" name=\"casazen_nonce\" value=\"[^\"]*\"" \
+		| sed -E 's/.*value="([^"]*)"$/\1/' \
+		| head -n 1 || true
+}
+
+# The Location header of a saved answer.
+location_of() {
+	grep -i '^location:' "$1" | tail -n 1 | tr -d '\r' | sed -E 's/^[Ll]ocation:[[:space:]]*//' || true
 }
 
 on_exit() {
@@ -149,6 +173,61 @@ assert_contains "$WORK_DIR/settings.html" 'Agenzia Esempio' 'The settings page d
 STATUS="$(curl --silent --show-error --output "$WORK_DIR/setup.html" --write-out '%{http_code}' --cookie "$JAR" "$SITE/wp-admin/options-general.php?page=casazen&tab=setup")"
 [[ "$STATUS" == 200 ]] || fail "The Guided setup tab answered $STATUS instead of 200."
 assert_contains "$WORK_DIR/setup.html" 'casazen_wizard[pages]' 'The form of the Guided setup is not on its tab'
+
+step 'Connect to CasaZen (the console and the API of the mock)'
+# The credential that the mock gives (casazen_smoke_site_token()): no page of the administrator may ever print it.
+TOKEN='czs_SmokeCredentialMustNeverBePrinted0123456789ab'
+NONCE="$(nonce_of "$WORK_DIR/settings.html" casazen_connect)"
+[[ -n "$NONCE" ]] || fail 'The form «Connect to CasaZen» is not on the settings page.'
+STATUS="$(curl --silent --show-error --output /dev/null --dump-header "$WORK_DIR/connect.headers" --write-out '%{http_code}' --cookie "$JAR" \
+	--data-urlencode "casazen_nonce=$NONCE" "$SITE/wp-admin/admin-post.php?action=casazen_connect")"
+[[ "$STATUS" == 302 ]] || fail "«Connect to CasaZen» answered $STATUS instead of 302."
+CONSOLE="$(location_of "$WORK_DIR/connect.headers")"
+echo "console: $CONSOLE"
+[[ "$CONSOLE" == 'https://app.example.com/app/connect/wordpress?site='* ]] || fail "«Connect to CasaZen» did not send the browser to the console of CASAZEN_APP_ORIGIN ($CONSOLE)."
+[[ "$CONSOLE" == *'&method=S256'* ]] || fail 'The address of the console has no S256 method.'
+STATE="$(printf '%s' "$CONSOLE" | grep -o -E '[?&]state=[0-9a-f]{64}' | sed -E 's/.*state=//' || true)"
+[[ "$STATE" =~ ^[0-9a-f]{64}$ ]] || fail 'The address of the console has no state.'
+
+# The console sends the browser back to the screen with a code and the state: the plugin exchanges the code and reads the account.
+STATUS="$(curl --silent --show-error --output /dev/null --dump-header "$WORK_DIR/return.headers" --write-out '%{http_code}' --cookie "$JAR" \
+	"$SITE/wp-admin/options-general.php?page=casazen&casazen_code=smoke-code-0123456789abcdef&state=$STATE")"
+[[ "$STATUS" == 302 ]] || fail "The return from the console answered $STATUS instead of 302."
+[[ "$(location_of "$WORK_DIR/return.headers")" != *casazen_code* ]] || fail 'The code stayed in the address of the screen.'
+
+STATUS="$(curl --silent --show-error --output "$WORK_DIR/connected.html" --write-out '%{http_code}' --cookie "$JAR" "$SITE/wp-admin/options-general.php?page=casazen")"
+[[ "$STATUS" == 200 ]] || fail "The screen answered $STATUS after the connection."
+assert_contains "$WORK_DIR/connected.html" 'Connected to Agenzia Esempio' 'The screen does not say that the site is connected'
+assert_contains "$WORK_DIR/connected.html" 'tab=setup' 'The guided setup is not offered as the next step'
+assert_contains "$WORK_DIR/connected.html" 'id="casazen-domain"' 'The section of the domain is not on the screen'
+STORED="$(wpcli option get casazen_settings --format=json | tr -d '\134')"
+[[ "$STORED" == *'"address":"https://app.example.com"'* && "$STORED" == *'"org_slug":"agenzia-esempio"'* ]] || fail "The address and the slug of the account are not in the settings (the option holds: $STORED)."
+[[ "$STORED" != *'czs_'* ]] || fail 'The settings hold a credential.'
+
+step 'A domain, its DNS records, then «Check now»'
+NONCE="$(nonce_of "$WORK_DIR/connected.html" casazen_domain_save)"
+[[ -n "$NONCE" ]] || fail 'The form of the domain is not on the screen.'
+STATUS="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --cookie "$JAR" \
+	--data-urlencode "casazen_nonce=$NONCE" --data-urlencode 'casazen_domain=prenota.example.com' "$SITE/wp-admin/admin-post.php?action=casazen_domain_save")"
+[[ "$STATUS" == 302 ]] || fail "«Connect domain» answered $STATUS instead of 302."
+curl --silent --show-error --fail --output "$WORK_DIR/domain.html" --cookie "$JAR" "$SITE/wp-admin/options-general.php?page=casazen" || fail 'The screen did not answer after the domain was saved.'
+for record in '_casazen-verify.prenota.example.com' 'casazen-verify=smoke-txt-value' 'cname.smoke-dns.example.net' 'Waiting for the DNS records' 'data-casazen-poll="1"'; do
+	assert_contains "$WORK_DIR/domain.html" "$record" 'The DNS records of the domain are not shown'
+done
+
+NONCE="$(nonce_of "$WORK_DIR/domain.html" casazen_domain_verify)"
+[[ -n "$NONCE" ]] || fail 'The form «Check now» is not on the screen.'
+STATUS="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --cookie "$JAR" \
+	--data-urlencode "casazen_nonce=$NONCE" "$SITE/wp-admin/admin-post.php?action=casazen_domain_verify")"
+[[ "$STATUS" == 302 ]] || fail "«Check now» answered $STATUS instead of 302."
+curl --silent --show-error --fail --output "$WORK_DIR/verified.html" --cookie "$JAR" "$SITE/wp-admin/options-general.php?page=casazen" || fail 'The screen did not answer after the check.'
+assert_contains "$WORK_DIR/verified.html" 'Your domain is active' 'The verified domain is not shown as active'
+STORED="$(wpcli option get casazen_settings --format=json | tr -d '\134')"
+[[ "$STORED" == *'"address":"https://prenota.example.com"'* && "$STORED" == *'"org_slug":""'* ]] || fail "The verified domain did not become the address of the settings (the option holds: $STORED)."
+
+for page in settings connected domain verified; do
+	assert_not_contains "$WORK_DIR/$page.html" "$TOKEN" "The page $page printed the credential of the site"
+done
 
 step 'Uninstall'
 wpcli plugin uninstall "$PLUGIN" --deactivate --skip-delete

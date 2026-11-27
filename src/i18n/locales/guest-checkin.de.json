@@ -11,6 +11,31 @@
       "Female": "Weiblich",
       "Other": "Divers"
     },
+    "prefill": {
+      "checkIt": "Bitte prüfen: aus dem gedruckten Text gelesen.",
+      "complete": "Alles, was dieses Dokument hergibt, wurde gelesen: Prüfen Sie es und bestätigen Sie.",
+      "confirm": "Angaben bestätigen",
+      "discard": "Foto erneut aufnehmen",
+      "field": {
+        "birthPlace": "Geburtsort",
+        "citizenship": "Staatsangehörigkeit",
+        "dateOfBirth": "Geburtsdatum",
+        "documentExpiresOn": "Ablaufdatum",
+        "documentIssuedOn": "Ausstellungsdatum",
+        "documentKind": "Dokumentart",
+        "documentNumber": "Dokumentnummer",
+        "firstName": "Vorname",
+        "gender": "Geschlecht",
+        "issuePlace": "Ausstellungsort",
+        "lastName": "Nachname",
+        "other": "Weitere Angaben"
+      },
+      "intro": "Prüfen Sie die aus dem Dokument gelesenen Angaben und korrigieren Sie falsche. In den nächsten Schritten fragen wir nur nach den Angaben, die wir nicht lesen konnten.",
+      "missingText": "Diese Angaben konnten dem Foto nicht entnommen werden: Sie geben sie in den nächsten Schritten ein.",
+      "missingTitle": "Wir fragen noch nach",
+      "readFromDocument": "Aus dem Dokument gelesen",
+      "title": "Aus dem Dokument gelesene Angaben"
+    },
     "validation": {
       "firstName": {
         "required": "Der Vorname ist erforderlich",
@@ -348,6 +373,41 @@
           "pick": "Rückseite fotografieren",
           "pickAgain": "Rückseite erneut fotografieren"
         },
+        "camera": {
+          "captureBack": "Rückseite fotografieren",
+          "captureFront": "Vorderseite fotografieren",
+          "chooseFile": "Foto vom Telefon auswählen",
+          "chooseHint": "Sie können auch ein bereits aufgenommenes Foto oder die Kamera-App Ihres Telefons verwenden.",
+          "duplicate": {
+            "send": "Trotzdem senden",
+            "text": "Dieses Foto sieht aus wie das Foto der Vorderseite. Drehen Sie das Dokument um und nehmen Sie es erneut auf, oder senden Sie es trotzdem: Nach dem Senden prüfen wir es.",
+            "title": "Das scheint dieselbe Seite zu sein"
+          },
+          "heldLabel": "Das von Ihnen aufgenommene Foto des Dokuments",
+          "hint": {
+            "blur": "Das Bild ist unscharf: Halten Sie das Handy ruhig.",
+            "bright": "Es ist zu hell: Gehen Sie an einen Ort mit weicherem Licht.",
+            "dark": "Es ist zu dunkel: Gehen Sie an einen helleren Ort.",
+            "edges": "Zeigen Sie das ganze Dokument mit allen vier Kanten im Rahmen.",
+            "glare": "Spiegelung auf dem Dokument: Neigen Sie es leicht oder gehen Sie vom Licht weg.",
+            "orientation": "Drehen Sie das Handy ins Querformat.",
+            "ready": "Der Bildausschnitt passt: Sie können das Foto aufnehmen.",
+            "settling": "Halten Sie das Handy ruhig…",
+            "waiting": "Kamera wird geöffnet…"
+          },
+          "previewLabel": "Kameravorschau mit dem Umriss des Dokuments",
+          "problem": {
+            "denied": "Der Browser hat die Kamera blockiert. Zum Erlauben tippen Sie auf das Schloss- oder Kamerasymbol neben der Webadresse, wählen Sie für die Kamera „Zulassen“ und drücken Sie „Kamera erneut versuchen“.",
+            "fallback": "Sie können unten ein Foto des Dokuments von Ihrem Telefon auswählen oder mit einer Person fortfahren.",
+            "not_found": "Auf diesem Gerät wurde keine Kamera gefunden.",
+            "title": "Die Kamera ist nicht verfügbar",
+            "unknown": "Die Kamera konnte nicht gestartet werden.",
+            "unsupported": "Diese Seite kann in diesem Browser die Kamera nicht verwenden."
+          },
+          "retake": "Foto erneut aufnehmen",
+          "retryCamera": "Kamera erneut versuchen",
+          "sendAgain": "Erneut senden"
+        },
         "fileLabel": "Foto des Ausweisdokuments",
         "frontReceived": "Die Seite mit Ihrem Foto ist angekommen.",
         "instructions": "Legen Sie das Dokument auf eine ebene, gut beleuchtete Fläche. Zeigen Sie die ganze Seite mit Ihrem Foto, ohne Spiegelungen. Ein Reisepass hat alles auf einer Seite: Zeigen Sie die Seite mit Ihrem Foto und den zwei Zeilen mit Buchstaben unten.",
@@ -363,14 +423,33 @@
         "avoid_glare": "Vermeiden Sie Spiegelungen: Neigen Sie das Dokument leicht oder gehen Sie vom Licht weg.",
         "document_back_needed": "Fotografieren Sie jetzt die Rückseite der Karte, auf der die Zeilen mit Buchstaben stehen.",
         "active_pose_retry": "Nehmen Sie beide Fotos erneut in der angegebenen Richtung auf.",
+        "document_blur": "Das Foto ist unscharf: Halten Sie das Handy ruhig und versuchen Sie es erneut.",
+        "document_edges_not_visible": "Zeigen Sie das ganze Dokument mit allen vier sichtbaren Kanten.",
+        "document_format_unsupported": "Dokument nicht unterstützt: Fahren Sie mit einer Person fort.",
+        "document_glare": "Spiegelung auf dem Foto: Neigen Sie das Dokument leicht.",
+        "document_layout_mismatch": "Wir erkennen den Aufbau des Dokuments nicht: Halten Sie es gerade, vollständig und ruhig und versuchen Sie es erneut.",
+        "document_not_found": "Auf diesem Foto ist kein Dokument zu sehen: Legen Sie es auf eine ebene Fläche und zeigen Sie es ganz.",
         "document_not_recognized": "Auf diesem Foto wurde kein Ausweisdokument erkannt. Laden Sie ein Foto eines Personalausweises, Reisepasses oder Führerscheins hoch.",
         "document_front_needed": "Fotografieren Sie die Seite der Karte mit Ihrem Foto.",
+        "document_orientation": "Das Dokument ist gedreht: Halten Sie es gerade, im Querformat.",
+        "document_portrait_missing": "Ihr Foto auf dem Dokument ist nicht zu sehen: Zeigen Sie die Seite mit dem Foto und verdecken Sie es nicht.",
+        "document_side_duplicate": "Sie haben dieselbe Seite zweimal fotografiert: Fotografieren Sie jetzt die andere Seite des Dokuments.",
+        "document_unreadable": "Wir können das Dokument nicht lesen: Fahren Sie mit einer Person fort.",
+        "document_wrong_side": "Dieses Foto zeigt die andere Seite des Dokuments: Fotografieren Sie die verlangte Seite.",
+        "document_wrong_side_back": "Das ist die Vorderseite: Fotografieren Sie jetzt die Rückseite mit den Zeilen aus Buchstaben und Zahlen.",
+        "document_wrong_side_front": "Das ist die Rückseite: Fotografieren Sie die Vorderseite mit Ihrem Foto.",
         "hold_still": "Halten Sie das Handy ruhig: Das Foto ist unscharf.",
         "less_light": "Es ist zu hell: Gehen Sie an einen Ort mit weicherem Licht.",
         "more_light": "Es ist zu dunkel: Gehen Sie an einen helleren Ort.",
         "move_closer": "Gehen Sie näher heran: Ihr Gesicht ist im Bild zu klein.",
         "one_face_only": "Im Bild sollen nur Sie zu sehen sein.",
         "other": "Bitte nehmen Sie das Foto erneut auf.",
+        "presence_again": "Wiederholen Sie die Aufnahme und folgen Sie den Anweisungen auf dem Bildschirm.",
+        "presence_challenge_not_followed": "Wir haben nicht alle verlangten Bewegungen gesehen: Folgen Sie den Anweisungen auf dem Bildschirm der Reihe nach.",
+        "presence_quality": "Die Aufnahme war nicht klar genug: Sorgen Sie für mehr Licht, halten Sie das Handy ruhig und Ihr Gesicht im Oval.",
+        "presence_single_face": "In der Aufnahme darf nur Ihr Gesicht zu sehen sein, und zwar durchgehend: Hinter Ihnen darf niemand stehen.",
+        "presence_timing": "Die Zeiten der Aufnahme stimmen nicht: Folgen Sie den Anweisungen ohne Pause nacheinander und versuchen Sie es erneut.",
+        "presence_too_short": "Die Aufnahme war zu kurz: Bleiben Sie vor der Kamera, bis die Anweisungen zu Ende sind.",
         "retake_picture": "Das Bild konnte nicht gelesen werden: Bitte nehmen Sie es erneut auf.",
         "retake_selfie": "Nehmen Sie das Selfie erneut auf und schauen Sie direkt in die Kamera.",
         "show_document_photo": "Zeigen Sie die Seite des Dokuments mit Ihrem Foto.",
@@ -388,6 +467,41 @@
         "ask": "Überprüfung durch eine Person anfordern",
         "requested": "Wir haben die Unterkunft informiert. Sie prüft Ihre Identität, und der Zugangscode erreicht Sie nach ihrer Entscheidung."
       },
+      "presence": {
+        "camera": {
+          "busy": "Eine andere App verwendet die Kamera. Schließen Sie sie und drücken Sie „Erneut versuchen“.",
+          "fallback": "Sie können es erneut versuchen oder mit einer Person fortfahren, die Ihre Identität prüft."
+        },
+        "cancel": "Abbrechen und eine Person bitten",
+        "cancelling": "Der Versand wird abgebrochen …",
+        "instructions": "Stellen Sie sich an einen hellen Ort und halten Sie Ihr Gesicht im Oval. Drücken Sie „Start“ und folgen Sie den Anweisungen auf dem Bildschirm: Sie drehen den Kopf und schauen nach oben oder unten. Das dauert nur wenige Sekunden.",
+        "kept": {
+          "offline": "Keine Verbindung. Wir konnten Ihre Aufnahme nicht senden, sie ist aber noch da: Wenn die Verbindung wieder da ist, drücken Sie „Erneut senden“.",
+          "sendAgain": "Erneut senden",
+          "server": "Der Dienst antwortet im Moment nicht. Ihre Aufnahme ist noch da: Drücken Sie in Kürze „Erneut senden“."
+        },
+        "leadIn": "Schauen Sie in die Kamera",
+        "move": {
+          "lookDown": "Schauen Sie nach unten",
+          "lookUp": "Schauen Sie nach oben",
+          "turnToTheLeft": "Drehen Sie den Kopf nach links",
+          "turnToTheRight": "Drehen Sie den Kopf nach rechts"
+        },
+        "notice": {
+          "expired": "Die Zeit für die Prüfung ist abgelaufen. Wir beginnen mit einer neuen Aufnahme von vorn: Drücken Sie „Start“.",
+          "hidden": "Die Seite war während der Aufnahme im Hintergrund, deshalb haben wir die Aufnahme abgebrochen. Drücken Sie „Start“, um sie zu wiederholen.",
+          "lost": "Wir konnten die Aufnahme nicht senden und haben sie gelöscht. Sobald Sie verbunden sind, drücken Sie „Start“, um sie zu wiederholen, oder fahren Sie mit einer Person fort.",
+          "not_prepared": "Die Bilder konnten nicht aufgenommen werden. Drücken Sie „Start“, um es erneut zu versuchen.",
+          "rotated": "Der Bildschirm wurde während der Aufnahme gedreht oder in der Größe verändert, deshalb haben wir die Aufnahme abgebrochen. Halten Sie das Handy ruhig und drücken Sie „Start“, um sie zu wiederholen."
+        },
+        "preparing": "Die Prüfung wird vorbereitet …",
+        "retry": "Erneut versuchen",
+        "secondsLeft": "Verbleibende Sekunden: {{count}}",
+        "start": "Start",
+        "step": "Schritt {{current}} von {{total}}",
+        "title": "Zeigen Sie Ihr Gesicht der Kamera",
+        "waitingForConnection": "Wir warten, bis die Verbindung wieder da ist …"
+      },
       "problem": {
         "consent_required": "Wir brauchen zuerst Ihre Antwort zur Gesichtsprüfung.",
         "consent_text_changed": "Der Text der Einwilligung wurde aktualisiert. Bitte lesen Sie ihn noch einmal, bevor Sie antworten.",
@@ -396,12 +510,18 @@
         "failed": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
         "link_unavailable": "Dieser Link ist nicht mehr gültig oder der Check-in ist bereits abgeschlossen. Bitten Sie Ihren Gastgeber um einen neuen Link.",
         "network": "Wir konnten den Server nicht erreichen. Es wurde nichts gespeichert: Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "presence_expired": "Die Zeit für diese Prüfung ist abgelaufen. Beginnen Sie mit einer neuen Aufnahme von vorn.",
+        "presence_invalid": "Die Aufnahme ist nicht gültig. Versuchen Sie es mit einer neuen Aufnahme oder bitten Sie um die Überprüfung durch eine Person.",
+        "presence_required": "Diese Prüfung hat sich geändert: Laden Sie die Seite neu oder bitten Sie um die Überprüfung durch eine Person.",
+        "presence_too_large": "Die Aufnahme ist zu groß zum Senden. Versuchen Sie es mit einer neuen Aufnahme.",
+        "presence_unavailable": "Die automatische Prüfung ist im Moment nicht verfügbar: Eine Person prüft Ihre Identität.",
         "processing": "Wir konnten das Foto nicht verarbeiten. Bitte versuchen Sie es erneut.",
         "too_large": "Das Foto ist zu groß. Nehmen Sie es mit einer niedrigeren Auflösung erneut auf.",
         "too_many_requests": "Zu viele Versuche in kurzer Zeit. Warten Sie einen Moment und versuchen Sie es erneut.",
         "unsupported": "Dieser Dateityp wird nicht unterstützt. Verwenden Sie ein JPEG- oder PNG-Foto."
       },
       "result": {
+        "closed": "Diese Prüfung war bereits abgeschlossen: So ist sie ausgegangen.",
         "ok": {
           "codeEmail": "Wenn Ihre Buchung eine E-Mail-Adresse hat, haben wir den Code auch dorthin gesendet.",
           "codeHeldTouristTax": "Ihre Identität ist bestätigt. Den Zugangscode erhalten Sie, nachdem die Ortstaxe bezahlt ist.",
@@ -417,6 +537,7 @@
         "retry": {
           "again": "Selfie erneut aufnehmen",
           "againDocument": "Dokument erneut fotografieren",
+          "againPresence": "Erneut versuchen",
           "attempts": "Verbleibende Versuche: {{count}}",
           "intro": "Die Prüfung war diesmal nicht erfolgreich. Das sollten Sie ändern:",
           "noReason": "Die Prüfung war diesmal nicht erfolgreich.",

@@ -11,6 +11,31 @@
       "Female": "Mujer",
       "Other": "Otro"
     },
+    "prefill": {
+      "checkIt": "Compruébelo: se ha leído del texto impreso.",
+      "complete": "Se ha leído todo lo que da este documento: revíselo y confirme.",
+      "confirm": "Confirmar estos datos",
+      "discard": "Volver a hacer la foto",
+      "field": {
+        "birthPlace": "Lugar de nacimiento",
+        "citizenship": "Nacionalidad",
+        "dateOfBirth": "Fecha de nacimiento",
+        "documentExpiresOn": "Fecha de caducidad",
+        "documentIssuedOn": "Fecha de expedición",
+        "documentKind": "Tipo de documento",
+        "documentNumber": "Número del documento",
+        "firstName": "Nombre",
+        "gender": "Sexo",
+        "issuePlace": "Lugar de expedición",
+        "lastName": "Apellidos",
+        "other": "Otros datos"
+      },
+      "intro": "Revise los datos leídos del documento y corrija los que no sean correctos. En los siguientes pasos solo le pediremos los que no hemos podido leer.",
+      "missingText": "Estos datos no se han podido leer de la foto: los introducirá en los siguientes pasos.",
+      "missingTitle": "Todavía le pediremos",
+      "readFromDocument": "Leído del documento",
+      "title": "Datos leídos del documento"
+    },
     "validation": {
       "firstName": {
         "required": "El nombre es obligatorio",
@@ -348,6 +373,41 @@
           "pick": "Fotografiar el reverso",
           "pickAgain": "Fotografiar de nuevo el reverso"
         },
+        "camera": {
+          "captureBack": "Fotografiar el reverso",
+          "captureFront": "Fotografiar el anverso",
+          "chooseFile": "Elegir una foto del teléfono",
+          "chooseHint": "También puede usar una foto ya hecha o la cámara de su teléfono.",
+          "duplicate": {
+            "send": "Enviar de todos modos",
+            "text": "Esta foto se parece a la del anverso. Dé la vuelta al documento y vuelva a hacerla, o envíela de todos modos: la comprobamos después del envío.",
+            "title": "Parece el mismo lado"
+          },
+          "heldLabel": "La foto del documento que ha hecho",
+          "hint": {
+            "blur": "La imagen está borrosa: mantenga quieto el teléfono.",
+            "bright": "Hay demasiada luz: pase a un lugar con luz más suave.",
+            "dark": "Hay poca luz: pase a un lugar más luminoso.",
+            "edges": "Muestre todo el documento, con los cuatro bordes dentro del marco.",
+            "glare": "Reflejo en el documento: inclínelo un poco o aléjese de la luz.",
+            "orientation": "Gire el teléfono en horizontal.",
+            "ready": "El encuadre es correcto: puede hacer la foto.",
+            "settling": "Mantenga quieto el teléfono…",
+            "waiting": "Abriendo la cámara…"
+          },
+          "previewLabel": "Vista previa de la cámara con el contorno del documento",
+          "problem": {
+            "denied": "El navegador bloqueó la cámara. Para permitirla, toque el icono del candado o de la cámara junto a la dirección web, elija «Permitir» para la cámara y pulse «Reintentar con la cámara».",
+            "fallback": "Puede elegir abajo una foto del documento desde su teléfono, o continuar con una persona.",
+            "not_found": "No se encontró ninguna cámara en este dispositivo.",
+            "title": "La cámara no está disponible",
+            "unknown": "No se pudo iniciar la cámara.",
+            "unsupported": "Esta página no puede usar la cámara en este navegador."
+          },
+          "retake": "Volver a hacer la foto",
+          "retryCamera": "Reintentar con la cámara",
+          "sendAgain": "Enviar de nuevo"
+        },
         "fileLabel": "Foto del documento de identidad",
         "frontReceived": "Hemos recibido el lado con su foto.",
         "instructions": "Coloque el documento sobre una superficie plana y bien iluminada. Muestre todo el lado con su foto, sin reflejos. El pasaporte lo tiene todo en una página: muestre la página con su foto y las dos líneas de letras de abajo.",
@@ -363,14 +423,33 @@
         "avoid_glare": "Evite los reflejos: incline un poco el documento o aléjese de la luz.",
         "document_back_needed": "Ahora fotografíe el reverso de la tarjeta, donde están las líneas de letras.",
         "active_pose_retry": "Repita las dos fotos siguiendo la dirección indicada.",
+        "document_blur": "La foto está borrosa: mantenga quieto el teléfono y vuelva a intentarlo.",
+        "document_edges_not_visible": "Muestre todo el documento, con los cuatro bordes visibles.",
+        "document_format_unsupported": "Documento no admitido: continúe con una persona.",
+        "document_glare": "Reflejo en la foto: incline un poco el documento.",
+        "document_layout_mismatch": "No reconocemos la disposición del documento: sosténgalo recto, entero y quieto, y vuelva a intentarlo.",
+        "document_not_found": "No vemos un documento en esta foto: colóquelo sobre una superficie plana y muéstrelo entero.",
         "document_not_recognized": "No se ha reconocido un documento en esta foto. Suba una foto de un documento de identidad, pasaporte o permiso de conducir.",
         "document_front_needed": "Fotografíe el lado de la tarjeta con su foto.",
+        "document_orientation": "El documento está girado: sosténgalo recto, en horizontal.",
+        "document_portrait_missing": "No vemos su foto en el documento: muestre el lado con la foto, sin taparla.",
+        "document_side_duplicate": "Ha fotografiado dos veces el mismo lado: fotografíe ahora el otro lado del documento.",
+        "document_unreadable": "No conseguimos leer el documento: continúe con una persona.",
+        "document_wrong_side": "Esta foto muestra el otro lado del documento: fotografíe el lado solicitado.",
+        "document_wrong_side_back": "Este es el anverso: fotografíe ahora el reverso, donde están las líneas de letras y números.",
+        "document_wrong_side_front": "Este es el reverso: fotografíe el anverso, donde está su foto.",
         "hold_still": "Mantenga quieto el teléfono: la foto está borrosa.",
         "less_light": "Hay demasiada luz: pase a un lugar con luz más suave.",
         "more_light": "Hay poca luz: pase a un lugar más luminoso.",
         "move_closer": "Acérquese: su cara se ve demasiado pequeña en la imagen.",
         "one_face_only": "En la imagen debe salir solo usted.",
         "other": "Vuelva a hacer la foto.",
+        "presence_again": "Repita la grabación siguiendo las indicaciones de la pantalla.",
+        "presence_challenge_not_followed": "No hemos visto todos los movimientos pedidos: siga las indicaciones de la pantalla, en orden.",
+        "presence_quality": "La grabación no era lo bastante clara: busque más luz, mantenga quieto el teléfono y el rostro dentro del óvalo.",
+        "presence_single_face": "En la grabación solo debe salir su rostro, siempre visible: nadie más detrás de usted.",
+        "presence_timing": "Los tiempos de la grabación no cuadran: siga las indicaciones una tras otra, sin detenerse, y vuelva a intentarlo.",
+        "presence_too_short": "La grabación fue demasiado corta: permanezca delante de la cámara hasta que terminen las indicaciones.",
         "retake_picture": "No se pudo leer la imagen: vuelva a hacerla.",
         "retake_selfie": "Vuelva a hacer el selfie mirando directamente a la cámara.",
         "show_document_photo": "Muestre el lado del documento con su foto.",
@@ -388,6 +467,41 @@
         "ask": "Pedir la verificación de una persona",
         "requested": "Hemos avisado al anfitrión. Verificará su identidad y el código de acceso le llegará después de su decisión."
       },
+      "presence": {
+        "camera": {
+          "busy": "Otra aplicación está usando la cámara. Ciérrela y pulse «Reintentar».",
+          "fallback": "Puede volver a intentarlo o continuar con una persona que verifique su identidad."
+        },
+        "cancel": "Cancelar y pedir una persona",
+        "cancelling": "Cancelando el envío…",
+        "instructions": "Colóquese en un lugar bien iluminado y mantenga el rostro dentro del óvalo. Pulse «Empezar» y siga las indicaciones de la pantalla: tendrá que girar la cabeza y subir o bajar la mirada. Dura unos segundos.",
+        "kept": {
+          "offline": "Sin conexión. No hemos podido enviar su grabación, pero sigue aquí: cuando vuelva la conexión pulse «Enviar de nuevo».",
+          "sendAgain": "Enviar de nuevo",
+          "server": "El servicio no responde en este momento. Su grabación sigue aquí: en un momento pulse «Enviar de nuevo»."
+        },
+        "leadIn": "Mire a la cámara",
+        "move": {
+          "lookDown": "Baje la mirada",
+          "lookUp": "Suba la mirada",
+          "turnToTheLeft": "Gire la cabeza hacia la izquierda",
+          "turnToTheRight": "Gire la cabeza hacia la derecha"
+        },
+        "notice": {
+          "expired": "Se acabó el tiempo de la verificación. Empezamos de nuevo con una grabación nueva: pulse «Empezar».",
+          "hidden": "La página pasó a segundo plano durante la grabación, así que la hemos cancelado. Pulse «Empezar» para repetirla.",
+          "lost": "No hemos podido enviar la grabación y la hemos borrado. Cuando tenga conexión pulse «Empezar» para repetirla, o continúe con una persona.",
+          "not_prepared": "No hemos podido grabar las imágenes. Pulse «Empezar» para intentarlo de nuevo.",
+          "rotated": "Se giró o cambió el tamaño de la pantalla durante la grabación, así que la hemos cancelado. Mantenga quieto el teléfono y pulse «Empezar» para repetirla."
+        },
+        "preparing": "Preparando la verificación…",
+        "retry": "Reintentar",
+        "secondsLeft": "Segundos restantes: {{count}}",
+        "start": "Empezar",
+        "step": "Paso {{current}} de {{total}}",
+        "title": "Muestre su rostro a la cámara",
+        "waitingForConnection": "Esperando a que vuelva la conexión…"
+      },
       "problem": {
         "consent_required": "Primero necesitamos su respuesta sobre la comprobación facial.",
         "consent_text_changed": "El texto del consentimiento se ha actualizado. Léalo de nuevo antes de responder.",
@@ -396,12 +510,18 @@
         "failed": "Algo ha salido mal. Inténtelo de nuevo.",
         "link_unavailable": "Este enlace ya no es válido o el check-in ya está completo. Pida un enlace nuevo a su anfitrión.",
         "network": "No hemos podido conectar con el servidor. No se ha guardado nada: compruebe su conexión e inténtelo de nuevo.",
+        "presence_expired": "Se acabó el tiempo de esta verificación. Empiece de nuevo con una grabación nueva.",
+        "presence_invalid": "La grabación no es válida. Inténtelo de nuevo con una grabación nueva o pida la verificación de una persona.",
+        "presence_required": "Esta verificación ha cambiado: recargue la página o pida la verificación de una persona.",
+        "presence_too_large": "La grabación es demasiado grande para enviarla. Inténtelo de nuevo con una grabación nueva.",
+        "presence_unavailable": "La verificación automática no está disponible en este momento: le verificará una persona.",
         "processing": "No hemos podido procesar la foto. Inténtelo de nuevo.",
         "too_large": "La foto es demasiado grande. Vuelva a hacerla con una resolución más baja.",
         "too_many_requests": "Demasiados intentos en poco tiempo. Espere un momento e inténtelo de nuevo.",
         "unsupported": "Este tipo de archivo no es compatible. Use una foto JPEG o PNG."
       },
       "result": {
+        "closed": "Esta verificación ya había terminado: así fue.",
         "ok": {
           "codeEmail": "Si su reserva tiene una dirección de correo electrónico, también hemos enviado allí el código.",
           "codeHeldTouristTax": "Su identidad está verificada. El código de acceso le llegará después de pagar la tasa turística.",
@@ -417,6 +537,7 @@
         "retry": {
           "again": "Volver a hacer el selfie",
           "againDocument": "Fotografiar de nuevo el documento",
+          "againPresence": "Reintentar",
           "attempts": "Intentos restantes: {{count}}",
           "intro": "La comprobación no ha salido bien esta vez. Esto es lo que debe cambiar:",
           "noReason": "La comprobación no ha salido bien esta vez.",

@@ -246,13 +246,56 @@ export interface AlloggiatiCodeEntryDto {
   citizenshipLabel?: string | null;
 }
 
-/** Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. */
+/**
+ * One value the zones of the card gave (`fields` of `read-document`, E71/F01/US03/T01, NF-190): what it is, the value, the side of the document it was read on, the zone of the format it came from and how far
+ * it is trusted. Personal data that goes to the guest who sent the photo and nowhere else: the page holds it in memory for the length of the step, never in a storage, an address or a log.
+ */
+export interface CheckInZonedField {
+  /** What the value is: `surname`, `givenNames`, `birthDate`, `birthPlace`, `sex`, `nationality`, `documentNumber`, `issueDate`, `expiryDate` or `fiscalCode`. */
+  name: string;
+  /** The value as the server reads it: names and places in upper case, dates as `yyyy-MM-dd`, `sex` as `M`, `F` or `X`, `nationality` as the three letters of the country. */
+  value: string;
+  /** The side it was read on: `front`, `back` or `single`. */
+  side: string;
+  /** The zone of the format it was read from (the name of a field zone, or `mrz`). */
+  zone: string;
+  /** How far the reading is trusted, 0 to 1. A hint for the page; it decides nothing. */
+  confidence: number;
+  /** Where the value comes from: `mrz` (the lines of letters and numbers, with their check digits) or `viz` (the printed zone). */
+  source: string;
+}
+
+/**
+ * The fields of the check-in the photo of a document can fill, in the words of the answer's `missing` (E71/F01/US03/T01): what the guest types when the photo did not give it. A name the page does not know is
+ * not an error: it is asked under a general label.
+ */
+export type CheckInPrefillFieldName =
+  | 'lastName'
+  | 'firstName'
+  | 'gender'
+  | 'dateOfBirth'
+  | 'birthPlace'
+  | 'citizenship'
+  | 'documentKind'
+  | 'documentNumber'
+  | 'issuePlace';
+
+/**
+ * Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. With the self-hosted flow on (E71/F01/US03/T01, NF-190) it also carries `fields` (what the zones of the card gave),
+ * `missing` (the fields the guest has still to type) and `source: "local"` (nothing left the server); with it off none of the three is in the answer, which is then exactly the one of before.
+ */
 export interface CheckInDocumentReadResult {
   side?: 'front' | 'back' | 'single' | null;
   guestPosition?: number | null;
   confirmGuest?: boolean;
   read: boolean;
   reason?: string | null;
+  /** The values read by zone, with their side, zone, confidence and source. Self-hosted flow only; absent otherwise. */
+  fields?: CheckInZonedField[] | null;
+  /** The fields of the check-in the photo did not give (see {@link CheckInPrefillFieldName}). Self-hosted flow only; absent otherwise. */
+  missing?: string[] | null;
+  /** `local` when the photo was read on the server and nowhere else. Self-hosted flow only; absent otherwise. */
+  source?: string | null;
   guest?: {
     firstName?: string | null;
     lastName?: string | null;
@@ -321,8 +364,9 @@ export interface CheckInLinkResponse {
 }
 
 /**
- * The steps of the identity verification as the API names them (`IdentityVerificationSteps`). `presence` is the step of the self-hosted flow (E70-E74): this page has no screen for it yet, so it shows the way to a person
- * instead (and so does any step of the future that is not named here).
+ * The steps of the identity verification as the API names them (`IdentityVerificationSteps`). `presence` is the step of the self-hosted flow (E70-E74) that takes the place of `selfie`: the guest follows the moves
+ * of a challenge while the browser records a timestamped sequence of frames (E72/F02/US01/T01). On a state that does not say `selfHosted`, and for any step of the future that is not named here, the page shows
+ * the way to a person instead of a screen it does not have.
  */
 export type IdentityVerificationStep = 'consent' | 'document' | 'selfie' | 'presence' | 'done' | 'operator';
 
@@ -455,6 +499,53 @@ export interface IdentityOpenRequest {
  * idempotent: later calls change nothing. A verification that is closed answers 409 `identity_already_closed` instead, with the same `state` in the body.
  */
 export interface IdentityOpenResponse {
+  state: IdentityVerificationState;
+}
+
+/**
+ * The moves of the challenge of the presence (API `PresenceMoves`, E72/F01/US01/T01): the guest is asked for them one after the other, in the order the challenge names them. The server names them by the picture it
+ * receives, as the camera gives it: `turn_right` is the nose going to the right of the frame (which is the guest's own left, in front of the camera) and `look_up` the nose going up. A move the page has no
+ * words and no drawing for is not a move of the challenge: the challenge is not used.
+ */
+export type PresenceMove = 'turn_left' | 'turn_right' | 'look_up' | 'look_down';
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/presence-challenge` (E72/F02/US01/T01, NF-192): the short challenge of the presence, bound to the session and to the attempt, that expires at `expiresAt`. The
+ * guest looks at the camera for `leadInMs`, then follows each of `steps` for `stepMs`; the browser takes a frame about `targetFps` times a second (at most `maxFrames`, each no larger than `maxFrameSide` px on its
+ * long side) and sends the sequence back with `challengeToken`. 409 `presence_challenge_unavailable` when the automatic check cannot be done for this session: a person verifies.
+ */
+export interface PresenceChallenge {
+  challengeToken: string;
+  steps: PresenceMove[];
+  stepMs: number;
+  leadInMs: number;
+  expiresAt: string;
+  targetFps: number;
+  maxFrames: number;
+  maxFrameSide: number;
+}
+
+/**
+ * What `POST /api/public/checkin/{token}/presence` is sent (E72/F02/US01/T01): the frames of the sequence (JPEG, in memory only), the time of each in milliseconds from the first (a whole number, the first is 0, each one larger
+ * than the one before), the token of the challenge they answer and, for a property that keeps no document (Ticino), the picture(s) of the document again, as the selfie of the legacy path does.
+ */
+export interface PresenceSequence {
+  frames: Blob[];
+  timestamps: number[];
+  challengeToken: string;
+  documentPhoto?: Blob | null;
+  documentPhotoBack?: Blob | null;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/presence`: `ok`, `retry` (with the codes of what to change, `presence_too_short`, `presence_timing`, `presence_quality`, `presence_single_face`,
+ * `presence_challenge_not_followed`) or `operator`, whether the one guided retry is still there, and the state of the verification. The server keeps the answer of an `Idempotency-Key` it has already
+ * processed and gives it again for the same key, also after the challenge has expired. Nothing of the frames comes back.
+ */
+export interface IdentityPresenceResponse {
+  result: IdentityVerificationResultKind;
+  guidance: string[];
+  guidedRetryAvailable: boolean;
   state: IdentityVerificationState;
 }
 
