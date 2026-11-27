@@ -7,8 +7,11 @@ name: WordPress plugin
 # pull request, so this workflow must NOT be made a required check in the branch protection: the required check stays
 # `CI / Lint, typecheck, unit tests, build` (ci.yml), which has no path filter.
 #
-# It publishes nothing and reads no secret. A release (a GitHub release with the ZIP) is made by wordpress-plugin-release.yml,
-# when a tag wp-plugin-v<version> is pushed.
+# It reads no secret. On a pull request it publishes nothing. On a push to develop or main (never on a pull request or in a fork) the
+# job `publish` puts the ZIP that the job `package` built for that channel (with the address of the console of its environment inside) in
+# the rolling release wp-plugin-develop or wp-plugin-main (tools/publish-release.mjs): that is the only job with `contents: write`, and it
+# builds nothing. A release with a version (a GitHub release with the ZIP) is made by wordpress-plugin-release.yml, when a tag
+# wp-plugin-v<version> is pushed.
 
 on:
   pull_request:
@@ -239,17 +242,27 @@ jobs:
           ignore-warnings: true
 
   # The ZIP, as a build artifact. It needs the three jobs above: a ZIP that did not pass them is not offered.
+  #
+  # On a push to develop or main this is the ZIP that the job `publish` puts in the rolling release of that channel, so it is built here, in a job
+  # that cannot write (the workflow is `contents: read`), for the channel: it carries the address of the console of that environment
+  # (includes/build-config.php; the addresses are in tools/publish-release.mjs and nowhere else). On a pull request or a manual run it is the
+  # development ZIP, with no such file, as before. `publish` only downloads this artifact: the code of third parties (npm ci, WP-CLI, the build
+  # of the blocks, the setup actions) never runs in the job that can write.
   package:
     name: ZIP package
     needs: [lint, phpunit, smoke]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    outputs:
+      version: ${{ steps.build.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Build the ZIP
         id: build
         uses: ./.github/actions/build-wordpress-plugin
+        with:
+          channel: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') && github.ref_name || '' }}
 
       - name: Upload the ZIP
         uses: actions/upload-artifact@v4
@@ -258,3 +271,51 @@ jobs:
           path: integrations/wordpress/casazen/dist/casazen-${{ steps.build.outputs.version }}.zip
           if-no-files-found: error
           retention-days: 14
+
+  # The ZIP of every push to develop or main, published as the asset casazen.zip of the rolling release wp-plugin-<branch>, so that the
+  # console links a stable address with no release step (tools/publish-release.mjs). It needs the job `package`, which needs lint, phpunit and
+  # smoke: a ZIP that did not pass them is not published. It never runs on a pull request, on a manual run or in a fork.
+  #
+  # This is the only job with `contents: write` (a release is written to the repository), and it builds NOTHING: no npm ci, no WP-CLI, no setup
+  # action, no local action. It checks the repository out (for tools/publish-release.mjs, which uses only Node), downloads the ZIP that the job
+  # `package` built for this channel (read only, with the address of the console of the channel inside) and runs that one script, which reads
+  # the address back from the ZIP and refuses a ZIP of another channel. So no code of third parties runs where a token can write.
+  #
+  # It uses no secret: the token is the one that GitHub gives to the run. The checkout does not keep it on disk (`persist-credentials: false`)
+  # and only the last step has it in its environment (GH_TOKEN).
+  publish:
+    name: Publish the ZIP (${{ github.ref_name }})
+    needs: [package]
+    if: github.event_name == 'push' && github.repository == 'casazen/frontend' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    # The publications of a channel never run together: a later one waits for the one that runs, and none is cancelled once it has started
+    # (`cancel-in-progress: false`), so two jobs never replace the asset at the same time. Whether a publication is still the one to make, when
+    # its turn comes, is decided by tools/publish-release.mjs (it reads the tip of the branch and steps aside for a newer commit).
+    concurrency:
+      group: wordpress-plugin-publish-${{ github.ref_name }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # The artifact of the job `package` of THIS run: the ZIP casazen-<version>.zip, built for the channel of the branch.
+      - name: Download the ZIP built by the job package
+        uses: actions/download-artifact@v4
+        with:
+          name: casazen-wordpress-plugin
+          path: ${{ runner.temp }}/casazen-zip
+
+      # The release wp-plugin-<channel> is created once; after that only its asset and its notes change. The tag is never moved or recreated.
+      - name: Publish the ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CHANNEL: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+          VERSION: ${{ needs.package.outputs.version }}
+          ZIP: ${{ runner.temp }}/casazen-zip/casazen-${{ needs.package.outputs.version }}.zip
+        run: node tools/publish-release.mjs --channel "$CHANNEL" --zip "$ZIP" --sha "$COMMIT" --version "$VERSION"

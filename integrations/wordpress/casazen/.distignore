@@ -6,6 +6,8 @@
 #   - `*` stays inside one name, `**` crosses folders; a matched folder is left out with everything in it.
 #
 # The ZIP holds: casazen.php, uninstall.php, includes/, blocks/build/, languages/, readme.txt and license.txt.
+# includes/build-config.php (the address of the CasaZen console) is not a source file: tools/build-zip.mjs writes it into the ZIP with
+# --app-origin, after these rules are applied, and refuses a plugin folder that holds one. No rule below may leave it out.
 
 # Dotfiles: .distignore, .gitignore, .wp-env.json, .phpunit.result.cache, ...
 .*

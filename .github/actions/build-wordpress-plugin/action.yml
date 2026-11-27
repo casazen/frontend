@@ -2,13 +2,20 @@ name: Build the CasaZen WordPress plugin ZIP
 description: >-
   Checks the version, builds the blocks, compiles the translations, checks that WordPress finds the texts of the block editor and writes
   integrations/wordpress/casazen/dist/casazen-<version>.zip.
-  Used by the workflows "WordPress plugin" (the package job and plugin-check) and "WordPress plugin release". Needs the repository
-  checked out first. It reads no secret and publishes nothing.
+  Used by the workflows "WordPress plugin" (the package job and plugin-check; the job publish, which can write, builds nothing: it downloads the
+  ZIP of the package job) and "WordPress plugin release". Needs the repository checked out first. It reads no secret and publishes nothing.
 
 inputs:
   tag:
     description: >-
       The release tag (wp-plugin-v<version>) that the version of the plugin must match. Empty for a build that is not a release.
+    required: false
+    default: ''
+  channel:
+    description: >-
+      The channel the ZIP is for (develop or main). The ZIP then carries the address of the CasaZen console of that channel in
+      includes/build-config.php, so the plugin downloaded from the test console connects to test and the one from production to production.
+      The addresses are in tools/publish-release.mjs and nowhere else. Empty for a build that is not published: the ZIP has no such file.
     required: false
     default: ''
 
@@ -105,9 +112,19 @@ runs:
       working-directory: integrations/wordpress/casazen
       run: node tools/check-translations.mjs
 
-    # Writes dist/casazen-<version>.zip, reads it back and checks it (one top-level folder, nothing that is not for the user).
+    # Writes dist/casazen-<version>.zip, reads it back and checks it (one top-level folder, nothing that is not for the user). With a channel,
+    # the ZIP carries the address of the console of that channel (includes/build-config.php, read back from the ZIP too); an unknown channel
+    # stops the step before anything is built.
     - name: Build the ZIP
       id: zip
       shell: bash
       working-directory: integrations/wordpress/casazen
-      run: node tools/build-zip.mjs
+      env:
+        CHANNEL: ${{ inputs.channel }}
+      run: |
+        if [ -n "$CHANNEL" ]; then
+          app_origin="$(node tools/publish-release.mjs --channel "$CHANNEL" --print-app-origin)"
+          node tools/build-zip.mjs --app-origin "$app_origin"
+        else
+          node tools/build-zip.mjs
+        fi
