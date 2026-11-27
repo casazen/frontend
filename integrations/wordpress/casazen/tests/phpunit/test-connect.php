@@ -8,8 +8,6 @@
  * @package Casazen
  */
 
-require_once __DIR__ . '/includes/casazen-api-stub.php';
-
 use Casazen\Account;
 use Casazen\Admin;
 use Casazen\Api_Client;
@@ -18,6 +16,8 @@ use Casazen\Connect;
 use Casazen\Connection;
 use Casazen\Link;
 use Casazen\Settings;
+
+require_once __DIR__ . '/includes/casazen-api-stub.php';
 
 /**
  * The connection of the site to the account of the agency.
@@ -103,7 +103,7 @@ class Test_Connect extends WP_UnitTestCase {
 		$query = array();
 		parse_str( $parts['query'], $query );
 		$this->assertSame( array( 'site', 'return', 'state', 'challenge', 'method' ), array_keys( $query ) );
-		$this->assertSame( 'https://example.org', $query['site'], 'The site is the origin of the site.' );
+		$this->assertSame( CASAZEN_TEST_SITE, $query['site'], 'The site is the origin of the site.' );
 		$this->assertSame( admin_url( 'options-general.php?page=casazen' ), $query['return'], 'CasaZen comes back to the screen of the plugin.' );
 		$this->assertSame( 'S256', $query['method'] );
 		$this->assertSame( 1, preg_match( '/^[0-9a-f]{64}$/', $query['state'] ), 'The state is 32 random bytes in hexadecimal.' );
@@ -259,7 +259,7 @@ class Test_Connect extends WP_UnitTestCase {
 			array(
 				'code'         => 'code-of-casazen-0123456789',
 				'codeVerifier' => $verifier,
-				'siteUrl'      => 'https://example.org',
+				'siteUrl'      => CASAZEN_TEST_SITE,
 			),
 			$exchanges[0]['body']
 		);
@@ -275,7 +275,7 @@ class Test_Connect extends WP_UnitTestCase {
 		$this->assertSame( CASAZEN_TEST_TOKEN, $link['token'] );
 		$this->assertSame( CASAZEN_TEST_CONNECTION, $link['connection_id'] );
 		$this->assertSame( 'Agenzia Esempio', $link['org_name'] );
-		$this->assertSame( 'https://example.org', $link['site_url'] );
+		$this->assertSame( CASAZEN_TEST_SITE, $link['site_url'] );
 		$this->assertSame( CASAZEN_TEST_API, $link['api_base'] );
 		$this->assertSame( Build_Config::app_origin(), $link['app_origin'] );
 		$this->assertArrayNotHasKey( Link::OPTION, wp_load_alloptions(), 'The link is not autoloaded.' );
@@ -387,6 +387,7 @@ class Test_Connect extends WP_UnitTestCase {
 				'post_content' => '[casazen_booking] [casazen_search] [casazen_guest_access] [casazen_owner_login]',
 			)
 		);
+
 		$this->calls = array();
 
 		$this->go_to( get_permalink( $page ) );

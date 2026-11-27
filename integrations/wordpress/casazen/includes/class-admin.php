@@ -822,8 +822,8 @@ class Admin {
 	 * @return void
 	 */
 	private static function render_domain_state( array $account, $state ) {
-		$status = $account['domain']['status'];
-		$titles = array(
+		$status       = $account['domain']['status'];
+		$titles       = array(
 			'verified'   => __( 'Your domain is active', 'casazen' ),
 			'waiting'    => __( 'Waiting for the DNS records', 'casazen' ),
 			'activating' => __( 'Activation in progress', 'casazen' ),
@@ -835,8 +835,8 @@ class Admin {
 			'activating' => __( 'The DNS records are not the problem: we are finishing the activation of the domain on the platform and will retry automatically.', 'casazen' ),
 			'failed'     => __( 'The domain cannot be activated. Check that it is spelled correctly or choose another domain.', 'casazen' ),
 		);
-		$explanation = 'verified' === $state ? '' : $status['message'];
-		$last_check  = Domain::last_check( $account );
+		$explanation  = 'verified' === $state ? '' : $status['message'];
+		$last_check   = Domain::last_check( $account );
 
 		printf(
 			'<div class="casazen-domain-state casazen-domain-state--%1$s" role="%2$s"><p><strong>%3$s</strong></p><p>%4$s</p></div>',
@@ -952,7 +952,7 @@ class Admin {
 		} elseif ( $surfaces['links'] && ! $effective['links'] ) {
 			$links_note = __( 'For now the links stay the CasaZen ones.', 'casazen' );
 		}
-		$choices = array(
+		$choices      = array(
 			'guest_area'   => array(
 				'label' => __( 'Guest area on my domain', 'casazen' ),
 				'help'  => __( 'Your guests manage their booking and check in from your address, under your brand.', 'casazen' ),

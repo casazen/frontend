@@ -5,11 +5,11 @@
  * @package Casazen
  */
 
-require_once __DIR__ . '/includes/casazen-api-stub.php';
-
 use Casazen\Account;
 use Casazen\Admin;
 use Casazen\Domain;
+
+require_once __DIR__ . '/includes/casazen-api-stub.php';
 
 // phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound -- the exception below is a helper of the test class of this file alone.
 
@@ -68,8 +68,9 @@ class Test_Ajax extends WP_UnitTestCase {
 	 * @return array|null
 	 */
 	private function ajax( $action, $nonce ) {
-		$_POST    = null === $nonce ? array() : array( 'nonce' => $nonce );
-		$_REQUEST = $_POST;
+		$fields   = null === $nonce ? array() : array( 'nonce' => $nonce );
+		$_POST    = $fields;
+		$_REQUEST = $fields;
 		$handler  = function () {
 			return array( $this, 'stop' );
 		};

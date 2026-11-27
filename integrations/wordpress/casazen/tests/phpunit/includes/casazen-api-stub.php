@@ -39,6 +39,12 @@ const CASAZEN_TEST_CONNECTION = '6ba7b810-9dad-41d1-80b4-00c04fd430c8';
 const CASAZEN_TEST_API = 'https://api.example.com/api';
 
 /**
+ * The origin of the WordPress site of the tests (use_https_site()), whatever the domain of the test environment is (example.org with
+ * the WordPress test library, localhost:8889 in wp-env).
+ */
+const CASAZEN_TEST_SITE = 'https://example.org';
+
+/**
  * Thrown by the `wp_redirect` filter of the tests, so that a handler does not reach its `exit`.
  */
 class Casazen_Test_Redirected extends Exception {
@@ -292,7 +298,7 @@ trait Casazen_Api_Stub {
 				'connection_id' => CASAZEN_TEST_CONNECTION,
 				'org_slug'      => 'agenzia-esempio',
 				'org_name'      => 'Agenzia Esempio',
-				'site_url'      => 'https://example.org',
+				'site_url'      => CASAZEN_TEST_SITE,
 				'app_origin'    => Build_Config::app_origin(),
 				'api_base'      => CASAZEN_TEST_API,
 				'connected_at'  => time(),
@@ -333,17 +339,18 @@ trait Casazen_Api_Stub {
 	}
 
 	/**
-	 * The site of the tests on https: the address of the site and of its administration (example.org).
+	 * The site of the tests on https, always at CASAZEN_TEST_SITE: the address of the site and of its administration do not depend on the
+	 * domain of the test environment (example.org with the WordPress test library, localhost:8889 in wp-env).
 	 *
 	 * @return void
 	 */
 	protected function use_https_site() {
-		$https = static function ( $url ) {
-			return is_string( $url ) ? preg_replace( '#^http://#', 'https://', $url ) : $url;
+		$site = static function ( $url ) {
+			return is_string( $url ) ? preg_replace( '#^https?://[^/?\#]+#', CASAZEN_TEST_SITE, $url ) : $url;
 		};
-		add_filter( 'home_url', $https );
-		add_filter( 'site_url', $https );
-		add_filter( 'admin_url', $https );
+		add_filter( 'home_url', $site );
+		add_filter( 'site_url', $site );
+		add_filter( 'admin_url', $site );
 	}
 
 	/**

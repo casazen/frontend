@@ -6,14 +6,14 @@
  * @package Casazen
  */
 
-require_once __DIR__ . '/includes/casazen-api-stub.php';
-
 use Casazen\Account;
 use Casazen\Admin;
 use Casazen\Api_Client;
 use Casazen\Domain;
 use Casazen\Link;
 use Casazen\Settings;
+
+require_once __DIR__ . '/includes/casazen-api-stub.php';
 
 /**
  * AC 3 of the connection: the credential never leaves the server.

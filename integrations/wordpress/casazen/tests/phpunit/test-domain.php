@@ -8,8 +8,6 @@
  * @package Casazen
  */
 
-require_once __DIR__ . '/includes/casazen-api-stub.php';
-
 use Casazen\Account;
 use Casazen\Admin;
 use Casazen\Api_Client;
@@ -18,6 +16,8 @@ use Casazen\Connection;
 use Casazen\Domain;
 use Casazen\Link;
 use Casazen\Settings;
+
+require_once __DIR__ . '/includes/casazen-api-stub.php';
 
 /**
  * The domain of the agency, managed from the plugin.
@@ -323,7 +323,7 @@ class Test_Domain extends WP_UnitTestCase {
 	 */
 	public function test_every_form_checks_the_capability_and_the_nonce() {
 		$this->route( 'GET', '/embed/v1/manifest.json', 200, $this->manifest() );
-		$forms = array(
+		$forms  = array(
 			Connect::START_ACTION      => array( Connect::class, 'handle_start' ),
 			Connect::DISCONNECT_ACTION => array( Connect::class, 'handle_disconnect' ),
 			Domain::SAVE_ACTION        => array( Domain::class, 'handle_save' ),
