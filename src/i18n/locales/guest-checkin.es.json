@@ -473,6 +473,11 @@
           "fallback": "Puede volver a intentarlo o continuar con una persona que verifique su identidad."
         },
         "instructions": "Colóquese en un lugar bien iluminado y mantenga el rostro dentro del óvalo. Pulse «Empezar» y siga las indicaciones de la pantalla: tendrá que girar la cabeza y subir o bajar la mirada. Dura unos segundos.",
+        "kept": {
+          "offline": "Sin conexión. No hemos podido enviar su grabación, pero sigue aquí: cuando vuelva la conexión pulse «Enviar de nuevo».",
+          "sendAgain": "Enviar de nuevo",
+          "server": "El servicio no responde en este momento. Su grabación sigue aquí: en un momento pulse «Enviar de nuevo»."
+        },
         "leadIn": "Mire a la cámara",
         "move": {
           "look_down": "Baje la mirada",
@@ -481,14 +486,19 @@
           "turn_right": "Gire la cabeza hacia la derecha"
         },
         "notice": {
-          "not_prepared": "No hemos podido grabar las imágenes. Pulse «Empezar» para intentarlo de nuevo."
+          "expired": "Se acabó el tiempo de la verificación. Empezamos de nuevo con una grabación nueva: pulse «Empezar».",
+          "hidden": "La página pasó a segundo plano durante la grabación, así que la hemos cancelado. Pulse «Empezar» para repetirla.",
+          "lost": "No hemos podido enviar la grabación y la hemos borrado. Cuando tenga conexión pulse «Empezar» para repetirla, o continúe con una persona.",
+          "not_prepared": "No hemos podido grabar las imágenes. Pulse «Empezar» para intentarlo de nuevo.",
+          "rotated": "Se giró o cambió el tamaño de la pantalla durante la grabación, así que la hemos cancelado. Mantenga quieto el teléfono y pulse «Empezar» para repetirla."
         },
         "preparing": "Preparando la verificación…",
         "retry": "Reintentar",
         "secondsLeft": "Segundos restantes: {{count}}",
         "start": "Empezar",
         "step": "Paso {{current}} de {{total}}",
-        "title": "Muestre su rostro a la cámara"
+        "title": "Muestre su rostro a la cámara",
+        "waitingForConnection": "Esperando a que vuelva la conexión…"
       },
       "problem": {
         "consent_required": "Primero necesitamos su respuesta sobre la comprobación facial.",
@@ -509,6 +519,7 @@
         "unsupported": "Este tipo de archivo no es compatible. Use una foto JPEG o PNG."
       },
       "result": {
+        "closed": "Esta verificación ya había terminado: así fue.",
         "ok": {
           "codeEmail": "Si su reserva tiene una dirección de correo electrónico, también hemos enviado allí el código.",
           "codeHeldTouristTax": "Su identidad está verificada. El código de acceso le llegará después de pagar la tasa turística.",

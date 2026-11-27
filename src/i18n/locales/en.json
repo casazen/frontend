@@ -6869,6 +6869,11 @@
           "fallback": "You can try again, or carry on with a person who checks your identity."
         },
         "instructions": "Stand somewhere well lit and keep your face inside the oval. Press “Start” and follow the instructions on the screen: you will turn your head and look up or down. It takes a few seconds.",
+        "kept": {
+          "offline": "No connection. We could not send your recording, but it is still here: when the connection is back press “Send again”.",
+          "sendAgain": "Send again",
+          "server": "The service is not answering right now. Your recording is still here: in a moment press “Send again”."
+        },
         "leadIn": "Look at the camera",
         "move": {
           "look_down": "Look down",
@@ -6877,14 +6882,19 @@
           "turn_right": "Turn your head to the right"
         },
         "notice": {
-          "not_prepared": "We could not record the images. Press “Start” to try again."
+          "expired": "Time for the check ran out. We start again with a new recording: press “Start”.",
+          "hidden": "The page went to the background during the recording, so we cancelled it. Press “Start” to do it again.",
+          "lost": "We could not send the recording and we deleted it. When you are connected press “Start” to do it again, or carry on with a person.",
+          "not_prepared": "We could not record the images. Press “Start” to try again.",
+          "rotated": "The screen was turned or resized during the recording, so we cancelled it. Hold the phone still and press “Start” to do it again."
         },
         "preparing": "Getting the check ready…",
         "retry": "Try again",
         "secondsLeft": "Seconds left: {{count}}",
         "start": "Start",
         "step": "Step {{current}} of {{total}}",
-        "title": "Show your face to the camera"
+        "title": "Show your face to the camera",
+        "waitingForConnection": "Waiting for the connection to come back…"
       },
       "problem": {
         "consent_required": "We need your answer about the face check first.",
@@ -6905,6 +6915,7 @@
         "unsupported": "This type of file is not supported. Use a JPEG or PNG photo."
       },
       "result": {
+        "closed": "This check was already finished: here is how it went.",
         "ok": {
           "codeEmail": "If your booking has an email address, we also sent the code there.",
           "codeHeldTouristTax": "Your identity is verified. The access code will reach you after the tourist tax is paid.",

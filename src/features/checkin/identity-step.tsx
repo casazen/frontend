@@ -147,6 +147,7 @@ export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) 
         <IdentityResult
           kind={progress.stage === 'done' ? 'ok' : progress.stage}
           presence={selfHosted}
+          closed={progress.closed}
           lockCode={progress.lockCode}
           lockCodeHeld={progress.lockCodeHeld ?? null}
           guidanceCodes={progress.guidanceCodes}

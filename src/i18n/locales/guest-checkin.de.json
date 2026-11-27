@@ -473,6 +473,11 @@
           "fallback": "Sie können es erneut versuchen oder mit einer Person fortfahren, die Ihre Identität prüft."
         },
         "instructions": "Stellen Sie sich an einen hellen Ort und halten Sie Ihr Gesicht im Oval. Drücken Sie „Start“ und folgen Sie den Anweisungen auf dem Bildschirm: Sie drehen den Kopf und schauen nach oben oder unten. Das dauert nur wenige Sekunden.",
+        "kept": {
+          "offline": "Keine Verbindung. Wir konnten Ihre Aufnahme nicht senden, sie ist aber noch da: Wenn die Verbindung wieder da ist, drücken Sie „Erneut senden“.",
+          "sendAgain": "Erneut senden",
+          "server": "Der Dienst antwortet im Moment nicht. Ihre Aufnahme ist noch da: Drücken Sie in Kürze „Erneut senden“."
+        },
         "leadIn": "Schauen Sie in die Kamera",
         "move": {
           "look_down": "Schauen Sie nach unten",
@@ -481,14 +486,19 @@
           "turn_right": "Drehen Sie den Kopf nach rechts"
         },
         "notice": {
-          "not_prepared": "Die Bilder konnten nicht aufgenommen werden. Drücken Sie „Start“, um es erneut zu versuchen."
+          "expired": "Die Zeit für die Prüfung ist abgelaufen. Wir beginnen mit einer neuen Aufnahme von vorn: Drücken Sie „Start“.",
+          "hidden": "Die Seite war während der Aufnahme im Hintergrund, deshalb haben wir die Aufnahme abgebrochen. Drücken Sie „Start“, um sie zu wiederholen.",
+          "lost": "Wir konnten die Aufnahme nicht senden und haben sie gelöscht. Sobald Sie verbunden sind, drücken Sie „Start“, um sie zu wiederholen, oder fahren Sie mit einer Person fort.",
+          "not_prepared": "Die Bilder konnten nicht aufgenommen werden. Drücken Sie „Start“, um es erneut zu versuchen.",
+          "rotated": "Der Bildschirm wurde während der Aufnahme gedreht oder in der Größe verändert, deshalb haben wir die Aufnahme abgebrochen. Halten Sie das Handy ruhig und drücken Sie „Start“, um sie zu wiederholen."
         },
         "preparing": "Die Prüfung wird vorbereitet …",
         "retry": "Erneut versuchen",
         "secondsLeft": "Verbleibende Sekunden: {{count}}",
         "start": "Start",
         "step": "Schritt {{current}} von {{total}}",
-        "title": "Zeigen Sie Ihr Gesicht der Kamera"
+        "title": "Zeigen Sie Ihr Gesicht der Kamera",
+        "waitingForConnection": "Wir warten, bis die Verbindung wieder da ist …"
       },
       "problem": {
         "consent_required": "Wir brauchen zuerst Ihre Antwort zur Gesichtsprüfung.",
@@ -509,6 +519,7 @@
         "unsupported": "Dieser Dateityp wird nicht unterstützt. Verwenden Sie ein JPEG- oder PNG-Foto."
       },
       "result": {
+        "closed": "Diese Prüfung war bereits abgeschlossen: So ist sie ausgegangen.",
         "ok": {
           "codeEmail": "Wenn Ihre Buchung eine E-Mail-Adresse hat, haben wir den Code auch dorthin gesendet.",
           "codeHeldTouristTax": "Ihre Identität ist bestätigt. Den Zugangscode erhalten Sie, nachdem die Ortstaxe bezahlt ist.",

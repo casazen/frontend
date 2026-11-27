@@ -473,6 +473,11 @@
           "fallback": "Vous pouvez réessayer, ou continuer avec une personne qui vérifie votre identité."
         },
         "instructions": "Placez-vous dans un endroit bien éclairé et gardez votre visage dans l'ovale. Appuyez sur « Commencer » et suivez les indications à l'écran : vous allez tourner la tête et lever ou baisser les yeux. Cela ne dure que quelques secondes.",
+        "kept": {
+          "offline": "Pas de connexion. Nous n'avons pas pu envoyer votre enregistrement, mais il est toujours là : quand la connexion revient, appuyez sur « Envoyer de nouveau ».",
+          "sendAgain": "Envoyer de nouveau",
+          "server": "Le service ne répond pas pour le moment. Votre enregistrement est toujours là : dans un instant, appuyez sur « Envoyer de nouveau »."
+        },
         "leadIn": "Regardez la caméra",
         "move": {
           "look_down": "Baissez les yeux",
@@ -481,14 +486,19 @@
           "turn_right": "Tournez la tête vers la droite"
         },
         "notice": {
-          "not_prepared": "Nous n'avons pas pu enregistrer les images. Appuyez sur « Commencer » pour réessayer."
+          "expired": "Le temps de la vérification est écoulé. Nous recommençons avec un nouvel enregistrement : appuyez sur « Commencer ».",
+          "hidden": "La page est passée en arrière-plan pendant l'enregistrement, nous l'avons donc annulé. Appuyez sur « Commencer » pour le refaire.",
+          "lost": "Nous n'avons pas pu envoyer l'enregistrement et nous l'avons supprimé. Quand vous êtes connecté, appuyez sur « Commencer » pour le refaire, ou continuez avec une personne.",
+          "not_prepared": "Nous n'avons pas pu enregistrer les images. Appuyez sur « Commencer » pour réessayer.",
+          "rotated": "L'écran a été tourné ou redimensionné pendant l'enregistrement, nous l'avons donc annulé. Tenez le téléphone immobile et appuyez sur « Commencer » pour le refaire."
         },
         "preparing": "Préparation de la vérification…",
         "retry": "Réessayer",
         "secondsLeft": "Secondes restantes : {{count}}",
         "start": "Commencer",
         "step": "Étape {{current}} sur {{total}}",
-        "title": "Montrez votre visage à la caméra"
+        "title": "Montrez votre visage à la caméra",
+        "waitingForConnection": "En attente du retour de la connexion…"
       },
       "problem": {
         "consent_required": "Nous avons d'abord besoin de votre réponse sur la vérification du visage.",
@@ -509,6 +519,7 @@
         "unsupported": "Ce type de fichier n'est pas pris en charge. Utilisez une photo JPEG ou PNG."
       },
       "result": {
+        "closed": "Cette vérification était déjà terminée : voici comment elle s'est passée.",
         "ok": {
           "codeEmail": "Si votre réservation comporte une adresse e-mail, nous y avons aussi envoyé le code.",
           "codeHeldTouristTax": "Votre identité est vérifiée. Le code d'accès vous parviendra après le paiement de la taxe de séjour.",

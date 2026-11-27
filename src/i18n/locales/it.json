@@ -6869,6 +6869,11 @@
           "fallback": "Puoi riprovare, oppure continuare con una persona che verifica la tua identità."
         },
         "instructions": "Mettiti in un posto ben illuminato e tieni il viso dentro l'ovale. Premi «Inizia» e segui le indicazioni sullo schermo: dovrai girare la testa e alzare o abbassare lo sguardo. Dura pochi secondi.",
+        "kept": {
+          "offline": "Connessione assente. Non siamo riusciti a inviare la tua registrazione, ma è ancora qui: quando la connessione torna premi «Invia di nuovo».",
+          "sendAgain": "Invia di nuovo",
+          "server": "Il servizio non risponde in questo momento. La tua registrazione è ancora qui: tra poco premi «Invia di nuovo»."
+        },
         "leadIn": "Guarda la fotocamera",
         "move": {
           "look_down": "Abbassa lo sguardo",
@@ -6877,14 +6882,19 @@
           "turn_right": "Gira la testa a destra"
         },
         "notice": {
-          "not_prepared": "Non siamo riusciti a registrare le immagini. Premi «Inizia» per riprovare."
+          "expired": "Il tempo per la verifica è scaduto. Ricominciamo con una nuova ripresa: premi «Inizia».",
+          "hidden": "La pagina è andata in secondo piano durante la ripresa, quindi l'abbiamo annullata. Premi «Inizia» per rifarla.",
+          "lost": "Non siamo riusciti a inviare la registrazione e l'abbiamo cancellata. Quando c'è connessione premi «Inizia» per rifarla, oppure continua con una persona.",
+          "not_prepared": "Non siamo riusciti a registrare le immagini. Premi «Inizia» per riprovare.",
+          "rotated": "Lo schermo è stato girato o ridimensionato durante la ripresa, quindi l'abbiamo annullata. Tieni fermo il telefono e premi «Inizia» per rifarla."
         },
         "preparing": "Prepariamo la verifica…",
         "retry": "Riprova",
         "secondsLeft": "Secondi rimasti: {{count}}",
         "start": "Inizia",
         "step": "Passo {{current}} di {{total}}",
-        "title": "Mostra il tuo viso alla fotocamera"
+        "title": "Mostra il tuo viso alla fotocamera",
+        "waitingForConnection": "In attesa che torni la connessione…"
       },
       "problem": {
         "consent_required": "Prima ci serve la tua risposta sul controllo del volto.",
@@ -6905,6 +6915,7 @@
         "unsupported": "Questo tipo di file non è supportato. Usa una foto JPEG o PNG."
       },
       "result": {
+        "closed": "Questa verifica era già conclusa: ecco com'è andata.",
         "ok": {
           "codeEmail": "Se la tua prenotazione ha un indirizzo email, abbiamo inviato il codice anche lì.",
           "codeHeldTouristTax": "La tua identità è verificata. Il codice di accesso ti arriverà dopo il pagamento della tassa di soggiorno.",

@@ -187,6 +187,8 @@ export interface IdentityProgress {
    * step. False on the legacy path, where none of that is there and the page is the one it always was.
    */
   selfHosted: boolean;
+  /** The verification was already closed when the page learnt where it stood (it was opened again, or a 409 `identity_already_closed` said so): the result says it was already over (E72/F02/US01/T02). */
+  closed: boolean;
 }
 
 /** `lockCodeHeld` of the selfie answer while the organization asks for the tourist tax before the lock code and the stay still owes it (E25/F01/US01/T01). */
@@ -257,6 +259,7 @@ export function progressFromState(state: IdentityVerificationState): IdentityPro
     documentRefused: false,
     lockCode: null,
     selfHosted: state.selfHosted === true,
+    closed: isClosed(state),
     ...documentFromState(state),
   };
 }
@@ -584,6 +587,16 @@ export function afterPresenceUnavailable(progress: IdentityProgress, state: Iden
     lockCode: null,
     lockCodeHeld: null,
   };
+}
+
+/**
+ * The 409 that says the challenge a recording answers is no longer one the server accepts (`presence_challenge_expired`, or `presence_challenge_required` when it has none for this attempt): nothing was decided, and
+ * the guest records again with a new challenge and a new key (E72/F02/US01/T02).
+ */
+export function isPresenceChallengeRenewal(error: unknown): boolean {
+  if (!isAxiosError(error) || error.response?.status !== 409) return false;
+  const code = getProblemCode(error.response.data);
+  return code === 'presence_challenge_expired' || code === 'presence_challenge_required';
 }
 
 /** After the guest asked for a person: the operators are told. A verification that had already passed stays passed. */

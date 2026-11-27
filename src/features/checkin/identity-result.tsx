@@ -13,6 +13,11 @@ interface IdentityResultProps {
    * the legacy path, are not there. The server decides how many guided retries there are, so the page counts none.
    */
   presence?: boolean;
+  /**
+   * The verification was already closed when the guest got here (the page was opened again, or another tab, or an earlier request that was answered after the screen was lost, ended it): the screen says it was already over, and
+   * shows where it ended (E72/F02/US01/T02). It never says «passed» unless `kind` is `ok`, which only the server decides.
+   */
+  closed?: boolean;
   /** The lock code of the property: shown only for `ok`, whatever else is passed. */
   lockCode: string | null;
   /** Why an `ok` has no code although the property has one: the code is held back until the tourist tax is paid (`tourist_tax_due`). */
@@ -38,6 +43,7 @@ interface IdentityResultProps {
 export function IdentityResult({
   kind,
   presence = false,
+  closed = false,
   lockCode,
   lockCodeHeld = null,
   guidanceCodes,
@@ -65,6 +71,11 @@ export function IdentityResult({
             {t('checkin.identity.result.ok.title')}
           </h4>
         </div>
+        {closed && (
+          <p className="text-sm text-muted-foreground" data-testid="identity-closed-note">
+            {t('checkin.identity.result.closed')}
+          </p>
+        )}
         {lockCode ? (
           <>
             <p className="text-sm">{t('checkin.identity.result.ok.codeLabel')}</p>
@@ -113,6 +124,12 @@ export function IdentityResult({
           {kind === 'retry' ? t('checkin.identity.result.retry.title') : t('checkin.identity.result.operator.title')}
         </h4>
       </div>
+
+      {closed && (
+        <p className="text-sm text-muted-foreground" data-testid="identity-closed-note">
+          {t('checkin.identity.result.closed')}
+        </p>
+      )}
 
       {kind === 'retry' ? (
         <>

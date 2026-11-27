@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { publicCheckinApi, type SelfiePose } from '@/api/checkin.api';
+import { getHttpStatus } from '@/lib/api-errors';
 import { prepareDocumentPhoto } from '@/lib/image-capture';
 import type { DocumentSide, IdentityVerificationState, PresenceChallenge, PresenceSequence } from '@/types/public-checkin.types';
 import { looksLikeTheSameSide } from './lib/document-fingerprint';
@@ -19,6 +20,7 @@ import {
   identityStateOf,
   isIdentityConcluded,
   isNoticeVersionUnknown,
+  isPresenceChallengeRenewal,
   presenceUnavailableOf,
   progressFromState,
   readPresenceAnswer,
@@ -26,6 +28,7 @@ import {
   type IdentityProblem,
   type IdentityProgress,
 } from './lib/identity-model';
+import { isRateLimited, uploadPresence } from './lib/presence-upload';
 
 /**
  * What asking for the challenge of the presence came to (E72/F02/US01/T01): the challenge; a failure the guest may try again (`problem` says which); the step moved on by itself, because the automatic check cannot
@@ -34,10 +37,16 @@ import {
 export type PresenceChallengeResult = { kind: 'ready'; challenge: PresenceChallenge } | { kind: 'failed' } | { kind: 'moved' } | { kind: 'stale' };
 
 /**
- * What sending the sequence of the presence came to (E72/F02/US01/T01): the server answered (the step moved on: a pass, a retry with its guidance, a person, or a verification found closed); the call failed (`problem`
- * says why, and the recording starts again, with a new challenge and a new key); or another call of the step is in flight and nothing was sent.
+ * What sending the sequence of the presence came to (E72/F02/US01/T02): the server answered (the step moved on: a pass, a retry with its guidance, a person, or a verification found closed); the upload did not get
+ * through (the network, the server, too many requests) and the same recording may be sent again with the same key (`problem` says which); the challenge ran out and nothing was decided (a new challenge, a new
+ * key, a new recording); the server refused for good (`problem` says why, and the recording starts again); or another call of the step is in flight and nothing was sent.
  */
-export type PresenceSendResult = { kind: 'answered' } | { kind: 'failed' } | { kind: 'busy' };
+export type PresenceSendResult =
+  | { kind: 'answered' }
+  | { kind: 'kept'; problem: IdentityProblem }
+  | { kind: 'renew' }
+  | { kind: 'failed' }
+  | { kind: 'busy' };
 
 /** What the identity step of the check-in page can do, and what it knows (E03/F04/US03/T01, E22/F02/US01/T01). */
 export interface IdentityVerificationController {
@@ -78,8 +87,9 @@ export interface IdentityVerificationController {
    */
   startPresence: (isCurrent?: () => boolean) => Promise<PresenceChallengeResult>;
   /**
-   * The sequence of the presence (E72/F02/US01/T01): sent with `idempotencyKey`, which belongs to the recording (made once for it). The pictures of the document a property that keeps none holds for the recording go
-   * with it. One call at a time (`busy` while it lasts): a second one is not sent. The sequence is not kept here: the caller owns its frames and lets them go.
+   * The sequence of the presence (E72/F02/US01/T02): sent with `idempotencyKey`, which belongs to the recording and is the same for every repeat of it. A network that drops, a timeout and a 5xx are repeated with the
+   * same frames and the same key (so a request that did reach the server comes back as its stored answer); a 4xx is not. The pictures of the document a property that keeps none holds for the recording go with it.
+   * One call at a time (`busy` while it lasts): a second one is not sent. The sequence is not kept here: the caller owns its frames and lets them go.
    */
   sendPresence: (sequence: PresenceSequence, idempotencyKey: string) => Promise<PresenceSendResult>;
   /** The guest asks for a person, from any screen of the step (GDPR art. 22). */
@@ -381,23 +391,35 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     setProblem(null);
     try {
       const body: PresenceSequence = { ...sequence, documentPhoto: needsDocument ? held.front : null, documentPhotoBack: needsBack ? held.back : null };
-      const answer = readPresenceAnswer(await publicCheckinApi.postPresence(token, body, idempotencyKey));
-      if (answer === null) {
-        // An answer that is not one (a page of the server in its place) decided nothing the page can show: it is a failure, never a pass.
-        setProblem('failed');
-        return { kind: 'failed' };
+      const outcome = await uploadPresence((key) => publicCheckinApi.postPresence(token, body, key), idempotencyKey);
+
+      if (outcome.kind === 'answered') {
+        const answer = readPresenceAnswer(outcome.answer);
+        if (answer === null) {
+          // An answer that is not one (a page of the server in its place) decided nothing the page can show: it is a failure, never a pass.
+          setProblem('failed');
+          return { kind: 'failed' };
+        }
+        // A pass or a person ends the step: the pictures of the document are let go. After a retry they are needed for the next recording.
+        if (answer.result !== 'retry') letGoOfThePictures();
+        update((current) => afterPresence(current, answer));
+        return { kind: 'answered' };
       }
-      // A pass or a person ends the step: the pictures of the document are let go. After a retry they are needed for the next recording.
-      if (answer.result !== 'retry') letGoOfThePictures();
-      update((current) => afterPresence(current, answer));
-      return { kind: 'answered' };
-    } catch (error) {
+
+      // The network or the server did not answer after the tries: the same recording is worth sending again with the same key.
+      if (outcome.kind === 'gave-up') return { kind: 'kept', problem: getHttpStatus(outcome.error) === undefined ? 'network' : 'processing' };
+
+      const { error } = outcome;
       // The verification is over (a recording sent from another tab, or after a reload): the server answered where it ended, and that is what the guest sees; the call is answered, and it is not a failure.
       const closed = closedStateOf(error);
       if (closed) {
         showClosed(closed);
         return { kind: 'answered' };
       }
+      // Too many requests in a short time: the server did not process this one, so the same recording may be sent again with the same key.
+      if (isRateLimited(error)) return { kind: 'kept', problem: 'too_many_requests' };
+      // The challenge ran out before the server closed the verification: nothing was decided, and a new recording starts from a new challenge and a new key.
+      if (isPresenceChallengeRenewal(error)) return { kind: 'renew' };
 
       const reason = classifyIdentityError(error);
       setProblem(reason);
