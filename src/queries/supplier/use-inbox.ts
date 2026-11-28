@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { acceptSupplierRequests, fetchSupplierChecklist, fetchSupplierDashboard, fetchSupplierInbox, fetchSupplierInboxCounts, fetchSupplierInboxItem, fetchSupplierKpis, fetchSupplierOverview, fetchSupplierToday } from '@/services/supplier-api';
-import type { SupplierInboxParams, SupplierKpiPeriod, SupplierOverviewPeriod } from '@/types/supplier';
+import { acceptSupplierRequests, fetchSupplierChecklist, fetchSupplierDashboard, fetchSupplierInbox, fetchSupplierInboxCounts, fetchSupplierInboxItem, fetchSupplierOverview, fetchSupplierToday } from '@/services/supplier-api';
+import type { SupplierInboxParams, SupplierOverviewPeriod } from '@/types/supplier';
 
 export function useSupplierInbox(params: SupplierInboxParams = { status: 'open' }, options?: { enabled?: boolean }) {
   return useQuery({
@@ -84,14 +84,5 @@ export function useSupplierDashboard() {
   return useQuery({
     queryKey: ['supplier', 'dashboard'],
     queryFn: fetchSupplierDashboard,
-  });
-}
-
-
-export function useSupplierKpis(period: SupplierKpiPeriod, options?: { enabled?: boolean }) {
-  return useQuery({
-    queryKey: ['supplier', 'dashboard', 'kpis', period],
-    queryFn: () => fetchSupplierKpis(period),
-    enabled: options?.enabled ?? true,
   });
 }

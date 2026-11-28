@@ -22,6 +22,7 @@ interface ProfileDialogProps {
   suggestedFrom: string;
   /** The start of the newest profile of the owner: a new one must start after it, since the server refuses a day that is not later (409). `null` for the first profile. */
   latestStart: string | null;
+  startAt?: number;
 }
 
 interface FormState {
@@ -92,12 +93,12 @@ function ChoiceField({ field, value, onChange }: { field: ProfileOptionField; va
 
 const text = (value: string): string | undefined => (value.trim() === '' ? undefined : value.trim());
 
-export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, suggestedFrom, latestStart }: ProfileDialogProps) {
+export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, suggestedFrom, latestStart, startAt = 0 }: ProfileDialogProps) {
   const { t, i18n } = useTranslation();
   const { date } = useOwnerFormat();
   const save = useSaveFiscalProfile(ownerId);
   const [form, setForm] = useState<FormState>(() => initial(from, suggestedFrom));
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(startAt);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus(); }, [step]);
   const [error, setError] = useState<string | null>(null);

@@ -26,7 +26,7 @@ export interface HelpTipProps {
   className?: string;
 }
 
-const EXTERNAL_HREF = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+const EXTERNAL_HREF = /^(?:[a-z][a-z0-9+.-]*:|\/\/|\/guida\/)/i;
 
 function LearnMoreLink({ href, label, onNavigate }: { href: string; label: string; onNavigate: () => void }) {
   const className =

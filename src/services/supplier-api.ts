@@ -14,8 +14,6 @@ import type {
   SupplierInboxCounts,
   SupplierInboxParams,
   SupplierInboxResponse,
-  SupplierKpiPeriod,
-  SupplierKpis,
   SupplierOverview,
   SupplierOverviewPeriod,
   SupplierProfile,
@@ -26,8 +24,6 @@ import axios from '@/lib/axios';
 import type { SupplierServiceRequestDetail } from '@/types/service-request';
 import type { PagedResult } from '@/types/users.types';
 import type {
-  AdminInvite,
-  AdminInvitesParams,
   AdminSupplier,
   AdminSupplierAuditEntry,
   AdminSuppliersParams,
@@ -131,16 +127,6 @@ export async function fetchSupplierConflicts(): Promise<SupplierConflictsRespons
   return ApiClient.get<SupplierConflictsResponse>('/supplier/calendar/conflicts');
 }
 
-export async function inviteSupplier(payload: {
-  email: string;
-  comuneCode: string;
-  categories?: string[];
-  message?: string;
-}): Promise<{ inviteId: string; expiresAt: string }> {
-  const { data } = await axios.post<{ inviteId: string; expiresAt: string }>('/admin/suppliers/invite', payload);
-  return data;
-}
-
 export async function fetchAdminSuppliers({ search, status, page = 1, pageSize = 20 }: AdminSuppliersParams): Promise<PagedResult<AdminSupplier>> {
   return ApiClient.get<PagedResult<AdminSupplier>>('/admin/suppliers', {
     page,
@@ -160,25 +146,6 @@ export async function reactivateSupplier(orgId: string): Promise<AdminSupplier> 
 
 export async function fetchSupplierAudit(orgId: string): Promise<AdminSupplierAuditEntry[]> {
   return ApiClient.get<AdminSupplierAuditEntry[]>(`/admin/suppliers/${encodeURIComponent(orgId)}/audit`);
-}
-
-export async function fetchAdminInvites({ search, state, page = 1, pageSize = 20 }: AdminInvitesParams): Promise<PagedResult<AdminInvite>> {
-  return ApiClient.get<PagedResult<AdminInvite>>('/admin/suppliers/invites', {
-    page,
-    pageSize,
-    ...(search ? { search } : {}),
-    ...(state ? { state } : {}),
-  });
-}
-
-export async function resendSupplierInvite(inviteId: string): Promise<{ inviteId: string; expiresAt: string }> {
-  return ApiClient.post<{ inviteId: string; expiresAt: string }>(
-    `/admin/suppliers/invites/${encodeURIComponent(inviteId)}/resend`,
-  );
-}
-
-export async function revokeSupplierInvite(inviteId: string): Promise<void> {
-  await axios.delete(`/admin/suppliers/invites/${encodeURIComponent(inviteId)}`);
 }
 
 export interface SupplierRegisterPayload {
@@ -252,10 +219,6 @@ export async function fetchSupplierRegistrationOptions(): Promise<SupplierRegist
 
 export async function fetchSupplierDashboard(): Promise<SupplierDashboard> {
   return ApiClient.get<SupplierDashboard>('/supplier/dashboard');
-}
-
-export async function fetchSupplierKpis(period: SupplierKpiPeriod): Promise<SupplierKpis> {
-  return ApiClient.get<SupplierKpis>('/supplier/dashboard/kpis', { period });
 }
 
 export async function fetchSupplierToday(days: number): Promise<SupplierToday> {

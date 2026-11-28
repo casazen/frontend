@@ -1,19 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchAdminInvites, fetchAdminSuppliers, fetchSupplierAudit, inviteSupplier, reactivateSupplier, resendSupplierInvite, revokeSupplierInvite, suspendSupplier } from '@/services/supplier-api';
-import type { AdminInvitesParams, AdminSuppliersParams } from '@/types/admin-suppliers';
-
-export function useInviteSupplier() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: inviteSupplier,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ADMIN_INVITES_KEY }),
-  });
-}
-
+import { fetchAdminSuppliers, fetchSupplierAudit, reactivateSupplier, suspendSupplier } from '@/services/supplier-api';
+import type { AdminSuppliersParams } from '@/types/admin-suppliers';
 
 const ADMIN_SUPPLIERS_KEY = ['admin', 'suppliers'] as const;
-
-const ADMIN_INVITES_KEY = ['admin', 'supplier-invites'] as const;
 
 
 export function useAdminSuppliers(params: AdminSuppliersParams) {
@@ -47,31 +36,5 @@ export function useReactivateSupplier() {
   return useMutation({
     mutationFn: (orgId: string) => reactivateSupplier(orgId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ADMIN_SUPPLIERS_KEY }),
-  });
-}
-
-
-export function useAdminInvites(params: AdminInvitesParams) {
-  return useQuery({
-    queryKey: [...ADMIN_INVITES_KEY, 'list', params],
-    queryFn: () => fetchAdminInvites(params),
-  });
-}
-
-
-export function useResendSupplierInvite() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (inviteId: string) => resendSupplierInvite(inviteId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ADMIN_INVITES_KEY }),
-  });
-}
-
-
-export function useRevokeSupplierInvite() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (inviteId: string) => revokeSupplierInvite(inviteId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ADMIN_INVITES_KEY }),
   });
 }

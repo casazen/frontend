@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, CalendarCheck, MessageSquare, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarCheck, ExternalLink, MessageSquare, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ import { asksForIncompleteArrivals } from './arrivals-capability';
 import type { AskIntent } from './ask-context';
 import { ArrivalsResult } from './arrivals-result';
 import { BookingDraft } from './booking-draft';
-import { resolveAsk, type AskLink } from './navigation';
+import { resolveAsk, type AskAnswer } from './navigation';
 
 interface Props {
   area: AppContextKey;
@@ -26,6 +26,7 @@ interface Props {
   scope: string;
   canReadArrivals: boolean;
   initialIntent: AskIntent;
+  initialQuestion?: string;
   opener: HTMLElement;
   onClose: () => void;
 }
@@ -38,13 +39,14 @@ export default function AskPanel({
   scope,
   canReadArrivals,
   initialIntent,
+  initialQuestion,
   opener,
   onClose,
 }: Props) {
   const { t } = useTranslation();
   const id = useId();
   const [intent, setIntent] = useState(initialIntent);
-  const [term, setTerm] = useState('');
+  const [term, setTerm] = useState(initialQuestion ?? '');
   const [submitted, setSubmitted] = useState('');
   const navigated = useRef(false);
   const title = useRef<HTMLHeadingElement>(null);
@@ -52,7 +54,7 @@ export default function AskPanel({
   const mobilePrimary = useUiStore((state) => state.mobilePrimaryVisible);
   const navigate = useNavigate();
   const pending = useRef<AbortController | null>(null);
-  const [answer, setAnswer] = useState<{ links: AskLink[]; message?: string }>({ links: [] });
+  const [answer, setAnswer] = useState<AskAnswer>({ links: [] });
   const [thinking, setThinking] = useState(false);
   useEffect(() => () => pending.current?.abort(), []);
   const sourceChosen = () => {
@@ -95,6 +97,11 @@ export default function AskPanel({
       if (!request.signal.aborted) setThinking(false);
     }
   };
+  useEffect(() => {
+    if (initialQuestion?.trim()) void ask(initialQuestion);
+    // Once, when the dialog opens with a question: asking again at every render would be a loop. StrictMode runs this twice and the first request is aborted by the cleanup above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   let detail = canReadArrivals ? t(propertyId ? 'ask.selectedProperty' : 'ask.allProperties') : null;
   if (intent === 'booking.prepareMessage') detail = t('ask.bookingContext');
   const queryLabel = [orgName, t(getArea(area).nameKey), detail].filter(Boolean).join(' · ');
@@ -164,7 +171,7 @@ export default function AskPanel({
           <>
             {submitted && (
               <div aria-live="polite" aria-busy={thinking} className="space-y-3 rounded-xl border bg-surface-2 p-4 text-sm">
-                <p className="font-medium">{thinking ? t('ask.resolving') : answer.message}</p>
+                {thinking || answer.message ? <p className="font-medium">{thinking ? t('ask.resolving') : answer.message}</p> : null}
                 {answer.links.length > 0 && (
                   <ul className="divide-y rounded-md border">
                     {answer.links.map(link => (
@@ -179,6 +186,28 @@ export default function AskPanel({
                       </li>
                     ))}
                   </ul>
+                )}
+                {answer.guide && answer.guide.length > 0 && (
+                  <div className="space-y-2" data-testid="ask-guide">
+                    <p className="flex items-center gap-2 font-medium">
+                      <BookOpen className="size-4" aria-hidden="true" />
+                      {t('ask.inManual')}
+                    </p>
+                    <ul className="divide-y rounded-md border">
+                      {answer.guide.map(hit => (
+                        <li key={`${hit.type}:${hit.id}`}>
+                          <a href={hit.href} target="_blank" rel="noopener noreferrer"
+                            className="flex min-h-11 items-center justify-between gap-3 px-3 py-2 hover:bg-muted">
+                            <span><span className="font-medium text-primary-text">{hit.title}</span>
+                              {hit.chapter && <span className="block text-xs text-muted-foreground">{hit.chapter}</span>}
+                            </span>
+                            <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
+                            <span className="sr-only">{t('productGuide.fullManualNewTab')}</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
             )}

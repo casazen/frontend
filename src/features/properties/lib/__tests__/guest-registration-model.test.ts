@@ -8,7 +8,6 @@ import {
   GUEST_REGISTRATION_MISSING_CODES,
   GUEST_REGISTRATION_OBLIGATIONS,
   GUEST_REGISTRATION_PRIVATE_RENTALS,
-  GUEST_REGISTRATION_SUPPORTS,
 } from '@/types/guest-registration.types';
 import { regime } from '../../components/__tests__/guest-registration-fixtures';
 import { DUTY_ANSWERS, certaintyView, isMissingCode, isTicinoRegime, missingCodesOf, missingTextKey, portalLink, regimeFacts } from '../guest-registration-model';
@@ -22,15 +21,23 @@ describe('the model of the card of the regime of the registration of the guests 
   });
 
   describe('regimeFacts', () => {
-    it('regimeFacts_RegimeOfTicino_SaysWhatTheCantonAsksWhenAndHowLongInPlainWords', () => {
+    it('regimeFacts_RegimeOfTicino_SaysWhatTheCantonAsksWhenAndHowLongInAFewWordsEach', () => {
       const facts = regimeFacts(regime(), it_);
 
-      expect(facts.obligation).toBe(`${it_('guestRegistration.obligation.ReportToAuthority')} ${it_('guestRegistration.privateRentals.Yes')}`);
+      expect(facts.obligation).toBe(it_('guestRegistration.short.obligation.ReportToAuthority'));
       expect(facts.deadline).toBe(it_('guestRegistration.deadline.Hours24FromArrival'));
       expect(facts.deadlineNote).toBeNull();
       expect(facts.retention).toBe('5 anni');
-      expect(facts.channel).toBe(it_('guestRegistration.channel.PortalFileUpload'));
-      expect(facts.support).toBe(it_('guestRegistration.support.FileExport'));
+      expect(facts.channel).toBe(it_('guestRegistration.short.channel.PortalFileUpload'));
+      expect(Object.keys(facts).sort()).toEqual(['channel', 'deadline', 'deadlineNote', 'obligation', 'retention']);
+    });
+
+    it('regimeFacts_ARuleThatDoesNotCoverPrivateHomesInFull_SaysSoAfterTheObligation', () => {
+      for (const privateRentals of ['Partial', 'No', 'Unknown'] as const) {
+        expect(regimeFacts(regime({ privateRentals }), it_).obligation, privateRentals).toBe(
+          `${it_('guestRegistration.short.obligation.ReportToAuthority')} · ${it_(`guestRegistration.short.privateRentals.${privateRentals}`)}`,
+        );
+      }
     });
 
     it('regimeFacts_OneYearAndNoPeriod_AreToldInTheSingularAndAsTheSourcesNotSayingIt', () => {
@@ -45,9 +52,9 @@ describe('the model of the card of the regime of the registration of the guests 
     });
 
     it('regimeFacts_AValueThisVersionDoesNotKnow_IsToCheckNeverTheRawValue', () => {
-      const facts = regimeFacts(regime({ obligation: 'Mandatory' as never, privateRentals: 'Sometimes' as never, channel: 'Pigeon' as never, deadlineKind: 'Yearly' as never, casaZenSupport: 'Magic' as never }), it_);
+      const facts = regimeFacts(regime({ obligation: 'Mandatory' as never, privateRentals: 'Sometimes' as never, channel: 'Pigeon' as never, deadlineKind: 'Yearly' as never }), it_);
 
-      for (const line of [facts.obligation, facts.deadline, facts.channel, facts.support]) {
+      for (const line of [facts.obligation, facts.deadline, facts.channel]) {
         expect(line).toContain(it_('guestRegistration.toVerify'));
         expect(line).not.toMatch(/Mandatory|Sometimes|Pigeon|Yearly|Magic/);
       }
@@ -127,11 +134,11 @@ describe('the model of the card of the regime of the registration of the guests 
   describe.each(['it', 'en'])('the texts in %s', (language) => {
     it('EveryMemberOfEveryEnum_HasItsText', () => {
       const groups: Array<[string, readonly string[]]> = [
-        ['obligation', GUEST_REGISTRATION_OBLIGATIONS],
+        ['short.obligation', GUEST_REGISTRATION_OBLIGATIONS],
         ['channel', GUEST_REGISTRATION_CHANNELS],
+        ['short.channel', GUEST_REGISTRATION_CHANNELS],
         ['deadline', GUEST_REGISTRATION_DEADLINE_KINDS],
-        ['privateRentals', GUEST_REGISTRATION_PRIVATE_RENTALS],
-        ['support', GUEST_REGISTRATION_SUPPORTS],
+        ['short.privateRentals', GUEST_REGISTRATION_PRIVATE_RENTALS.filter((member) => member !== 'Yes')],
       ];
       for (const [group, members] of groups) {
         for (const member of members) expect(i18n.exists(`guestRegistration.${group}.${member}`, { lng: language }), `${group}.${member}`).toBe(true);
@@ -141,7 +148,7 @@ describe('the model of the card of the regime of the registration of the guests 
         expect(i18n.exists(`guestRegistration.certainty.${certainty}.text`, { lng: language }), certainty).toBe(true);
       }
       expect(GUEST_REGISTRATION_DUTIES).toEqual(['Required', 'NotRequired', 'Ask']);
-      for (const key of ['required', 'answeredRequired', 'answeredNotRequired', 'askTitle', 'askQuestion', 'mustNotify', 'mustNotNotify', 'change', 'reversible', 'saveFailed']) {
+      for (const key of ['required', 'answeredRequired', 'answeredNotRequired', 'askTitle', 'askQuestion', 'mustNotify', 'mustNotNotify', 'change', 'saveFailed']) {
         expect(i18n.exists(`guestRegistration.duty.${key}`, { lng: language }), key).toBe(true);
       }
     });

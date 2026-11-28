@@ -7,7 +7,6 @@ import '@/styles/sheet-bottom.css';
 
 const Sheet = SheetPrimitive.Root;
 const SheetTrigger = SheetPrimitive.Trigger;
-const SheetClose = SheetPrimitive.Close;
 const SheetPortal = SheetPrimitive.Portal;
 
 function SheetCloseLabel() {
@@ -170,7 +169,6 @@ export {
   SheetPortal,
   SheetOverlay,
   SheetTrigger,
-  SheetClose,
   SheetContent,
   SheetHandle,
   SheetHeader,

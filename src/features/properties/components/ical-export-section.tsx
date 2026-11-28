@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Copy, Loader2, RotateCw } from 'lucide-react';
+import { CalendarArrowUp, Check, Copy, Loader2, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { InfoCard } from '@/components/shared/calm';
+import { ManualHint } from '@/components/shared/manual-hint';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -64,14 +66,16 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
   };
 
   return (
-    <section className="space-y-3 rounded-md border p-4" aria-labelledby="ical-export-title" data-testid="ical-export">
-      <div className="space-y-1">
-        <h3 id="ical-export-title" className="text-sm font-medium">
-          {t('ical.exportTitle')}
-        </h3>
-        <p className="text-xs text-muted-foreground">{t('ical.exportDescription')}</p>
-      </div>
-
+    <InfoCard
+      icon={CalendarArrowUp}
+      title={t('ical.exportTitle')}
+      hint={
+        <ManualHint page="canali-octorate" anchor="incollare-il-link-di-casazen-sui-portali" title={t('ical.exportTitle')}>
+          {t('ical.exportDescription')} {t('ical.exportPrivate')}
+        </ManualHint>
+      }
+      data-testid="ical-export"
+    >
       {exportUrl.isLoading ? (
         <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground" data-testid="ical-export-loading">
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -86,7 +90,9 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
         </div>
       ) : (
         <div className="space-y-2">
-          <Label htmlFor="property-ical-export">{t('ical.exportUrlLabel')}</Label>
+          <Label htmlFor="property-ical-export" className="sr-only">
+            {t('ical.exportUrlLabel')}
+          </Label>
           <div className="flex gap-2">
             <Input
               id="property-ical-export"
@@ -94,37 +100,21 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
               readOnly
               value={url}
               onFocus={(e) => e.currentTarget.select()}
-              className="font-mono text-xs"
+              className="min-w-0 font-mono text-xs"
             />
-            <Button type="button" variant="outline" onClick={() => void handleCopy()}>
-              {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-              {copied ? t('ical.copied') : t('ical.copy')}
+            <Button type="button" variant="outline" size="icon" className="min-h-11 min-w-11 shrink-0" onClick={() => void handleCopy()}>
+              {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
+              <span className="sr-only">{copied ? t('ical.copied') : t('ical.copy')}</span>
             </Button>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">{t('ical.exportPrivate')}</p>
-            <Button type="button" variant="ghost" size="sm" onClick={openRegenerate}>
-              <RotateCw className="mr-2 h-4 w-4" />
+          <div>
+            <Button type="button" variant="ghost" size="sm" className="-ms-2 min-h-11 px-2" onClick={openRegenerate}>
+              <RotateCw aria-hidden="true" className="size-4" />
               {t('ical.regenerate')}
             </Button>
           </div>
         </div>
       )}
-
-      <div className="space-y-1 text-xs text-muted-foreground">
-        <p className="font-medium text-foreground">{t('ical.exportHowTo')}</p>
-        <ul className="list-disc space-y-1 pl-4">
-          <li>
-            <span className="font-medium text-foreground">{t('ical.channels.Airbnb')}</span>: {t('ical.exportAirbnbSteps')}
-          </li>
-          <li>
-            <span className="font-medium text-foreground">{t('ical.channels.BookingCom')}</span>:{' '}
-            {t('ical.exportBookingSteps')}
-          </li>
-        </ul>
-        <p>{t('ical.exportContentNote')}</p>
-        <p>{t('ical.exportRefreshNote')}</p>
-      </div>
 
       <Dialog open={confirmRegenerate} onOpenChange={(open) => !open && closeRegenerate()}>
         <DialogContent>
@@ -148,6 +138,6 @@ export function IcalExportSection({ propertyId }: { propertyId: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </section>
+    </InfoCard>
   );
 }

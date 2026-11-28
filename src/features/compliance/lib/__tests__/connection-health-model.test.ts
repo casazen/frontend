@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RouteManifestEntry } from '@/config/route-manifest';
 import i18n from '@/i18n/config';
 import type { ConnectionHealthLine } from '@/types';
-import { describeHealthLine, formatRunTime, healthDetailKey, healthInstructionsKey, senderWizardPath, SENDER_WIZARD_PATH } from '../connection-health-model';
+import { describeHealthLine, formatRunTime, healthInstructionsKey, senderWizardPath, SENDER_WIZARD_PATH } from '../connection-health-model';
 
 const manifest = vi.hoisted(() => ({ entry: undefined as unknown }));
 vi.mock('@/config/route-manifest', async (importOriginal) => ({
@@ -79,15 +79,12 @@ describe('the words of a line', () => {
   const states = ['Active', 'Inactive', 'Unknown', 'Manual'] as const;
   const senders = ['ChannelManager', 'CasaZen', 'Manual', 'Other'] as const;
 
-  it.each(['it', 'en'])('healthDetailKey_EveryStateAndSender_HasWordsInTheLanguage_%s', async (language) => {
+  it.each(['it', 'en'])('healthInstructionsKey_EveryStateAndSender_HasWordsInTheLanguage_%s', async (language) => {
     await i18n.changeLanguage(language);
 
     for (const state of states) {
       for (const sender of senders) {
         const view = describeHealthLine(line({ state, sender: sender as never }), true);
-        const text = i18n.t(healthDetailKey(view));
-        expect(text, `${state} ${sender}`).not.toMatch(/^connectionHealth\./);
-
         const instructions = healthInstructionsKey(view);
         if (instructions) expect(i18n.t(instructions), `${state} ${sender} instructions`).not.toMatch(/^connectionHealth\./);
       }
@@ -115,10 +112,9 @@ describe('the words of a line', () => {
 
   it('InstructionsOfAnInactiveSend_DoNotNameTheSupplier', async () => {
     await i18n.changeLanguage('it');
-    const text = i18n.t('connectionHealth.instructions.ChannelManager.Inactive') + i18n.t('connectionHealth.detail.Inactive.ChannelManager');
+    const text = i18n.t('connectionHealth.instructions.ChannelManager.Inactive') + i18n.t('connectionHealth.instructions.ChannelManager.Unknown');
 
     expect(text).not.toMatch(/octorate/i);
-    expect(i18n.t('connectionHealth.disclosureTitle')).toBe('Dati consultati su Octorate');
   });
 });
 

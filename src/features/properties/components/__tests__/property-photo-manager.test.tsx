@@ -108,7 +108,7 @@ describe('PropertyPhotoManager (PC-04, A2-26)', () => {
       renderManager(false);
 
       const empty = await screen.findByTestId('property-photos-empty');
-      expect(within(empty).getByText('Per questa proprietà non sono state caricate foto.')).toBeInTheDocument();
+      expect(within(empty).getByText('Nessuna foto')).toBeInTheDocument();
       expect(within(empty).queryByRole('button')).not.toBeInTheDocument();
     });
 
@@ -122,14 +122,29 @@ describe('PropertyPhotoManager (PC-04, A2-26)', () => {
       expect(within(items[0]).getByTestId('property-photo-cover-badge')).toHaveTextContent('Copertina');
       expect(screen.getAllByTestId('property-photo-cover-badge')).toHaveLength(1);
       expect(screen.getByTestId('property-photo-counter')).toHaveTextContent('3 di 20 foto');
-      expect(screen.getByText('Fino a 20 foto in formato JPEG, PNG o WebP, massimo 10 MB ciascuna.')).toBeInTheDocument();
+      expect(screen.queryByText(/Fino a 20 foto in formato JPEG/)).not.toBeInTheDocument();
+    });
+
+    it('hint_HoldsTheRulesAndLinksToTheManual', async () => {
+      renderManager();
+
+      await tiles();
+      fireEvent.click(screen.getByRole('button', { name: "Cos'è: Foto della proprietà" }));
+
+      const bubble = screen.getByRole('dialog');
+      expect(bubble).toHaveTextContent('La prima foto è la copertina');
+      expect(bubble).toHaveTextContent('Fino a 20 foto in formato JPEG, PNG o WebP, massimo 10 MB ciascuna.');
+      expect(within(bubble).getByRole('link', { name: i18n.t('manual.open') })).toHaveAttribute(
+        'href',
+        '/guida/immobili.html#leggere-la-scheda-di-un-immobile',
+      );
     });
 
     it('readOnly_ShowsThePhotosWithoutAnyAction', async () => {
       renderManager(false);
 
       await tiles();
-      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Carica|copertina|Sposta|Elimina/ })).not.toBeInTheDocument();
     });
 
     it('legacyRelativeUrl_IsAPlaceholderThatCanBeDeletedAndNeverTheCover', async () => {

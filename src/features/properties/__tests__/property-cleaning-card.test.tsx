@@ -152,7 +152,7 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       expect(await screen.findByTestId('property-cleaning-price')).toHaveTextContent('CHF 45.00');
     });
 
-    it('PropertyCleaningCard_AnAmountWithNoCurrency_IsToldWithoutASymbolAndSaysSo', async () => {
+    it('PropertyCleaningCard_AnAmountWithNoCurrency_IsToldWithoutASymbolAndNeverWithAnotherCurrency', async () => {
       vi.mocked(propertyCleaningApi.get).mockResolvedValue(setupOf({ currency: '', priceCents: 4500 }));
       renderCard();
 
@@ -160,7 +160,7 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
 
       expect(price).toHaveTextContent('45,00');
       expect(price).not.toHaveTextContent(/€|CHF|EUR/);
-      expect(price).toHaveTextContent('La valuta non è indicata');
+      expect(price).not.toHaveTextContent('valuta');
     });
 
     it('PropertyCleaningCard_SaveWithAPrice_SendsTheCurrencyOfThePropertyWithIt', async () => {
@@ -239,11 +239,12 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
     });
 
-    it('PropertyCleaningCard_NoCleaner_SaysTheCleaningStaysToDoAndOffersToSetOne', async () => {
+    it('PropertyCleaningCard_NoCleaner_SaysNobodyIsChosenInOneLineAndOffersToSetOne', async () => {
       vi.mocked(propertyCleaningApi.get).mockResolvedValue(withoutSetup('EUR'));
       renderCard();
 
-      expect(await screen.findByTestId('property-cleaning-none')).toHaveTextContent('Pulizia da richiedere');
+      expect(await screen.findByTestId('property-cleaning-none')).toHaveTextContent('Nessuno scelto per pulire questo immobile.');
+      expect(screen.getByTestId('property-cleaning-none')).not.toHaveTextContent('Pulizia da richiedere');
       expect(screen.getByTestId('property-cleaning-set')).toBeEnabled();
     });
 
@@ -254,28 +255,28 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       expect(await screen.findByTestId('property-cleaning-state')).toHaveTextContent('Spenta');
     });
 
-    it('PropertyCleaningCard_TheTimeOfTheProperty_IsToldAsWhatItIs', async () => {
+    it('PropertyCleaningCard_TheTime_IsOnlyTheTimeWithItsIconAndNeverASentenceAboutWhereItComesFrom', async () => {
       renderCard();
 
-      await waitFor(() => expect(screen.getByTestId('property-cleaning-time')).toHaveTextContent('11:00 (l\'ora del check-out dell\'immobile)'));
+      await waitFor(() => expect(screen.getByTestId('property-cleaning-time')).toHaveTextContent(/^Ora di inizio: 11:00$/));
     });
 
-    it('PropertyCleaningCard_PropertyWithNoCheckOutTime_TellsTheDefaultTimeAndNeverCallsItTheCheckOut', async () => {
+    it('PropertyCleaningCard_PropertyWithNoCheckOutTime_TellsTheTimeTheServerGivesAndNeverCallsItTheCheckOut', async () => {
       vi.mocked(propertiesApi.getById).mockResolvedValue({ id: PROPERTY_ID, checkOutBy: null } as Property);
       vi.mocked(propertyCleaningApi.get).mockResolvedValue(setupOf({ effectiveStartTime: '10:00:00' }));
       renderCard();
 
-      await waitFor(() => expect(screen.getByTestId('property-cleaning-time')).toHaveTextContent('10:00 (orario predefinito: l\'immobile non ha un\'ora di check-out)'));
-      expect(screen.getByTestId('property-cleaning-time')).not.toHaveTextContent('l\'ora del check-out dell\'immobile');
+      await waitFor(() => expect(screen.getByTestId('property-cleaning-time')).toHaveTextContent(/^Ora di inizio: 10:00$/));
+      expect(screen.getByTestId('property-cleaning-time')).not.toHaveTextContent('check-out');
     });
 
-    it('PropertyCleaningCard_RecordOfThePropertyThatCannotBeRead_TellsTheTimeWithoutSayingWhereItComesFrom', async () => {
+    it('PropertyCleaningCard_RecordOfThePropertyThatCannotBeRead_TellsTheTimeJustTheSame', async () => {
       vi.mocked(propertiesApi.getById).mockRejectedValue(httpError(500));
       renderCard();
 
       const time = await screen.findByTestId('property-cleaning-time');
       await waitFor(() => expect(propertiesApi.getById).toHaveBeenCalled());
-      expect(time).toHaveTextContent(/^11:00$/);
+      expect(time).toHaveTextContent(/^Ora di inizio: 11:00$/);
     });
 
     it('PropertyCleaningCard_FormOfAPropertyWithNoCheckOutTime_SaysTheEmptyTimeIsTheDefaultOne', async () => {
@@ -300,7 +301,7 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       vi.mocked(routinesApi.getAll).mockResolvedValue([routine({})]);
       renderCard();
 
-      expect(await screen.findByTestId('property-cleaning-routine')).toHaveTextContent('è attiva: la pulizia parte da sola al check-out');
+      expect(await screen.findByTestId('property-cleaning-routine')).toHaveTextContent('Parte da sola al check-out');
     });
 
     it('PropertyCleaningCard_RoutineOnButNoCleaner_SaysNothingStartsForThisProperty', async () => {
@@ -309,8 +310,8 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       renderCard();
 
       const line = await screen.findByTestId('property-cleaning-routine');
-      expect(line).toHaveTextContent('questo immobile non ha chi pulisce attivo');
-      expect(line).not.toHaveTextContent('parte da sola');
+      expect(line).toHaveTextContent('Manca chi pulisce: non parte da sola');
+      expect(line).not.toHaveTextContent('Parte da sola al check-out');
     });
 
     it('PropertyCleaningCard_RoutineOnButSetupSwitchedOff_SaysNothingStartsForThisProperty', async () => {
@@ -319,8 +320,8 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       renderCard();
 
       const line = await screen.findByTestId('property-cleaning-routine');
-      expect(line).toHaveTextContent('questo immobile non ha chi pulisce attivo');
-      expect(line).not.toHaveTextContent('parte da sola');
+      expect(line).toHaveTextContent('Manca chi pulisce: non parte da sola');
+      expect(line).not.toHaveTextContent('Parte da sola al check-out');
     });
 
     it.each([
@@ -330,7 +331,7 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       vi.mocked(routinesApi.getAll).mockResolvedValue(routines);
       renderCard();
 
-      expect(await screen.findByTestId('property-cleaning-routine')).toHaveTextContent('non è attiva');
+      expect(await screen.findByTestId('property-cleaning-routine')).toHaveTextContent('Routine spenta: nessuna pulizia da sola');
     });
 
     it('PropertyCleaningCard_EmptyListOfRoutines_NeverSaysTheRoutineIsOff_AndSendsToTheAutomations', async () => {
@@ -338,9 +339,8 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       renderCard();
 
       const line = await screen.findByTestId('property-cleaning-routine');
-      expect(line).toHaveTextContent('Da qui non sappiamo se la routine');
-      expect(line).toHaveTextContent('controlla nelle automazioni');
-      expect(line).not.toHaveTextContent('non è attiva');
+      expect(line).toHaveTextContent('Stato della routine non noto');
+      expect(line).not.toHaveTextContent('Routine spenta');
       expect(within(line).getByRole('link', { name: 'Vai alle automazioni' })).toHaveAttribute('href', '/app/short-rent/automations');
     });
 

@@ -47,12 +47,6 @@ export function describeHealthLine(line: ConnectionHealthLine | null | undefined
   };
 }
 
-export function healthDetailKey(view: Pick<HealthLineView, 'state' | 'sender'>): string {
-  if (view.state === 'Manual') return 'connectionHealth.detail.Manual';
-  const who = view.sender === 'ChannelManager' || view.sender === 'CasaZen' ? view.sender : 'other';
-  return `connectionHealth.detail.${view.state}.${who}`;
-}
-
 export function healthInstructionsKey(view: Pick<HealthLineView, 'state' | 'sender' | 'needsAction'>): string | null {
   if (!view.needsAction) return null;
   if (view.sender === 'CasaZen') return 'connectionHealth.instructions.CasaZen';

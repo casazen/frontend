@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { publicOrgApi } from '@/api/public-org.api';
-import { publicBookingApi } from '@/api/public-booking.api';
 import type { OrgSiteDocumentKind } from '@/types';
 
 export function usePublicOrg(slug: string | undefined) {
@@ -41,15 +40,6 @@ export function useOrgDocument(slug: string | undefined, kind: OrgSiteDocumentKi
     queryKey: ['public-org-document', slug, kind],
     queryFn: () => publicOrgApi.getOrgDocument(slug!, kind),
     enabled: Boolean(slug),
-    retry: false,
-  });
-}
-
-export function usePropertyAvailability(propertyId: string | undefined, startDate?: string, endDate?: string) {
-  return useQuery({
-    queryKey: ['property-availability', propertyId, startDate, endDate],
-    queryFn: () => publicBookingApi.getPropertyAvailability(propertyId!, startDate, endDate),
-    enabled: Boolean(propertyId),
     retry: false,
   });
 }

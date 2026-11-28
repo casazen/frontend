@@ -65,6 +65,11 @@ function serverHolding(initial: GuestRegistration) {
 
 const t = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
 
+function hintText(): string {
+  fireEvent.click(screen.getByRole('button', { name: `Cos'è: ${t('guestRegistration.card.title')}` }));
+  return screen.getByRole('dialog').textContent ?? '';
+}
+
 beforeEach(async () => {
   await i18n.changeLanguage('it');
   vi.mocked(guestRegistrationApi.get).mockReset().mockResolvedValue(card());
@@ -82,19 +87,22 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
     vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ identifierMissing: ['ticino_structure_id_missing'] }));
     renderCard();
 
-    expect(await screen.findByTestId('guest-registration-summary')).toHaveTextContent(TICINO_SUMMARY);
+    const facts = await screen.findByTestId('guest-registration-facts');
     expect(screen.getByRole('heading', { name: t('guestRegistration.card.title') })).toBeInTheDocument();
     expect(screen.getByTestId('guest-registration-place')).toHaveTextContent('Lugano · Cantone TI');
-    expect(screen.getByTestId('guest-registration-fact-obligation')).toHaveTextContent(t('guestRegistration.obligation.ReportToAuthority'));
-    expect(screen.getByTestId('guest-registration-fact-obligation')).toHaveTextContent(t('guestRegistration.privateRentals.Yes'));
+    expect(within(facts).getAllByRole('term')).toHaveLength(4);
+    expect(screen.getByTestId('guest-registration-fact-obligation')).toHaveTextContent(t('guestRegistration.short.obligation.ReportToAuthority'));
     expect(screen.getByTestId('guest-registration-fact-deadline')).toHaveTextContent(t('guestRegistration.deadline.Hours24FromArrival'));
     expect(screen.getByTestId('guest-registration-fact-retention')).toHaveTextContent('5 anni');
-    expect(screen.getByTestId('guest-registration-fact-channel')).toHaveTextContent(t('guestRegistration.channel.PortalFileUpload'));
-    expect(screen.getByTestId('guest-registration-fact-support')).toHaveTextContent(t('guestRegistration.support.FileExport'));
+    expect(screen.getByTestId('guest-registration-fact-channel')).toHaveTextContent(t('guestRegistration.short.channel.PortalFileUpload'));
+    expect(screen.queryByTestId('guest-registration-summary')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('guest-registration-fact-support')).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toContain(TICINO_SUMMARY);
     const certainty = screen.getByTestId('guest-registration-certainty');
     expect(certainty).toHaveAttribute('data-certainty', 'Verified');
     expect(certainty).toHaveTextContent(t('guestRegistration.certainty.Verified.label'));
-    expect(certainty).toHaveTextContent(/verifica con il comune o la polizia/i);
+    expect(certainty).not.toHaveTextContent(/verifica con il comune o la polizia/i);
+    expect(hintText()).toMatch(/verifica con il comune o la polizia/i);
     expect(screen.getByTestId('guest-registration-duty-required')).toHaveTextContent(t('guestRegistration.duty.required'));
     expect(screen.queryByTestId('guest-registration-answer-Required')).not.toBeInTheDocument();
     const missing = screen.getByTestId('guest-registration-missing');
@@ -149,21 +157,33 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
     expect(link).toHaveTextContent('www.notifiche.ti.ch');
   });
 
-  it('GuestRegistrationCard_AWizardStepInProgress_NeverLeadsOutOfTheProcess_NoLinkToThePortal', async () => {
+  it('GuestRegistrationCard_ThePageVariant_TheHintLeadsToTheSectionOfTheManualThatTellsTheWholeRule', async () => {
+    renderCard({ variant: 'page' });
+    await screen.findByTestId('guest-registration-facts');
+
+    hintText();
+
+    const link = screen.getByRole('link', { name: t('manual.open') });
+    expect(link).toHaveAttribute('href', '/guida/cin-identificazione-ticino.html#svizzera-e-ticino-notifica-degli-ospiti');
+    expect(link).toHaveAttribute('target', '_blank');
+  });
+
+  it('GuestRegistrationCard_AWizardStepInProgress_NeverLeadsOutOfTheProcess_NoLinkToThePortalNorToTheManual', async () => {
     const { container } = renderCard({ variant: 'wizard' });
 
-    await screen.findByTestId('guest-registration-summary');
+    await screen.findByTestId('guest-registration-facts');
     expect(screen.queryByTestId('guest-registration-portal-link')).not.toBeInTheDocument();
     expect(container.querySelector('a[target="_blank"]')).toBeNull();
     expect(screen.getByTestId('guest-registration-portal-host')).toHaveTextContent('www.notifiche.ti.ch');
-    expect(screen.getByTestId('guest-registration-fact-portal')).toHaveTextContent(t('guestRegistration.card.portalLater'));
+    expect(hintText()).toMatch(/verifica con il comune o la polizia/i);
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
   it('GuestRegistrationCard_APortalThatIsNotHttps_IsNeverALink', async () => {
     vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ regime: regime({ portalUrl: 'javascript:alert(1)' }) }));
     renderCard();
 
-    await screen.findByTestId('guest-registration-summary');
+    await screen.findByTestId('guest-registration-facts');
     expect(screen.queryByTestId('guest-registration-portal-link')).not.toBeInTheDocument();
     expect(screen.queryByTestId('guest-registration-fact-portal')).not.toBeInTheDocument();
   });
@@ -299,7 +319,7 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       const missing = await screen.findByTestId('guest-registration-missing');
       expect(missing).toHaveTextContent(t('guestRegistration.missing.swiss_municipality_missing'));
       expect(screen.getByTestId('guest-registration-certainty')).toHaveAttribute('data-certainty', 'Unverified');
-      expect(screen.getByTestId('guest-registration-certainty')).toHaveTextContent(/verifica con il comune o la polizia/i);
+      expect(hintText()).toMatch(/verifica con il comune o la polizia/i);
       expect(screen.queryByTestId('guest-registration-place')).not.toBeInTheDocument();
       expect(screen.queryByTestId('ticino-structure-id-form')).not.toBeInTheDocument();
       fireEvent.click(screen.getByTestId('guest-registration-fix-municipality'));
@@ -359,7 +379,7 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
   describe('a read that does not work is told as such', () => {
     it('GuestRegistrationCard_TheReadFailsWith404AfterItWorked_IsNotFoundNeverTheOldAnswer', async () => {
       const { client } = renderCard();
-      expect(await screen.findByTestId('guest-registration-summary')).toBeInTheDocument();
+      expect(await screen.findByTestId('guest-registration-facts')).toBeInTheDocument();
 
       vi.mocked(guestRegistrationApi.get).mockRejectedValue(problemError(404, { code: 'property_not_found' }));
       await act(async () => {
@@ -367,7 +387,7 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       });
 
       expect(await screen.findByTestId('guest-registration-not-found')).toHaveTextContent(t('guestRegistration.card.notFound'));
-      expect(screen.queryByTestId('guest-registration-summary')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('guest-registration-facts')).not.toBeInTheDocument();
       expect(screen.queryByTestId('guest-registration-duty')).not.toBeInTheDocument();
     });
 
@@ -384,7 +404,7 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       const notice = await screen.findByTestId('guest-registration-refresh-error');
       expect(notice).toHaveTextContent(t('guestRegistration.card.refreshFailed'));
       expect(screen.queryByTestId('guest-registration-error')).not.toBeInTheDocument();
-      expect(screen.getByTestId('guest-registration-summary')).toBeInTheDocument();
+      expect(screen.getByTestId('guest-registration-facts')).toBeInTheDocument();
       expect(screen.getByLabelText(t('swiss.structureId.label'))).toHaveValue('NL-12');
 
       vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ identifierMissing: ['ticino_structure_id_missing'] }));
@@ -449,7 +469,7 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       expect(failure).toHaveTextContent(t('guestRegistration.card.loadFailed'));
       fireEvent.click(within(failure).getByRole('button', { name: t('guestRegistration.card.retry') }));
 
-      expect(await screen.findByTestId('guest-registration-summary')).toBeInTheDocument();
+      expect(await screen.findByTestId('guest-registration-facts')).toBeInTheDocument();
       expect(guestRegistrationApi.get).toHaveBeenCalledTimes(2);
     });
 
@@ -468,33 +488,21 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       );
       renderCard();
 
-      await screen.findByTestId('guest-registration-summary');
+      await screen.findByTestId('guest-registration-facts');
       expect(screen.getByTestId('guest-registration-fact-channel')).toHaveTextContent(t('guestRegistration.toVerify'));
       expect(screen.getByTestId('guest-registration-fact-deadline')).toHaveTextContent(t('guestRegistration.toVerify'));
-      expect(screen.getByTestId('guest-registration-fact-support')).toHaveTextContent(t('guestRegistration.toVerify'));
+      expect(screen.getByTestId('guest-registration-fact-obligation')).toHaveTextContent(t('guestRegistration.toVerify'));
       expect(screen.getByTestId('guest-registration-certainty')).toHaveAttribute('data-certainty', 'Unverified');
       for (const raw of ['Mandatory', 'Pigeon', 'Yearly', 'Magic', 'Maybe']) expect(document.body.textContent).not.toContain(raw);
     });
 
-    it.each([
-      ['it', 'AssistedNotification', /CasaZen prepara i dati degli ospiti da copiare e ti ricorda la scadenza; la notifica la fai tu\./],
-      ['it', 'GuestRegister', /CasaZen prepara il registro degli ospiti da scaricare e stampare/],
-      ['en', 'AssistedNotification', /CasaZen prepares the guests' data for you to copy and reminds you of the deadline; you make the notification\./],
-      ['en', 'GuestRegister', /CasaZen prepares the guest register for you to download and print/],
-    ] as const)('GuestRegistrationCard_%s_%sBuilt_SaysWhatCasaZenDoesInThePresent', async (language, support, present) => {
-      await i18n.changeLanguage(language);
+    it.each(['FileExport', 'GuestRegister', 'AssistedNotification', 'InformationOnly'] as const)('GuestRegistrationCard_%sBuilt_HasNoSentenceAboutWhatCasaZenDoes', async (support) => {
       vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ regime: regime({ casaZenSupport: support }) }));
       renderCard();
 
-      const sentence = await screen.findByTestId('guest-registration-fact-support');
-      expect(sentence).toHaveTextContent(present);
-      expect(sentence.textContent).not.toMatch(/In arrivo|Coming soon/);
-    });
-
-    it('GuestRegistrationCard_TheFileOfTicino_StillSaysWhatCasaZenDoesToday', async () => {
-      renderCard();
-
-      expect(await screen.findByTestId('guest-registration-fact-support')).toHaveTextContent(t('guestRegistration.support.FileExport'));
+      await screen.findByTestId('guest-registration-facts');
+      expect(screen.queryByTestId('guest-registration-fact-support')).not.toBeInTheDocument();
+      expect(document.body.textContent).not.toMatch(/CasaZen prepara|CasaZen prepares|In arrivo|Coming soon/);
     });
 
     it.each(['it', 'en'])('GuestRegistrationCard_%s_NamesNoSupplierAndSaysItIsNotLegalAdvice', async (language) => {
@@ -502,9 +510,10 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       for (const answer of [card(), zurichCard(), unknownPlaceCard()]) {
         vi.mocked(guestRegistrationApi.get).mockResolvedValue(answer);
         const { unmount } = renderCard();
-        await screen.findByTestId('guest-registration-summary');
+        await screen.findByTestId('guest-registration-facts');
         expect(document.body.textContent ?? '').not.toMatch(SUPPLIER);
-        expect(screen.getByTestId('guest-registration-certainty').textContent).toMatch(language === 'it' ? /consulenza legale/ : /legal advice/);
+        fireEvent.click(screen.getByRole('button', { name: new RegExp(t('guestRegistration.card.title')) }));
+        expect(screen.getByRole('dialog').textContent).toMatch(language === 'it' ? /consulenza legale/ : /legal advice/);
         unmount();
       }
     });
@@ -574,7 +583,7 @@ describe('GuestRegistrationCard, the register and the notification of the guests
     vi.mocked(guestRegistrationApi.get).mockResolvedValue(zurichCard());
     renderCard({}, newClient(), permissions);
 
-    await screen.findByTestId('guest-registration-summary');
+    await screen.findByTestId('guest-registration-facts');
     expect(screen.queryByTestId('guest-registration-layers')).not.toBeInTheDocument();
   });
 
@@ -582,7 +591,7 @@ describe('GuestRegistrationCard, the register and the notification of the guests
     vi.mocked(guestRegistrationApi.get).mockResolvedValue(zurichCard());
     renderCard({ variant: 'wizard' }, newClient(), READ_GUESTS);
 
-    await screen.findByTestId('guest-registration-summary');
+    await screen.findByTestId('guest-registration-facts');
     expect(screen.queryByTestId('guest-registration-layers')).not.toBeInTheDocument();
   });
 
@@ -590,7 +599,7 @@ describe('GuestRegistrationCard, the register and the notification of the guests
     vi.mocked(guestRegistrationApi.get).mockResolvedValue(italy());
     renderCard({}, newClient(), READ_GUESTS);
 
-    await screen.findByTestId('guest-registration-summary');
+    await screen.findByTestId('guest-registration-facts');
     expect(screen.queryByTestId('guest-registration-layers')).not.toBeInTheDocument();
   });
 });

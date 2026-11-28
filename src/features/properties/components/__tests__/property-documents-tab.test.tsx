@@ -141,7 +141,7 @@ describe('PropertyDocumentsTab, the notification of the guests of a property in 
     session.flags = { guestRegistrationRegimes: true };
     renderTab('CH', true, TICINO);
 
-    expect(await screen.findByTestId('guest-registration-summary')).toBeInTheDocument();
+    expect(await screen.findByTestId('guest-registration-facts')).toBeInTheDocument();
     expect(screen.getByTestId('guest-registration-card')).toHaveAttribute('data-variant', 'page');
     expect(guestRegistrationApi.get).toHaveBeenCalledWith(PROPERTY_ID);
     expect(screen.queryByText(i18n.t('property.swissRegistration.title'))).not.toBeInTheDocument();
@@ -166,7 +166,7 @@ describe('PropertyDocumentsTab, the notification of the guests of a property in 
     session.flags = { guestRegistrationRegimes: true };
     renderTab('CH', false, { isInTicino: true, ticinoStructureId: 'NL-555' });
 
-    expect(await screen.findByTestId('guest-registration-summary')).toBeInTheDocument();
+    expect(await screen.findByTestId('guest-registration-facts')).toBeInTheDocument();
     expect(screen.queryByTestId('ticino-structure-id-form')).not.toBeInTheDocument();
     expect(screen.queryByTestId('guest-registration-fix-municipality')).not.toBeInTheDocument();
   });

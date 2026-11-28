@@ -31,6 +31,7 @@ const GROUP_LABELS: Record<CommandGroup['id'], { labelKey: string }> = {
   property: { labelKey: 'commandPalette.groups.property' },
   booking: { labelKey: 'commandPalette.groups.booking' },
   guest: { labelKey: 'commandPalette.groups.guest' },
+  guide: { labelKey: 'commandPalette.groups.guide' },
 };
 
 const KIND_LABELS: Record<CommandKind, { labelKey: string }> = {
@@ -39,6 +40,7 @@ const KIND_LABELS: Record<CommandKind, { labelKey: string }> = {
   property: { labelKey: 'commandPalette.kinds.property' },
   booking: { labelKey: 'commandPalette.kinds.booking' },
   guest: { labelKey: 'commandPalette.kinds.guest' },
+  guide: { labelKey: 'commandPalette.kinds.guide' },
 };
 
 const ANNOUNCE_DELAY_MS = 400;

@@ -444,6 +444,26 @@ describe('IstatCoverageNotice: on the page of the property', () => {
     expect(screen.queryByTestId('istat-coverage-proof-link')).not.toBeInTheDocument();
   });
 
+  it('IstatCoverageNotice_Compact_KeepsTheRegionTheDeadlineAndTheActionAndPutsTheExplanationInTheHint', async () => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf({ coverage: 'Unknown', nextStep: 'AskSupport', verifiedAt: null }));
+    wrap(<IstatCoverageNotice propertyId={PROPERTY_ID} showProof compact />);
+
+    const notice = await screen.findByTestId('istat-coverage-notice');
+    expect(notice).toHaveAttribute('data-coverage', 'toVerify');
+    expect(within(notice).getByTestId('istat-coverage-region')).toHaveTextContent(text('istatCoverage.region.named', { region: 'Lombardia', system: 'Ross1000' }));
+    expect(within(notice).getByTestId('istat-coverage-deadline')).toHaveTextContent(text('istatCoverage.deadline.monthly', { day: 5 }));
+    expect(within(notice).queryByTestId('istat-coverage-detail')).not.toBeInTheDocument();
+    expect(within(notice).queryByTestId('istat-coverage-unverified')).not.toBeInTheDocument();
+    expect(notice).not.toHaveTextContent(text('istatCoverage.proof.lead'));
+    expect(await screen.findByTestId('assist-request-button')).toBeInTheDocument();
+
+    fireEvent.click(within(notice).getByRole('button', { name: `Cos'è: ${text('istatCoverage.title.toVerify')}` }));
+    const bubble = screen.getByRole('dialog');
+    expect(bubble).toHaveTextContent(text('istatCoverage.detail.toVerify'));
+    expect(bubble).toHaveTextContent(text('istatCoverage.unverified'));
+    expect(within(bubble).getByRole('link', { name: text('manual.open') })).toHaveAttribute('href', '/guida/alloggiati-istat.html#comunicare-l-istat-della-tua-regione');
+  });
+
   it('ConnectionHealthPanel_ActivationFlagOn_DrawsTheCoverageNoticeUnderTheStatesWithTheProofOfTheMonth', async () => {
     wrap(<ConnectionHealthPanel propertyId={PROPERTY_ID} timeZone="Europe/Rome" />);
 

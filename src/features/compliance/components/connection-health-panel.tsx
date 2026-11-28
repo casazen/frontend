@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
-import { CheckCircle2, CircleHelp, Hand, RefreshCw, XCircle, type LucideIcon } from 'lucide-react';
+import { Archive, ArrowDown, ChartColumn, CheckCircle2, CircleHelp, Globe, Hand, History, RefreshCw, ShieldCheck, XCircle, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { PlainSection } from '@/components/shared/calm';
+import { IconFact, IconFacts, InfoCard } from '@/components/shared/calm';
+import { ManualHint } from '@/components/shared/manual-hint';
+import { StatusPill } from '@/components/shared/status/status-pill';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/shared/error-state';
@@ -13,7 +15,7 @@ import { useConnectionHealth } from '@/queries/compliance-health';
 import type { ConnectionHealthLine, ConnectionHealthState } from '@/types';
 import type { ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 import { ComplianceDrawerButton } from '../compliance-drawer/compliance-drawer-button';
-import { CONNECTION_HEALTH_SECTION, describeHealthLine, formatRunTime, healthDetailKey, healthInstructionsKey, senderWizardPath } from '../lib/connection-health-model';
+import { CONNECTION_HEALTH_SECTION, describeHealthLine, formatRunTime, healthInstructionsKey, senderWizardPath } from '../lib/connection-health-model';
 import { useIstatClaim } from '../lib/use-istat-claim';
 import { IstatCoverageNotice } from './istat-coverage-notice';
 
@@ -36,6 +38,23 @@ const STATE_LOOK: Record<ConnectionHealthState, { Icon: LucideIcon; tone: string
   },
 };
 
+const TOPIC_ICONS: Record<ComplianceHandoffTopic, LucideIcon> = { Alloggiati: ShieldCheck, Istat: ChartColumn };
+
+function StatePill({ topic, state }: { topic: ComplianceHandoffTopic; state: ConnectionHealthState }) {
+  const { t } = useTranslation();
+  const { Icon, tone } = STATE_LOOK[state];
+
+  return (
+    <span
+      className={cn('inline-flex min-h-8 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset', tone)}
+      data-testid={`connection-health-${topic}-state`}
+    >
+      <Icon className="size-4" aria-hidden="true" />
+      {t(`connectionHealth.state.${state}`)}
+    </span>
+  );
+}
+
 interface HealthRowProps {
   topic: ComplianceHandoffTopic;
   line: ConnectionHealthLine;
@@ -45,41 +64,35 @@ interface HealthRowProps {
   wizardPath: string | null;
 }
 
-function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath, sharedDetail = false }: HealthRowProps & { sharedDetail?: boolean }) {
+function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath }: HealthRowProps) {
   const { t, i18n } = useTranslation();
   const view = describeHealthLine(line, applies);
-  const { Icon, tone } = STATE_LOOK[view.state];
+  const TopicIcon = TOPIC_ICONS[topic];
   const lastRun = view.lastRunAt ? formatRunTime(view.lastRunAt, i18n.language, timeZone) : '';
   const instructions = healthInstructionsKey(view);
 
   return (
-    <li className="space-y-2 py-4 first:pt-0 last:pb-0" data-testid={`connection-health-${topic}`} data-state={view.state}>
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-        <div className="min-w-0">
-          <h3 className="break-words font-medium">{t(`connectionHealth.topic.${topic}`)}</h3>
-          <p className="text-sm text-muted-foreground" data-testid={`connection-health-${topic}-sender`}>
-            {view.sender ? t(`connectionHealth.sender.${view.sender}`) : t('connectionHealth.sender.unknown')}
-          </p>
+    <li className="space-y-2 py-3 first:pt-0 last:pb-0" data-testid={`connection-health-${topic}`} data-state={view.state}>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <TopicIcon aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
+          <h3 className="min-w-0 break-words text-sm font-medium">{t(`connectionHealth.topic.${topic}`)}</h3>
         </div>
-        <span
-          className={cn('inline-flex min-h-8 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset', tone)}
-          data-testid={`connection-health-${topic}-state`}
-        >
-          <Icon className="size-4" aria-hidden="true" />
-          {t(`connectionHealth.state.${view.state}`)}
-        </span>
+        <StatePill topic={topic} state={view.state} />
       </div>
 
-      {sharedDetail ? null : (
-        <p className="text-sm" data-testid={`connection-health-${topic}-detail`}>
-          {applies ? t(healthDetailKey(view)) : t('connectionHealth.outsideItaly')}
+      {view.state !== 'Manual' ? (
+        <p className="text-sm text-foreground/70" data-testid={`connection-health-${topic}-sender`}>
+          {view.sender ? t(`connectionHealth.sender.${view.sender}`) : t('connectionHealth.sender.unknown')}
         </p>
-      )}
-      {view.reasonCode ? <p className="text-sm text-muted-foreground">{t(`connectionHealth.reason.${view.reasonCode}`)}</p> : null}
+      ) : null}
+      {view.reasonCode ? <p className="text-sm text-foreground/70">{t(`connectionHealth.reason.${view.reasonCode}`)}</p> : null}
       {lastRun ? (
-        <p className="text-sm text-muted-foreground" data-testid={`connection-health-${topic}-last-run`}>
-          {t('connectionHealth.lastRun', { when: lastRun })}
-        </p>
+        <IconFacts>
+          <IconFact icon={History} data-testid={`connection-health-${topic}-last-run`}>
+            {t('connectionHealth.lastRun', { when: lastRun })}
+          </IconFact>
+        </IconFacts>
       ) : null}
 
       {view.needsAction ? (
@@ -100,48 +113,40 @@ function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath, sha
           ) : null}
         </div>
       ) : null}
-
-      {view.checkInChannelManager ? (
-        <details className="text-sm text-muted-foreground">
-          <summary className="min-h-11 cursor-pointer py-3">{t('connectionHealth.disclosureTitle')}</summary>
-          <p className="pb-2">{t('connectionHealth.disclosureBody')}</p>
-        </details>
-      ) : null}
     </li>
   );
 }
 
-/**
- * The row of the ISTAT while the table does not say that the channel manager sends it for this property (the region is not covered, not verified, not read, or the sending does not go through the
- * channel manager): no sender and no green «Attivo» that the state of the police connection would give it, only the pointer to the notice below. The state is `Unknown` for who looks for it.
- */
 function IstatSeeNoticeRow() {
   const { t } = useTranslation();
 
   return (
-    <li className="space-y-2 py-4 first:pt-0 last:pb-0" data-testid="connection-health-Istat" data-state="Unknown">
-      <h3 className="break-words font-medium">{t('connectionHealth.topic.Istat')}</h3>
-      <p className="text-sm" data-testid="connection-health-Istat-detail">
+    <li className="space-y-1 py-3 first:pt-0 last:pb-0" data-testid="connection-health-Istat" data-state="Unknown">
+      <div className="flex min-w-0 items-center gap-2">
+        <ChartColumn aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
+        <h3 className="min-w-0 break-words text-sm font-medium">{t('connectionHealth.topic.Istat')}</h3>
+      </div>
+      <p className="flex items-center gap-1.5 text-sm text-foreground/70" data-testid="connection-health-Istat-detail">
+        <ArrowDown aria-hidden="true" className="size-4 shrink-0" />
         {t('connectionHealth.istatSeeNotice')}
       </p>
     </li>
   );
 }
 
-function CredentialsLine({ stored, usable, archivePath }: { stored: boolean; usable: boolean; archivePath: string }) {
+function CredentialsLine({ usable, archivePath }: { usable: boolean; archivePath: string }) {
   const { t } = useTranslation();
-  // «Usable» is the API's word and it is never true in this release: nothing here says the receipts come by themselves unless it says so.
-  const text = usable ? 'usable' : stored ? 'stored' : 'none';
+
+  if (usable) return null;
 
   return (
-    <p className="text-sm text-muted-foreground" data-testid="connection-health-credentials">
-      {t(`connectionHealth.credentials.${text}`)}{' '}
-      {!usable ? (
-        <Link to={archivePath} className="font-medium text-primary underline-offset-4 hover:underline" data-testid="connection-health-archive-link">
+    <IconFacts>
+      <IconFact icon={Archive} data-testid="connection-health-credentials">
+        <Link to={archivePath} className="font-medium text-primary-text underline underline-offset-4" data-testid="connection-health-archive-link">
           {t('connectionHealth.archiveLink')}
         </Link>
-      ) : null}
-    </p>
+      </IconFact>
+    </IconFacts>
   );
 }
 
@@ -150,14 +155,6 @@ interface ConnectionHealthPanelProps {
   timeZone?: string;
 }
 
-/**
- * «Invio a Polizia e ISTAT» on the page of the property (CHK-12 point 7, NF-52, E03/F03/US02/T01): for Alloggiati Web and for ISTAT who sends, whether
- * it works, when it last ran and whether CasaZen holds credentials for the receipts. The state is the API's word and only that: what the channel
- * manager does not let CasaZen read is «Non verificabile», with the way to check it by hand, and never a green state. The channel manager is «il
- * tuo channel manager» (the name only in the closed disclosure); where its outcome is the one to look at, the shared «Verifica nel tuo Cassetto
- * Compliance» is offered. «Attiva o ricollega» appears only when its wizard is in the ROUTE_MANIFEST and the person may open it: otherwise there are
- * the instructions. For who may not read the property nothing is asked and nothing is shown.
- */
 export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealthPanelProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
@@ -168,13 +165,13 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
   if (!canRead) return null;
 
   const archivePath = `/app/short-rent/alloggiati/reports?${new URLSearchParams({ property: propertyId, tab: 'proofs' }).toString()}`;
-  const title = t('connectionHealth.title');
+  const outside = health.data?.applies === false && !health.isError;
   let body: ReactNode;
 
   if (health.isError) {
     body =
       getHttpStatus(health.error) === 404 ? (
-        <p className="text-sm text-muted-foreground" data-testid="connection-health-not-found">
+        <p className="text-sm text-foreground/70" data-testid="connection-health-not-found">
           {t('connectionHealth.notFound')}
         </p>
       ) : (
@@ -188,47 +185,65 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
         <Skeleton className="h-5 w-2/3 motion-reduce:animate-none" />
       </div>
     );
+  } else if (!health.data.applies) {
+    body = (
+      <StatusPill icon={Globe} className="self-start py-1 text-sm" data-testid="connection-health-outside">
+        {t('connectionHealth.outsideItalyShort')}
+      </StatusPill>
+    );
   } else {
     const data = health.data;
     const wizardPath = senderWizardPath(propertyId, hasPermission);
-    const istatRow = !(data.applies && istatClaim === 'seeNotice');
-    const bothManual =
-      data.applies &&
-      istatRow &&
-      describeHealthLine(data.alloggiati, true).state === 'Manual' &&
-      describeHealthLine(data.istat, true).state === 'Manual';
+    const istatRow = istatClaim !== 'seeNotice';
     body = (
       <>
         <ul className="divide-y divide-border">
-          <HealthRow topic="Alloggiati" line={data.alloggiati} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} sharedDetail={bothManual} />
+          <HealthRow topic="Alloggiati" line={data.alloggiati} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
           {istatRow ? (
-            <HealthRow topic="Istat" line={data.istat} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} sharedDetail={bothManual} />
+            <HealthRow topic="Istat" line={data.istat} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
           ) : (
             <IstatSeeNoticeRow />
           )}
         </ul>
-        {bothManual ? (
-          <p className="text-sm" data-testid="connection-health-shared-detail">
-            {t('connectionHealth.detail.Manual')}
-          </p>
-        ) : null}
         {/* What the region table says of the ISTAT of this property (E21/F01/US02/T01): whether the channel manager sends it, the deadline, the one thing to do next and the upload of the proof of the month. Behind the flag of the activation. */}
-        {data.applies ? <IstatCoverageNotice propertyId={propertyId} showProof /> : null}
-        {data.applies ? <CredentialsLine stored={data.credentialsInCasaZen} usable={data.credentialsUsable} archivePath={archivePath} /> : null}
-        <div>
-          <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => void health.refetch()} disabled={health.isFetching} data-testid="connection-health-refresh">
-            <RefreshCw className={cn('size-4', health.isFetching && 'animate-spin motion-reduce:animate-none')} aria-hidden="true" />
-            {t('connectionHealth.refresh')}
-          </Button>
-        </div>
+        <IstatCoverageNotice propertyId={propertyId} showProof compact />
+        <CredentialsLine usable={data.credentialsUsable} archivePath={archivePath} />
       </>
     );
   }
 
   return (
-    <PlainSection id={CONNECTION_HEALTH_SECTION} tabIndex={-1} className="scroll-mt-6 outline-none" title={title} data-testid="connection-health-panel">
-      <p className="text-sm text-muted-foreground">{t('connectionHealth.description')}</p>
+    <InfoCard
+      id={CONNECTION_HEALTH_SECTION}
+      tabIndex={-1}
+      className="scroll-mt-6 outline-none"
+      icon={ShieldCheck}
+      title={t('connectionHealth.title')}
+      hint={
+        <ManualHint page="alloggiati-istat" anchor="chi-invia-i-dati-degli-ospiti" title={t('connectionHealth.title')}>
+          {t(outside ? 'connectionHealth.outsideItaly' : 'connectionHealth.description')}
+        </ManualHint>
+      }
+      aside={
+        health.data && !health.isError && health.data.applies ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="min-h-11 min-w-11"
+            onClick={() => void health.refetch()}
+            disabled={health.isFetching}
+            title={t('connectionHealth.refresh')}
+            aria-label={t('connectionHealth.refresh')}
+            data-testid="connection-health-refresh"
+          >
+            <RefreshCw className={cn('size-4', health.isFetching && 'animate-spin motion-reduce:animate-none')} aria-hidden="true" />
+          </Button>
+        ) : undefined
+      }
+      data-testid="connection-health-panel"
+    >
       {body}
-    </PlainSection>
+    </InfoCard>
   );
 }

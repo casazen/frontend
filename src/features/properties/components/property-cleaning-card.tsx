@@ -1,9 +1,11 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { Banknote, BrushCleaning, CheckCircle2, CircleHelp, CircleOff, Clock, Loader2, Pencil, Timer, TriangleAlert, UserRound, Zap, type LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { PlainSection } from '@/components/shared/calm';
+import { IconFact, IconFacts, InfoCard } from '@/components/shared/calm';
+import { ManualHint } from '@/components/shared/manual-hint';
+import { StatusPill } from '@/components/shared/status/status-pill';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +16,7 @@ import { useSavePropertyCleaningSetup, usePropertyCleaningSetup } from '@/querie
 import { useOrgMembers } from '@/queries/use-org-team';
 import { useProperty } from '@/queries/use-properties';
 import { useSuppliersByProperty } from '@/queries/use-service-requests';
+import type { StatusTone } from '@/lib/status-dictionary';
 import type { PropertyCleaningSetup } from '@/types';
 import {
   CLEANING_CATEGORY,
@@ -169,55 +172,43 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
   } else if (setup) {
     const price = setup.priceCents === null ? null : formatCleaningPrice(setup.priceCents, setup.currency, i18n.language);
     const staffName = setup.staffUserId && !members.isError ? members.data?.items.find((member) => member.userId === setup.staffUserId) : undefined;
-    const startsAt = toClock(setup.effectiveStartTime);
-    const startText =
-      setup.startTime === null && timeSource
-        ? t(timeSource.kind === 'property' ? 'propertyCleaning.summary.timeOfProperty' : 'propertyCleaning.summary.timeDefault', { time: startsAt })
-        : startsAt;
     body = !setup.configured ? (
       <div className="space-y-3" data-testid="property-cleaning-none">
-        <p className="text-sm">{t('propertyCleaning.none')}</p>
+        <p className="flex items-center gap-2 text-sm text-foreground/70">
+          <UserRound aria-hidden="true" className="size-4 shrink-0" />
+          {t('propertyCleaning.none')}
+        </p>
         <Button type="button" variant="outline" size="sm" onClick={() => startEditing(setup)} data-testid="property-cleaning-set">
           {t('propertyCleaning.set')}
         </Button>
       </div>
     ) : (
       <div className="space-y-3" data-testid="property-cleaning-summary">
-        <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[max-content_minmax(0,1fr)]">
-          <dt className="text-foreground/70">{t('propertyCleaning.summary.cleaner')}</dt>
-          <dd className="flex min-w-0 flex-wrap items-center gap-2" data-testid="property-cleaning-cleaner">
-            <span className="break-words">
-              {setup.cleanerKind === 'Supplier'
-                ? (setup.supplierName ?? t('propertyCleaning.summary.supplierUnknown'))
-                : staffName
-                  ? t('propertyCleaning.summary.staffNamed', { name: memberName(staffName) })
-                  : t('propertyCleaning.summary.staffUnknown')}
+        <IconFacts>
+          <IconFact icon={UserRound} label={t('propertyCleaning.summary.cleaner')} data-testid="property-cleaning-cleaner">
+            <span className="inline-flex flex-wrap items-center gap-2">
+              <span className="break-words">
+                {setup.cleanerKind === 'Supplier'
+                  ? (setup.supplierName ?? t('propertyCleaning.summary.supplierUnknown'))
+                  : staffName
+                    ? t('propertyCleaning.summary.staffNamed', { name: memberName(staffName) })
+                    : t('propertyCleaning.summary.staffUnknown')}
+              </span>
+              {setup.cleanerKind === 'Supplier' && setup.supplierIsTrusted ? <Badge variant="secondary">{t('propertyCleaning.summary.trusted')}</Badge> : null}
             </span>
-            {setup.cleanerKind === 'Supplier' && setup.supplierIsTrusted ? <Badge variant="secondary">{t('propertyCleaning.summary.trusted')}</Badge> : null}
-          </dd>
-          <dt className="text-foreground/70">{t('propertyCleaning.summary.price')}</dt>
-          <dd className="min-w-0 break-words" data-testid="property-cleaning-price">
-            {price ? (
-              <>
-                {price.text}
-                {price.currencyKnown ? null : <span className="block text-foreground/70">{t('propertyCleaning.summary.noCurrency')}</span>}
-              </>
-            ) : (
-              t('propertyCleaning.summary.noPrice')
-            )}
-          </dd>
-          <dt className="text-foreground/70">{t('propertyCleaning.summary.time')}</dt>
-          <dd data-testid="property-cleaning-time">{startText}</dd>
-          <dt className="text-foreground/70">{t('propertyCleaning.summary.duration')}</dt>
-          <dd>{t('propertyCleaning.summary.minutes', { count: setup.effectiveDurationMinutes })}</dd>
-          <dt className="text-foreground/70">{t('propertyCleaning.summary.state')}</dt>
-          <dd data-testid="property-cleaning-state">
-            {setup.active ? <Badge variant="success">{t('propertyCleaning.state.on')}</Badge> : <span>{t('propertyCleaning.state.off')}</span>}
-          </dd>
-        </dl>
-        <Button type="button" variant="outline" size="sm" onClick={() => startEditing(setup)} data-testid="property-cleaning-edit">
-          {t('propertyCleaning.edit')}
-        </Button>
+          </IconFact>
+        </IconFacts>
+        <IconFacts layout="inline">
+          <IconFact icon={Banknote} label={t('propertyCleaning.summary.price')} data-testid="property-cleaning-price">
+            {price ? price.text : t('propertyCleaning.summary.noPrice')}
+          </IconFact>
+          <IconFact icon={Clock} label={t('propertyCleaning.summary.time')} data-testid="property-cleaning-time">
+            {toClock(setup.effectiveStartTime)}
+          </IconFact>
+          <IconFact icon={Timer} label={t('propertyCleaning.summary.duration')}>
+            {t('propertyCleaning.summary.minutes', { count: setup.effectiveDurationMinutes })}
+          </IconFact>
+        </IconFacts>
       </div>
     );
   } else {
@@ -226,29 +217,69 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
 
   const routineState = routines.isError || routines.data === undefined ? undefined : cleaningRoutineStateOf(routines.data);
   const setupRuns = setup?.configured === true && setup.active;
-  const routineText =
+  const routine: { tone: StatusTone; Icon: LucideIcon; key: string } | undefined =
     routineState === 'on'
       ? setupRuns
-        ? t('propertyCleaning.routine.on')
-        : t('propertyCleaning.routine.onNoCleaner')
+        ? { tone: 'success', Icon: Zap, key: 'on' }
+        : { tone: 'warning', Icon: TriangleAlert, key: 'onNoCleaner' }
       : routineState === 'off'
-        ? t('propertyCleaning.routine.off')
+        ? { tone: 'warning', Icon: CircleOff, key: 'off' }
         : routineState === 'unknown'
-          ? t('propertyCleaning.routine.unknown')
+          ? { tone: 'neutral', Icon: CircleHelp, key: 'unknown' }
           : undefined;
+  const summarised = setup?.configured === true && !editing;
 
   return (
-    <PlainSection title={t('propertyCleaning.title')} data-testid="property-cleaning-card">
-      <p className="text-sm text-muted-foreground">{t('propertyCleaning.description')}</p>
+    <InfoCard
+      icon={BrushCleaning}
+      title={t('propertyCleaning.title')}
+      hint={
+        <ManualHint page="routine-ai-crm" anchor="creare-una-routine-da-un-modello" title={t('propertyCleaning.title')}>
+          {t('propertyCleaning.description')}
+        </ManualHint>
+      }
+      status={
+        summarised && setup ? (
+          setup.active ? (
+            <StatusPill tone="success" icon={CheckCircle2} data-testid="property-cleaning-state">
+              {t('propertyCleaning.state.on')}
+            </StatusPill>
+          ) : (
+            <StatusPill icon={CircleOff} data-testid="property-cleaning-state">
+              {t('propertyCleaning.state.off')}
+            </StatusPill>
+          )
+        ) : undefined
+      }
+      aside={
+        summarised && setup ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="min-h-11 min-w-11 text-primary-text"
+            onClick={() => startEditing(setup)}
+            title={t('propertyCleaning.edit')}
+            data-testid="property-cleaning-edit"
+          >
+            <Pencil aria-hidden="true" className="size-4" />
+            <span className="sr-only">{t('propertyCleaning.edit')}</span>
+          </Button>
+        ) : undefined
+      }
+      data-testid="property-cleaning-card"
+    >
       {body}
-      {setup && !editing && routineText !== undefined ? (
-        <p className="text-sm text-foreground/70" data-testid="property-cleaning-routine">
-          {routineText}{' '}
-          <Link to={AUTOMATIONS_PATH} className="font-medium text-primary underline underline-offset-4">
+      {setup && !editing && routine ? (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-3" data-testid="property-cleaning-routine">
+          <StatusPill tone={routine.tone} icon={routine.Icon}>
+            {t(`propertyCleaning.routine.${routine.key}`)}
+          </StatusPill>
+          <Link to={AUTOMATIONS_PATH} className="inline-flex min-h-11 items-center text-sm font-medium text-primary-text underline underline-offset-4 md:min-h-0">
             {t('propertyCleaning.routine.link')}
           </Link>
-        </p>
+        </div>
       ) : null}
-    </PlainSection>
+    </InfoCard>
   );
 }

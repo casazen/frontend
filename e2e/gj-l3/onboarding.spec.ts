@@ -135,17 +135,12 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.getByTestId('first-run-later').click();
       await expect(page.getByTestId('first-run-wizard')).toHaveCount(0);
       await page.getByTestId('guide-button').click();
-      const checklist = page.getByTestId('guide-setup');
-      await expect(checklist).toBeVisible({ timeout: 30_000 });
-      const propertyStep = checklist.getByRole('listitem').filter({ hasText: 'Primo immobile' });
-      await expect(propertyStep).toHaveAttribute('data-state', 'done');
-      await expect(checklist.locator('[aria-current="step"]')).toHaveCount(1);
-      await expect(checklist.getByTestId('guide-setup-continue')).toBeVisible();
-      await expectNoHorizontalOverflow(page, 'setup checklist in the guide');
-      const organizationTitle = checklist.getByText(/nome e indirizzo dell.organizzazione/i);
-      await expect(organizationTitle).toBeVisible();
-      expect((await organizationTitle.boundingBox())?.width ?? 0).toBeGreaterThan(200);
-      await shot(page, 'host-3-guide-checklist');
+      const guide = page.getByTestId('guide-panel');
+      await expect(guide.getByTestId('guide-search')).toBeVisible({ timeout: 30_000 });
+      await expect(guide.getByTestId('guide-topics')).toBeVisible();
+      await expect(guide.getByTestId('guide-setup')).toHaveCount(0);
+      await expectNoHorizontalOverflow(page, 'user guide panel');
+      await shot(page, 'host-3-guide-manual');
       console.log(`[onboarding-l3] short-rent host: QR -> property created in ${Math.round((Date.now() - t0) / 1000)}s`);
 
       const api = oracleFor(context.request, stack, await accessToken(page));

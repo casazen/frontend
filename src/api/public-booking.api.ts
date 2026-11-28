@@ -11,26 +11,12 @@ import type {
   OnSiteRequestConfirmation,
 } from '@/types';
 
-export interface PropertyAvailability {
-  propertyId: string;
-  startDate: string;
-  endDate: string;
-  bookedDates: string[];
-}
-
 export const publicBookingApi = {
   createDirectBooking: (payload: CreateDirectBookingPayload) =>
     ApiClient.post<DirectBookingResponse>('/public/bookings', payload, { public: true }),
 
   quoteDirectBooking: (payload: DirectBookingQuotePayload, signal?: AbortSignal) =>
     ApiClient.post<DirectBookingQuote>('/public/bookings/quote', payload, { public: true, signal }),
-
-  getPropertyAvailability: (propertyId: string, startDate?: string, endDate?: string) =>
-    ApiClient.get<PropertyAvailability>(
-      `/public/bookings/property/${encodeURIComponent(propertyId)}/availability`,
-      { startDate, endDate },
-      { public: true },
-    ),
 
   /**
    * "Le mie prenotazioni" (BK-11): the booking of this site with its code and the guest's email, in the body (never in the

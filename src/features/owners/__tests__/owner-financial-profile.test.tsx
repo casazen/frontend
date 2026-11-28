@@ -1,13 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { createElement } from 'react';
+import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import * as issuerApi from '@/api/owner-issuer-profiles.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import i18n from '@/i18n/config';
 import { todayInRome } from '@/lib/stay-dates';
+import { expectNoAxeViolations } from '@/test/axe';
 import { OWNER_ID, policy, profile } from '@/features/owner-accounting/__tests__/owner-accounting-fixtures';
 import { defaultPeriod, maskValue, OWNER_ONBOARDING_PATH, startOfPeriod } from '@/features/owner-accounting/owner-accounting-model';
+import type { OwnerMandate } from '@/types';
 import { OwnerFinancialProfilePage } from '../owner-financial-profile-page';
 
 const api = vi.hoisted(() => ({
@@ -23,21 +27,28 @@ const api = vi.hoisted(() => ({
   getAddress: vi.fn(),
   saveAddress: vi.fn(),
 }));
+const env = vi.hoisted(() => ({ flags: {} as Record<string, boolean> }));
 
 vi.mock('@/api/owner-accounting.api', () => ({ ownerAccountingApi: api }));
+vi.mock('@/api/owner-issuer-profiles.api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/owner-issuer-profiles.api')>();
+  return { ...actual, getOwnerIssuerProfile: vi.fn() };
+});
+vi.mock('@/hooks/use-feature-flags', () => ({
+  useFeatureFlags: () => ({ flags: { ...DEFAULT_FEATURE_FLAGS, ...env.flags }, isLoading: false }),
+}));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 const workspace = vi.hoisted(() => ({ contexts: [{ contextKey: 'account', roleKey: 'org_admin' }] }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: workspace.contexts }) }));
 vi.mock('@/components/layout/page-header', () => ({
-  PageHeader: ({ title, primary }: { title: string; primary?: { label: string; onClick?: () => void; testId?: string } }) =>
-    createElement('div', null, createElement('h1', null, title), primary ? createElement('button', { type: 'button', onClick: primary.onClick, 'data-testid': primary.testId }, primary.label) : null),
+  PageHeader: ({ title, status, primary }: { title: string; status?: ReactNode; primary?: { label: string; onClick?: () => void; testId?: string } }) =>
+    createElement('div', null, createElement('h1', null, title), status ?? null, primary ? createElement('button', { type: 'button', onClick: primary.onClick, 'data-testid': primary.testId }, primary.label) : null),
 }));
 
 vi.setConfig({ testTimeout: 30_000 });
 
 const text = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
 
-/** `search` is the query of the address (`?period=2025-01`, from the month-end close); `client` is the one of the app unless a test wants its own. */
 function renderPage(search = '', client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } })) {
   const view = render(
     createElement(
@@ -56,8 +67,29 @@ function reviewProfile(dialog: HTMLElement) {
 
 const problem = (status: number, code: string) => Object.assign(new Error(code), { isAxiosError: true, response: { status, data: { code } } });
 
+const mandate = (overrides: Partial<OwnerMandate> = {}): OwnerMandate => ({
+  id: 'c1000000-0000-4000-8000-000000000001',
+  ownerId: OWNER_ID,
+  ownershipId: null,
+  validFrom: '2024-01-01',
+  validTo: null,
+  commissionPercent: 20,
+  commissionBase: 'GrossExclTouristTax',
+  commissionIncludesVat: false,
+  cleaningFlatRate: 80,
+  linenFlatRate: null,
+  passthroughPaymentFees: false,
+  withholdingTreatment: 'NotDeductible',
+  monthlyFrequency: 1,
+  hasDocument: false,
+  createdAt: '2024-01-01T08:00:00Z',
+  createdByUserId: 'auth0|admin',
+  ...overrides,
+});
+
 beforeEach(async () => {
   vi.resetAllMocks();
+  env.flags = {};
   workspace.contexts = [{ contextKey: 'account', roleKey: 'org_admin' }];
   await i18n.changeLanguage('it');
   api.listOwners.mockResolvedValue([{ id: OWNER_ID, firstName: 'Marta', lastName: 'Rossi' }]);
@@ -66,45 +98,64 @@ beforeEach(async () => {
   api.listPolicies.mockResolvedValue([policy()]);
   api.listMandates.mockResolvedValue([]);
   api.getAddress.mockResolvedValue(null);
+  vi.mocked(issuerApi.getOwnerIssuerProfile).mockResolvedValue(null);
 });
 
 afterEach(() => cleanup());
 
 describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
   it('OwnerProfile_UnauthorizedRole_SeesOnlyMaskedData_AndCanNeitherRevealNorEdit', async () => {
-    renderPage();
+    const identity = renderPage('?tab=identity');
     const facts = await screen.findByTestId('profile-facts');
 
     expect(facts.querySelector('dl')).toHaveAttribute('data-masked', 'true');
     expect(within(facts).getByTestId('profile-value-fiscalCode')).toHaveTextContent('••••••••••••3456');
-    expect(within(facts).getByTestId('profile-value-bankAccountReference')).toHaveTextContent('•••••••••••••••••••••3456');
     expect(within(facts).getByTestId('profile-value-legalName')).toHaveTextContent('•••••••••ossi');
     expect(screen.queryByTestId('profile-reveal')).toBeNull();
     expect(screen.getByTestId('profile-masked-notice')).toHaveTextContent(text('ownerProfile.maskedNotice'));
     expect(screen.queryByTestId('profile-new-version')).toBeNull();
+    expect(screen.queryByTestId('profile-edit-0')).toBeNull();
+    identity.unmount();
+
+    renderPage('?tab=payments');
+    const payments = await screen.findByTestId('profile-payments');
+    expect(within(payments).getByTestId('profile-value-bankAccountReference')).toHaveTextContent('•••••••••••••••••••••3456');
+    expect(screen.queryByTestId('profile-reveal')).toBeNull();
+    expect(screen.queryByTestId('profile-edit-2')).toBeNull();
+    cleanup();
+
+    renderPage('?tab=rule');
+    await screen.findByTestId('profile-policy-section');
     expect(screen.queryByTestId('policy-new')).toBeNull();
+    expect(screen.queryByTestId('profile-edit-4')).toBeNull();
     expect(Object.keys(api)).not.toContain('getOwnerIban');
     for (const write of [api.saveFiscalProfile, api.approvePolicy, api.createPolicy]) expect(write).not.toHaveBeenCalled();
   });
 
   it('OwnerProfile_AuthorizedRole_SeesTheValuesMaskedUntilTheyAskForThem', async () => {
     api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, fiscalCode: 'RSSMRT80A01H501U', bankAccountReference: 'IT60X0542811101000000123456', legalName: 'Marta Rossi' })]);
-    renderPage();
+    const identity = renderPage('?tab=identity');
     const facts = await screen.findByTestId('profile-facts');
 
     expect(within(facts).getByTestId('profile-value-fiscalCode')).toHaveTextContent(maskValue('RSSMRT80A01H501U') as string);
     expect(within(facts).getByTestId('profile-value-fiscalCode')).not.toHaveTextContent('RSSMRT80A01H501U');
-    expect(within(facts).getByTestId('profile-value-bankAccountReference')).not.toHaveTextContent('IT60X0542811101000000123456');
 
     const reveal = within(facts).getByTestId('profile-reveal');
     expect(reveal).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(reveal);
-    expect(within(facts).getByTestId('profile-value-bankAccountReference')).toHaveTextContent('IT60X0542811101000000123456');
     expect(within(facts).getByTestId('profile-value-fiscalCode')).toHaveTextContent('RSSMRT80A01H501U');
+    expect(within(facts).getByTestId('profile-value-legalName')).toHaveTextContent('Marta Rossi');
 
     fireEvent.click(within(facts).getByTestId('profile-reveal'));
-    expect(within(facts).getByTestId('profile-value-bankAccountReference')).not.toHaveTextContent('IT60X0542811101000000123456');
+    expect(within(facts).getByTestId('profile-value-fiscalCode')).not.toHaveTextContent('RSSMRT80A01H501U');
     expect(screen.getByTestId('profile-new-version')).toBeInTheDocument();
+    identity.unmount();
+
+    renderPage('?tab=payments');
+    const payments = await screen.findByTestId('profile-payments');
+    expect(within(payments).getByTestId('profile-value-bankAccountReference')).not.toHaveTextContent('IT60X0542811101000000123456');
+    fireEvent.click(within(payments).getByTestId('profile-reveal'));
+    expect(within(payments).getByTestId('profile-value-bankAccountReference')).toHaveTextContent('IT60X0542811101000000123456');
   });
 
   it('OwnerProfile_ARuleNotApprovedYet_BlocksTheOwner_AndTheAccountantApprovalIsRecordedByName', async () => {
@@ -116,7 +167,7 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     const focus = await screen.findByTestId('profile-focus');
     expect(focus).toHaveAttribute('data-tone', 'warning');
     expect(focus).toHaveTextContent(text('ownerProfile.focus.blocked.policy_not_approved.title'));
-    expect(screen.getByTestId('policy-approval')).toHaveTextContent(text('ownerProfile.policy.waiting'));
+    expect(screen.getByTestId('profile-status')).toHaveTextContent(text('ownerProfile.status.todo'));
 
     fireEvent.click(screen.getByTestId('profile-focus-approve'));
     const dialog = await screen.findByRole('dialog');
@@ -128,13 +179,28 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     await waitFor(() => expect(api.approvePolicy).toHaveBeenCalledWith('b1000000-0000-4000-8000-000000000001', 'Dott. Bianchi'));
   });
 
+  it('OwnerProfile_ThePolicyTab_SaysWhoApprovedTheRuleOrThatItWaits', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false })]);
+    api.listPolicies.mockResolvedValue([policy({ approved: false, approvedAt: null, approvedByName: null })]);
+    const waiting = renderPage('?tab=rule');
+    expect(await screen.findByTestId('policy-approval')).toHaveTextContent(text('ownerProfile.policy.waiting'));
+    expect(screen.getByTestId('policy-approve')).toBeInTheDocument();
+    waiting.unmount();
+
+    api.listPolicies.mockResolvedValue([policy()]);
+    renderPage('?tab=rule');
+    expect(await screen.findByTestId('policy-approval')).toHaveTextContent('Dott. Bianchi');
+    expect(screen.getByTestId('profile-policy-section')).toHaveTextContent(text('ownerProfile.policy.approved'));
+    expect(screen.queryByTestId('policy-approve')).toBeNull();
+  });
+
   it('OwnerProfile_AProfileWithAnApprovedRule_IsReady_AndSaysWhoApprovedIt', async () => {
     renderPage();
     const focus = await screen.findByTestId('profile-focus');
 
     expect(focus).toHaveAttribute('data-tone', 'success');
     expect(focus).toHaveTextContent('Dott. Bianchi');
-    expect(screen.getByTestId('profile-policy-section')).toHaveTextContent(text('ownerProfile.policy.approved'));
+    expect(screen.getByTestId('profile-status')).toHaveTextContent('Pronto dal');
   });
 
   it('OwnerProfile_MissingFactsOfTheActivation_LinkBackToIt', async () => {
@@ -173,6 +239,7 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     expect(within(section).getByText(text('ownerProfile.reason.mandateMissing'))).toBeInTheDocument();
     expect(section).toHaveTextContent('Casa Mare');
     expect(section).toHaveTextContent(text('ownerProfile.reason.other', { code: 'something_new' }));
+    expect(section).toHaveTextContent(text('ownerProfile.onboarding.toFix', { count: 3 }));
     expect(within(section).getByTestId('profile-onboarding-link')).toHaveAttribute('href', OWNER_ONBOARDING_PATH);
 
     const issues = within(section).getByTestId('profile-ownership-issues');
@@ -218,7 +285,6 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     expect(warnings[0]).toHaveTextContent(text('ownerProfile.warning.shortLetBusinessPresumed.title'));
     expect(warnings[0]).toHaveTextContent('2 gestiti dall\'agenzia e 1 dichiarati fuori, con un limite di 2');
     expect(warnings[0]).toHaveTextContent(text('ownerProfile.warning.suggestion.issuerProfile'));
-    // A code this version does not know is told as a warning too, with the code, and nothing here stops the owner: the focus of the page is still the one of the readiness.
     expect(warnings[1]).toHaveTextContent('something_new');
     expect(screen.getByTestId('profile-focus')).toBeInTheDocument();
   });
@@ -229,6 +295,125 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
 
     expect(await screen.findByTestId('finance-admin-required')).toBeInTheDocument();
     for (const call of Object.values(api)) expect(call).not.toHaveBeenCalled();
+  });
+});
+
+describe('the path of an owner, from the overview to each section', () => {
+  const complete = () => api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, legalName: 'Marta Rossi', fiscalCode: 'RSSMRT80A01H501U', bankAccountReference: 'IT60X0542811101000000123456' })]);
+
+  it('OwnerProfile_TheOverview_ShowsTheStepsOfThePathWithTheirState_AndHowManyAreDone', async () => {
+    complete();
+    api.listMandates.mockResolvedValue([mandate()]);
+    renderPage();
+
+    const path = await screen.findByTestId('owner-path');
+    await waitFor(() => expect(within(path).getByTestId('owner-step-mandate')).toHaveAttribute('data-state', 'done'));
+    for (const step of ['identity', 'payments', 'mandate', 'rule']) expect(within(path).getByTestId(`owner-step-${step}`)).toHaveAttribute('data-state', 'done');
+    expect(within(path).queryByTestId('owner-step-documents')).toBeNull();
+    expect(within(path).getByTestId('owner-path-progress')).toHaveTextContent(text('ownerProfile.path.progress', { done: 4, total: 4 }));
+    expect(within(path).getByTestId('owner-step-mandate')).toHaveTextContent('20% + IVA');
+    expect(within(path).getByTestId('owner-step-payments')).toHaveTextContent('Valuta EUR');
+    expect(within(path).getByTestId('owner-step-rule')).toHaveTextContent('Dott. Bianchi');
+  });
+
+  it('OwnerProfile_AStepThatMissesSomething_IsToDoInThePathAndInTheTabs', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, legalName: 'Marta Rossi', fiscalCode: 'RSSMRT80A01H501U', bankAccountReference: null })]);
+    api.listMandates.mockResolvedValue([]);
+    renderPage();
+
+    const path = await screen.findByTestId('owner-path');
+    await waitFor(() => expect(within(path).getByTestId('owner-step-mandate')).toHaveAttribute('data-state', 'todo'));
+    expect(within(path).getByTestId('owner-step-payments')).toHaveAttribute('data-state', 'todo');
+    expect(within(path).getByTestId('owner-step-payments')).toHaveTextContent(text('ownerProfile.path.ibanMissing'));
+    expect(within(path).getByTestId('owner-step-identity')).toHaveAttribute('data-state', 'done');
+    expect(within(path).getByTestId('owner-path-progress')).toHaveTextContent(text('ownerProfile.path.progress', { done: 2, total: 4 }));
+    expect(screen.getByTestId('owner-tab-payments')).toHaveTextContent(text('ownerProfile.tabs.todo'));
+    expect(screen.getByTestId('owner-tab-identity')).toHaveTextContent(text('ownerProfile.tabs.done'));
+    expect(screen.getByTestId('owner-tab-overview').textContent).toBe(text('ownerProfile.tabs.overview'));
+  });
+
+  it('OwnerProfile_OpeningAStepOfThePath_GoesToItsTab_AndKeepsTheMonthThatSentThePersonHere', async () => {
+    complete();
+    renderPage('?period=2025-01');
+
+    const step = await screen.findByTestId('owner-step-payments');
+    expect(step.getAttribute('href')).toContain('period=2025-01');
+    expect(step.getAttribute('href')).toContain('tab=payments');
+    fireEvent.click(step);
+
+    const payments = await screen.findByTestId('profile-payments');
+    expect(within(payments).getByTestId('profile-value-settlementCurrency')).toHaveTextContent('EUR');
+    expect(screen.getByTestId('owner-tab-payments')).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByTestId('owner-path')).toBeNull();
+  });
+
+  it('OwnerProfile_ASectionThatDoesNotExist_OpensTheOverview', async () => {
+    const unknown = renderPage('?tab=nonsense');
+    expect(await screen.findByTestId('profile-focus')).toBeInTheDocument();
+    unknown.unmount();
+
+    renderPage('?tab=documents');
+    expect(await screen.findByTestId('profile-focus')).toBeInTheDocument();
+    expect(screen.queryByTestId('owner-tab-documents')).toBeNull();
+  });
+
+  it('OwnerProfile_TheStayDocumentsTab_ExistsOnlyWhileTheIssuanceIsOn', async () => {
+    env.flags = { fiscalDocumentIssuance: true };
+    renderPage('?tab=documents');
+
+    expect(await screen.findByTestId('profile-documents')).toBeInTheDocument();
+    expect(screen.getByTestId('owner-tab-documents')).toHaveAttribute('aria-selected', 'true');
+    expect(await screen.findByTestId('owner-issuer-not-for-you')).toBeInTheDocument();
+  });
+
+  it('OwnerProfile_EditingASection_OpensTheWizardAtThatStep', async () => {
+    complete();
+    renderPage('?tab=payments');
+
+    fireEvent.click(await screen.findByTestId('profile-edit-2'));
+    const dialog = await screen.findByTestId('profile-dialog');
+    expect(within(dialog).getByTestId('profile-currency')).toBeInTheDocument();
+    expect(within(dialog).queryByTestId('profile-legal-name')).toBeNull();
+    expect(within(dialog).getByTestId('profile-back')).toBeInTheDocument();
+  });
+
+  it('OwnerProfile_AFactTheAccountingNeedsAndIsMissing_IsToldWhereItIsInsteadOfBeingBlank', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, legalName: 'Marta Rossi', fiscalCode: 'RSSMRT80A01H501U', bankAccountReference: null, workingCapitalRule: null })]);
+    renderPage('?tab=payments');
+
+    const payments = await screen.findByTestId('profile-payments');
+    expect(within(payments).getByTestId('profile-value-bankAccountReference')).toHaveTextContent(text('ownerProfile.facts.missing'));
+    expect(within(payments).getByTestId('profile-value-settlementCurrency')).toHaveTextContent('EUR');
+    expect(payments).toHaveTextContent(text('ownerProfile.status.todo'));
+  });
+
+  it('OwnerProfile_TheReportsTab_ListsTheVersionsOfTheProfile_AndOffersTheExportOnlyWhileTheIssuanceIsOn', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, validFrom: '2025-06-01' }), profile({ id: 'a1000000-0000-4000-8000-000000000002', masked: false, validFrom: '2024-01-01', validTo: '2025-05-31' })]);
+    const withoutExport = renderPage('?tab=reports');
+
+    const history = await screen.findByTestId('profile-history');
+    expect(within(history).getAllByRole('listitem')).toHaveLength(2);
+    expect(history).toHaveTextContent(text('ownerProfile.history.current'));
+    expect(screen.queryByTestId('owner-issued-documents-section')).toBeNull();
+    withoutExport.unmount();
+
+    env.flags = { fiscalDocumentIssuance: true };
+    renderPage('?tab=reports');
+    expect(await screen.findByTestId('owner-issued-documents-section')).toBeInTheDocument();
+    expect(await screen.findByTestId('profile-history')).toBeInTheDocument();
+  });
+});
+
+describe('every section of the page is accessible', () => {
+  it.each(['', '?tab=identity', '?tab=payments', '?tab=mandate', '?tab=rule', '?tab=reports'])('OwnerProfile_Section%s_HasNoAxeViolations', async (search) => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, legalName: 'Marta Rossi', fiscalCode: 'RSSMRT80A01H501U', bankAccountReference: null })]);
+    api.listMandates.mockResolvedValue([mandate(), mandate({ id: 'c1000000-0000-4000-8000-000000000002', validFrom: '2023-01-01', validTo: '2023-12-31' })]);
+    api.getAddress.mockResolvedValue({ ownerId: OWNER_ID, street: 'Via Nassa', buildingNumber: '5', postalCode: '6900', town: 'Lugano', province: null, country: 'CH' });
+    renderPage(search);
+
+    await screen.findByTestId('owner-tab-panel');
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
+    await expectNoAxeViolations(document.body);
   });
 });
 
@@ -245,7 +430,7 @@ describe('the profile is personal data, and nothing of it outlives the page (E06
     api.listFiscalProfiles.mockResolvedValue([full()]);
     api.saveFiscalProfile.mockResolvedValue(full());
     const { client, unmount } = renderPage('', appClient());
-    await screen.findByTestId('profile-facts');
+    await screen.findByTestId('profile-focus');
     expect(client.getQueryCache().findAll({ queryKey: ['owner-accounting', 'profiles'] })).toHaveLength(1);
 
     const dialog = await openNewVersion();
@@ -294,7 +479,6 @@ describe('what the page says when it cannot show the owner (E06/F05/US02/T04)', 
     const notFound = await screen.findByTestId('profile-not-found');
     expect(notFound).toHaveTextContent(text('ownerProfile.notFound'));
     expect(within(notFound).getByRole('link')).toHaveAttribute('href', '/app/account/owner-close?period=2025-01');
-    // It is not a failure to try again: no retry is offered for what does not exist.
     expect(screen.queryByTestId('owner-accounting-error')).toBeNull();
   });
 
@@ -305,19 +489,19 @@ describe('what the page says when it cannot show the owner (E06/F05/US02/T04)', 
     const failed = await screen.findByTestId('owner-accounting-error');
     expect(screen.queryByTestId('profile-not-found')).toBeNull();
     fireEvent.click(within(failed).getByRole('button', { name: text('shared.errorState.retry') }));
-    await screen.findByTestId('profile-facts');
+    await screen.findByTestId('profile-focus');
     expect(api.listFiscalProfiles).toHaveBeenCalledTimes(2);
   });
 
   it('OwnerProfile_TheListOfOwners_IsReadAgainEveryTimeThePageOpens', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5 * 60_000 }, mutations: { retry: false } } });
     const first = renderPage('', client);
-    await screen.findByTestId('profile-facts');
+    await screen.findByTestId('profile-focus');
     await waitFor(() => expect(screen.getAllByText(/Marta Rossi/).length).toBeGreaterThan(0));
     first.unmount();
     expect(api.listOwners).toHaveBeenCalledTimes(1);
     renderPage('', client);
-    await screen.findByTestId('profile-facts');
+    await screen.findByTestId('profile-focus');
     await waitFor(() => expect(api.listOwners).toHaveBeenCalledTimes(2));
   });
 });
@@ -367,13 +551,12 @@ describe('the days a profile covers (E06/F05/US02/T04)', () => {
     api.listPolicies.mockResolvedValue([policy({ validFrom: '2025-01-01' })]);
     const { unmount } = renderPage('?period=2025-01');
 
-    // The month that sent the person here, before the day the data hold from, is left out: the one block says it (UX round 2026-11), in the
-    // tone of a warning, instead of a green «ready» above a yellow notice that said the opposite.
     const focus = await screen.findByTestId('profile-focus');
     expect(focus).toHaveAttribute('data-tone', 'warning');
     expect(focus).toHaveAttribute('data-month-not-covered', 'true');
     expect(focus).toHaveTextContent('gennaio 2025');
     expect(focus).toHaveTextContent('1 marzo 2025');
+    expect(screen.getByTestId('profile-status')).toHaveTextContent(text('ownerProfile.status.notCovered'));
     expect(screen.getAllByRole('region').filter((region) => region.getAttribute('data-tone') === 'success')).toHaveLength(0);
     unmount();
 
@@ -425,7 +608,7 @@ describe('what a profile and a rule send to the server (E06/F05/US02/T04)', () =
   it('OwnerProfile_ANewRule_SendsTheParametersTheAccountantGave_AndTheServerKeepsItNotApproved', async () => {
     api.listFiscalProfiles.mockResolvedValue([profile({ masked: false })]);
     api.createPolicy.mockResolvedValue(policy({ approved: false, approvedAt: null, approvedByName: null }));
-    renderPage();
+    renderPage('?tab=rule');
 
     fireEvent.click(await screen.findByTestId('policy-new'));
     const dialog = await screen.findByTestId('policy-dialog');
@@ -467,7 +650,7 @@ describe('what a profile and a rule send to the server (E06/F05/US02/T04)', () =
 
   it('OwnerProfile_ARuleThatIsNotComplete_IsNotSent', async () => {
     api.listFiscalProfiles.mockResolvedValue([profile({ masked: false })]);
-    renderPage();
+    renderPage('?tab=rule');
 
     fireEvent.click(await screen.findByTestId('policy-new'));
     const dialog = await screen.findByTestId('policy-dialog');
@@ -479,7 +662,6 @@ describe('what a profile and a rule send to the server (E06/F05/US02/T04)', () =
     expect(api.createPolicy).not.toHaveBeenCalled();
   });
 });
-
 
 describe('the owner profile guided journey (#913)', () => {
   it('shows one section at a time, retains edits when going back and saves only after review', async () => {

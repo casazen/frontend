@@ -85,7 +85,7 @@ describe('FinishStep, the notification of the guests in the last step of «Aggiu
   it('FinishStep_SwissPropertyWithTheRegimesOn_ShowsTheCardOfTheRegimeInsideTheStepAndNeverLeadsOut', async () => {
     const { container } = renderStep('CH', true);
 
-    expect(await screen.findByTestId('guest-registration-summary')).toBeInTheDocument();
+    expect(await screen.findByTestId('guest-registration-facts')).toBeInTheDocument();
     expect(screen.getByTestId('guest-registration-card')).toHaveAttribute('data-variant', 'wizard');
     expect(screen.queryByTestId('guest-registration-portal-link')).not.toBeInTheDocument();
     expect(container.querySelector('a[target="_blank"]')).toBeNull();

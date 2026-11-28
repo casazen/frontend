@@ -205,17 +205,6 @@ export interface CheckInZonedField {
   source: string;
 }
 
-export type CheckInPrefillFieldName =
-  | 'lastName'
-  | 'firstName'
-  | 'gender'
-  | 'dateOfBirth'
-  | 'birthPlace'
-  | 'citizenship'
-  | 'documentKind'
-  | 'documentNumber'
-  | 'issuePlace';
-
 export interface CheckInDocumentReadResult {
   side?: 'front' | 'back' | 'single' | null;
   guestPosition?: number | null;

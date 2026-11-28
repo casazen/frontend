@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Clock } from 'lucide-react';
+import { Clock, CloudOff } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
 import { Button } from '@/components/ui/button';
@@ -109,7 +109,8 @@ export function MultiChannelStatus({ propertyId, canWrite, cinValid }: DetailPro
   }
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-foreground/70" data-testid="multi-channel-status-empty">
+      <p className="flex items-center gap-2 text-sm text-foreground/70" data-testid="multi-channel-status-empty">
+        <CloudOff aria-hidden="true" className="size-4 shrink-0" />
         {t('listingStatus.none')}
       </p>
     );
@@ -119,12 +120,14 @@ export function MultiChannelStatus({ propertyId, canWrite, cinValid }: DetailPro
 
   return (
     <div className="space-y-3" data-testid="multi-channel-status">
-      <ul className="space-y-2">
+      <ul className="divide-y divide-border">
         {rows.map((row) => (
-          <li key={row.channel} className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1" data-testid={`multi-channel-${row.channel}`} data-status={row.status}>
+          <li key={row.channel} className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2 first:pt-0 last:pb-0" data-testid={`multi-channel-${row.channel}`} data-status={row.status}>
             <span className="min-w-0 break-words text-sm font-medium">{channelName(row.channel)}</span>
-            <StatusBadge kind="channel" status={row.status} />
-            {row.syncAlert ? <SyncDelayedBadge /> : null}
+            <span className="flex min-w-0 flex-wrap items-center justify-end gap-1.5">
+              {row.syncAlert ? <SyncDelayedBadge /> : null}
+              <StatusBadge kind="channel" status={row.status} />
+            </span>
             {row.status === 'ToFix' && row.reason ? <span className="basis-full text-sm text-foreground/70">{row.reason}</span> : null}
           </li>
         ))}

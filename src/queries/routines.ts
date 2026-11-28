@@ -26,16 +26,6 @@ export function useRoutines(enabled = true) {
   });
 }
 
-export function useRoutine(id: string | undefined) {
-  return useQuery({
-    queryKey: [ROUTINES_KEY, id],
-    queryFn: () => routinesApi.getById(id!),
-    enabled: !!id,
-    staleTime: ROUTINES_STALE_TIME,
-    refetchOnMount: 'always',
-  });
-}
-
 export function useRoutineActions() {
   return useQuery({
     queryKey: [ROUTINE_ACTIONS_KEY],

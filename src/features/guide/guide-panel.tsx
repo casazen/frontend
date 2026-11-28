@@ -1,175 +1,169 @@
-import { useContext, useEffect, useId, useMemo, useRef } from 'react';
+import { useContext, useEffect, useId, useRef, useState, type RefObject } from 'react';
 import { QueryClientContext } from '@tanstack/react-query';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, BookOpen, Compass, LifeBuoy } from 'lucide-react';
-import { GuidePath, type GuidePathStep } from '@/components/shared/calm';
+import { BookOpen, CircleHelp, Compass, ExternalLink, Footprints, LifeBuoy, ListChecks, Search, Sparkles, Type, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import type { AppContextKey } from '@/config/route-manifest';
 import { supportConfig } from '@/config/support.config';
-import { currentReturnTo } from '@/lib/auth-return-to';
-import { useWorkspace } from '@/hooks/use-workspace';
-import { useActivities, useActivityCount } from '@/queries/internalActivities';
-import { useProperties } from '@/queries/use-properties';
+import { AskContext } from '@/features/assistant/ask/ask-context';
+import { MANUAL_TYPE_ICONS } from '@/lib/manual/manual-icons';
+import { MANUAL_BASE, type ManualEntryType, type ManualHit } from '@/lib/manual/manual-search';
 import { useUiStore } from '@/store/ui-store';
-import { todoActionRoute } from '@/features/todo/activity-card';
-import { TODO_LIST_PATH, describeTodo } from '@/features/todo/lib/todo-model';
-import { useSetupJourney, type SetupJourney } from './use-setup-journey';
-
-const PANEL_TODO_ITEMS = 5;
+import { useManualHints, useManualSearch } from './use-manual';
 
 const PANEL_LINK =
-  'inline-flex min-h-11 items-center gap-1.5 rounded-md text-sm font-medium text-primary-text outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring';
+  'inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-primary-text outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring';
 
-function SetupSection({ journey }: { journey: SetupJourney }) {
+const ROW =
+  'flex min-h-11 items-center gap-3 rounded-lg px-2 py-2 text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring';
+
+const TILE =
+  'flex min-h-14 items-center gap-3 rounded-xl border bg-card px-3 py-3 text-sm font-medium outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring';
+
+const TYPE_LABEL_KEYS: Record<ManualEntryType, string> = {
+  pagina: 'guide.type.pagina',
+  howto: 'guide.type.howto',
+  funzione: 'guide.type.funzione',
+  faq: 'guide.type.faq',
+  flusso: 'guide.type.flusso',
+  termine: 'guide.type.termine',
+};
+
+const TOPICS: ReadonlyArray<{ id: string; labelKey: string; href: string; icon: LucideIcon }> = [
+  { id: 'start', labelKey: 'guide.topics.start', href: `${MANUAL_BASE}inizia-qui.html`, icon: Footprints },
+  { id: 'howTo', labelKey: 'guide.topics.howTo', href: `${MANUAL_BASE}come-fare.html`, icon: ListChecks },
+  { id: 'faq', labelKey: 'guide.topics.faq', href: `${MANUAL_BASE}domande-frequenti.html`, icon: CircleHelp },
+  { id: 'glossary', labelKey: 'guide.topics.glossary', href: `${MANUAL_BASE}glossario.html`, icon: Type },
+];
+
+function NewTabNote() {
   const { t } = useTranslation();
-  const titleId = useId();
-  const steps: GuidePathStep[] = journey.steps.map((step) => ({
-    id: step.id,
-    title: step.title,
-    state: step.state,
-    ...(step.state === 'current' ? { kicker: t('guide.setup.now') } : {}),
-    ...(step.href && step.cta
-      ? { action: { label: step.cta, href: step.href, state: step.linkState, testId: step.state === 'current' ? 'guide-setup-continue' : undefined } }
-      : {}),
-  }));
+  return <span className="sr-only"> ({t('productGuide.fullManualNewTab')})</span>;
+}
+
+function ManualRow({ hit }: { hit: ManualHit }) {
+  const { t } = useTranslation();
+  const Icon = MANUAL_TYPE_ICONS[hit.type];
 
   return (
-    <section aria-labelledby={titleId} className="space-y-4 rounded-xl border bg-card p-4" data-testid="guide-setup">
-      <div>
-        <h3 id={titleId} className="text-base font-semibold">
-          {t(journey.source === 'path' ? 'guide.setup.titlePath' : 'guide.setup.titleChecklist')}
-        </h3>
-        <p className="text-sm text-foreground/70">{t('guide.setup.progress', { done: journey.done, total: journey.total })}</p>
-      </div>
-      {journey.total > 0 && <progress aria-label={t('guide.setup.label')} className="block h-2 w-full accent-primary" value={journey.done} max={journey.total} />}
-      <GuidePath label={t('guide.setup.label')} steps={steps} density="compact" />
-      {journey.allHref ? (
-        <Link to={journey.allHref} className={PANEL_LINK} data-testid="guide-setup-all">
-          {t('guide.setup.all')}
-          <ArrowRight aria-hidden="true" className="size-4" />
-        </Link>
-      ) : null}
-    </section>
+    <li>
+      <a href={hit.href} target="_blank" rel="noopener noreferrer" className={ROW} data-testid="guide-hit">
+        <Icon aria-hidden="true" className="size-5 shrink-0 text-primary-text" />
+        <span className="min-w-0 flex-1">
+          <span className="block break-words font-medium">{hit.title}</span>
+          {hit.chapter ? <span className="block break-words text-xs text-foreground/70">{hit.chapter}</span> : null}
+        </span>
+        <ExternalLink aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
+        <span className="sr-only">
+          {t(TYPE_LABEL_KEYS[hit.type])}, {t('productGuide.fullManualNewTab')}
+        </span>
+      </a>
+    </li>
   );
 }
 
-function TodoSection() {
-  const { t, i18n } = useTranslation();
-  const titleId = useId();
-  const { hasPermission } = useWorkspace();
-  const activities = useActivities();
-  const urgent = useActivityCount();
-  const properties = useProperties({ mode: 'short' });
-  const propertyNames = useMemo(
-    () => new Map((Array.isArray(properties.data) ? properties.data : []).map((property) => [property.id, property.name] as const)),
-    [properties.data],
-  );
-  const items = Array.isArray(activities.data) ? activities.data : [];
-  if (activities.isPending) return null;
-
-  const context = { t, exists: (key: string) => i18n.exists(key), locale: i18n.language, propertyNames };
-  const steps: GuidePathStep[] = items.slice(0, PANEL_TODO_ITEMS).map((activity, index) => {
-    const text = describeTodo(activity, context);
-    const route = todoActionRoute(activity, hasPermission);
-    return {
-      id: activity.id,
-      title: text.title,
-      detail: text.object,
-      note: text.deadline?.text,
-      noteTone: text.deadline?.overdue ? 'danger' : text.urgency === 'High' ? 'warning' : 'neutral',
-      kicker: index === 0 ? t('activity.todo.path.now') : undefined,
-      state: index === 0 ? 'current' : 'upcoming',
-      action: route
-        ? { label: t('activity.todo.actions.doNow'), href: route, ariaLabel: t('activity.todo.actions.doNowFor', { title: text.title }) }
-        : undefined,
-    };
-  });
-  const urgentCount = urgent.data?.count ?? 0;
-
-  return (
-    <section aria-labelledby={titleId} className="space-y-4 rounded-xl border bg-card p-4" data-testid="guide-todo">
-      <div>
-        <h3 id={titleId} className="text-base font-semibold">
-          {t('guide.todo.title')}
-        </h3>
-        <p className="text-sm text-foreground/70">
-          {items.length === 0
-            ? t('guide.todo.nothing')
-            : urgentCount > 0
-              ? t('guide.todo.countUrgent', { count: items.length, urgent: urgentCount })
-              : t('guide.todo.count', { count: items.length })}
-        </p>
-      </div>
-      <GuidePath label={t('guide.todo.title')} steps={steps} density="compact" />
-      {items.length > 0 ? (
-        <Link to={TODO_LIST_PATH} className={PANEL_LINK} data-testid="guide-todo-all">
-          {t('guide.todo.all')}
-          <ArrowRight aria-hidden="true" className="size-4" />
-        </Link>
-      ) : null}
-    </section>
-  );
-}
-
-function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
+function PageHints({ pathname }: { pathname: string }) {
   const { t } = useTranslation();
   const titleId = useId();
-  const helpEmail = supportConfig.email;
-  const location = useLocation();
-  const manual = `/app/${contextKey}/help`;
-  const returnState = location.pathname === manual ? location.state : { guideReturnTo: currentReturnTo(location) };
+  const hints = useManualHints(pathname);
+  if (!hints.data) return null;
+  const { chapter, tasks } = hints.data;
 
   return (
-    <section aria-labelledby={titleId} className="space-y-2 rounded-xl border bg-card p-4" data-testid="guide-help">
-      <h3 id={titleId} className="text-base font-semibold">
-        {t('guide.help.title')}
+    <section aria-labelledby={titleId} className="space-y-1" data-testid="guide-hints">
+      <h3 id={titleId} className="px-2 text-sm font-semibold">
+        {t('guide.forThisPage')}
       </h3>
-      <p className="text-sm text-foreground/70">{helpEmail ? t('guide.help.text') : t('guide.help.textNoSupport')}</p>
-      <div className="flex flex-col items-start">
-        <Link to={manual} state={returnState} className={PANEL_LINK} data-testid="guide-help-manual">
-          <BookOpen aria-hidden="true" className="size-4" />
-          {t('guide.help.manual')}
-        </Link>
-        <a href="/guida/" target="_blank" rel="noopener" className={PANEL_LINK} data-testid="guide-help-full-manual">
-          <BookOpen aria-hidden="true" className="size-4" />
-          <span>
-            {t('guide.help.fullManual')}
-            <span className="sr-only"> ({t('productGuide.fullManualNewTab')})</span>
-          </span>
-        </a>
-        {helpEmail ? (
-          <a href={`mailto:${helpEmail}`} className={PANEL_LINK} data-testid="guide-help-support">
-            <LifeBuoy aria-hidden="true" className="size-4" />
-            {t('guide.help.support')}
-          </a>
-        ) : null}
-      </div>
+      {tasks.length > 0 ? (
+        <ul>
+          {tasks.map((task) => (
+            <ManualRow key={task.id} hit={task} />
+          ))}
+        </ul>
+      ) : null}
+      <a href={chapter.href} target="_blank" rel="noopener noreferrer" className={PANEL_LINK} data-testid="guide-chapter">
+        <BookOpen aria-hidden="true" className="size-4" />
+        {t('guide.openChapter', { title: chapter.title })}
+        <NewTabNote />
+      </a>
     </section>
+  );
+}
+
+function Topics() {
+  const { t } = useTranslation();
+  const titleId = useId();
+
+  return (
+    <section aria-labelledby={titleId} className="space-y-2" data-testid="guide-topics">
+      <h3 id={titleId} className="px-2 text-sm font-semibold">
+        {t('guide.topics.title')}
+      </h3>
+      <ul className="grid grid-cols-2 gap-2">
+        {TOPICS.map(({ id, labelKey, href, icon: Icon }) => (
+          <li key={id}>
+            <a href={href} target="_blank" rel="noopener noreferrer" className={TILE}>
+              <Icon aria-hidden="true" className="size-5 shrink-0 text-primary-text" />
+              <span className="min-w-0 break-words">
+                {t(labelKey)}
+                <NewTabNote />
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a href={MANUAL_BASE} target="_blank" rel="noopener noreferrer" className={PANEL_LINK} data-testid="guide-full-manual">
+        <BookOpen aria-hidden="true" className="size-4" />
+        {t('guide.fullManual')}
+        <NewTabNote />
+      </a>
+    </section>
+  );
+}
+
+function SearchResults({ search }: { search: ReturnType<typeof useManualSearch> }) {
+  const { t } = useTranslation();
+
+  if (search.failed) {
+    return (
+      <div className="space-y-2 px-2" role="alert" data-testid="guide-results-failed">
+        <p className="text-sm">{t('guide.search.failed')}</p>
+        <Button type="button" variant="outline" size="sm" onClick={search.retry}>
+          {t('guide.search.retry')}
+        </Button>
+      </div>
+    );
+  }
+  if (search.hits.length > 0) {
+    return (
+      <ul data-testid="guide-results" aria-busy={search.pending}>
+        {search.hits.map((hit) => (
+          <ManualRow key={`${hit.type}:${hit.id}`} hit={hit} />
+        ))}
+      </ul>
+    );
+  }
+  return (
+    <p className="px-2 text-sm text-foreground/70" role="status" data-testid="guide-results-empty">
+      {search.pending ? t('guide.search.pending') : t('guide.search.empty')}
+    </p>
   );
 }
 
 interface GuidePanelProps {
-  contextKey: AppContextKey;
+  opener: RefObject<HTMLElement | null>;
 }
 
-/**
- * «La tua guida» (the guide of CasaZen): a panel on the right, over the page, that tells the host where they are on the road and what comes
- * next, so that nobody is left alone in front of a page. In Affitti brevi: the setup as a road (the path «Inizia con CasaZen» or the
- * activation checklist, only while it is incomplete), the «Da fare» list as a road, and the help. In the other areas: the help.
- *
- * It is what replaces the notices that looked like errors: nothing here is tinted, the step to do now has its marker and its button. Every link
- * closes it (the page changes under it); the button of the header opens it, and so does the end of the welcome of the first access.
- */
-function GuidePanel({ contextKey }: GuidePanelProps) {
+function GuidePanel({ opener }: GuidePanelProps) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const setOpen = useUiStore((state) => state.setGuideOpen);
-  const { hasPermission } = useWorkspace();
-  const shortRent = contextKey === 'short-rent';
-  const { journey } = useSetupJourney({ enabled: shortRent });
-  const canReadTodo = shortRent && hasPermission('short-rent', 'property.read');
+  const ask = useContext(AskContext);
+  const [query, setQuery] = useState('');
+  const search = useManualSearch(query);
+  const supportEmail = supportConfig.email;
 
   const lastPath = useRef(pathname);
   useEffect(() => {
@@ -177,6 +171,11 @@ function GuidePanel({ contextKey }: GuidePanelProps) {
     lastPath.current = pathname;
     setOpen(false);
   }, [pathname, setOpen]);
+
+  const askCasaZen = (button: HTMLElement) => {
+    setOpen(false);
+    ask?.open('search', opener.current ?? button, query.trim() || undefined);
+  };
 
   return (
     <Sheet open onOpenChange={setOpen}>
@@ -188,37 +187,84 @@ function GuidePanel({ contextKey }: GuidePanelProps) {
           </SheetTitle>
           <SheetDescription>{t('guide.description')}</SheetDescription>
         </SheetHeader>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-surface-2 p-4 sm:p-5">
-          {shortRent && journey ? <SetupSection journey={journey} /> : null}
-          {canReadTodo ? <TodoSection /> : null}
-          <HelpSection contextKey={contextKey} />
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain bg-surface-2 p-4 sm:p-5">
+          <div role="search" className="relative">
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground/70" />
+            <Input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              aria-label={t('guide.search.label')}
+              placeholder={t('guide.search.placeholder')}
+              autoComplete="off"
+              maxLength={200}
+              className="h-11 pl-9"
+              data-testid="guide-search"
+            />
+          </div>
+          {search.active ? (
+            <SearchResults search={search} />
+          ) : (
+            <>
+              <PageHints pathname={pathname} />
+              <Topics />
+            </>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 border-t bg-card p-3" data-testid="guide-help">
+          {ask ? (
+            <Button type="button" variant="soft" className="min-h-11" onClick={(event) => askCasaZen(event.currentTarget)} data-testid="guide-ask">
+              <Sparkles aria-hidden="true" className="size-4" />
+              {t('guide.ask')}
+            </Button>
+          ) : null}
+          {supportEmail ? (
+            <Button asChild variant="ghost" className="min-h-11">
+              <a href={`mailto:${supportEmail}`} data-testid="guide-help-support">
+                <LifeBuoy aria-hidden="true" className="size-4" />
+                {t('guide.help.support')}
+              </a>
+            </Button>
+          ) : null}
         </div>
       </SheetContent>
     </Sheet>
   );
 }
 
-function GuideButtonView() {
+function GuideButtonView({ buttonRef }: { buttonRef: RefObject<HTMLButtonElement | null> }) {
   const { t } = useTranslation();
   const setOpen = useUiStore((state) => state.setGuideOpen);
   const open = useUiStore((state) => state.guideOpen);
   return (
-    <Button type="button" variant="ghost" size="sm" className="h-10 gap-2 px-2.5"
-      aria-haspopup="dialog" aria-expanded={open} aria-label={t('guide.open')} title={t('guide.open')}
-      onClick={() => setOpen(true)} data-testid="guide-button">
+    <Button
+      ref={buttonRef}
+      type="button"
+      variant="ghost"
+      size="sm"
+      className="h-10 gap-2 px-2.5"
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      aria-label={t('guide.open')}
+      title={t('guide.open')}
+      onClick={() => setOpen(true)}
+      data-testid="guide-button"
+    >
       <Compass aria-hidden="true" className="size-5" />
       <span className="hidden text-sm font-medium lg:inline">{t('guide.button')}</span>
     </Button>
   );
 }
-export function GuideButton({ contextKey }: GuidePanelProps) {
+
+export function GuideButton() {
   const open = useUiStore((state) => state.guideOpen);
   const hasQueryClient = useContext(QueryClientContext) !== undefined;
+  const trigger = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      <GuideButtonView />
-      {open && hasQueryClient ? <GuidePanel contextKey={contextKey} /> : null}
+      <GuideButtonView buttonRef={trigger} />
+      {open && hasQueryClient ? <GuidePanel opener={trigger} /> : null}
     </>
   );
 }

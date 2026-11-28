@@ -14,8 +14,6 @@ export const routinesApi = {
 
   getAll: () => ApiClient.get<Routine[]>('/routines'),
 
-  getById: (id: string) => ApiClient.get<Routine>(`/routines/${id}`),
-
   create: (dto: CreateRoutineDto) => ApiClient.post<Routine>('/routines', dto),
 
   update: (id: string, dto: UpdateRoutineDto) => ApiClient.put<Routine>(`/routines/${id}`, dto),

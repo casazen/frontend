@@ -34,7 +34,7 @@ const text = (key: string, options?: Record<string, unknown>) => i18n.t(key, opt
 const plain = (value: string) => value.replace(/\s/g, ' ');
 const money = (amount: number, currency: string) => plain(new Intl.NumberFormat('it-IT', { style: 'currency', currency }).format(amount));
 
-function renderPage() {
+function renderPage(tab = 'mandate') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
   return render(
     createElement(
@@ -42,7 +42,7 @@ function renderPage() {
       { client },
       createElement(
         MemoryRouter,
-        { initialEntries: [`/app/account/owners/${OWNER_ID}/financial`] },
+        { initialEntries: [`/app/account/owners/${OWNER_ID}/financial?tab=${tab}`] },
         createElement(Routes, null, createElement(Route, { path: '/app/account/owners/:ownerId/financial', element: createElement(OwnerFinancialProfilePage) })),
       ),
     ),
@@ -158,11 +158,38 @@ describe('the mandate and the billing address of an owner (E13/F02/US01/T01)', (
     expect(within(versions).getByTestId('owner-mandate-terms')).toHaveTextContent('20%');
     expect(within(versions).getByTestId('owner-mandate-version')).toHaveAttribute('data-in-force', 'true');
     expect(screen.queryByTestId('mandate-new-version')).toBeNull();
+    expect(screen.queryByTestId('profile-edit-3')).toBeNull();
     expect(within(section).getByTestId('owner-mandate-read-only')).toBeInTheDocument();
+    cleanup();
+
+    renderPage('payments');
     expect(await screen.findByTestId('owner-address-read-only')).toHaveTextContent(text('ownerAddress.notForYou'));
     expect(screen.queryByTestId('owner-address-form')).toBeNull();
     expect(api.getAddress).not.toHaveBeenCalled();
     for (const write of [api.createMandate, api.saveAddress]) expect(write).not.toHaveBeenCalled();
+  });
+
+  it('OwnerMandate_TheVersionInForceHasTheTermsInEvidence_AndTheOthersStayInAList', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, settlementCurrency: 'EUR' })]);
+    api.listMandates.mockResolvedValue([
+      mandate({ id: 'c1000000-0000-4000-8000-000000000002', validFrom: '2025-01-01', commissionPercent: 22, linenFlatRate: 15, hasDocument: true }),
+      mandate({ validFrom: '2024-01-01', validTo: '2024-12-31', commissionPercent: 18 }),
+    ]);
+    renderPage();
+
+    const section = await screen.findByTestId('owner-mandate-section');
+    const versions = await within(section).findByTestId('owner-mandate-versions');
+    const rows = within(versions).getAllByTestId('owner-mandate-version');
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveAttribute('data-in-force', 'true');
+    expect(within(rows[0]).getByTestId('owner-mandate-terms')).toHaveTextContent('22%');
+    expect(within(rows[0]).getByTestId('owner-mandate-terms')).toHaveTextContent('15,00');
+    expect(rows[0]).toHaveTextContent(text('ownerMandate.version.documentPresent'));
+    expect(rows[1]).toHaveAttribute('data-in-force', 'false');
+    expect(rows[1]).toHaveTextContent('18%');
+    expect(rows[1]).toHaveTextContent(text('ownerMandate.version.ended'));
+    expect(within(rows[1]).queryByTestId('owner-mandate-terms')).toBeNull();
+    expect(section).toHaveTextContent(text('ownerMandate.version.others', { count: 1 }));
   });
 
   it('OwnerMandate_WithFinancialManage_SavesANewVersionFromTheTermsInForce_AndCarriesTheTreatmentOver', async () => {
@@ -238,7 +265,7 @@ describe('the mandate and the billing address of an owner (E13/F02/US01/T01)', (
   it('OwnerAddress_WithFinancialManage_SavesTheWholeAddress_AndItalyAsksForTheProvince', async () => {
     api.listFiscalProfiles.mockResolvedValue([profile({ masked: false })]);
     api.saveAddress.mockResolvedValue(address({ town: 'Como', province: 'CO', country: 'IT' }));
-    renderPage();
+    renderPage('payments');
 
     expect(screen.queryByTestId('owner-address-form')).toBeNull();
     expect(await screen.findByTestId('owner-address-summary')).toHaveTextContent('Via Nassa');
@@ -262,7 +289,7 @@ describe('the mandate and the billing address of an owner (E13/F02/US01/T01)', (
   it('OwnerAddress_ARefusedRead_IsToldAsSuch_NeverAsAnEmptyAddress', async () => {
     api.listFiscalProfiles.mockResolvedValue([profile({ masked: false })]);
     api.getAddress.mockResolvedValue(null);
-    renderPage();
+    renderPage('payments');
 
     expect(await screen.findByTestId('owner-address-read-only')).toBeInTheDocument();
     expect(screen.queryByTestId('owner-address-form')).toBeNull();

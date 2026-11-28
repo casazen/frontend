@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { Archive, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { ManualHint } from '@/components/shared/manual-hint';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
@@ -34,6 +35,7 @@ interface IstatCoverageNoticeProps {
    * accounts for who sends it: a property whose ISTAT is sent by the host or by CasaZen is never told «lo invia il tuo channel manager».
    */
   senderOpen?: boolean;
+  compact?: boolean;
 }
 
 /**
@@ -44,13 +46,15 @@ interface IstatCoverageNoticeProps {
  * where it also leads to the upload of the proof of the month. It never names the channel manager. Behind the flag `octorateOnboarding`, like the endpoint: with the flag off nothing is
  * drawn and nothing is asked.
  */
-export function IstatCoverageNotice({ propertyId, showProof = false, inWizard = false, senderOpen = false }: IstatCoverageNoticeProps) {
+export function IstatCoverageNotice({ propertyId, showProof = false, inWizard = false, senderOpen = false, compact = false }: IstatCoverageNoticeProps) {
   const { flags } = useFeatureFlags();
 
-  return flags.octorateOnboarding && propertyId !== '' ? <Notice propertyId={propertyId} showProof={showProof} inWizard={inWizard} senderOpen={senderOpen} /> : null;
+  return flags.octorateOnboarding && propertyId !== '' ? (
+    <Notice propertyId={propertyId} showProof={showProof} inWizard={inWizard} senderOpen={senderOpen} compact={compact} />
+  ) : null;
 }
 
-function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatCoverageNoticeProps>) {
+function Notice({ propertyId, showProof, inWizard, senderOpen, compact }: Required<IstatCoverageNoticeProps>) {
   const { t, i18n } = useTranslation();
   const { contexts, hasPermission } = useWorkspace();
   const coverage = useIstatCoverage(propertyId);
@@ -140,6 +144,47 @@ function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatC
   const proofRoute = showProof ? complianceActionRoute({ action: 'UploadIstatProof', propertyId, bookingId: null, period }, hasPermission) : null;
   // The archive opens for whoever may read the bookings, but only who may submit the Alloggiati can upload to it: the others are told «Apri», as the cockpit does, never asked to upload.
   const canUploadProof = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS.UploadIstatProof.write);
+
+  if (compact) {
+    const title = t(`istatCoverage.title.${shown}`);
+    const explanation = [
+      t(`istatCoverage.detail.${shown}`),
+      region.kind !== 'unknown' && !isVerified(data) ? t('istatCoverage.unverified') : null,
+      action === 'support' && shown === 'notCovered' ? t('istatCoverage.portalMissing') : null,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return (
+      <div className="min-w-0 space-y-2" data-testid="istat-coverage-notice" data-coverage={shown}>
+        <Alert variant={shown === 'covered' || shown === 'otherSender' ? 'info' : 'warning'} title={title} action={step}>
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <p data-testid="istat-coverage-region">
+              {region.kind === 'named'
+                ? t('istatCoverage.region.named', { region: region.region, system: region.system })
+                : region.kind === 'noSystem'
+                  ? t('istatCoverage.region.noSystem', { region: region.region })
+                  : t('istatCoverage.region.unknown')}
+            </p>
+            <ManualHint page="alloggiati-istat" anchor="comunicare-l-istat-della-tua-regione" title={title}>
+              {explanation}
+            </ManualHint>
+          </div>
+          <p className="mt-1" data-testid="istat-coverage-deadline">
+            {deadline.kind === 'monthly' ? t('istatCoverage.deadline.monthly', { day: deadline.day }) : t(`istatCoverage.deadline.${deadline.kind}`)}
+          </p>
+        </Alert>
+        {proofRoute ? (
+          <p className="flex items-center gap-2 text-sm" data-testid="istat-coverage-proof">
+            <Archive aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
+            <Link to={proofRoute} className="inline-block min-h-11 py-2.5 font-medium text-primary-text underline underline-offset-4" data-testid="istat-coverage-proof-link">
+              {t(canUploadProof ? 'istatCoverage.proof.action' : 'istatCoverage.proof.open', { month: formatPeriod(period, i18n.language) })}
+            </Link>
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="min-w-0 space-y-2" data-testid="istat-coverage-notice" data-coverage={shown}>

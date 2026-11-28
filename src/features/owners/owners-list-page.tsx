@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, UserRound } from 'lucide-react';
+import { ArrowRight, Building2, FileSignature, Search, UserRound, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { matchesSearch } from '@/components/shared/list-view/list-data';
 import { Link, Navigate } from 'react-router-dom';
@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { PageHeader } from '@/components/layout/page-header';
 import { PlainSection } from '@/components/shared/calm';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -17,6 +16,7 @@ import type { PropertyOwnerSummary } from '@/types';
 import { OwnerAccountingError } from '@/features/owner-accounting/components/owner-accounting-error';
 import { OWNER_ONBOARDING_PATH, mandateOfRow, ownerFinancialPath, shortId } from '@/features/owner-accounting/owner-accounting-model';
 import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
+import { IconTile, StateChip } from './components/owner-ui';
 
 const VISIBLE_OWNERS = 20;
 
@@ -36,7 +36,7 @@ function OwnersBody() {
   const owners = useOwnerNames();
   const [showAll, setShowAll] = useState(false);
   const [query, setQuery] = useState('');
-  const header = <PageHeader title={t('owners.title')} description={t('owners.description')} crumbs="auto" />;
+  const header = <PageHeader title={t('owners.title')} icon={Users} description={t('owners.description')} crumbs="auto" />;
 
   if (owners.isPending) {
     return (
@@ -70,7 +70,7 @@ function OwnersBody() {
           <Input type="search" className="min-h-11 rounded-full ps-9" value={query} placeholder={t('commandPalette.title')} onChange={event => { setQuery(event.target.value); setShowAll(false); }} />
         </label>
         {shown.length ? (
-          <ul role="list" className="grid gap-3 lg:grid-cols-2">
+          <ul role="list" className="grid gap-3 pt-1 lg:grid-cols-2">
             {shown.map(owner => <OwnerRow key={owner.id} owner={owner} />)}
           </ul>
         ) : <p role="status" className="rounded-xl border bg-surface-2 p-4 text-sm">{t('listView.noResults.title')}</p>}
@@ -84,13 +84,6 @@ function OwnersBody() {
   );
 }
 
-/**
- * One owner: the name that opens its financial page, its kind and settlement currency (from the profile in force), how many properties it has, and the mandate in force today. The list
- * carries all of it, in the same read that made the row: nothing is read for each row, except the mandates of an owner for whom the list has no mandate to say. Its `mandateInForce` is
- * the owner's own mandate that covers today: where it is `null` the owner may still have a mandate of a single property or one that starts later (the list does not count them), so
- * the versions of its mandate are read and say whether the row shows «manca il mandato» (a fact that could not be read is told as such and never as «no mandate», and a loading row says
- * so). Nothing is written from the list.
- */
 function OwnerRow({ owner }: { owner: PropertyOwnerSummary }) {
   const { t } = useTranslation();
   const { date, percent } = useOwnerFormat();
@@ -140,30 +133,34 @@ function OwnerRow({ owner }: { owner: PropertyOwnerSummary }) {
       </span>
     );
   } else {
-    mandateLine = <Badge variant="warning" data-state="missing">{t('owners.row.mandateMissing')}</Badge>;
+    mandateLine = <StateChip tone="warning" data-state="missing">{t('owners.row.mandateMissing')}</StateChip>;
   }
 
   return (
-    <li className="flex min-w-0 flex-col items-start justify-between gap-4 rounded-xl border bg-card p-4" data-testid="owner-row" data-owner={owner.id}>
-      <div className="min-w-0 space-y-1">
-        <h3 className="flex items-center gap-2 break-words text-base font-semibold">
-          <UserRound aria-hidden="true" className="size-5 shrink-0 text-primary-text" />
-          <Link to={ownerFinancialPath(owner.id)} className="min-w-0 break-words underline-offset-4 hover:underline" data-testid={`owner-${owner.id}-open`}>
-            {name}
-          </Link>
-        </h3>
-        {profileLine ? (
-          <p className="break-words text-sm text-foreground/70" data-testid="owner-profile-line">
-            {profileLine}
-          </p>
-        ) : null}
-        <div className="break-words text-sm" data-testid="owner-mandate-line">
-          {mandateLine}
+    <li className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:p-5" data-testid="owner-row" data-owner={owner.id}>
+      <div className="flex min-w-0 items-start gap-3">
+        <IconTile icon={owner.entityKind === 'LegalEntity' ? Building2 : UserRound} />
+        <div className="min-w-0 flex-1 space-y-1">
+          <h3 className="break-words text-base font-semibold">
+            <Link to={ownerFinancialPath(owner.id)} className="min-w-0 break-words underline-offset-4 hover:underline" data-testid={`owner-${owner.id}-open`}>
+              {name}
+            </Link>
+          </h3>
+          {profileLine ? (
+            <p className="break-words text-sm text-foreground/70" data-testid="owner-profile-line">
+              {profileLine}
+            </p>
+          ) : null}
         </div>
+      </div>
+      <div className="flex min-w-0 items-start gap-2 text-sm" data-testid="owner-mandate-line">
+        {state?.kind === 'missing' ? null : <FileSignature aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-foreground/70" />}
+        <div className="min-w-0 break-words">{mandateLine}</div>
       </div>
       <Button asChild size="sm" variant="outline" className="self-start">
         <Link to={ownerFinancialPath(owner.id)} aria-label={t('owners.row.openLabel', { owner: name })}>
           {t('owners.row.open')}
+          <ArrowRight aria-hidden="true" className="size-4" />
         </Link>
       </Button>
     </li>

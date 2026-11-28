@@ -87,7 +87,5 @@ export const octorateApi = {
       ...(options.retryUnknown && options.retryUnknown.length > 0 ? { retryUnknown: options.retryUnknown } : {}),
     }),
 
-  getInventoryIntents: () => ApiClient.get<InventoryIntent[]>('/octorate/inventory-intents'),
-
   setInventoryIntents: (assignments: readonly InventoryIntentAssignment[]) => ApiClient.put<InventoryIntent[]>('/octorate/inventory-intents', { assignments }),
 };

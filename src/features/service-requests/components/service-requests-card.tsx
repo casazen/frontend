@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { Inbox, Loader2, type LucideIcon } from 'lucide-react';
+import { InfoCard } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -23,6 +24,7 @@ interface ServiceRequestsCardProps {
   canManage?: boolean;
   testId?: string;
   plain?: boolean;
+  icon?: LucideIcon;
 }
 
 /**
@@ -38,6 +40,7 @@ export function ServiceRequestsCard({
   canManage = true,
   testId = 'service-requests-card',
   plain = false,
+  icon,
 }: ServiceRequestsCardProps) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -56,12 +59,21 @@ export function ServiceRequestsCard({
       </Button>
     </div>
   ) : items.length === 0 ? (
-    <p className="text-sm text-muted-foreground" data-testid="service-requests-empty">
+    <p className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="service-requests-empty">
+      {icon ? <Inbox aria-hidden="true" className="size-4 shrink-0" /> : null}
       {emptyText}
     </p>
   ) : (
-    <ServiceRequestTimeline requests={items} context={context} showStay={showStay} canManage={canManage} />
+    <ServiceRequestTimeline requests={items} context={context} showStay={showStay} canManage={canManage} compact={icon !== undefined} />
   );
+
+  if (icon) {
+    return (
+      <InfoCard icon={icon} title={t('serviceRequest.timelineTitle')} aside={action} data-testid={testId}>
+        {content}
+      </InfoCard>
+    );
+  }
 
   if (plain) {
     return (

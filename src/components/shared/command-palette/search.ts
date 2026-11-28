@@ -10,7 +10,7 @@ import type { CommandItem, CommandKind } from './types';
 
 export const MAX_RESULTS_PER_GROUP = 5;
 
-const KIND_ORDER: readonly CommandKind[] = ['page', 'action', 'property', 'booking', 'guest'];
+const KIND_ORDER: readonly CommandKind[] = ['page', 'action', 'property', 'booking', 'guest', 'guide'];
 
 /**
  * Points. A match at the start of a word, or of the whole field, is a real match; one in the middle of a word ("oggi" in

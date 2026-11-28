@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
@@ -45,8 +45,11 @@ describe('SwissRegistrationGuidance, the card of the regime or the guidance it r
     renderGuidance(false);
 
     expect(screen.getByRole('heading', { name: i18n.t('property.swissRegistration.title') })).toBeInTheDocument();
-    expect(screen.getByText(i18n.t('property.swissRegistration.description'))).toBeInTheDocument();
-    expect(screen.getByText(i18n.t('property.swissRegistration.ticino'))).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('property.swissRegistration.description'))).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: `Cos'è: ${i18n.t('property.swissRegistration.title')}` }));
+    expect(screen.getByRole('dialog')).toHaveTextContent(i18n.t('property.swissRegistration.description'));
+    expect(screen.getByRole('dialog')).toHaveTextContent(i18n.t('property.swissRegistration.ticino'));
+    expect(screen.getByRole('link', { name: i18n.t('manual.open') })).toHaveAttribute('href', '/guida/cin-identificazione-ticino.html#svizzera-e-ticino-notifica-degli-ospiti');
     expect(screen.getByRole('link', { name: i18n.t('property.swissRegistration.link') })).toHaveAttribute('target', '_blank');
     expect(screen.queryByTestId('guest-registration-card')).not.toBeInTheDocument();
     expect(guestRegistrationApi.get).not.toHaveBeenCalled();
@@ -55,7 +58,7 @@ describe('SwissRegistrationGuidance, the card of the regime or the guidance it r
   it('SwissRegistrationGuidance_FlagOn_IsTheCardOfTheRegimeAndTheOldGuidanceIsGone', async () => {
     renderGuidance(true);
 
-    expect(await screen.findByTestId('guest-registration-summary')).toBeInTheDocument();
+    expect(await screen.findByTestId('guest-registration-facts')).toBeInTheDocument();
     expect(screen.getByTestId('guest-registration-card')).toHaveAttribute('data-variant', 'page');
     expect(screen.queryByText(i18n.t('property.swissRegistration.title'))).not.toBeInTheDocument();
     expect(screen.queryByText(i18n.t('property.swissRegistration.ticino'))).not.toBeInTheDocument();
@@ -65,7 +68,7 @@ describe('SwissRegistrationGuidance, the card of the regime or the guidance it r
   it('SwissRegistrationGuidance_FlagOnInAWizard_TheCardNeverLeavesTheProcess', async () => {
     renderGuidance(true, 'wizard');
 
-    await screen.findByTestId('guest-registration-summary');
+    await screen.findByTestId('guest-registration-facts');
     expect(screen.getByTestId('guest-registration-card')).toHaveAttribute('data-variant', 'wizard');
     expect(screen.queryByTestId('guest-registration-portal-link')).not.toBeInTheDocument();
   });

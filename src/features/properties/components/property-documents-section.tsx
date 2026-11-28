@@ -1,12 +1,13 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
+import { InfoCard } from '@/components/shared/calm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { PropertyDocumentDto, PropertyDocumentType } from '@/types';
-import { formatDateTime } from '@/lib/utils';
+import { cn, formatDateTime } from '@/lib/utils';
 import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
 import { latestApeDocument } from '@/lib/ape-documents';
-import { Download, FileText, Loader2, Trash2 } from 'lucide-react';
+import { Download, FileText, Loader2, Trash2, type LucideIcon } from 'lucide-react';
 import { DocumentUploadDialog } from './document-upload-dialog';
 import { ApeIdentificationForm } from './ape-identification-form';
 import { useDeletePropertyDocument, useDownloadPropertyDocument } from '@/queries/use-properties';
@@ -16,9 +17,10 @@ interface PropertyDocumentsSectionProps {
   documents: PropertyDocumentDto[];
   defaultUploadType?: PropertyDocumentType;
   plain?: boolean;
+  icon?: LucideIcon;
 }
 
-export function PropertyDocumentsSection({ propertyId, documents, defaultUploadType, plain = false }: PropertyDocumentsSectionProps) {
+export function PropertyDocumentsSection({ propertyId, documents, defaultUploadType, plain = false, icon }: PropertyDocumentsSectionProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const deleteMutation = useDeletePropertyDocument();
@@ -30,11 +32,11 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
     documents.length === 0 ? (
       <p className="text-sm text-muted-foreground">{t('property.documents.empty')}</p>
     ) : (
-      <ul className="space-y-2">
+      <ul className={icon ? 'divide-y divide-border' : 'space-y-2'}>
         {documents.map((doc) => {
           const downloading = downloadMutation.isPending && downloadMutation.variables?.docId === doc.id;
           return (
-            <li key={doc.id} className="flex items-center justify-between rounded-lg border p-3">
+            <li key={doc.id} className={cn('flex items-center justify-between gap-3', icon ? 'py-2.5 first:pt-0 last:pb-0' : 'rounded-lg border p-3')}>
               <div className="flex items-center gap-3 min-w-0">
                 <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
                 <div className="min-w-0">
@@ -74,6 +76,14 @@ export function PropertyDocumentsSection({ propertyId, documents, defaultUploadT
         })}
       </ul>
     );
+
+  if (icon) {
+    return (
+      <InfoCard icon={icon} title={t('property.documents.title')} aside={upload} data-testid="property-documents-card">
+        {content}
+      </InfoCard>
+    );
+  }
 
   if (plain) {
     return (

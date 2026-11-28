@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { FileArchive } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { isArchiveCallCancelled } from '@/api/document-archive.api';
 import { ReportAccessDeniedError } from '@/api/report-files';
-import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
+import { HelpTip } from '@/components/ui/help-tip';
 import { Select } from '@/components/ui/select';
 import { isFeatureEnabled } from '@/config/feature-flags';
 import { defaultPackagePeriod, parsePackagePeriod, periodChoices, periodKey } from '@/features/accountant/accountant-package-model';
@@ -15,12 +16,14 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { todayInRome } from '@/lib/stay-dates';
 import { useExportOwnerIssuedDocuments } from '@/queries/use-owner-issuer-profile';
+import { OwnerCard } from './owner-ui';
 
 interface IssuedDocumentsExportProps {
   testId: string;
   download: (request: { period: string; signal: AbortSignal }) => Promise<void>;
   problemOf: (error: unknown) => string;
   downloadLabel: string;
+  withDescription?: boolean;
 }
 
 /**
@@ -29,7 +32,7 @@ interface IssuedDocumentsExportProps {
  * differs. The period is chosen from the last months and the last years (the month that is over is the first), the button takes no second press while the file comes, and a failure is told next to it in
  * words, never as a file that is empty. Whatever way the page goes away the download goes with it.
  */
-export function IssuedDocumentsExport({ testId, download, problemOf, downloadLabel }: IssuedDocumentsExportProps) {
+export function IssuedDocumentsExport({ testId, download, problemOf, downloadLabel, withDescription = true }: IssuedDocumentsExportProps) {
   const { t } = useTranslation();
   const { month } = useOwnerFormat();
   const [today] = useState(() => todayInRome());
@@ -65,7 +68,7 @@ export function IssuedDocumentsExport({ testId, download, problemOf, downloadLab
 
   return (
     <div className="space-y-3" data-testid={testId}>
-      <p className="break-words text-sm text-foreground/70">{t('issuedDocuments.export.description')}</p>
+      {withDescription ? <p className="break-words text-sm text-foreground/70">{t('issuedDocuments.export.description')}</p> : null}
       <div className="grid gap-3 sm:max-w-md sm:grid-cols-[1fr_auto] sm:items-end">
         <Field label={t('issuedDocuments.export.period')}>
           <Select
@@ -130,8 +133,19 @@ export function OwnerIssuedDocumentsSection({ ownerId }: { ownerId: string }) {
   if (!isFeatureEnabled(flags, 'fiscalDocumentIssuance')) return null;
 
   return (
-    <PlainSection title={t('issuedDocuments.agency.title')} data-testid="owner-issued-documents-section">
-      <IssuedDocumentsExport testId="owner-issued-export" download={({ period, signal }) => exporter.mutateAsync({ ownerId, period, signal })} problemOf={(error) => exportProblemOf(error, t)} downloadLabel={t('issuedDocuments.agency.download')} />
-    </PlainSection>
+    <OwnerCard
+      icon={FileArchive}
+      title={t('issuedDocuments.agency.title')}
+      help={<HelpTip title={t('issuedDocuments.agency.title')}>{t('issuedDocuments.export.description')}</HelpTip>}
+      data-testid="owner-issued-documents-section"
+    >
+      <IssuedDocumentsExport
+        testId="owner-issued-export"
+        download={({ period, signal }) => exporter.mutateAsync({ ownerId, period, signal })}
+        problemOf={(error) => exportProblemOf(error, t)}
+        downloadLabel={t('issuedDocuments.agency.download')}
+        withDescription={false}
+      />
+    </OwnerCard>
   );
 }

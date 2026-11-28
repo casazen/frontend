@@ -193,6 +193,16 @@ describe('HelpTip (UI-07)', () => {
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     });
 
+    it('HelpTip_ManualHref_IsAPlainLinkInANewTabBecauseTheRouterOfTheAppDoesNotKnowThePagesOfTheManual', () => {
+      renderTip({ learnMoreHref: '/guida/immobili.html#stampare-il-codice-qr' });
+      fireEvent.click(trigger());
+
+      const link = screen.getByRole('link', { name: 'Scopri di più' });
+      expect(link).toHaveAttribute('href', '/guida/immobili.html#stampare-il-codice-qr');
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+
     it('HelpTip_TabFromTheBubble_ReachesTheLink', () => {
       renderTip({ learnMoreHref: '/app/short-rent/help/cin' });
       fireEvent.click(trigger());

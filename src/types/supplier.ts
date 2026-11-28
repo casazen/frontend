@@ -260,21 +260,6 @@ export interface SupplierDashboard {
   lastUpdated: string;
 }
 
-export const SUPPLIER_KPI_PERIODS = ['CurrentMonth', 'PreviousMonth', 'Last30Days', 'CurrentYear'] as const;
-export type SupplierKpiPeriod = (typeof SUPPLIER_KPI_PERIODS)[number];
-
-export interface SupplierKpis {
-  period: SupplierKpiPeriod;
-  from: string;
-  to: string;
-  timeZone: string;
-  completed: number;
-  rejected: number;
-  awaitingAcceptance: number;
-  upcoming: number;
-  totalRequests: number;
-}
-
 export interface SupplierToday {
   date: string;
   dateTo?: string;

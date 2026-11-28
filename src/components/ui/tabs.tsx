@@ -4,7 +4,10 @@ import type { LucideIcon } from 'lucide-react';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { TabCount, type TabTone } from './tab-count';
+import { TabState, type TabStateMark } from './tab-state';
 import { TAB_SELECT_CLASS, tabLinkClass } from './tab-styles';
+
+const stateSuffix = (state: TabStateMark | undefined): string => (state ? ` · ${state.label}` : '');
 
 export interface TabItem<T extends string = string> {
   /** What goes in the address (`?tab=ical`): short, lowercase, and the same forever, because emails and links point at it. */
@@ -14,6 +17,7 @@ export interface TabItem<T extends string = string> {
   countLabel?: string;
   /** How the number weighs: `warning` for what needs an answer, `danger` for what failed (UI-15). Without it, the accent of the app. */
   tone?: TabTone;
+  state?: TabStateMark;
   icon?: LucideIcon;
   testId?: string;
 }
@@ -125,7 +129,7 @@ export function Tabs<T extends string>({
           >
             {items.map((item) => (
               <option key={item.value} value={item.value}>
-                {item.count && item.count > 0 ? `${item.label} (${item.count})` : item.label}
+                {(item.count && item.count > 0 ? `${item.label} (${item.count})` : item.label) + stateSuffix(item.state)}
               </option>
             ))}
           </select>
@@ -159,6 +163,7 @@ export function Tabs<T extends string>({
                   {Icon ? <Icon className="h-4 w-4 shrink-0" aria-hidden="true" /> : null}
                   {item.label}
                   <TabCount count={item.count} label={item.countLabel} tone={item.tone} />
+                  <TabState state={item.state} />
                 </Link>
               );
             })}

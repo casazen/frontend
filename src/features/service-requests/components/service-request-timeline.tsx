@@ -16,9 +16,11 @@ interface ServiceRequestTimelineProps {
   showProperty?: boolean;
   /** The caller may pay and re-request (`property.write` of the context): the buttons are hidden otherwise. */
   canManage?: boolean;
+  compact?: boolean;
 }
 
 const LIST = 'divide-y divide-border border-y border-border';
+const COMPACT_LIST = 'divide-y divide-border';
 
 const QUIET = '-ms-3';
 
@@ -28,6 +30,7 @@ export function ServiceRequestTimeline({
   showStay = false,
   showProperty = false,
   canManage = true,
+  compact = false,
 }: ServiceRequestTimelineProps) {
   const { t } = useTranslation();
   const drawer = useDetailDrawer();
@@ -49,6 +52,7 @@ export function ServiceRequestTimeline({
       showStay={showStay}
       showProperty={showProperty}
       canManage={canManage}
+      compact={compact}
       onOpenDetail={openDetail}
     />
   );
@@ -61,7 +65,7 @@ export function ServiceRequestTimeline({
   return (
     <div className="space-y-3" data-testid="service-request-timeline">
       {toFollow.length > 0 ? (
-        <ul role="list" className={LIST} data-testid="service-requests-to-follow">
+        <ul role="list" className={compact ? COMPACT_LIST : LIST} data-testid="service-requests-to-follow">
           {toFollow.map(row)}
         </ul>
       ) : (
@@ -78,7 +82,7 @@ export function ServiceRequestTimeline({
           </Button>
           {showClosed ? (
             <>
-              <ul role="list" className={LIST} data-testid="service-requests-closed">
+              <ul role="list" className={compact ? COMPACT_LIST : LIST} data-testid="service-requests-closed">
                 {closed.slice(0, closedShown).map(row)}
               </ul>
               {closed.length > closedShown ? (

@@ -15,21 +15,6 @@ export interface AdminSupplier {
   openRequests: number;
 }
 
-export const ADMIN_INVITE_STATES = ['Pending', 'Used', 'Expired', 'Revoked'] as const;
-type AdminInviteState = (typeof ADMIN_INVITE_STATES)[number];
-
-export interface AdminInvite {
-  id: string;
-  email: string;
-  comuneCode: string;
-  categories: string[];
-  message?: string | null;
-  state: AdminInviteState;
-  createdAt: string;
-  expiresAt: string;
-  revokedAt?: string | null;
-}
-
 type AdminSupplierAuditAction = 'Suspended' | 'Reactivated' | 'InviteResent' | 'InviteRevoked';
 
 export interface AdminSupplierAuditEntry {
@@ -46,13 +31,6 @@ export interface AdminSupplierAuditEntry {
 export interface AdminSuppliersParams {
   search?: string;
   status?: AdminSupplierStatus;
-  page?: number;
-  pageSize?: number;
-}
-
-export interface AdminInvitesParams {
-  search?: string;
-  state?: AdminInviteState;
   page?: number;
   pageSize?: number;
 }

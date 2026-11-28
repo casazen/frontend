@@ -357,13 +357,22 @@ describe('IcalSettings (PC-11, PC-13)', () => {
 
       expect(await within(exportSection).findByRole('button', { name: 'Copiato' })).toBeInTheDocument();
       expect(writeText).toHaveBeenCalledWith(EXPORT_URL);
-      expect(
-        within(exportSection).getByText(/CasaZen esporta le prenotazioni dirette e manuali.*ogni OTA va collegata anche alle altre/),
-      ).toBeInTheDocument();
-      expect(within(exportSection).getByText(/Sincronizzazione calendari → Importa calendario/)).toBeInTheDocument();
-      expect(
-        within(exportSection).getByText(/Extranet apri Tariffe e disponibilità, nella sezione per sincronizzare i calendari/),
-      ).toBeInTheDocument();
+    });
+
+    it('exportHint_IsTheOnlyExplanationAndLeadsToTheStepsInTheManual', async () => {
+      renderSettings();
+      const exportSection = await screen.findByTestId('ical-export');
+      expect(await within(exportSection).findByDisplayValue(EXPORT_URL)).toBeInTheDocument();
+      expect(within(exportSection).queryByText(/CasaZen esporta le prenotazioni/)).not.toBeInTheDocument();
+      expect(within(exportSection).queryByText(/Importa calendario/)).not.toBeInTheDocument();
+      expect(within(exportSection).queryByText(/Tienilo riservato/)).not.toBeInTheDocument();
+      expect(exportSection.querySelector('ul')).toBeNull();
+
+      fireEvent.click(within(exportSection).getByRole('button', { name: "Cos'è: Link di esportazione per le OTA" }));
+
+      expect(screen.getByRole('dialog')).toHaveTextContent('leggono da questo link le prenotazioni fatte su CasaZen');
+      expect(screen.getByRole('dialog')).toHaveTextContent('Tienilo riservato');
+      expect(screen.getByRole('link', { name: 'Apri nel manuale' })).toHaveAttribute('href', '/guida/canali-octorate.html#incollare-il-link-di-casazen-sui-portali');
     });
 
     it('copyExportUrl_clipboardRefused_ShowsAnErrorAndSelectsTheLink', async () => {

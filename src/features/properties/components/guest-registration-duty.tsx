@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { GuestNotificationOverride, GuestRegistrationDuty } from '@/types/guest-registration.types';
 import { DUTY_ANSWERS } from '../lib/guest-registration-model';
@@ -76,14 +77,14 @@ export function GuestRegistrationDuty({ duty, override, canWrite, saving, saving
                 </Button>
               ))}
             </div>
-            <p className="text-sm text-foreground/70">{t('guestRegistration.duty.reversible')}</p>
           </>
         ) : null}
       </>
     );
   } else if (duty === 'Required') {
     content = (
-      <p className="text-sm" data-testid="guest-registration-duty-required">
+      <p className="flex items-center gap-2 text-sm font-medium" data-testid="guest-registration-duty-required">
+        <BellRing aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
         {t('guestRegistration.duty.required')}
       </p>
     );

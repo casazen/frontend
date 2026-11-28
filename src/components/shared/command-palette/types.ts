@@ -6,7 +6,7 @@ import type { FeatureFlags } from '@/config/feature-flags';
 import type { AppContextKey, PermissionPredicate } from '@/config/route-manifest';
 import type { AppLocale } from '@/i18n/config';
 
-export type CommandKind = 'page' | 'action' | 'property' | 'booking' | 'guest';
+export type CommandKind = 'page' | 'action' | 'property' | 'booking' | 'guest' | 'guide';
 
 interface CommandItemBase {
   id: string;

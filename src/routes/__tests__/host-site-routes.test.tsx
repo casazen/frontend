@@ -22,7 +22,6 @@ vi.mock('@/queries/use-public-org', () => ({
   usePublicOrg: () => ({ data: ORG, isLoading: false, isError: false }),
   useOrgProperties: () => ({ data: [], isLoading: false, isError: false }),
   useOrgPublicProperty: () => ({ data: undefined, isLoading: true, isError: false }),
-  usePropertyAvailability: () => ({ data: undefined, isError: false, refetch: vi.fn() }),
 }));
 
 vi.mock('@/api/checkin.api', async (importOriginal) => {

@@ -50,8 +50,6 @@ export const LEASE_EVENT_TYPES = [
   'DepositReturnRecorded',
 ] as const;
 
-export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
-
 type FiscalRegime = 'CedolareSecca' | 'RegimeOrdinario' | 'CanoneConcordato';
 
 export const LEASE_CONTRACT_TYPES = ['Libero', 'Concordato', 'Transitorio'] as const;

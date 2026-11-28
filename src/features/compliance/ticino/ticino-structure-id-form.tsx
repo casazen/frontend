@@ -69,7 +69,7 @@ export function TicinoStructureIdForm({ propertyId, value, onSaved, onPendingCha
         </Button>
       </div>
       {invalid ? <FormFieldError id={`${inputId}-error`} message={t('swiss.structureId.invalid')} /> : null}
-      <p id={`${inputId}-hint`} className="text-sm text-foreground/70">{t('swiss.structureId.hint')}</p>
+      <p id={`${inputId}-hint`} className="sr-only">{t('swiss.structureId.hint')}</p>
     </form>
   );
 }

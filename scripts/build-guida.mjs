@@ -1141,7 +1141,15 @@ export function buildGuida() {
   for (const g of data.terms) idx.push({ t: 'termine', pg: g.pagina, titolo: stripInline(g.termine, ctx.titleOf), sezione: g.sezione, ctx: 'Glossario', url: `glossario.html`, chi: [], testo: stripInline(g.definizione, ctx.titleOf), kw: '' });
   const pagineKw = {};
   for (const p of pages) pagineKw[p.id] = [...(Array.isArray(p.meta.parole_chiave) ? p.meta.parole_chiave : []), p.meta.dove || ''].join(' ');
-  files.set('guida-indice.js', `window.GUIDA_INDICE=${JSON.stringify({ versione: 2, aggiornato: meta.aggiornato, pagine: pagineKw, voci: idx })};\n`);
+  // Quale capitolo spiega quale pagina dell'app (`copre` del sorgente, senza le rotte tecniche): la Guida dell'app lo legge per suggerire, nella pagina aperta, i «Come fare» giusti.
+  const rotte = {};
+  for (const p of pages) {
+    for (const c of Array.isArray(p.meta.copre) ? p.meta.copre : []) {
+      if (/\(non-utente\)\s*$/i.test(c)) continue;
+      (rotte[c.trim()] ??= []).push(p.id);
+    }
+  }
+  files.set('guida-indice.js', `window.GUIDA_INDICE=${JSON.stringify({ versione: 2, aggiornato: meta.aggiornato, pagine: pagineKw, rotte, voci: idx })};\n`);
 
   const chunks = data.chunks.map((c) => ({ ...c, url: `${BASE_URL_PATH}${c.url}` }));
   files.set('guida-chunks.json', `${JSON.stringify({ versione: 1, aggiornato: meta.aggiornato, lingua: 'it', base: BASE_URL_PATH, note: 'Ogni chunk è autosufficiente. «testo» è in italiano semplice. Usa «url» per citare la fonte.', chunks }, null, 1)}\n`);

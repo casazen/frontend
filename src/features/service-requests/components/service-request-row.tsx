@@ -29,6 +29,7 @@ export interface ServiceRequestRowProps {
   showStay: boolean;
   showProperty: boolean;
   canManage: boolean;
+  compact?: boolean;
   onOpenDetail: (request: ServiceRequest, event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
@@ -52,7 +53,7 @@ function byText(actor: string | null, t: TFunction): string | null {
   return actor === 'Host' || actor === 'Supplier' || actor === 'System' ? t(`serviceRequest.list.by.${actor}`) : null;
 }
 
-export function ServiceRequestRow({ request, requests, context, showStay, showProperty, canManage, onOpenDetail }: ServiceRequestRowProps) {
+export function ServiceRequestRow({ request, requests, context, showStay, showProperty, canManage, compact = false, onOpenDetail }: ServiceRequestRowProps) {
   const { t, i18n } = useTranslation();
   const markStayPaid = useMarkServiceRequestPaid();
   const markLongRentPaid = useMarkLongRentServiceRequestPaid();
@@ -94,7 +95,7 @@ export function ServiceRequestRow({ request, requests, context, showStay, showPr
             {detail ? <span className="block break-words text-sm text-foreground/70">{detail}</span> : null}
           </Link>
 
-          {waitingKey ? (
+          {waitingKey && !compact ? (
             <p
               className={request.status === 'Completato' ? 'break-words text-sm font-medium' : 'break-words text-sm text-foreground/70'}
               data-testid={`service-request-waiting-${request.id}`}

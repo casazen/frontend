@@ -28,7 +28,6 @@ vi.mock('@/api/public-booking.api', () => ({
     createDirectBooking: vi.fn(),
     resumeCheckoutPayment: vi.fn(),
     getCheckoutOutcome: vi.fn(),
-    getPropertyAvailability: vi.fn(),
   },
 }));
 vi.mock('@/api/public-site-search.api', () => ({

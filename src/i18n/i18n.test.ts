@@ -29,7 +29,6 @@ import {
   GUEST_REGISTRATION_MISSING_CODES,
   GUEST_REGISTRATION_OBLIGATIONS,
   GUEST_REGISTRATION_PRIVATE_RENTALS,
-  GUEST_REGISTRATION_SUPPORTS,
 } from '@/types/guest-registration.types';
 import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
 
@@ -283,11 +282,10 @@ describe('keys used in code', () => {
       ...LEASE_STATUSES.map((s) => `leases.statusLabel.${s}`),
       ...LEASE_EVENT_TYPES.map((e) => `leases.eventType.${e}`),
       ...['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical', 'guest-registration'].map((s) => `compliance.activation.steps.${s}`),
-      ...GUEST_REGISTRATION_OBLIGATIONS.map((v) => `guestRegistration.obligation.${v}`),
-      ...GUEST_REGISTRATION_CHANNELS.map((v) => `guestRegistration.channel.${v}`),
+      ...GUEST_REGISTRATION_OBLIGATIONS.map((v) => `guestRegistration.short.obligation.${v}`),
+      ...GUEST_REGISTRATION_CHANNELS.flatMap((v) => [`guestRegistration.channel.${v}`, `guestRegistration.short.channel.${v}`]),
       ...GUEST_REGISTRATION_DEADLINE_KINDS.map((v) => `guestRegistration.deadline.${v}`),
-      ...GUEST_REGISTRATION_PRIVATE_RENTALS.map((v) => `guestRegistration.privateRentals.${v}`),
-      ...GUEST_REGISTRATION_SUPPORTS.map((v) => `guestRegistration.support.${v}`),
+      ...GUEST_REGISTRATION_PRIVATE_RENTALS.filter((v) => v !== 'Yes').map((v) => `guestRegistration.short.privateRentals.${v}`),
       ...GUEST_REGISTRATION_CERTAINTIES.flatMap((v) => [`guestRegistration.certainty.${v}.label`, `guestRegistration.certainty.${v}.text`]),
       ...GUEST_REGISTRATION_MISSING_CODES.flatMap((code) => [
         `guestRegistration.missing.${code}`,
