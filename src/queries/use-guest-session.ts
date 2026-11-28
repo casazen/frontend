@@ -8,7 +8,6 @@ import type { GuestBookingLookupPayload, GuestSession } from '@/types';
 
 export const GUEST_BOOKING_QUERY = 'guest-booking';
 
-/** True for the 401 of the guest area: the token is missing, altered or expired, and the guest has to prove the booking again. */
 export function isGuestSessionRefused(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 401;
 }
@@ -62,7 +61,6 @@ export function useGuestBooking(siteSlug: string, session: GuestSession | null) 
   return useQuery({
     queryKey: [GUEST_BOOKING_QUERY, siteSlug, session?.bookingCode ?? '', session?.expiresAt ?? ''] as const,
     queryFn: async () => {
-      // `enabled` keeps this from running without a session.
       if (!session) throw new Error('No guest session');
       try {
         return await guestSessionApi.getBooking(session.accessToken, session.bookingCode);
@@ -74,7 +72,6 @@ export function useGuestBooking(siteSlug: string, session: GuestSession | null) 
     enabled: session !== null,
     staleTime: 60_000,
     refetchOnMount: 'always',
-    // Not at every return to the tab: a token that was refused would be sent again each time.
     refetchOnWindowFocus: false,
   });
 }

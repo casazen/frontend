@@ -41,17 +41,13 @@ export function DocumentsPage() {
   const [address, setAddress] = useSearchParams();
   const pageSize = readArchivePageSize(address);
   const [exporting, setExporting] = useState(false);
-  // The rows whose file the server could not find: they say so, and the button is gone from them.
   const [withoutFile, setWithoutFile] = useState<ReadonlySet<string>>(() => new Set());
 
   const properties = useProperties({}, { fresh: true });
   const propertyList = Array.isArray(properties.data) ? properties.data : NO_PROPERTIES;
 
-  // The types the caller may read, asked with no filter: the chips are the definition of the list, and the list cannot be defined from what
-  // its own filters give. The numbers on the chips are the second call below, which does follow the filters.
   const offered = useDocumentTypes({});
   const offeredTypes = offered.data ?? NO_TYPES;
-  // The first read waits for what the filters are made of: the properties (an old `?f_property=` is checked against them) and the types (so is `?chip=`).
   const ready = !properties.isLoading && !offered.isLoading;
 
   const { mutate: downloadDocument, isPending: downloading } = useDownloadArchiveDocument();
@@ -101,7 +97,6 @@ export function DocumentsPage() {
           errorTitle={t('documentArchive.error')}
           onRetry={retry}
           testId="documents-list"
-          // The button of a row is 44 px high whatever the pointer: the table is where the mouse is, and the targets are for fingers too.
           className="[&_td_button]:min-h-11"
         />
 

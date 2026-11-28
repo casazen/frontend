@@ -14,46 +14,27 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 interface ExternalHandoffControllerProps {
   phase: HandoffPhase;
-  /** The kind of step: its instructions and what to have at hand. */
   kind: PanelStepKind;
   textKind: PanelTextKind;
-  /** Where the step is (the property, the channel): on screen for as long as the person is on the panel. */
   context?: ReactNode;
-  /** When the step was started (UTC), for «in attesa da 3 minuti». */
   startedAt?: string | null;
-  /** The step is being stored and the panel opened. */
   opening: boolean;
-  /** A check is running. */
   checking: boolean;
-  /** The confirmation is on its way. */
   confirming: boolean;
-  /** Why the panel could not be opened, already translated. */
   error?: string | null;
-  /** Why the confirmation was refused, already translated. */
   confirmError?: string | null;
-  /** Opens the panel: the first time, again, or once more after the browser blocked it. */
   onOpen: () => void;
-  /** «Sì, continua»: the person says the step is done (only offered after a check that could not tell). */
   onConfirm: () => void;
-  /** Goes on to the next step of CasaZen. */
   onContinue: () => void;
-  /** Leaves the step half way: its «Da fare» is already there. */
   onSaveAndExit: () => void;
-  /** «Fallo per me»: on screen for as long as the step is. */
   assist: ReactNode;
-  /** «Mi serve aiuto»: the way out of the question of a result CasaZen cannot read. */
   help?: ReactNode;
-  /** «Fallo per me» comes first, as the default action, and the panel is the alternative (a host with new properties: CasaZen support does the step). */
   assistFirst?: boolean;
   /**
    * The step is done because support said so (the request it closed is `declared`: the panel could not be read), not because CasaZen saw the connection: the screen says whose word
    * it is instead of «CasaZen ha verificato il collegamento».
    */
   declaredBySupport?: boolean;
-  /**
-   * The step is done but how it was closed is not known (the request support closed for it is being read, or could not be): the screen says neither «CasaZen ha verificato» nor that
-   * support declared it (`recoveredUnknown`), and «Continua» is there all the same.
-   */
   outcomeUnknown?: boolean;
 }
 
@@ -139,7 +120,6 @@ export function ExternalHandoffController({
         ) : null}
       </div>
 
-      {/* The change of state is read once by a screen reader, whatever the person was doing in the other window. */}
       <p role="status" aria-live="polite" className="sr-only" key={phase}>
         {title}
       </p>

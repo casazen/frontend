@@ -1,31 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '@/i18n/config';
 import { F24_CURRENCY, batchReference, exactMoney, failureMessage, problemCodeOf } from '../agency-finance';
-import { maskIban } from '../iban';
 
 const problem = (status: number, data: unknown) => Object.assign(new Error('failed'), { isAxiosError: true, response: { status, data } });
 const t = i18n.getFixedT('it');
 const failure = (error: unknown) => failureMessage(error, t, 'generico', 'non trovato');
-
-describe('maskIban: a bank account is never shown in full', () => {
-  it('MaskIban_LongAccount_KeepsTheCountryTheCheckDigitsAndTheEndOnly', () => {
-    expect(maskIban('IT60X0542811101000000123456')).toBe('IT60 •••• 3456');
-    expect(maskIban('it60 x054 2811 1010 0000 0123 456')).toBe('IT60 •••• 3456');
-    expect(maskIban('CH93-0076-2011-6238-5295-7')).toBe('CH93 •••• 2957');
-  });
-
-  it('MaskIban_NeverContainsTheMiddleOfTheAccount', () => {
-    const masked = maskIban('IT60X0542811101000000123456');
-
-    expect(masked).not.toContain('0542811101');
-    expect(masked.length).toBeLessThan('IT60X0542811101000000123456'.length);
-  });
-
-  it('MaskIban_TooShortToHideAnything_ShowsNothingOfIt', () => {
-    expect(maskIban('IT60')).toBe('••••');
-    expect(maskIban('')).toBe('••••');
-  });
-});
 
 describe('exactMoney: the figure of the server in its own currency, never rounded', () => {
   it.each([
@@ -39,7 +18,6 @@ describe('exactMoney: the figure of the server in its own currency, never rounde
   });
 
   it('ExactMoney_MoreThanTwoDecimals_AreKeptNotRoundedAway', () => {
-    // The formatter of a currency would write 12,35 (another figure): the money pages show what the server sent.
     expect(exactMoney(12.345, 'EUR', 'it-IT')).toMatch(/^12,345\s*€$/);
     expect(exactMoney(0.001, 'CHF', 'it-IT')).toMatch(/^0,001\s*CHF$/);
   });

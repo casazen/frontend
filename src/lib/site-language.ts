@@ -7,19 +7,13 @@ import type { AppLocale } from '@/i18n/locale-storage';
  * has always opened in Italian, and the switch of the header is one tap away.
  */
 
-/** The query parameter that carries the language in the address. */
 export const SITE_LANGUAGE_QUERY_KEY = 'lang';
 
-/** `it` or `en` for a language tag (`en-GB`, `IT`), null for any other language. */
 export function languageOfTag(tag: string): AppLocale | null {
   const base = tag.trim().toLowerCase().split('-')[0];
   return base === 'it' || base === 'en' ? base : null;
 }
 
-/**
- * The locale in which the guest's language writes amounts, dates and numbers: Italian puts the euro after the number (`145,00 €`),
- * English before it (`€145.00`).
- */
 export function siteLocale(language: string | undefined): string {
   return language?.toLowerCase().startsWith('en') ? 'en-GB' : 'it-IT';
 }

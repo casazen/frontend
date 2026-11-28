@@ -6,19 +6,11 @@ import { publicInquiryApi, type PublicInquiryBody } from '@/api/public-supplier-
 import { readRequestFailure, type RequestFailure } from '@/lib/supplier-site/request-errors';
 import { viewSignature } from '@/lib/supplier-site/request-view';
 
-/** The slots are cached for 30 seconds on the server: asking again sooner would tell nothing new. */
 const SLOTS_STALE_MS = 30_000;
-/** Four weeks of free times are offered, seven days at a time. */
 const SLOT_WINDOW_DAYS = 28;
-/** The urgent slots are only today and tomorrow. */
 const URGENT_WINDOW_DAYS = 3;
-/** While the card is not blocked yet the page asks the e-mail check again every few seconds. */
 const AWAITING_PAYMENT_POLL_MS = 4000;
 
-/**
- * The free times of a service for the booking: four weeks, or only today and tomorrow when the person asked for an urgent one. A time
- * shown is not a promise: the booking checks it again.
- */
 export function useBookingSlots(slug: string, serviceSlug: string | null, urgent: boolean, enabled: boolean) {
   return useQuery({
     queryKey: ['supplier-booking-slots', slug, serviceSlug, urgent],
@@ -30,9 +22,7 @@ export function useBookingSlots(slug: string, serviceSlug: string | null, urgent
   });
 }
 
-/** Holds the slot and e-mails the link. One call per attempt; the page keeps the id of the attempt and the answer. */
 export function useCreateBookingHold(slug: string) {
-  // `gcTime: 0`: the mutation (the body with the name, the e-mail and the phone, and the secret of the card in the answer) is not kept in the cache.
   return useMutation({ mutationFn: (body: PublicBookingBody) => publicBookingApi.createHold(slug, body), gcTime: 0 });
 }
 
@@ -54,9 +44,7 @@ export function useBookingConfirmation(slug: string, holdId: string | null, toke
   });
 }
 
-/** Sends the request on measure and e-mails the link. One call per attempt; the page keeps the id of the attempt and the answer. */
 export function useCreateInquiry(slug: string) {
-  // `gcTime: 0`: the mutation (the body with the words, the name, the e-mail and the phone) is not kept in the cache.
   return useMutation({ mutationFn: (body: PublicInquiryBody) => publicInquiryApi.create(slug, body), gcTime: 0 });
 }
 
@@ -101,11 +89,8 @@ export function useBookingRequest(slug: string) {
   const [session, setSession] = useState<BookingRequestSession | null>(null);
   const [failure, setFailure] = useState<RequestFailure | null>(null);
   const [pending, setPending] = useState(false);
-  // What the customer did (an action or a message) and what is running: a quiet reading of the polling that started before one of them is
-  // dropped, so a late answer never puts an older booking over a newer one.
   const calls = useRef({ started: 0, running: 0 });
 
-  /** Shows the booking the server answered, keeping the card session of an offer whose card is still awaited. */
   const show = useCallback((access: PublicBookingAccess, view: PublicBookingView) => {
     setSession((previous) => ({ access, view: keepPaymentSession(view, previous?.view) }));
   }, []);
@@ -123,7 +108,6 @@ export function useBookingRequest(slug: string) {
         const found = readRequestFailure(error);
         setFailure(found);
         if (found.kind === 'changed' || found.kind === 'refused' || found.kind === 'slotTaken') {
-          // What the page showed is not true any more: read it again, quietly.
           try {
             show(access, await publicBookingApi.lookup(access));
           } catch {
@@ -147,7 +131,6 @@ export function useBookingRequest(slug: string) {
     [run, slug],
   );
 
-  /** One action on the booking found: `call` gets the credentials and answers the booking. */
   const act = useCallback(
     (call: (access: PublicBookingAccess) => Promise<PublicBookingView>) => {
       if (!session) return Promise.resolve(false);
@@ -156,11 +139,6 @@ export function useBookingRequest(slug: string) {
     [run, session],
   );
 
-  /**
-   * One call that does not disturb the page: a message being written, the card being taken, the answer to an offer. No "working", no
-   * line of failure: the caller gets the failure and says it where it belongs. The booking is read again when what it showed is not true
-   * any more, as in {@link act}.
-   */
   const quiet = useCallback(
     async (call: (access: PublicBookingAccess) => Promise<PublicBookingView>): Promise<{ ok: true } | { ok: false; failure: RequestFailure }> => {
       if (!session) return { ok: false, failure: { kind: 'other' } };
@@ -188,10 +166,6 @@ export function useBookingRequest(slug: string) {
     [session, show],
   );
 
-  /**
-   * Reads the booking again without a word, for the polling of a conversation. Gives what changed (see {@link viewSignature}) or null
-   * when it asked nothing, failed, or was overtaken by something the customer did meanwhile.
-   */
   const refresh = useCallback(async (): Promise<string | null> => {
     if (!session || calls.current.running > 0) return null;
     const { access } = session;

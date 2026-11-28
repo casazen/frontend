@@ -11,34 +11,26 @@ import { ServiceRequestRow } from './service-request-row';
 
 interface ServiceRequestTimelineProps {
   requests: ServiceRequest[];
-  /** Workspace the list is shown in: decides which API marks a request paid and which context a new request is for (D2). */
   context?: ServiceRequestContextKey;
-  /** Property overview in short-rent: each request links to its stay (older ones without a stay say so). */
   showStay?: boolean;
-  /** Lists that span several properties name the property of each request. */
   showProperty?: boolean;
   /** The caller may pay and re-request (`property.write` of the context): the buttons are hidden otherwise. */
   canManage?: boolean;
+  compact?: boolean;
 }
 
 const LIST = 'divide-y divide-border border-y border-border';
+const COMPACT_LIST = 'divide-y divide-border';
 
-// A quiet action under a list: its text starts where the rows' do, and the hover box goes out to the left.
 const QUIET = '-ms-3';
 
-/**
- * The supplier requests of a stay, a property or the whole org (SU-09, A4-28), as the lists of the other areas do it (Guesty, Hostaway or the
- * jobs of a lease show the same): the ones still to follow are the list, one line each, the nearest job first; the ones that are over (paid,
- * cancelled, refused and asked again) are kept behind «Mostra le richieste concluse» and come five at a time. A stay that went through
- * many requests no longer buries the one that is open. Each row says what it waits for, or who closed it and when; the whole story of a
- * request is in the drawer its name opens.
- */
 export function ServiceRequestTimeline({
   requests,
   context = 'short-rent',
   showStay = false,
   showProperty = false,
   canManage = true,
+  compact = false,
 }: ServiceRequestTimelineProps) {
   const { t } = useTranslation();
   const drawer = useDetailDrawer();
@@ -46,7 +38,6 @@ export function ServiceRequestTimeline({
   const [showClosed, setShowClosed] = useState(false);
   const [closedShown, setClosedShown] = useState(CLOSED_FIRST);
 
-  // The request of a long-term property has a page of its own, and a click that asks for a new tab or window is the browser's.
   const openDetail = (request: ServiceRequest, event: MouseEvent<HTMLAnchorElement>) => {
     if (context === 'long-rent' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     if (drawer.open(INTERVENTION_DRAWER_KIND, request.id, { opener: event.currentTarget })) event.preventDefault();
@@ -61,6 +52,7 @@ export function ServiceRequestTimeline({
       showStay={showStay}
       showProperty={showProperty}
       canManage={canManage}
+      compact={compact}
       onOpenDetail={openDetail}
     />
   );
@@ -73,7 +65,7 @@ export function ServiceRequestTimeline({
   return (
     <div className="space-y-3" data-testid="service-request-timeline">
       {toFollow.length > 0 ? (
-        <ul role="list" className={LIST} data-testid="service-requests-to-follow">
+        <ul role="list" className={compact ? COMPACT_LIST : LIST} data-testid="service-requests-to-follow">
           {toFollow.map(row)}
         </ul>
       ) : (
@@ -90,7 +82,7 @@ export function ServiceRequestTimeline({
           </Button>
           {showClosed ? (
             <>
-              <ul role="list" className={LIST} data-testid="service-requests-closed">
+              <ul role="list" className={compact ? COMPACT_LIST : LIST} data-testid="service-requests-closed">
                 {closed.slice(0, closedShown).map(row)}
               </ul>
               {closed.length > closedShown ? (

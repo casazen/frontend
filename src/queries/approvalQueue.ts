@@ -14,7 +14,6 @@ import type { ApprovalQueueItem, RejectApprovalRequest } from '@/types/approval-
 const APPROVAL_QUEUE_KEY = 'approval-queue';
 const PENDING_KEY = [APPROVAL_QUEUE_KEY, 'pending'] as const;
 
-/** How often the queue is read again while its page is visible (AC-NF68-4): an item that has just been put in it shows up within this time. */
 export const APPROVAL_QUEUE_POLL_MS = 60_000;
 
 /**
@@ -26,10 +25,6 @@ export function invalidateQueue(queryClient: QueryClient): Promise<void> {
   return queryClient.invalidateQueries({ queryKey: [APPROVAL_QUEUE_KEY] });
 }
 
-/**
- * Approving the draft of a message sends it to the guest, so the conversation that is open, the lists of the conversations and the counters of what waits for an
- * answer are stale too: a thread open in front of the host shows the message that went out without a reload.
- */
 function invalidateConversations(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'thread'] });
   invalidateMessageHubLists(queryClient);
@@ -38,7 +33,6 @@ function invalidateConversations(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
 }
 
-/** Puts the item the API answered (an edit) in the list that is shown, so the new text is on the screen before the list is read again. */
 function replaceInPendingList(queryClient: QueryClient, item: ApprovalQueueItem): void {
   queryClient.setQueryData<ApprovalQueueItem[]>(PENDING_KEY, (list) => list?.map((candidate) => (candidate.id === item.id ? item : candidate)));
 }
@@ -142,11 +136,6 @@ export function useApproveItem() {
   });
 }
 
-/**
- * Save the text the host edited, before deciding: the original stays on the item and the approval acts with the edit (AC-NF68-2). A text
- * the API refuses is a 422 `approval_edit_invalid`. The text is the host's edit of a message to a guest: it is not kept in the cache of the mutations (`gcTime: 0`)
- * and a refusal is kept without the request that carried it (`withoutRequest`).
- */
 export function useEditItem() {
   const queryClient = useQueryClient();
 
@@ -170,11 +159,6 @@ export function useEditItem() {
   });
 }
 
-/**
- * «Save and approve» in one step: the edit is saved and then approved, so the message that goes out is the edited one (AC-NF68-2). When the edit
- * is saved and the approval fails (409 `approval_origin_action_failed`) the item stays open with its new text, ready to try again. Kept like the approval and the edit:
- * no text in the cache of the mutations (`gcTime: 0`), no request in a refusal (`withoutRequest`).
- */
 export function useSaveAndApproveItem() {
   const queryClient = useQueryClient();
 
@@ -197,10 +181,6 @@ export function useSaveAndApproveItem() {
   });
 }
 
-/**
- * Reject an approval queue item: the reason is mandatory and is saved on the item (AC-NF68-3, AC-NF06-2). The reason is the host's own words about a message of a
- * guest: it is not kept in the cache of the mutations (`gcTime: 0`) and a refusal is kept without the request that carried it (`withoutRequest`).
- */
 export function useRejectItem() {
   const queryClient = useQueryClient();
 

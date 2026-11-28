@@ -15,19 +15,13 @@ import type {
 /** Art. 13-ter c. 7: one extinguisher every 200 m² of floor or fraction, at least one per floor. */
 export const FLOOR_AREA_PER_EXTINGUISHER_SQM = 200;
 
-/** Same input limit as the backend (`SafetyChecklistRules.MaxFloors`). */
 export const MAX_FLOORS = 20;
 
 /** Recommended items, not required by art. 13-ter: they never block. */
 export const OPTIONAL_SAFETY_ITEMS: readonly SafetyItemCode[] = ['SmokeDetector', 'EmergencyInstructions'];
 
-/** Detectors: they collect a device type and the end of life of the sensor. */
 export const SAFETY_DETECTORS: readonly SafetyItemCode[] = ['GasDetector', 'CoDetector', 'SmokeDetector'];
 
-/**
- * Minimum number of extinguishers (prudent proposal of RS-3): `max(1, ceil(m² / 200))` on each floor of the unit,
- * summed; one per floor when the areas are not all given. Null without the number of floors.
- */
 export function minimumExtinguishers(floorCount: number | null, floorAreas: (number | null)[]): number | null {
   if (!floorCount || floorCount < 1) return null;
   if (floorAreas.length !== floorCount || floorAreas.some((a) => a === null || a <= 0)) return floorCount;
@@ -40,14 +34,9 @@ export function minimumExtinguishers(floorCount: number | null, floorAreas: (num
 export interface SafetyFactsPreview {
   entrepreneurial: boolean | null;
   hasGasSupply: boolean | null;
-  /** null = not answered, [] = no combustion appliance. */
   appliances: CombustionAppliance[] | null;
 }
 
-/**
- * How an item applies to the unit: gas and CO detectors are "not applicable" only with no gas system and no combustion
- * appliance (both conditions); the compliant systems only when the rental is not run as a business.
- */
 export function safetyItemRequirement(
   code: SafetyItemCode,
   facts: SafetyFactsPreview,

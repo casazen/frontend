@@ -15,7 +15,6 @@ import { useAssistantRules, useSaveAssistantRules } from '@/queries/use-assistan
 import { ASSISTANT_TONES, type AssistantRules, type AssistantTone, type SaveAssistantRulesRequest } from '@/types/assistant-settings.types';
 import { SettingsError, SettingsLoading, SettingsNoAccess } from './settings-states';
 
-/** What the form holds: the hours as an `<input type="time">` takes them, the lists as the names the server keeps. */
 interface RulesFields {
   enabled: boolean;
   tone: AssistantTone;
@@ -60,7 +59,6 @@ function requestOf(fields: RulesFields, rules: AssistantRules): SaveAssistantRul
   };
 }
 
-/** What is wrong with the form (what the server would refuse as `assistant_rules_invalid`): the i18n key of the sentence under the field. */
 function problemsOf(fields: RulesFields): Partial<Record<'languages' | 'signature' | 'hours', string>> {
   const problems: Partial<Record<'languages' | 'signature' | 'hours', string>> = {};
   if (fields.languages.length === 0) problems.languages = 'assistant.rules.error.languages';
@@ -88,7 +86,6 @@ interface ChecklistProps {
   testId: string;
 }
 
-/** A group of choices where each one is a row of 44 px: the whole row is the target of the box. */
 function Checklist({ legend, help, names, selected, label, disabled, onChange, testId }: ChecklistProps) {
   return (
     <fieldset className="min-w-0 space-y-2" disabled={disabled} data-testid={testId}>
@@ -109,10 +106,6 @@ function Checklist({ legend, help, names, selected, label, disabled, onChange, t
 interface RulesFieldsFormProps {
   rules: AssistantRules;
   canEdit: boolean;
-  /**
-   * The mutation belongs to `RulesForm`, not to this form: this form is started again whenever the server holds other rules (after a save, or when somebody else changed
-   * them), and a refusal that lived inside it (the 409, or the rules that changed while it was open) would be gone with the remount.
-   */
   save: ReturnType<typeof useSaveAssistantRules>;
 }
 
@@ -131,7 +124,6 @@ function RulesFieldsForm({ rules, canEdit, save }: RulesFieldsFormProps) {
     event.preventDefault();
     setAttempted(true);
     if (!canEdit || Object.keys(problems).length > 0) return;
-    // `base` is what this form started from: the save reads the rules again and sends nothing if somebody else changed them meanwhile.
     save.mutate({ request: requestOf(fields, rules), base: rules });
   };
 
@@ -268,9 +260,7 @@ function RulesFieldsForm({ rules, canEdit, save }: RulesFieldsFormProps) {
 }
 
 interface RulesFormProps {
-  /** The person may read the rules (`booking.read`); without it nothing is asked of the server. */
   canRead: boolean;
-  /** The person is the administrator of the organization, the only one who may change the rules. */
   canEdit: boolean;
 }
 
@@ -283,13 +273,11 @@ interface RulesFormProps {
 export function RulesForm({ canRead, canEdit }: RulesFormProps) {
   const { t } = useTranslation();
   const rules = useAssistantRules(canRead);
-  // The save lives here, above the form that is started again: its refusal outlives the reading again that follows it.
   const save = useSaveAssistantRules();
 
   if (!canRead) return <SettingsNoAccess message={t('assistant.noAccess.rules')} testId="assistant-rules-no-access" />;
   if (rules.isPending) return <SettingsLoading testId="assistant-rules-loading" />;
   if (!rules.data) return <SettingsError message={t('assistant.rules.loadError')} onRetry={() => void rules.refetch()} testId="assistant-rules-error" />;
 
-  // The form starts from what the server holds and starts again when that changes (after a save, or when someone else changed the rules).
   return <RulesFieldsForm key={JSON.stringify(rules.data)} rules={rules.data} canEdit={canEdit} save={save} />;
 }

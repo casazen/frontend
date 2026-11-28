@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
 interface AssistedPathProps {
-  /** A call of the step is in flight: the button stays disabled until it ends. */
   busy: boolean;
   /** The guest asks for a person (GDPR art. 22): the operators are told and the step is over for the guest. */
   onChoose: () => void;

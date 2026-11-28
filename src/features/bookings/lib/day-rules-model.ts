@@ -4,13 +4,6 @@ import type { CalendarChangeRequest, FieldPatch } from '@/types/calendar-changes
 import type { CalendarDayInfo, DayPriceSource } from '@/types/calendar-days.types';
 import type { DaySelection } from './day-selection';
 
-/**
- * The form model of a change of price and rules (E08/F05/US03/T02, NF-36, NF-78): the seven values of a night, each left as it is (`Keep`), set (`Set`, with what was typed) or
- * cleared (`Clear`), the Zod schema that checks them (messages are i18n keys) and the request it becomes. The price is typed as text (`120`, `120,5`, `120.50`), has at most two
- * decimals and sits between 0,01 and 100.000, and is sent as the number typed: the browser rounds nothing, the amount in the request is the amount the host wrote.
- */
-
-/** The bounds of the values of a night, the ones of the API (`DayRuleLimits`). */
 export const DAY_RULE_LIMITS = {
   minPrice: 0.01,
   maxPrice: 100_000,
@@ -23,12 +16,10 @@ export const DAY_RULE_LIMITS = {
 export const DAY_RULE_FIELDS = ['price', 'minNights', 'maxNights', 'closedToArrival', 'closedToDeparture', 'minAdvanceDays', 'maxAdvanceDays'] as const;
 export type DayRuleField = (typeof DAY_RULE_FIELDS)[number];
 
-/** The fields that hold a number the host types (the others are flags). */
 export type NumberRuleField = Exclude<DayRuleField, 'closedToArrival' | 'closedToDeparture'>;
 
 export type FieldAction = 'Keep' | 'Set' | 'Clear';
 
-/** What the form holds for one value: what to do to it and, to set it, what was typed (a flag has no text: `Set` is "on", `Clear` is "off"). */
 export interface RuleEdit {
   action: FieldAction;
   text: string;
@@ -38,7 +29,6 @@ export type DayRulesValues = Record<DayRuleField, RuleEdit>;
 
 export const KEEP: RuleEdit = { action: 'Keep', text: '' };
 
-/** The form of a change that touches nothing yet. */
 export function emptyDayRules(): DayRulesValues {
   return {
     price: KEEP,
@@ -51,21 +41,14 @@ export function emptyDayRules(): DayRulesValues {
   };
 }
 
-/** At least one value is set or cleared: a change that keeps all seven changes nothing and is not sent. */
 export function hasChange(values: DayRulesValues): boolean {
   return DAY_RULE_FIELDS.some((field) => values[field].action !== 'Keep');
 }
-
-/* ----------------------------------------------------------------------------------------------------------------------- Price */
 
 export type PriceProblem = 'required' | 'invalid' | 'decimals' | 'range';
 
 const PRICE_TEXT = /^(\d{1,7})(?:[.,](\d+))?$/;
 
-/**
- * The price a host typed, as the number it stands for, or what is wrong with it: `120`, `120,5` and `120.50` are fine; `120.505` has too many decimals, `0` and `100000.01` are out
- * of bounds, anything else (thousands separators, signs, letters) is not a price. Nothing is rounded: the value is exactly the digits written.
- */
 export function parsePriceText(text: string): { value: number; problem?: undefined } | { value?: undefined; problem: PriceProblem } {
   const typed = text.trim();
   if (typed === '') return { problem: 'required' };
@@ -78,7 +61,6 @@ export function parsePriceText(text: string): { value: number; problem?: undefin
   return { value };
 }
 
-/** The number of nights or of days a host typed, a whole number within the bounds of the field, or what is wrong with it. */
 function parseWholeNumber(text: string, min: number, max: number): { value: number; problem?: undefined } | { value?: undefined; problem: 'required' | 'invalid' | 'range' } {
   const typed = text.trim();
   if (typed === '') return { problem: 'required' };
@@ -94,14 +76,11 @@ const BOUNDS: Record<Exclude<NumberRuleField, 'price'>, { min: number; max: numb
   maxAdvanceDays: { min: DAY_RULE_LIMITS.minAdvance, max: DAY_RULE_LIMITS.maxAdvance },
 };
 
-/** The number a host typed in a field to set it, or `undefined` while it is empty or not valid. */
 export function numberOf(field: NumberRuleField, edit: RuleEdit): number | undefined {
   if (field === 'price') return parsePriceText(edit.text).value;
   const { min, max } = BOUNDS[field];
   return parseWholeNumber(edit.text, min, max).value;
 }
-
-/* ----------------------------------------------------------------------------------------------------------------------- Schema */
 
 /** The words of each problem, by key (`booking.calendar.dayRules.errors.*`), written out so that the i18n test finds a missing translation. */
 export const DAY_RULE_ERROR_KEYS = {
@@ -152,10 +131,6 @@ function problemKey(field: NumberRuleField, edit: RuleEdit): string | null {
 
 const ruleEditSchema = z.object({ action: z.enum(['Keep', 'Set', 'Clear']), text: z.string() });
 
-/**
- * The rules of the form (messages are i18n keys, as in every form): a value that is set has to be valid (the price as `parsePriceText` says, the nights and the days whole and
- * within their bounds), a maximum stay is not below the minimum and a maximum advance is not below the minimum, when both are set. At least one value has to change.
- */
 export const dayRulesSchema: ZodType<unknown, FieldValues> = z
   .object({
     price: ruleEditSchema,
@@ -185,7 +160,6 @@ export const dayRulesSchema: ZodType<unknown, FieldValues> = z
     if (!hasChange(rules)) context.addIssue({ code: 'custom', message: DAY_RULE_ERROR_KEYS.nothingToChange, path: [] });
   });
 
-/** The problems of the form, by field (the key of the sentence of each); empty when the form can be sent. A problem of no field in particular is under `form`. */
 export function dayRulesProblems(values: DayRulesValues): Partial<Record<DayRuleField | 'form', string>> {
   const result = dayRulesSchema.safeParse(values);
   if (result.success) return {};
@@ -198,12 +172,9 @@ export function dayRulesProblems(values: DayRulesValues): Partial<Record<DayRule
   return problems;
 }
 
-/* ---------------------------------------------------------------------------------------------------------------------- Request */
-
 function numberPatch(field: NumberRuleField, edit: RuleEdit): FieldPatch<number> {
   if (edit.action === 'Clear') return { action: 'Clear' };
   if (edit.action === 'Keep') return { action: 'Keep' };
-  // The number typed, not rounded: a form that passed the schema has a value (a Set without one is refused before it gets here).
   const value = numberOf(field, edit);
   if (value === undefined) throw new Error(`The value of ${field} is not valid: the form is checked before it is sent`);
   return { action: 'Set', value };
@@ -213,7 +184,6 @@ function flagPatch(edit: RuleEdit): FieldPatch<boolean> {
   return edit.action === 'Set' ? { action: 'Set', value: true } : { action: edit.action === 'Clear' ? 'Clear' : 'Keep' };
 }
 
-/** What to do to each of the seven values, as the API reads it: an untouched field is `Keep`, a typed one `Set` (the number as typed), a cleared one `Clear`. */
 export function toFieldPatches(values: DayRulesValues): Pick<CalendarChangeRequest, DayRuleField> {
   return {
     price: numberPatch('price', values.price),
@@ -226,14 +196,10 @@ export function toFieldPatches(values: DayRulesValues): Pick<CalendarChangeReque
   };
 }
 
-/** The request for the days of a selection (one property, from the first day to the last, both included). */
 export function toChangeRequest(selection: DaySelection, values: DayRulesValues): CalendarChangeRequest {
   return { propertyIds: [selection.propertyId], from: selection.from, to: selection.to, ...toFieldPatches(values) };
 }
 
-/* --------------------------------------------------------------------------------------------------------------------- Current */
-
-/** What the days of a selection hold for one value: the same value on every day, different values, or no value of its own. */
 export type CurrentValue<T> = { kind: 'value'; value: T } | { kind: 'mixed' } | { kind: 'none' };
 
 function currentOf<T>(values: readonly (T | undefined)[]): CurrentValue<T> {
@@ -244,11 +210,8 @@ function currentOf<T>(values: readonly (T | undefined)[]): CurrentValue<T> {
 }
 
 export interface CurrentRules {
-  /** The price of the night in cents. */
   priceCents: CurrentValue<number>;
-  /** Where the price comes from, when it is the same on every day. */
   priceSource: CurrentValue<DayPriceSource>;
-  /** At least one night of the selection has a price of its own: "Back to the usual price" has something to clear. */
   hasPriceRule: boolean;
   minNights: CurrentValue<number>;
   maxNights: CurrentValue<number>;
@@ -258,7 +221,6 @@ export interface CurrentRules {
   maxAdvanceDays: CurrentValue<number>;
 }
 
-/** What the nights of a selection hold now, from the day layer: the value the panel shows beside each field. The caller leaves out the nights that are over: the API does not change them. */
 export function currentRules(days: readonly CalendarDayInfo[]): CurrentRules {
   return {
     priceCents: currentOf(days.map((day) => day.priceCents)),

@@ -7,7 +7,6 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { flowNameKey, isOnboardingFlowKey } from '@/lib/onboarding-flows';
 import type { BulkFlowProgress, BulkProgress } from '@/types/onboarding.types';
 
-/** A count the server sent as a number; anything else is 0 (never `NaN` on screen). */
 function count(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 }

@@ -6,7 +6,6 @@ import { GUIDANCE_ICONS } from './components/guidance-icons';
 import { assistedReasonOf, guidanceKey, LOCK_CODE_HELD_TOURIST_TAX, presenceGuidanceKey, retakeTargetOf } from './lib/identity-model';
 
 interface IdentityResultProps {
-  /** What the guest is told: passed, try again, or a person verifies. */
   kind: 'ok' | 'retry' | 'operator';
   /**
    * The answer is the one of a self-hosted verification (E72/F02/US01/T01): a retry is the recording of the presence again, with a new challenge, and says what to change in its own words; the selfie, and the attempts of
@@ -18,20 +17,14 @@ interface IdentityResultProps {
    * shows where it ended (E72/F02/US01/T02). It never says «passed» unless `kind` is `ok`, which only the server decides.
    */
   closed?: boolean;
-  /** The lock code of the property: shown only for `ok`, whatever else is passed. */
   lockCode: string | null;
-  /** Why an `ok` has no code although the property has one: the code is held back until the tourist tax is paid (`tourist_tax_due`). */
   lockCodeHeld?: string | null;
   /** What to change, as codes of the API (a `retry`). */
   guidanceCodes: readonly string[];
   attemptsRemaining: number;
-  /** A person was asked and has the verification. */
   operatorRequested: boolean;
-  /** A call of the step is in flight: the buttons stay disabled. */
   busy: boolean;
-  /** The guest takes again what the guidance asked for. */
   onRetake: () => void;
-  /** The guest asks for a person (GDPR art. 22). */
   onRequestOperator: () => void;
 }
 
@@ -57,7 +50,6 @@ export function IdentityResult({
   const titleId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  // The answer is announced by moving the focus to its title, where a screen reader starts reading it.
   useEffect(() => {
     headingRef.current?.focus();
   }, [kind]);
@@ -90,7 +82,6 @@ export function IdentityResult({
             </p>
           </>
         ) : lockCodeHeld === LOCK_CODE_HELD_TOURIST_TAX ? (
-          // The property has a code and the organization asks for the tourist tax before it: the guest is told so, never that the code was sent.
           <p className="text-sm text-muted-foreground" data-testid="identity-code-held">
             {t('checkin.identity.result.ok.codeHeldTouristTax')}
           </p>
@@ -158,7 +149,6 @@ export function IdentityResult({
         </>
       ) : (
         <>
-          {/* A document the page cannot take (a format it does not know, a photo that could not be read as many times as allowed): the reason, in its own words, before the way of a person (E71/F02/US01/T02). */}
           {assistedReason && (
             <p className="flex items-start gap-2 text-sm font-medium" data-testid="identity-operator-reason">
               {AssistedIcon && <AssistedIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />}

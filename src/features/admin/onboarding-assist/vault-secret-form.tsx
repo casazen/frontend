@@ -22,7 +22,6 @@ const FIELDS: readonly { field: Field; type: 'text' | 'password' }[] = [
   { field: 'password', type: 'password' },
 ];
 
-/** The checks of the vault, mirrored (a value is required and has its longest): the server checks again (422 `support_vault_value_invalid`). The messages are i18n keys. */
 function validate(values: Values): Errors {
   const errors: Errors = {};
   for (const { field } of FIELDS) {
@@ -34,9 +33,7 @@ function validate(values: Values): Errors {
 
 interface VaultSecretFormProps {
   orgId: string;
-  /** The structure the user of the panel is for; `null` for the user of the whole organization. */
   propertyId: string | null;
-  /** A credential is in the vault already: the form replaces it. */
   present: boolean;
 }
 
@@ -53,7 +50,6 @@ export function VaultSecretForm({ orgId, propertyId, present }: VaultSecretFormP
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<Values>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
-  // The refusal of the server, kept here and not in the mutation: a mutation that is watched keeps what it was asked (the password) until it is reset.
   const [failure, setFailure] = useState<unknown>(null);
 
   function close() {
@@ -74,11 +70,8 @@ export function VaultSecretForm({ orgId, propertyId, present }: VaultSecretFormP
     store.mutate(
       { orgId, ...(propertyId ? { propertyId } : {}), kind: 'OctoratePanel', username: values.username, password: values.password },
       {
-        // Write-only: the values leave the page as soon as the server has them.
         onSuccess: close,
-        // A refusal keeps the values in the fields, to be corrected, and says why under them.
         onError: setFailure,
-        // Whatever the end, the mutation is reset: it holds nothing of the request, not even after a refusal (the cache of the mutations never has the password).
         onSettled: () => store.reset(),
       },
     );

@@ -4,29 +4,24 @@
  * them and posts them back unchanged as the query of the call. The answers are those of `PublicMarketingController`.
  */
 
-/** Signed values of `/unsubscribe#…` (`MarketingUnsubscribeLinks.Create`): never the address, only its keyed hash. */
 export interface UnsubscribeLinkParams {
   orgId: string;
   emailHash: string;
   expiresAt: string;
   signature: string;
-  /** Only on the link of a campaign e-mail. */
   campaignId?: string;
 }
 
-/** Signed values of `/marketing/confirm#…` (`MarketingConfirmationLinks.Create`): the contact and the expiry, never the address or the org. */
 export interface ConfirmLinkParams {
   contactId: string;
   expiresAt: string;
   signature: string;
 }
 
-/** `POST /public/marketing/unsubscribe`: the same answer on a repeat. */
 export interface UnsubscribeResult {
   unsubscribed: boolean;
 }
 
-/** `POST /public/marketing/confirm`: `alreadyConfirmed` when the same link was used before. */
 export interface ConfirmResult {
   confirmed: boolean;
   alreadyConfirmed: boolean;

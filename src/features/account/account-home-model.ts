@@ -10,25 +10,18 @@ import type { OrgOverview } from '@/types/org-team.types';
 
 export const ACCOUNT_PROFILE_PATH = '/app/account/profile';
 
-// The pages of the account area that the next tasks bring (people, properties, integrations, security and the log). The home leads to
-// one only once it is in the route manifest, so it never offers a page that is not there.
 export const ACCOUNT_PEOPLE_PATH = '/app/account/people';
 export const ACCOUNT_PROPERTIES_PATH = '/app/account/properties';
 export const ACCOUNT_INTEGRATIONS_PATH = '/app/account/integrations';
 export const ACCOUNT_ACTIVITY_PATH = '/app/account/security';
 
-/** What may need a look, most urgent first (the order of the demo, `redesign/assets/ad-feed.js`). */
 export type HomeItemKind = 'billing' | 'invitations' | 'properties' | 'alloggiati';
 
 export interface HomeItem {
   kind: HomeItemKind;
-  /** How it feels: a payment that failed is not an invitation that waits. */
   tone: CalmTone;
-  /** What the sentence counts (invitations, properties). */
   count: number;
-  /** Whole days the oldest invitation has waited (invitations only). */
   days: number | null;
-  /** The pages that solve it, best first; the first one the person may open is the way out. */
   destinations: readonly string[];
 }
 
@@ -62,13 +55,11 @@ export function buildHomeItems(overview: OrgOverview): HomeItem[] {
   return items;
 }
 
-/** What decides whether a person may open a page of the app: the areas it works in and the permissions of its role. */
 export interface Reach {
   contexts: readonly { contextKey: AppContextKey }[];
   hasPermission: PermissionPredicate;
 }
 
-/** The first of `paths` that is a page of the app (in the route manifest) the person may open, or `undefined`. */
 export function reachableEntry(paths: readonly string[], { contexts, hasPermission }: Reach): RouteManifestEntry | undefined {
   for (const path of paths) {
     const entry = getManifestEntry(path);
@@ -77,7 +68,6 @@ export function reachableEntry(paths: readonly string[], { contexts, hasPermissi
   return undefined;
 }
 
-/** The seats of the plan taken by people who have joined: the overview counts the pending invitations in `seats.used` too. */
 export function activePeople(overview: OrgOverview): number | null {
   if (!overview.seats) return null;
   return Math.max(overview.seats.used - (overview.invitations?.pending ?? 0), 0);

@@ -12,8 +12,6 @@ import { PAYMENTS_KEY } from '@/queries/use-payments';
 import type { PaymentLedgerBooking, PaymentLedgerLine } from '@/types';
 import { PaymentLedgerPeriod } from '../components/payment-ledger-period';
 
-// These tests use the real client of the app, with its interceptors and its handler of the 403: only the transport is replaced. What they prove is what the screens
-// do with a refusal and with a «not found» when nothing of the ledger is mocked, as in the browser.
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
 
 const BOOKING_ID = 'b0c1d2e3-0000-4000-8000-000000000002';
@@ -97,7 +95,6 @@ describe('the payment ledger and a 403 (permission rule: a refusal is told in th
     expect(onForbidden).not.toHaveBeenCalled();
     expect(screen.queryByRole('table')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
-    // A refusal is not asked again.
     expect(requests).toEqual([`GET /payment-ledger/bookings/${BOOKING_ID}`]);
   });
 
@@ -115,7 +112,6 @@ describe('the payment ledger and a 403 (permission rule: a refusal is told in th
   });
 
   it('theClientOfTheApp_A403OnAnyOtherRead_SendsTheAppToNoAccess', async () => {
-    // The control of the two tests above: the handler is wired and the transport rejects as the real one does, so its silence there is the doing of the ledger read.
     reply = () => ({ status: 403, data: '' });
 
     await expect(axiosInstance.get('/payments')).rejects.toBeDefined();
@@ -131,7 +127,6 @@ describe('the payment ledger and a 404 (a booking that is not found is never the
     const client = renderScreen(<BookingLedgerSection bookingId={BOOKING_ID} />);
     await waitFor(() => expect(within(screen.getByRole('table')).getAllByTestId('payment-ledger-row')).toHaveLength(1));
 
-    // The next read (a payment recorded somewhere, the booking out of the reach of the caller) is a 404: the lines the query still holds are not the ledger of a booking that is not found.
     await act(async () => {
       await client.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
     });

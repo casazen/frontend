@@ -6,21 +6,14 @@ import { Button } from '@/components/ui/button';
 import { buildEmbedMountOptions, buildEmbedSnippet, type EmbedSnippetInput } from './embed-snippet';
 import { EmbedPreview } from './embed-preview';
 
-/** What the panel shows: the code and the widget, or why there is nothing to show yet (a home to choose, a page to write, places on their way). */
 export type SnippetPlan = { state: 'ready'; input: EmbedSnippetInput } | { state: 'waiting'; message: string };
 
-/** How long «Copiato» stays on the button. */
 const COPIED_MS = 2000;
 
-/**
- * The code to paste and, beside it, the widget it produces (E41/F03/US01, NF-147): the text in a `pre`, a button that copies exactly that text and says so, and the preview that
- * mounts the real loader from the same address with the same options. While the choice is not complete (`waiting`) nothing is shown but the reason: no half code, no copy.
- */
 export function EmbedSnippetPanel({ plan }: { plan: SnippetPlan }) {
   const { t } = useTranslation();
   const snippetTitleId = useId();
   const previewTitleId = useId();
-  // The text that was copied, not a flag: when the choice changes, the new code is not the one that was copied and the button says «Copia» again.
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   const snippet = plan.state === 'ready' ? buildEmbedSnippet(plan.input) : null;

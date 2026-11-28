@@ -64,7 +64,6 @@ describe('DayList (UI-16)', () => {
   });
 
   it('DayList_DayGivenAsAnInstant_ShowsTheDayItFallsOnInRome', () => {
-    // 22:30 UTC of the 16th is half past midnight of the 17th in Rome.
     renderList([{ id: 'a', day: '2026-10-16T22:30:00Z', title: 'Dopo mezzanotte' }]);
 
     const time = screen.getByRole('listitem').querySelector('time');
@@ -91,10 +90,8 @@ describe('DayList (UI-16)', () => {
     const link = screen.getByRole('link', { name: /Registrazione Rossi/ });
     expect(link).toHaveAttribute('href', '/app/long-rent/contracts/a');
     expect(link.textContent).toBe('Registrazione RossiElisa Rossi · Via Roma 12');
-    // 44 px high at least, as wide as its column, and no overlay: the redesign has its own hit area for links and buttons of a phone.
     expect(link).toHaveClass('min-h-11', 'min-w-0');
     expect(link.className).not.toMatch(/after:|absolute/);
-    // The date and the note are outside it.
     expect(link).not.toHaveTextContent('28 ott');
     expect(link).not.toHaveTextContent('tra 12 giorni');
   });
@@ -105,7 +102,6 @@ describe('DayList (UI-16)', () => {
     const [link] = screen.getAllByRole('link');
     expect(link).toHaveClass('group/open');
     expect(link.querySelector('span')).toHaveClass('group-hover/open:underline');
-    // A row that only reads has no link to underline.
     cleanup();
     renderList([{ id: 'c', date: '10 nov', title: 'Una riga da leggere' }]);
     expect(screen.getByText('Una riga da leggere')).not.toHaveClass('group-hover/open:underline');
@@ -155,7 +151,6 @@ describe('DayList (UI-16)', () => {
     expect(action).toHaveTextContent('Invia il sollecito');
     expect(action).toHaveClass('min-h-11');
     expect(screen.getAllByRole('button')).toHaveLength(2);
-    // Two siblings, not one inside the other.
     expect(screen.getByRole('button', { name: /Canone Bianchi/ })).not.toContainElement(action);
     fireEvent.click(action);
 
@@ -194,7 +189,6 @@ describe('DayList (UI-16)', () => {
     expect(screen.getByText(/Titolo_lunghissimo/)).toHaveClass('break-words');
     expect(screen.getByText(/Sottoriga_lunghissima/)).toHaveClass('break-words');
     expect(screen.getByText(/Mercoledì_prossimo/)).toHaveClass('break-words', 'min-w-0');
-    // The title is a block inside a column that can shrink (the link or the button around it has `min-w-0` too).
     expect(screen.getByText(/Titolo_lunghissimo/).parentElement).toHaveClass('min-w-0');
   });
 
@@ -254,7 +248,6 @@ describe('TodayList (UI-16)', () => {
   it('TodayList_DayWrittenWithATime_IsReadAsTheDayItStartsWith', () => {
     renderToday([
       { id: 'a', day: '2026-10-16T09:30:00', date: '09:30', title: 'Oggi alle nove e mezza' },
-      // The stored midnight of the day, as the API writes the dates of a stay: the day, not an instant.
       { id: 'b', day: '2026-10-17T00:00:00Z', date: '15:00', title: 'Domani alle tre' },
     ]);
 
@@ -264,9 +257,7 @@ describe('TodayList (UI-16)', () => {
 
   it('TodayList_DayGivenAsAnInstant_IsTheDayItFallsOnInRomeNotTheDayOfUtc', () => {
     renderToday([
-      // 22:30 UTC of the 16th is half past midnight of the 17th in Rome: tomorrow, and its date says so.
       { id: 'a', day: '2026-10-16T22:30:00Z', date: '00:30', title: 'Dopo mezzanotte' },
-      // 21:30 UTC of the 16th is 23:30 in Rome: still today.
       { id: 'b', day: '2026-10-16T21:30:00Z', date: '23:30', title: 'Prima di mezzanotte' },
       { id: 'c', day: '2026-10-19T08:00:00+02:00', title: 'Con un fuso' },
     ]);
@@ -317,7 +308,6 @@ describe('TodayList (UI-16)', () => {
   });
 
   it('TodayList_WithoutToday_TakesTodayInRomeNotTheDayOfUtc', () => {
-    // 22:30 UTC of the 16th is half past midnight of the 17th in Rome (summer time): there, the 17th is today.
     freezeClock('2026-10-16T22:30:00Z');
     render(
       <MemoryRouter>

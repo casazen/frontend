@@ -53,7 +53,6 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// A row of the official ISTAT list (ISTAT, 21/02/2026).
 const COMO: Comune = {
   istatCode: '013075',
   cadastralCode: 'C933',
@@ -119,7 +118,6 @@ describe('SupplierProfilePage comuni', () => {
   it('saves the ISTAT codes of the chosen comuni and the text left, once the list is available', async () => {
     renderPage();
     expect(await screen.findByTestId('supplier-comune-chip-013075')).toBeInTheDocument();
-    // Roma was written as text and is not covered by a code: the supplier can drop it.
     fireEvent.click(await screen.findByRole('button', { name: 'Rimuovi Roma' }));
     fireEvent.click(screen.getByRole('button', { name: /Salva i dati/ }));
 

@@ -41,9 +41,7 @@ export interface CoastData {
 
 export interface LocalGen<D> {
   data: D;
-  /** Is the point on land? (in the coordinates of the generator) */
   land: (x: number, y: number) => boolean;
-  /** Is the point on land, away from the cliff? */
   margin: (x: number, y: number) => boolean;
 }
 
@@ -55,7 +53,6 @@ export function genCoast(seed: string, wide: boolean): LocalGen<CoastData> {
     [57.5, 62.2], [53, 60.6], [48.8, 58.4], [45.2, 56.4], [43.8, 58.8], [47.4, 62.6], [51.8, 66.2], [54.6, 69.4], [50.5 + J(2), 74.5], [45 + J(3), 80], [41 + J(3), 88],
   ];
   const tip: Pt = [45.2, 56.8];
-  // rotated drawings need the coast to go on beyond the canonical frame
   const chain: Pt[] = wide
     ? [[ctrl[0][0] + 7, -45], [ctrl[0][0] + 3.5, -26], ...ctrl, [ctrl[ctrl.length - 1][0] - 3, 102], [ctrl[ctrl.length - 1][0] - 6, 118], [ctrl[ctrl.length - 1][0] - 9, 135]]
     : ctrl;
@@ -83,7 +80,6 @@ export function genCoast(seed: string, wide: boolean): LocalGen<CoastData> {
     if (!land(p[0] + n[0] * 1.6, p[1] + n[1] * 1.6)) n = [-n[0], -n[1]];
     return n;
   });
-  // railway and main road behind the town, park, main street
   const railCtrl: Pt[] = ([[15, 4], [13.5, 14], [12, 28], [12.5, 44], [15, 58], [19, 70], [23, 96]] as Pt[]).map((p): Pt => [p[0] + J(1.2), p[1]]);
   const roadCtrl: Pt[] = ([[35, 4], [31.5, 14], [28, 26], [26, 40], [26.5, 54], [29, 66], [33.5, 96]] as Pt[]).map((p): Pt => [p[0] + J(1.2), p[1]]);
   const viaCtrl: Pt[] = [[26, 40.5 + J(1.5)], [35, 42.5], [43, 44.2 + J(1)], [51, 43.4], [58, 41.2], [66, 38.6]];
@@ -97,7 +93,6 @@ export function genCoast(seed: string, wide: boolean): LocalGen<CoastData> {
   const road = samples(roadCtrl, 1.2);
   const park = blobPts(rand, 57 + J(3), 22 + J(2), 9, 5.8, 9, 0.2, J(0.4));
   const parkS = sampleCurve(park, true, 0.8);
-  // old town: BSP blocks inside an ellipse, then cut along the cliff
   const oc: Pt = [49 + J(2), 49.5 + J(2)];
   const oRx = 21.5 + J(1.5);
   const oRy = 17 + J(1.2);
@@ -130,7 +125,6 @@ export function genCoast(seed: string, wide: boolean): LocalGen<CoastData> {
   const church = free.filter((b) => !drop.has(b)).reduce<Poly | null>((best, b) => (!best || distChurch(b) < distChurch(best) ? b : best), null);
   const tone = (b: Poly): number => (b === church ? 3 : rand() < 0.2 ? 2 : rand() < 0.5 ? 1 : 0);
   const blockList: Block[] = blocks.filter((b) => !drop.has(b)).map((b) => ({ p: b, t: tone(b) }));
-  // new town: modern, nearly orthogonal blocks aligned with the ring of the old town and with the coast
   const newBsp = bspField(rand, wide ? FRAME_WIDE : FRAME, {
     target: 20,
     jitter: 0.13,

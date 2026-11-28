@@ -56,12 +56,7 @@ function renderPage(initial = '/app/short-rent/guests') {
   );
 }
 
-/** The table of the page, once it is there. */
 const findTable = () => screen.findByRole('table', { name: i18n.t('guests.title') });
-/**
- * A cell of the table of the page, once it is there. The table of the last search stays while the next one is on its way, so
- * "the table is there" is not "the new rows are": it waits for the cell.
- */
 function findInTable(text: string) {
   return waitFor(() => within(screen.getByRole('table', { name: i18n.t('guests.title') })).getByText(text));
 }
@@ -84,8 +79,6 @@ describe('GuestsPage', () => {
     expect(screen.queryByRole('navigation', { name: i18n.t('listView.pagination.label') })).not.toBeInTheDocument();
   });
 
-  // UI-07 (DataView) and UI-14 (the unified list): the list is a table where there is room and a list of cards on a phone; the page
-  // has both and a media query shows one, so a test that means "the row is there" asks the table (or the list) and not the page.
   it('shows each guest once in the table and once as a card that opens the guest', async () => {
     vi.mocked(guestsApi.getAll).mockResolvedValue(page([guest('g1', 'Mario')], 1));
 
@@ -109,7 +102,6 @@ describe('GuestsPage', () => {
       expect(table.getByRole('columnheader', { name: i18n.t(name) })).toBeInTheDocument();
     }
     expect(table.queryByRole('columnheader', { name: i18n.t('guests.phone') })).not.toBeInTheDocument();
-    // No last stay, no stays, no documents, no marketing consent: the list the API gives has none of them, and none is made up.
     expect(table.getAllByRole('columnheader').map((cell) => cell.textContent)).not.toContain('Marketing');
     expect(table.getByText('—')).toBeInTheDocument();
 
@@ -148,7 +140,6 @@ describe('GuestsPage', () => {
     renderPage();
     fireEvent.click(within(await screen.findByRole('navigation', { name: i18n.t('listView.pagination.label') })).getByRole('button', { name: i18n.t('listView.pagination.next') }));
 
-    // The second page has not come: the first is still there, and the list says it is working.
     await waitFor(() => expect(guestsApi.getAll).toHaveBeenCalledTimes(2));
     expect(within(await findTable()).getByText('Mario Rossi')).toBeInTheDocument();
     expect(screen.getByTestId('guest-list')).toHaveAttribute('aria-busy', 'true');
@@ -168,7 +159,6 @@ describe('GuestsPage', () => {
 
       await waitFor(() => expect(guestsApi.getAll).toHaveBeenLastCalledWith({ search: 'rossi', page: 1, pageSize: 20 }), { timeout: 3000 });
       expect(screen.getByTestId('search')).toHaveTextContent('?q=rossi');
-      // One request for the word, not one for each key.
       expect(guestsApi.getAll).toHaveBeenCalledTimes(2);
     });
 
@@ -178,7 +168,6 @@ describe('GuestsPage', () => {
       renderPage('/app/short-rent/guests?q=%20mario%20&page=1');
 
       await findInTable('Mario Rossi');
-      // The spaces around the word are the person's, they are not asked of the API.
       expect(guestsApi.getAll).toHaveBeenCalledWith({ search: 'mario', page: 1, pageSize: 20 });
       expect(screen.getByRole('searchbox')).toHaveValue(' mario ');
     });

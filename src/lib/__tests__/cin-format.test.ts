@@ -38,10 +38,10 @@ describe('cin-format (mirror of backend CinFormat)', () => {
   );
 
   it.each([
-    '015146-CNI-01894', // Lombardy CIR, not a CIN
-    'IT058091C27G5FFZDZX', // 19 characters
-    'IT058091C2', // no random part
-    'CIN: IT058091C27G5FFZDZ', // prefix is not stripped
+    '015146-CNI-01894',
+    'IT058091C27G5FFZDZX',
+    'IT058091C2',
+    'CIN: IT058091C27G5FFZDZ',
     'IT058091C2.7G5FFZDZ',
     'BAD',
   ])('isValidCin_NotOfficialFormat_ReturnsFalse (%s)', (value) => {

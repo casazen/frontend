@@ -32,7 +32,6 @@ describe.each([
     await expect(read()).resolves.toBeNull();
 
     const config = get.mock.calls[0]![1]!;
-    // Only a 403 is taken as an answer: the other failures still reach the page as errors.
     expect(config.validateStatus!(403)).toBe(true);
     expect(config.validateStatus!(200)).toBe(true);
     expect(config.validateStatus!(401)).toBe(false);

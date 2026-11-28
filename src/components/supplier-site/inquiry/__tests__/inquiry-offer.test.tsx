@@ -49,7 +49,6 @@ const view: PublicBookingView = {
   actions: { ...none, canCancel: true, canRespondToOffer: true },
 };
 
-/** A quiet call that runs what it is given with the credentials, as the hook of the page does, and answers `outcome`. */
 const quietWith = (outcome: Awaited<ReturnType<QuietCall>>) =>
   vi.fn<QuietCall>(async (call) => {
     await call(access);
@@ -119,7 +118,6 @@ describe('La mia richiesta: the offer of a request on measure', () => {
     expect(await screen.findByRole('button', { name: 'Scrivi a Rossi Servizi' })).toBeInTheDocument();
     expect(screen.queryByTestId('supplier-inquiry-offer-accept')).toBeNull();
     expect(screen.getByRole('alert')).toHaveTextContent('non ti abbiamo addebitato nulla');
-    // Turning the offer down stays possible.
     expect(screen.getByTestId('supplier-inquiry-offer-decline')).toBeInTheDocument();
   });
 

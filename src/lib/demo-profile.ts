@@ -29,14 +29,11 @@ const PERSONA_PROFILES: Record<ExtendedDemoProfile, DemoPersonaProfile> = {
   'long-term': { role: 'LongTermLandlord', rentalType: 'LongTerm', org: DEMO_HOST_ORG, onboarded: true },
   dual: { role: 'PropertyOwner', rentalType: 'Both', org: DEMO_HOST_ORG, onboarded: true },
   triple: { role: 'Admin', rentalType: 'Both', org: DEMO_HOST_ORG, onboarded: true },
-  // A platform admin has no host org: the guard lets it through to the admin routes (A1-01).
   admin: { role: 'Admin', rentalType: null, org: null, onboarded: false },
   supplier: { role: 'Supplier', rentalType: null, org: DEMO_SUPPLIER_ORG, onboarded: true },
-  // New user: no org and no completed onboarding, so the guard opens the wizard.
   onboarding: { role: 'PropertyOwner', rentalType: null, org: null, onboarded: false },
 };
 
-/** The `/users/me` profile of a demo persona: org and onboarding state follow the persona. */
 export function buildDemoProfile(persona: ExtendedDemoProfile): UserDetail {
   const { role, rentalType, org, onboarded } = PERSONA_PROFILES[persona];
   return {
@@ -55,7 +52,6 @@ export function buildDemoProfile(persona: ExtendedDemoProfile): UserDetail {
   };
 }
 
-/** Profile of the current demo persona (`?demoProfile=`, session, or `VITE_DEMO_PROFILE`). */
 export function getDemoProfile(href?: string): UserDetail {
   return buildDemoProfile(getDemoProfileKey(href));
 }

@@ -16,9 +16,7 @@ const HELP: Readonly<Record<SenderStepId, string>> = {
 };
 
 interface SenderWizardExitProps {
-  /** Leaves the wizard: what was answered stays as the draft of the wizard (on the server too), and nothing is changed by leaving. */
   onSaveAndExit: () => void;
-  /** A request of the wizard is in flight (the change of the sender, the test, the declaration, the credentials): like every button of the card, both are shut until it ends. */
   busy: boolean;
 }
 

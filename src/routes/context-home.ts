@@ -10,11 +10,6 @@ import {
 import type { FeatureFlags } from '@/config/feature-flags';
 import { profilePathForContext } from '@/lib/profile-path';
 
-/**
- * The first page of the menu of an area that the user can open; failing that, the profile of the area. The profile asks for no
- * permission and is in the menu of the user (the header, the sheet of the phone), not in the menus of a rental area any more: a
- * user whom the area gives nothing else still lands on a page that opens. `undefined` when there is none.
- */
 export function getFirstOpenablePage(
   contextKey: AppContextKey,
   hasPermission: PermissionPredicate,

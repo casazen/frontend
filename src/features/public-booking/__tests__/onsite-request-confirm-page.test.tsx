@@ -60,7 +60,6 @@ describe('OnSiteRequestConfirmPage', () => {
     });
 
     renderPage('?token=tok_123');
-    // Nothing is sent on page load (a mail scanner opening the link confirms nothing).
     expect(publicBookingApi.confirmOnSiteRequestEmail).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Conferma e invia la richiesta' }));
 
@@ -88,7 +87,6 @@ describe('OnSiteRequestConfirmPage', () => {
     expect(within(done).getByTestId('checkout-outcome-booking-code')).toHaveTextContent('K7M4Q-9XP2H');
     expect(within(done).getByRole('button', { name: 'Copia il codice K7M4Q-9XP2H' })).toBeInTheDocument();
     expect(within(done).getByTestId('onsite-confirm-manage')).toHaveAttribute('href', '/book/demo-casazen/my-bookings?code=K7M4Q-9XP2H');
-    // The code is what the guest keeps, not the id of the booking.
     expect(done).not.toHaveTextContent(BOOKING_ID);
   });
 

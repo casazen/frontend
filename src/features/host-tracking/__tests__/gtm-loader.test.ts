@@ -39,7 +39,6 @@ describe('loadGtm', () => {
     expect(loadGtm(id)).toBe(false);
     expect(document.head.querySelector(GTM_SCRIPTS)).toBeNull();
     expect(document.querySelector('script[src*="googletagmanager"]')).toBeNull();
-    // Not even the queue of the tag manager is created by an id that is not one.
     expect(layer()).toBeUndefined();
   });
 
@@ -66,7 +65,6 @@ describe('loadGtm', () => {
   it('loadGtm_SecondCall_DoesNothing', () => {
     expect(loadGtm('GTM-ABC123')).toBe(true);
 
-    // The same id again (a re-render, a route change, another page of the site mounting the same component) and another one: a page has one container.
     expect(loadGtm('GTM-ABC123')).toBe(false);
     expect(loadGtm('GTM-OTHER99')).toBe(false);
 
@@ -144,7 +142,6 @@ describe('gtmContainerOf', () => {
     },
   );
 
-  // The address of these pages is the key to a booking (the code of `/my-bookings?code=`, the token of the links of the e-mails): a tag manager reads the whole address, so it is not loaded there.
   it.each([
     ['/my-bookings'],
     ['/my-bookings?code=K7M4Q-9XP2H'],

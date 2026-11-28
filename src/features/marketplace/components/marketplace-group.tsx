@@ -7,10 +7,6 @@ import { Button } from '@/components/ui/button';
 import type { MarketplaceGroupId } from '@/types';
 import { CHANNELS_PAGE_PATH } from '../lib/marketplace-paths';
 
-/**
- * The test id of the section of each group. Home services and Partners keep the ids the sections of the old page had
- * (`marketplace-suppliers-section`, `marketplace-partners-section`), which the specs of the marketplace read.
- */
 const GROUP_TEST_ID: Record<MarketplaceGroupId, string> = {
   salesChannels: 'marketplace-group-salesChannels',
   connectedTools: 'marketplace-group-connectedTools',
@@ -19,7 +15,6 @@ const GROUP_TEST_ID: Record<MarketplaceGroupId, string> = {
   partners: 'marketplace-partners-section',
 };
 
-/** One of the five groups of Scopri: its title, a line that says what it holds, and what it holds. */
 export function MarketplaceGroup({ id, children }: { id: MarketplaceGroupId; children: ReactNode }) {
   const { t } = useTranslation();
 
@@ -31,7 +26,6 @@ export function MarketplaceGroup({ id, children }: { id: MarketplaceGroupId; chi
   );
 }
 
-/** The cards of a group, side by side where there is room. */
 export function MarketplaceCards({ children }: { children: ReactNode }) {
   return (
     <ul role="list" className="grid list-none gap-3 pt-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -54,7 +48,6 @@ export function ChannelManagerOffNote({ groupId }: { groupId: MarketplaceGroupId
   );
 }
 
-/** A group whose cards could not be read: it says so, and the person can ask again. */
 export function MarketplaceGroupError({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
 

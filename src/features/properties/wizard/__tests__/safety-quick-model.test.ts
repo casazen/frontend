@@ -192,7 +192,6 @@ describe('safety quick model', () => {
       floorAreasSqm: [250],
     });
     expect(command.confirm).toBe(true);
-    // 250 m² on one floor: one extinguisher every 200 m² or fraction.
     expect(command.items.find((i) => i.code === 'FireExtinguishers')).toMatchObject({ answer: 'Present', quantity: 2 });
     expect(answers(command)).toEqual({
       FireExtinguishers: 'Present',
@@ -231,7 +230,6 @@ describe('safety quick model', () => {
         SystemsCompliance: { answer: 'ToReview' },
       },
     );
-    // The host now says the home is all electric and not a business: the detectors and the systems are not asked.
     const command = quickCommand(state({ heat: 'no', entrepreneurial: false, present: ['FireExtinguishers'] }), stored, noHints);
 
     expect(command.items.find((i) => i.code === 'GasDetector')).toMatchObject({
@@ -242,7 +240,6 @@ describe('safety quick model', () => {
       checkedOn: '2026-10-01',
     });
     expect(command.items.find((i) => i.code === 'FireExtinguishers')).toMatchObject({ answer: 'Present', quantity: 1, evidenceDocumentId: 'doc-1' });
-    // `ToReview` is never sent back.
     expect(command.items.find((i) => i.code === 'SystemsCompliance')?.answer).toBeNull();
     expect(command.facts.floorAreasSqm).toEqual([60]);
   });

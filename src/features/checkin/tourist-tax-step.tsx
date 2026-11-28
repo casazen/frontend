@@ -27,39 +27,23 @@ import {
 
 type Money = (amount: number) => string;
 
-/** What a new read of the tax answers (`refetch` of the query): the tax as the server says it now, or the failure of the read. */
 interface TaxRead {
   data?: PublicTouristTax;
   isError?: boolean;
 }
 
 interface TouristTaxStepProps {
-  /** The check-in link: the only access check of the page. */
   token: string;
-  /** What the API says now; `null` when it could not be read (the step says so and offers to try again). */
   view: PublicTouristTax | null;
-  /** Reads the tax again: after a payment the state comes from the server, never from the browser's own result. The answer says what the server says now. */
   refetch: () => Promise<TaxRead | undefined>;
-  /** A read is under way. */
   fetching: boolean;
-  /**
-   * Under the card of a check-in that is already completed (the server lets a completed check-in still pay its tax): the card says only what can still be paid and what was paid,
-   * and there is no step to leave.
-   */
   completed?: boolean;
-  /** Told when the guest's confirmation of the payment starts and ends: the page holds its own buttons («Indietro», «Avanti») while the money moves. */
   onPayingChange?: (paying: boolean) => void;
-  /**
-   * Told when the payment turns out not to be possible however often it is asked (the server answers that it is not offered): the page lets «Avanti» go even when the organization asks for the
-   * tax before the lock code, as the backend does not hold the code for a payment that cannot be made.
-   */
   onCannotPayChange?: (cannotPay: boolean) => void;
 }
 
-/** The tax of each guest by position (no name, never why one is exempt) and what is paid now: the figures are the API's, nothing is added up or taken away here. */
 function TaxFigures({ view, money }: { view: PublicTouristTax; money: Money }) {
   const { t } = useTranslation();
-  // The tax of the stay differs from what can be paid now when the price of the booking already included a part of it: both figures are said, the page works out neither.
   const partIncluded = view.amountDue !== null && view.amountDue !== view.payable;
 
   return (
@@ -129,21 +113,17 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange, onCannotP
   const [clientStatus, setClientStatus] = useState<ClientPaymentStatus | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
-  // The server is being asked again: the buttons wait, and a second ask does not start while one is under way.
   const [checking, setChecking] = useState(false);
   const settling = useRef(false);
   const failure = intent.error;
-  // A payment is under way when the guest confirmed one, or the server says one of the stay is (another tab, a method that redirected the guest and brought them back).
   const awaiting = clientStatus === 'succeeded' || clientStatus === 'processing' || problemCodeOf(failure) === TOURIST_TAX_IN_PROGRESS_CODE;
   const stopped = awaiting && attempt >= TOURIST_TAX_MAX_POLLS;
-  // The server will not give an intent (the payment is not offered): the guest is told, and the page lets «Avanti» go (the tax is paid at the property).
   const cannotPay = failure !== null && paymentCannotBeMade(failure);
   useEffect(() => {
     onCannotPayChange?.(cannotPay);
     return () => onCannotPayChange?.(false);
   }, [cannotPay, onCannotPayChange]);
 
-  // The intent is asked for once for each amount the server says can be paid now (a different amount is a new intent: the server cancels the old one).
   const asked = useRef<string | null>(null);
   const amountKey = `${view.payable}|${view.currency}`;
   useEffect(() => {
@@ -177,7 +157,6 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange, onCannotP
     }
   }, [mutate, refetch]);
 
-  // A 404 or a 409 says the tax moved (the payment is not offered any more or the link is gone, nothing left to pay, one is under way): the page reads it again and shows what it says.
   useEffect(() => {
     const status = failure === null ? undefined : getHttpStatus(failure);
     if (status === 404 || status === 409) void refetch();
@@ -251,7 +230,6 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange, onCannotP
     );
   }
 
-  // What the button says is what will be charged: the amount and the currency of the intent, as the server made it.
   const charged = formatTaxMoney(session.amount, session.currency, moneyLocaleOf(i18n.language));
   const elementLocale = paymentElementLocaleOf(i18n.language);
   return (
@@ -262,11 +240,9 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange, onCannotP
         </p>
       )}
       <StripeIntentPayment
-        // A new intent (another amount) or another language is a new element: the secret and the language of an element cannot change.
         key={`${session.paymentIntentId || session.clientSecret}:${elementLocale}`}
         mode="payment"
         publishableKey={session.publishableKey}
-        // The intent is on the connected account of the organization: Stripe.js is opened with it.
         stripeAccountId={session.stripeAccountId}
         clientSecret={session.clientSecret}
         locale={elementLocale}
@@ -279,7 +255,6 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange, onCannotP
           setClientStatus(status);
         }}
         onError={setPaymentError}
-        // A declined card leaves the intent as it was; any other refusal may leave the server in another state (cancelled by the host, paid with the answer lost): it is asked.
         onRefusal={(refusal) => {
           if (refusalLeavesPaymentOpen(refusal)) void settle();
         }}
@@ -288,7 +263,6 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange, onCannotP
   );
 }
 
-/** One sentence for a tax that needs nothing from the guest here (the outlooks that are not «payable»), and the confirmation of one that was paid. */
 function OutcomeNotice({ outlook, view, money }: { outlook: Exclude<GuestTaxOutlook, 'payable'>; view: PublicTouristTax; money: Money }) {
   const { t } = useTranslation();
 
@@ -318,7 +292,6 @@ function OutcomeNotice({ outlook, view, money }: { outlook: Exclude<GuestTaxOutl
 
 function TouristTaxContent({ token, view, refetch, fetching, completed = false, onPayingChange, onCannotPayChange }: TouristTaxStepProps & { view: PublicTouristTax }) {
   const { t, i18n } = useTranslation();
-  // The payment cannot be made (the server says it is not offered): the sentence that asks to pay before going on is dropped, and the page is told to let «Avanti» go.
   const [cannotPay, setCannotPay] = useState(false);
   const reportCannotPay = useCallback(
     (value: boolean) => {

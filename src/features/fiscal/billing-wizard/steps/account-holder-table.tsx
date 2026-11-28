@@ -9,9 +9,7 @@ import { holderChangesRequest, holderChoiceOf, holderKey } from '../billing-wiza
 import { ACCOUNT_HOLDER_PORTALS, type BillingWizardValues, type HolderChoice } from '../billing-wizard-schema';
 
 interface AccountHolderTableProps {
-  /** The listings of the organization, by name. */
   properties: readonly Pick<Property, 'id' | 'name'>[];
-  /** The holders the server has where they differ from the default. */
   overrides: readonly ChannelAccountHolder[];
 }
 
@@ -52,7 +50,6 @@ export function AccountHolderTable({ properties, overrides }: AccountHolderTable
       return next;
     });
   const allSelected = properties.length > 0 && selected.size === properties.length;
-  // What differs from what the server has: a cell the person put back to what it was is not a change.
   const pending = holderChangesRequest(changes, overrides)?.length ?? 0;
   const holderName = (holder: HolderChoice) => (holder === 'default' ? t('billingWizard.channels.exceptions.sameAsOrganization', { holder: t(`billingWizard.channels.holder.names.${defaultHolder}`) }) : t(`billingWizard.channels.holder.names.${holder}`));
 

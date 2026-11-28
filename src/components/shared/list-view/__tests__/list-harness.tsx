@@ -10,7 +10,6 @@ import { STAYS, stayList, type Stay } from './list-fixtures';
 
 export const SCOPE: ListViewsScope = { userId: 'auth0|tester', context: 'short-rent' };
 
-/** The address, and a way to go back, for a test to look at: the list writes its state there. */
 function Probe() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,11 +29,9 @@ export interface HarnessOptions {
   list?: ListDefinition<Stay>;
   rows?: readonly Stay[];
   props?: Partial<ListViewProps<Stay>>;
-  /** Anything else to put in the router next to the list: the host of the global drawer (UI-15). */
   beside?: ReactNode;
 }
 
-/** The list in a memory router, in English. */
 export function renderList({ initial = '/app/short-rent/bookings', list = stayList(), rows = STAYS, props = {}, beside }: HarnessOptions = {}) {
   const view = render(
     <I18nextProvider i18n={i18n}>
@@ -48,24 +45,19 @@ export function renderList({ initial = '/app/short-rent/bookings', list = stayLi
   return { ...view, list };
 }
 
-/** The address now (`?chip=pending`). */
 export const addressNow = () => screen.getByTestId('search').textContent ?? '';
 export const goBack = () => fireEvent.click(screen.getByTestId('probe-back'));
 
-/** The table, and the list of cards, of the list of stays. */
 export const stayTable = () => screen.getByRole('table', { name: 'Stays' });
 export const stayCards = () => screen.getByRole('list', { name: 'Stays' });
 
-/** The names in the first column of the table, in the order they are in. */
 export const namesInTable = () => within(stayTable()).getAllByRole('rowheader').map((cell) => cell.textContent);
 
-/** Opens the menu of a button the way a keyboard does (Radix opens on the pointer going down, which a click does not send). */
 export async function openMenu(button: HTMLElement) {
   fireEvent.keyDown(button, { key: 'Enter' });
   return screen.findByRole('menu');
 }
 
-/** Makes `matchMedia` say that the screen is a phone (under 48rem), and puts it back afterwards. */
 export function pretendToBeAPhone() {
   const original = window.matchMedia;
   Object.defineProperty(window, 'matchMedia', {
@@ -85,5 +77,4 @@ export function pretendToBeAPhone() {
   return () => Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: original });
 }
 
-/** Lets a handler that ends in a promise settle. */
 export const settle = () => act(async () => undefined);

@@ -22,19 +22,13 @@ type Working = 'download' | 'preview' | 'revoke' | null;
 
 interface SigningStepProps {
   leaseId: string;
-  /** The flow as the wizard has it: its step 7 says whether the contract was already downloaded to be signed. */
   flow: LeaseDraftFlow;
-  /** The version the next change is made on. */
   getVersion: () => number;
-  /** What the server answers to a change made outside the saving: the new version and the flow, which the wizard keeps. */
   onServerFlow: (version: number, flow: LeaseDraftFlow) => void;
-  /** A stale version, or a lease that is not a draft any more, stops the wizard and it says why: true then. */
   stopOn: (error: unknown) => boolean;
-  /** Sends what is still waiting to be saved; false when something could not be saved. */
   flush: () => Promise<boolean>;
 }
 
-/** The code of a failed call after `withJsonErrorBody` (a blob answer has the problem in its body). */
 function problemCodeOf(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
 }
@@ -61,7 +55,6 @@ export function SigningStep({ leaseId, flow, getVersion, onServerFlow, stopOn, f
   const templateInApproval = refused === 'template' || signing.data?.contractUnavailableCode === 'contract_template_not_approved';
   const dataMissing = refused === 'data' || signing.data?.contractUnavailableCode === 'contract_data_missing';
 
-  /** Takes the download back on the server: the toast after the download and the button both call it. */
   const revoke = async () => {
     const revoked = await leasesApi.revokeSent(leaseId, getVersion());
     onServerFlow(revoked.version, revoked.flow);
@@ -119,7 +112,6 @@ export function SigningStep({ leaseId, flow, getVersion, onServerFlow, stopOn, f
     }
   };
 
-  // The signed copy is in: the lease is not a draft any more, and «Dopo la firma» reads it from the server.
   const signed = () => {
     forgetReads();
     navigate(leaseEditPath(leaseId, AFTER_STEP), { replace: true });
@@ -205,7 +197,6 @@ export function SigningStep({ leaseId, flow, getVersion, onServerFlow, stopOn, f
         </div>
       )}
 
-      {/* Not inside a branch above: a window that lives in a branch is lost when the branch changes. */}
       <SignedContractDialog leaseId={leaseId} open={uploadOpen} onOpenChange={setUploadOpen} onSigned={signed} />
     </div>
   );

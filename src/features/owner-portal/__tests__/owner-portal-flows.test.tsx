@@ -39,7 +39,6 @@ import { ownerPortalApi } from '@/api/ownerPortal.api';
 
 const api = vi.mocked(ownerPortalApi);
 
-/** A refusal as the API client raises it: the status and a ProblemDetails body, and the request that was sent (as axios keeps it). */
 function refusal(status: number, code: string, sent?: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), data: sent === undefined ? undefined : JSON.stringify(sent) };
   return new AxiosError('refused', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: { status, code } });
@@ -155,7 +154,6 @@ describe('the owner stays: a request is never a confirmed stay (NF-111, AC-NF111
     renderPortal('/portale-proprietari/calendario/p1');
     await fillAndSend();
     expect((await screen.findByTestId('owner-stay-refused')).textContent).toContain('non sono più libere');
-    // The rule is shown before the form, in words.
     expect(screen.getByTestId('owner-stay-rule').textContent).toContain('Almeno 14 giorni di preavviso');
     expect(screen.getByTestId('owner-stay-rule').textContent).toContain('ne restano 26');
   });
@@ -172,7 +170,6 @@ describe('the owner stays: a request is never a confirmed stay (NF-111, AC-NF111
     expect(byState('sync_failed').textContent).not.toMatch(/Confermato\b/);
     expect(byState('requested').textContent).toContain('Le date non sono ancora bloccate');
     expect(byState('confirmed').textContent).toContain('Confermato');
-    // A refused or withdrawn stay has no button to withdraw it again.
     expect(within(byState('rejected')).queryByTestId('owner-stay-cancel')).toBeNull();
     expect(within(byState('cancelled')).queryByTestId('owner-stay-cancel')).toBeNull();
     expect(within(byState('confirmed')).getByTestId('owner-stay-cancel')).toBeInTheDocument();
@@ -201,7 +198,6 @@ describe('the delegated contacts (NF-111, AC-NF111-4)', () => {
 
     const save = within(card).getByTestId('owner-contact-save');
     expect(save).toBeDisabled();
-    // Taking one permission away changes that one only.
     fireEvent.click(within(card).getByTestId('owner-contact-c1-documents.read'));
     expect(within(card).getByTestId('owner-contact-c1-calendar.read')).toBeChecked();
     expect(within(card).getByTestId('owner-contact-c1-inbox.use')).toBeChecked();
@@ -230,7 +226,6 @@ describe('the delegated contacts (NF-111, AC-NF111-4)', () => {
     fireEvent.change(within(form).getByTestId('owner-invite-last-name'), { target: { value: 'Verdi' } });
     fireEvent.change(within(form).getByTestId('owner-invite-email'), { target: { value: 'anna.verdi@example.com' } });
 
-    // No permission chosen: nothing is sent, and the form says why (no permission is not «all»).
     fireEvent.click(within(form).getByTestId('owner-invite-submit'));
     expect((await within(form).findByTestId('owner-invite-problem')).textContent).toContain('nessun permesso non significa');
     expect(api.inviteContact).not.toHaveBeenCalled();
@@ -239,7 +234,6 @@ describe('the delegated contacts (NF-111, AC-NF111-4)', () => {
     fireEvent.click(within(form).getByTestId('owner-invite-submit'));
     await waitFor(() => expect(api.inviteContact).toHaveBeenCalledTimes(1));
     expect(api.inviteContact).toHaveBeenCalledWith({ email: 'anna.verdi@example.com', firstName: 'Anna', lastName: 'Verdi', permissions: ['accounting.read'] });
-    // The contact has no access until it accepts, and the page says so.
     expect((await screen.findByTestId('owner-invite-sent')).textContent).toContain('Non ha ancora nessun accesso');
   });
 
@@ -258,7 +252,6 @@ describe('the delegated contacts (NF-111, AC-NF111-4)', () => {
   });
 
   it('OwnerContact_ALapsedInvitation_CanBeWithdrawnToo_WithTheSameQuestion_AndHasNoPermissionToChange', async () => {
-    // For the server a lapsed invitation is still «invited» and counts in the most of 10 contacts: with no way to clear it, ten of them would stop every new invitation.
     api.listContacts.mockResolvedValue([contact(['calendar.read'], 'expired')] as never);
     api.revokeContact.mockResolvedValue(contact(['calendar.read'], 'revoked') as never);
     renderPortal('/portale-proprietari/contatti');
@@ -296,7 +289,6 @@ describe('the delegated contacts (NF-111, AC-NF111-4)', () => {
     fireEvent.click(within(form).getByTestId('owner-invite-submit'));
 
     expect((await within(form).findByTestId('owner-invite-refused')).textContent).toContain('già tra i tuoi contatti');
-    // What the cache of the mutations keeps of the failure is the status and the answer, not the body that was sent.
     const kept = client.getMutationCache().getAll().map((mutation) => mutation.state.error as AxiosError | null);
     expect(kept.length).toBeGreaterThan(0);
     for (const error of kept) {
@@ -316,7 +308,6 @@ describe('the inbox (NF-111, AC-NF111-5)', () => {
     renderPortal('/portale-proprietari/messaggi?topic=document&documentId=d1');
 
     const form = await screen.findByTestId('owner-new-conversation');
-    // The item of the link is already chosen once it is known to be the person's own.
     await waitFor(() => expect((within(form).getByTestId('owner-new-reference') as HTMLSelectElement).value).toBe('d1'));
     fireEvent.change(within(form).getByTestId('owner-new-subject'), { target: { value: 'Scadenza' } });
     fireEvent.change(within(form).getByTestId('owner-new-body'), { target: { value: 'Quando scade il mandato?' } });
@@ -394,7 +385,6 @@ describe('the inbox (NF-111, AC-NF111-5)', () => {
     await waitFor(() => expect(api.postMessage).toHaveBeenCalledTimes(1));
     expect(api.postMessage).toHaveBeenCalledWith('cv1', 'Ecco il documento', pdf);
 
-    // The server scans the file and refuses it: said in words, and nothing the person typed is lost.
     expect((await within(reply).findByTestId('owner-reply-refused')).textContent).toContain('password');
     expect((within(reply).getByTestId('owner-reply-body') as HTMLTextAreaElement).value).toBe('Ecco il documento');
   });
@@ -416,7 +406,6 @@ describe('a refusal is a refusal, whatever an earlier read left on the screen (A
     renderPortal('/portale-proprietari/messaggi/cv1');
     expect(await screen.findByTestId('owner-messages')).toBeInTheDocument();
 
-    // The access is withdrawn (the ownership ended, the contact was removed): the next read is a 404, and the old words leave the screen with it.
     api.listMessages.mockRejectedValue(refusal(404, 'owner_conversation_not_found'));
     fireEvent.click(screen.getByRole('button', { name: 'Aggiorna' }));
     const notice = await screen.findByTestId('owner-messages-error');
@@ -434,7 +423,6 @@ describe('a refusal is a refusal, whatever an earlier read left on the screen (A
     const form = await screen.findByTestId('owner-new-conversation');
     await waitFor(() => expect((within(form).getByTestId('owner-new-reference') as HTMLSelectElement).value).toBe('d1'));
 
-    // The access to the documents is withdrawn: the next read is refused, and the document of the answer before it is not on offer any more.
     api.listDocuments.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
     await act(async () => {
       await client.refetchQueries({ queryKey: [OWNER_PORTAL_KEY, 'documents'] });
@@ -458,7 +446,6 @@ describe('what the portal keeps (ADR-011, NF-111)', () => {
     expect(client.getQueryCache().getAll().length).toBeGreaterThan(0);
 
     act(() => unmount());
-    // Every query of the portal is dropped as soon as nothing shows it (`gcTime: 0`) and the shell clears what is left when it goes.
     await waitFor(() => expect(client.getQueryCache().getAll()).toHaveLength(0));
   });
 

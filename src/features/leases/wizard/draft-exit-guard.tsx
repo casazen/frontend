@@ -12,7 +12,6 @@ interface DraftExitProps {
   stopped: boolean;
 }
 
-/** The application uses a data router. A standalone form has no enclosing navigation to block. */
 export function DraftExitGuard(props: DraftExitProps) {
   const router = useContext(UNSAFE_DataRouterContext);
   return router ? <RoutedDraftExit {...props} /> : null;
@@ -23,7 +22,6 @@ function RoutedDraftExit({ hasPending, flush, discard, stopped }: DraftExitProps
   const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState(false);
   const blocker = useBlocker(({ currentLocation, nextLocation }) => {
-    // The editable steps share one form. Its values remain in memory when moving between those steps.
     const nextStep = new URLSearchParams(nextLocation.search).get('step');
     const leavesDraft = nextLocation.pathname !== currentLocation.pathname || nextStep === String(AFTER_STEP) || nextStep === DONE_STEP;
     return !stopped && leavesDraft && hasPending();
@@ -47,7 +45,6 @@ function RoutedDraftExit({ hasPending, flush, discard, stopped }: DraftExitProps
     if (saved) blocker.proceed();
   };
 
-  // A version conflict already has its own recovery dialog in the wizard.
   if (stopped) return null;
   return (
     <Dialog open onOpenChange={(open) => { if (!open) stay(); }}>

@@ -8,7 +8,6 @@ import { linkFailureOf } from './link-failure';
 import { MarketingLinkCard } from './marketing-link-card';
 import { useSignedFragment } from './use-signed-fragment';
 
-/** The values of the link of the confirmation e-mail (`MarketingConfirmationLinks.Create`): the contact and the expiry, never the address. */
 const LINK_FIELDS = {
   required: ['contactId', 'expiresAt', 'signature'],
 } as const;

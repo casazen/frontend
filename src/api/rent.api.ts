@@ -17,7 +17,6 @@ import type {
   RentWhatsAppReminder,
 } from '@/types';
 
-/** Recurring rent of a lease (LT-06): schedule, installments, payment requests and offline payments. */
 export const rentApi = {
   getLedger: (leaseId: string) => ApiClient.get<RentLedger>(`/leases/${encodeURIComponent(leaseId)}/rent`),
 
@@ -33,16 +32,11 @@ export const rentApi = {
       input,
     ),
 
-  /** Emails the payment link to the tenants now; the previous link stops working. */
   sendPaymentRequest: (leaseId: string, installmentId: string) =>
     ApiClient.post<RentInstallment>(
       `/leases/${encodeURIComponent(leaseId)}/rent/installments/${encodeURIComponent(installmentId)}/payment-request`,
     ),
 
-  /**
-   * Sends one prepared budget or settlement. Called only after the landlord confirms the channel. Never from a page load.
-   * `POST /leases/:id/condominium-notices/:noticeId/send`.
-   */
   sendCondominiumNotice: (leaseId: string, noticeId: string, channels: Array<'Email' | 'WhatsApp'>) =>
     ApiClient.post<void>(
       `/leases/${encodeURIComponent(leaseId)}/condominium-notices/${encodeURIComponent(noticeId)}/send`,
@@ -50,12 +44,7 @@ export const rentApi = {
     ),
 };
 
-/**
- * The rent register of the long-term area (LR-01): the installments of every lease the landlord reaches, month by month, with
- * the numbers of the month, and the reminder the landlord sends by hand.
- */
 export const rentRegisterApi = {
-  /** A page of the month. `status` `All` is the plain register (no parameter). */
   getRegister: async (params: RentRegisterParams = {}): Promise<RentRegisterPage> => {
     const { status, ...rest } = params;
     const data = await ApiClient.get<unknown>('/long-rent/rents', { ...rest, status: status === 'All' ? undefined : status });
@@ -65,16 +54,13 @@ export const rentRegisterApi = {
     return data as RentRegisterPage;
   },
 
-  /** Emails the tenants of one installment now, with the optional short note of the landlord. Never automatic: only when this is called. */
   sendReminder: (installmentId: string, note?: string) =>
     ApiClient.post<RentReminderResult>(`/long-rent/rents/${encodeURIComponent(installmentId)}/reminder`, note ? { note } : undefined),
 
-  /** Sends the approved template through the configured WhatsApp Business account. */
   sendWhatsAppReminder: (installmentId: string, note?: string) =>
     ApiClient.post<RentWhatsAppReminder>(`/long-rent/rents/${encodeURIComponent(installmentId)}/reminder/whatsapp`, note ? { note } : undefined),
 };
 
-/** Explicit multipart: the client's default JSON content type would serialize the FormData as JSON. */
 const MULTIPART = { headers: { 'Content-Type': 'multipart/form-data' } };
 
 function statementForm(file: File, mapping?: BankColumnMapping, selections?: BankImportSelection[]): FormData {
@@ -85,12 +71,7 @@ function statementForm(file: File, mapping?: BankColumnMapping, selections?: Ban
   return form;
 }
 
-/**
- * Import of a bank statement on the rents. The file is read twice by the server, to propose and to confirm, and never kept: the
- * confirmation sends it again with the choices, and the server reads amounts, dates and payers from the file itself.
- */
 export const rentBankImportApi = {
-  /** Reads the file and proposes, for each credit, the installment it pays. Nothing is written. */
   preview: async (file: File, mapping?: BankColumnMapping): Promise<BankImportPreview> => {
     const url = '/long-rent/rents/bank-import/preview';
     const data = await ApiClient.post<unknown>(url, statementForm(file, mapping), MULTIPART);
@@ -101,12 +82,10 @@ export const rentBankImportApi = {
     return data as BankImportPreview;
   },
 
-  /** Declares paid the installments the landlord chose, each with the credit of the file it was matched to. */
   confirm: (file: File, selections: BankImportSelection[], mapping?: BankColumnMapping) =>
     ApiClient.post<BankImportConfirmation>('/long-rent/rents/bank-import/confirm', statementForm(file, mapping, selections), MULTIPART),
 };
 
-/** The tenant's payment page (anonymous): the token of the link goes in the body, never in the URL of the API call. */
 export const publicRentApi = {
   getPayment: (installmentId: string, token: string) =>
     ApiClient.post<PublicRentPayment>(

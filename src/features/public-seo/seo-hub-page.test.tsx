@@ -7,7 +7,6 @@ import { SeoHubPage } from './seo-hub-page';
 import { ComplianceGuidePage } from './compliance-guide-page';
 import { Footer } from '@/features/public-site/components/Footer';
 
-/** SE-02 (A8-02): the hub lists the published pages, canonical URLs come only from the backend. */
 const PUBLIC_SITE = 'https://public-site.example.test';
 
 const state = vi.hoisted(() => ({
@@ -186,7 +185,6 @@ describe('Footer hub link', () => {
       </MemoryRouter>,
     );
 
-    // PL-14: internal pages (no domain in the frontend, D3), shown even before the texts exist ("in preparation").
     expect(screen.getByTestId('footer-privacy')).toHaveAttribute('href', '/legale/privacy');
     expect(screen.getByTestId('footer-terms')).toHaveAttribute('href', '/legale/termini');
     expect(screen.getByTestId('footer-subprocessors')).toHaveAttribute('href', '/legale/sub-responsabili');
@@ -202,7 +200,6 @@ describe('Footer hub link', () => {
     );
 
     expect(screen.queryByTestId('footer-seo-hub')).not.toBeInTheDocument();
-    // The host's site keeps Privacy and Terms in a new tab (the guest does not leave the booking); no host documents.
     expect(screen.getByTestId('footer-privacy')).toHaveAttribute('target', '_blank');
     expect(screen.queryByTestId('footer-subprocessors')).not.toBeInTheDocument();
   });

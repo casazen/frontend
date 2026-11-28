@@ -11,11 +11,9 @@ const ICON_CLASS = 'size-5';
 
 interface CategoryTileProps {
   category: string;
-  /** How many suppliers in the account’s service areas offer it. */
   count: number;
 }
 
-/** A category of the page of the categories (MKT): its icon, its name, how many suppliers there are in the account’s service areas, and a way in. */
 export function CategoryTile({ category, count }: CategoryTileProps) {
   const { t } = useTranslation();
 
@@ -26,7 +24,6 @@ export function CategoryTile({ category, count }: CategoryTileProps) {
       data-testid={`marketplace-category-${category}`}
     >
       <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-text">
-        {/* One of the icons of a fixed table, never a new component: `createElement` says so to the linter (as `NavIcon` does). */}
         {createElement(categoryIcon(category), { className: ICON_CLASS })}
       </span>
       <span className="min-w-0 flex-1">

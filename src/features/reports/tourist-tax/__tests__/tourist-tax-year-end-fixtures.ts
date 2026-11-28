@@ -41,7 +41,6 @@ export function summaryOf(year: number, change: Partial<TouristTaxSummary> = {})
   };
 }
 
-/** The exempt guests of Milano as the server gives them to a caller who holds `guest.read` for the whole organization: every reason of the catalogue, and the one that went with the data of a guest. */
 export const EXEMPTIONS_WITH_REASONS: TouristTaxReasonCount[] = [
   { reason: 'minor_age', stays: 1, guests: 1, guestNights: 3 },
   { reason: 'health_care', stays: 1, guests: 1, guestNights: 3 },
@@ -55,7 +54,6 @@ export const EXEMPTIONS_RESTRICTED: TouristTaxReasonCount[] = [
   { reason: 'restricted', stays: 3, guests: 4, guestNights: 7 },
 ];
 
-/** The words a person reads for the reasons that only who holds `guest.read` gets: none of them is in the page of a caller who does not. */
 export const SENSITIVE_REASON_CODES = ['resident', 'health_care', 'disability_companion', 'public_service', 'host_family', 'other', 'erased'];
 
 /**
@@ -100,7 +98,6 @@ export function declarationOf(year: number, change: Partial<TouristTaxDeclaratio
   };
 }
 
-/** A row of the account of the agent for Milano: the first month (or quarter) by default. */
 function accountRow(year: number, change: Partial<TouristTaxAgentAccountRow>): TouristTaxAgentAccountRow {
   return {
     comune: 'Milano',
@@ -119,10 +116,6 @@ function accountRow(year: number, change: Partial<TouristTaxAgentAccountRow>): T
   };
 }
 
-/**
- * The account of the agent as the server sends it: Milano by month (or by quarter) with the line of the year, Roma with the line of the year only, and the payments of the year. The periods add up to the year of Milano
- * (12.345,50 and 20.000,00 collected, 345,50 and 19.654,50 remitted), as the server's do.
- */
 export function agentAccountOf(year: number, by: 'month' | 'quarter' = 'month', change: Partial<TouristTaxAgentAccount> = {}): TouristTaxAgentAccount {
   const second = { collected: 20000, staysWithoutAmount: 1, remitted: 19654.5, balance: 345.5 };
   const periods =
@@ -148,7 +141,6 @@ export function agentAccountOf(year: number, by: 'month' | 'quarter' = 'month', 
   };
 }
 
-/** A property of the count of Ticino: a house in Lugano whose canton is known. */
 export function ticinoProperty(change: Partial<TicinoPropertyCount> = {}): TicinoPropertyCount {
   return {
     propertyId: 'p-lugano',
@@ -171,7 +163,6 @@ export function ticinoProperty(change: Partial<TicinoPropertyCount> = {}): Ticin
   };
 }
 
-/** A property in Switzerland with no municipality: its canton is not known, so it is counted and flagged by the server. */
 export function ticinoUnknownProperty(change: Partial<TicinoPropertyCount> = {}): TicinoPropertyCount {
   return ticinoProperty({
     propertyId: 'p-chiasso',
@@ -193,7 +184,6 @@ export function ticinoUnknownProperty(change: Partial<TicinoPropertyCount> = {})
   });
 }
 
-/** The yearly count of Ticino as the server sends it when every canton is known: one house in Lugano, due on 5 January of the next year. */
 export function ticinoOf(year: number, change: Partial<TicinoYearlyCount> = {}): TicinoYearlyCount {
   return { year, dueDate: `${year + 1}-01-05`, cantonUnknownCount: 0, properties: [ticinoProperty()], ...change };
 }

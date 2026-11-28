@@ -27,7 +27,6 @@ export function listItem(overrides: Partial<OwnerInvoiceListItem> = {}): OwnerIn
   };
 }
 
-/** The same invoice once issued: numbered, dated, and covered by the statement. */
 export const issuedItem = (overrides: Partial<OwnerInvoiceListItem> = {}): OwnerInvoiceListItem =>
   listItem({ status: 'Issued', number: 'FPM-2025-0001', issueDate: '2025-02-05', payment: { state: 'offset', amountDue: 0 }, ...overrides });
 

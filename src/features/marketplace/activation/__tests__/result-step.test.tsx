@@ -36,13 +36,11 @@ vi.mock('@/api/marketplace.api', async (importOriginal) => ({
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: [{ contextKey: 'short-rent', roleKey: 'property_owner' }] }) }));
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { octorateOnboarding: true } }) }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const ACTIVATION_IDS: Record<string, string> = { 'prop-1': 'act-1', 'prop-2': 'act-2' };
 const RETURN_TO = '/app/short-rent/somewhere-else';
 
-/** The last step, as the host reaches it: both properties chosen and connected, their rooms mapped. `access` is what the portal asks for. */
 function givenTheLastStep(requirements: string[] = ['hotelId']) {
   vi.mocked(propertiesApi.getAll).mockResolvedValue([property('prop-1', 'Casa Rosa'), property('prop-2', 'Casa Azzurra')]);
   vi.mocked(getActivationPlan).mockImplementation(async (_kind, _code, propertyId) =>
@@ -52,7 +50,6 @@ function givenTheLastStep(requirements: string[] = ['hotelId']) {
   writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'activate', values: { propertyIds: ['prop-1', 'prop-2'], hotelIds: {} } });
 }
 
-/** «Attiva»: the last button, on the summary. */
 async function activateAll(url = `${ACTIVATION_PATH}?step=activate`) {
   renderActivation(url);
   await screen.findByTestId('activation-activate-step', {}, WAIT);
@@ -84,9 +81,7 @@ describe('the result: each property, what happens next', () => {
     expect(screen.getByTestId('activation-result-prop-2-problem')).toHaveTextContent(i18n.t('apiErrors.codes.connectionNotEnabled'));
     expect(screen.queryByTestId('activation-result-prop-1-fix')).not.toBeInTheDocument();
     expect(screen.getByTestId('activation-result-prop-2-fix')).toBeInTheDocument();
-    // The properties are activated in turn, each with its own activation.
     expect(vi.mocked(activateActivation).mock.calls.map(([id]) => id)).toEqual(['act-1', 'act-2']);
-    // What CasaZen does by itself, and when; and the one next step.
     expect(screen.getByText(i18n.t('marketplace.activation.result.whatNext.checks'))).toBeInTheDocument();
     expect(screen.getByTestId('wizard-done-secondary')).toHaveTextContent(i18n.t('marketplace.activation.result.seeActive'));
   });
@@ -102,7 +97,6 @@ describe('the result: each property, what happens next', () => {
 
     expect(screen.getByTestId('activation-result-prop-1')).toHaveAttribute('data-status', 'ToFix');
     expect(screen.getByTestId('activation-result-prop-1-problem')).toHaveTextContent(i18n.t('apiErrors.codes.marketplacePanelAccessPending'));
-    // A refusal of one property does not stop the other.
     expect(screen.getByTestId('activation-result-prop-2')).toHaveAttribute('data-status', 'Active');
   });
 
@@ -125,7 +119,6 @@ describe('the result: each property, what happens next', () => {
 
     fireEvent.click(screen.getByTestId('activation-result-prop-2-fix'));
 
-    // «The connection is not enabled» is about the access: the wizard is open again there, for the property that failed.
     await onStep('access');
     expect(currentLocation()).toContain('step=access');
     expect(currentLocation()).toContain('propertyId=prop-2');
@@ -173,7 +166,6 @@ describe('the result: the closing button and the way out', () => {
     givenTheLastStep();
     renderActivation(`${ACTIVATION_PATH}?step=fatto&returnTo=${encodeURIComponent(RETURN_TO)}`);
 
-    // A reload has no result to show: it says the wizard is over and where to look, and the closing button still goes back.
     expect(await screen.findByTestId('activation-result', {}, WAIT)).toHaveTextContent(i18n.t('marketplace.activation.result.title.over'));
     expect(screen.queryByTestId('activation-result-list')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('wizard-done-primary'));
@@ -188,7 +180,6 @@ describe('the result: the closing button and the way out', () => {
     fireEvent.click(screen.getByTestId('activation-save-exit'));
 
     expect(await screen.findByTestId('somewhere-else-marker', {}, WAIT)).toBeInTheDocument();
-    // What was answered stays: the wizard opens again where it was left.
     await waitFor(() => expect(readWizardDraft(WIZARD_DRAFT_ID, SCOPE)?.values.propertyIds).toEqual(['prop-1', 'prop-2']), WAIT);
   });
 
@@ -215,7 +206,6 @@ describe('the result: the closing button and the way out', () => {
 
 describe('the way back after the trip to the panel of the channel manager', () => {
   const OPENED_FROM = `${ACTIVATION_PATH}?propertyId=prop-1&step=activate&returnTo=${encodeURIComponent(RETURN_TO)}`;
-  // The panel sends the person back to a step of the wizard: the record of the guided step carries no returnTo, so the address has none.
   const CAME_BACK = `${ACTIVATION_PATH}?propertyId=prop-1&step=activate`;
 
   async function opened(url: string) {
@@ -226,7 +216,6 @@ describe('the way back after the trip to the panel of the channel manager', () =
   it('ActivationWizard_LeftForThePanelAndOpenedAgainAtAStepWithNoReturnTo_StillGoesBackToWhereItWasOpenedFrom', async () => {
     givenTheLastStep();
     await opened(OPENED_FROM);
-    // The person leaves for the panel of the channel manager in this tab: the page goes away.
     cleanup();
 
     await opened(CAME_BACK);
@@ -254,12 +243,10 @@ describe('the way back after the trip to the panel of the channel manager', () =
     await opened(OPENED_FROM);
     cleanup();
 
-    // From the Marketplace again: no step and no returnTo in the address.
     renderActivation(`${ACTIVATION_PATH}?propertyId=prop-1`);
     fireEvent.click(await screen.findByTestId('activation-save-exit', {}, WAIT));
 
     expect(await screen.findByTestId('marketplace-marker', {}, WAIT)).toBeInTheDocument();
-    // And it did not stay for a later step either.
     cleanup();
     await opened(CAME_BACK);
     fireEvent.click(screen.getByTestId('activation-save-exit'));

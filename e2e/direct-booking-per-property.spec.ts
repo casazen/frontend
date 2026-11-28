@@ -99,8 +99,6 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
   });
 
   test('copy URL button copies property booking URL to clipboard', async ({ page, context }) => {
-    // Headless Chromium rejects navigator.clipboard.writeText without the permission: the app then (correctly)
-    // shows the error toast, so the test has to grant it like a user would by allowing the prompt.
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto(demoUrl('/app/short-rent/vetrina', 'short-stay'));
     await expect(page.getByTestId('vetrina-property-list')).toBeVisible({ timeout: 15_000 });
@@ -108,7 +106,6 @@ test.describe('AC12: Vetrina master-detail layout (#341)', () => {
     await page.getByTestId('vetrina-property-copy-url').first().click();
 
     await expect(page.getByText(/copiato/i)).toBeVisible({ timeout: 5_000 });
-    // The toast alone does not prove the copy: the clipboard must hold the absolute booking URL of the property.
     const copied = await page.evaluate(() => navigator.clipboard.readText());
     expect(copied).toBe(`${new URL(page.url()).origin}/book/${DEMO_ORG_SLUG_VETRINA}/property/${mockOrgPropertySlug}`);
   });
@@ -124,7 +121,6 @@ test.describe('AC13: Property URL uses slug when available (#341)', () => {
   });
 
   test('org landing navigates to slug-based URL when property has a slug', async ({ page }) => {
-    // A site with one home: the search of the site lists it alone (DB-07b), and the home opens that home's page.
     await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/stays**`, async (route) => {
       if (route.request().method() !== 'GET') { await route.fallback(); return; }
       await route.fulfill({
@@ -167,8 +163,6 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
   test.beforeEach(async ({ page }) => {
     await mockBrandedBookingApi(page);
     await page.addInitScript(() => {
-      // The cookie banner sits over the bottom of the page, where the button of the checkout step is: the choice is made, the banner
-      // has its own specs (branded-booking-site).
       localStorage.setItem('casazen_cookie_consent', 'rejected');
       localStorage.setItem('casazen.locale', 'it');
     });
@@ -178,7 +172,6 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
     await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}`);
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    // The page of a home is not the landing of the site: no title of the site at level 1 (the host card names the site at level 2).
     await expect(page.getByRole('heading', { level: 1, name: mockPublicOrg.displayName, exact: true })).not.toBeAttached();
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible();
   });
@@ -186,7 +179,6 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
   test('booking card carries dates, guests and amount to the checkout (A3-01)', async ({ page }) => {
     const { checkIn, checkOut } = futureStay(30, 3);
     let bookingPayload: CreateDirectBookingPayload | undefined;
-    // The price comes from the quote endpoint (BK-03): 165 € a night, 55 € cleaning, 2 € of tourist tax per adult and night.
     await mockDirectBookingQuoteApi(page, { nightlyRate: 165, cleaningFee: 55, touristTaxPerAdultNight: 2 });
     await page.route('**/api/public/bookings', async (route) => {
       if (route.request().method() !== 'POST') {
@@ -204,11 +196,9 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
     await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertySlug}?checkin=${checkIn}&checkout=${checkOut}&guests=3`);
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    // The card shows the total of the quote and "Prenota" leads to the checkout with the stay.
     await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', /\/checkout\?/, { timeout: 15_000 });
     await page.getByTestId('booking-cta').click();
 
-    // One "?" and the deep link parameters (checkin/checkout/guests), not "/checkout??checkIn=…".
     await expect(page).toHaveURL(
       new RegExp(`/property/${mockOrgPropertySlug}/checkout\\?checkin=${checkIn}&checkout=${checkOut}&guests=3$`),
     );
@@ -219,14 +209,12 @@ test.describe('AC14: Slug-based property URL resolves correctly (#341)', () => {
     await expect(page.getByTestId('checkout-stay-summary')).toContainText('3 ospiti');
     await expect(page.getByText(/Invalid Date/)).toHaveCount(0);
 
-    // 3 nights × 165 € + 55 € cleaning + 2 € × 3 adults × 3 nights of tourist tax = 568 €, the lines and the total of the quote.
     const breakdown = page.getByTestId('checkout-summary').getByTestId('price-breakdown');
     await expect(breakdown).toContainText('3 notti × 165 €');
     await expect(breakdown).toContainText('495 €');
     await expect(breakdown).toContainText('55 €');
     await expect(breakdown).toContainText('568 €');
 
-    // Step 1 (stay and how to book), step 2 (the guest), step 3 (consent and the booking).
     await expect(page.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 });
     await page.getByTestId('checkout-next').click();
     await page.locator('#firstName').fill('Mario');

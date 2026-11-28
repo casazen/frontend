@@ -12,7 +12,6 @@ import { DocumentDetailDrawer } from '../document-detail-drawer';
 import { paymentSplitOf } from '../document-model';
 import { swissDetail } from './document-fixtures';
 
-// The whole chain is real: the answer of the API goes through the reduction of `getDocument` and is drawn by the drawer, so a member the reduction dropped could never pass for a drawn one.
 vi.mock('@/lib/axios', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/axios')>()), default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: [], hasPermission: () => false }) }));
@@ -25,10 +24,6 @@ const plain = (text: string | null | undefined) => (text ?? '').replace(/\s/g, '
 const STAY_LINE = { lineNumber: 1, description: 'Soggiorno', quantity: 1, unitPrice: 433.53, totalPrice: 433.53, vatRatePercent: 3.8, vatAmount: 16.47, lineType: 'Accommodation' };
 const TAX_LINE = { lineNumber: 2, description: 'Tassa di soggiorno', quantity: 6, unitPrice: 2, totalPrice: 12, vatRatePercent: 0, vatAmount: 0, lineType: 'TouristTax' };
 
-/**
- * The document of the finding of the Swiss scenario as the API sends it: a 462.00 invoice of a booking a portal collected, with 12.00 of tourist tax in it that nobody collected. The server stores the
- * payment as paid through the portal for the whole total and says the split in `amountPaidViaPortal` and `amountToCollectAtProperty`, and the line of the tax with `toCollectAtProperty`.
- */
 const split = (overrides: Record<string, unknown> = {}) => ({
   id: DOCUMENT_ID,
   bookingId: 'b0000000-0000-4000-8000-0000000000a1',
@@ -57,7 +52,6 @@ const split = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-/** The same document when the server says no split, as it does for every other document: the members are left out of the answer and no line carries the mark. */
 const notSplit = () => split({ amountPaidViaPortal: undefined, amountToCollectAtProperty: undefined, lines: [STAY_LINE, TAX_LINE] });
 
 function renderDrawer(body: unknown) {
@@ -87,18 +81,14 @@ describe('the drawer of a portal document whose tourist tax is still to pay at t
 
     const drawer = await screen.findByTestId('fiscal-document-drawer');
     const block = await within(drawer).findByTestId('fiscal-document-payment-block');
-    // What the portal collected and the tax still to pay at the property: the figures the server wrote, in francs, and nothing worked out here.
     expect(plain(within(block).getByTestId('fiscal-document-payment-portal-amount').textContent)).toBe('450,00 CHF');
     expect(plain(within(block).getByTestId('fiscal-document-payment-property-amount').textContent)).toBe('12,00 CHF');
     expect(within(block).getByTestId('fiscal-document-payment-portal')).toHaveTextContent('Pagato tramite il portale');
     expect(within(block).getByTestId('fiscal-document-payment-property')).toHaveTextContent('Imposta di soggiorno da pagare in struttura');
-    // The tax is a part not yet completed: it is told as such (the tone of «to collect», with an icon) and never as a state that is paid.
     expect(within(block).getByTestId('fiscal-document-payment-property-state')).toHaveAttribute('data-tone', 'warning');
     expect(block.textContent).not.toContain('€');
-    // The single «paid» state is not there any more, and the document is still the whole 462.00.
     expect(within(drawer).queryByTestId('fiscal-document-detail-payment')).not.toBeInTheDocument();
     expect(plain(within(drawer).getByTestId('fiscal-document-detail-total').textContent)).toBe('462,00 CHF');
-    // The line of the tax, and only that one, carries the mark.
     const lines = within(drawer).getAllByTestId('fiscal-document-line');
     expect(lines).toHaveLength(2);
     expect(within(lines[0]).queryByTestId('fiscal-document-line-at-property')).not.toBeInTheDocument();
@@ -114,7 +104,6 @@ describe('the drawer of a portal document whose tourist tax is still to pay at t
     expect(single).toHaveAttribute('data-state', 'paidPortal');
     expect(single).toHaveAttribute('data-tone', 'success');
     expect(single).toHaveTextContent('Pagato tramite il portale');
-    // Nothing of the split is drawn, no line is marked and the figures are the ones they always were.
     expect(within(drawer).queryByTestId('fiscal-document-payment-split')).not.toBeInTheDocument();
     expect(within(drawer).queryByTestId('fiscal-document-payment-property')).not.toBeInTheDocument();
     expect(within(drawer).queryByTestId('fiscal-document-line-at-property')).not.toBeInTheDocument();
@@ -125,7 +114,6 @@ describe('the drawer of a portal document whose tourist tax is still to pay at t
     renderDrawer(split({ taxableBase: 12, vatAmount: 0, total: 12, amountPaidViaPortal: 0, amountToCollectAtProperty: 12, lines: [{ ...TAX_LINE, toCollectAtProperty: true }] }));
 
     const block = await screen.findByTestId('fiscal-document-payment-block');
-    // As the PDF does, the screen says nothing of the portal when it collected nothing: only the tax to pay at the property.
     expect(within(block).queryByTestId('fiscal-document-payment-portal')).not.toBeInTheDocument();
     expect(plain(within(block).getByTestId('fiscal-document-payment-property-amount').textContent)).toBe('12,00 CHF');
     expect(block.textContent).not.toMatch(/portale/i);

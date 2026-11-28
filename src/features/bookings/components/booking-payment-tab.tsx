@@ -39,8 +39,6 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
   const collected = typeof booking.paidAmount === 'number' && Number.isFinite(booking.paidAmount) && booking.paidAmount >= 0 ? booking.paidAmount : null;
   const { hasPermission } = useWorkspace();
   const [recordOpen, setRecordOpen] = useState(false);
-  // What is left to collect is known to who may read the payments; "Registra incasso" (SR-06b) is for who may write them, on a
-  // booking the host collects itself that still has something to collect.
   const [editingRecipient, setEditingRecipient] = useState(false);
   const balance = balanceOf(booking);
   const outstanding = booking.paymentState !== 'Paid' && booking.paymentState !== 'Refunded';
@@ -122,11 +120,8 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
         <BookingFiscalDocumentCard key={booking.id} bookingId={booking.id} onEditRecipient={() => setEditingRecipient(true)} />
         <BookingInvoiceDataSection bookingId={booking.id} editing={editingRecipient} onEditingChange={setEditingRecipient} />
       </div>
-      {/* FIS-05, NF-85: everything collected for the booking, line by line; not there for who may not read payments (nothing is asked for them). */}
       <BookingLedgerSection bookingId={booking.id} />
 
-      {/* NF-77, ADR-033-R8: what the channel says about the money of an imported booking; nothing for any other booking and for who
-          may not read payments (the API sends no amounts to them). */}
       <BookingOtaAmounts booking={booking} />
 
     </div>

@@ -9,7 +9,6 @@ import { LeaseWizard } from '../lease-wizard';
 
 vi.mock('@/api/leases.api', () => ({ leasesApi: { saveDraft: vi.fn(), getReview: vi.fn(), confirmReview: vi.fn() } }));
 
-/** An imported contract on the step of the parties: the steps of the model and of the review do not apply to it. */
 const FLOW: LeaseDraftFlow = {
   steps: [
     { step: 1, state: 'Done', needs: [] },
@@ -52,7 +51,6 @@ const RULES: LongRentRules = {
   transitoryBandFromInhabitants: 10000,
 };
 
-/** The contract is being read. */
 const READING_ON: LeaseReading = {
   state: 'Reading',
   documents: [{ id: 'doc-1', fileName: 'contratto.pdf', status: 'Processing', error: null }],
@@ -61,7 +59,6 @@ const READING_ON: LeaseReading = {
   contractDocumentId: 'doc-1',
 };
 
-/** The contract is read: it gave the rent (the server wrote it in the draft; the form here does not have it yet). */
 const READING_DONE: LeaseReading = {
   ...READING_ON,
   state: 'Done',
@@ -77,7 +74,6 @@ describe('LeaseWizard — the reading of the contract ends while the person fill
     vi.mocked(leasesApi.saveDraft).mockResolvedValue({ version: 5, flow: FLOW, landlordIds: ['landlord-1'], tenantIds: ['tenant-1'] });
   });
 
-  /** The wizard on the parties, with the reading as it is now; the same client for every render, so a new render keeps the wizard. */
   function renderWizard(client: QueryClient, reading: LeaseReading, onReload = vi.fn()) {
     const wizard = (current: LeaseReading) => (
       <QueryClientProvider client={client}>
@@ -99,15 +95,12 @@ describe('LeaseWizard — the reading of the contract ends while the person fill
 
     change(READING_DONE);
 
-    // Said and not done: what was written is where it was, the draft was not read again under the person's hands, and the note «abbiamo
-    // compilato i dati» (which would not be true yet) is not there.
     expect(await screen.findByTestId('lease-reading-arrived')).toHaveTextContent(i18n.t('leaseRound.reading.arrived'));
     expect(tenant.getByLabelText(/^Nome/)).toHaveValue('Giulia');
     expect(onReload).not.toHaveBeenCalled();
     expect(screen.queryByTestId('lease-reading-done')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-reading-ongoing')).not.toBeInTheDocument();
 
-    // On request: what is waiting is saved first, on the version this draft has here, and then the draft is read again.
     fireEvent.click(screen.getByTestId('lease-reading-show'));
     await waitFor(() => expect(onReload).toHaveBeenCalledTimes(1));
     expect(leasesApi.saveDraft).toHaveBeenCalledWith(

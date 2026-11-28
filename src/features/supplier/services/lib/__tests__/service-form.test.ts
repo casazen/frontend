@@ -21,7 +21,6 @@ function form(overrides: Partial<ServiceFormValues> = {}): ServiceFormValues {
   return { ...emptyServiceForm(), name: 'Pulizia cambio ospiti', category: 'cleaning', amount: '45', ...overrides };
 }
 
-/** The problems a schema finds, as `path: message`. */
 function problems(schema: { safeParse: (value: unknown) => { success: boolean; error?: { issues: { path: PropertyKey[]; message: string }[] } } }, values: unknown): string[] {
   const result = schema.safeParse(values);
   return result.success ? [] : (result.error?.issues ?? []).map((issue) => `${issue.path.join('.')}: ${issue.message}`);
@@ -71,7 +70,6 @@ describe('splitLines', () => {
   });
 
   it('SplitLines_ATabPastedFromASpreadsheet_IsASpaceAndALoneCarriageReturnEndsALine', () => {
-    // The API refuses a control character in an entry of a list: the tab becomes a space, the carriage return is a line break.
     expect(splitLines('Pulizia bagni\tinclusa\rCambio biancheria')).toEqual(['Pulizia bagni inclusa', 'Cambio biancheria']);
   });
 });
@@ -144,9 +142,7 @@ describe('toServiceBody', () => {
     );
     expect(body.supplements).toEqual([
       { code: 'bagno-in-piu', label: 'Bagno in più', amountCents: 1000, per: 'bathroom', max: 3 },
-      // A supplement that was already saved keeps its code, whatever its label became.
       { code: 'oltre-60-mq', label: 'Superficie grande (rinominato)', amountCents: 1550, per: 'sqm30', max: null },
-      // The same label twice: the second gets a number. A flat amount has no quantity to limit, so no maximum.
       { code: 'bagno-in-piu-2', label: 'Bagno in più', amountCents: 800, per: 'flat', max: null },
       { code: 'la-piu-e-gia-cosi', label: 'Là più è già così!', amountCents: 100, per: 'hour', max: 2 },
     ]);
@@ -233,7 +229,6 @@ describe('serviceToForm and bodyFromService', () => {
 
   it.each([
     [{ requiresQuote: true, priceFromCents: null }, 'quote'],
-    // A service that asks for a quote is "on quote" in the form, whatever else it carries.
     [{ requiresQuote: true, priceFromCents: 5000, priceUnit: 'PerHour' as const }, 'quote'],
     [{ priceUnit: 'PerHour' as const }, 'hourly'],
     [{ priceUnit: 'PerSet' as const }, 'fixed'],
@@ -292,7 +287,6 @@ describe('the rules of the first step', () => {
     const eleven = Array.from({ length: 11 }, (_, i) => `voce ${i}`).join('\n');
     expect(problems(serviceStepSchema, form({ included: eleven }))).toEqual([`included: ${ERR}listTooMany`]);
     expect(problems(serviceStepSchema, form({ excluded: 'x'.repeat(101) }))).toEqual([`excluded: ${ERR}listItemTooLong`]);
-    // Blank and repeated lines do not count, as for the API.
     const ten = [...Array.from({ length: 10 }, (_, i) => `voce ${i}`), '', 'VOCE 1'].join('\n');
     expect(problems(serviceStepSchema, form({ included: ten }))).toEqual([]);
   });
@@ -377,7 +371,6 @@ describe('draftValues (what a save of the creation may send)', () => {
 
     const draft = draftValues(typed, saved());
 
-    // The first and the third step hold: as typed. The second does not: what the server has, so the save is not refused.
     expect(draft).toMatchObject({ name: 'Nuovo nome', durationMinutes: 90 });
     expect(draft.supplements).toEqual(saved().supplements);
     expect(draft.amount).toBe('45,50');
@@ -408,7 +401,6 @@ describe('draftValues (what a save of the creation may send)', () => {
 });
 
 describe('the rules of the whole form', () => {
-  /** What the page of a service asks of its form: the errors by field, as react-hook-form reads them. */
   async function errorsOf(values: ServiceFormValues) {
     const result = await serviceFormResolver(values, undefined, { fields: {}, names: [], criteriaMode: 'firstError', shouldUseNativeValidation: false });
     return result.errors as Record<string, { message?: string } | Record<string, unknown>>;

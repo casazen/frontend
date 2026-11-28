@@ -20,10 +20,8 @@ import { OfferSheet } from './offer-sheet';
 const T = 'supplier.inquiry.now';
 /** A button of the quiet row under the block: at least 44 px high, and a long label wraps instead of pushing the page sideways. */
 const QUIET_BUTTON = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
-/** The countdown is read again every half minute: it is minutes that matter, and the page is not a clock. */
 const TICK_MS = 30_000;
 
-/** Whose turn it is and what the customer sees, in two lines (the same shape as the block of every other request). */
 function TurnLines({ view }: { view: NegotiationView }) {
   const { t } = useTranslation();
   return (
@@ -88,7 +86,6 @@ function InquiryNowInDrawer({ request, actions }: { request: SupplierServiceRequ
 function InquiryNowOnPage({ request, actions }: { request: SupplierServiceRequest; actions: RequestActions }) {
   const { t, i18n } = useTranslation();
   const now = useNow(TICK_MS);
-  // The conversation below is the one that keeps the thread fresh (it polls); this block reads the same cache.
   const thread = useSupplierRequestThread(request.id);
   const send = useSendSupplierOffer(request.id);
   const withdraw = useWithdrawSupplierOffer(request.id);
@@ -107,7 +104,6 @@ function InquiryNowOnPage({ request, actions }: { request: SupplierServiceReques
 
   let block: ReactNode;
   if (view === 'offerSent' && offer) {
-    // Waiting for the customer: nothing the supplier has to do, so no highlight. It may still replace the offer or take it back.
     block = (
       <PlainSection title={t(`${T}.offerSent.title`)} data-testid="supplier-request-now">
         <div className="text-sm sm:text-base">
@@ -144,7 +140,6 @@ function InquiryNowOnPage({ request, actions }: { request: SupplierServiceReques
       />
     );
   } else {
-    // The supplier cannot answer now (suspended, or the conversation closed meanwhile): the words, and no button that would be refused.
     block = (
       <PlainSection title={t(`${T}.quietTitle`)} data-testid="supplier-request-now">
         <p className="break-words text-sm sm:text-base">{t(`${T}.cannotAnswer`)}</p>

@@ -45,7 +45,6 @@ describe('the group of backup suppliers of a request, for its host (SP-BKP)', ()
     ).toBe('backupTookIt');
     expect(groupStageOf(group({ phase: 'Closed', members: [member({ ...PRIMARY, status: 'Annullato', cancellationReason: 'NoResponse' })] }))).toBe('nobody');
     expect(groupStageOf(group({ phase: 'Closed', members: [member({ ...ALFA, status: 'Annullato', cancellationReason: 'RequestCancelledByHost' })] }))).toBe('cancelled');
-    // A phase this version does not know is a group that is over.
     expect(groupStageOf(group({ phase: 'SomethingNew' }))).toBe('over');
   });
 

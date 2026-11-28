@@ -69,7 +69,6 @@ function problem(status: number, data: unknown): AxiosError {
 describe('the steps and the ways to send', () => {
   it('senderStepIds_EachSender_HasOnlyTheStepsItNeeds', () => {
     expect(senderStepIds('ChannelManager')).toEqual(['choice', 'summary', 'credentials', 'panel', 'test']);
-    // CasaZen has no panel to pass through; the host's own send ends at the summary, and so does a wizard with no answer yet.
     expect(senderStepIds('CasaZen')).toEqual(['choice', 'summary', 'credentials', 'test']);
     expect(senderStepIds('Manual')).toEqual(['choice', 'summary']);
     expect(senderStepIds('')).toEqual(['choice', 'summary']);
@@ -93,7 +92,6 @@ describe('the steps and the ways to send', () => {
 
   it('defaultSenderChoice_ConnectedProperty_StartsFromTheChannelManagerAndAnOtherwiseFirstWayOffered', () => {
     expect(defaultSenderChoice(sender({ sender: 'ChannelManager' }))).toBe('ChannelManager');
-    // The sender in effect cannot be chosen now (the connector went off): the choice starts from the first way that can.
     expect(defaultSenderChoice(sender({ sender: 'ChannelManager', channelManagerAvailable: false, availableSenders: ['Manual'] }))).toBe('Manual');
     expect(defaultSenderChoice(sender({ availableSenders: [] }))).toBe('');
   });
@@ -109,16 +107,13 @@ describe('the delegation of the transmission', () => {
   it('consentGiven_OnlyForTheTextInForceThatThisPageCanShow', () => {
     expect(consentGiven(values({ delegationConsentVersion: VERSION }), sender())).toBe(true);
     expect(consentGiven(values({ delegationConsentVersion: '' }), sender())).toBe(false);
-    // A consent given to an older text does not count for the one in force.
     expect(consentGiven(values({ delegationConsentVersion: '2026-10-v0' }), sender())).toBe(false);
-    // A text this page cannot show is never consented to, even by a draft that names its version.
     expect(consentGiven(values({ delegationConsentVersion: '2099-01-v9' }), sender({ delegationTextVersion: '2099-01-v9' }))).toBe(false);
   });
 
   it('delegationSettled_AutomaticSenderWithoutConsent_IsNotSettledAndTheOthersAre', () => {
     expect(delegationSettled(values({ sender: 'ChannelManager' }), sender())).toBe(false);
     expect(delegationSettled(values({ sender: 'ChannelManager', delegationConsentVersion: VERSION }), sender())).toBe(true);
-    // Accepted by the organization already: nothing is asked again. The host's own send needs no delegation.
     expect(delegationSettled(values({ sender: 'ChannelManager' }), sender({ delegationAccepted: true }))).toBe(true);
     expect(delegationSettled(values({ sender: 'Manual' }), sender())).toBe(true);
   });
@@ -141,7 +136,6 @@ describe('the request that changes the sender', () => {
   });
 
   it('toSwitchRequest_ConfirmationOfAnotherChange_IsNotAConfirmationOfThisOne', () => {
-    // The host confirmed «from CasaZen to manual»; the sender in effect is now the channel manager: that confirmation says nothing about this change.
     const stale = values({ sender: 'Manual', switchConfirmed: confirmationOf('CasaZen', 'Manual') });
 
     expect(toSwitchRequest(stale, sender({ sender: 'ChannelManager' })).confirmed).toBe(false);
@@ -190,7 +184,6 @@ describe('the request that changes the sender', () => {
 describe('what is shown as «Attivo»', () => {
   it('outcomeOfSender_OnlyAVerifiedActiveSender_IsActive', () => {
     expect(outcomeOfSender(sender({ sender: 'ChannelManager', state: 'Active', verification: 'Verified' }))).toBe('active');
-    // `Active` without the verification of the server is not shown as working.
     expect(outcomeOfSender(sender({ sender: 'ChannelManager', state: 'Active', verification: 'Unverifiable' }))).toBe('unverified');
     expect(outcomeOfSender(sender({ sender: 'ChannelManager', state: 'Declared', verification: 'UserDeclared' }))).toBe('declared');
     expect(outcomeOfSender(sender({ sender: 'ChannelManager', state: 'Unverified', verification: 'Unverifiable' }))).toBe('unverified');
@@ -214,7 +207,6 @@ describe('what is shown as «Attivo»', () => {
 
     expect(outcomeToShow(declared, undefined)).toBe('declared');
     expect(outcomeToShow(declared, test({ outcome: 'Unverifiable' }))).toBe('declared');
-    // A test that says it does not send wins over an older declaration; one that proves it is the only way to «attivo».
     expect(outcomeToShow(declared, test({ outcome: 'Inactive' }))).toBe('inactive');
     expect(outcomeToShow(declared, test({ outcome: 'Verified' }))).toBe('active');
     expect(outcomeToShow(sender({ sender: 'ChannelManager', state: 'Unverified', verification: 'Unverifiable' }), undefined)).toBe('unverified');
@@ -246,7 +238,6 @@ describe('the address and the way back from the panel', () => {
   it.each(['', '?property=', '?property=../../x', '?property=1', `?property=${PROPERTY_ID}/../x`, '?propertyId=3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b'])(
     'propertyOfAddress_%s_IsNoProperty',
     (search) => {
-      // The id ends up in the path of requests: only an id goes through.
       expect(propertyOfAddress(new URLSearchParams(search))).toBe('');
     },
   );
@@ -262,7 +253,6 @@ describe('the address and the way back from the panel', () => {
 
   it('senderResumePath_StepStartedByTheWizard_ReturnsToTheSameStepOfTheSameProperty', () => {
     expect(senderResumePath(stepOf({}))).toBe(`/app/short-rent/compliance/sender?property=${PROPERTY_ID}&step=panel`);
-    // A step this version does not know leads to the wizard all the same, at its first step.
     expect(senderResumePath(stepOf({ stepCode: 'something-new' }))).toBe(`/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
   });
 

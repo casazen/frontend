@@ -21,10 +21,8 @@ const NEXT_STEP: Record<ChangeNextStep, { key: string; icon: LucideIcon }> = {
 };
 
 interface BulkChangeDoneProps {
-  /** The change the API answered when the last button was pressed: the process that sends it to the channel manager. */
   change: CalendarChange;
   values: BulkChangeValues;
-  /** The days the summary said would change (the preview the host confirmed), of every property added up; the result says no number of days when it is not known. */
   changedDays?: number;
 }
 
@@ -37,10 +35,8 @@ export function BulkChangeDone({ change, values, changedDays }: BulkChangeDonePr
   const { t } = useTranslation();
   const properties = useProperties({ mode: 'short' });
   const mayRead = useContext(WorkspaceContext)?.hasPermission('short-rent', 'property.read') ?? false;
-  // With the connector of the channel manager off nothing is sent there: nothing is followed or asked, and the one step is to look at the calendar.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
   const canFollow = mayRead && connectorOn;
-  // The same read as the lines (one entry of the cache): the suggested step follows the state the lines show.
   const detail = useCalendarChange(change.id, { enabled: canFollow, initial: change });
   const current = detail.data ?? change;
   const next = NEXT_STEP[

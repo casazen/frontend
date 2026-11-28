@@ -4,16 +4,11 @@ import { Button } from '@/components/ui/button';
 interface ClientPagerProps {
   page: number;
   pages: number;
-  /** All the rows of the list, on every page. */
   total: number;
   onPage: (page: number) => void;
   testId: string;
 }
 
-/**
- * The pager of a long result the page holds whole and draws a page at a time (the rows of a check of a file, the properties of an apply): «Pagina 2 di 5 ·
- * 230 in tutto» and two buttons of at least 44 px. Nothing is drawn for a list of one page.
- */
 export function ClientPager({ page, pages, total, onPage, testId }: ClientPagerProps) {
   const { t } = useTranslation();
   if (pages <= 1) return null;

@@ -12,7 +12,6 @@ import { BookingLinkDialog } from './booking-link-dialog';
 
 interface VetrinaPropertyRowProps {
   property: Property;
-  /** Where the links of the site are (its own host or the platform): the address the row copies and opens is on it, not on the address of this page. */
   bookingSite: OrgBookingSite;
   isSelected: boolean;
   onSelect: (id: string) => void;
@@ -30,8 +29,6 @@ export function VetrinaPropertyRow({ property, bookingSite, isSelected, onSelect
     complianceStatus: property.complianceStatus ?? undefined,
   });
 
-  // The address is copied once it is known: while the settings of the site are on their way nothing is, and when they could not be read the host is told that what it
-  // got is the address of CasaZen (`copySiteAddress`).
   const handleCopy = async () => {
     if (!(await copySiteAddress(propertyUrl, bookingSite.status, t))) return;
     setCopied(true);
@@ -79,7 +76,6 @@ export function VetrinaPropertyRow({ property, bookingSite, isSelected, onSelect
             {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
           </Button>
 
-          {/* The link for the website of the agency (NF-123): dates, guests, language and campaign, with its QR. */}
           <Button
             type="button"
             variant="ghost"

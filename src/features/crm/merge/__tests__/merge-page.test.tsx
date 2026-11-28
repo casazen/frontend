@@ -129,7 +129,6 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
     renderPage();
 
     const text = (await screen.findByTestId('crm-merge-card')).textContent ?? '';
-    // The reason says that the birth date is the same, and that is all it says: the only date of a card is the last stay.
     expect(text).toContain('la stessa data di nascita');
     expect(text).not.toMatch(/nascita[^.]*\d/i);
     expect(text).not.toMatch(/document|passaport|codice fiscale|identity|birth date of/i);
@@ -170,10 +169,8 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
     const dialog = within(await screen.findByRole('dialog'));
     const radios = dialog.getAllByRole('radio');
     expect(radios).toHaveLength(2);
-    // None is chosen for the host, and the merge cannot be confirmed before the host chooses.
     for (const radio of radios) expect(radio).not.toBeChecked();
     expect(confirmButton()).toBeDisabled();
-    // What the merge does, plainly: history and contacts move, no consent changes, it cannot be undone.
     expect(dialog.getByText(i18n.t('crm.merge.dialog.history'))).toBeInTheDocument();
     expect(dialog.getByText(i18n.t('crm.merge.dialog.consent'))).toBeInTheDocument();
     expect(dialog.getByText(i18n.t('crm.merge.dialog.final'))).toBeInTheDocument();
@@ -192,7 +189,6 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
 
     await waitFor(() => expect(CrmMergeApi.merge).toHaveBeenCalledWith(CANDIDATE, ROSSI_B));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('crm.merge.mergeDone')));
-    // The list reads the proposals again: the pair that was decided is not there any more.
     expect(await screen.findByText(i18n.t('crm.merge.empty.title'))).toBeInTheDocument();
     expect(screen.queryByTestId('crm-merge-card')).not.toBeInTheDocument();
   });
@@ -206,7 +202,6 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(CrmMergeApi.merge).not.toHaveBeenCalled();
 
-    // The next time the choice is the host's again.
     await openMerge();
     for (const radio of within(await screen.findByRole('dialog')).getAllByRole('radio')) expect(radio).not.toBeChecked();
   });
@@ -216,7 +211,6 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
     renderPage();
 
     fireEvent.click(await screen.findByTestId('crm-merge-dismiss-open'));
-    // Nothing happens before the host confirms.
     const dialog = within(await screen.findByRole('dialog'));
     expect(dialog.getByText(i18n.t('crm.merge.dismiss.title'))).toBeInTheDocument();
     expect(CrmMergeApi.dismiss).not.toHaveBeenCalled();
@@ -243,7 +237,6 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t(key)));
     expect(toast.success).not.toHaveBeenCalled();
-    // The proposal may be decided or out of reach: the list is read again, so the page tells the truth.
     await waitFor(() => expect(vi.mocked(CrmMergeApi.getCandidates).mock.calls.length).toBeGreaterThan(1));
   });
 

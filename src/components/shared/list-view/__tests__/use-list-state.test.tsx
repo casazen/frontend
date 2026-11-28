@@ -8,7 +8,6 @@ import { stayList } from './list-fixtures';
 
 const list = stayList();
 
-/** The hook inside a memory router, with what a test wants to see of the history next to it. */
 function renderState(initial = '/app/short-rent/bookings') {
   const wrapper = ({ children }: { children: ReactNode }) => <MemoryRouter initialEntries={[initial]}>{children}</MemoryRouter>;
   const { result } = renderHook(

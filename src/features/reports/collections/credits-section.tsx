@@ -57,7 +57,6 @@ function StripeBlock({ stripe }: { stripe: StripeCredits }) {
           <p className="text-sm text-foreground/70">{t('reports.collections.credits.stripeNote')}</p>
         </>
       ) : (
-        // Nothing is stored for the period: one sentence, and no figure at all (a zero would say that nothing was credited).
         <p className="text-sm text-foreground/70" data-testid="collections-credits-stripe-unavailable">
           {t('reports.collections.credits.unavailable')}
         </p>

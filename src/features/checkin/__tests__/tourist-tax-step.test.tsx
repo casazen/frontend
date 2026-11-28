@@ -35,7 +35,6 @@ import {
   withoutPaymentReturn,
 } from '../lib/tourist-tax-model';
 
-// The Payment Element and Stripe.js are Stripe's: the page only has to open them with what the API gave, and to confirm once.
 const stripe = vi.hoisted(() => ({ confirmPayment: vi.fn(), loadStripe: vi.fn() }));
 vi.mock('@stripe/stripe-js', () => ({ loadStripe: stripe.loadStripe }));
 vi.mock('@stripe/react-stripe-js', () => ({
@@ -66,15 +65,12 @@ vi.mock('@/api/checkin-wizard.api', () => ({
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// Explicit conditions only, no fixed waits (QA-INFRA-01): a wait ends as soon as its condition holds.
 configure({ asyncUtilTimeout: 15_000 });
 
 const TOKEN = 'tok-123';
 
-/** Filling the guests over three steps takes a few seconds in jsdom, more on a loaded CI runner. */
 const FORM_TEST_TIMEOUT_MS = 30_000;
 
-/** The tax of a stay of two guests in a house in Switzerland: what the API sends, in francs. */
 function taxView(overrides: Partial<PublicTouristTax> = {}): PublicTouristTax {
   return {
     status: 'ToCollect',
@@ -113,7 +109,6 @@ function queryClientOf() {
   return new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 }
 
-/** What a new read of the tax answers: the tax as the server says it now, or the failure of the read. */
 type TaxReadResult = { data?: PublicTouristTax; isError?: boolean };
 
 function renderStep(
@@ -144,7 +139,6 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  // The page changes the language of the app for as long as it is on screen and gives it back: a test never leaves it changed.
   cleanup();
   await i18n.changeLanguage('it');
   document.documentElement.lang = 'it';
@@ -158,19 +152,15 @@ beforeEach(() => {
 
 describe('TouristTaxStep: the money', () => {
   it('payable_AmountsAndCurrencyAreTheApis_NothingIsAddedUpInTheBrowser', async () => {
-    // The price of the booking already included part of the tax: the API says what is paid now (3) apart from the tax of the stay (9), and the lines sum to the second.
     vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mockResolvedValue(paymentIntent({ amount: 3 }));
     renderStep(taxView({ payable: 3, amountDue: 9 }));
 
     expect(screen.getByTestId('tourist-tax-total')).toHaveTextContent(/^3,00\s*CHF$/);
     expect(screen.getByTestId('tourist-tax-amount-due')).toHaveTextContent(/^9,00\s*CHF$/);
     expect(screen.getByTestId('tourist-tax-line-0-amount')).toHaveTextContent(/^4,50\s*CHF$/);
-    // The currency is the API's, never a euro the code assumed.
     expect(screen.getByTestId('checkin-tourist-tax-step')).not.toHaveTextContent('€');
-    // The guests are positions («Ospite 1 · 3 notti»), never a name.
     expect(screen.getByTestId('tourist-tax-line-0')).toHaveTextContent('Ospite 1 · 3 notti');
 
-    // The button says what will be charged: the amount and the currency of the intent, which is on the account of the agency.
     expect(await screen.findByRole('button', { name: /^Paga 3,00\s*CHF$/ })).toBeEnabled();
     expect(publicCheckinApi.createTouristTaxPaymentIntent).toHaveBeenCalledTimes(1);
     expect(publicCheckinApi.createTouristTaxPaymentIntent).toHaveBeenCalledWith(TOKEN);
@@ -198,9 +188,7 @@ describe('TouristTaxStep: the money', () => {
     expect(stripe.confirmPayment).toHaveBeenCalledTimes(1);
     const [options] = stripe.confirmPayment.mock.calls[0] as [{ confirmParams: { return_url: string }; redirect: string }];
     expect(options.redirect).toBe('if_required');
-    // The way back of a method that redirects is the page itself, with no query: no secret and nothing of the guest in what is given besides the page.
     expect(options.confirmParams.return_url).toBe(`${window.location.origin}${window.location.pathname}`);
-    // While it runs the button is disabled and says so.
     expect(await screen.findByRole('button', { name: /Pagamento in corso/ })).toBeDisabled();
 
     finish({ paymentIntent: { status: 'processing' } });
@@ -214,12 +202,10 @@ describe('TouristTaxStep: the money', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: /^Paga 9,00\s*CHF$/ }));
 
-    // The browser got «succeeded», but the payment is recorded by the server from what the provider says: until then the page says it is being confirmed, and shows no form.
     await screen.findByTestId('tourist-tax-processing');
     expect(screen.queryByTestId('tourist-tax-paid')).not.toBeInTheDocument();
     expect(screen.queryByTestId('payment-element')).not.toBeInTheDocument();
 
-    // The server says it: only then «pagata», with the amount of the API.
     step.readAgain(taxView({ status: 'PaidOnline', reason: 'NothingDue', payable: 0, collectedAmount: 9 }));
     expect(await screen.findByTestId('tourist-tax-paid')).toHaveTextContent(/9,00\s*CHF/);
     expect(screen.queryByTestId('tourist-tax-processing')).not.toBeInTheDocument();
@@ -262,7 +248,6 @@ describe('TouristTaxStep: the money', () => {
 
     expect(screen.getByTestId(`tourist-tax-${outlook}`)).toHaveTextContent(sentence);
     expect(screen.getByTestId('checkin-tourist-tax-step')).toHaveAttribute('data-outlook', outlook);
-    // Nothing is asked of the server and no form is drawn: the channel collects it, the price included it, the host tells it, it is paid.
     expect(screen.queryByTestId('payment-element')).not.toBeInTheDocument();
     expect(publicCheckinApi.createTouristTaxPaymentIntent).not.toHaveBeenCalled();
   });
@@ -272,7 +257,6 @@ describe('TouristTaxStep: the money', () => {
 
     const notice = screen.getByTestId('tourist-tax-paidPartly');
     expect(notice).toHaveTextContent(/Hai già pagato online 9,00\s*CHF/);
-    // The rest is not worked out here: no amount of it is told.
     expect(notice).not.toHaveTextContent('11,00');
     expect(publicCheckinApi.createTouristTaxPaymentIntent).not.toHaveBeenCalled();
   });
@@ -303,7 +287,6 @@ describe('TouristTaxStep: the money', () => {
   });
 
   it.each(['de', 'fr', 'es'] as const)('payable_InTheLanguageOfThePage_%s_TheTextsAreThePagesAndTheAmountIsTheApis', async (language) => {
-    // The page offers the guest five languages; the three of the subset files are loaded when the guest chooses them.
     await ensureGuestLocale(language);
     await i18n.changeLanguage(language);
     const t = i18n.getFixedT(language);
@@ -321,7 +304,6 @@ describe('TouristTaxStep: back to what the server says after an outcome that is 
   const PAY = /^Paga 9,00\s*CHF$/;
   const refused = (type: string, message: string) => ({ error: { type, message } });
   const settled = async () => {
-    // What `settle` does after the read of the tax (a microtask): the negative checks below look at the end of it.
     await act(async () => {
       await Promise.resolve();
     });
@@ -336,7 +318,6 @@ describe('TouristTaxStep: back to what the server says after an outcome that is 
 
     await waitFor(() => expect(publicCheckinApi.createTouristTaxPaymentIntent).toHaveBeenCalledTimes(2));
     expect(refetch).toHaveBeenCalledTimes(1);
-    // The tax is read BEFORE the intent is asked for again, and nothing is confirmed twice.
     const readOrder = refetch.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY;
     const askedAgainOrder = vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mock.invocationCallOrder[1] ?? 0;
     expect(readOrder).toBeLessThan(askedAgainOrder);
@@ -358,7 +339,6 @@ describe('TouristTaxStep: back to what the server says after an outcome that is 
   });
 
   it('confirmRefused_TheServerNowSaysThereIsNothingToPay_NoNewIntentIsAskedFor', async () => {
-    // The host recorded «Pagata in struttura»: the server cancelled the intent, so the confirmation is refused, and the tax read again is no longer payable.
     stripe.confirmPayment.mockResolvedValue(refused('invalid_request_error', 'The PaymentIntent was canceled.'));
     const refetch = vi.fn().mockResolvedValue({ data: taxView({ status: 'PaidAtProperty', reason: 'PaidAtProperty', payable: 0 }), isError: false });
     renderStep(taxView(), { refetch });
@@ -379,7 +359,6 @@ describe('TouristTaxStep: back to what the server says after an outcome that is 
   });
 
   it('intentNotAvailable409_TheGuestIsToldAndThePageIsToldToLetAvantiGo', async () => {
-    // The platform key is not there: the read of the tax does not see it, the intent answers 409 not available, and the backend does not hold the lock code for a payment that cannot be made.
     vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mockRejectedValue(httpError(409, { code: 'tourist_tax_payment_not_available' }));
     const onCannotPayChange = vi.fn();
     renderStep(taxView({ requiredBeforeAccessCode: true }), { onCannotPayChange });
@@ -419,7 +398,6 @@ describe('the answers of the API', () => {
   it('paymentCannotBeMade_OnlyWhenTheServerWillNeverGiveAnIntent', () => {
     expect(paymentCannotBeMade(httpError(409, { code: 'tourist_tax_payment_not_available' }))).toBe(true);
     expect(paymentCannotBeMade(new UnexpectedApiResponseError('/public/checkin/{token}/tourist-tax/payment-intent'))).toBe(true);
-    // A failure that may pass, a payment under way and a tax with nothing left to pay are not «cannot be made».
     expect(paymentCannotBeMade(httpError(503))).toBe(false);
     expect(paymentCannotBeMade(httpError(429))).toBe(false);
     expect(paymentCannotBeMade(httpError(409, { code: 'tourist_tax_payment_in_progress' }))).toBe(false);
@@ -436,7 +414,6 @@ describe('the answers of the API', () => {
   });
 
   it('readPublicTouristTax_AnAnswerThatIsNotTheTax_IsNothingAndNeverATaxOfZero', () => {
-    // A catch-all answer that gave the context of the link, or the page of a misconfigured rewrite.
     expect(readPublicTouristTax({ completed: false, status: 'Inviato', sessionId: 'x', declaredGuests: 1 })).toBeNull();
     expect(readPublicTouristTax('<!doctype html>')).toBeNull();
     expect(readPublicTouristTax(null)).toBeNull();
@@ -485,7 +462,6 @@ describe('the answers of the API', () => {
     const read = { enabled: true, isPending: false, isError: true, hasData: true };
     expect(guestTaxAvailability({ ...read, error: httpError(404) })).toBe('unavailable');
     expect(guestTaxAvailability({ ...read, error: httpError(409, { code: 'tourist_tax_payment_not_available' }) })).toBe('unavailable');
-    // A failure that may pass keeps what was read, and says it could not be read when nothing was.
     expect(guestTaxAvailability({ ...read, error: httpError(503) })).toBe('ready');
     expect(guestTaxAvailability({ ...read, hasData: false, error: httpError(503) })).toBe('failed');
     expect(guestTaxAvailability({ ...read, enabled: false, error: null })).toBe('off');
@@ -533,13 +509,11 @@ const openContext: PublicCheckInContextDto = {
   availableCodeTables: [],
 };
 
-/** The query string the router is at: what the page leaves in the address. */
 function LocationSearch() {
   const { search } = useLocation();
   return <span data-testid="location-search">{search}</span>;
 }
 
-/** The page at `/checkin/:token` followed by `search` (what Stripe adds to the address of a payment method that redirects, say). */
 function renderPage(flags: Partial<FeatureFlags> = {}, search = '') {
   const client = queryClientOf();
   return render(
@@ -579,7 +553,6 @@ function change(scope: ReturnType<typeof within>, label: RegExp, value: string) 
   fireEvent.change(scope.getByLabelText(label), { target: { value } });
 }
 
-/** The form is on screen AND the page has started it from the guests on file (see the same helper of the page test). */
 async function formReady() {
   await screen.findByTestId('checkin-page');
   if (screen.queryByTestId('checkin-document-step')) {
@@ -588,7 +561,6 @@ async function formReady() {
   await waitFor(() => expect(guestCard(0).getByLabelText(/^Nome/)).toHaveValue('Mario'));
 }
 
-/** One guest filled in as a guest does, then the step of the document: the way to what comes after. */
 async function fillGuestAndDocument() {
   await formReady();
   const card = guestCard(0);
@@ -641,11 +613,9 @@ describe('CheckInPage and the tourist tax', () => {
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
     const step = await screen.findByTestId('checkin-tourist-tax-step');
     expect(screen.getAllByText('Tassa di soggiorno').length).toBeGreaterThan(0);
-    // The lines are positions: the guest typed a name in the step before, and it is not here.
     expect(step).not.toHaveTextContent(/Mario|Rossi|Giulia|Bianchi/);
     expect(screen.getByText('Passo 4 di 5')).toBeInTheDocument();
 
-    // The organization did not ask for the tax before the code: the guest goes on without paying, and the invoice step and the privacy notice follow.
     fireEvent.click(screen.getByTestId('checkin-next'));
     await screen.findByTestId('checkin-privacy-notice');
   });
@@ -662,7 +632,6 @@ describe('CheckInPage and the tourist tax', () => {
     expect(screen.getByTestId('checkin-next')).toBeDisabled();
     fireEvent.click(screen.getByTestId('checkin-next'));
     expect(screen.getByTestId('checkin-tourist-tax-step')).toBeInTheDocument();
-    // «Indietro» is always there: the guest is never shut in.
     expect(screen.getByRole('button', { name: /Indietro/ })).toBeEnabled();
   });
 
@@ -676,7 +645,6 @@ describe('CheckInPage and the tourist tax', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: /^Paga 9,00\s*CHF$/ }));
 
-    // The step is not left while the money moves.
     await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeDisabled());
     expect(screen.getByRole('button', { name: /Indietro/ })).toBeDisabled();
 
@@ -687,7 +655,6 @@ describe('CheckInPage and the tourist tax', () => {
   });
 
   it('twoClicksInTheSameInstant_ConfirmOnce_AndAvantiIsLetGoOnlyWhenTheServerSaysPaid', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
-    // The organization asks for the tax before the lock code: «Avanti» is held until the server says the tax is paid.
     let serverSaysPaid = false;
     vi.mocked(publicCheckinApi.getTouristTax).mockImplementation(async () =>
       serverSaysPaid
@@ -703,19 +670,16 @@ describe('CheckInPage and the tourist tax', () => {
     const pay = await screen.findByRole('button', { name: /^Paga 9,00\s*CHF$/ });
     expect(screen.getByTestId('checkin-next')).toBeDisabled();
 
-    // Two clicks before the page has drawn anything (the same act, so the button is not disabled yet for the second one): the guard of the form lets one confirmation through.
     act(() => {
       pay.click();
       pay.click();
     });
     expect(stripe.confirmPayment).toHaveBeenCalledTimes(1);
 
-    // The browser got «succeeded», but the server has not recorded the payment: the step says it is being confirmed and «Avanti» is still held.
     finish({ paymentIntent: { status: 'succeeded' } });
     await screen.findByTestId('tourist-tax-processing');
     expect(screen.getByTestId('checkin-next')).toBeDisabled();
 
-    // The server records it (its webhook): the next read of the page says paid, and only then «Avanti» is let go.
     serverSaysPaid = true;
     await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeEnabled());
     expect(screen.getByTestId('tourist-tax-paid')).toBeInTheDocument();
@@ -861,7 +825,6 @@ describe('TaxCollection: the host sees the state of the collection', () => {
     expect(onRecord).toHaveBeenCalledTimes(1);
     view.unmount();
 
-    // Any write of the card under way (an exemption, the collector) holds the button.
     renderCollection({}, { busy: true, onRecord });
     expect(screen.getByTestId('tax-collection-paid-at-property')).toBeDisabled();
     fireEvent.click(screen.getByTestId('tax-collection-paid-at-property'));
@@ -869,7 +832,6 @@ describe('TaxCollection: the host sees the state of the collection', () => {
   });
 });
 
-/** The tax of a stay of one guest, as the host's step reads it, with the collection block the server sends while its flag is on. */
 function hostTax(collectionOverrides: Partial<TouristTaxCollection> | null = {}): StayTouristTax {
   return {
     bookingId: 'b-1',
@@ -920,13 +882,11 @@ describe('TaxStep of the host wizard with the collection', () => {
   });
 
   it('flagOff_NoCollectionBlockIsSentAndTheStepIsTheOneItAlwaysWas', async () => {
-    // No workspace around the step: nothing of the collection is drawn, so nothing reads it (the step must not need it).
     vi.mocked(checkInWizardApi.getTouristTax).mockResolvedValue(hostTax(null));
     renderHostStep({ workspace: false });
 
     expect(await screen.findByTestId('tax-guest-0')).toBeInTheDocument();
     expect(screen.queryByTestId('checkin-wizard-tax-collection')).not.toBeInTheDocument();
-    // The amounts are the euro amounts they always were.
     expect(screen.getByTestId('tax-guest-0-amount')).toHaveTextContent(/4,00\s*€/);
   });
 
@@ -948,14 +908,11 @@ describe('TaxStep of the host wizard with the collection', () => {
     fireEvent.click(button);
     fireEvent.click(button);
 
-    // The mutation starts a moment after the click, and the second click met a button already disabled: one write.
     await waitFor(() => expect(checkInWizardApi.recordTouristTaxPaidAtProperty).toHaveBeenCalledTimes(1));
     expect(checkInWizardApi.recordTouristTaxPaidAtProperty).toHaveBeenCalledWith('b-1');
-    // Any write of the card holds the others: the exemption of the guest waits too.
     await waitFor(() => expect(screen.getByTestId('tax-exemption-0')).toBeDisabled());
     expect(screen.getByTestId('tax-collection-paid-at-property')).toBeDisabled();
 
-    // The server answers: the state is what it says, and the tax is read again.
     vi.mocked(checkInWizardApi.getTouristTax).mockResolvedValue(
       hostTax({ status: 'PaidAtProperty', reason: 'PaidAtProperty', toCollect: 0, onlinePayable: 0, collectedAt: '2026-11-15T09:30:00Z' }),
     );
@@ -984,7 +941,6 @@ describe('TaxStep of the host wizard with the collection', () => {
     fireEvent.change(screen.getByTestId('tax-exemption-0'), { target: { value: 'resident' } });
 
     await waitFor(() => expect(checkInWizardApi.setExemptions).toHaveBeenCalledTimes(1));
-    // The answer of a write carries no collection block: the one on screen does not vanish (it would look as if the flag went off), and the tax is read again.
     await waitFor(() => expect(checkInWizardApi.getTouristTax).toHaveBeenCalledTimes(2));
     expect(screen.getByTestId('checkin-wizard-tax-collection')).toBeInTheDocument();
   });
@@ -1013,10 +969,8 @@ describe('the live refresh of a tax paid online', () => {
 
   it('notificationRoute_TouristTaxPaid_OpensTheTaxStepOfTheWizard_AndTheBookingForWhoMayNotWriteIt', () => {
     const paid = { type: 'tourist-tax-paid', entityId: 'b-1' };
-    // The state of the collection is in the tax step of the wizard of the booking, not on the page of the booking.
     expect(notificationRoute(paid, 'short-rent')).toBe('/app/short-rent/bookings/b-1/check-in?step=tax');
     expect(notificationRoute(paid, 'short-rent', (_context, permission) => permission === 'booking.write')).toBe('/app/short-rent/bookings/b-1/check-in?step=tax');
-    // The wizard needs `booking.write`: whoever lacks it is not sent to a page that answers «no access».
     expect(notificationRoute(paid, 'short-rent', () => false)).toBe('/app/short-rent/bookings/b-1');
   });
 
@@ -1027,7 +981,6 @@ describe('the live refresh of a tax paid online', () => {
     expect(todoActionRoute(refund, (_context, permission) => permission === 'booking.read' || permission === 'booking.write')).toBe(
       `/app/short-rent/bookings/${bookingId}/check-in?step=tax`,
     );
-    // Who may only read the booking gets the page of the booking (the action's own entry), never a page that answers «no access».
     expect(todoActionRoute(refund, (_context, permission) => permission === 'booking.read')).toBe(`/app/short-rent/bookings/${bookingId}`);
     expect(todoActionRoute({ ...refund, activityType: 'SomethingElse' })).toBe(`/app/short-rent/bookings/${bookingId}`);
   });

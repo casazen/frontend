@@ -132,15 +132,11 @@ for (const [width, height] of [[320, 568], [768, 1024], [1440, 900]]) {
 }
 
 test('primo accesso anonimo · riprovare il login e aprire un invito senza esporre il token all’IdP', async ({ page }) => {
-  // This test compiles the anonymous app, then crosses origins for the login and invitation handoffs.
   test.setTimeout(180_000);
-  // The shared demo server already signs in a sample user. This isolated Vite instance runs
-  // the real auth bridge, with an in-browser fixture standing in for the hosted identity provider.
   const { createServer } = await import('vite');
   const server = await createServer({
     logLevel: 'error',
     cacheDir: 'node_modules/.vite-guided-entry-e2e',
-    // Vite may resolve zero to its default port. Let it select a free port when CI already owns 5173.
     server: { host: '127.0.0.1', port: 0, strictPort: false, hmr: false },
     define: {
       'import.meta.env.VITE_DEMO_MODE': '"false"',
@@ -155,7 +151,6 @@ test('primo accesso anonimo · riprovare il login e aprire un invito senza espor
     const address = server.httpServer?.address();
     if (!address || typeof address === 'string') throw new Error('Expected a loopback TCP server');
     const origin = `http://127.0.0.1:${address.port}`;
-    // Keep both loads within the page’s recently-started interval even on a cold CI worker.
     await page.clock.setFixedTime(new Date());
     await page.setViewportSize({ width: 390, height: 844 });
     await page.route('https://idp.example.test/**', route => route.fulfill({
@@ -193,7 +188,6 @@ test('primo accesso anonimo · riprovare il login e aprire un invito senza espor
     expect(page.url()).not.toContain(inviteToken);
     expect(lookups).toBe(2);
 
-    // Current invitation emails start on a ticket bridge before returning to the role-specific page.
     const ticket = { organization: 'org_demo123', invitation: 'inv_ticket_demo', flow: 'team', token: inviteToken };
     await page.goto(origin + '/attiva-invito#' + new URLSearchParams(ticket), { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveURL(/^https:\/\/idp\.example\.test\/authorize\?/);

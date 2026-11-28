@@ -5,7 +5,6 @@ import type { OwnerPortalInvoice, OwnerPortalStatement, OwnerPortalStatementDeta
  * page that draws a wrong one is found out, and they add up as the ledger does.
  */
 
-/** A statement in francs: 1800 - 270 - 216 - 79.50 = 1234.50. */
 export const CHF_STATEMENT: OwnerPortalStatement = {
   statementId: 'st-chf',
   agencyId: 'ag-1',
@@ -21,7 +20,6 @@ export const CHF_STATEMENT: OwnerPortalStatement = {
   totals: { gross: 1800, channelFees: -270, withholding: 0, commission: -216, charges: -79.5, corrections: 0, net: 1234.5, payments: 0, openingBalance: 0, closingBalance: 1234.5 },
 };
 
-/** The statement of the month before, in euros: 1300 - 195 - 104 - 13.35 = 987.65. */
 export const EUR_STATEMENT: OwnerPortalStatement = {
   ...CHF_STATEMENT,
   statementId: 'st-eur',
@@ -56,7 +54,6 @@ export const EUR_INVOICE: OwnerPortalInvoice = {
   statementId: 'st-eur',
 };
 
-/** One line of a statement: a stay of the property «Casa Lago», told by its days, its channel and its booking code, never by a guest. */
 export function statementLine(id: string, overrides: Partial<OwnerPortalStatementLine> = {}): OwnerPortalStatementLine {
   return {
     id,
@@ -77,7 +74,6 @@ export function statementLine(id: string, overrides: Partial<OwnerPortalStatemen
   };
 }
 
-/** The lines of a statement grouped as in its PDF, with the tourist tax of the one stay and the invoice of the manager. */
 export function statementDetail(statement: OwnerPortalStatement, overrides: Partial<OwnerPortalStatementDetail> = {}): OwnerPortalStatementDetail {
   return {
     statement,

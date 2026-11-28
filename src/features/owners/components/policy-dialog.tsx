@@ -21,7 +21,6 @@ interface PolicyDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/** A rate typed as `21` or `21,5`: positive, at most 100, at most two decimals; `null` for anything else. */
 function parsePercent(raw: string): number | null {
   const text = raw.trim().replace(',', '.');
   if (!/^\d{1,3}(\.\d{1,4})?$/.test(text)) return null;
@@ -192,10 +191,6 @@ interface ApprovePolicyDialogProps {
   onClose: () => void;
 }
 
-/**
- * Records the approval of the qualified accountant on a rule set: who approved it and when stay with it for good, and an approved rule set never
- * changes. It is a statement of fact, made by a person who may (the server asks the finance permission): CasaZen does not approve a rule.
- */
 export function ApprovePolicyDialog({ policy, onClose }: ApprovePolicyDialogProps) {
   const { t, i18n } = useTranslation();
   const approve = useApprovePolicy();

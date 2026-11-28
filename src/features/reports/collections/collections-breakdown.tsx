@@ -12,7 +12,6 @@ type CollectionsView = (typeof VIEWS)[number];
 const HEAD = 'px-3 py-2 font-medium';
 const FIGURE = 'px-3 py-2 text-right align-top tabular-nums';
 
-/** One row of a cut: its name, the amount in cents and the payments the server sent, and its share when the cut has one. */
 interface CutRow {
   key: string;
   name: ReactNode;
@@ -25,9 +24,7 @@ interface CutTableProps {
   caption: string;
   nameHeader: string;
   rows: CutRow[];
-  /** The cut has a share of the total for each row (by method and by channel). */
   withShare: boolean;
-  /** The server's total: every cut adds up to it, so the last row says it as the server does. */
   total: CollectionsTotal;
   testId: string;
 }
@@ -36,7 +33,6 @@ function CutTable({ caption, nameHeader, rows, withShare, total, testId }: CutTa
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const na = t('reports.money.notAvailable');
-  // The figures of the collections carry no currency (the server adds every property in its own, with no conversion): the number alone.
   const money = (cents: number) => formatSummedCents(cents, locale) ?? na;
 
   return (
@@ -109,7 +105,6 @@ export function CollectionsBreakdown({ report }: CollectionsBreakdownProps) {
 
   return (
     <section aria-label={t('reports.collections.sectionLabel')} className="min-w-0 space-y-4" data-testid="collections-breakdown">
-      {/* The figures below have no symbol: the server adds every property in its own currency and does not say it, so the page says so first. */}
       <p className="text-sm text-foreground/70" data-testid="collections-currency-note">
         {t('reports.money.currencyNote')}
       </p>

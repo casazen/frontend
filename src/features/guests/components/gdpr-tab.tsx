@@ -135,7 +135,6 @@ export function GdprTab({ guest }: GdprTabProps) {
 
   return (
     <div className="space-y-8">
-      {/* Privacy notice and purpose */}
       <PlainSection title={t('guests.gdprTab.noticeTitle')}>
         <Facts>
           <Fact label={t('guests.gdprTab.privacyNotice')}>
@@ -182,7 +181,6 @@ export function GdprTab({ guest }: GdprTabProps) {
 
       <RetentionSchedule items={data.retention} />
 
-      {/* Actions */}
       {flags.guestPortal && <PortalPrivacyRequests guestId={guest.id} />}
 
       <PlainSection title={t('guests.gdprTab.actionsTitle')}>
@@ -224,7 +222,6 @@ export function GdprTab({ guest }: GdprTabProps) {
             </Button>
           </div>
 
-          {/* Status indicators */}
           <div className="space-y-1 text-sm">
             {guest.erasureRequested && (
               <p className="text-warning-foreground">

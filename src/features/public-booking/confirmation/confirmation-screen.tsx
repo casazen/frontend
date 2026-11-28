@@ -33,10 +33,8 @@ interface ConfirmationScreenProps {
   org: PublicOrgDto;
   orgSlug: string;
   token: string;
-  /** The public record of the house, for the photo, the zone, the hours and the host; the screen is complete without it. */
   property: PublicPropertyDetailDto | undefined;
   clientStatus: ClientPaymentStatus | null;
-  /** What the checkout hands over for this page only (never through the address): the email and the first name the guest booked with. */
   guestEmail?: string;
   guestFirstName?: string;
   pollingStopped: boolean;
@@ -56,13 +54,6 @@ function PollingNote() {
   );
 }
 
-/**
- * The confirmation of a booking (DB-06b), one screen for each state the backend can be in. The state decides what the page says and
- * which single action it offers: «Aggiungi al calendario» for a confirmed booking, the update of an email or a host still to answer,
- * the payment to redo, other dates when there is nothing left to wait for. Only a booking the backend confirmed is called confirmed (D24).
- * Under the first screen come the steps with their real days, and the host if they published a way to reach them. Nothing is drawn
- * for data the booking does not have.
- */
 export function ConfirmationScreen({
   view,
   outcome,
@@ -97,7 +88,6 @@ export function ConfirmationScreen({
   const deadline = outcome.expiresAt ? formatRomeDateTime(outcome.expiresAt, i18n.language) : '';
   const total = money(outcome.totalPrice, outcome.currency);
 
-  // The state changed (or the page has just opened on one): the title takes the focus, so a screen reader reads the new state.
   useEffect(() => {
     titleRef.current?.focus({ preventScroll: true });
   }, [view]);

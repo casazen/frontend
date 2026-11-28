@@ -9,7 +9,6 @@ import { formatTypicalResponse } from '@/lib/supplier-site/format';
 import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 import { SiteMedia } from '../site-media';
 
-/** One professional of the list: the cover, the name (the link to its showcase), «Verificato», how long it usually takes to answer, and a «da €». */
 function AlternativeCard({ alternative }: { alternative: PublicAlternative }) {
   const { t, i18n } = useTranslation();
   const cover = isDisplayableMediaUrl(alternative.coverUrl) ? alternative.coverUrl : null;

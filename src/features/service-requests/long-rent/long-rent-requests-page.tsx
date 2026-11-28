@@ -14,12 +14,6 @@ import { NewLongRentRequest } from './new-long-rent-request';
 
 const NO_ROWS: readonly ServiceRequest[] = [];
 
-/**
- * Interventi of Affitti lunghi (LR-08b): the requests to the suppliers of the Portale for the properties let long term, from the
- * request to the payment, in one list. Three tabs, Aperti · Chiusi · Tutti (`?tab=`), each one asking the server for its view
- * (`?view=open|closed`, LR-08a); the list searches and sorts the requests of the tab. The name of a request opens its page, where
- * the next step is told; the button of the header asks for a new one. Who may only read the properties sees the list and has no button.
- */
 export function LongRentRequestsPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();

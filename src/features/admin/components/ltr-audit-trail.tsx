@@ -6,7 +6,6 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { formatDateTime } from '@/lib/utils';
 import { ltrAuditKey } from '../lib/ltr-query-keys';
 
-/** Audit log of a reference-data row (LT-13): every admin change and verification, newest first. */
 export function LtrAuditTrail({ entityId }: { entityId: string }) {
   const { t } = useTranslation();
   const audit = useQuery({

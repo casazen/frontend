@@ -2,11 +2,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 
-/** Homes the list shows at first, and the ones each press of «Show more homes» adds. */
 export const EMBED_RESULTS_PAGE_SIZE = 24;
 
 interface EmbedSearchResultsProps<T extends { id: string }> {
-  /** Every home of the answer that the list shows (the free ones), in order: the whole list, never a page of it. */
   cards: readonly T[];
   renderCard: (card: T, index: number) => ReactNode;
 }
@@ -23,7 +21,6 @@ interface EmbedSearchResultsProps<T extends { id: string }> {
 export function EmbedSearchResults<T extends { id: string }>({ cards, renderCard }: EmbedSearchResultsProps<T>) {
   const { t } = useTranslation();
   const list = useRef<HTMLDivElement>(null);
-  // The answer the count belongs to: when the list changes, the count is the first page again (derived while drawing, no effect).
   const listKey = cards.map((card) => card.id).join(',');
   const [asked, setAsked] = useState({ listKey, count: EMBED_RESULTS_PAGE_SIZE });
   const count = asked.listKey === listKey ? asked.count : EMBED_RESULTS_PAGE_SIZE;

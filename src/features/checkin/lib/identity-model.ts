@@ -15,22 +15,13 @@ import type {
   PresenceMove,
 } from '@/types/public-checkin.types';
 
-/**
- * The kinds of legal text the registry of the identity step serves (API `CheckInLegalTextKinds`): the consent to the face check, whose `version` the consent posts back, and
- * the notice of a property that keeps no document (Ticino). The text of each is the registry's, never the page's (E22/F01/US02/T02).
- */
 export const BIOMETRIC_CONSENT_KIND: CheckInLegalTextKind = 'biometric-consent';
 export const TICINO_NOTICE_KIND: CheckInLegalTextKind = 'ticino-notice';
 
-/** The text of `kind` among the ones the registry served, or `null` when it served none (in production, a text that is not approved yet is not served). */
 export function legalTextOf(texts: readonly CheckInLegalText[] | undefined, kind: CheckInLegalTextKind): CheckInLegalText | null {
   return texts?.find((text) => text.kind === kind && text.version.trim() !== '') ?? null;
 }
 
-/**
- * The capture guidance codes of the API (`CaptureGuidanceCodes`): what to change in a photo, and the static tips of the selfie. Each has its words in
- * every language of the page (`checkin.identity.guidance.*`); a code the page does not know is shown with the generic sentence.
- */
 export const GUIDANCE_CODES = [
   'show_your_face',
   'one_face_only',
@@ -52,7 +43,6 @@ export const GUIDANCE_CODES = [
   'document_front_needed',
   'document_not_recognized',
   'active_pose_retry',
-  // The targeted codes of the document step of the self-hosted flow (E71/F01/US03/T01, NF-189): what is wrong with the photo of a side, one code each.
   'document_not_found',
   'document_edges_not_visible',
   'document_layout_mismatch',
@@ -66,22 +56,12 @@ export const GUIDANCE_CODES = [
   'document_unreadable',
 ] as const;
 
-/**
- * The two codes after which the verification is no longer in the hands of the guest: the server has already closed it with a person (a document of a format it does not know, a side
- * refused as many times as the policy allows). Nothing is asked of the guest any more: the page shows the way of a person, not another capture.
- */
 export const ASSISTED_GUIDANCE_CODES = ['document_format_unsupported', 'document_unreadable'] as const;
 
-/** The first of the codes that end the document step with a person, or `null` when none of them is in `codes`. */
 export function assistedReasonOf(codes: readonly string[]): string | null {
   return codes.find((code) => (ASSISTED_GUIDANCE_CODES as readonly string[]).includes(code)) ?? null;
 }
 
-/**
- * The codes of what to change in the sequence of the presence (E72/F02/US01/T01, NF-192): the recording was too short, its timing did not hold, its quality was not enough, it did not show one face, or the moves of the
- * challenge were not followed. They come in the `guidance` of the answer of the presence, each with its words in every language of the page (`checkin.identity.guidance.*`); a code of the family the page does not
- * know is shown with the generic sentence of the presence. Kept apart from {@link GUIDANCE_CODES}, which are the codes of the capture checks of the document and of the legacy selfie.
- */
 export const PRESENCE_GUIDANCE_CODES = [
   'presence_too_short',
   'presence_timing',
@@ -97,13 +77,8 @@ export function presenceGuidanceKey(code: string): string {
   return 'checkin.identity.guidance.presence_again';
 }
 
-/** The older code of the capture checks that says what a targeted code of the document step says (a reflection, a blurred picture): the server sends both when both checks find it. */
 const OLDER_TWIN: Readonly<Record<string, string>> = { document_glare: 'avoid_glare', document_blur: 'hold_still' };
 
-/**
- * The codes of a refusal as the page lists them: a targeted code and the older code that gives the same advice are one line, the targeted one (the server sends the targeted codes first and then the
- * codes of the capture checks of before). An older code on its own is listed as it always was, and so is every other.
- */
 export function listedGuidance(codes: readonly string[]): string[] {
   return codes.filter((code) => !Object.entries(OLDER_TWIN).some(([targeted, older]) => older === code && codes.includes(targeted)));
 }
@@ -117,13 +92,8 @@ export function guidanceKey(code: string, asked?: DocumentSide | null): string {
   return (GUIDANCE_CODES as readonly string[]).includes(code) ? `checkin.identity.guidance.${code}` : 'checkin.identity.guidance.other';
 }
 
-/**
- * The codes that only say which side of the document comes next: the picture before it was good, the document has two sides (the Italian electronic identity card has the face on the
- * front and the lines of letters on the back). They are not a refusal of the photo that was taken.
- */
 const SIDE_GUIDANCE: Readonly<Record<string, DocumentSide>> = { document_back_needed: 'back', document_front_needed: 'front' };
 
-/** The side a guidance asks for next, or `null` when it asks for none. */
 export function sideAskedBy(codes: readonly string[]): DocumentSide | null {
   for (const code of codes) {
     const side = SIDE_GUIDANCE[code];
@@ -132,7 +102,6 @@ export function sideAskedBy(codes: readonly string[]): DocumentSide | null {
   return null;
 }
 
-/** The codes that ask for the document to be photographed again, not the selfie: the targeted codes of the document step (`document_*`) are all about the photo of a side. */
 const DOCUMENT_GUIDANCE: ReadonlySet<string> = new Set([
   'upload_document_again',
   'use_valid_document',
@@ -155,52 +124,31 @@ export function retakeTargetOf(codes: readonly string[], selfHosted = false): 'd
  */
 export type IdentityStage = 'consent' | 'document' | 'selfie' | 'presence' | 'retry' | 'operator' | 'done' | 'unsupported';
 
-/**
- * Everything the identity step knows, in memory for the life of the page and never in a storage, a cache or a log: the stage, whether a person
- * was asked, the attempts left, the guidance of the last answer and the lock code of a pass. Never a picture: only which sides of the document were sent.
- */
 export interface IdentityProgress {
   stage: IdentityStage;
-  /** A person was asked to verify (the API said so, or the guest has just asked). */
   operatorRequested: boolean;
-  /** The face check is offered for this stay: not switched off for the organization, not a minor, not refused. */
   biometricOffered: boolean;
   attemptsRemaining: number;
-  /** The property keeps no document (Ticino): the photo of it comes again with the selfie. */
   documentNotArchived: boolean;
-  /** What to change after the last document or selfie, as codes. */
   guidanceCodes: readonly string[];
-  /** The last photo of the document could not be compared: the guest takes it again (with the guidance, when the API gave any). */
   documentRefused: boolean;
-  /** The side of the document the next photo is of: the front first; the back when the answer said the document has two sides and the front was good. */
   documentSideNeeded: DocumentSide;
-  /** The document has two sides (a card with the face on the front and the lines of letters on the back): the API said so, or the page was opened again with both on file. */
   documentTwoSided: boolean;
   /** The sides sent from this page since the step began (a property that keeps no document gets them again with the selfie, so the page holds those pictures; the list says which, it is no picture). */
   documentSidesTaken: readonly DocumentSide[];
-  /** The lock code, only after an `ok`; `null` for any other answer and for a property with none. */
   lockCode: string | null;
-  /** Why an `ok` came with no lock code although the property has one (`LOCK_CODE_HELD_TOURIST_TAX`): the code is held back until the tourist tax is paid. */
   lockCodeHeld?: string | null;
-  /**
-   * The session follows the self-hosted flow (E70/F03/US01/T01): the page opens the step with the text it shows, offers the two ways to be verified side by side and keeps the way to a person on every
-   * step. False on the legacy path, where none of that is there and the page is the one it always was.
-   */
   selfHosted: boolean;
-  /** The verification was already closed when the page learnt where it stood (it was opened again, or a 409 `identity_already_closed` said so): the result says it was already over (E72/F02/US01/T02). */
   closed: boolean;
 }
 
-/** `lockCodeHeld` of the selfie answer while the organization asks for the tourist tax before the lock code and the stay still owes it (E25/F01/US01/T01). */
 export const LOCK_CODE_HELD_TOURIST_TAX = 'tourist_tax_due';
 
-/** The verification is closed (self-hosted flow): no capture is offered any more, and the guest sees where it ended. */
 function isClosed(state: IdentityVerificationState): boolean {
   return state.closed === true;
 }
 
 function stageOfState(state: IdentityVerificationState): IdentityStage {
-  // A closed verification is over, whatever step the state still names: an approval is a pass, anything else is a person who has it. Nothing here says «passed» without the server saying it.
   if (isClosed(state)) return state.outcome === 'ok' ? 'done' : 'operator';
 
   switch (state.step) {
@@ -213,41 +161,32 @@ function stageOfState(state: IdentityVerificationState): IdentityStage {
     case 'document':
       return 'document';
     case 'selfie':
-      // In Ticino nothing of the document is kept, and the page that was closed no longer has its photo: the selfie asks for it again.
       return state.documentNotArchived ? 'document' : 'selfie';
     case 'presence':
-      // The step of the self-hosted flow that takes the place of the selfie (E72/F02/US01/T01): the recording is asked for the same way, with the photo of the document again in Ticino. A state that does not say
-      // `selfHosted` has no screen for it (nothing of the legacy path changes): the way to a person.
       if (state.selfHosted !== true) return 'unsupported';
       return state.documentNotArchived ? 'document' : 'presence';
     default:
-      // A step the page does not know yet: not a blank screen, the way to a person.
       return 'unsupported';
   }
 }
 
-/** The sides of the document the server holds a read of, without the `single` of a document of one picture. */
 function sidesOnFile(state: IdentityVerificationState): DocumentSide[] {
   const sides = state.documentSides ?? [];
   return (['front', 'back'] as const).filter((side) => sides.includes(side));
 }
 
-/** The document has two sides: a picture of the back is on file, or the server says a side is still missing (only a document of two sides misses one). */
 function isTwoSided(state: IdentityVerificationState): boolean {
   return sidesOnFile(state).includes('back') || (state.documentSideNeeded ?? null) !== null;
 }
 
-/** What the document step starts from, given what the server says: the side it still wants (the front, when it says none), and the sides it has. */
 function documentFromState(state: IdentityVerificationState): Pick<IdentityProgress, 'documentSideNeeded' | 'documentTwoSided' | 'documentSidesTaken'> {
   return {
     documentSideNeeded: state.documentSideNeeded ?? 'front',
     documentTwoSided: isTwoSided(state),
-    // A property that keeps no document has nothing of it on file, and the page that was closed holds no picture: both sides come again.
     documentSidesTaken: state.documentNotArchived ? [] : sidesOnFile(state),
   };
 }
 
-/** Where the identity step starts: what the API says about the session (the page opened, or opened again through the same link). */
 export function progressFromState(state: IdentityVerificationState): IdentityProgress {
   return {
     stage: stageOfState(state),
@@ -272,10 +211,6 @@ function resultKindOf(value: unknown): IdentityVerificationResultKind | null {
   return value === 'ok' || value === 'retry' || value === 'operator' ? value : null;
 }
 
-/**
- * The state of the verification read from a body that came off the network (the answer of the opening, the body of a 409), or `null` when it is not one (it has no `step`). Each member is read for what it is: a flag
- * that is not `true` is `false` (the prudent value: nothing offered, nothing approved), a text that is not a text is `null`, and a step the page does not know is kept as it is.
- */
 export function identityStateOf(value: unknown): IdentityVerificationState | null {
   if (!isRecord(value) || typeof value.step !== 'string') return null;
   const flag = (member: string) => value[member] === true;
@@ -312,10 +247,6 @@ export function identityStateOf(value: unknown): IdentityVerificationState | nul
 /** The `code` of the 409 that refuses a step because the verification is over (API `IdentityApiErrors.IdentityAlreadyClosed`). */
 const IDENTITY_ALREADY_CLOSED = 'identity_already_closed';
 
-/**
- * A verification that is closed with a person: what the page shows when the 409 of the document, the selfie, the request for a person or the opening says it is closed and carries no state it can read (those answers always carry
- * one: the page never meets this case with the server of today). It never says «passed». The calls of the presence do not use it: see {@link closedAnswerOf}.
- */
 const CLOSED_WITH_A_PERSON: IdentityVerificationState = {
   step: 'operator',
   result: 'operator',
@@ -367,11 +298,9 @@ export function isNoticeVersionUnknown(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 422 && getProblemCode(error.response.data) === 'notice_version_unknown';
 }
 
-/** After the answer to the consent: a consent leads to the document, anything else is the way to a person. */
 export function afterConsent(progress: IdentityProgress, response: BiometricConsentResponse): IdentityProgress {
   const { state } = response;
   if (response.result === 'consent_recorded') {
-    // The photo of the document is kept only after the consent: it is taken now, whatever was read before.
     return {
       ...progress,
       stage: 'document',
@@ -393,7 +322,6 @@ export function afterConsent(progress: IdentityProgress, response: BiometricCons
   };
 }
 
-/** `sides` with `side` in it, once, in the order front then back. */
 function withSide(sides: readonly DocumentSide[], side: DocumentSide): DocumentSide[] {
   return (['front', 'back'] as const).filter((candidate) => candidate === side || sides.includes(candidate));
 }
@@ -406,8 +334,6 @@ function withSide(sides: readonly DocumentSide[], side: DocumentSide): DocumentS
 export function afterDocument(progress: IdentityProgress, response: IdentityDocumentResponse, sent: DocumentSide = progress.documentSideNeeded): IdentityProgress {
   const codes = response.guidanceCodes;
   if (!response.acceptable && assistedReasonOf(codes) !== null) {
-    // The server has already closed the verification with a person (a format it does not know, or a side refused as many times as the policy allows): nothing is asked of the guest any more,
-    // so the page shows the way of a person, with the reason, and not another capture. The pictures this page held are let go.
     return { ...progress, stage: 'operator', operatorRequested: true, guidanceCodes: codes, documentRefused: false, documentSidesTaken: [], lockCode: null, lockCodeHeld: null };
   }
 
@@ -425,7 +351,6 @@ export function afterDocument(progress: IdentityProgress, response: IdentityDocu
 
   return {
     ...progress,
-    // What follows a document that is complete: the selfie, or on a self-hosted verification the recording of the presence (the legacy selfie routes are refused there, and never called).
     stage: next === null ? (progress.selfHosted ? 'presence' : 'selfie') : 'document',
     documentNotArchived: notArchived,
     documentTwoSided: twoSided,
@@ -436,10 +361,6 @@ export function afterDocument(progress: IdentityProgress, response: IdentityDocu
   };
 }
 
-/**
- * The photo that was sent was the face side and it was good: it is accepted, or it is the answer that only asks for the back (`document_back_needed`, the front was fine and the card has its
- * lines of letters on the back). The step keeps what it needs of that front to warn before the back looks like it (a hint, E71/F02/US01/T02).
- */
 export function frontWasTaken(response: IdentityDocumentResponse, sent: DocumentSide): boolean {
   return sent === 'front' && (response.acceptable || sideAskedBy(response.guidanceCodes) === 'back');
 }
@@ -476,7 +397,6 @@ export function afterSelfie(progress: IdentityProgress, response: IdentitySelfie
   };
 }
 
-/** The moves of the challenge of the presence the page has words and a drawing for. */
 const PRESENCE_MOVES: readonly PresenceMove[] = ['turn_left', 'turn_right', 'look_up', 'look_down'];
 
 function isPresenceMove(value: unknown): value is PresenceMove {
@@ -491,10 +411,6 @@ function isPositiveInteger(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value > 0;
 }
 
-/**
- * The challenge of the presence read from a body that came off the network (E72/F02/US01/T01), or `null` when it is not one the page can follow: no token, no moves, a move the page has no words for, a time or a rate
- * that is not a positive number, an expiry that is not a date. A challenge the page cannot follow is never half-used: the guest is told, and may try again or ask for a person.
- */
 export function readPresenceChallenge(value: unknown): PresenceChallenge | null {
   if (!isRecord(value)) return null;
   const { challengeToken, steps, stepMs, leadInMs, expiresAt, targetFps, maxFrames, maxFrameSide } = value;
@@ -507,7 +423,6 @@ export function readPresenceChallenge(value: unknown): PresenceChallenge | null 
   return { challengeToken, steps: [...steps], stepMs, leadInMs, expiresAt, targetFps, maxFrames, maxFrameSide };
 }
 
-/** The answer of the presence as the page reads it: the result, what to change, and the lock code when the server sends one with an `ok`. */
 export interface PresenceAnswer {
   result: IdentityVerificationResultKind;
   guidance: readonly string[];
@@ -517,10 +432,6 @@ export interface PresenceAnswer {
   lockCodeHeld: string | null;
 }
 
-/**
- * The answer of `POST .../presence` read from a body that came off the network, or `null` when it is not one (no `result` the page knows): an answer that cannot be read is a failure, never a pass. The codes of what to
- * change are the `guidance` of the answer (the older name `guidanceCodes` is read too), each a text; the lock code, when the server sends one with an `ok`, is a text.
- */
 export function readPresenceAnswer(value: unknown): PresenceAnswer | null {
   if (!isRecord(value)) return null;
   const result = resultKindOf(value.result);
@@ -572,13 +483,8 @@ export function afterPresence(progress: IdentityProgress, answer: PresenceAnswer
   };
 }
 
-/** The `code` of the 409 that says the automatic check cannot be done for this session (API `IdentityApiErrors.PresenceChallengeUnavailable`). */
 const PRESENCE_CHALLENGE_UNAVAILABLE = 'presence_challenge_unavailable';
 
-/**
- * The state the 409 `presence_challenge_unavailable` carries (`null` when it carries none the page can read), or `null` itself for any other failure. The challenge cannot be issued for this session: the guest is
- * told, and a person verifies. The state in the body says why (a person already asked, the face check not offered, the attempts used).
- */
 export function presenceUnavailableOf(error: unknown): { state: IdentityVerificationState | null } | null {
   if (!isAxiosError(error) || error.response?.status !== 409) return null;
   const body: unknown = error.response.data;
@@ -586,10 +492,6 @@ export function presenceUnavailableOf(error: unknown): { state: IdentityVerifica
   return { state: identityStateOf(isRecord(body) ? body.state : undefined) };
 }
 
-/**
- * The automatic check cannot be done: the page shows the message of the assisted path (the person verifies, and is asked for at once by the step). The state of the answer, when there is one, tells whether a person was
- * already asked and whether the face check is offered at all; a verification found closed is shown where it ended.
- */
 export function afterPresenceUnavailable(progress: IdentityProgress, state: IdentityVerificationState | null): IdentityProgress {
   if (state?.closed === true) return progressFromState(state);
   return {
@@ -605,17 +507,12 @@ export function afterPresenceUnavailable(progress: IdentityProgress, state: Iden
   };
 }
 
-/**
- * The 409 that says the challenge a recording answers is no longer one the server accepts (`presence_challenge_expired`, or `presence_challenge_required` when it has none for this attempt): nothing was decided, and
- * the guest records again with a new challenge and a new key (E72/F02/US01/T02).
- */
 export function isPresenceChallengeRenewal(error: unknown): boolean {
   if (!isAxiosError(error) || error.response?.status !== 409) return false;
   const code = getProblemCode(error.response.data);
   return code === 'presence_challenge_expired' || code === 'presence_challenge_required';
 }
 
-/** After the guest asked for a person: the operators are told. A verification that had already passed stays passed. */
 export function afterOperatorRequest(progress: IdentityProgress, response: IdentityOperatorResponse): IdentityProgress {
   const { state } = response;
   if (state.step === 'done') return { ...progress, stage: 'done' };
@@ -647,27 +544,21 @@ export function afterRetake(progress: IdentityProgress): IdentityProgress {
   };
 }
 
-/** What a refused call changes: the step the API asks for first. Anything else leaves the guest where they are, with what they have. */
 export function afterProblem(progress: IdentityProgress, problem: IdentityProblem): IdentityProgress {
   if (problem === 'consent_required' || problem === 'consent_text_changed') return { ...progress, stage: 'consent', guidanceCodes: [], documentRefused: false };
   if (problem === 'document_required' || problem === 'document_photo') {
-    // The pictures the page held are no longer the ones the server has read (or it has none): the document comes again from its face side.
     return { ...progress, stage: 'document', guidanceCodes: [], documentRefused: false, documentSideNeeded: 'front', documentSidesTaken: [] };
   }
-  // The automatic check cannot be done for this session: the way to a person, with the message of the assisted path.
   if (problem === 'presence_unavailable') return afterPresenceUnavailable(progress, null);
-  // The server wants a recording of the presence on a page that offers the selfie (a page opened before the flag was turned on): no screen of this page can answer, so the way to a person.
   if (problem === 'presence_required') return { ...progress, stage: 'unsupported', guidanceCodes: [], documentRefused: false };
   return progress;
 }
 
-/** The identity step is over for the guest: it passed, or a person was asked and has it. The page goes on only then (the way to a person is always open). */
 export function isIdentityConcluded(progress: IdentityProgress | null): boolean {
   if (progress === null) return true;
   return progress.stage === 'done' || (progress.stage === 'operator' && progress.operatorRequested);
 }
 
-/** Why a call of the identity step failed, in the terms the page has words for (`checkin.identity.problem.*`). */
 export const IDENTITY_PROBLEMS = [
   'network',
   'too_many_requests',
@@ -680,8 +571,6 @@ export const IDENTITY_PROBLEMS = [
   'document_photo',
   'processing',
   'failed',
-  // The recording of the presence of a self-hosted verification (E72/F02/US01/T01): the automatic check cannot be done (a person verifies), the challenge ran out, the sequence is not valid or too large, or the page
-  // is the one of the selfie while the server wants a recording.
   'presence_unavailable',
   'presence_expired',
   'presence_invalid',
@@ -690,10 +579,6 @@ export const IDENTITY_PROBLEMS = [
 ] as const;
 export type IdentityProblem = (typeof IDENTITY_PROBLEMS)[number];
 
-/**
- * A failure of a call reduced to the problem the guest is told about. Only the status and the code of the answer are read: nothing of the request
- * (which holds a photo) is kept, and a 404 is always «this link is no longer valid», whatever the page still has in memory.
- */
 export function classifyIdentityError(error: unknown): IdentityProblem {
   const status = getHttpStatus(error);
   if (status === undefined) return isTransientRequestError(error) ? 'network' : 'failed';
@@ -701,7 +586,6 @@ export function classifyIdentityError(error: unknown): IdentityProblem {
   const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
   if (status === 404) return 'link_unavailable';
   if (status === 429) return 'too_many_requests';
-  // The sequence of the presence has its own 413, before the one of the photos: it is a recording that is too large, not a photo.
   if (code === 'presence_sequence_too_large') return 'presence_too_large';
   if (status === 413) return 'too_large';
   if (code === 'presence_challenge_unavailable') return 'presence_unavailable';
@@ -709,7 +593,6 @@ export function classifyIdentityError(error: unknown): IdentityProblem {
   if (code === 'presence_sequence_invalid') return 'presence_invalid';
   if (code === 'presence_sequence_required') return 'presence_required';
   if (code === 'biometric_consent_required') return 'consent_required';
-  // The text the guest read is no longer the one the registry serves (a new version was published), or none was sent: the guest reads it again before answering.
   if (code === 'biometric_consent_version_unknown' || code === 'biometric_consent_version_required') return 'consent_text_changed';
   if (code === 'document_check_required') return 'document_required';
   if (code === 'document_photo_required' || code === 'document_photo_mismatch') return 'document_photo';
@@ -718,7 +601,6 @@ export function classifyIdentityError(error: unknown): IdentityProblem {
   return status >= 500 ? 'processing' : 'failed';
 }
 
-/** The key of the sentence that tells the guest about a problem. */
 export function problemKey(problem: IdentityProblem): string {
   return `checkin.identity.problem.${problem}`;
 }

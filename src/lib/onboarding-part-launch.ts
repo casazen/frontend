@@ -19,21 +19,14 @@ import type { OnboardingFlowAction, OnboardingLaunchTarget } from '@/types/onboa
 /** What a target is for when the plan names more than a part: the choice of the sender, the CIN or the tourist tax rate of a property (`compliance`). */
 export type LaunchFocus = 'sender' | 'cin' | 'taxRate';
 
-/** One page a target can open: its manifest path and, for a wizard, the step it opens on. */
 export interface LaunchCandidate {
   path: string;
   step?: string;
-  /**
-   * The query parameter that carries the property into a page that is not «of one property» by its path (`:id`): the sender wizard reads `?property=<id>`. It is written
-   * when the caller names a property; a caller that names none opens the page without it, and the page asks which property.
-   */
   propertyParam?: string;
 }
 
 interface LaunchEntry {
-  /** For one property (`:id` in the path), tried first when the caller names a property. */
   property?: readonly LaunchCandidate[];
-  /** For the whole org, or for a caller that names no property. */
   general: readonly LaunchCandidate[];
   /** What a focus asks for, instead of the lists above (tried first, then the lists above). */
   focus?: Partial<Record<LaunchFocus, { property?: readonly LaunchCandidate[]; general?: readonly LaunchCandidate[] }>>;
@@ -50,15 +43,9 @@ interface LaunchEntry {
   needsFeatureFlag?: boolean;
 }
 
-/** The connect wizard of E02 (`fe-octorate-connect-wizard`): the consent, the listings found, the mapping and the existing inventory import. */
 const CONNECT = '/app/short-rent/integrations/octorate';
 const ACTIVATION = '/app/short-rent/properties/:id/activation';
 
-/**
- * The registry. The pages the other epics still have to register (the inbox of E05; the sender wizard of E03 is registered now) come FIRST in their lists: while they
- * are not in the manifest the target falls back to the page that exists, and the day they are registered they win by themselves. The paths are the
- * ones the lead aligns with their tasks (epic risks); `onboarding-part-launch.test.ts` keeps the ones that exist today in the manifest.
- */
 const REGISTRY: Readonly<Record<OnboardingLaunchTarget, LaunchEntry>> = {
   connect: { general: [{ path: CONNECT, step: 'consent' }] },
   mapping: { general: [{ path: CONNECT, step: 'mapping' }] },
@@ -69,7 +56,6 @@ const REGISTRY: Readonly<Record<OnboardingLaunchTarget, LaunchEntry>> = {
     property: [{ path: ACTIVATION }],
     general: [{ path: '/app/short-rent/compliance' }],
     focus: {
-      // The sender wizard of E03 (E03/F01/US02/T02) is registered: it wins for a property (`?property=<id>`) and, with none named, opens on the choice of the property.
       sender: {
         general: [{ path: '/app/short-rent/compliance/sender' }, { path: '/app/short-rent/compliance' }],
         property: [{ path: '/app/short-rent/compliance/sender', propertyParam: 'property' }, { path: ACTIVATION }],
@@ -85,34 +71,26 @@ const REGISTRY: Readonly<Record<OnboardingLaunchTarget, LaunchEntry>> = {
   fiscal: { general: [{ path: BILLING_SETUP_PATH }], stepOfReason: billingStepOfReason, needsFeatureFlag: true },
   marketplace: { general: [{ path: '/app/short-rent/marketplace' }] },
   summary: { general: [{ path: '/app/short-rent/onboarding/summary' }] },
-  // The notification of the guests in Switzerland (E29/F02/US02/T01): the activation wizard of the property, opened on its step «Notifica degli ospiti» (it works for an active property
-  // too). With no property named the part has no wizard of its own: the list of the properties, where the host chooses (the part page lists the properties that lack something).
   guestRegistration: { property: [{ path: ACTIVATION, step: GUEST_REGISTRATION_STEP_ID }], general: [{ path: '/app/short-rent/properties' }] },
 };
 
-/** The page a target opens for a person, with the address to go to: the manifest entry that was found and the full address (the property and the step filled in). */
 export interface ResolvedLaunch {
   entry: RouteManifestEntry;
-  /** The address: the path with the property in it, and the step of a wizard in the query. */
   to: string;
 }
 
-/** The first candidate in the list that is a page of the manifest the person may open, as an address; `null` when none is. */
 export function resolveCandidates(
   candidates: readonly LaunchCandidate[],
   propertyId: string | undefined,
   hasPermission?: PermissionPredicate,
   lookup: (path: string) => RouteManifestEntry | undefined = getManifestEntry,
   step?: string | null,
-  /** The flags the page is shown under, to check the pages behind a flag too (`features` undefined: every flag is off); not given: only the permissions are checked. */
   gate?: { features: Partial<FeatureFlags> | undefined },
 ): ResolvedLaunch | null {
   for (const candidate of candidates) {
     const entry = lookup(candidate.path);
     if (!entry || !hasEntryPermission(entry, hasPermission)) continue;
-    // A page behind a flag that is off is not there for anyone: the route sends the person back to the home of the area, so it is no candidate.
     if (gate && !isEntryFeatureEnabled(entry, gate.features)) continue;
-    // A page of one property needs the property; without it the page is not a candidate.
     if (candidate.path.includes(':id') && !propertyId) continue;
     const path = candidate.path.includes(':id') ? generatePath(candidate.path, { id: propertyId ?? '' }) : candidate.path;
     const query: string[] = [];
@@ -157,7 +135,6 @@ export function resolveLaunchTarget(
   return null;
 }
 
-/** What a «Do now» action of the flow status asks of the registry: the target and the focus to resolve. */
 export interface ActionLaunch {
   target: OnboardingLaunchTarget;
   focus?: LaunchFocus;
@@ -175,15 +152,10 @@ const ACTION_LAUNCH: Readonly<Record<OnboardingFlowAction, ActionLaunch>> = {
   chooseIssuer: { target: 'fiscal' },
 };
 
-/**
- * The target and the focus a «Do now» action of the flow status resolves to (`chooseSender` is `compliance` with the focus `sender`, `activate` is
- * the summary); `null` for an action this version of the app does not know.
- */
 export function launchTargetForAction(action: OnboardingFlowAction | string | null | undefined): ActionLaunch | null {
   return typeof action === 'string' && Object.hasOwn(ACTION_LAUNCH, action) ? ACTION_LAUNCH[action as OnboardingFlowAction] : null;
 }
 
-/** Every candidate path of the registry, for the test that keeps the pages it names in the manifest. */
 export function allLaunchCandidates(): LaunchCandidate[] {
   return Object.values(REGISTRY).flatMap((entry) => [
     ...(entry.property ?? []),

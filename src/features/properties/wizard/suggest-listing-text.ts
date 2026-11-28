@@ -1,13 +1,10 @@
 import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX, joinList } from '@/lib/listing-texts';
 import type { PropertyWizardValues } from './property-wizard-model';
 
-// The limits of the listing headline and description are the API's (`@/lib/listing-texts`); the description was a short pitch of 600
-// characters until the AI wrote it (a text of three or four paragraphs, up to about 1,200 characters, that the host then trims as they like).
 export { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX };
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-/** The name of an amenity in the language of the page: the label of the catalog (`useAmenityLabels`). */
 type AmenityLabelOf = (amenity: string) => string;
 
 export type ListingTextInput = Pick<
@@ -15,7 +12,6 @@ export type ListingTextInput = Pick<
   'accommodationType' | 'name' | 'city' | 'maxGuests' | 'bedrooms' | 'beds' | 'bathrooms' | 'areaSqm' | 'amenities'
 >;
 
-/** How many of the amenities the person chose are named in the text. */
 const NAMED_AMENITIES = 3;
 
 const capitalise = (text: string) => (text.length > 0 ? text[0]!.toUpperCase() + text.slice(1) : text);
@@ -64,7 +60,6 @@ export function suggestListingText(input: ListingTextInput, t: Translate, amenit
   const named = input.amenities.slice(0, NAMED_AMENITIES).map(amenityLabel);
   if (named.length > 0) sentences.push(t('propertyWizard.suggest.amenities', { list: joinList(named, and) }));
 
-  // Whole sentences only: if the text is too long the last sentences go, none is cut in the middle.
   let description = '';
   for (const sentence of sentences) {
     const next = description === '' ? sentence : `${description} ${sentence}`;

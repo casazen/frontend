@@ -25,7 +25,6 @@ function httpError(status?: number, data?: unknown, code?: string): AxiosError {
   return new AxiosError('Request failed', code ?? AxiosError.ERR_BAD_REQUEST, config, {}, response);
 }
 
-/** Where the guest ends up: the address, as the page of the stay would read it. */
 function Where() {
   const location = useLocation();
   return <p data-testid="where">{`${location.pathname}${location.search}`}</p>;
@@ -52,7 +51,6 @@ const submit = () => fireEvent.click(screen.getByTestId('checkin-door-submit'));
 
 beforeEach(async () => {
   vi.clearAllMocks();
-  // The page opens in the language of the browser: Italian here.
   vi.spyOn(window.navigator, 'language', 'get').mockReturnValue('it-IT');
   vi.mocked(publicCheckinApi.openDoor).mockResolvedValue({ token: 'link-token-1' });
   vi.mocked(publicCheckinApi.setLanguage).mockResolvedValue({ language: 'it' });
@@ -84,7 +82,6 @@ describe('the page of the door of the property (E22/F02/US01/T01)', () => {
 
     await waitFor(() => expect(publicCheckinApi.openDoor).toHaveBeenCalledWith(DOOR, { bookingCode: 'ABC123', arrivalDate: '2026-11-20' }));
     expect(await screen.findByTestId('where')).toHaveTextContent('/checkin/link-token-1?step=identity');
-    // The guest never chose a language here: nothing is saved on the session.
     expect(publicCheckinApi.setLanguage).not.toHaveBeenCalled();
   });
 
@@ -109,7 +106,6 @@ describe('the page of the door of the property (E22/F02/US01/T01)', () => {
     submit();
 
     const where = await screen.findByTestId('where');
-    // Only the token of the link is in the address of the stay: not the code, not the date.
     expect(where.textContent).toBe('/checkin/link-token-1?step=identity');
     expect(where.textContent).not.toContain('SECRETCODE9');
     expect(stored).not.toHaveBeenCalled();

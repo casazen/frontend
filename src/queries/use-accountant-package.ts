@@ -4,17 +4,12 @@ import { withoutRequest } from '@/features/marketplace/activation/use-sequential
 import type { SaveAccountantPackageSettingsRequest } from '@/types';
 import { saveDownload } from './save-download';
 
-/** Root of the query keys of the accountant package: the summary of every period lives under it. */
 export const ACCOUNTANT_PACKAGE_KEY = 'accountant-package';
 
 export const accountantPackageKeys = {
   summary: (period: string) => [ACCOUNTANT_PACKAGE_KEY, 'agency-summary', period] as const,
 };
 
-/**
- * How the package is sent to the accountant. Not under {@link ACCOUNTANT_PACKAGE_KEY}: the summary is read again whenever a document is issued (`use-notifications-realtime.ts`), and that must
- * not read the settings of the send again while the person is typing them.
- */
 const ACCOUNTANT_SETTINGS_KEY = ['accountant-package-settings'] as const;
 
 /**
@@ -33,7 +28,6 @@ export function useAgencySummary(period: string, enabled = true) {
   });
 }
 
-/** What the download needs besides the period: a way to stop it, and to hear how many bytes of the ZIP came so far. */
 interface DownloadRequest {
   period: string;
   signal?: AbortSignal;
@@ -94,11 +88,6 @@ export function useSaveAccountantPackageSettings() {
   });
 }
 
-/**
- * «Send a test» (`POST api/accountant-package/send`): the package of the last month goes to the saved address of the accountant. The answer says «queued» and nothing more (never that it arrived);
- * a send is recorded in the settings (the month it was for), so they are read again whether it worked or not. Nothing is kept once nothing observes the mutation (`gcTime: 0`), and a failure is
- * kept without its request (`withoutRequest`).
- */
 export function useSendAccountantPackageTest() {
   const queryClient = useQueryClient();
 

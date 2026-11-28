@@ -13,7 +13,6 @@ export const STEP_LABEL: Record<number, string> = {
   [STEP_CONSENTS]: 'checkin.stepConsents',
 };
 
-/** Every step in the order the page shows them: the steps that are not in `stepsOf` are skipped, and the step that follows one that went away is found here. */
 const STEP_ORDER: readonly number[] = [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_TAX, STEP_IDENTITY, STEP_CONSENTS];
 
 /**
@@ -25,7 +24,6 @@ export function stepsOf(identity: boolean, tax: boolean): readonly number[] {
   return STEP_ORDER.filter((candidate) => (candidate === STEP_IDENTITY ? identity : candidate === STEP_TAX ? tax : true));
 }
 
-/** The step a guest is at when the one they were at went away while the page was open (the verification or the tax payment was switched off): the one that follows it. */
 export function stepAfterGone(gone: number, steps: readonly number[]): number {
   return STEP_ORDER.slice(STEP_ORDER.indexOf(gone) + 1).find((candidate) => steps.includes(candidate)) ?? STEP_CONSENTS;
 }

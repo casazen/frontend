@@ -8,7 +8,6 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import i18n from '@/i18n/config';
 import { settleDrawer } from '@/test/drawer';
-// The one file the shell loads to register the kinds of the drawer: the layer must be there with no other help.
 import '@/config/detail-kinds';
 
 vi.mock('@/api/guest-register.api', () => ({ guestRegisterApi: { getInfo: vi.fn(), download: vi.fn() } }));
@@ -21,7 +20,6 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: 
 vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() }) }));
 
 const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
-/** The layer is a chunk that loads when the drawer opens: the first time it is also compiled, which is slow on a loaded machine. */
 const CHUNK = { timeout: 20_000 };
 const SLOW_TEST = { timeout: 40_000 };
 

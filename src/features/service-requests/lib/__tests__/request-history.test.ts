@@ -25,7 +25,6 @@ describe('suppliersThatRejected (SU-09)', () => {
     const requests = [
       rejected,
       request({ id: 'b', supplierOrgId: 'sup-2' }),
-      // Another category, another stay, another property, or not rejected: not counted.
       request({ id: 'c', supplierOrgId: 'sup-3', category: 'plumbing' }),
       request({ id: 'd', supplierOrgId: 'sup-4', bookingId: 'b-2' }),
       request({ id: 'e', supplierOrgId: 'sup-5', propertyId: 'p-2' }),

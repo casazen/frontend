@@ -8,7 +8,6 @@ const params = (query: string) => new URLSearchParams(query);
 
 describe('readArchiveAddress (the links of the cockpit)', () => {
   it('readArchiveAddress_LinkOfAPeriodItem_PreselectsKindPropertyAndMonth', () => {
-    // The address `complianceActionRoute` builds for `UploadIstatProof` (E03/F03/US01/T01).
     const address = readArchiveAddress(params(`kind=IstatProof&property=${PROPERTY_ID}&period=2026-08`), true);
 
     expect(address).toMatchObject({ kind: 'IstatProof', propertyId: PROPERTY_ID, period: '2026-08', page: 1 });
@@ -53,9 +52,7 @@ describe('readArchiveAddress (the links of the cockpit)', () => {
     ['', true, 'summary'],
     ['tab=proofs', true, 'proofs'],
     ['tab=summary', true, 'summary'],
-    // A link of the cockpit has no tab: it opens the summary narrowed to what the item is about, where the missing row has its button.
     [`kind=IstatProof&property=${PROPERTY_ID}&period=2026-08`, true, 'summary'],
-    // Without the traffic light there is no summary: every address is the archive of the proofs.
     ['', false, 'proofs'],
     ['tab=summary', false, 'proofs'],
   ] as const)('readArchiveAddress_Query%s_WithSummary%s_Opens%s', (query, hasSummary, tab) => {
@@ -104,7 +101,6 @@ describe('periods of the list', () => {
     expect(months[11]).toBe('2025-12');
   });
 
-  // A proof is kept five years from its upload: the years offered reach back as far as one that can still be there, so none is out of the reach of the page.
   it('listedYears_Today_IsThisYearAndTheFiveBeforeAsFarBackAsAProofIsKept', () => {
     expect(listedYears('2026-11-13')).toEqual(['2026', '2025', '2024', '2023', '2022', '2021']);
   });
@@ -178,7 +174,6 @@ const report = (change: Partial<CoverageReport>): CoverageReport => ({
   ...change,
 });
 
-// AC 8: the summary never displays «all compliant» when the API reports ExternalVerificationRequired or Missing; green is never worked out from no data.
 describe('summarizeCoverage', () => {
   it('summarizeCoverage_EverythingProvenAndTheApiSaysComplete_IsTheOnlyGreen', () => {
     const summary = summarizeCoverage(report({ complete: true, officialProof: 2, rows: [row('OfficialProof'), row('OfficialProof')] }));
@@ -216,7 +211,6 @@ describe('summarizeCoverage', () => {
   });
 
   it('summarizeCoverage_CompleteButEmpty_IsNotGreenEither', () => {
-    // «Complete» with no rows at all and no proof is an absence of data: not a green light.
     expect(summarizeCoverage(report({ complete: true, rows: [] })).tone).toBe('neutral');
     expect(summarizeCoverage(report({ complete: true, rows: [] })).key).toBe('nothingOwed');
   });

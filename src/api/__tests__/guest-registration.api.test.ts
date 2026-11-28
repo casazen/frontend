@@ -22,9 +22,7 @@ describe('guestRegistrationApi (the regime of the registration of the guests of 
 
     const [url, config] = get.mock.calls[0]!;
     expect(url).toBe(`/properties/${PROPERTY_ID}/guest-registration`);
-    // Whoever reads the property: never an anonymous call (`public: true` would drop the token and the policy would answer 401).
     expect(config).not.toHaveProperty('public');
-    // Nothing of the property or of the host is in the address but its id.
     expect(config).toMatchObject({ params: undefined });
   });
 
@@ -51,7 +49,6 @@ describe('guestRegistrationApi (the regime of the registration of the guests of 
 
     await guestRegistrationApi.setOverride(PROPERTY_ID, null);
 
-    // A body without `override` is a 400 of the server: «follow the regime again» is said with a null, never by leaving the member out.
     const body = put.mock.calls[0]![1] as Record<string, unknown>;
     expect(body).toStrictEqual({ override: null });
     expect(Object.keys(body)).toEqual(['override']);

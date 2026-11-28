@@ -88,8 +88,6 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     await i18n.changeLanguage('it');
   });
 
-  // ─── Suppliers list ───
-
   it('requires staff to select a candidate and submits its organization identifier', async () => {
     vi.mocked(ApiClient.get).mockImplementation(async path => path.includes('identity-reviews') ? [{
       id: 'invite-1', hostName: 'Host Como', email: 'alias@example.it', supplied: { phone: '3331234567' },
@@ -166,7 +164,6 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     fireEvent.change(screen.getByTestId('admin-suppliers-search'), { target: { value: 'r' } });
     fireEvent.change(screen.getByTestId('admin-suppliers-search'), { target: { value: 'ro' } });
     fireEvent.change(screen.getByTestId('admin-suppliers-search'), { target: { value: 'rossi' } });
-    // Not one request per keystroke.
     expect(api.fetchAdminSuppliers.mock.calls.length).toBe(calls);
     await waitFor(() => expect(lastSupplierParams()).toMatchObject({ search: 'rossi', page: 1 }));
     expect(api.fetchAdminSuppliers.mock.calls.length).toBeLessThanOrEqual(calls + 1);
@@ -189,8 +186,6 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     expect(await screen.findByText(/Pagina 2 di 3/)).toBeInTheDocument();
   });
 
-  // ─── Suspend / reactivate ───
-
   it('AdminSuppliersPage_Suspend_RequiresAReasonAndSendsItTrimmed', async () => {
     renderPage();
     fireEvent.click(await screen.findByTestId('admin-supplier-suspend-s-active'));
@@ -207,7 +202,6 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     await waitFor(() => expect(api.suspendSupplier).toHaveBeenCalledWith('s-active', 'Segnalato da due host'));
     await waitFor(() => expect(screen.queryByTestId('suspend-supplier-dialog')).not.toBeInTheDocument());
     expect(toast.success).toHaveBeenCalledWith('Pulizie Rossi Srl è stato sospeso.');
-    // The list is reloaded to show the new status.
     await waitFor(() => expect(api.fetchAdminSuppliers.mock.calls.length).toBeGreaterThan(1));
   });
 
@@ -257,8 +251,6 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     await waitFor(() => expect(screen.queryByTestId('admin-confirm-dialog')).not.toBeInTheDocument());
     expect(api.reactivateSupplier).not.toHaveBeenCalled();
   });
-
-  // ─── Audit ───
 
   it('AdminSuppliersPage_History_ShowsWhoSuspendedWhenAndWhy', async () => {
     const entries: AdminSupplierAuditEntry[] = [

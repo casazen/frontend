@@ -12,7 +12,6 @@ const valid: DetailsFormValues = {
   offersWhatsApp: false,
 };
 
-/** Messages (i18n keys) of the issues on `field`. */
 function messagesFor(values: Partial<DetailsFormValues>, field: keyof DetailsFormValues): string[] {
   const result = detailsSchema.safeParse({ ...valid, ...values });
   if (result.success) return [];
@@ -69,13 +68,11 @@ describe('detailsSchema', () => {
 
   it('safeParse_WhatsAppBoxWithAPhone_OrUntickedOrEmailOnly_IsAccepted', () => {
     expect(detailsSchema.safeParse({ ...valid, offersWhatsApp: true, phone: '+39 333 123 4567' }).success).toBe(true);
-    // The box left unticked needs no number, and the e-mail box needs none either.
     expect(detailsSchema.safeParse({ ...valid, phone: '' }).success).toBe(true);
     expect(detailsSchema.safeParse({ ...valid, offersEmail: true, phone: '' }).success).toBe(true);
   });
 
   it('safeParse_WhatsAppBoxWithANumberThatDoesNotSayItsCountry_IsRefusedOnTheBoxWithItsOwnMessage', () => {
-    // The server puts its own calling code in front of such a number: the consent would be recorded for somebody else's phone.
     for (const phone of ['333 123 4567', '3331234567', '06 1234 5678']) {
       expect(messagesFor({ offersWhatsApp: true, phone }, 'offersWhatsApp'), phone).toEqual(['publicBooking.validation.whatsAppNeedsPrefix']);
     }
@@ -88,7 +85,6 @@ describe('detailsSchema', () => {
   });
 
   it('safeParse_NumberWithoutPrefixAndNoWhatsAppBox_IsAccepted', () => {
-    // The number of a guest who only wants to be reached on arrival (or by e-mail offers) is not sent for a consent: no prefix is asked.
     expect(detailsSchema.safeParse({ ...valid, phone: '333 123 4567' }).success).toBe(true);
     expect(detailsSchema.safeParse({ ...valid, phone: '333 123 4567', offersEmail: true }).success).toBe(true);
   });

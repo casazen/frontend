@@ -42,7 +42,6 @@ const workspace = vi.hoisted(() => ({
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
@@ -62,10 +61,8 @@ function renderSummary() {
   );
 }
 
-/** The text of an element with the spaces the formatter writes (no-break, narrow no-break) as plain ones: the same words in the same order. */
 const plain = (value: string | null | undefined) => (value ?? '').replace(/[\u00a0\u202f]/g, ' ');
 
-/** The example document of the summary, once the preview has been read. */
 async function exampleTable() {
   return within(await screen.findByTestId('billing-example', undefined, WAIT)).findByTestId('billing-example-table', undefined, WAIT);
 }
@@ -84,7 +81,6 @@ afterEach(() => {
 });
 
 describe('the example document of the summary is in the currency of the issuer (E11/F02/US01/T01)', () => {
-  // Money rule: the amounts of the example are in the currency of the issuer, from the country it says: francs for a Swiss one, never euros by default.
   it('BillingWizard_SwissIssuer_SeesFrancsInTheSummaryExample', async () => {
     vi.mocked(api.getBillingSetup).mockResolvedValue(swissSetup());
     vi.mocked(api.getBillingPreview).mockResolvedValue(previewOf(SWISS_RULE));
@@ -99,7 +95,6 @@ describe('the example document of the summary is in the currency of the issuer (
     expect(text).toContain('CHF');
     expect(text).not.toContain('€');
     expect(screen.queryByTestId('billing-example-no-currency')).not.toBeInTheDocument();
-    // The rates in force are shown with the version of the rule that gives them.
     expect(screen.getByTestId('billing-rule')).toHaveTextContent('CH-2024-01-01');
     expect(screen.getByTestId('billing-rates')).toHaveTextContent('3,8%');
   });
@@ -158,10 +153,8 @@ describe('the currency and the example of the issuer, without the page', () => {
     expect(swiss).toMatchObject({ net: 250, vat: 9.5, stamp: 0, total: 259.5 });
 
     expect(exampleDocument(ITALIAN_RULE)).toMatchObject({ net: 250, vat: 0, stamp: 2, total: 252 });
-    // The stamp is not charged to the guest, or the amounts are under its threshold: nothing is added.
     expect(exampleDocument({ ...ITALIAN_RULE, stampDuty: { threshold: 77.47, amount: 2, chargedToRecipient: false } })?.stamp).toBe(0);
     expect(exampleDocument({ ...ITALIAN_RULE, stampDuty: { threshold: 500, amount: 2, chargedToRecipient: true } })?.stamp).toBe(0);
-    // No rule, or a rule with no rate for the stay: no example.
     expect(exampleDocument(undefined)).toBeNull();
     expect(exampleDocument({ ...SWISS_RULE, rates: [{ lineType: 'Cleaning', percent: 3.8 }] })).toBeNull();
   });

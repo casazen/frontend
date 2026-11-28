@@ -107,7 +107,6 @@ describe('SupplierClaimPage (SU-02)', () => {
 
     renderPage();
 
-    // Linked and role granted: nothing to confirm, the wizard opens by itself.
     expect(await screen.findByTestId('activation')).toBeInTheDocument();
     expect(claimSupplierProfile).toHaveBeenCalledTimes(1);
     expect(claimSupplierProfile).toHaveBeenCalledWith(CLAIM.token);

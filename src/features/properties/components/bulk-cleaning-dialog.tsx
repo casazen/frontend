@@ -34,7 +34,6 @@ import { PropertyCleaningFields, type StaffChoice } from './property-cleaning-fi
 interface BulkCleaningDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Tell, after a save, that the routine that makes the cleanings is switched on from the page of the automations (default). Off where the dialog is already opened from there. */
   routineLink?: boolean;
 }
 
@@ -64,7 +63,6 @@ export function BulkCleaningDialog({ open, onOpenChange, routineLink = true }: B
           <DialogTitle>{t('propertyCleaning.bulk.title')}</DialogTitle>
           <DialogDescription>{t('propertyCleaning.bulk.description')}</DialogDescription>
         </DialogHeader>
-        {/* Its own component, mounted with the dialog: what was chosen is forgotten when the dialog closes. */}
         <BulkCleaningBody save={save} onClose={() => handleOpenChange(false)} routineLink={routineLink} />
       </DialogContent>
     </Dialog>
@@ -84,24 +82,20 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CleaningSetupBulkResponse | null>(null);
 
-  // A list that could not be read again is not the list: the old one is never offered as current.
   const properties = useMemo(() => cleaningPropertiesOf(list.isError ? undefined : list.data), [list.data, list.isError]);
   const byId = useMemo(() => new Map(properties.map((property) => [property.id, property])), [properties]);
   const chosen = useMemo(() => selected.flatMap((id) => byId.get(id) ?? []), [selected, byId]);
 
-  // The currency of each property is what its setup says (the list of the properties carries none): one read for each property, and a read that fails is «currency not read», never the old answer.
   const reads = usePropertyCleaningSetups(properties.map((property) => property.id));
   const readsById = new Map<string, CleaningRead>(properties.map((property, index) => [property.id, cleaningReadOf({ isError: reads[index].isError, data: reads[index].data })]));
   const readOf = (propertyId: string): CleaningRead => readsById.get(propertyId) ?? { state: 'unread' };
 
-  // One currency at a time: the price is in the currency of the property, and a number is never applied to a currency the person did not state or the server did not say.
   const chosenReads = chosen.map((property) => readOf(property.id));
   const chosenUnread = chosenReads.some((read) => read.state === 'unread');
   const first = chosenReads[0];
   const lockCurrency = first?.state === 'known' ? first.currency : null;
   const ready = chosenReads.length > 0 && chosenReads.every((read) => read.state === 'known');
   const currency = ready ? lockCurrency : null;
-  // The suppliers work in euro: for a property in another currency a member of the staff cleans, whatever was chosen before.
   const form: CleaningForm = currency !== null && currency !== SUPPLIER_CURRENCY && draft.kind === 'Supplier' ? { ...draft, kind: 'Staff' } : draft;
 
   const supplierReads = useCleaningSuppliers(
@@ -113,7 +107,6 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
     supplierReads.map((read) => read.isError ? [] : (read.data?.items ?? [])),
     false,
   );
-  // The team is read again every time the layer opens, and only by who may list it (the server answers 403 to the others, which sends the whole app to the page of no access).
   const members = useOrgMembers(canListTeam, { fresh: true });
   const staffChoices = useMemo<StaffChoice[]>(
     () => (members.isError ? [] : cleaningStaffOf(members.data?.items)).map((member) => ({ userId: member.userId, name: memberName(member) })),
@@ -142,7 +135,6 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
           .slice(0, MAX_BULK_PROPERTIES);
   const allSelected = selectable.length > 0 && selectable.every((property) => selected.includes(property.id));
 
-  // The properties chosen that have a setup saved already: saving replaces the whole setup of each one (what the body leaves out is cleared, the time and the length included), so they are told first.
   const existing = chosen.filter((property) => {
     const read = readOf(property.id);
     return read.state === 'known' && read.configured;
@@ -165,7 +157,6 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
     if (save.isPending || currency === null) return;
     setAttempted(true);
     if (Object.keys(cleaningProblems(form)).length > 0) return;
-    // Nothing is saved before the person says yes to replacing what is already there.
     if (existing.length > 0) {
       setConfirming(true);
       return;
@@ -232,7 +223,6 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
     );
   }
 
-  // The question before replacing: a step of its own and not a dialog inside the form (a button of a dialog inside a form submits the form), with the properties that have a cleaner already named.
   if (confirming) {
     return (
       <div className="space-y-4" data-testid="bulk-cleaning-confirm">
@@ -341,7 +331,6 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
                 <Checkbox
                   id={id}
                   checked={checked}
-                  // A property already chosen can always be taken out again, whatever its read says now.
                   disabled={save.isPending || (!checked && (read.state !== 'known' || otherCurrency))}
                   onCheckedChange={(value) => toggle(property, value === true)}
                   data-testid={`bulk-cleaning-property-${property.id}`}
@@ -392,7 +381,6 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
           disabled={save.isPending}
         />
       ) : chosen.length > 0 ? (
-        // Nothing is asked about the price until the server has said the currency of every property chosen.
         <p className="text-sm text-foreground/70" role={chosenUnread ? undefined : 'status'} data-testid="bulk-cleaning-currency-state">
           {chosenUnread ? t('propertyCleaning.bulk.currencyBlocked') : t('propertyCleaning.bulk.currencyWaiting')}
         </p>

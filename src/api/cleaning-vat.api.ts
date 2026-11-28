@@ -4,25 +4,18 @@ import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { acceptsRefusal } from './accept-refusal';
 import type { CleaningVatAnswer, CleaningVatAnswerCommand, CleaningVatQuestion } from '@/types';
 
-/** The three answers the API declares: a member no one declares is not an answer. */
 const ANSWERS: readonly CleaningVatAnswer[] = ['Applied', 'NotApplied', 'Unknown'];
 
-/** The day of the cleaning as the API writes a `DateOnly`. */
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const textOf = (value: unknown): string | null => (typeof value === 'string' && value.trim() !== '' ? value : null);
 
-/** A rate is a number above zero: anything else is no rate (a «Sì» with no rate is never offered, whatever the field carried). */
 const rateOf = (value: unknown): number | null => (typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null);
 
 const isAnswer = (value: unknown): value is CleaningVatAnswer => ANSWERS.includes(value as CleaningVatAnswer);
 
-/**
- * The question of an answer of the API, cut to the members of the console and nothing else. An answer that is not the question (a page of the app served in place of the API, an empty body) or that says something the
- * contract does not (an answer no member declares, a day that is not a day) is unreadable: it is a failed call, never a question with a hole in it and never a success.
- */
 function questionOf(data: unknown, path: string): CleaningVatQuestion {
   if (!isRecord(data)) throw new UnexpectedApiResponseError(path);
   const serviceRequestId = textOf(data.serviceRequestId);
@@ -44,7 +37,6 @@ function questionOf(data: unknown, path: string): CleaningVatQuestion {
     statedAnswer: isAnswer(data.statedAnswer) ? data.statedAnswer : null,
     statedRatePercent: rateOf(data.statedRatePercent),
     statedByCompany: data.statedByCompany === true,
-    // The box «Ricorda per questa ditta» is for a caller of the whole organization and only when the server says so: nothing else is a yes.
     canRemember: data.canRemember === true,
   };
 }

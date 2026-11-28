@@ -8,24 +8,19 @@ import type { RentInstallmentStatus } from './rent.types';
  * fiscal code is never sent, and the e-mail only masked. Dates are Europe/Rome calendar days or UTC midnights of them.
  */
 
-/** The views of the list the server knows: `Current` has at least one lease that has not concluded, `Former` has only concluded ones. */
 export type TenantListView = 'All' | 'Current' | 'Former';
 
-/** Whether the tenant is a citizen of the Union. */
 type TenantCitizenship = 'Eu' | 'NonEu';
 
-/** A lease the person is on: the stage is the one of the path of the lease, decided by the server. */
 export interface TenantLease {
   leaseId: string;
   propertyId: string;
   propertyName: string;
   stage: LeaseStage | null;
   monthlyRent: number;
-  /** The last day of the period the lease is in now. */
   currentTermEndDate: string;
 }
 
-/** The installments due so far and how many of them were paid within the grace period (`onTimeDays` of the sheet). */
 export interface TenantPunctuality {
   onTime: number;
   total: number;
@@ -37,14 +32,11 @@ export interface TenantRow {
   lastName: string;
   citizenship: TenantCitizenship;
   contactEmailMasked: string;
-  /** Every lease of the person has concluded. */
   isFormer: boolean;
-  /** Newest first. */
   leases: TenantLease[];
   punctuality: TenantPunctuality;
 }
 
-/** How many people each view holds for the search asked. */
 interface TenantCounts {
   all: number;
   current: number;
@@ -66,7 +58,6 @@ export interface TenantListParams {
   pageSize?: number;
 }
 
-/** An installment due so far of one of the person's leases. `daysOverdue` only while it is overdue. */
 export interface TenantPayment {
   id: string;
   leaseId: string;
@@ -79,7 +70,6 @@ export interface TenantPayment {
   daysOverdue: number | null;
 }
 
-/** What is past due across the person's leases; the oldest installment tells which month to look at. */
 interface TenantOverdue {
   count: number;
   amount: number;
@@ -88,7 +78,6 @@ interface TenantOverdue {
   daysOverdue: number;
 }
 
-/** `GET /long-rent/tenants/:id`: the row, the six latest installments due, what is overdue (null when nothing is) and the grace period used. */
 export interface TenantDetail {
   tenant: TenantRow;
   payments: TenantPayment[];
@@ -96,7 +85,6 @@ export interface TenantDetail {
   onTimeDays: number;
 }
 
-/** What the erasure request did on one lease of the person: the outcome of the lease's own request (`LeaseErasureStatus`). */
 export interface TenantErasureLease {
   leaseId: string;
   propertyName: string;

@@ -24,7 +24,6 @@ async function boxes(locator: Locator) {
   return found as NonNullable<(typeof found)[number]>[];
 }
 
-/** Every button, link and day of the gallery that is under 44 px high (what a finger needs), one line each. */
 async function smallTargets(page: Page) {
   return page.locator('[data-testid="calm-blocks-page"]').evaluate((root) => {
     const found: string[] = [];
@@ -75,8 +74,6 @@ test.describe('widths', () => {
       await page.addStyleTag({ content: WIDER_LETTERS });
 
       await expectNothingSticksOut(page, `${width} px, the blocks with wider letters`, '[data-testid="calm-blocks-page"]');
-      // The words of a long name wrap inside the block that holds them: the page does not scroll sideways (the check above) and
-      // the name does not stand out of its own box either.
       for (const testId of ['plain-long', 'checklist-long', 'day-list']) {
         const stickingOut = await page.getByTestId(testId).evaluate((root) => {
           const right = root.getBoundingClientRect().right;
@@ -139,7 +136,6 @@ test.describe('keyboard', () => {
     const days = page.getByTestId('week-strip').getByRole('radio');
     await expect(page.getByTestId('week-strip').getByRole('radio', { checked: true })).toHaveCount(1);
 
-    // Only the chosen day is in the Tab order.
     const tabIndexes = await days.evaluateAll((items) => items.map((item) => (item as HTMLElement).tabIndex));
     const chosenIndex = await days.evaluateAll((items) => items.findIndex((item) => item.getAttribute('aria-checked') === 'true'));
     expect(tabIndexes.filter((value) => value === 0)).toHaveLength(1);
@@ -160,11 +156,9 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Home');
     await expect(days.first()).toBeFocused();
 
-    // A shortcut of the browser is not taken for a choice of day (Alt+Left is Back).
     await page.keyboard.press('Alt+ArrowRight');
     await expect(days.first()).toBeFocused();
 
-    // Tab leaves the week: it is one stop.
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => document.activeElement?.closest('[role="radiogroup"]'))).toBeNull();
   });
@@ -177,7 +171,6 @@ test.describe('keyboard', () => {
     const button = page.getByTestId('focus-warning').getByRole('button', { name: 'Registra il contratto' });
     const ring = (locator: Locator) => locator.evaluate((element) => getComputedStyle(element).boxShadow);
 
-    // Before the focus: no ring (a static shadow of the element would not count as one).
     const before = [await ring(day), await ring(row), await ring(button)];
     // A key press first, so that the browser treats the next focus as the keyboard's (`:focus-visible`).
     await page.keyboard.press('Tab');
@@ -198,7 +191,6 @@ test.describe('keyboard', () => {
     await list.getByRole('button', { name: /Canone di ottobre · Bianchi/ }).click();
     await expect(page.getByTestId('last-action')).toHaveText('Ultima azione: apri canone Bianchi');
 
-    // The line under the title is part of the link.
     await list.getByText('Elisa Rossi · Via Roma 12, Bari').click();
     await expect(page).toHaveURL(/\/dev\/calm-blocks\?aperto=rossi$/);
   });
@@ -215,8 +207,6 @@ test.describe('keyboard', () => {
   });
 });
 
-// A phone: a finger (a coarse pointer) and `data-ui="v2"`, where `tokens.css` gives every link and button its own hit area.
-// What a block does there is not what it does with a mouse, and nothing else looks at it.
 test.describe('a phone under the redesign', () => {
   test.use({ hasTouch: true, isMobile: true });
 

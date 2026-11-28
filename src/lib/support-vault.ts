@@ -6,7 +6,6 @@ import { SUPPORT_VAULT_REASON_LENGTH, type AdminAssistRequest, type SupportVault
  * is what the screen offers, so that staff is not shown a button that can only be refused.
  */
 
-/** A request that is open (to take, or in progress): the only one a credential is opened for. A request that is done or cancelled has nothing to open. */
 export function isOpenAssist(request: Pick<AdminAssistRequest, 'status'>): boolean {
   return request.status === 'Requested' || request.status === 'InProgress';
 }
@@ -30,7 +29,6 @@ export function credentialKindFits(request: Pick<AdminAssistRequest, 'part' | 'c
   }
 }
 
-/** How long the values of an opening stay on screen when the answer does not say (decision O5: a minute). */
 export const REVEAL_VISIBLE_MS = 60_000;
 
 /**
@@ -43,7 +41,6 @@ export function revealVisibleMs(values: Pick<SupportVaultReveal, 'openedAt' | 'v
   return Number.isFinite(span) && span > 0 ? Math.min(Math.max(span, 1_000), REVEAL_VISIBLE_MS) : REVEAL_VISIBLE_MS;
 }
 
-/** The reason of an opening as the server reads it: trimmed, from 10 to 300 characters. */
 export function isValidRevealReason(reason: string): boolean {
   const length = reason.trim().length;
   return length >= SUPPORT_VAULT_REASON_LENGTH.min && length <= SUPPORT_VAULT_REASON_LENGTH.max;

@@ -16,14 +16,12 @@ import {
 describe('the years of the page of the tourist tax at year end', () => {
   it('YearEndYears_TheCurrentYearAndTheThreeBefore_NewestFirst', () => {
     expect(yearEndYears('2026-09-24')).toEqual([2026, 2025, 2024, 2023]);
-    // The year turns on the day of Rome, which `todayInRome` gives: on 1 January it is the new one.
     expect(yearEndYears('2027-01-01')).toEqual([2027, 2026, 2025, 2024]);
   });
 });
 
 describe('the name of a file when the page cannot read the one the server gives it', () => {
   it('YearEndFallbackName_IsTheNameTheServerGives_SoTheFileIsNamedTheSameWhetherOrNotTheHeaderIsReadable', () => {
-    // The names of `TouristTaxYearEndExports` (backend): the declaration, the account of the agent cut by month or by quarter, and the count of Ticino.
     expect(yearEndFallbackName({ kind: 'declaration', year: 2026, format: 'csv' })).toBe('casazen-imposta-soggiorno-dichiarazione-2026.csv');
     expect(yearEndFallbackName({ kind: 'agentAccount', year: 2026, by: 'month', format: 'xlsx' })).toBe('casazen-imposta-soggiorno-conto-agente-2026-mensile.xlsx');
     expect(yearEndFallbackName({ kind: 'agentAccount', year: 2026, by: 'quarter', format: 'csv' })).toBe('casazen-imposta-soggiorno-conto-agente-2026-trimestrale.csv');
@@ -31,7 +29,6 @@ describe('the name of a file when the page cannot read the one the server gives 
   });
 });
 
-/** The space between the figure and the symbol is a no-break one: the texts are compared with a plain one. */
 const plain = (text: string) => text.replace(/\s/g, ' ');
 
 describe('the figures of the year', () => {
@@ -46,7 +43,6 @@ describe('the figures of the year', () => {
   });
 
   it('YearEndAmount_TheNumberOfTheServer_IsWrittenInTheCurrencyOfItsAnswer_AndOneWithNoneIsTheFigureAlone', () => {
-    // The count of Ticino and the account of the agent give a number to the cent, not cents: the franc of a house in Switzerland, the euro of the Italian tax.
     expect(plain(yearEndAmount(12345.5, 'CHF', 'it'))).toBe('12.345,50 CHF');
     expect(plain(yearEndAmount(12345.5, 'eur', 'en'))).toBe('€12,345.50');
     expect(plain(yearEndAmount(-0.05, 'EUR', 'it'))).toBe('-0,05 €');
@@ -54,7 +50,6 @@ describe('the figures of the year', () => {
   });
 });
 
-/** A row of the account of the agent: only the comune and the label of the period matter to what is under test. */
 const accountRow = (comune: string, period: string): TouristTaxAgentAccountRow => ({
   comune,
   period,
@@ -74,7 +69,6 @@ describe('the account of the agent on screen', () => {
   it('AccountGroups_RowsThatFollowOneAnother_GoUnderTheirComune_InTheOrderTheServerGaveThem', () => {
     const rows = [accountRow('Roma', '2026-03'), accountRow('Roma', '2026'), accountRow('Milano', '2026-03'), accountRow('Milano', '2026'), accountRow('Roma', '2026-04')];
 
-    // Nothing is sorted, merged or dropped: each run of rows of a comune is a group, in the order of the server.
     expect(accountGroups(rows).map((group) => [group.comune, group.rows.map((row) => row.period)])).toEqual([
       ['Roma', ['2026-03', '2026']],
       ['Milano', ['2026-03', '2026']],
@@ -90,13 +84,11 @@ describe('the account of the agent on screen', () => {
 
     expect([month, quarter, year].map((row) => accountPeriodLabel(row, 'it', i18n.getFixedT('it')))).toEqual(['marzo 2026', '1º trimestre 2026', 'Anno 2026']);
     expect([month, quarter, year].map((row) => accountPeriodLabel(row, 'en', i18n.getFixedT('en')))).toEqual(['March 2026', 'Q1 2026', 'Year 2026']);
-    // A label of the future (a week) is not guessed.
     expect(accountPeriodLabel({ period: '2026-W07', from: '2026-02-09', isYear: false }, 'it', i18n.getFixedT('it'))).toBe('2026-W07');
   });
 });
 
 describe('the words of the reasons', () => {
-  /** A text of the page has spaces; a code (`health_care`) or the key of a text that is missing (`touristTax.exemption.resident`) is one token. */
   const isWords = (text: string) => !/^[\w.]+$/.test(text);
 
   it('ExemptionReasonLabel_EveryCodeTheServerGives_HasItsOwnWordsInBothLanguages_AndAnUnknownOneIsWrittenAsItCame', () => {
@@ -107,11 +99,9 @@ describe('the words of the reasons', () => {
       const words = codes.map((code) => exemptionReasonLabel(code, t));
       expect(words.every(isWords), `words of every code in ${language}: ${words.join(' | ')}`).toBe(true);
       expect(new Set(words).size).toBe(codes.length);
-      // Never guessed: a reason the page has no words for, and a name every object has, are written as they came.
       expect(exemptionReasonLabel('a_reason_of_the_future', t)).toBe('a_reason_of_the_future');
       expect(exemptionReasonLabel('toString', t)).toBe('toString');
     }
-    // The row that stands for every reason a caller may not read, in the sentence of the brief and in the English words of its own.
     expect(exemptionReasonLabel('restricted', i18n.getFixedT('it'))).toBe('dettaglio dei motivi riservato');
     expect(exemptionReasonLabel('restricted', i18n.getFixedT('en'))).toBe('reason detail restricted');
   });

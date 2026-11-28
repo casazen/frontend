@@ -6,7 +6,6 @@ import type { MapLink, RegionMapProps } from '@/features/site-maps';
 import type { PublicStayCard } from '@/types/public-stays.types';
 import { ResultsMapPane } from '../results-map-pane';
 
-// The map draws SVG from data loaded on demand: here a stand-in that keeps the pins the pane gave it.
 const map = vi.hoisted(() => ({ props: null as RegionMapProps | null }));
 vi.mock('@/features/site-maps', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/features/site-maps')>();
@@ -20,10 +19,6 @@ vi.mock('@/features/site-maps', async (importOriginal) => {
   };
 });
 
-/**
- * CHF-MONEY, the pins of the map of the results: each pin says the price of its home in the currency the home says, and a home whose data says none has its
- * pin written with no symbol and the phrase that says so, never in a euro that nobody said. The pane still draws.
- */
 function card(id: string, currency: string | undefined, price: Partial<PublicStayCard['price']> = {}): PublicStayCard {
   return {
     id,
@@ -39,7 +34,6 @@ function card(id: string, currency: string | undefined, price: Partial<PublicSta
     amenities: [],
     tags: [],
     availability: { available: true },
-    // `currency` is a required text in the answer of the server: what these tests give it is what a malformed answer would carry.
     price: { currency: currency as string, perNightCents: 14500, ...price },
   };
 }

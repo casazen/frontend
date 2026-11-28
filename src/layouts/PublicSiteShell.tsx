@@ -24,7 +24,6 @@ interface PublicSiteShellProps {
   mode?: 'org' | 'default';
 }
 
-/** The same `/book/:orgSlug/...` path with the org's current slug (segments after the slug are kept as they are). */
 function canonicalOrgPath(pathname: string, slug: string): string {
   if (pathname.startsWith('/s/action/org/')) {
     return pathname.replace(/^\/s\/action\/org\/[^/]+/, () => `/s/action/org/${encodeURIComponent(slug)}`);
@@ -33,10 +32,8 @@ function canonicalOrgPath(pathname: string, slug: string): string {
   return `/book/${encodeURIComponent(slug)}${rest ? `/${rest}` : ''}`;
 }
 
-/** What the booking site is showing: its page, or the state that takes the place of it. */
 type SiteState = 'ready' | 'loading' | 'error' | 'not-found';
 
-/** Shown while the org is read: the shapes of the landing page (cover, title, cards), so the page does not jump. */
 function SiteSkeleton() {
   const { t } = useTranslation();
   const block = 'animate-pulse bg-black/5 motion-reduce:animate-none';
@@ -66,7 +63,6 @@ function SiteSkeleton() {
   );
 }
 
-/** The skip link: out of sight until the keyboard reaches it, then a clear button on the theme of the page. */
 const SKIP_LINK_CLASS =
   'sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-[var(--cz-public-radius)] focus:bg-[var(--cz-public-surface)] focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-[var(--cz-public-text)] focus:shadow-[var(--cz-public-shadow-widget)]';
 
@@ -77,33 +73,25 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
   const isOrgMode = mode === 'org' && !!orgSlug;
   const { data: org, isLoading, isError, error, refetch } = usePublicOrg(isOrgMode ? orgSlug : undefined);
   useOrgSeoMeta(org, location.pathname);
-  // The homes of the site, for the column "Le case" of the footer (the same request as the landing page: one for both).
   const { data: properties } = useOrgProperties(isOrgMode && org ? orgSlug : undefined);
-  // The site of a host opens in the language of the guest: the address, else what they chose, else Italian (DB-02b).
   useSiteLanguage(isOrgMode);
 
   const themeId = resolvePublicSiteTheme(org?.publicThemeId);
-  // The font pair the host chose; null = the one its theme starts with (the theme block of the CSS sets it).
   const fontId = resolvePublicSiteFont(org?.publicFontId);
   // Only a valid hex color reaches CSS (BK-12); null keeps the theme's own color. The text color on it and the
   // readable variant of it are derived so that any host color meets AA (BK-13).
   const colorVars = publicSiteColorVars(normalizeHexColor(org?.primaryColor ?? org?.themeColor), themeId);
   const colorStyle = colorVars as CSSProperties | null;
-  // The call to action of the header is where there is something to check: the landing and the page of a property (not
-  // its checkout, where the dates are already chosen).
   const isLanding = location.pathname === `/book/${orgSlug}` || location.pathname === `/book/${orgSlug}/`;
   const isPropertyPage = location.pathname.includes('/property/') && !/\/checkout\/?$/.test(location.pathname);
   const showBookingCta = isOrgMode && (isLanding || isPropertyPage);
 
-  // Also on <html> for the content rendered in portals (dialogs), outside .public-site-root.
   const colorVarsKey = colorVars ? JSON.stringify(colorVars) : '';
-  // What a portal needs to wear the look of the site (DB-20): the pickers and sheets read it, `usePortalRootProps`.
   const appearance = useMemo<SiteAppearance>(
     () => ({
       themeId,
       fontId,
       colorStyle: colorVarsKey ? (JSON.parse(colorVarsKey) as CSSProperties) : undefined,
-      // CasaZen's own pages (the search across all the sites) wear the brand in their popovers and sheets too.
       brand: isOrgMode ? undefined : 'casazen',
     }),
     [themeId, fontId, colorVarsKey, isOrgMode],
@@ -119,8 +107,6 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
 
   useEffect(() => {
     if (!isOrgMode) return;
-    // The header of the booking site is sticky: an anchor, a focused element or the booking widget that the call to action
-    // scrolls to must not land under it (as the shell of the app does, `--header-height`).
     const root = document.documentElement;
     const previous = root.style.scrollPaddingTop;
     root.style.scrollPaddingTop = 'var(--header-height)';
@@ -139,15 +125,12 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
     } else if (isError || !org) {
       state = 'not-found';
     } else if (org.slug && org.slug !== orgSlug) {
-      // A previous slug of the org (PL-04): the backend still resolves it, the address bar moves to the current one.
       return <Navigate to={canonicalOrgPath(location.pathname, org.slug) + location.search + location.hash} replace />;
     }
   }
 
   const basePath = `/book/${orgSlug}`;
 
-  // The states are inside the frame of the site, in the theme of the host (the default theme when there is no host to read
-  // it from: the site does not exist, or could not be read).
   let content: ReactNode;
   if (state === 'loading') content = <SiteSkeleton />;
   else if (state === 'error') content = <PublicOrgErrorPage onRetry={() => void refetch()} />;
@@ -160,11 +143,7 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
         className="public-site-root flex min-h-screen flex-col"
         data-theme={themeId}
         data-font={fontId ?? undefined}
-        // CasaZen's own pages (search, guides, legal, supplier showcase) have the brand's look; an org's booking site keeps
-        // the theme and color its host chose (public-brand.css).
         data-brand={isOrgMode ? undefined : 'casazen'}
-        // On the root itself: the [data-theme] tokens are declared on this element and would override a value
-        // inherited from <html> (A3-17). Color, text on it and readable variant (BK-13).
         style={colorStyle ?? undefined}
         data-testid="public-site-shell"
       >
@@ -208,7 +187,6 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
               properties={isOrgMode ? properties : undefined}
             />
             <CookieConsentBanner />
-            {/* The agency's own Tag Manager container, only after the visitor allowed statistics and only on its own domain (NF-149): it renders nothing. */}
             {isOrgMode ? <HostTracking /> : null}
           </>
         )}

@@ -13,7 +13,6 @@ import { agendaWindow, leaseDeadlineRows } from '../deadlines/deadlines-model';
 import { leaseSheetPath } from '../lib/lease-next-step';
 import { leaseTermFacts } from '../lifecycle/lifecycle-format';
 
-/** A year from today: the most the server answers for, so the end of the period and the last day of notice are in it. */
 const WINDOW_DAYS = 366;
 
 /**
@@ -31,7 +30,6 @@ export function LeaseDates({ lease }: { lease: LeaseDetail }) {
   const depositReturned = (lease.events ?? []).find((event) => event.eventType === 'DepositReturnRecorded');
   const { rows, moreRents } = useMemo(() => leaseDeadlineRows(agenda.data?.items ?? [], { t }, { renews }), [agenda.data, t, renews]);
 
-  // The rents past the next ones are on the tab of the payments: one quiet way there, only when some were left out.
   const more = moreRents > 0 ? { actionLabel: t('leaseSheet.deadlines.allRents'), href: leaseSheetPath(lease.id, 'pagamenti') } : {};
 
   return (

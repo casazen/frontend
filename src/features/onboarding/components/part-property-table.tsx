@@ -28,7 +28,6 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 interface PartPropertyTableProps {
   partKey?: OnboardingPartKey;
   flow: OnboardingFlowKey;
-  /** What the part itself launches: the page a row opens when the server names no action for it. */
   target: OnboardingLaunchTarget;
   /** The compliance part: each property also has the guided steps of the police and ISTAT connections. */
   panelSteps?: boolean;

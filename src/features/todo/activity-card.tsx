@@ -13,80 +13,48 @@ import { messageThreadPath } from '@/lib/message-hub-routes';
 import { cn } from '@/lib/utils';
 import { describeTodo } from './lib/todo-model';
 
-/**
- * Whose id fills the `:id` of a page: the id of the entity the item is about, or the id of its property. `thread` is the page of a conversation of the hub of messages
- * (`:threadKey`): its key is made from the kind of conversation (`threadKind`) and the id of the entity the item is about.
- */
 export type TodoRouteTarget = 'entity' | 'property' | 'thread';
 
-/** A page of the ROUTE_MANIFEST (a pattern with `:id` when `target` says whose id fills it), optionally on a tab or a step of it. */
 export interface TodoRoute {
   path: string;
   target?: TodoRouteTarget;
-  /** The name of the `:param` of the page that the id of `target` fills, when it is not `:id` (`versionId` of the page of a statement). */
   idParam?: string;
-  /**
-   * The kind of entity an item must be about for `target: 'entity'` to fill the page with its id (`Booking` for the page of a booking).
-   * The id of an item about anything else (a queue item, a message thread) is not the id of a booking: it gets no address from this route.
-   */
   entityType?: string;
-  /** A tab of the page of a booking (`?tab=`). */
   tab?: BookingTab;
-  /** Other parameters of the address, for a step of a wizard (`?step=`). */
   search?: Readonly<Record<string, string>>;
-  /**
-   * The name of the parameter of the address that carries the id of the property the item is about (`propertyId` for the wizard «Aggiungi
-   * immobile» reopened on a property): a page that does not take the id in its path. Like `target: 'property'`, it needs an item that names one.
-   */
   propertyParam?: string;
   /**
    * The kinds of entity an item must be about for this route to apply: several kinds of item share one action (`ResumeWizard` is the wizard of a
    * property and every step of the activation with Octorate), and each opens its own page. An item of another kind skips the route.
    */
   onlyFor?: readonly string[];
-  /** The name of the parameter of the address that carries the id of the entity the item is about (`step` of a guided step of the panel), for a page that finds the rest from it. */
   entityParam?: string;
   /**
    * The permissions the person needs besides the ones of the page (`requiredPermissions` of its entry), in the area of the page: a page can be read by who cannot do what its item asks (the page of an intervention is read with
    * `property.read`, the question of the VAT of a cleaning is answered with `property.write`), and the button is offered only to who can do it. Without them in the predicate of the person the route is skipped.
    */
   permissions?: readonly string[];
-  /**
-   * For `target: 'thread'`: the kind of conversation the key starts with, `ota` (a conversation of a channel, the id of its thread) or `direct` (a direct booking, the id of
-   * the booking), as the hub gives them (`ota:{id}`, `direct:{bookingId}`).
-   */
   threadKind?: 'ota' | 'direct';
 }
 
 export interface TodoActionTarget {
-  /** Where "Do now" leads. */
   route: TodoRoute;
-  /**
-   * Where it leads a person who cannot open `route`, or an item that lacks the id `route` needs: a page that tells the same thing in
-   * read-only. Several pages are tried in order, the first the person can open wins.
-   */
   fallback?: TodoRoute | readonly TodoRoute[];
 }
 
-/** The `entityType` the server sends for an item about a booking. */
 const BOOKING = 'Booking';
 
-/** The `entityType` of the items about a request to a supplier (`ServiceRequest`): the id of the entity is the request, here a cleaning. */
 const SERVICE_REQUEST = 'ServiceRequest';
 
-/** The `entityType` of an item about a conversation of a channel (the thread of the copy of the channel's messages). */
 const OTA_THREAD = 'OtaMessageThread';
 
-/** The `entityType` of the items of the activation with Octorate: a guided step of the panel, a part of the plan, a «Fallo per me» request. */
 const PANEL_STEP = 'OnboardingPanelStep';
 const ONBOARDING_PART = 'OnboardingPart';
 const ASSIST_REQUEST = 'OnboardingAssistRequest';
 const ONBOARDING_FLOW = 'OnboardingFlow';
 
-/** The `entityType` of the items about a fiscal document (`FiscalDocumentTodos.EntityType`): the id of the entity is the document. */
 const FISCAL_DOCUMENT = 'FiscalDocument';
 
-/** The `entityType` of the items about a statement of an owner (`OwnerStatementDocuments.OwnerStatementVersionEntityType`): the id of the entity is the version of the statement. */
 const OWNER_STATEMENT_VERSION = 'OwnerStatementVersion';
 
 /**
@@ -214,13 +182,9 @@ export const ACTION_ROUTE_MAP = {
   DeclareTouristTax: {
     route: { path: '/app/short-rent/alloggiati/reports', propertyParam: 'property', search: { kind: 'TouristTaxDeclaration' } },
   },
-  // The check-in link of a stay from a portal has not reached the guest (E23/F01/US01/T01, `ActivityAction` 110, NF-122): the guest tab of the booking, where the panel of the link says
-  // why it has not gone by itself and has «Copia link». The item is about the booking.
   CopyCheckInLink: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
   },
-  // A scheduled message of a booking is held back or failed (E05/F07/US01/T03, `ActivityAction` 120, NF-71): the page of the booking, where the tab Soggiorno lists its messages and says what the blocked
-  // one waits for, with «Modifica», «Salta» and «Invia ora». The item is about the booking (one item for each booking, shared by its blocked messages).
   FixScheduledMessage: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
   },
@@ -266,10 +230,8 @@ const ROUTE_MAP_BY_TYPE = {
   },
 } satisfies Record<string, TodoActionTarget>;
 
-/** An action this version of the app opens. The server may send one it does not know yet: it has no button. */
 export type TodoAction = keyof typeof ACTION_ROUTE_MAP;
 
-/** The id a guid-valued field has when the server had nothing to put there. */
 const NO_ID = '00000000-0000-0000-0000-000000000000';
 
 type TodoRouteSubject = Pick<TodoActivity, 'action' | 'entityType' | 'entityId' | 'propertyId'> & Partial<Pick<TodoActivity, 'activityType'>>;
@@ -278,13 +240,11 @@ function usable(id: string | null | undefined): id is string {
   return Boolean(id) && id !== NO_ID;
 }
 
-/** The property an item is about: the one it names, or the entity itself when the entity is a property. */
 function propertyOf(activity: TodoRouteSubject): string | null {
   if (usable(activity.propertyId)) return activity.propertyId;
   return activity.entityType === 'Property' && usable(activity.entityId) ? activity.entityId : null;
 }
 
-/** The id of the entity an item is about, for a page of that kind of entity (`route.entityType`): none for an item about anything else. */
 function entityOf(route: TodoRoute, activity: TodoRouteSubject): string | null {
   if (route.entityType !== undefined && activity.entityType !== route.entityType) return null;
   return usable(activity.entityId) ? activity.entityId : null;
@@ -294,15 +254,11 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   if (route.onlyFor && !route.onlyFor.includes(activity.entityType)) return null;
   const entry = getManifestEntry(route.path);
   if (!entry) return null;
-  // The same test the menu and the route use: the permissions of the page and, for the page of the organization administrator (`orgBillingAdmin`, like the withholding), being one. A person who is not is sent
-  // to the next page of the item (the booking), never to a page that tells them to ask an administrator.
   if (hasPermission && !hasEntryPermission(entry, hasPermission)) return null;
-  // What the item asks besides what the page asks: a person who can read the page and not do the thing is offered no button.
   if (hasPermission && route.permissions?.some((permission) => !hasPermission(entry.context, permission))) return null;
 
   let path = entry.path;
   if (route.target === 'thread') {
-    // The key of a conversation is `ota:{id}` or `direct:{bookingId}`; the address carries it escaped, like every link to a conversation.
     const id = entityOf(route, activity);
     if (!id || !route.threadKind) return null;
     path = messageThreadPath(`${route.threadKind}:${id}`);
@@ -352,7 +308,6 @@ export function todoActionRoute(activity: TodoRouteSubject, hasPermission?: Perm
 
 interface TodoActivityCardProps {
   activity: TodoActivity;
-  /** The names of the host's properties, by id (the item carries the id only). */
   propertyNames: ReadonlyMap<string, string>;
   /**
    * Decides what the person may do. Whether they may open the page "Do now" leads to (without it the button is always offered), and
@@ -360,15 +315,9 @@ interface TodoActivityCardProps {
    * such button: what cannot be checked is not offered).
    */
   hasPermission?: PermissionPredicate;
-  /** The card holds the one filled "Do now" of the page (the first card that has one, UX round 2026-11); the others are outlined. */
   primary?: boolean;
 }
 
-/**
- * One item of the host's list: what needs attention and the action that resolves its source process.
- * Completion follows the saved business state; this card cannot dismiss a deadline or unfinished process.
- * Manual staff work keeps its separate status controls in `components/activities/ActivityCard`.
- */
 export function TodoActivityCard({ activity, propertyNames, hasPermission, primary = false }: TodoActivityCardProps) {
   const { t, i18n } = useTranslation();
   const text = describeTodo(activity, { t, exists: (key) => i18n.exists(key), locale: i18n.language, propertyNames });
@@ -390,8 +339,6 @@ export function TodoActivityCard({ activity, propertyNames, hasPermission, prima
             {text.object}
           </p>
         </div>
-        {/* Only what is urgent says so (UX round 2026-11): the list is already in the order of urgency, and a badge on every card
-            read as noise. The word is there, never the color alone. */}
         {text.urgency === 'High' ? (
           <Badge variant="destructive" className="gap-1" data-testid="todo-urgency">
             <AlertCircle aria-hidden="true" className="size-3.5 shrink-0" />

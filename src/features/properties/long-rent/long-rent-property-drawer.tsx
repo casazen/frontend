@@ -20,10 +20,6 @@ import { apeOfRow, cadastralOfRow, freeFromOf, leaseDay, leaseOfRow, modeChangeO
 import { useLongRentPropertyRows, type LongRentPropertyRow } from './long-rent-property-rows';
 import { LONG_RENT_PROPERTY_DRAWER_KIND, longRentLeasePath, longRentPropertyPath, newLeaseForPropertyPath } from './paths';
 
-/**
- * The property of the drawer, read from the list of the properties of Affitti lunghi: the same queries as the page of the list, so
- * there is no second request, and what changes in one changes in both.
- */
 function useRowOfTheList(id: string) {
   const workspace = useContext(WorkspaceContext);
   const canReadLeases = workspace?.hasPermission('long-rent', 'lease.read') ?? false;
@@ -36,7 +32,6 @@ export function LongRentPropertyDrawerTitle({ id }: DetailTitleProps) {
   return <>{row?.property.name ?? ''}</>;
 }
 
-/** Who lives there, with what lease, until when and for how much: or who is coming. The way to the lease is the button above. */
 function LeaseSection({ row }: { row: LongRentPropertyRow }) {
   const { t, i18n } = useTranslation();
   const lease = leaseOfRow(row);
@@ -114,7 +109,6 @@ function KeyData({ row }: { row: LongRentPropertyRow }) {
 export function LongRentPropertyDrawerContent({ id }: DetailContentProps) {
   const { t } = useTranslation();
   const { row, isLoading, isError, error, refetch } = useRowOfTheList(id);
-  // Read without `useWorkspace`, which refuses to run outside its provider: a drawer drawn on its own offers no action.
   const workspace = useContext(WorkspaceContext);
   const canCreateLease = workspace?.hasPermission('long-rent', 'lease.create') ?? false;
   const canReadLease = workspace?.hasPermission('long-rent', 'lease.read') ?? false;
@@ -135,7 +129,6 @@ export function LongRentPropertyDrawerContent({ id }: DetailContentProps) {
   }
 
   const lease = leaseOfRow(row);
-  // The one thing to do now: open the lease the property has, or make the first one.
   const mainAction = lease ? (
     canReadLease ? (
       <Button asChild>
@@ -165,8 +158,6 @@ export function LongRentPropertyDrawerContent({ id }: DetailContentProps) {
   );
 }
 
-// Registered when this module is loaded, which the list of the properties does (it imports this file): the drawer opens from the
-// list and from a shared address (`?detail=long-rent-property:<id>`) on that page. `pageHref` is the "Apri la scheda completa" of its foot.
 registerDetail(LONG_RENT_PROPERTY_DRAWER_KIND, {
   title: LongRentPropertyDrawerTitle,
   Content: LongRentPropertyDrawerContent,

@@ -11,7 +11,6 @@ export interface SiteAppProps {
   i18n: I18n;
   legal: SiteLegal;
   year: number;
-  /** The "Accedi" link of the header. Absent: shown, the same as the pages of a preview (`src/config/login-entry.ts`). */
   showLogin?: boolean;
 }
 
@@ -32,7 +31,6 @@ function PageContent({ page, legal }: { page: SitePageId; legal: SiteLegal }) {
   }
 }
 
-/** One page of the public site, the same tree for the build-time render and the browser (SEO-VETRINA). */
 export function SiteApp({ page, i18n, legal, year, showLogin = true }: SiteAppProps) {
   return (
     <I18nextProvider i18n={i18n}>

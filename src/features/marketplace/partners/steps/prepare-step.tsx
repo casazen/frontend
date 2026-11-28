@@ -20,7 +20,6 @@ const FIELD_TEXT: Readonly<Record<BriefField, string>> = {
   cinCode: 'marketplace.partnerFlow.prepare.fields.cinCode',
 };
 
-/** What a read of the brief that failed says: a partner the organization may not see, a property outside its scope, or something that can be tried again. */
 export function BriefProblem({ context }: { context: PartnerContext }) {
   const { t } = useTranslation();
   const problem = partnerProblemOf(context.briefError);
@@ -55,11 +54,6 @@ interface PrepareStepProps {
   context: PartnerContext;
 }
 
-/**
- * Step «Cosa preparare» (E09/F02/US04/T04, S18): what the host takes to the partner's own site. The data of the property that the partner is likely to ask for, each with
- * a «Copia» button (the brief carries a fixed list of fields: no guest, no booking, no price, no document), and the checklist of what to choose and what to authorise
- * there. The page only shows it to the host: CasaZen sends nothing to the partner.
- */
 export function PrepareStep({ context }: PrepareStepProps) {
   const { t } = useTranslation();
   const { brief } = context;
@@ -80,7 +74,6 @@ export function PrepareStep({ context }: PrepareStepProps) {
       await navigator.clipboard.writeText(value);
       toast.success(t('marketplace.partnerFlow.prepare.copied', { field: t(FIELD_TEXT[field]) }));
     } catch {
-      // The value is on the screen and can be selected: the person copies it by hand.
       toast.error(t('marketplace.partnerFlow.prepare.copyFailed'));
     }
   };

@@ -13,7 +13,6 @@ interface MarketplaceFrameProps {
   children: ReactNode;
 }
 
-/** The account marketplace stays available before any property is set up. */
 export function MarketplaceFrame({ section, title, description, crumbs, toolbar, children }: MarketplaceFrameProps) {
   return (
     <div className="min-w-0 space-y-6" data-testid="marketplace-page">

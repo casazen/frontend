@@ -4,7 +4,6 @@ import { useOrgStays, usePublicStayQuote } from '@/queries/use-public-stays';
 import type { DirectBookingQuote } from '@/types';
 import type { PublicStayCard } from '@/types/public-stays.types';
 
-/** The example of the home is for two adults and, at least, three nights. */
 const RECEIPT_ADULTS = 2;
 const RECEIPT_MIN_NIGHTS = 3;
 

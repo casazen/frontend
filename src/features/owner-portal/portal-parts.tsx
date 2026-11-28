@@ -11,15 +11,10 @@ import { cn } from '@/lib/utils';
 import { ownerReadStateOf, type OwnerReadState } from './owner-portal-model';
 import { ownerPortalPaths } from './paths';
 
-/**
- * The title of a page of the portal and, under it, what the page is for. One `h1` for each page. It is the head of every page of
- * the app (`PageHeader`, UX round 2026-11): the same icon tile, title and description as the host sees, and the title of the tab.
- */
 export function PortalPageHeading({ title, description, actions, icon }: { title: string; icon?: LucideIcon; description?: string; actions?: ReactNode }) {
   return <PageHeader title={title} description={description} icon={icon} action={actions} />;
 }
 
-/** A section that waits for its read: one announced placeholder, never an empty list that would say «nothing here» before the server answered. */
 export function PortalLoading({ label }: { label?: string }) {
   return <SkeletonCard lines={3} label={label} />;
 }
@@ -39,13 +34,11 @@ const STATE_VARIANT: Record<Exclude<OwnerReadState, 'failed'>, 'info' | 'warning
 
 interface PortalReadProblemProps {
   error: unknown;
-  /** What failed to load, for the case that can be tried again («Impossibile caricare il calendario»). */
   failedTitle: string;
   onRetry: () => void;
   testId?: string;
 }
 
-/** The honest state of a section that is refused or not open: what is true, and the way back. Never an empty list. */
 export function PortalNotice({ state, testId = 'owner-read-problem' }: { state: Exclude<OwnerReadState, 'failed'>; testId?: string }) {
   const { t } = useTranslation();
   return (
@@ -113,8 +106,6 @@ export function CheckRow({ id, checked, onChange, label, description, disabled =
 
 export type PillTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
-// Dark text on a soft background with an edge, from the semantic tokens (the fallbacks are the values of the redesign): the text is the page foreground, so the pair meets AA
-// whatever the tone. A filled badge with white text does not (white on green-500 is 2.2:1).
 const PILL_TONE: Record<PillTone, string> = {
   success: 'bg-[color:var(--color-success-soft,#eaf7ee)] ring-[color:var(--color-success-border,#b7e2c3)]',
   warning: 'bg-[color:var(--color-warning-soft,#fef4e2)] ring-[color:var(--color-warning-border,#f5d49a)]',
@@ -123,7 +114,6 @@ const PILL_TONE: Record<PillTone, string> = {
   neutral: 'bg-muted ring-border',
 };
 
-/** Where something stands, in a word: the tone says it at a glance and the word says it to everyone. */
 export function StatusPill({ tone, className, children, ...rest }: { tone: PillTone } & React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-foreground ring-1 ring-inset', PILL_TONE[tone], className)} {...rest}>

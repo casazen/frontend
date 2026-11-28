@@ -53,7 +53,6 @@ const properties = [
 const MISSING_NUMBER: OnboardingPartMissing = { propertyId: LUGANO, reason: 'ticino_structure_id_missing', code: 'guest-registration' };
 const MISSING_MUNICIPALITY: OnboardingPartMissing = { propertyId: ZURICH, reason: 'swiss_municipality_missing', code: 'guest-registration' };
 
-/** The plan of a host with active properties in Switzerland: the part is open, with what each property lacks. */
 function swissPlan(missing: OnboardingPartMissing[] | undefined, extra: Record<string, unknown> = {}) {
   return plan({
     guestRegistration: { state: 'open', reason: 'swiss_municipality_missing', done: 1, total: 1 + (missing?.length ?? 0), launchTarget: 'guestRegistration', ...(missing ? { missing } : {}), ...extra },
@@ -94,7 +93,6 @@ afterEach(() => {
   cleanup();
 });
 
-// E29/F02/US02/T01, point 4: the part «Guest registration» lists its missing items with «Fai ora» reopening the wizard at the right step.
 describe('OnboardingPartPage, the part «Notifica degli ospiti (Svizzera)»', () => {
   it('Part_ActivePropertiesThatLackSomething_AreListedByNameWithWhatIsMissingAndFaiOraOpeningTheWizardOnItsSwissStep', async () => {
     renderPage();
@@ -102,19 +100,16 @@ describe('OnboardingPartPage, the part «Notifica degli ospiti (Svizzera)»', ()
     const list = await screen.findByTestId('part-missing-list');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(t('onboardingPlan.parts.guestRegistration.title'));
     expect(screen.getByTestId('onboarding-part-progress')).toHaveTextContent(t('onboardingPlan.progress', { done: 1, total: 3 }));
-    // Each property by its name and its comune, with what it lacks in plain words.
     const number = await within(list).findByTestId(`part-missing-${LUGANO}`);
     expect(number).toHaveTextContent('Casa Lugano');
     expect(number).toHaveTextContent('Lugano');
     expect(within(number).getByTestId(`part-missing-${LUGANO}-reason`)).toHaveTextContent(t('onboardingPlan.reasons.property.ticino_structure_id_missing'));
     expect(within(list).getByTestId(`part-missing-${ZURICH}`)).toHaveTextContent('Studio Zurigo');
     expect(within(list).getByTestId(`part-missing-${ZURICH}-reason`)).toHaveTextContent(t('onboardingPlan.reasons.property.swiss_municipality_missing'));
-    // «Fai ora» reopens the activation wizard of THAT property on the step of the notification, in the same tab.
     const doNow = within(list).getByTestId(`part-missing-${LUGANO}-do`);
     expect(doNow).toHaveAttribute('href', `/app/short-rent/properties/${LUGANO}/activation?step=guest-registration`);
     expect(doNow).toHaveAccessibleName(`${t('onboardingPlan.actions.doNow')}: Casa Lugano`);
     expect(within(list).getByTestId(`part-missing-${ZURICH}-do`)).toHaveAttribute('href', `/app/short-rent/properties/${ZURICH}/activation?step=guest-registration`);
-    // The one button of the part would only repeat them: «Torna al piano» is the only one left.
     expect(screen.queryByTestId('part-launch-primary')).not.toBeInTheDocument();
     expect(screen.getByTestId('part-launch-back')).toHaveAttribute('href', '/app/short-rent/onboarding');
   });
@@ -149,7 +144,6 @@ describe('OnboardingPartPage, the part «Notifica degli ospiti (Svizzera)»', ()
     workspace.hasPermission = (_context, permission) => permission === 'property.read';
     renderPage();
 
-    // The wizard writes the property (`property.write`): a reader gets the list of the properties, the page they may open.
     expect(await screen.findByTestId(`part-missing-${LUGANO}-do`)).toHaveAttribute('href', '/app/short-rent/properties');
   });
 
@@ -187,7 +181,6 @@ describe('OnboardingPartPage, the part «Notifica degli ospiti (Svizzera)»', ()
     expect(screen.queryByTestId('part-launch-primary')).not.toBeInTheDocument();
   });
 
-  // The part counts the ACTIVE properties only: a host with none has nothing to do here, and the page of the part says so.
   it('Part_NoActiveSwissProperty_SaysThereIsNothingToDoHere', async () => {
     vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan());
     renderPage();

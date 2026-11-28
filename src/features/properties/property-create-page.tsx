@@ -18,10 +18,6 @@ import {
 import type { CreatePropertyDto } from '@/types';
 import { PropertyWizardPage } from './wizard/property-wizard-page';
 
-/**
- * The first property of a new host (`?first=1`, set by the onboarding): the short form, then the checklist asks the rest. The
- * onboarding and the Golden Journey go through it (SR-D47), so the wizard does not replace it.
- */
 function FirstPropertyPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -30,15 +26,12 @@ function FirstPropertyPage() {
   const { data: entitlement } = useEntitlement();
   const [planLimitHit, setPlanLimitHit] = useState(false);
 
-  // Block on a proactive entitlement read OR a server 403/409 we just caught.
-  // The server stays the source of truth — a stale client cannot bypass the limit (AC8/AC12).
   const blockedByPlan = planLimitHit || entitlement?.canAddProperty === false;
 
   const handleSubmit = async (data: CreatePropertyDto) => {
     setPlanLimitHit(false);
     try {
       await createProperty.mutateAsync(data);
-      // The profile carries `hasProperties`: refresh it before leaving, or the guard would send the host back here.
       await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
       navigate('/app/short-rent');
     } catch (error) {
@@ -85,10 +78,6 @@ function FirstPropertyPage() {
   );
 }
 
-/**
- * `/app/short-rent/properties/create`: «Aggiungi immobile» (SR-07b), the guided flow that replaces the form. The first property of a
- * new host (`?first=1`) keeps its short form: it is the destination of the onboarding guard.
- */
 export function PropertyCreatePage() {
   const [searchParams] = useSearchParams();
   return searchParams.get('first') === '1' ? <FirstPropertyPage /> : <PropertyWizardPage />;

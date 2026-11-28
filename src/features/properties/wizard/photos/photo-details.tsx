@@ -14,16 +14,9 @@ import { roomOptionLabel } from '../rooms-model';
 interface PhotoDetailsProps {
   form: UseFormReturn<PropertyWizardValues>;
   propertyId: string;
-  /** The photos the person sees, in display order. */
   photos: readonly string[];
 }
 
-/**
- * The caption and the room of each photo (NF-32), under the gallery: the caption is the alternative text of the photo, in Italian and in
- * English (the English one needs the Italian one), and the room is one of the rooms of the property as saved in the first step. The
- * answers are fields of the wizard; the step saves them with «Avanti» like the rest. A photo with no caption and no room is a photo the
- * channels take as it is.
- */
 export function PhotoDetails({ form, propertyId, photos }: PhotoDetailsProps) {
   const { t } = useTranslation();
   const rooms = usePropertyRooms(propertyId);

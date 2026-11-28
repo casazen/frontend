@@ -22,7 +22,6 @@ export function SearchPage() {
   const [params, setParams] = useSearchParams();
   const searched = [...params.keys()].length > 0;
 
-  // The old page named the place `city`: a link that was shared opens the same search.
   useEffect(() => {
     const city = params.get('city')?.trim();
     if (city === undefined) return;

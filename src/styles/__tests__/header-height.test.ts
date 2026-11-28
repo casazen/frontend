@@ -2,14 +2,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-/**
- * The sticky header has one height for the whole app (UI-05): `--header-height` in `globals.css`. It was "4rem" written in the
- * header, in the shell (the scroll padding), in the full-height page of the booking site editor and as `top-20` of a sticky
- * preview; whoever changes the header now changes one line, and these places follow.
- */
 const read = (relativePath: string) => readFileSync(resolve(process.cwd(), relativePath), 'utf8');
 
-// Every source of the app (tests excluded), to look for a height that is written out again.
 const SOURCES = import.meta.glob<string>(['/src/**/*.{ts,tsx}', '!/src/**/*.test.{ts,tsx}', '!/src/**/__tests__/**', '!/src/test/**'], {
   query: '?raw',
   import: 'default',

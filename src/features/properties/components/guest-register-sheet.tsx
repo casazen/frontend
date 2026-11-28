@@ -6,7 +6,6 @@ import type { GuestRegisterTable } from '../lib/guest-register-model';
 import './guest-register-print.css';
 
 interface GuestRegisterSheetProps {
-  /** The register as the file holds it: the header (the words of the language of the page) and one line for each guest, the last column the empty one of the signature. */
   table: GuestRegisterTable;
   propertyName: string;
   period: GuestRegisterPeriod;

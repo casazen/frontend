@@ -20,17 +20,12 @@ import type { RentInstallment } from '@/types';
 
 interface MarkRentPaidDialogProps {
   leaseId: string;
-  /** The installment to declare paid; null closes the dialog. */
   installment: RentInstallment | null;
   onOpenChange: (open: boolean) => void;
 }
 
 const MAX_NOTE_LENGTH = 500;
 
-/**
- * Offline payment of an installment (bank transfer, cash), declared by the landlord (LT-06). No money goes through
- * CasaZen; an online payment link still open is invalidated by the server first.
- */
 export function MarkRentPaidDialog({ leaseId, installment, onOpenChange }: MarkRentPaidDialogProps) {
   const { t } = useTranslation();
   const markPaid = useMarkRentPaid(leaseId);

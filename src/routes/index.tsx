@@ -110,8 +110,6 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
     } satisfies RouteObject;
   });
 
-  // An area with no page at its bare address (supplier) would open an empty shell: its index opens the home of the area
-  // (UI-00). Short-rent, long-rent, account and admin have the page in the manifest.
   if (!entries.some((entry) => entry.path === prefix)) {
     children.unshift({ index: true, element: <ContextIndexRoute contextKey={contextKey} /> });
   }
@@ -138,7 +136,6 @@ const workspaceRoutes: RouteObject[] = [
     path: '/app',
     element: (
       <WorkspaceProvider>
-        {/* data-area on <html>: the accent of the area (UI-01); the area picker and the pages outside an area have none. */}
         <AreaProvider>
           <Outlet />
         </AreaProvider>
@@ -205,10 +202,8 @@ const workspaceRoutes: RouteObject[] = [
   })),
 ];
 
-/** Route table of the app (exported for the routing tests; the app uses `router`). */
 export const appRoutes: RouteObject[] = [
   {
-    // Pages that need Auth0: reached client-side from a public page (no Auth0 loaded), they reload themselves.
     element: <AuthProviderBoundary />,
     children: [
       {
@@ -224,8 +219,6 @@ export const appRoutes: RouteObject[] = [
         element: <SupplierRegisterPage />,
       },
       {
-        // Link of the email that invites an independent host: under Auth0 (it leads to the signup or login) but outside
-        // the protected route and the onboarding guard, which would send a new account to the onboarding first.
         path: '/invito-host/:token',
         element: <HostInvitePage />,
       },
@@ -237,12 +230,10 @@ export const appRoutes: RouteObject[] = [
         element: <InviteAcceptPage />,
       },
       {
-        // SE-03 (A8-03): CTA entry point, stores the attribution and opens the Auth0 signup screen.
         path: SIGNUP_PATH,
         element: <SignupPage />,
       },
       {
-        // Auth0 verification email Redirect To. Not the OAuth callback: Auth0 adds `code=success`.
         path: '/email-verified',
         element: <EmailVerifiedPage />,
       },
@@ -273,53 +264,38 @@ export const appRoutes: RouteObject[] = [
     ],
   },
   {
-    // Outside the onboarding guard: a supplier who signed up after registering must reach it before any host
-    // onboarding redirect (SU-02).
     path: '/register/claim',
     element: <SupplierClaimPage />,
   },
   {
     path: '/book/:orgSlug',
     element: <PublicSiteShell mode="org" />,
-    // The public booking site keeps its own look until DB-01: the redesign (data-ui="v2") is never applied here.
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
       { index: true, element: <OrgHomePage /> },
-      // The results of the site for a stay and a search (DB-07c): in the address, so a search can be shared and Back finds it again.
       { path: 'search', element: <SiteSearchPage /> },
       { path: 'my-bookings', element: <GuestBookingsPage /> },
-      // The operator's own privacy notice and booking terms (BK-14, A3-21), not the CasaZen ones (/legale/*).
       { path: ORG_DOCUMENT_SEGMENTS.privacy, element: <OrgPrivacyPage /> },
       { path: ORG_DOCUMENT_SEGMENTS.terms, element: <OrgTermsPage /> },
-      // English spelling of the terms address, e.g. typed by hand or linked by older sites.
       { path: 'terms', element: <Navigate to={`../${ORG_DOCUMENT_SEGMENTS.terms}`} relative="path" replace /> },
-      // Link of the "request received" email of a "pay at the property" request (BK-06).
       { path: 'requests/:bookingId/confirm', element: <OnSiteRequestConfirmPage /> },
-      // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
       { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
-      // The link in the email the host sends after a stay: the guest writes the review of the stay with the signed token (DB-12b).
       { path: 'booking/:bookingId/review', element: <GuestLinkedSection action="review" legacy><ReviewLinkPage /></GuestLinkedSection> },
-      // The link of the email that lets the guest cancel (DB-08a/b): what they get back today, and the cancellation, with the signed token.
       { path: 'bookings/:bookingId/cancel', element: <GuestLinkedSection action="cancellation" legacy><GuestCancelLinkPage /></GuestLinkedSection> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
-      // Compat for links missing `/property/` (e.g. older mobile share URLs)
       { path: ':propertySlugOrId', element: <LegacyPropertyBookingRedirect /> },
     ],
   },
-  // The embeddable widgets of an org on the CasaZen domain (NF-144): `/embed/:orgSlug/booking`, `…/property/:propertySlugOrId`, `…/guest-access`. Frames of
-  // other sites with no app chrome, outside `PublicSiteShell`; an agency's own domain serves the same pages without the org in the address.
   ...buildEmbedRoutes('platform'),
   {
     element: <PublicSiteShell mode="default" />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
-      // Public search across the booking sites (BK-20): in the public shell, never in the host console.
       { path: '/search', element: <SearchPage /> },
       { path: SEO_HUB_PATH, element: <SeoHubPage /> },
       { path: '/p/affitti-brevi/:region/:comune', element: <ComplianceGuidePage /> },
       { path: '/p/tassa-soggiorno/:comune', element: <TouristTaxCalculatorPage /> },
-      // CasaZen legal documents (PL-14): public, texts provided by the product owner (D14).
       { path: LEGAL_INDEX_PATH, element: <LegalIndexPage /> },
       { path: LEGAL_DOCUMENT_PATHS.tos, element: <TermsPage /> },
       { path: LEGAL_DOCUMENT_PATHS.privacy, element: <PrivacyPage /> },
@@ -328,24 +304,17 @@ export const appRoutes: RouteObject[] = [
     ],
   },
   {
-    // Public showcase of a supplier (SU-13, A4-16, SP-09-FE): the frame of its own, with the look the supplier chose, not the one of
-    // CasaZen's public pages. It keeps the marker: the redesign of the app (`data-ui="v2"`) never reaches it.
     path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug`,
     element: <SupplierSiteShell />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
     children: [
       { index: true, element: <SupplierShowcasePage /> },
-      // The services of the supplier and one of them with its estimate (they need the list of services, so, like it, the bookings flag);
-      // the story of the supplier.
       { path: 'servizi', element: <SupplierServicesPage /> },
       { path: 'servizi/:serviceSlug', element: <SupplierServicePage /> },
       { path: 'chi-siamo', element: <SupplierAboutPage /> },
-      // The booking from the site (SP-12b): the steps, the page the link of the verification e-mail opens and the customer's own request
-      // (the link of the other e-mails). All behind the booking flag (with it off their addresses lead back to the home), never indexed.
       { path: 'prenota', element: <SupplierBookingPage /> },
       { path: 'conferma', element: <SupplierBookingConfirmPage /> },
       { path: 'richiesta', element: <SupplierRequestPage /> },
-      // The request on measure (SP-12c), for what the price list does not say: the form; its check, its conversation and its offer are the pages above.
       { path: 'preventivo', element: <SupplierInquiryPage /> },
     ],
   },
@@ -361,7 +330,6 @@ export const appRoutes: RouteObject[] = [
   { path: linkedStayPaths.checkin, element: <GuestLinkedSection action="checkin"><CheckInPage /></GuestLinkedSection>, handle: NOT_REDESIGNED_ROUTE_HANDLE },
   { path: linkedStayPaths.documents, element: <GuestLinkedSection action="documents"><PublicFiscalDocumentPage /></GuestLinkedSection>, handle: NOT_REDESIGNED_ROUTE_HANDLE },
   {
-    // Stay tokens and legacy supplier slugs share this prefix.
     path: '/s/:slug',
     element: <GuestPortalEntry />,
   },
@@ -374,7 +342,6 @@ export const appRoutes: RouteObject[] = [
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
-    // A guest's page, not the host's console: it keeps its look until it is redesigned (like the booking site).
     path: '/checkin/:token',
     element: <GuestLinkedSection action="checkin" legacy><CheckInPage /></GuestLinkedSection>,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
@@ -387,8 +354,6 @@ export const appRoutes: RouteObject[] = [
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
-    // Link of the payment request of a service a supplier completed (SP-15c-d): the host pays from the e-mail, no sign-in. A payer's page,
-    // not the console: it keeps its look until it is redesigned (like the rent payment).
     path: '/service/pay/:paymentId',
     element: <ServicePaymentPage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
@@ -410,22 +375,16 @@ export const appRoutes: RouteObject[] = [
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
-    // The link of the double opt-in e-mail (CRM-03, NF-90): `/marketing/confirm#contactId=…&expiresAt=…&signature=…`. Public in the same way.
     path: MARKETING_CONFIRM_PATH,
     element: <ConfirmPage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
-    // The page behind the QR code a host prints for a house (CRM-03, NF-90): `/benvenuto/{token}`. A guest's page (no sign-in, no menu, not
-    // indexed, no analytics), never behind the `crmMarketing` flag: a code already printed must keep working. The random token is the only proof.
     path: WELCOME_PATH,
     element: <WelcomePage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
-    // The module of the service that prepares the contract, simulated for the test environments (CF-SIM): the signed link of a
-    // contract opens it there. A public page like the real module (no sign-in); where the simulator is off the API answers 404 and
-    // the page says it is not available.
     path: GUIDED_FORM_PATH,
     element: <GuidedFormPage />,
   },
@@ -441,20 +400,16 @@ export const appRoutes: RouteObject[] = [
     path: '/help/ical',
     element: <IcalHelpPage />,
   },
-  // Owner portal routes (ADR-011-R6): dedicated portal with Auth0 login
   {
     element: <AuthProviderBoundary />,
     children: ownerPortalRoutes,
   },
-  // Tenant area (CondoLedger phase 1B): the signed-in tenant, not the landlord console.
   {
     element: <AuthProviderBoundary />,
     children: tenantAreaRoutes,
   },
-  // Pages for the people who build the app: the dev server only, empty in a build (UI-07).
   ...devRoutes,
   {
-    // Public 404 (A8-03): never a redirect to the login.
     path: '*',
     element: <CatchAllRedirect />,
   },
@@ -464,11 +419,6 @@ type AppRouter = ReturnType<typeof createBrowserRouter>;
 
 let routerInstance: AppRouter | undefined;
 
-/**
- * The router of the app, created on first use: the start-up has found out by then whether the host is the app's own or an
- * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site (and, when `resolve-host` says they are on for it, the guest check-in
- * and the owner portal, NF-140) and shows clean addresses (`/`, `/property/…`); anywhere else it is the full app.
- */
 export function getRouter(): AppRouter {
   if (!routerInstance) {
     const hostSite = getHostSite();

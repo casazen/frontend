@@ -9,7 +9,6 @@ const ISTAT_REGIONS_KEY = ['admin', 'istat-regions'] as const;
 /** Root of the query key of the ISTAT coverage of a property: one key for each property. */
 const ISTAT_COVERAGE_KEY = 'istat-coverage';
 
-/** The same territory: the region code and, for the two autonomous provinces of Trentino-Alto Adige, the plate code. */
 const sameTerritory = (first: Pick<IstatRegionRule, 'regionIstatCode' | 'provinceCode'>, second: Pick<IstatRegionRule, 'regionIstatCode' | 'provinceCode'>): boolean =>
   first.regionIstatCode === second.regionIstatCode && (first.provinceCode ?? null) === (second.provinceCode ?? null);
 
@@ -26,10 +25,6 @@ export function useIstatRegions() {
   });
 }
 
-/**
- * Reads the whole table again now, whatever the age of what the page holds (`staleTime: 0`), and puts the answer in the table of the page. It fails when the read fails: the answer of the server
- * or nothing, never the older rows. A save replaces a whole row and the API has no version, so the form of a row starts from this read and is saved only after another one.
- */
 export function useRereadIstatRegions() {
   const queryClient = useQueryClient();
 

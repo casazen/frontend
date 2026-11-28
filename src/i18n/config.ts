@@ -10,13 +10,10 @@ export { LOCALE_STORAGE_KEY, type AppLocale } from './locale-storage';
 void i18n.use(initReactI18next).init({
   resources: APP_RESOURCES,
   lng: readStoredLocale(),
-  // A text a language lacks falls back to Italian. The three languages of the guest check-in page (their subset files are
-  // loaded when chosen) fall back to English first, then to Italian.
   fallbackLng: { default: ['it'], de: ['en', 'it'], fr: ['en', 'it'], es: ['en', 'it'] },
   interpolation: { escapeValue: false },
 });
 
-// Break circular dependency: zod-error-map no longer imports i18n directly.
 setZodErrorMapI18n(i18n);
 z.setErrorMap(i18nZodErrorMap);
 

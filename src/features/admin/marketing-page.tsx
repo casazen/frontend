@@ -4,11 +4,6 @@ import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SeoTopComuniWidget } from './components/seo-top-comuni-widget';
 
-/**
- * Marketing section (SE-03): makes the tracking data already collected visible to admins.
- * No new events or pixels are added: the page surfaces existing signup attribution
- * (UTM, referrer host, comune) and the top-converting comuni from the SEO funnel.
- */
 export function MarketingPage() {
   const { t } = useTranslation();
 
@@ -19,7 +14,6 @@ export function MarketingPage() {
         description={t('admin.marketing.description')}
       />
 
-      {/* SEO funnel: top comuni by CTA clicks and signup conversions */}
       <SeoTopComuniWidget />
 
       <p className="flex items-start gap-3 rounded-lg bg-surface-2 px-4 py-3 text-sm text-muted-foreground" data-testid="marketing-scope-notice">
@@ -27,7 +21,6 @@ export function MarketingPage() {
         {t('admin.marketing.scopeNotice')}
       </p>
 
-      {/* UTM / referrer attribution placeholder */}
       <Card data-testid="marketing-attributions-placeholder">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">

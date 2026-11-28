@@ -11,7 +11,6 @@ beforeEach(() => {
   vi.mocked(axios.post).mockResolvedValue({ data: {} });
 });
 
-/** The body and the options of the only call to `post`. */
 function postCall() {
   const [url, body, options] = vi.mocked(axios.post).mock.calls[0];
   return { url, body, options: options as { public?: boolean; headers?: Record<string, string>; timeout?: number; signal?: AbortSignal } };
@@ -41,7 +40,6 @@ describe('the identity calls of the guest check-in (E03/F04/US03/T01)', () => {
 
     const { url, body, options } = postCall();
     expect(url).toBe(`/public/checkin/${TOKEN}/document`);
-    // `multipart/form-data` is said: the instance is JSON by default and would turn the form into JSON, and the API would get no file.
     expect(options).toEqual({ public: true, headers: { 'Content-Type': 'multipart/form-data' } });
     expect(body).toBeInstanceOf(FormData);
     const form = body as FormData;
@@ -91,7 +89,6 @@ describe('the opening of the self-hosted identity step (E70/F03/US01/T01)', () =
       body: { noticeVersion: 'checkin-biometric-2026-11' },
       options: { public: true },
     });
-    // The version is the one the guest read, sent in the body: never part of the address of the call.
     expect(postCall().url).not.toContain('checkin-biometric-2026-11');
   });
 
@@ -181,11 +178,9 @@ describe('the presence of the self-hosted identity step (E72/F02/US01/T01)', () 
     await publicCheckinApi.postPresence(TOKEN, { frames: [jpeg('one')], timestamps: [0], challengeToken: 'challenge-1' }, KEY);
 
     const { url, body, options } = postCall();
-    // `multipart/form-data` is said (the instance is JSON by default), the key is a header of its own, and the call is anonymous.
     expect(options).toMatchObject({ public: true, headers: { 'Content-Type': 'multipart/form-data', 'Idempotency-Key': KEY } });
     expect(url).not.toContain(KEY);
     expect([...(body as FormData).values()].map(String)).not.toContain(KEY);
-    // A sequence of a few megabytes on a mobile network is given longer than the default.
     expect(options.timeout).toBeGreaterThan(30_000);
   });
 
@@ -196,7 +191,6 @@ describe('the presence of the self-hosted identity step (E72/F02/US01/T01)', () 
 
     const { options } = postCall();
     expect(options.signal).toBe(stop.signal);
-    // The request is cancelled by the guest, never by a shorter wait: a slow network is given the whole time.
     expect(options.timeout).toBeGreaterThan(30_000);
   });
 

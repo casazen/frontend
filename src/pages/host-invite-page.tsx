@@ -18,12 +18,10 @@ import {
 } from '@/lib/host-invite';
 import { useHostInviteLookup } from '@/queries/use-host-invites';
 
-/** Where the invited person goes once the invite is bound: the guard of the app sends a new account to the onboarding. */
 const AFTER_ACCEPT_PATH = '/';
 
 type UnusableState = 'invalid' | 'expired' | 'revoked' | 'used';
 
-/** The reason a link cannot be used, from the `state` of the lookup (anything unknown counts as invalid). */
 function unusableState(state: string | null | undefined): UnusableState {
   switch (state?.toLowerCase()) {
     case 'expired':
@@ -57,12 +55,10 @@ function InviteFlow({ token }: { token: string }) {
   const lookup = useHostInviteLookup(token);
   const valid = lookup.data?.valid === true;
 
-  // A link that is no longer usable leaves nothing behind.
   useEffect(() => {
     if (lookup.data && !lookup.data.valid) clearPendingHostInvite();
   }, [lookup.data]);
 
-  // The token waits for the signup or login (and for the return to this page, which also carries it).
   useEffect(() => {
     if (valid && !isAuthenticated && !authLoading) savePendingHostInvite(token);
   }, [valid, isAuthenticated, authLoading, token]);
@@ -121,7 +117,6 @@ function InviteFlow({ token }: { token: string }) {
   );
 }
 
-/** Signed in: binds the invite once, then goes on to the app. */
 function AcceptInvite({ token, inviterName }: { token: string; inviterName?: string | null }) {
   const { t } = useTranslation();
   const navigate = useNavigate();

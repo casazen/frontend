@@ -72,7 +72,6 @@ interface MonthPickerProps {
   onToggle: (month: number) => void;
 }
 
-/** Put the months on one row only when the season panel has room. */
 function MonthPicker({ season, selected, disabled, onToggle }: MonthPickerProps) {
   const { t, i18n } = useTranslation();
   return (
@@ -123,18 +122,12 @@ function toForm(config: PricingAdapterConfig): FormState {
   };
 }
 
-/**
- * The rules of the seasonal suggestions (the one section of the page that is a form): on or off, the seasons and the national
- * holidays with how much each moves the price, how often the suggestions are computed, and the button that saves it. No box
- * inside the section: groups are told apart by space and by their own titles.
- */
 export function PricingRulesSection({ config, isSaving, onSave }: PricingRulesSectionProps) {
   const { t, i18n } = useTranslation();
   const activeRules = ruleSentences(config, t, i18n.language);
   const isEnabled = config.isEnabled;
   const [form, setForm] = useState<FormState>(() => toForm(config));
 
-  // Sync local form state when server data changes (adjusting state during render)
   const [syncedConfig, setSyncedConfig] = useState(config);
   if (config !== syncedConfig) {
     setSyncedConfig(config);
@@ -151,7 +144,6 @@ export function PricingRulesSection({ config, isSaving, onSave }: PricingRulesSe
       const own = season === 'high' ? current.highSeasonMonths : current.lowSeasonMonths;
       const other = season === 'high' ? current.lowSeasonMonths : current.highSeasonMonths;
       const nextOwn = own.includes(month) ? own.filter((m) => m !== month) : [...own, month].sort((a, b) => a - b);
-      // A month belongs to one season only.
       const nextOther = other.filter((m) => m !== month);
       return season === 'high'
         ? { ...current, highSeasonMonths: nextOwn, lowSeasonMonths: nextOther }
@@ -185,7 +177,6 @@ export function PricingRulesSection({ config, isSaving, onSave }: PricingRulesSe
         {t('pricing.config.exampleRuleNote')}
       </p>
 
-      {/* Seasons */}
       <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-2">
         <div className="flex min-h-11 items-center gap-3 @5xl:col-span-2">
           <Checkbox
@@ -226,7 +217,6 @@ export function PricingRulesSection({ config, isSaving, onSave }: PricingRulesSe
         })}
       </div>
 
-      {/* National holidays */}
       <div className="space-y-3">
         <div className="flex min-h-11 items-center gap-3">
           <Checkbox
@@ -250,7 +240,6 @@ export function PricingRulesSection({ config, isSaving, onSave }: PricingRulesSe
         />
       </div>
 
-      {/* How often they are computed */}
       <fieldset className="min-w-0 space-y-4">
         <legend className="mb-1 text-base font-medium">{t('pricing.config.frequencyLabel')}</legend>
         <div className="flex flex-col sm:flex-row sm:gap-8">

@@ -24,11 +24,6 @@ export function useWizardCreateProperty() {
   });
 }
 
-/**
- * Saves what a step of the wizard asks (PATCH: the fields left out keep their value). Silent like the creation: each step saves
- * when the person goes on, and a toast at every «Avanti» would be noise. Everything that reads the property is read again (the key
- * `properties` covers the lists, the record and the detail), the activation included, which is where «what is missing» comes from.
- */
 export function useWizardSaveProperty() {
   const queryClient = useQueryClient();
 

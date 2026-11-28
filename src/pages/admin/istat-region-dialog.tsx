@@ -28,11 +28,9 @@ import {
 const FIELDS_MODES: readonly FieldsMode[] = ['toVerify', 'none', 'some'];
 
 interface IstatRegionDialogProps {
-  /** The row the form starts from: the one the server held when the form was opened (the page reads the table again first). */
   rule: IstatRegionRule;
   /** The same row as the table of the page holds it now, or `null` when the page has no table: a row that is not the one of `rule` was saved by someone else since. */
   live: IstatRegionRule | null;
-  /** The table could not be read again: what the form holds may be old. */
   readFailed: boolean;
   onClose: () => void;
 }
@@ -59,10 +57,8 @@ export function IstatRegionDialog({ rule, live, readFailed, onClose }: IstatRegi
   const [errors, setErrors] = useState<RegionFormErrors>({});
   const [checking, setChecking] = useState(false);
   const [stopped, setStopped] = useState<StaleReason | null>(null);
-  // The request is in flight (the table read again before the save, or the save): nothing of the form can be pressed again meanwhile, and the dialog does not close under it.
   const busy = save.isPending || checking;
   const name = territoryName(rule);
-  // What the page knows now, or what the last attempt found: a table that cannot be read says nothing about the row, and a row that is not the one of the form is not what the form holds.
   const stale: StaleReason | null = readFailed ? 'unreadable' : live !== null && live.updatedAt !== rule.updatedAt ? 'changed' : stopped;
 
   const change = <K extends keyof RegionFormValues>(field: K, value: RegionFormValues[K]) => {
@@ -77,7 +73,6 @@ export function IstatRegionDialog({ rule, live, readFailed, onClose }: IstatRegi
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
-    // The table is read again first: the save goes only on the row the form started from.
     setChecking(true);
     try {
       const current = (await reread()).find((row) => row.id === rule.id);
@@ -99,7 +94,6 @@ export function IstatRegionDialog({ rule, live, readFailed, onClose }: IstatRegi
     try {
       await save.mutateAsync(requestOf(rule, values));
     } catch (error) {
-      // The reason of the server in words (the source or the portal it refused, a territory it does not know); the form stays as it is.
       toast.error(getProblemMessage(error, t) ?? t('istatRegions.toast.saveFailed'));
       return;
     }

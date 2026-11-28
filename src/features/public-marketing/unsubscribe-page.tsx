@@ -8,7 +8,6 @@ import { linkFailureOf } from './link-failure';
 import { MarketingLinkCard } from './marketing-link-card';
 import { useSignedFragment } from './use-signed-fragment';
 
-/** The values of the link of a campaign e-mail (`MarketingUnsubscribeLinks.Create`); the campaign is there only when the link comes from one. */
 const LINK_FIELDS = {
   required: ['orgId', 'emailHash', 'expiresAt', 'signature'],
   optional: ['campaignId'],
@@ -28,7 +27,6 @@ export function UnsubscribePage() {
   const link = useSignedFragment(LINK_FIELDS);
   const unsubscribe = useUnsubscribe();
 
-  // The unsubscribe endpoint never says `contact_not_found` nor `contact_suppressed`; a link the server refuses for any other reason does not work.
   const failure = unsubscribe.isError ? linkFailureOf(unsubscribe.error) : null;
   let state: UnsubscribeState = 'ask';
   if (unsubscribe.isSuccess) state = 'done';

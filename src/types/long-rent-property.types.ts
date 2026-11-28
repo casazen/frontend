@@ -7,17 +7,13 @@ import type { RentalMode } from './property.types';
  * the change of mode that is programmed. No name of a tenant and no amount: those come with the list of the leases.
  */
 
-/** What the APE of the property says, the way the contract needs it: nothing on file, a certificate without its code and class, or both on record. */
 type LongRentApeStatus = 'Missing' | 'ToConfirm' | 'Identified';
 
-/** `Rented`: a lease in force holds it. `InPreparation`: none does but one is on its way. `Free`: nothing. */
 type LongRentPropertyState = 'Free' | 'Rented' | 'InPreparation';
 
-/** The lease that holds the property. `freeFrom` is the first free day, only when the lease does not go on (a notice or an early end, or a type without renewal). */
 interface LongRentPropertyLease {
   leaseId: string;
   stage: LeaseStage | null;
-  /** The last day of the period the lease is in now. */
   currentTermEndDate: string;
   noticeOn: string | null;
   freeFrom: string | null;
@@ -41,10 +37,8 @@ export interface LongRentPropertyAggregate {
   unit: string | null;
   ape: LongRentApeStatus;
   apeValid: boolean;
-  /** The energy class of the latest certificate that has its code and class. */
   apeClass: string | null;
   cadastralComplete: boolean;
-  /** `null` when the person may not read the leases: nothing is said of them. */
   status: LongRentPropertyState | null;
   currentLease: LongRentPropertyLease | null;
   preparingLease: LongRentPreparingLease | null;

@@ -83,7 +83,6 @@ function renderPage() {
   );
 }
 
-/** The sender and the scope the person chooses, as a person does it. */
 function choose(scope: 'all' | 'filter', sender?: 'ChannelManager' | 'CasaZen' | 'Manual') {
   fireEvent.click(screen.getByTestId(`bulk-scope-${scope}`));
   if (sender) fireEvent.click(screen.getByTestId(`bulk-sender-${sender}`));
@@ -133,7 +132,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       expect(screen.getByTestId('bulk-progress-bar')).toHaveAttribute('aria-valuenow', '57');
       for (const flow of ONBOARDING_FLOW_KEYS) expect(screen.getByTestId(`bulk-progress-flow-${flow}`)).toBeInTheDocument();
       expect(screen.getByTestId('bulk-progress-flow-Bookings')).toHaveTextContent('132');
-      // The card comes first on the page.
       const page = screen.getByTestId('onboarding-bulk-page');
       expect(page.querySelector('section')).toBe(screen.getByTestId('bulk-progress'));
     });
@@ -170,7 +168,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       for (const sender of ['ChannelManager', 'CasaZen', 'Manual']) expect(screen.getByTestId(`bulk-sender-${sender}`)).not.toBeChecked();
       for (const action of ['bulk-preview', 'bulk-check', 'bulk-apply']) expect(screen.getByTestId(action), action).toBeDisabled();
       expect(screen.getByTestId('bulk-nothing-chosen')).toBeInTheDocument();
-      // A scope without a sender (or a sender without a scope) is still nothing to check.
       choose('all');
       expect(screen.getByTestId('bulk-check')).toBeDisabled();
       expect(screen.getByTestId('bulk-preview')).toBeEnabled();
@@ -191,7 +188,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       expect(screen.getByTestId('bulk-filter-comuni')).toHaveAttribute('aria-invalid', 'true');
       expect(screen.getByTestId('bulk-check')).toBeDisabled();
 
-      // A flow without its state is half a criterion, not a selection.
       fireEvent.change(screen.getByTestId('bulk-filter-comuni'), { target: { value: '' } });
       fireEvent.change(screen.getByTestId('bulk-filter-flow'), { target: { value: 'Bookings' } });
       expect(screen.getByTestId('bulk-check')).toBeDisabled();
@@ -229,7 +225,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
 
       fireEvent.click(screen.getByTestId('bulk-check'));
 
-      // The check: a dry run, nothing confirmed. Each property is told, one by one, with the reason of a refusal in plain words.
       await screen.findByTestId('bulk-check-result');
       expect(onboardingApi.bulkApply).toHaveBeenCalledWith({ selection: { kind: 'all' }, choice: { complianceSender: 'Manual' }, dryRun: true, confirmed: false });
       expect(screen.getByTestId('bulk-check-would-change')).toHaveTextContent(i18n.t('onboardingPlan.bulk.selection.summary.wouldChange', { count: 1 }));
@@ -237,7 +232,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       expect(screen.getByTestId(`bulk-item-${P3}-reason`)).toHaveTextContent(i18n.t('onboardingPlan.bulk.reasons.sender_not_applicable'));
       expect(screen.getByTestId('bulk-apply')).toHaveTextContent(i18n.t('onboardingPlan.bulk.selection.apply', { count: 1 }));
 
-      // The press: a confirmation that says exactly what will happen, which properties and to what; nothing is written before it.
       fireEvent.click(screen.getByTestId('bulk-apply'));
       const dialog = await screen.findByRole('dialog');
       expect(within(dialog).getByTestId('bulk-confirm-properties')).toHaveTextContent('Casa del Mare');
@@ -254,7 +248,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       expect(screen.getByTestId('bulk-applied-summary')).toHaveAttribute('role', 'alert');
       expect(screen.getByTestId('bulk-applied-summary')).toHaveTextContent(i18n.t('onboardingPlan.bulk.selection.appliedPartly'));
       expect(screen.getByTestId('bulk-applied-refused')).toHaveTextContent(i18n.t('onboardingPlan.bulk.selection.summary.refused', { count: 1 }));
-      // Nothing goes twice: the press is off until a new check.
       await waitFor(() => expect(screen.getByTestId('bulk-apply')).toBeDisabled());
     });
 
@@ -315,7 +308,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       fireEvent.click(confirm);
 
       await waitFor(() => expect(onboardingApi.bulkApply).toHaveBeenCalledTimes(2));
-      // Every button of the card is off while the call is on its way.
       expect(screen.getByTestId('bulk-check')).toBeDisabled();
       expect(screen.getByTestId('bulk-preview')).toBeDisabled();
       expect(screen.getByTestId('bulk-apply')).toBeDisabled();
@@ -377,7 +369,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       renderPage();
 
       expect(await screen.findByTestId('pilot-hint')).toHaveTextContent(i18n.t('onboardingPlan.bulk.pilot.hint', { min: 5, max: 10 }));
-      // Only the properties that are active are offered.
       expect(await screen.findByTestId(`pilot-candidate-${P1}`)).toBeInTheDocument();
       expect(screen.queryByTestId(`pilot-candidate-${P3}`)).not.toBeInTheDocument();
       expect(screen.getByTestId('pilot-save')).toBeDisabled();
@@ -387,7 +378,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       fireEvent.click(screen.getByTestId('pilot-save'));
 
       await waitFor(() => expect(onboardingApi.setPilot).toHaveBeenCalledWith([P1]));
-      // The recommendation does not block: one property was enough to save.
       expect(screen.getByTestId('pilot-hint')).toBeInTheDocument();
     });
 
@@ -397,7 +387,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       renderPage();
       await screen.findByTestId('pilot-activation');
 
-      // Nothing is ticked at the start, and the others stay off with the reason.
       for (const flow of ONBOARDING_FLOW_KEYS) expect(screen.getByTestId(`pilot-flow-${flow}`), flow).not.toBeChecked();
       expect(screen.getByTestId('pilot-activate')).toBeDisabled();
       expect(screen.getByTestId('pilot-activate-rest')).toBeDisabled();
@@ -405,7 +394,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
 
       fireEvent.click(screen.getByTestId('pilot-flow-Bookings'));
       expect(screen.getByTestId('pilot-activate')).toBeEnabled();
-      // The pilot is not active in the flow chosen: the others stay off.
       expect(screen.getByTestId('pilot-activate-rest')).toBeDisabled();
       expect(onboardingApi.bulkActivate).not.toHaveBeenCalled();
     });
@@ -439,7 +427,6 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       await screen.findByTestId('pilot-report');
       expect(onboardingApi.bulkActivate).toHaveBeenCalledTimes(1);
       expect(onboardingApi.bulkActivate).toHaveBeenCalledWith({ cohort: 'rest', flows: ['Bookings'] });
-      // One property was not ready: told as a part, never as done, with what it lacks (and a prerequisite the app does not know as a neutral phrase).
       expect(screen.getByTestId('pilot-report-summary')).toHaveAttribute('data-complete', 'false');
       const left = screen.getByTestId(`pilot-left-Bookings-${P3}`);
       expect(left).toHaveTextContent('Chiusa');

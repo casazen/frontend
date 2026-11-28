@@ -23,7 +23,6 @@ function PagePreview({ page }: { page: DocumentPage }) {
   return <img ref={image} alt={page.file.name} className="h-24 w-24 object-contain" style={{ transform: `rotate(${page.rotation}deg)` }} />;
 }
 
-/** Why the files cannot be added, in words: one reason, the first that applies; `null` when they can. */
 function refusal(files: File[], value: DocumentSelection, allowOffice: boolean, t: TFunction): string | null {
   const isOffice = (file: File) => /\.docx?$/i.test(file.name);
   const unsupported = files.find((file) => !isPhoto(file) && !isDocumentPdf(file) && !(allowOffice && isOffice(file)));
@@ -35,18 +34,12 @@ function refusal(files: File[], value: DocumentSelection, allowOffice: boolean, 
   const total = files.reduce((sum, file) => sum + file.size, value.pages.reduce((sum, page) => sum + page.file.size, 0));
   if (total > MAX_TOTAL_BYTES) return t('documentPages.totalTooLarge');
   const allPhotos = files.every(isPhoto);
-  // Photos and a PDF in one go, a PDF added to photos, anything added to a PDF.
   if (files.some(isPhoto) && !allPhotos) return t('documentPages.mixed');
   if (value.pages.length > 0 && (!allPhotos || !isPhoto(value.pages[0].file))) return t('documentPages.mixed');
   if (allPhotos) return value.pages.length + files.length > MAX_PHOTOS ? t('documentPages.tooManyPhotos', { max: MAX_PHOTOS }) : null;
   return files.length !== 1 ? t('documentPages.onePdf') : null;
 }
 
-/**
- * The pages of one document: a PDF as it is, or up to 12 photos put in order, turned and joined in one PDF by the browser.
- * Files come from the button or are dropped anywhere on the box. Images are kept in browser memory only. A single PDF is sent
- * to the existing document API.
- */
 export function DocumentPages({ value, onChange, disabled, allowOffice = false, maxPdfMb = 20 }: {
   value: DocumentSelection; onChange: (value: DocumentSelection) => void; disabled?: boolean; allowOffice?: boolean; maxPdfMb?: number;
 }) {
@@ -57,8 +50,6 @@ export function DocumentPages({ value, onChange, disabled, allowOffice = false, 
   const [dragging, setDragging] = useState(false);
   const photos = value.pages.length > 0 && isPhoto(value.pages[0].file);
 
-  // A file dropped beside the box would make the browser open it in place of the app, losing the form (and every page chosen):
-  // while the box is on screen such a drop does nothing.
   useEffect(() => {
     const keep = (event: globalThis.DragEvent) => { if (hasFiles(event)) event.preventDefault(); };
     window.addEventListener('dragover', keep);

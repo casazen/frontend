@@ -5,12 +5,6 @@ import { mockLeasesApiEmpty } from './helpers/lease-api-mock';
 import { pinE2eLocale } from './helpers/locale';
 import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
 
-/**
- * UI-04a: navigation by area. The sidebar shows the main entries in named groups and "Altro"; the area switcher
- * replaces the icon tabs; counters, the collapsed sidebar and the pages that hang from a menu entry.
- * The specs that read the roles and names of the old menus (navigation, supplier-layout, context-workspace-switch,
- * long-term-layer) are updated next to them.
- */
 test.describe('Area navigation (UI-04a)', () => {
   test.describe('Desktop', () => {
     test.use({ viewport: { width: 1280, height: 800 } });
@@ -43,12 +37,9 @@ test.describe('Area navigation (UI-04a)', () => {
         await expect(menu.getByRole('link', { name })).toBeVisible();
       }
 
-      // The queues are tabs of the Cruscotto, the settings are pinned at the foot of the sidebar,
-      // «Inizia con CasaZen» is the welcome of the first access and the guide of the header, Profilo is in the menu of the user.
       await expect(menu.getByRole('button', { name: 'Altro' })).toHaveCount(0);
       const foot = page.getByRole('navigation', { name: 'Impostazioni e inviti' });
       await expect(foot.getByRole('link')).toHaveText(['Impostazioni']);
-      // The pages that hang from an entry, the profile, plan and billing are in no menu.
       const inNoMenu = [
         'Ospiti',
         'CRM Ospiti',
@@ -97,7 +88,6 @@ test.describe('Area navigation (UI-04a)', () => {
       await page.keyboard.press('Enter');
       await expect(switcher).toHaveAttribute('aria-expanded', 'true');
 
-      // The focus starts on the current area, which is ticked; the description says what each area is for.
       const shortRent = page.getByRole('menuitemradio', { name: /Affitti brevi/ });
       const longRent = page.getByRole('menuitemradio', { name: /Affitti lunghi/ });
       await expect(shortRent).toHaveAttribute('aria-checked', 'true');
@@ -105,12 +95,10 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(shortRent).toContainText('Prenotazioni, calendario, prezzi e sito diretto');
       await expect(longRent).toContainText('Contratti, inquilini, scadenze e canoni');
 
-      // Esc closes it and the focus is back on the button.
       await page.keyboard.press('Escape');
       await expect(switcher).toHaveAttribute('aria-expanded', 'false');
       await expect(switcher).toBeFocused();
 
-      // The arrow down opens it again, with the focus on the current area; arrows and Enter choose the other one.
       await page.keyboard.press('ArrowDown');
       await expect(shortRent).toBeFocused();
       await page.keyboard.press('ArrowDown');
@@ -129,7 +117,6 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
       expect(await page.evaluate(() => localStorage.getItem('casazen:active-context'))).toBe('long-rent');
 
-      // A new visit at the root of the site opens the last area, not the first.
       await page.goto(demoUrl('/', 'dual'), { waitUntil: 'domcontentloaded' });
       await expect(page).toHaveURL(/\/app\/long-rent(?:[?#]|$)/);
       await expect(page.getByTestId('area-switcher')).toHaveAttribute('aria-label', /Affitti lunghi/);
@@ -153,7 +140,6 @@ test.describe('Area navigation (UI-04a)', () => {
         emailConfirmedAt: '2026-10-08T10:00:00Z',
         respondBy: '2026-10-09T10:00:00Z',
       });
-      // Registered after the default mocks: this one answers.
       await page.route('**/api/bookings/approval-requests**', (route) =>
         route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([request(1), request(2)]) }),
       );
@@ -162,7 +148,6 @@ test.describe('Area navigation (UI-04a)', () => {
       const bookings = page.getByRole('navigation', { name: 'Menu Affitti brevi' }).getByRole('link', { name: /Prenotazioni/ });
       await expect(bookings.getByTestId('nav-count')).toHaveText(/2/);
       await expect(bookings).toHaveAccessibleName(/^Prenotazioni\s*,\s*2 richieste da approvare$/);
-      // The other entries of the menu have none (the bar of the phone, hidden on a computer, shows its own: mobile-navigation.spec.ts).
       await expect(page.getByRole('navigation', { name: 'Menu Affitti brevi' }).getByTestId('nav-count')).toHaveCount(1);
     });
 
@@ -197,20 +182,17 @@ test.describe('Area navigation (UI-04a)', () => {
       );
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      // The adempimenti are in the main menu: no need to open "Altro" to reach them.
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
       await menu.getByRole('link', { name: 'Adempimenti' }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/compliance$/);
       await expect(menu.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
 
-      // The pages that hang from the entry are the tabs on top of its page, and of each of them.
       const tabs = page.getByRole('navigation', { name: 'Sezioni di Adempimenti' });
       await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN', 'Identificazione']);
       await expect(tabs.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
       await tabs.getByRole('link', { name: 'Alloggiati', exact: true }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/alloggiati$/);
-      // Still "Adempimenti" that is highlighted in the menu; the tabs are there on this page too.
       await expect(menu.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
       await expect(menu.getByRole('link', { name: 'Alloggiati', exact: true })).toHaveCount(0);
       await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN', 'Identificazione']);
@@ -283,10 +265,8 @@ test.describe('Area navigation (UI-04a)', () => {
       await sidebar.getByRole('button', { name: 'Comprimi menu' }).click();
       await expect(sidebar).toHaveAttribute('data-collapsed', 'true');
       await expect.poll(async () => (await sidebar.boundingBox())!.width).toBe(72);
-      // Only the icons are on screen, the names stay for screen readers.
       await expect(sidebar.getByText('Ogni giorno')).toHaveCount(0);
       await expect(sidebar.getByRole('link', { name: 'Calendario' })).toBeVisible();
-      // The name is a tooltip on hover and on keyboard focus (UI-04b), no longer the `title` attribute of UI-04a.
       await expect(sidebar.getByRole('link', { name: 'Calendario' })).not.toHaveAttribute('title');
       await sidebar.getByRole('link', { name: 'Calendario' }).hover();
       await expect(page.getByTestId('rail-tooltip')).toHaveText('Calendario');
@@ -334,13 +314,11 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(sheet.getByRole('group', { name: 'Gestione' })).toBeVisible();
       await expect(sheet.getByRole('group', { name: 'Impostazioni e inviti' })).toBeVisible();
       await expect(sheet.getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
-      // The settings close the sheet as they close the sidebar; the queues are tabs of the Cruscotto; the profile is in the account row.
       await expect(sheet.getByRole('group', { name: 'Impostazioni e inviti' }).getByRole('link')).toHaveText(['Impostazioni']);
       await sheet.getByRole('link', { name: 'Adempimenti' }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/compliance/);
       await expect(sheet).not.toBeVisible();
-      // The adempimenti are not one of the destinations of the bar: "Altro" is the marked tab (its sheet is closed again).
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-current', 'page');
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
     });
@@ -348,7 +326,6 @@ test.describe('Area navigation (UI-04a)', () => {
     test('a tab of a section is a menu on a phone, and the bar marks the entry of the section', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/bookings', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      // The strip of tabs becomes the native menu of the RouteTabs, which goes to the page that is chosen.
       const select = page.getByTestId('nav-section-select');
       await expect(select).toBeVisible();
       await select.selectOption({ label: 'Ospiti' });
@@ -373,8 +350,6 @@ test.describe('Area navigation (UI-04a)', () => {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     });
 
-    // The same check at 360 px, the narrowest phone of the suite: the menu, the switcher and the page behind them (the
-    // headers of the pages, with wider letters, are in page-header-reflow.spec.ts).
     test('no horizontal scroll at 360 px with the area switcher open in the phone menu', async ({ page }) => {
       await page.setViewportSize({ width: 360, height: 800 });
       await mockLeasesApiEmpty(page);

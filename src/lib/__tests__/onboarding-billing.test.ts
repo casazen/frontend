@@ -34,7 +34,6 @@ const BACKEND_ITEM_KEYS = [
   'sdi_issuer_registration_pending',
 ];
 
-/** The sections the backend sends (`BillingSetupSections`). */
 const BACKEND_SECTIONS = ['issuer', 'vat', 'numbering', 'touristTax', 'channels', 'mandates', 'automation', 'italy'];
 
 const LANGUAGES = ['it', 'en'] as const;
@@ -52,7 +51,6 @@ describe('the part «Fatturazione» of the guide opens its wizard at the step of
       expect(isBillingItemKey(key), key).toBe(true);
       expect(BILLING_STEP_ORDER, key).toContain(BILLING_ITEM_STEPS[key as keyof typeof BILLING_ITEM_STEPS]);
     }
-    // The table and the list of the app are exactly the keys the backend sends: a key is never kept after the backend drops it, and never missing.
     expect(Object.keys(BILLING_ITEM_STEPS).sort()).toEqual([...BACKEND_ITEM_KEYS].sort());
     expect([...BILLING_SETUP_ITEM_KEYS].sort()).toEqual([...BACKEND_ITEM_KEYS].sort());
   });
@@ -69,10 +67,8 @@ describe('the part «Fatturazione» of the guide opens its wizard at the step of
       expect(billingStepOfItem({ key }), String(key)).toBeNull();
       expect(billingItemTextKey(key), String(key)).toBe('billingWizard.items.unknown');
     }
-    // An item the app does not know yet (an epic added it) is still opened, by the section it says it belongs to.
     expect(billingStepOfItem({ key: 'brand_new_item', section: 'italy' })).toBe(BILLING_SECTION_STEPS.italy);
     expect(billingStepOfItem({ key: 'brand_new_item', section: 'nobody' })).toBeNull();
-    // The reason of a part that is not about an item (the issuance is off) is not an item.
     expect(billingStepOfReason('issuer_missing')).toBeNull();
   });
 
@@ -81,7 +77,6 @@ describe('the part «Fatturazione» of the guide opens its wizard at the step of
     for (const key of BACKEND_ITEM_KEYS) {
       const textKey = billingItemTextKey(key);
       expect(i18n.exists(textKey), key).toBe(true);
-      // The text is not the key it came from, and a plural has its forms.
       expect(i18n.t(textKey), key).not.toBe(textKey);
       expect(i18n.t(textKey), key).not.toContain('billingWizard.');
     }
@@ -97,15 +92,12 @@ describe('the part «Fatturazione» of the guide opens its wizard at the step of
       const step = BILLING_ITEM_STEPS[key as keyof typeof BILLING_ITEM_STEPS];
       expect(resolveLaunchTarget('fiscal', null, null, undefined, key, ISSUANCE_ON)?.to, key).toBe(`${BILLING_SETUP_PATH}?step=${step}`);
     }
-    // No reason, a reason that is not an item and a key the app does not know: the wizard opens where it would without a step (at what is missing), never at a wrong one.
     for (const reason of [null, undefined, '', 'issuer_missing', 'brand_new_item']) {
       expect(resolveLaunchTarget('fiscal', null, null, undefined, reason, ISSUANCE_ON)?.to, String(reason)).toBe(BILLING_SETUP_PATH);
     }
-    // The reason of another part never gives the wizard a step.
     expect(resolveLaunchTarget('messages', null, null, undefined, 'regime_missing')?.to).toBe('/app/short-rent/messages');
   });
 
-  // Flag rule: with the issuance off the wizard is not there (its route leads to the home of the area), so no reason, the one that says «not active yet» included, opens it.
   it('BillingItemSteps_TheLaunchOfThePartWithTheIssuanceOff_OpensNothingForAnyReason', () => {
     for (const reason of [...BACKEND_ITEM_KEYS, 'issuer_missing', null, undefined]) {
       expect(resolveLaunchTarget('fiscal', null, null, undefined, reason, DEFAULT_FEATURE_FLAGS), String(reason)).toBeNull();

@@ -6,8 +6,6 @@ import { ReadingBanner } from '../reading-marks';
 import { emptyFlow } from '../wizard-model';
 import type { LeaseReading } from '@/types';
 
-// CF-DOCS-REAL: after the reading of the file the guided service delivers (the contract, its attestation and its calculation sheet in one
-// scan) the screen says what it recognized, in the words of a person, and what is worth a second look; it never shows a value.
 function reading(overrides: Partial<LeaseReading['documents'][number]> = {}): LeaseReading {
   return {
     state: 'Done',

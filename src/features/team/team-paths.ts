@@ -1,10 +1,8 @@
 import type { OrgRole } from '@/types/org-team.types';
 import { ACCOUNT_PEOPLE_PATH } from '../account/account-home-model';
 
-/** The wizard of the invitation: four steps, from the page of the people. */
 export const ACCOUNT_INVITE_PATH = `${ACCOUNT_PEOPLE_PATH}/invite`;
 
-/** «Ruoli e permessi» (AM-04b-FU2): what each role can do, area by area, in one table. */
 export const ACCOUNT_ROLES_PATH = `${ACCOUNT_PEOPLE_PATH}/roles`;
 
 /**
@@ -16,5 +14,4 @@ export function personPreviewPath(rowKey: string, role?: OrgRole): string {
   return role ? `${path}?role=${role}` : path;
 }
 
-/** The people who have been invited and have not answered yet: the page of the people with its «Invitate» chip. */
 export const ACCOUNT_INVITED_PATH = `${ACCOUNT_PEOPLE_PATH}?chip=invited`;

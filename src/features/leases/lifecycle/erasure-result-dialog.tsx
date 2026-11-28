@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import type { LeaseErasureResult } from '@/types';
 import { longDay } from './lifecycle-format';
 
-/** What the answer to an erasure request means, in a sentence: done, done except for the people with another lease, or set for a day. */
 function erasureSentence(result: LeaseErasureResult, t: TFunction, language: string): string {
   switch (result.status) {
     case 'Anonymized':
@@ -20,15 +19,10 @@ function erasureSentence(result: LeaseErasureResult, t: TFunction, language: str
 }
 
 interface ErasureResultDialogProps {
-  /** The answer to show; `null` keeps the window closed. */
   result: LeaseErasureResult | null;
   onClose: () => void;
 }
 
-/**
- * What the erasure request led to (LR-10), told in words and kept on the screen until the person closes it: the request touches personal
- * data and cannot be taken back, so a toast that goes away in a few seconds is not enough to know what happened.
- */
 export function ErasureResultDialog({ result, onClose }: ErasureResultDialogProps) {
   const { t, i18n } = useTranslation();
 

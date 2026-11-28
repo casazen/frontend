@@ -4,10 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { NOTIFICATION_PREFERENCES_PATH } from '../notification-preferences-model';
 
-/**
- * The way from the profile to the settings of the alerts (E05/F03/US02): the page is also the second tab of the profile, and this is the same
- * way in for the phone, where the tabs are a menu, and for whoever looks for it in the page and not above it.
- */
 export function NotificationPreferencesLink() {
   const { t } = useTranslation();
 

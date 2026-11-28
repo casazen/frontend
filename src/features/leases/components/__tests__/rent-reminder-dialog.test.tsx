@@ -9,8 +9,6 @@ import { toastUndo } from '@/lib/toast-undo';
 import type { RentRegisterRow } from '@/types';
 import { RentReminderDialog } from '../rent-reminder-dialog';
 
-// LR-04b: a reminder writes to a tenant and an e-mail cannot be called back. It leaves only from the landlord's own action, and
-// only after the six seconds of «Annulla» (the toast is mocked: its `commit` is what runs when they pass, its `undo` is «Annulla»).
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('@/lib/toast-undo', () => ({ toastUndo: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -69,19 +67,16 @@ describe('RentReminderDialog (LR-04b)', () => {
   it('confirm_ThenAnnulla_NothingIsEverSentToTheTenant', () => {
     const { onClose } = renderDialog(row('installment-a'));
 
-    // Open, with a note typed: nothing is sent, nothing is even waiting.
     fireEvent.change(screen.getByLabelText('Messaggio per il conduttore'), { target: { value: 'Grazie' } });
     expect(post).not.toHaveBeenCalled();
     expect(toastUndo).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Invia sollecito' }));
 
-    // Confirmed: the window closes and the send waits for its six seconds, still unsent.
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(toastUndo).toHaveBeenCalledTimes(1);
     expect(post).not.toHaveBeenCalled();
 
-    // «Annulla»: it is dropped, and nothing was ever written.
     vi.mocked(toastUndo).mock.calls[0][1].undo();
     expect(post).not.toHaveBeenCalled();
   });
@@ -103,7 +98,6 @@ describe('RentReminderDialog (LR-04b)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Invia sollecito' }));
     expect(post).not.toHaveBeenCalled();
 
-    // The window of «Annulla» closes without it: this is what the toast runs.
     await vi.mocked(toastUndo).mock.calls[0][1].commit?.();
 
     expect(post).toHaveBeenCalledTimes(1);
@@ -123,7 +117,6 @@ describe('RentReminderDialog (LR-04b)', () => {
     const invalidate = vi.spyOn(QueryClient.prototype, 'invalidateQueries');
     renderDialog({ ...row('installment-c'), canRemind: false, hasTenantPhone: true, canWhatsAppRemind: true });
 
-    // A phone with no e-mail can send WhatsApp only: the e-mail action the server already refused stays hidden.
     expect(screen.queryByRole('button', { name: 'Invia sollecito' })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Messaggio per il conduttore'), { target: { value: ' Grazie ' } });

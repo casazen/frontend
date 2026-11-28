@@ -12,7 +12,6 @@ import type {
 } from '@/types/campaign.types';
 
 export const campaignsApi = {
-  // Segments
   getSegments: () => ApiClient.get<Segment[]>('/campaigns/segments'),
 
   createSegment: (data: CreateSegmentDto) => ApiClient.post<Segment>('/campaigns/segments', data),
@@ -20,10 +19,8 @@ export const campaignsApi = {
   getSegmentPreview: (segmentId: string, propertyId?: string) =>
     ApiClient.get<SegmentPreviewResult>(`/campaigns/segments/${segmentId}/preview`, propertyId ? {propertyId} : undefined),
 
-  // Field catalog
   getFields: () => ApiClient.get<FieldDefinition[]>('/campaigns/fields'),
 
-  // Campaigns
   getCampaigns: () => ApiClient.get<Campaign[]>('/campaigns'),
 
   getCampaignById: (id: string) => ApiClient.get<Campaign>(`/campaigns/${id}`),

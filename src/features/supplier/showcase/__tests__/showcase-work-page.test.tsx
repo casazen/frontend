@@ -26,7 +26,6 @@ vi.mock('@/api/supplier-services.api', async (importOriginal) => ({
   fetchSupplierServices: servicesApi.fetchServices,
 }));
 
-// The categories of the profile only decide which style is marked as the recommended one.
 vi.mock('@/queries/supplier/use-profile', () => ({
   useSupplierProfile: () => ({ isLoading: false, data: { categories: ['cleaning'], photoUrls: ['https://cdn.example/profile-1.jpg'] } }),
 }));
@@ -38,7 +37,6 @@ vi.mock('sonner', () => sonner);
 
 const PATH = '/app/supplier/showcase';
 
-/** A showcase that was never published and is ready to be: the server's answer, with the fields the editor reads. */
 function content(patch: Partial<ShowcaseContent> = {}): ShowcaseContent {
   return {
     schemaVersion: 1,
@@ -59,7 +57,6 @@ function content(patch: Partial<ShowcaseContent> = {}): ShowcaseContent {
       ],
     },
     bookings: { open: false, blockedBy: ['not_published'] },
-    // No address: the preview says why it is not there, and the tests are about the panels and the draft.
     publicPath: null,
     publicUrl: null,
     ...patch,
@@ -135,7 +132,6 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     renderEditor(content(), 'texts');
 
     fireEvent.change(await screen.findByLabelText(/Frase in grande/), { target: { value: 'Pronti' } });
-    // The step is left before the pause is over: what waits is still sent, and before the publication.
     fireEvent.click(screen.getByTestId('supplier-showcase-step-publish'));
     fireEvent.click(await screen.findByTestId('supplier-showcase-publish-button'));
 
@@ -143,7 +139,6 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     expect(api.saveDraft).toHaveBeenNthCalledWith(1, 3, { tagline: 'Pronti' });
     await waitFor(() => expect(sonner.toast.success).toHaveBeenCalled());
 
-    // A publication changes the row: the next save names the version the publication answered with, never the one before it.
     fireEvent.click(screen.getByTestId('supplier-showcase-step-texts'));
     fireEvent.change(await screen.findByLabelText(/Introduzione/), { target: { value: 'Da noi' } });
     await waitFor(() => expect(api.saveDraft).toHaveBeenNthCalledWith(2, 5, { intro: 'Da noi' }), { timeout: 3000 });
@@ -156,14 +151,12 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
 
     fireEvent.click(await screen.findByTestId('supplier-showcase-starter'));
 
-    // What the supplier wrote stays; the empty members get the text.
     await waitFor(() => expect(api.saveDraft).toHaveBeenCalledWith(3, { intro: starter.intro, prep: starter.prep }), { timeout: 3000 });
     expect(screen.getByLabelText(/Frase in grande/)).toHaveValue('La mia frase');
     expect(screen.getByLabelText(/Introduzione/)).toHaveValue(starter.intro);
     const [message, options] = sonner.toast.success.mock.calls.at(-1) as [string, { action: { label: string; onClick: () => void } }];
     expect(message).toBe('Testo di partenza inserito');
     expect(options.action.label).toBe('Annulla');
-    // Nothing is offered once the three are filled.
     expect(screen.queryByTestId('supplier-showcase-starter')).not.toBeInTheDocument();
   });
 
@@ -179,14 +172,12 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     });
     renderEditor(content({ draft: { tagline: 'La mia frase' } }), 'texts', { ai: true });
 
-    // The block of the AI is there and the static starter is not: one way in, not two.
     fireEvent.change(await screen.findByLabelText(/Due righe su di te/), { target: { value: 'Siamo una piccola squadra.' } });
     expect(screen.queryByTestId('supplier-showcase-starter')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('supplier-showcase-ai-write'));
 
     await waitFor(() => expect(api.suggestTexts).toHaveBeenCalledWith({ answers: { about: 'Siamo una piccola squadra.' }, regenerate: false }));
     const result = await screen.findByTestId('supplier-showcase-ai-result');
-    // The sentence is already written by the supplier: offered, but not ticked, and it says that taking it replaces the text.
     expect(within(screen.getByTestId('supplier-showcase-ai-field-tagline')).getByText('Sostituisce il testo che hai già scritto.')).toBeInTheDocument();
     expect(within(result).getByText(/Basato su: Pulizie · Seveso · 1 servizio · le tue righe/)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('supplier-showcase-ai-use'));
@@ -194,7 +185,6 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     await waitFor(() => expect(api.saveDraft).toHaveBeenCalledWith(3, { intro: 'Pulizie e cura del giardino a Seveso.' }), { timeout: 3000 });
     expect(screen.getByLabelText(/Frase in grande/)).toHaveValue('La mia frase');
     expect(screen.getByLabelText(/Introduzione/)).toHaveValue('Pulizie e cura del giardino a Seveso.');
-    // What the AI wrote is marked as a draft until the supplier changes it.
     expect(screen.getAllByText("Bozza scritta dall'AI: rivedila prima di pubblicare.")).toHaveLength(1);
     fireEvent.change(screen.getByLabelText(/Introduzione/), { target: { value: 'Pulizie e giardini a Seveso.' } });
     expect(screen.queryByText("Bozza scritta dall'AI: rivedila prima di pubblicare.")).not.toBeInTheDocument();
@@ -221,9 +211,7 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
     fireEvent.click(await screen.findByRole('switch', { name: /Cambio ospiti/ }));
 
     await waitFor(() => expect(api.saveDraft).toHaveBeenCalledWith(3, { serviceOrder: ['biancheria'] }), { timeout: 3000 });
-    // The page cannot show none: the last one is not switched off.
     expect(screen.getByRole('switch', { name: /Biancheria/ })).toBeDisabled();
-    // A draft is not offered: it says why and where it is finished.
     expect(screen.getByTestId('supplier-showcase-service-ripasso')).toHaveTextContent('Bozza');
   });
 
@@ -247,7 +235,6 @@ describe('The work view of the editor: "Il mio sito vetrina" (SP-13d)', () => {
 
     fireEvent.click(await screen.findByTestId('supplier-showcase-work-0-pick'));
     const picker = await screen.findByTestId('supplier-showcase-photo-picker');
-    // The photos of the profile come first, then the ones of each service.
     await waitFor(() => expect(picker.querySelectorAll('button[aria-pressed]')).toHaveLength(2));
     fireEvent.click(within(picker).getByRole('button', { name: 'Foto 1 del profilo' }));
 

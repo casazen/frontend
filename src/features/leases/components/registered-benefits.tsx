@@ -26,15 +26,7 @@ const ROW_BUTTON = 'h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center l
 
 interface RegisteredBenefitsProps {
   lease: Pick<LeaseDetail, 'id' | 'hasSignedPdf' | 'registration' | 'isConcordatoFacileSource'>;
-  /**
-   * The block is the one highlighted block of the screen (default), or it comes after another step that is more urgent and is only a
-   * quiet section under it: a sheet shows one highlighted block, never two.
-   */
   calm?: boolean;
-  /**
-   * The block is one row among the advice of the guide of the lease (LR-GUIDE-1): no box, no side line, its title an `h3` under the
-   * section «Per il tuo contratto». It is the same block with the same words, the one place that tells what to claim after a registration.
-   */
   plain?: boolean;
 }
 
@@ -52,12 +44,10 @@ export function RegisteredBenefits({ lease, calm = false, plain = false }: Regis
   const titleId = useId();
   const Heading = plain ? 'h3' : 'h2';
   const documents = useLeaseDocuments(lease.id);
-  // The window is for the document whose button opened it; it keeps that one while it closes.
   const [uploadFor, setUploadFor] = useState<BenefitDocument>('attestation');
   const [uploadOpen, setUploadOpen] = useState(false);
   const [downloading, setDownloading] = useState<BenefitDocument | null>(null);
 
-  // The lease of the guided service gets its contract and attestation in one file: any contract file uploaded to it is that file (CF-DONE).
   const ids = benefitDocuments(documents.data, lease.isConcordatoFacileSource === true);
   const together = ids.length === 2;
   const rows = ids.map((id) => ({ id, source: benefitSource(id, lease, documents.data) }));
@@ -179,7 +169,6 @@ export function RegisteredBenefits({ lease, calm = false, plain = false }: Regis
         <p className="break-words text-sm text-foreground/70">{t('leaseRound.benefits.disclaimer')}</p>
       </div>
 
-      {/* Always mounted, not inside the rows: a window that lives in a branch is lost when the branch changes. */}
       <LeaseDocumentUploadDialog
         leaseId={lease.id}
         kind={BENEFIT_DOCUMENT_KIND[uploadFor]}

@@ -6,7 +6,6 @@ import { getProblemMessage } from '@/lib/api-errors';
 import type { DepositReturnInput, IstatCalculationInput, LeaseLetterKind, MarkLetterSentInput } from '@/types';
 import { LEASES_KEY } from './use-leases';
 
-/** The operations of a lease hang from the lease (`['leases', id, …]`): whatever refreshes the lease refreshes them too. */
 const leaseOperationsKey = (leaseId: string) => [LEASES_KEY, leaseId, 'operations'] as const;
 
 /**
@@ -38,11 +37,6 @@ export function useIstatCalculation(leaseId: string, input: IstatCalculationInpu
   });
 }
 
-/**
- * The statement of the return of the deposit worked out by the server (`POST /leases/:id/deposit/calculate`, LR-OPS-1c) for the input given: a
- * read that writes nothing, asked only when `input` is there (every year has its rate, the dates and the sums are valid) and not retried (a refusal
- * is told, not repeated).
- */
 export function useDepositCalculation(leaseId: string, input: DepositReturnInput | null) {
   return useQuery({
     queryKey: [LEASES_KEY, leaseId, 'deposit-calculation', input] as const,
@@ -52,11 +46,6 @@ export function useDepositCalculation(leaseId: string, input: DepositReturnInput
   });
 }
 
-/**
- * «Registra la restituzione»: an event in the history of the lease with the sums of the statement and nothing else (no money moves, the deposit of
- * the lease does not change). The answer is the operations as they are now, put in the cache at once; the lease is read again. A refusal is told by
- * a toast.
- */
 export function useRecordDepositReturn(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -71,10 +60,6 @@ export function useRecordDepositReturn(leaseId: string) {
   });
 }
 
-/**
- * «Segna come inviata»: an event in the history of the lease and nothing else. The answer is the operations as they are now, put in the
- * cache at once, and the lease is read again (its history has the new event). A refusal is told by a toast.
- */
 export function useMarkLetterSent(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({

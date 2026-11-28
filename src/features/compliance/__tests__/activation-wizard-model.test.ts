@@ -58,7 +58,6 @@ function httpError(status: number, data: unknown): AxiosError {
 describe('changedPropertyFields', () => {
   it('changedPropertyFields_FormSubmittedUnchanged_ReturnsNoField', () => {
     const stored = propertyFormPayload(property);
-    // What the form sends for untouched fields: empty strings, reordered amenities, undefined coordinates.
     const submitted = { ...stored, houseRules: '', slug: '', latitude: undefined, amenities: ['Kitchen', 'WiFi'] };
 
     expect(changedPropertyFields(stored, submitted)).toEqual({});
@@ -115,7 +114,6 @@ describe('wizard steps', () => {
   });
 
   it('openReminders_DocumentsAndSafetyAsWarnings_TheyAreTheRemindersAndNoBlocker', () => {
-    // PO decision 2026-11-01 (option A): the documents and the safety sheet do not block.
     const permissive = [
       step('base-data', 'complete'),
       step('cin', 'complete'),
@@ -156,7 +154,6 @@ describe('getActivationBlockedProblem', () => {
   });
 });
 
-// E29/F02/US02/T01: the step of a property in Switzerland, where the card of the regime of its canton is.
 describe('the step «Notifica degli ospiti» of a property in Switzerland', () => {
   const swiss = step('guest-registration', 'pending', true, [{ step: 'guest-registration', code: 'ticino_structure_id_missing', message: 'm' }]);
 
@@ -167,7 +164,6 @@ describe('the step «Notifica degli ospiti» of a property in Switzerland', () =
 
   it('InitialStepId_TheSwissStepIsTheFirstBlockerStillOpen_TheWizardOpensOnIt', () => {
     expect(initialStepId([step('base-data', 'complete'), swiss])).toBe('guest-registration');
-    // For a property that is already active it is a reminder (it does not block): the wizard opens on the summary.
     expect(initialStepId([step('base-data', 'complete'), { ...swiss, status: 'warning', blocker: false }])).toBe(REVIEW_STEP_ID);
   });
 
@@ -185,7 +181,6 @@ describe('the step «Notifica degli ospiti» of a property in Switzerland', () =
     expect(ORIGIN_STEP_PARAM).toBe('from');
     expect(stepHref('guest-registration', REVIEW_STEP_ID)).toEqual({ search: '?step=guest-registration&from=review' });
     expect(stepHref('guest-registration', 'base-data')).toEqual({ search: '?step=guest-registration&from=base-data' });
-    // Never back to itself.
     expect(stepHref('guest-registration', 'guest-registration')).toEqual({ search: '?step=guest-registration' });
   });
 });

@@ -6,7 +6,6 @@ import { toastUndo } from '@/lib/toast-undo';
 import { useRemovePropertyPhotoQuietly } from '@/queries/use-property-photos';
 
 interface Held {
-  /** Sends the delete, once: asked a second time it hands back the same answer. */
   commit: () => Promise<void>;
   toastId: string | number;
 }
@@ -30,7 +29,6 @@ export function useDelayedPhotoDelete(propertyId: string) {
     setHeld((previous) => previous.filter((candidate) => candidate !== url));
   }, []);
 
-  /** Hides the photo and offers «Annulla»; the delete is sent when the window closes. */
   const remove = useCallback(
     (url: string) => {
       if (entries.current.has(url)) return;
@@ -62,12 +60,10 @@ export function useDelayedPhotoDelete(propertyId: string) {
     [mutateAsync, release],
   );
 
-  /** Sends every delete that is waiting and resolves when they are all answered. */
   const flush = useCallback(async () => {
     const waiting = [...entries.current.values()];
     await Promise.all(
       waiting.map(({ commit, toastId }) => {
-        // Closing the toast would send it too (it asks for the same `commit`): the answer is shared, so this waits for it.
         toast.dismiss(toastId);
         return commit();
       }),

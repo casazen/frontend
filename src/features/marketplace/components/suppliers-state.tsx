@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { getProblemMessage } from '@/lib/api-errors';
 
-/** The suppliers are on their way. */
 export function SuppliersLoading() {
   const { t } = useTranslation();
 
@@ -15,7 +14,6 @@ export function SuppliersLoading() {
   );
 }
 
-/** The suppliers could not be loaded: said as it is (never as an empty list), with a way to try again. */
 export function SuppliersError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const { t } = useTranslation();
 

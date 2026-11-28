@@ -49,7 +49,6 @@ describe('parseEmbedMessage: a valid message of each type (AC1)', () => {
   });
 
   it('buildEmbedMessage_OutputSurvivesTheStructuredCloneOfPostMessage', () => {
-    // What the receiver gets is a copy: the parser must read the copy as it reads the original.
     for (const message of VALID) {
       expect(parseEmbedMessage(structuredClone(message))).toEqual(message);
     }
@@ -122,7 +121,6 @@ describe('parseEmbedMessage: what is not a message of version 1 (AC1)', () => {
   });
 
   it.each([['page_view'], ['purchase'], ['Search'], [''], [undefined], [3]])('parseEmbedMessage_EventName_%s_IsNull', (name) => {
-    // `purchase` is pushed by the pages of the site on its own domain, never by a frame.
     expect(parseEmbedMessage({ ...base, type: 'event', name, params: {} })).toBeNull();
   });
 
@@ -202,7 +200,6 @@ describe('parseEmbedMessage: the members of the contract and nothing else (AC1)'
       other: true,
     });
 
-    // A radius that is not text is not one; a member that is not in the contract is dropped; the valid ones stay.
     expect(parsed).toEqual({ ...base, type: 'config', theme: { primary: '#0a7d5a', font: 'moderno' }, lang: 'en' });
   });
 
@@ -217,7 +214,6 @@ describe('parseEmbedMessage: the members of the contract and nothing else (AC1)'
     const parsed = parseEmbedMessage({ ...base, type: 'event', name: 'view_item_list', params });
 
     expect(parsed).toEqual({ ...base, type: 'event', name: 'view_item_list', params: { item_list_id: 'search_results', items: [{ item_id: 'p1' }] } });
-    // A copy: the page cannot reach what the frame holds through it.
     expect((parsed as EmbedMessage<'event'>).params).not.toBe(params);
     expect('skipped' in (parsed as EmbedMessage<'event'>).params).toBe(false);
   });
@@ -277,7 +273,6 @@ describe('the params of an event are plain JSON of at most 4 KB (the proof of pr
   });
 
   it('fitsEmbedEventParams_SaysWhatParseEmbedMessageWouldTake', () => {
-    // For whoever builds the params (the GA4 builders): the same rule as the parser, in one place.
     const fits = { note: 'x'.repeat(4096 - '{"note":""}'.length) };
     const tooBig = { note: 'x'.repeat(4096 - '{"note":""}'.length + 1) };
 
@@ -288,7 +283,6 @@ describe('the params of an event are plain JSON of at most 4 KB (the proof of pr
   });
 
   it('protocol_event_CountsTheBytesOfTheTextNotItsCharacters', () => {
-    // 1400 characters of three bytes each are 4200 bytes.
     expect(parseEmbedMessage({ ...base, params: { note: '€'.repeat(1400) } })).toBeNull();
     expect(parseEmbedMessage({ ...base, params: { note: '€'.repeat(1300) } })).not.toBeNull();
   });
@@ -302,7 +296,6 @@ describe('the params of an event are plain JSON of at most 4 KB (the proof of pr
 
 describe('protocol.ts is the reference of the contract: pure TypeScript with no import from the app', () => {
   it('protocol_File_ImportsNothing', () => {
-    // It ends up in the loader (a few kilobytes), in the plugin and in the acceptance test.
     const source = readFileSync(resolve(process.cwd(), 'src/embed/protocol.ts'), 'utf8');
 
     expect(source).not.toMatch(/^\s*import\s/m);

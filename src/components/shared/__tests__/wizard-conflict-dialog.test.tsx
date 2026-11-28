@@ -4,7 +4,6 @@ import i18n from "@/i18n/config";
 import type { ServerWizardDraft } from "@/types/wizard";
 import { WizardConflictDialog } from "../wizard-conflict-dialog";
 
-// 09:30 UTC is 10:30 in Rome in November.
 const SERVER_DRAFT: ServerWizardDraft = {
   type: "BookingCreate",
   entityId: null,

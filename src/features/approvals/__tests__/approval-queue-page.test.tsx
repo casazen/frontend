@@ -68,7 +68,6 @@ const ROUTINE = item({
   threadKey: null,
 });
 
-/** The draft of the public reply to a review of a channel (E05/F06/US02): approving it publishes the reply, once, and it cannot be taken back. */
 const REVIEW_REPLY = item({
   id: 'review-1',
   itemType: 'ReviewReply',
@@ -88,7 +87,6 @@ function httpError(status: number, data: Record<string, unknown>): AxiosError {
   return new AxiosError('failed', String(status), undefined, undefined, { status, data, statusText: '', headers: {}, config: {} as never });
 }
 
-/** A promise the test settles by hand: the request that is still going on while the host does something else. */
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason: unknown) => void;
@@ -134,7 +132,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       const first = within(cards()[0]);
       expect(first.getByText('Bozza di messaggio')).toBeInTheDocument();
       expect(first.getByText('Orario di check-in')).toBeInTheDocument();
-      // A clear label, with the number next to it, not only a number.
       expect(first.getByTestId('approval-item-confidence')).toHaveTextContent('Affidabilità: alta (92%)');
       expect(first.getByTestId('approval-item-confidence')).toHaveAttribute('data-level', 'high');
       expect(first.getByTestId('approval-item-text')).toHaveTextContent('Il check-in è dalle 15.');
@@ -149,7 +146,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       expect(second.getByTestId('approval-item-confidence')).toHaveAttribute('data-level', 'low');
       expect(second.getByRole('link', { name: 'Apri la conversazione' })).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent('direct:0c9d2a10-aaaa-4bbb-8ccc-123456789abc')}`);
 
-      // A campaign is not a draft of a message: no situation, no score, no conversation.
       const campaign = within(cards()[2]);
       expect(campaign.getByText('Campagna')).toBeInTheDocument();
       expect(campaign.getByText('Offerta di dicembre')).toBeInTheDocument();
@@ -200,7 +196,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       renderPage();
 
       expect(await screen.findByText('Impossibile caricare la coda di approvazione')).toBeInTheDocument();
-      // The page keeps its head (and with it its tabs): the other queue of decisions is still one click away.
       expect(screen.getByRole('heading', { level: 1, name: 'Coda di approvazione' })).toBeInTheDocument();
       expect(screen.queryByTestId('approval-item')).toBeNull();
     });
@@ -225,7 +220,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
 
       await waitFor(() => expect(approvalQueueApi.approve).toHaveBeenCalledWith('draft-1'));
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Messaggio inviato all'ospite."));
-      // The item left the queue; what was decided stays on the page, with the outcome.
       await waitFor(() => expect(screen.getAllByTestId('approval-item')).toHaveLength(1));
       const decided = within(screen.getByTestId('approval-decided'));
       expect(decided.getByTestId('approval-decided-outcome')).toHaveTextContent("Messaggio inviato all'ospite.");
@@ -258,7 +252,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Approva e invia' }));
 
-      // The item stays open: the reason in plain words (not a code), what it means and a way to try again.
       const failure = await screen.findByTestId('approval-item-failure');
       expect(failure).toHaveTextContent("Non è stato possibile completare l'approvazione: l'elemento resta in attesa.");
       expect(failure).toHaveTextContent('Questa conversazione è chiusa: non si possono più scrivere messaggi.');
@@ -269,7 +262,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
         description: 'Questa conversazione è chiusa: non si possono più scrivere messaggi.',
       });
 
-      // «Riprova» approves again: the answer is the same call, and the second time it goes through.
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([]);
       fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
       await waitFor(() => expect(approvalQueueApi.approve).toHaveBeenCalledTimes(2));
@@ -299,7 +291,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       await waitFor(() => expect(toast.warning).toHaveBeenCalledWith(expect.stringContaining('controllalo nella conversazione')));
       expect(toast.success).not.toHaveBeenCalled();
       const decided = await screen.findByTestId('approval-decided');
-      // The way to check it is right there.
       expect(within(decided).getByRole('link', { name: 'Apri la conversazione' })).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent(THREAD)}`);
     });
 
@@ -336,7 +327,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
 
       const dialog = within(await screen.findByTestId('approval-edit-dialog'));
-      // The dialog keeps the original visible while the host writes.
       expect(dialog.getByTestId('approval-edit-original')).toHaveTextContent('Il check-in è dalle 15.');
       const field = dialog.getByLabelText('Testo');
       expect(field).toHaveValue('Il check-in è dalle 15.');
@@ -361,7 +351,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
       const dialog = within(await screen.findByTestId('approval-edit-dialog'));
-      // Nothing changed yet: there is nothing to save.
       expect(dialog.getByRole('button', { name: 'Salva' })).toBeDisabled();
       fireEvent.change(dialog.getByLabelText('Testo'), { target: { value: 'Dalle 16.' } });
       fireEvent.click(dialog.getByRole('button', { name: 'Salva' }));
@@ -369,7 +358,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       await waitFor(() => expect(approvalQueueApi.edit).toHaveBeenCalledWith('draft-1', 'Dalle 16.'));
       expect(approvalQueueApi.approve).not.toHaveBeenCalled();
       await waitFor(() => expect(screen.queryByTestId('approval-edit-dialog')).toBeNull());
-      // The card shows the edit, marked, with the original behind it.
       expect(await screen.findByTestId('approval-item-edited')).toBeInTheDocument();
       expect(screen.getByTestId('approval-item-text')).toHaveTextContent('Dalle 16.');
     });
@@ -422,7 +410,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       fireEvent.click(within(cardOf('campaign-1')).getByRole('button', { name: 'Modifica' }));
       const dialog = within(await screen.findByTestId('approval-edit-dialog'));
 
-      // Two fields: the subject line (on one line) and the body.
       const subject = dialog.getByLabelText('Oggetto');
       expect(subject).toHaveValue('Offerta di dicembre');
       expect(dialog.getByLabelText('Testo della campagna')).toHaveValue('Sconto del 10% per chi prenota presto.');
@@ -493,7 +480,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       expect(await dialog.findByText('Scrivi il motivo del rifiuto.')).toBeInTheDocument();
       expect(approvalQueueApi.reject).not.toHaveBeenCalled();
 
-      // A reason of blanks is no reason.
       fireEvent.change(dialog.getByLabelText('Motivo del rifiuto'), { target: { value: '   ' } });
       fireEvent.click(dialog.getByRole('button', { name: 'Rifiuta' }));
       expect(approvalQueueApi.reject).not.toHaveBeenCalled();
@@ -515,7 +501,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       await waitFor(() => expect(screen.queryByTestId('approval-reject-dialog')).toBeNull());
       await waitFor(() => expect(screen.getAllByTestId('approval-item')).toHaveLength(1));
 
-      // The queue lists only what waits: the reason stays on the page, on the item that was rejected.
       const rejected = within(screen.getByTestId('approval-decided-item'));
       expect(rejected.getByText('Rifiutato')).toBeInTheDocument();
       expect(rejected.getByTestId('approval-decided-reason')).toHaveTextContent('Non è il tono giusto.');
@@ -539,8 +524,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
     });
   });
 
-  // The reply to a review is public and cannot be taken back (E05/F06/US02, AC-NF69-2): the queue asks the same question as the page of the review, with the exact words,
-  // before «Approva e pubblica» and before «Salva e pubblica» publish anything, and the reviews are read again whatever came of it.
   describe('the reply to a review is public: the queue asks before it publishes', () => {
     it('ApprovalQueuePage_ReplyToAReview_AsksFirstWithTheExactWordsAndPublishesOnlyWhenTheHostConfirms', async () => {
       vi.mocked(approvalQueueApi.getPending).mockResolvedValueOnce([REVIEW_REPLY]).mockResolvedValue([]);
@@ -551,7 +534,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Approva e pubblica' }));
 
-      // One click publishes nothing: the host is asked first, with the words exactly as they will be published and the sentence that they cannot be taken back.
       const dialog = within(await screen.findByRole('dialog'));
       expect(dialog.getByText('Pubblichi la risposta?')).toBeInTheDocument();
       expect(dialog.getByText(/Non si può ritirare né modificare/)).toBeInTheDocument();
@@ -565,7 +547,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Risposta pubblicata.'));
       expect(await screen.findByTestId('approval-decided-outcome')).toHaveTextContent('Risposta pubblicata.');
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-      // The reviews are read again: the ones of the bookings, the one that is open and the list of the hub.
       expect(invalidate).toHaveBeenCalledWith({ queryKey: [OTA_REVIEWS_QUERY] });
       expect(invalidate).toHaveBeenCalledWith({ queryKey: [MESSAGE_HUB_QUERY, 'review-thread'] });
     });
@@ -623,10 +604,8 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
       const editDialog = within(await screen.findByTestId('approval-edit-dialog'));
       fireEvent.change(editDialog.getByLabelText('Testo'), { target: { value: 'Grazie a voi, a presto!' } });
-      // The button says what it does: it publishes.
       fireEvent.click(editDialog.getByRole('button', { name: 'Salva e pubblica' }));
 
-      // Nothing is saved or published before the answer: the question shows the edited words.
       expect(await screen.findByTestId('review-publish-text')).toHaveTextContent('Grazie a voi, a presto!');
       expect(approvalQueueApi.edit).not.toHaveBeenCalled();
       expect(approvalQueueApi.approve).not.toHaveBeenCalled();
@@ -658,7 +637,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       await waitFor(() => expect(screen.queryByTestId('review-publish-text')).toBeNull());
       expect(approvalQueueApi.edit).not.toHaveBeenCalled();
       expect(approvalQueueApi.approve).not.toHaveBeenCalled();
-      // The edit dialog is still there with the words the host wrote.
       expect(screen.getByTestId('approval-edit-dialog')).toBeInTheDocument();
     });
 
@@ -675,8 +653,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
     });
   });
 
-  // The host may close a dialog (the X, Esc, a tap outside) while its request goes on: the request does not stop, so the page must not lose its outcome,
-  // and nothing else of the queue may start a second decision meanwhile.
   describe('a decision that goes on after its dialog is closed', () => {
     const closeTheDialogWithEscape = () => fireEvent.keyDown(document.body, { key: 'Escape' });
 
@@ -699,7 +675,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       closeTheDialogWithEscape();
       await waitFor(() => expect(screen.queryByTestId('approval-edit-dialog')).toBeNull());
 
-      // «Approva e invia» (and every other button of the queue) waits: no second approval can start while the first one is in flight.
       for (const card of cards()) {
         for (const button of within(card).getAllByRole('button')) expect(button).toBeDisabled();
       }
@@ -710,7 +685,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
         approval.resolve(approved(edited, { originActionResult: 'Sent' }));
       });
 
-      // The outcome is written below although the dialog that started it is gone, and the buttons are back.
       expect(await screen.findByTestId('approval-decided-outcome')).toHaveTextContent("Messaggio inviato all'ospite.");
       await waitFor(() => expect(screen.getAllByTestId('approval-item')).toHaveLength(1));
       expect(within(screen.getByTestId('approval-item')).getByRole('button', { name: 'Approva' })).toBeEnabled();
@@ -719,7 +693,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
     it('ApprovalQueuePage_ApprovalFailsAfterTheDialogIsClosed_PutsTheFailureOnTheCardWithARetry', async () => {
       const draft = item();
       const approval = deferred<ApprovalQueueItem>();
-      // The list as the mock gives it carries no failure saved on the item: only the answer of the request can put the reason on the card.
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([draft]);
       vi.mocked(approvalQueueApi.edit).mockResolvedValue({ ...draft, editedContentText: 'Dalle 16.' });
       vi.mocked(approvalQueueApi.approve).mockReturnValue(approval.promise);
@@ -794,7 +767,6 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
         rejection.resolve({ ...draft, status: 'Rejected', rejectionReason: 'Non è il tono giusto.' });
       });
 
-      // The reason is on the page afterwards even though the dialog that asked for it was closed before the answer.
       expect(await screen.findByTestId('approval-decided-reason')).toHaveTextContent('Non è il tono giusto.');
       await waitFor(() => expect(within(cardOf('campaign-1')).getByRole('button', { name: 'Approva' })).toBeEnabled());
     });

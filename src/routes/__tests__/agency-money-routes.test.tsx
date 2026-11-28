@@ -44,7 +44,6 @@ function Address() {
   return <p data-testid="address">{`${pathname}${search}`}</p>;
 }
 
-/** The routes as the app builds them: the page of the manifest behind its guard (permissions and flag), the old address as a legacy redirect. */
 function renderApp(entry: string, flags: { agencyTier: boolean; isLoading?: boolean }) {
   const page = ROUTE_MANIFEST.find((candidate) => candidate.path === '/app/account/statements');
   if (!page) throw new Error('the statements are not in the manifest');

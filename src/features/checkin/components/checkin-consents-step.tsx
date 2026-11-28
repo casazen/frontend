@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import type { PublicCheckInContextDto } from '@/types/public-checkin.types';
 import { ConsentStep } from '../ConsentStep';
 
-/** The last step: the house rules (when the property has them) and the consents. */
 export function CheckInConsentsStep({ context, activeRulesVersion, rulesAccepted, setAcceptedRulesVersion, privacyRead, setPrivacyRead }: {
   context: PublicCheckInContextDto;
   activeRulesVersion: string | undefined;
@@ -17,8 +16,6 @@ export function CheckInConsentsStep({ context, activeRulesVersion, rulesAccepted
       {activeRulesVersion && context.houseRules && (
         <section className="space-y-3 border-t pt-4" data-testid="checkin-house-rules">
           <h2 id="checkin-house-rules-title" className="font-semibold">{t('guestPortal.guide.houseRules')}</h2>
-          {/* Long rules scroll in their own box, so the box to tick and the button stay near. A named region that takes the focus:
-              the keys scroll it, and a screen reader says what it is. */}
           <div
             role="region"
             tabIndex={0}

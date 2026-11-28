@@ -3,10 +3,6 @@ import it_ from '@/i18n/locales/it.json';
 import en from '@/i18n/locales/en.json';
 import { OWNER_PORTAL_PERMISSIONS } from '@/types';
 
-/**
- * The texts of the owner portal (E07/F07/US01/T03): both languages hold the same keys, in alphabetical order, nobody reads a name of a supplier or of the channel
- * manager, every key the pages ask for is there, and no page gives a `defaultValue` (a missing text must show as a missing text, never as another one).
- */
 const BLOCKS = ['ownerPortal', 'ownerContactInvitation'] as const;
 const LOCALES = [
   ['it', it_ as Record<string, unknown>],
@@ -77,14 +73,12 @@ describe('the texts of the owner portal', () => {
     const missing: string[] = [];
     let seen = 0;
     for (const [file, source] of files) {
-      // A key written out in full: t('ownerPortal.x.y'), or a key a model hands over as a plain word.
       for (const match of source.matchAll(/\bt\(\s*'((?:ownerPortal|ownerContactInvitation|apiErrors)\.[A-Za-z0-9_.]+)'/g)) {
         seen += 1;
         const value = lookup(locale, match[1]);
         const plural = lookup(locale, `${match[1]}_other`);
         if (typeof value !== 'string' && typeof plural !== 'string') missing.push(`${file}: ${match[1]}`);
       }
-      // No page gives a text of its own for a key that is missing.
       expect(source, file).not.toMatch(/\bdefaultValue\b/);
     }
     expect(seen).toBeGreaterThan(100);

@@ -21,10 +21,6 @@ import { BulkCloseResult } from './bulk-close-result';
 interface BulkCloseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /**
-   * Told when the person leaves the dialog: `true` when it has to stay in the page, closed (a run goes on: the dialog goes on following it, reads the month again when it ends and tells how it went),
-   * `false` when nothing in it is left to look at and the page can drop it.
-   */
   onKeepChange?: (keep: boolean) => void;
   period: Period;
   /**
@@ -33,10 +29,8 @@ interface BulkCloseDialogProps {
    */
   readiness?: OwnerCloseReadiness;
   summary?: CloseSummary;
-  /** The month is over: only then can it be closed. */
   monthOver: boolean;
   nameOf: (ownerId: string) => string;
-  /** How often a queued run is asked how far it goes, in milliseconds. */
   pollMs?: number;
 }
 
@@ -57,19 +51,15 @@ export function BulkCloseDialog({ open, onOpenChange, onKeepChange, period, read
   const [action, setAction] = useState<OwnerBulkAction>(suggested);
   const [typed, setTyped] = useState('');
   const [started, setStarted] = useState<OwnerBulkRun | null>(null);
-  // Whether the dialog is open, for what happens later than a click (a run that ends, a read that fails): it is told in a toast only when nobody is looking at the dialog.
   const isOpen = useRef(open);
   useEffect(() => {
     isOpen.current = open;
   }, [open]);
 
-  // A run that is queued is followed until it ends; one that answered in the request (a few owners) has nothing to follow.
   const following = started !== null && started.jobId !== null && !isRunOver(started) ? started : null;
   const polled = useBulkRun(following?.year ?? period.year, following?.month ?? period.month, following?.jobId ?? null, pollMs);
-  // A read that failed is never shown as progress: the last answer of a failed read is old, whatever the cache still holds.
   const readFailed = following !== null && polled.isError;
   const current = polled.data ?? started;
-  // A run whose progress can no longer be read is not followed any more: it is not «going on» for the dialog.
   const running = current !== null && !isRunOver(current) && !readFailed;
   // The month of the run on screen: the title and the pages that resolve a reason name it, even if the page behind has moved to another month while the dialog was closed.
   const shown: Period = current ? { year: current.year, month: current.month } : period;
@@ -80,7 +70,6 @@ export function BulkCloseDialog({ open, onOpenChange, onKeepChange, period, read
   const readError = readFailed ? (getHttpStatus(polled.error) === 404 ? t('ownerAccounting.bulk.progress.notFound') : t('ownerAccounting.bulk.progress.readError')) : null;
   const reopen = { label: t('ownerAccounting.bulk.reopen'), onClick: () => onOpenChange(true) };
 
-  /** How a run went, in a toast, for a run that ended while the dialog was closed: the same words as the line on top of its result, and the way back to it. */
   const tell = (run: OwnerBulkRun) => {
     const verdict = verdictOf(run);
     const message = headlineOf(run, t);
@@ -90,8 +79,6 @@ export function BulkCloseDialog({ open, onOpenChange, onKeepChange, period, read
     else toast.warning(message, options);
   };
 
-  // What a run changed is read again where the month is open: when a followed run has ended, and when it can no longer be followed (it may have ended, and the list of the month is where the
-  // person is sent to look). Whether the dialog is open or not: the pages behind it must not wait for a reload.
   const ended = polled.data !== undefined && isRunOver(polled.data) ? polled.data : null;
   const told = useRef<unknown>(null);
   useEffect(() => {
@@ -115,10 +102,8 @@ export function BulkCloseDialog({ open, onOpenChange, onKeepChange, period, read
   };
 
   const handleOpenChange = (next: boolean) => {
-    // The request that starts a run is waited for, as its button is: its answer is what the dialog shows next.
     if (!next && start.isPending) return;
     if (!next) {
-      // Leaving while the step goes on does not stop it: the person is told, and the dialog stays in the page, closed, following it. What was looked at is dropped: the next opening starts from the question.
       if (running) toast.warning(t('ownerAccounting.bulk.leftRunning'));
       else reset();
       onKeepChange?.(running);
@@ -177,7 +162,6 @@ export function BulkCloseDialog({ open, onOpenChange, onKeepChange, period, read
                 {readError}
               </Alert>
             ) : null}
-            {/* A read that failed says so and nothing else: the progress it had read before is old, and a run the server has forgotten (404) is not «at 1 of 3». */}
             {readFailed ? null : isRunOver(current) ? <BulkCloseResult run={current} period={shown} nameOf={nameOf} /> : <BulkProgress run={current} />}
             <DialogFooter>
               {isRunOver(current) && !readFailed ? (
@@ -201,20 +185,17 @@ interface BulkStartFormProps {
   onAction: (action: OwnerBulkAction) => void;
   typed: string;
   onTyped: (typed: string) => void;
-  /** The word the person types to close the months of everybody. */
   word: string;
   wordOk: boolean;
   monthOver: boolean;
   suggested: OwnerBulkAction;
   owners: number;
   pending: boolean;
-  /** Why the server refused to start, in words: the form stays open with it. */
   error: string | null;
   onStart: () => void;
   onCancel: () => void;
 }
 
-/** The question: which step, what it does, what it will not allow afterwards, and the confirmation. The form is not sent from the page around it (a dialog drawn in a portal still bubbles to it). */
 function BulkStartForm({ action, onAction, typed, onTyped, word, wordOk, monthOver, suggested, owners, pending, error, onStart, onCancel }: BulkStartFormProps) {
   const { t } = useTranslation();
   const consequences = [1, 2].map((n) => t(`ownerAccounting.bulk.step.${action}.consequence${n}`));
@@ -303,7 +284,6 @@ function BulkStartForm({ action, onAction, typed, onTyped, word, wordOk, monthOv
   );
 }
 
-/** A run that is on its way: the owners answered out of the owners asked for, as a number and a bar. Nothing here says «fatto»: that is the result's, and only for a run that is over. */
 function BulkProgress({ run }: { run: OwnerBulkRun }) {
   const { t } = useTranslation();
   const answered = run.results.length;

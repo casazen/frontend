@@ -13,7 +13,6 @@ import { EmbedConnectedSites } from '../embed-connected-sites';
 vi.mock('@/api/site-connections.api', () => ({ SiteConnectionsApi: { list: vi.fn(), revoke: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 
-// Midday in UTC: the same day in every time zone, so the dates the page writes can be told exactly.
 const QUOKKA: SiteConnection = { id: 'c1', siteUrl: 'https://www.quokka360.test', createdAt: '2026-11-20T12:00:00Z', lastUsedAt: '2026-11-26T12:00:00Z' };
 const BLOG: SiteConnection = { id: 'c2', siteUrl: 'https://blog.quokka360.test', createdAt: '2026-11-25T12:00:00Z', lastUsedAt: null };
 
@@ -72,7 +71,6 @@ describe('EmbedConnectedSites (PLG-FE-CONSOLE, NF-203)', () => {
       expect(within(rowOf('c1')).getByTestId('embed-site-dates')).toHaveTextContent(
         `${i18n.t('embed.settings.sites.linked', { date: formatDate(QUOKKA.createdAt) })} · ${i18n.t('embed.settings.sites.lastUsed', { date: formatDate(QUOKKA.lastUsedAt!) })}`,
       );
-      // A site that was never used says so, it does not show an empty date.
       expect(within(rowOf('c2')).getByTestId('embed-site-dates')).toHaveTextContent(i18n.t('embed.settings.sites.lastUsedNever'));
       expect(screen.queryByTestId('embed-sites-empty')).not.toBeInTheDocument();
     });
@@ -100,7 +98,6 @@ describe('EmbedConnectedSites (PLG-FE-CONSOLE, NF-203)', () => {
     });
 
     it('sites_ALaterReadThatIsRefused404_NeverShowsTheRowsOfTheEarlierRead', async () => {
-      // TanStack Query keeps the data of the last good read when a later one fails: the block says the list could not be read, it does not show a connection that may be gone.
       const client = newClient();
       renderBlock(client);
       await waitFor(() => expect(rows()).toHaveLength(2));
@@ -115,7 +112,6 @@ describe('EmbedConnectedSites (PLG-FE-CONSOLE, NF-203)', () => {
     });
 
     it('sites_AnotherVisit_ReadsTheListAgain', async () => {
-      // A site connects from WordPress without this page doing anything: the list is not served from the cache of an earlier visit.
       const client = newClient();
       const first = renderBlock(client);
       await waitFor(() => expect(rows()).toHaveLength(2));
@@ -149,7 +145,6 @@ describe('EmbedConnectedSites (PLG-FE-CONSOLE, NF-203)', () => {
       expect(dialog()).toHaveTextContent(i18n.t('embed.settings.sites.revokeConfirm.description'));
       expect(SiteConnectionsApi.revoke).not.toHaveBeenCalled();
 
-      // «Annulla»: nothing is revoked, and the row stays.
       fireEvent.click(within(dialog()).getByRole('button', { name: i18n.t('shared.cancel') }));
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
       expect(SiteConnectionsApi.revoke).not.toHaveBeenCalled();
@@ -166,7 +161,6 @@ describe('EmbedConnectedSites (PLG-FE-CONSOLE, NF-203)', () => {
 
       await waitFor(() => expect(SiteConnectionsApi.revoke).toHaveBeenCalledWith('org-1', 'c1'));
       expect(SiteConnectionsApi.revoke).toHaveBeenCalledTimes(1);
-      // The list is the server's: the row of the connection that was revoked goes, the other stays.
       await waitFor(() => expect(rows().map((row) => row.getAttribute('data-site-id'))).toEqual(['c2']));
       expect(SiteConnectionsApi.list).toHaveBeenCalledTimes(2);
       expect(toast.success).toHaveBeenCalledWith(i18n.t('embed.settings.sites.revoked'));
@@ -186,7 +180,6 @@ describe('EmbedConnectedSites (PLG-FE-CONSOLE, NF-203)', () => {
     });
 
     it('revoke_TheConfirmationDoesNotSubmitAFormAroundIt', async () => {
-      // A ConfirmationDialog inside a form submits it (the events of a portal reach the parents): this one is confirmed and the form around it never hears.
       const submitted = vi.fn((event: React.FormEvent) => event.preventDefault());
       renderBlock(newClient(), (node) => <form onSubmit={submitted}>{node}</form>);
       await waitFor(() => expect(rows()).toHaveLength(2));
@@ -212,7 +205,6 @@ describe('EmbedConnectedSites (PLG-FE-CONSOLE, NF-203)', () => {
       const confirm = within(dialog()).getByRole('button', { name: i18n.t('embed.settings.sites.revokeConfirm.confirm') });
       fireEvent.click(confirm);
 
-      // Every «Scollega» of the block is off while one is on its way, the one of the other row too, and so is the confirmation.
       await waitFor(() => expect(confirm).toBeDisabled());
       for (const button of screen.getAllByTestId('embed-site-revoke')) expect(button).toBeDisabled();
       fireEvent.click(confirm);
@@ -235,7 +227,6 @@ describe('EmbedConnectedSites (PLG-FE-CONSOLE, NF-203)', () => {
 
       await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('embed.settings.sites.revokeFailed')));
       expect(toast.success).not.toHaveBeenCalled();
-      // The list is read again whatever the answer, and the connection that could not be revoked is still on it.
       await waitFor(() => expect(SiteConnectionsApi.list).toHaveBeenCalledTimes(2));
       await waitFor(() => expect(rows()).toHaveLength(2));
       await waitFor(() => expect(within(rowOf('c1')).getByTestId('embed-site-revoke')).toBeEnabled());

@@ -133,14 +133,12 @@ describe('the month: groups, anomalies, percentage', () => {
       [gap(null)],
     );
 
-    // The gap is one anomaly of the month (told under the month), plus the exchange rate of «b»: two lines, two anomalies.
     expect(groupAnomalies(month).map((group) => [group.ownerId, group.code])).toEqual([
       ['b', 'fx_missing'],
       [null, 'ownership_share_gap'],
     ]);
     const summary = summarize(month);
     expect(summary).toMatchObject({ blocking: 2, orgBlocking: 1, owners: 3 });
-    // The owners of the property are held back all the same: only «c» is ready.
     expect(summary).toMatchObject({ ready: 1, percent: 33 });
   });
 
@@ -154,14 +152,12 @@ describe('the month: groups, anomalies, percentage', () => {
       owner_fiscal_profile_missing: 'profile',
       owner_fiscal_policy_not_approved: 'profile',
       ownership_share_gap: 'onboarding',
-      // A stay with no mandate in force is resolved in the financial data of the owner, a portal with no commission rule in the channel commissions (E13/F02/US03/T01).
       mandate_missing_for_stay: 'profile',
       channel_commission_missing: 'channelRules',
       source_amount_missing: 'payment',
       period_dirty: 'regenerate',
       statement_missing: 'prepare',
     });
-    // An unknown code of a later version says so and offers nothing it does not understand.
     expect(actionForIssue(issue('something_new')).kind).toBe('none');
     expect(actionForIssue(issue('source_amount_missing', { sourceId: null })).kind).toBe('none');
   });
@@ -290,7 +286,6 @@ describe('the rule that decides a payout', () => {
     expect(resolveRule([profile({ accountingPolicyId: null })], [policy()], '2025-02-05')).toEqual({ ok: false, reason: 'policy_missing' });
     expect(resolveRule([profile()], [policy({ approved: false, approvedAt: null })], '2025-02-05')).toEqual({ ok: false, reason: 'policy_not_approved' });
     expect(resolveRule([profile()], [policy({ validFrom: '2025-06-01' })], '2025-02-05')).toEqual({ ok: false, reason: 'policy_not_effective' });
-    // The country does not choose the rule: a Swiss profile never takes an Italian rule set.
     expect(resolveRule([profile({ taxJurisdiction: 'CH' })], [policy()], '2025-02-05')).toEqual({ ok: false, reason: 'policy_jurisdiction_mismatch' });
   });
 
@@ -317,7 +312,6 @@ describe('buildPayoutCommand', () => {
     expect(built).toEqual({
       command: { idempotencyKey: 'key-1', ownerId: OWNER_ID, statementVersionId: VERSION_ID, currency: 'EUR', paidOn: '2025-02-05', reference: 'CRO 9' },
     });
-    // Nothing a person could have typed about the money or about the withholding is in it, not even as an empty member.
     expect('command' in built ? Object.keys(built.command).sort() : []).toEqual(['currency', 'idempotencyKey', 'ownerId', 'paidOn', 'reference', 'statementVersionId']);
   });
 
@@ -372,7 +366,6 @@ describe('what the server says about a refusal', () => {
     expect(ruleBlockOfCode('owner_fiscal_policy_not_approved')).toBe('policy_not_approved');
     expect(ruleBlockOfCode('owner_fiscal_policy_not_effective')).toBe('policy_not_effective');
     expect(ruleBlockOfCode('owner_fiscal_policy_jurisdiction_mismatch')).toBe('policy_jurisdiction_mismatch');
-    // Any other code (the balance that is gone, a fact the rule could not resolve, a closed month) or none is no verdict on the owner: the owner is not told to have a rule missing.
     expect(ruleBlockOfCode('owner_period_closed')).toBeNull();
     expect(ruleBlockOfCode('owner_payout_exceeds_balance')).toBeNull();
     expect(ruleBlockOfCode(null)).toBeNull();
@@ -396,7 +389,6 @@ describe('the key of a payout belongs to what is asked', () => {
     expect(payoutKeyFor({ ...intent, statementVersionId: 'other' })).not.toBe(first);
     expect(payoutKeyFor({ ...intent, ownerId: 'other' })).not.toBe(first);
 
-    // Confirmed: the same facts again are a second payment of the same amount, which must not be answered with the first one.
     settlePayoutKey(intent);
     expect(payoutKeyFor(intent)).not.toBe(first);
   });
@@ -408,10 +400,8 @@ describe('the key of a payout belongs to what is asked', () => {
     const again = buildPayoutCommand({ ...form }, { ...ctx }, payoutKeyFor);
     expect(first).toHaveProperty('command.idempotencyKey');
     expect('command' in first && 'command' in again && first.command.idempotencyKey === again.command.idempotencyKey).toBe(true);
-    // The balance of the preview is what the key stands for: another balance is another payout.
     const other = buildPayoutCommand(form, { ...ctx, balance: 801 }, payoutKeyFor);
     expect('command' in first && 'command' in other && first.command.idempotencyKey !== other.command.idempotencyKey).toBe(true);
-    // A form that is refused makes no key.
     expect(buildPayoutCommand({ ...form, paidOn: '' }, ctx, payoutKeyFor)).toHaveProperty('errors.paidOn');
   });
 });
@@ -424,7 +414,6 @@ describe('a statement that is already paid is closed, not paid again', () => {
     expect(isSettled(closing, [payout({ grossAmount: 800 })], [VERSION_ID])).toBe(true);
     expect(isSettled(closing, [payout({ grossAmount: 500 })], [VERSION_ID])).toBe(false);
     expect(isSettled(closing, [], [VERSION_ID])).toBe(false);
-    // A reversed payout pays nothing, and a payout of another currency is no payment of this statement.
     expect(isSettled(closing, [payout({ grossAmount: 800, status: 'Reversed' })], [VERSION_ID])).toBe(false);
     expect(isSettled(closing, [payout({ grossAmount: 800, currency: 'CHF' })], [VERSION_ID])).toBe(false);
     expect(isSettled({ closingBalance: 0, currency: 'EUR' }, [], [VERSION_ID])).toBe(true);
@@ -437,17 +426,13 @@ describe('a statement that is already paid is closed, not paid again', () => {
 
     const paid = actionsOf({ ...base, version: { status: 'Published' }, settled: true });
     expect(primaryActionOf(paid)).toBe('close');
-    // The payment stays available, in the menu, for an extra one.
     expect(otherActionsOf(paid)).toEqual(['payout']);
 
-    // Paid, but the month is not over: nothing to do until it is.
     const waiting = actionsOf({ ...base, monthOver: false, version: { status: 'Published' }, settled: true });
     expect(primaryActionOf(waiting)).toBeNull();
     expect(waiting.closeWaitsForTheEnd).toBe(true);
 
-    // What is not known (the payments not read yet) is not paid.
     expect(primaryActionOf(actionsOf({ ...base, version: { status: 'Published' } }))).toBe('payout');
-    // An approved statement is first published, paid or not.
     expect(primaryActionOf(actionsOf({ ...base, version: { status: 'Approved' }, settled: true }))).toBe('publish');
   });
 });
@@ -464,7 +449,6 @@ describe('the year of the withholdings against the F24 and the annual data', () 
   it('taxYearVerdict_ReconciledNeedsAnF24ThatMatchesAndAnnualDataThatMatch', () => {
     const f24Only = checkTaxYear({ obligationsTotal: 120, annualTotal: null, months: [month(1, 120, 120)] });
     expect(f24Only.annual).toBeNull();
-    // Annual data that does not exist is not said to match.
     expect(taxYearVerdict(f24Only)).toBe('f24Matches');
 
     const both = checkTaxYear({ obligationsTotal: 120, annualTotal: 120, months: [month(1, 120, 120)] });
@@ -501,7 +485,6 @@ describe('the profile of an owner and the days it covers', () => {
   it('ownerReadinessOn_SaysFromWhichDayTheDataHolds', () => {
     const ready = ownerReadinessOn([profile({ validFrom: '2025-03-01' })], [policy({ validFrom: '2025-01-01' })], '2025-04-10');
     expect(ready).toMatchObject({ ready: true, from: '2025-03-01' });
-    // The rule set that starts later is the one that decides: the data holds from the day both apply.
     const later = ownerReadinessOn([profile({ validFrom: '2025-01-01' })], [policy({ validFrom: '2025-02-01' })], '2025-04-10');
     expect(later).toMatchObject({ ready: true, from: '2025-02-01' });
   });

@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, BedDouble, CalendarRange, ChevronDown, Download, FileSignature, Lock, Percent, Plus, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Dropzone } from '@/components/ui/dropzone';
 import { ownerAccountingApi } from '@/api/owner-accounting.api';
 import { saveBlobAs } from '@/lib/file-download';
-import { Badge } from '@/components/ui/badge';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -20,23 +19,16 @@ import { FormDialog } from '@/features/owner-accounting/components/form-dialog';
 import { OwnerAccountingError } from '@/features/owner-accounting/components/owner-accounting-error';
 import { MAX_FLAT_FEE, failureText, latestMandateStart, mandateCovers } from '@/features/owner-accounting/owner-accounting-model';
 import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
+import { Fact, FactGrid, Metric, MetricRow, OwnerCard, QuietNote, StateChip } from './owner-ui';
 
 interface OwnerMandateSectionProps {
   ownerId: string;
-  /** The settlement currency of the owner (its fiscal profile); `null` while the profile has none. The flat fees of a stay are in it. */
   currency: string | null;
-  /** Who may write (`agency.owner.financial.manage`). Without it the versions are read and no form is offered. */
   canManage: boolean;
 }
 
 const BASES: readonly CommissionBase[] = ['GrossExclTouristTax', 'GrossExclTouristTaxAndCleaning'];
 
-/**
- * «Mandato» of an owner (E13/F02/US01/T01, NF-110, NF-115): the versions of the terms between the agency and the owner, the newest first, with the one in force marked, and «Nuova versione»
- * for who manages the finances of the owners. A new version starts on a day after the start of every other and ends the one in force the day before; nothing already posted changes.
- * The commission is «+ IVA» unless the terms say they already hold it (⚖ R4); the flat fees are per stay, in the settlement currency of the owner, and written without a symbol while the
- * profile of the owner has none (the page says so, it never assumes a euro). A version that could not be read is never told as «no mandate».
- */
 export function OwnerMandateSection({ ownerId, currency, canManage }: OwnerMandateSectionProps) {
   const { t } = useTranslation();
   const mandates = useOwnerMandates(ownerId);
@@ -44,9 +36,9 @@ export function OwnerMandateSection({ ownerId, currency, canManage }: OwnerManda
   const today = todayInRome();
   const versions = mandates.data;
   const hasFees = (versions ?? []).some((mandate) => mandate.cleaningFlatRate !== null || mandate.linenFlatRate !== null);
+  const inForce = (versions ?? []).some((mandate) => mandateCovers(mandate, today));
 
   let content;
-  // A 404 is «not found» whatever the cache still holds (a failed read keeps the old data).
   if (getHttpStatus(mandates.error) === 404) {
     content = <p className="break-words text-sm text-foreground/70" data-testid="owner-mandate-not-found">{t('ownerMandate.notFound')}</p>;
   } else if (mandates.isPending) {
@@ -58,34 +50,82 @@ export function OwnerMandateSection({ ownerId, currency, canManage }: OwnerManda
   } else if (mandates.isError || !versions) {
     content = <OwnerAccountingError error={mandates.error} title={t('ownerMandate.loadError')} onRetry={() => void mandates.refetch()} />;
   } else if (versions.length === 0) {
-    content = <p className="break-words text-sm text-foreground/70" data-testid="owner-mandate-missing">{t('ownerMandate.missing')}</p>;
-  } else {
     content = (
-      <ul role="list" className="divide-y divide-border text-sm" data-testid="owner-mandate-versions">
-        {versions.map((mandate) => (
-          <MandateVersion key={mandate.id} mandate={mandate} currency={currency} today={today} canManage={canManage} />
-        ))}
+      <QuietNote icon={AlertTriangle} data-testid="owner-mandate-missing">
+        {t('ownerMandate.missing')}
+      </QuietNote>
+    );
+  } else {
+    const current = versions.find((mandate) => mandateCovers(mandate, today)) ?? versions[0];
+    const others = versions.filter((mandate) => mandate.id !== current.id);
+    content = (
+      <ul role="list" className="space-y-4" data-testid="owner-mandate-versions">
+        <CurrentMandate mandate={current} currency={currency} today={today} canManage={canManage} />
+        {others.length > 0 ? (
+          <li>
+            <details className="group rounded-lg border border-border">
+              <summary className="flex min-h-11 cursor-pointer items-center justify-between gap-2 px-3 text-sm font-medium">
+                {t('ownerMandate.version.others', { count: others.length })}
+                <ChevronDown aria-hidden="true" className="size-4 shrink-0 transition-transform group-open:rotate-180 motion-reduce:transition-none" />
+              </summary>
+              <ul role="list" className="divide-y divide-border border-t border-border">
+                {others.map((mandate) => (
+                  <OtherMandate key={mandate.id} mandate={mandate} currency={currency} today={today} />
+                ))}
+              </ul>
+            </details>
+          </li>
+        ) : null}
       </ul>
     );
   }
 
-  const newVersion = canManage && mandates.isSuccess ? { actionLabel: t('ownerMandate.newVersion'), onAction: () => setAdding(true), actionTestId: 'mandate-new-version' } : {};
+  const chip = inForce ? <StateChip tone="success">{t('ownerMandate.version.inForce')}</StateChip> : versions && versions.length === 0 ? <StateChip tone="warning">{t('owners.row.mandateMissing')}</StateChip> : null;
+  const action =
+    canManage && mandates.isSuccess ? (
+      <Button type="button" variant="outline" size="sm" onClick={() => setAdding(true)} data-testid="mandate-new-version">
+        <Plus aria-hidden="true" className="size-4" />
+        {t('ownerMandate.newVersion')}
+      </Button>
+    ) : undefined;
 
   return (
-    <PlainSection title={t('ownerMandate.title')} count={versions?.length} {...newVersion} data-testid="owner-mandate-section">
+    <OwnerCard icon={FileSignature} title={t('ownerMandate.title')} chip={chip} action={action} data-testid="owner-mandate-section">
       {content}
-      {currency === null && hasFees ? <p className="break-words text-sm text-foreground/70" data-testid="owner-mandate-currency-missing">{t('ownerMandate.currencyMissing')}</p> : null}
-      {!canManage ? <p className="break-words text-sm text-foreground/70" data-testid="owner-mandate-read-only">{t('ownerMandate.readOnly')}</p> : null}
-      {adding && versions ? (
-        <MandateDialog open onOpenChange={(open) => !open && setAdding(false)} ownerId={ownerId} currency={currency} versions={versions} />
+      {currency === null && hasFees ? (
+        <QuietNote icon={AlertTriangle} data-testid="owner-mandate-currency-missing">
+          {t('ownerMandate.currencyMissing')}
+        </QuietNote>
       ) : null}
-    </PlainSection>
+      {!canManage ? (
+        <QuietNote icon={Lock} data-testid="owner-mandate-read-only">
+          {t('ownerMandate.readOnly')}
+        </QuietNote>
+      ) : null}
+      {adding && versions ? <MandateDialog open onOpenChange={(open) => !open && setAdding(false)} ownerId={ownerId} currency={currency} versions={versions} /> : null}
+    </OwnerCard>
   );
 }
 
-function MandateVersion({ mandate, currency, today, canManage }: { mandate: OwnerMandate; currency: string | null; today: string; canManage: boolean }) {
+interface MandateRowProps {
+  mandate: OwnerMandate;
+  currency: string | null;
+  today: string;
+}
+
+function useMandateTerms(mandate: OwnerMandate, currency: string | null) {
   const { t } = useTranslation();
   const { date, percent, money, amount } = useOwnerFormat();
+  return {
+    range: mandate.validTo ? t('ownerMandate.version.between', { from: date(mandate.validFrom), to: date(mandate.validTo) }) : t('ownerMandate.version.from', { from: date(mandate.validFrom) }),
+    commission: `${percent(mandate.commissionPercent)} ${mandate.commissionIncludesVat ? t('ownerMandate.vat.included') : t('ownerMandate.vat.excluded')}`,
+    fee: (value: number) => (currency ? money(value, currency) : amount(value)),
+  };
+}
+
+function CurrentMandate({ mandate, currency, today, canManage }: MandateRowProps & { canManage: boolean }) {
+  const { t } = useTranslation();
+  const { range, commission, fee } = useMandateTerms(mandate, currency);
   const [downloading, setDownloading] = useState(false);
   const download = async () => {
     setDownloading(true);
@@ -96,28 +136,52 @@ function MandateVersion({ mandate, currency, today, canManage }: { mandate: Owne
     finally { setDownloading(false); }
   };
   const inForce = mandateCovers(mandate, today);
-  const fee = (value: number) => (currency ? money(value, currency) : amount(value));
+  const metrics = [
+    { key: 'commission', icon: Percent, label: t('ownerMandate.dialog.commission'), value: commission, detail: undefined },
+    ...(mandate.cleaningFlatRate !== null ? [{ key: 'cleaning', icon: Sparkles, label: t('ownerMandate.fields.cleaningFlatRate'), value: fee(mandate.cleaningFlatRate), detail: t('ownerMandate.version.perStay') }] : []),
+    ...(mandate.linenFlatRate !== null ? [{ key: 'linen', icon: BedDouble, label: t('ownerMandate.fields.linenFlatRate'), value: fee(mandate.linenFlatRate), detail: t('ownerMandate.version.perStay') }] : []),
+  ];
 
   return (
-    <li className="space-y-1 py-3" data-testid="owner-mandate-version" data-in-force={inForce}>
-      <p className="flex flex-wrap items-center gap-2 font-medium">
-        <span className="break-words">
-          {mandate.validTo ? t('ownerMandate.version.between', { from: date(mandate.validFrom), to: date(mandate.validTo) }) : t('ownerMandate.version.from', { from: date(mandate.validFrom) })}
-        </span>
-        {inForce ? <Badge variant="success">{t('ownerMandate.version.inForce')}</Badge> : mandate.validFrom > today ? <Badge variant="outline">{t('ownerMandate.version.upcoming')}</Badge> : null}
+    <li className="space-y-4" data-testid="owner-mandate-version" data-in-force={inForce}>
+      <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
+        <CalendarRange aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
+        <span className="break-words">{range}</span>
+        {inForce ? null : mandate.validFrom > today ? <StateChip tone="info">{t('ownerMandate.version.upcoming')}</StateChip> : <StateChip tone="neutral">{t('ownerMandate.version.ended')}</StateChip>}
       </p>
-      <p className="break-words" data-testid="owner-mandate-terms">
-        {t('ownerMandate.version.terms', {
-          percent: percent(mandate.commissionPercent),
-          base: t(`ownerMandate.base.${mandate.commissionBase}`),
-          vat: mandate.commissionIncludesVat ? t('ownerMandate.vat.included') : t('ownerMandate.vat.excluded'),
-        })}
-      </p>
-      {mandate.cleaningFlatRate !== null ? <p className="break-words text-foreground/70">{t('ownerMandate.version.cleaning', { amount: fee(mandate.cleaningFlatRate) })}</p> : null}
-      {mandate.linenFlatRate !== null ? <p className="break-words text-foreground/70">{t('ownerMandate.version.linen', { amount: fee(mandate.linenFlatRate) })}</p> : null}
-      <p className="break-words text-foreground/70">{mandate.passthroughPaymentFees ? t('ownerMandate.version.feesOwner') : t('ownerMandate.version.feesAgency')}</p>
-      <p className="break-words text-foreground/70">{mandate.hasDocument ? t('ownerMandate.version.document') : t('ownerMandate.version.noDocument')}</p>
-      {canManage && mandate.documentUploaded ? <Button type="button" variant="ghost" loading={downloading} onClick={() => void download()}>{t('ownerMandate.wizard.download')}</Button> : null}
+      <MetricRow columns={metrics.length as 1 | 2 | 3} data-testid="owner-mandate-terms">
+        {metrics.map(({ key, ...metric }) => (
+          <Metric key={key} {...metric} />
+        ))}
+      </MetricRow>
+      <FactGrid>
+        <Fact label={t('ownerMandate.fields.commissionBase')} value={t(`ownerMandate.base.${mandate.commissionBase}`)} wide />
+        <Fact label={t('ownerMandate.fields.passthroughPaymentFees')} value={mandate.passthroughPaymentFees ? t('ownerMandate.version.feesOwnerShort') : t('ownerMandate.version.feesAgencyShort')} />
+        <Fact label={t('ownerMandate.fields.documentReference')} value={mandate.hasDocument ? <StateChip tone="success">{t('ownerMandate.version.documentPresent')}</StateChip> : t('ownerMandate.version.documentMissing')} />
+      </FactGrid>
+      {canManage && mandate.documentUploaded ? (
+        <Button type="button" variant="outline" size="sm" loading={downloading} onClick={() => void download()}>
+          <Download aria-hidden="true" className="size-4" />
+          {t('ownerMandate.wizard.download')}
+        </Button>
+      ) : null}
+    </li>
+  );
+}
+
+function OtherMandate({ mandate, currency, today }: MandateRowProps) {
+  const { t } = useTranslation();
+  const { range, commission } = useMandateTerms(mandate, currency);
+  const inForce = mandateCovers(mandate, today);
+  const upcoming = mandate.validFrom > today;
+  return (
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5 text-sm" data-testid="owner-mandate-version" data-in-force={inForce}>
+      <CalendarRange aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
+      <span className="min-w-0 break-words font-medium">{range}</span>
+      <span className="min-w-0 break-words text-foreground/70">{commission}</span>
+      <StateChip tone={upcoming ? 'info' : 'neutral'} className="ms-auto">
+        {upcoming ? t('ownerMandate.version.upcoming') : t('ownerMandate.version.ended')}
+      </StateChip>
     </li>
   );
 }
@@ -137,13 +201,8 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const HTTPS = /^https:\/\/\S+$/i;
 const DOCUMENT_MAX = 500;
 
-/** A number as the person types it in Italian: two decimals, a comma. */
 const asField = (value: number): string => value.toFixed(2).replace('.', ',');
 
-/**
- * The form starts from the version the person is replacing (the newest): the terms change on a day, they are not typed again. The first day is today, or the day after the newest
- * version starts when that is later (the server refuses a day that is not). The signed document is never returned by the server, so it is asked again, and left blank it stays absent.
- */
 function initial(from: OwnerMandate | null, latestStart: string | null): FormState {
   const today = todayInRome();
   const earliest = latestStart === null ? today : addDays(latestStart, 1);
@@ -171,7 +230,6 @@ interface MandateDialogProps {
   onOpenChange: (open: boolean) => void;
   ownerId: string;
   currency: string | null;
-  /** The versions of the owner, the newest first: the form starts from the first. */
   versions: readonly OwnerMandate[];
 }
 
@@ -180,10 +238,8 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
   const { t, i18n } = useTranslation();
   const { date } = useOwnerFormat();
   const save = useCreateOwnerMandate(ownerId);
-  // The versions the server checks the overlap on are those of the owner (the shape of before E13, of one ownership, is not): the newest of them is what a new version replaces.
   const ofTheOwner = versions.filter((mandate) => mandate.ownershipId === null);
   const latestStart = latestMandateStart(ofTheOwner);
-  // Its terms are the ones the form starts from, and the treatment of the commission is carried over from it: the form has no field for it.
   const from = ofTheOwner.find((mandate) => mandate.validFrom === latestStart) ?? null;
   const [form, setForm] = useState<FormState>(() => initial(from, latestStart));
   const [error, setError] = useState<string | null>(null);
@@ -235,7 +291,6 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
       if (values.commissionPercent !== null) patch.commissionPercent = asField(values.commissionPercent);
       if (values.commissionBase !== null) patch.commissionBase = values.commissionBase;
       if (values.commissionIncludesVat !== null) patch.commissionIncludesVat = values.commissionIncludesVat;
-      // Never turn a fee written in another or unknown currency into the owner's settlement currency.
       if (currency && values.currency?.toUpperCase() === currency.toUpperCase()) {
         if (values.cleaningFlatRate !== null) patch.cleaningFlatRate = asField(values.cleaningFlatRate);
         if (values.linenFlatRate !== null) patch.linenFlatRate = asField(values.linenFlatRate);
@@ -257,7 +312,6 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
   const linen = flatFeeOf(form.linenFlatRate);
   const document = form.documentReference.trim();
   const documentOk = document === '' || (HTTPS.test(document) && document.length <= DOCUMENT_MAX);
-  // The server refuses a version that does not start after the newest one (409 `owner_mandate_overlap`): the form says so before it is sent.
   const startsAfterTheLast = latestStart === null || !DAY.test(form.validFrom) || form.validFrom > latestStart;
   const valid = DAY.test(form.validFrom) && startsAfterTheLast && percentOk && cleaning.ok && linen.ok && documentOk;
 

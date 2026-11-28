@@ -12,10 +12,6 @@
  * page, the cache of the queries or a log.
  */
 
-/** The life of a document: a draft has no number, an issued one is immutable, a discarded draft consumed no number. */
-export const FISCAL_DOCUMENT_STATUSES = ['Draft', 'Issued', 'Discarded'] as const;
-export type FiscalDocumentStatus = (typeof FISCAL_DOCUMENT_STATUSES)[number];
-
 /** The states of a document on the SDI (the Italian exchange system of electronic invoices), as the server writes them. */
 export const FISCAL_DOCUMENT_SDI_STATUSES = ['not_applicable', 'to_send', 'submitted', 'delivered', 'rejected', 'manual_declared', 'unknown'] as const;
 
@@ -30,7 +26,6 @@ export interface FiscalDocumentEntry {
   source: string;
   kind: string;
   status: string;
-  /** The series and the number in it that the server gave the document when it issued it (`number` is the two together): a draft has none. */
   series: string | null;
   sequenceNumber: number | null;
   number: string | null;
@@ -43,18 +38,11 @@ export interface FiscalDocumentEntry {
   sdiErrorCode: string | null;
   hasXml: boolean;
   octoratePdfAvailable: boolean;
-  /**
-   * What the document is for (E17/F01/US01/T02): `GuestStay`, `OwnerInvoice` (the invoice of the property manager to an owner) or `SelfBilling` (a TD17). Only there when the server sends it; a purpose this client does
-   * not know is shown as it came. An owner invoice and a self-billed invoice are never changed with the endpoints of the guest documents (the server refuses with 422), so the screens do not offer it.
-   */
   purpose?: string;
-  /** The rejected document that this draft replaces, when it is the replacement a correction made (it keeps the number of the rejected one): `null` or absent for any other document. */
   replacesDocumentId?: string | null;
-  /** Who issued the document, by name, when the server says it (several documents of a booking may have several issuers: the owner, the agency): absent when it does not. */
   issuerName?: string | null;
 }
 
-/** One page of the list, newest first, as the server pages and counts it. */
 export interface FiscalDocumentPage {
   items: FiscalDocumentEntry[];
   totalCount: number;
@@ -62,10 +50,6 @@ export interface FiscalDocumentPage {
   pageSize: number;
 }
 
-/**
- * What narrows the list and the files (`from` and `to` are Europe/Rome days of the issue, both included). What is not set is not sent. The files (CSV, Excel) hold the
- * issued documents only and do not read `status`.
- */
 export interface FiscalDocumentCriteria {
   from?: string;
   to?: string;
@@ -74,7 +58,6 @@ export interface FiscalDocumentCriteria {
   status?: string;
 }
 
-/** The two files of the list. */
 export type FiscalDocumentExportFormat = 'csv' | 'xlsx';
 
 /**
@@ -85,20 +68,14 @@ export interface FiscalDocumentsContext {
   mode: string | null;
   casazenIssuanceEnabled: boolean;
   sdiProviderConfigured: boolean;
-  /**
-   * The pattern of the series of the documents of the guests, as the setting holds it (`{year}` stands for the year of the issue). `''`: the setting has none, so the server uses the
-   * year. Left out (or `null`) when the setting could not say, and nothing is claimed about the series then.
-   */
   guestDocumentSeries?: string | null;
 }
 
-/** A file the API sent back: its bytes and the name it gave it (`Content-Disposition`, when the page may read it). */
 export interface FiscalDocumentFile {
   blob: Blob;
   contentDisposition: string | null;
 }
 
-/** What a line of a document is (backend `FiscalLineType`): the words are written for these codes, any other one is shown as it came. */
 export const FISCAL_DOCUMENT_LINE_TYPES = ['Accommodation', 'AdvancedExpense', 'Cleaning', 'Commission', 'ExtraService', 'Other', 'Recharge', 'TouristTax'] as const;
 
 /**
@@ -115,14 +92,9 @@ export interface FiscalDocumentLine {
   vatNatureCode: string | null;
   lineType: string | null;
   vatAmount: number | null;
-  /**
-   * `true` for the line of tourist tax that the portal left to the host and that nobody recorded as collected: the guest pays it at the property and the document does not declare it paid. Only there when the
-   * server says it (it leaves the member out of every other line, and of every answer of an older server): the client never works out which line it is.
-   */
   toCollectAtProperty?: boolean;
 }
 
-/** Who issued the document as it was when it was issued (the snapshot), as far as the server says it: `null` while the answer carries none. */
 export interface FiscalDocumentIssuer {
   legalName: string | null;
   vatNumber: string | null;
@@ -151,7 +123,6 @@ export interface FiscalDocumentDetail extends FiscalDocumentEntry {
   amountToCollectAtProperty?: number;
 }
 
-/** What a write on a document answers, reduced to what the screens use: the document and the number it has now (a draft has none). */
 export interface FiscalDocumentChange {
   id: string;
   number: string | null;
@@ -166,7 +137,6 @@ export interface FiscalDocumentEmailQueued {
   linkExpiresAt: string;
 }
 
-/** One document of a bulk issue: issued with its number, or not with the stable code of why (`errorCode`). */
 export interface FiscalDocumentBatchRow {
   id: string;
   issued: boolean;
@@ -174,7 +144,6 @@ export interface FiscalDocumentBatchRow {
   errorCode: string | null;
 }
 
-/** The answer of a bulk issue: one row per document, how many were issued, how many were not, and how many more drafts the selection matched beyond what one request issues. */
 export interface FiscalDocumentBatchResult {
   rows: FiscalDocumentBatchRow[];
   issued: number;
@@ -182,13 +151,11 @@ export interface FiscalDocumentBatchResult {
   remaining: number;
 }
 
-/** What a credit note is asked for: the amount (the whole document when left out) and why. The confirmation is the host pressing the button. */
 export interface FiscalCreditNoteRequest {
   amount?: number;
   reason: string;
 }
 
-/** One document of a booking as its card shows it (`GET api/bookings/{id}/fiscal-documents`): no recipient and no line. */
 export interface BookingFiscalDocument {
   id: string;
   kind: string;
@@ -199,9 +166,6 @@ export interface BookingFiscalDocument {
   paymentState: string;
   issueDate: string | null;
 }
-
-// ---------------------------------------------------------------------------------------------------------------------------------
-// The SDI: state, submission, declaration, correction (E17/F01/US02, E17/F03/US01/T02, NF-116, NF-86)
 
 /**
  * Whose endpoints the SDI state of a document is read and changed through: the documents of the guests (and a self-billed invoice) are on `api/fiscal/documents/{id}/sdi` behind `payment.read` and
@@ -228,9 +192,7 @@ export interface FiscalDocumentSdiState {
   canCorrect: boolean;
 }
 
-/** The answer of «Invia»: what it did and the state of the document now. */
 export interface SdiSubmitResult {
-  /** What the submission did (backend `SdiSubmitOutcome`): `NotConfigured`, `Submitted`, `Refused` or `AlreadySubmitted`. `Submitted` is the only one that says the channel took the file; a code this client does not know is never read as a success. */
   outcome: string;
   state: FiscalDocumentSdiState;
 }

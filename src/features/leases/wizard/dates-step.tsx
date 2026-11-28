@@ -48,7 +48,6 @@ export function DatesStep({
   const needsDocumentation = makesItsNeed({ contractType }, origin) && termDays(startDate, endDate) > rules.transitoryDocumentationAfterDays;
   const end = typedEnd || (startValid && months !== null ? periodEnd(startDate, months) : '');
   const day = (date: string) => formatStayDate(date, i18n.language);
-  // «4 anni» for 48 months, «30 mesi» for 30: the length as people say it.
   const length = (count: number) => (count % 12 === 0 ? t('leaseWizard.dates.years', { count: count / 12 }) : t('leaseWizard.dates.months', { count }));
   const inThePast = startValid && !imported && startDate < todayInRome();
 

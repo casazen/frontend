@@ -12,15 +12,9 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 interface AssistReopenDialogProps {
   onClose: () => void;
-  /** Sends the note and settles when the server answered: a rejection is the refusal, said under the note. */
   onReopen: (note: string) => Promise<unknown>;
 }
 
-/**
- * «Non funziona» (E20/F03/US02/T01): the host says what does not work in a connection support made, and the request goes back to support with that note. The note is required (the
- * server refuses an empty one, 422 `assist_reopen_note_required`), at most 500 characters, and has no e-mail address (the same 422): the refusal is said under the field and the dialog
- * stays open so the note can be fixed. It closes when the server accepted the reopening, and it can neither be closed nor pressed twice while the call is on its way.
- */
 export function AssistReopenDialog({ onClose, onReopen }: AssistReopenDialogProps) {
   const { t } = useTranslation();
   const ids = useId();
@@ -31,8 +25,6 @@ export function AssistReopenDialog({ onClose, onReopen }: AssistReopenDialogProp
 
   async function confirm(event: FormEvent) {
     event.preventDefault();
-    // The dialog is drawn in a portal, but its events bubble through the React tree: the button that opens it can be inside the form of a wizard (the sender wizard's panel step),
-    // and a submit that is not stopped here would submit that form too, and go on to its next step.
     event.stopPropagation();
     if (sending) return;
     const trimmed = note.trim();

@@ -9,7 +9,6 @@ import { formatCents } from './tourist-tax-model';
 
 const SHORT_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/** The state of a comune is always said in words in its badge; the tone only helps the eye (what is still to pay is the one that asks). */
 const STATUS_VARIANTS: Record<TouristTaxSummaryStatus, NonNullable<BadgeProps['variant']>> = {
   NothingOwed: 'outline',
   ToPay: 'warning',
@@ -17,24 +16,19 @@ const STATUS_VARIANTS: Record<TouristTaxSummaryStatus, NonNullable<BadgeProps['v
   Overpaid: 'secondary',
 };
 
-// The first column stays in sight while the table scrolls sideways on a phone, so every figure keeps the name of its comune.
 const STICKY = 'sticky left-0 z-10 bg-background';
 const HEAD = 'bg-muted px-3 py-3 text-xs font-semibold';
 const FIGURE = 'px-3 py-3 text-right align-top tabular-nums';
 
 interface ComuneSummaryTableProps {
   summary: TouristTaxSummary;
-  /** The person may record and delete payments (`payment.write`); the server decides again. */
   canWrite: boolean;
-  /** The payment whose receipt is on its way. */
   downloadingId: string | null;
-  /** The person chose "Record payment" on a comune. */
   onRecord: (comune: TouristTaxComuneSummary) => void;
   onDownloadReceipt: (remittance: TouristTaxRemittance) => void;
   onDeleteRemittance: (remittance: TouristTaxRemittance) => void;
 }
 
-/** The short sentence that says an owed amount may be incomplete: next to the amount and next to the state, whatever the state. */
 function IncompleteNote({ className }: { className?: string }) {
   const { t } = useTranslation();
   return (
@@ -146,7 +140,6 @@ export function ComuneSummaryTable({ summary, canWrite, downloadingId, onRecord,
           {showPayments && row.remittances && row.remittances.length > 0 ? (
             <tr data-testid="tourist-tax-remittances-row">
               <td colSpan={columns} className="px-3 pb-3 pt-0">
-                {/* On a phone the list stays where the first column is, as wide as the screen, while the table scrolls under it. */}
                 <div className="sticky left-0 w-[min(100%,calc(100vw-3rem))]">
                   <RemittanceList
                     comune={row.comune}

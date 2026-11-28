@@ -85,7 +85,6 @@ describe('the month of the host calendar with the day layer (E08/F05/US03/T01, T
     expect(text(within(cellOf('2026-09-13')).getByTestId('day-cell-price'))).toBe('120,50 €');
     expect(within(cellOf('2026-09-13')).getByTestId('day-cell-closed-arrival')).toHaveTextContent('no arrivi');
     expect(within(cellOf('2026-09-15')).getByTestId('day-cell-closed-departure')).toHaveTextContent('no partenze');
-    // A taken night and a past day show no price.
     expect(within(cellOf('2026-09-14')).queryByTestId('day-cell')).not.toBeInTheDocument();
     expect(within(cellOf('2026-09-10')).queryByTestId('day-cell')).not.toBeInTheDocument();
     expect(cellOf('2026-09-10')).toHaveClass('host-calendar-past');
@@ -114,7 +113,6 @@ describe('the month of the host calendar with the day layer (E08/F05/US03/T01, T
 
     const button = (date: string) => document.querySelector<HTMLElement>(`[data-day-cell="${date}"]`)!;
     button('2026-09-12').focus();
-    // Enter and Space make a click with no position: that is the keyboard's press (a mouse click is the library's).
     fireEvent.click(button('2026-09-12'), { detail: 0 });
     expect(onPressDay).toHaveBeenLastCalledWith('p1', '2026-09-12', false);
     fireEvent.click(button('2026-09-12'), { detail: 1 });
@@ -124,7 +122,6 @@ describe('the month of the host calendar with the day layer (E08/F05/US03/T01, T
     expect(button('2026-09-13')).toHaveFocus();
     fireEvent.keyDown(button('2026-09-13'), { key: 'ArrowRight', shiftKey: true });
     expect(onPressDay).toHaveBeenLastCalledWith('p1', '2026-09-14', true, '2026-09-13');
-    // Down is a week on.
     fireEvent.keyDown(button('2026-09-14'), { key: 'ArrowDown' });
     expect(button('2026-09-21')).toHaveFocus();
     fireEvent.keyDown(button('2026-09-21'), { key: 'Escape' });
@@ -151,7 +148,6 @@ describe('the month of the host calendar with the day layer (E08/F05/US03/T01, T
     const channel = screen.getAllByTestId('calendar-event-channel')[0];
     expect(channel).toHaveTextContent(name);
     expect(channel.querySelector('svg')).not.toBeNull();
-    // And in the tooltip of the entry.
     expect(screen.getAllByTitle(new RegExp(name)).length).toBeGreaterThan(0);
   });
 

@@ -4,18 +4,11 @@ import { ApiClient } from './client';
 
 const ORG = '/orgs/me/bank-links';
 
-/**
- * Stripe Financial Connections on the paths the API actually exposes. The base URL already ends in `/api`.
- * Starting a payment does not mark a due paid (`dueSettled` is false until a later read of the due).
- */
 export const bankLinkApi = {
-  /** Landlord: Financial Connections client secret. */
   createOrgSession: async (): Promise<BankLinkSession> => parseSession(await ApiClient.post<unknown>(`${ORG}/sessions`, {})),
 
-  /** Landlord: the account stored on the org, or `linked: false`. */
   getOrgAccount: async (): Promise<BankLinkAccount> => parseAccount(await ApiClient.get<unknown>(ORG)),
 
-  /** Landlord: stores `fca_…` after Stripe.js returns it. */
   attachOrgAccount: async (accountId: string): Promise<BankLinkAccount> =>
     parseAccount(await ApiClient.post<unknown>(ORG, { accountId })),
 
@@ -35,13 +28,11 @@ export const bankLinkApi = {
       await ApiClient.post<unknown>(rentPath(installmentId, 'session'), { token }, { public: true }),
     ),
 
-  /** Tenant: stores `fca_…` on that lease only. */
   attachRentAccount: async (installmentId: string, token: string, accountId: string): Promise<BankLinkAccount> =>
     parseAccount(
       await ApiClient.post<unknown>(rentPath(installmentId), { token, accountId }, { public: true }),
     ),
 
-  /** Tenant: debit of this installment. The amount is the due's. Starting it does not mark the due paid. */
   startRentPayment: async (installmentId: string, token: string, idempotencyKey: string): Promise<BankLinkPaymentStarted> =>
     parsePayment(
       await ApiClient.post<unknown>(rentPath(installmentId, 'payment'), { token }, {
@@ -58,11 +49,9 @@ export const bankLinkApi = {
   createTenantSession: async (leaseId: string, dueId: string): Promise<BankLinkSession> =>
     parseSession(await ApiClient.post<unknown>(tenantDueBankLinkPath(leaseId, dueId, 'session'), {})),
 
-  /** Stores `fca_…` for this tenant due. */
   attachTenantAccount: async (leaseId: string, dueId: string, accountId: string): Promise<BankLinkAccount> =>
     parseAccount(await ApiClient.post<unknown>(tenantDueBankLinkPath(leaseId, dueId), { accountId })),
 
-  /** Debit of this due from the tenant's linked account. Starting it does not mark the due paid. */
   startTenantPayment: async (leaseId: string, dueId: string, idempotencyKey: string): Promise<BankLinkPaymentStarted> =>
     parsePayment(
       await ApiClient.post<unknown>(tenantDueBankLinkPath(leaseId, dueId, 'payment'), {}, {
@@ -71,7 +60,6 @@ export const bankLinkApi = {
     ),
 };
 
-/** Tenant due bank link: the tenant pays the landlord. */
 export function tenantDueBankLinkPath(leaseId: string, dueId: string, action?: 'session' | 'payment'): string {
   const base = `/tenant-area/contracts/${encodeURIComponent(leaseId)}/dues/${encodeURIComponent(dueId)}/bank-link`;
   return action ? `${base}/${action}` : base;
@@ -86,10 +74,6 @@ function rentPath(installmentId: string, action?: 'session' | 'payment'): string
   return action ? `${base}/${action}` : base;
 }
 
-/**
- * The debit was accepted by the API. The due itself stays unpaid until a later read says Stripe confirmed it,
- * including when `dueSettled` is unexpectedly true or the intent status is already `succeeded`.
- */
 export function transferAwaitingConfirmation(started: Pick<BankLinkPaymentStarted, 'stripeStatus'>): boolean {
   const status = started.stripeStatus;
   return status !== 'canceled' && status !== 'requires_payment_method';

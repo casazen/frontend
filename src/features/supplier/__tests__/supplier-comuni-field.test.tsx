@@ -11,7 +11,6 @@ const api = vi.hoisted(() => ({ getStatus: vi.fn(), search: vi.fn(), getByIstatC
 
 vi.mock('@/api/comuni.api', () => ({ COMUNE_SEARCH_MIN_LENGTH: 2, ComuniApi: api }));
 
-// Rows of the official ISTAT list (ISTAT, 21/02/2026).
 const COMO: Comune = {
   istatCode: '013075',
   cadastralCode: 'C933',
@@ -35,7 +34,6 @@ const TORINO: Comune = {
   isActive: true,
 };
 
-/** The field as a form holds it: the parent keeps the value. */
 function Harness({ initial, known, onValue }: { initial: SupplierComuniValue; known?: Comune[]; onValue: (v: SupplierComuniValue) => void }) {
   const [value, setValue] = useState(initial);
   return (

@@ -18,22 +18,17 @@ import { futureStay, mockDirectCheckoutApi } from './direct-checkout-mock';
  * Page routes win over context routes, so the API mocks of a page (`mockAgencyApi`) answer first and what they leave out reaches the proxy.
  */
 
-/** The stand-in for the agency's WordPress site: another origin than the booking domain, and https, the only scheme `frame-ancestors https:` lets frame a page. */
 export const WORDPRESS_ORIGIN = 'https://sito-wordpress.test';
 
-/** The agency's own domain (a verified custom domain, NF-140): the host `resolve-host` knows, and the one the widgets and the checkout are served from. */
 export const AGENCY_HOST = 'prenota.quokka-test.test';
 export const AGENCY_ORIGIN = `https://${AGENCY_HOST}`;
 
-/** Where Playwright serves the built app (`playwright.config.ts`, mode `E2E_EMBED`): only the proxy calls it, the browser never does. */
 const LOCAL_APP_ORIGIN = 'http://localhost:4173';
 
-/** The booking of the guest area: the code the guest-access widget takes, and the two proofs the page of the guest area accepts for it (NF-143). */
 export const GUEST_BOOKING_CODE = 'K7M4Q-9XP2H';
 export const GUEST_EMAIL = 'giulia@example.com';
 export const GUEST_PHONE_LAST4 = '4567';
 
-/** The session the mocked guest area hands out, and the pages of the agency domain that must refuse to be framed by another website (AC-NF144-1). */
 const GUEST_ACCESS_TOKEN = 'gs1.e2e-guest-session';
 export const REFUSED_PATHS = [
   '/login',
@@ -44,32 +39,20 @@ export const REFUSED_PATHS = [
   '/app/short-rent/bookings',
 ] as const;
 
-/** The page of the booking widget as a frame asks for it: the one page of the domain another website may frame. */
 const FRAMABLE_WIDGET_PATH = `/embed/booking?lang=it&parent=${encodeURIComponent(WORDPRESS_ORIGIN)}&v=1`;
 
-/** A transparent pixel: what the picture of a home, or the logo of the agency, is in a world with no network. */
 const PIXEL = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------
-// The stand-in for the WordPress site.
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function escapeAttribute(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
-/** The element the plugin prints for a widget (`Renderer::element`): one `<div>` with the attributes the loader reads, in the plugin's order. */
 function widgetElement(widget: string, attributes: Record<string, string> = {}): string {
   const all: Record<string, string> = { 'data-casazen-widget': widget, 'data-casazen-base': AGENCY_ORIGIN, 'data-casazen-lang': 'it', ...attributes };
   const pairs = Object.entries(all).map(([name, value]) => `${name}="${escapeAttribute(value)}"`);
   return `<div class="casazen-widget casazen-widget--${widget}" ${pairs.join(' ')}></div>`;
 }
 
-/**
- * A page of the stand-in site. Every page keeps the events the loader hands to the page (`casazen:event`, a DOM event on the element of the widget that bubbles) in
- * `window.__czEvents`, the way the agency's own script would listen to them; the page of the booking widget also holds the `dataLayer` that Tag Manager reads, created
- * BEFORE the loader runs, as a page with the container in its head has it.
- */
 function standInPage(title: string, main: string, { dataLayer = false }: { dataLayer?: boolean } = {}): string {
   return `<!doctype html>
 <html lang="it-IT">
@@ -105,7 +88,6 @@ function framingPage(): string {
 }
 
 const WORDPRESS_PAGES: Record<string, string> = {
-  // The home: the search bar of the hero, drawn in the page itself (no frame), with the places the plugin printed.
   '/': standInPage(
     'Quokka',
     widgetElement('search', {
@@ -113,10 +95,8 @@ const WORDPRESS_PAGES: Record<string, string> = {
       'data-casazen-destinations': JSON.stringify([{ id: 'roma', label: 'Roma' }]),
     }),
   ),
-  // The booking engine: the plugin prints the events for the `dataLayer` by default.
   '/prenota/': standInPage('Prenota', widgetElement('booking', { 'data-casazen-datalayer': 'true', 'data-casazen-sync-url': 'false' }), { dataLayer: true }),
   '/check-in-online/': standInPage('Check-in online', widgetElement('guest-access', { 'data-casazen-datalayer': 'true' })),
-  // The owner link is never a frame: a link to the sign-in of the portal, on the address of the agency.
   '/area-proprietari/': standInPage(
     'Area proprietari',
     `<p class="casazen-owner-login"><a class="casazen-owner-login__link" href="${AGENCY_ORIGIN}/portale-proprietari/accedi" rel="noopener">Area proprietari</a></p>`,
@@ -124,7 +104,6 @@ const WORDPRESS_PAGES: Record<string, string> = {
   '/tentativi-di-incorniciatura/': framingPage(),
 };
 
-/** Answers the pages of the stand-in WordPress site (`https://sito-wordpress.test/…`); any other path of it is a 404, like on a real site. */
 export async function fulfillWordpressSite(context: BrowserContext): Promise<void> {
   await context.route(
     (url) => url.origin === WORDPRESS_ORIGIN,
@@ -139,10 +118,6 @@ export async function fulfillWordpressSite(context: BrowserContext): Promise<voi
   );
 }
 
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------
-// The agency domain: the built app with the headers of vercel.json.
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
 interface VercelHeaderRule {
   source: string;
   headers: { key: string; value: string }[];
@@ -150,7 +125,6 @@ interface VercelHeaderRule {
 
 let vercelRules: VercelHeaderRule[] | undefined;
 
-/** The header rules of the real `vercel.json` (read once, from the root of the repository: Playwright runs from there). */
 function readVercelRules(): VercelHeaderRule[] {
   vercelRules ??= (JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8')) as { headers: VercelHeaderRule[] }).headers;
   return vercelRules;
@@ -176,21 +150,17 @@ export function vercelHeadersFor(path: string): { source: string; headers: Recor
   return { source, headers };
 }
 
-/** A page of the agency domain the browser asked for, with the headers the proxy answered it with. */
 interface ProxiedDocument {
   path: string;
   headers: Record<string, string>;
 }
 
 export interface AgencyProxy {
-  /** The documents (pages and frames, not scripts or pictures) the browser asked of the agency domain, in the order it asked. */
   documents: ProxiedDocument[];
 }
 
-/** What belongs to one hop between two servers: the answer below is whole and plain, so none of it is passed on. */
 const HOP_HEADERS = new Set(['connection', 'keep-alive', 'transfer-encoding', 'content-encoding', 'content-length']);
 
-/** What the browser says about itself and about the page it came from: not for the local server, which would refuse a `Host` it does not know (403) and answer `304` to a validator. */
 const NOT_FORWARDED = ['host', 'origin', 'referer', 'if-none-match', 'if-modified-since'];
 
 /**
@@ -228,7 +198,6 @@ export async function proxyAgencyDomain(context: BrowserContext): Promise<Agency
 
       const forwarded: Record<string, string> = { ...request.headers(), 'accept-encoding': 'identity' };
       for (const name of Object.keys(forwarded)) {
-        // The pseudo-headers of HTTP/2 (`:authority`) are no header of a request to the local server.
         if (NOT_FORWARDED.includes(name) || name.startsWith(':')) delete forwarded[name];
       }
 
@@ -247,11 +216,6 @@ export async function proxyAgencyDomain(context: BrowserContext): Promise<Agency
   return { documents };
 }
 
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------
-// The API of the agency domain.
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-/** What `resolve-host` says about the agency's domain (analysis §6): verified custom domain, guest area and owner portal on, the widgets on, no tracking container. */
 const RESOLVE_HOST_ANSWER: ResolveHostResponse = {
   orgId: '11111111-1111-1111-1111-111111111101',
   slug: DEMO_ORG_SLUG,
@@ -264,7 +228,6 @@ const RESOLVE_HOST_ANSWER: ResolveHostResponse = {
   branding: { displayName: 'Demo Casazen Stays', slug: DEMO_ORG_SLUG, showPoweredBy: false },
 };
 
-/** What the page of the guest area posts to open a session: the booking code and ONE proof, the e-mail or the last four digits of the phone (NF-143). */
 interface GuestLookupBody {
   orgSlug?: string;
   bookingCode?: string;
@@ -273,11 +236,9 @@ interface GuestLookupBody {
 }
 
 export interface AgencyApi {
-  /** The bodies of the guest-area lookups (`POST /api/public/guest/session`), as the page sent them, in order. */
   guestLookups: GuestLookupBody[];
 }
 
-/** Whether the lookup proves the booking: its code and exactly one of the two proofs, the right one. */
 function provesTheBooking(body: GuestLookupBody): boolean {
   if (body.orgSlug !== DEMO_ORG_SLUG || body.bookingCode !== GUEST_BOOKING_CODE) return false;
   return (body.email === GUEST_EMAIL && body.phoneLast4 === undefined) || (body.phoneLast4 === GUEST_PHONE_LAST4 && body.email === undefined);
@@ -334,7 +295,6 @@ export async function mockAgencyApi(page: Page): Promise<AgencyApi> {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(RESOLVE_HOST_ANSWER) });
   });
 
-  // `whiteLabelHost` gives the page of the guest area its second proof (the last four digits of the phone); `siteEmbed` is the flag of the widgets.
   await page.route(api(/^\/api\/public\/features$/), async (route) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ otaPartnerApi: false, whiteLabelHost: true, siteEmbed: true }) });
   });

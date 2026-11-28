@@ -8,7 +8,6 @@ import { getHttpStatus, getProblemMessage, getRetryAfterSeconds } from '@/lib/ap
 import { useGuestThread, useSendGuestMessage } from '@/queries/use-guest-messages';
 import { GUEST_MESSAGE_MAX_LENGTH, type GuestBookingDetails, type GuestBookingStatus, type GuestSession } from '@/types';
 
-/** The states of a booking that has a thread: confirmed, or the stay in progress / over (the backend answers 404 for the others). */
 const MESSAGING_STATUSES: readonly GuestBookingStatus[] = ['Confirmed', 'StayInProgress', 'StayCompleted'];
 
 interface GuestMessagesSectionProps {
@@ -35,7 +34,6 @@ function GuestMessages({ session, booking }: GuestMessagesSectionProps) {
   const thread = useGuestThread(session);
   const { pending, redacted, send, retry } = useSendGuestMessage(session);
 
-  // No thread for this booking (cancelled, not confirmed): nothing to show, not even a placeholder.
   if (thread.isError && getHttpStatus(thread.error) === 404) return null;
 
   const hostName = booking.host.name ?? t('publicBooking.guestMessages.hostFallback');

@@ -12,7 +12,6 @@
  */
 export const NOT_REDESIGNED_ROUTE_HANDLE = { redesign: false } as const;
 
-/** True when one of the matched routes is marked as not redesigned yet. */
 export function isNotRedesignedMatch(matches: readonly { route: { handle?: unknown } }[] | null): boolean {
   return (matches ?? []).some(({ route }) => (route.handle as { redesign?: unknown } | undefined)?.redesign === false);
 }

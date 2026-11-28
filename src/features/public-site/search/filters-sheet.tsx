@@ -30,7 +30,6 @@ import {
 } from './search-state';
 import type { useSearchState } from './use-search-state';
 
-/** The sliders wait for a pause of the finger before they ask the server how many homes are left. */
 const COUNT_DELAY_MS = 250;
 const ROOM_CHOICES = [1, 2, 3];
 const BATH_CHOICES = [1, 2];
@@ -44,19 +43,11 @@ const RULE_ICONS: Record<FilterRule, LucideIcon> = {
 };
 
 interface FiltersSheetProps {
-  /** Where the homes are searched: a booking site, or all of them. */
   scope: SearchScope;
   state: ReturnType<typeof useSearchState>;
-  /** How far the sliders go: from every home of the site, or from the server for the place asked. */
   facets: SearchFacets;
 }
 
-/**
- * The filters of the results (DB-07c): the button with the number of filters that are on and the window they open (a sheet from the
- * bottom on a phone). The window works on a draft; «Mostra N case» says how many homes the draft leaves, and it follows the
- * choices as they are made (the server is asked after a short pause, so a slider is not a flood of calls, and the number is
- * announced to a screen reader). Nothing is applied until that button is pressed.
- */
 export function FiltersSheet({ scope, state, facets }: FiltersSheetProps) {
   const portal = usePortalRootProps();
   const [open, setOpen] = useState(false);
@@ -74,7 +65,6 @@ export function FiltersSheet({ scope, state, facets }: FiltersSheetProps) {
   );
 }
 
-/** The button of the filters, with the number of the ones that are on: it opens the sheet, or (in a frame) the panel. */
 const FiltersButton = forwardRef<HTMLButtonElement, { count: number } & ButtonHTMLAttributes<HTMLButtonElement>>(function FiltersButton({ count, ...props }, ref) {
   const { t } = useTranslation();
   return (
@@ -92,12 +82,6 @@ const FiltersButton = forwardRef<HTMLButtonElement, { count: number } & ButtonHT
 
 const FILTERS_PANEL_ID = 'sr-filters-panel';
 
-/**
- * The filters inside the frame of an embeddable widget (NF-144) are not a dialog: a dialog is fixed to the window, and the window of a frame is as tall as its
- * content, so it would open far from the guest. They are the same button and the same form, and the form is a panel in the flow of the page, under the bar.
- * `FiltersPanelButton` goes with the other tools of the bar and opens and closes the panel (a disclosure: the focus stays on the button), `FiltersPanel` goes
- * under them, and «Mostra N case» applies the draft and closes it.
- */
 export const FiltersPanelButton = forwardRef<HTMLButtonElement, Pick<FiltersSheetProps, 'state'> & { open: boolean; onToggle: () => void }>(function FiltersPanelButton(
   { state, open, onToggle },
   ref,
@@ -121,9 +105,7 @@ function FiltersForm({ scope, state, facets, onClose, inline = false }: FiltersS
   const hasDates = Boolean(stay.checkIn && stay.checkOut);
   const [draft, setDraft] = useState<SearchFilters>(search.filters);
 
-  // How many homes the draft leaves: the same call as the list, with the draft in place of the filters.
   const settled = useDebouncedValue(draft, COUNT_DELAY_MS);
-  // Across all the sites it only needs the counts: a page of one home.
   const preview = useScopedStays(scope, toStaysQuery(stay, { ...search, filters: settled }), { keepPrevious: true, pageSize: 1 });
   const unsupported = preview.data?.unsupportedFilters ?? [];
   const clean = dropUnsupported(draft, unsupported);
@@ -135,10 +117,7 @@ function FiltersForm({ scope, state, facets, onClose, inline = false }: FiltersS
   const { prices, areas } = facets;
   const update = (patch: Partial<SearchFilters>) => setDraft((current) => ({ ...current, ...patch }));
   const toggle = <T extends string>(list: T[], value: T): T[] => (list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
-  // Written in the currency of the homes (francs in Switzerland); with none, with no symbol and the phrase that says so; with homes of two currencies, the number alone.
   const euros = (value: number) => writeFacetPrice(value, facets, locale, t);
-  // The icon and the words of each service are the catalog of the site (the same as on the page of a home).
-  // What the server could not apply is not offered.
   const amenityOptions = FILTER_AMENITIES.flatMap((name) => {
     const meta = listAmenities([name])[0];
     return meta && !isUnsupported(unsupported, 'amenities', name) ? [{ name, meta }] : [];
@@ -154,8 +133,6 @@ function FiltersForm({ scope, state, facets, onClose, inline = false }: FiltersS
           ? t('siteSearch.filters.priceUpTo', { price: euros(draft.maxPrice) })
           : t('siteSearch.filters.any');
 
-  // The title, the description and the foot are the parts of a dialog in the sheet; in a panel of the page they are a heading and plain blocks (the parts of
-  // a dialog cannot stand outside it).
   const clear = (
     <Button
       type="button"
@@ -289,7 +266,6 @@ function FiltersForm({ scope, state, facets, onClose, inline = false }: FiltersS
         </Group>
       </form>
 
-      {/* The number the button says, for a screen reader, once it has settled. */}
       <p className="sr-only" role="status" aria-live="polite">
         {waiting ? '' : button}
       </p>
@@ -308,7 +284,6 @@ function FiltersForm({ scope, state, facets, onClose, inline = false }: FiltersS
   );
 }
 
-/** A group of the form: a legend, the value it stands at on the right, and what it holds. */
 function Group({ legend, output, children }: { legend: string; output?: string; children: ReactNode }) {
   return (
     <fieldset className="sr-fs">

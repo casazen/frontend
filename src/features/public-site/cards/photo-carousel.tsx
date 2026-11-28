@@ -3,14 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
 import { displayableMediaUrls } from '@/lib/media-url';
 
-/** Photos a card shows at most: the first ones are the ones a guest looks at, the rest is on the page of the home. */
 const MAX_PHOTOS = 6;
 
-/**
- * The photos of a home on its card (DB-07b): a strip that snaps photo by photo, with arrows and the keyboard. It is the plain
- * scrolling of the browser, so a finger swipes it and nothing is drawn twice; the photos after the first load when they come
- * near. The photo is decoration (the name of the home is the link next to it), and a home with none shows a quiet placeholder.
- */
 export function PhotoCarousel({ photos, label, eager = false }: { photos: readonly string[]; label: string; eager?: boolean }) {
   const { t } = useTranslation();
   const track = useRef<HTMLDivElement>(null);

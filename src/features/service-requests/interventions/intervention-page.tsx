@@ -27,7 +27,6 @@ import { INTERVENTIONS_PATH } from './paths';
 import { useHostPermissions } from './use-host-permissions';
 import { useInterventionActions } from './use-intervention-actions';
 
-/** The page while the request loads: the shape of the page, no spinner in the middle of nothing. */
 function DetailSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="intervention-loading">
@@ -50,14 +49,9 @@ function DetailSkeleton({ label }: { label: string }) {
 
 interface InterventionDetailProps {
   request: ServiceRequest;
-  /** The return from the page of the card (`?redirect_status=`): a payment sent that Stripe confirms to the backend a little later, or a refused card. */
   returned: 'sent' | 'failed' | null;
 }
 
-/**
- * What the page says of an intervention: the way it has gone, in a block of its own what to do now, then its details, the photos of the
- * work, the supplier and the history. The block reads what the server says the host can do (`hostAction`); the page has no state logic.
- */
 function InterventionDetail({ request, returned }: InterventionDetailProps) {
   const { t, i18n } = useTranslation();
   const permissions = useHostPermissions();
@@ -85,7 +79,6 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="intervention-page">
-      {/* The trail (Affitti brevi › Immobili › Interventi › this one) and, on a phone, the link back to the list (UI-05). */}
       <ServicePageHeader
         icon={ClipboardCheck}
         crumbs="auto"
@@ -152,11 +145,9 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
  */
 export function InterventionDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
-  // One page per request: what was open (a window, a payment) is not carried over to the next one.
   return (
     <>
       <InterventionPage key={id} id={id} />
-      {/* The question does not depend on what the page says of the request: it is read by its own endpoint, which does not tell Affitti brevi from Affitti lunghi. */}
       <CleaningVatQuestionHost />
     </>
   );
@@ -165,14 +156,12 @@ export function InterventionDetailPage() {
 function InterventionPage({ id }: { id: string }) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  // A payment sent to Stripe from the page of the bank (3-D Secure): the request is read again until it is paid.
   const [outcome] = useState(() => clientStatusFromRedirect(searchParams.get('redirect_status')));
   const returned = outcome === 'succeeded' || outcome === 'processing' ? 'sent' : outcome === 'failed' ? 'failed' : null;
   const { data: request, isLoading, isError, error, refetch } = useIntervention(id, { poll: returned === 'sent' });
 
   if (isLoading) return <DetailSkeleton label={t('interventions.detail.loading')} />;
 
-  // An API error is never shown as «not found» (only a 404 is).
   if (isError && getHttpStatus(error) !== 404) {
     return (
       <div className="min-w-0 space-y-6">

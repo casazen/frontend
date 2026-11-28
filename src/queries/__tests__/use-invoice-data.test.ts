@@ -30,12 +30,10 @@ describe('useSaveInvoiceData - what is typed is not kept once the panel is gone'
       await result.current.mutateAsync({ recipientKind: 'Guest', fiscalCode: FISCAL_CODE });
     });
 
-    // While the panel that saved is there the mutation is its own: it holds what was sent and what came back...
     const held = queryClient.getMutationCache().getAll()[0];
     expect(held?.state.variables).toMatchObject({ fiscalCode: FISCAL_CODE });
     expect(held?.state.data).toMatchObject({ fiscalCode: FISCAL_CODE });
 
-    // ...and as soon as it is gone nothing of it is left to read.
     unmount();
     await waitFor(() => expect(queryClient.getMutationCache().getAll()).toHaveLength(0));
   });

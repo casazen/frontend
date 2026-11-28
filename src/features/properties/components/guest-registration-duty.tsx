@@ -1,24 +1,17 @@
 import { useTranslation } from 'react-i18next';
+import { BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { GuestNotificationOverride, GuestRegistrationDuty } from '@/types/guest-registration.types';
 import { DUTY_ANSWERS } from '../lib/guest-registration-model';
 
 interface GuestRegistrationDutyProps {
-  /** What CasaZen treats as the duty of the property (`effectiveDuty` of the card): raised, not raised, or left to the host. */
   duty: GuestRegistrationDuty | string;
-  /** The host's own answer; `null` follows the regime. */
   override: GuestNotificationOverride | null;
-  /** `property.write`: the answer can be given and changed. */
   canWrite: boolean;
-  /** The answer is on its way to the server. */
   saving: boolean;
-  /** What the answer on its way says (`null` is «follow the regime»); `undefined` when there is none. */
   savingValue?: GuestNotificationOverride | null;
-  /** Any change of the card is on its way (the answer or the structure number): no button can be pressed until it is over. */
   busy: boolean;
-  /** Why the last answer was not saved; `null` when it was, or none was given. */
   error: string | null;
-  /** The municipality of the property, so its canton, is known: until then there is nothing to decide, and the question is not asked (an answer already given still shows, to be taken back). */
   placeKnown: boolean;
   onAnswer: (override: GuestNotificationOverride | null) => void;
 }
@@ -59,7 +52,6 @@ export function GuestRegistrationDuty({ duty, override, canWrite, saving, saving
       </>
     );
   } else if (duty === 'Ask' && !placeKnown) {
-    // Nothing to decide yet: the list of what is missing says what comes first.
     content = null;
   } else if (duty === 'Ask') {
     content = (
@@ -85,23 +77,21 @@ export function GuestRegistrationDuty({ duty, override, canWrite, saving, saving
                 </Button>
               ))}
             </div>
-            <p className="text-sm text-foreground/70">{t('guestRegistration.duty.reversible')}</p>
           </>
         ) : null}
       </>
     );
   } else if (duty === 'Required') {
     content = (
-      <p className="text-sm" data-testid="guest-registration-duty-required">
+      <p className="flex items-center gap-2 text-sm font-medium" data-testid="guest-registration-duty-required">
+        <BellRing aria-hidden="true" className="size-4 shrink-0 text-foreground/70" />
         {t('guestRegistration.duty.required')}
       </p>
     );
   } else {
-    // A duty this version does not know: nothing is claimed about it.
     content = null;
   }
 
-  // Nothing to say and nothing to explain: no empty block between the facts and what is missing.
   if (content === null && !error) return null;
 
   return (

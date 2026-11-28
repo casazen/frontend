@@ -12,7 +12,6 @@ test.describe('Public booking read-model (#212)', () => {
   test('AC11: search results show the city, price, capacity and host, and lead to the site of the host, without operator identity', async ({ page }) => {
     await page.goto(demoUrl(SEARCH_URL, 'short-stay'));
 
-    // The public search is the results page of a site (SEARCH-GLOBAL): a card per home, the name is its one link.
     const home = page.getByTestId('house-card').first();
     await expect(home.getByRole('link', { name: 'Trastevere Loft' })).toBeVisible({ timeout: 15_000 });
     await expect(home.getByRole('link', { name: 'Trastevere Loft' })).toHaveAttribute('href', new RegExp(`^/book/demo-casazen/property/${PUBLIC_SEARCH_PROPERTY_ID}`));

@@ -12,29 +12,20 @@
  * wrong costs the guest one tap. The hash is a value derived from the document: it lives in memory for the length of the step, never in a storage, an address, a log or a request.
  */
 
-/** The columns of the thumbnail: 9 cells make 8 comparisons in a row. */
 const COLUMNS = 9;
 
-/** The rows of the thumbnail. */
 const ROWS = 8;
 
-/** The size the page draws the picture at before it is hashed: 10 by 10 pixels for each cell. */
 const SAMPLE = { width: COLUMNS * 10, height: ROWS * 10 };
 
-/**
- * The Hamming distance up to which the back looks like the front: the provisional distance the server uses for the same question (`policy.document.perceptualDuplicateMaxDistance`, 6). A hint
- * for the guest, not a decision: the server answers for the photo that is sent.
- */
 export const SAME_SIDE_MAX_DISTANCE = 6;
 
-/** The pixels of a picture: an `ImageData` fits. */
 export interface FingerprintPixels {
   readonly width: number;
   readonly height: number;
   readonly data: ArrayLike<number>;
 }
 
-/** The difference hash of the pixels, as 16 lower case hexadecimal digits (the form the server keeps it in), or `null` when there is nothing to hash. */
 export function differenceHash(pixels: FingerprintPixels): string | null {
   const { width, height, data } = pixels;
   if (width < 1 || height < 1 || data.length < width * height * 4) return null;
@@ -73,7 +64,6 @@ export function differenceHash(pixels: FingerprintPixels): string | null {
   return hex;
 }
 
-/** How many of the 64 bits differ between two hashes (0 the same picture, 64 the opposite one); `Infinity` when either is not a hash of 16 hexadecimal digits. */
 export function hashDistance(a: string, b: string): number {
   if (!/^[0-9a-f]{16}$/i.test(a) || !/^[0-9a-f]{16}$/i.test(b)) return Number.POSITIVE_INFINITY;
   let distance = 0;
@@ -87,15 +77,10 @@ export function hashDistance(a: string, b: string): number {
   return distance;
 }
 
-/** The photo of the back looks like the photo of the front: their hashes are within {@link SAME_SIDE_MAX_DISTANCE}. A hint only; the server decides. */
 export function looksLikeTheSameSide(front: string, back: string): boolean {
   return hashDistance(front, back) <= SAME_SIDE_MAX_DISTANCE;
 }
 
-/**
- * The hash of what is drawn on the canvas (the frame the guest has just taken), or `null` when it cannot be made (an empty canvas, a browser that cannot read the pixels): then the page has
- * no hint and the server decides alone. The copy it draws is let go before this returns; the canvas it is given is the caller's.
- */
 export function fingerprintOfCanvas(source: HTMLCanvasElement): string | null {
   if (source.width < 1 || source.height < 1) return null;
 

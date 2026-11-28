@@ -1,11 +1,6 @@
 import { ROUTE_MANIFEST, hasEntryPermission, isEntryFeatureEnabled, type PermissionPredicate } from '@/config/route-manifest';
 import type { FeatureFlags } from '@/config/feature-flags';
 
-/**
- * The page of the guest in the manifest. The profile of the customer (CRM-01, epic E07) has its own page behind its flag, keyed by a
- * profile of its own that a conversation does not carry; the page of the guest record is the one that is built from the id of the guest
- * of the booking, which is what the conversation gives.
- */
 const GUEST_PAGE = '/app/short-rent/guests/:id';
 
 /**

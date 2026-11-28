@@ -43,11 +43,8 @@ const nameOf = (ownerId: string) => NAMES.get(ownerId) ?? ownerId;
 const row = (ownerId: string, overrides: Partial<OwnerBulkOwnerResult> = {}): OwnerBulkOwnerResult => ({ ownerId, ok: true, code: null, unchanged: false, issues: null, details: null, ...overrides });
 const run = (overrides: Partial<OwnerBulkRun> = {}): OwnerBulkRun => ({ jobId: null, action: 'Approve', year: YEAR, month: MONTH, status: 'Completed', total: 3, results: [], errorCode: null, ...overrides });
 
-/** What the server answers to a refusal: the status and the problem with its code. */
 const problem = (status: number, code: string) => Object.assign(new Error(code), { isAxiosError: true, response: { status, data: { code } } });
-/** What axios throws when there is no answer at all. */
 const networkError = () => Object.assign(new Error('Network Error'), { isAxiosError: true, code: 'ERR_NETWORK' });
-/** An answer settled from outside: the request that is on its way. */
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason: unknown) => void;
@@ -58,7 +55,6 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
-/** Three owners with a draft each: the month asks for the approval. */
 const MONTH_OF_THREE: OwnerCloseReadiness = readiness([
   ownerReadiness({ ownerId: OWNER_ID, latestStatus: 'Draft' }),
   ownerReadiness({ ownerId: OTHER_OWNER_ID, latestStatus: 'Draft' }),
@@ -93,7 +89,6 @@ function renderDialog(options: { monthOver?: boolean; pollMs?: number } = {}) {
   return { onOpenChange, onKeepChange };
 }
 
-/** Starts the step that is chosen: the button is waited for until it can be pressed, never a fixed time. */
 async function start() {
   const confirm = await screen.findByTestId('bulk-confirm');
   await waitFor(() => expect(confirm).toBeEnabled());
@@ -115,17 +110,12 @@ describe('what a bulk run comes to (E13/F02/US03/T01)', () => {
   it('BulkVerdict_FromTheRowsOnly_NeverAllDoneWhileOneRowSaysOtherwise_Test', () => {
     expect(verdictOf(run({ total: 3, results: rows(3) }))).toBe('allDone');
     expect(verdictOf(run({ total: 3, results: [...rows(2), row('x', { ok: false, code: 'fx_missing' })] }))).toBe('someNotDone');
-    // The server's own `allDone` is never read: the rows say.
     expect(verdictOf({ ...run({ total: 3, results: [...rows(2), row('x', { ok: false, code: 'fx_missing' })] }), allDone: true } as OwnerBulkRun)).toBe('someNotDone');
-    // A run that is over without a row for every owner it was asked for is not «fatto».
     expect(verdictOf(run({ total: 3, results: rows(2) }))).toBe('incomplete');
-    // A run that failed itself is not either, even when every row it has is fine.
     expect(verdictOf(run({ status: 'Failed', total: 3, results: rows(3), errorCode: 'owner_bulk_failed' }))).toBe('runFailed');
-    // A status a later server adds is over (nobody waits for it for ever) and is not a success.
     const unknown = { ...run({ total: 1, results: rows(1) }), status: 'Paused' } as unknown as OwnerBulkRun;
     expect(isRunOver(unknown)).toBe(true);
     expect(verdictOf(unknown)).toBe('runFailed');
-    // A version made with anomalies is a statement made, and a line of its own.
     expect(verdictOf(run({ action: 'Generate', total: 2, results: [row('a'), row('b', { code: 'owner_statement_flagged', issues: ['fx_missing'] })] }))).toBe('doneWithFlags');
     expect(verdictOf(run({ total: 0, results: [] }))).toBe('empty');
     expect(verdictOf(run({ jobId: 'job', status: 'Running', total: 3, results: rows(1) }))).toBe('running');
@@ -134,7 +124,6 @@ describe('what a bulk run comes to (E13/F02/US03/T01)', () => {
 
   it('UnansweredOf_TheOwnersAskedForThatHaveNoRow_WhateverTheVerdictSays', () => {
     expect(unansweredOf(run({ total: 5, results: rows(3) }))).toBe(2);
-    // A failure does not hide them: the verdict is «someNotDone» and two owners still have no answer.
     const failedWithGaps = run({ total: 5, results: [...rows(2), row('x', { ok: false, code: 'fx_missing' })] });
     expect(verdictOf(failedWithGaps)).toBe('someNotDone');
     expect(unansweredOf(failedWithGaps)).toBe(2);
@@ -151,7 +140,6 @@ describe('what a bulk run comes to (E13/F02/US03/T01)', () => {
     expect(suggest(readiness([ownerReadiness({ latestStatus: 'Draft' })]))).toBe('Approve');
     expect(suggest(readiness([ownerReadiness({ latestStatus: 'Approved' })]))).toBe('Publish');
     expect(suggest(readiness([ownerReadiness({ latestStatus: 'Published' })]))).toBe('Close');
-    // The close is not suggested for a month that is not over, nor for one that is closed.
     expect(suggest(readiness([ownerReadiness({ latestStatus: 'Published' })]), false)).toBe('Post');
     expect(suggest(readiness([ownerReadiness({ latestStatus: 'Published', status: 'Closed' })]))).toBe('Post');
   });
@@ -167,20 +155,17 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     );
     renderDialog();
 
-    // The suggestion is the approval (three drafts), and the run is for everyone: no list of owners is sent.
     expect(await screen.findByTestId('bulk-step')).toHaveValue('Approve');
     await start();
     const result = await screen.findByTestId('bulk-result');
     expect(api.runBulkStep).toHaveBeenCalledTimes(1);
     expect(api.runBulkStep).toHaveBeenCalledWith(YEAR, MONTH, { action: 'Approve' });
 
-    // The run says what it comes to, from its rows: one owner did not go through, and «fatto per tutti» is not on the screen.
     expect(result).toHaveAttribute('data-verdict', 'someNotDone');
     const step = stepLabel('Approve');
     expect(screen.getByTestId('bulk-headline')).toHaveTextContent(text('ownerAccounting.bulk.result.headline.someNotDone', { count: 1, total: 3, step }));
     expect(screen.queryByText(text('ownerAccounting.bulk.result.headline.allDone', { count: 3, step }))).toBeNull();
 
-    // The owner that failed is listed, by name, with the reason in words and the anomalies behind it; the others are not in that list.
     const failed = screen.getByTestId('bulk-failed');
     const rowsFailed = within(failed).getAllByTestId('bulk-result-row');
     expect(rowsFailed).toHaveLength(1);
@@ -190,7 +175,6 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     expect(within(rowsFailed[0] as HTMLElement).getByTestId('bulk-result-reason')).toHaveTextContent(text('apiErrors.codes.ownerStatementFlagged'));
     expect(within(rowsFailed[0] as HTMLElement).getByTestId('bulk-result-issues')).toHaveTextContent(text('ownerAccounting.issue.fxMissing.title'));
     expect(within(failed).queryByText('Marta Rossi')).toBeNull();
-    // The two that did not fail wait under one line, each as what it is.
     expect(screen.getByTestId('bulk-tally-failed')).toHaveTextContent(text('ownerAccounting.bulk.result.tally.failed', { count: 1 }));
     expect(screen.getByTestId('bulk-tally-done')).toHaveTextContent(text('ownerAccounting.bulk.result.tally.done', { count: 1 }));
     expect(screen.getByTestId('bulk-tally-unchanged')).toHaveTextContent(text('ownerAccounting.bulk.result.tally.unchanged', { count: 1 }));
@@ -201,7 +185,6 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     renderDialog();
     await start();
 
-    // «1 out of 5 did not go through» is not all that is known: two owners have no answer at all, and the screen says it.
     expect(await screen.findByTestId('bulk-result')).toHaveAttribute('data-verdict', 'someNotDone');
     expect(screen.getByTestId('bulk-headline')).toHaveTextContent(text('ownerAccounting.bulk.result.headline.someNotDone', { count: 1, total: 5, step: stepLabel('Approve') }));
     expect(screen.getByTestId('bulk-unanswered')).toHaveTextContent(text('ownerAccounting.bulk.result.unanswered', { count: 2, total: 5 }));
@@ -239,7 +222,6 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     expect(flaggedRow).toHaveAttribute('data-kind', 'flagged');
     expect(within(flaggedRow).getByTestId('bulk-result-issues')).toHaveTextContent(text('ownerAccounting.issue.channelCommissionMissing.title'));
     expect(within(flaggedRow).getByTestId('bulk-result-issues')).toHaveTextContent(text('ownerAccounting.issue.fxMissing.title'));
-    // A missing commission of a portal is resolved in the channel commissions: the row says where.
     expect(within(flaggedRow).getByTestId('bulk-result-fix')).toHaveAttribute('href', '/app/account/channel-commissions');
     expect(screen.queryByText(text('ownerAccounting.bulk.result.headline.allDone', { count: 2, step: stepLabel('Generate') }))).toBeNull();
   });
@@ -253,7 +235,6 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     expect(result).toHaveAttribute('data-verdict', 'incomplete');
     expect(screen.getByTestId('bulk-headline')).toHaveTextContent(text('ownerAccounting.bulk.result.headline.incomplete', { count: 2, total: 3, step: stepLabel('Approve') }));
     expect(screen.queryByText(text('ownerAccounting.bulk.result.headline.allDone', { count: 3, step: stepLabel('Approve') }))).toBeNull();
-    // The headline already says it: no second line for the same owners.
     expect(screen.queryByTestId('bulk-unanswered')).toBeNull();
   });
 
@@ -288,7 +269,6 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
       );
     renderDialog();
 
-    // Closing the months of everybody asks for the word, as the close of one owner does.
     fireEvent.change(await screen.findByTestId('bulk-step'), { target: { value: 'Close' } });
     const confirm = screen.getByTestId('bulk-confirm');
     expect(confirm).toBeDisabled();
@@ -296,20 +276,17 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     await waitFor(() => expect(confirm).toBeEnabled());
     fireEvent.click(confirm);
 
-    // Queued: nothing answered yet, and nothing says «fatto».
     const progress = await screen.findByTestId('bulk-progress');
     expect(progress).toHaveAttribute('data-status', 'Queued');
     expect(screen.getByTestId('bulk-progress-text')).toHaveTextContent(text('ownerAccounting.bulk.progress.queued'));
     expect(screen.queryByTestId('bulk-result')).toBeNull();
     queued.resolve(run({ action: 'Close', jobId: 'job-2', status: 'Running', total: 3, results: [row(OWNER_ID)] }));
 
-    // Running: one owner out of three, as a number and a bar.
     await waitFor(() => expect(screen.getByTestId('bulk-progress-text')).toHaveTextContent(text('ownerAccounting.bulk.progress.text', { count: 1, total: 3 })));
     expect(screen.getByTestId('bulk-progress-bar')).toHaveAttribute('aria-valuenow', '33');
     expect(screen.queryByTestId('bulk-result')).toBeNull();
     running.resolve(run({ action: 'Close', jobId: 'job-2', status: 'Running', total: 3, results: [row(OWNER_ID), row(OTHER_OWNER_ID, { ok: false, code: 'owner_close_unreconciled' })] }));
 
-    // Over: the owner whose balance does not match the payments is listed, with the figures the server gave (no currency: no symbol, and the words say it), and the run is not done.
     const failed = await screen.findByTestId('bulk-failed');
     expect(screen.getByTestId('bulk-result')).toHaveAttribute('data-verdict', 'someNotDone');
     expect(within(failed).getByTestId('bulk-result-row')).toHaveAttribute('data-owner', OTHER_OWNER_ID);
@@ -348,7 +325,6 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     await screen.findByTestId('bulk-progress');
     first.resolve(run({ jobId: 'job-4', status: 'Running', total: 3, results: [row(OWNER_ID)] }));
 
-    // The 404 comes after an answer was read: the answer that is still in the cache is not shown as the state of the run.
     const notFound = await screen.findByTestId('bulk-read-error');
     expect(notFound).toHaveTextContent(text('ownerAccounting.bulk.progress.notFound'));
     expect(screen.queryByTestId('bulk-read-retry')).toBeNull();
@@ -374,7 +350,6 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     const close = within(select).getByRole('option', { name: text('ownerAccounting.bulk.choose.closedLater', { label: stepLabel('Close') }) });
     expect(close).toBeDisabled();
     expect(within(select).getByRole('option', { name: text('ownerAccounting.bulk.choose.suggested', { label: stepLabel('Approve') }) })).toBeInTheDocument();
-    // The consequences of the chosen step are on the screen before anything is asked.
     expect(screen.getByTestId('bulk-consequences')).toHaveTextContent(text('ownerAccounting.bulk.step.Approve.consequence1'));
     expect(screen.getByTestId('bulk-count')).toHaveTextContent(text('ownerAccounting.bulk.count', { count: 3 }));
     expect(api.runBulkStep).not.toHaveBeenCalled();
@@ -392,7 +367,6 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     await waitFor(() => expect(close).toBeEnabled());
     fireEvent.click(close);
 
-    // Told, and the page is asked to keep the dialog (closed): the run is still followed from there.
     expect(toast.warning).toHaveBeenCalledWith(text('ownerAccounting.bulk.leftRunning'));
     expect(onKeepChange).toHaveBeenCalledWith(true);
     expect(onOpenChange).toHaveBeenCalledWith(false);
@@ -455,16 +429,13 @@ describe('«Esegui per tutti» on the month-end page (E13/F02/US03/T01)', () => 
     const readings = api.getReadiness.mock.calls.length;
     await start();
 
-    // The step ran for the month on the page, for every owner of it (no list), and the owner that failed is named as the registry names it.
     const failed = await screen.findByTestId('bulk-failed');
     expect(api.runBulkStep).toHaveBeenCalledWith(YEAR, MONTH, { action: 'Approve' });
     expect(within(failed).getByTestId('bulk-result-row')).toHaveTextContent('Luca Bianchi');
     expect(screen.queryByText(text('ownerAccounting.bulk.result.headline.allDone', { count: 2, step: stepLabel('Approve') }))).toBeNull();
-    // The month behind the dialog is read again: what the run changed is on the page when the dialog is closed.
     await waitFor(() => expect(api.getReadiness.mock.calls.length).toBeGreaterThan(readings));
   });
 
-  /** Starts the suggested step for the whole month (a queued run, whose first reading is `first`), then leaves the dialog while it goes on. */
   async function startAndLeave(jobId: string, first: { promise: Promise<OwnerBulkRun> }) {
     api.runBulkStep.mockResolvedValue(run({ jobId, status: 'Queued', total: 2, results: [] }));
     api.getBulkRun.mockImplementationOnce(() => first.promise);
@@ -483,20 +454,17 @@ describe('«Esegui per tutti» on the month-end page (E13/F02/US03/T01)', () => 
     await waitFor(() => expect(screen.queryByTestId('bulk-dialog')).toBeNull());
   }
 
-  // Data: a run the person left while it went on is not lost. The month on the page is read again when it ends, nobody has to reload, and who failed is still to be seen.
   it('MonthEndPage_ARunLeftWhileItGoesOn_IsFollowedToItsEnd_TheMonthIsReadAgain_AndWhoFailedIsStillToBeSeen', async () => {
     const first = deferred<OwnerBulkRun>();
     await startAndLeave('job-9', first);
     const readings = api.getReadiness.mock.calls.length;
 
-    // The run ends while nobody looks at the dialog: the month is read again, and the person is told how it went, with the way back to the result.
     first.resolve(run({ jobId: 'job-9', status: 'Completed', total: 2, results: [row(OWNER_ID), row(OTHER_OWNER_ID, { ok: false, code: 'owner_statement_flagged', issues: ['fx_missing'] })] }));
     await waitFor(() => expect(api.getReadiness.mock.calls.length).toBeGreaterThan(readings));
     const told = text('ownerAccounting.bulk.result.headline.someNotDone', { count: 1, total: 2, step: stepLabel('Approve') });
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(told, expect.objectContaining({ action: expect.objectContaining({ label: text('ownerAccounting.bulk.reopen') }) })));
     expect(toast.success).not.toHaveBeenCalled();
 
-    // Coming back, the person finds the result owner by owner, and no question that would start a second run.
     const open = screen.getByTestId('bulk-open');
     await waitFor(() => expect(open).toBeEnabled());
     fireEvent.click(open);
@@ -511,7 +479,6 @@ describe('«Esegui per tutti» on the month-end page (E13/F02/US03/T01)', () => 
     await startAndLeave('job-10', first);
     const readings = api.getReadiness.mock.calls.length;
 
-    // The list of the month is where the person is sent to look: it is read again, and what is told is that the run cannot be found, not that it is done.
     first.reject(problem(404, 'owner_bulk_job_not_found'));
     await waitFor(() => expect(api.getReadiness.mock.calls.length).toBeGreaterThan(readings));
     await waitFor(() =>

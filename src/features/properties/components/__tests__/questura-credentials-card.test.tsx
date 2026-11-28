@@ -57,7 +57,6 @@ describe('QuesturaCredentialsCard (CO-14)', () => {
     renderCard();
 
     expect(await screen.findByText(/^Configurate il 20\/09\/2026/)).toBeInTheDocument();
-    // Write-only: the form stays empty, there is nothing to reveal.
     expect(screen.getByLabelText('Nome utente')).toHaveValue('');
     expect(screen.getByLabelText('Password')).toHaveValue('');
     expect(screen.getByLabelText('Chiave web service (WSKey)')).toHaveValue('');

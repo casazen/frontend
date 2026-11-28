@@ -18,14 +18,11 @@ import { assign, NO_SUPPLIER } from './request-form';
 import { ASSIST_MAX_TEXT, ASSIST_MIN_TEXT, assistOutcome, type AssistOutcome, type RequestValues } from './request-model';
 
 interface RequestAssistCardProps {
-  /** The host took the proposal: the wizard goes on from where the channel says (the proposals or the partners). */
   onUse: (channel: AssistOutcome['channel'], step: AssistOutcome['step']) => void;
 }
 
-/** The reasons a new try may overcome: a platform with no AI, or whose budget of the month is gone, does not. */
 const RETRYABLE: readonly ServiceRequestAssistReason[] = ['ai_unavailable', 'ai_invalid_answer'];
 
-/** A description this short is asked for a little more (where, for when) before the AI reads it. */
 const SHORT_TEXT = 30;
 
 /**
@@ -45,11 +42,9 @@ export function RequestAssistCard({ onUse }: RequestAssistCardProps) {
   const assist = useRequestAssist();
   const propertyId = useWatch({ control, name: 'propertyId' });
   const text = useWatch({ control, name: 'assistText' });
-  // Open again with the words when the host comes back to the step.
   const [open, setOpen] = useState(() => getValues('assistText').trim() !== '');
   const [answer, setAnswer] = useState<ServiceRequestAssist | null>(null);
 
-  // No AI on the platform (or the read failed): the step is the one it always was.
   if (availability.data?.available !== true) return null;
 
   const trimmed = text.trim();
@@ -71,14 +66,11 @@ export function RequestAssistCard({ onUse }: RequestAssistCardProps) {
     setAnswer(null);
   };
 
-  // A proposal for the external channel leads to the partners of its service: with none in the catalog (or none the person may read) the
-  // step it leads to would be empty, so it is not followed (nobody is steered to a way with no partner).
   const followable = (outcome: AssistOutcome) => outcome.channel !== 'external' || partnersFor(outcome.values.category ?? '').length > 0;
 
   const use = (proposal: ServiceRequestAssist) => {
     const outcome = assistOutcome(proposal, getValues(), categories.data ?? []);
     if (!outcome || !followable(outcome)) return;
-    // The suppliers and their services depend on the kind of work: another one starts them again.
     if (getValues('category') !== outcome.values.category) assign(setValue, NO_SUPPLIER);
     assign(setValue, outcome.values);
     onUse(outcome.channel, outcome.step);
@@ -154,10 +146,6 @@ export function RequestAssistCard({ onUse }: RequestAssistCardProps) {
   );
 }
 
-/**
- * «L'AI ha scelto: Idraulico. Cambia» at the top of the step the proposal of the AI leads to: it says what was chosen for the host, while it
- * is still the service chosen, and «Cambia» goes to the step where the host picks another one.
- */
 export function AssistChoiceLine({ goTo }: { goTo: (stepId: string) => void }) {
   const { t } = useTranslation();
   const { control } = useFormContext<RequestValues>();
@@ -187,14 +175,12 @@ function RetryButton({ onClick }: { onClick: () => void }) {
 
 interface ProposalProps {
   answer: ServiceRequestAssist;
-  /** False for a proposal of the external channel when the catalog has no partner for its service: there is nothing to go on to. */
   canUse: boolean;
   onUse: () => void;
   onEdit: () => void;
   onSkip: () => void;
 }
 
-/** What the AI proposes, said plainly: the service, the urgency, who, why, and the sentence the supplier will read; then the ways on. */
 function Proposal({ answer, canUse, onUse, onEdit, onSkip }: ProposalProps) {
   const { t } = useTranslation();
   const casazen = answer.channel === 'casazen';
@@ -261,7 +247,6 @@ interface NoProposalProps {
   onSkip: () => void;
 }
 
-/** No proposal: the AI could not tell the job, or could not answer. It says which, and the host goes on by writing again or choosing. */
 function NoProposal({ reason, retrying, onRetry, onEdit, onSkip }: NoProposalProps) {
   const { t } = useTranslation();
   return (

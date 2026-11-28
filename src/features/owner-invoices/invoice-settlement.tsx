@@ -3,10 +3,6 @@ import type { OwnerInvoiceListItem } from '@/types';
 import { settlementOf } from './owner-invoice-model';
 import { useInvoiceMoney } from './use-invoice-money';
 
-/**
- * How an issued invoice is paid, in words: offset in the statement, to pay with the amount, or credited. Nothing for a draft, which has no payment, and never «paid»: a state this app
- * does not know is told by its code.
- */
 export function InvoiceSettlement({ invoice }: { invoice: Pick<OwnerInvoiceListItem, 'creditedInFull' | 'payment' | 'currency'> }) {
   const { t } = useTranslation();
   const money = useInvoiceMoney();

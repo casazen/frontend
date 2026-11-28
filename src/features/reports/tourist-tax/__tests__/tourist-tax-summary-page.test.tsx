@@ -8,9 +8,6 @@ import { freezeClock, NOON_UTC } from '@/test/clock';
 import type { TouristTaxComuneSummary, TouristTaxRemittance, TouristTaxSummary } from '@/types';
 import { TouristTaxSummaryPage } from '../tourist-tax-summary-page';
 
-// The page with the real hooks, table and dialog: only the HTTP layer, the permissions and the frame of the app are replaced. What is
-// under test is the wiring of the page itself: what a caller who reaches only some of the properties is told, who is offered the
-// buttons that write, and the days a payment starts from.
 const granted = vi.hoisted(() => new Set<string>());
 
 vi.mock('@/hooks/use-workspace', () => ({
@@ -27,7 +24,6 @@ vi.mock('@/components/layout/page-header', () => ({
 
 const get = vi.mocked(axios.get);
 
-// 24 September 2026 is "today" in Rome in these tests: the page opens on this year.
 const THIS_YEAR = { from: '2026-01-01', to: '2026-12-31' };
 
 const REMITTANCE: TouristTaxRemittance = {
@@ -43,7 +39,6 @@ const REMITTANCE: TouristTaxRemittance = {
   hasReceipt: true,
 };
 
-/** Milano: 30 EUR owed, 18 EUR paid with a receipt, 12 EUR left to pay. */
 const MILANO: TouristTaxComuneSummary = {
   comune: 'Milano',
   stays: 4,
@@ -60,7 +55,6 @@ const MILANO: TouristTaxComuneSummary = {
   remittances: [REMITTANCE],
 };
 
-/** What the server sends to who reaches every property. */
 function fullSummary(period = THIS_YEAR): TouristTaxSummary {
   return {
     title: 'Tassa di soggiorno per comune',
@@ -84,7 +78,6 @@ function fullSummary(period = THIS_YEAR): TouristTaxSummary {
   };
 }
 
-/** What it sends to who reaches only some of the properties: the owed side, and nothing about the payments. */
 function partialSummary(period = THIS_YEAR): TouristTaxSummary {
   const full = fullSummary(period);
   return {
@@ -95,7 +88,6 @@ function partialSummary(period = THIS_YEAR): TouristTaxSummary {
   };
 }
 
-/** The same summary for a period in which no stay checks in. */
 function withoutStays(summary: TouristTaxSummary): TouristTaxSummary {
   return { ...summary, comuni: [], total: { ...summary.total, stays: 0, nights: 0, guests: 0, owed: 0, owedCents: 0, staysWithoutAmount: 0 } };
 }
@@ -122,9 +114,6 @@ describe('TouristTaxSummaryPage (NF-100)', () => {
     vi.useRealTimers();
   });
 
-  // Permission / privacy: the buttons that record and delete a payment are the page's own reading of `payment.write` in short-rent, and
-  // they are offered to nobody when the payments are hidden (the server answers 403 to those calls, whatever the role says). The notice
-  // of the hidden payments shows exactly then; who may only read still sees the payments and their receipts.
   it.each([
     { name: 'WriterOfPayments', write: true, hidden: false, record: 1, remove: 1, payments: 1, notice: 0 },
     { name: 'ReaderOfPayments', write: false, hidden: false, record: 0, remove: 0, payments: 1, notice: 0 },
@@ -143,8 +132,6 @@ describe('TouristTaxSummaryPage (NF-100)', () => {
     expect(screen.queryAllByTestId('tourist-tax-payments-hidden')).toHaveLength(notice);
   });
 
-  // Trust / privacy: a caller who reaches only some properties cannot see the payments, so the page must not say that none is recorded
-  // (false, or a datum given away) nor explain the paid and balance columns that are not there. A caller who sees them is told as before.
   it.each([
     { name: 'CallerWhoReachesEveryProperty_IsToldAboutPayments', hidden: false, empty: 'reports.touristTax.empty', basis: 'reports.touristTax.basis' },
     {
@@ -167,8 +154,6 @@ describe('TouristTaxSummaryPage (NF-100)', () => {
     }
   });
 
-  // Money: while the summary of another period loads, the previous one stays on screen (dimmed) with its buttons. A payment started from
-  // one of its rows starts from the days of that summary, next to its comune and balance, never from the days that were just picked.
   it('RecordPayment_WhileAnotherPeriodLoads_StartsFromTheDaysOfTheSummaryShown', async () => {
     granted.add('short-rent:payment.write');
     get.mockImplementation((_url: string, config?: { params?: { from?: string } }) =>
@@ -177,7 +162,6 @@ describe('TouristTaxSummaryPage (NF-100)', () => {
     renderPage();
     await screen.findByTestId('tourist-tax-results');
 
-    // Last year is asked for and never answered: the summary of this year is still shown.
     fireEvent.change(screen.getByTestId('tourist-tax-period'), { target: { value: 'lastYear' } });
     expect(screen.getByTestId('tourist-tax-results')).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByTestId('tourist-tax-range')).toHaveTextContent('2025');

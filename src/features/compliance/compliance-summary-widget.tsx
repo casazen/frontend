@@ -16,7 +16,6 @@ import { type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/co
 import { useCockpit } from '@/features/compliance/use-cockpit';
 import { NoteLine } from '@/features/dashboard/components/note-line';
 
-/** How many rows of the calm levels show before "Mostra le altre": what the law dates is never cut. */
 const CALM_VISIBLE = 3;
 
 /** Where every Alloggiati Web communication is listed, the ones the cockpit does not. */
@@ -26,16 +25,13 @@ function Badge({ badge }: { badge: CockpitBadge }) {
   return badge.kind === 'property' ? <StatusBadge kind="property" status={badge.status} /> : <StatusBadge kind="alloggiati" status={badge.status} />;
 }
 
-/** What the law dates and is still to do is the urgent one. What is in hand (yellow) or done (green) is not. */
 function isUrgent(row: CockpitRow) {
   return row.tier === 'fine' && row.light !== 'yellow' && row.light !== 'green';
 }
 
 function CockpitRowItem({ row, solid }: { row: CockpitRow; solid: boolean }) {
   const { t } = useTranslation();
-  // The icon of an urgent row takes the color of urgency; its button is solid only if it is the first urgent row of the page (`solid`).
   const urgent = isUrgent(row);
-  // «Verifica nel tuo Cassetto Compliance»: for the rows whose outcome the server says is held by the connected area, where the connector is on.
   const drawer = useComplianceDrawerAvailable() ? row.drawer : undefined;
   // The button of the row: where it goes, unless the row is only to read.
   const link = row.quiet ? null : row.to;
@@ -57,8 +53,6 @@ function CockpitRowItem({ row, solid }: { row: CockpitRow; solid: boolean }) {
         link || drawer ? (
           <>
             {link ? (
-              // Only the first urgent row of the page has the solid button: it is the one thing the eye should land on, and several solid
-              // buttons would compete (UX round 3). The other rows, urgent or not, ask less.
               <Button asChild variant={solid ? 'default' : 'outline'} size="sm" className={ROW_BUTTON}>
                 <Link to={link} aria-label={t('dashboard.row.actionFor', { action: row.cta, name: row.subject })} data-testid={`compliance-summary-${row.testKey}-link`}>
                   {row.cta}
@@ -73,7 +67,6 @@ function CockpitRowItem({ row, solid }: { row: CockpitRow; solid: boolean }) {
   );
 }
 
-/** The rows of a section, one under the other with a line between them. `solidId` is the row of the page that has the solid button. */
 function RowList({ rows, solidId }: { rows: readonly CockpitRow[]; solidId: string | undefined }) {
   return (
     <ul role="list" className="divide-y divide-border rounded-2xl border bg-card">
@@ -84,7 +77,6 @@ function RowList({ rows, solidId }: { rows: readonly CockpitRow[]; solidId: stri
   );
 }
 
-/** A line that opens a list kept out of the way ("3 case in regola"): a button of 44 px, the list under it. */
 function Disclosure({ id, label, open, onToggle, testId, children }: { id: string; label: string; open: boolean; onToggle: () => void; testId: string; children: React.ReactNode }) {
   return (
     <div data-testid={testId}>
@@ -97,10 +89,6 @@ function Disclosure({ id, label, open, onToggle, testId, children }: { id: strin
   );
 }
 
-/**
- * Why a section matters, one click away (UX round 2026-11): the host reads it once, and then it stops taking the room of the rows
- * every time the page opens. A native disclosure: Enter and Space open it, a screen reader says whether it is open.
- */
 function SectionWhy({ testId, children }: { testId: string; children: React.ReactNode }) {
   const { t } = useTranslation();
   return (
@@ -114,7 +102,6 @@ function SectionWhy({ testId, children }: { testId: string; children: React.Reac
   );
 }
 
-/** Group open obligations by deadline, activation and upkeep. Each action appears once, in its own row. */
 export function ComplianceSummaryWidget() {
   const { t } = useTranslation();
   const { model, summary } = useCockpit({ freshProperties: true });
@@ -139,7 +126,6 @@ export function ComplianceSummaryWidget() {
   }
 
   const { fine, start, chore } = model;
-  // The urgent rows are the dated ones, all in the first section and never cut: the first of them is the page's solid button.
   const solidId = fine.rows.find(isUrgent)?.id;
   const shown = (rows: CockpitRow[], expanded: boolean) => (expanded ? rows : rows.slice(0, CALM_VISIBLE));
   const more = (rows: CockpitRow[], expanded: boolean, toggle: () => void) =>
@@ -151,7 +137,6 @@ export function ComplianceSummaryWidget() {
     <div data-testid="compliance-summary-widget" className="space-y-6 md:space-y-8">
       {model.total > 0 ? <ComplianceSummaryLine lights={model.lights} /> : null}
 
-      {/* Nothing to do is the empty state of the app, not a box of its own (UX round 2026-11). */}
       {model.total === 0 && (
         <div data-testid="compliance-summary-all-clear">
           <EmptyState

@@ -1,11 +1,9 @@
 import type { RentLedgerComponent } from '@/types';
 
-/** The four parts a rent-ledger row shows. An unknown kind is counted with the other charges. */
 export const RENT_COMPONENT_KINDS = ['Rent', 'CondominiumAdvance', 'CondominiumSettlement', 'Other'] as const;
 
 export type RentComponentKindName = (typeof RENT_COMPONENT_KINDS)[number];
 
-/** What a row needs for the breakdown. `components` is optional: without it only the total is known. */
 export interface RentMoneySource {
   amount?: number | null;
   status?: string | null;
@@ -15,7 +13,6 @@ export interface RentMoneySource {
 }
 
 export interface RentBreakdown {
-  /** The API sent at least one part. Without it the part columns stay empty and `total` is `amount`. */
   hasComponents: boolean;
   rent: number | null;
   condominiumAdvance: number | null;
@@ -38,11 +35,6 @@ function finiteAmount(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
-/**
- * Rent, condominium advance, settlement, other charges, total, paid and residual of one ledger row.
- * Parts are read only from `components`. When that array is missing, the current `amount` is the total and the parts
- * stay empty, so a ledger the API has not split yet still renders.
- */
 export function rentBreakdown(row: RentMoneySource): RentBreakdown {
   const components = (row.components ?? []).filter(
     (part): part is { kind: string; amount: number } =>
@@ -80,5 +72,4 @@ export function rentBreakdown(row: RentMoneySource): RentBreakdown {
   };
 }
 
-/** The keyboard link and its installment row share this fragment. */
 export const installmentAnchor = (id: string) => `rent-installment-${id}`;

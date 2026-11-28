@@ -8,23 +8,16 @@ import { PUBLIC_SITE_THEME_PALETTES, type PublicSiteThemeId } from '@/lib/public
  * values are passed here, from the same palette the CSS mirrors (`public-site-themes.ts`).
  */
 
-/** Radius of the fields of each theme: `--cz-public-radius-sm` of `public-tokens.css`. */
 const FIELD_RADIUS: Record<PublicSiteThemeId, string> = {
   terra: '10px',
   mare: '14px',
   citta: '3px',
 };
 
-/** Error color of the site (`--cz-public-err`): AA on the white and on the cream of the cards. */
 const DANGER = '#b4232a';
 
-/** The fonts of the site are served by us and not reachable from the iframe of Stripe: the system font is the honest match. */
 const FONT_FAMILY = 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
-/**
- * The `appearance` option of `<Elements>` for a theme. `colorVars` are the inline variables of a host primary color
- * (`publicSiteColorVars`), or null/undefined when the host uses the theme's own color.
- */
 export function stripeAppearance(
   themeId: PublicSiteThemeId,
   colorVars?: Readonly<Record<string, string>> | null,

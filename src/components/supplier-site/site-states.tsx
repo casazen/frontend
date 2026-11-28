@@ -6,10 +6,6 @@ import type { SiteModel } from '@/lib/supplier-site/site-model';
 import { siteThemeProps } from '@/lib/supplier-site/style-config';
 import { cn } from '@/lib/utils';
 
-/**
- * The look of a site that has no supplier to take it from (loading, not found, error): the style and the typeface a trade with
- * no style of its own gets. A plain header with the mark of CasaZen, which is who is speaking.
- */
 export function StateFrame({ children }: { children: ReactNode }) {
   const theme = siteThemeProps('fresco', 'editoriale', null);
   return (
@@ -29,7 +25,6 @@ export function StateFrame({ children }: { children: ReactNode }) {
   );
 }
 
-/** The proportions of the home (cover, three cards), so nothing jumps when the page arrives. */
 export function SiteSkeleton() {
   const { t } = useTranslation();
   return (
@@ -58,7 +53,6 @@ interface StateProps {
   tone?: 'error';
   actions?: ReactNode;
   testId: string;
-  /** The title is the `h1` of the page. */
   role?: 'alert';
 }
 
@@ -77,7 +71,6 @@ function State({ icon, title, text, tone, actions, testId, role }: StateProps) {
   );
 }
 
-/** A slug nobody knows, a supplier that is not active and one that is suspended: the same words for all three. */
 export function SiteNotFound() {
   const { t } = useTranslation();
   return (
@@ -114,7 +107,6 @@ export function SiteLoadError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-/** The supplier paused the showcase: nothing to book, said plainly (and what there is to do instead). */
 export function SitePaused({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   return (

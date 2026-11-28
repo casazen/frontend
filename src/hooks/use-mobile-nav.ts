@@ -40,7 +40,6 @@ export function useMobileNav(contextKey: AppContextKey) {
   const canOpenPath = useCommercialRouteAccess();
   const bottomEntries = getBottomNavEntries(contextKey, permissionCheck, flags, canOpenPath);
   const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags, canOpenPath);
-  // What the bar does not list: the sheet of "Altro" holds it, and the counters of these entries show on "Altro".
   const moreEntries = getVisibleNavEntries(contextKey, permissionCheck, flags, canOpenPath).filter((entry) => entry.navBottom === undefined);
   const hasMore = moreEntries.length > 0 || getAccessibleAreas(contexts).length > 1;
 

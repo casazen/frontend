@@ -29,7 +29,6 @@ function DisdettaBody({ lease, operations, onClose }: Omit<DisdettaDialogProps, 
   const { busy, download } = useLetterDownload();
   const [reason, setReason] = useState<LeaseDisdettaReason | ''>('');
 
-  // At the first expiry the law asks the letter to state one of its reasons: no letter without one.
   const needsReason = disdetta.firstPeriod;
   const canDownload = !needsReason || reason !== '';
   const recordPath = `${leaseSheetPath(lease.id)}?${LEASE_ACTION_PARAM}=disdetta`;
@@ -113,13 +112,6 @@ function DisdettaBody({ lease, operations, onClose }: Omit<DisdettaDialogProps, 
   );
 }
 
-/**
- * «Prepara la disdetta» (LR-OPS-1): the window of the landlord's notice of non-renewal. It says when the lease ends and by which day the
- * letter is on time (computed by the server, no month of law is written here), asks for the reason of the law at the first expiry (the
- * only field) and downloads the draft of the letter, a PDF the person signs and sends. After sending, «Segna come inviata» and the way to
- * record the notice in the contract (the action that stops the renewal) are one click below. The window is controlled by the address
- * (`?operazione=disdetta`), and its content is forgotten when it closes.
- */
 export function DisdettaDialog({ open, lease, operations, onClose }: DisdettaDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>

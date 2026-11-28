@@ -12,16 +12,12 @@ export type SitePageId = 'home' | 'shortRent' | 'longRent' | 'features' | 'suppl
 
 export interface SitePage {
   id: SitePageId;
-  /** Public path on the web app's own host. */
   path: string;
-  /** File under `dist/_site/` that holds the prerendered page. */
   file: string;
 }
 
-/** Folder of `dist/` holding the prerendered pages: never linked, kept out of crawling by `robots.txt`. */
 export const SITE_ASSET_DIR = '_site';
 
-/** Sitemap of the public site on the web app's own host (static, written by the prerender). */
 export const SITE_SITEMAP_PATH = '/sitemap-site.xml';
 
 export const SITE_PAGES: readonly SitePage[] = [
@@ -39,24 +35,17 @@ export function sitePageById(id: SitePageId): SitePage {
   return page;
 }
 
-/** The page served at a public path, or null when the path is not a page of the public site. */
 export function sitePageByPath(pathname: string): SitePage | null {
   const path = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   return SITE_PAGES.find((page) => page.path === path) ?? null;
 }
 
-/** Absolute URL of a page on the public origin (`https://host`), the form of the canonical and of the sitemap. */
 export function sitePageUrl(origin: string, page: SitePage): string {
   return page.path === '/' ? `${origin}/` : `${origin}${page.path}`;
 }
 
-/**
- * The public search of homes, a page of the app (not prerendered, so not one of `SITE_PAGES`): the pages of the site link to it and its
- * sitemap lists it. The page without a search is for the crawlers; the address of a search is `noindex,follow` (see the page).
- */
 export const SEARCH_PATH = '/search';
 
-/** The sitemap of the public site: one `<loc>` per page on the public origin, then the public pages of the app that belong to it. */
 export function buildSiteSitemap(origin: string): string {
   const urls = [
     ...SITE_PAGES.map((page) => `  <url><loc>${sitePageUrl(origin, page)}</loc></url>`),

@@ -1,4 +1,3 @@
-/** Matches backend CalendarBookingDto */
 interface CalendarBookingDto {
   id: string;
   propertyId: string;
@@ -33,59 +32,37 @@ export interface CalendarItemDto {
   totalPrice?: number | null;
   guestName?: string | null;
   summary?: string | null;
-  /** `ical-block` only: channel of the feed (`Airbnb`, `BookingCom`, `Other`), null for a block without feed. */
   channel?: string | null;
-  /** `ical-block` only: label the host gave to the feed. */
   feedLabel?: string | null;
-  /** `ical-block` only: `ICalImport` or `Manual` (CO-21). */
   blockSource?: string | null;
-  /** `ical-block` with `blockSource` `Manual` only: why the host closed the dates (PC-09); `summary` is then the note. */
   blockReason?: string | null;
-  /** `ical-block` only: its import feed (CO-21). */
   feedId?: string | null;
-  /** `ical-block` only: the OTA stay created from it, while not cancelled (CO-21). */
   bookingId?: string | null;
-  /** `ical-block` only: "Crea soggiorno OTA" is offered (CO-21). */
   convertible?: boolean | null;
-  /** `booking` only: the feed of an OTA stay created from iCal (CO-21). */
   icalFeedId?: string | null;
-  /** `booking` only: label of that feed when the stay was created (CO-21). */
   channelLabel?: string | null;
-  /** `booking` only: why the OTA stay is "da verificare" (CO-21). */
   otaReviewReason?: OtaReviewReason | null;
 }
 
-/** Why an OTA stay created from an iCal block is "da verificare" (CO-21). */
 export type OtaReviewReason = 'BlockRemoved' | 'BlockDatesChanged';
 
-/** Matches backend CalendarResponseDto */
 export interface CalendarResponseDto {
   timezone: string;
   utcOffsetMinutes: number;
   bookings: CalendarBookingDto[];
-  /** Every booking and block of the range (`bookings` holds the bookings only). */
   items: CalendarItemDto[];
 }
 
-/** Why the host closed dates by hand (backend `CalendarBlockReason`, PC-09). */
 export const MANUAL_BLOCK_REASONS = ['Owner', 'Maintenance', 'Other'] as const;
 export type ManualBlockReason = (typeof MANUAL_BLOCK_REASONS)[number];
 
-/**
- * The reason of the block that a scheduled change to long-term closes in the calendar (backend `CalendarBlockReason.ModeChange`,
- * PM-02). The system writes it: the host cannot choose it among the reasons above, nor delete the block (it goes when the change
- * is withdrawn).
- */
 export const MODE_CHANGE_BLOCK_REASON = 'ModeChange';
 export type BlockReason = ManualBlockReason | typeof MODE_CHANGE_BLOCK_REASON;
 
-/** Longest note of a manual block (backend `CalendarBlock.ManualNoteMaxLength`). */
 export const MANUAL_BLOCK_NOTE_MAX_LENGTH = 200;
 
-/** Longest manual block in nights (backend `ManualBlocks.MaxNights`). */
 export const MANUAL_BLOCK_MAX_NIGHTS = 366;
 
-/** `POST /api/properties/{id}/blocks` (PC-09): nights from `startDate` (included) to `endDate` (first free day). */
 export interface CreateManualBlockDto {
   startDate: string;
   endDate: string;
@@ -93,7 +70,6 @@ export interface CreateManualBlockDto {
   note?: string;
 }
 
-/** A manual block (backend `ManualBlockDto`): stay dates without time zone (`2026-10-10T00:00:00`). */
 export interface ManualBlockDto {
   id: string;
   propertyId: string;

@@ -26,7 +26,6 @@ const EVENT_LOCATION = { search: '', origin: ORIGIN };
 const FIRST_PAGE = { pathname: '/p/affitti-brevi/lombardia/como', search: '?utm_source=newsletter', origin: ORIGIN };
 const SIGNUP = { pathname: '/signup', search: '?comune=como&utm_source=newsletter', origin: ORIGIN };
 
-// DB-02b: what measures the visitor (the SEO funnel, Plausible, the source of a host signup) runs only after an explicit yes.
 describe('what measures runs only with the consent of the visitor (DB-02b)', () => {
   const sendBeacon = vi.fn();
   const plausible = vi.fn();

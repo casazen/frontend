@@ -8,12 +8,6 @@ import { SwitchRow } from '../services/components/service-fields';
 
 const RULES = ['regulars', 'service', 'cancel', 'notice'] as const;
 
-/**
- * "Accetta in automatico i clienti abituali" (SP-16c-c): the one switch of the answers. It is off for everybody until the supplier turns
- * it on, and it is saved as soon as it is touched (`PUT api/supplier/settings` takes all five settings, so the other four are sent as the
- * server gave them). The rule is told as the server applies it (SP-04d): hosts with at least three jobs already taken, a service with a
- * price and a free time, and the supplier can cancel until the job starts. If saving fails the switch goes back to what is saved.
- */
 export function AutoAcceptSection() {
   const { t } = useTranslation();
   const settings = useSupplierSettings();
@@ -35,7 +29,6 @@ export function AutoAcceptSection() {
     return <SkeletonLine lines={4} label={t('supplier.settings.loading')} />;
   }
 
-  // While the save is on the way the switch shows what was asked; if it fails the data is the old one and the switch goes back.
   const checked = save.isPending ? (save.variables?.autoAcceptRegulars ?? data.autoAcceptRegulars) : data.autoAcceptRegulars;
   const toggle = (next: boolean) =>
     save.mutate({
@@ -48,7 +41,6 @@ export function AutoAcceptSection() {
 
   return (
     <PlainSection title={t('supplier.settings.answers.title')} data-testid="supplier-settings-auto-accept">
-      {/* The switch and, beside it from `xl`, the rules it follows (under it on a narrower screen, as close as it always was). */}
       <div className="grid grid-cols-1 gap-x-10 gap-y-2 xl:grid-cols-2 xl:items-start">
         <div className="min-w-0 space-y-2">
           <SwitchRow

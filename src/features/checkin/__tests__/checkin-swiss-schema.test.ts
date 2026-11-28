@@ -18,10 +18,8 @@ import {
 } from '../schemas/checkin.schema';
 import { NOON_UTC, freezeClock } from '@/test/clock';
 
-/** The Swiss stay of the tests arrives on this day: an adult is 18 or more on it. */
 const ARRIVAL = '2026-10-10';
 
-/** What the API sends for a property in canton Ticino (NF-132). */
 const TICINO_FIELDS = ['DocumentType', 'DocumentNumber', 'ResidenceStreet', 'ResidencePostalCode', 'ResidenceCityName', 'ResidenceCountryName'];
 
 const ticino = swissRulesOf(TICINO_FIELDS, ARRIVAL);
@@ -44,7 +42,6 @@ function guest(overrides: Partial<StayGuestFormValues> = {}): StayGuestFormValue
   };
 }
 
-/** An adult family member, who has no document in the Italian record. */
 function member(overrides: Partial<StayGuestFormValues> = {}): StayGuestFormValues {
   return guest({
     type: 'FamilyMember',
@@ -114,7 +111,6 @@ describe('notifiedGuestIndexes (the rule of the Swiss police file)', () => {
   });
 
   it('notifiedGuestIndexes_SixGuestsThatAreNotOneGroup_KeepTheRuleOfTheAdults', () => {
-    // Two heads of group are not a group the police file can count on one row.
     const guests = [
       guest({ type: 'HeadOfGroup' }),
       guest({ type: 'HeadOfGroup' }),
@@ -245,7 +241,6 @@ describe('the plate of the car (NF-132)', () => {
   it('hostVehiclePlateOf_FormWithoutAPlate_SendsNothingSoTheStoredOneStays', () => {
     expect(hostVehiclePlateOf({})).toBeUndefined();
     expect(hostVehiclePlateOf({ vehiclePlate: ' ti 123 ' })).toBe('TI123');
-    // An empty field of the host clears the plate: it is sent as an empty text.
     expect(hostVehiclePlateOf({ vehiclePlate: '' })).toBe('');
   });
 });
@@ -259,7 +254,6 @@ describe('what the requests send (NF-132)', () => {
     const empty = toStayGuestSubmit(guest(), { swiss: ticino });
 
     expect(filled).toMatchObject({ residenceStreet: 'Via Nassa 5', residencePostalCode: '6900', residenceCityName: 'Lugano' });
-    // The whole truth: a field the guest left blank is sent as null, never left out.
     expect(empty.residenceStreet).toBeNull();
     expect(empty.residencePostalCode).toBeNull();
     expect(empty.residenceCityName).toBeNull();
@@ -278,9 +272,7 @@ describe('what the requests send (NF-132)', () => {
 
     const host = toStayGuestSubmit(held, { keepResidenceAddress: true });
     expect(host).toMatchObject({ residenceStreet: 'Via Nassa 5', residenceCityName: 'Lugano' });
-    // Only what is held: an empty field is not invented, so an Italian request keeps its shape.
     expect(host).not.toHaveProperty('residencePostalCode');
-    // The guest portal sends the home only where the regime asks it.
     expect(toStayGuestSubmit(held)).not.toHaveProperty('residenceStreet');
   });
 
@@ -317,7 +309,6 @@ describe('what the requests send (NF-132)', () => {
     const never = schema.parse({ guests: [guest()] });
 
     expect(toPublicCheckInSubmitRequest(withPlate, { swiss: ticino }).vehiclePlate).toBe('TI123456');
-    // The page never reads the plate back: an empty field says «nothing new», and the server keeps what it holds.
     expect(toPublicCheckInSubmitRequest(without, { swiss: ticino })).not.toHaveProperty('vehiclePlate');
     expect(toPublicCheckInSubmitRequest(never)).not.toHaveProperty('vehiclePlate');
   });

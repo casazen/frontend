@@ -35,13 +35,11 @@ function workspaceOf(contexts: ContextBootstrapDto[], isReady = true): Workspace
   };
 }
 
-/** Where the redirect ends up: path, query and fragment, exactly as in the address bar. */
 function CurrentAddress() {
   const { pathname, search, hash } = useLocation();
   return <p data-testid="address">{`${pathname}${search}${hash}`}</p>;
 }
 
-/** The two kinds of route of the app: the canonical `/app/...` pages and the old root-level addresses. */
 function renderAt(entry: string, workspace: WorkspaceContextValue) {
   render(
     <WorkspaceContext.Provider value={workspace}>
@@ -61,7 +59,6 @@ describe('LegacyRedirect keeps the query string and the fragment (UI-00)', () =>
   });
 
   it('LegacyRedirect_LegacyPathWithQueryAndFragment_KeepsBoth', () => {
-    // The Stripe return pages and the links of the emails reach the console through an old address.
     renderAt('/bookings/abc?checkout=success&view=requests#x', workspaceOf([shortRent]));
 
     expect(screen.getByTestId('address')).toHaveTextContent('/app/short-rent/bookings/abc?checkout=success&view=requests#x');
@@ -92,7 +89,6 @@ describe('LegacyRedirect keeps the query string and the fragment (UI-00)', () =>
   });
 
   it('LegacyRedirect_LegacyPathOfAnAreaTheUserDoesNotHave_GoesToHisHomeWithoutThatQuery', () => {
-    // The query belongs to the page that was asked for: it means nothing on the home of another area.
     renderAt('/bookings/abc?checkout=success#x', workspaceOf([longRent]));
 
     expect(screen.getByTestId('address').textContent).toBe('/app/long-rent/leases');

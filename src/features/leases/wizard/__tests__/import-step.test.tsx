@@ -13,7 +13,6 @@ vi.mock('@/api/lease-documents.api', () => ({
   leaseDocumentsApi: { list: vi.fn().mockResolvedValue([]), readReceipt: vi.fn() },
 }));
 
-/** Where the person is, and what the next screen was told: the declaration of the registration is asked for there. */
 function Where() {
   const location = useLocation();
   return <p data-testid="where">{`${location.pathname}${location.search} ${JSON.stringify(location.state)}`}</p>;
@@ -66,13 +65,10 @@ describe('ImportStep (LR-06b): the import of a signed contract cannot be taken b
     fireEvent.click(screen.getByTestId('lease-registered-yes'));
     fireEvent.click(screen.getByTestId('lease-import-submit'));
 
-    // The consequences are written first, and nothing has gone to the server yet.
     const dialog = within(await screen.findByRole('dialog'));
     expect(dialog.getByText(/non si può più modificare né eliminare/)).toBeInTheDocument();
     expect(leasesApi.importSigned).not.toHaveBeenCalled();
 
-    // Two taps on «Inserisci il contratto» are one import. The server is busy: nothing was written, the person is told, and the
-    // registration is not asked for (the contract is not in).
     const confirm = dialog.getByRole('button', { name: 'Inserisci il contratto' });
     fireEvent.click(confirm);
     fireEvent.click(confirm);
@@ -80,7 +76,6 @@ describe('ImportStep (LR-06b): the import of a signed contract cannot be taken b
     expect(leasesApi.importSigned).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('where')).toHaveTextContent('?step=7 null');
 
-    // Again, with the same confirmation: this time it is in, and only then does the next screen open the declaration of the registration.
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     fireEvent.click(screen.getByTestId('lease-import-submit'));
     const again = within(await screen.findByRole('dialog'));

@@ -21,7 +21,6 @@ import { useLeaseId, useTenantContractPage } from './use-tenant-contract';
 const URGENCIES: TenantMaintenanceUrgency[] = ['Normal', 'High', 'Emergency'];
 const FALLBACK_CATEGORIES = ['maintenance', 'plumbing', 'electrical', 'cleaning'];
 
-/** Where a request stands, as a chip: the same one in the list and under the title of the request (the detail used to say it in a line of the card). */
 function RequestStatus({ status }: { status: TenantMaintenanceStatus }) {
   const { t } = useTranslation();
   return (
@@ -53,7 +52,6 @@ export function TenantMaintenanceListPage() {
         }
       />
       {items.length === 0 ? (
-        // Straight under the title of the page: the state is one level below it.
         <EmptyState icon={Wrench} title={t('tenantArea.maintenance.empty')} titleAs="h2" description={t('tenantArea.maintenance.emptyHint')} />
       ) : (
         <ul className="space-y-2">
@@ -168,8 +166,6 @@ export function TenantMaintenanceDetailPage() {
   }
 
   const item = request.data;
-  // The page has its title, as every page of the portal (it had none: the name of the request was the title of the card), and the state under it,
-  // as the list shows it. «La richiesta va al gestore» is for who is writing the request (the form), not for who reads it afterwards.
   return (
     <div className="space-y-4">
       <PageHeader title={getServiceCategoryLabel(item.category, t)} status={<RequestStatus status={item.status} />} />

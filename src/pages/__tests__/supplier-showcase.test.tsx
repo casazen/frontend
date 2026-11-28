@@ -12,7 +12,6 @@ import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '../supplie
 const api = vi.hoisted(() => ({ getShowcase: vi.fn(), quote: vi.fn() }));
 vi.mock('@/api/public-supplier.api', () => ({ publicSupplierApi: api }));
 
-// The list of comuni is not what is under test.
 vi.mock('@/queries/use-comuni', () => ({
   useComuneDatasetStatus: () => ({ data: { datasetAvailable: true }, isPending: false, isError: false }),
   useComuneSearch: () => ({ data: { items: [] }, isFetching: false, isSuccess: true, isError: false }),
@@ -96,12 +95,10 @@ describe('SupplierShowcasePage: public showcase /fornitori/:slug (SU-13, A4-16, 
 
     expect(await screen.findByTestId('supplier-showcase-name')).toHaveTextContent('Pulizie Roma Srl');
     expect(api.getShowcase).toHaveBeenCalledWith('pulizie-roma');
-    // Category codes are translated, never shown raw ("cleaning").
     expect(screen.queryByText('cleaning')).not.toBeInTheDocument();
     expect(within(screen.getByTestId('supplier-site-categories')).getByText('Pulizie')).toBeInTheDocument();
     expect(within(screen.getByTestId('supplier-site-zones')).getByText('Roma')).toBeInTheDocument();
     expect(screen.getByTestId('supplier-site-bio')).toHaveTextContent('Pulizie professionali per affitti brevi.');
-    // The cover is the first photo that can be shown; a relative legacy path is not a photo.
     const images = screen.getByTestId('supplier-site-hero').querySelectorAll('img');
     expect(images).toHaveLength(1);
     expect(images[0]).toHaveAttribute('src', 'https://cdn.example.test/p1.jpg');
@@ -187,9 +184,7 @@ describe('SupplierShowcasePage: public showcase /fornitori/:slug (SU-13, A4-16, 
     expect(card).toHaveTextContent('da');
     expect(card).toHaveTextContent('45');
     expect(card).toHaveTextContent('IVA inclusa');
-    // A color white text cannot be read on is not put on the buttons.
     expect(screen.getByTestId('supplier-site').getAttribute('style') ?? '').not.toContain('--vz-cta');
-    // The payment is said (and the time to answer is the supplier's setting) only while the bookings are open.
     expect(screen.getByTestId('supplier-site-how')).toBeInTheDocument();
     expect(screen.getByTestId('supplier-site-closing')).toBeInTheDocument();
     expect(screen.getByTestId('supplier-site-stickybar')).toBeInTheDocument();
@@ -224,7 +219,6 @@ describe('SupplierShowcasePage: public showcase /fornitori/:slug (SU-13, A4-16, 
     const faq = screen.getByTestId('supplier-site-faq');
     expect(faq).toHaveTextContent('Portate i prodotti?');
     expect(faq).not.toHaveTextContent('Senza risposta');
-    // No contact, no rating, no insurance: nothing of the kind is on the page (D11, D13, VT-D14).
     const page = screen.getByTestId('supplier-site').textContent ?? '';
     expect(page).not.toMatch(/tel:|mailto:|whatsapp|assicurat|recension|P\.?\s?IVA/i);
   });
@@ -242,7 +236,6 @@ describe('SupplierShowcasePage: public showcase /fornitori/:slug (SU-13, A4-16, 
     expect(await screen.findByTestId('supplier-site-bookings-closed')).toBeInTheDocument();
     expect(screen.queryByTestId('supplier-site-finder')).not.toBeInTheDocument();
     expect(screen.getByTestId('supplier-site-service-pulizia-standard')).not.toHaveTextContent('IVA inclusa');
-    // A color that reads at AA is the one of the buttons.
     expect(screen.getByTestId('supplier-site').getAttribute('style') ?? '').toContain('#7c3aed');
   });
 

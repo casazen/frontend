@@ -34,7 +34,6 @@ export function OwnerConversation() {
     <div className="space-y-6">
       <div className="space-y-2">
         {back}
-        {/* The head of every page of the portal, in the colors of the theme (it was a title in a fixed green). */}
         <PortalPageHeading
           icon={Mail}
           title={conversation?.subject ?? t('ownerPortal.inbox.thread.title')}

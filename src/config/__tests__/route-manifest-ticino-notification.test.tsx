@@ -3,7 +3,6 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { getDetail } from '@/components/shared/detail-drawer/detail-registry';
 import { TICINO_LAYER_KIND } from '@/features/compliance/ticino/ticino-layer-address';
-// The one file the shell loads to register the kinds of the drawer.
 import '../detail-kinds';
 import { ROUTE_MANIFEST, getNavMatchEntries, getVisibleNavEntries, hasEntryPermission } from '../route-manifest';
 
@@ -12,7 +11,6 @@ const OLD_PATH = '/app/short-rent/compliance/ticino';
 const COCKPIT_PATH = '/app/short-rent/compliance';
 const entry = ROUTE_MANIFEST.find((candidate) => candidate.path === OLD_PATH);
 
-/** The source of the old page: it must draw nothing of its own (E30/F02/US03/T02, AC4: no parallel Swiss compliance page remains). */
 const pageSource = Object.values(import.meta.glob<string>('/src/pages/SwissCompliancePage.tsx', { query: '?raw', import: 'default', eager: true }))[0];
 
 function Where() {
@@ -20,7 +18,6 @@ function Where() {
   return <output data-testid="where">{`${location.pathname}${location.search}`}</output>;
 }
 
-/** The old address opened the way a link does, with the page the manifest gives it, and where it ends up. */
 async function openOldAddress(search: string) {
   const page = await entry!.component();
   const Page = page.default;
@@ -57,7 +54,6 @@ describe('route manifest: the guided notification to the Ticino police as a laye
 
     expect(def).toBeDefined();
     expect(def?.width).toBe('wide');
-    // No «Apri la scheda completa»: the page is gone, the layer is what there is.
     expect(def?.pageHref).toBeUndefined();
   });
 
@@ -85,7 +81,6 @@ describe('route manifest: the guided notification to the Ticino police as a laye
 
   it('RouteManifest_OldPage_DrawsNothingOfItsOwn', () => {
     expect(pageSource).toMatch(/export function SwissCompliancePage\b/);
-    // A page of its own would be the parallel page the layer replaced: no shell, no header, no read of the days, no upload.
     expect(pageSource).not.toMatch(/AppShell|PageHeader|useTicinoDay|useUploadReceipt|useDownloadTicinoFile|PlainSection/);
   });
 });

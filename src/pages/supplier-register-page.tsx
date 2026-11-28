@@ -20,23 +20,19 @@ import {
 import { useRegisterSupplier, useSupplierInvite, useSupplierRegistrationOptions } from '@/queries/supplier/use-registration';
 import type { SupplierInvitePreview } from '@/services/supplier-api';
 
-/** Where a registered supplier completes the profile (activation wizard). */
 const ACTIVATION_PATH = '/app/supplier/activation';
 const SELF_SERVE_PATH = '/register';
 
-/** Invite errors that retrying cannot fix. */
 const FINAL_INVITE_CODES = new Set([
   'supplier_invite_invalid',
   'supplier_invite_expired',
   'supplier_invite_used',
-  // An admin revoked it (SU-12): only a new invite helps.
   'supplier_invite_revoked',
 ]);
 
 type RegistrationDone = {
   authenticated: boolean;
   email: string;
-  /** Anonymous registration: the claim that links the account created next (SU-02). */
   claim?: PendingSupplierClaim | null;
 };
 
@@ -104,7 +100,6 @@ function InviteRegistration({ token }: { token: string }) {
     </div>
   );
 
-  // Back to this page after the Auth0 login, with the invited email pre-filled.
   const loginForInvite = (authorizationParams: Record<string, string>) =>
     login({
       returnTo: currentReturnTo(location),
@@ -213,7 +208,6 @@ function SelfServeRegistration() {
       { payload: values, authenticated: isAuthenticated },
       {
         onSuccess: (result) => {
-          // Anonymous: keep the claim token until the Auth0 account exists (SU-02, A4-02).
           const claim = isAuthenticated
             ? null
             : parsePendingSupplierClaim({
@@ -258,7 +252,6 @@ function SelfServeRegistration() {
 type RegistrationValues = { email: string; comuneCode: string; legalName: string; phone: string };
 
 type ComuneField =
-  /** The comune of an invite: fixed. */
   | { kind: 'locked'; code: string; label: string }
   /** Any comune of the official ISTAT list, searched by name (the list is public and loaded in the background). */
   | { kind: 'picker' };
@@ -271,7 +264,6 @@ function RegistrationForm({
   error,
   onSubmit,
 }: {
-  /** Set when the email cannot change (invite, or the signed-in account). */
   email?: string;
   emailHint?: string;
   comune: ComuneField;
@@ -391,7 +383,6 @@ function RegistrationSuccess({ done }: { done: RegistrationDone }) {
   const navigate = useNavigate();
   const opened = useRef(false);
 
-  // Back to the claim page after the Auth0 signup or login; the claim also travels in appState.
   function loginToClaim(authorizationParams: Record<string, string>) {
     login({
       returnTo: SUPPLIER_CLAIM_PATH,
@@ -400,13 +391,10 @@ function RegistrationSuccess({ done }: { done: RegistrationDone }) {
     });
   }
 
-  // A signed-in supplier is already linked: nothing to confirm, the wizard is the next screen.
   const authenticated = done.authenticated;
   useEffect(() => {
     if (!authenticated || opened.current) return;
     opened.current = true;
-    // The Supplier role was just added in Auth0: get a token that carries it (best effort, the API
-    // already authorizes the supplier through the account link).
     void refreshAccessToken()
       .catch(() => undefined)
       .then(() => navigate(ACTIVATION_PATH, { replace: true }));

@@ -11,7 +11,6 @@ import { DEFAULT_FEATURE_FLAGS } from '../../src/config/feature-flags';
 import { PersonPreviewPage } from '../../src/features/team/person-preview-page';
 import axios from '../../src/lib/axios';
 
-// Test-only entry loads the real page, hooks and permission model with synthetic local API responses.
 const context = {
   contexts: [{ contextKey: 'account', roleKey: 'org_owner', permissions: ['org.members.manage'] }],
   activeContext: 'account', isReady: true, setActiveContext: () => {},

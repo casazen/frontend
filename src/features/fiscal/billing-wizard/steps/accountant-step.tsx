@@ -33,25 +33,13 @@ import {
 type Read<T> = Pick<UseQueryResult<T>, 'data' | 'isPending' | 'isError' | 'error' | 'refetch'>;
 
 interface AccountantStepProps {
-  /**
-   * The settings of the send as the server has them: `null` when the server refuses them to this person (403: their reach is only some of the properties, and the settings are the whole
-   * organization's), an error when they could not be read. The step never lays this over what the person typed: the form keeps the answers they changed, and the rest is read from here.
-   */
   settings: Read<AccountantPackageSettings | null>;
   /** The save of the settings (`PUT api/accountant-package/settings`): the page's own, so that its buttons wait for it. */
   save: UseMutationResult<AccountantPackageSettings, unknown, SaveAccountantPackageSettingsRequest>;
-  /** The test send (`POST api/accountant-package/send`). */
   send: UseMutationResult<AccountantPackageEmailQueued, unknown, void>;
-  /** The month the test is about, `yyyy-MM`: the one that is over. */
   lastMonth: string;
-  /** Another request of the wizard is on its way (the save of a step, the way out): the action of the step waits for it, as «Continua» waits for the action. */
   busy: boolean;
-  /**
-   * The person may choose the folders that carry the owner accounting: the administrator of an organization on the agency plan (`agency` of the wizard, who holds `agency.statement.view`).
-   * For anyone else those folders are not offered and are never sent: the backend refuses them (422 `accountant_package_owner_accounting_required`) on an agency's organization.
-   */
   ownerAccounting: boolean;
-  /** The server refused the save or the test with a 403 (the role or the reach of the person is not what the settings need): the wizard turns read-only, as at a save of the step. */
   onRefused: () => void;
 }
 
@@ -61,21 +49,14 @@ const PROBLEM_FIELDS = ['accountantEmail', 'accountantDay', 'accountantContents'
 /** The days of the month the send can be due on: 1 to 28, so that every month has the day. */
 const SEND_DAYS = Array.from({ length: ACCOUNTANT_SEND_DAYS.max - ACCOUNTANT_SEND_DAYS.min + 1 }, (_, index) => ACCOUNTANT_SEND_DAYS.min + index);
 
-/** A folder of the package to choose: a native checkbox in a card of at least 44 px, with the name and a line on what it holds. */
 const FOLDER_CARD =
   'flex min-h-11 min-w-0 cursor-pointer items-start gap-3 rounded-md border bg-background p-3 text-sm has-[:checked]:bg-primary/5 has-[:checked]:ring-2 has-[:checked]:ring-primary has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60';
 
 const DATE_ONLY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 const DATE_AND_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
 
-/** 422: the test of an organization on the agency plan is for a caller who may read the owner accounting, whatever folders are chosen (the package it sends holds it). */
 const OWNER_ACCOUNTING_REQUIRED_CODE = 'accountant_package_owner_accounting_required';
 
-/**
- * What a failed test send says, in words: a package that is too large (with how many files it would hold and how many one package allows, when the server says), the refusals the server explains
- * by code, and, for anything else, the sentence that admits the person cannot tell whether the e-mail went out (a call that ended without an answer may have): they look at the last send before they try again.
- * `asked` is whether the test itself was asked (and not only the save that goes before it): only then can a call with no answer have gone through.
- */
 function testProblem(error: unknown, asked: boolean, t: TFunction): string {
   const tooLarge = accountantPackageTooLarge(error);
   if (tooLarge) {
@@ -83,10 +64,7 @@ function testProblem(error: unknown, asked: boolean, t: TFunction): string {
       ? t('billingWizard.accountant.test.tooLargeCount', { files: tooLarge.fileCount, max: tooLarge.maxFiles })
       : t('billingWizard.accountant.test.tooLarge');
   }
-  // Its own words: the generic ones talk about folders, and the person who gets this has no owner folder to take out.
   if (isAxiosError(error) && error.response?.status === 422 && getProblemCode(error.response.data) === OWNER_ACCOUNTING_REQUIRED_CODE) return t('billingWizard.accountant.test.ownerAccounting');
-  // No answer at all (the ten minutes ran out, the connection dropped): the server may have made the package and queued the e-mail. «Cannot reach the server, try again» would send the person to a second
-  // test (which sends again whatever was sent), so it is the sentence that admits they cannot tell. Before the test is asked nothing has gone out, and the generic words are the true ones.
   if (asked && isAxiosError(error) && !error.response) return t('billingWizard.accountant.test.failed');
   return getProblemMessage(error, t) ?? t('billingWizard.accountant.test.failed');
 }
@@ -102,7 +80,6 @@ function testProblem(error: unknown, asked: boolean, t: TFunction): string {
  */
 export function AccountantStep({ settings, save, send, lastMonth, busy, ownerAccounting, onRefused }: AccountantStepProps) {
   const { t } = useTranslation();
-  // A 404 is the module being off at the server: it is that even when the query still holds the answer it had (a read that fails keeps the data it had), and it is said, never a form.
   const notFound = settings.isError && getHttpStatus(settings.error) === 404;
 
   return (
@@ -113,7 +90,6 @@ export function AccountantStep({ settings, save, send, lastMonth, busy, ownerAcc
           {t('billingWizard.accountant.unavailable')}
         </Alert>
       ) : settings.data ? (
-        // A read that fails after the settings are on screen (a transient error when the window comes back) does not take the form from under the person's hands.
         <AccountantSettingsForm
           current={accountantSettingsFor(settings.data, ownerAccounting)}
           save={save}
@@ -137,7 +113,6 @@ export function AccountantStep({ settings, save, send, lastMonth, busy, ownerAcc
 }
 
 interface AccountantSettingsFormProps {
-  /** The settings as this person sees them (`accountantSettingsFor`): without the folders they may not choose. */
   current: AccountantPackageSettings;
   save: AccountantStepProps['save'];
   send: AccountantStepProps['send'];
@@ -162,9 +137,7 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
   const typedDay = useWatch({ control, name: 'accountantDay' });
   const typedContents = useWatch({ control, name: 'accountantContents' });
   const [queued, setQueued] = useState<AccountantPackageEmailQueued | null>(null);
-  // What failed, and whether it was the test itself (`asked`) or only the save that goes before it.
   const [failure, setFailure] = useState<{ error: unknown; asked: boolean } | null>(null);
-  // The test is on its way (the save that goes before it, then the send): the page's own save of «Continua» is not the test, and does not make the button say so.
   const [running, setRunning] = useState(false);
   const locale = amountLocale(i18n.language);
 
@@ -192,7 +165,6 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
     recheck();
   };
 
-  /** «Invia una prova»: what is on screen is checked and saved first when it is valid and different, so the e-mail goes to the address the person sees; then the test is asked. */
   const sendTest = async () => {
     if (busy || running) return;
     setQueued(null);
@@ -200,7 +172,6 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
     const values = getValues();
     const now = accountantAnswersOf(current, values);
     const noAddress = now.email.trim() === '';
-    // With no address the test has nowhere to go: that is what the field says (not the monthly send's own words), and any other problem of the step is told as well.
     const problems = accountantProblems(now).filter((problem) => !(noAddress && problem.field === 'accountantEmail'));
     if (noAddress) problems.unshift({ field: 'accountantEmail', messageKey: BILLING_ERROR_KEYS.accountantEmailNeeded });
     if (problems.length > 0) {
@@ -208,7 +179,6 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
       return;
     }
     setRunning(true);
-    // The save goes first and then the test: a refusal of the save names the field it is about; a refusal of the test is about the test, and names no field (not a folder the person chose).
     let saving = true;
     try {
       const { request } = accountantChange(current, values, 'whole');
@@ -217,7 +187,6 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
       setQueued(await send.mutateAsync());
     } catch (error) {
       if (saving) for (const problem of accountantProblemsOf(error)) setError(problem.name as AccountantField, { type: 'server', message: problem.messageKey });
-      // The settings are the organization's: a refusal of the role or of the reach, of the save or of the test, turns the wizard read-only, as at a save of the step.
       if (isAccountantRefused(error)) onRefused();
       setFailure({ error, asked: !saving });
     } finally {
@@ -311,7 +280,6 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
                   period: periodLabel(last.period, locale),
                   when: formatRomeDateTime(asInstant(last.at), locale, DATE_AND_TIME),
                   reason: t(lastSendErrorKey(last.error)),
-                  // «We try again every morning» is true only while the monthly send is on (the server tries again for no one else, and a failed test is not recorded here).
                   retry: t(current.enabled ? 'billingWizard.accountant.lastSend.retryOn' : 'billingWizard.accountant.lastSend.retryOff'),
                 })}
           </p>

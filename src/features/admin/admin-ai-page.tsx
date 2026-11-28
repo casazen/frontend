@@ -19,10 +19,6 @@ const PRESETS: Record<AiProviderName, { model: string; baseUrl: string }> = {
   OpenAiCompatible: { model: '', baseUrl: '' },
 };
 
-/**
- * Platform AI provider. The key is write-only. Stub calls nobody; the others write drafts (SEO and the other AI
- * callers) and are listed among the subprocessors once a key is saved.
- */
 function knownProvider(value: string): AiProviderName {
   return PROVIDERS.includes(value as AiProviderName) ? (value as AiProviderName) : 'Stub';
 }

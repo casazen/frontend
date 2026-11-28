@@ -4,7 +4,6 @@ import i18n from '@/i18n/config';
 import { AuthTokenUnavailableError } from '@/lib/api-errors';
 import { reduceSiteConnectionError, SiteConnectionError } from '../site-connection-error';
 
-// Made-up values: none of them is a code, a state or a credential of anyone.
 function failure(status: number, data: unknown) {
   return new AxiosError(
     'Request failed',

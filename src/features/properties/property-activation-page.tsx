@@ -128,7 +128,6 @@ export function PropertyActivationPage() {
   const search = useRef<HTMLInputElement>(null);
   const firstResult = useRef<HTMLAnchorElement>(null);
   const routeQuery = params.get('q') ?? '';
-  // Keep the latest input available to links while React Router commits the query update.
   const [pendingSearch, setPendingSearch] = useState<{ locationKey: string; value: string }>();
   const query = pendingSearch?.locationKey === locationKey ? pendingSearch.value : routeQuery;
   const selected = properties.data?.find((property) => property.id === params.get('propertyId'));

@@ -7,10 +7,6 @@ import i18n from '@/i18n/config';
 import { setHostSite, type HostSite } from '@/lib/host-site';
 import type { PublicOrgDto } from '@/types';
 
-/**
- * BK-16 (A3-08) on the real route table: an org's own host serves that org's booking site and nothing else. No app, no
- * login (it used to send the guest of `https://www.villa.example/` to Auth0), no cross-site search, no guides, no other org.
- */
 const PUBLIC_SITE = 'https://public-site.example.test';
 
 const ORG: PublicOrgDto = {
@@ -26,10 +22,8 @@ vi.mock('@/queries/use-public-org', () => ({
   usePublicOrg: () => ({ data: ORG, isLoading: false, isError: false }),
   useOrgProperties: () => ({ data: [], isLoading: false, isError: false }),
   useOrgPublicProperty: () => ({ data: undefined, isLoading: true, isError: false }),
-  usePropertyAvailability: () => ({ data: undefined, isError: false, refetch: vi.fn() }),
 }));
 
-// The context of a check-in link: the one thing the routes need is which agency's link it is, and a page to show for it.
 vi.mock('@/api/checkin.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/checkin.api')>();
   return { ...actual, publicCheckinApi: { ...actual.publicCheckinApi, getContext: vi.fn() } };
@@ -91,7 +85,6 @@ describe('routes of an org own host (BK-16)', () => {
   it.each(['/book/other-org', '/book/other-org/property/casa-mare', '/book/villa-rossi-2'])(
     'OrgSiteRoute_AnotherOrg_%s_IsNotFoundOnThisHost',
     async (path) => {
-      // A domain can never be made to show another host's site under its name.
       renderHostSite(path);
 
       expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
@@ -121,7 +114,6 @@ describe('routes of an org own host (BK-16)', () => {
   it.each(['/legale/privacy', '/legale/termini', '/legale/dpa', '/legale/sub-responsabili', '/legale'])(
     'LegalDocument_%s_LeadsToThePublicWebApp',
     async (path) => {
-      // The documents are CasaZen's, not the host's: they live on the public web app (VITE_PUBLIC_SITE_URL).
       renderHostSite(path);
 
       await vi.waitFor(() => expect(replace).toHaveBeenCalledWith(`${PUBLIC_SITE}${path}`));
@@ -142,10 +134,6 @@ describe('routes of an org own host (BK-16)', () => {
   });
 });
 
-/**
- * NF-140 on the real route table: besides its booking site, the own domain of an agency serves the guest check-in and the owner portal, each only when `resolve-host` says it is on, inside the frame of the
- * agency; everything that belongs to the host console stays «not found» with every surface on.
- */
 const BRANDED_LOOK = {
   logoUrl: 'https://cdn.example.test/villa-rossi.png',
   primaryColor: '#1a5276',
@@ -164,7 +152,6 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     window.sessionStorage.clear();
     replace.mockClear();
     vi.mocked(publicCheckinApi.getContext).mockReset();
-    // A link that is already completed: the check-in page shows its closing card, nothing to fill in.
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo' });
     vi.stubEnv('VITE_PUBLIC_SITE_URL', PUBLIC_SITE);
     vi.stubGlobal('location', { ...window.location, hostname: 'www.villa-rossi.example.test', replace });
@@ -182,7 +169,6 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
 
     const frame = await screen.findByTestId('host-surface-frame');
     expect(await within(frame).findByTestId('checkin-success')).toBeInTheDocument();
-    // The logo and the name of the agency, a link to the landing page of the site.
     const home = within(frame).getByTestId('host-surface-frame-home');
     expect(home).toHaveAttribute('href', '/');
     expect(home).toHaveTextContent('Villa Rossi');
@@ -195,7 +181,6 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     ['the field is missing from the answer', { ...HOST_SITE }],
     ['the guest area is off', { ...HOST_SITE, surfaces: { guestArea: false, ownerPortal: true }, ownerLoginReady: true }],
   ])('surface off means not found: /checkin/:token when %s (and nothing is asked)', async (_name, site) => {
-    // Nothing changes for an org without the surface.
     renderHostSite('/checkin/tok-1', site);
 
     expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
@@ -212,7 +197,6 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
   });
 
   it('CheckInRoute_AnotherAgencyContextWithOnlyTheOrgSlug_IsNotFoundInTheFrameOfNoOne', async () => {
-    // An agency with no published privacy notice (or one that withdrew it): the answer names the agency of the link by `orgSlug` only, and that is enough to refuse it on this domain.
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: false, status: 'InCompilazione', propertyName: 'Casa di altri', orgSlug: 'another-agency' });
     renderHostSite('/checkin/tok-1', GUEST_ONLY);
 
@@ -221,7 +205,6 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
   });
 
   it('CheckInRoute_CompletedLinkOfAnotherAgency_IsNotFoundAndShowsNoClosingCard', async () => {
-    // A link that is already completed answers with its status and the agency of the link only: the closing card of another agency's guest is not shown under the name of this domain either.
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo', orgSlug: 'another-agency' });
     renderHostSite('/checkin/tok-1', GUEST_ONLY);
 
@@ -241,7 +224,6 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
   it.each(['/portale-proprietari/accedi', '/portale-proprietari/invito', '/portale-proprietari/contatto', '/portale-proprietari', '/portale-proprietari/contabilita', '/portale-proprietari/accesso-negato'])(
     'surface off means not found: owner portal %s',
     async (path) => {
-      // The guest area alone, and a host with no surface at all: the owner portal is not there.
       renderHostSite(path, GUEST_ONLY);
 
       expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
@@ -282,7 +264,6 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     '/book/other-org',
     '/book/other-org/property/casa-mare',
   ])('host-only paths are not found with every surface on: %s', async (path) => {
-    // The host app and the host sign-in are not reachable on the agency domain, whatever the agency has switched on.
     const router = renderHostSite(path, EVERY_SURFACE);
 
     expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
@@ -295,7 +276,6 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     ['without a surface', HOST_SITE],
     ['with every surface on', EVERY_SURFACE],
   ])('BookingSite_%s_IsServedAsBefore', async (_name, site) => {
-    // The booking site, and with it «Le mie prenotazioni» (`/my-bookings` of the browser is `/book/<slug>/my-bookings` for the router), do not depend on the surfaces.
     renderHostSite('/book/villa-rossi/my-bookings', site);
 
     expect(await screen.findByTestId('public-site-shell')).toBeInTheDocument();

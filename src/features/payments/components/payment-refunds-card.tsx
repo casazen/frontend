@@ -10,10 +10,6 @@ interface PaymentRefundsCardProps {
   currency?: string;
 }
 
-/**
- * Refunds of a payment with their Stripe status (BK-02). Refunds still waiting for Stripe are
- * refreshed until Stripe confirms or fails them.
- */
 export function PaymentRefundsCard({ paymentId, currency = 'EUR' }: PaymentRefundsCardProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError, error } = usePaymentRefunds(paymentId);

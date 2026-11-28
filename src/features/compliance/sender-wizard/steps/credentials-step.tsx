@@ -17,7 +17,6 @@ interface CredentialsStepProps {
   onChange: (field: QuesturaCredentialsField, value: string) => void;
   /** Sends the typed credentials once (`PUT /properties/{id}/questura-credentials`): the button of the step and the Enter key. */
   onSave: () => void;
-  /** A request of the wizard is in flight (this one or another): nothing here can be pressed again meanwhile. */
   busy: boolean;
   /** The regional ISTAT credentials, under the police ones: only while the activation of the channel manager is on (the flag `octorateOnboarding`). */
   istat?: IstatCredentialsStepProps;

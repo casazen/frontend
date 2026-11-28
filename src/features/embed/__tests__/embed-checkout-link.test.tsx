@@ -63,7 +63,6 @@ interface RenderOptions {
   embed?: EmbedContextValue | null;
   bridge?: EmbedBridge;
   model?: BookingModel;
-  /** The address of the frame. */
   address?: string;
 }
 
@@ -115,7 +114,6 @@ describe('the address of the exit (AC2)', () => {
     expect(link()).toHaveTextContent('Book');
     expect(link()).toHaveAttribute('target', '_top');
     expect(link()).toHaveAttribute('rel', 'noopener');
-    // The origin of the frame: the agency's domain, or CasaZen's. Never another one, and never a page of the frame itself.
     expect(url.origin).toBe(window.location.origin);
     expect(url.pathname).toBe('/book/villa-rossi/property/casa-mare/checkout');
     expect(url.pathname.startsWith('/embed')).toBe(false);
@@ -160,7 +158,6 @@ describe('the click (AC3)', () => {
     expect(sent.map((message) => message.type)).toEqual(['event', 'navigate']);
     const [begin, go] = sent as [EmbedMessage<'event'>, EmbedMessage<'navigate'>];
     expect(begin.name).toBe('begin_checkout');
-    // The total of the quote of the server (the line `Total`, in cents) in the currency of the quote: 519.50 francs, not euros, not a sum of this page.
     expect(begin.params).toEqual({
       currency: 'CHF',
       value: 519.5,
@@ -176,7 +173,6 @@ describe('the click (AC3)', () => {
   ])('embedCheckoutLink_With%s_LeavesTheClickToTheLinkAndSaysNothing', (_label, bridge) => {
     renderLink({ bridge: bridgeOf(bridge) });
 
-    // The anchor navigates the top window by itself: the widget degrades to a plain link.
     expect(click(link())).toBe(false);
     expect(sent).toEqual([]);
   });

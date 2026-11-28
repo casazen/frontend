@@ -25,28 +25,11 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   icon?: LucideIcon;
-  /**
-   * The state of what the page shows (a `StatusBadge`: «Confermata», «Da completare»). It goes under the title, at the start
-   * of the line of the description, so the state, the name and the facts read as one line, and the controls on the right are
-   * only actions (on a phone they no longer wrap into three rows). A page shows its state here once, not again in a card.
-   */
   status?: React.ReactNode;
-  /**
-   * Free content on the right of the title, as it always was. A page that is moved to the new header gives its actions as
-   * `primary` and `secondary` instead (a page has one primary action).
-   */
   action?: React.ReactNode;
-  /**
-   * Where the page sits (UI-05): the trail to it, the page itself last, with the area put first by the header. `'auto'`
-   * reads the trail from the route manifest (the pages above this one, named as the menus name them). On a computer it is
-   * the breadcrumb, on a phone the link back to the page above.
-   */
   crumbs?: PageCrumb[] | 'auto';
-  /** The one primary action of the page (UI-05). */
   primary?: PageHeaderAction;
-  /** The other actions, in the menu "⋯" (UI-05). */
   secondary?: PageHeaderMenuItem[];
-  /** Where `primary` goes on a phone (UI-05): fixed above the bottom bar (`bar`, the default), a round button (`fab`), or stays up here (`none`). */
   mobilePrimary?: MobilePrimaryMode;
 }
 
@@ -115,7 +98,6 @@ function PageHeaderWithTrail({ title, description, icon: Icon, status, action, c
   const { t } = useTranslation();
   const shell = useAppShell();
   const { pathname } = useLocation();
-  // Read without `useWorkspace`, which refuses to run outside the provider: a page rendered on its own shows its trail.
   const workspace = useContext(WorkspaceContext);
   const { flags } = useFeatureFlags();
 
@@ -135,12 +117,10 @@ function PageHeaderWithTrail({ title, description, icon: Icon, status, action, c
     trail = crumbs;
   }
 
-  // The area comes first, as in the demo: "Affitti lunghi › Immobili › Bilocale Monza".
   const area: PageCrumb | null = shell
     ? { label: t(getArea(shell.contextKey).nameKey), to: getDefaultRoute(shell.contextKey) }
     : null;
   const items = trail.length === 0 ? [] : area ? [area, ...trail] : trail;
-  // The way back on a phone: the closest step above the page that leads somewhere.
   const back = items
     .slice(0, -1)
     .reverse()
@@ -150,8 +130,6 @@ function PageHeaderWithTrail({ title, description, icon: Icon, status, action, c
 
   return (
     <div className="workspace-page-heading flex flex-col gap-2" data-testid="page-header">
-      {/* The breadcrumb is for a computer (`PageCrumbs` hides itself on a phone): the row and its icon go with it, or a phone shows
-          the icon of the area alone above the way back. */}
       {items.length > 0 && (
         <div className="hidden items-center gap-2 md:flex">
           {shell && !Icon && (
@@ -163,7 +141,6 @@ function PageHeaderWithTrail({ title, description, icon: Icon, status, action, c
         </div>
       )}
       {back?.to ? <BackLink to={back.to} label={back.label} /> : null}
-      {/* The same row as the head every page has (it wraps and shrinks to fit a phone); the title is smaller on a phone. */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex min-w-0 grow basis-56 items-start gap-3 sm:gap-4">
           {Icon && (

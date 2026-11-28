@@ -11,19 +11,11 @@ import '@/features/public-booking/property-page.css';
 
 interface PropertyOverviewProps {
   property: PublicPropertyDetailDto;
-  /** The text of the description, already trimmed; the section has none when the host wrote none. */
   description: string;
-  /** How the host is named, or null when the site does not say: the line «Ti ospita…» is then left out. */
   hostLabel: string | null;
-  /** Whether the page has the card of the host to jump to. */
   hasHostCard: boolean;
 }
 
-/**
- * The first section of the page (DB-04a): the facts in big tiles, who hosts, up to three highlights, the description, what the
- * host said of the outdoor spaces and the renovation, and the energy class when they stated it. Every part is there only when its
- * data is; a house with nothing but a name and a description is a short section, not a section of empty blocks.
- */
 export function PropertyOverview({ property, description, hostLabel, hasHostCard }: PropertyOverviewProps) {
   const { t, i18n } = useTranslation();
   const outdoor = pickText(property.outdoorNote, i18n.language);

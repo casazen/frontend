@@ -23,7 +23,6 @@ import { OwnerInvoiceDrawer } from './owner-invoice-drawer';
 import { isDraft, isIssued } from './owner-invoice-model';
 import { hasNoCurrency, useInvoiceMoney } from './use-invoice-money';
 
-/** The months the filter of the period offers, counting back from the current one: older invoices are still in the list, under «Tutti i mesi». */
 const MONTHS_OFFERED = 24;
 const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -46,7 +45,6 @@ function OwnerInvoicesBody() {
   const [params, setParams] = useSearchParams();
   const today = todayInRome();
   const thisMonth = useMemo(() => ({ year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)) }), [today]);
-  // The address is the filter: whatever it says is what the list shows (a month that is not a month, or an owner that is not an id, is no filter).
   const periodValue = parsePeriod(params.get('period'), { year: 0, month: 0 });
   const period = periodValue.year === 0 ? undefined : periodParam(periodValue);
   const ownerParam = params.get('owner') ?? '';
@@ -55,7 +53,6 @@ function OwnerInvoicesBody() {
   const owners = useOwnerNames();
   const invoices = useOwnerInvoices({ period, ownerId });
   const pdf = useDownloadOwnerInvoicePdf();
-  // The invoice opened in the drawer (its lines and totals, read by its id). Only the id is kept: what the drawer shows is read, and read again, from the server.
   const [opened, setOpened] = useState<string | null>(null);
   const header = <PageHeader title={t('ownerInvoice.page.title')} description={t('ownerInvoice.page.description')} crumbs="auto" />;
 
@@ -68,7 +65,6 @@ function OwnerInvoicesBody() {
 
   let content;
   if (getHttpStatus(invoices.error) === 404) {
-    // A 404 is the module being off at the server, whatever the cache still holds: said, never an empty list.
     content = (
       <p className="break-words text-sm text-foreground/70" data-testid="owner-invoices-unavailable">
         {t('ownerInvoice.page.unavailable')}
@@ -144,7 +140,6 @@ interface FilterBarProps {
   onOwner: (value: string) => void;
 }
 
-/** The month and the owner the list is narrowed to; «tutti» is no limit. A month or an owner that the address names and the options do not hold is added to them, so the address wins. */
 function FilterBar({ period, ownerId, thisMonth, owners, onPeriod, onOwner }: FilterBarProps) {
   const { t } = useTranslation();
   const { month } = useOwnerFormat();
@@ -184,16 +179,12 @@ function FilterBar({ period, ownerId, thisMonth, owners, onPeriod, onOwner }: Fi
 
 interface InvoiceRowProps {
   invoice: OwnerInvoiceListItem;
-  /** This invoice's PDF is being saved. */
   downloading: boolean;
-  /** Some PDF is being saved: the others wait for it. */
   locked: boolean;
-  /** Opens the lines and the totals of the invoice. */
   onOpen: () => void;
   onPdf: () => void;
 }
 
-/** One invoice: its number (a draft has none yet), owner and month, the total in its own currency, its state and how it is paid, the way to its lines, and the PDF of an issued one. */
 function InvoiceRow({ invoice, downloading, locked, onOpen, onPdf }: InvoiceRowProps) {
   const { t } = useTranslation();
   const { month } = useOwnerFormat();

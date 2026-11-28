@@ -6,10 +6,6 @@ const FE_URL =
     ? 'https://casazen-app.vercel.app'
     : 'http://localhost:5173');
 
-/**
- * Verifies deployed Vercel FE serves the React SPA (not a broken .env or placeholder).
- * Run in CI: E2E_DEPLOY_SMOKE=1 E2E_DEPLOY_FE_URL=https://casazen-app.vercel.app
- */
 test.describe('Vercel deploy smoke', () => {
   test.skip(!process.env.E2E_DEPLOY_SMOKE, 'Set E2E_DEPLOY_SMOKE=1 for live FE deploy checks');
 

@@ -3,13 +3,8 @@ import { addDays } from '@/lib/stay-dates';
 import { buildCalendarIndex, type CalendarDay, type RangeProblem } from '@/features/public-site/stay/stay-calendar-model';
 import { extendToMinimum, firstFreeStay, limitOfProblem, problemOfCode, problemOfRange } from '../stay-exits';
 
-/**
- * What a guest is told when a stay cannot be had, and where they are sent: the rules the host set on the nights (E08/F05/US01, NF-36)
- * must be said in their own sentence, never as the generic failure, and a way out must never land on a night a rule refuses.
- */
 const TODAY = '2026-10-25';
 
-/** 90 free nights from today with the rules of the test on some of them. */
 function indexWith(rules: Record<string, Partial<CalendarDay>>) {
   const days: CalendarDay[] = Array.from({ length: 90 }, (_, offset) => {
     const date = addDays(TODAY, offset);
@@ -29,7 +24,6 @@ describe('problemOfRange', () => {
     [{ kind: 'maxNights', maxNights: 4, latestCheckOut: '2026-11-14' }, 'maxNights'],
     [{ kind: 'advance', side: 'shorter', days: 3 }, 'advance'],
     [{ kind: 'advance', side: 'longer', days: 90 }, 'advance'],
-    // A night the calendar does not know is not a reason to refuse: the server answers for it.
     [{ kind: 'unknown' }, null],
   ])('problemOfRange_%j_Is%s', (problem, expected) => {
     expect(problemOfRange(problem)).toBe(expected);
@@ -87,7 +81,6 @@ describe('firstFreeStay', () => {
   });
 
   it('firstFreeStay_DepartureClosed_SkipsTheArrivalThatLeavesOnTheClosedDay', () => {
-    // 3 nights from the 10th would leave on the 13th, which is closed to departure: the first stay that leaves on an open day is the 11th.
     const index = indexWith({ '2026-11-13': { closedToDeparture: true } });
 
     expect(firstFreeStay(index, 3, '2026-11-10')).toEqual({ checkIn: '2026-11-11', checkOut: '2026-11-14' });
@@ -100,14 +93,12 @@ describe('firstFreeStay', () => {
   });
 
   it('firstFreeStay_ArrivalCloserThanTheMinimumAdvance_StartsWhereTheAdvanceHolds', () => {
-    // Every night asks for 3 days ahead: today and the two days after cannot start a stay, the 28th can.
     const rules = Object.fromEntries(Array.from({ length: 90 }, (_, offset) => [addDays(TODAY, offset), { minAdvanceDays: 3 }]));
 
     expect(firstFreeStay(indexWith(rules), 2, '')).toEqual({ checkIn: '2026-10-28', checkOut: '2026-10-30' });
   });
 
   it('firstFreeStay_ArrivalFurtherAheadThanTheMaximumAdvance_IsFoundFromToday', () => {
-    // Every night can be booked 20 days ahead at most: from the 10th of December on (46 days ahead) there is nothing, from today there is.
     const rules = Object.fromEntries(Array.from({ length: 90 }, (_, offset) => [addDays(TODAY, offset), { maxAdvanceDays: 20 }]));
     const index = indexWith(rules);
 
@@ -136,7 +127,6 @@ describe('extendToMinimum', () => {
   });
 
   it('extendToMinimum_MinimumOfTheServerAboveTheOneOfTheCalendar_IsThatManyNights', () => {
-    // The calendar (older than the rule) asks for no minimum, the refusal of the server said five: the stay has five nights, not one.
     expect(extendToMinimum(indexWith({}), '2026-11-10', 5)).toEqual({ checkIn: '2026-11-10', checkOut: '2026-11-15' });
   });
 

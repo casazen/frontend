@@ -117,7 +117,6 @@ async function toSummary() {
 describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    // The draft of the wizard is kept in the tab: a test does not start from the answers of the one before.
     window.sessionStorage.clear();
     await i18n.changeLanguage('it');
     freezeClock('2026-09-12T10:00:00Z');
@@ -151,7 +150,6 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     const connections = await screen.findAllByTestId('bulk-property-connection', undefined, WAIT);
     expect(connections[0]).toHaveTextContent('Collegato al tuo channel manager');
     expect(connections[1]).toHaveTextContent('Non collegato al tuo channel manager: la modifica resta in CasaZen.');
-    // At least one property is needed to go on.
     next();
     expect(await screen.findByTestId('bulk-properties-problem', undefined, WAIT)).toHaveTextContent('Scegli almeno un immobile.');
   });
@@ -180,7 +178,6 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
   });
 
   it('CalendarBulkPage_ConnectorOff_TheResultAsksForNoStateAndSaysNothingOfTheChannelManager', { timeout: 30_000 }, async () => {
-    // The change is saved in CasaZen and nothing is sent anywhere: no read of its state, one line, one next step (the calendar).
     vi.mocked(calendarChangesApi.apply).mockResolvedValue({ ...CHANGE, state: 'Applied', properties: [{ propertyId: 'p1', state: 'Skipped', chunkCount: 0 }, { propertyId: 'p2', state: 'Skipped', chunkCount: 0 }] });
     renderPage(['property.read', 'property.write'], false);
     await toSummary();
@@ -204,7 +201,6 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     fireEvent.change(label('booking.calendar.bulk.period.to'), { target: { value: '2026-09-11' } });
     next();
 
-    // The sentence is next to the field and in the list of the problems of the step.
     expect(await screen.findAllByText('Questi giorni sono già passati: scegli giorni da oggi in poi.', undefined, WAIT)).not.toHaveLength(0);
     expect(screen.getByTestId('bulk-period-step')).toBeInTheDocument();
   });
@@ -253,12 +249,10 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     expect(words).toHaveTextContent('Per Villa Mare la modifica viene inviata anche al tuo channel manager (circa 3 chiamate al channel manager).');
     expect(words).toHaveTextContent('Casa Lago non è collegato al tuo channel manager: la sua modifica resta in CasaZen.');
     expect(screen.getByTestId('bulk-summary-quota')).toHaveTextContent('è solo una stima');
-    // Per property the days that change and the days skipped, and the first changes before and after.
     const cards = screen.getAllByTestId('bulk-summary-property');
     expect(cards[0]).toHaveTextContent('30 giorni cambiano');
     expect(within(cards[0]).getByTestId('bulk-summary-taken')).toHaveTextContent('1 notte occupata');
     expect((within(cards[0]).getByTestId('bulk-summary-sample').textContent ?? '').replace(/\s/g, ' ')).toContain('Prezzo: 100 € → 120,50 €');
-    // Nothing is sent before "Apply changes", and "Edit" is there to go back.
     expect(calendarChangesApi.apply).not.toHaveBeenCalled();
     expect(screen.getAllByRole('link', { name: /Modifica/ }).length).toBeGreaterThanOrEqual(3);
     expect(screen.getByTestId('bulk-wizard-apply')).toBeEnabled();
@@ -268,7 +262,6 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     [20, 'Cambieremo il prezzo di 20 giorni su 1 immobile in CasaZen.'],
     [1, 'Cambieremo il prezzo di 1 giorno su 1 immobile in CasaZen.'],
   ])('CalendarBulkPage_Summary_TheHeadlineCountsTheDaysThatChange_%i_NotTheDaysOfThePeriod', { timeout: 30_000 }, async (changedDays, headline) => {
-    // 31 days selected, 5 of them already over and 6 that already hold the price: only the others change.
     vi.mocked(calendarChangesApi.preview).mockResolvedValue({
       ...PREVIEW,
       days: 31,
@@ -343,14 +336,12 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
 
     expect(await screen.findByText('Modifica salvata in CasaZen', undefined, WAIT)).toBeInTheDocument();
     expect(vi.mocked(calendarChangesApi.apply).mock.calls[0][0].price).toEqual({ action: 'Set', value: 120.5 });
-    // The result says the days that change (the 30 and 30 the summary announced), not the 30 days the period covers.
     expect(screen.getByText('60 giorni in tutto su 2 immobili.')).toBeInTheDocument();
     expect(screen.getByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
     const lines = screen.getAllByTestId('calendar-change-property');
     expect(lines[0]).toHaveAttribute('data-state', 'waiting');
     expect(lines[1]).toHaveAttribute('data-state', 'notConnected');
     expect(lines[1]).toHaveTextContent('la modifica resta in CasaZen');
-    // The only way out is "Save and exit"; the wording never says "published".
     expect(screen.getAllByRole('link')).toHaveLength(1);
     expect(screen.getByTestId('wizard-done-primary')).toHaveTextContent('Salva ed esci');
     expect(document.body.textContent).not.toMatch(/pubblicat/i);
@@ -379,14 +370,12 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     renderPage();
     await chooseProperties();
 
-    // The shell's own "Cancel" would delete the draft and leave: it is not there, so nothing leaves the wizard but "Save and exit".
     expect(screen.queryByTestId('wizard-exit')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Annulla' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button').filter((button) => /esci/i.test(button.textContent ?? ''))).toHaveLength(1);
 
     fireEvent.click(screen.getByTestId('bulk-save-and-exit'));
     expect(await screen.findByText('calendar-page', undefined, WAIT)).toBeInTheDocument();
-    // What was chosen is kept for when the host comes back.
     const saved = Object.keys(window.sessionStorage).filter((key) => key.includes('calendar-bulk'));
     expect(saved).toHaveLength(1);
     expect(JSON.parse(window.sessionStorage.getItem(saved[0]) ?? '{}').values.propertyIds).toEqual(['p1', 'p2']);

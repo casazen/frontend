@@ -45,7 +45,6 @@ vi.mock('@/hooks/use-workspace', () => ({
 }));
 
 const property = { id: 'property-1', name: 'Casa Mare', city: 'Rimini', maxGuests: 6 } as Property;
-// Rendering the wizard with the zod resolver can be slow on a loaded CI runner.
 const WAIT = { timeout: 5000 };
 const ALL_PERMISSIONS = ['booking.read', 'booking.write', 'payment.read', 'payment.write'];
 const LINK = 'https://example.test/book/casa/booking/booking-1?token=secret-token';
@@ -62,7 +61,6 @@ function conflict(data: unknown): AxiosError {
   });
 }
 
-/** The dates are free (SR-06a): the answer of the availability the wizard asks for as soon as the dates are known. */
 const freeStay: StayAvailability = {
   propertyId: property.id,
   from: '2027-10-01',
@@ -76,10 +74,8 @@ const freeStay: StayAvailability = {
   linkableBlockId: null,
 };
 
-/** Free in CasaZen and on the channel manager, of which the property is a part (`channelManagerChecked`: the channel manager answered). */
 const freeOnChannelManager: StayAvailability = { ...freeStay, channelManagerChecked: true };
 
-/** Quote of the backend (BK-03): Firenze-like rates exempt minors by age when `ageRules` is true. */
 function hostQuote(ageRules: boolean, status: DirectBookingQuote['touristTax']['status'] = 'Calculated'): DirectBookingQuote {
   return {
     propertyId: property.id,
@@ -124,7 +120,6 @@ function renderPage(url = '/app/short-rent/bookings/new', options: { connector?:
 const next = () => fireEvent.click(screen.getByTestId('booking-wizard-next'));
 const label = (key: string) => screen.getByLabelText(i18n.t(key));
 
-/** Step 1: the property and the dates (the guests stay at the two adults it starts with). */
 async function fillStay() {
   const select = await screen.findByLabelText(i18n.t('booking.create.stay.property'), undefined, WAIT);
   await screen.findByRole('option', { name: 'Casa Mare · Rimini' }, WAIT);
@@ -133,19 +128,16 @@ async function fillStay() {
   fireEvent.change(label('booking.create.stay.checkOut'), { target: { value: '2027-10-05' } });
 }
 
-/** Step 2: the name and the email of the guest are all that is asked (SR-06a). */
 async function fillGuest() {
   const name = await screen.findByLabelText(i18n.t('booking.create.guest.name'), undefined, WAIT);
   fireEvent.change(name, { target: { value: 'Mario Rossi' } });
   fireEvent.change(label('booking.create.guest.email'), { target: { value: 'mario.rossi@example.com' } });
 }
 
-/** Step 4: how the guest pays has no default, so the host picks one. */
 async function choosePayment(arrangement: 'paymentLink' | 'onSite' | 'bankTransfer' = 'onSite') {
   fireEvent.click(await screen.findByTestId(`booking-payment-${arrangement}`, undefined, WAIT));
 }
 
-/** Through the stay, the guest and the price (the quote of the API) to the way the guest pays. */
 async function reachPayment() {
   await fillStay();
   next();
@@ -156,7 +148,6 @@ async function reachPayment() {
   await screen.findByTestId('booking-payment-step', undefined, WAIT);
 }
 
-/** Through the four first steps, to the summary. */
 async function reachSummary(arrangement: 'paymentLink' | 'onSite' | 'bankTransfer' = 'onSite') {
   await reachPayment();
   await choosePayment(arrangement);
@@ -216,7 +207,6 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     await choosePayment('bankTransfer');
     next();
     await screen.findByTestId('booking-summary-what-happens', undefined, WAIT);
-    // The summary says the total the API calculated, and how the guest pays.
     expect(screen.getByText(/474,00/)).toBeInTheDocument();
     expect(screen.getByText(i18n.t('booking.create.summary.paymentValue.bankTransfer'))).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('booking-create-button'));
@@ -225,7 +215,6 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     expect(screen.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/short-rent/bookings');
     expect(screen.getByTestId('booking-done-booking')).toHaveAttribute('data-state', 'created');
     expect(bookingsApi.createManual).toHaveBeenCalledWith(expect.objectContaining({ paymentArrangement: 'bankTransfer' }));
-    // A property that is not connected to the channel manager shows no line of it and asks nothing.
     expect(screen.queryByTestId('booking-done-channel-manager')).not.toBeInTheDocument();
     expect(bookingsApi.getById).not.toHaveBeenCalled();
   });
@@ -239,7 +228,6 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     fireEvent.click(screen.getByRole('button', { name: i18n.t('qty.increase', { label: i18n.t('booking.create.stay.minors') }) }));
     const age = await screen.findByLabelText(i18n.t('touristTaxRules.childAgeLabel', { index: 1 }), undefined, WAIT);
 
-    // The step does not move on while the age of the minor is missing.
     next();
     expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toHaveTextContent(i18n.t('booking.form.childrenAgesMissing'));
     expect(screen.queryByLabelText(i18n.t('booking.create.guest.name'))).not.toBeInTheDocument();
@@ -295,7 +283,6 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
 });
 
 describe('the draft of the browser and the address', { timeout: 20000 }, () => {
-  // The draft of the flow as the wizard keeps it: this tab only, for this user in this organization (the user and the organization of the mock above).
   const DRAFT_KEY = 'casazen.wizardDraft:user-1:org-1:sr-new-booking';
 
   function keepDraft(values: Partial<NewBookingValues>, version = NEW_BOOKING_DRAFT_VERSION, step = 'stay') {
@@ -315,7 +302,6 @@ describe('the draft of the browser and the address', { timeout: 20000 }, () => {
   });
 
   it('BookingCreatePage_DraftOfAnotherProperty_GivesWayToTheAddressAndItsAnswersAreNotTaken', async () => {
-    // The property in the address is the one the host came from: a draft for another property must not win over it, nor bring its dates along.
     keepDraft({ propertyId: 'property-2', checkInDate: '2027-10-01', checkOutDate: '2027-10-05' });
     renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}`);
 
@@ -335,7 +321,6 @@ describe('the draft of the browser and the address', { timeout: 20000 }, () => {
     expect(label('booking.create.stay.checkIn')).toHaveValue('');
   });
 
-  // A draft taken up at the summary: the stay was not checked in this visit, so nothing is known about the channel manager of the property.
   const keepDraftOfTheSummary = () =>
     keepDraft(
       {
@@ -359,7 +344,6 @@ describe('the draft of the browser and the address', { timeout: 20000 }, () => {
   });
 
   it('BookingCreatePage_DraftTakenUpAtTheSummary_ConnectorOff_SaysNothingOfTheChannelManager', async () => {
-    // With the connector off nothing is pushed or asked: not even as a condition.
     keepDraftOfTheSummary();
     renderPage(`/app/short-rent/bookings/new?propertyId=${property.id}&step=summary`);
 
@@ -417,7 +401,6 @@ describe('the payment step (NF-74)', { timeout: 20000 }, () => {
     }
     next();
 
-    // Said on the step (the summary of the problems and the field both carry it).
     expect((await screen.findAllByText(i18n.t('booking.validation.paymentArrangement.required'), undefined, WAIT)).length).toBeGreaterThan(0);
     expect(screen.queryByTestId('booking-summary-what-happens')).not.toBeInTheDocument();
     expect(screen.getByTestId('booking-payment-step')).toBeInTheDocument();
@@ -435,13 +418,11 @@ describe('the payment step (NF-74)', { timeout: 20000 }, () => {
     expect(screen.getByTestId('booking-summary-happens-payment')).toHaveTextContent(i18n.t('booking.create.summary.willHappen.paymentLink'));
     fireEvent.click(screen.getByTestId('booking-create-button'));
 
-    // The link comes with the answer of the creation, and the result lets the host copy it: it is shown on this screen only.
     expect(await screen.findByTestId('booking-done-payment', undefined, WAIT)).toHaveAttribute('data-state', 'linkSent');
     expect(bookingsApi.createManual).toHaveBeenCalledWith(expect.objectContaining({ paymentArrangement: 'paymentLink' }));
     fireEvent.click(screen.getByTestId('booking-done-payment-copy'));
     await waitFor(() => expect(copyTextToClipboard).toHaveBeenCalledWith(LINK));
     expect(document.body.innerHTML).not.toContain('secret-token');
-    // Nothing of it in the address and nothing in the storage of the browser.
     expect(JSON.stringify(Object.entries(localStorage))).not.toContain('secret-token');
     expect(JSON.stringify(Object.entries(sessionStorage))).not.toContain('secret-token');
   });
@@ -454,7 +435,6 @@ describe('the payment step (NF-74)', { timeout: 20000 }, () => {
 
     await waitFor(() => expect(screen.getByTestId('booking-payment-paymentLink')).toBeDisabled(), WAIT);
     expect(screen.getByText(i18n.t('booking.create.payment.reason.account'))).toBeInTheDocument();
-    // The other two ways stay open, and nothing on the step takes the host to another page.
     expect(screen.getByTestId('booking-payment-onSite')).toBeEnabled();
     expect(screen.getByTestId('booking-payment-bankTransfer')).toBeEnabled();
     expect(within(screen.getByTestId('booking-payment-step')).queryAllByRole('link')).toHaveLength(0);
@@ -470,7 +450,6 @@ describe('the payment step (NF-74)', { timeout: 20000 }, () => {
   });
 
   it('BookingCreatePage_PaymentLink_CallerWithoutPaymentWrite_IsDisabledAndTheAccountIsNotEvenAsked', async () => {
-    // The status of the account needs `payment.read`: a read the caller may not make would send them to the page of no access.
     permissions = new Set(['booking.read', 'booking.write']);
     renderPage();
 
@@ -501,7 +480,6 @@ describe('the payment step (NF-74)', { timeout: 20000 }, () => {
     await screen.findByTestId('booking-price-total', undefined, WAIT);
     next();
     await choosePayment('paymentLink');
-    // Back to the price and a total of zero: there is nothing to pay, so no link.
     fireEvent.click(screen.getByTestId('booking-wizard-back'));
     fireEvent.change(await screen.findByLabelText(i18n.t('booking.create.price.total'), undefined, WAIT), { target: { value: '0' } });
     next();
@@ -527,7 +505,6 @@ describe('the payment step (NF-74)', { timeout: 20000 }, () => {
 
 describe('a reservation of a portal that the host completes', { timeout: 20000 }, () => {
   it('BookingCreatePage_PortalReservation_HasNoPaymentStepAndSendsNoWayOfPaying', async () => {
-    // The portal collects: a link is refused for a block (422) and the other ways are not recorded, so there is nothing to choose.
     const block: StayAvailability = {
       ...freeStay,
       state: 'linkableBlock',
@@ -543,7 +520,6 @@ describe('a reservation of a portal that the host completes', { timeout: 20000 }
     next();
     await fillGuest();
     next();
-    // The price step is the amount the portal shows; the next one is the summary.
     expect(await screen.findByTestId('booking-portal-payment', undefined, WAIT)).toBeInTheDocument();
     next();
     await screen.findByTestId('booking-summary-what-happens', undefined, WAIT);
@@ -571,11 +547,9 @@ describe('the channel manager at the stay step (NF-74, NF-80)', { timeout: 20000
     renderPage();
 
     await fillStay();
-    // Said under the dates as soon as they are known...
     expect(await screen.findByTestId('booking-availability-channel-manager', undefined, WAIT)).toHaveTextContent(i18n.t('booking.create.availability.channelManagerBlocked'));
     next();
 
-    // ...and the step does not move on.
     expect(await screen.findByTestId('booking-submit-error', undefined, WAIT)).toHaveTextContent(i18n.t('booking.create.availability.channelManagerBlocked'));
     expect(screen.queryByLabelText(i18n.t('booking.create.guest.name'))).not.toBeInTheDocument();
   });
@@ -620,7 +594,6 @@ describe('the channel manager at the stay step (NF-74, NF-80)', { timeout: 20000
     await fillStay();
 
     expect(await screen.findByTestId('booking-availability-unchecked', undefined, WAIT)).toHaveTextContent(i18n.t('booking.create.availability.channelManagerUnchecked'));
-    // CasaZen's own calendar is free, and that is still said.
     expect(screen.getByTestId('booking-availability')).toHaveAttribute('data-state', 'ok');
     next();
     expect(await screen.findByLabelText(i18n.t('booking.create.guest.name'), undefined, WAIT)).toBeInTheDocument();
@@ -628,7 +601,6 @@ describe('the channel manager at the stay step (NF-74, NF-80)', { timeout: 20000
   });
 
   it('BookingCreatePage_ChannelManagerCouldNotBeAskedWhileCasaZenCalendarIsTaken_DoesNotSayTheHostCanGoOn', async () => {
-    // The step is stopped by CasaZen's own calendar: "you can go on" would not be true.
     vi.mocked(bookingsApi.availability).mockResolvedValue({
       ...freeStay,
       state: 'occupied',
@@ -647,7 +619,6 @@ describe('the channel manager at the stay step (NF-74, NF-80)', { timeout: 20000
   });
 
   it('BookingCreatePage_ChannelManagerCouldNotBeAskedAndTheStayIsUnderTheMinimum_StillSaysTheHostCanGoOn', async () => {
-    // Free but short: the host may go on, so the notice about the channel manager that could not be asked is said.
     vi.mocked(bookingsApi.availability).mockResolvedValue({ ...freeStay, state: 'belowMinimum', minNights: 7, channelManagerChecked: false });
     renderPage();
 
@@ -676,7 +647,6 @@ describe('the channel manager at the stay step (NF-74, NF-80)', { timeout: 20000
   });
 
   it('BookingCreatePage_Summary_ConnectedPropertyButConnectorOff_DoesNotMentionTheChannelManager', async () => {
-    // With the connector off nothing is pushed or asked: whatever the stay step saw, the summary says nothing of a channel manager.
     vi.mocked(bookingsApi.availability).mockResolvedValue(freeOnChannelManager);
     renderPage();
 
@@ -704,12 +674,10 @@ describe('the channel manager at the stay step (NF-74, NF-80)', { timeout: 20000
     await reachSummary();
     fireEvent.click(screen.getByTestId('booking-create-button'));
 
-    // The creation answer has no mirror: the result reads the booking, and the line is the outcome of the channel manager.
     const line = await screen.findByTestId('booking-done-channel-manager', undefined, WAIT);
     await waitFor(() => expect(line).toHaveAttribute('data-state', 'synced'), WAIT);
     expect(line).toHaveTextContent(i18n.t('booking.create.done.channelManager.synced'));
     expect(bookingsApi.getById).toHaveBeenCalledWith('booking-1');
-    // Everything stayed inside the wizard: the only ways out are the two links of the result, which the host chooses.
     expect(screen.getByTestId('booking-wizard')).toHaveAttribute('data-step', 'fatto');
   });
 });

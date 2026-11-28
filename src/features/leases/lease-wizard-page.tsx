@@ -16,22 +16,17 @@ import { AFTER_STEP, DONE_STEP } from './wizard/wizard-model';
 
 const LEASES_PATH = '/app/long-rent/leases';
 
-/** The wizard on a draft that exists on the server: the draft is read when the page opens, and the wizard opens on the first step not done. */
 function DraftWizard({ id }: { id: string }) {
   const { t } = useTranslation();
   const draft = useLeaseDraft(id);
   const rules = useLongRentRules();
-  // A draft with no landlord yet starts from the landlord the server suggests (not waiting for it if it cannot be read).
   const needsLandlord = draft.data !== undefined && draft.data.values.landlords.length === 0;
   const landlord = useLandlordDefaults(needsLandlord);
-  // The contract the person uploaded to be read (NL-DOCS): asked about while it is being read, then once. When it ends while the wizard is
-  // open the draft is NOT read again here: the wizard says so and brings the values in when the person asks (NL-DOCS-FU8).
   const reading = useDraftReading(id, draft.data?.origin === 'Imported');
 
   if (draft.isError) {
     const status = getHttpStatus(draft.error);
     const code = isAxiosError(draft.error) ? getProblemCode(draft.error.response?.data) : undefined;
-    // No longer a draft: the page of the lease is the one to show.
     if (status === 404 && code === 'lease_not_draft') return <Navigate to={`${LEASES_PATH}/${id}`} replace />;
     if (status === 404) {
       return (
@@ -65,7 +60,6 @@ function DraftWizard({ id }: { id: string }) {
     <div className="min-w-0 space-y-6" data-testid="lease-wizard-page">
       <BackLink to={draft.data.values.propertyId ? `${longRentPropertyPath(draft.data.values.propertyId)}?tab=contracts` : LONG_RENT_PROPERTIES_PATH} label={t('nav.properties')} className="md:inline-flex" />
       <PageHeader title={t('leaseWizard.title')} />
-      {/* A new key for each reading of the draft: after a conflict, reading it again gives a wizard that starts from what was saved. */}
       <LeaseWizard
         key={draft.dataUpdatedAt}
         draft={draft.data}
@@ -78,13 +72,6 @@ function DraftWizard({ id }: { id: string }) {
   );
 }
 
-/**
- * «Continua il contratto» (LR-06a, LR-06b), `/app/long-rent/leases/:id/edit`: the wizard of a contract. While the lease is a draft it is
- * read from the server and the wizard opens on the first step that is not done, the same from any device; a lease that is not a draft
- * any more (signed, registered) has its sheet instead. The two last parts, «Dopo la firma» (`?step=8`) and the final screen
- * (`?step=done`), belong to a lease that is signed, so they read the lease. The title is the same for every contract: no name of a
- * person is in the title of the tab.
- */
 export function LeaseWizardPage() {
   const { t } = useTranslation();
   const { id = '' } = useParams<{ id: string }>();

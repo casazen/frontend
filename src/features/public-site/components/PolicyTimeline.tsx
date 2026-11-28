@@ -7,25 +7,18 @@ type StageId = 'full' | 'partial' | 'none';
 interface Stage {
   id: StageId;
   percent: number;
-  /** Last day (included) of the stage, `YYYY-MM-DD`; `null` for the last stage, which has no end. */
   until: string | null;
 }
 
 interface PolicyTimelineProps {
-  /** Last day (included) with the full refund; `null` when the policy never refunds in full. */
   fullRefundUntil: string | null;
-  /** The share of the partial window; `null` when the policy has none. */
   partialRefundPercent: number | null;
-  /** Last day (included) with the partial refund. */
   partialRefundUntil: string | null;
-  /** The day the figures were worked out, `YYYY-MM-DD` (Europe/Rome): the stage it falls in is marked. */
   today: string;
-  /** The text of the policy, shown in place of the stages when the policy has no date to draw. */
   description?: string | null;
   className?: string;
 }
 
-/** The stages of the policy of a stay, in order, with the real dates. The last one (no refund of the stay) always exists. */
 function stagesOf({ fullRefundUntil, partialRefundPercent, partialRefundUntil }: PolicyTimelineProps): Stage[] {
   const stages: Stage[] = [];
   if (fullRefundUntil) stages.push({ id: 'full', percent: 100, until: fullRefundUntil });

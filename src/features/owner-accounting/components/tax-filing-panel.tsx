@@ -54,7 +54,6 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
   const annualDataset = annual.data;
   const generateF24 = useGenerateF24();
   const generateAnnual = useGenerateAnnualDataset();
-  // A file is being made again: no other button of the panel can be pressed until the server has answered (the steps and the regeneration work on the same record).
   const busy = generateF24.isPending || generateAnnual.isPending;
   const [target, setTarget] = useState<Target | null>(null);
 
@@ -212,7 +211,6 @@ interface FileViewProps {
   onStep: (step: Step) => void;
   onRegenerate: () => void;
   regenerating: boolean;
-  /** A file of the panel is being made again: none of its buttons can be pressed until the server has answered. */
   busy: boolean;
 }
 
@@ -337,7 +335,6 @@ function AnnualView({ dataset, onStep, onRegenerate, regenerating, busy }: FileV
   );
 }
 
-/** One move of a tax file: «verificato» needs only a confirmation; the others ask for the proof they are called by (the handoff, the receipt, the reason). */
 function FilingDialog({ target, onClose }: { target: Target; onClose: () => void }) {
   const { t, i18n } = useTranslation();
   const setF24 = useSetF24FilingState();

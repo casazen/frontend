@@ -75,10 +75,8 @@ import { propertyHasOwner } from './owner-step-model';
 import { RulesStep } from './steps/rules-step';
 import { useWizardCreateProperty, useWizardSaveProperty } from './use-wizard-property';
 
-/** Name of the flow: the draft of the first step lives under it. */
 const WIZARD_ID = 'property-new';
 
-/** The wizard's plan notice: the same box and words the creation page has always had, so the limit reads the same everywhere. */
 function PlanLimitAlert() {
   return (
     <div role="alert" data-testid="plan-limit-alert" className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm">
@@ -91,18 +89,10 @@ function PlanLimitAlert() {
 }
 
 interface SaveAndCloseProps {
-  /** Saves the answers of the step on screen, as «Avanti» does. Absent while nothing is saved yet (the first step of a new property): the button then only exits. */
   save?: (stepId: string, values: PropertyWizardValues) => Promise<void>;
   onSaved: (step: string) => void;
 }
 
-/**
- * «Salva e chiudi» (SR-07b): leaves the wizard from any step with what was answered saved, as «Avanti» saves it, and without going
- * on. The property exists already and is «Da completare»: nothing is lost by closing the browser either. A step that is not valid
- * is not saved: its problems show, as with «Avanti». The descriptions step asks less here than it does for «Avanti» (only the lengths):
- * a host who has not written the English text yet still leaves with the rest saved. It is there on every step, the first included
- * (E02/F03/US01/T04, NF-01, NF-06): where nothing is saved yet it only exits, and the answers of the first step stay in the draft.
- */
 function SaveAndClose({ save, onSaved }: SaveAndCloseProps) {
   const { t } = useTranslation();
   const wizard = useOptionalWizard();
@@ -122,7 +112,6 @@ function SaveAndClose({ save, onSaved }: SaveAndCloseProps) {
     try {
       const lenient = SAVE_AND_CLOSE_SCHEMAS[wizard.stepId];
       if (lenient ? !lenient.safeParse(form.getValues()).success : false) {
-        // Shows what is wrong (a text too long); the step's own rules are the ones that speak.
         await form.trigger();
         return;
       }
@@ -151,18 +140,10 @@ function SaveAndClose({ save, onSaved }: SaveAndCloseProps) {
 }
 
 interface PropertyWizardProps {
-  /** The property when the wizard reopens on one (`?propertyId=`); absent when a new one is being added. */
   property?: Property;
-  /** The rooms, discounts, translations and captions the server has for that property: the form starts from them. */
   listing?: WizardListingSeed;
-  /**
-   * The steps to show, when only some are: an already published or imported listing opens on the steps that lack data, the channels and
-   * the last one (the check of an imported listing). The step named in the address is shown as well. Absent = all of them.
-   */
   onlySteps?: readonly WizardStepId[];
-  /** The step to open on when the address names none. */
   initialStepId?: WizardStepId;
-  /** Told the id of the property this very wizard created, so the page knows that the id which appears in the address is its own. */
   onCreated?: (propertyId: string) => void;
 }
 
@@ -197,10 +178,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   const savePhotoMetaMutation = useSavePhotoMeta();
   const [defaults] = useState(() => wizardDefaults(property, listing));
   const [propertyId, setPropertyId] = useState<string | null>(property?.id ?? null);
-  // The rooms as stored, to tell the photos' room select what exists and to drop a room that was removed from the choice of a photo.
   const storedRooms = usePropertyRooms(propertyId ?? undefined);
-  // What each part of the listing looked like when it was last saved (or when the wizard opened): a step that changed nothing there sends
-  // nothing. The ids of the stored rooms by the key of their editor row: a room with an id is updated and keeps its photos, the others are new.
   const roomIds = useRef(new Map<string, string>(listing.rooms.map((room) => [room.id, room.id])));
   const savedRooms = useRef(roomsSignature(defaults.rooms));
   const savedTexts = useRef(textDraftsFromProfile(listing.siteProfile));
@@ -209,26 +187,18 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   const [planLimitHit, setPlanLimitHit] = useState(false);
   const [tosAccepted, setTosAccepted] = useState(false);
   const [setupFailure, setSetupFailure] = useState<string | null>(null);
-  /** The host knows that the documents and the safety sheet still open are their obligations (reminders, PO decision 2026-11-01). */
   const [remindersAccepted, setRemindersAccepted] = useState(false);
-  /** The blockers of the last refused activation (409): the server knows some that the screen could not. */
   const [refused, setRefused] = useState<readonly ActivationBlocker[] | null>(null);
-  /** «Mostra la casa sul sito» as the server has it: what the form started from, then what was last written. */
   const storedVisibility = useRef(defaults.publishedOnSite);
 
-  // What is missing and where the property stands, read again after every save (the saves invalidate it): the last step and its
-  // button are drawn from it, nothing is worked out from the form.
   const activation = useComplianceActivation(propertyId ?? '');
   const completeActivation = useCompleteComplianceActivation(propertyId ?? '');
   const stage = finishStage(activation.data);
   const remindersOpen = openReminders(activation.data?.steps ?? []).length > 0;
 
-  // Said before the first step is saved: the plan usage (any writer reads it) or the entitlement (the billing administrator) say
-  // there is no room, or the server just refused (403 `plan_limit_reached`). The server stays the source of truth on a create.
   const planUsage = usePlanUsage(!propertyId);
   const canAssignOwner = isOrgBillingAdmin(contexts);
   const entitlement = useEntitlement(canAssignOwner);
-  // Property managers may read who owns the property but cannot read billing entitlements or assign shares.
   const ownerRequired = entitlement.data?.isAgency ?? (org?.isAgency === true && org.planTier === 'Agency');
   const verifyOwner = async () => {
     if (!ownerRequired || !propertyId) return;
@@ -237,11 +207,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   };
   const blockedByPlan = !propertyId && (planLimitHit || planUsage.data?.canAdd === false || entitlement.data?.canAddProperty === false);
 
-  // The property is in the address from the moment it exists (the reload and the links need it), whichever way the step changed.
-  // The address is read from the browser, not from this render: «Avanti» changes the step right after the creation, and the router
-  // has not rendered that yet when this runs — the copy of the address that `setSearchParams((previous) => …)` hands over is the
-  // old one, and writing the property into it would put the old step back and keep the wizard on the first step. It runs again at
-  // every address the router renders (`searchParams`), so a later step change that leaves the property out is mended too.
   useEffect(() => {
     if (!propertyId) return;
     const current = new URLSearchParams(window.location.search);
@@ -250,9 +215,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     setSearchParams(current, { replace: true });
   }, [propertyId, searchParams, setSearchParams]);
 
-  // The rooms, right after the property is created or updated (NF-34): the same save sets the bedrooms and the beds of the property from
-  // them. A unit with no room (the host gave the counters only) has nothing to save — the API takes no empty list, a unit has a bed.
-  // The rooms are sent with the id of the stored room they are, so the photos of a room that stays keep it; a room that is not sent is removed.
   const saveRooms = async (id: string, rooms: readonly RoomDraft[]) => {
     if (rooms.length === 0) return;
     const signature = roomsSignature(rooms);
@@ -273,11 +235,9 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
         return;
       }
       const created = await create.mutateAsync(createPayload(values));
-      // From now on the answers live on the server: the draft of the first step must not offer to add this property again.
       if (user?.id) clearWizardDraft(WIZARD_ID, { userId: user.id, orgId: org?.id ?? null });
       onCreated?.(created.id);
       setPropertyId(created.id);
-      // The property exists from here: if the rooms are refused, «Avanti» again updates it and does not create a second one.
       await saveRooms(created.id, values.rooms);
     } catch (error) {
       if (isPlanLimitError(error)) setPlanLimitHit(true);
@@ -285,9 +245,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     }
   };
 
-  // The caption and the room of the photos (NF-32); the photos themselves go to the server as they are chosen, not with the step. Nothing is
-  // sent when no caption and no room changed. A room the host removed in the first step is gone from the server, and so is its place in the
-  // choice of a photo: it is not sent again (the API would refuse a room that is not the property's).
   const savePhotos = async (values: PropertyWizardValues) => {
     if (!propertyId) return;
     const known = storedRooms.data ? new Set(storedRooms.data.map((room) => room.id)) : null;
@@ -298,9 +255,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     savedPhotoMeta.current = signature;
   };
 
-  // The headline and the description in Italian go to the columns of the property, every other language to the site profile (NF-31).
-  // The profile is saved as a whole, so it is only saved when a text of another language changed, and then with everything else of it as
-  // the server has it (`useSaveListingTexts`).
   const saveDescriptions = async (values: PropertyWizardValues) => {
     if (!propertyId) return;
     await saveProperty.mutateAsync({ id: propertyId, data: descriptionsUpdatePayload(values) });
@@ -326,7 +280,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     await saveProperty.mutateAsync({ id: propertyId, data: rulesUpdatePayload(values) });
   };
 
-  // The length-of-stay discounts (NF-35) are a list of their own: replaced as a whole, only when the tiers changed (an empty list removes them).
   const savePrices = async (values: PropertyWizardValues) => {
     if (!propertyId) return;
     await saveProperty.mutateAsync({ id: propertyId, data: pricesUpdatePayload(values) });
@@ -337,7 +290,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     savedDiscounts.current = signature;
   };
 
-  // The account data lives in its own guided flows; verify the persisted answer, not a local checkbox.
   const verifyCompliance = async (values: PropertyWizardValues) => {
     setSetupFailure(null);
     if (!propertyId || !complianceOn || values.country !== 'IT') return;
@@ -364,7 +316,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     if (!propertyId) return null;
     setSetupFailure(null);
     if (stage === 'ready' || stage === 'active') await verifyOwner();
-    // Recheck the setup before activation, including when opening the last step directly.
     if (stage === 'ready' && !onlySteps) {
       await verifyCompliance(values);
       await verifyBilling();
@@ -376,7 +327,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
         storedVisibility.current = values.publishedOnSite;
       } else {
         try {
-          // The button is off until the reminders, when open, are acknowledged: the flag goes only with them.
           await completeActivation.mutateAsync({ tosAccepted: true, ...(remindersOpen ? { remindersAcknowledged: true } : {}) });
         } catch (error) {
           const blocked = getActivationBlockedProblem(error);
@@ -393,7 +343,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     return propertyId;
   };
 
-  // A property created in this visit has no amenity yet; one the wizard reopened on keeps the ones the house rules decide.
   const saveAmenities = async (values: PropertyWizardValues) => {
     if (!propertyId) return;
     await saveProperty.mutateAsync({ id: propertyId, data: amenitiesUpdatePayload(values, property ?? { amenities: [] }) });
@@ -407,8 +356,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       purpose: t('propertyWizard.steps.base.purpose'),
       schema: baseStepSchema,
       beforeNext: saveBase,
-      // Over the limit of the plan the first «Avanti» cannot create anything: it is off, as the form of before was, and the notice
-      // says why. The server still decides on a create (a stale page cannot get past it).
       nextDisabled: blockedByPlan,
       render: ({ form }) => (
         <>
@@ -483,7 +430,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
             label: t('propertyWizard.steps.channels.label'),
             title: t('propertyWizard.steps.channels.title'),
             purpose: t('propertyWizard.steps.channels.purpose'),
-            // The host may go on without publishing: the property is saved and can be published from here later.
             optional: true,
             nextLabel: t('propertyWizard.channels.next'),
             render: ({ form, goTo }) =>
@@ -512,8 +458,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       label: t('propertyWizard.steps.finish.label'),
       title: t('propertyWizard.steps.finish.title'),
       purpose: t('propertyWizard.steps.finish.purpose'),
-      // The terms (and, with reminders open, the acknowledgement) are what the host still has to do when nothing blocks; a click
-      // before that would only be refused.
       nextDisabled: stage === 'loading' || (stage === 'ready' && (!tosAccepted || (remindersOpen && !remindersAccepted))),
       render: ({ form }) =>
         propertyId ? (
@@ -559,7 +503,6 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       finishLabel={t(`propertyWizard.last.button.${stage === 'ready' ? 'activate' : stage === 'active' ? 'done' : 'later'}`)}
       finishFailedMessage={setupFailure ?? t('propertyWizard.errors.saveFailed')}
       onFinish={finish}
-      // The first step is not saved yet: the draft keeps its answers over a reload. Once the property exists they are on the server.
       draft={propertyId ? false : { accept: (saved) => saved.step === 'base' }}
       onExit={() => navigate(planReturn ?? PROPERTIES_PATH)}
       aboveFooter={
@@ -588,10 +531,6 @@ interface PropertyWizardShellProps extends WizardShellProps<PropertyWizardValues
   onlySteps?: readonly WizardStepId[];
 }
 
-/**
- * `WizardShell` with only some of the steps when the listing is already on the channels (the check of an imported listing): the ones
- * asked for, and the one the address names, which is never hidden. The list is cut here, apart from the steps themselves.
- */
 function PropertyWizardShell({ onlySteps, steps, ...shell }: PropertyWizardShellProps) {
   const [searchParams] = useSearchParams();
   const named = searchParams.get('step');

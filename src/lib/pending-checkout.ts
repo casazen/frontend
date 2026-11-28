@@ -1,9 +1,3 @@
-/**
- * The checkout started in this browser tab (BK-07, A3-15). If the guest goes back to the checkout form and books the same
- * dates again, their own hold makes the backend answer 409: the checkout page then offers to go back to that booking
- * instead. Kept in `sessionStorage` (this tab only, gone when it is closed); every access may throw (private mode,
- * blocked storage), and then nothing is remembered.
- */
 export interface PendingCheckout {
   bookingId: string;
   token: string;
@@ -31,7 +25,6 @@ export function savePendingCheckout(entry: PendingCheckout): void {
   }
 }
 
-/** The checkout of these dates started in this tab, if any. */
 export function findPendingCheckout(propertyId: string, checkIn: string, checkOut: string): PendingCheckout | null {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -43,7 +36,6 @@ export function findPendingCheckout(propertyId: string, checkIn: string, checkOu
   }
 }
 
-/** Forgets the checkout once its outcome is final. */
 export function clearPendingCheckout(bookingId: string): void {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);

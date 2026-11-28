@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { MARKETPLACE_PATH } from '../lib/marketplace-paths';
 
-/** A link in the text of a step: at least 44 px high, a visible focus, underlined (the one way out of a wizard that is allowed, UX-02). */
 export const WIZARD_LINK_CLASS =
   'inline-flex min-h-11 items-center rounded-sm text-sm font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
@@ -17,7 +16,6 @@ interface SaveAndExitProps {
   testId: string;
 }
 
-/** The way out of a wizard that keeps what was answered, on every step (UX-06). It is a button: the wizard is one form, and a link would leave it without saying so. */
 export function SaveAndExit({ label, onLeave, testId }: SaveAndExitProps) {
   return (
     <div className="flex justify-end">
@@ -35,7 +33,6 @@ interface WizardFrameProps {
   children: ReactNode;
 }
 
-/** The page of a wizard of the marketplace: as wide as the page, under its title, and the trail back to the Marketplace. */
 export function WizardFrame({ title, description, testId, children }: WizardFrameProps) {
   const { t } = useTranslation();
 

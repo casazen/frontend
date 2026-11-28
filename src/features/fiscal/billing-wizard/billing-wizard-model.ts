@@ -54,14 +54,6 @@ import {
   type ItalianRegime,
 } from './billing-wizard-schema';
 
-// ---------------------------------------------------------------------------------------------------------------------
-// Money: the currency of the issuer
-// ---------------------------------------------------------------------------------------------------------------------
-
-/**
- * The currency of the documents and of the amounts of an issuer, from the country it issues from: Switzerland issues in francs, Italy in euros. `null` while the issuer has
- * not said the country: an amount is then shown without a symbol, and the page says that the currency is not known yet (never a euro that nobody chose).
- */
 export function currencyOfCountry(countryCode: string | null | undefined): string | null {
   switch ((countryCode ?? '').trim().toUpperCase()) {
     case 'CH':
@@ -73,38 +65,28 @@ export function currencyOfCountry(countryCode: string | null | undefined): strin
   }
 }
 
-/** The locale an amount is written in, for the language of the app. */
 export function amountLocale(language: string): string {
   return language.startsWith('en') ? 'en-GB' : 'it-IT';
 }
 
-/** An amount without a currency, written the way the app writes amounts (two decimals): for an issuer whose country, and so whose currency, is not known yet. */
 export function plainAmount(amount: number, locale: string): string {
   return new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// The setup as the server sent it
-// ---------------------------------------------------------------------------------------------------------------------
-
-/** A section of the setup by its name; `undefined` while the server sends none (a section no epic provides). */
 export function sectionOf(setup: BillingSetup | undefined, name: BillingSetupSectionName): BillingSetupSection | undefined {
   return setup?.sections.find((section) => section.section === name);
 }
 
-/** A saved text; empty when the value is absent or is not a text. */
 export function textOf(values: Record<string, unknown> | undefined, key: string): string {
   const value = values?.[key];
   return typeof value === 'string' ? value : '';
 }
 
-/** A saved yes or no; `fallback` when the value is absent or is not one. */
 export function flagOf(values: Record<string, unknown> | undefined, key: string, fallback = false): boolean {
   const value = values?.[key];
   return typeof value === 'boolean' ? value : fallback;
 }
 
-/** A saved list of texts; `null` when the value is absent (never confirmed) or is not a list. */
 function listOf(values: Record<string, unknown> | undefined, key: string): string[] | null {
   const value = values?.[key];
   return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : null;
@@ -141,16 +123,10 @@ export function withProposal(values: BillingWizardValues, proposed: readonly str
   return { ...values, touristTaxCollectors };
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// The tourist tax of the Italian portals (FIX/BE-IT-TOURISTTAX-DEFAULTS): proposals to confirm per comune, the confirmed ones, the hint
-// ---------------------------------------------------------------------------------------------------------------------
-
-/** The members of the values of the section `touristTax` the server adds for an Italian issuer (backend `ItalianTouristTaxSetupKeys`). */
 const PROPOSALS_KEY = 'italianPortalProposals';
 const CONFIRMED_KEY = 'confirmedPortalTouristTaxComuni';
 const CONFLICT_KEY = 'portalTouristTaxConflict';
 
-/** The only status of a proposal that is a question for a person: a status a newer server may add is not asked. */
 const TO_CONFIRM = 'to_confirm';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -161,10 +137,6 @@ function sameComune(a: PortalTouristTaxComune, b: PortalTouristTaxComune): boole
   return a.channel === b.channel && a.comuneIstat === b.comuneIstat;
 }
 
-/**
- * The pairs of a list the server sent; `null` when it is not a list or when ANY entry of it is not a pair. A confirmation sends the WHOLE list, so a list that could be read only in part
- * must never be the base of one: it would take the confirmations it could not read away.
- */
 function pairsOf(value: unknown): PortalTouristTaxComune[] | null {
   if (!Array.isArray(value)) return null;
   const pairs: PortalTouristTaxComune[] = [];
@@ -176,7 +148,6 @@ function pairsOf(value: unknown): PortalTouristTaxComune[] | null {
   return pairs;
 }
 
-/** The proposals that are questions (`status` `to_confirm`), once each and without the ones that are already confirmed. An entry that is not readable is left out: nothing is asked about it. */
 function proposalsOf(value: unknown, confirmed: readonly PortalTouristTaxComune[]): ItalianPortalProposal[] {
   if (!Array.isArray(value)) return [];
   const proposals: ItalianPortalProposal[] = [];
@@ -193,17 +164,12 @@ function proposalsOf(value: unknown, confirmed: readonly PortalTouristTaxComune[
 
 /** What the step «Tassa di soggiorno» of an Italian issuer says of the portals that collect the tourist tax, as the server sent it. */
 export interface ItalianTouristTaxView {
-  /**
-   * The questions: «does this portal collect and pay the tourist tax in this comune?», for the comuni of the properties, none confirmed yet. Never an answer: nothing is preselected.
-   * Empty while the confirmed pairs cannot be read (see `confirmed`).
-   */
   proposals: ItalianPortalProposal[];
   /**
    * The portals the organization already confirmed, one pair for each comune. `null` when the server did not send them, or sent a list that cannot be read: nothing can be answered
    * or taken away then, because an answer is the whole list and one built on a part of it would take confirmations away.
    */
   confirmed: PortalTouristTaxComune[] | null;
-  /** The records of the stays from the portals contradict the rule of the organization for the tourist tax: a hint, never a «Da fare». */
   conflict: boolean;
 }
 
@@ -220,7 +186,6 @@ export function italianTouristTaxOf(setup: BillingSetup | undefined): ItalianTou
   return { proposals: confirmed === null ? [] : proposalsOf(values[PROPOSALS_KEY], confirmed), confirmed, conflict: values[CONFLICT_KEY] === true };
 }
 
-/** What a person does with a portal in a comune: confirms it, or takes the confirmation away. */
 export type PortalComuniChange = { add: PortalTouristTaxComune } | { remove: PortalTouristTaxComune };
 
 /**
@@ -233,16 +198,8 @@ export function portalComuniRequest(confirmed: readonly PortalTouristTaxComune[]
   return { comuni: [...others, ...('add' in change ? [target] : [])].map(({ channel, comuneIstat }) => ({ channel, comuneIstat })) };
 }
 
-/**
- * Why a confirmation was not saved, in the words the step has for it. `notSent` is the one failure where it is KNOWN that nothing was sent (the list could not be made); `failed` is a call
- * whose outcome is not known (the server may have saved it before the answer was lost), and the other three are refusals of the server, which saved nothing.
- */
 export type PortalComuniFailure = 'wholeOrg' | 'forbidden' | 'invalid' | 'profile' | 'notSent' | 'failed';
 
-/**
- * The confirmation was NOT sent: the setup, read again just before it, could not be read, or did not hold the confirmed portals in full. A confirmation is the WHOLE list and the server
- * replaces the list it had, so a list made from anything but a fresh and complete reading could take confirmations away: nothing is sent, and the person can try again.
- */
 export class PortalComuniNotSentError extends Error {
   constructor() {
     super('The portals confirmed for the comuni could not be read, so nothing was sent.');
@@ -250,12 +207,6 @@ export class PortalComuniNotSentError extends Error {
   }
 }
 
-/**
- * What a failed confirmation was, from the answer: the list that could not be made (`PortalComuniNotSentError`: nothing was sent), 403 `fiscal_settings_need_whole_org` (the person reaches
- * only some of the properties), any other 403 (the role may not change the setup), 422 `issuer_field_invalid` (a portal or a comune the server does not take), 422
- * `issuer_profile_incomplete` (the issuer step has not created the profile yet); anything else (no answer, a 5xx, a body that is not the section) is a failed call whose outcome is not
- * known, which can be tried again after the list has been read again.
- */
 export function portalComuniFailureOf(error: unknown): PortalComuniFailure {
   if (error instanceof PortalComuniNotSentError) return 'notSent';
   if (isAxiosError(error) && error.response) {
@@ -321,7 +272,6 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
   const countryChosen = isCountry(country) && !isMissing(setup, 'country_missing');
   const regime = textOf(vat, 'regime');
   const collected = listOf(tourist, 'platformCollectedTouristTaxChannels');
-  // What the issuer saved is what the step shows; for an issuer that has saved nothing the portals the server says collect it by default are chosen (and the others left to answer).
   const proposed = platformDefaultsOf(setup);
   const holder = textOf(channels, 'portalAccountHolder');
   const stay = textOf(vat, 'stayVatTreatment');
@@ -364,7 +314,6 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
     conservationAgreementConfirmed: flagOf(italy, 'conservationAgreementConfirmed'),
     virtualStampConfirmed: flagOf(italy, 'virtualStampConfirmed'),
     stampDutyReference: textOf(italy, 'stampDutyReference'),
-    // The settings of the send to the accountant are not part of the setup: they are read on their own, and the step shows them until the person changes one.
     accountantEmail: null,
     accountantMonthly: null,
     accountantDay: null,
@@ -372,15 +321,9 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
   };
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// The steps
-// ---------------------------------------------------------------------------------------------------------------------
-
 /** The steps that exist only where something Italian asks for them (E17/F03/US01): the owners who issue the documents of their stays, and the sending to the SDI. */
 export interface ItalianSteps {
-  /** The agency has owners of Italian properties that still miss an issuer profile that can issue (the item `owner_issuer_missing` of the setup as it was when the wizard opened). */
   ownerIssuers?: boolean;
-  /** The sending to the SDI is on (the flag `sdiSubmission`). */
   sdi?: boolean;
 }
 
@@ -401,7 +344,6 @@ export function stepIdsFor(country: string, agency: boolean, accountant = false,
   });
 }
 
-/** How many owners the setup still says have no issuer profile that can issue (the item `owner_issuer_missing`): `0` when it says none. The server's count, never one worked out from the rows. */
 export function ownerIssuersMissing(setup: BillingSetup | undefined): number {
   return missingItemsOf(setup).find((item) => item.key === 'owner_issuer_missing')?.count ?? 0;
 }
@@ -418,22 +360,15 @@ export function sdiConnectionOf(input: { providerConfigured: boolean; sendingOn:
   return input.providerConfigured ? 'connected' : 'waitingCredentials';
 }
 
-/** Every item that is missing, in the order of the sections of the setup (the order of the wizard). */
 export function missingItemsOf(setup: BillingSetup | undefined): BillingSetupItem[] {
   return setup?.sections.flatMap((section) => section.missing) ?? [];
 }
 
-/** The first step of `steps` that has an item missing; `null` when none has (everything is set, or what is missing belongs to a step this person does not have). */
 export function firstMissingStep(setup: BillingSetup | undefined, steps: readonly BillingStepId[]): BillingStepId | null {
   const missing = missingItemsOf(setup).map((item) => billingStepOfItem(item));
   return steps.find((id) => missing.includes(id)) ?? null;
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// What a step saves
-// ---------------------------------------------------------------------------------------------------------------------
-
-/** What a step saves on the server: the section and the fields of the request. */
 export interface StepSave {
   section: BillingSetupSectionName;
   request: SaveBillingSetupSectionRequest;
@@ -460,7 +395,6 @@ function invalidFieldsOf(step: BillingStepId, values: BillingWizardValues, onRec
   return new Set(result.error.issues.map((issue) => String(issue.path[0])));
 }
 
-/** Two answers of the form are the same answer (the text of a field, a choice, or the list of the portals that say who collects the tourist tax). */
 function sameAnswer(a: unknown, b: unknown): boolean {
   return a === b || JSON.stringify(a) === JSON.stringify(b);
 }
@@ -480,9 +414,7 @@ export function stepSave(
   const draft = options.draft === true;
   const invalid = draft ? invalidFieldsOf(step, values, options.onRecord ?? { vatNumber: false, fiscalCode: false }) : new Set<string>();
   const initial = options.initial;
-  /** A draft of a step the person left as it started: that field is not an answer. */
   const untouched = (field: keyof BillingWizardValues): boolean => draft && initial !== undefined && sameAnswer(values[field], initial[field]);
-  /** A text field: sent when it is asked; in a draft only when it is filled, valid and changed. */
   const put = (request: SaveBillingSetupSectionRequest, field: BillingSetupField, value: string): void => {
     if (draft && (value === '' || invalid.has(field) || untouched(field as keyof BillingWizardValues))) return;
     (request as Record<string, unknown>)[field] = value;
@@ -513,7 +445,6 @@ export function stepSave(
         }
       } else {
         if (values.regime !== '' && !invalid.has('regime') && !untouched('regime')) request.regime = values.regime;
-        // A draft that left the regime code empty does not clear a code the accountant gave.
         put(request, 'fatturaPaRegimeCode', text(values.fatturaPaRegimeCode).toUpperCase());
         if (!untouched('stayVatTreatment')) request.stayVatTreatment = values.stayVatTreatment;
       }
@@ -529,7 +460,6 @@ export function stepSave(
     case BILLING_STEPS.touristTax: {
       if (values.countryCode !== 'CH') return null;
       const answered = PORTAL_SOURCES.every((portal) => values.touristTaxCollectors[portal] === 'portal' || values.touristTaxCollectors[portal] === 'host');
-      // A list is an answer, an empty one included: «no portal collects it». A draft with a portal still unanswered says nothing about the others.
       if (!answered || untouched('touristTaxCollectors')) return null;
       return { section: 'touristTax', request: { platformCollectedTouristTaxChannels: PORTAL_SOURCES.filter((portal) => values.touristTaxCollectors[portal] === 'portal') } };
     }
@@ -552,7 +482,6 @@ export function stepSave(
   }
 }
 
-/** The fields of the form of the standard mandate: the step saves none of them, the terms are applied by their own action. */
 const MANDATE_FIELDS = [
   'mandateValidFrom',
   'mandateCommissionPercent',
@@ -612,16 +541,10 @@ export function taxProfileAddition(values: BillingWizardValues, onRecord: Billin
   return Object.keys(update).length > 0 ? update : null;
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// The step «Commissioni dei canali»
-// ---------------------------------------------------------------------------------------------------------------------
-
-/** The key of a cell of the table of the account holders: the listing and the portal. */
 export function holderKey(propertyId: string, channel: string): string {
   return `${propertyId}|${channel}`;
 }
 
-/** What the table shows in a cell: what the person changed, else the holder the listing was given, else the default of the organization. */
 export function holderChoiceOf(
   propertyId: string,
   channel: string,
@@ -633,10 +556,6 @@ export function holderChoiceOf(
   return overrides.find((row) => row.propertyId === propertyId && row.channel === channel)?.holder ?? 'default';
 }
 
-/**
- * The rows of the bulk write of the holders: only the cells that differ from what the server has (a cell back at the default is a `null` holder, and one that already was
- * at the default sends nothing). `null` when there is nothing to write: the write refuses an empty list.
- */
 export function holderChangesRequest(changes: Record<string, HolderChoice>, overrides: readonly ChannelAccountHolder[]): ChannelAccountHolderChange[] | null {
   const rows: ChannelAccountHolderChange[] = [];
   for (const [key, choice] of Object.entries(changes)) {
@@ -659,7 +578,6 @@ export function portalSettingsChanged(values: PortalSettings, initial: PortalSet
   return values.portalAccountHolder !== initial.portalAccountHolder || values.rechargePortalCommissions !== initial.rechargePortalCommissions;
 }
 
-/** The percent shown for a portal: what the person typed, else the one that applies today (the rule in force, or the default of the configuration). */
 export function commissionPercentText(row: Pick<ChannelCommissionInForce, 'channel' | 'percent'>, typed: Record<string, string>): string {
   const own = typed[row.channel];
   if (own !== undefined) return own;
@@ -696,7 +614,6 @@ export function commissionRulesRequest(
     const percent = parseDecimal(commissionPercentText(row, typed));
     if (percent === null) continue;
 
-    // The rule in force is one of the stored ones, at the same place in the list: what is added below goes after them.
     const stored = row.ruleId ? current.rules.findIndex((rule) => rule.id === row.ruleId) : -1;
     if (stored >= 0) {
       if (rules[stored].percent === percent) continue;
@@ -715,10 +632,6 @@ export function commissionRulesRequest(
   return changed ? rules : null;
 }
 
-/**
- * The first day of the latest rule in force that starts AFTER `start`, among the portals whose percent the person changed, or `null` when none does. A rule that starts on or after the day the
- * new percent is asked to start from is changed in place, and the days between `start` and its first day would stay without a rule: the day cannot be used, the person chooses that one or a later one.
- */
 export function commissionStartTooEarly(current: ChannelCommissionRuleSet, typed: Record<string, string>, start: string): string | null {
   let latest: string | null = null;
   for (const row of current.channels) {
@@ -730,10 +643,6 @@ export function commissionStartTooEarly(current: ChannelCommissionRuleSet, typed
   }
   return latest;
 }
-
-// ---------------------------------------------------------------------------------------------------------------------
-// The step «Mandato standard»
-// ---------------------------------------------------------------------------------------------------------------------
 
 /**
  * The standard mandate as the form says it: a percent, a base, the flat fees when written, who bears the payment fees and «+ IVA» or VAT included (⚖ R4). `null` while the form
@@ -757,31 +666,20 @@ export function mandateTemplateOf(values: BillingWizardValues): OwnerMandateTemp
   };
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// The step «Commercialista»
-// ---------------------------------------------------------------------------------------------------------------------
-
-/** A setting of the send to the accountant, by the field of the form that holds the person's answer to it. */
 export type AccountantField = 'accountantEmail' | 'accountantMonthly' | 'accountantDay' | 'accountantContents';
 
-/** What a save of the step does with the answers of the person. */
 export interface AccountantChange {
-  /** The whole settings to send (`PUT api/accountant-package/settings` takes them as a whole), or `null` when there is nothing to save: nothing was touched, or what is on screen is what the server has. */
   request: SaveAccountantPackageSettingsRequest | null;
-  /** The settings the person changed that this save does NOT keep. Only a draft leaves any out (a whole save is checked first, and refuses). */
   leftOut: AccountantField[];
 }
 
-/** Every answer of the step «not touched»: the server's settings, as they are. */
 const ACCOUNTANT_UNTOUCHED = { accountantEmail: null, accountantMonthly: null, accountantDay: null, accountantContents: null } as const;
 
-/** The settings as the server takes them: the address cut at its ends, and none (`null`) when it is empty. */
 function accountantRequestOf(answers: AccountantAnswers): SaveAccountantPackageSettingsRequest {
   const email = answers.email.trim();
   return { enabled: answers.enabled, email: email === '' ? null : email, sendDay: answers.sendDay, contents: [...answers.contents] };
 }
 
-/** Whether a request would leave the settings as the server has them: the address does not count its capitals (the server keeps it in lower case) and the folders do not count their order. */
 function accountantUnchanged(current: AccountantPackageSettings, request: SaveAccountantPackageSettingsRequest): boolean {
   return (
     (current.email ?? '').toLowerCase() === (request.email ?? '').toLowerCase() &&
@@ -814,7 +712,6 @@ export function accountantChange(current: AccountantPackageSettings | null | und
   const leftOut: AccountantField[] = [];
   const typedEmail = values.accountantEmail;
   if (typedEmail !== null) {
-    // An address emptied is an answer (no address); one that is not a plain address is not kept.
     if (typedEmail.trim() === '' || isPlainEmail(typedEmail)) kept.email = typedEmail.trim();
     else leftOut.push('accountantEmail');
   }
@@ -827,7 +724,6 @@ export function accountantChange(current: AccountantPackageSettings | null | und
     else leftOut.push('accountantContents');
   }
   if (values.accountantMonthly !== null) kept.enabled = values.accountantMonthly;
-  // The monthly send cannot be on with no address to send it to: whichever answer would leave it so is not kept.
   if (kept.enabled && kept.email.trim() === '') {
     if (values.accountantMonthly === true) {
       kept.enabled = current.enabled;
@@ -837,14 +733,11 @@ export function accountantChange(current: AccountantPackageSettings | null | und
       leftOut.push('accountantEmail');
     }
   }
-  // The folders this person sees can be none (the settings hold only folders they may not choose: `accountantSettingsFor`), and a list with no folder is refused by the server: nothing is sent
-  // until they choose one, and the draft says it left that out.
   if (kept.contents.length === 0) return { request: null, leftOut: leftOut.includes('accountantContents') ? leftOut : [...leftOut, 'accountantContents'] };
   const request = accountantRequestOf(kept);
   return { request: accountantUnchanged(current, request) ? null : request, leftOut };
 }
 
-/** The 422 codes of the settings of the send that name a field of the form, with the words that say what the field wants (`accountant_package_settings_invalid` names none). */
 const ACCOUNTANT_PROBLEM_CODES: ReadonlyMap<string, FormProblem> = new Map([
   ['accountant_package_recipient_invalid', { name: 'accountantEmail', messageKey: BILLING_ERROR_KEYS.accountantEmail }],
   ['accountant_package_recipient_missing', { name: 'accountantEmail', messageKey: BILLING_ERROR_KEYS.accountantEmailMissing }],
@@ -853,10 +746,6 @@ const ACCOUNTANT_PROBLEM_CODES: ReadonlyMap<string, FormProblem> = new Map([
   ['accountant_package_owner_accounting_required', { name: 'accountantContents', messageKey: BILLING_ERROR_KEYS.accountantOwnerAccounting }],
 ]);
 
-/**
- * The field of the form a refused save of the settings of the send names: the server refuses an address that is not a plain one, a send turned on with no address, a day outside 1 to 28, no folder
- * and, from a caller who may not read the owner accounting, the folders that carry it. Any other answer names no field: its words are the message of the whole save.
- */
 export function accountantProblemsOf(error: unknown): FormProblem[] {
   if (!isAxiosError(error) || error.response?.status !== 422) return [];
   const code = getProblemCode(error.response.data);
@@ -864,17 +753,14 @@ export function accountantProblemsOf(error: unknown): FormProblem[] {
   return problem ? [problem] : [];
 }
 
-/** The 403 the settings of the send answer to a caller whose role does not allow them or whose reach is only some of the properties: they are the whole organization's. */
 export function isAccountantRefused(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 403;
 }
 
-/** The month a test send is about: the one that is over (the month before today, Europe/Rome), as `yyyy-MM` — the very month the server makes the package of. */
 export function lastMonthOf(today: string): string {
   return periodParam(defaultPeriod(today));
 }
 
-/** A month `yyyy-MM` as «ottobre 2026» in the locale given, or the text as it came when it is not a month. */
 export function periodLabel(period: string, locale: string): string {
   const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(period);
   if (!match) return period;
@@ -891,36 +777,23 @@ const LAST_SEND_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
   ['email_not_queued', 'billingWizard.accountant.lastSend.errors.emailNotQueued'],
 ]);
 
-/** The key of the sentence that says why the last send failed; a code the app does not know (the server is newer) reads as a neutral line, never as the code itself. */
 export function lastSendErrorKey(code: string | null | undefined): string {
   return (code ? LAST_SEND_ERROR_KEYS.get(code) : undefined) ?? 'billingWizard.accountant.lastSend.errors.unknown';
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// What the server refused
-// ---------------------------------------------------------------------------------------------------------------------
-
-/** A field of the form the server refused, with the text that says what it wants. */
 export interface FormProblem {
   name: string;
   messageKey: string;
 }
 
-/** The 403 a caller gets when it reaches only some of the properties: the setup is the whole organization's. */
 export function isNeedsWholeOrg(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 403 && getProblemCode(error.response.data) === 'fiscal_settings_need_whole_org';
 }
 
-/**
- * The 422 a write of the portal accounts (the settings of the step, or the bulk write of the holders) gets when it starts the waiver of the recharge (the recharge turned off while the agency
- * holds an account, or the agency made the default holder or given its first listing while the recharge is off) and does not carry the acknowledgement of the person. Nothing was saved:
- * the wizard asks, and sends the write again with the acknowledgement only if the person confirms.
- */
 export function isRechargeWaiverNotAcknowledged(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 422 && getProblemCode(error.response.data) === 'recharge_waiver_not_acknowledged';
 }
 
-/** The form field and the words of a field of the setup the server refused; `null` for a field the wizard cannot put a message on. */
 function problemOfField(field: string, country: string): FormProblem | null {
   switch (field as BillingSetupField) {
     case 'countryCode':
@@ -956,10 +829,6 @@ function problemOfField(field: string, country: string): FormProblem | null {
   }
 }
 
-/**
- * The fields a refused save names: `issuer_field_invalid` lists the values that are not valid (`errors`, and the first as `field`). Names the wizard cannot put a message on are
- * left out, and any other answer names none. A refusal is shown where it can be fixed; the message of the API says the rest.
- */
 export function problemsOf(error: unknown, country: string): FormProblem[] {
   if (!isAxiosError(error) || error.response?.status !== 422) return [];
   const data: unknown = error.response.data;
@@ -973,11 +842,6 @@ export function problemsOf(error: unknown, country: string): FormProblem[] {
   return found.filter((problem, index): problem is FormProblem => problem !== null && found.findIndex((other) => other?.name === problem.name) === index);
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// The summary: the example document and the address
-// ---------------------------------------------------------------------------------------------------------------------
-
-/** The lines of the example document of the summary, with the amounts of a test stay: the document of a real booking carries the amounts of the booking. */
 export const EXAMPLE_LINES: ReadonlyArray<{ lineType: string; amount: number }> = [
   { lineType: 'Accommodation', amount: 200 },
   { lineType: 'Cleaning', amount: 50 },
@@ -992,7 +856,6 @@ export interface ExampleLine {
   gross: number;
 }
 
-/** The example document computed with the rates in force. */
 export interface ExampleDocument {
   lines: ExampleLine[];
   net: number;
@@ -1002,7 +865,6 @@ export interface ExampleDocument {
   total: number;
 }
 
-/** An amount rounded to the cent, away from zero, as the documents do it (the amounts here are never negative). */
 function cents(amount: number): number {
   return Math.round(amount * 100 + Number.EPSILON) / 100;
 }
@@ -1032,7 +894,6 @@ export function exampleDocument(rule: FiscalTaxRule | undefined): ExampleDocumen
   return { lines, net, vat, stamp, total: cents(net + vat + stamp) };
 }
 
-/** The address as it will read on the documents: «Via Roma 12, 20121 Milano (MI)». */
 export function addressLine(values: Pick<BillingWizardValues, 'addressStreet' | 'addressCivic' | 'postalCode' | 'city' | 'province'>): string {
   const street = [values.addressStreet.trim(), values.addressCivic.trim()].filter(Boolean).join(' ');
   const town = [values.postalCode.replace(/\s+/g, ''), values.city.trim()].filter(Boolean).join(' ');
@@ -1040,7 +901,6 @@ export function addressLine(values: Pick<BillingWizardValues, 'addressStreet' | 
   return [street, province ? `${town} (${province})` : town].filter(Boolean).join(', ');
 }
 
-/** The regime as the regime step says it, for the summary: the Swiss answer is a regime too. */
 export function regimeOfValues(values: Pick<BillingWizardValues, 'countryCode' | 'swissVatRegistered' | 'regime'>): DocumentRegime | null {
   if (values.countryCode === 'CH') {
     if (values.swissVatRegistered === 'yes') return 'SwissVatRegistered';

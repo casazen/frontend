@@ -27,7 +27,6 @@ interface HostReviewCardProps {
   onReport: (review: HostReview) => void;
 }
 
-/** One review in the host's list: the stars and the words, where it stands, the host's own answer, and what the host can still do. */
 function HostReviewCard({ review, canWrite, onReply, onReport }: HostReviewCardProps) {
   const { t, i18n } = useTranslation();
   const month = formatStayMonth(review.stayMonth, i18n.language);
@@ -94,11 +93,6 @@ function HostReviewCard({ review, canWrite, onReply, onReport }: HostReviewCardP
   );
 }
 
-/**
- * `/app/short-rent/reviews`: the reviews of the host's properties (DB-12b), newest first, "Carica altre" for the older ones. The host
- * answers each once and reports the ones that break the rules; it can neither hide nor delete one, and the page says so. A person who
- * cannot write bookings only reads. The invitation of a guest starts from the booking, not from here.
- */
 export function HostReviewsPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();

@@ -9,7 +9,6 @@ vi.mock('@/queries/use-public-seo');
 
 const mutateAsync = vi.fn();
 
-/** Firenze as seeded from the RS-7 research: 6,00 €, max 7 nights, exempt under 12. */
 const firenze: PublicTouristTaxRateSummary = {
   city: 'Firenze',
   accommodationCategory: null,

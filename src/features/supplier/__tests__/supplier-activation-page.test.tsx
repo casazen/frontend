@@ -22,7 +22,6 @@ vi.mock('@/services/supplier-api', async (importOriginal) => ({
   ...api,
 }));
 
-// SU-04: the comune field reads the status of the official list; these tests are about the wizard, so it is "not imported".
 vi.mock('@/queries/use-comuni', () => ({
   useComuneDatasetStatus: () => ({ data: { datasetAvailable: false }, isLoading: false, isError: false }),
   useComuneSearch: () => ({ data: undefined, isLoading: false, isError: false }),

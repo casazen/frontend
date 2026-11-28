@@ -17,11 +17,8 @@ import { NavIcon } from './nav-icon';
 import { useRailTooltip } from './rail-tooltip';
 
 interface AreaSwitcherProps {
-  /** The area of the page that is open: the one the switcher shows as current. */
   contextKey: AppContextKey;
-  /** The organization of the user, shown under the name of the area (the shell reads it once and hands it down). */
   organizationName?: string | null;
-  /** Sidebar reduced to the icons: the switcher keeps only the icon of the area, whose name is a tooltip (UI-04b). */
   collapsed?: boolean;
   className?: string;
 }
@@ -55,7 +52,6 @@ export function AreaSwitcher({ contextKey, organizationName = null, collapsed = 
   const current = getArea(contextKey);
   const currentName = t(current.nameKey);
   const hasChoice = areas.length > 1;
-  // Reduced to the icon, the area has its name as a tooltip, on hover and on focus (UI-04b).
   const { triggerProps, tooltip } = useRailTooltip(currentName, collapsed);
 
   const face = (
@@ -92,7 +88,6 @@ export function AreaSwitcher({ contextKey, organizationName = null, collapsed = 
           onPointerLeave={triggerProps.onPointerLeave}
         >
           {face}
-          {/* Nothing to click, but the icon alone must still say where the user is. */}
           {collapsed ? (
             <span className="sr-only">{organizationName ? `${currentName}, ${organizationName}` : currentName}</span>
           ) : null}
@@ -132,7 +127,6 @@ export function AreaSwitcher({ contextKey, organizationName = null, collapsed = 
         <DropdownMenuRadioGroup
           value={contextKey}
           onValueChange={(value) => {
-            // The current area stays where it is: the menu just closes.
             if (value !== contextKey) setActiveContext(value as AppContextKey);
           }}
         >

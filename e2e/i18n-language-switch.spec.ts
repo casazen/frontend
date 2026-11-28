@@ -50,7 +50,6 @@ async function resetLocaleToDefault(page: import('@playwright/test').Page): Prom
   await page.reload({ waitUntil: 'networkidle' });
 }
 
-// UI-05: the language is chosen in the menu of the profile (the avatar of the header), not with a switch of the header.
 async function switchToEnglish(page: import('@playwright/test').Page): Promise<void> {
   await chooseLanguage(page, 'English');
 }

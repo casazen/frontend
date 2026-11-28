@@ -14,10 +14,8 @@ import { useAssistQueue, useUpdateAssistRequest } from '@/queries/use-admin-onbo
 import type { AssistRequestStatus, AssistUpdateStatus, PagedAssistRequests } from '@/types/onboarding.types';
 import { AssistRequestRow } from './components/assist-request-row';
 
-/** The page size of the queue: a staff queue is read, not scrolled through; the server takes at most 100. */
 const PAGE_SIZE = 25;
 
-/** What the filter can ask: the open requests (the default: requested and in progress), one status, or all of them. */
 type QueueFilter = 'open' | 'requested' | 'inProgress' | 'done' | 'cancelled' | 'all';
 const FILTERS: readonly QueueFilter[] = ['open', 'requested', 'inProgress', 'done', 'cancelled', 'all'];
 const FILTER_STATUS: Partial<Record<QueueFilter, AssistRequestStatus>> = {
@@ -28,7 +26,6 @@ const FILTER_STATUS: Partial<Record<QueueFilter, AssistRequestStatus>> = {
 };
 
 interface QueueSectionProps {
-  /** The title of the list when the page shows two (the open view): «Da prendere in carico», «In corso». */
   title?: string;
   query: UseQueryResult<PagedAssistRequests>;
   page: number;
@@ -37,7 +34,6 @@ interface QueueSectionProps {
   busy: boolean;
   onUpdate: (id: string, status: AssistUpdateStatus, note?: string) => Promise<unknown>;
   testId: string;
-  /** The line of a list with nothing in it, when the page does not say it for both lists. */
   empty?: string;
 }
 

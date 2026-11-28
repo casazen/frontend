@@ -9,7 +9,6 @@ import { surfaceSupplement, defaultSelection, isPickedSupplement, maxUnits, type
  * (the server adds up the lines of the estimate) and the consent is never part of the draft (it is asked again every time).
  */
 
-/** The comune picked from the official list, as far as the booking needs it. */
 export interface DraftComune {
   istatCode: string;
   name: string;
@@ -17,22 +16,12 @@ export interface DraftComune {
 }
 
 export interface BookingDraft {
-  /** Slug of the service. */
   service: string | null;
-  /** Hours, sets or m² of the service's own price; null: the default of the service. */
   quantity: number | null;
-  /** The m² of the home, for a service with a `sqm30` supplement; null: what the price covers. */
   surface: number | null;
-  /** Units picked of each supplement. */
   options: Record<string, number>;
-  /** The urgent slots (today and tomorrow, with a surcharge). */
   urgent: boolean;
-  /**
-   * The comune of the work. `undefined`: not chosen here, the one the address of the page named (`?comune=`) stands; `null`: chosen
-   * to be empty. A JSON file cannot tell the two apart, which is fine: the address only seeds a new draft.
-   */
   comune?: DraftComune | null;
-  /** The slot, exactly as the server gave it. */
   startUtc: string | null;
   postalCode: string;
   address: string;
@@ -59,7 +48,6 @@ export const EMPTY_DRAFT: BookingDraft = {
   phone: '',
 };
 
-/** What the address of the page says (`?service=…&start=…`, from the cards and the finder of the site) as the start of a draft. */
 export function draftFromParams(params: BookingParams): Partial<BookingDraft> {
   return {
     ...(params.service ? { service: params.service } : {}),
@@ -70,17 +58,13 @@ export function draftFromParams(params: BookingParams): Partial<BookingDraft> {
   };
 }
 
-/** A service can be booked when it has a price; one on quote is asked for with a request on measure. */
 export const isBookable = (service: PublicSupplierService) => !service.requiresQuote && service.priceFromCents !== null;
 
-/** The steps, in order. The last one exists only for a booking whose card has to be blocked. */
 export const BOOKING_STEPS = ['service', 'where', 'when', 'details', 'payment'] as const;
 export type BookingStep = (typeof BOOKING_STEPS)[number];
 
-/** The limits of the server (`ShowcaseBookingLimits`): a longer text is refused there, so the page stops it first. */
 export const BOOKING_LIMITS = { address: 200, floor: 60, accessNotes: 500, fullName: 100, email: 254, phoneMinDigits: 6, phoneMaxDigits: 15 } as const;
 
-/** What can be wrong with a field of the last step: the word the person reads is `supplierSite.booking.problems.<field>.<problem>`. */
 export type DetailsField = 'address' | 'postalCode' | 'floor' | 'accessNotes' | 'fullName' | 'email' | 'phone' | 'consent';
 export type FieldProblem = 'required' | 'invalid' | 'tooLong';
 export type DetailsProblems = Partial<Record<DetailsField, FieldProblem>>;
@@ -92,7 +76,6 @@ export function phoneDigits(value: string): number {
   return value.replace(/\D/g, '').length;
 }
 
-/** The problem of a name and surname, or null when it is fine. The request on measure (SP-12c) asks for the same three data. */
 export function fullNameProblem(value: string): FieldProblem | null {
   const fullName = value.trim();
   if (!fullName) return 'required';
@@ -100,7 +83,6 @@ export function fullNameProblem(value: string): FieldProblem | null {
   return fullName.length > BOOKING_LIMITS.fullName ? 'tooLong' : null;
 }
 
-/** The problem of an e-mail address, or null when it is fine. */
 export function emailProblem(value: string): FieldProblem | null {
   const email = value.trim();
   if (!email) return 'required';
@@ -108,7 +90,6 @@ export function emailProblem(value: string): FieldProblem | null {
   return email.length > BOOKING_LIMITS.email ? 'tooLong' : null;
 }
 
-/** The problem of a phone number, or null when it is fine. */
 export function phoneProblem(value: string): FieldProblem | null {
   const phone = value.trim();
   if (!phone) return 'required';
@@ -116,7 +97,6 @@ export function phoneProblem(value: string): FieldProblem | null {
   return !/^\+?[\d\s().-]+$/.test(phone) || digits < BOOKING_LIMITS.phoneMinDigits || digits > BOOKING_LIMITS.phoneMaxDigits ? 'invalid' : null;
 }
 
-/** The problems of the last step; empty means the booking can be sent. The consent is the person's, given now, never remembered. */
 export function validateDetails(draft: BookingDraft, consent: boolean): DetailsProblems {
   const problems: DetailsProblems = {};
   const address = draft.address.trim();
@@ -141,7 +121,6 @@ export function validateDetails(draft: BookingDraft, consent: boolean): DetailsP
   return problems;
 }
 
-/** The common slips in the domain of an address: the page offers the right one and the person decides. */
 const DOMAIN_SLIPS: Record<string, string> = {
   'gmial.com': 'gmail.com',
   'gmai.com': 'gmail.com',
@@ -188,15 +167,12 @@ export function selectionOf(draft: BookingDraft, service: PublicSupplierServiceD
   };
 }
 
-/** The urgent choice stands only for a service that offers it. */
 export function isUrgent(draft: BookingDraft, service: PublicSupplierServiceDetail | undefined): boolean {
   return draft.urgent && service?.urgent.enabled === true;
 }
 
-/** Part of the day of a slot, by the clock of Rome. */
 export type DayPart = 'morning' | 'afternoon' | 'evening';
 
-/** `HH:mm` on the clock of Rome: `startLocal` already is that clock, with its offset after the seconds. */
 export function slotClock(slot: PublicSlot): string {
   return slot.startLocal.slice(11, 16);
 }
@@ -215,11 +191,9 @@ export interface BookingBodyInput {
   locale: string;
   privacyNoticeVersion: string;
   clientRequestId: string;
-  /** What the trap field holds (a person leaves it empty). */
   trap: string;
 }
 
-/** The body the server holds a slot with. Only call it with a draft that passed {@link validateDetails} and has a service, a comune and a slot. */
 export function toBookingBody(input: BookingBodyInput): PublicBookingBody {
   const { draft, service, selection, comune } = input;
   const options = Object.entries(selection.options)

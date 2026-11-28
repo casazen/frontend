@@ -12,7 +12,6 @@ interface ActivationSectionProps {
   stage: FinishStage;
   tosAccepted: boolean;
   onTosChange: (accepted: boolean) => void;
-  /** Reminders still open (the documents, the safety sheet): the host acknowledges them once to activate. */
   remindersOpen: boolean;
   remindersAccepted: boolean;
   onRemindersChange: (accepted: boolean) => void;

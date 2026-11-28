@@ -30,7 +30,6 @@ export interface LongRentDeadline {
   amount: number | null;
 }
 
-/** The dates of a window, in date order. `truncated`: more rents were due than the answer carries (the earliest 500). */
 export interface LongRentDeadlines {
   from: string;
   to: string;
@@ -38,15 +37,12 @@ export interface LongRentDeadlines {
   truncated: boolean;
 }
 
-/** `GET /long-rent/deadlines`: both days included, at most 366 days apart; today and ninety days later when missing. */
 export interface LongRentDeadlinesParams {
   from?: string;
   to?: string;
-  /** The dates of one lease only (the sheet of a contract, LR-03c): narrows what the caller already reaches; another lease gives none. */
   leaseId?: string;
 }
 
-/** The leases of the area counted as the views of the list of leases are (`active` includes `expiring`; `inPreparation` is `toSign` + `toRegister`). */
 export interface LongRentLeaseCounters {
   active: number;
   expiring: number;
@@ -56,7 +52,6 @@ export interface LongRentLeaseCounters {
   ended: number;
 }
 
-/** The most urgent step of the landlord among all the leases they reach: the step that lease has in the list of leases. */
 export interface LongRentNow {
   leaseId: string;
   propertyId: string;
@@ -67,11 +62,6 @@ export interface LongRentNow {
   step: LeaseNextStep;
 }
 
-/**
- * `GET /long-rent/overview`: the leases by group, the rent of the current month (`rentMonth` is `yyyy-MM`) and the step of the
- * landlord that cannot wait. `now` is null when there is none (and missing from an older answer). The checklist the server also
- * sends is not read: it is what `now` and the agenda say, once.
- */
 export interface LongRentOverview {
   today: string;
   leases: LongRentLeaseCounters;

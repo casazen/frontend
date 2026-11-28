@@ -33,7 +33,6 @@ describe('the checks of the Italian short-let withholding (E18/F02/US01/T01)', (
     expect(get.mock.calls[0]![1]?.validateStatus).toBe(acceptsRefusal);
   });
 
-  // Permission: a 403 is an answer of the page («no access»), not a reason to send the whole app to the page of the missing access, and never an empty list.
   it('ListCompanyTenantCases_403_ResolvesToNullNeverToAnEmptyList', async () => {
     get.mockResolvedValueOnce({ status: 403, data: {} });
 

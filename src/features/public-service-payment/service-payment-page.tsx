@@ -127,7 +127,6 @@ function PaymentContent({ payment, token, clientStatus, onSubmitted }: PaymentCo
         <StripeIntentPayment
           mode="payment"
           publishableKey={session.data.publishableKey}
-          // Null for the money CasaZen holds: the PaymentIntent is on the platform and Stripe.js is loaded with the publishable key alone.
           stripeAccountId={session.data.stripeAccountId}
           clientSecret={session.data.clientSecret}
           locale={stripeLocale(i18n.language)}

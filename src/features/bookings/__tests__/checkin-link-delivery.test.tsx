@@ -25,10 +25,8 @@ vi.mock('@/lib/utils', async (importOriginal) => ({
 }));
 
 const BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
-/** The link to the page of the guest: a secret, so the test looks for it in everything the panel draws. */
 const LINK = 'https://casazen.test/checkin/secret-token-123';
 
-/** A portal guest with no e-mail address: the daily job found no recipient. */
 const NO_RECIPIENT: CheckInSessionStatusDto = {
   sessionId: 's1',
   status: 'Inviato',
@@ -67,7 +65,6 @@ afterEach(() => {
   cleanup();
 });
 
-/** What a person reads in the panel: its text and the values of its fields, where a link would show. */
 function everythingShown(container: HTMLElement): string {
   const fields = [...container.querySelectorAll('input')].map((input) => input.value).join(' ');
   return `${container.textContent ?? ''} ${fields}`;
@@ -112,12 +109,10 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
 
     await waitFor(() => expect(copyTextToClipboard).toHaveBeenCalledWith(LINK));
     expect(everythingShown(container)).not.toContain('secret-token-123');
-    // Copying makes no new link: the one the guest may already hold keeps working.
     expect(bookingsApi.createCheckInLink).not.toHaveBeenCalled();
     expect(bookingsApi.resendCheckInLink).not.toHaveBeenCalled();
   });
 
-  // The link of the delivery is never in the page, so «seleziona il link e copialo a mano» would lead nowhere: a copy that fails says to use «Genera link da copiare», which shows a new link.
   it('panel_CopyOfTheLinkOfTheDeliveryThatFails_SendsToGenerateALinkToCopyAndNeverPrintsTheLink', async () => {
     vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
     vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery());
@@ -159,7 +154,6 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     renderPanel();
 
     expect(await screen.findByTestId('checkin-delivery-state')).toHaveTextContent(expected);
-    // The line of the e-mail that was never sent says nothing for a link that goes another way.
     expect(screen.queryByTestId('checkin-link-email')).not.toBeInTheDocument();
   });
 
@@ -172,7 +166,6 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(screen.getByTestId('checkin-link-email')).toBeInTheDocument();
   });
 
-  // The delivery only handed the e-mail to the queue: what the session says of the e-mail is the truth, and nothing contradicts it with «Inviato per email».
   it.each([
     ['Failed', 'Email non inviata'],
     ['Queued', 'Email con il link in coda di invio'],
@@ -255,14 +248,11 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery({ ended: true, endedReason: 'host_link', checkInLink: null }));
     renderPanel();
 
-    // The host carries the link from here (the server ended the delivery): the line of the session says what there is.
     expect(await screen.findByTestId('checkin-link-email')).toBeInTheDocument();
     await deliveryDrawn();
     expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
   });
 
-  // The host issued another link (generated it or sent it again): the server ends the row of the delivery and leaves its state as it was, `Sent`, which is now the history of a link that
-  // no longer works. It is not told as where the link stands (a green «Inviato nella chat del portale» beside a link just generated), and the line of the e-mail of the new link is not hidden.
   it.each([
     ['PortalChat', 'host_link'],
     ['PortalChat', 'link_replaced'],
@@ -291,7 +281,6 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
   });
 
-  // What ended with the check-in or the expiry of the link was true while it lasted: the line stays.
   it.each([
     ['check_in_completed', 'Completo'],
     ['link_expired', 'Scaduto'],
@@ -324,8 +313,6 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
   });
 
-  // The query keeps the last answer when a read fails, and an error says nothing about what the answer was: the old state and its «Copia link» are not shown as the present one. The panel
-  // says it cannot read where the link stands, and the state comes back when a read works again.
   it('panel_ReadThatFailsAfterAnAnswer_SaysItCannotReadAndNeverKeepsTheOldStateNorItsLink', async () => {
     vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
     vi.mocked(checkinLinkApi.getDelivery)
@@ -335,7 +322,6 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     const { client, container } = renderPanel();
     expect(await screen.findByTestId('checkin-delivery-copy')).toBeInTheDocument();
 
-    // The page reads it again (return to the window, the bell, the poll of every minute) and the read fails.
     await act(async () => {
       await client.invalidateQueries({ queryKey: [CHECKIN_LINK_DELIVERY_KEY, BOOKING_ID] });
     });
@@ -346,13 +332,11 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(screen.queryByTestId('checkin-delivery-copy')).not.toBeInTheDocument();
     expect(everythingShown(container)).not.toContain('secret-token-123');
 
-    // «Riprova»: the next read works and the state it gives is the one shown.
     fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
     expect(await screen.findByTestId('checkin-delivery-state')).toHaveTextContent('In attesa che il portale apra la conversazione');
     expect(screen.queryByTestId('checkin-delivery-error')).not.toBeInTheDocument();
   });
 
-  // With both flags off nothing changes: nothing is asked and the panel is what it was.
   it('panel_FlagsOff_AsksNothingAndShowsNothingOfTheDelivery', async () => {
     vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
     vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery());
@@ -363,8 +347,6 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(screen.queryByTestId('checkin-delivery')).not.toBeInTheDocument();
   });
 
-  // The backend works the delivery only while the connector of the channel manager is on too: with it off, whatever the flags say, the panel asks nothing and draws nothing of the delivery
-  // (the server still records a row then, which is not for a screen), and the line of the e-mail is the one that tells.
   it.each([
     ['portalChatCheckInLink', { portalChatCheckInLink: true, guestContactInfo: false }],
     ['guestContactInfo', { portalChatCheckInLink: false, guestContactInfo: true }],

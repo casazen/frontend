@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { REVIEW_MAX_RATING, REVIEW_TEXT_MAX_LENGTH } from '@/types';
 import { StarInput } from './star-input';
 
-// The messages are i18n keys: the form translates them when it draws them.
 const reviewSchema = z.object({
   rating: z.number().int().min(1, 'siteReviews.form.ratingRequired').max(REVIEW_MAX_RATING, 'siteReviews.form.ratingRequired'),
   text: z.string().max(REVIEW_TEXT_MAX_LENGTH, 'siteReviews.form.textTooLong'),
@@ -23,7 +22,6 @@ export type ReviewFormValues = z.infer<typeof reviewSchema>;
 interface ReviewFormProps {
   onSubmit: (values: ReviewFormValues) => void;
   isPending: boolean;
-  /** Why the last attempt failed, already translated; shown over the button. */
   errorMessage?: string;
 }
 

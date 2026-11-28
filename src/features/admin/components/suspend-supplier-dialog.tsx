@@ -13,13 +13,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { AdminSupplier } from '@/types/admin-suppliers';
 
-/** Longest reason the API accepts (`SuspendSupplierRequest.Reason`). */
 export const SUSPEND_REASON_MAX_LENGTH = 500;
 
-/**
- * Asks the admin why a supplier is suspended: the reason is required, recorded in the audit trail and never shown to the
- * supplier. Warns about the requests the supplier still has open, which stay as they are (SU-12).
- */
 export function SuspendSupplierDialog({
   supplier,
   isPending,

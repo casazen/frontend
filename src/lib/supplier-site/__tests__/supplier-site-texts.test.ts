@@ -2,11 +2,6 @@ import { describe, expect, it } from 'vitest';
 import it_ from '@/i18n/locales/it.json';
 import en from '@/i18n/locales/en.json';
 
-/**
- * Nothing the booking, the request of the customer (and the request on measure, SP-12c) and the payment page say may be untrue (D24, decisions VT-D1/VT-D2): no cash, no
- * deposit, no text message, no review, no promise of how fast the professional answers, no date of accounting or time of refund, no name
- * of the supplier of the guided form nor «partner». The texts are scanned, not the pages: a new sentence that breaks a rule fails here.
- */
 const FAMILIES = ['supplierSite.booking', 'supplierSite.request', 'supplierSite.inquiry', 'servicePayment'];
 
 function texts(node: unknown, path = ''): Array<[string, string]> {
@@ -29,7 +24,6 @@ const BANNED: Array<[string, RegExp]> = [
   ['speed of the answer', /risponde in un.ora|answers? within an hour/i],
   ['the supplier of the guided form', /concordato\s*facile/i],
   ['partner', /\bpartner\b/i],
-  // A time or a date of accounting / refund is never promised.
   ['a time of accounting', /\b(entro|in|within)\s+\d+\s*(giorni|giorno|ore|ora|days?|hours?|minuti|minutes?)\b/i],
 ];
 

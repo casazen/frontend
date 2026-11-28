@@ -27,7 +27,6 @@ function RecordRow({ testId, label, hint, host, value, copyLabel, copyTestId }: 
       await navigator.clipboard.writeText(value);
       toast.success(t('domain.dns.copied'));
     } catch {
-      // Clipboard blocked (insecure context, denied permission): the value stays on screen to copy by hand.
       toast.error(t('domain.dns.copyFailed'));
     }
   };
@@ -47,10 +46,6 @@ function RecordRow({ testId, label, hint, host, value, copyLabel, copyTestId }: 
   );
 }
 
-/**
- * The DNS records the host creates at their provider: the CNAME (or the A records for a domain without `www`), the TXT
- * that proves ownership and, only when the service provider asks for it, its own TXT (BK-17, A3-25).
- */
 export function DnsInstructionsPanel({ instructions }: DnsInstructionsPanelProps) {
   const { t } = useTranslation();
   const aRecords = instructions.aRecordValues ?? [];

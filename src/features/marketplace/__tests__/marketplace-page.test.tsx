@@ -20,7 +20,6 @@ const api = vi.hoisted(() => ({
   getConnectStatus: vi.fn(),
 }));
 const workspace = vi.hoisted(() => ({ permissions: new Set<string>() }));
-// The page reads the catalog through its hook: the test gives the answer of the hook (what the server said, loading, or failed).
 const hooks = vi.hoisted(() => ({ catalog: vi.fn(), entry: vi.fn() }));
 
 vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: api.fetchServiceCategories }));
@@ -70,7 +69,6 @@ const feeds = (count: number): CalendarOverview => ({
 const ACTIVE_STRIPE = { connectedAccountId: 'acct_1', chargesEnabled: true, payoutsEnabled: true, detailsSubmitted: true, requirementsDue: [] };
 const NO_STRIPE = { connectedAccountId: null, chargesEnabled: false, payoutsEnabled: false, detailsSubmitted: false, requirementsDue: [] };
 
-// The cards of the catalog: made-up names, as the real ones are entered by the administrator and written nowhere in the page.
 const BASE = {
   logoUrl: null,
   cost: { text: null, invoicedBy: 'Unknown' },
@@ -139,7 +137,6 @@ function catalog(options: { enabled?: boolean; connected?: boolean; partners?: M
   };
 }
 
-/** What `useMarketplaceCatalog` answers. */
 function catalogAnswer(data: MarketplaceCatalogResponse | undefined, extra: { isPending?: boolean; isError?: boolean; refetch?: () => void } = {}) {
   return { data, isPending: false, isError: false, error: null, refetch: vi.fn(), ...extra };
 }
@@ -159,7 +156,6 @@ function Where() {
   return <output data-testid="where">{useLocation().search}</output>;
 }
 
-/** Where a link leads: its path and its parameters. */
 function target(testId: string) {
   const url = new URL(screen.getByTestId(testId).getAttribute('href') ?? '', 'http://localhost');
   return { path: url.pathname, params: url.searchParams };
@@ -179,7 +175,6 @@ beforeEach(async () => {
   await i18n.changeLanguage('it');
 });
 
-// A card that opened its detail card leaves who opened it to the drawer: forgotten after the test, as the tests of the drawer of the app do.
 afterEach(async () => {
   cleanup();
   await settleDrawer();
@@ -193,10 +188,8 @@ describe('MarketplacePage · Scopri', () => {
     await screen.findByTestId('marketplace-partners-section');
     const groups = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
     expect(groups).toEqual(['Canali di vendita', 'Strumenti collegati', 'Funzioni del channel manager', 'Servizi per la casa', 'Partner']);
-    // Each group says in one line what it holds.
     expect(screen.getByTestId('marketplace-group-salesChannels')).toHaveTextContent('I portali dove vendi i tuoi alloggi');
     expect(screen.getByTestId('marketplace-partners-section')).toHaveTextContent('non fornitori CasaZen');
-    // Both reads are account-level.
     expect(hooks.catalog).toHaveBeenCalledWith(undefined);
     expect(api.fetchMarketplaceSuppliers).toHaveBeenCalledWith(expect.objectContaining({ accountScope: true }));
     expect(api.getProperties).not.toHaveBeenCalled();
@@ -224,7 +217,6 @@ describe('MarketplacePage · Scopri', () => {
     expect(portal).toHaveTextContent('Sell on the test portal.');
     expect(within(portal).getByTestId('marketplace-entry-Channel-PORTAL1-cost')).toHaveTextContent('Costo: 2% per booking (fatturato dal channel manager)');
     expect(within(portal).getByTestId('marketplace-entry-Channel-PORTAL1-status')).toHaveTextContent('Non attivo');
-    // It sits in its group.
     expect(within(screen.getByTestId('marketplace-group-salesChannels')).getByTestId('marketplace-entry-Channel-PORTAL1')).toBe(portal);
   });
 
@@ -284,29 +276,24 @@ describe('MarketplacePage · Scopri', () => {
     renderAt(<MarketplacePage />);
     await screen.findByTestId('marketplace-entry-Channel-PORTAL1');
 
-    // Not active: the wizard of a channel, and it brings the person back to the page they were on.
     const activate = target('marketplace-entry-Channel-PORTAL1-action');
     expect(screen.getByTestId('marketplace-entry-Channel-PORTAL1-action')).toHaveTextContent('Attiva');
     expect(activate.path).toBe('/app/short-rent/marketplace/activate/channel/PORTAL1');
     expect(activate.params.has('propertyId')).toBe(false);
     expect(activate.params.get('returnTo')).toBe('/app/short-rent/marketplace');
 
-    // Active: managed in the Active tab.
     expect(screen.getByTestId('marketplace-entry-Tool-TOOL1-status')).toHaveTextContent('Attivo');
     expect(screen.getByTestId('marketplace-entry-Tool-TOOL1-action')).toHaveTextContent('Gestisci');
     expect(target('marketplace-entry-Tool-TOOL1-action').path).toBe('/app/short-rent/marketplace/mine');
     expect(target('marketplace-entry-Tool-TOOL1-action').params.has('propertyId')).toBe(false);
 
-    // To fix: the same wizard, with the word «Correggi».
     expect(screen.getByTestId('marketplace-entry-Tool-TOOL2-status')).toHaveTextContent('Da correggere');
     expect(screen.getByTestId('marketplace-entry-Tool-TOOL2-action')).toHaveTextContent('Correggi');
     expect(target('marketplace-entry-Tool-TOOL2-action').path).toBe('/app/short-rent/marketplace/activate/tool/TOOL2');
 
-    // Pending: it is already asked for, so it is managed and not asked for again.
     expect(screen.getByTestId('marketplace-entry-LicensedFunction-chat-status')).toHaveTextContent('In attesa');
     expect(screen.getByTestId('marketplace-entry-LicensedFunction-chat-action')).toHaveTextContent('Gestisci');
 
-    // A function of the license has its own request; a partner its own hand-off.
     expect(target('marketplace-entry-LicensedFunction-rms-action').path).toBe('/app/short-rent/marketplace/request/rms');
     expect(target('marketplace-entry-Partner-test-cleaners-action').path).toBe('/app/short-rent/marketplace/partners/test-cleaners/activate');
   });
@@ -316,9 +303,7 @@ describe('MarketplacePage · Scopri', () => {
 
     const locked = await screen.findByTestId('marketplace-entry-LicensedFunction-rateChecker');
     expect(within(locked).queryByTestId('marketplace-entry-LicensedFunction-rateChecker-action')).not.toBeInTheDocument();
-    // A reason the page has no text for is said in general words.
     expect(within(locked).getByTestId('marketplace-entry-LicensedFunction-rateChecker-reason')).toHaveTextContent('Al momento non si può attivare da qui.');
-    // The details are still there to read.
     expect(within(locked).getByRole('button', { name: 'Dettagli di TEST Checker' })).toBeInTheDocument();
   });
 
@@ -367,7 +352,6 @@ describe('MarketplacePage · Scopri', () => {
     expect(cleaning).toHaveAttribute('href', '/app/short-rent/marketplace/categories/cleaning');
     expect(screen.getByTestId('marketplace-category-plumbing')).toHaveTextContent('Ancora nessun fornitore');
     expect(screen.queryByTestId('marketplace-no-network')).not.toBeInTheDocument();
-    // The tiles are the group of Home services.
     expect(within(screen.getByTestId('marketplace-suppliers-section')).getByTestId('marketplace-categories')).toBeInTheDocument();
   });
 
@@ -390,7 +374,6 @@ describe('MarketplacePage · Scopri', () => {
     hooks.catalog.mockReturnValue(answer());
     renderAt(<MarketplacePage />);
 
-    // The sentence about the territory stays; the one that sends the person to the Partners group is there only when that group has cards.
     const note = await screen.findByTestId('marketplace-no-network');
     expect(note).toHaveTextContent("Ancora nessun fornitore");
     expect(note).not.toHaveTextContent('partner');
@@ -401,7 +384,6 @@ describe('MarketplacePage · Scopri', () => {
     api.getConnectStatus.mockResolvedValue(ACTIVE_STRIPE);
     renderAt(<MarketplacePage />);
 
-    // The calendars are a sales channel, the card payments a tool.
     const calendars = await within(await screen.findByTestId('marketplace-group-salesChannels')).findByTestId('marketplace-integration-calendars');
     await waitFor(() => expect(within(calendars).getByTestId('marketplace-integration-calendars-status')).toHaveTextContent('Attivo'));
     expect(calendars).toHaveTextContent('2 calendari collegati');
@@ -410,7 +392,6 @@ describe('MarketplacePage · Scopri', () => {
     const payments = within(screen.getByTestId('marketplace-group-connectedTools')).getByTestId('marketplace-integration-payments');
     await waitFor(() => expect(within(payments).getByTestId('marketplace-integration-payments-status')).toHaveTextContent('Attivo'));
     expect(target('marketplace-integration-payments-action').path).toBe('/app/short-rent/settings/payments');
-    // They are not in the catalog: no detail card to open, and no price invented.
     expect(within(calendars).queryByRole('button', { name: /Dettagli/ })).not.toBeInTheDocument();
     expect(within(calendars).getByTestId('marketplace-integration-calendars-cost')).toHaveTextContent('Costo non specificato');
   });
@@ -428,7 +409,6 @@ describe('MarketplacePage · Scopri', () => {
   });
 
   it('MarketplacePage_Scopri_UnreadableAnswers_ShowTheCardsWithoutAStateAndDoNotBreak', async () => {
-    // An answer that is not what the API sends (a page of HTML from a proxy, say) is as good as none.
     api.getCalendarOverview.mockResolvedValue('<!doctype html>' as never);
     api.getConnectStatus.mockResolvedValue('<!doctype html>' as never);
     renderAt(<MarketplacePage />);
@@ -453,7 +433,6 @@ describe('MarketplacePage · Scopri', () => {
     workspace.permissions = new Set(['short-rent:booking.read']);
     renderAt(<MarketplacePage />);
 
-    // The catalog is there; CasaZen's own integrations are not, and nothing was read for them.
     await screen.findByTestId('marketplace-entry-Channel-PORTAL1');
     expect(screen.queryByTestId('marketplace-integration-calendars')).not.toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-integration-payments')).not.toBeInTheDocument();
@@ -474,13 +453,11 @@ describe('MarketplacePage · Scopri', () => {
       expect(note).toHaveTextContent('Per vedere queste schede devi prima collegare il tuo channel manager a CasaZen.');
       expect(within(note).getByRole('link', { name: 'Collega i tuoi canali' })).toHaveAttribute('href', '/app/short-rent/channels');
     }
-    // No card of the catalog in them, whatever the catalog held; the rest of the page does not wait for the channel manager.
     expect(screen.queryByTestId('marketplace-entry-Channel-PORTAL1')).not.toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-entry-Tool-TOOL1')).not.toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-entry-LicensedFunction-chat')).not.toBeInTheDocument();
     expect(await screen.findByTestId('marketplace-category-cleaning')).toBeInTheDocument();
     expect(within(screen.getByTestId('marketplace-partners-section')).getByTestId('marketplace-entry-Partner-test-cleaners')).toBeInTheDocument();
-    // CasaZen's own integrations stay where they were.
     expect(await screen.findByTestId('marketplace-integration-calendars')).toBeInTheDocument();
   });
 
@@ -490,7 +467,6 @@ describe('MarketplacePage · Scopri', () => {
 
     const channels = await screen.findByTestId('marketplace-group-salesChannels');
     expect(within(channels).getByText('Carico…')).toBeInTheDocument();
-    // CasaZen's own integrations do not wait for the catalog; the cards of the catalog and the note about the channel manager do.
     expect(await within(channels).findByTestId('marketplace-integration-calendars')).toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-entry-Channel-PORTAL1')).not.toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-octorate-off-salesChannels')).not.toBeInTheDocument();

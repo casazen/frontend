@@ -32,17 +32,8 @@ import type { FiscalCreditNoteRequest, FiscalDocumentCriteria, FiscalDocumentEnt
 import { PAYMENTS_KEY } from './use-payments';
 import { useRestartOnNewWaiting, useWatchWindow } from './use-watch-window';
 
-/**
- * Root of the query keys of the fiscal documents. It is under `fiscal` on purpose: a change to the tax profile or to the invoicing setup (`useBillingSetup`, which invalidates it
- * after every save) reads the documents again. The list, the detail of a document, the documents of a booking and the numbers issued all live under it, so one invalidation of
- * this key (a document issued, a message of the live channel) reads every one of them again.
- */
 export const FISCAL_DOCUMENTS_KEY = ['fiscal', 'documents'] as const;
 
-/**
- * The key of every write on a document (issue, make again, drop, credit, bulk issue, create) and of every download: `useDocumentsBusy` asks the client whether one of them is
- * running for a document, so the buttons of a card wait for each other wherever the card is drawn (a row, the detail, the card of a booking).
- */
 export const FISCAL_DOCUMENT_MUTATION_KEY = [...FISCAL_DOCUMENTS_KEY, 'mutation'] as const;
 
 /** How often an open list is read again while a document waits for the answer of the SDI: the answer comes without any screen asking for it. */
@@ -113,12 +104,10 @@ export function useFiscalDocumentsContext(enabled = true) {
 }
 
 interface DownloadRequest {
-  /** What the download needs of a document: where its file is (the id and the source) and the number its file is named after. A self-billed invoice (TD17) is downloaded through the same endpoints. */
   document: Pick<FiscalDocumentEntry, 'id' | 'source' | 'number'>;
   format: 'pdf' | 'xml';
 }
 
-/** What a download that failed says: the words of the server for its code (`apiErrors.codes.*`), and for a 404 that a document is not found, never a generic failure. */
 function downloadFailure(error: unknown): string {
   return getProblemMessage(error, i18n.t) ?? i18n.t(getHttpStatus(error) === 404 ? 'fiscalDocuments.list.download.notFound' : 'fiscalDocuments.list.download.failed');
 }
@@ -158,11 +147,6 @@ interface ExportRequest {
   criteria: FiscalDocumentCriteria;
 }
 
-/**
- * Downloads the list as a CSV or an Excel file and saves it, with the days, the kind and the source of the filters. Like a single document it keeps nothing once nobody
- * watches it (`gcTime: 0`), saves inside its function and keeps a failure without its request. A refusal of the server (days it does not accept, a list longer than a file
- * holds) is told with its own words.
- */
 export function useExportFiscalDocuments() {
   return useMutation({
     mutationFn: async ({ format, criteria }: ExportRequest): Promise<void> => {
@@ -183,16 +167,8 @@ export function useExportFiscalDocuments() {
   });
 }
 
-// ---------------------------------------------------------------------------------------------------------------------------------
-// The detail, the card of a booking and the writes (E12/F02/US01/T01)
-
-/** How many issued documents the numbering reads: the newest ones, which hold the highest number of the series. */
 const NUMBERS_PAGE_SIZE = 100;
 
-/**
- * One document with its lines, for the detail. Like the list it is money and the data of a person, so it is read again whenever it opens and is not kept once nothing shows it (`FRESH`).
- * `enabled: false` without an id: the detail is closed.
- */
 export function useFiscalDocument(id: string | null) {
   return useQuery({
     queryKey: [...FISCAL_DOCUMENTS_KEY, 'detail', id],
@@ -202,10 +178,6 @@ export function useFiscalDocument(id: string | null) {
   });
 }
 
-/**
- * The documents of a booking, for the card of its tab Pagamento. `enabled: false` for who may not read payments, and while the card has nothing to ask. Read again whenever it opens, and
- * by the message of the live channel when a document of the booking is issued.
- */
 export function useBookingFiscalDocuments(bookingId: string, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [...FISCAL_DOCUMENTS_KEY, 'booking', bookingId],
@@ -238,7 +210,6 @@ interface WriteTarget {
   document?: { id: string };
 }
 
-/** Whether the variables of a write are about one of these documents (or this booking): a download names its document, a bulk issue its documents, a draft its booking. */
 function touches(variables: unknown, documentIds: readonly string[], bookingId: string | undefined): boolean {
   if (typeof variables !== 'object' || variables === null) return false;
   const target = variables as WriteTarget;
@@ -248,10 +219,6 @@ function touches(variables: unknown, documentIds: readonly string[], bookingId: 
   return bookingId !== undefined && target.bookingId === bookingId;
 }
 
-/**
- * Whether any write or download is running for one of these documents, or for this booking. The buttons of a card are disabled while ANY of them runs, whatever the button that started it and
- * wherever it is drawn (a row, the detail and the card of the booking are three places for the same documents): a second click can never start a second write on the same document.
- */
 export function useDocumentsBusy(target: { documentIds: readonly string[]; bookingId?: string }): boolean {
   return (
     useIsMutating({
@@ -261,24 +228,15 @@ export function useDocumentsBusy(target: { documentIds: readonly string[]; booki
   );
 }
 
-/**
- * What every write leaves behind: the documents are read again (the list, the detail, the card of the booking, the numbers) and so is the payment ledger, which shows the fiscal document
- * of a booking. It runs whatever the answer was: a refusal of a state that changed (a draft that is not one any more) is told by the list, not left stale.
- */
 function afterWrite(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: FISCAL_DOCUMENTS_KEY });
   void queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
 }
 
-/** What a write that failed says: the words of the server for its code (`apiErrors.codes.*`), else the sentence of the action. */
 function failureOf(error: unknown, fallbackKey: string): string {
   return getProblemMessage(error, i18n.t) ?? i18n.t(fallbackKey);
 }
 
-/**
- * Issues a draft. The mutation keeps nothing once nobody watches it (`gcTime: 0`) and a failure is kept without its request, which holds the access token (`withoutRequest`). The confirmation
- * the server asks for is given by the dialog the person pressed «Emetti» in; a failure is told by that dialog, with the words of its code, and the dialog stays open.
- */
 export function useIssueFiscalDocument() {
   const queryClient = useQueryClient();
 
@@ -299,7 +257,6 @@ export function useIssueFiscalDocument() {
   });
 }
 
-/** Makes a draft again from the current price and data of its booking. A failure is told in a toast: there is no dialog to keep it in. */
 export function useRefreshFiscalDocument() {
   const queryClient = useQueryClient();
 
@@ -323,7 +280,6 @@ export function useRefreshFiscalDocument() {
   });
 }
 
-/** Drops a draft: it consumed no number. */
 export function useDiscardFiscalDocument() {
   const queryClient = useQueryClient();
 
@@ -370,7 +326,6 @@ export function useSendFiscalDocumentEmail() {
   });
 }
 
-/** Issues a credit note of an issued document: the whole of it, or the part the request names. */
 export function useCreateFiscalCreditNote() {
   const queryClient = useQueryClient();
 
@@ -391,10 +346,6 @@ export function useCreateFiscalCreditNote() {
   });
 }
 
-/**
- * The bulk issue of the drafts named. It tells nothing by itself: the screen reads the answer (one row per document) and says what came of each, so there is no «done» toast that could say it
- * all went well. A failure of the call itself (a network error after some documents were issued) is not told as a success either, and the documents are read again.
- */
 export function useIssueFiscalDocumentsBatch() {
   const queryClient = useQueryClient();
 
@@ -412,7 +363,6 @@ export function useIssueFiscalDocumentsBatch() {
   });
 }
 
-/** Makes the draft of a booking. A failure is told in a toast, with the words of its code (the data of the invoice missing, a rule not configured...). */
 export function useCreateFiscalDraft() {
   const queryClient = useQueryClient();
 
@@ -433,10 +383,6 @@ export function useCreateFiscalDraft() {
   });
 }
 
-/**
- * Finds the drafts of the filters of the list for «Seleziona tutte le bozze del periodo»: the drafts of the stays, at most the 200 a bulk issue takes, newest first, and whether there are more. It
- * only reads: nothing is issued by it. Nothing is kept once nobody watches it (`gcTime: 0`).
- */
 export function useSelectDraftsOfPeriod() {
   return useMutation({
     mutationFn: async (criteria: FiscalDocumentCriteria) => {
@@ -449,9 +395,6 @@ export function useSelectDraftsOfPeriod() {
     gcTime: 0,
   });
 }
-
-// ---------------------------------------------------------------------------------------------------------------------------------
-// The SDI: state, submission, declaration, correction (E17/F03/US01/T02)
 
 /**
  * Where a document stands with the SDI. It is read again whenever it opens and is not kept once nothing shows it (`FRESH`): the state changes without any screen (the SDI answers) and by other hands (a

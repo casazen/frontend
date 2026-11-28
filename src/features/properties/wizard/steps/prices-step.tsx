@@ -16,15 +16,10 @@ interface PricesStepProps {
   propertyId: string;
 }
 
-/**
- * The tourist tax, as the service says it for the comune of the property (the `tourist-tax` step of the activation): found, or not
- * yet available. Never an amount of ours and never a blocker: it is not in the price, it is added to the booking.
- */
 function TouristTaxNote({ propertyId, city }: { propertyId: string; city: string }) {
   const { t } = useTranslation();
   const activation = useComplianceActivation(propertyId);
   const info = activation.data?.steps.find((step) => step.id === 'tourist-tax')?.touristTax;
-  // Without an answer (still loading, or it failed) nothing is claimed.
   if (!activation.data) return null;
 
   const comune = info?.city || city;
@@ -45,12 +40,6 @@ function TouristTaxNote({ propertyId, city }: { propertyId: string; city: string
   );
 }
 
-/**
- * Step 6 · «Quanto costa una notte?» (SR-07c): the base rate, the weekend surcharge (empty: none), the cleaning, the minimum stay and the
- * length-of-stay discounts (up to five tiers, NF-35). No «similar homes cost…» line of ours: there is no source for it. The one place that speaks of similar homes
- * is the card «Vuoi che calcoli io il prezzo con l'AI?» (WIZ-AI-PRICE), and only with what the server says it compared (at least three
- * homes published in the comune). The prices that apply on a given date are the Calendar's; here is the base they start from.
- */
 export function PricesStep({ form, propertyId }: PricesStepProps) {
   const { t } = useTranslation();
   const { register, formState } = form;
@@ -78,7 +67,6 @@ export function PricesStep({ form, propertyId }: PricesStepProps) {
         control={form.control}
         name="minNights"
         render={({ field }) => (
-          // As wide as the fields above it and no wider: on a wide screen the buttons stay beside the name they count, not at the far end of the step.
           <div className="flex min-w-0 max-w-xl items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="font-medium">{t('propertyWizard.prices.minNights.label')}</div>

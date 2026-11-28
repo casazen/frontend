@@ -22,7 +22,6 @@ describe('protected email destination', () => {
   });
 
   it('does not carry the code and the state of the channel manager to the login', () => {
-    // The login stays in the history and Auth0 keeps the `returnTo` while the user signs in: the single-use secrets do not go into it.
     render(<MemoryRouter initialEntries={['/app/short-rent/integrations/octorate?code=the-code&state=the-state']}><Routes>
       <Route path="/app/short-rent/integrations/octorate" element={<ProtectedRoute><p>protected wizard</p></ProtectedRoute>} />
       <Route path="/login" element={<Location />} />

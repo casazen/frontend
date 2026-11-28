@@ -4,7 +4,6 @@ import { ApiClient } from "@/api/client";
 import { CONDO_BASE, CONDO_KEY, condominiumAccountingApi, type CondoBook, type CondoPeriod } from "@/api/condominium-accounting.api";
 import { parseEuroAmount } from "@/lib/euro-amount";
 
-/** The state of one period: its report, the forms of the budget, the final statement and the prior balance, and the writes and the PDFs. */
 export function useCondominiumPeriodState(book: CondoBook, period: CondoPeriod) {
   const qc = useQueryClient();
   const base = `${CONDO_BASE}/${book.id}/periods/${period.id}`;

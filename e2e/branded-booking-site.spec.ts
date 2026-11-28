@@ -114,7 +114,6 @@ test.describe('Branded booking site (#215)', () => {
     await expect(page.getByTestId('property-house-rules')).toContainText('Check-in dalle 15:00.');
     expect(authHeader).toBeUndefined();
 
-    // The card asks the quote for the stay of the address; "Prenota" is a link once the total of the server is in.
     await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', /\/checkout\?/, { timeout: 15_000 });
     await page.getByTestId('booking-cta').click();
 
@@ -136,8 +135,6 @@ test.describe('Branded booking site (#215)', () => {
     await page.goto(`/book/${DEMO_ORG_SLUG}`);
     await expect(page.getByTestId('public-site-shell')).toBeVisible({ timeout: 15_000 });
 
-    // BK-14: on a host's booking site the footer offers the operator's documents of that site, opened in a new tab,
-    // not the CasaZen ones.
     const privacy = page.getByTestId('footer-privacy');
     const terms = page.getByTestId('footer-terms');
     await expect(privacy).toHaveText('Informativa privacy');
@@ -152,16 +149,11 @@ test.describe('Branded booking site (#215)', () => {
   test('AC9: AI content notice is hidden when isAiGenerated is false', async ({ page }) => {
     await page.goto(`/book/${DEMO_ORG_SLUG}/property/${mockOrgPropertyId}`);
     await expect(page.getByRole('heading', { name: 'Trastevere Suite' })).toBeVisible({ timeout: 15_000 });
-    // By default the property detail renders AiContentNotice with visible=false
     await expect(page.getByTestId('ai-content-notice')).not.toBeVisible();
   });
 
   test('AC11: /app/short-rent/dashboard redirects to login when not authenticated', async ({ page }) => {
-    // In demo mode these routes still exist under ProtectedRoute
-    // Navigate to a protected route — it should redirect to /login or /app/choose-context, never render the shell
     await page.goto('/app/short-rent/dashboard');
-    // In demo mode the protected routes are bypassed, but in non-demo they redirect
-    // We verify the page is NOT the public booking shell (no auth chrome on /book)
     await expect(page.getByTestId('public-site-shell')).not.toBeAttached();
   });
 });
@@ -181,7 +173,6 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Trastevere Suite' })).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('property-util-bar')).toBeVisible();
     await expect(page.getByTestId('property-share')).toBeVisible();
-    // The org has several homes in the mock: the way back to all of them is there.
     await expect(page.getByTestId('property-back')).toHaveAttribute('href', new RegExp(`/book/${DEMO_ORG_SLUG}`));
   });
 
@@ -193,7 +184,6 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
     );
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    // The legacy names are read and the link of "Prenota" carries the stay in the deep link form.
     const book = page.getByTestId('booking-cta');
     await expect(book).toHaveAttribute('href', new RegExp(`checkin=${checkIn}&checkout=${checkOut}&guests=3`), { timeout: 15_000 });
     await book.click();
@@ -211,14 +201,12 @@ test.describe('Vetrina navigation UX pass 1 (#338)', () => {
     );
 
     await expect(page.getByTestId('public-property-page')).toBeVisible({ timeout: 15_000 });
-    // The dates and guests of the address are in the card, and its total is the one of the quote (2 nights).
     await expect(page.getByTestId('booking-card')).toContainText('2 notti', { timeout: 15_000 });
     await expect(page.getByTestId('booking-guests')).toContainText('2 ospiti');
     await expect(page.getByTestId('booking-cta')).toHaveAttribute('href', new RegExp(`checkin=${checkIn}&checkout=${checkOut}&guests=2`));
   });
 
   test('AC4: single-property org redirects landing to property detail', async ({ page }) => {
-    // A site with one home: the search of the site (DB-07a) lists it alone and the home of the site opens that home's page.
     await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/stays**`, async (route) => {
       if (route.request().method() !== 'GET') {
         await route.fallback();

@@ -14,9 +14,7 @@ interface OwnerActionDialogsProps {
   ctx: ActionContext;
   asked: ActionKey | null;
   onDismiss: () => void;
-  /** Makes a new version (it throws when the server refuses). */
   generate: () => Promise<OwnerStatementVersion>;
-  /** A new version is being made. */
   generating?: boolean;
 }
 
@@ -64,7 +62,6 @@ function StepDialog({ action, ctx, onOpenChange, generate, generating }: StepDia
       if (action !== 'regenerate') toast.success(t(`ownerAccounting.step.${action}.done`, values));
     } catch (failure) {
       setError(messageOf(failure, t));
-      // The dialog stays open with the reason: the person fixes it and asks again.
       throw failure;
     }
   };

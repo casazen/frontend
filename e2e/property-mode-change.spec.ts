@@ -11,10 +11,6 @@ import { mockPropertyModeApi, type PropertyModeMock } from './helpers/property-m
 import { WIDER_LETTERS, expectInsideTheScreen, expectNoAxeViolations, expectNothingSticksOut, untilStill } from './helpers/ui-checks';
 import { buildCreatedProperty } from './fixtures/properties.fixtures';
 
-/**
- * PM-03/#915: long-to-short conversion and management of historical scheduled mode changes, its entries in the pages
- * of the property and the row of status with "Annulla il passaggio". L2 (demo mode, mocked API: the four endpoints of PM-02).
- */
 const SHORT_ID = 'prop-mode-short-1';
 const LONG_ID = 'prop-mode-long-1';
 const SHORT_PAGE = `/app/short-rent/properties/${SHORT_ID}`;
@@ -37,7 +33,6 @@ async function openLongProperty(page: Page): Promise<PropertyModeMock> {
   await mockPropertiesApi(page, [
     buildCreatedProperty({ id: LONG_ID, name: 'Bilocale Monza', city: 'Monza', rentalMode: 'Long', maxGuests: 0, nightlyRate: 0 }),
   ]);
-  // The documents of the property (the properties mock leaves them to the spec).
   await page.route(`**/api/properties/${LONG_ID}/documents`, async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
@@ -48,7 +43,6 @@ async function openLongProperty(page: Page): Promise<PropertyModeMock> {
   return mockPropertyModeApi(page, { propertyId: LONG_ID, rentalMode: 'Long' });
 }
 
-/** Every control that has to be hit with a thumb is at least 44 px tall (the sr-only radio of a choice card is not one: its card is). */
 async function expectTouchTargets(page: Page, where: string, scope = '[data-testid="property-mode-page"]') {
   const small = await page.evaluate((within) =>
     Array.from(document.querySelectorAll(`${within} :is(button, a[href], input, select, textarea)`))
@@ -95,7 +89,6 @@ test.describe('Change of rental mode (PM-03)', () => {
       await expect(wizard(page)).toHaveCount(0);
     }
     await page.goto(demoUrl(`${SHORT_PAGE}/mode?from=account&step=date`, 'short-stay'), { waitUntil: 'domcontentloaded' });
-    // The short-stay demo user has no Account grant; the protected route redirects to its workspace.
     await expect(page).toHaveURL(/\/app\/short-rent$/);
     expect(previews).toEqual([]);
     expect(mock.schedules).toEqual([]);
@@ -108,14 +101,11 @@ test.describe('Change of rental mode (PM-03)', () => {
     await expect(wizard(page)).toHaveAttribute('data-step', 'choice', { timeout: 20_000 });
     await next(page).click();
 
-    // The first day is the one after the last departure, with the reason.
     const earliest = addDays(todayInRome(), 6);
     await expect(date(page)).toHaveValue(earliest);
     await expect(date(page)).toHaveAttribute('min', earliest);
     await expect(page.getByTestId('property-mode-date-reason')).toContainText("Il contratto finisce il");
 
-    // A day before it does not pass. The field says so as soon as it is left (the page moves under the pointer when it does, so the
-    // button is pressed once that has settled), and "Continue" says it again in the summary and stays on the step.
     await date(page).fill(addDays(todayInRome(), 2));
     await date(page).blur();
     await expect(page.getByText('Il passaggio non può partire prima del primo giorno possibile.')).toBeVisible();
@@ -125,7 +115,6 @@ test.describe('Change of rental mode (PM-03)', () => {
     await page.getByTestId('property-mode-use-earliest').click();
     await expect(date(page)).toHaveValue(earliest);
 
-    // A longer lease is registered while the host reads: the checks find it, list it with its action and do not let go.
     mock.busyUntil = addDays(todayInRome(), 9);
     await next(page).click();
     await expect(wizard(page)).toHaveAttribute('data-step', 'checks');
@@ -137,7 +126,6 @@ test.describe('Change of rental mode (PM-03)', () => {
     await expect(page.getByTestId('wizard-error-summary')).toContainText('Risolvi gli ostacoli');
     await expect(wizard(page)).toHaveAttribute('data-step', 'checks');
 
-    // One click puts the first free day in the field, and the server says yes.
     await page.getByTestId('property-mode-pick-earliest').click();
     await expect(page.getByTestId('property-mode-checks-result')).toContainText('Tutto a posto per il');
     await next(page).click();
@@ -153,7 +141,6 @@ test.describe('Change of rental mode (PM-03)', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Bilocale Monza' })).toBeVisible({ timeout: 20_000 });
 
     await page.getByRole('button', { name: 'Altre azioni' }).click();
-    // The menu keeps the edit, and now has the change next to it.
     await expect(page.getByRole('menuitem', { name: 'Modifica' })).toBeVisible();
     await page.getByRole('menuitem', { name: 'Cambia modalità' }).click();
     await expect(page).toHaveURL(new RegExp(`${LONG_PAGE}/mode$`));
@@ -171,7 +158,6 @@ test.describe('Change of rental mode (PM-03)', () => {
 
     await expect(page.getByRole('heading', { level: 2, name: 'Passaggio programmato' })).toBeVisible();
     expect(mock.schedules).toEqual([{ to: 'Short', effectiveDate: addDays(todayInRome(), 1) }]);
-    // Until the day the property is still in long-term: both buttons lead there.
     await expect(page.getByTestId('wizard-done-primary')).toHaveAttribute('href', LONG_PAGE);
     await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/long-rent/properties');
   });
@@ -187,7 +173,6 @@ test.describe('Change of rental mode (PM-03)', () => {
     await page.getByTestId('property-mode-scheduled-cancel').click();
     await page.getByRole('dialog').getByRole('button', { name: 'Annulla il passaggio' }).click();
 
-    // The Account destination requires org.members.manage, which the demo does not grant.
     await expect(page).toHaveURL(/\/app\/short-rent$/, { timeout: 20_000 });
     expect(mock.cancels).toEqual(['change-e2e-0']);
   });
@@ -203,8 +188,6 @@ test.describe('Change of rental mode (PM-03)', () => {
 
       const check = async (step: string) => {
         await expect(wizard(page)).toHaveAttribute('data-step', step);
-        // The pointer stays over the button that was pressed, and its hover color (primary at 90 %) is 4.4:1 on this accent: a finger
-        // does not hover, so the contrast is read as the page rests.
         await page.mouse.move(1, 1);
         await untilStill(page);
         await expectNothingSticksOut(page, `${width} px, step ${step}`);
@@ -215,7 +198,6 @@ test.describe('Change of rental mode (PM-03)', () => {
       await check('choice');
       await next(page).click();
       await check('date');
-      // A lease later than the first day: the checks list it with its link.
       mock.busyUntil = addDays(todayInRome(), 7);
       await next(page).click();
       await expect(page.getByTestId('property-mode-blocker-Lease')).toBeVisible();
@@ -245,8 +227,6 @@ test.describe('Change of rental mode (PM-03)', () => {
       await page.mouse.move(1, 1);
       await untilStill(page);
 
-      // The row itself, not the whole page: the actions of the header of this page (still the old ones) are wider than a phone with or
-      // without the feature, so the page scrolls sideways at these widths whatever the row does.
       await expectInsideTheScreen(page, row, `${width} px, the row of status`);
       await expectTouchTargets(page, `${width} px, the row of status`, '[data-testid="property-mode-notice"]');
       await expectNoAxeViolations(page, { include: '[data-testid="property-mode-notice"]' });

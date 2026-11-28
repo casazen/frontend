@@ -21,7 +21,6 @@ function renderWithDrawer(list: ListDefinition<Stay> = withDrawer(), initial = '
 }
 
 const address = () => new URLSearchParams(addressNow());
-/** The button that opens a row, in the table (the cards of a phone are in the page too, and a media query shows one of the two). */
 const nameButton = (name: string) => within(stayTable()).getByRole('button', { name });
 
 describe('ListView opens the global drawer (UI-15)', () => {
@@ -53,7 +52,6 @@ describe('ListView opens the global drawer (UI-15)', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Details' });
     expect(within(dialog).getByTestId('drawer-body-text')).toHaveTextContent('Stay s1 in the global drawer');
     expect(address().get('detail')).toBe('stay-probe:s1');
-    // It is not the slot of the list.
     expect(screen.queryByTestId('list-detail-panel')).not.toBeInTheDocument();
   });
 
@@ -90,7 +88,6 @@ describe('ListView opens the global drawer (UI-15)', () => {
     renderWithDrawer(withDrawer(), '/app/short-rent/bookings?detail=stay-probe:s1');
     await screen.findByRole('dialog');
 
-    // The list is behind the dialog, but something can still change it (a filter applied from a link, a saved view).
     fireEvent.click(screen.getByTestId('list-chip-all'));
 
     expect(address().get('chip')).toBe('all');

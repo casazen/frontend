@@ -6,7 +6,6 @@ import { freezeClock } from '@/test/clock';
 import { expectNoAxeViolations } from '@/test/axe';
 import { WeekStrip, type WeekStripDay } from '../week-strip';
 
-// Monday 12 to Sunday 18 October 2026.
 const WEEK: WeekStripDay[] = [
   { date: '2026-10-12', count: 2 },
   { date: '2026-10-13' },
@@ -17,7 +16,6 @@ const WEEK: WeekStripDay[] = [
   { date: '2026-10-18', count: 3 },
 ];
 
-// Monday 19 to Sunday 25 October 2026.
 const NEXT_WEEK: WeekStripDay[] = Array.from({ length: 7 }, (_, index) => ({ date: `2026-10-${19 + index}` }));
 
 const TODAY = '2026-10-14';
@@ -86,7 +84,6 @@ describe('WeekStrip (UI-16)', () => {
     render(<WeekStrip days={WEEK} today={TODAY} />);
 
     const dots = radios().map((radio) => radio.lastElementChild!.className);
-    // 2, none, 1, 0, 4, none, 3: a dot (a shape, not only a color) where the count is above zero.
     expect(dots.map((cls) => (cls.includes('bg-transparent') ? 'empty' : 'dot'))).toEqual(['dot', 'empty', 'dot', 'empty', 'dot', 'empty', 'dot']);
   });
 
@@ -113,7 +110,6 @@ describe('WeekStrip (UI-16)', () => {
   it('WeekStrip_Colors_AreTheOnesOfTheSystemWhenTheUserForcesColors', () => {
     render(<WeekStrip days={WEEK} today={TODAY} defaultValue="2026-10-16" />);
 
-    // In forced-colors mode the browser drops backgrounds and shadows: the chosen day, the dot and the ring keep a cue.
     expect(radios()[4]).toHaveClass('forced-colors:bg-[Highlight]', 'forced-colors:text-[HighlightText]');
     expect(radios()[2].children[1]).toHaveClass('forced-colors:outline-1');
     expect(radios()[0].lastElementChild).toHaveClass('forced-colors:bg-[CanvasText]');
@@ -160,12 +156,10 @@ describe('WeekStrip (UI-16)', () => {
     fireEvent.click(radios()[4]);
     expect(checked()).toEqual(['2026-10-16']);
 
-    // The next week: the chosen day is gone and today is not in it: nothing is chosen, the Tab order enters on the first day.
     rerender(<WeekStrip days={NEXT_WEEK} />);
     expect(checked()).toEqual([]);
     expect(radios().map((radio) => radio.tabIndex)).toEqual([0, -1, -1, -1, -1, -1, -1]);
 
-    // Back to the first week: the choice the person made there is back with it.
     rerender(<WeekStrip days={WEEK} />);
     expect(checked()).toEqual(['2026-10-16']);
   });
@@ -243,7 +237,6 @@ describe('WeekStrip (UI-16)', () => {
     render(<Harness onValueChange={onValueChange} initial={TODAY} />);
 
     radios()[2].focus();
-    // `fireEvent` says whether the event was left alone (true) or its default was prevented (false).
     const left = fireEvent.keyDown(radios()[2], { key: 'ArrowLeft', ...modifier });
     const endLeft = fireEvent.keyDown(radios()[2], { key: 'End', ...modifier });
 
@@ -305,10 +298,8 @@ describe('WeekStrip (UI-16)', () => {
     const onValueChange = vi.fn();
     const days = [{ date: '2026-10-14T00:00:00Z' }, { date: '2026-10-15T00:00:00Z' }, { date: '2026-10-16T00:00:00Z' }];
     const { rerender } = render(<WeekStrip days={days} today={TODAY} onValueChange={onValueChange} />);
-    // Today is among them: it is chosen by default, although the day is written with a time.
     expect(checked()).toEqual(['2026-10-14']);
 
-    // The page speaks in calendar days: `value` and `defaultValue` find the day, and the strip gives back the calendar day.
     rerender(<WeekStrip days={days} today={TODAY} value="2026-10-15" onValueChange={onValueChange} />);
     expect(checked()).toEqual(['2026-10-15']);
     expect(radios().map((radio) => radio.tabIndex)).toEqual([-1, 0, -1]);
@@ -320,7 +311,6 @@ describe('WeekStrip (UI-16)', () => {
   });
 
   it('WeekStrip_DayGivenAsAnInstant_IsTheDayItFallsOnInRome', () => {
-    // 22:30 UTC of the 13th is half past midnight of the 14th in Rome.
     render(<WeekStrip days={[{ date: '2026-10-13T22:30:00Z' }, { date: '2026-10-15T00:00:00Z' }]} today={TODAY} />);
 
     expect(radios().map((radio) => radio.getAttribute('data-date'))).toEqual(['2026-10-14', '2026-10-15']);

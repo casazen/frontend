@@ -30,11 +30,9 @@ import { Disclosure } from './disclosure';
 import { OwnerAccountingError } from './owner-accounting-error';
 
 interface OwnerInvoicePanelProps {
-  /** The version of the statement the invoice is made from. It is made from the newest version of the month and from no other: a version that was superseded only shows what exists. */
   version: OwnerStatementVersion;
 }
 
-/** The codes of a draft that is not what the server would issue now, or that was issued already: the draft on screen is no longer the invoice, and it is made again. */
 const STALE_DRAFT_CODES: ReadonlySet<string> = new Set(['document_draft_outdated', 'document_not_draft']);
 
 /**
@@ -52,27 +50,21 @@ export function OwnerInvoicePanel({ version }: OwnerInvoicePanelProps) {
 
 function PanelBody({ version }: OwnerInvoicePanelProps) {
   const { t } = useTranslation();
-  // A version is the newest until another one supersedes it: the version says it itself, without waiting for the list of the versions of the month.
   const isCurrent = version.status !== 'Superseded';
   const { contexts } = useWorkspace();
   const money = useInvoiceMoney();
   const { date } = useOwnerFormat();
-  // The write permission (`agency.statement.manage`) follows the org role: the owner and the administrators hold it, nobody else does (the server decides, this only keeps the buttons away).
   const canManage = isOrgBillingAdmin(contexts);
   const invoices = useOwnerInvoices({ period: periodParam(version), ownerId: version.ownerId });
   const create = useCreateOwnerInvoiceDraft();
   const issue = useIssueOwnerInvoice();
   const pdf = useDownloadOwnerInvoicePdf();
-  // The draft as the server made it a moment ago, with its lines: what the person reviews before issuing. A page that is opened later has only the totals of the list, and asks to review.
   const [reviewed, setReviewed] = useState<OwnerInvoice | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  // The invoice opened in the drawer, read by its id: the lines and the totals of a draft or of an issued invoice, without making anything again.
   const [opened, setOpened] = useState<string | null>(null);
-  // Every button of the card waits while one of its writes or downloads is on its way: a draft made again under an issue, or two issues, would act on an invoice that is changing.
   const busy = create.isPending || issue.isPending || pdf.isPending;
 
-  // A 404 is the module being off at the server, whatever the cache still holds; a refused list (null) is not this person's page. Either way there is no panel.
   if (getHttpStatus(invoices.error) === 404 || invoices.data === null) return null;
 
   const list = invoices.data;
@@ -106,13 +98,11 @@ function PanelBody({ version }: OwnerInvoicePanelProps) {
       setReviewed(null);
     } catch (error) {
       if (STALE_DRAFT_CODES.has(problemFacts(error).code ?? '')) {
-        // The draft is not what would be issued now (or is issued already): it is told, and the person reviews it again before issuing. Nothing was issued.
         setReviewed(null);
         setConfirming(false);
         setNotice(messageOf(error, t));
         return;
       }
-      // The dialog stays open with the reason.
       throw error;
     }
   };
@@ -213,7 +203,6 @@ function PanelBody({ version }: OwnerInvoicePanelProps) {
       </div>
     );
   } else {
-    // A state of a later server: told by its code, with nothing to do.
     content = <p className="break-words text-sm">{t('ownerInvoice.panel.unknownState', { status: own.status })}</p>;
   }
 
@@ -250,15 +239,10 @@ interface IssueDialogProps {
   invoice: OwnerInvoice;
   ownerName: string | null;
   pending: boolean;
-  /** Issues the draft; it throws when the server refuses, so the dialog stays open and says why. */
   onIssue: () => Promise<void>;
   onClose: () => void;
 }
 
-/**
- * The confirmation of the issue: what is issued (the series and the total, the owner and the month) and what follows. The number is not known yet: the server gives it in the same
- * moment, in sequence and without gaps, and an issued invoice never changes.
- */
 function IssueDialog({ invoice, ownerName, pending, onIssue, onClose }: IssueDialogProps) {
   const { t } = useTranslation();
   const money = useInvoiceMoney();

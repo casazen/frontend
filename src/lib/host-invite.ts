@@ -48,15 +48,9 @@ export function hostInviteNeedsEmailVerification(error: unknown): boolean {
 
 export type HostInviteAcceptOutcome = { ok: true } | { ok: false; error: unknown };
 
-// Tokens being accepted in this page load: a second call for the same token (StrictMode, re-render) is never sent.
 const inFlight = new Map<string, Promise<HostInviteAcceptOutcome>>();
-// Tokens accepted in this page load: coming back to the invite page does not send them again.
 const accepted = new Set<string>();
 
-/**
- * Accepts the invite once. The stored token is removed before the call, so no other tab or render can send it again;
- * it is put back when the request can be retried or email verification is still required.
- */
 export function acceptHostInviteOnce(token: string): Promise<HostInviteAcceptOutcome> {
   if (accepted.has(token)) return Promise.resolve({ ok: true });
   const running = inFlight.get(token);

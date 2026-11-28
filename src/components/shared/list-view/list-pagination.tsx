@@ -9,7 +9,6 @@ interface ListPaginationProps {
   onPageChange: (page: number) => void;
 }
 
-/** Previous and next, for a list whose server hands it one page at a time. Nothing is shown when everything fits in one page. */
 export function ListPagination({ page, pageSize, totalCount, onPageChange }: ListPaginationProps) {
   const { t } = useTranslation();
   const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));

@@ -30,12 +30,10 @@ import {
 } from './invite-model';
 import { BackToPeople, ReviewStep, RoleStep, WhereStep, WhoStep } from './invite-steps';
 
-/** The language of the emails the person starts from when the account has not chosen one (or it cannot be read): the one of the interface. */
 function interfaceLanguage(language: string): OrgInvitationLanguage {
   return language.toLowerCase().startsWith('en') ? 'en' : 'it';
 }
 
-/** After a refusal for the last seat the way out is one click away: the plan. The refusal itself is told by the wizard. */
 function SeatLimitWay() {
   const { t } = useTranslation();
   return (
@@ -57,13 +55,10 @@ function InviteWizard() {
   const members = useOrgMembers(true, { fresh: true });
   const invitations = useOrgInvitations({ fresh: true });
   const roles = useOrgRoles();
-  // The language of the account (AM-08b-b) is the language the emails start with; without it (a refusal, an older backend) the interface's.
   const settings = useOrgSettings(true);
   const { properties, isError: propertiesFailed } = usePickerProperties();
-  // The last seat is contended: a refusal for it keeps the answers (the wizard stays on its last step) and shows the way to the plan.
   const [seatLimitHit, setSeatLimitHit] = useState(false);
 
-  // The checks of the steps know who is in the team and who is already invited, and which roles this person may give.
   const memberData = members.data?.items;
   const ownerAreas = Array.isArray(memberData) ? memberData.find((member) => member.role === 'Owner' && member.status === 'Active')?.areas : undefined;
   const availableAreas = useMemo(() => RENTAL_AREAS.filter((area) => ownerAreas?.includes(area)), [ownerAreas]);
@@ -80,7 +75,6 @@ function InviteWizard() {
     [memberData, invitationData, assignable, availableAreas],
   );
 
-  // `?property=` needs the properties to know the area of the one it names: the wizard opens when they are there (or failed).
   const waitingForProperties = searchParams.has('property') && properties === undefined && !propertiesFailed;
   // The wizard opens when the language is known (or could not be read), so that its first answer is never changed under the person's hands.
   const waitingForSettings = settings.isPending;
@@ -164,7 +158,6 @@ function InviteWizard() {
           throw error;
         }
       }}
-      // An address that asks for something (`?role=accountant`) is not given the answers of an older visit instead.
       draft={{ exclude: INVITE_DRAFT_EXCLUDE, accept: (draft) => !defaults.prefilled && Array.isArray(draft.values.areas)
         && draft.values.areas.every((area) => availableAreas.includes(area)) }}
       onExit={() => navigate(ACCOUNT_PEOPLE_PATH)}

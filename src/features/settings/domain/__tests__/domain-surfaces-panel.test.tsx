@@ -44,7 +44,6 @@ function config(surfaces: Partial<DomainSurfaces> | null = {}, overrides: Partia
   };
 }
 
-/** The panel as the page holds it: the configuration comes from the cache of the domain settings, which the two mutations of the block write into. */
 function Harness() {
   const { data } = useOrgDomain('org-1');
   return data
@@ -98,10 +97,8 @@ describe('DomainSurfacesPanel (E40/F02/US02, NF-140..NF-142)', () => {
 
       const line = await screen.findByTestId('domain-owner-login');
       expect(line).toHaveAttribute('data-state', key);
-      // The words of the brief, and the key of the locale file says the same.
       expect(screen.getByTestId('domain-owner-login-state').textContent).toBe(italian);
       expect(italian).toBe(i18n.t(`domain.surfaces.ownerLogin.state.${key}`));
-      // «Riprova» only when it failed; the hand-made enabling says that there is nothing to do.
       expect(screen.queryByTestId('domain-owner-login-retry') !== null).toBe(state === 'Failed');
       expect(screen.queryByText(i18n.t('domain.surfaces.ownerLogin.manualHint')) !== null).toBe(key === 'pendingManual');
     });
@@ -119,7 +116,6 @@ describe('DomainSurfacesPanel (E40/F02/US02, NF-140..NF-142)', () => {
       expect(retry).toBeEnabled();
       fireEvent.click(retry);
 
-      // While the request is on its way nothing of the block can be pressed: no second request, no choice that would overwrite another.
       await waitFor(() => expect(retry).toBeDisabled());
       for (const control of screen.getAllByRole('switch')) expect(control).toBeDisabled();
       fireEvent.click(retry);
@@ -171,7 +167,6 @@ describe('DomainSurfacesPanel (E40/F02/US02, NF-140..NF-142)', () => {
       fireEvent.click(guest);
 
       await waitFor(() => expect(DomainApi.setSurfaces).toHaveBeenCalledTimes(1));
-      // All three, every time: the one that moved over the two the server holds.
       expect(DomainApi.setSurfaces).toHaveBeenCalledWith('org-1', {
         guestAreaOnOwnDomain: true,
         ownerPortalOnOwnDomain: true,
@@ -217,7 +212,6 @@ describe('DomainSurfacesPanel (E40/F02/US02, NF-140..NF-142)', () => {
           guestAreaOnOwnDomain: true,
           ownerPortalOnOwnDomain: true,
           useOwnDomainForLinks: true,
-          // The portal is served, but the sign-in of the owners is not ready: their links do not move yet.
           effective: { ...OFF, ownerPortal: true },
           ownerLoginHostState: 'Pending',
         }),
@@ -226,7 +220,6 @@ describe('DomainSurfacesPanel (E40/F02/US02, NF-140..NF-142)', () => {
       expect(await screen.findByTestId('domain-surface-guest-area-note')).toHaveTextContent(i18n.t('domain.surfaces.guestArea.notActive'));
       expect(screen.getByTestId('domain-surface-owner-portal-note')).toHaveTextContent(i18n.t('domain.surfaces.ownerPortal.notActive'));
       expect(screen.getByTestId('domain-surface-links-note')).toHaveTextContent(i18n.t('domain.surfaces.links.notActive'));
-      // The switches still show what was chosen, and no address is shown for links that are not on the domain.
       expect(await guestSwitch()).toBeChecked();
       expect(screen.queryByText('https://prenota.tuavilla.it', { exact: false })).not.toBeInTheDocument();
     });
@@ -270,7 +263,6 @@ describe('DomainSurfacesPanel (E40/F02/US02, NF-140..NF-142)', () => {
   });
 });
 
-/** Every text of a locale subtree with the path of its key, and the keys of every object of it in the order they are written. */
 function scan(node: unknown, path: string, texts: Array<[string, string]> = [], orders: Array<[string, string[]]> = []) {
   if (typeof node === 'string') texts.push([path, node]);
   else if (node !== null && typeof node === 'object') {
@@ -281,10 +273,8 @@ function scan(node: unknown, path: string, texts: Array<[string, string]> = [], 
 }
 
 describe('the texts of the block (E40/F02/US02)', () => {
-  // No other system is named: not the one that signs the owners in, nor the ones that host the site, take the payments or manage the channels.
   const SYSTEM = /auth0|vercel|railway|supabase|stripe|octorate|kross|krossbooking|concordato\s*facile|wordpress/i;
   const NEW_SENTENCES = ['domainVerified', 'ownerLoginFailed', 'ownerLoginReady'];
-  // The run of the bell texts that is written in alphabetical order, and where each of the three new sentences has its place (not after the run).
   const BELL_RUN = [...NEW_SENTENCES, 'otaReviewActionFailed', 'otaReviewReceived', 'scheduledMessageIssue'];
 
   it.each([
@@ -292,7 +282,6 @@ describe('the texts of the block (E40/F02/US02)', () => {
     ['en', en],
   ] as const)('texts_%s_NameNoSystemAndTheNewKeysAreInAlphabeticalOrder', (_language, locale) => {
     const { texts, orders } = scan(locale.domain.surfaces, 'domain.surfaces');
-    // The scan really reaches the texts of the block.
     expect(texts.length).toBeGreaterThanOrEqual(24);
     for (const key of NEW_SENTENCES) texts.push([`notifications.types.${key}`, String((locale.notifications.types as Record<string, string>)[key])]);
     expect(NEW_SENTENCES.every((key) => key in locale.notifications.types)).toBe(true);
@@ -300,7 +289,6 @@ describe('the texts of the block (E40/F02/US02)', () => {
     expect(texts.filter(([, text]) => SYSTEM.test(text)).map(([key, text]) => `${key}: ${text}`)).toEqual([]);
     expect(texts.filter(([, text]) => text.trim() === '').map(([key]) => key)).toEqual([]);
     for (const [path, keys] of orders) expect(keys, path).toEqual([...keys].sort());
-    // The order the keys really have in the file (object keys that are not numbers keep it): the three new sentences each sit in their place of the run of the bell.
     expect(Object.keys(locale.notifications.types).filter((key) => BELL_RUN.includes(key))).toEqual([...BELL_RUN].sort());
   });
 

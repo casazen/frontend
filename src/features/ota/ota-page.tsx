@@ -53,7 +53,6 @@ function statusVariant(status: 'connected' | 'warning' | 'disconnected'): 'defau
 interface OtaCardProps {
   integration: OtaIntegration;
   t: (key: string, options?: Record<string, unknown>) => string;
-  /** Some integration of the list has a sync status / an error: every card keeps a row for it, empty where it has none. */
   showSyncStatus: boolean;
   showError: boolean;
 }
@@ -61,8 +60,6 @@ interface OtaCardProps {
 function OtaCard({ integration, t, showSyncStatus, showError }: OtaCardProps) {
   const syncPlatform = useSyncOtaPlatform();
   const connectionStatus = getConnectionStatus(integration);
-  // The rows, the same in all the cards of the list (`AlignedCard`): the name, the status, the last sync status (if any card has
-  // one), the last sync, the error (if any card has one) and the button, which is always the last and at the same height.
   const rows = (4 + Number(showSyncStatus) + Number(showError)) as 4 | 5 | 6;
 
   function handleSync() {

@@ -26,7 +26,6 @@ function httpError(status: number, data: object = {}): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, null, { status, statusText: '', headers: {}, config, data: { status, ...data } });
 }
 
-/** The page at `path`, in StrictMode like the app in development: the effects run twice, the link must still be asked once. */
 function renderGuided(flags: Partial<FeatureFlags>, path = `/app/long-rent/leases/${leaseId}/guided-contract`) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const value = { flags: { ...DEFAULT_FEATURE_FLAGS, ...flags }, isLoading: false };
@@ -48,14 +47,12 @@ function renderGuided(flags: Partial<FeatureFlags>, path = `/app/long-rent/lease
 }
 
 type Source = 'payment' | 'gift' | 'admin' | null;
-/** What the server says about the access: where it comes from (none yet), whether the privacy notice was accepted, whether a gift is there. */
 interface Access {
   source: Source;
   privacy?: boolean;
   gift?: boolean;
 }
 
-/** The lease and the access as `access()` says now; anything else is a 404. */
 function mockService(access: () => Access) {
   get.mockImplementation((url: string) => {
     if (url === `/leases/${leaseId}`) {
@@ -98,8 +95,6 @@ describe('ConcordatoFacileOfferPage (CF-FIX, CF-FLOW): the page of payment', () 
     expect(post).not.toHaveBeenCalled();
   });
 
-  // CF-FLOW: the form opens from the sheet. Whoever already has the access and opens this address (a bookmark, "back" of the browser)
-  // is sent back there, whatever the source of the access, and the page does not open the form by itself.
   it.each<Source>(['admin', 'payment', 'gift'])('with the access active (%s) a visit to this address goes back to the sheet and opens nothing', async (source) => {
     mockService(() => ({ source }));
 
@@ -110,11 +105,9 @@ describe('ConcordatoFacileOfferPage (CF-FIX, CF-FLOW): the page of payment', () 
     expect(replace).not.toHaveBeenCalled();
     expect(assign).not.toHaveBeenCalled();
     expect(open).not.toHaveBeenCalled();
-    // Nothing of the old screens: no banner of the administrator, no «Accedi alla pratica».
     expect(screen.queryByRole('button', { name: 'Accedi alla pratica' })).not.toBeInTheDocument();
   });
 
-  // The act of the person that opens the form from here: back from the payment. The link is asked once and this tab goes to it.
   it('back from the payment (the old address, the result kept) it asks for the link ONCE and takes this tab to it, with no other click', async () => {
     mockService(() => ({ source: 'payment' }));
     post.mockResolvedValue({ data: { url: FORM_URL } });
@@ -138,7 +131,6 @@ describe('ConcordatoFacileOfferPage (CF-FIX, CF-FLOW): the page of payment', () 
 
     expect(await screen.findByText(i18n.t('guidedContract.paymentReceived'))).toBeInTheDocument();
     expect(linkCalls()).toHaveLength(0);
-    // The payment is recorded after the person is back: the next reading (the access is read again every two seconds) finds it.
     recorded = true;
     await waitFor(() => expect(replace).toHaveBeenCalledWith(FORM_URL), { timeout: 6000 });
     expect(linkCalls()).toHaveLength(1);
@@ -197,7 +189,6 @@ describe('ConcordatoFacileOfferPage (CF-FIX, CF-FLOW): the page of payment', () 
     expect(post).not.toHaveBeenCalled();
   });
 
-  // The plans of 24 months are not on sale: the first step never promises them, and it mentions the gift practice only where there is one.
   it.each([
     ['there is a gift practice', true, 'guidedContract.stepPayOrGift', 'concordatofacile.offer.step1'],
     ['there is none', false, 'concordatofacile.offer.step1', 'guidedContract.stepPayOrGift'],
@@ -217,7 +208,7 @@ describe('ConcordatoFacileOfferPage (CF-FIX, CF-FLOW): the page of payment', () 
     mockService(() => ({ source: paid ? 'payment' : null }));
     post.mockImplementation((url: string) => {
       if (url === linkUrl) return Promise.resolve({ data: { url: FORM_URL } });
-      paid = true; // the payment is recorded by the time the access is read again
+      paid = true;
       return Promise.reject(httpError(409, { code: 'concordatofacile_already_purchased' }));
     });
     renderGuided({ concordatoFacile: true });

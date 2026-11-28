@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { LeaseDetail, LeaseSummary } from '@/types';
 
-/** Axios error as the HTTP client rejects it: with a response (`status`) or without (network). */
 export function httpError(status?: number, data: object = {}): AxiosError {
   const config = { headers: new AxiosHeaders() };
   if (status === undefined) {
@@ -20,10 +19,8 @@ export function httpError(status?: number, data: object = {}): AxiosError {
   });
 }
 
-/** What a dev server or a SPA rewrite answers for an unmatched `/api/*` path. */
 export const HTML_FALLBACK = '<!doctype html><html lang="en"><head></head><body><div id="root"></div></body></html>';
 
-/** `state` is what the history entry carries (a link of the app can leave something there, see `LEASE_CONFIRMED_STATE`). */
 export function renderAt(path: string, routePath: string, page: ReactElement, state?: unknown) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const [pathname, ...query] = path.split('?');

@@ -31,7 +31,6 @@ describe('booking params: what the pages of the site tell the booking', () => {
       'service=Not%20A%20Slug&quantity=-3&surface=abc&options=bad%20code:2,ok:0,fine:3,fine:4&comune=58091&day=2026-02-31&start=tomorrow',
     );
 
-    // Only the second «fine» is dropped as a repeat; «ok:0» and the bad code do not fit.
     expect(parsed).toEqual({ options: [{ code: 'fine', quantity: 3 }] });
   });
 

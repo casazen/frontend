@@ -9,11 +9,9 @@ import type { CheckInDocumentReadResult, CheckInZonedField } from '@/types/publi
  * members (`fields`, `missing`, `source`), `zonedAnswerOf` finds nothing and the data step is the one it always was.
  */
 
-/** The data the step shows for the guest to check: what a document says and the form takes from it. The names are not among them: they come from the booking and are not changed here. */
 export const PREFILL_ROWS = ['gender', 'dateOfBirth', 'birthPlace', 'citizenship', 'documentKind', 'documentNumber', 'issuePlace', 'documentIssuedOn', 'documentExpiresOn'] as const;
 export type PrefillRowName = (typeof PREFILL_ROWS)[number];
 
-/** How a row is edited: a line of text, a date, one of the two genders of the form, or one of the three kinds of document. */
 export const PREFILL_INPUT: Readonly<Record<PrefillRowName, 'text' | 'date' | 'gender' | 'kind'>> = {
   gender: 'gender',
   dateOfBirth: 'date',
@@ -26,10 +24,8 @@ export const PREFILL_INPUT: Readonly<Record<PrefillRowName, 'text' | 'date' | 'g
   documentExpiresOn: 'date',
 };
 
-/** The kinds of document the form has (the values of `guest.documentKind`). */
 export const PREFILL_DOCUMENT_KINDS = ['IdentityCard', 'Passport', 'DriversLicense'] as const;
 
-/** The name the zones of the card give a row (`ZonedFieldNames` of the server), when there is one: the kind of document and the place of issue have no zone. */
 const ZONE_OF_ROW: Readonly<Partial<Record<PrefillRowName, string>>> = {
   gender: 'sex',
   dateOfBirth: 'birthDate',
@@ -40,31 +36,25 @@ const ZONE_OF_ROW: Readonly<Partial<Record<PrefillRowName, string>>> = {
   documentExpiresOn: 'expiryDate',
 };
 
-/** The form of the document the value of a row was read from. */
 export type PrefillSource = 'mrz' | 'viz';
 
-/** One value to check: what it is, the value (the guest may change it) and where it was read from (`null` when the answer does not say). */
 export interface PrefillRow {
   name: PrefillRowName;
   value: string;
   source: PrefillSource | null;
 }
 
-/** What the data step shows after a reading: the values to check and the names of the data the guest will still be asked for. */
 export interface DocumentPrefill {
   rows: readonly PrefillRow[];
-  /** The data the reading did not give and the form does not hold yet, in the words of the API (`lastName`, `birthPlace`, ...); an unknown name is asked under a general label. */
   missing: readonly string[];
 }
 
-/** What the guest left in the rows when they confirmed: the value of each row by its name. */
 export type PrefillValues = Partial<Record<PrefillRowName, string>>;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** The zoned part of an answer, or `null` when the answer is the one of before (the flow is off, or the server is older): no `fields`, no `missing`, or a source that is not the local reading. */
 export function zonedAnswerOf(result: CheckInDocumentReadResult): { fields: CheckInZonedField[]; missing: string[] } | null {
   if (result.source !== 'local' || !Array.isArray(result.fields) || !Array.isArray(result.missing)) return null;
   const fields = result.fields.filter(
@@ -76,7 +66,6 @@ export function zonedAnswerOf(result: CheckInDocumentReadResult): { fields: Chec
 
 const text = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
 
-/** The first four-digit-year date of a value (`yyyy-MM-dd`, whatever follows the day), or an empty text. */
 const dateOf = (value: unknown): string => /^\d{4}-\d{2}-\d{2}/.exec(text(value))?.[0] ?? '';
 
 /**
@@ -106,7 +95,6 @@ export function buildPrefill(result: CheckInDocumentReadResult, isFilled: (name:
       case 'dateOfBirth':
         return dateOf(guest.dateOfBirth) || dateOf(zone?.value);
       case 'birthPlace':
-        // The form takes a birth place only when it knows whether it is in Italy.
         return typeof guest.bornInItaly === 'boolean' ? text(guest.birthPlace) || text(zone?.value) : '';
       case 'citizenship':
         return text(guest.citizenship);
@@ -131,7 +119,6 @@ export function buildPrefill(result: CheckInDocumentReadResult, isFilled: (name:
     if (value !== '') rows.push({ name, value, source: sourceOf(zoneValue(name)) });
   }
 
-  // What the zones gave and the form cannot take is asked like what they did not give.
   const shown = new Set<string>(rows.map((row) => row.name));
   const notTaken = PREFILL_ROWS.filter((name) => !shown.has(name) && zoneValue(name) !== undefined);
   const missing = [...new Set([...zoned.missing, ...notTaken])].filter((name) => !shown.has(name) && !isFilled(name));
@@ -139,10 +126,6 @@ export function buildPrefill(result: CheckInDocumentReadResult, isFilled: (name:
   return { rows, missing };
 }
 
-/**
- * The answer with the values the guest confirmed in place of the ones the reading gave: the page applies it to the form the way it applies any reading. A value the guest cleared is left out (an empty
- * value never overwrites what the form holds), and the rest of the answer (who the photo belongs to, the residence, the side) is untouched.
- */
 export function withConfirmedValues(result: CheckInDocumentReadResult, values: PrefillValues): CheckInDocumentReadResult {
   const guest: NonNullable<CheckInDocumentReadResult['guest']> = { ...result.guest };
   for (const name of PREFILL_ROWS) {
@@ -182,7 +165,6 @@ export function withConfirmedValues(result: CheckInDocumentReadResult, values: P
   return { ...result, guest };
 }
 
-/** The key of the label of a datum of the prefill, or of the general one for a name the page does not know. */
 export function prefillFieldKey(name: string): string {
   const known = [...PREFILL_ROWS, 'lastName', 'firstName'] as readonly string[];
   return known.includes(name) ? `checkin.prefill.field.${name}` : 'checkin.prefill.field.other';

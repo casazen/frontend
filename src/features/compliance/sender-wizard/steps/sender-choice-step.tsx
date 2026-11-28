@@ -16,7 +16,6 @@ interface SenderChoiceStepProps {
   read: PropertySender;
 }
 
-/** The delegation of the transmission: two sentences that say what it is, the text in force and the box that records the consent. */
 function DelegationConsent({ read }: SenderChoiceStepProps) {
   const { t } = useTranslation();
   const { control, setValue } = useFormContext<SenderWizardValues>();
@@ -49,14 +48,12 @@ function DelegationConsent({ read }: SenderChoiceStepProps) {
               }
               data-testid="sender-delegation-consent"
             />
-            {/* The label is the target to press: at least 44 px high, the whole line. */}
             <Label htmlFor="sender-delegation-consent" className="flex min-h-11 flex-1 cursor-pointer items-center break-words text-sm font-medium leading-snug">
               {t('compliance.sender.delegation.consent')}
             </Label>
           </div>
         </>
       ) : (
-        // A text this page cannot show is never consented to: the person reloads, and the page that shows the text in force is the one that asks.
         <Alert variant="warning" data-testid="sender-delegation-unknown">
           {t('compliance.sender.delegation.unknownVersion')}
         </Alert>
@@ -77,8 +74,6 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
   const options = senderOptions(read);
   const automatic = isAutomaticSender(chosen);
   const istatClaim = useIstatClaim(read.propertyId);
-  // With the direct send of CasaZen in force the server offers no way to choose (`availableSenders` is empty) and the sender changes only with the support: the cards say that, not
-  // that they are «not available yet». A legacy row that names CasaZen without a direct send in force does not activate a route: the server reads it as `Inactive`, and it keeps the generic words.
   const directActive = read.sender === 'CasaZen' && read.state !== 'Inactive';
 
   return (
@@ -93,7 +88,6 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
         </span>
         <SenderStateBadge outcome={outcomeOfSender(read)} testId="sender-current-state" />
       </div>
-      {/* The channel manager is the starting sender of a connected property, but the automatic send of the guests is off to begin with: one quiet sentence next to the choice, no banner. */}
       {read.sender === 'ChannelManager' && !autoSendInForce(read) ? (
         <p className="break-words text-sm text-foreground/70" data-testid="sender-auto-send-off">
           {t('compliance.sender.choice.autoSendOff')}

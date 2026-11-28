@@ -67,12 +67,10 @@ afterEach(() => cleanup());
 describe('the states towards the SDI are the server\'s: «inviata» only after the server says so (E17/F03/US01/T02, NF-116)', () => {
   it('submitVerdictOf_OnlyASubmissionThatTheServerConfirmsIsASuccess', () => {
     expect(submitVerdictOf(answer('Submitted', { status: 'submitted' }))).toBe('submitted');
-    // The outcome says «took it» but the state the server answers does not: nothing is claimed.
     expect(submitVerdictOf(answer('Submitted', { status: 'to_send' }))).toBe('unconfirmed');
     expect(submitVerdictOf(answer('Refused', { status: 'to_send', errorCode: 'sdi_provider_refused' }))).toBe('refused');
     expect(submitVerdictOf(answer('NotConfigured', { status: 'to_send' }))).toBe('notConfigured');
     expect(submitVerdictOf(answer('AlreadySubmitted', { status: 'submitted' }))).toBe('alreadySubmitted');
-    // An outcome this client does not know (the server is newer) is never read as a success.
     expect(submitVerdictOf(answer('SomethingNew', { status: 'submitted' }))).toBe('unconfirmed');
   });
 
@@ -86,7 +84,6 @@ describe('the states towards the SDI are the server\'s: «inviata» only after t
   it('SdiPanel_WhenTheChannelTakesTheFile_ItSaysSubmittedOnlyBecauseTheAnswerSaysIt', async () => {
     const submitted = { status: 'submitted', canSubmit: false, canDeclare: false };
     submit.mockResolvedValue(answer('Submitted', submitted));
-    // The server holds the state it answered: the read that follows the write says the same.
     read.mockResolvedValueOnce(state()).mockResolvedValue(state(submitted));
     renderPanel();
 
@@ -142,7 +139,6 @@ describe('the states towards the SDI are the server\'s: «inviata» only after t
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
     expect(screen.queryByTestId('fiscal-document-sdi-verdict')).toBeNull();
     expect(await pill()).toHaveAttribute('data-state', 'toSend');
-    // A call that got lost may have reached the channel: the state is asked again, never guessed.
     await waitFor(() => expect(read.mock.calls.length).toBeGreaterThan(readsBefore));
     expect(toast.success).not.toHaveBeenCalled();
   });
@@ -176,7 +172,6 @@ describe('the states towards the SDI are the server\'s: «inviata» only after t
     fireEvent.click(await screen.findByTestId('fiscal-document-sdi-submit'));
 
     await waitFor(async () => expect(await pill()).toHaveAttribute('data-state', 'rejected'));
-    // «Preso in carico dal canale» was what the server said when it was said: it is not what the document is now, and it is not told next to the rejection.
     expect(screen.queryByTestId('fiscal-document-sdi-verdict')).toBeNull();
     expect(screen.getByTestId('fiscal-document-sdi-reason')).toHaveTextContent('Il codice fiscale del destinatario non è valido.');
   });
@@ -184,7 +179,6 @@ describe('the states towards the SDI are the server\'s: «inviata» only after t
   it('SdiPanel_AfterTheHandDeclaration_NoBannerKeepsTellingToDeclare', async () => {
     const declared = state({ status: 'manual_declared', canSubmit: false, canDeclare: true, statusUpdatedAt: '2026-11-14T00:00:00Z' });
     const noChannel = state({ providerConfigured: false });
-    // The reads: the panel opens, the sending is answered (nothing changed), the declaration is answered.
     read.mockResolvedValueOnce(noChannel).mockResolvedValueOnce(noChannel).mockResolvedValue(declared);
     submit.mockResolvedValue(answer('NotConfigured', { status: 'to_send', providerConfigured: false }));
     declare.mockResolvedValue(declared);
@@ -199,13 +193,11 @@ describe('the states towards the SDI are the server\'s: «inviata» only after t
     fireEvent.click(within(dialog).getByTestId('fiscal-sdi-declare-submit'));
 
     await waitFor(async () => expect(await pill()).toHaveAttribute('data-state', 'manualDeclared'));
-    // The sentence that said «declare it by hand» is gone: the document is declared.
     expect(screen.queryByTestId('fiscal-document-sdi-verdict')).toBeNull();
   });
 
   it('SdiPanel_WhenTheStateIsReadAgainAndTheServerSaysNotFound_NothingOfTheOldStateStaysOnScreen', async () => {
     submit.mockResolvedValue(answer('Submitted', { status: 'submitted', canSubmit: false, canDeclare: false }));
-    // The first read has the document; the read that follows the write finds it gone: a 404 is «not found» even though the cache still holds the old answer.
     read.mockResolvedValueOnce(state()).mockRejectedValue(failure(404));
     renderPanel();
 
@@ -221,7 +213,6 @@ describe('the states towards the SDI are the server\'s: «inviata» only after t
 
     fireEvent.click(await screen.findByTestId('fiscal-document-sdi-declare'));
     const dialog = await screen.findByTestId('fiscal-sdi-declare-dialog');
-    // No reference: the server would refuse it with 422, so the dialog says what is missing and sends nothing.
     fireEvent.click(within(dialog).getByTestId('fiscal-sdi-declare-submit'));
 
     expect(await within(dialog).findByText(i18n.t('fiscalDocuments.sdi.declare.reference.error'))).toBeInTheDocument();

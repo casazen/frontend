@@ -43,20 +43,11 @@ function LongRentStartGuide() {
   );
 }
 
-/**
- * The long-term leases (LR-02, LR-02b, LR-02c) on the unified list. The server sends the whole list once (it is not paginated) with, for
- * each lease, its stage, how far along it is and the step it waits for; the list does the rest on the client: the quick filters
- * (`?chip=todo`), the filters of the drawer, the search (`?q=rossi`) and the order, all in the address, with the most urgent step first.
- * Each row has a drawer with the lease at a glance, the button that does its next step, and the CSV.
- *
- * The first visit, with no lease at all, keeps the guide of the first steps (`LongRentGuide` above, the three steps below).
- */
 export function LeasesPage() {
   const { t } = useTranslation();
   const list = useLeasesList();
   const viewsScope = useListViewsScope();
 
-  // The plain list has no parameter at all: it is the same request, and the same cache, as the guide above it makes.
   const { data, isLoading, isError, error, refetch } = useLeases(undefined, { refetchOnMount: true });
   const leases: readonly LeaseSummary[] = data ?? [];
   const noLeasesAtAll = !isLoading && !isError && leases.length === 0;

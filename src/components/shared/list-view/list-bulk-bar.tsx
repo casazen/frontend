@@ -17,15 +17,10 @@ interface ListBulkBarProps {
   onClear: () => void;
 }
 
-// A phone has the bottom bar, and a page may fix its primary action above it (the same two heights that `AppToaster` clears).
 const ABOVE_THE_BAR = 'max-md:bottom-[calc(var(--bottom-nav-height,0px)+env(safe-area-inset-bottom,0px)+0.75rem)]';
 const ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION =
   'max-md:bottom-[calc(var(--bottom-nav-height,0px)+var(--mobile-primary-height,0px)+env(safe-area-inset-bottom,0px)+0.75rem)]';
 
-/**
- * The actions on the rows that are selected, shown while at least one is (UI-14). On a computer it sticks under the header, over
- * the rows; on a phone it is fixed at the bottom, over the bottom bar, where the thumb is.
- */
 export function ListBulkBar({ count, actions, onClear }: ListBulkBarProps) {
   const { t } = useTranslation();
   const primaryActionIsThere = useUiStore((state) => state.mobilePrimaryVisible);
@@ -55,7 +50,6 @@ export function ListBulkBar({ count, actions, onClear }: ListBulkBarProps) {
           );
         })}
       </div>
-      {/* On a phone: the number and "clear" on the first row, the actions under them. */}
       <Button type="button" variant="ghost" size="sm" onClick={onClear} data-testid="list-bulk-clear" className="max-md:order-2 max-md:ml-auto">
         {t('listView.bulk.clear')}
       </Button>

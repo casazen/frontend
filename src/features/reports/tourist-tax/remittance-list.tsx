@@ -10,21 +10,13 @@ const SHORT_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short',
 
 interface RemittanceListProps {
   comune: string;
-  /** The payments of the comune that the summary lists (oldest period first), as the server sends them. */
   remittances: readonly TouristTaxRemittance[];
-  /** The person may delete a payment (`payment.write`); the server decides again. */
   canWrite: boolean;
-  /** The payment whose receipt is on its way: its button waits. */
   downloadingId: string | null;
   onDownloadReceipt: (remittance: TouristTaxRemittance) => void;
   onDelete: (remittance: TouristTaxRemittance) => void;
 }
 
-/**
- * The payments of one comune (NF-100): the amount, the period it pays, the day it was paid and the reference, with the receipt to
- * download and, for who may write payments, the button that deletes a wrong entry. The page asks for the confirmation; this list
- * only says which payment the person chose.
- */
 export function RemittanceList({ comune, remittances, canWrite, downloadingId, onDownloadReceipt, onDelete }: RemittanceListProps) {
   const { t, i18n } = useTranslation();
   const titleId = useId();

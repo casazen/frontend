@@ -1,11 +1,5 @@
 import type { ContextBootstrapDto } from '@/api/contexts';
 
-/**
- * Pseudo-permission of the org billing administrator: plan, subscription, billing portal and billing profile of the
- * org. Frontend mirror of the backend policy `OrgBillingAdmin` (TN-3, `OrgBillingAdminAuthorizationHandler`), which
- * is not among the context permissions of `/me/contexts`: the workspace `hasPermission` derives it from the contexts
- * of the user. It only decides what the menu shows; the backend stays the authority.
- */
 export const ORG_BILLING_ADMIN_PERMISSION = 'org.billing.admin';
 
 /**
@@ -22,19 +16,10 @@ const ORG_BILLING_ADMIN_ROLE_KEYS: ReadonlyMap<string, ReadonlySet<string>> = ne
   ['admin', new Set(['platform_admin'])],
 ]);
 
-/**
- * True when one of the contexts is held with the owner's (or the platform admin's) role key: the user may manage the
- * plan and the billing of its org. A membership with any other role key of the same context does not count.
- */
 export function isOrgBillingAdmin(contexts: readonly Pick<ContextBootstrapDto, 'contextKey' | 'roleKey'>[]): boolean {
   return contexts.some((context) => ORG_BILLING_ADMIN_ROLE_KEYS.get(context.contextKey)?.has(context.roleKey) === true);
 }
 
-/**
- * True when the user manages the plan and the billing of its org and works in the account area, where they have one page
- * (`/app/account/billing`, AM-08a). The plan and billing pages of the rental areas hand such a user over to it; without the account
- * area (the demo, an org that has no memberships yet) they stay as they were.
- */
 export function hasAccountBillingPage(contexts: readonly Pick<ContextBootstrapDto, 'contextKey' | 'roleKey'>[]): boolean {
   return isOrgBillingAdmin(contexts) && contexts.some((context) => context.contextKey === 'account');
 }

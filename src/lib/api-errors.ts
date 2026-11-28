@@ -35,7 +35,6 @@ export class UnexpectedApiResponseError extends Error {
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_VALIDATION_MESSAGES = 3;
 const CODE_PATTERN = /^[A-Za-z][A-Za-z0-9_]*$/;
-/** ProblemDetails `type` links of the RFCs: their `title` is only the generic HTTP reason phrase. */
 const RFC_TYPE_PATTERN = /tools\.ietf\.org|rfc-editor\.org|datatracker\.ietf\.org/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -49,10 +48,6 @@ function cleanText(value: unknown): string | undefined {
   return text;
 }
 
-/**
- * Free-text server message worth showing: at least two words. Single tokens are error codes
- * (`too_many_guests`), bare reason phrases or unresolved resource keys (`ForbiddenDetail`).
- */
 function sentenceText(value: unknown): string | undefined {
   const text = cleanText(value);
   return text && /\s/.test(text) ? text : undefined;
@@ -75,7 +70,6 @@ function validationMessages(errors: unknown): string | undefined {
   return collected.length > 0 ? collected.slice(0, MAX_VALIDATION_MESSAGES).join('\n') : undefined;
 }
 
-/** `fx_missing` → `fxMissing`: the key of the texts of an error code. */
 export function toCamelCase(code: string): string {
   const [first = '', ...rest] = code.toLowerCase().split('_').filter(Boolean);
   return first + rest.map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join('');
@@ -87,15 +81,10 @@ function translateCode(code: string, t: TranslateFn): string | undefined {
   return translated && translated !== key ? translated : undefined;
 }
 
-/**
- * Translation of a stable backend error `code` stored in a resource (e.g. the `lastErrorCode` of an iCal feed),
- * or `undefined` when the frontend has no text for it (`apiErrors.codes.<camelCase code>`).
- */
 export function translateErrorCode(code: string | null | undefined, t: TranslateFn): string | undefined {
   return code && CODE_PATTERN.test(code) ? translateCode(code, t) : undefined;
 }
 
-/** HTTP status of a failed API call, or undefined when no response was received. */
 export function getHttpStatus(error: unknown): number | undefined {
   return isAxiosError(error) ? error.response?.status : undefined;
 }
@@ -106,7 +95,6 @@ export function getHttpStatus(error: unknown): number | undefined {
  */
 export const ACCOUNT_INACTIVE_CODE = 'account_inactive';
 
-/** True for the 403 `account_inactive` of a deactivated account (see {@link ACCOUNT_INACTIVE_CODE}). */
 export function isAccountInactiveError(error: unknown): boolean {
   return (
     isAxiosError(error) &&
@@ -115,17 +103,12 @@ export function isAccountInactiveError(error: unknown): boolean {
   );
 }
 
-/** Stable machine-readable `code` of an error body (ProblemDetails extension or legacy `{ code }`). */
 export function getProblemCode(data: unknown): string | undefined {
   if (!isRecord(data)) return undefined;
   const code = data.code;
   return typeof code === 'string' && CODE_PATTERN.test(code) ? code : undefined;
 }
 
-/**
- * Failures worth retrying: no response received (network error, timeout) or a 5xx other than
- * 501 Not Implemented. Never 4xx, cancellations or missing tokens.
- */
 export function isTransientRequestError(error: unknown): boolean {
   if (!isAxiosError(error)) return false;
   const status = error.response?.status;

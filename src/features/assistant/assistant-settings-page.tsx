@@ -20,12 +20,10 @@ import { SettingsError, SettingsLoading, SettingsNoAccess, SettingsNotFound } fr
 import { SituationsTable } from './components/situations-table';
 import { ASSISTANT_SETTINGS_PATH, ASSISTANT_TABS, type AssistantTab } from './lib/assistant-routes';
 
-/** The tab the address names; anything else is the first one (a link of an older version, a typo). */
 function tabOf(value: string | null): AssistantTab {
   return ASSISTANT_TABS.find((tab) => tab === value) ?? 'rules';
 }
 
-/** The properties of Affitti brevi, read again at every visit: the list is changed on other pages. */
 function useShortProperties() {
   return useProperties({ mode: 'short' }, { fresh: true });
 }
@@ -37,7 +35,6 @@ interface PermissionsProps {
   isAdmin: boolean;
 }
 
-/** The rules of the organization and, beside them from `xl`, the answers that hold for every property (under each other on a narrower screen). */
 function RulesTab({ canReadRules, isAdmin }: Pick<PermissionsProps, 'canReadRules' | 'isAdmin'>) {
   return (
     <div className={cn(PAGE_COLUMNS, 'gap-10')} data-testid="assistant-tab-rules">
@@ -95,7 +92,6 @@ function PropertiesTab({ propertyId, canReadRules, canReadProperty, canWriteProp
             {t('assistant.property.choose')}
           </p>
         ) : chosen === undefined ? (
-          // The address names a property that is not among the person's (another organization, out of its reach, or gone): never another one in its place.
           <SettingsNotFound title={t('assistant.property.notFound')} hint={t('assistant.property.notFoundHint')} testId="assistant-property-unknown" />
         ) : (
           <div className="space-y-4">
@@ -110,7 +106,6 @@ function PropertiesTab({ propertyId, canReadRules, canReadProperty, canWriteProp
   );
 }
 
-/** The situations of the organization or of one property, with the choice of which. The choice needs the list of the properties: only a person who may read them has it. */
 function SituationsTab({ propertyId, canReadRules, canReadProperty, canWriteProperty, isAdmin }: PermissionsProps & { propertyId: string | null }) {
   if (!canReadProperty) {
     return (
@@ -170,12 +165,6 @@ function SituationsOfScope({ propertyId, canReadRules, canReadProperty, canWrite
   );
 }
 
-/**
- * The settings of the assistant (E05/F05/US04/T02, NF-66): `/app/short-rent/settings/assistant`, in «Altro», only with the flag `messageAssistant`. Three tabs (the tab is in
- * the address, `?tab=`; a property in `?propertyId=`): the rules of the organization (changed by its administrator alone, the others read them), the properties (each with
- * its switch, its exceptions and what the assistant may say about it) and the situations (what the assistant does in each, for the organization or for one property).
- * The assistant only drafts in this release: nothing is sent without the host's approval.
- */
 export function AssistantSettingsPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();

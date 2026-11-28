@@ -21,7 +21,6 @@ beforeAll(async () => {
   await i18n.changeLanguage('en');
 });
 
-// NF-99, AC-NF99-1 and AC-NF99-5: the chips are the types the server sends, and no other.
 describe('documentChips (NF-99)', () => {
   it('DocumentChips_TheTypesOfTheServer_AreTheChipsAfterAll_AndNoOther', () => {
     const chips = documentChips(i18n.t, counts(['propertyDocument', 3], ['contract', 1]));
@@ -105,7 +104,6 @@ describe('archiveFilterParams and archiveListQuery (NF-99)', () => {
     expect(archiveFilterParams(state())).toEqual({ from: undefined, to: undefined, propertyId: undefined, q: undefined });
   });
 
-  // The date field of the list has no limits, and the API answers 400 for a day outside 2000 to 2100: a day beyond them means no limit on that side.
   it.each([
     ['both days before and after the years', '1999-01-01..2150-12-31', '2000-01-01', '2100-12-31'],
     ['a first day long before', '0100-05-05..2026-03-31', '2000-01-01', '2026-03-31'],
@@ -119,7 +117,6 @@ describe('archiveFilterParams and archiveListQuery (NF-99)', () => {
 
   it('ArchiveListQuery_AllChip_AsksEveryTypeTheCallerMayRead', () => {
     expect(archiveListQuery(state({ chip: ARCHIVE_ALL_TYPES, page: 3 }), 50)).toMatchObject({ types: undefined, page: 3, pageSize: 50 });
-    // No chips at all (one type, or the types did not come): no type is asked either.
     expect(archiveListQuery(state({ chip: '' }), 25)).toMatchObject({ types: undefined });
   });
 
@@ -136,7 +133,6 @@ describe('archiveFilterParams and archiveListQuery (NF-99)', () => {
   });
 });
 
-// NF-99: the page and the page size are in the address, so a reload and the Back button keep the place.
 describe('page size in the address (NF-99)', () => {
   it.each([
     ['', ARCHIVE_DEFAULT_PAGE_SIZE],

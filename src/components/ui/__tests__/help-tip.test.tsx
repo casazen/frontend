@@ -29,7 +29,6 @@ function renderTip(props: Partial<HelpTipProps> = {}) {
 
 const trigger = (name = 'Maggiori informazioni') => screen.getByRole('button', { name });
 
-/** Radix starts listening for a press outside one tick after something opens. */
 const nextTick = () =>
   act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -194,6 +193,16 @@ describe('HelpTip (UI-07)', () => {
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     });
 
+    it('HelpTip_ManualHref_IsAPlainLinkInANewTabBecauseTheRouterOfTheAppDoesNotKnowThePagesOfTheManual', () => {
+      renderTip({ learnMoreHref: '/guida/immobili.html#stampare-il-codice-qr' });
+      fireEvent.click(trigger());
+
+      const link = screen.getByRole('link', { name: 'Scopri di più' });
+      expect(link).toHaveAttribute('href', '/guida/immobili.html#stampare-il-codice-qr');
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+
     it('HelpTip_TabFromTheBubble_ReachesTheLink', () => {
       renderTip({ learnMoreHref: '/app/short-rent/help/cin' });
       fireEvent.click(trigger());
@@ -300,7 +309,6 @@ describe('HelpTip (UI-07)', () => {
       fireEvent.keyDown(screen.getByRole('dialog', { name: 'iCal' }), { key: 'Escape' });
 
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'iCal' })).not.toBeInTheDocument());
-      // The dialog under it is still there.
       expect(screen.getByRole('dialog', { name: 'Collega il calendario' })).toBeInTheDocument();
     });
 

@@ -19,7 +19,6 @@ const NOTE = 'Il codice del cancello e 4821';
 
 const guests = [{ firstName: 'Giulia', lastName: 'Bianchi', documentNumber: DOCUMENT_NUMBER }] as unknown as StayGuestSubmit[];
 const progress = { currentStep: 'alloggiati', propertyNotes: NOTE } as unknown as CheckoutWizardProgressCommand;
-/** The closing of the stay carries the same free notes (what the host wrote about the cleaning and about the property). */
 const completion = { confirmDeparture: true, cleaningChoice: 'Skip', serviceNotes: null, propertyReady: false, propertyNotes: NOTE } as unknown as CheckoutWizardCompleteCommand;
 
 function setup() {
@@ -28,7 +27,6 @@ function setup() {
   return { queryClient, wrapper };
 }
 
-/** A refusal of the API as axios keeps it: with the request that was sent, whose body holds what the host typed. */
 function refusal(status: number, body: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify(body) } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: { status }, statusText: '', headers: {}, config });
@@ -38,10 +36,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-/**
- * Privacy (NF-45): the check-out wizard saves the guests of the stay through the editor of the check-in wizard, its own progress and the closing of the stay. A mutation keeps what it was
- * given and the request of a failure in the cache of the mutations for five minutes by default, after the panel or the wizard is gone.
- */
 describe('what the check-out wizard saves is not kept once it is gone', () => {
   it('useSaveCheckInGuests_Refused_KeepsNoPersonalDataAndNothingOnceTheEditorIsGone', async () => {
     const { queryClient, wrapper } = setup();
@@ -52,7 +46,6 @@ describe('what the check-out wizard saves is not kept once it is gone', () => {
       await expect(result.current.mutateAsync(guests)).rejects.toMatchObject({ response: { status: 400 } });
     });
 
-    // What the form turns into words on the fields stays (the status and the body of the answer); the request, with the guests in it, does not.
     const kept = queryClient.getMutationCache().getAll()[0]?.state.error as AxiosError;
     expect(kept.response?.status).toBe(400);
     expect(JSON.stringify(kept.config ?? {})).not.toContain(DOCUMENT_NUMBER);
@@ -102,7 +95,6 @@ describe('what the check-out wizard saves is not kept once it is gone', () => {
       await expect(result.current.mutateAsync(completion)).rejects.toMatchObject({ response: { status: 409 } });
     });
 
-    // The status and the body of the answer stay (the page turns them into words); the request, with the notes in it, does not.
     const kept = queryClient.getMutationCache().getAll()[0]?.state.error as AxiosError;
     expect(kept.response?.status).toBe(409);
     expect(JSON.stringify(kept.config ?? {})).not.toContain(NOTE);

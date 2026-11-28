@@ -19,10 +19,8 @@ import { getHostSite, isHostSurfaceOn, type HostSite } from '@/lib/host-site';
 import { buildEmbedRoutes } from './embed-routes';
 import { ownerPortalRoutes } from './ownerPortalRoutes';
 
-/** Path of the booking site route of the app, the one an org's own host serves. */
 const ORG_SITE_PATH = '/book/:orgSlug';
 
-/** Path of the guest check-in route of the app, the one an org's own host serves when its guest area is on. */
 const CHECK_IN_PATH = '/checkin/:token';
 
 function findAppRoute(appRoutes: RouteObject[], what: string, matches: (route: RouteObject) => boolean): RouteObject {
@@ -31,10 +29,6 @@ function findAppRoute(appRoutes: RouteObject[], what: string, matches: (route: R
   return route;
 }
 
-/**
- * The guest check-in on an org's own host (NF-140): the very route of the app, only for the agency of the host (`HostCheckInGuard`). The door of a property
- * (`/checkin/porta/:doorToken`) is another route of the app and is not served here.
- */
 function checkInRoute(appRoutes: RouteObject[]): RouteObject {
   const route = findAppRoute(appRoutes, `the check-in ${CHECK_IN_PATH}`, (candidate) => candidate.path === CHECK_IN_PATH);
   return { ...route, element: <HostCheckInGuard>{route.element}</HostCheckInGuard> };
@@ -61,10 +55,6 @@ function ownerPortalHostRoute(appRoutes: RouteObject[]): RouteObject {
   };
 }
 
-/**
- * The owner portal on an org's own host whose domain is NOT yet registered with the sign-in service: every address of the portal is one page that says the access is not active yet.
- * No sign-in boundary here: the boundary reloads a page that needs the sign-in, and on such a host nothing mounts it.
- */
 function ownerPortalNotEnabledRoute(): RouteObject {
   return { path: `${ownerPortalPaths.home}/*`, element: <OwnerLoginNotEnabledPage /> };
 }

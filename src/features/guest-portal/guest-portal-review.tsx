@@ -6,7 +6,6 @@ import { getHttpStatus } from '@/lib/api-errors';
 
 interface Labels {
   rating: string;
-  /** The name of one star for a screen reader, with `{value}` («4 su 5»). */
   ratingValue: string;
   comment: string;
   showName: string;
@@ -50,8 +49,6 @@ export function GuestPortalReview({ path, labels, onSubmitted }: { path: string;
       )}
       {review.isSuccess && !submitted && (
         <form onSubmit={submit} className="stay-chat-form">
-          {/* Five stars, as a guest knows them from every booking site (UX round 2026-11): one radio each, so the arrows move
-              the choice and a screen reader says «4 su 5»; the stars up to the chosen one are filled. */}
           <span id="stay-review-rating">{labels.rating}</span>
           <div role="radiogroup" aria-labelledby="stay-review-rating" className="stay-stars" data-testid="guest-review-rating">
             {STARS.map((value) => (

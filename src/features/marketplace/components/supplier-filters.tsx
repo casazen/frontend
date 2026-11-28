@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 import type { SupplierPickerSort } from '@/types/service-request';
 import { SUPPLIER_SORTS, type SupplierFilters } from '../lib/use-supplier-filters';
 
-/** The two controls of a list of suppliers: the order and «Solo verificati». */
 function FilterControls({ filters, idPrefix, inRow }: { filters: SupplierFilters; idPrefix: string; inRow: boolean }) {
   const { t } = useTranslation();
 
@@ -47,10 +46,6 @@ function FilterControls({ filters, idPrefix, inRow }: { filters: SupplierFilters
   );
 }
 
-/**
- * The order and «Solo verificati» of a list of suppliers, and how many there are (MKT). On a computer they are in a row above the
- * list; on a phone they would take the screen, so there is one button, «Filtri», that opens them in a sheet from the bottom.
- */
 export function SupplierFiltersBar({ filters, count }: { filters: SupplierFilters; count: number }) {
   const { t } = useTranslation();
   const isPhone = useMediaQuery(PHONE_QUERY);

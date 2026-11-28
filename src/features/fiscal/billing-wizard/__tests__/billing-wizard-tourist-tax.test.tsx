@@ -11,7 +11,6 @@ import { TouristTaxStep } from '../steps/tourist-tax-step';
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: vi.fn() } }));
 vi.mock('@/api/tourist-tax.api', () => ({ touristTaxApi: { getAll: vi.fn() } }));
 
-/** The client of the app (`query-client.ts`): a list that was read stays fresh for five minutes and is never read again when a page mounts. */
 function appClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5 * 60 * 1000, gcTime: 10 * 60 * 1000, refetchOnMount: false } } });
 }
@@ -27,7 +26,6 @@ function step(client: QueryClient) {
   );
 }
 
-/** The step with the portals of the Italian comuni wired as the page wires them, for a view that says what the test gives it. */
 function WithPortals({ view }: { view: ItalianTouristTaxView }) {
   const confirm = useConfirmPortalTouristTaxComuni();
   return <TouristTaxStep country="IT" portals={{ view, confirm, busy: false, onRefused: () => undefined }} />;
@@ -63,14 +61,11 @@ describe('the tourist tax of an Italian issuer lists the comuni of the propertie
 });
 
 describe('the tourist tax of an Italian issuer is the reading of the municipal rules it was when the server says nothing of the portals (FIX/FE-IT-TOURISTTAX-PROPOSALS)', () => {
-  // A response without the new members (an older server, or a caller who does not reach the whole organization) is a step with no portals; and a response that has them and nothing to
-  // say (no question, nothing confirmed, no hint) is the same step: not an empty box, not another intro, not a line more.
   it('ItalianTouristTax_NoPortalsOrAViewWithNothingToSay_IsExactlyTheReadingOfTheMunicipalRulesAsItWas', async () => {
     vi.mocked(propertiesApi.getAll).mockResolvedValue([milano, roma] as never);
     const plain = render(step(appClient()));
     expect(await screen.findByText('Roma')).toBeInTheDocument();
     const before = plain.container.innerHTML;
-    // The step as it was: the intro that says nothing is set here, the comuni with their rates, and the «Da fare» of the rates that are missing.
     expect(before).toContain(i18n.t('billingWizard.touristTax.italy.intro'));
     expect(before).not.toContain('billing-portal-tax');
     plain.unmount();
@@ -85,7 +80,6 @@ describe('the tourist tax of an Italian issuer is the reading of the municipal r
     expect(screen.queryByTestId('billing-portal-tax')).toBeNull();
     nothingToSay.unmount();
 
-    // Confirmed pairs that cannot be read in full, with no hint, say nothing either: nothing can be answered on them.
     const unreadable = render(
       <QueryClientProvider client={appClient()}>
         <WithPortals view={{ proposals: [], confirmed: null, conflict: false }} />
@@ -96,7 +90,6 @@ describe('the tourist tax of an Italian issuer is the reading of the municipal r
   });
 
   it('ItalianTouristTax_APortalsBlockIsThereWhileTheRatesAreStillOnTheirWay_AndWhenTheyCannotBeRead', async () => {
-    // The questions come from the setup, not from the rates: a list of rates that does not load does not take them away.
     vi.mocked(propertiesApi.getAll).mockResolvedValue([milano] as never);
     vi.mocked(touristTaxApi.getAll).mockRejectedValue(new Error('rates'));
     const view: ItalianTouristTaxView = {

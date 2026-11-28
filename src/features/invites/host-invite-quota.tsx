@@ -6,7 +6,6 @@ import { formatRomeDateTime } from '@/lib/stay-dates';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useHostInviteQuota } from '@/queries/use-host-invites';
 
-/** Daily quota of invites of the host: used out of the limit, what is left and when it starts again. */
 export function HostInviteQuotaIndicator() {
   const { t, i18n } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useHostInviteQuota();

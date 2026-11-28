@@ -35,7 +35,6 @@ vi.mock('@/components/layout/page-header', () => ({
 
 const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 
-/** A new request with no price (a service on quote): the supplier answers it with a quote. */
 const NEW_REQUEST: SupplierServiceRequestDetail = {
   id: ID,
   rentalContext: 'ShortRent',
@@ -63,7 +62,6 @@ const NEW_REQUEST: SupplierServiceRequestDetail = {
   history: [{ status: 'Richiesto', at: '2026-10-01T08:00:00Z', actor: 'Host', actorName: null, reason: null }],
 };
 
-/** The same request after the supplier sent the quote: it waits for the customer, who has until nobody says (a host). */
 const QUOTE_PENDING: SupplierServiceRequestDetail = {
   ...NEW_REQUEST,
   phase: 'quote_pending',
@@ -85,7 +83,6 @@ const QUOTE_PENDING: SupplierServiceRequestDetail = {
   ],
 };
 
-/** A completed job paid inside CasaZen, with the figures the server gave (the commission is NOT 10 % of the gross: nothing is worked out here). */
 const COMPLETED_ONLINE: SupplierServiceRequestDetail = {
   ...NEW_REQUEST,
   status: 'Completato',
@@ -158,7 +155,6 @@ describe('the quote of the supplier (SP-04b, SP-08d): what is sent', () => {
   });
 
   it('QuoteForm_AnotherTime_GoesAsUtcFromTheRomeClockWithTheDurationOfTheRequest', () => {
-    // 9:30 in Rome on 14 October 2026 is summer time (UTC+2).
     const form = filled([['Manodopera', '80']], { otherTime: true, day: '2026-10-14', time: '09:30' });
 
     expect(payloadOf(form, 120)).toMatchObject({ scheduledStartUtc: '2026-10-14T07:30:00.000Z', scheduledEndUtc: '2026-10-14T09:30:00.000Z' });
@@ -169,33 +165,27 @@ describe('the quote of the supplier (SP-04b, SP-08d): what is sent', () => {
 
   it('QuoteForm_WhatTheServerWouldRefuse_IsStoppedBeforeSending', () => {
     expect(problemsOf(filled([['Manodopera', '80,50']])).valid).toBe(true);
-    // A line with no description, no amount, a word, zero or more than 100,000 euros.
     for (const [label, amount] of [['', '10'], ['Voce', ''], ['Voce', 'abc'], ['Voce', '0'], ['Voce', '100.000,01']] as [string, string][]) {
       expect(problemsOf(filled([[label, amount]])).valid, `${label}|${amount}`).toBe(false);
     }
-    // Lines that are fine one by one but add up to more than the API takes.
     const tooMuch = problemsOf(filled([['A', '60000'], ['B', '60000']]));
     expect(tooMuch.total).toBe('totalRange');
     expect(tooMuch.valid).toBe(false);
-    // 21 lines, and none.
     expect(problemsOf(filled(Array.from({ length: 21 }, (_, index) => [`Voce ${index}`, '1'] as [string, string]))).valid).toBe(false);
     expect(problemsOf({ ...emptyQuoteForm(), rows: [] }).valid).toBe(false);
     expect(problemsOf(filled(Array.from({ length: 20 }, (_, index) => [`Voce ${index}`, '1'] as [string, string]))).valid).toBe(true);
-    // Another time needs a day and an hour, and the hour must exist (it is skipped when summer time starts: 28 March 2027, 02:30).
     expect(problemsOf(filled([['A', '1']], { otherTime: true, day: '2026-10-14', time: '' })).time).toBe('timeRequired');
     expect(problemsOf(filled([['A', '1']], { otherTime: true, day: '2027-03-28', time: '02:30' })).time).toBe('timeInvalid');
   });
 
   it('RequestPlan_EachPhase_OffersTheRightThingsAndPaymentActionsFollowTheServerAndTheFlag', () => {
     const unpriced = { phase: 'to_answer', status: 'Richiesto' as const, price: {} };
-    // «Rifiuta» is the second action of a new request, with a price or without one: always in the same place (UX round 3).
     expect(actionsOf(unpriced)).toEqual({ primary: 'quote', secondary: 'reject', more: ['take'] });
     expect(actionsOf({ ...unpriced, price: { amountCents: 5000 } })).toEqual({ primary: 'take', secondary: 'reject', more: ['quote'] });
     expect(actionsOf({ phase: 'quote_pending', status: 'Richiesto' })).toEqual({ more: ['editQuote', 'withdrawQuote'] });
 
     const completed = { phase: 'completed', status: 'Completato' as const, payment: { canRequest: true, canRecordOffline: true } };
     expect(actionsOf(completed, { onlinePayments: true }).more).toEqual(['remindPayment', 'recordPayment']);
-    // The reminder is the server's word AND the flag; the payment received outside CasaZen is the server's word only.
     expect(actionsOf(completed, { onlinePayments: false }).more).toEqual(['recordPayment']);
     expect(actionsOf({ ...completed, payment: { canRequest: false, canRecordOffline: true } }, { onlinePayments: true }).more).toEqual(['recordPayment']);
     expect(actionsOf({ ...completed, payment: { canRequest: false, canRecordOffline: false } }, { onlinePayments: true }).more).toEqual([]);
@@ -218,7 +208,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     supplierApi.fetchSupplierInboxItem.mockResolvedValueOnce(NEW_REQUEST).mockResolvedValue(QUOTE_PENDING);
     renderPage();
 
-    // The quote comes first, «Rifiuta» is where it always is (next to the main button), and accepting without a quote is one tap away among the quiet buttons.
     const quote = await screen.findByTestId('supplier-request-quote');
     const focus = screen.getByTestId('supplier-request-now');
     expect(within(focus).getByTestId('supplier-request-reject')).toBeInTheDocument();
@@ -228,7 +217,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     expect(screen.getByTestId('supplier-request-take')).toHaveTextContent('Accetta senza preventivo');
     const sheet = await screen.findByTestId('quote-sheet');
 
-    // Nothing is sent while the sheet is incomplete.
     fireEvent.click(within(sheet).getByTestId('quote-submit'));
     expect(await within(sheet).findByText('Scrivi che cosa comprende la voce.')).toBeInTheDocument();
     expect(requestsApi.sendServiceRequestQuote).not.toHaveBeenCalled();
@@ -242,7 +230,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     fireEvent.change(secondAmount, { target: { value: '20' } });
     fireEvent.change(within(sheet).getByTestId('quote-note'), { target: { value: 'Materiali inclusi' } });
     expect(within(sheet).getByTestId('quote-total')).toHaveTextContent('100,50 €');
-    // The time stays the one of the request, and the sheet says it is not held for the customer.
     expect(within(sheet).getByTestId('quote-same-time')).toHaveTextContent('Resta l’orario della richiesta');
 
     fireEvent.click(within(sheet).getByTestId('quote-submit'));
@@ -256,7 +243,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
         note: 'Materiali inclusi',
       }),
     );
-    // The request is read again: it waits for the customer, with the quote in front of the supplier and nothing to accept any more.
     await waitFor(() => expect(screen.getByTestId('supplier-request-now')).toHaveTextContent('Aspetta la risposta del cliente'));
     expect(screen.queryByTestId('quote-sheet')).not.toBeInTheDocument();
     expect(screen.getByTestId('supplier-request-quote-total')).toHaveTextContent('100,50 €');
@@ -273,7 +259,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     expect(screen.getByTestId('supplier-request-history')).toHaveTextContent('Hai inviato un preventivo');
     expect(screen.getByTestId('supplier-request-price')).toHaveTextContent('100,50 €');
 
-    // Changing it opens the sheet with the quote that was sent; the new one replaces it.
     fireEvent.click(screen.getByTestId('supplier-request-edit-quote'));
     const sheet = await screen.findByTestId('quote-sheet');
     expect(within(sheet).getAllByTestId('quote-line-label').map((input) => (input as HTMLInputElement).value)).toEqual(['Manodopera', 'Materiali']);
@@ -291,7 +276,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     );
     await waitFor(() => expect(screen.queryByTestId('quote-sheet')).not.toBeInTheDocument());
 
-    // Taking it back asks first, and says that nobody is told.
     fireEvent.click(screen.getByTestId('supplier-request-withdraw-quote'));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('Il cliente non riceve nessun messaggio');
@@ -306,7 +290,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
 
     fireEvent.click(await screen.findByTestId('supplier-request-record-payment'));
     let dialog = await screen.findByRole('dialog');
-    // What follows is written before it is done, and the reason is required for a request paid inside CasaZen.
     expect(dialog).toHaveTextContent('nessuna commissione');
     expect(dialog).toHaveTextContent('Non si può annullare');
     const confirm = within(dialog).getByRole('button', { name: 'Registra l’incasso' });
@@ -319,7 +302,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     await waitFor(() => expect(requestsApi.recordOfflineServiceRequestPayment).toHaveBeenCalledWith(ID, 'Bonifico del cliente'));
     unmount();
 
-    // A request that is paid outside CasaZen anyway needs no reason.
     requestsApi.recordOfflineServiceRequestPayment.mockClear();
     supplierApi.fetchSupplierInboxItem.mockResolvedValue({ ...COMPLETED_ONLINE, paymentMode: 'Manual' });
     renderPage();
@@ -333,7 +315,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     supplierApi.fetchSupplierInboxItem.mockResolvedValue(COMPLETED_ONLINE);
     const { unmount } = renderPage({ onlinePayments: false });
 
-    // Online payments off: the supplier can still say it was paid outside CasaZen, and nothing else.
     await screen.findByTestId('supplier-request-record-payment');
     expect(screen.queryByTestId('supplier-request-remind-payment')).not.toBeInTheDocument();
     unmount();
@@ -368,7 +349,6 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     renderPage();
 
     await screen.findByTestId('supplier-request-detail');
-    // 12.34 is not 10 % of 100.50: the commission and the net are the server's, never worked out in the page.
     expect(screen.getByTestId('supplier-request-payment-amount')).toHaveTextContent('100,50 €');
     expect(screen.getByTestId('supplier-request-payment-commission')).toHaveTextContent('12,34 € (10 %)');
     expect(screen.getByTestId('supplier-request-payment-net')).toHaveTextContent('88,16 €');

@@ -5,14 +5,12 @@ import { Label } from '@/components/ui/label';
 import { LEGAL_DOCUMENT_PATHS } from '@/features/legal/legal-paths';
 
 interface ActivationTermsCardProps {
-  /** The version in force (`tos.currentVersion`): what the supplier is shown and what the API checks. */
   version: string;
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
 }
 
-/** Acceptance of the Terms of Service: names the version and links the published text (new tab, the page stays open). */
 export function ActivationTermsCard({ version, checked, onCheckedChange, disabled }: ActivationTermsCardProps) {
   const { t } = useTranslation();
   return (

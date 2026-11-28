@@ -14,7 +14,6 @@ const view: PublicBookingView = {
   endUtc: '2026-11-13T10:00:00Z',
   startLocal: '2026-11-13T09:00:00+01:00',
   endLocal: '2026-11-13T11:00:00+01:00',
-  // Once the supplier took the request the customer's view carries the exact place: a calendar file must not.
   place: { city: 'Monza', postalCode: '20900', address: 'Via Roma 12', floor: 'Scala B, interno 7', accessNotes: 'Citofono Bianchi' },
   price: { currency: 'EUR', amountCents: 9000, basis: 'estimate', lines: [] },
   cancellationTerms: { freeUntilUtc: '2026-11-12T08:00:00Z', freeUntilLocal: '2026-11-12T09:00:00+01:00', isFree: true },
@@ -30,7 +29,6 @@ describe('the customer request: where it is and what the calendar file carries',
     expect(phaseOf({ ...view, status: 'Pagato' })).toBe('paid');
     expect(phaseOf({ ...view, status: 'Rifiutato' })).toBe('refused');
     expect(phaseOf({ ...view, status: 'Annullato' })).toBe('cancelled');
-    // A request on measure that is still new is a conversation; once its offer is taken it goes the way of every other request.
     expect(phaseOf({ ...view, status: 'Richiesto', kind: 'Custom' })).toBe('conversation');
     expect(phaseOf({ ...view, kind: 'Custom' })).toBe('taken');
   });
@@ -50,9 +48,7 @@ describe('the customer request: where it is and what the calendar file carries',
     const open = { ...view, status: 'Richiesto' as const, kind: 'Custom' as const };
 
     expect(phaseOf({ ...open, offer, negotiation: 'OfferSent', actions: { ...none, canRespondToOffer: true } })).toBe('offer');
-    // The card of the offer: the offer stands, the customer has accepted and the card is not through.
     expect(phaseOf({ ...open, offer, negotiation: 'AwaitingPayment', actions: { ...none, canRespondToOffer: true } })).toBe('cardPending');
-    // An offer nobody can answer any more is not offered for an answer.
     expect(phaseOf({ ...open, offer, negotiation: 'OfferSent', actions: none })).toBe('offerLapsed');
     expect(phaseOf({ ...open, negotiation: 'OfferDeclined' })).toBe('conversation');
   });

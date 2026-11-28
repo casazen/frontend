@@ -28,7 +28,6 @@ export function CinCompliancePage() {
   const items = Array.isArray(data?.items) ? data.items : [];
   const summary = data?.summary;
   const first = items.find((item) => item.cinStatus !== 'valid');
-  // The edit page for whoever may edit, the property for whoever may only look: the button never leads where the guard says no.
   const primary = first
     ? canWrite
       ? { label: t(first.cinStatus === 'missing' ? 'cin.table.addCin' : 'cin.table.fixCin'), href: `${PROPERTIES_PATH}/${first.propertyId}/edit` }
@@ -41,7 +40,6 @@ export function CinCompliancePage() {
         <PageHeader title={t('cin.pageTitle')} description={t('cin.pageDescription')} crumbs="auto" />
 
         {isError && !data ? (
-          // An API error is never shown as "no properties".
           <ErrorState title={t('cin.loadError')} error={error} onRetry={() => void refetch()} testId="cin-compliance-error" />
         ) : isLoading ? (
           <>

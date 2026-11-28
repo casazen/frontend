@@ -12,9 +12,6 @@ import { hostNeedsAuth, isSignInErrorReturn } from '@/lib/secure-origin';
 import { getRouter } from '@/routes';
 import type { PublicOrgDto } from '@/types';
 
-// The sign-in service is the only thing replaced. Its provider is a marker in the page (so a test can see whether the app mounted it) and hands the app, once it is mounted, the `appState`
-// that `login()` would have given back after the redirect: only for a return that completes. A return that comes back with an error does what the real provider does (it reads the answer, does not
-// call `onRedirectCallback` and reports the failure as `error`). Everything else is the app: `App`, the auth bridge, `handleAuthRedirect` and the route table of the agency's own domain.
 const auth0 = vi.hoisted(() => ({
   appState: undefined as Record<string, unknown> | undefined,
   error: undefined as Error | undefined,
@@ -24,7 +21,6 @@ const auth0 = vi.hoisted(() => ({
   getAccessTokenSilently: vi.fn(),
 }));
 
-// The router of the app is created once per page load: the test makes a new one for each page it opens.
 const testRouter = vi.hoisted(() => ({ reset: (): void => undefined }));
 
 vi.mock('@auth0/auth0-react', () => ({
@@ -45,7 +41,6 @@ vi.mock('@auth0/auth0-react', () => ({
   }),
 }));
 
-// The routes are the real ones of the agency's own domain for the site the test sets (or the whole app when there is none), in a memory router that starts where the browser is.
 vi.mock('@/routes', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/routes')>();
   const { buildHostSiteRoutes } = await import('@/routes/host-site-routes');
@@ -71,7 +66,6 @@ vi.mock('@/routes', async (importOriginal) => {
   };
 });
 
-// The owner portal itself is not what is tried here: the router only has to land on it.
 vi.mock('@/features/owner-portal/owner-portal-shell', () => ({ OwnerPortalShell: () => <div data-testid="owner-portal-shell" /> }));
 
 const ORG: PublicOrgDto = { slug: 'villa-rossi', displayName: 'Villa Rossi', logoUrl: null, themeColor: null, contactEmail: null, tagline: null };
@@ -79,33 +73,28 @@ vi.mock('@/queries/use-public-org', () => ({
   usePublicOrg: () => ({ data: ORG, isLoading: false, isError: false }),
   useOrgProperties: () => ({ data: [], isLoading: false, isError: false }),
   useOrgPublicProperty: () => ({ data: undefined, isLoading: true, isError: false }),
-  usePropertyAvailability: () => ({ data: undefined, isError: false, refetch: vi.fn() }),
 }));
 vi.mock('@/api/checkin.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/checkin.api')>();
   return { ...actual, publicCheckinApi: { ...actual.publicCheckinApi, getContext: vi.fn() } };
 });
 
-// Parts of the shell that read the network or the clock of the app: not what is tried here.
 vi.mock('@/contexts/feature-flags-provider', () => ({ FeatureFlagsProvider: ({ children }: { children: ReactNode }) => children }));
 vi.mock('@/routes/ui-version-sync', () => ({ UiVersionSync: () => null }));
 vi.mock('@/i18n/i18n-locale-sync', () => ({ I18nLocaleSync: () => null }));
 vi.mock('@/components/shared/app-toaster', () => ({ AppToaster: () => null }));
 
-/** The agency's own domain, with the surfaces on, in the states the backend can say. */
 const HOST: HostSite = { host: 'prenota.villa-rossi.example.test', slug: 'villa-rossi', displayName: 'Villa Rossi' };
 const READY: HostSite = { ...HOST, surfaces: { guestArea: true, ownerPortal: true }, ownerLoginReady: true };
 const NOT_READY: HostSite = { ...HOST, surfaces: { guestArea: true, ownerPortal: true } };
 const OWNER_OFF: HostSite = { ...HOST, surfaces: { guestArea: true, ownerPortal: false }, ownerLoginReady: true };
 
-/** The page the browser is on when the app starts. */
 function openAt(url: string) {
   window.history.replaceState(null, '', url);
 }
 
 const provider = () => screen.queryByTestId('auth0-provider');
 
-/** A read that the server refuses, as it does for the token of a person who is not an owner of this agency: the answer is a bare 403. */
 async function refusedRead(config: InternalAxiosRequestConfig): Promise<never> {
   throw new AxiosError('Forbidden', 'ERR_BAD_REQUEST', config, undefined, { status: 403, statusText: 'Forbidden', headers: {}, config, data: '' });
 }
@@ -119,7 +108,6 @@ describe('hostNeedsAuth (NF-141)', () => {
     '/portale-proprietari/contatto',
     '/portale-proprietari/contabilita/sv-1',
     '/portale-proprietari/accesso-negato',
-    // The router reads an address without looking at the case and decodes its segments: these are the portal for it, so they need the sign-in service too (or its boundary would reload the page for ever).
     '/Portale-Proprietari',
     '/PORTALE-PROPRIETARI/Accedi',
     '/portale%2Dproprietari/accedi',
@@ -142,7 +130,6 @@ describe('hostNeedsAuth (NF-141)', () => {
   ])(
     'hostNeedsAuth_ReadyHost_%s_IsFalse',
     (path) => {
-      // The booking site, the guest area and the widgets work with no sign-in module at all.
       expect(hostNeedsAuth(READY, path, '')).toBe(false);
       expect(hostNeedsAuth(READY, path, '?checkin=2026-12-01&guests=2&lang=it')).toBe(false);
     },
@@ -156,7 +143,6 @@ describe('hostNeedsAuth (NF-141)', () => {
     ['?code=abc', false],
     ['?state=xyz', false],
     ['?error=access_denied', false],
-    // The code of a booking, in the link of an e-mail, is not an answer of the sign-in.
     ['?code=K7M4Q-9XP2H', false],
     ['', false],
   ])('hostNeedsAuth_ReadyHostAtTheRoot_With_%s_Is_%s', (search, expected) => {
@@ -166,7 +152,6 @@ describe('hostNeedsAuth (NF-141)', () => {
   it.each(['/embed/booking', '/embed/property/casa-mare', '/embed/guest-access', '/embed/v1/embed.js', '/EMBED/booking', '/%65mbed/booking'])(
     'hostNeedsAuth_ReadyHost_TheWidget_%s_IsFalseWhateverItsQuerySays',
     (path) => {
-      // The widgets are frames of other sites: no session module, no storage (NF-145), even for an address that looks like the return of a sign-in.
       expect(hostNeedsAuth(READY, path, '?code=abc&state=xyz')).toBe(false);
       expect(hostNeedsAuth(READY, path, '?error=access_denied&state=xyz&lang=it&parent=https%3A%2F%2Fquokka.example.test&v=1')).toBe(false);
     },
@@ -206,7 +191,6 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
     auth0.error = undefined;
     auth0.authenticated = false;
     auth0.getAccessTokenSilently.mockResolvedValue('a-new-access-token');
-    // A link that is already completed: the check-in page shows its closing card, nothing to fill in.
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo' });
     testRouter.reset();
     await i18n.changeLanguage('it');
@@ -262,7 +246,6 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
     ['/my-bookings', 'public-site-shell'],
     ['/checkin/abc', 'checkin-success'],
   ])('public host pages never mount Auth0: %s', async (path, page) => {
-    // Even on a host that is registered with the sign-in service, only the owner portal and the return of the sign-in are not public pages.
     setHostSite(READY);
     openAt(path);
 
@@ -289,8 +272,6 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
   it.each(['/Portale-Proprietari/accedi', '/PORTALE-PROPRIETARI/Accedi', '/portale%2Dproprietari/accedi'])(
     'ready host: the owner portal opened as %s mounts the sign-in service and is not loaded again for ever',
     async (path) => {
-      // The router reads these addresses as the portal (it decodes them and does not look at the case). If the app did not, the page would be shown with no sign-in service under the boundary that asks for it:
-      // that boundary loads the page again, to the same address, and the page would never appear.
       setHostSite(READY);
       openAt(path);
 
@@ -304,7 +285,6 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
   );
 
   it('ready host: a 403 on a read of the portal opens the no-access page of the domain, which has the way out, and never «not found»', async () => {
-    // A signed-in person who is not an owner of this agency (or an owner of another one): the server refuses the read, the shared client tells the app, and `/app/no-access` does not exist on a host.
     setHostSite(READY);
     openAt('/portale-proprietari');
     auth0.authenticated = true;
@@ -317,7 +297,6 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
     expect(getRouter().state.location.pathname).toBe('/portale-proprietari/accesso-negato');
     expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
     expect(screen.getByTestId('host-surface-frame')).toContainElement(screen.getByTestId('owner-host-no-access'));
-    // The portal with its sign-out is gone by now: this page is the way out, and it brings the browser back to this domain.
     fireEvent.click(screen.getByTestId('owner-host-no-access-sign-out'));
     expect(auth0.logout).toHaveBeenCalledWith({ logoutParams: { returnTo: window.location.origin } });
   });
@@ -325,14 +304,12 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
   it('ready host: the address the sign-in returns to mounts the sign-in service and completes the return', async () => {
     setHostSite(READY);
     openAt('/?code=abc&state=xyz');
-    // What `login({ returnTo })` kept in the `appState`, handed back by the provider once it has read the answer.
     auth0.appState = { returnTo: '/portale-proprietari' };
     auth0.authenticated = true;
 
     render(<App />);
 
     expect(await screen.findByTestId('auth0-provider')).toBeInTheDocument();
-    // The return goes through the router of the host, to the page the owner asked for.
     expect(await screen.findByTestId('owner-portal-shell')).toBeInTheDocument();
     expect(getRouter().state.location.pathname).toBe('/portale-proprietari');
   });
@@ -340,20 +317,17 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
   it('ready host: a sign-in that comes back with an error says so on the sign-in page of the domain, it does not leave the booking site with the answer in the address', async () => {
     setHostSite(READY);
     openAt('/?error=access_denied&error_description=Account%20blocked&state=xyz');
-    // What the real provider does with such a return: it reads the answer, never calls `onRedirectCallback`, and reports the failure.
     auth0.error = new Error('access_denied');
 
     render(<App />);
 
     expect(await screen.findByTestId('auth0-provider')).toBeInTheDocument();
-    // The failure is told, inside the frame of the agency, and nothing sends the person off again by itself.
     const failed = await screen.findByTestId('owner-host-login-failed');
     expect(failed).toHaveTextContent('L’accesso non è andato a buon fine');
     expect(screen.getByTestId('host-surface-frame')).toContainElement(failed);
     expect(screen.queryByTestId('public-site-shell')).not.toBeInTheDocument();
     expect(screen.queryByTestId('owner-host-login-redirecting')).not.toBeInTheDocument();
     expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
-    // The answer of the sign-in is out of the address (the entry is replaced, not added); the way to try again is a button.
     expect(getRouter().state.location.pathname).toBe('/portale-proprietari/accedi');
     expect(getRouter().state.location.search).toBe('');
     fireEvent.click(screen.getByTestId('owner-host-login-button'));
@@ -365,7 +339,6 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
     ['/', 'public-site-shell'],
     ['/portale-proprietari/accedi', 'owner-host-login'],
   ])('ready host: %s with no answer of the sign-in in the address is not a failed sign-in, whatever the service reports', async (path, page) => {
-    // The failure is only told for the return from the login: a person who simply opens a page is not told that a sign-in failed.
     setHostSite(READY);
     openAt(path);
     auth0.error = new Error('login_required');

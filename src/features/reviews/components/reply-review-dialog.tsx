@@ -8,16 +8,11 @@ import { useReplyToReview } from '@/queries/use-reviews';
 import { REVIEW_REPLY_MAX_LENGTH, type HostReview } from '@/types';
 
 interface ReplyReviewDialogProps {
-  /** The review to answer; nothing is drawn without one. */
   review: HostReview | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * The one answer of the host to a review (DB-12b): written once, shown under the review on the public page, and not editable
- * afterwards. An error is told by the toast of the mutation and leaves the dialog open with the text.
- */
 export function ReplyReviewDialog({ review, open, onOpenChange }: ReplyReviewDialogProps) {
   const { t } = useTranslation();
   const reply = useReplyToReview();

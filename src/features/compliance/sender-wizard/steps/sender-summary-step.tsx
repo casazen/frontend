@@ -21,11 +21,8 @@ import {
 import { useSenderPropertyName } from '../use-sender-property-name';
 
 interface AutoSendSettingProps {
-  /** The sender as the server says it now: its setting of the automatic send is the one the switch shows until the person touches it. */
   read: PropertySender;
-  /** The person may change the setting (the organization administrator): without it the setting is told and nobody is offered a switch the server would refuse. */
   canChange: boolean;
-  /** A request of the wizard is on its way (the change of the sender with this setting): the switch stays off, so what is on screen is what was sent. */
   busy: boolean;
 }
 
@@ -71,9 +68,7 @@ function AutoSendSetting({ read, canChange, busy }: AutoSendSettingProps) {
 
 interface SenderSummaryStepProps {
   read: PropertySender;
-  /** The person is the administrator of the organization, who alone changes its setting of the automatic send of the guests (`org.billing.admin`). */
   canChangeAutoSend?: boolean;
-  /** Any request of the wizard is on its way: the switch of the setting is off meanwhile, like the buttons of the step. */
   busy?: boolean;
 }
 
@@ -90,9 +85,7 @@ export function SenderSummaryStep({ read, canChangeAutoSend = false, busy = fals
   const kind = switchKind(read.sender, values.sender);
   const automatic = isAutomaticSender(values.sender);
   const token = confirmationOf(read.sender, values.sender);
-  // The sender stays as it is but the administrator changed the setting of the guests: the line that says «nothing changes» would contradict the switch right above it.
   const onlyTheSetting = canChangeAutoSend && values.sender === 'ChannelManager' && autoSendAsked(values, read) !== undefined;
-  // The change is about one property: the summary says which (its name is read after the sender, so only for a property the caller reaches).
   const propertyName = useSenderPropertyName(read.propertyId, true);
   // «Le invia lo stesso servizio» only where the table says the channel manager sends the ISTAT of the region: otherwise the notice of the first step is what to read.
   const istatClaim = useIstatClaim(read.propertyId);
@@ -132,7 +125,6 @@ export function SenderSummaryStep({ read, canChangeAutoSend = false, busy = fals
               onCheckedChange={(checked) => setValue('switchConfirmed', checked === true ? token : '', { shouldDirty: true, shouldTouch: true })}
               data-testid="sender-switch-confirmed"
             />
-            {/* The label is the target to press: at least 44 px high, the whole line. */}
             <Label htmlFor="sender-switch-confirmed" className="flex min-h-11 flex-1 cursor-pointer items-center break-words text-sm font-medium leading-snug">
               {t('compliance.sender.summary.switch.confirm')}
             </Label>

@@ -3,7 +3,6 @@ import { isLocalApi, requireE2eCredentials } from './helpers/env';
 import { pinE2eLocale } from './helpers/locale';
 import { fillPropertyWizard } from './helpers/properties-api-mock';
 
-// Exercise the real API through the same proxy used by the staging UI, without bypassing CORS.
 const STAGING_API = '/api';
 
 const PROPERTIES_PATH = '/app/short-rent/properties';
@@ -61,14 +60,11 @@ test.describe('Property flow on staging API (live)', () => {
     );
     const runId = Date.now();
     const uniqueName = `E2E Staging ${runId}`;
-    // The staging org keeps every property the earlier runs created, and the API refuses a second active property at the same
-    // address and unit (409 duplicate_property_address): each run takes a street number of its own.
     const uniqueAddress = `Via Milano ${(runId % 99_000) + 1}`;
 
     await page.getByTestId('property-add').click();
     await expect(page.getByRole('heading', { level: 1, name: /^(Add property|Aggiungi immobile)$/ })).toBeVisible();
 
-    // «Aggiungi immobile» (SR-07b): the property is created by the first «Continua».
     const planAlert = page.getByTestId('plan-limit-alert');
     const nextButton = page.getByTestId('property-wizard-next');
     await expect.poll(async () => await planAlert.isVisible() || await nextButton.isEnabled()).toBe(true);
@@ -107,7 +103,6 @@ test.describe('Property flow on staging API (live)', () => {
         await page.locator('table tbody tr').first().getByRole('button').first().click();
       } else {
         expect(response.status()).toBe(201);
-        // The property exists from here: «Salva e chiudi» leaves the wizard and the list has it.
         await page.getByTestId('property-wizard-save-close').click();
         await expect(page.getByRole('button', { name: uniqueName, exact: true })).toBeVisible({ timeout: 15_000 });
         await page.getByRole('button', { name: uniqueName, exact: true }).click();

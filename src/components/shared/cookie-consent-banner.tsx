@@ -8,18 +8,9 @@ import { useConsent } from '@/hooks/use-consent';
 import { cn } from '@/lib/utils';
 import { useCookiePreferencesStore } from '@/store/cookie-preferences-store';
 
-/**
- * The card of the cookie notice, at the bottom left (the full width on a phone). Above the fixed bar of the property page
- * (z-40), below the sheets and the dialogs (z-50): the only place that says it. The banner and the panel of the choices are the
- * same card, so the one that is open takes the place of the other.
- */
 const CARD_CLASS =
   'fixed inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[45] max-h-[calc(100dvh-1rem)] overflow-y-auto rounded-[var(--cz-public-radius,0.75rem)] bg-background p-4 shadow-[var(--cz-public-shadow-widget)] ring-1 ring-black/5 animate-in fade-in slide-in-from-bottom-4 duration-500 motion-reduce:animate-none sm:inset-x-auto sm:bottom-4 sm:left-4 sm:w-[26rem] sm:p-5';
 
-/**
- * "Rifiuta" and "Accetta" are the very same button, one next to the other: refusing is as easy and as visible as
- * accepting (same variant, same size, same look; only the label tells them apart). The two buttons of the panel are the same too.
- */
 const CHOICE_CLASS = 'public-site-outline h-11 w-full px-3';
 
 const TITLE_CLASS = 'flex items-center gap-2 text-base font-semibold text-foreground';
@@ -81,7 +72,6 @@ function CookieNotice() {
   );
 }
 
-/** One category of the panel: its name, what it is for, and the switch (always on for the necessary ones). */
 function CategoryRow({
   name,
   hint,
@@ -114,7 +104,6 @@ function CategoryRow({
         onCheckedChange={onChange}
         aria-labelledby={nameId}
         aria-describedby={hintId}
-        // The "off" track is dark enough to be seen against the card (the pale hairline of the app is not, AA 1.4.11).
         className="mt-0.5 data-[state=unchecked]:bg-[var(--cz-public-muted,var(--color-muted-foreground))]"
       />
     </li>
@@ -134,15 +123,12 @@ function CookiePreferences() {
   const [statistics, setStatistics] = useState(allowed);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // The keyboard and the screen reader land in the panel when it opens.
   useEffect(() => {
     panelRef.current?.focus();
   }, []);
 
   const leave = () => {
     const opener = closePreferences();
-    // After the page has drawn again: the opener of the footer is still there; the "Scegli tu" of the notice is drawn anew;
-    // with the notice gone (a choice was made) the focus goes to the start of the page.
     requestAnimationFrame(() => {
       const target = opener?.isConnected
         ? opener

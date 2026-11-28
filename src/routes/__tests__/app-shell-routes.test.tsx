@@ -9,11 +9,6 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 
-/**
- * UI-03 on a route tree shaped like the app's: `ContextLayout` as the layout route of the area, pages that still wrap
- * themselves in `AppShell` (as 38 files do), the guard of the manifest routes. The shell, its header and its menus are
- * the real ones; only the sources of data (auth, current user) are replaced.
- */
 const support = vi.hoisted(() => ({ email: null as string | null }));
 
 vi.mock('@/config/support.config', async (importOriginal) => {
@@ -30,7 +25,6 @@ vi.mock('@/config/support.config', async (importOriginal) => {
 vi.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({ user: { name: 'Demo User', email: 'demo@casazen.com' }, logout: vi.fn() }),
 }));
-// The counters of the menu have their own tests: the route tree does not need a query client.
 vi.mock('@/hooks/use-nav-counts', () => ({ useNavCounts: () => ({}) }));
 vi.mock('@/queries/use-users', () => ({
   useCurrentUser: () => ({
@@ -68,7 +62,6 @@ const workspace: WorkspaceContextValue = {
   getDefaultRoute: (contextKey) => contexts.find((context) => context.contextKey === contextKey)?.defaultRoute ?? '/app',
 };
 
-/** A page as the app has them: its own `AppShell` wrapper around a `PageHeader`. */
 function Page({ title }: { title: string }) {
   return (
     <AppShell>
@@ -148,7 +141,6 @@ describe('one shell per route (UI-03)', () => {
     expect(screen.getAllByRole('main')).toHaveLength(1);
     expect(screen.getAllByRole('complementary', { name: i18n.t('shell.mainNavigation') })).toHaveLength(1);
     expect(screen.getAllByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).toHaveLength(1);
-    // The menu button of the header is gone (UI-05): on a phone the menu is "Altro" of the bottom bar, and only the bar has it.
     expect(screen.queryByRole('button', { name: 'Apri menu di navigazione' })).not.toBeInTheDocument();
     expect(
       within(screen.getByRole('navigation', { name: i18n.t('shell.mobileNavigation') })).getAllByRole('button', { name: i18n.t('nav.more') }),
@@ -162,7 +154,6 @@ describe('one shell per route (UI-03)', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Cruscotto' })).toBeInTheDocument();
     expect(document.title).toBe('Cruscotto · Affitti brevi · CasaZen');
 
-    // The shell stays and the page changes: so does the title, and the area when the user goes to another one.
     await act(async () => {
       await router.navigate('/app/short-rent/bookings');
     });
@@ -294,7 +285,6 @@ describe('one shell per route (UI-03)', () => {
     expect(within(screen.getByRole('main')).getByTestId('reserved-page')).toBeInTheDocument();
     expect(title).toBeInTheDocument();
     expect(screen.queryByText('Incassi: contenuto')).not.toBeInTheDocument();
-    // No silent redirect: the address is the one the user asked for.
     expect(router.state.location.pathname).toBe('/app/short-rent/payments');
     expect(screen.getAllByTestId('app-shell')).toHaveLength(1);
     expect(screen.getByRole('link', { name: i18n.t('appShell.reserved.backToToday') })).toHaveAttribute(

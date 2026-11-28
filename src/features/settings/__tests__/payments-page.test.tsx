@@ -85,7 +85,6 @@ describe('ConnectPaymentsPage (BK-09)', () => {
 
     const alert = await screen.findByTestId('connect-status-error');
     expect(alert).toHaveTextContent(i18n.t('apiErrors.codes.stripeConnectUnavailable'));
-    // The status was not read: no "Non collegato" badge, no "site not active" banner, no "Collega Stripe" button.
     expect(screen.queryByTestId('connect-status-badge')).not.toBeInTheDocument();
     expect(screen.queryByText(i18n.t('settings.connectStatusDisconnected'))).not.toBeInTheDocument();
     expect(screen.queryByTestId('connect-checkout-gate-banner')).not.toBeInTheDocument();
@@ -132,7 +131,6 @@ describe('ConnectPaymentsPage (BK-09)', () => {
     fireEvent.click(await screen.findByTestId('connect-stripe-cta'));
 
     await waitFor(() => expect(assign).toHaveBeenCalledWith('https://connect.stripe.com/setup/e/x'));
-    // A3-42: the return and refresh pages are built by the API.
     expect(ConnectApi.createOnboardingLink).toHaveBeenCalledWith();
     expect(ConnectApi.createAccount).not.toHaveBeenCalled();
   });
@@ -163,7 +161,6 @@ describe('ConnectPaymentsPage (BK-09)', () => {
   });
 
   it('openDashboard_ActiveAccount_FollowsTheSingleUseLinkAtOnceAndKeepsNothing', async () => {
-    // AM-08b-d: the login link of the Express Dashboard is a credential: followed at once, written nowhere the page keeps.
     vi.mocked(ConnectApi.getStatus).mockResolvedValue(activeStatus);
     vi.mocked(ConnectApi.createDashboardLink).mockResolvedValue({ url: 'https://connect.stripe.com/express/single-use-token' });
     renderPage();
@@ -205,7 +202,6 @@ describe('ConnectPaymentsPage (BK-09)', () => {
   });
 
   it('statusQuery_ActiveButTransfersNotEnabled_SaysTheMoneyStaysInTheStripeBalance', async () => {
-    // «Attivo» is `chargesEnabled`: the card payments work, and the transfers to the bank may not be enabled yet.
     vi.mocked(ConnectApi.getStatus).mockResolvedValue({ ...activeStatus, payoutsEnabled: false });
     renderPage();
 

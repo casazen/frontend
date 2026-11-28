@@ -74,7 +74,6 @@ function mockUser(planTier: PlanTier) {
   } as unknown as CurrentUserResult);
 }
 
-/** The user's contexts as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
 function mockContexts(contextKeys: AppContextKey[], roleKey?: string) {
   vi.mocked(useWorkspace).mockReturnValue({
     contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
@@ -169,7 +168,6 @@ describe('BillingSettingsPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: i18n.t('billing.portal.managePayments') }));
     await waitFor(() => expect(assign).toHaveBeenCalledWith(PORTAL_URL));
-    // The portal links back to this page (PL-16).
     expect(BillingApi.createPortalSession).toHaveBeenCalledWith(BILLING_PATH);
   });
 
@@ -190,7 +188,6 @@ describe('BillingSettingsPage', () => {
     const notice = await screen.findByTestId('subscription-notice-incomplete');
     expect(notice).toHaveTextContent(i18n.t('billing.notice.incomplete'));
     expect(statusBadge()).toHaveTextContent(i18n.t('billing.status.incomplete'));
-    // The paid plan is not granted: the effective plan is shown.
     expect(screen.getByTestId('plan-badge')).toHaveTextContent('Starter');
 
     fireEvent.click(within(notice).getByRole('button', { name: i18n.t('billing.portal.completePayment') }));
@@ -291,7 +288,6 @@ describe('BillingSettingsPage', () => {
     expect(BillingApi.getSubscription).not.toHaveBeenCalled();
   });
 
-  // AM-00 (S1): a collaborator of the org has the rental context but not the owner's role key.
   it.each(MEMBER_ROLE_KEYS)(
     'BillingSettingsPage_MemberWithRoleKey_%s_AsksToContactTheOwnerWithoutCallingTheApi',
     (roleKey) => {

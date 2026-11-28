@@ -39,7 +39,6 @@ describe('areas (UI-04a)', () => {
       'short-rent': 'Affitti brevi',
       'long-rent': 'Affitti lunghi',
       supplier: 'Portale fornitori',
-      // `/app/account` is the customer's "Amministrazione" of the demo; `/app/admin` is the staff console (decision D1).
       account: 'Amministrazione',
       admin: 'Console staff',
     });

@@ -12,11 +12,6 @@ import type { PublicStayCard, PublicStaysQuery, PublicStaysResult } from '@/type
 import { FRAME_QUERY, frameInsideAPage, renderWidgets, type FramingPage } from './embed-test-kit';
 import { DESTINATIONS, ORG_SLUG, siteCalendar, stayCard, staysResult } from './stays-fixtures';
 
-/**
- * A site of 190 homes and more in the frame (E41/F01/US02/T01, NF-144). A booking site lists every home of an org in one go, which a frame cannot do: it is as
- * tall as its content, and 60 000 px is no frame. The list shows 24 homes and adds 24 at a time, from the same answer, while the map keeps every pin and the title
- * keeps the real count.
- */
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn(), getOrgProperty: vi.fn(() => new Promise(() => undefined)) } }));
 vi.mock('@/api/public-site-search.api', () => ({
   publicSiteSearchApi: { getStays: vi.fn(), getSiteCalendar: vi.fn(), getDestinations: vi.fn() },
@@ -40,7 +35,6 @@ const getPublicOrg = vi.mocked(publicOrgApi.getPublicOrg);
 const getStays = vi.mocked(publicSiteSearchApi.getStays);
 const DATES = 'checkin=2026-12-10&checkout=2026-12-13&guests=2';
 
-/** `count` homes for a stay of three nights, each with the total of its quote; the ones after `free` are not free on those dates. */
 function site(count: number, free = count): PublicStaysResult {
   const homes: PublicStayCard[] = Array.from({ length: count }, (_, index) => {
     const card = stayCard(index + 1);
@@ -92,19 +86,15 @@ describe('200 homes in one frame (AC4)', () => {
     open();
 
     await screen.findAllByTestId('house-card');
-    // The DOM holds 24 cards, not 200.
     expect(cards()).toHaveLength(24);
     expect(within(screen.getByTestId('search-results')).getAllByTestId('house-card')).toHaveLength(24);
-    // The map receives the 200 pins (and so keeps its clusters), whatever the list shows.
     expect(screen.getByTestId('region-map-stub')).toHaveAttribute('data-pins', '200');
     expect(map.props?.pins).toHaveLength(200);
-    // The title says the real count of the homes that are free, and the line under the list says how far it is.
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('200 case libere');
     expect(screen.getByText('Stai vedendo 24 case su 200')).toBeInTheDocument();
   });
 
   it('embedBookingLargeSite_ShowMoreHomes_AddsTwentyFourAtATime_FromTheSameAnswerWithNoNewRequest', async () => {
-    // 60 homes = 24 + 24 + 12: the same steps as the 200 of the site, with fewer cards for the browser of the test to draw.
     getStays.mockResolvedValue(site(60));
     open();
     await screen.findAllByTestId('house-card');
@@ -114,17 +104,14 @@ describe('200 homes in one frame (AC4)', () => {
     fireEvent.click(showMore());
     expect(cards()).toHaveLength(48);
     expect(screen.getByText('Stai vedendo 48 case su 60')).toBeInTheDocument();
-    // The first card that was added has the focus (a keyboard follows the list), and the page is not scrolled for it.
     expect(document.activeElement).toBe(screen.getAllByTestId('house-card-link')[24]);
 
-    // The last press shows the 12 that are left and the button, with its line, is gone.
     fireEvent.click(showMore());
     expect(cards()).toHaveLength(60);
     expect(screen.queryByRole('button', { name: 'Mostra altre case' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('search-more')).not.toBeInTheDocument();
     expect(document.activeElement).toBe(screen.getAllByTestId('house-card-link')[48]);
 
-    // From the same answer: no new request, every pin on the map, and the title with the real count.
     expect(getStays.mock.calls.length).toBe(asked);
     expect(map.props?.pins).toHaveLength(60);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('60 case libere');
@@ -166,7 +153,6 @@ describe('200 homes in one frame (AC4)', () => {
     open();
 
     await screen.findAllByTestId('house-card');
-    // 190 homes are free: the title counts them, the list shows 24 of them, the other 10 are the short list of the ones that are not free, and every one of the 200 has its pin.
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('190 case libere');
     expect(cards()).toHaveLength(24);
     expect(screen.getByText('Stai vedendo 24 case su 190')).toBeInTheDocument();

@@ -17,11 +17,6 @@ interface ConfirmBookingDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * Confirmation of a pending booking entered by the host (PC-07, A2-08): the dates become taken on the booking site
- * and in the iCal export, and the guest check-in link becomes available. The error (e.g. dates taken meanwhile) stays
- * in the dialog.
- */
 export function ConfirmBookingDialog({ bookingId, open, onOpenChange }: ConfirmBookingDialogProps) {
   const { t } = useTranslation();
   const confirm = useConfirmBooking();

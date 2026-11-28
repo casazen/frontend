@@ -45,7 +45,6 @@ const COLUMNS: DataColumn<Guest>[] = [
 
 type ListState = 'data' | 'loading' | 'empty' | 'error';
 
-/** The primitives of UI-07 on one page, to look at them and to let Playwright and axe walk through them. */
 export default function UiPrimitivesPage() {
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [regime, setRegime] = useState('cedolare');

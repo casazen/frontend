@@ -21,7 +21,6 @@ import { ADVICE_SHOWN, selectAdvice } from './select-advice';
 
 interface LeaseGuideProps {
   lease: LeaseDetail;
-  /** Where the lease stands on its path, as the server says it; `undefined` when the list did not say (the status then decides). */
   stage: LeaseStage | undefined;
   /** The step «Cosa devi fare ora» shows above the tabs, so that the guide does not say it again; `null` when the sheet shows none. */
   stepCode: string | null;
@@ -39,13 +38,10 @@ interface LeaseGuideProps {
  */
 export function LeaseGuide({ lease, stage, stepCode }: LeaseGuideProps) {
   const { t, i18n } = useTranslation();
-  // A draft of the guided service (the one made for it, or one whose data the server read from the documents it delivered, CF-DONE): its
-  // contract is not prepared in CasaZen, so the advice and the tools about preparing one are left out.
   const partnerDraft = isServiceDraft(lease);
   const viaService = lease.isConcordatoFacileSource === true;
   const concordato = lease.contractType === 'Concordato' || viaService;
   const registered = lease.status === 'Registered';
-  // The comparison of the two regimes means nothing without a rent, and a draft made for the guided service has none to compare.
   const hasRent = lease.monthlyRent > 0 && !partnerDraft;
 
   const rules = useLongRentRules();
@@ -60,11 +56,8 @@ export function LeaseGuide({ lease, stage, stepCode }: LeaseGuideProps) {
   const today = todayInRome();
   const ata = advisory.data?.ata;
   const imuApplicable = imu.data?.applicable;
-  // The attestation is a document of its own, or the contract file that holds it (CF-DOCS-REAL); for the guided service, whose file holds
-  // both, any contract file uploaded (CF-DONE): the person is never asked to upload it again.
   const attested = documents.data ? hasAttestation(documents.data, viaService) : undefined;
   const rulesData = rules.data;
-  // The need of a transitory lease is the landlord's to confirm: the advice then leads to the window that prepares the letter (LR-OPS-1b).
   const confirmation = operations.data?.transitoryConfirmation;
   const landlordConfirmsNeed = confirmation ? confirmation.applies && confirmation.available : undefined;
 

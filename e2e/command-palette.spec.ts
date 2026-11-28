@@ -14,13 +14,6 @@ import {
   untilStill,
 } from './helpers/ui-checks';
 
-/**
- * UI-06: the global search, Ctrl/Cmd+K. It opens from the keyboard and from the header, finds the pages of the menus, the
- * actions and the properties, bookings and guests the pages have already loaded, shows only what the user may open, goes
- * where the result says, and works from the keyboard and with a screen reader. The API of the demo mode is mocked, and the
- * palette makes no request of its own.
- */
-
 const palette = (page: Page) => page.getByRole('dialog', { name: 'Cerca' });
 const box = (page: Page) => palette(page).getByRole('combobox');
 const options = (page: Page) => palette(page).getByRole('option');
@@ -29,13 +22,11 @@ const trigger = (page: Page) => page.getByTestId('command-palette-trigger');
 const menuLink = (page: Page, area: string, name: string) =>
   page.getByRole('navigation', { name: `Menu ${area}` }).getByRole('link', { name });
 
-/** The page is up (the header says the workspace is loaded) on the page of `path`, for the person of `profile`. */
 async function openPage(page: Page, path: string, profile: DemoProfile) {
   await page.goto(demoUrl(path, profile), { waitUntil: 'domcontentloaded' });
   await expect(page.getByTestId('app-ready')).toBeVisible();
 }
 
-/** Ctrl+K, and the box of the palette is there with the focus in it. */
 async function openFromKeyboard(page: Page) {
   await page.keyboard.press('Control+K');
   await expect(palette(page)).toBeVisible();
@@ -77,11 +68,9 @@ const GUEST = {
   createdAt: '2026-09-20T10:00:00Z',
 };
 
-/** The list of bookings and the list of guests, answered the way the API answers (a page). */
 async function mockBookingsAndGuests(page: Page) {
   const answerWith = (path: string, body: unknown) =>
     page.route(`**${path}**`, async (route) => {
-      // `**/api/bookings**` also matches the Vite module `/src/api/bookings.api.ts`: only the list of the API is answered.
       if (new URL(route.request().url()).pathname.replace(/\/$/, '') !== path || route.request().method() !== 'GET') {
         await route.fallback();
         return;
@@ -89,7 +78,6 @@ async function mockBookingsAndGuests(page: Page) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
     });
   await answerWith('/api/bookings', { items: [BOOKING], totalCount: 1, page: 1, pageSize: 10 });
-  // The page of the bookings (SR-04) asks for its rows and for the counters of its chips.
   await answerWith('/api/bookings/search', { items: [BOOKING], totalCount: 1, page: 1, pageSize: 20 });
   await answerWith('/api/bookings/counts', { all: 1, toConfirm: 0, upcoming: 1, inProgress: 0, completed: 0, cancelled: 0 });
   await answerWith('/api/guests', { items: [GUEST], totalCount: 1, page: 1, pageSize: 20 });
@@ -111,7 +99,6 @@ test.describe('Command palette (UI-06)', () => {
       await openFromKeyboard(page);
       await expect(box(page)).toHaveAttribute('aria-expanded', 'true');
       await expect(box(page)).toHaveAttribute('aria-autocomplete', 'list');
-      // The page behind is out of reach of assistive technology while the dialog is open; nothing has moved.
       await expect(page).toHaveURL(/\/app\/short-rent(\?|$)/);
 
       await page.keyboard.press('Escape');
@@ -155,7 +142,6 @@ test.describe('Command palette (UI-06)', () => {
       await expect(palette(page).getByRole('button', { name: 'Chiudi' })).toBeFocused();
       await page.keyboard.press('Shift+Tab');
       await expect(box(page)).toBeFocused();
-      // The focus does not escape to the page behind while the dialog is open.
       for (let tabs = 0; tabs < 4; tabs += 1) await page.keyboard.press('Tab');
       expect(await page.evaluate(() => document.activeElement?.closest('[role="dialog"]') !== null)).toBe(true);
 
@@ -183,7 +169,6 @@ test.describe('Command palette (UI-06)', () => {
       await expect(box(page)).toHaveAttribute('placeholder', 'Cerca immobili, prenotazioni, ospiti, pagine…');
       await expect(group(page, 'Azioni').getByRole('option')).toHaveText([/Crea una prenotazione/, /Aggiungi un immobile/, /Registra un pagamento/]);
       await expect(group(page, 'Pagine').getByRole('option').first()).toContainText('Cruscotto');
-      // The actions of the account (language, sign out) are found by typing, they are not offered here.
       await expect(palette(page)).not.toContainText('Esci');
       await expect(palette(page).getByRole('status')).toHaveText('');
     });
@@ -197,7 +182,6 @@ test.describe('Command palette (UI-06)', () => {
       await expect(first).toContainText('Prenotazioni');
       await expect(first).toHaveAttribute('aria-selected', 'true');
       await expect(box(page)).toHaveAttribute('aria-activedescendant', (await first.getAttribute('id')) ?? '');
-      // Only what was typed is underlined.
       await expect(first.locator('[data-match]')).toHaveText('Preno');
 
       await page.keyboard.press('Enter');
@@ -205,7 +189,6 @@ test.describe('Command palette (UI-06)', () => {
       await expect(palette(page)).toBeHidden();
       await expect(page.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeFocused();
 
-      // It remembers what was chosen, by the id of the item, and offers it first the next time.
       await page.keyboard.press('Control+K');
       await expect(group(page, 'Recenti').getByRole('option')).toHaveText([/Prenotazioni/]);
     });
@@ -265,7 +248,6 @@ test.describe('Command palette (UI-06)', () => {
       await openFromKeyboard(page);
       await search(page, 'incass');
 
-      // Two results: the page and, after it, the page of the revenue ("Ricavi" is found by the words of the earnings).
       const row = options(page).first();
       await expect(row).toContainText('Incassi');
       await row.hover();
@@ -295,15 +277,12 @@ test.describe('Command palette (UI-06)', () => {
       await expect(property).toHaveCount(1);
       await expect(property).toContainText('Casa del Lago');
       await expect(property).toContainText('Como');
-      // The city finds it too, a little lower than the name.
       await search(page, 'como');
       await expect(group(page, 'Immobili').getByRole('option')).toContainText('Casa del Lago');
-      // Nobody has loaded the bookings yet: they are not here.
       await search(page, 'rossi');
       await expect(palette(page).getByTestId('command-palette-empty')).toContainText('Nessun risultato per «rossi»');
       expect(requests, 'the palette asked the server for nothing').toEqual([]);
 
-      // Going to the bookings and the guests with the palette itself (the page is not reloaded: the cache stays).
       await search(page, 'prenotazioni');
       await page.keyboard.press('Enter');
       await expect(page.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeFocused();
@@ -327,7 +306,6 @@ test.describe('Command palette (UI-06)', () => {
       await expect(guest).toHaveCount(1);
       await expect(guest).toContainText('Mario Rossi');
 
-      // Privacy: a name and nothing else of a person is on the screen, and the palette keeps nothing it was told.
       const text = (await palette(page).innerText()).toLowerCase();
       for (const secret of ['mario.rossi@example.com', '333 1234567', 'example.com']) expect(text).not.toContain(secret);
 
@@ -388,8 +366,6 @@ test.describe('Command palette (UI-06)', () => {
       await openPage(page, '/app/short-rent', 'dual');
       await openFromKeyboard(page);
 
-      // The broad search returns at most five pages across both rental areas.
-      // Search for each property subpage by name to verify its area independently of ranking.
       await search(page, 'immobili');
       const pages = group(page, 'Pagine').getByRole('option');
       await expect(pages).toHaveCount(5);
@@ -410,7 +386,6 @@ test.describe('Command palette (UI-06)', () => {
       await expect(options(page).first()).toContainText("Passa all'inglese");
       await page.keyboard.press('Enter');
       await expect(palette(page)).toBeHidden();
-      // The whole app, the palette included, is in English now.
       await page.keyboard.press('Control+K');
       const english = page.getByRole('dialog', { name: 'Search' });
       await expect(english).toBeVisible();
@@ -430,7 +405,6 @@ test.describe('Command palette (UI-06)', () => {
 
       await search(page, 'immobili');
       await expect(group(page, 'Pagine').getByRole('option').first()).toContainText('Immobili');
-      // One area only: the second line does not repeat its name.
       await expect(group(page, 'Pagine').getByRole('option').first()).not.toContainText('Affitti lunghi');
       await search(page, 'contratti');
       await expect(group(page, 'Pagine').getByRole('option')).toHaveCount(0);
@@ -514,7 +488,6 @@ test.describe('Command palette (UI-06)', () => {
         expect(iconBox.height).toBeGreaterThanOrEqual(44);
         await expectInsideTheScreen(page, icon, `${width} px, the search`);
         await expect(icon).toHaveAccessibleName('Cerca immobili, prenotazioni, ospiti, pagine…');
-        // The header still has the name of the area and the profile: the icon did not push them out of the screen.
         await expect(page.getByTestId('header-area')).toBeVisible();
         const area = (await page.getByTestId('header-area').boundingBox())!;
         expect(area.x + area.width, 'the name of the area ends before the search').toBeLessThanOrEqual(iconBox.x + 0.5);
@@ -536,7 +509,6 @@ test.describe('Command palette (UI-06)', () => {
         await expectNothingSticksOut(page, `${width} px, the palette with results`, '[data-testid="command-palette"]');
         await expect(palette(page).getByTestId('command-palette-body')).not.toContainText('Invio per aprire');
 
-        // A tap chooses.
         await options(page).first().click();
         await expect(page).toHaveURL(/\/app\/short-rent\/bookings$/);
         await expect(palette(page)).toBeHidden();

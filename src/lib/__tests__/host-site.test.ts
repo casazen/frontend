@@ -4,7 +4,6 @@ import type { ResolveHostResponse } from '@/types/domain.types';
 import { getHostSite, isDefaultAppHost, isHostSurfaceOn, resolveHostSite, setHostSite } from '../host-site';
 import { getPublicSiteHost, getPublicSiteOrigin } from '@/config/public-site';
 
-/** D3 (SE-03): the web app's own hosts come from configuration, no CasaZen domain is written in the code. */
 describe('isDefaultAppHost', () => {
   it.each(['public-site.example.test', 'localhost', '127.0.0.1', 'casazen-app.vercel.app', 'pr-12-casazen.vercel.app'])(
     'isDefaultAppHost_AppHost_%s_IsNotResolved',
@@ -71,7 +70,6 @@ describe('resolveHostSite (BK-16, A3-08)', () => {
     const result = await resolveHostSite('WWW.Villa-Rossi.example.test', resolveHost);
 
     expect(resolveHost).toHaveBeenCalledWith('www.villa-rossi.example.test');
-    // An answer that says nothing of the surfaces (and an agency that set no look) gives the site as it always was.
     expect(result).toEqual({
       kind: 'site',
       site: { host: 'www.villa-rossi.example.test', slug: 'villa-rossi', displayName: 'Villa Rossi' },

@@ -31,7 +31,6 @@ vi.mock('@/api/calendar-changes.api', () => ({ calendarChangesApi: { apply: vi.f
 vi.mock('@/queries/use-properties', () => ({ useProperties: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// Dates the host closed for maintenance today (PC-09).
 const MAINTENANCE_BLOCK: CalendarItemDto = {
   type: 'ical-block',
   id: 'mb1',
@@ -83,7 +82,6 @@ function renderPage(permissions: string[] = ['property.write', 'booking.write'],
   );
 }
 
-// "Blocca date" opens the panel of the days (E08/F05/US03/T02) on tonight of the property shown, with the block form in it.
 function openForm() {
   fireEvent.click(screen.getByRole('button', { name: 'Blocca date' }));
   return screen.getByTestId('manual-block-form');
@@ -116,7 +114,6 @@ describe('CalendarPage manual blocks (PC-09)', () => {
     vi.useRealTimers();
   });
 
-  // The guard of the reads of the days and of the changes: the right to read properties, and for the changes the connector of the channel manager. Nothing is asked without them.
   it('CalendarPage_WithoutTheRightToReadProperties_AsksForNoDaysAndNoChanges', async () => {
     renderPage(['property.write', 'booking.write'], true);
     await screen.findByRole('button', { name: 'Giorno' });
@@ -166,7 +163,6 @@ describe('CalendarPage manual blocks (PC-09)', () => {
     await screen.findByRole('button', { name: 'Giorno' });
 
     const form = openForm();
-    // From today (Rome) by default, one night.
     expect(within(form).getByLabelText('Dalla notte del')).toHaveValue('2026-09-30');
     expect(within(form).getByLabelText('Di nuovo libero dal')).toHaveValue('2026-10-01');
     fireEvent.change(within(form).getByLabelText('Dalla notte del'), { target: { value: '2026-10-10' } });
@@ -185,7 +181,6 @@ describe('CalendarPage manual blocks (PC-09)', () => {
       }),
     );
     await waitFor(() => expect(screen.queryByTestId('day-panel')).not.toBeInTheDocument());
-    // The calendar of the range is asked again with the new block.
     await waitFor(() => expect(bookingsApi.getCalendar).toHaveBeenCalledTimes(2));
   });
 
@@ -228,7 +223,6 @@ describe('CalendarPage manual blocks (PC-09)', () => {
 
     const details = await openMaintenanceBlock();
     expect(within(details).getByText('Nota: Cambio caldaia')).toBeInTheDocument();
-    // Not an OTA reservation: no "Crea soggiorno OTA".
     expect(within(details).queryByRole('button', { name: 'Crea soggiorno OTA' })).not.toBeInTheDocument();
 
     fireEvent.click(within(details).getByRole('button', { name: 'Elimina blocco' }));

@@ -10,8 +10,6 @@ import { BANK_IMPORT_KEY } from '../lib/bank-import';
 import { RentsPage } from '../rents-page';
 import { renderAt } from './lease-test-utils';
 
-// The rents page with the real hooks and the real dialog: only the HTTP layer and the permissions are replaced. What is under test is the
-// way in to the import of a bank statement («Importa estratto conto»): who sees it, and that it opens the dialog.
 const permissions = vi.hoisted(() => new Set<string>());
 
 vi.mock('@/hooks/use-workspace', () => ({
@@ -19,7 +17,6 @@ vi.mock('@/hooks/use-workspace', () => ({
 }));
 vi.mock('@/hooks/use-list-views-scope', () => ({ useListViewsScope: () => ({ userId: 'auth0|tester', context: 'long-rent' }) }));
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
-// The six seconds of «Annulla» are not waited for: the toast is a stand-in whose `undo` is what the landlord presses.
 vi.mock('@/lib/toast-undo', () => ({ toastUndo: vi.fn() }));
 
 const get = vi.mocked(axios.get);
@@ -82,7 +79,6 @@ describe('RentsPage: the import of the bank statement', () => {
   });
 
   afterEach(() => {
-    // Whatever a test left waiting is let go, so the next one starts with the way in open.
     act(() => {
       for (const [, options] of vi.mocked(toastUndo).mock.calls) options.undo();
     });
@@ -104,7 +100,6 @@ describe('RentsPage: the import of the bank statement', () => {
     const dialog = await screen.findByTestId('bank-import-dialog');
     expect(dialog).toHaveAttribute('data-stage', 'choose');
     expect(within(dialog).getByRole('heading', { name: 'Importa estratto conto' })).toBeInTheDocument();
-    // Opening it reads nothing and writes nothing.
     expect(axios.post).not.toHaveBeenCalled();
   });
 
@@ -119,7 +114,6 @@ describe('RentsPage: the import of the bank statement', () => {
     renderPage();
 
     await screen.findByTestId('rents-numbers');
-    // Nothing to collect: the quiet line is not there, the menu is.
     expect(screen.queryByTestId('rents-import-hint')).not.toBeInTheDocument();
     fireEvent.keyDown(screen.getByTestId('page-header-more'), { key: 'Enter' });
     fireEvent.click(await screen.findByTestId('rents-import-statement'));
@@ -142,7 +136,6 @@ describe('RentsPage: the import of the bank statement', () => {
     fireEvent.click(line);
     expect(screen.queryByTestId('bank-import-dialog')).not.toBeInTheDocument();
 
-    // «Annulla» (or the end of the recording): the way in is open again.
     act(() => {
       vi.mocked(toastUndo).mock.calls[0][1].undo();
     });

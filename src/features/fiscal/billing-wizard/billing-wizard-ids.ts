@@ -4,13 +4,11 @@
 /** The fiscal page of the area: the card «Fatturazione» is on it, and the wizard returns to it. */
 export const FISCAL_PATH = '/app/short-rent/fiscal';
 
-/** The home of the area, where the confirmation leads besides the fiscal page. */
 export const AREA_HOME_PATH = '/app/short-rent';
 
 /** The wizard «Fatturazione» (E11/F02/US01/T01, NF-82, NF-118): the whole invoicing setup of the organization, a part of the onboarding guide. `?step=` carries the step. */
 export const BILLING_SETUP_PATH = '/app/short-rent/fiscal/setup';
 
-/** The old wizard «Come emetti i documenti?» (E06/F02/US02/T03): its address stays and leads to {@link BILLING_SETUP_PATH}. */
 export const LEGACY_ISSUER_PATH = '/app/short-rent/fiscal/issuer';
 
 /**
@@ -36,7 +34,6 @@ export const BILLING_STEPS = {
 
 export type BillingStepId = (typeof BILLING_STEPS)[keyof typeof BILLING_STEPS];
 
-/** Every step in the order of the wizard. */
 export const BILLING_STEP_ORDER: readonly BillingStepId[] = [
   BILLING_STEPS.issuer,
   BILLING_STEPS.vat,
@@ -52,7 +49,6 @@ export const BILLING_STEP_ORDER: readonly BillingStepId[] = [
   BILLING_STEPS.summary,
 ];
 
-/** The steps of the old wizard «Come emetti i documenti?» and the step of the new one that holds what they asked. The choice of the issuer is gone, with its step. */
 const LEGACY_STEPS: Readonly<Record<string, BillingStepId>> = {
   regime: BILLING_STEPS.vat,
   issuer: BILLING_STEPS.issuer,

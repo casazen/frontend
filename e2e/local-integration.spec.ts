@@ -96,14 +96,12 @@ test.describe('Property flow on local API', () => {
   });
 
   test('property list UI renders correctly', async ({ page }) => {
-    // The list page should show the properties heading and at minimum show the empty/add state
     await expect(
       page.getByRole('heading', { name: /Properties|Immobili/i })
     ).toBeVisible();
   });
 
   test('workspace context includes short-rent and supplier tabs', async ({ page }) => {
-    // After login, the sidebar should show workspace tabs
     const sidebar = page.locator('[data-testid="workspace-sidebar"], aside, nav').first();
     await expect(sidebar).toBeVisible({ timeout: 10_000 });
   });

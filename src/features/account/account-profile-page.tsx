@@ -9,10 +9,6 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { useMe } from '@/queries/use-users';
 import { accountRoleLabel } from './account-roles';
 
-/**
- * The profile in the account area (AM-04): who the person is and the role it has in the team. The type of operator (short or long
- * term) is a property of the org and not of the person, so only its owner sees it: the other members cannot change it.
- */
 export function AccountProfilePage() {
   const { t } = useTranslation();
   const { isLoading, user } = useAuth();

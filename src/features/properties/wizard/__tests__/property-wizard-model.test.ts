@@ -32,7 +32,6 @@ describe('resumeStepFor', () => {
   it('resumeStepFor_FirstOpenBlockerOfTheWizard_IsTheStepToReopen', () => {
     const steps = (open: string[]) => ['base-data', 'cin', 'documents', 'safety'].map((id) => step(id, open.includes(id)));
 
-    // The server says what is open; the wizard only picks the first of ITS steps that has something open.
     expect(resumeStepFor({ ...complete, name: '' }, steps(['base-data']))).toBe('base');
     expect(resumeStepFor({ ...complete, maxGuests: 0 }, steps(['base-data']))).toBe('base');
     expect(resumeStepFor(complete, steps(['base-data']))).toBe('prices');
@@ -42,7 +41,6 @@ describe('resumeStepFor', () => {
     expect(resumeStepFor(complete, steps(['cin', 'safety']))).toBe('amenities');
     expect(resumeStepFor(complete, steps(['base-data', 'safety']))).toBe('amenities');
     expect(resumeStepFor({ ...complete, city: '' }, steps(['base-data', 'safety', 'cin']))).toBe('base');
-    // Nothing open, or only advice that does not block: the last step, where the property is activated.
     expect(resumeStepFor(complete, steps([]))).toBe('finish');
     expect(resumeStepFor(complete, [step('tourist-tax', true, false), step('ical', true, false)])).toBe('finish');
   });
@@ -50,7 +48,6 @@ describe('resumeStepFor', () => {
 
 describe('what the steps save', () => {
   it('baseUpdatePayload_SavedAgain_NeverTouchesTheRateTheDescriptionOrTheAmenities', () => {
-    // PATCH: the first step is saved every time it is gone through again; the price or the text written elsewhere must stay.
     const payload = baseUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, name: 'Casa Lago', address: 'Via Roma 1', city: 'Como', areaSqm: '70' });
 
     expect(payload).not.toHaveProperty('nightlyRate');
@@ -62,7 +59,6 @@ describe('what the steps save', () => {
   it('amenitiesUpdatePayload_TheRulesDecideTwoAmenities_TheStepNeverTakesThemAway', () => {
     const stored = { amenities: ['WiFi', 'PetFriendly', 'SmokingAllowed', 'Garden'] };
 
-    // The step shows the 21 amenities it asks about, saves the list as a whole and keeps the two that the house rules decide.
     expect(amenitiesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, amenities: ['WiFi', 'Pool'] }, stored).amenities).toEqual([
       'WiFi',
       'Pool',
@@ -71,7 +67,6 @@ describe('what the steps save', () => {
     ]);
     const reopened = wizardDefaults({ ...stored, name: 'Casa', address: 'Via Roma 1', city: 'Como', postalCode: '', maxGuests: 2, bedrooms: 1, bathrooms: 1 } as Property);
     expect(reopened.amenities).toEqual(['WiFi', 'Garden']);
-    // The catalog decides what can be chosen, not a list of the wizard: an amenity the property has that the step does not show is kept.
     const exotic = wizardDefaults({ ...stored, amenities: ['WiFi', 'Sauna', 'SomethingNew'], name: 'Casa', address: 'Via Roma 1', city: 'Como', postalCode: '', maxGuests: 2, bedrooms: 1, bathrooms: 1 } as Property);
     expect(exotic.amenities).toEqual(['WiFi', 'Sauna', 'SomethingNew']);
   });
@@ -89,12 +84,10 @@ describe('what the rules and prices steps save', () => {
       cancellationPolicyId: '',
     });
 
-    // PATCH: a blank fee or quiet hours is null (taken off); a blank time, rule or policy is left out (the stored one stays).
     expect(payload).toMatchObject({ extraGuestFeePerNight: null, quietHoursFrom: null, quietHoursTo: null });
     expect(payload).not.toHaveProperty('checkInFrom');
     expect(payload).not.toHaveProperty('smokingPolicy');
     expect(payload).not.toHaveProperty('cancellationPolicyId');
-    // The policy the host chose, the fee written with a comma and the times are sent as they are meant.
     expect(
       rulesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, extraGuestFee: '12,50', quietHoursFrom: '22:00', quietHoursTo: '08:00', cancellationPolicyId: 'p1' }),
     ).toMatchObject({ extraGuestFeePerNight: 12.5, quietHoursFrom: '22:00', quietHoursTo: '08:00', cancellationPolicyId: 'p1', checkInFrom: '15:00' });
@@ -110,7 +103,6 @@ describe('what the rules and prices steps save', () => {
   });
 
   it('pricesUpdatePayload_BlankAnswers_TurnOffWhatTheApiTurnsOffAndKeepTheRate', () => {
-    // A blank surcharge is 0 (leaving it out would keep an old one), one night is no minimum (null), a blank rate is left out.
     const blank = pricesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS });
     expect(blank).toEqual({ weekendSurchargePercent: 0, cleaningFee: 0, minNights: null });
 
@@ -163,13 +155,11 @@ describe('the steps of the wizard (NF-31, NF-37)', () => {
       texts: { ...answers.texts, en: { title: 'Trullo with pool', description: 'A quiet trullo.' } },
     };
     expect(descriptionsStepSchema.safeParse(filled).success).toBe(true);
-    // Other languages are optional, with the same limits.
     expect(descriptionsStepSchema.safeParse({ ...filled, texts: { ...filled.texts, fr: { title: '', description: '' } } }).success).toBe(true);
     expect(descriptionsStepSchema.safeParse({ ...filled, texts: { ...filled.texts, fr: { title: 'x'.repeat(61), description: '' } } }).success).toBe(false);
   });
 
   it('descriptionsLengthsSchema_WhereTheChannelManagerIsOff_EmptyTextsAreFine_OnlyTheLengthsAreChecked', () => {
-    // The whole schema of the step without the channel manager: the texts of the listing are optional, as they always were.
     expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS }).success).toBe(true);
     expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, listingTitle: 'x'.repeat(61) }).success).toBe(false);
     expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, description: 'x'.repeat(10_000) }).success).toBe(true);
@@ -189,7 +179,6 @@ describe('the steps of the wizard (NF-31, NF-37)', () => {
       houseRules: 'Regole del canale',
       texts: { en: { title: 'Pool trullo', description: 'Text of the channel' }, fr: { title: '', description: '' } },
     });
-    // The wizard opens on the same fields.
     expect(wizardDefaults({ ...complete, amenities: [], bedrooms: 1, bathrooms: 1, ...property } as unknown as Property, { rooms: [], stayDiscounts: [], photoMeta: [], siteProfile: profile })).toMatchObject(
       adoptableFieldsOf(property, profile),
     );
@@ -221,7 +210,6 @@ describe('the steps of the wizard (NF-31, NF-37)', () => {
 
   it('rulesUpdatePayload_TheChildrenRuleGoesWithTheOtherStructuredRules', () => {
     expect(rulesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, childrenPolicy: 'OnRequest' })).toMatchObject({ childrenPolicy: 'OnRequest', petsPolicy: 'No' });
-    // A blank answer is left out (the stored rule stays), like the other policies.
     expect(rulesUpdatePayload({ ...NEW_PROPERTY_DEFAULTS, childrenPolicy: '' })).not.toHaveProperty('childrenPolicy');
     expect(rulesStepSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, childrenPolicy: 'Sometimes' }).success).toBe(false);
   });

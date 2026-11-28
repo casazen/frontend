@@ -19,7 +19,6 @@ describe('payoutBlockOf: what the preview of a payout says would be refused', ()
 
   it('payoutBlockOf_NothingLeftToPay_FromTheCodeOrFromTheBalance', () => {
     expect(payoutBlockOf({ ...ok, blockingCode: 'owner_payout_exceeds_balance', balance: 0 })).toEqual({ kind: 'nothingLeft' });
-    // A balance that is not positive is nothing to pay even when the server named no code (a negative balance is owed by the owner, never paid to it).
     expect(payoutBlockOf({ ...ok, balance: 0 })).toEqual({ kind: 'nothingLeft' });
     expect(payoutBlockOf({ ...ok, balance: -12.5 })).toEqual({ kind: 'nothingLeft' });
   });
@@ -40,7 +39,6 @@ describe('the codes of the facts have words in both languages', () => {
 
   it.each(['it', 'en'])('factWords_EveryCodeOfTheContract_HasItsOwnWordsIn_%s_NotTheCodeAsItCame', (language) => {
     const t = i18n.getFixedT(language) as TFunction;
-    // A word the app does not have comes back as the key of the text or as the code itself: a code with an underscore is never in a sentence, one word could be.
     for (const [group, codes] of groups) {
       for (const code of codes) {
         const words = factWords(t, group, code);

@@ -61,7 +61,6 @@ interface LiveConfirmation {
 
 type RoutineFilter = 'all' | 'active' | 'test' | 'inactive';
 
-/** The log of a routine shows at most this many lines: the newest 50, which is what the server sends on a page (`RoutineLimits.DefaultExecutionsPageSize`). */
 const EXECUTIONS_PAGE_SIZE = 50;
 
 export function RoutinesPage() {
@@ -89,7 +88,6 @@ export function RoutinesPage() {
     else next.delete('view');
     return next;
   }, { replace: true });
-  // The layer that says who cleans for many properties at once (the ready cleaning routine acts on the properties that have a cleaner), over the library.
   const [cleanersOpen, setCleanersOpen] = useState(false);
   const [logRoutineId, setLogRoutineId] = useState<string | undefined>();
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | undefined>();
@@ -200,7 +198,6 @@ export function RoutinesPage() {
   }
 
   const notAvailable = isError && getHttpStatus(error) === 404;
-  // The routines the page shows: only a list that was read without failing. A refetch that fails keeps the old data in the query, and the page must not show it as if it were current.
   const list = isLoading || isError ? undefined : routines;
 
   const activeRoutines = list?.filter((r) => r.active && !r.testMode) ?? [];
@@ -228,7 +225,6 @@ export function RoutinesPage() {
         </div>
       )}
 
-      {/* The server answers 404 to every endpoint while its flag is off: that is not a failure of the person, so it is a calm note and not an error. */}
       {notAvailable && (
         <Alert variant="info" title={t('routines.unavailable.title')} data-testid="routines-unavailable">
           {t('routines.unavailable.description')}
@@ -291,7 +287,6 @@ export function RoutinesPage() {
         </div>
       )}
 
-      {/* Editor Dialog */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
@@ -313,7 +308,6 @@ export function RoutinesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Library Dialog */}
       <Dialog open={Boolean(list) && libraryOpen} onOpenChange={setLibraryOpen}>
         <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
           <DialogHeader>
@@ -329,7 +323,6 @@ export function RoutinesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Who cleans, for many properties: the same layer as the list of the properties, opened from the ready cleaning routine; it does not send the host away. */}
       <BulkCleaningDialog open={cleanersOpen} onOpenChange={setCleanersOpen} routineLink={false} />
 
       <Dialog open={Boolean(simulation)} onOpenChange={open => { if (!open) setSimulation(undefined); }}>
@@ -342,7 +335,6 @@ export function RoutinesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Execution Log Dialog */}
       <Dialog open={logRoutineId !== undefined} onOpenChange={(open) => !open && setLogRoutineId(undefined)}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
@@ -394,7 +386,6 @@ export function RoutinesPage() {
 interface RoutineCardProps {
   routine: Routine;
   availability: ActionAvailability | undefined;
-  /** A write on this routine is on its way: nothing of the card can be pressed. */
   busy: boolean;
   onEdit: (routine: Routine) => void;
   onSimulate: (routine: Routine) => void;
@@ -420,7 +411,6 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-40 flex-1 space-y-2">
-            {/* A level under the title of the page: the card title of the kit is an h3, which would skip one. */}
             <h2 className="break-words text-lg font-semibold leading-none tracking-tight">{routine.name}</h2>
             {routine.agentObjective && <CardDescription>{routine.agentObjective}</CardDescription>}
             <Badge variant={routine.active && !routine.testMode ? 'success' : 'secondary'} data-testid={!routine.active ? 'paused-badge' : routine.testMode ? 'test-mode-badge' : 'active-badge'}>
@@ -467,7 +457,6 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
                 {t('routines.active')}
               </span>
             </div>
-            {/* The switch shows what the server holds: when the server refuses to switch the routine on (422), nothing changes here and the toast says why. */}
             <Switch
               checked={routine.active}
               disabled={busy}
@@ -484,7 +473,6 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
   );
 }
 
-/** The log of one routine, the newest first: how each run ended and what each of its actions did, told as what it was (a simulated action is not a done one). */
 function ExecutionLog({ routineId }: { routineId: string | undefined }) {
   const { t, i18n } = useTranslation();
   const { data: executions, isLoading, isError } = useRoutineExecutions(routineId);

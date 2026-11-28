@@ -40,7 +40,6 @@ export function ChannelsPage() {
   const canWrite = hasPermission('short-rent', 'property.write');
 
   const data = overview.data;
-  // The clock of the page, never behind the answer it just got.
   const now = useMemo(() => new Date(Math.max(tick.getTime(), overview.dataUpdatedAt)), [tick, overview.dataUpdatedAt]);
   const rows = useMemo(() => (data ? buildCalendarRows(data) : []), [data]);
 
@@ -49,7 +48,6 @@ export function ChannelsPage() {
   const handleCopyLink = useCallback(
     async (row: FeedRow) => {
       try {
-        // A property whose link nobody asked for yet has none in the overview: the single read creates it.
         const url = row.exportUrl ?? (await propertyIcalApi.getExportUrl(row.propertyId)).exportUrl;
         await navigator.clipboard.writeText(url);
         toast.success(t('ical.copied'), { description: t('ical.exportPrivate') });

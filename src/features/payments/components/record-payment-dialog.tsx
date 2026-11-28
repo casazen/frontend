@@ -4,13 +4,11 @@ import { RecordPaymentForm } from './record-payment-form';
 
 interface RecordPaymentDialogProps {
   bookingId: string;
-  /** What is left to collect on the booking, in euros; `null` when it is not known. */
   balance: number | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-/** "Registra incasso" on the sheet of a booking (SR-06b): the form of the payments page, for the booking at hand. */
 export function RecordPaymentDialog({ bookingId, balance, open, onOpenChange }: RecordPaymentDialogProps) {
   const { t } = useTranslation();
   const close = () => onOpenChange(false);

@@ -14,11 +14,9 @@ import { likelihoodLabel, likelihoodOf, reasonLabel } from './merge-labels';
 
 interface ProfileSummaryProps {
   profile: CrmMergeProfile;
-  /** 1 or 2: the order the two profiles are shown in. */
   position: number;
 }
 
-/** One of the two profiles of a proposal: name, country, stays, last stay, properties and contacts (the values masked). No birth date, no document. */
 function ProfileSummary({ profile, position }: ProfileSummaryProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
@@ -81,13 +79,11 @@ export function MergeCandidateCard({ candidate }: MergeCandidateCardProps) {
   const nameOf = (profile: CrmMergeProfile) => profile.displayName || t('crm.merge.profile.noName');
   const likelihood = likelihoodOf(candidate.score);
 
-  /** What tells the two profiles apart in the choice of the one to keep: where they are from, how many stays, and one address. */
   const describe = (profile: CrmMergeProfile) =>
     [profile.country, t('crm.merge.dialog.stays', { count: profile.stays }), profile.contacts[0]?.valueMasked].filter(Boolean).join(' · ');
 
   const closeMerge = (open: boolean) => {
     setMergeOpen(open);
-    // Nothing stays chosen from one time to the next: the host chooses every time.
     if (!open) setSurvivor(null);
   };
 
@@ -157,7 +153,6 @@ export function MergeCandidateCard({ candidate }: MergeCandidateCardProps) {
         isLoading={merge.isPending}
         onConfirm={async () => {
           if (survivor === null) return;
-          // The other profile of the pair goes: the page of the profile that goes must not come back from what the app has read.
           const discardedProfileId = survivor === profileA.id ? profileB.id : profileA.id;
           await merge.mutateAsync({ candidateId: candidate.id, survivorProfileId: survivor, discardedProfileId });
         }}

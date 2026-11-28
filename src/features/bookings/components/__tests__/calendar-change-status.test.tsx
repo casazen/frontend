@@ -60,7 +60,6 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
   });
 
   it('CalendarChangeStatus_ConnectorOff_AsksForNothingAndSaysNothingOfTheChannelManager', async () => {
-    // Changes left waiting or failed from when the connector was on: with it off nothing is sent there, so nothing is followed, asked or said.
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' }), change({ id: 'c2', state: 'Failed', properties: [{ propertyId: 'p1', state: 'Failed', chunkCount: 1 }] })]);
     renderStatus(true, false);
 
@@ -102,8 +101,6 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     });
     expect(screen.queryByTestId('calendar-change-status')).not.toBeInTheDocument();
 
-    // The host sends a change from the panel, the wizard or a block: every calendar view is read again (what the mutations ask for). The page has been open for more than three
-    // minutes, and the window of this change starts now, not from the opening of the page.
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Queued' })]);
     await act(async () => {
       await client.invalidateQueries({ queryKey: ['bookings', 'calendar'] });
@@ -113,7 +110,6 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     expect(screen.getByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
     expect(screen.queryByTestId('calendar-change-status-check')).not.toBeInTheDocument();
 
-    // It is followed every five seconds: the next read says that the channel manager took it, and the line goes away.
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sent', properties: [{ propertyId: 'p1', state: 'Accepted', chunkCount: 1 }] })]);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(CHANGE_POLL_MS + 100);
@@ -126,8 +122,6 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' })]);
     renderStatus();
-    // The window of a change opens when the change is on screen (and again each time a new one starts to wait): the first read has to be on screen before the clock moves. Moved
-    // at once, on a loaded runner the read arrives after the clock and the window starts from there, so it is never over.
     expect(await screen.findByTestId('calendar-change-status-waiting', undefined, { timeout: 5000 })).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
     await act(async () => {
       await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
@@ -140,7 +134,6 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     });
     expect(vi.mocked(calendarChangesApi.list).mock.calls.length).toBe(calls);
 
-    // "Check again" asks once more and the line follows the change for a new while.
     await act(async () => {
       fireEvent.click(screen.getByTestId('calendar-change-status-check'));
       await vi.advanceTimersByTimeAsync(0);
@@ -166,8 +159,6 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     expect(line).toHaveTextContent('Non riusciamo a leggere le modifiche inviate al tuo channel manager.');
   });
 
-  // What this proves is what the line does with a 403 body; it does not prove what the app does with a refused GET (the interceptor of axios moves to the page of "no access").
-  // The guard that matters is the right to read, checked before the line is mounted (`calendar-page-manual-block.test.tsx`: no right, no list asked).
   it('CalendarChangeStatus_A403AnswerOfTheList_IsNotSaidAsAFailure', async () => {
     vi.mocked(calendarChangesApi.list).mockRejectedValue(statusError(403));
     renderStatus();

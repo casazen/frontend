@@ -4,18 +4,13 @@ import type { BillingSubscriptionStatus } from '@/types';
 
 type TranslateFn = (key: string) => string;
 
-/** 409 of the checkout: the org already has a subscription, it changes plan or pays from the portal (PL-10). */
 export const ALREADY_SUBSCRIBED_CODE = 'already_subscribed';
-/** 422 of the checkout: the plan has no Stripe price in this environment (PL-11). */
 export const BILLING_PLAN_UNAVAILABLE_CODE = 'billing_plan_unavailable';
-/** Query parameter of the Stripe Checkout return page. */
 export const CHECKOUT_RETURN_PARAM = 'checkout';
 
 export type CheckoutReturn = 'success' | 'cancel';
 
-/** Polling of the subscription after the Stripe return, until the webhook confirms the payment. */
 export const CHECKOUT_CONFIRM_POLL_MS = 3_000;
-/** After this the page stops polling and tells the user the confirmation is still on its way. */
 export const CHECKOUT_CONFIRM_TIMEOUT_MS = 60_000;
 
 const STATUSES: readonly BillingSubscriptionStatus[] = [
@@ -28,15 +23,10 @@ const STATUSES: readonly BillingSubscriptionStatus[] = [
   'none',
 ];
 
-/** A status sent by the API; anything unknown is treated as no subscription. */
 export function normalizeSubscriptionStatus(value: unknown): BillingSubscriptionStatus {
   return STATUSES.find((status) => status === value) ?? 'none';
 }
 
-/**
- * The subscription still exists on Stripe: a new checkout is refused (409 `already_subscribed`), the org changes plan
- * or pays from the billing portal. Mirror of the backend `BillingSubscriptionPolicy.BlocksNewCheckout`.
- */
 export function isLiveSubscription(status: BillingSubscriptionStatus): boolean {
   return (
     status === 'active' ||
@@ -47,12 +37,10 @@ export function isLiveSubscription(status: BillingSubscriptionStatus): boolean {
   );
 }
 
-/** A payment is due: past due (grace period), unpaid, or the first payment not completed. */
 export function needsPaymentAction(status: BillingSubscriptionStatus): boolean {
   return status === 'past_due' || status === 'unpaid' || status === 'incomplete';
 }
 
-/** Paid access is confirmed after a checkout. */
 export function isPaidStatus(status: BillingSubscriptionStatus): boolean {
   return status === 'active' || status === 'trialing';
 }
@@ -62,7 +50,6 @@ export function readCheckoutReturn(params: URLSearchParams): CheckoutReturn | nu
   return value === 'success' || value === 'cancel' ? value : null;
 }
 
-/** Leaves the app for a Stripe page (checkout or portal); only absolute http(s) URLs. */
 export function redirectToStripe(url: string): void {
   let parsed: URL;
   try {
@@ -87,7 +74,6 @@ export function isVatIdShapeValid(value: string): boolean {
   return /^[A-Z0-9]{4,20}$/.test(normalizeVatId(value));
 }
 
-/** A UTC instant of the API shown as a calendar date in Europe/Rome; empty when invalid. */
 export function formatBillingDate(instant: string, locale: string): string {
   const iso = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(instant) ? instant : `${instant}Z`;
   const date = new Date(iso);
@@ -100,7 +86,6 @@ export function formatBillingDate(instant: string, locale: string): string {
   }).format(date);
 }
 
-/** Problem `code` of a failed API call. */
 export function getErrorCode(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
 }

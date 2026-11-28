@@ -10,7 +10,6 @@ beforeEach(async () => {
 
 afterEach(cleanup);
 
-/** The pulsing blocks of a preset (everything that is a `Skeleton`). */
 const blocksOf = (root: HTMLElement) => Array.from(root.querySelectorAll<HTMLElement>('.cz-shimmer'));
 
 describe('Skeleton', () => {
@@ -35,7 +34,6 @@ describe('Skeleton presets', () => {
     const region = screen.getByRole('status');
     expect(region).toHaveAttribute('aria-busy', 'true');
     expect(region).toHaveTextContent('Caricamento...');
-    // The placeholders are drawn for the eyes only.
     for (const block of blocksOf(region)) expect(block.closest('[aria-hidden="true"]')).not.toBeNull();
     expect(screen.getAllByRole('status')).toHaveLength(1);
   });

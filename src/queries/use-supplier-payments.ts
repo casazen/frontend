@@ -35,7 +35,6 @@ function pause(ms: number, signal: AbortSignal): Promise<void> {
   });
 }
 
-/** The account read from Stripe; asked again while the only thing left is Stripe's own check, and only a few times. */
 async function readFromStripe(signal: AbortSignal): Promise<SupplierPaymentsAccount> {
   let account = await fetchSupplierPaymentsAccount(true);
   for (let read = 1; read < STRIPE_READS && resolveSupplierPaymentsState(account) === 'verifying'; read += 1) {
@@ -52,7 +51,6 @@ async function readFromStripe(signal: AbortSignal): Promise<SupplierPaymentsAcco
  * server: the page says so.
  */
 export function useSupplierPaymentsAccount(afterStripe: boolean) {
-  // How many times the supplier asked Stripe; 0 is the plain read.
   const [stripeReads, setStripeReads] = useState(afterStripe ? 1 : 0);
   const query = useQuery({
     queryKey: [...ACCOUNT_KEY, stripeReads],
@@ -67,16 +65,11 @@ export function useSupplierPaymentsAccount(afterStripe: boolean) {
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,
-    /** Stripe is being asked now (as opposed to the server's own copy). */
     askingStripe: stripeReads > 0 && query.isFetching,
     askStripeAgain: () => setStripeReads((reads) => reads + 1),
   };
 }
 
-/**
- * The Stripe address where the supplier connects the account or finishes it. The page opens it at once: the account may not exist
- * until this call, and the address works once. A failure is shown by the page, with "Riprova" when trying again may help.
- */
 export function useSupplierOnboardingLink() {
   return useMutation({
     mutationFn: createSupplierOnboardingLink,
@@ -84,7 +77,6 @@ export function useSupplierOnboardingLink() {
   });
 }
 
-/** The single-use address of the Express Dashboard of the account, opened at once. */
 export function useSupplierDashboardLink() {
   return useMutation({
     mutationFn: createSupplierDashboardLink,

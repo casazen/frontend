@@ -6,15 +6,9 @@ import type { PageCrumb } from '@/lib/page-crumbs';
 import { cn } from '@/lib/utils';
 
 interface PageCrumbsProps {
-  /** The trail, the area first and the page that is open last (which is not a link). */
   items: PageCrumb[];
 }
 
-/**
- * The breadcrumb of a page (UI-05), for a computer: where the page sits in the area, each step a link to go up. The step that
- * is a list that remembers its filters (`useListReturn`) leads to it as the user left it. Hidden on a phone, where the
- * `BackLink` takes its place.
- */
 export function PageCrumbs({ items }: PageCrumbsProps) {
   const { t } = useTranslation();
 

@@ -35,7 +35,6 @@ interface PayoutDialogProps {
   ctx: ActionContext;
 }
 
-/** What stops the payout, in words: the way out of a rule that is not usable is the data of the owner. */
 function BlockNotice({ block, ctx }: { block: PayoutBlock; ctx: ActionContext }) {
   const { t, i18n } = useTranslation();
 
@@ -76,13 +75,11 @@ function BlockNotice({ block, ctx }: { block: PayoutBlock; ctx: ActionContext })
   );
 }
 
-/** What the rule decided on the facts, with the figures of the preview: nothing here is typed and nothing is computed by the page. */
 function DecisionSummary({ preview }: { preview: OwnerPayoutPreview }) {
   const { t } = useTranslation();
   const { money, percent } = useOwnerFormat();
   const euro = preview.facts.withholdingCurrency;
   const applicable = preview.decision === 'Applicable';
-  // The net is the server's: with no withholding it is the balance, with one it is the figure the server worked out, and with neither it is not told.
   const net = preview.netAmount ?? (preview.decision === 'NotApplicable' ? preview.balance : null);
 
   return (
@@ -150,10 +147,8 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
   const properties = useProperties();
   const propertyNames = useMemo(() => new Map((Array.isArray(properties.data) ? properties.data : []).map((property) => [property.id, property.name] as const)), [properties.data]);
 
-  // A read that failed is the server's word, whatever an earlier answer of the same day left in the cache.
   const preview = read.isError ? undefined : read.data;
   const block = preview ? payoutBlockOf(preview) : null;
-  // The preview of this day is being read again (the window came back, the day changed): nothing is confirmed on what may be old.
   const checking = read.isFetching;
   const loading = read.isPending && read.fetchStatus === 'fetching';
 
@@ -161,7 +156,6 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
   // A request is on its way: the state of the mutation says it a moment later than the click, so a second submit in between is stopped here.
   const sending = useRef(false);
 
-  // The request is on its way: the dialog stays (Escape, the cross and a click outside all end here), so nobody opens another one for a payout that may be recorded already.
   const dismiss = (next: boolean) => {
     if (!next && (confirm.isPending || sending.current)) return;
     onOpenChange(next);
@@ -180,17 +174,14 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
     sending.current = true;
     try {
       const payout = await confirm.mutateAsync(built.command);
-      // Confirmed: the same facts asked again are another payout, which gets its own key.
       settlePayoutKey({ ownerId: ctx.ownerId, statementVersionId: version.id, balance: preview.balance, paidOn: form.paidOn });
       setDone(payout);
       toast.success(t('ownerAccounting.payout.done', { owner: ctx.ownerName }));
     } catch (error) {
       const facts = problemFacts(error);
-      // A fact the rule needs that the ledger could not give: the server names it, and it is told beside the facts.
       setFailure(
         facts.code === 'tax_applicability_unresolved' && facts.field ? t('ownerAccounting.payout.unresolved', { field: fieldNameOf(facts.field, t, i18n.exists) }) : messageOf(error, t),
       );
-      // What the person saw is not what the server has (the balance moved, the rule changed): the preview is read again, and it says what is true now.
       if (facts.status === 409 || facts.status === 422) void read.refetch();
     } finally {
       sending.current = false;

@@ -9,7 +9,6 @@ export function RentFocus({ installments }: { installments: RentInstallment[] })
   const { t, i18n } = useTranslation();
   if (!installments.length) return null;
 
-  // Keep the ledger in server order. Choose the oldest exception before the next outstanding due date.
   const byDueDate = [...installments].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
   const open = byDueDate.filter((row) => row.status === 'Scheduled' || row.status === 'Failed');
   const attention = open.filter((row) => row.isOverdue || row.status === 'Failed');

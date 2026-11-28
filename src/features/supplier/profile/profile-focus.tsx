@@ -6,7 +6,6 @@ import type { ActivationStatus, SupplierProfile } from '@/types/supplier';
 const ACTIVATION_PATH = '/app/supplier/activation';
 const SHOWCASE_PATH = '/app/supplier/showcase';
 
-/** What is left to do for the profile to be fully active, the one thing at a time. */
 type ProfileFocusState =
   | { kind: 'pending'; missing: string[] }
   | { kind: 'terms'; blocking: boolean }
@@ -15,17 +14,10 @@ type ProfileFocusState =
 
 interface FocusInput {
   profile: Pick<SupplierProfile, 'status'>;
-  /** The activation status of the server: the requirements still missing and the Terms of Service. Unknown while it loads or fails. */
   activation: ActivationStatus | undefined;
-  /** Whether at least one day has working hours; `undefined` while that is not known (the hours then decide nothing). */
   hoursConfigured: boolean | undefined;
 }
 
-/**
- * The one thing to say about the profile, in the order of what matters: the requirements of an inactive profile, the new Terms of
- * Service, the working hours (without them there are no slots to book), and, when nothing is left, that it is all in order. A suspended
- * supplier gets none: the banner of the console already says it, and a second red block would be two places to look.
- */
 function focusStateOf({ profile, activation, hoursConfigured }: FocusInput): ProfileFocusState | null {
   if (profile.status === 'Pending') {
     const missing = (activation?.steps ?? []).flatMap((step) => (step.required && step.blocker ? [step.blocker] : []));
@@ -43,7 +35,6 @@ interface ProfileFocusProps extends FocusInput {
   onSetHours: () => void;
 }
 
-/** The one highlighted block of the page: where the profile stands and what to do about it. */
 export function ProfileFocus({ profile, activation, hoursConfigured, settled, onSetHours }: ProfileFocusProps) {
   const { t, i18n } = useTranslation();
 
@@ -58,7 +49,6 @@ export function ProfileFocus({ profile, activation, hoursConfigured, settled, on
 
   switch (state.kind) {
     case 'pending': {
-      // A code this version has no words for is left out: the activation page shows the rest, and the list never shows a key.
       const missing = state.missing.filter((code) => i18n.exists(`supplier.activation.blockers.${code}`));
       return (
         <FocusBlock

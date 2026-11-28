@@ -8,11 +8,6 @@ import { HostInviteForm } from './host-invite-form';
 import { HostInviteQuotaIndicator } from './host-invite-quota';
 import { HostInvitesList } from './host-invites-list';
 
-/**
- * Content of the page where a host invites other independent hosts: the daily quota and the form on the left, the list of their
- * own invites with resend and revoke on the right (under each other on a narrow screen). The short-rent route wraps it in its
- * shell ({@link HostInvitesPage}), the long-rent route gets the long-rent shell from the context layout.
- */
 export function HostInvitesContent() {
   const { t } = useTranslation();
   const quota = useHostInviteQuota();
@@ -38,7 +33,6 @@ export function HostInvitesContent() {
   );
 }
 
-/** Invites of other hosts in the short-rent shell. */
 export function HostInvitesPage() {
   return (
     <AppShell>

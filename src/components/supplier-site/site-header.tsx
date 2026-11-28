@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 import { useSiteDialogTheme } from './site-context';
 import { useScrolled } from './use-scrolled';
 
-/** The first letters of the name, for the mark of a supplier that has no logo: "Splendore Pulizie" is "SP". */
 function initials(name: string): string {
   const letters = name
     .split(/\s+/)
@@ -45,20 +44,13 @@ function Brand({ model }: { model: SiteModel }) {
   );
 }
 
-/** An entry of the menu: a page of the site, or (on the home only) a block of the home. */
 interface NavEntry {
   key: string;
   label: string;
-  /** A page of the site. */
   to?: string;
-  /** The id of a block of the home. */
   hash?: string;
 }
 
-/**
- * The entries of the menu: the pages that exist (the services, the story) and, on the home, the blocks that exist. Nothing is offered
- * that has nothing behind it.
- */
 function navEntries(model: SiteModel, onHome: boolean): NavEntry[] {
   const { blocks, slug } = model;
   const entries: NavEntry[] = [];
@@ -76,16 +68,10 @@ function navEntries(model: SiteModel, onHome: boolean): NavEntry[] {
 
 interface SiteHeaderProps {
   model: SiteModel;
-  /** `over`: floats transparent over the cover (the pages with a full-width scene); `solid` everywhere else. */
   variant: 'over' | 'solid';
-  /** The links to the blocks of the home only work on the home. */
   onHome: boolean;
 }
 
-/**
- * The header of a supplier's site: its name or logo, the menu to the pages and the blocks that exist and, when the bookings are open,
- * the one action "Prenota ora". No phone and no "write to us" button: the contacts are not part of the site (interview Q4/Q7).
- */
 export function SiteHeader({ model, variant, onHome }: SiteHeaderProps) {
   const { t } = useTranslation();
   const scrolled = useScrolled();

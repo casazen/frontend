@@ -23,7 +23,6 @@ vi.mock('@/queries/use-listing-status', () => ({ useListingStatus: () => listing
 vi.mock('../use-wizard-listing-seed', () => ({
   useWizardListingSeed: () => ({ seed: { rooms: [], stayDiscounts: [], siteProfile: null, photoMeta: [] }, failed: false, error: null, retry: vi.fn() }),
 }));
-// The wizard itself is not under test here: only what the page hands it.
 vi.mock('../property-wizard', () => ({
   PropertyWizard: (props: { onlySteps?: string[]; initialStepId?: string }) => (
     <pre data-testid="wizard-props">{JSON.stringify({ onlySteps: props.onlySteps ?? null, initialStepId: props.initialStepId ?? null })}</pre>
@@ -73,7 +72,6 @@ describe('PropertyWizardPage: a listing that is already on the channels (NF-29)'
 
     fireEvent.click(screen.getByTestId('property-wizard-show-all'));
 
-    // «Mostra tutti i passi»: the whole wizard, as it opens for a property that is not on the channels.
     expect(handedOver().onlySteps).toBeNull();
     expect(screen.getByTestId('property-wizard-imported')).toHaveTextContent('Stai vedendo tutti i passi');
   });

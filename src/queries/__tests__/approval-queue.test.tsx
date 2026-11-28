@@ -82,9 +82,7 @@ describe('the hooks of the approval queue (NF-68)', () => {
       const options = client.getQueryCache().findAll({ queryKey: ['approval-queue', 'pending'] })[0].observers[0].options;
       expect(options.refetchInterval).toBe(APPROVAL_QUEUE_POLL_MS);
       expect(APPROVAL_QUEUE_POLL_MS).toBe(60_000);
-      // Not while the tab is hidden: the poll pauses by itself.
       expect(options.refetchIntervalInBackground).toBeFalsy();
-      // `true` would read on a visit only data that is stale, and the app keeps data fresh for five minutes: every visit reads, and a reading is fresh for half a minute.
       expect(options.refetchOnMount).toBe('always');
       expect(options.staleTime).toBe(APPROVAL_QUEUE_STALE_MS);
       expect(APPROVAL_QUEUE_STALE_MS).toBeLessThanOrEqual(30_000);
@@ -101,11 +99,9 @@ describe('the hooks of the approval queue (NF-68)', () => {
       await waitFor(() => expect(firstVisit.result.current.data?.map((queued) => queued.id)).toEqual(['a1']));
       firstVisit.unmount();
 
-      // While the host was on another page an item was put in the queue: nobody was listening to the notifications, and the last reading is a minute old.
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([item(), item({ id: 'new-one' })]);
       const secondVisit = renderHook(() => usePendingApprovals(), { wrapper });
 
-      // The visit reads the queue at once: it does not show the list of the last visit until the next minute.
       await waitFor(() => expect(secondVisit.result.current.data?.map((queued) => queued.id)).toEqual(['a1', 'new-one']));
       expect(approvalQueueApi.getPending).toHaveBeenCalledTimes(2);
     });
@@ -131,7 +127,6 @@ describe('the hooks of the approval queue (NF-68)', () => {
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(approvalQueueApi.getPending).toHaveBeenCalledTimes(1);
 
-      // What the real-time channel does when an alert is raised for the host: it writes the count of the bell (the alert of an item waiting for approval).
       act(() => {
         client.setQueryData(UNREAD_COUNT_KEY, 3);
       });
@@ -210,7 +205,6 @@ describe('the hooks of the approval queue (NF-68)', () => {
         description: 'Questa conversazione è chiusa: non si possono più scrivere messaggi.',
       });
       expect(toast.success).not.toHaveBeenCalled();
-      // The queue is read again: the item is still in it, with the failure the server saved.
       await waitFor(() => expect(approvalQueueApi.getPending).toHaveBeenCalledTimes(2));
       expect(result.current.queue.data?.map((queued) => queued.id)).toEqual(['a1']);
     });
@@ -235,7 +229,6 @@ describe('the hooks of the approval queue (NF-68)', () => {
       const { wrapper } = setup();
       const { result } = renderHook(() => ({ queue: usePendingApprovals(), edit: useEditItem() }), { wrapper });
       await waitFor(() => expect(result.current.queue.isSuccess).toBe(true));
-      // The list as it is read again after the edit still has the old text: the edited item is what the screen has meanwhile.
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([item()]);
 
       await act(async () => {

@@ -5,12 +5,10 @@ import i18n from '@/i18n/config';
 import { saveBlobAs } from '@/lib/file-download';
 import { ReportExportButtons } from '../report-export-buttons';
 
-// The file of a money report: each way it can fail is said as it is under the buttons, nothing is saved, and the person can try again.
 vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
 
 const save = vi.mocked(saveBlobAs);
 
-/** What axios throws for a failed answer of a file (the API has already turned the JSON Blob of its body back into an object). */
 function failure(status: number, body: unknown): AxiosError {
   return new AxiosError('failed', undefined, undefined, undefined, { status, statusText: '', data: body, headers: {}, config: { headers: new AxiosHeaders() } });
 }
@@ -26,8 +24,6 @@ describe('ReportExportButtons: each failure of the file is said as it is', () =>
   });
   afterEach(() => cleanup());
 
-  // A 404 is "not found", and the text of the server never replaces it: the property is not one of the person's (or no longer exists), and
-  // "try again" cannot work.
   it.each([
     { format: 'csv', body: {} },
     { format: 'xlsx', body: { code: 'property_not_found', detail: 'Property 6f1c0f66 not found' } },
@@ -54,7 +50,6 @@ describe('ReportExportButtons: each failure of the file is said as it is', () =>
     expect(await screen.findByTestId('export-failure')).toHaveTextContent('We cannot find the data you asked for.');
   });
 
-  // A 500 is a file that did not come, with a try again, and what the server says of its own failure is never shown to the person.
   it.each([
     { format: 'csv', body: { detail: 'NullReferenceException at HostCollectionsReportService' } },
     { format: 'xlsx', body: { title: 'Internal Server Error' } },

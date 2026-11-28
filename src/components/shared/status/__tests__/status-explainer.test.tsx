@@ -14,7 +14,6 @@ describe("StatusExplainer full", () => {
   it("StatusExplainer_StateWithAWayForward_SaysWhatItMeansWhatIsNeededAndWhatComesNext", () => {
     const { container } = render(<StatusExplainer kind="lease" status="Draft" />);
 
-    // The current state, and the next one: "Bozza" then "In attesa di firma".
     expect(container.querySelector("[data-status='Draft']")).toHaveTextContent("Bozza");
     expect(screen.getByText("In attesa di firma")).toBeInTheDocument();
     expect(screen.getByText("Il contratto è in preparazione: non è ancora stato inviato alla firma.")).toBeInTheDocument();
@@ -34,7 +33,6 @@ describe("StatusExplainer full", () => {
     expect(items[0]).toHaveTextContent("(completato)");
     expect(items[1]).toHaveTextContent("(da fare)");
     expect(items[2]).toHaveTextContent("(completato)");
-    // Done ones have a check; the others an empty circle: the difference is not only color.
     expect(items[0].querySelector("svg")).not.toBeNull();
     expect(items[1].querySelector("svg")).toBeNull();
     expect(container.querySelectorAll("li svg")).toHaveLength(2);
@@ -63,7 +61,6 @@ describe("StatusExplainer full", () => {
   it("StatusExplainer_SentenceOfTheCaller_ReplacesTheDictionarysAndTheWayForwardItDescribes", () => {
     const { container } = render(<StatusExplainer kind="lease" status="Draft" explain="Il contratto lo prepara un servizio: segui la pratica." />);
 
-    // The state keeps its badge; its sentence is the caller's; the next state and the list of what it takes are those of another path.
     expect(container.querySelector("[data-status='Draft']")).toHaveTextContent("Bozza");
     expect(screen.getByText("Il contratto lo prepara un servizio: segui la pratica.")).toBeInTheDocument();
     expect(screen.queryByText("Il contratto è in preparazione: non è ancora stato inviato alla firma.")).not.toBeInTheDocument();
@@ -92,7 +89,6 @@ describe("StatusExplainer full", () => {
 
     expect(screen.getByText("Un cliente ti ha chiesto un intervento: accettalo o rifiutalo.")).toBeInTheDocument();
     expect(screen.getByText("Accetta la richiesta, oppure rifiutala indicando il motivo", { exact: false })).toBeInTheDocument();
-    // The next state is named as the supplier knows it.
     expect(screen.getByText("Per passare a «Preso in carico» serve:")).toBeInTheDocument();
   });
 

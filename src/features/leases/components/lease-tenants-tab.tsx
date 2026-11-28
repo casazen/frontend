@@ -6,7 +6,6 @@ import { PlainSection } from '@/components/shared/calm';
 import type { LeaseDetail } from '@/types';
 import { PartyList } from './lease-data-tab';
 
-/** Only the tenants of this contract, using the masked data returned by the server. */
 export function LeaseTenantsTab({ lease, onRequestErasure }: { lease: LeaseDetail; onRequestErasure?: () => void }) {
   const { t } = useTranslation();
   const action = onRequestErasure ? {

@@ -9,9 +9,7 @@ import { useChannelTemplates, useMessageTemplates, useRenderTemplate } from '@/q
 
 interface TemplatePickerProps {
   threadKey: string;
-  /** The conversation is one of a channel: the channel's own templates are offered too. */
   withChannelTemplates: boolean;
-  /** Puts a text in the draft; the host reads it and edits it before it is sent. */
   onInsert: (text: string) => void;
 }
 

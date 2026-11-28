@@ -5,26 +5,14 @@ import { cn } from "@/lib/utils";
 
 export interface StepperStep {
   id: string;
-  /** Name of the step, already translated. */
   label: string;
 }
 
 export interface StepperProps {
   steps: StepperStep[];
-  /** Index (from 0) of the step the person is on. The steps before it are done, the ones after it are still to do. */
   current: number;
-  /**
-   * Called with the index of a done step the person picks. Only done steps can be picked (the ones ahead may depend on
-   * answers not given yet); without this function no step is a button.
-   */
   onStepSelect?: (index: number) => void;
-  /** Name of the list for assistive technology. The default is "Steps". */
   label?: string;
-  /**
-   * `horizontal` (the default): on a phone one line ("Step 2 of 6", the name of the step and a bar), from `md` up every step side by
-   * side. `vertical`: "Step 2 of 6" and the steps one under the other at every width, for a narrow column beside the content (the
-   * steps of a wizard on a wide screen). The states, the names and the steps that are buttons are the same in both.
-   */
   orientation?: "horizontal" | "vertical";
   className?: string;
 }
@@ -50,18 +38,15 @@ const LABEL: Record<StepState, string> = {
 };
 
 const ITEM = "flex min-w-0 flex-1 flex-col gap-2 text-left";
-/** A step of the vertical list: the number (or the check) and, beside it, the name, which may take two lines. */
 const VERTICAL_ITEM = "flex min-w-0 flex-1 items-start gap-3 text-left";
 const STEP_BUTTON =
   "group/step rounded-md ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pointer-coarse:min-h-11";
 
-/** The steps before the current one are done, the ones after it are still to do. */
 function stateOf(position: number, current: number): StepState {
   if (position < current) return "done";
   return position === current ? "current" : "todo";
 }
 
-/** The number of a step in its circle, or the check of a done one. Drawn for the eyes: the state is said in words beside it. */
 function StepMark({ state, position }: { state: StepState; position: number }) {
   return (
     <span aria-hidden="true" className={cn("grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold", NUMBER[state])}>
@@ -95,7 +80,6 @@ export function Stepper({ steps, current, onStepSelect, label, orientation = "ho
             const content = (
               <>
                 <StepMark state={state} position={position} />
-                {/* The name is not cut here: the column has room for a second line. */}
                 <span className={cn("min-w-0 break-words py-0.5 text-sm font-semibold group-hover/step:underline", LABEL[state])}>
                   {step.label}
                   <span className="sr-only">{` (${stateTextOf(state)})`}</span>
@@ -105,7 +89,6 @@ export function Stepper({ steps, current, onStepSelect, label, orientation = "ho
 
             return (
               <li key={step.id} className="relative flex min-w-0 pb-6 last:pb-0">
-                {/* The line down to the next step: in the color of the bar, full once the step is done. */}
                 {position < steps.length - 1 ? (
                   <span
                     aria-hidden="true"
@@ -131,7 +114,6 @@ export function Stepper({ steps, current, onStepSelect, label, orientation = "ho
 
   return (
     <div className={className}>
-      {/* Phone: the same information in one line. Hidden with CSS (`display: none`), so assistive technology reads one version. */}
       <div className="space-y-2 md:hidden">
         <div className="flex items-baseline justify-between gap-3 text-sm">
           <span className="shrink-0 font-semibold">{stepOf}</span>
@@ -161,7 +143,6 @@ export function Stepper({ steps, current, onStepSelect, label, orientation = "ho
                 <StepMark state={state} position={position} />
                 <span className={cn("min-w-0 truncate group-hover/step:underline", LABEL[state])} title={step.label}>
                   {step.label}
-                  {/* In the same text as the label, so the name reads "Dati (done)" in every browser, as the wizards of the app already do. */}
                   <span className="sr-only">{` (${stateTextOf(state)})`}</span>
                 </span>
               </span>

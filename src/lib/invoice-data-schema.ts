@@ -37,7 +37,6 @@ import {
  * code, a company in Italy a VAT number or a fiscal code, and outside Italy neither.
  */
 
-/** What the person has typed: every member is text, so the draft of a form is plain data. */
 export interface InvoiceDataFormValues {
   recipientKind: InvoiceRecipientKind;
   name: string;
@@ -53,7 +52,6 @@ export interface InvoiceDataFormValues {
   pec: string;
 }
 
-/** The longest text the server keeps for each field (`BookingInvoiceData`): the form refuses what the server would refuse. */
 export const INVOICE_DATA_LIMITS: Readonly<Record<InvoiceDataTextField, number>> = {
   name: 200,
   fiscalCode: 16,
@@ -72,7 +70,6 @@ const FIELD_INVALID: InvoiceDataErrorCode = 'invoice_data_field_invalid';
 const TWO_LETTERS = /^[A-Za-z]{2}$/;
 const ITALIAN_POSTAL_CODE = /^\d{5}$/;
 
-/** The values of a form with nothing in it: a private person in Italy. */
 export function emptyInvoiceDataForm(): InvoiceDataFormValues {
   return {
     recipientKind: 'Guest',
@@ -90,7 +87,6 @@ export function emptyInvoiceDataForm(): InvoiceDataFormValues {
   };
 }
 
-/** The values of a form from the data the server has: what is not there is empty, the kind and the country have their default. */
 export function invoiceDataFormOf(data: BookingInvoiceData | null | undefined): InvoiceDataFormValues {
   const empty = emptyInvoiceDataForm();
   if (!data) return empty;
@@ -111,7 +107,6 @@ export function invoiceDataFormOf(data: BookingInvoiceData | null | undefined): 
   };
 }
 
-/** Trimmed, with every run of white space collapsed into one space (the server's `Text`). */
 const plainText = (value: string) => value.trim().replace(/\s+/g, ' ');
 
 /**
@@ -138,10 +133,6 @@ export function normalizeInvoiceData(values: InvoiceDataFormValues): InvoiceData
   };
 }
 
-/**
- * True when the person has written something about the recipient: any text but the country (which has a default and is only a way to read the
- * rest). A guest who says «yes» and writes nothing has asked for an invoice and left the data to the host: that is no data to check.
- */
 export function hasTypedInvoiceData(values: InvoiceDataFormValues): boolean {
   const written: readonly InvoiceDataTextField[] = [
     'name',
@@ -170,14 +161,8 @@ export function missingIdentification(values: InvoiceDataFormValues): InvoiceDat
   return data.fiscalCode === '' ? 'fiscalCode' : null;
 }
 
-/** What the checks are asked: when the identification is needed, and whether a form with nothing written is to be left alone. */
 export interface InvoiceDataValidationOptions {
-  /**
-   * The data is what a person typed (the host in the booking, the guest at the check-in), so the recipient must be identified. The partial data
-   * of an import is not asked for it, and this form is never used for one.
-   */
   requireIdentification: boolean;
-  /** Check nothing while nothing is written: the guest's «yes» with no data, which leaves the data to the host. */
   onlyWhenTyped?: boolean;
 }
 
@@ -226,7 +211,6 @@ export function validateInvoiceData(values: InvoiceDataFormValues, options: Invo
   return failures;
 }
 
-/** The fields of the form as a Zod shape: every text is a string, the kind is one of the two kinds (a message of the schema is the code). */
 export const invoiceDataFormShape = {
   recipientKind: z.enum(INVOICE_RECIPIENT_KINDS, FIELD_INVALID),
   name: z.string(),
@@ -242,22 +226,16 @@ export const invoiceDataFormShape = {
   pec: z.string(),
 };
 
-/**
- * Adds the failures of `validateInvoiceData` to a Zod refinement: the path is the field and the message is the code of the failure (the same code
- * the server sends), which the screen turns into words with `invoiceErrorMessageOf`.
- */
 export function addInvoiceDataIssues(values: InvoiceDataFormValues, options: InvoiceDataValidationOptions, context: RefinementCtx): void {
   for (const failure of validateInvoiceData(values, options)) {
     context.addIssue({ code: 'custom', path: [failure.field], message: failure.code });
   }
 }
 
-/** The schema of the invoice data: the host's sub-step (`requireIdentification`), shared with the guest check-in page through `addInvoiceDataIssues`. */
 export function createInvoiceDataSchema(options: InvoiceDataValidationOptions) {
   return z.object(invoiceDataFormShape).superRefine((values, context) => addInvoiceDataIssues(values, options, context));
 }
 
-/** The failure of each field, by the code: what a form keeps to show the words under the field. */
 export type InvoiceDataFieldErrors = Partial<Record<InvoiceDataField, InvoiceDataErrorCode>>;
 
 function isField(value: unknown): value is InvoiceDataField {
@@ -268,17 +246,12 @@ function isErrorCode(value: unknown): value is InvoiceDataErrorCode {
   return typeof value === 'string' && (INVOICE_DATA_ERROR_CODES as readonly string[]).includes(value);
 }
 
-/** The first failure of each field (a form shows one message under a field). */
 export function invoiceFieldErrorsOf(failures: readonly InvoiceDataFailure[]): InvoiceDataFieldErrors {
   const errors: InvoiceDataFieldErrors = {};
   for (const failure of failures) errors[failure.field] ??= failure.code;
   return errors;
 }
 
-/**
- * The failure of each field from the errors of a form library, which keeps the message of each field: here the code of the failure, as the schema
- * and a 422 of the server both write it. A message that is no code of the invoice data (written by something else) is left out.
- */
 export function invoiceFieldErrorsOfForm(errors: Partial<Record<InvoiceDataField, { message?: string } | undefined>> | undefined): InvoiceDataFieldErrors {
   const failures: InvoiceDataFieldErrors = {};
   for (const field of INVOICE_DATA_FIELDS) {
@@ -288,7 +261,6 @@ export function invoiceFieldErrorsOfForm(errors: Partial<Record<InvoiceDataField
   return failures;
 }
 
-/** The failures of a Zod error of the schema above (the path is the field, the message the code). */
 export function invoiceFailuresOfZod(error: z.ZodError): InvoiceDataFailure[] {
   return error.issues.flatMap((issue) => {
     const field = issue.path[issue.path.length - 1];
@@ -300,10 +272,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/**
- * The failures a 422 of the invoice data carries: the list `errors` (`[{ field, code }]`, every failure at once) or, for an answer that has only
- * the first one, its `code` and `field`. Empty for any other answer: a 422 of another kind, a 400, a network error.
- */
 export function readInvoiceDataProblems(error: unknown): InvoiceDataFailure[] {
   if (!isAxiosError(error) || error.response?.status !== 422) return [];
 
@@ -321,10 +289,6 @@ export function readInvoiceDataProblems(error: unknown): InvoiceDataFailure[] {
   return isErrorCode(code) && isField(data.field) ? [{ field: data.field, code }] : [];
 }
 
-/**
- * The words of a failure, as the name of a text under the `errors` of a set of texts: the code and the field give one of eleven messages
- * (`fiscalCodeRequired` and `vatNumberRequired` are the same code on two fields, `tooLong` is the code of a field that holds free text).
- */
 export const INVOICE_ERROR_MESSAGES = [
   'fiscalCodeInvalid',
   'vatNumberInvalid',
@@ -370,7 +334,6 @@ export function toSaveInvoiceDataRequest(values: InvoiceDataFormValues): SaveInv
   return normalizeInvoiceData(values);
 }
 
-/** True when two forms say the same thing once normalized: a save that would change nothing is not made. */
 export function sameInvoiceData(a: InvoiceDataFormValues, b: InvoiceDataFormValues): boolean {
   const left = normalizeInvoiceData(a);
   const right = normalizeInvoiceData(b);

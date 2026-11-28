@@ -27,7 +27,6 @@ describe('Product guide', () => {
     expect(manual).toHaveAttribute('href', '/guida/');
     expect(manual).toHaveAttribute('target', '_blank');
     expect(manual).toHaveAttribute('rel', expect.stringContaining('noopener'));
-    // It sits in the search block (before the list of topics), not at the bottom of the page.
     const search = screen.getByRole('searchbox');
     expect(search.compareDocumentPosition(manual) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(manual.compareDocumentPosition(screen.getAllByRole('heading', { level: 2 })[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -45,5 +44,4 @@ describe('Product guide', () => {
     fireEvent.click(screen.getByRole('link', { name: 'Back to topics' }));
     expect(screen.getByRole('link', { name: /Alloggiati/ })).toHaveFocus();
   });
-  // The way in from the header is the «Guida» panel now (its link to this page per area: `features/guide/__tests__/guide.test.tsx`).
 });

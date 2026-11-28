@@ -9,14 +9,12 @@ import type { SwissLocality } from '@/types/swiss-places.types';
 import { expectNoAxeViolations } from '@/test/axe';
 import { SwissLocalityPicker } from '../swiss-locality-picker';
 
-// The search waits a quarter of a second after the last key: on a loaded machine the awaits of the answers get more room.
 configure({ asyncUtilTimeout: 5_000 });
 
 const api = vi.hoisted(() => ({ searchLocalities: vi.fn(), getMunicipality: vi.fn() }));
 
 vi.mock('@/api/swiss-places.api', () => ({ SWISS_SEARCH_MIN_LENGTH: 2, SwissPlacesApi: api }));
 
-// Rows as the directory gives them (the official BFS number of Lugano is 5192; the other numbers are invented).
 const locality = (postalCode: string, name: string, municipalityCode: string, municipalityName: string, cantonCode = 'TI'): SwissLocality => ({
   postalCode,
   name,
@@ -30,7 +28,6 @@ const PARADISO = locality('6900', 'Paradiso', '5195', 'Paradiso');
 const VIGANELLO = locality('6962', 'Viganello', '5192', 'Lugano');
 const DIRECTORY = [LUGANO, MASSAGNO, PARADISO, VIGANELLO];
 
-/** A small directory with the search of the API: a postal code by its first digits, a name by what it contains. */
 function searchDirectory(query: string): SwissLocality[] {
   const text = query.trim().toLowerCase();
   if (/^\d+$/.test(text)) return DIRECTORY.filter((item) => item.postalCode.startsWith(text));
@@ -49,7 +46,6 @@ function problem(status: number, code: string) {
 
 type PickerProps = Partial<ComponentProps<typeof SwissLocalityPicker>>;
 
-/** The picker inside what the form does with it: it keeps the confirmed municipality, the postal code and the city, and takes them from the choice. */
 function Harness({ onPick, ...props }: PickerProps & { onPick: (place: SwissLocality | null) => void }) {
   const [municipalityCode, setMunicipalityCode] = useState(props.municipalityCode ?? null);
   const [postalCode, setPostalCode] = useState(props.postalCode ?? '');
@@ -319,7 +315,6 @@ describe('SwissLocalityPicker stored place', { timeout: 20_000 }, () => {
     const { client } = renderPicker({ postalCode: '6900', city: 'Lugano', municipalityCode: '5192' });
     expect(await screen.findByTestId('swiss-picker-municipality')).toBeInTheDocument();
 
-    // TanStack Query keeps the old data on an error: the 404 still wins.
     api.getMunicipality.mockRejectedValue(problem(404, 'swiss_municipality_unknown'));
     await act(async () => {
       await client.refetchQueries();

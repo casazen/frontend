@@ -41,7 +41,6 @@ function renderInbox(flags: Partial<FeatureFlags> = { octorateConnector: true })
   return { ...view, client };
 }
 
-/** The list is drawn and the state of the chats has been answered and drawn: what is not on the page now is not coming (no window of time). */
 async function statusDrawn() {
   await waitFor(() => expect(messageHubApi.getChannelStatus).toHaveBeenCalled());
   await act(async () => {
@@ -69,7 +68,6 @@ describe('InboxPage: the listings whose chat is not active yet (E23/F01/US02, NF
     const banner = await screen.findByTestId('chat-availability-banner');
     expect(banner).toHaveTextContent('Per 2 annunci la chat dei portali non è ancora attiva');
     expect(banner).toHaveTextContent('per attivarla devi dare il permesso alla chat nel tuo channel manager');
-    // Only the listings that wait for the permission are named: a chat that works, or that failed for another reason, is not «not active yet».
     const names = within(screen.getByTestId('chat-availability-listings')).getAllByTestId('chat-availability-listing').map((item) => item.textContent);
     expect(names).toEqual(['Casa Mare', 'Casa Monti']);
     expect(banner.textContent).not.toMatch(/octorate/i);
@@ -125,7 +123,6 @@ describe('InboxPage: the listings whose chat is not active yet (E23/F01/US02, NF
     expect(await screen.findByText('Nessun messaggio a cui rispondere')).toBeInTheDocument();
   });
 
-  // The query keeps the last answer when a read fails: it is not the state of the chats now, so the banner is taken away until a read works again, not kept as if it were current.
   it('InboxPage_StateOfTheChatsFailsToBeReadAfterAnAnswer_TakesTheBannerAwayAndShowsItAgainWhenAReadWorks', async () => {
     vi.mocked(messageHubApi.getChannelStatus)
       .mockResolvedValueOnce({ items: [listing('Casa Mare', 'waiting_permission', 1)] })
@@ -145,7 +142,6 @@ describe('InboxPage: the listings whose chat is not active yet (E23/F01/US02, NF
     expect(await screen.findByTestId('chat-availability-banner')).toBeInTheDocument();
   });
 
-  // Without a connection to the channels there is no chat to be waiting for: nothing is asked and the inbox is what it was.
   it('InboxPage_NoConnectionToTheChannels_AsksNothingOfTheChatsAndShowsNoBanner', async () => {
     vi.mocked(messageHubApi.getChannelStatus).mockResolvedValue({ items: [listing('Casa Mare', 'waiting_permission', 1)] });
     renderInbox({ octorateConnector: false });

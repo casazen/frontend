@@ -21,7 +21,6 @@ import {
 
 const IMPRESA_REGIMES: readonly StrFiscalRegime[] = ['RegimeOrdinario', 'RegimeForfettario'];
 
-/** Over the threshold and a regime still to choose ask for attention; the other notes only inform. */
 const TAX_NOTE_TONES: Record<FiscalTaxNote, NoteTone> = {
   irpef_ordinaria_not_computed: 'info',
   short_stay_threshold_exceeded: 'warning',
@@ -32,18 +31,11 @@ const TAX_NOTE_TONES: Record<FiscalTaxNote, NoteTone> = {
 interface FiscalPropertyItemProps {
   row: FiscalPropertyRow;
   snapshot: FiscalRegimeSnapshot;
-  /** A regime is being saved: the controls wait. */
   pending: boolean;
-  /** Whoever may change the properties gets the controls; the others see the state of each one. */
   canWrite: boolean;
   onAssign: (regime: StrFiscalRegime) => void;
 }
 
-/**
- * A property and its regime for the tax year: the name, the regime it has and its state, what the backend says about it, and,
- * for whoever may change it, the one control that chooses the regime and the buttons that confirm the recommended one or
- * designate the unit at 21%. On a phone everything is one column with the controls under the text.
- */
 export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign }: FiscalPropertyItemProps) {
   const { t } = useTranslation();
   const available = new Set(row.availableRegimes ?? []);
@@ -59,7 +51,6 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
   const movesReducedRate =
     canDesignate && taxpayer?.reducedRatePropertyId != null && taxpayer.reducedRatePropertyId !== row.propertyId;
   const showRecommended = row.recommendedRegime != null && row.recommendedRegime !== row.assignedRegime;
-  // With one taxpayer, the organization's, the line says nothing; it matters when there are several or a person's own.
   const showTaxpayer = taxpayer != null && (taxpayers.length > 1 || !taxpayer.isOrgTaxProfile);
   const selectId = `fiscal-regime-${row.propertyId}`;
   const confirmLabel = t('fiscal.confirmRecommended');
@@ -69,7 +60,6 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
   return (
     <li
       data-testid={`fiscal-property-card-${row.propertyId}`}
-      // One column on a phone, with the controls under the text; text and controls side by side from `md` when there are controls.
       className={cn(
         'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-x-8 gap-y-4 rounded-xl border bg-card p-4',
         canWrite && 'md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] md:items-start',

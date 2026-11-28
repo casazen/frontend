@@ -1,9 +1,7 @@
 import type { PropertyPhotoMeta, PropertyPhotoMetaInput } from '@/types';
 
-/** The longest caption of a photo (the alternative text): the limit of the backend. */
 export const PHOTO_CAPTION_MAX = 200;
 
-/** The caption of a photo (Italian and English) and its room, as typed in the wizard. A blank `roomId` is no room. */
 export interface PhotoMetaDraft {
   url: string;
   altIt: string;
@@ -15,19 +13,16 @@ const blank = (url: string): PhotoMetaDraft => ({ url, altIt: '', altEn: '', roo
 
 const hasContent = (draft: PhotoMetaDraft): boolean => draft.altIt.trim() !== '' || draft.altEn.trim() !== '' || draft.roomId !== '';
 
-/** What the server knows of the photos, as the fields of the wizard: only the photos that have a caption or a room. */
 export function photoMetaDraftsFromServer(photos: readonly PropertyPhotoMeta[]): PhotoMetaDraft[] {
   return photos
     .map((photo) => ({ url: photo.url, altIt: photo.alt?.it ?? '', altEn: photo.alt?.en ?? '', roomId: photo.roomId ?? '' }))
     .filter(hasContent);
 }
 
-/** The fields of one photo: blank when the host wrote nothing for it. */
 export function photoMetaOf(drafts: readonly PhotoMetaDraft[], url: string): PhotoMetaDraft {
   return drafts.find((draft) => draft.url === url) ?? blank(url);
 }
 
-/** The list with the fields of one photo changed (added when it was not there). */
 export function withPhotoMeta(drafts: readonly PhotoMetaDraft[], url: string, change: Partial<Omit<PhotoMetaDraft, 'url'>>): PhotoMetaDraft[] {
   const next = { ...photoMetaOf(drafts, url), ...change };
   return drafts.some((draft) => draft.url === url) ? drafts.map((draft) => (draft.url === url ? next : draft)) : [...drafts, next];
@@ -48,7 +43,6 @@ export function photoMetaInputs(drafts: readonly PhotoMetaDraft[], galleryUrls: 
     });
 }
 
-/** A comparable form of the captions and rooms: two lists that say the same thing have the same signature (blank entries and order do not matter). */
 export function photoMetaSignature(drafts: readonly PhotoMetaDraft[]): string {
   return JSON.stringify(
     drafts

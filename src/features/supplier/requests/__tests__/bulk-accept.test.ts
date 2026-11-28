@@ -4,7 +4,6 @@ import { acceptInBlocks, BLOCK_NOT_SENT, inBlocks } from '../bulk-accept';
 
 const ids = (count: number, prefix = 'r') => Array.from({ length: count }, (_, index) => `${prefix}${index + 1}`);
 
-/** An answer of the server in which every request is taken, except the ones named in `refused` (with the reason the server gives). */
 function answerFor(block: string[], refused: Record<string, string> = {}): AcceptSupplierRequestsResponse {
   const results = block.map((id) =>
     id in refused ? { id, accepted: false, code: 'supplier_commitment_conflict', message: refused[id] } : { id, accepted: true, status: 'PresoInCarico' },
@@ -60,7 +59,6 @@ describe('acceptInBlocks (SP-08b): the outcome of every request is its own', () 
 
     expect(outcome.failed.map((failure) => failure.id)).toEqual(ids(20));
     expect(outcome.failed.every((failure) => failure.code === BLOCK_NOT_SENT && failure.message === null)).toBe(true);
-    // What went through is not hidden by what did not.
     expect(outcome.accepted).toEqual(['r21', 'r22', 'r23', 'r24', 'r25']);
   });
 

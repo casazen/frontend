@@ -5,20 +5,11 @@ import { withListReturn } from '@/lib/list-return';
 import { cn } from '@/lib/utils';
 
 interface BackLinkProps {
-  /**
-   * Where it leads: the page above this one. When that is a list that remembers its filters (`useListReturn`) the link
-   * leads to it as the user left it.
-   */
   to: string;
-  /** The name of that page ("Prenotazioni"): the link reads "← Prenotazioni", a screen reader "Torna a Prenotazioni". */
   label: string;
   className?: string;
 }
 
-/**
- * The way back to the page above, for a phone (UI-05): where the breadcrumb of a computer would be, a link a thumb can hit
- * (44 px tall). From `md` up it is hidden, the breadcrumb takes its place; pass a `className` to show it there too.
- */
 export function BackLink({ to, label, className }: BackLinkProps) {
   const { t } = useTranslation();
 

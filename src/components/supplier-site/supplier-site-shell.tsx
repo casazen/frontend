@@ -18,7 +18,6 @@ import { OfflineBar, SiteLoadError, SiteNotFound, SitePaused, SiteSkeleton, Stat
 import { StickyBookBar } from './sticky-book-bar';
 import { isFramedPreview, usePreviewDraft } from './use-preview-draft';
 
-/** The cache of the slots of the backend is 30 seconds: reading the page again sooner would tell nothing new. */
 const SHOWCASE_STALE_MS = 30_000;
 
 /**
@@ -53,7 +52,6 @@ export function SupplierSiteShell() {
             ...data,
             paused: false,
             content: draft ?? data.content,
-            // The order of the services the draft names (the published page gets its own from the server).
             services: data.services && draft ? applyServiceOrder(data.services, draft.serviceOrder) : data.services,
           }
         : data,
@@ -67,7 +65,6 @@ export function SupplierSiteShell() {
   );
   const notFound = isError && isAxiosError(error) && error.response?.status === 404;
 
-  // The title and the description of the page it is on: the home, the list of services, one service, the story.
   const onServices = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/servizi`, end: true }) !== null;
   const onService = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/servizi/:serviceSlug`, end: true });
   const onAbout = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/chi-siamo`, end: true }) !== null;
@@ -77,7 +74,6 @@ export function SupplierSiteShell() {
   const onBooking = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/prenota`, end: true }) !== null;
   const onConfirm = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/conferma`, end: true }) !== null;
   const onRequest = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/richiesta`, end: true }) !== null;
-  // The request on measure (SP-12c): a form like the booking, private in the same way and not indexed.
   const onInquiry = useMatch({ path: `${SUPPLIER_SHOWCASE_BASE_PATH}/:slug/preventivo`, end: true }) !== null;
   const onCustomerArea = onConfirm || onRequest;
   let title = t('supplierShowcase.title');
@@ -140,9 +136,7 @@ export function SupplierSiteShell() {
     );
   }
 
-  // The header floats over a full-width cover on the home; everywhere else it is solid.
   const variant = onHome && model.hero === 'full' && !model.paused ? 'over' : 'solid';
-  // On a phone the one action stays at hand once the cover is out of sight: on the home, while the bookings are open.
   const hasBar = onHome && model.bookingsOpen && !preview;
 
   return (

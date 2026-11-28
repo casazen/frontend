@@ -23,7 +23,6 @@ export function TicinoGuestsEditor({ bookingId, onClose }: TicinoGuestsEditorPro
     if (!open) onClose();
   };
 
-  // A read that failed is an error even when an older answer is still held: the form would offer to edit what may no longer be there.
   if (summary.data && !summary.isError) {
     return <StayGuestsEditDialog bookingId={bookingId} summary={summary.data} open onOpenChange={onOpenChange} />;
   }

@@ -8,7 +8,6 @@ import { formatStayDate } from '@/lib/stay-dates';
 import type { ComplianceHandoff, ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 import { describeFailure } from './compliance-drawer-model';
 
-/** Where the handoff stands: being prepared by the server, ready to be followed, or not possible (and then the guide is ours, never an invented one). */
 export type ComplianceDrawerState =
   | { status: 'loading' }
   | { status: 'ready'; handoff: ComplianceHandoff }
@@ -17,17 +16,13 @@ export type ComplianceDrawerState =
 interface ComplianceDrawerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** What the host asked to check; the only thing the dialog knows before the server answers. */
   topic: ComplianceHandoffTopic;
   state: ComplianceDrawerState;
-  /** «Continua la verifica» was pressed: the tab is on its way to the address of the handoff. */
   leaving: boolean;
-  /** Saves where to come back to and opens the address of `handoff` in this same tab. */
   onContinue: (handoff: ComplianceHandoff) => void;
   onRetry: () => void;
 }
 
-/** A month (`yyyy-MM`) as «ottobre 2026», a day (`yyyy-MM-dd`) as a date; what is not one is shown as it came. */
 function periodLabel(period: string, locale: string): string {
   const month = period.length === 7;
   return formatStayDate(month ? `${period}-01` : period, locale, month ? { month: 'long', year: 'numeric' } : undefined) || period;
@@ -88,7 +83,6 @@ function ReadyBody({ handoff }: { handoff: ComplianceHandoff }) {
         {t(handoff.destinationKind === 'DeepLink' ? 'compliance.drawer.destination.deepLink' : 'compliance.drawer.destination.home')}
       </p>
 
-      {/* What it is and what it is not, as a secondary line: the result stays where it is, CasaZen does not read it and keeps nothing of it. */}
       <div className="flex items-start gap-2 rounded-md bg-muted p-3 text-sm" data-testid="compliance-drawer-disclosure">
         <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-foreground/70" />
         <div className="min-w-0 space-y-0.5">
@@ -112,7 +106,6 @@ export function ComplianceDrawerDialog({ open, onOpenChange, topic, state, leavi
   const loading = state.status === 'loading';
   const failure = state.status === 'error' ? describeFailure(state.error, t) : null;
 
-  // The tab is leaving: the layer stays as it is until the browser has gone.
   const changeOpen = (next: boolean) => {
     if (!next && leaving) return;
     onOpenChange(next);
@@ -136,7 +129,6 @@ export function ComplianceDrawerDialog({ open, onOpenChange, topic, state, leavi
             <Alert variant="danger" data-testid="compliance-drawer-error">
               {failure.message}
             </Alert>
-            {/* The guide of the topic, so the host can still do the check on their own: what to look at, never where (that is the server's to say). */}
             <section className="space-y-1" data-testid="compliance-drawer-fallback">
               <h3 className="text-sm font-semibold">{t('compliance.drawer.guide.checkTitle')}</h3>
               <p className="break-words text-sm">{t(`compliance.drawer.fallback.${topic}`)}</p>

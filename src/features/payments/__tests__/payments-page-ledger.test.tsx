@@ -30,7 +30,6 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('@/features/bookings/components/bookings-section-tabs', () => ({ BookingsSectionTabs: () => null }));
 
-/** Today in these tests (Europe/Rome): 13 November 2026. */
 const NOW = new Date('2026-11-13T10:00:00Z');
 
 const BOOKING = 'b0c1d2e3-0000-4000-8000-000000000002';
@@ -58,7 +57,6 @@ const answer = (items: PaymentLedgerLine[], totalCount = items.length, page = 1)
 const statusError = (status: number) =>
   new AxiosError('failed', 'ERR_BAD_RESPONSE', undefined, undefined, { status, statusText: '', data: {}, headers: {}, config: {} as never });
 
-/** A read that stays open until the test answers it: what the screen shows while it waits is what is looked at. */
 function pending<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((done) => {
@@ -124,15 +122,12 @@ describe('PaymentsPage, the switch between the list and the ledger of a period',
     expect(listLedger).toHaveBeenCalledTimes(1);
     expect(listLedger).toHaveBeenCalledWith({ from: '2026-11-01', to: '2026-11-30' }, 1, 20);
     expect(screen.getByTestId('payments-view-ledger')).toHaveAttribute('aria-pressed', 'true');
-    // The list and the numbers of the month are not on screen: one thing to look at.
     expect(screen.queryByTestId('payments-list')).toBeNull();
     expect(screen.queryByTestId('payments-summary')).toBeNull();
-    // The booking of each line is a link; each amount is in its own currency; nothing is added up.
     expect(within(rows()[0]).getByTestId('payment-ledger-booking')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING}`);
     expect(within(rows()[0]).getByTestId('payment-ledger-gross')).toHaveTextContent(/^100,00\s€$/);
     expect(within(rows()[1]).getByTestId('payment-ledger-gross')).toHaveTextContent(/^40,00\sCHF$/);
     expect(screen.queryByText(/140/)).toBeNull();
-    // Data rule: the choice and the days are in the screen, not in the address and not in the storage of the browser.
     expect(screen.getByTestId('search').textContent).toBe('');
     for (const storage of [window.localStorage, window.sessionStorage]) {
       for (let index = 0; index < storage.length; index += 1) {
@@ -191,7 +186,6 @@ describe('PaymentLedgerPeriod, the days and the pages', () => {
   });
 
   it('PaymentLedgerPeriod_AnotherPeriodStillBeingRead_ShowsNoLineOfTheEarlierPeriodAndThenOnlyTheLinesOfTheNewOne', async () => {
-    // Data rule: the lines of November are never drawn under the days of October while October is still being read (money of one period read as the money of another).
     const october = pending<PaymentLedgerPage>();
     vi.mocked(listLedger).mockResolvedValueOnce(answer([line({ paymentId: 'nov', gross: 111.11 })])).mockImplementationOnce(() => october.promise);
     renderPage();
@@ -203,7 +197,6 @@ describe('PaymentLedgerPeriod, the days and the pages', () => {
     fireEvent.change(screen.getByTestId('payment-ledger-from'), { target: { value: '2026-10-01' } });
 
     await waitFor(() => expect(listLedger).toHaveBeenLastCalledWith({ from: '2026-10-01', to: '2026-11-30' }, 1, 20));
-    // The new read has not answered: no row, no figure and no count of the earlier period (table and cards alike), a placeholder is read out instead.
     const table = screen.getByTestId('payment-ledger-period-table');
     expect(within(table).queryAllByTestId('payment-ledger-row')).toHaveLength(0);
     expect(within(table).queryByText(/111,11/)).toBeNull();
@@ -308,7 +301,6 @@ describe('PaymentLedgerPeriod, what a failed read and an empty period say', () =
     await screen.findByText('Pagina 1 di 3');
     fireEvent.click(screen.getByRole('button', { name: /Successiva/ }));
     await screen.findByText('Pagina 2 di 3');
-    // The lines went down while the page was open: page 2 is empty, and the total says there are lines.
     vi.mocked(listLedger).mockResolvedValueOnce(answer([], 25, 3)).mockResolvedValue(answer([line({ paymentId: 'p-last' })], 25, 2));
 
     fireEvent.click(screen.getByRole('button', { name: /Successiva/ }));
@@ -326,7 +318,6 @@ describe('PaymentLedgerPeriod, who may read it (permission rule)', () => {
 
     await act(async () => {});
     expect(listLedger).not.toHaveBeenCalled();
-    // Nothing is said about money either: no table, no "empty period", no error.
     expect(container).toBeEmptyDOMElement();
   });
 });

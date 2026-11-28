@@ -27,13 +27,6 @@ import { TrendChart } from './trend-chart';
 
 const SHORT_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/**
- * The overview of the Reports page (NF-96): occupancy, revenue, ADR and RevPAR of a period, the trend week by week or month by
- * month and the same days one year earlier, for all the properties together, by property or by channel. Every number and every
- * difference is read from `GET /api/reports/performance` and `/trend`, and for an agency from `/by-owner`; nothing is worked out here.
- * The downloads of the page stay below it. The filters are the page's own state (a link to the page opens it on this month, the way
- * the downloads suggest).
- */
 export function ReportsOverview() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -46,22 +39,16 @@ export function ReportsOverview() {
 
   const days = overviewDays(state, todayInRome());
   const problem = periodProblem(days, HOST_PERIOD_SOURCE);
-  // A property that is no longer the host's (an old choice) is the whole scope, not an error.
   const propertyId = propertyList.some((property) => property.id === state.propertyId) ? state.propertyId : '';
 
-  // By owner is offered to the owner and the administrators of an agency: the nearest mirror on the client of the roles that pass the
-  // `AgencyStatementView` policy of the server (the property manager does not). The server stays the authority: its 403 (`null`
-  // from the read) takes the grouping away again, quietly.
   const mayGroupByOwner = isAgency && hasPermission('short-rent', ORG_BILLING_ADMIN_PERMISSION);
   const asked = problem === null;
   const ownerReport = useOwnerReport(days, asked && mayGroupByOwner && state.grouping === 'owner');
   const ownerRefused = ownerReport.data === null;
   const groupings: readonly OverviewGrouping[] = ['all', 'property', 'channel', ...(mayGroupByOwner && !ownerRefused ? (['owner'] as const) : [])];
   const grouping = groupings.includes(state.grouping) ? state.grouping : 'all';
-  // By owner is the whole agency: the report by owner takes no property, so the numbers above it are not narrowed to one either.
   const query = overviewQuery(days, { compare: state.compare, grouping }, grouping === 'owner' ? '' : propertyId);
 
-  // The server is not asked for days it would refuse: the page says why, and shows nothing of an earlier choice.
   const performance = usePerformanceReport(query, asked);
   const trend = useTrendReport(query, asked);
   const report = asked ? performance.data : undefined;

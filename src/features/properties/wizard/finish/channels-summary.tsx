@@ -8,15 +8,9 @@ import { channelEntries } from '../channels-model';
 
 interface ChannelsSummaryProps {
   propertyId: string;
-  /** The channels the host chose to leave out in the channels step. */
   leftOut: readonly string[];
 }
 
-/**
- * «Canali» in the summary of the last step (NF-05): before the publication what will happen on each channel — it will be published, the
- * host left it out, its content is managed on the channel — and after it the result of each channel as the server tells it, with the
- * reason in simple words when it needs a look. It reads the status; nothing is worked out here.
- */
 export function ChannelsSummary({ propertyId, leftOut }: ChannelsSummaryProps) {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();

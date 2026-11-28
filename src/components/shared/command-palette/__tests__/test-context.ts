@@ -8,7 +8,6 @@ import { ORG_BILLING_ADMIN_PERMISSION, isOrgBillingAdmin } from '@/lib/org-billi
 import { contextOf } from '@/test/org-contexts';
 import type { CommandContext, CommandItem } from '../types';
 
-/** Every permission the pages of an area ask for, and the one of the organization's billing administrator: a full role. */
 export function allPermissions(area: AppContextKey): string[] {
   const permissions = new Set<string>([ORG_BILLING_ADMIN_PERMISSION]);
   for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.context === area)) {
@@ -18,13 +17,9 @@ export function allPermissions(area: AppContextKey): string[] {
 }
 
 interface ContextOptions {
-  /** The areas the user has. Default: short rent only. */
   areas?: AppContextKey[];
-  /** The area of the page that is open. Default: the first area. */
   activeArea?: AppContextKey;
-  /** The permissions the user has in each area. Default: all of them. */
   permissions?: (area: AppContextKey) => string[];
-  /** Replaces the whole test of permissions. */
   hasPermission?: PermissionPredicate;
   flags?: Partial<FeatureFlags>;
   locale?: AppLocale;
@@ -33,7 +28,6 @@ interface ContextOptions {
   actions?: Partial<CommandContext['actions']>;
 }
 
-/** A context for the sources of the palette, built the way the workspace of the app answers the same questions. */
 export function makeContext(options: ContextOptions = {}): CommandContext {
   const areas = options.areas ?? ['short-rent'];
   const locale = options.locale ?? 'it';
@@ -68,7 +62,6 @@ export function makeContext(options: ContextOptions = {}): CommandContext {
   };
 }
 
-/** A page-like item for the tests of the search and of the palette. */
 export function item(id: string, label: string, extra: Partial<CommandItem> = {}): CommandItem {
   return { id, kind: 'page', label, icon: Home, to: `/app/${id}`, ...extra } as CommandItem;
 }

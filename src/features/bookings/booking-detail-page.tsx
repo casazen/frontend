@@ -40,7 +40,6 @@ import { bookingCanCancel, bookingCanEdit } from './lib/booking-change';
 import { bookingPanelOf, type BookingPanel } from './lib/booking-tabs';
 import { canRegisterArrival, checkInWizardPath } from './lib/stay-actions';
 
-/** The page while the booking loads: the shape of the page, no spinner in the middle of nothing. */
 function BookingDetailSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="booking-detail-loading">
@@ -61,7 +60,6 @@ function BookingDetailSkeleton({ label }: { label: string }) {
   );
 }
 
-/** The stay is the default view. History and portal access open from the booking menu or an existing deep link. */
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
@@ -75,9 +73,7 @@ export function BookingDetailPage() {
   const [arrivalOpen, setArrivalOpen] = useState(false);
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
-  // The page is read again whenever it opens: what the host may do with the booking (`changeOptions`) and what is tied to it change elsewhere (the guest, the channel manager).
   const { data: booking, isLoading, isError, error, refetch } = useBooking(id!, { fresh: true });
-  // Messages with the guest (SR-12): only a booking of the booking site has them; the same thread query feeds the tab and its number.
   const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking, flags.guestPortal);
   const unreadMessages = useBookingThread(id!, hasMessages).data?.unreadCount ?? 0;
   const hasPortal = flags.guestPortal && hasPermission('short-rent', 'booking.write')
@@ -133,19 +129,11 @@ export function BookingDetailPage() {
   const canWrite = hasPermission('short-rent', 'booking.write');
   const canOpenCheckInWizard = canWrite && hasPermission('short-rent', 'alloggiati.submit')
     && (booking.status === 'Confirmed' || booking.status === 'CheckedIn');
-  // One confirmation for every pending booking the host can confirm (PC-07 with BK-06): the ones entered by hand and
-  // left Pending by the old code, and the "pay at the property" requests waiting for the host's answer.
   const pendingManual = booking.status === 'Pending' && booking.source === 'Manual';
   const canConfirm = canWrite && (pendingManual || (booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval'));
-  // The host can also decline the request that waits for the answer (BK-06, the same dialog as the list).
   const canDecline = canWrite && booking.status === 'Pending' && booking.onSiteRequestState === 'AwaitingHostApproval';
-  // Cancellation with refunds on Stripe (BK-02); the API also checks payment.write when money moves. A booking of a channel is cancelled only where the channel lets the
-  // host do it (E08/F03/US02, NF-76): the server says so with `changeOptions`, and where it does not the page says how to ask the guest or the channel (the tab Soggiorno).
   const canCancel = canWrite && bookingCanCancel(booking);
-  // "Modifica" only where the API takes it (SR-05c): the server says so with `changeOptions` (and `canEdit`), the page keeps no rule of its own. A request of the booking
-  // site, a booking of a channel, one that has started and one that is cancelled answer 422 to a change of dates and guests.
   const canEdit = canWrite && bookingCanEdit(booking);
-  // "Registra arrivo" (CO-08): a confirmed booking from its check-in day to its check-out day (Europe/Rome).
   const canCheckIn = canWrite && canRegisterArrival(booking);
 
   const language = i18n.language;
@@ -156,7 +144,6 @@ export function BookingDetailPage() {
   };
   const nights = bookingNights(booking);
   const guestName = `${booking.guest?.firstName ?? ''} ${booking.guest?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback');
-  // The line under the name: where, when, for how long, how many.
   const summary = [
     booking.propertyName,
     `${day(booking.checkInDate)} – ${day(booking.checkOutDate)}`,
@@ -177,7 +164,6 @@ export function BookingDetailPage() {
       : []),
   ];
 
-  // The test ids are how the Golden Journey (L3) and the tests reach the tabs.
   const tabs: TabItem<BookingPanel>[] = [
     { value: 'details', label: t('booking.detailPage.tabs.details'), testId: 'booking-tab-details' },
     ...(hasMessages
@@ -215,21 +201,17 @@ export function BookingDetailPage() {
         className={showMessages ? 'flex min-w-0 flex-1 flex-col gap-6 lg:min-h-0' : 'min-w-0 space-y-6'}
         data-app-viewport={showMessages ? '' : undefined}
       >
-        {/* The trail (Affitti brevi › Prenotazioni › this booking) and, on a phone, the link back to the list as the user left it (UI-05). */}
         <PageHeader
           crumbs={typeof state?.arrivalsSearch === 'string'
             ? [{ label: t('dashboard.today.arrivalsLabel'), to: `/app/short-rent?${new URLSearchParams(state.arrivalsSearch)}` }, { label: guestName }]
             : 'auto'}
           title={guestName}
-          // The state under the name; the facts of the stay (house, dates, guests) only where the card of the stay is not shown
-          // right below with the same facts; on the right, only the next action and its why (UX round 2026-11).
           status={<StatusBadge kind="booking" status={booking.status} data-testid="booking-detail-status" />}
           description={activeTab === 'details' ? undefined : summary}
           action={activeTab === 'details' ? <div className="flex min-w-0 flex-wrap items-center gap-2">{nextStep}</div> : undefined}
           secondary={menu}
         />
 
-        {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs
           label={t('booking.detailPage.tabsLabel')}
           items={tabs}
@@ -239,7 +221,6 @@ export function BookingDetailPage() {
           className={showMessages ? 'lg:flex lg:min-h-[26rem] lg:flex-1 lg:flex-col' : undefined}
           panelClassName={showMessages ? 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col' : undefined}
         >
-          {/* The "da verificare" notice has buttons that act on the stay: it lives with the stay (this tab), not above every tab. */}
           {activeTab === 'details' && (
             <div className="space-y-6">
               <OtaReviewNotice booking={booking} canWrite={canWrite} />

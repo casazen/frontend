@@ -30,21 +30,16 @@ export interface InterventionsListOptions {
   /** A step is running: the one action of a row waits, so that a second tap cannot send it twice. */
   busy: boolean;
   permissions: HostPermissions;
-  /** The properties of the host, for the filter. */
   properties: readonly { id: string; name: string }[];
-  /** The suppliers the host asked, for the filter. */
   suppliers: readonly { value: string; label: string }[];
-  /** The codes of the categories of the catalog, for the filter. */
   categories: readonly string[];
 }
 
-/** The line under the name of an intervention: where, and how pressing when it is not an ordinary one. */
 function subLine(request: ServiceRequest, t: TFunction): string {
   const urgency = request.urgency === 'Normal' ? null : t(`interventions.list.urgency.${request.urgency}`);
   return [request.propertyName, request.propertyCity, urgency].filter(Boolean).join(' · ');
 }
 
-/** The day and the hours of the work; a request with no time says so, it is never made up. */
 function whenCell(request: ServiceRequest, t: TFunction, language: string): ReactNode {
   const when = whenText(request, language, t);
   if (!when.day) return <span className="text-foreground/70">{t('interventions.list.noTime')}</span>;
@@ -61,7 +56,6 @@ function whenLine(request: ServiceRequest, t: TFunction, language: string): stri
   return [when.day, when.time].filter(Boolean).join(' · ') || t('interventions.list.noTime');
 }
 
-/** What the server asks of the host, as a few words under the state: only the cases the state alone does not say. */
 function stateNote(request: ServiceRequest, t: TFunction): string | null {
   switch (hostActionKind(request)) {
     case 'acceptProposal':
@@ -97,7 +91,6 @@ export function useInterventionsList({ steps, busy, permissions, properties, sup
       const may = (action: string) => mayDo(action, { canManage, canRequest });
 
       if (kind === 'none') {
-        // A new request reminded not long ago: the button is not there to press, it says when it will be.
         const wait = remindWaitText(request, t);
         return wait && may('remind') ? { id: 'remind-wait', label: wait, icon: BellRing, disabled: true, testId: 'intervention-row-remind-wait' } : null;
       }
@@ -162,7 +155,6 @@ export function useInterventionsList({ steps, busy, permissions, properties, sup
             );
           },
         },
-        // The ids of the two columns the server can order by (`SORT_KEYS` of the model).
         {
           id: 'when',
           label: t('interventions.list.columns.when'),
@@ -268,7 +260,6 @@ export function useInterventionsList({ steps, busy, permissions, properties, sup
           ],
         };
       },
-      // The swipe is the one action of the row and nothing else; the menu of the card has it too (a gesture is never the only way).
       swipe: (request) => {
         const primary = primaryOf(request);
         return primary && !primary.disabled
@@ -276,12 +267,9 @@ export function useInterventionsList({ steps, busy, permissions, properties, sup
           : undefined;
       },
 
-      // The name opens the drawer (UI-15); «Apri la scheda» leads to the page, which is also where a row goes when the drawer cannot open it.
       rowHref: (request) => interventionPath(request.id),
       detail: { drawerKind: INTERVENTION_DRAWER_KIND },
-      // What waits for the host is marked at the start of its row; what is over is quieter.
       rowTone: (request) => (waitsForHost(request) ? 'urgent' : isOver(request.status) ? 'done' : undefined),
-      // With the sidebar open (from `lg`) five columns and the button are not seen whole under 1280 px: cards until then.
       cardsUntil: 'xl',
       csv: false,
 

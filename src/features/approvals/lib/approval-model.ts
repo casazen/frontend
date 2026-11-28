@@ -4,42 +4,24 @@ import { getProblemCode, translateErrorCode } from '@/lib/api-errors';
 import { APPROVAL_ITEM_TYPES, type ApprovalQueueItem, type KnownApprovalItemType } from '@/types/approval-queue.types';
 import { REVIEW_REPLY_MAX_LENGTH } from '@/types/review.types';
 
-/*
- * What the page of the approvals needs to say about an item, as plain functions: the type, the situation and the confidence of a draft, the
- * text an approval acts with, the rules of an edit (the same the API applies: it decides, these only spare a round trip) and the words for
- * what an approval did or why it did not. The texts of the items are messages to guests and mailings: nothing here logs or stores them.
- */
-
-/** The type of the drafts the assistant writes for a conversation (`ItemType`): approving one sends the text to the guest. */
 export const MESSAGE_DRAFT_TYPE: KnownApprovalItemType = 'MessageDraft';
 
-/** The type of a marketing campaign waiting for approval: its text is the subject line, a blank line and the body. */
 export const CAMPAIGN_TYPE: KnownApprovalItemType = 'Campaign';
 
-/** The type of the drafts the assistant writes for the public reply to a review of a guest (E05/F06, NF-69): approving one publishes the reply, once. */
 export const REVIEW_REPLY_TYPE: KnownApprovalItemType = 'ReviewReply';
 
-/** The longest message to a guest (`GuestMessageRules.TextMaxLength`). */
 export const MESSAGE_TEXT_MAX_LENGTH = 2000;
 
-/** The longest subject line of a campaign (`ApprovalQueueRules.CampaignSubjectMaxLength`). */
 export const CAMPAIGN_SUBJECT_MAX_LENGTH = 200;
 
-/** The longest reason of a rejection (`ApprovalQueueItem.RejectionReasonMaxLength`). */
 export const REJECTION_REASON_MAX_LENGTH = 500;
 
-/**
- * The score from which a draft of the assistant is called «high» (PO-08: 0.85 is the threshold the assistant starts with; the page does not
- * know the one an organization may have set, so it only words the score: the decision is always the host's).
- */
 export const HIGH_CONFIDENCE_FROM = 0.85;
 
-/** The codes of the answers of the approval queue (`ApprovalQueueRules`), the ones the page tells apart. */
 export const ORIGIN_ACTION_FAILED_CODE = 'approval_origin_action_failed';
 const NOT_PENDING_CODE = 'approval_item_not_pending';
 const NOT_FOUND_CODE = 'approval_item_not_found';
 
-/** The code the server gives to a failure of an action that nobody foresaw (`ApprovalQueueRules.UnexpectedErrorCode`). */
 const UNEXPECTED_ORIGIN_ERROR_CODE = 'origin_action_error';
 
 const TYPE_LABEL_KEYS: Record<KnownApprovalItemType, string> = {
@@ -50,31 +32,25 @@ const TYPE_LABEL_KEYS: Record<KnownApprovalItemType, string> = {
   ReviewReply: 'approval.type.reviewReply',
 };
 
-/** The types the filter of the page offers, in the order it shows them (the drafts of messages first). */
 export const FILTERABLE_TYPES: readonly KnownApprovalItemType[] = APPROVAL_ITEM_TYPES;
 
-/** The type of an item in words: «Bozza di messaggio», «Campagna»; «Altro» for a type this version does not know. */
 export function approvalTypeLabel(itemType: string, t: TFunction): string {
   const key = (TYPE_LABEL_KEYS as Record<string, string | undefined>)[itemType] ?? 'approval.type.other';
   return t(key);
 }
 
-/** Whether the item is the draft of a message to a guest: it has a conversation, a situation and a score. */
 export function isMessageDraft(item: Pick<ApprovalQueueItem, 'itemType'>): boolean {
   return item.itemType === MESSAGE_DRAFT_TYPE;
 }
 
-/** Whether the item is a campaign. */
 export function isCampaign(item: Pick<ApprovalQueueItem, 'itemType'>): boolean {
   return item.itemType === CAMPAIGN_TYPE;
 }
 
-/** Whether the item is the draft of the public reply to a review: it has a review (`threadKey`) and no situation or score. */
 export function isReviewReply(item: Pick<ApprovalQueueItem, 'itemType'>): boolean {
   return item.itemType === REVIEW_REPLY_TYPE;
 }
 
-/** Whether the host edited the text: the approval then acts with the edit, and the original stays on the item. */
 export function isEdited(item: Pick<ApprovalQueueItem, 'editedContentText'>): boolean {
   return item.editedContentText !== null && item.editedContentText !== undefined;
 }
@@ -84,12 +60,9 @@ export function finalTextOf(item: Pick<ApprovalQueueItem, 'contentText' | 'edite
   return isEdited(item) ? (item.editedContentText as string) : item.contentText;
 }
 
-/** The first line of a text, for a place where it only has to be recognised. */
 export function firstLineOf(text: string): string {
   return text.replace(/\r\n?/g, '\n').split('\n').find((line) => line.trim().length > 0)?.trim() ?? '';
 }
-
-// -- the confidence and the situation of a draft ---------------------------------------------------------------------------------------
 
 /** The score of a draft in words: `high` from {@link HIGH_CONFIDENCE_FROM}, `low` below it («check it carefully»), with the percentage. */
 export interface ConfidenceView {
@@ -97,17 +70,12 @@ export interface ConfidenceView {
   percent: number;
 }
 
-/** The confidence of a draft, or `null` when the item has no score (every item that is not the draft of a message). */
 export function confidenceView(score: number | null | undefined): ConfidenceView | null {
   if (score === null || score === undefined || !Number.isFinite(score)) return null;
   const clamped = Math.min(1, Math.max(0, score));
   return { level: clamped >= HIGH_CONFIDENCE_FROM ? 'high' : 'low', percent: Math.round(clamped * 100) };
 }
 
-/**
- * The situation the assistant recognised, in words: `approval.situation.<code>` for the situations it has (snake_case codes), and, for a code
- * this version does not know, the code itself written as a phrase («late_check_in» → «Late check in»), never a raw identifier.
- */
 export function situationLabel(code: string, t: TFunction, i18n: Pick<I18nInstance, 'exists'>): string {
   const key = `approval.situation.${code}`;
   if (/^[a-z][a-z0-9_]*$/.test(code) && i18n.exists(key)) return t(key);
@@ -115,16 +83,12 @@ export function situationLabel(code: string, t: TFunction, i18n: Pick<I18nInstan
   return phrase.length === 0 ? code : phrase.charAt(0).toUpperCase() + phrase.slice(1);
 }
 
-// -- the text of an edit ---------------------------------------------------------------------------------------------------------------
-
-/** The fields the edit dialog holds: one text for everything but a campaign, whose text is a subject line and a body. */
 export interface EditFields {
   text: string;
   subject: string;
   body: string;
 }
 
-/** What is wrong with an edit: the field, the i18n key of the sentence and, when it has one, the limit it names. */
 export interface EditProblem {
   field: 'text' | 'subject' | 'body';
   key: string;
@@ -135,10 +99,6 @@ function normalizeBreaks(text: string): string {
   return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 }
 
-/**
- * The subject line and the body of the text of a campaign: the subject on one line, a blank line, the body (`ApprovalQueueRules.TryParseCampaignText`).
- * `null` for a text that is not in that form.
- */
 export function parseCampaignText(text: string): { subject: string; body: string } | null {
   const normalized = normalizeBreaks(text).trim();
   const split = normalized.indexOf('\n\n');
@@ -150,12 +110,10 @@ export function parseCampaignText(text: string): { subject: string; body: string
   return { subject, body };
 }
 
-/** The text of a campaign item: the subject, a blank line and the body (the form the API reads). */
 export function campaignTextOf(subject: string, body: string): string {
   return `${subject.trim()}\n\n${body.trim()}`;
 }
 
-/** The fields of the edit dialog for a text: a campaign is split into its subject line and its body, any other text is one field. */
 export function editFieldsOf(item: Pick<ApprovalQueueItem, 'itemType'>, text: string): EditFields {
   if (isCampaign(item)) {
     const parsed = parseCampaignText(text);
@@ -164,16 +122,10 @@ export function editFieldsOf(item: Pick<ApprovalQueueItem, 'itemType'>, text: st
   return { text, subject: '', body: '' };
 }
 
-/** The text an edit saves: the subject line, a blank line and the body for a campaign, the text as it is for the others. */
 export function editedTextOf(item: Pick<ApprovalQueueItem, 'itemType'>, fields: EditFields): string {
   return isCampaign(item) ? campaignTextOf(fields.subject, fields.body) : fields.text;
 }
 
-/**
- * What the API would refuse in an edit (`approval_edit_invalid`), found before the request: an empty text, a message longer than
- * {@link MESSAGE_TEXT_MAX_LENGTH} characters, a campaign without a subject line (or with one longer than {@link CAMPAIGN_SUBJECT_MAX_LENGTH}
- * or on several lines) or without a body. `null` when the edit is usable. The API stays the judge: it answers 422 for what this lets through.
- */
 export function editProblem(item: Pick<ApprovalQueueItem, 'itemType'>, fields: EditFields): EditProblem | null {
   if (isCampaign(item)) {
     const subject = normalizeBreaks(fields.subject).trim();
@@ -189,14 +141,11 @@ export function editProblem(item: Pick<ApprovalQueueItem, 'itemType'>, fields: E
   if (isMessageDraft(item) && text.length > MESSAGE_TEXT_MAX_LENGTH) {
     return { field: 'text', key: 'approval.edit.error.tooLong', max: MESSAGE_TEXT_MAX_LENGTH };
   }
-  // The public reply to a review is shorter than a message to a guest (`ReviewRules.ReplyMaxLength`).
   if (isReviewReply(item) && text.length > REVIEW_REPLY_MAX_LENGTH) {
     return { field: 'text', key: 'approval.edit.error.tooLong', max: REVIEW_REPLY_MAX_LENGTH };
   }
   return null;
 }
-
-// -- what an approval did, and why it did not ------------------------------------------------------------------------------------------
 
 /** What an approval did, as the page tells it: the i18n key of the sentence and its tone (`warning` when the host has something to check). */
 export interface ApprovalOutcome {
@@ -234,10 +183,6 @@ export function approvalOutcome(item: Pick<ApprovalQueueItem, 'originActionResul
   }
 }
 
-/**
- * The stable code of a failed action when the error is the 409 `approval_origin_action_failed` of an approval (its `originActionError`):
- * the item stays pending and the host can try again. `undefined` for any other error.
- */
 export function originActionErrorOf(error: unknown): string | undefined {
   if (!isAxiosError(error) || error.response?.status !== 409) return undefined;
 
@@ -269,7 +214,6 @@ export function originErrorMessage(code: string | null | undefined, t: TFunction
   return translateErrorCode(code, t) ?? t('approval.action.originUnknown');
 }
 
-/** The code of the failure to show on an item that is still pending: the one the last approval gave, or the one the server saved on the item. */
 export function failureCodeOf(item: Pick<ApprovalQueueItem, 'originActionStatus' | 'originActionError'>): string | null {
   return item.originActionStatus === 'Failed' ? (item.originActionError ?? UNEXPECTED_ORIGIN_ERROR_CODE) : null;
 }

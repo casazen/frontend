@@ -122,7 +122,6 @@ describe('NavSectionTabs (UI-04a)', () => {
   });
 
   it('NavSectionTabs_UserWhoMayNotOpenTheEntry_SeesNoTabs', () => {
-    // Without payment.read the pages of Incassi are entries of "Altro" of their own: the tabs would lead to pages the menu does not group.
     renderAt('/app/short-rent/fiscal', { hasPermission: (_ctx, permission) => permission !== 'payment.read' });
 
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
@@ -158,12 +157,10 @@ describe('NavSectionTabs (UI-04a)', () => {
     expect(labelsOf('Sezioni di Chiusura mensile')).toEqual(['Chiusura mensile', 'Rendiconti', "Ritenute d'acconto", 'Bonifici proprietari', 'Commissioni dei canali']);
     cleanup();
 
-    // The supplier area keeps the links to its sub-pages in the header of the page of the entry (`NavChildLinks`).
     const { container } = renderAt('/app/supplier/availability');
     expect(container).toBeEmptyDOMElement();
   });
 
-  // An isolated test of a page renders it without the workspace or the router (as the pages' own tests do).
   it('NavSectionTabs_NoWorkspace_ShowsEveryPageOfTheSection', () => {
     renderAt('/app/short-rent/bookings', { withWorkspace: false });
 
@@ -191,7 +188,6 @@ describe('PageHeader draws the tabs of its section (UI-04a)', () => {
 
     const heading = screen.getByRole('heading', { level: 1, name: 'Ospiti' });
     const nav = screen.getByRole('navigation', { name: 'Sezioni di Prenotazioni' });
-    // The strip follows the head in the page.
     expect(heading.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(nav).getByRole('link', { name: 'Ospiti' })).toHaveAttribute('aria-current', 'page');
   });
@@ -218,20 +214,16 @@ describe('PageHeader draws the tabs of its section (UI-04a)', () => {
   });
 });
 
-// The tabs are drawn by the head of each page of a section: a page of a section that has no `PageHeader` would leave its tab bar
-// off, and the user with no way to the other pages of the section but the menu. The rental areas have no other way in.
 describe('every page of a section has the head that draws the tabs', () => {
   const sources = import.meta.glob<string>(['/src/**/*.tsx', '!/src/**/*.test.tsx', '!/src/**/__tests__/**'], {
     query: '?raw',
     import: 'default',
     eager: true,
   });
-  // The manifest and the list it spreads (the pages of the activation, `onboarding-routes.ts`): a page of a section may be in either.
   const manifest = Object.values(
     import.meta.glob<string>(['/src/config/route-manifest.ts', '/src/config/onboarding-routes.ts'], { query: '?raw', import: 'default', eager: true }),
   ).join('\n');
 
-  /** The sources of the component of a page of the manifest: where the exported name it lazy-loads is defined. */
   function componentSources(path: string): string[] {
     const start = manifest.indexOf(`path: '${path}',`);
     const block = manifest.slice(start, manifest.indexOf('\n  },', start));

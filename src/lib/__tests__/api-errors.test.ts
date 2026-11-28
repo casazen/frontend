@@ -59,7 +59,6 @@ describe('getProblemMessage (A9-09 FE)', () => {
     expect(getProblemMessage(error, t)).toBe(i18n.t('apiErrors.codes.managedByStripe'));
   });
 
-  // AM-00 (S2): the 409 a member of an org gets from the onboarding has its own text, not the generic conflict.
   it('getProblemMessage_memberCannotOnboard_isTranslatedInBothLanguages', async () => {
     const error = httpError(409, { status: 409, code: 'member_cannot_onboard', detail: 'Testo del server' });
 

@@ -15,7 +15,6 @@ interface PlanBadgeProps {
   className?: string;
 }
 
-/** Read-only plan indicator (#202, AC11). */
 export function PlanBadge({ planTier, className }: PlanBadgeProps) {
   const { t } = useTranslation();
 

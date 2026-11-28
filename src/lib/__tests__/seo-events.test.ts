@@ -35,7 +35,6 @@ describe('buildSeoEventPayload (SE-04, #300 AC3, no personal data)', () => {
       utmSource: 'seo-compliance',
       utmMedium: 'cta',
       utmCampaign: 'estate',
-      // The host only: never the URL or its query.
       referrerHost: 'www.google.com',
     });
   });
@@ -84,7 +83,6 @@ describe('trackSeoEvent (SE-04, #300 AC3 AC8)', () => {
 
   beforeEach(() => {
     window.sessionStorage.clear();
-    // The visitor allowed statistics: without that nothing is sent (`cookie-consent.test.ts` proves it).
     window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
     sendBeacon.mockReset().mockReturnValue(true);
     Object.defineProperty(window.navigator, 'sendBeacon', { value: sendBeacon, configurable: true, writable: true });

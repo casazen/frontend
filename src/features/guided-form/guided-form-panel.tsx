@@ -25,15 +25,9 @@ function asSettableStatus(status: CfPracticeStatus): CfSimulatorStatus {
 
 interface SubmittedViewProps {
   practice: SubmittedPractice;
-  /** The state the practice has now: the page keeps it (and the tab remembers it). */
   onStatusChanged: (status: CfPracticeStatus) => void;
 }
 
-/**
- * What the module shows once the practice is sent: its number and state, and the test panel where whoever is trying the round does what the
- * service would do (moves the practice through its states and sends the documents by e-mail, here downloaded), then the way back into
- * CasaZen: the page that takes the documents in (`?practice=`) and the page of the contract.
- */
 export function GuidedFormSubmitted({ practice, onStatusChanged }: SubmittedViewProps) {
   const { t } = useTranslation();
   const setStatus = useCfSimulatorSetStatus(practice.practiceId);

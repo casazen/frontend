@@ -47,7 +47,6 @@ const HANDOFF: ComplianceHandoff = {
   guide: { code: 'alloggiati_daily', menuPath: 'Strutture, poi Questura, poi Invii giornalieri', check: 'Controlla che il soggiorno risulti inviato e senza errori.' },
 };
 
-/** A failed call as axios builds it, with the body the request carried (what `withoutRequest` must not keep). */
 function answered(status: number, data?: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify({ returnPath: ROUTE }) } as InternalAxiosRequestConfig;
   return new AxiosError('failed', 'ERR_BAD_RESPONSE', config, { sent: true }, { status, statusText: '', headers: {}, config, data });
@@ -71,7 +70,6 @@ function renderButton({ connector = true, path = ROUTE }: { connector?: boolean;
 
 const trigger = () => screen.getByTestId('compliance-drawer-trigger');
 
-/** The browser shows the page: `persisted` when it brings it back from its memory (the back button of a page that left in the same tab). */
 function pageshow(persisted: boolean) {
   const event = new Event('pageshow');
   Object.defineProperty(event, 'persisted', { value: persisted });
@@ -113,7 +111,6 @@ describe('ComplianceDrawerButton: who is offered it', () => {
     renderButton();
 
     expect(screen.getByRole('button', { name: 'Verifica nel tuo Cassetto Compliance: Mario Rossi' })).toBeInTheDocument();
-    // Offering it asks nothing: the handoff starts when the host presses it.
     expect(start).not.toHaveBeenCalled();
   });
 });
@@ -144,7 +141,6 @@ describe('ComplianceDrawerButton: the dialog', () => {
     const disclosure = within(dialog).getByTestId('compliance-drawer-disclosure');
     expect(disclosure).toHaveTextContent('Dati consultati su Octorate');
     expect(disclosure).toHaveTextContent('non lo importa');
-    // The primary copy speaks as CasaZen: the name of the connected area is only in the disclosure.
     expect(within(dialog).getByTestId('compliance-drawer-menu')).not.toHaveTextContent('Octorate');
     expect(within(dialog).getByRole('button', { name: 'Continua la verifica' })).toBeEnabled();
   });
@@ -198,7 +194,6 @@ describe('ComplianceDrawerButton: the dialog', () => {
       origin: `Alloggiati:${PROPERTY}:${BOOKING}:`,
     });
     expect(Object.keys(kept).sort()).toEqual(['expiresAt', 'filters', 'handoffId', 'origin', 'route']);
-    // Once the tab is on its way the button cannot be pressed again.
     expect(screen.getByTestId('compliance-drawer-continue')).toBeDisabled();
     open.mockRestore();
   });
@@ -260,7 +255,6 @@ describe('ComplianceDrawerButton: the dialog', () => {
 });
 
 describe("ComplianceDrawerButton: a tab that does not leave, and a page brought back from the browser's memory", () => {
-  /** The host pressed «Continua la verifica» and the navigation never came (the browser asked «Lasciare il sito?» and was told no). */
   async function pressContinueOnATabThatStays() {
     const assign = vi.fn();
     vi.stubGlobal('location', { ...window.location, assign });
@@ -281,7 +275,6 @@ describe("ComplianceDrawerButton: a tab that does not leave, and a page brought 
     try {
       fireEvent.click(proceed);
 
-      // On its way out: nothing of the layer can be pressed, and the tab kept where to come back to.
       expect(assign).toHaveBeenCalledTimes(1);
       expect(screen.getByTestId('compliance-drawer-continue')).toBeDisabled();
       expect(screen.getByTestId('compliance-drawer-continue')).toHaveTextContent("Apro l'area collegata");
@@ -295,7 +288,6 @@ describe("ComplianceDrawerButton: a tab that does not leave, and a page brought 
         vi.advanceTimersByTime(1);
       });
 
-      // The page that was to come never came: the layer is usable again, as it was, and is not a dead end.
       expect(screen.getByTestId('compliance-drawer-continue')).toBeEnabled();
       expect(screen.getByTestId('compliance-drawer-continue')).toHaveTextContent('Continua la verifica');
       expect(screen.getByTestId('compliance-drawer-cancel')).toBeEnabled();
@@ -323,7 +315,6 @@ describe("ComplianceDrawerButton: a tab that does not leave, and a page brought 
     }
     fireEvent.click(screen.getByTestId('compliance-drawer-cancel'));
 
-    // The host is not on their way any more: nothing is left to bring them back to a page they never left.
     await waitFor(() => expect(screen.queryByTestId('compliance-drawer-dialog')).not.toBeInTheDocument());
     expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).toBeNull();
   });
@@ -344,7 +335,6 @@ describe("ComplianceDrawerButton: a tab that does not leave, and a page brought 
     pageshow(true);
 
     await waitFor(() => expect(screen.queryByTestId('compliance-drawer-dialog')).not.toBeInTheDocument());
-    // It is the host's way back: the shell restores it, once; the button neither forgets it nor asks for anything more.
     expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).not.toBeNull();
     expect(start).toHaveBeenCalledTimes(1);
     expect(trigger()).not.toHaveAttribute('aria-busy');
@@ -388,7 +378,6 @@ describe('ComplianceDrawerButton: while the request is in flight', () => {
     fireEvent.click(await screen.findByTestId('compliance-drawer-cancel'));
     await waitFor(() => expect(screen.queryByTestId('compliance-drawer-dialog')).not.toBeInTheDocument());
 
-    // Pressed again while the first request is still out: nothing is asked.
     expect(trigger()).toHaveAttribute('aria-busy', 'true');
     fireEvent.click(trigger());
     expect(start).toHaveBeenCalledTimes(1);

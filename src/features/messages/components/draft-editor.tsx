@@ -9,17 +9,12 @@ import type { useEditItem, useSaveAndApproveItem } from '@/queries/approvalQueue
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
 interface DraftEditorProps {
-  /** The draft being edited. The field starts from the text the approval would act with (the host's earlier edit, else the draft). */
   item: ApprovalQueueItem;
-  /** The mutations belong to the panel: it keeps every button waiting while any request of the draft goes on. */
   edit: ReturnType<typeof useEditItem>;
   saveAndApprove: ReturnType<typeof useSaveAndApproveItem>;
-  /** Any request of the panel is going on (an approval, an edit, a rejection, a request for a draft). */
   busy: boolean;
   onClose: () => void;
-  /** «Save and approve» went through: the item as the API answered it, with what the approval did. */
   onApproved: (item: ApprovalQueueItem) => void;
-  /** The edit was saved and the approval did not go through (the action failed): the draft stays open on the panel with the code of the failure. */
   onApproveFailed: (id: string, originCode: string) => void;
 }
 
@@ -38,11 +33,9 @@ export function DraftEditor({ item, edit, saveAndApprove, busy, onClose, onAppro
   const problem = editProblem(item, { text, subject: '', body: '' });
   const changed = text !== initial;
 
-  /** What the API answered to a save that did not go through: only a text it refuses stays on the box; the toast of the hook says the rest. */
   const failed = (error: unknown) => {
     const originCode = originActionErrorOf(error);
     if (originCode !== undefined) {
-      // The edit is saved: the draft stays on the panel with its new text and the reason, ready to be approved again.
       onApproveFailed(item.id, originCode);
       onClose();
     } else if (itemIsGone(error)) {

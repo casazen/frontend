@@ -25,7 +25,6 @@ import type { SignupAttribution } from '@/types';
  * them is dropped here, so the backend refuses nothing in practice.
  */
 
-/** Route of the signup entry point (public, opens the Auth0 signup screen). */
 export const SIGNUP_PATH = '/signup';
 
 export const UTM_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const;
@@ -41,17 +40,14 @@ interface LandingTouch {
 interface PendingAttribution {
   attribution: SignupAttribution;
   capturedAt: number;
-  /** Set when the first onboarding created the org: only then is the attribution sent. */
   ready: boolean;
 }
 
 export const LANDING_TOUCH_STORAGE_KEY = 'cz-landing-touch';
 export const PENDING_ATTRIBUTION_STORAGE_KEY = 'cz-signup-attribution';
 
-/** An attribution not sent within 30 days (signup abandoned) is forgotten. */
 export const PENDING_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-// Same rules as the backend (Casazen.Core/Validation/SignupAttributionRules.cs).
 const MAX_UTM_LENGTH = 100;
 const UTM_PATTERN = /^[\p{L}\p{N} ._~+|:,/()!-]+$/u;
 const MAX_COMUNE_LENGTH = 100;
@@ -74,7 +70,6 @@ function valid(value: string | null | undefined, pattern: RegExp, maxLength: num
   return trimmed && trimmed.length <= maxLength && pattern.test(trimmed) ? trimmed : undefined;
 }
 
-/** UTM parameters of a query string; values outside the rules are dropped. */
 export function readUtm(search: string): UtmValues {
   const params = new URLSearchParams(search);
   const utm: UtmValues = {};
@@ -100,7 +95,6 @@ function isStayLinkPath(pathname: string | null | undefined): boolean {
 export function validLandingPath(pathname: string | null | undefined): string | undefined {
   // The address of an invite link carries its secret token: never part of an attribution.
   if (isStayLinkPath(pathname) || pathname?.startsWith(HOST_INVITE_PATH_PREFIX)) return undefined;
-  // The address of the document a guest got by e-mail names the document (E12/F02/US02): never part of an attribution either.
   if (pathname?.startsWith(FISCAL_DOCUMENT_VIEW_PATH_PREFIX)) return undefined;
   return valid(pathname, LANDING_PATH_PATTERN, MAX_LANDING_PATH_LENGTH);
 }
@@ -113,14 +107,12 @@ function parseUrl(value: string): URL | null {
   }
 }
 
-/** Host of a referrer on another site; `undefined` for this site, no referrer or anything else than http(s). */
 export function externalReferrerHost(referrer: string, origin: string): string | undefined {
   const url = referrer ? parseUrl(referrer) : null;
   if (!url || (url.protocol !== 'https:' && url.protocol !== 'http:') || url.origin === origin) return undefined;
   return valid(url.hostname.toLowerCase(), REFERRER_HOST_PATTERN, MAX_REFERRER_HOST_LENGTH);
 }
 
-/** Path of a referrer on this site (e.g. the SEO page whose CTA was clicked). */
 function sameSiteReferrerPath(referrer: string, origin: string): string | undefined {
   const url = referrer ? parseUrl(referrer) : null;
   return url && url.origin === origin ? validLandingPath(url.pathname) : undefined;
@@ -160,7 +152,6 @@ interface PageLocation {
   origin: string;
 }
 
-/** The first page of a visit that the visitor opened before allowing statistics: held in memory only, never stored, until they do. */
 let deferredTouch: LandingTouch | null = null;
 
 /**
@@ -170,9 +161,7 @@ let deferredTouch: LandingTouch | null = null;
  * accepts on the second page still counts for the page they came in by).
  */
 export function recordLandingTouch(location: PageLocation = window.location, referrer = document.referrer): void {
-  // The visit of a person who stops or confirms the marketing e-mails is no statistic about a visitor (NF-95): not even held in memory.
   if (isStayLinkPath(location.pathname) || isMarketingLinkPath(location.pathname)) return;
-  // So is the visit of a guest who opens the document of the stay from the e-mail (E12/F02/US02): its address names the document. Not even held in memory.
   if (location.pathname.startsWith(FISCAL_DOCUMENT_VIEW_PATH_PREFIX)) return;
   if (readJson<LandingTouch>(session, LANDING_TOUCH_STORAGE_KEY)) return;
   const touch: LandingTouch = {
@@ -184,7 +173,6 @@ export function recordLandingTouch(location: PageLocation = window.location, ref
   else deferredTouch ??= touch;
 }
 
-/** The visitor has just allowed statistics: the first page of the visit, held in memory until now, is kept like any other touch. */
 export function keepDeferredLandingTouch(): void {
   if (deferredTouch && !readJson<LandingTouch>(session, LANDING_TOUCH_STORAGE_KEY)) {
     writeJson(session, LANDING_TOUCH_STORAGE_KEY, deferredTouch);
@@ -192,7 +180,6 @@ export function keepDeferredLandingTouch(): void {
   deferredTouch = null;
 }
 
-/** The visitor does not allow statistics (or no longer does): the source of the visit is forgotten, in the page and in the browser. */
 export function forgetVisitMarketing(): void {
   deferredTouch = null;
   remove(session, LANDING_TOUCH_STORAGE_KEY);
@@ -220,11 +207,6 @@ function readLandingTouch(): LandingTouch | null {
   return touch && typeof touch === 'object' ? { ...touch, utm: touch.utm ?? {} } : null;
 }
 
-/**
- * Link of the signup CTA of an SEO page: the URL built by the backend (public domain, comune, default UTM
- * parameters) with the UTM parameters of the visit when it has some (the whole set replaces the defaults, so the
- * values stay coherent). A relative URL stays relative.
- */
 export function buildSignupCtaHref(signupUrl: string, location: Pick<PageLocation, 'search' | 'origin'> = window.location): string {
   let url: URL;
   try {
@@ -260,7 +242,6 @@ function readPending(now: number): PendingAttribution | null {
   return pending;
 }
 
-/** The attribution waiting to be sent, if any (expired ones are forgotten). */
 export function readPendingSignupAttribution(now = Date.now()): SignupAttribution | null {
   return readPending(now)?.attribution ?? null;
 }
@@ -275,7 +256,6 @@ export function captureSignupAttribution(
   referrer = document.referrer,
   now = Date.now(),
 ): SignupAttribution {
-  // A statistic about the visitor: nothing is read into it or kept before they allow statistics (DB-02b).
   if (!hasConsent('statistics')) return {};
 
   const params = new URLSearchParams(location.search);
@@ -303,7 +283,6 @@ export function captureSignupAttribution(
   return attribution;
 }
 
-/** The first onboarding created the org: the attribution may now be sent. */
 export function markSignupAttributionReady(now = Date.now()): void {
   const pending = readPending(now);
   if (pending && !pending.ready) {
@@ -315,7 +294,6 @@ export function discardSignupAttribution(): void {
   remove(local, PENDING_ATTRIBUTION_STORAGE_KEY);
 }
 
-/** Only a failure worth retrying keeps the attribution: a refused one (4xx) would be refused again. */
 function keepForRetry(error: unknown): boolean {
   if (error instanceof AuthTokenUnavailableError) return true;
   if (isAxiosError(error) && error.response) {

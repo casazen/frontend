@@ -52,23 +52,17 @@ import type { StayCalendarData } from './use-public-calendar';
 import './stay-pickers.css';
 
 export interface StayCalendarProps {
-  /** The stay chosen. `checkOut` is empty while only the arrival is. */
   value: StayRange;
   onChange: (next: StayRange) => void;
-  /** The nights: from `usePublicPropertyCalendar`, or from the calendar of a whole site. */
   data: StayCalendarData;
-  /** Months side by side: two from a tablet up, one on a phone. */
   months?: 1 | 2;
-  /** `paged`: arrows between the months. `scroll`: the months one under the other (the sheet of a phone). */
   layout?: 'paged' | 'scroll';
-  /** The price of each night under its number. */
   showPrices?: boolean;
   className?: string;
 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-/** How a chosen day takes part in the stay. */
 type StayRole = 'start' | 'end' | 'in' | 'none';
 
 function stayRole(date: string, checkIn: string, checkOut: string): StayRole {
@@ -81,9 +75,7 @@ interface DayCellProps {
   date: string;
   state: DayState;
   priceCents: number | null;
-  /** A free night that no stay can start on (the host closed the arrival): marked with an icon and named in the label of the day. */
   closedToArrival: boolean;
-  /** The currency the calendar says; `null` when it says none (the cell then writes the number alone; the name of the day and the total of the stay say that the currency is not available). */
   currency: string | null;
   locale: string;
   showPrice: boolean;
@@ -96,12 +88,6 @@ interface DayCellProps {
   register: (date: string, element: HTMLButtonElement | null) => void;
 }
 
-/**
- * One day (the night that starts on it). A day that is over or not known is not a button; every other day is, taken ones
- * included (a taken night can still be a check-out day, and a click on one as an arrival says why it cannot be; the same for a night
- * closed to arrival). Its name tells everything a color tells: free or taken, the price, closed to arrival, whether it is the arrival
- * or the departure.
- */
 const DayCell = memo(function DayCell({
   date,
   state,
@@ -174,7 +160,6 @@ const DayCell = memo(function DayCell({
       >
         <span className="stay-cal__n">{dayNumber}</span>
         {showPrice && !busy && priceCents !== null ? (
-          // A cell is 54px wide: with no currency it holds the number alone (the phrase is in the name of the day, above, and in the total of the stay).
           <span className="stay-cal__p">{formatPriceShort(priceCents, currency, locale, t)}</span>
         ) : null}
         {closedToArrival ? <DoorClosed className="stay-cal__x" aria-hidden="true" /> : null}
@@ -201,7 +186,6 @@ interface MonthProps {
   register: (date: string, element: HTMLButtonElement | null) => void;
 }
 
-/** A month: its name, the days of the week and the weeks that start on Monday. */
 function CalendarMonth({
   month,
   index,
@@ -277,7 +261,6 @@ function CalendarMonth({
   );
 }
 
-/** The sentence a problem of the stay is told with. */
 function problemSentence(t: TFunction, problem: RangeProblem, locale: string): string {
   switch (problem.kind) {
     case 'past':
@@ -342,7 +325,6 @@ export function StayCalendar({
     [data.days, data.today, data.end, unverified],
   );
   const monthList = useMemo(() => calendarMonths(index), [index]);
-  // The legend names the door of «arrivi chiusi» only when the calendar has a night that carries it.
   const hasClosedArrival = useMemo(
     () => data.days.some((day) => day.closedToArrival === true && day.available && day.date >= data.today),
     [data.days, data.today],
@@ -350,7 +332,6 @@ export function StayCalendar({
   const scroll = layout === 'scroll';
   const shown = scroll ? monthList.length : (months ?? (fromTablet ? 2 : 1));
 
-  // The first month in view: the one the person paged to, else the one of the arrival, else the current one.
   const [pageChoice, setPageChoice] = useState<number | null>(null);
   const arrivalMonth = monthList.indexOf(startOfMonth(value.checkIn || index.today));
   const maxPage = Math.max(0, monthList.length - shown);
@@ -362,8 +343,6 @@ export function StayCalendar({
   const [focusChoice, setFocusChoice] = useState<string | null>(null);
   const lastDay = addDays(index.end, -1);
 
-  // The day that takes the tab stop of the grid: where the focus was, else the arrival, else the first free day. If that is
-  // not in a month in view, the first day in view.
   const wanted =
     focusChoice && focusChoice >= index.today && focusChoice <= lastDay ? focusChoice : defaultFocusDate(index, value);
   const firstInView = visibleMonths[0] && visibleMonths[0] > index.today ? visibleMonths[0] : index.today;
@@ -376,7 +355,6 @@ export function StayCalendar({
     else buttons.current.delete(date);
   }, []);
 
-  // After a move by keyboard the target may be in a month that was not drawn: focus it once it is there.
   useLayoutEffect(() => {
     const date = pendingFocus.current;
     const element = date ? buttons.current.get(date) : undefined;
@@ -397,8 +375,6 @@ export function StayCalendar({
     }
   };
 
-  // The stay as the last click left it. The parent writes it in the address and the router renders it a moment later: a second
-  // click that comes before then (a quick hand, a test) must build on the first one, not on the value that was there.
   const latest = useRef<StayRange>(value);
   useEffect(() => {
     latest.current = { checkIn: value.checkIn, checkOut: value.checkOut };
@@ -427,7 +403,6 @@ export function StayCalendar({
     if (bounded !== current) focusDay(bounded);
   };
 
-  // The preview of the stay follows the pointer and the focus: when both leave the grid it goes.
   const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHover('');
   };

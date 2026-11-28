@@ -21,18 +21,11 @@ interface ManualBlockActionsProps {
   onDeleted: () => void;
 }
 
-/**
- * Note and "Elimina blocco" of dates the host closed by hand (PC-09). Removing asks for a confirmation: the nights become
- * bookable again on the site and free on the channels that read the export.
- */
 function ManualBlockActions({ block, propertyId, canWriteProperty, onDeleted }: ManualBlockActionsProps) {
   const { t } = useTranslation();
   const deleteBlock = useDeleteManualBlock();
   const [confirming, setConfirming] = useState(false);
 
-  // The nights a scheduled change to long-term closes (PM-02): the host did not close them and cannot open them from here (the
-  // API refuses with `calendar_block_held_by_mode_change`); they open again when the change is withdrawn. That way out is
-  // offered only to who has it: with the permission to write the property.
   if (block.reason === MODE_CHANGE_BLOCK_REASON) {
     return (
       <div className="space-y-2" data-testid="mode-change-block">
@@ -104,9 +97,7 @@ function ManualBlockActions({ block, propertyId, canWriteProperty, onDeleted }: 
 export interface BlockDetailsBodyProps {
   block: HostCalendarBlockEvent;
   propertyId: string;
-  /** The host may create stays (`booking.write`). */
   canWrite: boolean;
-  /** The host may remove a manual block (`property.write`, PC-09). */
   canWriteProperty: boolean;
   onStayCreated: (booking: Booking) => void;
   onBlockDeleted: () => void;
@@ -194,7 +185,6 @@ export function BlockDetails({ onClose, ...body }: BlockDetailsProps) {
     <section aria-labelledby="calendar-block-title" className="space-y-3 rounded-xl border bg-card p-4 text-sm">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">
-          {/* The same small box as in the legend and on the grid: what these dates are, by shape and icon and not by color alone. */}
           <span className={cn('host-calendar-swatch', `host-calendar-event--${kind}`)} aria-hidden="true">
             <KindIcon />
           </span>

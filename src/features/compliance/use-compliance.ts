@@ -58,14 +58,12 @@ export function useCompleteComplianceActivation(propertyId: string) {
       }
     },
     onError: (error) => {
-      // 409 property_activation_blocked: the wizard lists the blockers with a link to their step (A5-18 b).
       if (getActivationBlockedProblem(error)) return;
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('compliance.activation.completeFailed'));
     },
   });
 }
 
-/** Saved safety checklist: read again from the server every time the form opens, never from a stale cache. */
 export function useSafetyChecklist(propertyId: string) {
   return useQuery({
     queryKey: [COMPLIANCE_KEY, 'safety-checklist', propertyId],
@@ -104,10 +102,8 @@ export function useComplianceSummary() {
   });
 }
 
-/** How long the number on the menu is trusted before it is read again: the page itself always reads again when it opens. */
 const FINE_COUNT_STALE_MS = 60_000;
 
-/** The summary as the counters of the menu and of the Home read it: the cache entry of the page, trusted for a minute. */
 function useCountedSummary(enabled: boolean) {
   return useQuery({
     queryKey: [COMPLIANCE_KEY, 'summary'],
@@ -117,11 +113,6 @@ function useCountedSummary(enabled: boolean) {
   });
 }
 
-/**
- * How many things carry a risk of a sanction (`fineCount`): the number on the menu entry «Adempimenti» and the reason of the block
- * of the Home. It is the summary the page reads, in the same cache entry, so opening the page shows what the menu counted. A counter is
- * a hint: while it loads, when it fails or when the server answers something that is not the summary, there is no number.
- */
 export function useComplianceFineCount(enabled: boolean): number | undefined {
   const query = useCountedSummary(enabled);
   return enabled && query.data && typeof query.data === 'object' ? fineCount(query.data) : undefined;
@@ -154,34 +145,20 @@ export function useComplianceLights(enabled: boolean) {
   });
 }
 
-/** The read of the lights that a card holds: only what the helpers below need of it. */
 type LightsRead = Pick<UseQueryResult<ComplianceSummaryResult>, 'data' | 'error' | 'isError'>;
 
-/**
- * Whether the summary is not there at all (a 404: the traffic light is off). The card is then what it always was, and an old answer left in the cache
- * by the query is not an answer (TanStack Query keeps the data of a read that fails).
- */
 const lightsAreOff = (read: LightsRead): boolean => read.isError && getHttpStatus(read.error) === 404;
 
-/** The summary a card reads its lines from: none when the lights are off, whatever the cache still holds. */
 export function lightsOf(read: LightsRead): ComplianceSummaryResult | undefined {
   return lightsAreOff(read) ? undefined : read.data;
 }
 
-/**
- * Whether a card could not read the lights and has to say so: the read failed with a 5xx, the network or a 403, which is «non lo so» and never
- * «tutto in ordine». A 404 is the traffic light off: the card is what it was.
- */
 export function lightsCouldNotBeRead(read: LightsRead): boolean {
   return read.isError && !lightsAreOff(read);
 }
 
 const checkoutStartKey = (bookingId: string) => [COMPLIANCE_KEY, 'checkout', bookingId];
 
-/**
- * Opens the check-out wizard of a stay whose arrival is registered (CO-08): the API checks the same rules as the
- * completion and records when the wizard was opened. Started once per page: never refetched in the background.
- */
 export function useStartCheckoutWizard(bookingId: string, enabled = true) {
   return useQuery({
     queryKey: checkoutStartKey(bookingId),
@@ -193,10 +170,6 @@ export function useStartCheckoutWizard(bookingId: string, enabled = true) {
   });
 }
 
-/**
- * "Registra arrivo e procedi" (CO-08): the host confirms that the guest arrived; the API registers the arrival of the
- * confirmed booking and opens the check-out wizard in the same transaction. No toast: the page shows the error.
- */
 export function useRegisterArrivalAndStartCheckout(bookingId: string) {
   const queryClient = useQueryClient();
 
@@ -211,10 +184,6 @@ export function useRegisterArrivalAndStartCheckout(bookingId: string) {
   });
 }
 
-/**
- * The wizard of a stay without any change (CO-17): used once the stay is checked out, to show what was declared and
- * whether the property is still to be declared ready.
- */
 export function useCheckoutWizard(bookingId: string, enabled = true) {
   return useQuery({
     queryKey: [COMPLIANCE_KEY, 'checkout-state', bookingId],
@@ -225,13 +194,6 @@ export function useCheckoutWizard(bookingId: string, enabled = true) {
   });
 }
 
-/**
- * Saves the progress of the wizard as the host moves between the steps and when it leaves with "Save and exit" (CO-17): the answer replaces
- * the cached start, so a reload opens the wizard on the same step with the same answers. No toast: the page shows the error.
- *
- * The answers hold free notes about the stay, so the mutation is dropped as soon as nothing observes it (`gcTime: 0`, not five minutes in the
- * cache of the mutations) and a refusal is kept without the request that was sent (`withoutRequest`: the status and the body of the answer stay).
- */
 export function useSaveCheckoutProgress(bookingId: string) {
   const queryClient = useQueryClient();
 
@@ -248,7 +210,6 @@ export function useSaveCheckoutProgress(bookingId: string) {
   });
 }
 
-/** Closes the stay with the answers of the wizard; kept like the progress (`gcTime: 0`, a refusal without its request). */
 export function useCompleteCheckoutWizard(bookingId: string) {
   const queryClient = useQueryClient();
 
@@ -262,7 +223,6 @@ export function useCompleteCheckoutWizard(bookingId: string) {
       }
     },
     onSuccess: (result) => {
-      // The cockpit changes; the wizard start of this stay is never fetched again (it would answer 409 now).
       queryClient.setQueryData([COMPLIANCE_KEY, 'checkout-state', bookingId], result.wizard);
       queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY, 'summary'] });
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
@@ -277,7 +237,6 @@ export function useCompleteCheckoutWizard(bookingId: string) {
   });
 }
 
-/** The host declares the property ready after the check-out: the turnover leaves the cockpit (CO-17). */
 export function useConfirmPropertyReady(bookingId: string) {
   const queryClient = useQueryClient();
 

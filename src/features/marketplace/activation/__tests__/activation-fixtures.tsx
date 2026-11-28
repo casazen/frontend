@@ -11,25 +11,20 @@ import { CHANNELS_PAGE_PATH, MARKETPLACE_PATH } from '../../lib/marketplace-path
 import { ActivationWizardPage } from '../activation-wizard-page';
 import { activationWizardId } from '../activation-wizard-model';
 
-/** The user and the organization the draft of the wizard belongs to (the tests mock `useCurrentUser` with the same ones). */
 export const SCOPE = { userId: 'user-1', orgId: 'org-1' };
 
 export const WAIT = { timeout: 5000 };
 
-/** The portal of the tests: a channel with the number its code is. */
 export const CHANNEL_CODE = '142';
 export const CHANNEL_NAME = 'Booking.com';
 export const ACTIVATION_PATH = `/app/short-rent/marketplace/activate/channel/${CHANNEL_CODE}`;
 
-/** The name the draft of the wizard is kept under. */
 export const WIZARD_DRAFT_ID = activationWizardId('Channel', CHANNEL_CODE);
 
-/** A property of the host, as `GET api/properties` gives it (only what the steps read). */
 export function property(id = 'prop-1', name = 'Casa Rosa'): Property {
   return { id, name, address: 'Via Roma 12', city: 'Milano', maxGuests: 4 } as Property;
 }
 
-/** The plan of the portal for a property: a channel that asks for the identifier on the channel and for the login, with the property linked and no activation yet. */
 export function plan(overrides: Partial<MarketplaceActivationPlan> = {}): MarketplaceActivationPlan {
   return {
     kind: 'Channel',
@@ -45,7 +40,6 @@ export function plan(overrides: Partial<MarketplaceActivationPlan> = {}): Market
   };
 }
 
-/** The state of an activation, as the server gives it after a step. */
 export function state(overrides: Partial<MarketplaceActivationState> = {}): MarketplaceActivationState {
   return {
     activationId: 'act-1',
@@ -63,12 +57,10 @@ export function state(overrides: Partial<MarketplaceActivationState> = {}): Mark
   };
 }
 
-/** A room of the channel, with the proposal of CasaZen. */
 export function channelRoom(overrides: Partial<MarketplaceChannelRoom> = {}): MarketplaceChannelRoom {
   return { channelRoomId: 'room-1', name: 'Camera doppia', rateName: null, manageable: true, mappedProductId: null, proposedProductId: 'prod-1', ...overrides };
 }
 
-/** The mapping of an activation: the rooms of the channel and the two products of the listing they can be mapped to. */
 export function mapping(rooms: MarketplaceChannelRoom[] = [channelRoom()], activationId = 'act-1'): MarketplaceActivationMapping {
   return {
     activationId,
@@ -81,7 +73,6 @@ export function mapping(rooms: MarketplaceChannelRoom[] = [channelRoom()], activ
   };
 }
 
-/** The error of a request the server refused, as axios builds it (the code is what the app translates). */
 export function axiosError(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
@@ -98,7 +89,6 @@ function LocationProbe() {
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
 }
 
-/** The wizard on its own route, with the pages it can lead to marked. It gives back what `render` gives, and the client of the queries the wizard runs on. */
 export function renderActivation(url: string = ACTIVATION_PATH) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const rendered = render(
@@ -120,12 +110,10 @@ export function renderActivation(url: string = ACTIVATION_PATH) {
   return { ...rendered, client };
 }
 
-/** The address the router is at now, path and query. */
 export const currentLocation = () => screen.getByTestId('location').textContent ?? '';
 
 export async function onStep(step: string) {
   await waitFor(() => expect(screen.getByTestId('activation-wizard')).toHaveAttribute('data-step', step), WAIT);
 }
 
-/** The main button: «Continue» on every step but the last, the closing button of the wizard on the last. */
 export const primaryButton = () => screen.queryByTestId('activation-next') ?? screen.getByTestId('activation-finish');

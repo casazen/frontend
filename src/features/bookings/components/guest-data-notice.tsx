@@ -7,23 +7,17 @@ import { guestDataCompletionPath } from '../lib/stay-actions';
 
 interface GuestDataNoticeBaseProps {
   bookingId: string;
-  /** False while the notice is not shown (closed dialog): no request is sent. */
   enabled?: boolean;
 }
 
-/** Link mode: the host follows the link to the tab of the booking (the check-in dialog). */
 interface GuestDataNoticeLinkProps extends GuestDataNoticeBaseProps {
   inline?: false;
-  /** Called when the host follows the link to complete the data (e.g. to close a dialog). */
   onNavigate?: () => void;
 }
 
-/** Inline mode: the host stays where they are (a wizard); the notice shows a button that opens the panel to complete the data there. */
 interface GuestDataNoticeInlineProps extends GuestDataNoticeBaseProps {
   inline: true;
-  /** Opens the panel that completes the data of the guests, over the page. */
   onComplete: () => void;
-  /** Something else on the page is working (a request of the same card): the button stays off until it is done. */
   busy?: boolean;
 }
 

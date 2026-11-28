@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { LEGAL_DOCUMENT_KEYS, LEGAL_DOCUMENT_PATHS, LEGAL_SUBPROCESSORS_PATH } from './legal-paths';
 
-/** Index of the CasaZen legal documents (PL-14). */
 export function LegalIndexPage() {
   const { t } = useTranslation();
   useSeoMeta({ title: `${t('legal.indexTitle')} · CasaZen`, description: t('legal.indexIntro') });

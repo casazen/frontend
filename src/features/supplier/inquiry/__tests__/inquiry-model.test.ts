@@ -5,7 +5,6 @@ import { isInquiry, isOpenInquiry, minutesLeft, negotiationViewOf, offerAsQuote,
 const t = (key: string, options?: Record<string, unknown>) => `${key}|${JSON.stringify(options ?? {})}`;
 
 describe('respondByLine (SP-08e): the time left is the server\'s deadline, never a number of the frontend', () => {
-  // 14:30 in Rome in November (winter time, UTC+1).
   const due = '2026-11-09T13:30:00.000Z';
 
   it('respondByLine_ADeadlineToday_SaysUntilWhenAndHowLong', () => {
@@ -42,11 +41,8 @@ describe('the negotiation of a request on measure (SP-08e)', () => {
     expect(isInquiry({ kind: 'Standard' })).toBe(false);
     expect(isInquiry({})).toBe(false);
     expect(isOpenInquiry({ kind: 'Custom', phase: 'to_answer', status: 'Richiesto' })).toBe(true);
-    // The offer waits for the customer: the server's phase is the one of a quote.
     expect(isOpenInquiry({ kind: 'Custom', phase: 'quote_pending', status: 'Richiesto' })).toBe(true);
-    // Accepted: it is a job like the others.
     expect(isOpenInquiry({ kind: 'Custom', phase: 'scheduled', status: 'PresoInCarico' })).toBe(false);
-    // A host's request is never taken for one.
     expect(isOpenInquiry({ kind: 'Standard', phase: 'to_answer', status: 'Richiesto' })).toBe(false);
   });
 });
@@ -69,7 +65,6 @@ describe('offerAsQuote (SP-08e, SP-D30: the offer is shown with the summary of t
   it('offerAsQuote_KeepsTheTotalOfTheServerAndSaysHowManyOfAThing', () => {
     const quote = offerAsQuote(offer, (cents) => `${cents / 100} €`);
 
-    // The total is the one the server added up; the frontend adds nothing.
     expect(quote.totalCents).toBe(12500);
     expect(quote.lines).toEqual([
       { label: 'Pulizia', amountCents: 8000 },

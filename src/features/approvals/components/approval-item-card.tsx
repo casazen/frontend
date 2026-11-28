@@ -26,18 +26,14 @@ const EXPIRY_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'shor
 
 interface ApprovalItemCardProps {
   item: ApprovalQueueItem;
-  /** The code of the failure of the last approval, when the page has just seen one; the failure the server saved on the item is read from the item itself. */
   failureCode?: string;
-  /** A decision is going on somewhere in the queue: every button waits for it, the one that started it says so. */
   busy: boolean;
-  /** The approval of this item is the one going on. */
   approving: boolean;
   onApprove: (item: ApprovalQueueItem) => void;
   onEdit: (item: ApprovalQueueItem) => void;
   onReject: (item: ApprovalQueueItem) => void;
 }
 
-/** The text of an item exactly as it will go: a campaign with its subject line apart, any other text as it is. */
 function ItemText({ item }: { item: ApprovalQueueItem }) {
   const text = finalTextOf(item);
   const campaign = isCampaign(item) ? parseCampaignText(text) : null;
@@ -69,7 +65,6 @@ export function ApprovalItemCard({ item, failureCode, busy, approving, onApprove
   const failure = failureCode ?? failureCodeOf(item);
   const expires = formatRomeDateTime(item.expiresAt, i18n.language, EXPIRY_FORMAT);
 
-  // The reply to a review is public: approving it publishes it, once, and it cannot be taken back (E05/F06).
   const reviewReply = isReviewReply(item);
 
   let hint: string | null = null;
@@ -85,7 +80,6 @@ export function ApprovalItemCard({ item, failureCode, busy, approving, onApprove
   return (
     <Card data-testid="approval-item" data-item-id={item.id} data-item-type={item.itemType}>
       <CardHeader>
-        {/* A heading of the second level: the page has its title as the first (the card title of the kit is a third level). */}
         <h2 className="flex flex-wrap items-center gap-2 text-lg font-semibold leading-none tracking-tight">
           <span>{approvalTypeLabel(item.itemType, t)}</span>
           {item.isAiGenerated ? (
@@ -163,7 +157,6 @@ export function ApprovalItemCard({ item, failureCode, busy, approving, onApprove
               <Link to={messageThreadPath(item.threadKey)}>{t('approval.thread.open')}</Link>
             </Button>
           ) : null}
-          {/* The review the reply is for: the host reads it before it decides. */}
           {reviewReply && item.threadKey ? (
             <Button asChild variant="ghost" size="sm" className="sm:ml-auto">
               <Link to={reviewThreadPath(item.threadKey)}>{t('approval.review.open')}</Link>

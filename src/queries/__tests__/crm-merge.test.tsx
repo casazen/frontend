@@ -24,7 +24,6 @@ const PROPOSALS_KEY = [...MERGE_CANDIDATES_KEY, 1] as const;
 let client: QueryClient;
 const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 
-/** What the app has read before the host decides: the list, the page of each of the two profiles, another profile and the proposals. */
 function seedWhatTheAppHasRead() {
   client.setQueryData(LIST_KEY, { items: [], totalCount: 0, page: 1, pageSize: 20 });
   client.setQueryData(crmGuestKey(GONE), { id: GONE });
@@ -56,9 +55,7 @@ describe('useMergeProfiles: what a merge leaves behind in what the app has read 
     await act(() => result.current.mutateAsync({ candidateId: CANDIDATE, survivorProfileId: KEPT, discardedProfileId: GONE }));
 
     expect(CrmMergeApi.merge).toHaveBeenCalledWith(CANDIDATE, KEPT);
-    // The profile that went is a tombstone: what was read of it is not kept, so its page cannot come back from the cache.
     expect(client.getQueryData(crmGuestKey(GONE))).toBeUndefined();
-    // The list, the page of the profile that stays (it has the other's stays and contacts), any other page and the proposals are read again.
     expect(stale(LIST_KEY)).toBe(true);
     expect(stale(crmGuestKey(KEPT))).toBe(true);
     expect(stale(crmGuestKey(OTHER))).toBe(true);
@@ -76,11 +73,9 @@ describe('useMergeProfiles: what a merge leaves behind in what the app has read 
 
     expect(toast.error).toHaveBeenCalledWith(i18n.t('apiErrors.codes.crmMergeNotProposed'));
     expect(toast.success).not.toHaveBeenCalled();
-    // Nothing was merged: the profile is still there, and the list and the profiles are as they were.
     expect(client.getQueryData(crmGuestKey(GONE))).toEqual({ id: GONE });
     expect(stale(LIST_KEY)).toBe(false);
     expect(stale(crmGuestKey(KEPT))).toBe(false);
-    // The proposal may be decided or out of reach: the proposals are read again.
     expect(stale(PROPOSALS_KEY)).toBe(true);
   });
 });
@@ -101,7 +96,6 @@ describe('useDismissMergeCandidate: what saying "not the same person" leaves beh
     await act(() => result.current.mutateAsync(CANDIDATE));
 
     expect(CrmMergeApi.dismiss).toHaveBeenCalledWith(CANDIDATE);
-    // Both profiles are still there: only the mark "possible duplicate" of the list and the count of their pages change.
     expect(client.getQueryData(crmGuestKey(GONE))).toEqual({ id: GONE });
     expect(client.getQueryData(crmGuestKey(KEPT))).toEqual({ id: KEPT });
     expect(stale(LIST_KEY)).toBe(true);

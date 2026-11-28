@@ -9,10 +9,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-/**
- * Asks the host to confirm "Segna pagato" (SU-09, A4-28): the flag cannot be undone, and CasaZen does not pay the
- * supplier, so the text says it only records a payment the host already made.
- */
 export function MarkPaidDialog({
   supplierName,
   category,
@@ -21,7 +17,6 @@ export function MarkPaidDialog({
   onConfirm,
 }: {
   supplierName?: string | null;
-  /** Translated name of the service category. */
   category: string;
   isPending: boolean;
   onCancel: () => void;

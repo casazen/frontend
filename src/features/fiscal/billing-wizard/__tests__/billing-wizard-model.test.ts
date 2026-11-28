@@ -64,7 +64,6 @@ describe('what the wizard starts from', () => {
       BILLING_STEPS.italy,
       BILLING_STEPS.summary,
     ]);
-    // Nobody who has not chosen a country sees the Italian step.
     expect(stepIdsFor('', false)).not.toContain(BILLING_STEPS.italy);
   });
 
@@ -91,7 +90,6 @@ describe('what a step saves on the server', () => {
       section: 'automation',
       request: { autoIssueGuestDocuments: true, emailGuestDocuments: false },
     });
-    // The steps of the portals, of the mandate and of the summary have no section of their own.
     for (const step of [BILLING_STEPS.channels, BILLING_STEPS.mandate, BILLING_STEPS.summary]) expect(stepSave(step, values())).toBeNull();
   });
 
@@ -100,7 +98,6 @@ describe('what a step saves on the server', () => {
     const draft = stepSave(BILLING_STEPS.issuer, half, { draft: true });
     expect(draft?.request).toEqual({ countryCode: 'CH', addressStreet: 'Via Nassa', addressCivic: '12', province: 'TI' });
 
-    // A series that is too long is not kept; the other is.
     expect(numberingStepSchema.safeParse(values({ guestDocumentSeries: 'AAAAAAAAAAAA' })).success).toBe(false);
     expect(stepSave(BILLING_STEPS.numbering, values({ guestDocumentSeries: 'AAAAAAAAAAAA' }), { draft: true })?.request).toEqual({ ownerInvoiceSeries: 'PM{year}' });
   });
@@ -116,7 +113,6 @@ describe('what a step saves on the server', () => {
     expect(draft(BILLING_STEPS.numbering)?.request).toEqual({});
     expect(draft(BILLING_STEPS.issuing)?.request).toEqual({});
     expect(draft(BILLING_STEPS.italy)?.request).toEqual({});
-    // The same steps, checked with «Continua», are the answers of the person: every field is sent, the proposals too.
     expect(stepSave(BILLING_STEPS.issuing, start)?.request).toEqual({ autoIssueGuestDocuments: false, emailGuestDocuments: false });
     expect(stepSave(BILLING_STEPS.numbering, start)?.request).toEqual({ guestDocumentSeries: start.guestDocumentSeries, ownerInvoiceSeries: start.ownerInvoiceSeries });
   });
@@ -144,10 +140,8 @@ describe('what a step saves on the server', () => {
     expect(left(BILLING_STEPS.issuer, { postalCode: '' })).toEqual([]);
     expect(left(BILLING_STEPS.numbering, { guestDocumentSeries: 'AAAAAAAAAAAA' })).toEqual(['guestDocumentSeries']);
     expect(left(BILLING_STEPS.issuing, { autoIssueGuestDocuments: true })).toEqual([]);
-    // The percents of the portals: one that is a percent is kept, one that is not is left out, an empty one was not written.
     expect(left(BILLING_STEPS.channels, { commissionPercents: { Airbnb: '16' } })).toEqual([]);
     expect(left(BILLING_STEPS.channels, { commissionPercents: { Airbnb: 'abc', Vrbo: '' } })).toEqual(['commissionPercents.Airbnb']);
-    // No step saves the terms of the standard mandate: every one that was changed is left out.
     expect(left(BILLING_STEPS.mandate, {})).toEqual([]);
     expect(left(BILLING_STEPS.mandate, { mandateCommissionPercent: '20', mandatePassthroughPaymentFees: true })).toEqual(['mandateCommissionPercent', 'mandatePassthroughPaymentFees']);
   });
@@ -156,20 +150,16 @@ describe('what a step saves on the server', () => {
     const all = Object.fromEntries(['Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda', 'OtherChannel'].map((portal) => [portal, 'host' as const]));
     expect(stepSave(BILLING_STEPS.touristTax, values({ touristTaxCollectors: all }))?.request).toEqual({ platformCollectedTouristTaxChannels: [] });
     expect(stepSave(BILLING_STEPS.touristTax, values({ touristTaxCollectors: { ...all, Airbnb: 'portal' } }))?.request).toEqual({ platformCollectedTouristTaxChannels: ['Airbnb'] });
-    // With a portal left unanswered nothing is said about the others: a draft saves no list, which would confirm «no portal collects it».
     expect(stepSave(BILLING_STEPS.touristTax, values({ touristTaxCollectors: { ...all, Vrbo: '' } }), { draft: true })).toBeNull();
-    // An Italian issuer sets nothing there.
     expect(stepSave(BILLING_STEPS.touristTax, values({ countryCode: 'IT', touristTaxCollectors: all }))).toBeNull();
   });
 
   it('TaxProfileAddition_OnlyWhatTheProfileDoesNotHaveYetAndThePersonWrote', () => {
     const ordinary = values({ countryCode: 'IT', regime: 'VatOrdinary', vatNumber: ' 12345678901 ' });
     expect(taxProfileAddition(ordinary, NOBODY)).toEqual({ hasPartitaIva: true, partitaIvaNumber: '12345678901' });
-    // What is on record is never changed, and a Swiss issuer has no Italian number.
     expect(taxProfileAddition(ordinary, { vatNumber: true, fiscalCode: false })).toBeNull();
     expect(taxProfileAddition({ ...ordinary, countryCode: 'CH' }, NOBODY)).toBeNull();
     expect(taxProfileAddition(values({ countryCode: 'IT', regime: 'PrivatePerson', fiscalCode: 'rssmra80a01f205x' }), NOBODY)).toEqual({ fiscalCode: 'RSSMRA80A01F205X' });
-    // A draft does not send a number that is not complete.
     expect(taxProfileAddition(values({ countryCode: 'IT', regime: 'VatOrdinary', vatNumber: '123' }), NOBODY, { draft: true })).toBeNull();
   });
 
@@ -198,7 +188,6 @@ describe('the step «Commissioni dei canali»', () => {
   });
 
   it('CommissionRules_ADraftSavesOnlyThePercentsThePersonTypedNeverTheDefaultsThatAreOnlyShown', () => {
-    // Money rule: the percent of a portal is the agency's own rule only once the person gave it. Leaving the step with the default on screen creates no rule.
     expect(commissionRulesRequest(set, {}, TODAY, { draft: true })).toBeNull();
     expect(commissionRulesRequest(set, { Airbnb: '16' }, TODAY, { draft: true })).toEqual([
       { channel: 'BookingCom', percent: 15, base: 'GrossExclTouristTax', validFrom: '2026-01-01', validTo: null },
@@ -226,14 +215,11 @@ describe('the step «Commissioni dei canali»', () => {
       { channel: 'BookingCom', percent: 16.5, base: 'GrossExclTouristTax', validFrom: TODAY },
       { channel: 'Vrbo', percent: 8, validFrom: TODAY },
     ]);
-    // A rule that starts today is changed in place: it is the same rule, with the same first day.
     const today: ChannelCommissionRuleSet = { rules: [{ ...set.rules[0], validFrom: TODAY }], channels: [{ ...set.channels[1], validFrom: TODAY }] };
     expect(commissionRulesRequest(today, { BookingCom: '12' }, TODAY)).toEqual([{ channel: 'BookingCom', percent: 12, base: 'GrossExclTouristTax', validFrom: TODAY, validTo: null }]);
   });
 
   it('CommissionRules_TheWizardStartsThemToday_AndThePageOfTheChannelCommissionsFromTheDayChosen', () => {
-    // Money rule: a rule applies by the day a stay checks out. The page of the channel commissions starts the new percents from a day of its own (a month that is still open, where the stays held
-    // back for a missing commission are); the wizard passes none and goes on starting them today.
     expect(commissionRulesRequest(set, { BookingCom: '16', Vrbo: '8' }, TODAY, { draft: true, validFrom: '2026-11-01' })).toEqual([
       { channel: 'BookingCom', percent: 15, base: 'GrossExclTouristTax', validFrom: '2026-01-01', validTo: '2026-10-31' },
       { channel: 'BookingCom', percent: 16, base: 'GrossExclTouristTax', validFrom: '2026-11-01' },
@@ -251,11 +237,9 @@ describe('the step «Commissioni dei canali»', () => {
       rules: [{ ...set.rules[0], validFrom: '2026-11-05' }],
       channels: [set.channels[0], { ...set.channels[1], validFrom: '2026-11-05' }, set.channels[2]],
     };
-    // The rule would be changed in place and 1-4 November would stay without one: the day to choose is the first day of the rule.
     expect(commissionStartTooEarly(late, { BookingCom: '16' }, '2026-11-01')).toBe('2026-11-05');
     expect(commissionStartTooEarly(late, { BookingCom: '16' }, '2026-11-05')).toBeNull();
     expect(commissionStartTooEarly(late, { BookingCom: '16' }, '2026-11-20')).toBeNull();
-    // Nothing is in the way when the percent is the one in force, for a portal that has no rule, or when nothing was typed.
     expect(commissionStartTooEarly(late, { BookingCom: '15' }, '2026-11-01')).toBeNull();
     expect(commissionStartTooEarly(late, { Vrbo: '8' }, '2026-11-01')).toBeNull();
     expect(commissionStartTooEarly(late, {}, '2026-11-01')).toBeNull();
@@ -283,14 +267,12 @@ describe('the step «Commissioni dei canali»', () => {
     ).toEqual({ validFrom: TODAY, commissionPercent: 20, commissionBase: 'GrossExclTouristTax', commissionIncludesVat: true, cleaningFlatRate: 45.5, passthroughPaymentFees: true });
   });
 
-  // Money rule: the standard mandate is given to every owner that has none, so a form that does not say a percent is no mandate. It is never one of 0%.
   it('MandateTemplate_ABlankOrInvalidPercentOrDayIsNoMandateAtAllNeverOneOfZeroPercent', () => {
     for (const mandateCommissionPercent of ['', '   ', 'abc', '101', '12,345', '-5']) {
       expect(mandateTemplateOf(values({ mandateCommissionPercent })), mandateCommissionPercent).toBeNull();
     }
     expect(mandateTemplateOf(values({ mandateCommissionPercent: '20', mandateValidFrom: '' }))).toBeNull();
     expect(mandateTemplateOf(values({ mandateCommissionPercent: '20', mandateCleaningFlatRate: 'abc' }))).toBeNull();
-    // A percent of 0 that the person wrote is a choice: it is the blank one that is not.
     expect(mandateTemplateOf(values({ mandateCommissionPercent: '0' }))).toMatchObject({ commissionPercent: 0 });
   });
 });

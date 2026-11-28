@@ -27,7 +27,6 @@ function mockOrg(planTier: 'Starter' | 'Pro' | 'Scale' = 'Pro') {
   } as unknown as ReturnType<typeof useUsers.useCurrentUser>);
 }
 
-/** The contexts of the user as the API returns them: held as the owner, or with `roleKey` (a member of the org, AM-00). */
 function workspace(contextKeys: AppContextKey[], roleKey?: string): WorkspaceContextValue {
   return {
     contexts: contextKeys.map((contextKey) => contextOf(contextKey, roleKey)),
@@ -39,7 +38,6 @@ function workspace(contextKeys: AppContextKey[], roleKey?: string): WorkspaceCon
   };
 }
 
-/** The badge as the header of the shell at `path` draws it, for a user working in `contexts`. */
 function renderInShell(path: string, contexts: AppContextKey[], roleKey?: string) {
   return render(
     <WorkspaceContext.Provider value={workspace(contexts, roleKey)}>
@@ -86,7 +84,6 @@ describe('OrgBadge (#202 AC11)', () => {
   });
 });
 
-// PL-16 (A1-36): the badge opens the plan page of the shell it is drawn in, never always the short-rent one.
 describe('OrgBadge plan link per shell', () => {
   it('OrgBadge_InTheLongRentShell_LinksToTheLongRentPlanPage', () => {
     mockOrg();
@@ -123,7 +120,6 @@ describe('OrgBadge plan link per shell', () => {
     expect(screen.getByTestId('plan-badge')).toHaveTextContent(i18n.t('plan.tier.Pro'));
   });
 
-  // AM-00 (S1): a collaborator of the org sees where it works, but the badge does not lead it to a page it cannot use.
   it.each(MEMBER_ROLE_KEYS)('OrgBadge_MemberWithRoleKey_%s_ShowsThePlanWithoutALink', (roleKey) => {
     mockOrg();
 

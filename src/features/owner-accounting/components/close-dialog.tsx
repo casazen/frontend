@@ -58,7 +58,6 @@ export function CloseDialog({ open, onOpenChange, ctx }: CloseDialogProps) {
       if (facts.code === 'owner_close_unreconciled' && facts.figures) setFigures(facts.figures);
       if (facts.code === 'owner_close_not_ready') setBlocking(facts.issues);
       setError(messageOf(failure, t));
-      // The dialog stays open: the person reads why, fixes it and asks again.
       throw failure;
     }
   };

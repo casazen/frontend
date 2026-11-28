@@ -12,11 +12,8 @@ import { StatusBadge } from './status-badge';
 
 interface RowProps {
   item: SelfBillingListItem;
-  /** The person may use «Correggi e rimanda» (role and flags): the button is drawn only with it AND when the server says the row `canCorrect`. */
   mayCorrect: boolean;
-  /** The person may use «Chiudi come non più dovuta» (role and flags): the button is drawn only with it AND for a kept replacement draft. */
   mayClose: boolean;
-  /** This row is the rejected original of a replacement that was closed as «non più dovuta»: no invoice will ever carry its number, and the row does not say it was replaced by one. */
   replacementClosed: boolean;
   onOpen: () => void;
   onCorrect: () => void;
@@ -32,7 +29,6 @@ interface RowProps {
 export function SelfBillingRow({ item, mayCorrect, mayClose, replacementClosed, onOpen, onCorrect, onCloseNotDue, onOpenReplacement }: RowProps) {
   const { t, i18n } = useTranslation();
   const { month } = useOwnerFormat();
-  // The buttons of the card wait while any write on this TD17 (or the drafts of the month, which name none) is on its way.
   const busy = useSelfBillingBusy([item.id]);
   const issued = item.status === 'Issued';
   const replacementId = item.replacedByDocumentId;
@@ -61,7 +57,6 @@ export function SelfBillingRow({ item, mayCorrect, mayClose, replacementClosed, 
           {t('selfBilling.row.monthAndHolder', { month: month(item.periodYear, item.periodMonth), holder: t(`selfBilling.holder.${item.holderKind === 'Owner' ? 'Owner' : 'Agency'}`), country: item.portalCountry })}
         </p>
         {closed ? (
-          // A closed draft is not «da emettere»: it says what it was and why it ended, in place of the line of the due day and of the draft that replaces an invoice.
           <ClosedDetails item={item} testId="self-billing-row-closed" />
         ) : (
           <>

@@ -42,7 +42,6 @@ function setup() {
   return { queryClient, wrapper };
 }
 
-/** A refusal of the API as axios keeps it: with the request that was sent, whose body holds the guest. */
 function refusal(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify(dto) } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
@@ -60,10 +59,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-/**
- * Privacy (NF-74): a mutation keeps what it was given (the name, the e-mail and the phone of the guest) and what it got back (the payment link, a credential)
- * in the mutation cache for five minutes by default, after the wizard that made it is gone.
- */
 describe('what the new-booking wizard asks and gets back is not kept once it is gone', () => {
   it('useCreateManualBooking_Created_LeavesNothingInTheMutationCacheOnceTheWizardIsGone', async () => {
     const { queryClient, wrapper } = setup();
@@ -74,12 +69,10 @@ describe('what the new-booking wizard asks and gets back is not kept once it is 
       await result.current.mutateAsync(dto);
     });
 
-    // While the wizard is there the mutation is its own: it holds the guest it was given and the link it got back...
     const held = queryClient.getMutationCache().getAll()[0];
     expect(held?.state.variables).toMatchObject({ guest: { email: GUEST_EMAIL } });
     expect(held?.state.data).toMatchObject({ paymentLinkUrl: LINK });
 
-    // ...and as soon as it is gone nothing of it is left to read.
     unmount();
     await waitFor(() => expect(queryClient.getMutationCache().getAll()).toHaveLength(0));
   });
@@ -93,7 +86,6 @@ describe('what the new-booking wizard asks and gets back is not kept once it is 
       await expect(result.current.mutateAsync(dto)).rejects.toMatchObject({ response: { status: 409, data: { code: 'booking_dates_unavailable' } } });
     });
 
-    // What a screen turns into words stays (the status and the code); the body that was sent does not.
     const kept = queryClient.getMutationCache().getAll()[0]?.state.error as AxiosError;
     expect(kept.response?.status).toBe(409);
     expect(JSON.stringify(kept.config ?? {})).not.toContain(GUEST_EMAIL);
@@ -187,7 +179,6 @@ describe('«Retry» of the sync with the channel manager', () => {
   });
 
   it.each([404, 409])('useRetryOctorateSync_Refused%s_KeepsNoAccessTokenAndNothingOnceTheResultIsGone', async (status) => {
-    // The request of a failed call holds the access token of the user in its headers: the mutation cache keeps a mutation for five minutes by default.
     const { queryClient, wrapper } = setup();
     const refused = refusalOfTheRetry(status);
     expect(JSON.stringify(refused.config)).toContain(ACCESS_TOKEN);
@@ -198,13 +189,11 @@ describe('«Retry» of the sync with the channel manager', () => {
       await expect(result.current.mutateAsync({ id: 'b-1' })).rejects.toMatchObject({ response: { status } });
     });
 
-    // What a screen turns into words stays (the status); the request, and the token in it, does not.
     const kept = queryClient.getMutationCache().getAll()[0]?.state.error as AxiosError;
     expect(kept.response?.status).toBe(status);
     expect(JSON.stringify(kept.config ?? {})).not.toContain(ACCESS_TOKEN);
     expect(JSON.stringify(kept.response?.config ?? {})).not.toContain(ACCESS_TOKEN);
 
-    // As soon as nothing watches the mutation it is gone.
     unmount();
     await waitFor(() => expect(queryClient.getMutationCache().getAll()).toHaveLength(0));
   });
@@ -227,7 +216,6 @@ describe('the Stripe account of the payment link', () => {
     const { result } = renderHook(() => usePaymentLinkAccountReady(true), { wrapper });
 
     await waitFor(() => expect(result.current).toBe(true));
-    // `refresh=false`: the state as CasaZen holds it, no call to Stripe on every opening of the wizard.
     expect(ConnectApi.getStatus).toHaveBeenCalledWith(false);
   });
 
@@ -285,7 +273,6 @@ describe('the result of the wizard follows the channel manager without a reload'
     });
     expect(bookingsApi.getById).toHaveBeenCalledTimes(3);
 
-    // Settled (or the time is over): it stops asking.
     rerender({ watching: false });
     await act(async () => {
       await vi.advanceTimersByTimeAsync(10_000);
@@ -305,7 +292,6 @@ describe('the result of the wizard follows the channel manager without a reload'
   });
 
   it('useBookingMirror_OpenedAgainWithTheMirrorInTheCache_ReadsItAgainBeforeSayingAnything', async () => {
-    // The client does not read an unobserved query again by default (`refetchOnMount: false`): the state of the sync changes on the server meanwhile.
     const { queryClient, wrapper } = setup();
     queryClient.setQueryData(bookingMirrorKey('b-1'), { octorateSync: { state: 'Pending' } });
     vi.mocked(bookingsApi.getById).mockResolvedValue({ id: 'b-1', octorateSync: { state: 'Synced' } } as Booking);
@@ -323,7 +309,6 @@ describe('the result of the wizard follows the channel manager without a reload'
   });
 
   it('useBookingMirror_KeepsTheMirrorOnly_NotTheBookingWithItsGuestAndNotTheEntryOfTheBookingPage', async () => {
-    // The booking holds the contact of the guest; the result needs the mirror. The page of the booking, which the host opens from the result, reads its own.
     const { queryClient, wrapper } = setup();
     vi.mocked(bookingsApi.getById).mockResolvedValue({ id: 'b-1', guest: { email: GUEST_EMAIL }, octorateSync: { state: 'Synced' } } as Booking);
 
@@ -342,7 +327,6 @@ describe('the result of the wizard follows the channel manager without a reload'
   });
 
   it('useBookingMirror_BookingWithNoMirror_KeepsNullAndNotUndefined', async () => {
-    // A query cannot keep `undefined`: "not mirrored" is a null the screen reads.
     const { queryClient, wrapper } = setup();
     vi.mocked(bookingsApi.getById).mockResolvedValue({ id: 'b-1' } as Booking);
 

@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/use-auth';
 type HandoffStatus = 'idle' | 'pending' | 'failed' | 'delayed';
 type LoginOptions = Parameters<ReturnType<typeof useAuth>['login']>[0];
 
-/** A single handoff at a time. A rejected or stalled redirect gives control back to the same page. */
 export function useLoginHandoff() {
   const { login } = useAuth();
   const [status, setStatus] = useState<HandoffStatus>('idle');

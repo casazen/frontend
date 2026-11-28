@@ -3,7 +3,6 @@ import { todayInRome } from '@/lib/stay-dates';
 import { useQueryWriter } from '../hooks/use-query-writer';
 import { readStay, siteLink, writeStay, type StayLimits, type StayState } from './stay-state';
 
-/** The place chosen in the «Dove» field: the id of a destination of the site (`GET …/destinations`), empty for all. */
 export const WHERE_PARAM = 'where';
 
 /**
@@ -35,7 +34,6 @@ export function useStayState(limits: Partial<Pick<StayLimits, 'maxGuests' | 'pet
   const clearDates = useCallback(() => setStay({ checkIn: '', checkOut: '' }), [setStay]);
 
   const where = searchParams.get(WHERE_PARAM)?.trim() ?? '';
-  /** Chooses the place (an empty id is «everywhere»); written with the same writer as the stay, so no edit is lost between them. */
   const setWhere = useCallback(
     (id: string, options: { push?: boolean } = {}) =>
       write(

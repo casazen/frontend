@@ -27,26 +27,19 @@ const cards = (page: Page) => page.getByRole('list', { name: 'Prenotazioni' });
 const searchBox = (page: Page) => page.getByRole('searchbox', { name: 'Cerca prenotazioni' });
 const chip = (page: Page, name: RegExp | string) => page.getByRole('button', { name, exact: typeof name === 'string' });
 
-/** The guests of the rows of the table, in the order they are in. */
 async function guestsInTable(page: Page) {
   return (await table(page).locator('th[scope="row"] [data-list-opener]').allInnerTexts()).map((text) => text.trim());
 }
 
-/** The guests the table shows now, waited for: the address changes before the rows do. */
 const expectGuests = (page: Page, expected: string[]) => expect.poll(() => guestsInTable(page)).toEqual(expected);
 const expectGuestCount = (page: Page, count: number) => expect.poll(async () => (await guestsInTable(page)).length).toBe(count);
 
-/** The words of the row of the table that has the guest in it. */
 const rowOf = (page: Page, guest: string) => table(page).getByRole('row').filter({ has: page.getByRole('button', { name: guest, exact: true }) });
 
-/** A menu that opens with the keyboard, as it does for a person who does not use a mouse. */
 async function openMenuWithKeyboard(button: Locator) {
   await button.focus();
   await button.press('Enter');
 }
-
-// ---------------------------------------------------------------------------------------------------------------------------
-// The address
 
 test.describe('the state of the list is in the address', () => {
   test('the quick filter, the search and Back: each view has its own address and Back gives the one before', async ({ page }) => {
@@ -63,13 +56,11 @@ test.describe('the state of the list is in the address', () => {
     await expectGuests(page, ['Elena Gatti']);
     await expect(page.getByTestId('list-count')).toHaveText('1 prenotazione su 14');
 
-    // A refresh gives the same list: the address is all the state there is.
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(searchBox(page)).toHaveValue('elena');
     await expect(chip(page, /^Da confermare/)).toHaveAttribute('aria-pressed', 'true');
     await expectGuests(page, ['Elena Gatti']);
 
-    // Back: the search was one step (typing it did not leave a step for each letter), then the quick filter, then the plain list.
     await page.goBack();
     await expect(page).toHaveURL(/\?chip=pending$/);
     await expect(searchBox(page)).toHaveValue('');
@@ -114,9 +105,6 @@ test.describe('the state of the list is in the address', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------------------------------------
-// Filters
-
 test.describe('the filters', () => {
   test('a drawer with the number of results, tags that take a filter away, and "Azzera i filtri"', async ({ page }) => {
     await openList(page);
@@ -127,7 +115,6 @@ test.describe('the filters', () => {
     await panel.getByLabel('Immobile').selectOption('trullo');
     await panel.getByRole('checkbox', { name: 'Airbnb' }).check();
     await panel.getByRole('checkbox', { name: 'A mano' }).check();
-    // Elena (Airbnb) and Luigi (a mano) are the two upcoming stays of the Trullo that come from there.
     await expect(panel.getByRole('button', { name: 'Mostra 2 risultati' })).toBeVisible();
     await panel.getByRole('button', { name: 'Mostra 2 risultati' }).click();
 
@@ -142,7 +129,6 @@ test.describe('the filters', () => {
     await expect(page).toHaveURL(/\?f_channel=airbnb%2Cmanual$/);
 
     await page.getByTestId('list-clear').click();
-    // "Azzera i filtri" leaves the quick filter for everything.
     await expect(page).toHaveURL(/\?chip=all$/);
     await expectGuestCount(page, 14);
   });
@@ -176,9 +162,6 @@ test.describe('the filters', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------------------------------------
-// Views
-
 test.describe('the views', () => {
   test('a view of the list, and a view of the person that stays after a refresh, and goes with a way back', async ({ page }) => {
     await openList(page);
@@ -186,36 +169,30 @@ test.describe('the views', () => {
     await page.getByRole('menuitemradio', { name: 'Arrivi dei prossimi 7 giorni' }).click();
     await expect(page).toHaveURL(/\?f_arrival=2026-10-09\.\.2026-10-16$/);
     await expectGuestCount(page, 5);
-    // The menu says which view the list is in.
     await page.getByTestId('list-views-button').click();
     await expect(page.getByRole('menuitemradio', { name: 'Arrivi dei prossimi 7 giorni' })).toBeChecked();
     await page.keyboard.press('Escape');
 
-    // The person's own: the Trullo, saved under a name.
     await page.goto(`${DEV_PAGE}?chip=all&f_property=trullo`, { waitUntil: 'domcontentloaded' });
     await page.getByTestId('list-views-button').click();
     await page.getByRole('menuitem', { name: 'Salva questa vista…' }).click();
     const dialog = page.getByRole('dialog', { name: 'Salva questa vista' });
-    // Without a name nothing is saved.
     await dialog.getByRole('button', { name: 'Salva la vista' }).click();
     await expect(dialog.getByRole('alert')).toHaveText('Scrivi un nome per la vista.');
     await dialog.getByRole('textbox', { name: 'Nome della vista' }).fill('Solo il Trullo');
     await dialog.getByRole('button', { name: 'Salva la vista' }).click();
     await expect(page.getByText('Vista «Solo il Trullo» salvata')).toBeVisible();
 
-    // It stays after a refresh (it is kept in the browser), and applying it brings the list back to what it was.
     await page.goto(`${DEV_PAGE}?chip=cancelled`, { waitUntil: 'domcontentloaded' });
     await page.getByTestId('list-views-button').click();
     await page.getByRole('menuitemradio', { name: 'Solo il Trullo' }).click();
     await expect(page).toHaveURL(/\?chip=all&f_property=trullo$/);
 
-    // Deleting it can be undone.
     await page.getByTestId('list-views-button').click();
     await page.getByRole('menuitem', { name: 'Elimina una vista salvata…' }).click();
     await page.getByRole('dialog', { name: 'Elimina una vista' }).getByRole('button', { name: 'Elimina la vista: Solo il Trullo' }).click();
     await expect(page.getByText('Vista «Solo il Trullo» eliminata')).toBeVisible();
     await expect(page.getByRole('dialog', { name: 'Elimina una vista' }).getByText('Non hai ancora salvato nessuna vista.')).toBeVisible();
-    // The toast is out of the reach of a person who has a dialog open: closing the dialog first, then "Annulla".
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Annulla' }).click();
     await page.getByTestId('list-views-button').click();
@@ -223,11 +200,7 @@ test.describe('the views', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------------------------------------
-// The CSV
-
 test.describe('the CSV', () => {
-  /** What the browser was asked to save: the bytes of the start, the file name and the text. */
   async function download(page: Page, click: () => Promise<void>) {
     const [saved] = await Promise.all([page.waitForEvent('download'), click()]);
     const bytes = await readFile(await saved.path());
@@ -243,12 +216,10 @@ test.describe('the CSV', () => {
     expect(file.name).toMatch(/^prenotazioni-\d{4}-\d{2}-\d{2}\.csv$/);
     expect(file.mark).toEqual([0xef, 0xbb, 0xbf]);
     const lines = file.text.split('\r\n');
-    // Italian: `;` between the cells and the comma as the decimal mark.
     expect(lines[0]).toBe('"Ospite e immobile";"Date";"Canale";"Stato";"Totale"');
     expect(lines).toHaveLength(15);
     expect(lines).toContain('"Anna Maria Giuseppina Bianchi Montefeltro Della Rovere · Masseria Ulivi";"2026-10-16 → 2026-10-23";"Booking.com";"Confirmed";"1480"');
     expect(file.text).toContain('"640,5"');
-    // A guest that wrote a formula as a name: it is text in the file, not something that runs when Excel opens it.
     expect(file.text).toContain(`"'=HYPERLINK(""http://evil.example"",""clicca qui"") · Trullo dei Sogni"`);
     expect(file.text).not.toMatch(/(^|;)"=HYPERLINK/m);
   });
@@ -278,9 +249,6 @@ test.describe('the CSV', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------------------------------------
-// Selecting, and acting on many
-
 test.describe('actions on many rows', () => {
   test('a bar with the number selected, an action with its "Annulla", and a question before what cannot be taken back', async ({ page }) => {
     await openList(page, 1280, '?chip=all');
@@ -290,14 +258,12 @@ test.describe('actions on many rows', () => {
     const bar = page.getByRole('region', { name: 'Azioni sulle righe selezionate' });
     await expect(bar.getByRole('status')).toHaveText('2 selezionate');
 
-    // Reversible: done at once, with a toast that takes it back.
     await bar.getByRole('button', { name: 'Invia il link di check-in' }).click();
     await expect(page.getByText('Link inviato a 2 ospiti')).toBeVisible();
     await expect(bar).toBeHidden();
     await page.getByRole('button', { name: 'Annulla' }).click();
     await expect(page.getByText('Link inviato a 2 ospiti')).toBeHidden();
 
-    // Not reversible: it asks first, and "Annulla" means no.
     await table(page).getByRole('checkbox', { name: 'Sofia Marino' }).check();
     await table(page).getByRole('checkbox', { name: 'Elena Gatti' }).check();
     await bar.getByRole('button', { name: 'Cancella' }).click();
@@ -326,9 +292,6 @@ test.describe('actions on many rows', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------------------------------------
-// A row: its action, its menu, its drawer
-
 test.describe('a row', () => {
   test('its action is in sight and undoes with "Annulla"; its menu has the rest; its drawer shows the row', async ({ page }) => {
     await openList(page, 1280, '?chip=all');
@@ -344,7 +307,6 @@ test.describe('a row', () => {
     await expect(page.getByRole('menuitem')).toHaveText(['Scrivi all’ospite', 'Apri la scheda', 'Cancella la prenotazione']);
     await page.keyboard.press('Escape');
 
-    // The name opens the drawer; so does a click on the row; it gives the focus back to the name when it closes.
     const name = mario.getByRole('button', { name: 'Mario Rossi', exact: true });
     await name.click();
     const drawer = page.getByRole('dialog', { name: 'Mario Rossi' });
@@ -359,9 +321,6 @@ test.describe('a row', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------------------------------------
-// Columns by state
-
 test.describe('the columns by state', () => {
   const column = (page: Page, name: string) => page.getByRole('region', { name });
   const cardOf = (page: Page, guest: string) => page.locator('[data-board-card]').filter({ hasText: guest });
@@ -371,7 +330,6 @@ test.describe('the columns by state', () => {
     await page.getByRole('button', { name: 'Colonne', exact: true }).click();
     await expect(page).toHaveURL(/\?view=board$/);
     await expect(page.getByTestId('list-board')).toBeVisible();
-    // The columns start from the quick filter for everything.
     await expect(chip(page, 'Tutte')).toHaveAttribute('aria-pressed', 'true');
 
     await openMenuWithKeyboard(page.getByRole('button', { name: 'Sposta o altre azioni: Sofia Marino' }));
@@ -393,7 +351,6 @@ test.describe('the columns by state', () => {
     await openList(page, 1280, '?view=board');
     const source = cardOf(page, 'Mario Rossi');
     const target = column(page, 'In corso');
-    // Pressed on a line of text of the card, not on its title (a link) nor its buttons: those are theirs.
     const grip = (await source.getByText('Sito diretto').boundingBox())!;
     const to = (await target.boundingBox())!;
 
@@ -401,7 +358,6 @@ test.describe('the columns by state', () => {
     await page.mouse.down();
     await page.mouse.move(grip.x + 50, grip.y + 20, { steps: 4 });
     await page.mouse.move(to.x + to.width / 2, to.y + 80, { steps: 12 });
-    // The column under the pointer is lit; a copy of the card goes with the pointer.
     await expect(target).toHaveClass(/border-dashed/);
     await expect(page.locator('body > [data-board-ghost]')).toHaveCount(1);
     await page.mouse.up();
@@ -415,7 +371,6 @@ test.describe('the columns by state', () => {
     await openList(page, 1280, '?view=board');
     const grip = (await cardOf(page, 'Sofia Marino').getByText('Sito diretto').boundingBox())!;
 
-    // From "Richieste" to "In corso": two steps at once, which is not allowed.
     await page.mouse.move(grip.x + 4, grip.y + grip.height / 2);
     await page.mouse.down();
     const inProgress = (await column(page, 'In corso').boundingBox())!;
@@ -442,9 +397,6 @@ test.describe('the columns by state', () => {
     await expect(column(page, 'Confermate').getByText('Mario Rossi')).toBeVisible();
   });
 });
-
-// ---------------------------------------------------------------------------------------------------------------------------
-// When there is nothing to show
 
 test.describe('the states', () => {
   test('while it loads, when it fails, when it is empty', async ({ page }) => {
@@ -477,13 +429,9 @@ test.describe('the states', () => {
   });
 });
 
-// ---------------------------------------------------------------------------------------------------------------------------
-// A phone
-
 test.describe('on a phone', () => {
   test.use({ hasTouch: true, isMobile: true });
 
-  /** A finger that goes down at `x`, moves along and is lifted: real touch events, which is what a phone sends. */
   async function swipe(page: Page, target: Locator, dx: number) {
     await target.scrollIntoViewIfNeeded();
     const box = (await target.boundingBox())!;
@@ -507,7 +455,6 @@ test.describe('on a phone', () => {
       await expect(table(page)).toBeHidden();
       await expect(cards(page)).toBeVisible();
       await expectInsideTheScreen(page, cards(page), `${width} px, the cards`);
-      // The long name and the long e-mail of one guest are broken, not pushed out.
       await expect(cardOf(page, 'ZS-1004')).toContainText('Anna Maria Giuseppina');
       await expectNothingSticksOut(page, `${width} px, the list with wider letters`, 'main');
     });
@@ -554,15 +501,12 @@ test.describe('on a phone', () => {
     const mario = cardOf(page, 'ZS-1003');
     await expect(mario.getByText('Confermata')).toBeVisible();
 
-    // A short pull: the card goes back and nothing happens.
     await swipe(page, mario, -30);
     await expect(mario.getByText('Confermata')).toBeVisible();
 
-    // Pulled to the left past the threshold: the arrival is registered (the same as the button on the card).
     await swipe(page, mario, -100);
     await expect(mario.getByText('Check-in effettuato')).toBeVisible();
 
-    // The other way: "Scrivi", which is a message.
     await swipe(page, mario, 100);
     await expect(page.getByText('Messaggio a Mario Rossi')).toBeVisible();
   });
@@ -571,9 +515,7 @@ test.describe('on a phone', () => {
     await openList(page, 390, '?chip=all');
     const mario = cardOf(page, 'ZS-1003');
 
-    // The action of the swipe to the left is the one of the card, in sight.
     await expect(mario.getByRole('button', { name: 'Registra arrivo' })).toBeVisible();
-    // The one of the swipe to the right is in the menu, which a keyboard and a screen reader reach.
     await openMenuWithKeyboard(mario.getByRole('button', { name: 'Altre azioni: Mario Rossi' }));
     await expect(page.getByRole('menuitem', { name: 'Scrivi all’ospite' })).toBeVisible();
   });
@@ -608,14 +550,10 @@ test.describe('on a phone', () => {
     const scrolls = await page.getByTestId('list-board').evaluate((board) => board.scrollWidth > board.clientWidth);
     expect(scrolls).toBe(true);
     await expectNothingSticksOut(page, 'the columns on a phone', 'main');
-    // A card moves with its menu: a finger does not drag.
     await openMenuWithKeyboard(page.getByRole('button', { name: 'Sposta o altre azioni: Sofia Marino' }));
     await expect(page.getByRole('menuitem', { name: 'Sposta in «Confermate»' })).toBeVisible();
   });
 });
-
-// ---------------------------------------------------------------------------------------------------------------------------
-// Accessibility, in a real browser (colors and contrast included)
 
 test.describe('accessibility', () => {
   for (const width of [1280, 390]) {
@@ -651,9 +589,6 @@ test.describe('accessibility', () => {
         await openList(page, width, `?scenario=${scenario}`);
         await expect(page.getByTestId(`scenario-${scenario}`)).toHaveAttribute('aria-pressed', 'true');
 
-        // The empty state is `EmptyState` (UI-02), not drawn by the list: its description is `muted-foreground` (4.36:1, the defect
-        // that UI-07 already reported) and its title an `h3` under the `h1` of the page. Those two are not the list's to fix here;
-        // anything else that axe finds is.
         const known = scenario === 'empty' ? ['color-contrast', 'heading-order'] : [];
         const found = (await axeViolations(page)).filter((violation) => !known.some((rule) => violation.startsWith(`${rule} `)));
         expect(found).toEqual([]);
@@ -681,21 +616,18 @@ test.describe('accessibility', () => {
 
       await openMenuWithKeyboard(page.getByTestId('list-more-button'));
       await expect(page.getByRole('menu')).toBeVisible();
-      // A menu eases in and its items change color as the focus moves: the colors are read when they have stopped.
       await untilStill(page);
       await expectNoAxeViolations(page, { include: '[role="menu"]' });
       await page.keyboard.press('Escape');
 
       await page.getByTestId('list-views-button').click();
       await expect(page.getByRole('menu')).toBeVisible();
-      // A menu eases in and its items change color as the focus moves: the colors are read when they have stopped.
       await untilStill(page);
       await expectNoAxeViolations(page, { include: '[role="menu"]' });
       await page.keyboard.press('Escape');
 
       await openMenuWithKeyboard(page.getByRole('button', { name: 'Altre azioni: Mario Rossi' }).first());
       await expect(page.getByRole('menu')).toBeVisible();
-      // A menu eases in and its items change color as the focus moves: the colors are read when they have stopped.
       await untilStill(page);
       await expectNoAxeViolations(page, { include: '[role="menu"]' });
     });
@@ -711,9 +643,6 @@ test.describe('accessibility', () => {
   }
 });
 
-// ---------------------------------------------------------------------------------------------------------------------------
-// The list of guests: the first page that uses the list, and one that asks a server
-
 interface GuestRow {
   id: string;
   firstName: string;
@@ -728,7 +657,6 @@ interface GuestRow {
 const FIRST_NAMES = ['Mario', 'Anna', 'Luigi', 'Chiara', 'Giuseppe', 'Elena'];
 const LAST_NAMES = ['Rossi', 'Bianchi', 'Verdi', 'Neri', 'Esposito', 'Gatti', 'Colombo'];
 
-/** 45 guests, one of them with a name and an e-mail that no phone can show in one line. */
 const GUESTS: GuestRow[] = Array.from({ length: 45 }, (_, index) => {
   const first = FIRST_NAMES[index % FIRST_NAMES.length];
   const last = LAST_NAMES[(index * 3) % LAST_NAMES.length];
@@ -744,12 +672,10 @@ const GUESTS: GuestRow[] = Array.from({ length: 45 }, (_, index) => {
   };
 });
 
-/** The API of the guests: it searches (`search`) and pages (`page`, `pageSize`) as the real one does. Returns what it was asked. */
 async function mockGuests(page: Page, guests: GuestRow[] = GUESTS) {
   const asked: URL[] = [];
   await page.route('**/api/guests**', async (route) => {
     const url = new URL(route.request().url());
-    // `**/api/guests**` also matches the Vite module `/src/api/guests.api.ts`: only the list of the API is answered.
     if (url.pathname.replace(/\/$/, '') !== '/api/guests' || route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -814,7 +740,6 @@ test.describe('the list of guests', () => {
 
     await expect(page).toHaveURL(/[?&]q=verdi$/);
     await expect.poll(() => asked.at(-1)?.searchParams.get('search')).toBe('verdi');
-    // One request for the word and not one for each letter.
     expect(asked.length - before).toBe(1);
     const names = await guestNames(page);
     expect(names.length).toBeGreaterThan(0);

@@ -69,14 +69,12 @@ function PackageBody() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const today = todayInRome();
-  // The address is the choice: a period that is not a month or a year (what the server would refuse) is no period, and the month that is over applies.
   const period = parsePackagePeriod(params.get('period')) ?? defaultPackagePeriod(today);
   const key = periodKey(period);
   const summary = useAgencySummary(key);
   const view = reportView(summary);
 
   if (view.kind === 'notFound') {
-    // A 404 is the module being off at the server, whatever the cache still holds: said, never the figures of an earlier read.
     return (
       <p className={NOTE} data-testid="accountant-package-unavailable">
         {t('accountantPackage.unavailable')}
@@ -108,23 +106,16 @@ function PackageBody() {
 interface PackageBlockProps {
   period: PackagePeriod;
   today: string;
-  /** What the summary says about the owner accounting, or `null` while it is not known (the summary is on its way, or it failed). */
   ownerAccounting: boolean | null;
   onPeriod: (value: string) => void;
 }
 
-/**
- * The period and the package: the one highlighted block of the page. Everything that moves while the ZIP comes (the bytes that arrived, the answer) lives here and not in the page, so the
- * tables under it are not drawn again for every chunk. While the download is on the period cannot be changed (the file is the one of the period it was asked for), and a second click is
- * ignored; the person can stop it, which is not a failure. Whatever way the page goes away the download goes with it.
- */
 function PackageBlock({ period, today, ownerAccounting, onPeriod }: PackageBlockProps) {
   const { t, i18n } = useTranslation();
   const format = useSummaryFormat();
   const download = useDownloadAccountantPackage();
   const key = periodKey(period);
   const [received, setReceived] = useState(0);
-  // The failure belongs to the period it came from: another period shows none of it, and no effect has to forget it.
   const [problem, setProblem] = useState<{ period: string; text: string } | null>(null);
   const request = useRef<AbortController | null>(null);
   useEffect(
@@ -148,7 +139,6 @@ function PackageBlock({ period, today, ownerAccounting, onPeriod }: PackageBlock
       {
         onSuccess: () => toast.success(t('accountantPackage.download.done')),
         onError: (error) => {
-          // A call the person stopped is not a failure to tell.
           if (isArchiveCallCancelled(error)) return;
           setProblem({ period: key, text: downloadProblem(error, t) });
         },

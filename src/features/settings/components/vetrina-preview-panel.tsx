@@ -8,7 +8,6 @@ interface VetrinaPreviewPanelProps {
   bookingSitePath: string;
 }
 
-/** iPhone 14 logical viewport — keeps iframe media queries in mobile mode. */
 const MOBILE_PREVIEW_WIDTH = 390;
 const MOBILE_PREVIEW_HEIGHT = 720;
 

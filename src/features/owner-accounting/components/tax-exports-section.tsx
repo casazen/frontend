@@ -18,26 +18,21 @@ import { cuOwnerIdsOf, type TaxExportRequest } from '../tax-exports-model';
 import { useOwnerFormat } from '../use-owner-format';
 import { FilingStatus } from './filing-status';
 
-/** What a failed export says, in words: a role that may not read the file, the sentence of the code of any other (no annual data yet, nothing withheld in the period, data of before the recipients), else that the file did not come. */
 function exportProblemOf(error: unknown, t: TFunction): string {
   if (error instanceof ReportAccessDeniedError) return t('ownerAccounting.exports.noAccess');
   return getProblemMessage(error, t) ?? t('ownerAccounting.exports.failed');
 }
 
-/** The two formats a file of the withholding can be made in: the CSV for a spreadsheet set to Italian, the Excel file the accountant opens. */
 const FORMATS: readonly ReportFileFormat[] = ['csv', 'xlsx'];
 
 interface FormatButtonsProps {
   id: string;
-  /** What the file is, for a screen reader that reads the buttons of the page one after the other. */
   title: string;
-  /** The format being made now (the request of this row that is on its way), if any. */
   pending: ReportFileFormat | null;
   disabled: boolean;
   onDownload: (format: ReportFileFormat) => void;
 }
 
-/** «CSV» and «Excel» of one file: the CSV for a spreadsheet set to Italian, the Excel file the accountant opens. */
 function FormatButtons({ id, title, pending, disabled, onDownload }: FormatButtonsProps) {
   const { t } = useTranslation();
   return (
@@ -72,7 +67,6 @@ interface ExportRowProps {
   disabled: boolean;
   pending: ReportFileFormat | null;
   failure: string | null;
-  /** What waits under the buttons: a way to the step before, or the list of the owners. */
   children?: ReactNode;
   onDownload: (format: ReportFileFormat) => void;
 }
@@ -101,7 +95,6 @@ interface ProspectListProps {
   year: number;
   dataset: TaxReportingDataset;
   disabled: boolean;
-  /** The owner whose prospect is being made now. */
   pendingOwner: string | null;
   failure: { ownerId: string; message: string } | null;
   onDownload: (ownerId: string) => void;
@@ -167,19 +160,15 @@ interface TaxExportsSectionProps {
   year: number;
   /** The month whose F24 data is offered; `null` when the month has no withholding to put in an F24 (nothing is offered then). */
   month: number | null;
-  /** The annual data of the year: `undefined` while they are read (or the read failed), `null` when they were never generated, then there is no CU to export. */
   dataset: TaxReportingDataset | null | undefined;
   /** The read of the annual data failed: the CU says so, with the way to read them again, instead of waiting for data that is not coming. */
   datasetError?: { error: unknown; onRetry: () => void };
   /** A file of the page is being made again (the F24, the annual data): the files read the same data, so none is asked until it is made. */
   busy?: boolean;
-  /** Where the annual data are generated when there are none: the month-end close of the month. */
   closeHref?: string;
-  /** The section is a part of another one (it has an `h3`, not an `h2`). */
   nested?: boolean;
 }
 
-/** What one request is for: the row of the page that asked it, to put its failure under it. */
 function rowOf(request: TaxExportRequest): string {
   return request.kind === 'cuProspect' ? `cuProspect:${request.ownerId}` : request.kind;
 }
@@ -198,7 +187,6 @@ export function TaxExportsSection({ year, month, dataset, datasetError, busy = f
   const { flags } = useFeatureFlags();
   const tax = isFeatureEnabled(flags, 'taxReportingExports');
   const download = useDownloadTaxFile();
-  // A failure belongs to the period it was asked for (`scope`): the month or the year changes under the same section, and the refusal of one (nothing withheld, no annual data yet) is never told under the file of another.
   const scope = `${year}-${month ?? 'none'}`;
   const [asked, setFailure] = useState<{ row: string; message: string; scope: string } | null>(null);
   const failure = asked?.scope === scope ? asked : null;
@@ -280,7 +268,6 @@ export function TaxExportsSection({ year, month, dataset, datasetError, busy = f
                   {messageOf(datasetError.error, t)}
                 </Alert>
               ) : null}
-              {/* On a page of its own the CU says where it stands (the panel of the month-end has the state of the file above). */}
               {cuReady && !nested ? <FilingStatus file={dataset} /> : null}
               {cuReady ? (
                 <ProspectList
@@ -317,7 +304,6 @@ export function TaxExportsSection({ year, month, dataset, datasetError, busy = f
     </>
   );
 
-  // Inside another section of a page (the tax panel of the month-end) it is a part of it with an `h3`; on a page of its own it is a section.
   return nested ? (
     <div className="space-y-2" data-testid="tax-exports">
       <h3 className="text-base font-semibold">{title}</h3>

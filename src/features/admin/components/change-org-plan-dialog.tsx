@@ -23,8 +23,6 @@ export function ChangeOrgPlanDialog({ user, open, onOpenChange }: ChangeOrgPlanD
   const updatePlan = useAdminUpdateOrgPlan();
   const [selectedTier, setSelectedTier] = useState<PlanTier | null>(null);
 
-  // A refused change (409 managed_by_stripe or subscription_required, FD-18) is reported by the hook's onError with
-  // getProblemMessage; the dialog stays open on the current plan. mutate: no promise left unhandled.
   const handleSelect = (tier: PlanTier) => {
     if (!user?.orgId) return;
     setSelectedTier(tier);

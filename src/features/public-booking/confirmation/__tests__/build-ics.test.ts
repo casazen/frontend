@@ -12,7 +12,6 @@ const stay: CalendarStay = {
   checkOut: '2026-10-27',
 };
 
-/** The physical lines of the file as a calendar program reads them back: the folds are undone. */
 function unfold(file: string): string[] {
   return file.replace(/\r\n[ \t]/g, '').split('\r\n').filter(Boolean);
 }
@@ -53,7 +52,6 @@ describe('foldIcsLine', () => {
     const folded = foldIcsLine(line);
 
     for (const physical of folded.split('\r\n')) expect(octets(physical)).toBeLessThanOrEqual(75);
-    // A cut inside a character would leave a replacement character when the file is read back.
     expect(folded.replace(/\r\n /g, '')).toBe(line);
   });
 });
@@ -79,7 +77,6 @@ describe('buildIcs', () => {
 
     expect(first).toBe('UID:k7m4q9xp2h@booking.invalid');
     expect(second).toBe(first);
-    // With the site named, the UID ends with it.
     expect(unfold(buildIcs({ ...stay, uidHost: 'ville.example.org' }, STAMP))).toContain('UID:k7m4q9xp2h@ville.example.org');
   });
 
@@ -88,7 +85,6 @@ describe('buildIcs', () => {
 
     const description = unfold(file).find((line) => line.startsWith('DESCRIPTION:')) ?? '';
     expect(description).toBe('DESCRIPTION:Trastevere Suite\\nCodice prenotazione K7M4Q-9XP2H\\nArrivo dalle 15:00');
-    // The place is what the caller gave, and nothing else: the file has no field for an address.
     expect(file).not.toMatch(/GEO:|X-APPLE-STRUCTURED-LOCATION/);
   });
 
@@ -140,7 +136,6 @@ describe('calendar links', () => {
   });
 
   it('calendarLinks_Stay_NeverCarryTheBookingCode', () => {
-    // The code and the email of the booking open it in the guest area: they stay out of an address another service receives.
     expect(googleCalendarUrl(stay)).not.toContain('K7M4Q');
     expect(outlookCalendarUrl(stay)).not.toContain('K7M4Q');
   });

@@ -10,7 +10,6 @@ import { OTA_STAY_SOURCES, type Booking, type CreateOtaStayDto, type OtaStaySour
 
 interface OtaStayFormProps {
   blockId: string;
-  /** Channel of the block's feed: the source of the stay, chosen here only for a feed of channel "Other". */
   channel?: string | null;
   onCreated: (booking: Booking) => void;
   onCancel: () => void;
@@ -24,7 +23,6 @@ const EMAIL_MAX_LENGTH = 255;
 const MAX_GUESTS = 100;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** "150,50" or "150.50" → 150.5; undefined when empty; NaN when not a number. */
 function parseAmount(value: string): number | undefined {
   const text = value.trim().replace(/\s/g, '').replace(',', '.');
   if (!text) return undefined;
@@ -49,7 +47,6 @@ export function OtaStayForm({ blockId, channel, onCreated, onCancel }: OtaStayFo
   const [errors, setErrors] = useState<FieldErrors>({});
   const chooseSource = channel !== 'Airbnb' && channel !== 'BookingCom';
 
-  // A new attempt hides the error of the previous one.
   const edit = (field: Field, update: () => void) => {
     if (createStay.isError) createStay.reset();
     if (errors[field]) setErrors((current) => ({ ...current, [field]: undefined }));
@@ -102,7 +99,6 @@ export function OtaStayForm({ blockId, channel, onCreated, onCancel }: OtaStayFo
     createStay.mutate({ blockId, data: result.data }, { onSuccess: (booking) => onCreated(booking) });
   };
 
-  // Error text of a field and the attributes that tie it to its input.
   const fieldState = (field: Field) => {
     const message = errors[field];
     const id = `ota-stay-${field}-error`;

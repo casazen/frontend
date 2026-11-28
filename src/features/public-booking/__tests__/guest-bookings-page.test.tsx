@@ -15,7 +15,6 @@ vi.mock('@/api/guest-session.api', () => ({
 vi.mock('@/api/public-booking.api', () => ({
   publicBookingApi: { sendGuestCheckInLink: vi.fn() },
 }));
-// The cancellation section of the guest area (DB-08b) is covered by its own test; here its preview never arrives.
 vi.mock('@/api/guest-cancellation.api', () => ({
   guestCancellationApi: { getPreview: vi.fn(() => new Promise(() => undefined)), cancel: vi.fn() },
 }));
@@ -130,15 +129,12 @@ describe('GuestBookingsPage', () => {
     fill(' k7m4q 9xp2h ', ` ${EMAIL} `);
 
     const result = await screen.findByTestId('guest-booking-result');
-    // The code as the backend expects it, the site of the page, the trimmed email: once, to open the session.
     expect(guestSessionApi.openSession).toHaveBeenCalledWith({
       orgSlug: 'demo-casazen',
       bookingCode: CODE,
       email: EMAIL,
     });
-    // The booking is read with the token of the session, not with code + email.
     expect(guestSessionApi.getBooking).toHaveBeenCalledWith('gs1.token-of-the-session', CODE);
-    // The session is kept in the tab for this site; the email never is.
     const stored = window.sessionStorage.getItem(STORAGE_KEY);
     expect(stored).toContain('gs1.token-of-the-session');
     expect(stored).not.toContain(EMAIL);
@@ -174,7 +170,6 @@ describe('GuestBookingsPage', () => {
     expect(screen.queryByTestId('guest-bookings-error')).not.toBeInTheDocument();
     expect(screen.queryByTestId('guest-booking-result')).not.toBeInTheDocument();
     expect(window.sessionStorage.getItem(STORAGE_KEY)).toBeNull();
-    // The form stays, with what the guest typed, to correct it.
     expect(screen.getByLabelText('Codice prenotazione')).toHaveValue(CODE);
   });
 
@@ -261,7 +256,6 @@ describe('GuestBookingsPage', () => {
   });
 
   it('flag off: unchanged e-mail form', async () => {
-    // No provider of the flags here: every flag is off, `whiteLabelHost` too (NF-143). The form is the one of the code and the email, with its own words, and it sends what it always sent.
     vi.mocked(guestSessionApi.getBooking).mockResolvedValue(booking());
     renderPage();
 
@@ -278,7 +272,6 @@ describe('GuestBookingsPage', () => {
     fill(CODE, EMAIL);
 
     await screen.findByTestId('guest-booking-result');
-    // The body of the call: three keys, the email among them, and no key of the phone.
     const body = vi.mocked(guestSessionApi.openSession).mock.calls[0][0];
     expect(body).toEqual({ orgSlug: 'demo-casazen', bookingCode: CODE, email: EMAIL });
     expect(Object.keys(body).sort()).toEqual(['bookingCode', 'email', 'orgSlug']);
@@ -306,7 +299,6 @@ describe('GuestBookingsPage', () => {
 
     expect(screen.queryByTestId('guest-booking-result')).not.toBeInTheDocument();
     expect(screen.getByTestId('guest-bookings-form')).toBeInTheDocument();
-    // The session is forgotten and the form comes back without the email of the guest.
     expect(window.sessionStorage.getItem(STORAGE_KEY)).toBeNull();
     expect(screen.getByLabelText('Email usata per prenotare')).toHaveValue('');
   });

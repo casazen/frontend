@@ -191,11 +191,9 @@ describe('OnboardingGuard (PL-01)', () => {
       }),
     );
 
-    // Who has the listings on the channel manager and none in CasaZen yet: the wizard, and the page the consent leads back to.
     renderGuard('/app/short-rent/integrations/octorate?code=the-code&state=the-state');
 
     expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/short-rent/integrations/octorate');
-    // The guard does not touch the answer of the channel manager: the wizard reads it and takes it out of the address.
     expect(screen.getByTestId('workspace-search')).toHaveTextContent('?code=the-code&state=the-state');
   });
 
@@ -214,7 +212,6 @@ describe('OnboardingGuard (PL-01)', () => {
         hasProperties: false,
       }),
     );
-    // Made-up values: none of them is a code, a state or a credential of anyone.
     const search = new URLSearchParams({
       site: 'https://www.quokka360.test',
       return: 'https://www.quokka360.test/wp-admin/options-general.php?page=casazen',
@@ -223,7 +220,6 @@ describe('OnboardingGuard (PL-01)', () => {
       method: 'S256',
     }).toString();
 
-    // The plugin sends the administrator here (PLG-FE-CONSOLE): an owner with no property yet reaches the consent with the whole request in the address, and is not taken to the creation of the first property.
     renderGuard(`/app/connect/wordpress?${search}`);
 
     expect(await screen.findByTestId('workspace')).toHaveTextContent('workspace /app/connect/wordpress');
@@ -237,7 +233,6 @@ describe('OnboardingGuard (PL-01)', () => {
 
     renderGuard('/app/short-rent/integrations/octorate?code=the-code&state=the-state&step=consent');
 
-    // The `from` stays in the history of the browser: the code and the state are single-use secrets and do not go along.
     const onboarding = await screen.findByTestId('onboarding-page');
     expect(onboarding).toHaveTextContent('onboarding from /app/short-rent/integrations/octorate?step=consent');
     expect(onboarding).not.toHaveTextContent('the-code');
@@ -290,7 +285,6 @@ describe('OnboardingGuard (PL-01)', () => {
 
     renderGuard('/app/admin');
 
-    // Profile loaded but roles still unknown: no decision yet (it would wrongly be "no roles → onboarding").
     await waitFor(() => expect(UsersApi.getMe).toHaveBeenCalled());
     expect(screen.queryByTestId('onboarding-page')).not.toBeInTheDocument();
     expect(screen.queryByTestId('workspace')).not.toBeInTheDocument();
@@ -376,7 +370,6 @@ describe('OnboardingGuard (PL-01)', () => {
     demo.enabled = true;
     sessionStorage.setItem('casazen:demo-profile', 'short-stay');
     mockAuth({ roles: ['PropertyOwner'] });
-    // Outside Playwright the demo token is rejected (401) or the API is unreachable.
     vi.mocked(UsersApi.getMe).mockRejectedValue(new AxiosError('Network Error', AxiosError.ERR_NETWORK));
 
     renderGuard();
@@ -430,7 +423,6 @@ describe('OnboardingGuard supplier (SU-02)', () => {
   });
 
   it('OnboardingGuard_LinkedSupplierWithoutRoleInToken_RendersSupplierConsole', async () => {
-    // Claimed, but the Auth0 Supplier role is not in the token yet (rolesSynced: false).
     mockAuth({ tokenRoles: Promise.resolve([]) });
     vi.mocked(UsersApi.getMe).mockResolvedValue(
       profile({ role: 'PropertyOwner', orgId: 'supplier-org', supplierOrgId: 'supplier-org' }),

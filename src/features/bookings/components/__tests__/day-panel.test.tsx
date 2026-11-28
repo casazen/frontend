@@ -115,7 +115,6 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
 
     expect(await screen.findByTestId('manual-block-error')).toHaveTextContent('Una prenotazione occupa già una di queste notti');
     expect(screen.getByTestId('day-panel')).toBeInTheDocument();
-    // The form is there: it says the refusal next to its fields and nothing says it twice.
     expect(toast.error).not.toHaveBeenCalled();
   });
 
@@ -128,7 +127,6 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
 
     await waitFor(() => expect(screen.getByTestId('day-panel-price')).toBeDisabled());
     expect(screen.getByTestId('day-panel-restrictions')).toBeDisabled();
-    // Escape and the close button do not abandon a request that is on its way: its answer is seen in the form.
     fireEvent.keyDown(screen.getByTestId('day-panel'), { key: 'Escape' });
     fireEvent.click(screen.getByRole('button', { name: 'Chiudi' }));
     expect(onClose).not.toHaveBeenCalled();
@@ -159,7 +157,6 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     fireEvent.click(within(screen.getByTestId('manual-block-form')).getByRole('button', { name: 'Blocca date' }));
     await waitFor(() => expect(manualBlocksApi.create).toHaveBeenCalledTimes(1));
 
-    // The host clicks other days of the calendar while the request is on its way: the form of the new days replaces the old one, which is gone when the answer comes.
     rerender(tree(extendSelection(startSelection('p1', '2026-09-20'), 'p1', '2026-09-22')!));
     await waitFor(() => expect(screen.getByTestId('day-panel-price')).toBeEnabled());
     await act(async () => refuse(problemError(409, { code: 'calendar_block_overlaps_booking', detail: 'server text' })));
@@ -239,7 +236,6 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     expect(await screen.findByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
     expect(screen.queryByTestId('calendar-change-property')).not.toBeInTheDocument();
     expect(screen.getByTestId('day-panel-result').textContent).not.toMatch(/channel manager/i);
-    // Nothing is sent there, so the state of the change is not asked either.
     expect(calendarChangesApi.get).not.toHaveBeenCalled();
   });
 
@@ -283,7 +279,6 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     fireEvent.change(screen.getByTestId('day-price-input'), { target: { value: '99' } });
     fireEvent.click(screen.getByTestId('day-rules-submit'));
 
-    // The sentence of the code, in the words of the app (the text of the server is the fallback for a code with none).
     expect(await screen.findByTestId('day-rules-error')).toHaveTextContent('Questi giorni sono già passati: scegli giorni da oggi in poi.');
     expect(screen.queryByTestId('day-panel-result')).not.toBeInTheDocument();
   });
@@ -296,7 +291,6 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     fireEvent.change(screen.getByTestId('day-price-input'), { target: { value: '99' } });
     fireEvent.click(screen.getByTestId('day-rules-submit'));
 
-    // The change cannot be followed without the right to read it: what it was when the API answered is said as that, never as a progress that is not known.
     const line = await screen.findByTestId('calendar-change-property');
     expect(line).toHaveAttribute('data-state', 'noAnswer');
     expect(calendarChangesApi.get).not.toHaveBeenCalled();

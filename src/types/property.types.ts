@@ -2,121 +2,77 @@ import type { PropertyModeChange } from './property-mode.types';
 import type { RatingSummary } from './review.types';
 import type { SwissPlace } from './swiss-places.types';
 
-/** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
 export type RentalMode = 'Short' | 'Long';
 
-/** The kind of accommodation (SR-07a): the five choices of the first step of «Aggiungi immobile». */
 export const ACCOMMODATION_TYPES = ['Apartment', 'HouseOrVilla', 'TrulloOrMasseria', 'LoftOrPenthouse', 'RoomOrSuite'] as const;
 export type AccommodationType = (typeof ACCOMMODATION_TYPES)[number];
 
-/** What the house rules say about smoking, pets, parties and children (SR-07a, NF-37). */
 export type SmokingPolicy = 'No' | 'OutdoorsOnly' | 'Yes';
 export type PetsPolicy = 'No' | 'OnRequest' | 'Yes';
 export type PartiesPolicy = 'No' | 'OnRequest';
 export type ChildrenPolicy = 'No' | 'OnRequest' | 'Yes';
 
-/** The one state of a short-stay property in the host's list (SR-07a): derived by the server, never worked out here. */
 type PropertyLifecycleStatus = 'NeedsAttention' | 'Active' | 'Paused' | 'Suspended';
 
-/** Where a short-stay property stands on the booking site: on it, ready but kept off (paused or switched off), or not ready. */
 type PropertySiteVisibility = 'Published' | 'Hidden' | 'NotReady';
 
-/**
- * Property record of `GET /properties/{id}` (and rows of `GET /properties`). Amounts are in euros; the API has no
- * country nor currency field (A2-27). The record never carries the bookings of the property (A2-32).
- */
 export interface Property {
   id: string;
   name: string;
   description: string;
   address: string;
-  /** Interno / scala (PC-06): tells apart the apartments of one building; `null` when the property has none. */
   unit?: string | null;
   city: string;
   postalCode: string;
-  /** WGS84 degrees, -90..90, six decimals (about 0.1 m, A2-33); 0 with a longitude of 0 = not set. */
   latitude?: number;
-  /** WGS84 degrees, -180..180, six decimals. */
   longitude?: number;
-  /** 0 = studio flat (monolocale). */
   bedrooms: number;
-  /** Whole number, at least 1. */
   bathrooms: number;
   maxGuests: number;
   nightlyRate: number;
-  /** Fewest nights the booking site accepts (DB-03); `null` = no minimum. */
   minNights?: number | null;
-  /** Percent added to the rate on the nights that start on a Friday or a Saturday (DB-03); 0 = none. */
   weekendSurchargePercent?: number;
-  /** `Short` = short-rent section, `Long` = long-rent section. Set at creation, changed only by the scheduled mode change. */
   rentalMode?: RentalMode;
   cleaningFee: number;
   damageDeposit: number;
   amenities: string[];
   photoUrls: string[];
   houseRules: string;
-  /** The fields of the wizard «Aggiungi immobile» (SR-07a): `null` = the host never said. */
   accommodationType?: AccommodationType | null;
   beds?: number | null;
-  /** Living area in square metres. */
   areaSqm?: number | null;
-  /** The headline of the listing, at most 60 characters; `null` = the listing uses the name. */
   listingTitle?: string | null;
-  /** «Mostra la casa sul sito»: `false` = the host keeps the property off the booking site (it never publishes by itself). */
   publishedOnSite?: boolean;
-  /** `HH:mm:ss` on the property's clock. */
   checkInFrom?: string | null;
   checkOutBy?: string | null;
   smokingPolicy?: SmokingPolicy | null;
   petsPolicy?: PetsPolicy | null;
   partiesPolicy?: PartiesPolicy | null;
-  /** The rule about children (NF-37), next to pets and smoking; `null` = the host never said. */
   childrenPolicy?: ChildrenPolicy | null;
   quietHoursFrom?: string | null;
   quietHoursTo?: string | null;
-  /** What the host asks per night for each extra guest, in euros; `null` = extra guests are not accepted. */
   extraGuestFeePerNight?: number | null;
-  /**
-   * Only in the rows of `GET /properties?view=overview` (SR-07a), told by the server: the one state, what is missing, the
-   * occupancy of the last 30 days (percent, active properties only), the photos and where the property stands on the site.
-   */
   lifecycleStatus?: PropertyLifecycleStatus;
   occupancy30?: number;
   photoCount?: number;
   coverPhotoUrl?: string;
   siteVisibility?: PropertySiteVisibility;
-  /** With `lifecycleStatus` `Suspended`: the blocker codes that suspended the property. */
   suspensionReasons?: string[];
   cinCode: string | null;
-  /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
   country: 'IT' | 'CH';
-  /** ISO 4217 currency code (ADR-001-R7). */
   currency: 'EUR' | 'CHF';
   /**
    * ISTAT code (6 digits, text) of the comune chosen from the official list (SU-04); null until chosen: it is never
    * inferred from the free-text `city`.
    */
   comuneIstatCode?: string | null;
-  /** CasaZen's region code (`LOM`) that follows the comune; null until a comune is chosen. */
   regionCode?: string | null;
   /** The CIN is valid and its ISTAT comune differs from `comuneIstatCode`: a non-blocking warning. */
   cinIstatMismatch?: boolean;
-  /**
-   * BFS number (text of digits, `"5192"` is Lugano) of the Swiss municipality the host confirmed in the form (E29/F01/US01/T02, NF-124);
-   * null until confirmed. A municipality derived from the postal code is in `swissPlace`, never here.
-   */
   swissMunicipalityCode?: string | null;
-  /** Official name of the stored Swiss municipality. Only on `GET /properties/{id}`: null on the lists and when none is stored. */
   swissMunicipalityName?: string | null;
-  /** The canton (`TI`) of the stored Swiss municipality. Only on `GET /properties/{id}`: null on the lists and when none is stored. */
   swissCantonCode?: string | null;
-  /**
-   * Where the rules place the property: the stored municipality (`source: 'Stored'`), or, without one, the one its postal code and city
-   * give (`'Derived'`: not stored, the form proposes it for confirmation), or `ambiguous: true` with no municipality when the postal
-   * code leaves several open. Only on `GET /properties/{id}`, for a Swiss property that has a place.
-   */
   swissPlace?: SwissPlace | null;
-  /** IANA time zone, e.g. `Europe/Rome`. */
   timezone: string;
   cancellationPolicyId: string | null;
   cancellationFullRefundHours?: number | null;
@@ -124,9 +80,7 @@ export interface Property {
   cancellationPartialRefundPercent?: number | null;
   cancellationRefundType?: 'Percent' | 'NonRefundable';
   isActive: boolean;
-  /** Host-set pause (A2-05): hidden from public search/bookings until reactivated with `POST /properties/:id/activate`. */
   isPaused: boolean;
-  /** ISO instant the property was paused; `null` when not paused. */
   pausedAt: string | null;
   complianceStatus?: string | null;
   slug?: string | null;
@@ -135,36 +89,25 @@ export interface Property {
    * mode, and only while it is `Scheduled`; absent otherwise. The same object `GET /properties/:id/mode` gives as `scheduledChange`.
    */
   scheduledModeChange?: PropertyModeChange | null;
-  /** Cadastral identification of the unit (LT-10): used by the lease contract; the sheet also finds the concordato zone. */
   cadastralSheet?: string | null;
   cadastralParcel?: string | null;
   cadastralSubaltern?: string | null;
   cadastralCategory?: string | null;
   cadastralIncome?: number | null;
   ownerId: string;
-  /**
-   * The member in charge of the property (AM-03): the account id of an `OrgMember` (`userId`), told with the administrators when
-   * something happens on it. `null` while nobody is named (the creator is told). Changed with `PUT /properties/:id/responsible`.
-   */
   responsibleUserId?: string | null;
   orgId?: string;
-  /**
-   * What a short-term property still lacks, worked out by the server with the rules of its activation: only in the list asked with
-   * `?view=overview` (SR-07a), and only for a short-term property. The client reads it and never works it out again.
-   */
   missing?: PropertyMissingItem[];
   createdAt: string;
   updatedAt: string;
 }
 
-/** One thing a short-term property lacks (`GET /properties?view=overview`): a stable code, and whether it blocks the activation or is only advice. */
 export interface PropertyMissingItem {
   /** `base_data`, `cin`, `documents`, `safety`, `activation_not_confirmed` (blocking) or `photos`, `calendar` (advice). */
   code: string;
   blocking: boolean;
 }
 
-/** `PUT /properties/:id/cadastral` (LT-10): empty values clear the field; only lengths are checked. */
 export interface PropertyCadastralData {
   sheet: string | null;
   parcel: string | null;
@@ -173,7 +116,6 @@ export interface PropertyCadastralData {
   income: number | null;
 }
 
-/** `PUT /properties/:id/documents/:docId/ape` (LT-10): what is printed on the APE. */
 export interface ApeIdentification {
   code: string;
   energyClass: string;
@@ -183,7 +125,6 @@ export interface CreatePropertyDto {
   name: string;
   description: string;
   address: string;
-  /** Interno / scala; `null` or blank clears it. The same address and unit twice in an org is a 409 `duplicate_property_address`. */
   unit?: string | null;
   city: string;
   postalCode: string;
@@ -192,12 +133,6 @@ export interface CreatePropertyDto {
    * `null` clears it; a city changed without a comune clears the stored one.
    */
   comuneIstatCode?: string | null;
-  /**
-   * BFS number (text of digits) of the Swiss municipality the host confirmed from the official directory (`GET /api/swiss/localities`),
-   * only for a property in Switzerland. On an update `null` clears it and leaving it out keeps it; a city or postal code changed without
-   * it clears the stored one. A create refuses a value (422 `swiss_municipality_not_applicable`: its request has no country), so the
-   * form sends it only for a property it edits.
-   */
   swissMunicipalityCode?: string | null;
   latitude?: number;
   longitude?: number;
@@ -205,17 +140,13 @@ export interface CreatePropertyDto {
   bathrooms: number;
   maxGuests: number;
   nightlyRate: number;
-  /** On an update `null` removes the minimum and leaving it out keeps it (DB-03). */
   minNights?: number | null;
-  /** On an update `0` turns the surcharge off and leaving it out keeps it (DB-03). */
   weekendSurchargePercent?: number;
-  /** Sent on creation only (an update must carry the stored mode: 422 `property_rental_mode_change_not_allowed`). */
   rentalMode?: RentalMode;
   cleaningFee?: number;
   damageDeposit?: number;
   amenities?: string[];
   houseRules?: string;
-  /** The fields of the wizard «Aggiungi immobile» (SR-07a); on an update `null` clears them and leaving one out keeps it. */
   accommodationType?: AccommodationType | null;
   beds?: number | null;
   areaSqm?: number | null;
@@ -231,7 +162,6 @@ export interface CreatePropertyDto {
   quietHoursTo?: string | null;
   extraGuestFeePerNight?: number | null;
   cinCode?: string | null;
-  /** casazen/backend#979: the «Numero identificativo LEAR / NO-LEAR» for the Ticino police file; null or blank clears it. */
   ticinoStructureId?: string | null;
   timezone?: string;
   cancellationPolicyId?: string | null;
@@ -240,16 +170,10 @@ export interface CreatePropertyDto {
   cancellationPartialRefundPercent?: number | null;
   cancellationRefundType?: 'Percent' | 'NonRefundable';
   slug?: string | null;
-  /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
   country?: 'IT' | 'CH';
-  /** ISO 4217 currency code (ADR-001-R7), auto-derived from country. */
   currency?: 'EUR' | 'CHF';
 }
 
-/**
- * Body of `PUT /properties/{id}`, which has PATCH semantics (A2-04): a field left out keeps its stored value;
- * `cinCode`, `slug` and `cancellationPolicyId` sent as `null` are cleared.
- */
 export type UpdatePropertyDto = Partial<CreatePropertyDto>;
 
 /**
@@ -266,7 +190,6 @@ export interface PropertyPhotosDto {
   allowedContentTypes: string[];
 }
 
-/** A cancellation policy a property can reference (`GET /properties/cancellation-policies`). */
 export interface CancellationPolicyOption {
   id: string;
   name: string;
@@ -274,17 +197,11 @@ export interface CancellationPolicyOption {
   fullRefundHours: number;
   partialRefundPercent: number;
   partialRefundHours: number;
-  /** Stable identifier of the catalog (SR-07a): the name and the description may be reworded, the slug never. */
   slug?: string;
 }
 
-/**
- * How many properties the org has of how many its plan allows (`GET /properties/plan-usage`, SR-07a): readable by whoever may
- * read properties, and deliberately without the name of the plan or the billing.
- */
 export interface PlanUsage {
   used: number;
-  /** `null` when the plan has no limit. */
   max: number | null;
   unlimited: boolean;
   canAdd: boolean;
@@ -299,25 +216,11 @@ export type PropertyDocumentType =
   | 'Ape'
   | 'Other';
 
-export interface PropertyDocument {
-  id: string;
-  fileName: string;
-  storageUrl: string;
-  documentType: PropertyDocumentType;
-  uploadedBy: string;
-  uploadedAt: string;
-}
-
 export type CinStatus = 'Valid' | 'Missing' | 'Invalid';
 
-/** Public list read-model (US-001 #212) — no ownerId or internal fields. */
 export interface PublicPropertyDto {
   id: string;
   slug?: string | null;
-  /**
-   * Current slug of the org that owns the property: with `slug`, the property page of its booking site
-   * (`/book/{orgSlug}/property/{slug}`). Absent only from an older backend (BK-20, A3-27).
-   */
   orgSlug?: string;
   name: string;
   description: string;
@@ -330,7 +233,6 @@ export interface PublicPropertyDto {
   maxGuests: number;
   nightlyRate: number;
   cleaningFee: number;
-  /** ISO 4217 code of the property (`EUR` or `CHF`): `nightlyRate` and `cleaningFee` are in it. Absent from an older backend: the amounts are then written with no symbol and the phrase that says the currency is not available, never in an assumed euro. */
   currency?: string;
   amenities: string[];
   photoUrls: string[];
@@ -339,10 +241,6 @@ export interface PublicPropertyDto {
   timezone: string;
 }
 
-/**
- * A text the host wrote for the page: Italian always and, if they wanted, English (DB-11a). Nothing is translated for them (DB-D8):
- * the page shows the language of the visitor and falls back to the Italian text.
- */
 export interface PublicLocalizedText {
   it: string;
   en?: string | null;
@@ -358,33 +256,23 @@ export interface PublicCancellationPolicy {
   slug: string;
   name: string;
   description: string | null;
-  /** Hours before the start of the check-in day up to which the refund is full; null = never in full. */
   fullRefundHours: number | null;
-  /** Hours before the start of the check-in day up to which the partial refund holds; null = there is none. */
   partialRefundHours: number | null;
-  /** The share refunded in the partial window (0-100); null = there is none. */
   partialRefundPercent: number | null;
   hostOverrideApplies: boolean;
   longStayNights: number;
 }
 
-/** One of the (at most three) highlights of the page: an icon of a fixed list, a short title and an optional line (DB-11a). */
 export interface PublicHighlight {
   icon: string;
   title: PublicLocalizedText;
   text?: PublicLocalizedText | null;
 }
 
-/** What a point of interest is, in the order the list shows them (DB-11a). */
 export const PUBLIC_POI_TYPES = ['beach', 'sight', 'food', 'shop', 'transport', 'health', 'parking'] as const;
 
-/**
- * A place near the house with the time to get there (DB-11a). It has no coordinates: only the direction (compass bearing from the
- * house, 0 = north) and the distance, so a page never learns where the house is.
- */
 export interface PublicPointOfInterest {
   id: string;
-  /** One of `PUBLIC_POI_TYPES`; anything else is listed under «other» by the page. */
   type: string;
   name: PublicLocalizedText | string;
   mode: 'walk' | 'car';
@@ -393,12 +281,10 @@ export interface PublicPointOfInterest {
   distanceM: number;
 }
 
-/** One level of the floor plan: the image the host uploaded and the area of the level (DB-11a). */
 export interface PublicFloorPlanLevel {
   id: string;
   name: PublicLocalizedText | string;
   imageUrl: string;
-  /** Text alternative of the image, when the host wrote one. */
   alt?: PublicLocalizedText | string | null;
   areaSqm?: number | null;
 }
@@ -407,7 +293,6 @@ interface PublicFloorPlan {
   levels: PublicFloorPlanLevel[];
 }
 
-/** The kind of place a house stands in (DB-11a): what the schematic map of the zone draws around it. */
 export type PublicAreaKind = 'Country' | 'Coast' | 'Historic';
 
 /**
@@ -416,20 +301,14 @@ export type PublicAreaKind = 'Country' | 'Coast' | 'Historic';
  * never says what the host did not say (D24, D37). A member that an older backend does not send is simply absent.
  */
 interface PublicPropertyProfile {
-  /** Living area in square metres. */
   areaSqm?: number | null;
   beds?: number | null;
-  /** `0` = ground floor, negative = below it. */
   floorLevel?: number | null;
   renovatedYear?: number | null;
-  /** The class of the APE, `A4` to `G`. Never guessed by the system (DB-D18). */
   energyClass?: string | null;
-  /** The global energy performance index, kWh/m² per year; only with a class. */
   energyIndex?: number | null;
   areaKind?: PublicAreaKind | null;
-  /** `true` = children are welcome, `false` = the house is not suited to them, absent = not said. */
   childrenWelcome?: boolean | null;
-  /** Earliest and latest arrival and the departure time, `HH:mm`. */
   checkInFrom?: string | null;
   checkInTo?: string | null;
   checkOutBy?: string | null;
@@ -438,81 +317,51 @@ interface PublicPropertyProfile {
   partiesPolicy?: PartiesPolicy | null;
   quietHoursFrom?: string | null;
   quietHoursTo?: string | null;
-  /** A YouTube, Vimeo or Matterport embed address the backend already made canonical (DB-D17); loaded only after a click. */
   videoUrl?: string | null;
   tourUrl?: string | null;
-  /** «Campagna di Ostuni, Valle d'Itria» */
   zone?: PublicLocalizedText | null;
-  /** «10 minuti da Ostuni, 20 dal mare» */
   near?: PublicLocalizedText | null;
   floorNote?: PublicLocalizedText | null;
   outdoorNote?: PublicLocalizedText | null;
-  /** How check-in works: «In autonomia, con cassetta a codice». */
   checkInMethod?: PublicLocalizedText | null;
   rulesNote?: PublicLocalizedText | null;
   highlights?: PublicHighlight[] | null;
   safetyNotes?: PublicLocalizedText[] | null;
-  /** Ids of the labels of the site: `mare`, `centro`, `piscina`, `pet`, `campagna`, `terrazza`, `vista-mare`. */
   tags?: string[] | null;
   pointsOfInterest?: PublicPointOfInterest[] | null;
   floorPlan?: PublicFloorPlan | null;
 }
 
-/** Public detail read-model for branded site / checkout (US-001 #212). */
 export interface PublicPropertyDetailDto extends PublicPropertyDto, PublicPropertyProfile {
   houseRules: string;
   cancellationPolicySummary: string;
-  /** The policy in a form a page can draw (DB-03b); null when the property has none; absent on an older backend. */
   cancellationPolicy?: PublicCancellationPolicy | null;
   minNights: number | null;
-  /** Percent added to the nightly rate on the Friday and Saturday nights (DB-03); 0 when the host charges none. The quote is the only authority on a total. */
   weekendSurchargePercent?: number;
   currency: string;
-  /** A guest can book now: the org can take a payment (DB-03), the same value as `PublicOrgDto.acceptsBookings`. */
   acceptsBookings?: boolean;
-  /** How the host is named on the site (DB-03), or null. */
   hostName?: string | null;
-  /** The phone number the host chose to publish (DB-03), or null. */
   publicPhone?: string | null;
-  /** Absolute URL of the property page on the public domain, from the backend (BK-15); null when it is not configured. */
   canonicalUrl?: string | null;
-  /** Count and average of the public reviews (DB-12a). Absent while the property has none: no stars, no «0 recensioni». */
   ratingSummary?: RatingSummary;
 }
 
-/**
- * The night that starts on `date` in the public calendar of a property (DB-03b, `GET api/public/properties/{id}/calendar`).
- * Dates and amounts only: it never says who stays, nor tells a booking from a block of the host.
- */
 interface PublicCalendarDayDto {
   date: string;
-  /** A stay can start this night. The day of a check-out is free for a new check-in, so it is available. */
   available: boolean;
-  /** What the night costs in cents: the number the quote adds up for that night. Given for a taken night too. */
   nightlyPriceCents: number;
-  /** The fewest nights of a stay that starts on this day: 1 when there is no minimum. */
   minNights: number;
-  /**
-   * The most nights of a stay that starts on this day; `null` for no maximum. This and the four fields below are the rules the host
-   * set on the day (E08/F05/US01, NF-36): an older backend does not send them, and a day without them has no rule.
-   */
   maxNights?: number | null;
-  /** A stay cannot start on this night: it is free (`available`) and can still be slept in and left on. */
   closedToArrival?: boolean;
-  /** A stay cannot end on this day (the day of the departure). */
   closedToDeparture?: boolean;
-  /** The fewest days between today and the arrival of a stay that starts on this day; `null` for no minimum. */
   minAdvanceDays?: number | null;
-  /** The most days between today and the arrival of a stay that starts on this day; `null` for no maximum. */
   maxAdvanceDays?: number | null;
 }
 
-/** The public calendar of a property: a day for each day from `startDate` (included) to `endDate` (excluded). */
 export interface PublicCalendarDto {
   propertyId: string;
   startDate: string;
   endDate: string;
-  /** Today in Europe/Rome: earlier days are not listed. */
   today: string;
   currency: string;
   days: PublicCalendarDayDto[];
@@ -525,21 +374,13 @@ export interface PropertyDocumentDto {
   id: string;
   fileName: string;
   fileType: string;
-  /** Kind of document: the lease form needs `Ape` on file before a contract can be drafted (A7-06). */
   documentType: PropertyDocumentType;
   uploadedAt: string;
   downloadUrl: string;
-  /** APE documents only (LT-10): code and energy class printed on it; null until the landlord enters them. */
   apeCode?: string | null;
   apeEnergyClass?: string | null;
-  /**
-   * Only in the answer of an APE upload: what the automatic reading found. Anything but `Verified` is a certificate kept all the
-   * same, which the landlord confirms by typing its code and energy class.
-   */
   apeCheck?: ApeCheckOutcome | null;
-  /** With `apeCheck` `Incomplete`: the data that were not read, in words of the language of the request. */
   apeUnreadFields?: string[] | null;
-  /** With `apeCheck`: where the code found automatically came from, the file itself or the public register of the region. */
   apeIdentificationSource?: 'Document' | 'Registry' | null;
 }
 
@@ -562,7 +403,6 @@ interface BookingsSummaryDto {
   nextCheckOut: string | null;
 }
 
-/** Seasonal price suggestions of the property: on/off, last computation, next due Europe/Rome date (yyyy-MM-dd). */
 interface PricingAdapterSummaryDto {
   isEnabled: boolean;
   lastAdaptedAt: string | null;
@@ -572,12 +412,10 @@ interface PricingAdapterSummaryDto {
 export interface PropertyDetailDto {
   id: string;
   ownerId: string;
-  /** Section the property belongs to (PM-01). */
   rentalMode?: RentalMode;
   name: string;
   description: string;
   address: string;
-  /** Interno / scala (PC-06); `null` when the property has none. */
   unit?: string | null;
   city: string;
   postalCode: string;
@@ -589,7 +427,6 @@ export interface PropertyDetailDto {
   damageDeposit: number;
   cinCode: string | null;
   cinStatus: CinStatus;
-  /** casazen/backend#979: the «Numero identificativo LEAR / NO-LEAR» of the structure (Ticino police portal); null until entered. */
   ticinoStructureId?: string | null;
   /** The property is in canton Ticino: its guests go to the cantonal police (notifiche.ti.ch), not to Alloggiati Web. */
   isInTicino?: boolean;
@@ -597,16 +434,13 @@ export interface PropertyDetailDto {
   cinIstatMismatch?: boolean;
   /** ISTAT code of the comune chosen from the official list; null until chosen. */
   comuneIstatCode?: string | null;
-  /** CasaZen's region code that follows the comune; null until a comune is chosen. */
   regionCode?: string | null;
   timezone: string;
   amenities: string[];
   photoUrls: string[];
   houseRules: string;
   isActive: boolean;
-  /** Host-set pause (A2-05): hidden from public search/bookings until reactivated. */
   isPaused: boolean;
-  /** ISO instant the property was paused; `null` when not paused. */
   pausedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -614,22 +448,15 @@ export interface PropertyDetailDto {
   otaIntegrations: OtaIntegrationSummaryDto[];
   bookingsSummary: BookingsSummaryDto;
   pricingAdapterSummary: PricingAdapterSummaryDto;
-  /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
   country: 'IT' | 'CH';
-  /** ISO 4217 currency code (ADR-001-R7). */
   currency: 'EUR' | 'CHF';
 }
 
-/** `POST /properties/:id/pause` and `POST /properties/:id/activate` (A2-05): the pause state right after the change. */
 export interface PropertyPauseStatus {
   isPaused: boolean;
   pausedAt: string | null;
 }
 
-/**
- * Filters of the public search, all optional (BK-20, A8-13): `city` is a part of the name, the minimums are inclusive,
- * `guests` is the number of guests the property must sleep. Every one of them is sent to `GET /api/properties/search`.
- */
 export interface PropertySearchParams {
   city?: string;
   minPrice?: number;

@@ -24,10 +24,8 @@ export const QUESTURA_PANEL_ID = 'questura-communication';
  */
 export const QUESTURA_OFFICIAL_INFO_URL = 'https://www.poliziadistato.it/articolo/125a93e344e6c73863395263';
 
-/** Largest receipt accepted by the API (`QuesturaCommunicationLimits.MaxReceiptBytes`). */
 export const QUESTURA_MAX_RECEIPT_BYTES = 10 * 1024 * 1024;
 
-/** `YYYY-MM-DD` of a date-only value of the API (`2026-09-23T00:00:00Z`): the calendar date, whatever the browser zone. */
 export function toDateOnly(value: string): string {
   return value.slice(0, 10);
 }

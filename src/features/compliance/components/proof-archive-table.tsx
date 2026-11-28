@@ -9,14 +9,12 @@ const LONG_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', y
 
 const SOURCES: ReadonlySet<string> = new Set(['manual_upload', 'casazen_receipt']);
 
-/** What a proof is, in words: a kind this version does not know is just «Prova», never its raw name. */
 function kindKey(kind: string): string {
   return COMPLIANCE_PROOF_KINDS.some((candidate) => candidate === kind) ? kind : 'other';
 }
 
 interface ProofArchiveTableProps {
   items: readonly ComplianceArchiveEntry[];
-  /** A download is under way: every button of the list waits, so a second click cannot start another one. */
   downloading: boolean;
   onDownload: (entry: ComplianceArchiveEntry) => void;
 }

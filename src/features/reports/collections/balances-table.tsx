@@ -13,7 +13,6 @@ const FIGURE = 'px-3 py-2 text-right align-top tabular-nums';
 
 interface SectionTableProps {
   section: BalanceSection;
-  /** The caption of the table: with more than one currency it says which one. */
   caption: string;
   testId: string;
 }

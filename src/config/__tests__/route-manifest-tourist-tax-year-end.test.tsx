@@ -17,7 +17,6 @@ const entry = ROUTE_MANIFEST.find((candidate) => candidate.path === PATH) as Rou
 const allowAll = () => true;
 const without = (denied: string) => (_context: string, permission: string) => permission !== denied;
 
-/** The rows of the list of reports before the year-end page existed: with the flag off the list is exactly this one. */
 const ROWS_BEFORE = ['revenue', 'occupancy', 'channels', 'channelCosts', 'collections', 'touristTax', 'touristTaxSummary', 'annual', 'withholding', 'alloggiati', 'payments'];
 
 describe('route manifest: the tourist tax at year end (E18/F01/US02/T03, NF-117)', () => {
@@ -26,7 +25,6 @@ describe('route manifest: the tourist tax at year end (E18/F01/US02/T03, NF-117)
     expect(entry.context).toBe('short-rent');
     expect(entry.requiredPermissions).toEqual(['payment.read']);
 
-    // The money of the agency: whoever may not read payments does not open it (the backend refuses every file to them too).
     expect(hasEntryPermission(entry, without('payment.read'))).toBe(false);
     expect(hasEntryPermission(entry, allowAll)).toBe(true);
   });
@@ -39,7 +37,6 @@ describe('route manifest: the tourist tax at year end (E18/F01/US02/T03, NF-117)
     expect(isEntryFeatureEnabled(entry, DEFAULT_FEATURE_FLAGS)).toBe(false);
     expect(isEntryFeatureEnabled(entry, { taxReportingExports: true })).toBe(true);
 
-    // A page of the list of reports like its sister of the tourist tax: no entry of a menu, no tab, none of the bar.
     expect(entry.navKey).toBeUndefined();
     expect(entry.navParent).toBeUndefined();
     expect(entry.navPlacement).toBeUndefined();
@@ -61,7 +58,6 @@ describe('the list of reports follows the flag as the page does', () => {
   it('ReportCatalog_FlagOff_TheListIsTheOneItAlwaysWas', () => {
     expect(reportsFor(DEFAULT_FEATURE_FLAGS).map((report) => report.id)).toEqual(ROWS_BEFORE);
     expect(reportsFor(undefined).map((report) => report.id)).toEqual(ROWS_BEFORE);
-    // The row exists in the catalog, behind its flag, and nowhere else.
     expect(REPORTS.filter((report) => report.featureFlag !== undefined).map((report) => report.id)).toEqual(['touristTaxYearEnd']);
   });
 
@@ -93,7 +89,6 @@ function renderRoute(options: { permissions: string[]; flags: Partial<FeatureFla
     getDefaultRoute: vi.fn().mockReturnValue('/app/short-rent'),
   });
 
-  // The guard as the router builds it from the entry of the manifest: its permissions and its flag, nothing typed by hand.
   return render(
     <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, ...options.flags }, isLoading: false }}>
       <MemoryRouter initialEntries={[PATH]}>

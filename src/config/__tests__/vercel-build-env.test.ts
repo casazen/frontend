@@ -6,12 +6,10 @@ const COMPLETE = {
   VITE_AUTH0_DOMAIN: 'tenant.eu.auth0.com',
   VITE_AUTH0_CLIENT_ID: 'spa-client-id',
   VITE_AUTH0_AUDIENCE: 'https://api.example.test',
-  // SEO-VETRINA: company data of the public site's home page (production only).
   VITE_LEGAL_NAME: 'Esempio S.r.l.',
   VITE_LEGAL_VAT_ID: '01234567890',
 };
 
-/** COMPLETE without the company data of the public site. */
 function withoutCompanyData(): Record<string, string> {
   const env: Record<string, string> = { ...COMPLETE };
   delete env.VITE_LEGAL_NAME;
@@ -27,7 +25,6 @@ describe('findVercelBuildEnvProblems (DEPLOY-CFG)', () => {
   it.each([['development'], [undefined]])(
     'findVercelBuildEnvProblems_NotAVercelReleaseEnvironment_%s_DoesNotRequireAnything',
     (vercelEnv) => {
-      // Local and CI builds keep working with the fallbacks of env.config.ts.
       expect(findVercelBuildEnvProblems({ vercelEnv, demoBuild: false, env: {} })).toEqual([]);
     },
   );
@@ -62,7 +59,6 @@ describe('findVercelBuildEnvProblems (DEPLOY-CFG)', () => {
 
     expect(problems).toHaveLength(1);
     expect(problems[0]).toMatch(message);
-    // Names the variable, never repeats the value.
     expect(problems[0]).not.toContain(value.trim() || 'never-empty');
   });
 
@@ -80,8 +76,6 @@ describe('findVercelBuildEnvProblems (DEPLOY-CFG)', () => {
   );
 
   it.each(['production', 'preview'])('findVercelBuildEnvProblems_%sWithoutCompanyData_IsNotAProblem', (vercelEnv) => {
-    // SEO-VETRINA: the company does not exist yet. Without its data production simply does not serve the public site
-    // (src/site/site-gate.ts): no deployment is blocked for it.
     expect(findVercelBuildEnvProblems({ vercelEnv, demoBuild: false, env: withoutCompanyData() })).toEqual([]);
   });
 
@@ -89,7 +83,6 @@ describe('findVercelBuildEnvProblems (DEPLOY-CFG)', () => {
     const chosen = { ...withoutCompanyData(), VITE_PUBLIC_SITE_WITHOUT_VAT_ID: 'true' };
 
     it('findVercelBuildEnvProblems_productionWithTheChoiceButNoHolder_NamesNameAndContact', () => {
-      // The owner asked to publish: a site with no identifiable holder must not go online by mistake.
       expect(findVercelBuildEnvProblems({ vercelEnv: 'production', demoBuild: false, env: chosen })).toEqual([
         expect.stringMatching(/^VITE_LEGAL_NAME: missing/),
         expect.stringMatching(/^VITE_SUPPORT_EMAIL: missing/),

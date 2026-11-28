@@ -58,7 +58,6 @@ describe('what a failed read means for a section', () => {
 
   it('CurrentData_IsNothingOnceTheLastAnswerWasAnError_WhateverAnEarlierAnswerLeftInTheCache', () => {
     expect(currentData({ data: ['a'], isError: false })).toEqual(['a']);
-    // TanStack Query keeps the data of the answer before when the next one fails: it is not drawn next to the notice of the refusal.
     expect(currentData({ data: ['a'], isError: true })).toBeUndefined();
     expect(currentData({ data: undefined, isError: false })).toBeUndefined();
   });
@@ -126,7 +125,6 @@ describe('the owner stays', () => {
     expect(stayRefusalText(failure(422, 'owner_stay_notice_too_short'), RULE, 2026)).toEqual({ key: 'noticeTooShort', values: { days: 14 } });
     expect(stayRefusalText(failure(422, 'owner_stay_beyond_window'), RULE, 2026)).toEqual({ key: 'beyondWindow', values: { days: 365 } });
     expect(stayRefusalText(failure(422, 'owner_stay_allowance_exceeded'), RULE, 2026)).toEqual({ key: 'allowanceExceeded', values: { nights: 30, year: 2026 } });
-    // A code with no number, or a rule that is not known: the common text of the code applies.
     expect(stayRefusalText(failure(409, 'owner_stay_dates_unavailable'), RULE, 2026)).toBeNull();
     expect(stayRefusalText(failure(422, 'owner_stay_too_short'), null, null)).toBeNull();
     expect(stayRefusalText(new Error('x'), RULE, 2026)).toBeNull();
@@ -204,7 +202,6 @@ describe('delegated contacts', () => {
     permissions = togglePermission(permissions, 'calendar.read', true);
     expect(permissions).toEqual(['calendar.read', 'inbox.use']);
     expect(togglePermission(permissions, 'inbox.use', false)).toEqual(['calendar.read']);
-    // Taking away one never touches another, and a permission that is not held can be taken away without effect.
     expect(togglePermission(['accounting.read', 'documents.read'], 'accounting.read', false)).toEqual(['documents.read']);
     expect(togglePermission(['documents.read'], 'stays.request', false)).toEqual(['documents.read']);
     expect(samePermissions(['calendar.read', 'inbox.use'], ['inbox.use', 'calendar.read'])).toBe(true);
@@ -236,9 +233,7 @@ describe('delegated contacts', () => {
 
 describe('the inbox', () => {
   it('IsAgencyNeededRefusal_OnlyTheRefusalOfAGeneralQuestion_ThatTheServerCallsInvalid', () => {
-    // A general question of an owner with several agencies: the server cannot tell which one to write to, and nothing else is left behind that code (the subject stops at its longest).
     expect(isAgencyNeededRefusal(failure(422, 'owner_conversation_invalid'), 'general')).toBe(true);
-    // The same code for a question about an item is the common one (the reference), and any other code, or no answer, is not about the agency.
     expect(isAgencyNeededRefusal(failure(422, 'owner_conversation_invalid'), 'document')).toBe(false);
     expect(isAgencyNeededRefusal(failure(422, 'owner_message_invalid'), 'general')).toBe(false);
     expect(isAgencyNeededRefusal(failure(500), 'general')).toBe(false);

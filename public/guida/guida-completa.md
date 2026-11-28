@@ -22,15 +22,15 @@ Funzionalità: Invito a un team; Cosa fa: Ti fa entrare nell'organizzazione di u
 Funzionalità: Invito di un amico host; Cosa fa: Ti fa registrare dopo il consiglio di un altro host; non assegna ruoli; Dove si trova: Link ricevuto per email › «Crea il tuo account»; Chi può usarla: gestore; Disponibilità: Disponibile; Come si usa: Registrarti dopo l'invito di un amico
 Funzionalità: Configurazione guidata; Cosa fa: Profilo, area, piano e pagamento in cinque passaggi (i documenti si confermano prima di pagare); Dove si trova: Dopo la registrazione, pagina «Come vuoi usare CasaZen?»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Creare il tuo account e la tua attività
 Funzionalità: «Metti in pausa»; Cosa fa: Salva le scelte per riprenderle dopo; Dove si trova: Passaggi «Piano e funzionalità» e «Riepilogo»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Mettere in pausa la configurazione
-Funzionalità: Benvenuto al primo accesso; Cosa fa: Ti propone il percorso di avvio, una sola volta; Dove si trova: Home di Affitti brevi; Chi può usarla: amministratore; Disponibilità: Disponibile; Come si usa: Seguire i passi della Guida
-Funzionalità: Checklist «Attiva il tuo sito di prenotazione»; Cosa fa: Elenca i passi per essere operativo; Dove si trova: Guida in alto, Home; Chi può usarla: amministratore, gestore; Disponibilità: Disponibile; Come si usa: Seguire i passi della Guida
-Funzionalità: Percorso «Inizia con CasaZen»; Cosa fa: Piano guidato in parti: canali, annunci, prezzi, adempimenti, fatturazione, messaggi; Dove si trova: Guida in alto › «Vedi tutti i passi»; Chi può usarla: amministratore, gestore; Disponibilità: Su attivazione; Come si usa: Seguire il percorso «Inizia con CasaZen»
+Funzionalità: Benvenuto al primo accesso; Cosa fa: Ti propone il percorso di avvio, una sola volta; Dove si trova: Home di Affitti brevi; Chi può usarla: amministratore; Disponibilità: Disponibile; Come si usa: Seguire la checklist di avvio
+Funzionalità: Checklist «Attiva il tuo sito di prenotazione»; Cosa fa: Elenca i passi per essere operativo; Dove si trova: Home, riquadro «Il prossimo passo»; Chi può usarla: amministratore, gestore; Disponibilità: Disponibile; Come si usa: Seguire la checklist di avvio
+Funzionalità: Percorso «Inizia con CasaZen»; Cosa fa: Piano guidato in parti: canali, annunci, prezzi, adempimenti, fatturazione, messaggi; Dove si trova: Home, riquadro «Inizia con CasaZen»; Chi può usarla: amministratore, gestore; Disponibilità: Su attivazione; Come si usa: Seguire il percorso «Inizia con CasaZen»
 Funzionalità: Aree di lavoro; Cosa fa: Separano affitti brevi, affitti lunghi, amministrazione e fornitori; Dove si trova: In alto nella barra laterale; su telefono «Altro»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Andare in Amministrazione o cambiare area di lavoro
 Funzionalità: Menu; Cosa fa: Voci raggruppate, «Altro», impostazioni in basso, barra inferiore su telefono; Dove si trova: Barra laterale; su telefono barra in basso; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Muoverti nel menu
 Funzionalità: «Cerca nel menu»; Cosa fa: Trova una pagina del menu per nome; Dove si trova: In cima al menu; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Trovare una pagina
-Funzionalità: «Cerca»; Cosa fa: Cerca immobili, prenotazioni, ospiti, pagine e azioni; Dove si trova: Barra in alto (Ctrl o Cmd + K); Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Trovare una pagina
-Funzionalità: «Guida»; Cosa fa: Mostra cosa fare adesso e come chiedere aiuto; Dove si trova: In alto a destra, pulsante «Guida»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Usare la Guida
-Funzionalità: Manuale in app «Guida CasaZen»; Cosa fa: 11 argomenti brevi con ricerca e il link al manuale completo; Dove si trova: Guida › «Apri il manuale di CasaZen»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Aprire il manuale completo dall'app
+Funzionalità: «Cerca»; Cosa fa: Cerca immobili, prenotazioni, ospiti, pagine, azioni e argomenti del manuale; Dove si trova: Barra in alto (Ctrl o Cmd + K); Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Trovare una pagina
+Funzionalità: «Guida»; Cosa fa: Il manuale in un pannello: ricerca nel manuale, i «Come fare» della pagina in cui sei, i capitoli principali, «Chiedi a CasaZen»; Dove si trova: In alto a destra, pulsante «Guida»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Usare la Guida
+Funzionalità: Manuale completo; Cosa fa: Guide passo passo, elenco delle funzionalità, domande frequenti e glossario; Dove si trova: Guida › «Apri il manuale completo»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Aprire il manuale completo dall'app
 Funzionalità: Assistenza; Cosa fa: Ti fa scrivere a CasaZen quando ti blocchi o ti serve una funzione «su attivazione»; Dove si trova: Guida › «Scrivi all'assistenza» (compare solo se l'installazione ha un indirizzo di assistenza); anche in «Cerca»; Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Scrivere all'assistenza di CasaZen
 Funzionalità: «Personalizza area di lavoro»; Cosa fa: Tabelle compatte, voci in primo piano, cruscotto con le attività prima; Dove si trova: Menu del tuo profilo (avatar in alto a destra); Chi può usarla: gestore, amministratore, fornitore; Disponibilità: Disponibile; Come si usa: Personalizzare l'area di lavoro
 
@@ -137,17 +137,18 @@ Non vedi tutte le voci: dipendono da ruolo, permessi e funzioni attive. In Ammin
 
 #### «Cerca» e «Cerca nel menu»
 
-- «Cerca» è la barra in alto («Cerca immobili, prenotazioni, ospiti, pagine…»; su telefono è la lente). Da computer si apre anche con Ctrl + K (su Mac Cmd + K). I risultati sono divisi in Azioni, Prenotazioni, Ospiti, Pagine, Immobili e Recenti. Scegli con le frecce, apri con Invio, chiudi con Esc. Fra le azioni ci sono «Aggiungi un immobile», «Crea una prenotazione», «Registra un pagamento», «Nuovo contratto», «Cambia area: [nome dell'area]», il cambio di lingua, «Esci» e, solo se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza». L'azione «Collega Airbnb o Booking.com» compare solo se il collegamento diretto con i portali è attivo (su attivazione): per collegare un calendario usa i calendari iCal (Canali, calendari e Octorate). Vedi solo ciò che il tuo ruolo permette.
+- «Cerca» è la barra in alto («Cerca immobili, prenotazioni, ospiti, pagine…»; su telefono è la lente). Da computer si apre anche con Ctrl + K (su Mac Cmd + K). I risultati sono divisi in Azioni, Prenotazioni, Ospiti, Pagine, Immobili, Guida (gli argomenti del manuale, che si aprono in una nuova scheda) e Recenti. Scegli con le frecce, apri con Invio, chiudi con Esc. Fra le azioni ci sono «Aggiungi un immobile», «Crea una prenotazione», «Registra un pagamento», «Nuovo contratto», «Cambia area: [nome dell'area]», il cambio di lingua, «Esci» e, solo se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza». L'azione «Collega Airbnb o Booking.com» compare solo se il collegamento diretto con i portali è attivo (su attivazione): per collegare un calendario usa i calendari iCal (Canali, calendari e Octorate). Vedi solo ciò che il tuo ruolo permette.
 - «Cerca nel menu» è il campo in cima al menu: trova le pagine e le loro schede per nome. Se non trova nulla vedi «Nessuna pagina trovata».
-- Accanto a «Cerca» c'è il pulsante «Chiedi a CasaZen»: lo trovi in Chiedi a CasaZen.
+- Accanto a «Cerca» c'è il pulsante «Chiedi a CasaZen»: lo trovi in Chiedi a CasaZen. Quello che scrivi in «Cerca» o in «Chiedi a CasaZen» viene cercato anche nel manuale.
 
 #### La Guida e il manuale in app
 
-Il pulsante Guida è in alto a destra. Se c'è qualcosa di urgente porta un numero. Si apre il pannello «La tua guida» con:
-- I passi per configurare CasaZen (la checklist o il percorso, solo finché non è completo), con «Adesso», l'avanzamento («3 di 7 passi fatti») e «Continua» o «Vedi tutti i passi»;
-- Da fare adesso: le prime cose da fare, dalla più urgente, con «Vedi tutte le cose da fare» (vedi Da fare);
-- Ti serve una mano?: «Apri il manuale di CasaZen» e, se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza».
-Il manuale in app si chiama Guida CasaZen e ha 11 argomenti brevi: primi passi e aree di lavoro, immobili e pubblicazione, prenotazioni e calendario, calendari esterni e iCal, ospiti, check-in e privacy, Alloggiati e adempimenti, pagamenti e comunicazioni agli ospiti, organizzazione persone e permessi, affitti lunghi e contratti, fornitori e richieste di servizio, problemi frequenti e assistenza. Usa «Cerca nella guida» per filtrare e «Torna agli argomenti» per tornare all'elenco. Questo manuale lo approfondisce.
+Il pulsante Guida è in alto a destra. Si apre il pannello «Guida utente», che è questo manuale a portata di mano:
+- Cerca nel manuale: scrivi cosa vuoi fare («aggiungere un immobile») e vedi i punti del manuale che ne parlano;
+- In questa pagina: i «Come fare» del capitolo che spiega la pagina in cui sei, con «Apri il capitolo» (se il manuale non ha un capitolo per quella pagina, il riquadro non compare);
+- Parti da qui: «Primi passi», «Come fare», «Domande frequenti» e «Glossario», e «Apri il manuale completo»;
+- in fondo: «Chiedi a CasaZen», che si apre con quello che hai scritto, e, se la tua installazione ha un indirizzo di assistenza, «Scrivi all'assistenza».
+Ogni risultato del manuale si apre in una nuova scheda. Il pannello non mostra i passi di configurazione né le cose da fare: li trovi nel Cruscotto, nei riquadri «Il prossimo passo» o «Inizia con CasaZen», e in Da fare (vedi Da fare).
 
 #### Modalità demo
 
@@ -250,16 +251,16 @@ Se non riesce a collegare l'invito, puoi premere «Continua senza invito»: il t
 3. Per riprendere premi «Riprendi la configurazione», oppure riapri la pagina: riparti dal passaggio salvato e vedi «Abbiamo recuperato le scelte salvate in questa scheda».
 Attenzione: dopo una ricarica devi confermare di nuovo i documenti. Se chiudi la scheda o passa più di un giorno, le scelte si perdono: ripeti i passaggi.
 
-#### Seguire i passi della Guida
+#### Seguire la checklist di avvio
 
-1. Premi Guida in alto a destra.
-2. Leggi «Adesso» e premi «Continua»: si apre la procedura giusta.
+1. Apri il Cruscotto (la Home di Affitti brevi): finché la configurazione non è completa vedi il riquadro «Il prossimo passo».
+2. Premi il pulsante del riquadro: si apre la procedura giusta.
 3. Quando finisci un passo, ti proponiamo il successivo. Puoi fermarti quando vuoi: riprendi da dove eri.
-4. Per vedere tutti i passi premi «Vedi tutti i passi».
+4. Per vedere tutti i passi premi «Tutti i passi».
 
 #### Seguire il percorso «Inizia con CasaZen»
 
-Disponibile su attivazione. Lo apri da Guida › Vedi tutti i passi o dal benvenuto.
+Disponibile su attivazione. Lo apri dal benvenuto o dal riquadro «Inizia con CasaZen» del Cruscotto.
 1. Nella pagina «Inizia con CasaZen» leggi la carta «Prossimo passo» e premi «Continua».
 2. Ogni parte spiega cosa fa, cosa ti serve e cosa manca immobile per immobile. Premi «Fai ora» o «Riprendi» per aprire la procedura guidata.
 3. Se non puoi farlo adesso premi «Lo faccio dopo», scegli quando ricordartelo e conferma. Lo trovi in Da fare.
@@ -289,20 +290,21 @@ In alternativa, da qualsiasi pagina: menu del profilo, sotto «Le tue aree», op
 #### Usare la Guida
 
 1. Premi Guida in alto a destra (su schermi stretti è l'icona della bussola).
-2. Segui «Adesso» o apri una «cosa da fare».
-3. Per la guida breve dell'app premi «Apri il manuale di CasaZen»; «Torna alla pagina di partenza» ti riporta dove eri.
+2. Per cercare, scrivi cosa vuoi fare nel campo «Cerca nel manuale» (per esempio «aggiungere un immobile») e scegli un risultato: il punto giusto del manuale si apre in una nuova scheda.
+3. In «In questa pagina» trovi i «Come fare» della pagina in cui sei; «Apri il capitolo» apre il capitolo intero.
+4. Se non trovi la risposta premi «Chiedi a CasaZen» in fondo al pannello: si apre con quello che hai scritto.
 
 #### Aprire il manuale completo dall'app
 
-1. In alto a destra premi Guida e, sotto «Ti serve una mano?», premi «Apri il manuale di CasaZen»: si apre la pagina «Guida CasaZen» (11 argomenti brevi).
-2. In quella pagina cerca il link «Apri il manuale completo: guide passo passo, elenco delle funzionalità e domande frequenti» (oggi è in fondo alla pagina).
-3. Premilo: il manuale si apre in una nuova scheda. Il manuale è pubblico: lo apri anche senza accedere, con l'indirizzo di CasaZen seguito da /guida/.
+1. In alto a destra premi Guida.
+2. Sotto «Parti da qui» premi «Apri il manuale completo», oppure uno dei quattro riquadri: «Primi passi», «Come fare», «Domande frequenti», «Glossario».
+3. Il manuale si apre in una nuova scheda. Il manuale è pubblico: lo apri anche senza accedere, con l'indirizzo di CasaZen seguito da /guida/.
 
 #### Scrivere all'assistenza di CasaZen
 
 Ti serve: un programma di posta impostato sul computer o sul telefono, e che la tua installazione abbia un indirizzo di assistenza.
 1. In alto a destra premi Guida.
-2. In fondo, sotto «Ti serve una mano?», premi «Scrivi all'assistenza» (oppure apri «Cerca» e scegli «Scrivi all'assistenza»).
+2. In fondo al pannello premi «Scrivi all'assistenza» (oppure apri «Cerca» e scegli «Scrivi all'assistenza»).
 3. Si apre un messaggio già indirizzato all'assistenza: scrivi cosa stavi facendo, cosa ti aspettavi e cosa è successo, poi invialo.
 Se non vedi «Scrivi all'assistenza», vedi «Assistenza: come scrivere a CasaZen».
 
@@ -326,7 +328,7 @@ Le preferenze si salvano su questo dispositivo, per il tuo profilo e per l'area 
 1. Tu: crei l'account e scegli profilo, area Affitti brevi e piano (vedi «Creare il tuo account e la tua attività»).
 2. Tu: confermi i documenti e paghi su Stripe.
 3. CasaZen: crea la tua organizzazione e ti porta sulla Home di Affitti brevi; se non hai immobili ti apre «Aggiungi il tuo primo immobile» (con il percorso guidato, se attivo, apre «Inizia con CasaZen»).
-4. Tu: completi l'immobile (Immobili) e segui i passi della Guida.
+4. Tu: completi l'immobile (Immobili) e segui la checklist di avvio del Cruscotto.
 5. Tu: colleghi i calendari e imposti prezzi (Canali, calendari e Octorate, Prezzi e tariffe).
 6. Tu: controlli ogni giorno Cruscotto e Da fare (Cruscotto, Da fare, notifiche e assistente).
 
@@ -403,7 +405,7 @@ Dal menu del profilo, sotto «Lingua».
 
 #### Come scrivo all'assistenza? Non c'è un numero di telefono.
 
-Non c'è un numero: si scrive. In alto premi Guida: nel pannello, sotto «Ti serve una mano?», trovi «Scrivi all'assistenza» se la tua installazione ha un indirizzo configurato. In «Cerca» c'è la stessa azione. Passi e cosa scrivere: «Scrivere all'assistenza di CasaZen».
+Non c'è un numero: si scrive. In alto premi Guida: nel pannello, in fondo, trovi «Scrivi all'assistenza» se la tua installazione ha un indirizzo configurato. In «Cerca» c'è la stessa azione. Passi e cosa scrivere: «Scrivere all'assistenza di CasaZen».
 
 #### Cos'è CasaZen e cosa posso farci?
 
@@ -478,7 +480,7 @@ Sezione: Per iniziare · Si trova in: Affitti brevi › Cruscotto (schede Da far
 
 ### In breve
 
-Il Cruscotto è la pagina da cui parti ogni mattina: cosa succede oggi, cosa devi fare e i numeri essenziali. Le schede Da fare, Da approvare e Verifiche raccolgono ciò che aspetta una tua decisione. La campanella e gli avvisi ti dicono quando succede qualcosa, senza ricaricare la pagina. Chiedi a CasaZen è una scorciatoia per aprire pagine e trovare prenotazioni: non fa operazioni al posto tuo.
+Il Cruscotto è la pagina da cui parti ogni mattina: cosa succede oggi, cosa devi fare e i numeri essenziali. Le schede Da fare, Da approvare e Verifiche raccolgono ciò che aspetta una tua decisione. La campanella e gli avvisi ti dicono quando succede qualcosa, senza ricaricare la pagina. Chiedi a CasaZen è una scorciatoia per aprire pagine, trovare prenotazioni e raggiungere il punto giusto del manuale: non fa operazioni al posto tuo.
 Suggerimento: in pratica, ogni giorno fai tre cose, in quest'ordine. 1) Apri il Cruscotto e guarda «Oggi» (arrivi, partenze, pulizie) e «Da fare». 2) Guarda la campanella: ti dice cosa è successo e porta alla pagina giusta. 3) Se usi l'assistente o le campagne, apri Da approvare: ciò che prepara CasaZen non parte senza il tuo sì. Il pulsante Guida serve finché non hai finito la configurazione. «Home» e «Cruscotto» sono la stessa pagina: la pagina iniziale di Affitti brevi. Il primo giorno è normale che sia quasi vuoto: si riempie quando hai una casa attiva. Dal telefono la campanella e il Cruscotto si usano dal browser; le notifiche sul telefono arrivano con l'app «CasaZen», che non è ancora negli store (App mobile CasaZen).
 
 ### Funzionalità
@@ -491,7 +493,7 @@ Funzionalità: Da approvare; Cosa fa: Bozze e azioni che aspettano la tua approv
 Funzionalità: Verifiche; Cosa fa: Identità degli ospiti che aspetta una persona; Dove si trova: Cruscotto › scheda «Verifiche»; Chi può usarla: amministratore, gestore; Disponibilità: Disponibile; Come si usa: Registrare la decisione su una verifica
 Funzionalità: Campanella; Cosa fa: Elenco delle notifiche, con numero da leggere; Dove si trova: In alto, icona «Notifiche»; Chi può usarla: tutti; Disponibilità: Disponibile; Come si usa: Leggere le notifiche
 Funzionalità: Avvisi in primo piano; Cosa fa: Un avviso alla volta per le scadenze; Dove si trova: Sopra la pagina, in basso a destra; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Rispondere a un avviso
-Funzionalità: «Chiedi a CasaZen»; Cosa fa: Apre pagine, trova prenotazioni, prepara bozze; Dove si trova: In alto, accanto a «Cerca»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Chiedere a CasaZen
+Funzionalità: «Chiedi a CasaZen»; Cosa fa: Apre pagine, trova prenotazioni, indica i punti del manuale, prepara bozze; Dove si trova: In alto, accanto a «Cerca»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Chiedere a CasaZen
 Funzionalità: Impostazioni AI; Cosa fa: Porta alle routine, all'assistente e alla verifica dei volti; Dove si trova: Impostazioni › AI; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Controllare le impostazioni AI
 Funzionalità: Assistente per i messaggi; Cosa fa: Prepara bozze di risposta agli ospiti; Dove si trova: Impostazioni › AI › Assistente; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Regolare l'assistente dei messaggi
 
@@ -589,6 +591,7 @@ Cosa sa fare davvero:
 - Trovare una prenotazione: scrivi «prenotazione Rossi» o il codice. Se ce n'è una sola, la apre; altrimenti ne mostra fino a sei e «Cerca nell'elenco prenotazioni».
 - Dirti le attività aperte: «cose da fare» risponde «Ci sono N attività aperte» (o «Tutto in regola. Nessuna attività aperta.»), propone le prime cinque con il pulsante per aprirle e il collegamento a Da fare.
 - Portarti alla pagina giusta: «alloggiati» apre Report Alloggiati; «fatture di ottobre» apre Documenti fiscali già filtrati sul mese (e sulle fatture); «impostazioni» apre le impostazioni dell'organizzazione; «crea una routine per le pulizie» apre Routine AI (nei modelli o in creazione, secondo le parole usate).
+- Indicarti il manuale: se chiedi come fare una cosa («come metto in pausa una casa?») compare «Nel manuale» con i punti che ne parlano; si aprono in una nuova scheda. Se nessuna pagina corrisponde ma il manuale ha la risposta, vedi solo quella.
 - Trovare i check-in incompleti di oggi: la domanda suggerita «Quali arrivi di oggi hanno il check-in incompleto?» (pulsante «Trova i check-in incompleti») elenca gli arrivi del giorno (ora di Roma), per «Tutti gli immobili assegnati» o per l'immobile selezionato, con lo stato del link («Link da inviare», «Link inviato · dati in attesa», «Link scaduto», «Compilazione in corso», «Modulo inviato · dati ospiti incompleti»). Scegli una prenotazione con «Apri prenotazione» per verificarla.
 - Preparare le istruzioni di arrivo: dal dettaglio di una prenotazione, «Prepara le istruzioni di arrivo» ti fa scegliere un «Modello della tua organizzazione», premi «Prepara bozza» e ottieni una «Bozza modificabile» che copi con «Copia la bozza» e incolli nei messaggi della prenotazione.
 - Preparare un invito: «voglio invitare Marta come manager» (anche con l'email, e con «come amministratore», «come collaboratore» o «come commercialista») apre il modulo «Invita un utente» già compilato con nome, email, ruolo e area. Se indichi un'altra organizzazione ti dice qual è quella attiva. L'invio lo confermi tu e serve poter gestire le persone.
@@ -1013,6 +1016,7 @@ Funzionalità: Pausa e riattivazione; Cosa fa: Toglie la casa dalla vendita senz
 Funzionalità: Elimina immobile; Cosa fa: Nasconde la casa dall'elenco; Dove si trova: Riga o scheda › «⋯» › «Elimina immobile»; Chi può usarla: gestore, amministratore (permesso di modifica); Disponibilità: Disponibile; Come si usa: Eliminare un immobile
 Funzionalità: Cambia modalità; Cosa fa: Programma il passaggio da affitto breve a lungo (e viceversa); Dove si trova: Scheda › «⋯» › «Cambia modalità»; Chi può usarla: gestore, amministratore (permesso di modifica); Disponibilità: Disponibile; Come si usa: Passare un immobile all'affitto lungo (o breve)
 Funzionalità: Codice QR; Cosa fa: Foglio stampabile con il codice QR per gli ospiti; Dove si trova: Pagina del codice QR dell'immobile; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Stampare il codice QR
+Funzionalità: QR di benvenuto; Cosa fa: Cartello da mettere in casa: chi lo inquadra lascia un contatto e sceglie se ricevere le tue offerte; Dove si trova: Scheda › Panoramica › «QR di benvenuto»; Chi può usarla: gestore, amministratore (permesso di modifica); Disponibilità: Su attivazione; Come si usa: Stampare il QR di benvenuto
 Funzionalità: Chi invia Polizia e ISTAT, fatturazione; Cosa fa: Due passi della procedura, presenti solo dove le funzioni sono attive; Dove si trova: Procedura «Aggiungi immobile»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Vedi Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili e Regime fiscale e documenti fiscali
 
 ### Come funziona
@@ -1099,8 +1103,9 @@ Nota: in ogni passo c'è «Salva e chiudi»: salva ciò che hai scritto e ti rip
 1. Dall'elenco premi il nome e poi «Scheda completa», oppure apri il menu «⋯» della riga.
 2. In alto vedi il nome, un riassunto (camere · ospiti · città) e lo stato.
 3. «Cosa fare ora» è il riquadro che ti dice il prossimo passo: «Completa l'attivazione» (con «Mancano:» e l'elenco), «Manca il codice CIN», «Il CIN non è nel formato ufficiale», «Aggiungi le foto», «L'immobile è in pausa», «L'immobile è sospeso» oppure «Tutto in ordine» con il prossimo arrivo.
-4. Le schede: Panoramica (dati, prezzi, canali, invio a Polizia e ISTAT), Foto, Prenotazioni e interventi, Calendari iCal (si chiama «Canali OTA» dove è attiva l'integrazione diretta; vedi Canali, calendari e Octorate) e Documenti e adempimenti (documenti, CIN).
-5. Se la casa è pubblicata, «Vedi sul sito pubblico» apre la sua pagina sul tuo sito di prenotazione.
+4. Le schede: Panoramica (la foto e i dati essenziali con le loro icone, poi i riquadri «Prezzi», «Servizi», «Canali», «Invio a Polizia e ISTAT» e «QR di benvenuto»), Foto, Prenotazioni e interventi (i numeri delle prenotazioni, «Pulizie al check-out» e «Richieste fornitore»), Calendari iCal (si chiama «Canali OTA» dove è attiva l'integrazione diretta; vedi Canali, calendari e Octorate) e Documenti e adempimenti (CIN o, per le case in Svizzera, la notifica degli ospiti; i documenti; per le case in Italia anche i portali di Alloggiati Web, ISTAT e imposta di soggiorno).
+5. Ogni riquadro ha un'icona, un titolo e i dati che contano: niente paragrafi. Il «?» accanto al titolo apre una frase di spiegazione e il link «Apri nel manuale», che porta alla sezione di questa guida che racconta tutto.
+6. Se la casa è pubblicata, «Vedi sul sito pubblico» apre la sua pagina sul tuo sito di prenotazione.
 Gestire le foto dalla scheda
 1. Apri la scheda Foto.
 2. Premi «Carica foto» (o «Carica la prima foto»). Valgono gli stessi limiti della procedura: 20 foto, JPEG, PNG o WebP, 10 MB.
@@ -1160,6 +1165,14 @@ Si può tornare indietro? Sì, fino al giorno prima: nella scheda dell'immobile 
 2. Dove la verifica dell'identità degli ospiti è attiva vedi «Codice QR della porta»: gli ospiti lo inquadrano alla porta, scrivono il codice della prenotazione e la data di arrivo e proseguono con il check-in. Altrimenti vedi «Codice QR per verifica ospiti», che porta alla pagina di verifica dell'ospite.
 3. Premi «Stampa» (il browser apre un foglio pronto; se lo blocca, consenti le finestre) oppure «Scarica PNG».
 4. Per sostituire il codice del «Codice QR della porta» premi «Rigenera» e conferma con «Rigenera il codice»: quello stampato prima smette di funzionare subito. Solo chi può modificare l'immobile vede il codice e può rigenerarlo.
+
+#### Stampare il QR di benvenuto
+
+Su attivazione (Cosa significa «Su attivazione»?). Ti serve: il permesso di modifica degli immobili.
+1. Apri la scheda dell'immobile: in Panoramica c'è il riquadro «QR di benvenuto». Se la casa non ne ha ancora uno vedi «Per questa casa non c'è ancora un QR di benvenuto»: premi «Crea il QR».
+2. Premi «Stampa il cartello»: si apre un foglio pronto con il codice e una riga in italiano e in inglese (se il browser lo blocca, consenti le finestre). L'icona di copia accanto all'indirizzo copia il link della pagina di benvenuto.
+3. Metti il cartello in casa. Chi lo inquadra apre la pagina di benvenuto, può lasciarti un contatto e scegliere se ricevere le tue offerte. Per l'ospite è facoltativo e non cambia il suo soggiorno.
+4. Per sostituire il codice premi «Crea un nuovo QR» e conferma con «Sì, crea un nuovo QR»: quello stampato prima smette di funzionare subito e va sostituito in casa.
 
 ### Flussi completi
 
@@ -1331,7 +1344,7 @@ Chi può fare cosa. Vedere Canali e calendari richiede il permesso di lettura de
 
 Importa in CasaZen le date occupate di un portale. Ti serve: il permesso di modifica degli immobili, la casa già creata in CasaZen e l'accesso al tuo account Airbnb, Booking.com (o all'altro portale) per copiare il link del calendario.
 1. Sul portale cerca la funzione che esporta il calendario dell'annuncio e copia il suo link iCal: un indirizzo che comincia con https. Ogni portale lo chiama in modo diverso: «Esporta calendario», «Sincronizza calendari», «Indirizzo segreto iCal». Secondo la guida dentro CasaZen, su Airbnb lo trovi nell'annuncio, in Disponibilità › Sincronizzazione calendari › «Esporta calendario»; su Booking.com, nell'Extranet, in Tariffe e disponibilità, nella sezione per sincronizzare i calendari (i nomi delle voci possono cambiare): scegli di esportare il calendario e copia l'indirizzo iCal che compare. I portali cambiano spesso nomi e posizioni: se non trovi la voce, cerca nel portale «esporta calendario» o «sincronizza calendari». Non usare il link dell'annuncio né quello di importazione.
-2. In CasaZen apri Affitti brevi › Immobili › Canali e calendari e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda Calendari iCal. Se non sai dove trovare il link sul portale, sotto il campo «URL import (HTTPS)» premi «Come trovare il link iCal»: si apre la pagina «Come collegare il calendario via iCal» con i passi per Airbnb, Booking.com, VRBO, Google Calendar, Apple Calendar e Outlook (la stessa guida si apre dal «?» «Cos'è iCal» in Canali e calendari).
+2. In CasaZen apri Affitti brevi › Immobili › Canali e calendari e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda Calendari iCal. Se non sai dove trovare il link sul portale, accanto al campo «URL import (HTTPS)» premi il «?» e poi «Apri nel manuale»: si apre questa sezione della guida. La pagina «Come collegare il calendario via iCal», con i passi per Airbnb, Booking.com, VRBO, Google Calendar, Apple Calendar e Outlook, si apre dal «?» «Cos'è iCal» in Canali e calendari.
 3. Nel modulo «Collega un calendario» scegli il «Canale»: Airbnb, Booking.com o Altro.
 4. Se vuoi, scrivi un'«Etichetta (facoltativa)», fino a 60 caratteri, per esempio «Airbnb - camera 2». Serve se una casa ha più calendari.
 5. Incolla il link in «URL import (HTTPS)». Deve cominciare con https ed essere raggiungibile da internet.
@@ -1343,11 +1356,11 @@ Attenzione: questo passo porta le date del portale dentro CasaZen, non le porta 
 #### Incollare il link di CasaZen sui portali
 
 Serve perché i portali chiudano le date prese su CasaZen (prenotazioni del tuo sito, quelle che inserisci tu e i blocchi manuali). Ti serve: il permesso di leggere gli immobili e l'accesso ai portali.
-1. Apri la scheda Calendari iCal della casa e guarda «Link di esportazione per le OTA».
-2. Premi «Copia». Se la copia non riesce, seleziona il link e copialo a mano. In Canali e calendari puoi anche aprire il menu «⋯» di una riga e scegliere «Copia il link di CasaZen».
-3. Sul portale cerca la funzione che importa o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Secondo la guida dentro CasaZen, su Airbnb: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su Booking.com: nell'Extranet apri Tariffe e disponibilità, nella sezione per sincronizzare i calendari, e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
+1. Apri la scheda Calendari iCal della casa e guarda il riquadro «Link di esportazione per le OTA».
+2. Premi l'icona di copia accanto al link. Se la copia non riesce, seleziona il link e copialo a mano. In Canali e calendari puoi anche aprire il menu «⋯» di una riga e scegliere «Copia il link di CasaZen».
+3. Sul portale cerca la funzione che importa o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Su Airbnb: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su Booking.com: nell'Extranet apri Tariffe e disponibilità, nella sezione per sincronizzare i calendari, e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
 4. I portali rileggono il link ogni tanto: le modifiche non compaiono subito.
-Attenzione: chi ha il link vede le date occupate. Incollalo solo sui portali che devono leggerle («Tienilo riservato»). Attenzione: il link di CasaZen porta ai portali solo ciò che si prenota su CasaZen. Non basta per allineare tra loro Airbnb e Booking.com: serve anche il compito seguente.
+Attenzione: chi ha il link vede le date occupate. Incollalo solo sui portali che devono leggerle e tienilo riservato. Attenzione: il link di CasaZen porta ai portali solo ciò che si prenota su CasaZen. Non basta per allineare tra loro Airbnb e Booking.com: serve anche il compito seguente.
 
 #### Evitare le doppie prenotazioni tra portali con i calendari iCal
 
@@ -3245,7 +3258,7 @@ Canton Ticino. La polizia del Canton Ticino vuole ogni ospite notificato entro 2
 - Per creare il file serve il numero identificativo della struttura («Numero identificativo LEAR / NO-LEAR», per esempio NL-12345678), quello che Ticino Turismo ti ha dato con la registrazione.
 - Una volta caricato il file, il giorno si chiude con la dichiarazione «Ho caricato il file» oppure caricando la ricevuta del portale (il riepilogo come PDF, immagine o CSV, fino a 10 MB). Il giorno si chiude anche senza ricevuta.
 - Se scarichi di nuovo il file di un giorno già chiuso, CasaZen ti chiede conferma: se lo carichi ancora, il portale potrebbe creare notifiche doppie.
-Altri cantoni (su attivazione). Ogni cantone ha una regola sua: alcuni chiedono solo un registro da tenere, altri una notifica a un'autorità. CasaZen mostra «Cosa chiede il cantone», con un livello di certezza («Letto sulle fonti ufficiali», «Le fonti non sono tutte ufficiali o non dicono tutto», «Non abbiamo trovato una fonte ufficiale»): in ogni caso verifica con il comune o la polizia, perché CasaZen non dà consulenza legale. Dove la notifica è prevista, ti prepara i dati ospite per ospite da copiare sul portale del cantone; non c'è un file. Per i cantoni dove le fonti non indicano una scadenza la riga dice «Scadenza non nota». Se le fonti non dicono con certezza che la notifica vale per chi affitta una casa privata, decidi tu e puoi cambiare la risposta nella scheda dell'immobile.
+Altri cantoni (su attivazione). Ogni cantone ha una regola sua: alcuni chiedono solo un registro da tenere, altri una notifica a un'autorità. CasaZen mostra, nella scheda «Notifica degli ospiti nel tuo cantone», quattro riquadri con la loro icona («Obbligo», «Scadenza», «Conservazione», «Come») e un livello di certezza («Verificato», «Parzialmente verificato», «Non verificato»; il «?» accanto al titolo dice che cosa significa: «Letto sulle fonti ufficiali», «Le fonti non sono tutte ufficiali o non dicono tutto», «Non abbiamo trovato una fonte ufficiale»): in ogni caso verifica con il comune o la polizia, perché CasaZen non dà consulenza legale. Dove la notifica è prevista, ti prepara i dati ospite per ospite da copiare sul portale del cantone; non c'è un file. Per i cantoni dove le fonti non indicano una scadenza la riga dice «Scadenza non nota». Se le fonti non dicono con certezza che la notifica vale per chi affitta una casa privata, decidi tu e puoi cambiare la risposta nella scheda dell'immobile.
 Avvisi (su attivazione). Per il Ticino, e per i giorni dei cantoni che li hanno, CasaZen avvisa chi può inviare i dati degli ospiti: la sera del giorno di arrivo (o 2 ore dopo l'arrivo previsto), 6 ore prima della scadenza, alla scadenza e con al massimo 2 promemoria a distanza di 24 ore, finché il giorno non è chiuso. L'e-mail va all'indirizzo dell'organizzazione e non contiene mai nomi o numeri di documento, solo i tipi di dato che mancano.
 
 #### Differenze per paese dell'immobile
@@ -3321,7 +3334,7 @@ Nota: il vecchio indirizzo della notifica del Ticino non è più una pagina: apr
 
 Su attivazione (Cosa significa «Su attivazione»?). Funziona come per il Ticino, ma senza file.
 1. In Adempimenti premi «Notifica» sulla voce «Notifica all'autorità gli ospiti arrivati il {data}», oppure apri la scheda dell'immobile («Apri la notifica degli ospiti»).
-2. Leggi «Cosa chiede il cantone» e il livello di certezza.
+2. Leggi i riquadri «Obbligo», «Scadenza», «Conservazione» e «Come» e il livello di certezza.
 3. Passo Ospiti: usa «Copia tutto» per ogni ospite o «Copia {campo}» per ogni dato.
 4. Passo Apri il portale: premi «Apri il portale ufficiale», incolla i dati e conferma.
 5. Passo Ho notificato: premi «Ho notificato». Per annullare, «Non l'ho notificato: riapri il giorno».
@@ -3478,7 +3491,8 @@ La pagina Imposta di soggiorno: dovuta e versata mette insieme, per ogni comune 
 - Versata: i versamenti che hai registrato con periodo compreso nel periodo;
 - Saldo: la differenza dei due totali. Lo stato di ogni comune è «Da versare», «Versata», «Versata in più» o «Nessun importo registrato».
 Il periodo si sceglie tra i periodi proposti o con date a scelta, al massimo un anno. Contano solo gli immobili in Italia. I soggiorni senza imposta registrata non sono contati come zero: sono segnalati («N soggiorni non hanno l'imposta registrata: l'importo dovuto può essere incompleto»). Un versamento è una tua dichiarazione, non un movimento bancario: più versamenti per lo stesso comune e periodo sono rate. Se il tuo accesso copre solo alcuni immobili, vedi l'imposta dovuta su quelli ma non i versamenti, che appartengono a tutta l'organizzazione.
-Nella scheda dell'immobile, sezione Portali istituzionali › Imposta di soggiorno, trovi il collegamento al rendiconto per comune («Apri il rendiconto per Comune»). Per Como la dichiarazione mensile si fa su StayTour (il portale del comune) con SPID o CIE, cioè con l'identità digitale o la carta d'identità elettronica («Accedi a StayTour Como»), usando il rendiconto per controllare gli importi: CasaZen non la invia. Per gli altri comuni la sezione rimanda alla procedura prevista dal comune.
+Nella scheda dell'immobile, scheda Documenti e adempimenti, riquadro Imposta di soggiorno, trovi il collegamento al rendiconto per comune («Apri il rendiconto per Comune»). Per Como la dichiarazione mensile si fa su StayTour (il portale del comune) con SPID o CIE, cioè con l'identità digitale o la carta d'identità elettronica («Accedi a StayTour Como»), usando il rendiconto per controllare gli importi: CasaZen non la invia. Per gli altri comuni il riquadro rimanda alla procedura prevista dal comune.
+Il riepilogo Dichiarazione mensile · Como, nello stesso riquadro, conta per il mese scelto gli ospiti imponibili, i pernottamenti imponibili e l'imposta a carico del gestore dei soggiorni con uscita nel mese e imposta confermata. Prima di dichiarare su StayTour controlla le causali di esenzione. I soggiorni «da riconciliare» (data di uscita mancante o diversa da quella usata per il calcolo) e quelli «da completare o riconfermare» (dati mancanti o da riconfermare) restano fuori dai totali finché non li sistemi. «Imposta riscossa dal portale» dice per quanti soggiorni l'imposta l'ha già riscossa il portale di prenotazione: controlla sugli estratti degli intermediari tutte le riscossioni del mese, anche quelle dei soggiorni con uscita in altri mesi. «Archivia la conferma di StayTour» salva la conferma nell'archivio e «Consulta le conferme del mese» la ritrova.
 Scadenze. CasaZen non conosce la scadenza della dichiarazione e del versamento del tuo comune e non la inventa: la trovi nel regolamento o sul sito del comune. In Adempimenti le voci «Dichiara e paga l'imposta di soggiorno di {mese}» compaiono quando il mese è finito e ci sono soggiorni con imposta. Con il semaforo la voce è «Da fare» finché non carichi né la dichiarazione né la ricevuta del pagamento, «In corso» con una sola delle due, «In regola» con tutte e due. Il pulsante ti porta all'archivio delle prove, già filtrato sul mese, per caricare la dichiarazione o il pagamento.
 
 #### Fine anno
@@ -5728,12 +5742,13 @@ Funzionalità: Elenco dei proprietari; Cosa fa: Mostra ogni proprietario con tip
 Funzionalità: Stato dell'attivazione dei proprietari; Cosa fa: Dice a che punto sono proprietari, quote, dati per i rendiconti e inviti; Dove si trova: Guida › «Vedi tutti i passi» › «Proprietari e rendiconti»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Vedere a che punto è l'attivazione dei proprietari
 Funzionalità: Aggiungere proprietari da file; Cosa fa: Importa i proprietari da un file .csv o .xlsx e li associa agli immobili già in CasaZen, con le quote; Dove si trova: Guida › «Vedi tutti i passi» › «Proprietari e rendiconti»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Aggiungere i proprietari da un file
 Funzionalità: Aggiungere un proprietario a mano; Cosa fa: Controlla e importa una sola riga scritta nella pagina; Dove si trova: «Proprietari e rendiconti» › «Aggiungi a mano»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Aggiungere un proprietario a mano
-Funzionalità: Dati finanziari; Cosa fa: Profilo fiscale, conto di pagamento, mandato, regola fiscale e cosa manca; Dove si trova: Proprietari › «Dati finanziari»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Completare i dati finanziari di un proprietario
+Funzionalità: Dati finanziari; Cosa fa: Una pagina a sezioni con il percorso del proprietario: Riepilogo, Anagrafica, Pagamenti, Mandato, Documenti dei soggiorni, Regola fiscale, Report e storico; Dove si trova: Proprietari › «Dati finanziari»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Completare i dati finanziari di un proprietario
 Funzionalità: Mandato; Cosa fa: Provvigione, IVA, forfait e commissioni sui pagamenti, a versioni nel tempo; Dove si trova: Dati finanziari › Mandato; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Registrare il mandato di un proprietario
-Funzionalità: Regola fiscale; Cosa fa: Dice se c'è una ritenuta al pagamento; l'approvazione del commercialista si registra qui; Dove si trova: Dati finanziari › Regola fiscale e approvazione; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Creare una regola fiscale e registrarne l'approvazione
-Funzionalità: Indirizzo di fatturazione; Cosa fa: Indirizzo per fattura, QR-fattura e bonifico al proprietario; Dove si trova: Dati finanziari › Indirizzo di fatturazione; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Salvare l'indirizzo di fatturazione
-Funzionalità: Emittente dei documenti dei soggiorni; Cosa fa: Dice chi emette il documento del soggiorno per questo proprietario; Dove si trova: Dati finanziari › Emittente dei documenti dei soggiorni; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Impostare chi emette i documenti dei soggiorni
-Funzionalità: Affitti brevi fuori dall'agenzia; Cosa fa: Conta gli appartamenti che il proprietario affitta senza di te, per la regola dell'«impresa presunta»; Dove si trova: Dati finanziari › Affitti brevi fuori dall'agenzia; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Dichiarare gli appartamenti affittati fuori dall'agenzia
+Funzionalità: Regola fiscale; Cosa fa: Dice se c'è una ritenuta al pagamento; l'approvazione del commercialista si registra qui; Dove si trova: Dati finanziari › Regola fiscale; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Creare una regola fiscale e registrarne l'approvazione
+Funzionalità: Indirizzo di fatturazione; Cosa fa: Indirizzo per fattura, QR-fattura e bonifico al proprietario; Dove si trova: Dati finanziari › Pagamenti; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Salvare l'indirizzo di fatturazione
+Funzionalità: Emittente dei documenti dei soggiorni; Cosa fa: Dice chi emette il documento del soggiorno per questo proprietario; Dove si trova: Dati finanziari › Documenti dei soggiorni; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Impostare chi emette i documenti dei soggiorni
+Funzionalità: Affitti brevi fuori dall'agenzia; Cosa fa: Conta gli appartamenti che il proprietario affitta senza di te, per la regola dell'«impresa presunta»; Dove si trova: Dati finanziari › Regola fiscale; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Dichiarare gli appartamenti affittati fuori dall'agenzia
+Funzionalità: Documenti emessi a nome del proprietario; Cosa fa: Un solo file ZIP per il commercialista del proprietario, con i documenti di un mese o di un anno; Dove si trova: Dati finanziari › Report e storico; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Scaricare i documenti emessi per il commercialista del proprietario
 Funzionalità: Inviti al portale; Cosa fa: Invia ai proprietari il link per entrare nel portale; Dove si trova: Proprietari e rendiconti › «4. Accesso al portale»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Invitare i proprietari al portale
 Funzionalità: Portale del proprietario; Cosa fa: Rendiconti, calendario, documenti, messaggi e contatti, dalla parte del proprietario; Dove si trova: Indirizzo del portale (arriva con l'invito); Chi può usarla: proprietario; Disponibilità: Su attivazione; Come si usa: Usare il portale (parte «Il portale del proprietario»)
 Funzionalità: Commissioni dei canali; Cosa fa: Dice quanto trattiene un portale quando la prenotazione non riporta la commissione; Dove si trova: Amministrazione › Chiusura mensile › Commissioni dei canali; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Impostare le commissioni dei canali
@@ -5821,7 +5836,7 @@ Ti serve: essere titolare o amministratore, il piano Agency e il percorso «Iniz
 1. Apri Guida (in alto) › «Vedi tutti i passi» e, nella pagina «Inizia con CasaZen», premi «Apri» sulla riga «Proprietari e rendiconti». La riga dice quanti proprietari ci sono e quanti hanno dati da completare.
 2. Leggi «Come stanno le due parti dell'attivazione»: «Strutture operative» (gli immobili funzionano con i canali) e «Rendicontazione proprietari» (finché è da completare, i rendiconti non partono; il riquadro elenca gli immobili e i proprietari che mancano, con il motivo).
 3. Leggi le quattro fasi («1. Proprietari», «2. Associazioni e quote», «3. Dati per rendiconti», «4. Accesso al portale»): ognuna è «Da iniziare», «Da completare» o «Completato». Parti dalla prima che non è completata.
-4. Per un solo proprietario apri Amministrazione › Proprietari › «Dati finanziari»: il riquadro in alto dice se i dati sono pronti o cosa manca, e più sotto «Cosa manca nell'attivazione» ha il pulsante «Completa nell'attivazione».
+4. Per un solo proprietario apri Amministrazione › Proprietari › «Dati finanziari»: nel «Riepilogo» il riquadro in alto dice se i dati sono pronti o cosa manca, «Il percorso» mostra i passi con il loro stato e, in fondo, «Cosa manca nell'attivazione» ha il pulsante «Completa nell'attivazione».
 
 #### Controllare l'elenco dei proprietari
 
@@ -5863,20 +5878,21 @@ I dati scritti restano nella pagina solo finché lavori lì: non vengono salvati
 #### Completare i dati finanziari di un proprietario
 
 Ti serve: essere titolare o amministratore. Per ogni proprietario tieni pronti: codice fiscale o partita IVA (o l'identificativo fiscale estero), residenza fiscale, nome legale e indirizzo, IBAN e valuta di pagamento, il mandato (provvigione, IVA, eventuali forfait), l'indirizzo di fatturazione e la regola fiscale approvata dal commercialista (Creare una regola fiscale e registrarne l'approvazione). Si compila un proprietario alla volta, in sette schermate; il file dei proprietari può già portare valuta, IBAN e BIC. Con tanti proprietari prepara prima una tabella con questi dati.
-1. Apri Amministrazione › Proprietari e premi «Dati finanziari» del proprietario. La pagina si intitola «Dati finanziari di» e il nome.
-2. Leggi il riquadro in evidenza, in alto: dice se i dati sono pronti («I dati sono pronti dal…») o cosa manca («Manca la regola fiscale», «I dati finanziari sono incompleti», «La regola fiscale aspetta l'approvazione»…). Il pulsante grande è il prossimo passo: «Completa i dati», «Crea una regola» o «Registra l'approvazione».
-3. Premi «Nuova versione dei dati» (in alto) oppure «Completa i dati». Si apre una procedura in sette passi: «Chi è il proprietario?», «Residenza e dati fiscali», «Come riceve i pagamenti?», «Il mandato di gestione», «Ricavi e commissioni», «La regola contabile» e «Controlla i dati». Usa «Continua» e «Indietro».
-4. Scegli «Vale dal» (il primo giorno in cui i nuovi dati valgono: per il primo profilo, il primo giorno del primo mese che devi ancora chiudere) e compila i campi: tipo di soggetto, nome legale, residenza fiscale, codice fiscale o partita IVA, valuta e IBAN, ruolo e periodo del mandato («Locatore», «Proprietario» o «Usufruttuario»), «Quando contano gli incassi», «Spese e commissioni», «Fondo di cassa», giurisdizione (per esempio IT, CH o CH-TI: il paese o cantone di cui valgono le regole fiscali del proprietario) e «Regola fiscale».
+1. Apri Amministrazione › Proprietari e premi «Dati finanziari» del proprietario. La pagina si intitola «Dati finanziari di» e il nome; accanto al titolo vedi lo stato: «Pronto dal…» oppure «Da completare».
+2. Si apre il «Riepilogo». Leggi il riquadro in evidenza, in alto: dice se i dati sono pronti («I dati sono pronti dal…») o cosa manca («Manca la regola fiscale», «I dati finanziari sono incompleti», «La regola fiscale aspetta l'approvazione»…). Il pulsante grande è il prossimo passo: «Completa i dati», «Crea una regola» o «Registra l'approvazione».
+3. Sotto, «Il percorso» elenca i passi: «Anagrafica», «Pagamenti», «Mandato», «Documenti dei soggiorni» (su attivazione) e «Regola fiscale». Ognuno dice «Completo» o «Da completare» e mostra i dati principali; premilo per aprire la sua sezione. Le stesse sezioni sono nell'elenco a sinistra (sul telefono, nel menu sopra la pagina), ognuna con la spunta o il segnale di attenzione, più «Report e storico».
+4. Premi «Nuova versione dei dati» (in alto) oppure «Completa i dati». Si apre una procedura in sette passi: «Chi è il proprietario?», «Residenza e dati fiscali», «Come riceve i pagamenti?», «Il mandato di gestione», «Ricavi e commissioni», «La regola contabile» e «Controlla i dati». Usa «Continua» e «Indietro». Se premi «Modifica» in una sezione la procedura si apre già al passo che la riguarda.
+5. Scegli «Vale dal» (il primo giorno in cui i nuovi dati valgono: per il primo profilo, il primo giorno del primo mese che devi ancora chiudere) e compila i campi: tipo di soggetto, nome legale, residenza fiscale, codice fiscale o partita IVA, valuta e IBAN, ruolo e periodo del mandato («Locatore», «Proprietario» o «Usufruttuario»), «Quando contano gli incassi», «Spese e commissioni», «Fondo di cassa», giurisdizione (per esempio IT, CH o CH-TI: il paese o cantone di cui valgono le regole fiscali del proprietario) e «Regola fiscale».
    - «Quando contano gli incassi» decide in quale mese entra nel rendiconto l'incasso di un soggiorno: «Quando incassa» oppure «Alla fine del soggiorno».
    - «Spese e commissioni» («Al lordo» o «Al netto della commissione») e «Fondo di cassa» («Nessun fondo» o «Fondo di riserva») sono scelte di contabilità: se non sai quale scegliere, chiedilo al commercialista.
-5. Premi «Salva la nuova versione». Compare «Dati finanziari salvati».
-Cosa succede dopo: la versione vale dal giorno scelto; quella di prima finisce il giorno prima. Quello che è già registrato non cambia. La pagina mostra anche «Versioni precedenti».
+6. Premi «Salva la nuova versione». Compare «Dati finanziari salvati».
+Cosa succede dopo: la versione vale dal giorno scelto; quella di prima finisce il giorno prima. Quello che è già registrato non cambia. In «Report e storico» trovi lo «Storico delle versioni».
 Attenzione: il primo profilo di un proprietario vale dal giorno scelto in poi: i mesi prima restano bloccati e un profilo non si può spostare indietro dopo. Fallo partire dal primo mese che devi ancora chiudere. Se i dati partono dopo il mese che stai chiudendo, vedi «I dati non coprono» quel mese e il suo rendiconto resta bloccato.
-Sotto il riquadro in evidenza trovi anche «Cosa manca nell'attivazione»: l'elenco delle cose da completare (mandato, quote, conto, indirizzo…) con il pulsante «Completa nell'attivazione».
+In fondo al «Riepilogo» trovi anche «Cosa manca nell'attivazione»: l'elenco delle cose da completare (mandato, quote, conto, indirizzo…) con il pulsante «Completa nell'attivazione». Dove un dato che serve ai rendiconti manca, la sezione lo scrive in giallo («Da indicare»).
 
 #### Registrare il mandato di un proprietario
 
-1. Apri i Dati finanziari del proprietario e vai alla sezione Mandato.
+1. Apri i Dati finanziari del proprietario e vai alla sezione Mandato: in alto vedi il mandato in vigore, con la provvigione e i forfait in evidenza, e le altre versioni in un elenco che si apre.
 2. Premi «Nuova versione».
 3. Scrivi «Valido dal» (deve essere dopo l'inizio dell'ultima versione) e la «Provvigione (%)», da 0 a 100.
 4. Scegli «IVA sulla provvigione e sui forfait»: «+ IVA» (l'IVA si aggiunge in fattura) oppure «IVA inclusa».
@@ -5888,7 +5904,7 @@ Sotto il riquadro in evidenza trovi anche «Cosa manca nell'attivazione»: l'ele
 #### Creare una regola fiscale e registrarne l'approvazione
 
 Ti serve: essere titolare o amministratore e un commercialista che ti dia i valori. Senza una regola approvata il pagamento a un proprietario non si registra e sul mese compaiono anomalie. Chiedi al commercialista: 1) se c'è una ritenuta e, se sì, aliquota e codice tributo; 2) quali voci entrano nella base (codici come «rent», «cleaning»); 3) l'indirizzo (https) della norma o fonte ufficiale e la sua impronta, il codice di 64 caratteri che identifica quel documento; 4) da quando vale; 5) per quanti anni conservare le prove. Se per quel proprietario non c'è ritenuta, lascia vuota la casella «La regola prevede una ritenuta al pagamento». La regola approvata si sceglie poi nei dati di ogni proprietario: non va rifatta ogni volta.
-1. In Dati finanziari, sezione «Regola fiscale e approvazione», premi «Nuova regola».
+1. In Dati finanziari apri la sezione «Regola fiscale»: nella scheda «Regola fiscale e approvazione» premi «Nuova regola».
 2. Scrivi codice e versione della regola, la giurisdizione (per esempio IT, CH o CH-TI) e da quando vale.
 3. Se la regola prevede una ritenuta al pagamento, spunta «La regola prevede una ritenuta al pagamento» e scrivi «Aliquota della ritenuta (%)», «Codice tributo» e le «Voci della base lorda».
 4. Scrivi l'indirizzo della fonte ufficiale (https://) e la sua impronta (64 caratteri), l'arrotondamento e gli anni di conservazione.
@@ -5899,7 +5915,7 @@ Una regola approvata non si cambia più: per cambiare un valore serve una nuova 
 
 #### Salvare l'indirizzo di fatturazione
 
-1. Nei Dati finanziari, sezione «Indirizzo di fatturazione», scrivi «Via», «Numero civico», «CAP», «Località», «Provincia o cantone» e «Paese» (due lettere, per esempio IT o CH).
+1. Nei Dati finanziari apri la sezione «Pagamenti»: nella scheda «Indirizzo di fatturazione» premi «Modifica» e scrivi «Via», «Numero civico», «CAP», «Località», «Provincia o cantone» e «Paese» (due lettere, per esempio IT o CH).
 2. In Italia la provincia è obbligatoria (le due lettere della sigla).
 3. Premi «Salva l'indirizzo». Salvandolo sostituisci quello di prima.
 Serve per la fattura dell'agenzia, la QR-fattura e il bonifico al proprietario.
@@ -5907,7 +5923,7 @@ Serve per la fattura dell'agenzia, la QR-fattura e il bonifico al proprietario.
 #### Impostare chi emette i documenti dei soggiorni
 
 Questa parte è su attivazione. In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale: CasaZen lo emette a suo nome.
-1. Nei Dati finanziari, sezione «Emittente dei documenti dei soggiorni», scegli «Chi emette»: «Persona fisica» (ricevuta a suo nome, con il bollo quando serve), «Regime forfettario» (fattura senza IVA) o «Società o professionista» (fattura elettronica con il suo sezionale).
+1. Nei Dati finanziari apri la sezione «Documenti dei soggiorni» e premi «Modifica» nella scheda «Emittente dei documenti dei soggiorni»; scegli «Chi emette»: «Persona fisica» (ricevuta a suo nome, con il bollo quando serve), «Regime forfettario» (fattura senza IVA) o «Società o professionista» (fattura elettronica con il suo sezionale).
 2. Compila i dati richiesti: nome, codice fiscale, partita IVA se c'è, indirizzo, sezionale, «IVA sul soggiorno» e gli altri campi che vedi.
 3. Premi «Salva il profilo». Se manca qualcosa leggi «Mancano ancora…»: finché il profilo non è completo CasaZen non prepara i documenti dei suoi soggiorni.
 Le scelte «da confermare» sono valori prudenti: li conferma il commercialista e li puoi cambiare quando vuoi. Come funzionano poi i documenti è in Regime fiscale e documenti fiscali.
@@ -5915,10 +5931,18 @@ Le scelte «da confermare» sono valori prudenti: li conferma il commercialista 
 #### Dichiarare gli appartamenti affittati fuori dall'agenzia
 
 Questa parte è su attivazione. Una persona fisica senza partita IVA può affittare in locazione breve un numero limitato di appartamenti. Oltre quel limite l'attività è presunta d'impresa: il proprietario appare con l'avviso «Impresa presunta» e i suoi soggiorni non hanno la ritenuta delle locazioni brevi. Contano anche gli appartamenti che affitta senza passare da te.
-1. Apri i Dati finanziari del proprietario e vai a «Affitti brevi fuori dall'agenzia».
+1. Apri i Dati finanziari del proprietario, sezione «Regola fiscale», e vai alla scheda «Affitti brevi fuori dall'agenzia»: tre numeri dicono quanti appartamenti gestisci tu, quanti sono dichiarati fuori e il totale rispetto al limite.
 2. Scrivi in «Appartamenti che affitta fuori dall'agenzia» un numero intero da 0 al massimo indicato. Scrivi 0 se non ne ha: lasciare vuoto non vale.
 3. Premi «Salva il numero».
 L'avviso non blocca niente: rendiconti e pagamenti vanno avanti. La pagina suggerisce di valutare un profilo emittente d'impresa.
+
+#### Scaricare i documenti emessi per il commercialista del proprietario
+
+Questa parte è su attivazione. Serve che CasaZen abbia emesso dei documenti a nome del proprietario.
+1. Apri i Dati finanziari del proprietario e vai alla sezione «Report e storico».
+2. Nella scheda «Documenti emessi a nome del proprietario» scegli il «Periodo»: un mese oppure un anno.
+3. Premi «Scarica per il commercialista del proprietario» e aspetta il file. Se qualcosa non va, la pagina lo scrive accanto al pulsante.
+Il file è uno solo (ZIP): contiene i PDF e gli XML dei documenti emessi a nome del proprietario nel periodo, il loro elenco (CSV ed Excel) e l'indice con l'impronta di ogni file.
 
 #### Invitare i proprietari al portale
 

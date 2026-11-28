@@ -26,13 +26,10 @@ vi.mock('@/components/layout/page-header', () => ({ PageHeader: ({ title }: { ti
 vi.setConfig({ testTimeout: 30_000 });
 
 const text = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
-/** Intl writes a no-break space between a figure and its currency: the text of the page is compared with plain spaces. */
 const plain = (value: string) => value.replace(/\s/g, ' ');
 const money = (amount: number, currency: string) => plain(new Intl.NumberFormat('it-IT', { style: 'currency', currency }).format(amount));
-/** What the server says to a refusal: the status and the problem with its code. */
 const problem = (status: number, code: string) => Object.assign(new Error(code), { isAxiosError: true, response: { status, data: { code } } });
 
-/** A client that keeps what it has read for a while (as the app's does): what an earlier read left must never be drawn over a later answer. */
 const keepingClient = () => new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 const drawerOf = (client: QueryClient, invoiceId: string | null) =>
   createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(OwnerInvoiceDrawer, { invoiceId, onClose: vi.fn() })));
@@ -52,15 +49,12 @@ describe('an invoice to an owner is opened by its id, with its lines and its tot
 
     const lines = await screen.findByTestId('owner-invoice-lines');
     expect(api.get).toHaveBeenCalledWith(INVOICE_ID);
-    // The three lines of the draft, each with its type, and the totals as the server stored them, in francs.
     expect(within(lines).getAllByTestId('owner-invoice-line').map((row) => row.getAttribute('data-type'))).toEqual(['Commission', 'Recharge', 'AdvancedExpense']);
     expect(plain(within(lines).getByTestId('owner-invoice-total').textContent ?? '')).toBe(money(1239.1, 'CHF'));
     expect(plain(within(lines).getByTestId('owner-invoice-totals').textContent ?? '')).toContain(money(89.1, 'CHF'));
-    // The title says it is a draft (it has no number yet), and whose it is.
     const drawer = screen.getByTestId('owner-invoice-drawer');
     expect(within(drawer).getByRole('heading', { name: text('ownerInvoice.page.row.draft') })).toBeInTheDocument();
     expect(drawer).toHaveTextContent('Marta Rossi');
-    // Opening it only reads: nothing is made again or issued.
     expect(api.createDraft).not.toHaveBeenCalled();
     expect(api.issue).not.toHaveBeenCalled();
   });
@@ -74,7 +68,6 @@ describe('an invoice to an owner is opened by its id, with its lines and its tot
     expect(within(drawer).getByRole('heading', { name: text('ownerInvoice.page.row.number', { number: 'FPM-2025-0001' }) })).toBeInTheDocument();
     expect(within(drawer).getByText(text('ownerInvoice.status.Issued'))).toBeInTheDocument();
     expect(drawer.textContent).toMatch(/Emessa il\s.*2025/);
-    // No currency, no symbol, and a sentence that says it.
     expect(plain(within(lines).getByTestId('owner-invoice-total').textContent ?? '')).toBe(plain(new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(1239.1)));
     expect(drawer.textContent).not.toMatch(/CHF|€/);
     expect(within(drawer).getByTestId('owner-invoice-detail-currency-missing')).toHaveTextContent(text('ownerInvoice.currencyMissing'));
@@ -86,7 +79,6 @@ describe('an invoice to an owner is opened by its id, with its lines and its tot
     const view = render(drawerOf(client, INVOICE_ID));
     await screen.findByTestId('owner-invoice-lines');
 
-    // The drawer is closed and opened again: the read is made again, and the server says the invoice is gone (404).
     view.rerender(drawerOf(client, null));
     await waitFor(() => expect(screen.queryByTestId('owner-invoice-drawer')).toBeNull());
     api.get.mockRejectedValue(problem(404, 'fiscal_document_not_found'));
@@ -94,13 +86,11 @@ describe('an invoice to an owner is opened by its id, with its lines and its tot
 
     const notFound = await screen.findByTestId('owner-invoice-detail-not-found');
     expect(notFound).toHaveTextContent(text('ownerInvoice.detail.notFound'));
-    // Not the lines of the earlier read, and not an empty drawer.
     expect(screen.queryByTestId('owner-invoice-lines')).toBeNull();
     expect(screen.queryByTestId('owner-invoice-totals')).toBeNull();
   });
 
   it('OwnerInvoiceDrawer_ARefusedRead_SaysTheAccessIsNotThere_AndDrawsNothing', async () => {
-    // The call answers `null` for a 403 (the whole app is not sent to the page of no access for it).
     api.get.mockResolvedValue(null);
     render(drawerOf(keepingClient(), INVOICE_ID));
 
@@ -145,7 +135,6 @@ describe('where the app has the id of an invoice, it can be opened', () => {
     );
 
     const rows = await screen.findAllByTestId('owner-invoice-row');
-    // Nothing is read for the rows: the invoice is read when its row is opened.
     expect(api.get).not.toHaveBeenCalled();
     const open = within(rows[1] as HTMLElement).getByTestId('owner-invoice-row-open');
     await waitFor(() => expect(open).toBeEnabled());
@@ -158,7 +147,6 @@ describe('where the app has the id of an invoice, it can be opened', () => {
   });
 
   it('OwnerInvoicePanel_ADraftOfTheMonthAfterAReload_IsOpenedByItsId_WithoutMakingItAgain', async () => {
-    // A page opened later has only the totals of the list: the lines are read by the id of the draft, and the draft is not made again from the version.
     api.list.mockResolvedValue([listItem()]);
     api.get.mockResolvedValue(draft());
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });

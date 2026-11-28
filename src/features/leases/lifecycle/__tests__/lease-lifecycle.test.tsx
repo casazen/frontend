@@ -8,10 +8,6 @@ import { buildDetail, buildSummary, httpError, renderAt } from '../../__tests__/
 import { availableLeaseActions } from '../lifecycle-actions';
 import { useLeaseActions } from '../use-lease-actions';
 
-// LR-10: the three things on the sheet of a lease that cannot be taken back, each with the rule that keeps a mistake from costing data:
-// a draft is deleted only when the six seconds of «Annulla» have passed, a lease is ended only with the word «TERMINA», and the data of
-// its people are erased only after the confirmation. Real calls to the API client; the toast of «Annulla» is mocked, its `commit` is
-// what runs when the seconds pass and its `undo` is the click on «Annulla».
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() } }));
 vi.mock('@/lib/toast-undo', () => ({ toastUndo: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
@@ -25,7 +21,6 @@ function Harness({ lease }: { lease: LeaseDetail }) {
   return <>{actions.dialogs}</>;
 }
 
-/** The figures the server applies (`GET /long-rent/rules`): the facts of the window «Termina il contratto» are told with them. */
 const RULES = {
   termMonths: { Libero: 48, Concordato: 36 },
   renewalMonths: { Libero: 48, Concordato: 24 },
@@ -39,7 +34,6 @@ const RULES = {
   transitoryBandFromInhabitants: 10_000,
 };
 
-/** The sheet's windows, opened as a link opens them (`?azione=`); the list of the leases of the property tells the stage. */
 function renderAction(lease: LeaseDetail, action: string, stage?: LeaseStage) {
   get.mockImplementation((url: string) => {
     if (url === '/leases') return Promise.resolve({ data: [buildSummary({ id: lease.id, propertyId: lease.propertyId, stage })] });
@@ -66,11 +60,9 @@ describe('the actions of the life of a lease (LR-10)', () => {
     expect(del).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Elimina la bozza' }));
 
-    // Confirmed: the draft is held back for its six seconds, still on the server.
     await waitFor(() => expect(toastUndo).toHaveBeenCalledTimes(1));
     expect(del).not.toHaveBeenCalled();
 
-    // «Annulla»: the draft is dropped from the wait, and nothing was ever written.
     vi.mocked(toastUndo).mock.calls[0][1].undo();
     expect(del).not.toHaveBeenCalled();
   });
@@ -84,7 +76,6 @@ describe('the actions of the life of a lease (LR-10)', () => {
     await waitFor(() => expect(toastUndo).toHaveBeenCalledTimes(1));
     expect(del).not.toHaveBeenCalled();
 
-    // The window of «Annulla» closes without it: this is what the toast runs.
     await vi.mocked(toastUndo).mock.calls[0][1].commit?.();
 
     expect(del).toHaveBeenCalledTimes(1);
@@ -100,7 +91,6 @@ describe('the actions of the life of a lease (LR-10)', () => {
     const input = within(dialog).getByTestId('confirmation-input');
     fireEvent.change(within(dialog).getByTestId('lease-terminate-date'), { target: { value: '2026-10-20' } });
 
-    // The day is there, the word is not: the button waits, and Enter does not get round it.
     expect(confirm).toBeDisabled();
     fireEvent.submit(input.closest('form')!);
     fireEvent.change(input, { target: { value: 'altro' } });
@@ -113,23 +103,20 @@ describe('the actions of the life of a lease (LR-10)', () => {
 
     await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
     expect(post).toHaveBeenCalledWith('/leases/lease-t/terminate', { on: '2026-10-20' }, undefined);
-    // It cannot be taken back, so no toast offers «Annulla».
     expect(toastUndo).not.toHaveBeenCalled();
   });
 
   it('terminate_ThePickerStartsTheDayAfterTheLeaseBegan_TheDayItBeganOnIsRefused_AndTheFactsAreOneSentence', async () => {
-    renderAction(buildDetail({ id: 'lease-m', status: 'Registered' }), 'termina', 'Active'); // began on 1 October 2026, ends on 30 September 2030
+    renderAction(buildDetail({ id: 'lease-m', status: 'Registered' }), 'termina', 'Active');
 
     const dialog = await screen.findByRole('dialog');
     const date = within(dialog).getByTestId('lease-terminate-date');
     expect(date).toHaveAttribute('min', '2026-10-02');
     expect(date).toHaveAttribute('max', '2030-09-30');
-    // The months of notice and the days to report it are the server's figures, in one sentence.
     expect(await within(dialog).findByTestId('lease-terminate-facts')).toHaveTextContent(
       /6 mesi di preavviso.*entro 30 giorni.*cedolare secca/,
     );
 
-    // The day it began is not an ending: the word is typed and the button still waits; nothing goes to the server.
     fireEvent.change(date, { target: { value: '2026-10-01' } });
     fireEvent.change(within(dialog).getByTestId('confirmation-input'), { target: { value: 'termina' } });
     expect(within(dialog).getByRole('button', { name: 'Termina il contratto' })).toBeDisabled();
@@ -144,7 +131,7 @@ describe('the actions of the life of a lease (LR-10)', () => {
 
     expect(availableLeaseActions(notBegun, context).termina).toBe(false);
     expect(availableLeaseActions(running, context).termina).toBe(true);
-    expect(availableLeaseActions(notBegun, { ...context, today: '2026-11-01' }).termina).toBe(true); // its first day has come
+    expect(availableLeaseActions(notBegun, { ...context, today: '2026-11-01' }).termina).toBe(true);
   });
 
   it('erasure_OnlyAfterTheConfirmation_AndTheAnswerIsToldInWords', async () => {

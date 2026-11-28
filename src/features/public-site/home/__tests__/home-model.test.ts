@@ -21,12 +21,10 @@ function card(overrides: Partial<PublicStayCard>): PublicStayCard {
   };
 }
 
-/** How many decimals a number is written with. */
 const decimals = (value: number) => (String(value).split('.')[1] ?? '').length;
 
 describe('zonesOf (DB-07b): the position of a zone is never more exact than the homes publish', () => {
   it('ZonesOf_HomesWithRoundedPositions_GivesAPinWithAtMostTwoDecimals', () => {
-    // The middle of 40.73 and 40.74 is 40.735: written with three decimals it would be a finer position than any home gives.
     const zones = zonesOf(
       [
         card({ id: 'a', latitude: 40.73, longitude: 17.58 }),
@@ -54,13 +52,10 @@ describe('zonesOf (DB-07b): the position of a zone is never more exact than the 
 
     expect(zones).toHaveLength(2);
     expect(zones[0]).toMatchObject({ id: 'ostuni', name: 'Ostuni', count: 2, fromPerNightCents: 9000 });
-    // A comune the server does not list yet falls back to its name, which the `where` filter also takes.
     expect(zones[1]).toMatchObject({ id: 'Lecce', count: 1 });
   });
 
   it('ZonesOf_HomesWithoutAPosition_KeepTheirZoneWithZeroZeroNotInTheMiddle', () => {
-    // The data say «no position» with 0, 0 (the host never gave one): such a home is in its comune all the same, the map puts its pin
-    // there, and its 0, 0 must not be averaged with the position of a home that has one (it would drag the pin into the Gulf of Guinea).
     const zones = zonesOf(
       [
         card({ id: 'a', comune: 'Como', latitude: 0, longitude: 0 }),

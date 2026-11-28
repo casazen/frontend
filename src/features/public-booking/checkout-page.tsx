@@ -15,17 +15,11 @@ interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
-/**
- * `/book/:orgSlug/property/:slug/checkout` (DB-05): loads the home and then hands over to the checkout in three steps. A home that does
- * not exist is said so; a site whose host cannot take payments yet gets a gentle page with the way to write, not a form that would fail
- * after the guest filled it.
- */
 export function CheckoutPage() {
   const { t } = useTranslation();
   const { orgSlug = '', propertySlugOrId } = useParams<{ orgSlug: string; propertySlugOrId: string }>();
   const { org } = useOutletContext<PublicBookingContext>();
   const { data: property, isLoading, isError } = useOrgPublicProperty(orgSlug, propertySlugOrId);
-  // Everything the guest chose and typed, kept while they move between the steps. Never in the address, never in a log.
   const [draft, setDraft] = useState<CheckoutDraft>(EMPTY_DRAFT);
 
   if (isLoading) {

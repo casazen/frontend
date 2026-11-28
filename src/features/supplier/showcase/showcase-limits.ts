@@ -1,8 +1,3 @@
-/**
- * How much each member of the content may hold: the bounds of the server (`ShowcaseContentLimits`, SP-13a). The ones the design states
- * (the sentence, the introduction, "chi siamo", the guarantee, the captions) are the counters of the editor; one place, so the fields
- * and the server cannot drift apart.
- */
 export const SHOWCASE_LIMITS = {
   tagline: 90,
   intro: 180,

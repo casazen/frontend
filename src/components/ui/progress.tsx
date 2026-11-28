@@ -2,15 +2,12 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
-/** A value outside 0-100 (or not a number) is the nearest end of the scale: the bar never overflows its track. */
 function toPercent(value: number): number {
   return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
 }
 
 export interface ProgressProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
-  /** From 0 to 100. */
   value: number;
-  /** Accessible name of the bar, in the words of the page ("Setup completed"). The default is a generic "Progress". */
   label?: string;
   /** What the value means in words ("Step 2 of 6"): assistive technology reads it instead of the percentage. */
   valueText?: string;
@@ -18,11 +15,6 @@ export interface ProgressProps extends Omit<React.HTMLAttributes<HTMLDivElement>
   size?: "default" | "sm";
 }
 
-/**
- * A horizontal progress bar. It carries the progressbar semantics (`aria-valuenow` and the range) and does not animate
- * when the user asks for reduced motion. The bar is not the only way to know the value: put the number or the words
- * ("3 of 5") next to it.
- */
 const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
   ({ value, label, valueText, tone = "default", size = "default", className, ...props }, ref) => {
     const { t } = useTranslation();
@@ -43,7 +35,6 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         <div
           className={cn(
             "h-full rounded-full motion-safe:transition-[width] motion-safe:duration-300 motion-safe:ease-out",
-            // The success solid of the redesign (`--color-success`), 3.9:1 on the track; before it, the same green.
             tone === "success" ? "bg-[color:var(--color-success,#1e8a47)]" : "bg-primary"
           )}
           style={{ width: `${percent}%` }}
@@ -55,17 +46,13 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
 Progress.displayName = "Progress";
 
 export interface RingProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
-  /** From 0 to 100. */
   value: number;
-  /** Diameter in px. 44 fits the number inside. */
   size?: number;
-  /** Accessible name. The default says "<value>% complete". */
   label?: string;
 }
 
 const RING_STROKE = 5;
 
-/** A ring with the percentage inside, for a checklist or a card. Same semantics and motion rules as `Progress`. */
 const Ring = React.forwardRef<HTMLDivElement, RingProps>(({ value, size = 44, label, className, style, ...props }, ref) => {
   const { t } = useTranslation();
   const percent = toPercent(value);
@@ -88,7 +75,6 @@ const Ring = React.forwardRef<HTMLDivElement, RingProps>(({ value, size = 44, la
     >
       <svg aria-hidden="true" width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 -rotate-90">
         <circle cx={center} cy={center} r={radius} fill="none" strokeWidth={RING_STROKE} className="stroke-muted" />
-        {/* No arc at 0%: a round cap on a zero-length dash would still draw a dot. */}
         {percent > 0 && (
           <circle
             cx={center}

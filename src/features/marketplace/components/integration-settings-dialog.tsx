@@ -15,7 +15,6 @@ import { CREDENTIAL_MAX_LENGTH, HOTEL_ID_MAX_LENGTH, requirementsOf } from '../a
 import { badgeStatusOf } from '../lib/active-model';
 import { changeErrorText, leftUnchanged } from '../lib/change-errors';
 
-/** The activation whose settings are changed: a channel or a tool, for a property. */
 export interface SettingsTarget {
   activationId: string;
   kind: MarketplaceConnectionKind;
@@ -28,7 +27,6 @@ interface IntegrationSettingsDialogProps {
   target: SettingsTarget;
   /** The change of the card: it is the card's, so that every button of the card is shut while it is on its way. */
   update: ReturnType<typeof useUpdateActivationSettings>;
-  /** Closes the dialog (the card stops mounting it): what was typed is forgotten with it. */
   onClose: () => void;
 }
 
@@ -47,11 +45,9 @@ export function IntegrationSettingsDialog({ target, update, onClose }: Integrati
   const [hotelId, setHotelId] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  // The call is made once: a second press before the first answer comes (or Escape while it is on its way) does nothing.
   const inFlight = useRef(false);
   const busy = update.isPending;
 
-  // Only what the portal asks for and the person filled: a field left empty is not sent, and nothing is «everything».
   const settings: UpdateMarketplaceSettingsRequest = {
     ...(requirements?.hotelId && hotelId.trim() !== '' ? { hotelId: hotelId.trim() } : {}),
     ...(requirements?.credentials && username.trim() !== '' ? { username: username.trim() } : {}),
@@ -68,13 +64,11 @@ export function IntegrationSettingsDialog({ target, update, onClose }: Integrati
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    // The dialog is drawn outside the page but sits inside it for React: its submit must not reach a form around it.
     event.stopPropagation();
     if (!asksForAnything || !filled || inFlight.current) return;
     inFlight.current = true;
     try {
       const change = await update.mutateAsync({ id: target.activationId, settings });
-      // The connection is as the channel manager says after the change: only Active is «saved and working».
       if (change.status === 'Active') toast.success(t('marketplace.change.settings.saved'));
       else toast.warning(t('marketplace.change.settings.savedNotActive', { status: t(`marketplace.status.${badgeStatusOf(change.status)}`) }));
       update.reset();
@@ -86,8 +80,6 @@ export function IntegrationSettingsDialog({ target, update, onClose }: Integrati
     }
   };
 
-  // The words of a refusal, and whether the settings were left as they were (said outside the markup: a key given to a function is not text to translate).
-  // The connection that is gone is told in this dialog's own words: the text of its code sends the person back to a step of the wizard, which is not here.
   const failure = update.isError
     ? changeErrorText(update.error, t, 'marketplace.change.settings.failed', { marketplace_connection_missing: 'marketplace.change.settings.connectionMissing' })
     : null;

@@ -18,16 +18,13 @@ export interface ServiceSelection {
   quantity: number | null;
   surface: number | null;
   options: Record<string, number>;
-  /** ISTAT code of the comune where the work is, if said. */
   comune: string | null;
 }
 
-/** What a square meters price starts from, and how it moves. */
 export const SQUARE_METERS_DEFAULT = 60;
 export const SQUARE_METERS_STEP = 10;
 export const SQUARE_METERS_MAX = 1000;
 
-/** Most units of a supplement without a limit of its own, and most 30 m² blocks offered without one. */
 const DEFAULT_MAX_UNITS = 8;
 const DEFAULT_SQM_BLOCKS = 6;
 const SQM_BLOCK = 30;
@@ -36,20 +33,17 @@ export const isPickedSupplement = (supplement: PublicSupplierSupplement) => supp
 
 export const surfaceSupplement = (service: PublicSupplierServiceDetail) => service.supplements.find((supplement) => supplement.per === 'sqm30');
 
-/** How many units of a supplement can be picked: a `flat` one is one. */
 export function maxUnits(supplement: PublicSupplierSupplement): number {
   if (supplement.per === 'flat') return 1;
   return supplement.max ?? DEFAULT_MAX_UNITS;
 }
 
-/** The surfaces to choose from, by the upper edge of each size: what the price covers, then one more block of 30 m² at a time. */
 export function surfaceChoices(supplement: PublicSupplierSupplement): number[] {
   const included = supplement.includedSqm ?? SQUARE_METERS_DEFAULT;
   const blocks = supplement.max ?? DEFAULT_SQM_BLOCKS;
   return Array.from({ length: blocks + 1 }, (_, block) => included + block * SQM_BLOCK);
 }
 
-/** Where the card starts: the usual quantity of the service, the surface its price covers, no supplement. */
 export function defaultSelection(service: PublicSupplierServiceDetail): ServiceSelection {
   let quantity: number | null = null;
   if (service.priceUnit === 'PerHour') quantity = Math.max(1, Math.ceil((service.durationMinutes ?? 60) / 60));
@@ -60,14 +54,12 @@ export function defaultSelection(service: PublicSupplierServiceDetail): ServiceS
   return { quantity, surface: surface ? (surface.includedSqm ?? SQUARE_METERS_DEFAULT) : null, options: {}, comune: null };
 }
 
-/** The supplements picked, as the estimate and the booking name them (none with zero units; the `sqm30` follows the surface). */
 function pickedOptions(selection: ServiceSelection): { code: string; quantity: number }[] {
   return Object.entries(selection.options)
     .filter(([, quantity]) => quantity > 0)
     .map(([code, quantity]) => ({ code, quantity }));
 }
 
-/** The request of the estimate for what is chosen. */
 export function toQuoteBody(service: PublicSupplierServiceDetail, selection: ServiceSelection): PublicQuoteRequestBody {
   const options = pickedOptions(selection);
   return {
@@ -79,7 +71,6 @@ export function toQuoteBody(service: PublicSupplierServiceDetail, selection: Ser
   };
 }
 
-/** The parameters of the booking for what is chosen (`booking-params.ts`). */
 export function toBookingParams(service: Pick<PublicSupplierService, 'slug'>, selection: ServiceSelection): BookingParams {
   const options = pickedOptions(selection);
   return {

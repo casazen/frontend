@@ -14,7 +14,6 @@ describe('the Italian steps of the wizard «Fatturazione» (E17/F03/US01)', () =
     const was = [BILLING_STEPS.issuer, BILLING_STEPS.vat, BILLING_STEPS.numbering, BILLING_STEPS.touristTax, BILLING_STEPS.channels, BILLING_STEPS.mandate, BILLING_STEPS.issuing, BILLING_STEPS.italy, BILLING_STEPS.summary];
     expect(stepIdsFor('IT', true)).toEqual(was);
     expect(stepIdsFor('IT', true, false, {})).toEqual(was);
-    // Both off: nothing changes whatever the flags say elsewhere.
     expect(stepIdsFor('IT', true, false, { ownerIssuers: false, sdi: false })).toEqual(was);
   });
 
@@ -32,9 +31,7 @@ describe('the Italian steps of the wizard «Fatturazione» (E17/F03/US01)', () =
       BILLING_STEPS.ownerIssuers,
       BILLING_STEPS.summary,
     ]);
-    // Not for anyone who is not the agency's administrator: the owners are not theirs to read.
     expect(stepIdsFor('IT', false, false, { ownerIssuers: true })).not.toContain(BILLING_STEPS.ownerIssuers);
-    // A Swiss agency with Italian properties still has the step (its owners need a profile too), without the step «Italia».
     const swiss = stepIdsFor('CH', true, false, { ownerIssuers: true });
     expect(swiss).toContain(BILLING_STEPS.ownerIssuers);
     expect(swiss).not.toContain(BILLING_STEPS.italy);
@@ -67,14 +64,12 @@ describe('the Italian steps of the wizard «Fatturazione» (E17/F03/US01)', () =
     expect(ownerIssuersMissing(undefined)).toBe(0);
     expect(ownerIssuersMissing(italy([]))).toBe(0);
     expect(ownerIssuersMissing(italy([{ key: 'owner_issuer_missing', section: 'italy', reason: 'required', count: 3 }]))).toBe(3);
-    // An item with no count (an older server) is no count at all.
     expect(ownerIssuersMissing(italy([{ key: 'owner_issuer_missing', section: 'italy', reason: 'required' }]))).toBe(0);
   });
 
   it('sdiConnectionOf_ConnectedOnlyWithAChannelAndTheSendingOn_WaitingForTheCredentialsWithout_NotConnectedWhenItIsOff', () => {
     expect(sdiConnectionOf({ providerConfigured: true, sendingOn: true })).toBe('connected');
     expect(sdiConnectionOf({ providerConfigured: false, sendingOn: true })).toBe('waitingCredentials');
-    // With the sending off no channel is used, whatever the environment has: never «connected».
     expect(sdiConnectionOf({ providerConfigured: true, sendingOn: false })).toBe('notConnected');
     expect(sdiConnectionOf({ providerConfigured: false, sendingOn: false })).toBe('notConnected');
   });

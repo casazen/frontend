@@ -28,7 +28,6 @@ export const e2eEnv = {
   baseUrl: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
   auth0Email: process.env.E2E_AUTH0_EMAIL ?? '',
   auth0Password: process.env.E2E_AUTH0_PASSWORD ?? '',
-  /** Optional: assert JWT `sub` after login (e.g. auth0|6a209c92984357dfe61c45ac) */
   auth0UserId: process.env.E2E_AUTH0_USER_ID ?? '',
   authStoragePath: 'e2e/.auth/long-term-user.json',
 } as const;
@@ -44,10 +43,6 @@ export function requireE2eCredentials(): { email: string; password: string } {
   return { email: auth0Email, password: auth0Password };
 }
 
-/**
- * A local API (localhost or 127.0.0.1: the stack of `run-l3-local.ps1`). A test that leaves rows nobody removes, or that e-mails a person,
- * writes only to such an API: the shared test environment gets the staging suite at every push to develop and every night.
- */
 export function isLocalApi(url: string | undefined): boolean {
   return /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/i.test(url ?? '');
 }

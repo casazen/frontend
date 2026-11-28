@@ -12,11 +12,6 @@ vi.mock('@/api/guest-marketing.api', () => ({
   guestMarketingApi: { get: vi.fn(), save: vi.fn(), resendConfirmation: vi.fn() },
 }));
 
-/**
- * NF-90, the guest page. What costs privacy when it is wrong is held here: no switch is on before the guest turns it on (whatever the server
- * knows about the address), a consent is for the version of the text the guest read, an opt-out is asked first and then recorded by the server,
- * and what the page shows is what the server sent, masked.
- */
 const CODE = 'K7M4Q-9XP2H';
 const SESSION: GuestSession = {
   accessToken: 'gs1.token-of-the-session',
@@ -67,13 +62,11 @@ describe('GuestMarketingSection (NF-90)', () => {
 
     expect(await screen.findByTestId('guest-marketing')).toBeInTheDocument();
     await screen.findByTestId('guest-marketing-email');
-    // Even with an address on the booking, nothing is on until the guest turns it on.
     const switches = screen.getAllByRole('switch');
     expect(switches).toHaveLength(2);
     for (const control of switches) expect(control).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByTestId('guest-marketing-email-state')).toHaveTextContent('Non iscritto');
     expect(screen.getByTestId('guest-marketing-whatsapp-state')).toHaveTextContent('Non iscritto');
-    // The address and the number are the masked ones of the server, and the text of the consent shows with its version.
     expect(screen.getByTestId('guest-marketing-email-value')).toHaveTextContent('g***@e***.com');
     expect(screen.getByTestId('guest-marketing-whatsapp-value')).toHaveTextContent('+39******567');
     expect(screen.getByTestId('guest-marketing-consent-version')).toHaveTextContent('2026-11-v1');
@@ -93,17 +86,14 @@ describe('GuestMarketingSection (NF-90)', () => {
     fireEvent.click(screen.getByTestId('guest-marketing-save'));
 
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
-    // The booking has a real address: none is typed, and only the e-mail channel is named.
     expect(save).toHaveBeenCalledWith(SESSION.accessToken, CODE, { consentVersion: '2026-11-v1', language: 'it', email: { enabled: true } });
     expect(await screen.findByText('Da confermare')).toBeInTheDocument();
     expect(screen.getByTestId('guest-marketing-email')).toHaveAttribute('data-state', 'pending');
-    // A choice that waits for its confirmation has no switch to press again, and the confirmation can be asked for again.
     expect(screen.queryByTestId('guest-marketing-email-switch')).not.toBeInTheDocument();
     expect(screen.getByTestId('guest-marketing-resend')).toBeInTheDocument();
   });
 
   it('GuestMarketingSection_BookingWithNoAddressToShow_AsksForAnAddressAndSendsTheOneTyped', async () => {
-    // No address the server can show (the booking has none that is real and the guest never typed one): `maskedAddress` is null.
     get.mockResolvedValue(marketing({ email: { state: 'none', maskedAddress: null, canResend: false } }));
     save.mockResolvedValue(marketing({ email: { state: 'pending', maskedAddress: 'g***@e***.com', canResend: true } }));
     renderSection();
@@ -115,7 +105,6 @@ describe('GuestMarketingSection (NF-90)', () => {
     expect(screen.getByTestId('guest-marketing-email')).toHaveTextContent('non si può usare per le offerte');
     fireEvent.click(screen.getByTestId('guest-marketing-save'));
 
-    // No address, no consent: the field says so and nothing is sent.
     expect(await screen.findByText('Scrivi l\'indirizzo e-mail su cui vuoi ricevere le offerte.')).toBeInTheDocument();
     expect(save).not.toHaveBeenCalled();
 
@@ -131,8 +120,6 @@ describe('GuestMarketingSection (NF-90)', () => {
   });
 
   it('GuestMarketingSection_ServiceOnlyWithARealAddressAndNumber_ShowsThemMaskedAndAsksForNothing', async () => {
-    // «Service only» is also the state of a real address and number of the booking (a direct booking with no notice, a manual one, the
-    // check-in): the server uses them, and ignores an address typed beside a real one. So nothing is asked and both are shown.
     get.mockResolvedValue(
       marketing({
         email: { state: 'service_only', maskedAddress: 'g***@e***.com', canResend: false },
@@ -148,7 +135,6 @@ describe('GuestMarketingSection (NF-90)', () => {
     renderSection();
     await screen.findByTestId('guest-marketing-email');
 
-    // Where the offers would go is visible before the switch is turned on, for both channels.
     expect(screen.getByTestId('guest-marketing-email-value')).toHaveTextContent('g***@e***.com');
     expect(screen.getByTestId('guest-marketing-whatsapp-value')).toHaveTextContent('+39******567');
     fireEvent.click(emailSwitch());
@@ -168,7 +154,6 @@ describe('GuestMarketingSection (NF-90)', () => {
   });
 
   it('GuestMarketingSection_ForwardAddressRefusedByTheServer_AsksForAnAddressAfterTheRefusalAndSendsTheOneTyped', async () => {
-    // The answer cannot tell an OTA forward address from a real one: the server says it with a 422, and only then the address is asked for.
     get.mockResolvedValue(marketing({ email: { state: 'service_only', maskedAddress: 'a***@g***.example', canResend: false } }));
     save
       .mockRejectedValueOnce(httpError(422, { code: 'guest_marketing_email_invalid' }))
@@ -184,7 +169,6 @@ describe('GuestMarketingSection (NF-90)', () => {
     expect(save).toHaveBeenNthCalledWith(1, SESSION.accessToken, CODE, { consentVersion: '2026-11-v1', language: 'it', email: { enabled: true } });
     expect(await screen.findByTestId('guest-marketing-save-error')).toHaveTextContent('Scrivi un indirizzo e-mail corretto');
     const address = await screen.findByTestId('guest-marketing-address');
-    // The switch stays on: the guest only has to type the address.
     expect(emailSwitch()).toHaveAttribute('aria-checked', 'true');
 
     fireEvent.change(address, { target: { value: 'giulia@example.com' } });
@@ -210,7 +194,6 @@ describe('GuestMarketingSection (NF-90)', () => {
     fireEvent.change(phone, { target: { value: ' 333 1234567 ' } });
     fireEvent.click(screen.getByTestId('guest-marketing-save'));
 
-    // The server puts its own calling code in front of a number that does not say its country: nothing is sent, the field says why.
     expect(await screen.findByText(/con il prefisso internazionale, per esempio \+39 333 1234567/)).toBeInTheDocument();
     expect(save).not.toHaveBeenCalled();
 
@@ -232,7 +215,6 @@ describe('GuestMarketingSection (NF-90)', () => {
 
     const withdraw = await screen.findByRole('button', { name: 'Non voglio ricevere offerte su E-mail' });
     expect(screen.getByTestId('guest-marketing-email-state')).toHaveTextContent('Confermato');
-    // The page says it before the press, and the dialog says it again: it is final, and nothing is sent until the guest agrees.
     expect(screen.getByTestId('guest-marketing-email')).toHaveTextContent('non si può tornare indietro');
     fireEvent.click(withdraw);
     const dialog = await screen.findByRole('dialog', { name: 'Non vuoi più ricevere offerte?' });
@@ -243,7 +225,6 @@ describe('GuestMarketingSection (NF-90)', () => {
 
     await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
     expect(save).toHaveBeenCalledWith(SESSION.accessToken, CODE, { email: { enabled: false }, language: 'it' });
-    // What the server recorded is what the page shows: unsubscribed, with no way to switch it on again from here, and WhatsApp untouched.
     await waitFor(() => expect(screen.getByTestId('guest-marketing-email')).toHaveAttribute('data-state', 'withdrawn'));
     expect(screen.getByTestId('guest-marketing-email-state')).toHaveTextContent('Annullato');
     expect(screen.queryByTestId('guest-marketing-email-switch')).not.toBeInTheDocument();
@@ -269,7 +250,6 @@ describe('GuestMarketingSection (NF-90)', () => {
     renderSection();
 
     expect(await screen.findByText('Ricevi offerte su soggiorni simili')).toBeInTheDocument();
-    // The guest was told, not asked: it is not shown as a switch that is on, and it can be refused.
     expect(screen.queryByTestId('guest-marketing-email-switch')).not.toBeInTheDocument();
     expect(screen.getByTestId('guest-marketing-email-withdraw')).toBeInTheDocument();
   });
@@ -331,7 +311,6 @@ describe('GuestMarketingSection (NF-90)', () => {
     fireEvent.click(emailSwitch());
     fireEvent.click(screen.getByTestId('guest-marketing-save'));
 
-    // What was switched on was for the old text: the new one is shown, with nothing on, and nothing was recorded.
     expect(await screen.findByTestId('guest-marketing-save-error')).toHaveTextContent('aggiornato');
     await waitFor(() => expect(screen.getByTestId('guest-marketing-consent-version')).toHaveTextContent('2026-12-v2'));
     expect(emailSwitch()).toHaveAttribute('aria-checked', 'false');

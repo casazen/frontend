@@ -18,13 +18,6 @@ import { useSupplierEarningsList } from './supplier-earnings-list';
 const PAGE_SIZE = 20;
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/**
- * The earnings of the supplier (SP-16b): what is owed to it and what it has been paid, job by job, with gross, commission and net, and a
- * file for the accountant. Three quiet numbers (to collect, paid this month, the commission of CasaZen this month), the list of the jobs
- * with the tabs of the server and a period, and the commission that applies now. Every figure is the server's: nothing is computed here, and
- * no date of payout is promised. It only reads (and downloads): it asks nobody for a payment. The page is behind `SupplierOnlinePayments`.
- * A load that fails says it and offers "Riprova". With `?clientId=` (from the page of the customers) only the jobs of that customer.
- */
 export function SupplierEarningsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -55,7 +48,6 @@ export function SupplierEarningsPage() {
         title={t('supplier.earnings.title')}
         description={t('supplier.earnings.description')}
         crumbs="auto"
-        /* The file is not the thing a phone is for: the button stays in the header, not fixed above the bottom bar. */
         mobilePrimary="none"
         primary={{
           label: t('supplier.earnings.export'),
@@ -63,7 +55,6 @@ export function SupplierEarningsPage() {
           onClick: () => download.mutate(params),
           disabled: download.isPending,
           testId: 'supplier-earnings-export',
-          // A page that only reads has no filled button: the numbers are its focal point, the file is a way to take them away (UX round 3).
           variant: 'outline',
         }}
       />

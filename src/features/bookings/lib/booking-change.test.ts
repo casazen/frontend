@@ -14,7 +14,6 @@ import {
   stayLockOf,
 } from './booking-change';
 
-/** What the API answers for a booking of a channel whose channel is closed for the change and for the cancellation. */
 const closedChannel: BookingChangeOptions = {
   canEdit: false,
   canCancel: false,
@@ -88,7 +87,6 @@ describe('channelGuidanceOf', () => {
   });
 
   it('channelGuidanceOf_OpenChannelThatLocksTheStay_HasNoSentenceAndShowsTheForm', () => {
-    // An open channel keeps `canEdit` false (price and payment are settled there) but the API accepts the notes: the form, not a sentence.
     const open: BookingChangeOptions = { ...closedChannel, reasonCode: 'booking_update_source_locked', guidanceKey: 'OtaChannelModifyGuidanceBookingCom' };
     expect(channelGuidanceOf(open, 'modify')).toBeNull();
   });
@@ -175,8 +173,6 @@ describe('channelVersionChange', () => {
   });
 
   it('channelVersionChange_GuestsNotKept_IsNullBecauseTheServerWouldNotTakeItAsTheirVersion', () => {
-    // The server adopts the version of the channel manager only when it says the dates AND the guests: with the guests of the booking in their place the save would be a
-    // change like any other and conflict again, so the version is not offered.
     expect(channelVersionChange(booking, { checkIn: '2027-10-03T00:00:00Z', checkOut: '2027-10-08T00:00:00Z', guests: null })).toBeNull();
     expect(channelVersionChange(booking, { checkIn: '2027-10-03T00:00:00Z', checkOut: '2027-10-08T00:00:00Z', guests: 0 })).toBeNull();
   });
@@ -207,7 +203,6 @@ describe('channelRefusalOf', () => {
   });
 
   it('channelRefusalOf_TheRequestIsKeptOutOfTheFailure_StillReadsTheAnswer', () => {
-    // The mutation keeps the failure without the request that was sent (`withoutRequest`): the status and the body of the answer stay.
     const kept = withoutRequest(problem(503, { status: 503, code: 'octorate_unavailable', channel: 'Airbnb' }));
     expect(channelRefusalOf(kept)).toEqual({ code: 'octorate_unavailable', channel: 'Airbnb' });
   });

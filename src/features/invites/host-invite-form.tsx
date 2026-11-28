@@ -11,15 +11,9 @@ import type { HostInviteScope } from '@/api/host-invites.api';
 import { InviteQrCard } from '@/features/admin/invite-qr-card';
 import { HOST_INVITE_LOCALES, type HostInviteLocale, type HostInviteResult } from '@/types/host-invites';
 
-/** Same shape the backend accepts ([EmailAddress]): one `@` with text on both sides; the server validates again. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
 const MAX_MESSAGE_LENGTH = 500;
 
-/**
- * Form to invite another independent host by email: email, optional message, optional language of the email. The
- * invite gives no role: the guest signs up as usual and the link binds the email and records who invited. The same
- * form serves the admin and the hosts; for a host `blocked` stops it when the daily quota is used up.
- */
 export function HostInviteForm({ scope, blocked = false }: { scope: HostInviteScope; blocked?: boolean }) {
   const { t, i18n } = useTranslation();
   const create = useCreateHostInvite(scope);
@@ -54,7 +48,6 @@ export function HostInviteForm({ scope, blocked = false }: { scope: HostInviteSc
       setMessage('');
       setLocale('');
     } catch (error) {
-      // host_invite_quota_exceeded (429), host_email_taken and duplicate_invite (409) have their own texts.
       toast.error(getProblemMessage(error, t) ?? t('hostInvites.toast.error'));
     }
   };

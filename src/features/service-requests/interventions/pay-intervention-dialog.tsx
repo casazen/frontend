@@ -9,9 +9,7 @@ import type { ServicePaymentSession } from '@/types/service-request';
 interface PayInterventionDialogProps {
   /** What Stripe.js needs to pay (`POST …/payment-session`): a credential, used here and never kept. */
   session: ServicePaymentSession;
-  /** The supplier, in the words of the dialog: who is paid. */
   supplierName?: string | null;
-  /** Where Stripe leads the host back to when its bank asks for a step outside the window: the page of the request. */
   returnUrl: string;
   onClose: () => void;
   /** The card was sent to Stripe (the result as far as the browser knows it, never the state of the request: the backend says that). */
@@ -54,7 +52,6 @@ export function PayInterventionDialog({ session, supplierName, returnUrl, onClos
           clientSecret={session.clientSecret}
           returnUrl={returnUrl}
           onSubmitted={(status) => {
-            // A card that was refused stays in the window, with the words: the host can try another.
             if (status === 'failed') {
               setError(t('interventions.pay.failed'));
               return;

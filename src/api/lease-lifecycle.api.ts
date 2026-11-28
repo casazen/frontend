@@ -18,7 +18,6 @@ function isErasureStatus(value: unknown): value is LeaseErasureStatus {
   return value === 'Anonymized' || value === 'PartiallyAnonymized' || value === 'Scheduled';
 }
 
-/** The notice and the termination answer with the detail of the lease; anything else (an HTML fallback, an envelope) is not an answer. */
 function expectLease(data: unknown, url: string): LeaseDetail {
   if (!isRecord(data) || typeof data.id !== 'string') throw new UnexpectedApiResponseError(url);
   return data as unknown as LeaseDetail;
@@ -31,17 +30,14 @@ function expectLease(data: unknown, url: string): LeaseDetail {
  * runbooks of the backend (`long-rent-lease-draft.md` § 6-7, `long-rent-aggregates.md` § 10, `gdpr.md` § 7).
  */
 export const leaseLifecycleApi = {
-  /** Deletes a draft with everything tied to it. 409 `lease_not_deletable` for a lease that is not a draft, or has a signed copy or a rent plan. */
   deleteDraft: async (id: string): Promise<void> => {
     await ApiClient.delete<unknown>(`/leases/${id}`);
   },
 
-  /** The contract was downloaded for the signature on paper. 422 while the review is not confirmed or the template is not approved. */
   markSent: async (id: string): Promise<void> => {
     await ApiClient.post<unknown>(`/leases/${id}/sent`);
   },
 
-  /** Takes the download for the signature back: the lease is a draft in review again. */
   revokeSent: async (id: string): Promise<void> => {
     await ApiClient.delete<unknown>(`/leases/${id}/sent`);
   },
@@ -54,14 +50,9 @@ export const leaseLifecycleApi = {
   recordNotice: async (id: string, input: RecordLeaseNoticeInput): Promise<LeaseDetail> =>
     expectLease(await ApiClient.post<unknown>(`/leases/${id}/notice`, input), '/leases/:id/notice'),
 
-  /** Takes the notice back, only while the current period has not ended (409 `lease_term_already_ended` after). */
   removeNotice: async (id: string): Promise<LeaseDetail> =>
     expectLease(await ApiClient.delete<unknown>(`/leases/${id}/notice`), '/leases/:id/notice'),
 
-  /**
-   * Ends the lease on its last day. **Irreversible.** 422 `lease_termination_date_invalid`; 409 `lease_not_in_force`,
-   * `lease_already_terminated`, `lease_busy`.
-   */
   terminate: async (id: string, input: TerminateLeaseInput): Promise<LeaseDetail> =>
     expectLease(await ApiClient.post<unknown>(`/leases/${id}/terminate`, input), '/leases/:id/terminate'),
 

@@ -22,11 +22,8 @@ import { PROPERTIES_PATH, propertyWizardPath, propertyCalendarPath, propertyTabP
 
 interface PropertyNextStepProps {
   property: PropertyDetailDto;
-  /** The state to show (`propertyStatus`): the block is read from it, so it never disagrees with the badge of the header. */
   status: PropertyStatus;
-  /** `property.write`: without it the block says what is going on and leads back to the list. */
   canWrite: boolean;
-  /** `booking.read`: the calendar is a page of the bookings. */
   canReadBookings: boolean;
   onReactivate: () => void;
   reactivating: boolean;
@@ -38,18 +35,15 @@ const TONES: Record<PropertyNextStepKind, CalmTone> = {
   reactivate: 'neutral',
   cinMissing: 'warning',
   cinInvalid: 'warning',
-  // The tone of a compliance item is its light's: red (the deadline red once it has passed), blue while it is in hand.
   compliance: 'warning',
   addPhotos: 'neutral',
   allInOrder: 'success',
 };
 
-/** What the block says and offers for one step. */
 interface StepView {
   title: string;
   body?: ReactNode;
   when?: string;
-  /** The step is the host's to take (and the host may): the block says "Tocca a te". */
   hostTurn?: boolean;
   primary: CalmAction;
 }
@@ -89,7 +83,6 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
     </>
   );
 
-  // The lights can take back a step that says «tutto in ordine» or asks for a photo: until they are read, that is not said.
   if (wantsLights && lights.isLoading && mayGiveWayToCompliance(nextStepOf(facts))) {
     return (
       <div role="status" aria-busy="true" data-testid="property-next-step-loading">
@@ -141,16 +134,10 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
           primary: canWrite ? { label: t('property.detail.tabs.documents'), href: propertyTabPath(property.id, 'documents'), testId: 'property-next-cin' } : toProperties,
         };
       case 'compliance': {
-        // The worst compliance item of the property (NF-52): red is the host's to do, yellow is in hand.
         const line = complianceLineOf(lines);
         if (!line) return { title: t('property.next.compliance.waiting.title'), primary: toProperties };
         const route = complianceActionRoute(line.item, hasPermission);
         const mayAct = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS[line.action].write);
-        // The tourist tax rate has no page of its own (it is entered in the guided check-in of a stay, and this item names no stay): `complianceActionRoute` is null,
-        // so there is no button. The block still says what is wrong and why (the reason says where to enter it), and leads back to the
-        // list; it is not the host's turn here. The police send opens the wizard that activates it (E03/F01/US02/T02),
-        // another page; for who may only read the property it opens the section of its connection health on this same page (`?section=connection-health`,
-        // E03/F03/US02/T01), which is not the address the person is on until they have opened it.
         const opens = route !== null && !isCurrentAddress(route, location);
         const action: CalmAction =
           route && opens
@@ -191,11 +178,9 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
 
   const { hostTurn, ...view } = viewOfStep();
   const line = kind === 'compliance' ? complianceLineOf(lines) : undefined;
-  // A compliance step has the light of its item: the deadline red once it has passed, the blue of «in hand» for what the host has not to do.
   const overdue = line !== undefined && romeDateOf(line.dueAt) !== '' && romeDateOf(line.dueAt) < todayInRome();
   const tone: CalmTone = kind === 'compliance' && line ? (line.state === 'red' ? (overdue ? 'danger' : 'warning') : 'info') : TONES[kind];
 
-  // The lights of the other items of the property, under what the block says: the same `ComplianceLight` and words as the page of the adempimenti.
   const lineView = viewOfLines(lines, { skip: line?.id });
   const body = hasLinesToShow(lineView) ? (
     <>

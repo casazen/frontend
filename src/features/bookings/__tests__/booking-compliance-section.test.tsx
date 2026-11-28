@@ -18,7 +18,6 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: v
 vi.mock('@/api/octorate-compliance-handoff.api', () => ({
   octorateComplianceHandoffApi: { start: vi.fn() },
 }));
-// What CasaZen holds for the stay (E20/F01/US02): the proofs and the send log, read from the archive of the proofs.
 vi.mock('@/api/compliance-archive.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/compliance-archive.api')>()),
   complianceArchiveApi: { getBookingCompliance: vi.fn(), downloadProof: vi.fn() },
@@ -190,7 +189,6 @@ describe('BookingComplianceSection', () => {
     cleanup();
     alloggiati.read.mockClear();
     renderSection({ connector: false });
-    // Not offered: nothing more is read for it.
     expect(alloggiati.read).toHaveBeenCalledWith(BOOKING_ID, false);
   });
 
@@ -219,7 +217,6 @@ describe('BookingComplianceSection', () => {
   });
 });
 
-// E20/F01/US02 (NF-47): what CasaZen holds for the stay, in the same section, newest first, with the download.
 describe('BookingComplianceSection: the proofs and the send log of the stay', () => {
   const records = () => screen.findByTestId('booking-compliance-records', undefined, { timeout: 5000 });
 
@@ -247,7 +244,6 @@ describe('BookingComplianceSection: the proofs and the send log of the stay', ()
         sendLog: [
           logLine('first', '2026-11-14T08:00:00Z', { sender: 'Manual', sentBy: 'Giulia Bianchi', reference: 'RIC-7', sentAt: '2026-11-14T00:00:00Z' }),
           logLine('last', '2026-11-15T09:30:00Z'),
-          // A kind and a sender that a later version of the server may send: this version has no words for them.
           logLine('odd', '2026-11-14T12:00:00Z', { kind: 'SomethingNew' as ComplianceSendLogLine['kind'], sender: 'SomeoneNew' as ComplianceSendLogLine['sender'] }),
         ],
       }),
@@ -259,7 +255,6 @@ describe('BookingComplianceSection: the proofs and the send log of the stay', ()
     expect(rows[0]).toHaveTextContent('Ospiti alla Questura');
     expect(rows[0]).toHaveTextContent('Affidato al tuo channel manager');
     expect(rows[0].textContent ?? '').not.toMatch(/inviato/i);
-    // A kind or a sender of a later version gets the generic words, never its raw name.
     expect(rows[1].textContent ?? '').not.toMatch(/SomethingNew|SomeoneNew/);
     expect(rows[2]).toHaveTextContent('Dichiarato inviato a mano da Giulia Bianchi');
     expect(rows[2]).toHaveTextContent('rif. RIC-7');
@@ -272,7 +267,6 @@ describe('BookingComplianceSection: the proofs and the send log of the stay', ()
     expect(screen.getByTestId('booking-proofs-empty')).toBeInTheDocument();
     expect(screen.getByTestId('booking-log-empty')).toBeInTheDocument();
     expect(screen.queryByTestId('proof-archive-table')).not.toBeInTheDocument();
-    // The action that hands the host to the connected area is still there, as it was.
     expect(screen.getByTestId('booking-compliance-drawer-trigger')).toBeInTheDocument();
   });
 
@@ -289,7 +283,6 @@ describe('BookingComplianceSection: the proofs and the send log of the stay', ()
   });
 
   it('section_StayNotFound404_IsNotFoundWhateverTheCacheStillHolds', async () => {
-    // The proofs of an older read are in the cache; the new read answers 404: the section must not show them.
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     client.setQueryData([COMPLIANCE_ARCHIVE_KEY, 'booking', BOOKING_ID], archiveOf({ proofs: [proof('cached', '2026-11-14T09:00:00Z')] }));
     vi.mocked(complianceArchiveApi.getBookingCompliance).mockRejectedValue(problem(404));

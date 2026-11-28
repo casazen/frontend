@@ -17,17 +17,14 @@ import { GuideButton } from './guide-button';
 interface AdviceItemProps {
   entry: AdviceEntry;
   lease: LeaseDetail;
-  /** The numbers the texts take (`guideValues`). */
   values: Record<string, string | number>;
   onOpenTool: (tool: GuideTool) => void;
 }
 
-/** The address of the sheet of the lease with a window of the lifecycle open on it (`?azione=disdetta`). */
 function lifecyclePath(leaseId: string, action: string): string {
   return `${leaseSheetPath(leaseId)}?${LEASE_ACTION_PARAM}=${action}`;
 }
 
-/** An official page: it opens in a new tab and says so to a screen reader. */
 function OfficialLink({ href, label }: { href: string; label: string }) {
   const { t } = useTranslation();
   return (
@@ -40,7 +37,6 @@ function OfficialLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-/** The receipt of the registration, saved as a file: the advice that asks to keep it. */
 function ReceiptButton({ leaseId, label }: { leaseId: string; label: string }) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
@@ -79,11 +75,6 @@ function ActionOf({ action, label, leaseId, onOpenTool }: { action: AdviceAction
   }
 }
 
-/**
- * One piece of advice of the guide: a short title (often a question), a sentence or two in plain words, the one gesture that does
- * something about it and, closed, «Perché?» with the reason and the sources. The follow-up of a registered canone concordato is the
- * one that brings its own block (the documents to bring to the accountant and to the comune, each with its button).
- */
 export function AdviceItem({ entry, lease, values, onOpenTool }: AdviceItemProps) {
   const { t } = useTranslation();
   const base = `leaseGuide.advice.${entry.id}`;

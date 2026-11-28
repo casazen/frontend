@@ -18,21 +18,12 @@ export const ownerTaxChecksApi = {
     return response.status === 403 ? null : response.data;
   },
 
-  /**
-   * Records the decision about the regime of the stay of a company tenant (`agency.owner.financial.manage`): it closes the «Da fare» of the stay, and the withholding facts follow it from then on. The same decision
-   * again answers the same one. 404 `booking_not_found`; 422 `owner_tax_decision_invalid` (with the `field`), `owner_tax_decision_not_applicable` (the stay needs no decision).
-   */
   decide: (command: DecideShortLetTaxCommand) => ApiClient.post<ShortLetTaxDecision>('/owner-tax-decisions', command),
 
-  /**
-   * The limit of units of an owner today (`agency.owner.view`): the apartments the agency manages for it, the ones it declared outside the agency and whether a private person is past the limit. `null` when the server
-   * refuses it to this caller (403). 404 `owner_not_found` (also an owner outside the reach).
-   */
   getUnitsCheck: async (ownerId: string): Promise<OwnerUnitsCheck | null> => {
     const response = await axios.get<OwnerUnitsCheck>(`/owners/${encodeURIComponent(ownerId)}/tax-checks`, { validateStatus: acceptsRefusal });
     return response.status === 403 ? null : response.data;
   },
 
-  /** Saves how many apartments the owner lets short outside the agency (`agency.owner.financial.manage`, 0 to 1000) and answers the new check. 422 `owner_external_units_invalid` (with the `field`). */
   declareExternalUnits: (ownerId: string, units: number) => ApiClient.put<OwnerUnitsCheck>(`/owners/${encodeURIComponent(ownerId)}/external-short-let-units`, { units }),
 };

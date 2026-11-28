@@ -3,7 +3,6 @@ import { archiveDocumentFileName, archiveDocumentKey, archiveDownloadFileName, c
 
 const row = (title: string, contentType = '', date = '2026-10-12') => ({ type: 'touristTax' as const, title, date, contentType });
 
-// The API exposes `Content-Disposition` to the page (CORS): the file is saved under the name the server gave it, the original one of a receipt included.
 describe('contentDispositionFileName (NF-99)', () => {
   it.each([
     ['the name with its charset wins over the plain one', `attachment; filename="Ricevuta _.pdf"; filename*=UTF-8''Ricevuta%20%C3%A8.pdf`, 'Ricevuta è.pdf'],
@@ -35,7 +34,6 @@ describe('archiveDownloadFileName (NF-99)', () => {
     expect(archiveDownloadFileName(row('Siracusa'), 'application/pdf', `attachment; filename*=UTF-8''F24%20Siracusa.pdf`)).toBe('F24 Siracusa.pdf');
   });
 
-  // The header is read only where the API exposes it to the page: with none, or with no name in it, the name is rebuilt from the row, and nothing fails.
   it.each([
     ['no header', null],
     ['no header at all', undefined],

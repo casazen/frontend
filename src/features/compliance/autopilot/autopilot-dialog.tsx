@@ -16,14 +16,11 @@ import { useAutopilotPlan, useRunAutopilot } from './use-autopilot';
 interface AutopilotDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** What the cockpit says only the host can do besides the stays: said in «Resta a te». */
   hostOnly: AutopilotHostOnly;
 }
 
-/** The last run, kept while the page is open: the messages for the host to send are not lost if the layer is closed. */
 interface LastRun {
   result: AutopilotRunResult;
-  /** When it ended, already written (HH:mm in Rome). */
   at: string;
 }
 
@@ -58,7 +55,6 @@ export function AutopilotDialog({ open, onOpenChange, hostOnly }: AutopilotDialo
     setLast(null);
   };
 
-  // Not in the middle of a run: the host asked for it, and the layer is where it ends.
   const changeOpen = (next: boolean) => {
     if (!next && run.isPending) return;
     onOpenChange(next);

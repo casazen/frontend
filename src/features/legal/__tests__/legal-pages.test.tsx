@@ -7,7 +7,6 @@ import { LegalDocumentPage } from '../legal-document-page';
 import { SubprocessorsPage } from '../subprocessors-page';
 import { LegalIndexPage } from '../legal-index-page';
 
-/** PL-14 (A1-06, A9-40): public legal pages with version and date, no invented text, truthful subprocessors. */
 const state = vi.hoisted(() => ({
   document: {} as { data?: LegalDocumentMeta; isLoading: boolean; isError: boolean },
   subprocessors: {} as { data?: SubprocessorsDocument; isLoading: boolean; isError: boolean },
@@ -190,7 +189,6 @@ describe('SubprocessorsPage', () => {
     expect(resend).toHaveTextContent('Entity set by the PO');
     expect(resend).toHaveTextContent('Mechanism set by the PO');
     expect(resend).not.toHaveTextContent(i18n.t('legal.subprocessors.pending'));
-    // A purpose configured as text (no key) is shown as configured.
     expect(screen.getByTestId('subprocessor-row-ai')).toHaveTextContent('SEO content');
     expect(screen.queryByText(/SendGrid/)).not.toBeInTheDocument();
   });

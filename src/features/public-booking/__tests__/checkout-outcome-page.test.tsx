@@ -18,8 +18,6 @@ vi.mock('@/api/public-booking.api', () => ({
 }));
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getOrgProperty: vi.fn() } }));
 
-// No real waiting: the backoff has its own unit test; here the next poll starts as soon as the previous one ends, and the
-// tests hold the backend answers with promises they resolve themselves.
 vi.mock('../checkout-outcome', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../checkout-outcome')>()),
   nextPollDelay: () => 0,
@@ -102,7 +100,6 @@ function LocationProbe() {
   return <output data-testid="location">{`${location.pathname}${location.search}`}</output>;
 }
 
-/** What the checkout hands over in the history state of its navigation (never in the address). */
 interface HandedOver {
   guestFirstName?: string;
   guestEmail?: string;
@@ -125,7 +122,6 @@ function renderOutcome(url: string = OUTCOME_PATH, state?: HandedOver) {
   );
 }
 
-/** The public record of the house arrives after the state of the booking: its photo in the ticket is the sign that it is there. */
 async function propertyShown() {
   await waitFor(() => expect(document.querySelector('.bc-ticket__media img')).toBeInTheDocument());
 }
@@ -173,7 +169,6 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
     expect(within(screenForState).getByRole('heading', { level: 1 })).toHaveTextContent(title);
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(publicBookingApi.getCheckoutOutcome).toHaveBeenCalledWith(BOOKING_ID, TOKEN);
-    // A3-15, D24: "Prenotazione confermata" only for a booking the backend confirmed.
     if (state !== 'Confirmed') expect(screen.queryByText(/Prenotazione confermata/)).not.toBeInTheDocument();
   });
 
@@ -201,9 +196,7 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
     expect(ticket).toHaveTextContent('2 ospiti');
     expect(ticket).toHaveTextContent('Paghi il 17 ottobre 2026');
     expect(within(ticket).getByTestId('checkout-outcome-chip')).toHaveTextContent('Confermata');
-    // The charge is a step of its own, with its day, between the confirmation and the arrival.
     expect(within(confirmed).getByTestId('checkout-outcome-steps')).toHaveTextContent('Addebito di 550,00');
-    // BK-11: the code of the confirmation email, not the booking id, with the way to the guest area filled in with it.
     expect(within(confirmed).getByTestId('checkout-outcome-booking-code')).toHaveTextContent('K7M4Q-9XP2H');
     expect(confirmed).not.toHaveTextContent(BOOKING_ID);
     expect(within(confirmed).getByTestId('checkout-outcome-manage')).toHaveAttribute('href', '/book/demo-casazen/my-bookings?code=K7M4Q-9XP2H');
@@ -217,7 +210,6 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Prenotazione confermata, Mario!' })).toBeInTheDocument();
     expect(screen.getByTestId('checkout-confirmation')).toHaveTextContent('mario@example.com');
-    // The name and the address came with the navigation: they are not in the address bar.
     expect(screen.getByTestId('location')).not.toHaveTextContent(/Mario|mario@/);
   });
 
@@ -229,7 +221,6 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
     const steps = await screen.findByTestId('checkout-outcome-steps');
     expect(within(steps).getAllByRole('listitem')).toHaveLength(3);
     expect(document.querySelector('[aria-current="step"]')).toHaveAttribute('data-step', 'arrival');
-    // The hours of the host, as the host wrote them (they come with the public record of the house).
     await propertyShown();
     expect(steps).toHaveTextContent('dalle 15:00');
     expect(steps).toHaveTextContent('entro le 10:00');
@@ -243,11 +234,9 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
     const waiting = await screen.findByTestId('checkout-outcome-awaiting-host');
     expect(within(waiting).getByTestId('checkout-outcome-note')).toHaveTextContent('Richiesta, non ancora una prenotazione');
     expect(within(waiting).getByTestId('checkout-outcome-chip')).toHaveTextContent("In attesa dell'host");
-    // D24: no time is promised that the system does not keep. The deadline is the one of the backend.
     expect(waiting).toHaveTextContent('fino a: 24 settembre alle ore 12:30 (ora italiana)');
     expect(waiting).not.toHaveTextContent(/entro 24 ore/);
     expect(within(waiting).getByTestId('checkout-outcome-write').getAttribute('href')).toMatch(/^mailto:host@example\.com\?subject=/);
-    // The number the host published, reduced to what a `tel:` link accepts (it comes with the public record of the house).
     expect(await within(waiting).findByTestId('property-host-call')).toHaveAttribute('href', 'tel:+39061234567');
     expect(document.querySelector('[aria-current="step"]')).toHaveAttribute('data-step', 'host');
   });
@@ -337,10 +326,8 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
 
     renderOutcome(`${OUTCOME_PATH}&payment_intent=pi_1&payment_intent_client_secret=pi_1_secret_x&redirect_status=succeeded`);
 
-    // Stripe said "succeeded" but the backend has not confirmed yet: being confirmed, not confirmed.
     expect(await screen.findByTestId('checkout-outcome-processing')).toHaveTextContent('Pagamento in elaborazione');
     expect(screen.queryByText(/Prenotazione confermata/)).not.toBeInTheDocument();
-    // The client secret does not stay in the address bar.
     await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(OUTCOME_PATH));
     expect(screen.getByTestId('location')).not.toHaveTextContent('client_secret');
 
@@ -348,7 +335,6 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
     second.resolve(outcome('Confirmed'));
 
     expect(await screen.findByTestId('checkout-confirmation')).toHaveTextContent('Prenotazione confermata!');
-    // The state changed: the title took the focus, so a screen reader reads the new one.
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus());
   });
 
@@ -377,7 +363,6 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
     expect(stripe.confirmPayment).toHaveBeenCalledWith(
       expect.objectContaining({ confirmParams: { return_url: `${window.location.origin}${OUTCOME_PATH}` } }),
     );
-    // SEPA-like "processing": the page waits for the backend, it does not declare the booking confirmed.
     expect(await screen.findByTestId('checkout-outcome-processing')).toBeInTheDocument();
   });
 
@@ -417,7 +402,6 @@ describe('CheckoutOutcomePage', { timeout: 20_000 }, () => {
     renderOutcome(`${OUTCOME_PATH}&redirect_status=succeeded`);
 
     expect(await screen.findByTestId('checkout-outcome-expired')).toHaveTextContent("l'importo ti verrà rimborsato per intero");
-    // BK-04 may still confirm the booking again: the page keeps asking.
     await waitFor(() => expect(publicBookingApi.getCheckoutOutcome).toHaveBeenCalledTimes(2));
     second.resolve(outcome('Confirmed'));
     expect(await screen.findByTestId('checkout-confirmation')).toBeInTheDocument();

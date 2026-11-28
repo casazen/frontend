@@ -21,14 +21,8 @@ import { ApeIdentificationForm } from './ape-identification-form';
 
 interface DocumentUploadDialogProps {
   propertyId: string;
-  /** Type selected when the dialog opens (default: CIN certificate). */
   defaultDocumentType?: PropertyDocumentType;
-  /** Only this type, with no type to choose (the lease form asks for the APE). */
   onlyType?: PropertyDocumentType;
-  /**
-   * Opened from outside, with no button of its own: for a page whose button goes away once the document is on file (the lease
-   * form hides "Carica l'APE" as soon as the APE is there), the window must not go with it before its last step.
-   */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -107,7 +101,6 @@ export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCer
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState('');
   const [documentType, setDocumentType] = useState<PropertyDocumentType>(initialType);
-  // The APE just stored: the dialog stays open on its code and class.
   const [savedApe, setSavedApe] = useState<PropertyDocumentDto | null>(null);
 
   const uploadMutation = useUploadPropertyDocument();
@@ -140,7 +133,6 @@ export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCer
         close();
       }
     } catch (error) {
-      // Said here too, not only in a toast: the person is looking at this window, and it keeps the pages chosen to try again.
       setError(
         error instanceof Error && error.message.startsWith('documentPages.')
           ? t(error.message)
@@ -177,7 +169,6 @@ export function DocumentUploadDialog({ propertyId, defaultDocumentType = 'CinCer
           </DialogTitle>
           {savedApe ? (
             <DialogDescription>
-              {/* "Type them as printed" only when something is left to type. */}
               {savedApe.apeCode && savedApe.apeEnergyClass
                 ? t('shared.documentUpload.apeDataReadDescription')
                 : t('shared.documentUpload.apeDataDescription')}

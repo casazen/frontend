@@ -28,7 +28,6 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useOpenDoorCheckIn } from '@/queries/use-checkin';
 import { NotFoundPage } from '@/pages/not-found-page';
 
-/** The sentence for a door that did not open: the same one for everything the server does not open, never which part of what was typed was wrong. */
 function problemText(problem: DoorProblem, t: (key: string) => string): string {
   switch (problem) {
     case 'not_found':
@@ -42,7 +41,6 @@ function problemText(problem: DoorProblem, t: (key: string) => string): string {
   }
 }
 
-/** The words of a field that needs another look. */
 function fieldErrorText(field: 'code' | 'surname' | 'arrival', error: DoorErrors[keyof DoorErrors], t: (key: string) => string): string | undefined {
   if (!error) return undefined;
   if (field === 'code') return t(error === 'required' ? 'checkin.door.errors.codeRequired' : 'checkin.door.errors.codeInvalid');
@@ -54,21 +52,18 @@ function DoorCheckInForm({ doorToken }: { doorToken: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const door = useOpenDoorCheckIn(doorToken);
-  // The page opens in the language of the browser until the guest chooses; the page of the stay then opens in the one that was chosen here.
   const [chosenLocale, setChosenLocale] = useState<GuestLocale | null>(null);
   const locale = chosenLocale ?? resolveGuestLocale(typeof navigator === 'undefined' ? undefined : navigator.language);
   const keepLocale = useCallback((stayedIn: GuestLocale) => setChosenLocale(stayedIn), []);
   useGuestPageLocale(locale, keepLocale);
 
   const [mode, setMode] = useState<DoorMode>('code');
-  // What is typed lives in this state only, for the time the page is open: never in the address, a storage or a cache.
   const [values, setValues] = useState<DoorValues>({ code: '', surname: '', arrival: '' });
   const [tried, setTried] = useState(false);
   const errors = tried ? validateDoor(mode, values) : {};
 
   const edit = (change: Partial<DoorValues>) => {
     setValues((current) => ({ ...current, ...change }));
-    // Something typed again is a new attempt: the sentence about the last one goes away.
     if (door.isError) door.reset();
   };
 
@@ -79,7 +74,6 @@ function DoorCheckInForm({ doorToken }: { doorToken: string }) {
 
     try {
       const answer = await door.mutateAsync(doorRequestOf(mode, values));
-      // The page of the stay opens in the language chosen here; the stay is found either way, so a failure to save it is not worth a word.
       if (chosenLocale) void publicCheckinApi.setLanguage(answer.token, chosenLocale).catch(() => undefined);
       navigate(checkInAddressOf(answer.token), { replace: true });
     } catch {

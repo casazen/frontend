@@ -52,11 +52,9 @@ describe('the bulk change model (E08/F05/US03/T03)', () => {
     const period = (from: string, to: string, weekdays: string[] = [...WEEKDAYS]) => periodStepSchema.safeParse({ from, to, weekdays });
 
     expect(period('2026-09-12', '2026-10-12').success).toBe(true);
-    // Partly past is fine (the days before today are left alone): a range that ends today or later.
     expect(period('2026-09-01', '2026-09-12').success).toBe(true);
     expect(messageOf(period('2026-10-12', '2026-09-12'))).toBe(BULK_ERROR_KEYS.toBeforeFrom);
     expect(messageOf(period('2026-09-01', '2026-09-11'))).toBe(BULK_ERROR_KEYS.allPast);
-    // 366 days, both ends included, is the longest; one more is refused.
     expect(period('2026-09-12', '2027-09-12').success).toBe(true);
     expect(messageOf(period('2026-09-12', '2027-09-13'))).toBe(BULK_ERROR_KEYS.tooLong);
     expect(messageOf(period('', '2026-10-12'))).toBe(BULK_ERROR_KEYS.fromInvalid);
@@ -100,7 +98,6 @@ describe('the bulk change model (E08/F05/US03/T03)', () => {
   });
 
   it('changedDaysOf_AddsUpTheDaysThatChangeOfEveryProperty_NotTheDaysThePeriodCovers', () => {
-    // 31 days selected on each property: 5 already over and 6 that already hold the values on the first, none over on the second.
     const preview = {
       properties: [
         { days: 31, changedDays: 20, unchangedDays: 6, skippedPastDays: 5 },

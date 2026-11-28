@@ -52,7 +52,6 @@ import {
 const FORM_ID = 'lease-wizard-form';
 const LEASES_PATH = '/app/long-rent/leases';
 
-/** What a refused main button tells: the things in the way, each with the step where it is put right; `pressed` counts the refusals. */
 interface Raised {
   step: number;
   items: MissingItem[];
@@ -80,22 +79,12 @@ function SaveIndicator({ status, savedAt, onRetry }: { status: DraftSaveStatus; 
 
 interface LeaseWizardProps {
   draft: LeaseDraft;
-  /** The landlord the server suggests, for a draft that has none yet. */
   defaults: LandlordDefaults | null;
   rules: LongRentRules;
-  /** Reads the draft again: the person chose to see the version saved somewhere else. */
   onReload: () => void;
-  /** The reading of the contract the person uploaded (NL-DOCS): which values it wrote, and the signed PDF the import can use. */
   reading?: LeaseReading | null;
 }
 
-/**
- * The wizard «Crea contratto» on a draft that exists on the server (LR-06a): the steps of the contract, the review, the saving.
- * The draft IS the contract: every change is saved as it is typed (`useLeaseDraftSaver`), the server says what each step still needs
- * (`flow`) and the steps show it; a draft opens on the first step that is not done, from any device. Nothing is kept in the browser.
- * «Avanti» goes on when the step has nothing left that was typed wrong or missing; an APE or the cadastral data of the property that
- * are missing only stop the review.
- */
 export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }: LeaseWizardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -106,12 +95,8 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   const [initial] = useState(() => toWizardValues(draft.values, defaults));
   const [flow, setFlow] = useState(draft.flow);
   const flowRef = useRef(draft.flow);
-  // The furthest step reached: ③ is not «Da completare» before it is opened, though the type chosen at the start is saved as a save of ③.
   const [maxStep, setMaxStep] = useState(() => reachedStep(draft));
   const [busy, setBusy] = useState(false);
-  // The reading of the contract ended while this wizard was open (NL-DOCS-FU8): its values are on the server and not in the form. They are
-  // not brought in under the person's hands (reading the draft again lost the last keystrokes, or gave a conflict of version): the person
-  // is told, and shows them when they want. A wizard opened after the reading ended shows them from the start, as before.
   const [sawReading, setSawReading] = useState(false);
   if (reading?.state === 'Reading' && !sawReading) setSawReading(true);
   const arrived = sawReading && reading?.state === 'Done' && reading.fields.some((field) => field.state === 'Read');
@@ -130,7 +115,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     stepRef.current = current;
   });
 
-  // The rules of the step on screen: one form serves every step, so the answers survive going back and forth.
   const resolver = useCallback<Resolver<WizardValues>>(async (values, context, options) => {
     const step = stepRef.current;
     if (!isDataStep(step)) return { values, errors: {} };
@@ -147,10 +131,8 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
       flowRef.current = saved.flow;
       setFlow(saved.flow);
       setMaxStep((value) => Math.max(value, step));
-      // What was left when the main button was pressed may be done now: the line under the fields reads the flow again.
       setRaised(null);
       forgetReads();
-      // The server gave an id to each entry it kept: it goes back with the next save, so the entry keeps its row.
       if (!parties) return;
       for (const list of ['landlords', 'tenants'] as const) {
         const ids = list === 'landlords' ? saved.landlordIds : saved.tenantIds;
@@ -168,7 +150,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   const saver = useLeaseDraftSaver({ leaseId: draft.id, version: draft.version, origin: draft.origin, getValues, onSaved });
   const { queue, flush, adopt, getVersion, stopOn } = saver;
 
-  // Every change of a field is queued for its step.
   useEffect(() => {
     const subscription = form.watch((_values, info) => {
       const step = stepOfField(info.name);
@@ -186,7 +167,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     queue(2);
   }, [current, queue]);
 
-  // Landing on another step: the focus goes to its heading, which a screen reader reads.
   const previousStep = useRef(current);
   useEffect(() => {
     if (previousStep.current === current) return;
@@ -194,7 +174,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     titleRef.current?.focus();
   }, [current]);
 
-  // After a refused «Avanti», once the problems are on the screen: the focus goes to the first field in error.
   useEffect(() => {
     if (focusRequest === 0 || handledFocus.current === focusRequest || !hasErrors) return;
     handledFocus.current = focusRequest;
@@ -209,7 +188,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   const focusField = (id: string | null) => {
     if (id) document.getElementById(id)?.focus();
   };
-  /** The main button was pressed with something left: the focus goes to the first thing, and the line under the fields says what it is. */
   const raise = (step: number, items: MissingItem[]) => {
     pressCount.current += 1;
     setRaised({ step, items, pressed: pressCount.current });
@@ -218,10 +196,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   };
 
   const here = flowStep(flow, current);
-  // What is left to do on this step. For a contract made in CasaZen the APE and the cadastral data of the property are part of it (they keep
-  // the next step shut); for one already signed they are a notice and do not stop (`blockingNeeds`).
   const remaining = isDataStep(current) ? (imported ? blockingNeeds(here) : (here?.needs ?? [])) : [];
-  // On the review what is left are the checks that block: each is put right at its own step.
   const blockingChecks: MissingItem[] =
     current === REVIEW_STEP
       ? (review.data?.checks ?? [])
@@ -235,7 +210,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   const next = position >= 0 && position < steps.length - 1 ? steps[position + 1] : null;
   const stopped = saver.status === 'conflict' || saver.status === 'gone';
 
-  /** What the server answers to a change made outside the saving (the review, the download for the signature): the version and the flow. */
   const applyServerFlow = (version: number, nextFlow: LeaseDraftFlow) => {
     adopt(version);
     flowRef.current = nextFlow;
@@ -243,7 +217,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     forgetReads();
   };
 
-  /** The inverse of the confirmation, on the server: «Annulla» of the toast. The signature step (if the person is there) closes again. */
   const withdrawReview = async () => {
     const withdrawn = await leasesApi.withdrawReviewConfirmation(draft.id, getVersion());
     applyServerFlow(withdrawn.version, withdrawn.flow);
@@ -262,7 +235,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
       applyServerFlow(confirmation.version, confirmation.flow);
       await review.refetch();
       toastUndo(t('leaseWizard.review.confirmedToast'), { undo: withdrawReview });
-      // «Conferma e vai alla firma» is one gesture: the confirmation can be taken back with the toast, which comes back to the review.
       if (next !== null) goTo(next);
     } catch (error) {
       if (!stopOn(error)) toast.error(getProblemMessage(error, t) ?? t('leaseWizard.review.confirmFailed'));
@@ -276,7 +248,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     setRaised(null);
     try {
       if (current === REVIEW_STEP) {
-        // Something blocks: the main button leads to the step where the first thing is put right, and the line under the checks says what.
         const firstBlock = reviewConfirmed ? undefined : blockingChecks[0];
         if (firstBlock) {
           goTo(firstBlock.step);
@@ -289,7 +260,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
         setFocusRequest((value) => value + 1);
         return;
       }
-      // Passing through a step saves it, even when nothing changed: the server counts the steps the person went through.
       if (isDataStep(current)) queue(current);
       if (!(await flush())) return;
 
@@ -303,7 +273,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
         return;
       }
       if (flowStep(flowRef.current, next)?.state === 'Locked') {
-        // The next step opens when the ones before it are complete, the property's APE and cadastral data included.
         const items = flowRef.current.steps
           .filter((step) => isDataStep(step.step))
           .flatMap((step) => step.needs.map((need) => ({ step: step.step, need })));
@@ -316,18 +285,12 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     }
   };
 
-  /** «Salva e continua dopo»: what is typed is saved, the person opens the saved contract, whose property tab keeps the draft reachable. */
   const saveAndLeave = async () => {
     if (!(await flush())) return;
     toast.success(t('leaseWizardGuide.later.saved'));
     navigate(sheetPath);
   };
 
-  /**
-   * «Mostra i dati letti» (NL-DOCS-FU8): what is waiting to be saved goes first, on the version this draft has here, and only then is the
-   * draft read again (the wizard starts from it, with the values read in their fields). A version the reading moved is the conflict
-   * dialog's to settle, which also reads the draft again: nothing is replaced behind the person's back.
-   */
   const showReading = async () => {
     setShowing(true);
     try {
@@ -337,14 +300,12 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     }
   };
 
-  // The main button says what it does, with the verb of the step it leads to: «Salva e vai alle parti».
   const nextLabel =
     current === REVIEW_STEP && !reviewConfirmed
       ? t('leaseWizardGuide.next.confirm')
       : next === null
         ? t('leaseWizard.finish')
         : t(`leaseWizardGuide.next.to.${stepKey(next, draft.origin)}`);
-  // It stays pressable while something is left (it leads to the first thing); only a review that is not there yet cannot be confirmed.
   const reviewBlocked = current === REVIEW_STEP && (review.isLoading || review.isError) && !reviewConfirmed;
 
   const entries = steps.map((step) => ({
@@ -354,7 +315,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     to: stepHref(step),
   }));
 
-  // The signed contract the person gave to be read is the one the import takes: it is not asked for again.
   const contractDocument = reading?.documents.find((document) => document.id === reading.contractDocumentId);
   const uploadedContract = contractDocument ? { id: contractDocument.id, name: contractDocument.fileName } : null;
 
@@ -410,7 +370,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
         <SaveIndicator status={saver.status} savedAt={saver.savedAt} onRetry={() => void flush()} />
       </div>
 
-      {/* The main button is the one strong thing; on a phone it is on top and the two quiet ones under it. */}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2">
           {previous !== null ? (
@@ -450,7 +409,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
   );
 
   return (
-    // The marks wait for the values: until the person asks for them, nothing in the fields says «letto dal contratto».
     <ReadingProvider reading={arrived ? null : reading} flow={flow} leaseId={draft.id}>
       <ReadingBanner reading={reading ?? undefined} flow={flow} held={arrived} />
       {arrived ? <ReadingArrivedNotice onShow={() => void showReading()} busy={showing} /> : null}
@@ -496,7 +454,6 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
         )}
       </LeaseWizardFrame>
 
-      {/* Outside the form: a dialog sits inside it for React, and its buttons would send it. Closing it is reading the draft again. */}
       <Dialog open={saver.status === 'conflict'} onOpenChange={(open) => !open && onReload()}>
         <DialogContent onInteractOutside={(event) => event.preventDefault()} onEscapeKeyDown={(event) => event.preventDefault()}>
           <DialogHeader>

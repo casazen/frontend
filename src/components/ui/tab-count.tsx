@@ -2,13 +2,10 @@ import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
 import type { StatusTone } from '@/lib/status-dictionary';
 import { cn } from '@/lib/utils';
 
-/** How a number on a tab weighs: the colors of the status badges. Without one the number is the accent of the app. */
 export type TabTone = StatusTone;
 
 interface TabCountProps {
-  /** Nothing is shown when it is 0 or missing. */
   count?: number;
-  /** What the number counts, for a screen reader ("2 da approvare"). Without it only the number is read. */
   label?: string;
   tone?: TabTone;
 }

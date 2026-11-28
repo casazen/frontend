@@ -19,11 +19,6 @@ interface ReviewRowProps {
   compact: boolean;
 }
 
-/**
- * One review of the list under the filter «Recensioni» (E05/F06/US02, NF-69): the guest, the stars in words, the first words of the review, when it was published, the channel in one word,
- * the booking code, the property and the days of the stay, and «Senza risposta» while the host has not answered. The whole row opens the review. A review is not a conversation: it has
- * no unread count and no last message, and its stars are not told by the picture alone.
- */
 export function ReviewRow({ thread, selected, search, now, compact }: ReviewRowProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;

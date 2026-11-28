@@ -5,17 +5,14 @@ import { Segmented, type SegmentedOption } from '@/components/ui/segmented';
 import { buildPreviewMessage, PREVIEW_READY_TYPE } from '@/lib/supplier-site/preview-channel';
 import type { ShowcaseDocument } from '@/types/supplier-showcase';
 
-/** The width of the screen the page is drawn for: the frame has this width, so the page lays out as it does on that device. */
 const DEVICE_WIDTH = { desktop: 1280, tablet: 820, phone: 390 } as const;
 type Device = keyof typeof DEVICE_WIDTH;
 
-/** The height of the screen drawn, in pixels of the device. */
 const SCREEN_HEIGHT = 760;
 
 const PAGE_PATH = { home: '', services: '/servizi', about: '/chi-siamo' } as const;
 type PreviewPage = keyof typeof PAGE_PATH;
 
-/** The width of an element, followed as it changes. 0 until it is measured. */
 function useElementWidth(element: HTMLElement | null): number {
   const [width, setWidth] = useState(0);
   useEffect(() => {
@@ -28,20 +25,12 @@ function useElementWidth(element: HTMLElement | null): number {
 }
 
 interface ShowcasePreviewProps {
-  /** `/fornitori/{slug}`. */
   publicPath: string;
   /** The draft: what the page draws instead of what is published. */
   doc: ShowcaseDocument;
-  /** The pages of the services exist only while the list of services is public. */
   hasServices: boolean;
 }
 
-/**
- * The live preview of the editor (SP-13c/d): the real public page in a frame of the same origin (`?anteprima=1&frame=1`), at the true width
- * of the device chosen (the frame is made that wide and shrunk to fit, so the page lays out as it will on a phone, a tablet or a
- * computer), on the page chosen. The draft goes to the page with `postMessage` as it is written: first the page says it is ready, then
- * every change is sent (`lib/supplier-site/preview-channel.ts`); nothing is written or sent by the page in this mode.
- */
 export function ShowcasePreview({ publicPath, doc, hasServices }: ShowcasePreviewProps) {
   const { t } = useTranslation();
   const [device, setDevice] = useState<Device>('desktop');
@@ -56,7 +45,6 @@ export function ShowcasePreview({ publicPath, doc, hasServices }: ShowcasePrevie
   const deviceWidth = DEVICE_WIDTH[device];
   const scale = available > 0 ? Math.min(1, available / deviceWidth) : 1;
 
-  // The page says it is ready: from then on it gets the draft. (A page that is loaded again says it again.)
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin || event.source !== frame.current?.contentWindow) return;
@@ -67,7 +55,6 @@ export function ShowcasePreview({ publicPath, doc, hasServices }: ShowcasePrevie
     return () => window.removeEventListener('message', onMessage);
   }, [src]);
 
-  // The draft goes to the page as it changes.
   useEffect(() => {
     if (readyFor !== src) return;
     frame.current?.contentWindow?.postMessage(buildPreviewMessage(doc), window.location.origin);

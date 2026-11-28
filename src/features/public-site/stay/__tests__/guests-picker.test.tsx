@@ -4,10 +4,6 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
 import { GuestsPicker, type GuestsPickerProps } from '../guests-picker';
 
-/**
- * The guests of a stay: a guest with a dog wants to be asked, and to be told whether the home takes it, before choosing the home. The
- * question used to be there only for a home that takes pets, so a guest looking at one that does not never saw it.
- */
 function renderPicker(props: Partial<GuestsPickerProps> = {}) {
   const onChange = vi.fn();
   render(

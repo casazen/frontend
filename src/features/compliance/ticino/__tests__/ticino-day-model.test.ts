@@ -17,7 +17,6 @@ const guest = (over14 = 0, under14 = 0): TicinoNotificationRow => ({ bookingId: 
 const group: TicinoNotificationRow = { bookingId: 'b2', guestName: 'Giulia Neri', personsOver14: 5, personsUnder14: 1, kind: 'group', groupSize: 7 };
 const issue = { bookingId: 'b3', position: 1, guestName: 'Anna Verdi', missing: ['birthDate'] };
 
-/** The parts of a day the model reads: ready to notify, nothing declared, no file written. */
 const day = (overrides: Partial<TicinoNotificationDay> = {}) =>
   ({ day: '2026-11-19', stayCount: 1, rows: [guest()], issues: [], warnings: [], receiptCount: 0, declaredAt: null, alreadyDeclared: false, fileGeneratedCount: 0, ...overrides }) as TicinoNotificationDay;
 
@@ -78,7 +77,6 @@ describe('the model of the Ticino day (E30/F02/US03/T02)', () => {
     });
 
     it('isFutureDay_ADayThatHasNotStartedInZurich_IsFuture_TheArrivalDayItselfIsNot', () => {
-      // 23:30 UTC of the 18th is already the 19th in Zurich (00:30).
       const lateOnThe18th = new Date('2026-11-18T23:30:00Z');
 
       expect(isFutureDay({ day: '2026-11-19' }, lateOnThe18th)).toBe(false);
@@ -89,7 +87,6 @@ describe('the model of the Ticino day (E30/F02/US03/T02)', () => {
 
   describe('the rows and the warnings of the day', () => {
     it('minorsCountedOf_CountsTheChildrenOnTheirParentAndNeverTheMembersOnTheRowOfAGroup', () => {
-      // On a group row the two counters hold every other member, adults included.
       expect(minorsCountedOf({ rows: [guest(1, 2), guest(0, 1), group] })).toBe(4);
       expect(minorsCountedOf({ rows: [group] })).toBe(0);
     });

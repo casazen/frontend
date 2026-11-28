@@ -62,7 +62,6 @@ export function useOpenDoorCheckIn(doorToken: string) {
   });
 }
 
-/** Root of the door QR of a property for the host. */
 const DOOR_QR_KEY = 'door-qr';
 
 /**
@@ -81,7 +80,6 @@ export function useDoorQr(propertyId: string, enabled: boolean) {
   });
 }
 
-/** «Rigenera»: replaces the door token, and the printed code of the old one stops working at once. The new address takes the place of the old one in the page. */
 export function useRotateDoorQr(propertyId: string) {
   const queryClient = useQueryClient();
 
@@ -135,10 +133,6 @@ export function useCreateTouristTaxPaymentIntent(token: string) {
   });
 }
 
-/**
- * 400 ValidationProblem with field errors, or the 422 of the invoice block (FIS-01, it names its fields): the check-in page shows them on the
- * fields, in the language of the page, not in a toast.
- */
 function isFieldValidationProblem(error: unknown): boolean {
   if (readInvoiceDataProblems(error).length > 0) return true;
   if (!isAxiosError(error) || error.response?.status !== 400) return false;
@@ -174,18 +168,12 @@ export function useSubmitGuestCheckIn(token: string) {
   });
 }
 
-/**
- * Saves the language the guest chose on the page. Nothing is shown here: the page already changed language, and tells the guest only
- * when the choice could not be saved. The context in the cache is left alone: the choice lives in the page (`chosenLocale`) and on the
- * server, and a new `context` object would reset the form the guest is filling in.
- */
 export function useSetCheckInLanguage(token: string) {
   return useMutation({
     mutationFn: (language: string) => publicCheckinApi.setLanguage(token, language),
   });
 }
 
-/** While the link email is queued, the host view polls its real outcome (sent or failed). */
 const CHECKIN_EMAIL_POLL_MS = 5000;
 
 export function useBookingCheckInSession(bookingId: string) {
@@ -197,14 +185,12 @@ export function useBookingCheckInSession(bookingId: string) {
   });
 }
 
-/** Translated reason of a failed link email (`no_recipient` → `checkin.link.emailError.noRecipient`; unknown codes get a generic reason). */
 export function checkInEmailErrorLabel(code: string | null | undefined, t: (key: string) => string): string {
   const known = code && (CHECK_IN_LINK_EMAIL_ERRORS as readonly string[]).includes(code);
   const key = known ? code.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase()) : 'unknown';
   return t(`checkin.link.emailError.${key}`);
 }
 
-/** What really happened to the email of a new link: queued, or not sent (and the host copies the link, which the response always carries, A5-26). */
 function toastLinkEmail(data: CheckInLinkResponse) {
   if (data.emailStatus === 'Failed') {
     toast.error(i18n.t('checkin.link.toast.emailFailed', { reason: checkInEmailErrorLabel(data.emailError, i18n.t) }));
@@ -213,16 +199,11 @@ function toastLinkEmail(data: CheckInLinkResponse) {
   }
 }
 
-/**
- * A link the host generated or sent replaces the one the system was taking to the guest: the server ends that delivery (E23/F01/US01/T01), so the line that
- * says where the link stands is read again with the state of the session.
- */
 function refreshLinkOf(queryClient: QueryClient, bookingId: string): void {
   void queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
   void queryClient.invalidateQueries({ queryKey: [CHECKIN_LINK_DELIVERY_KEY, bookingId] });
 }
 
-/** Sends a new link by email (also the reminder). The toast says what really happened to the email. */
 export function useResendCheckInLink(bookingId: string) {
   const queryClient = useQueryClient();
 
@@ -238,7 +219,6 @@ export function useResendCheckInLink(bookingId: string) {
   });
 }
 
-/** The same call for a list (SR-04): the booking is the one given to `mutate`, so one hook serves the menu of every row. */
 export function useSendCheckInLink() {
   const queryClient = useQueryClient();
 
@@ -254,7 +234,6 @@ export function useSendCheckInLink() {
   });
 }
 
-/** Generates a new link to copy, without email. */
 export function useCreateCheckInLink(bookingId: string) {
   const queryClient = useQueryClient();
 

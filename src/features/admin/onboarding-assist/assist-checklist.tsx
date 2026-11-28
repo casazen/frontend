@@ -33,7 +33,6 @@ const STEP_STATE_VIEW: Record<AssistChecklistStepState, { tone: StatusTone; Icon
   assistRequested: { tone: 'info', Icon: LifeBuoy },
 };
 
-/** A state of a step this version does not know (the server is newer) is never read as done: it is shown as not understood. */
 const UNKNOWN_STEP_VIEW: { tone: StatusTone; Icon: LucideIcon } = { tone: 'warning', Icon: CircleHelp };
 
 const SENDERS: ReadonlySet<string> = new Set(['ChannelManager', 'CasaZen', 'Manual']);
@@ -46,7 +45,6 @@ interface ItemProps {
   children: ReactNode;
 }
 
-/** One line of the checklist: what it is, how it stands and what staff can do about it. */
 function Item({ label, testId, children }: ItemProps) {
   return (
     <div className="min-w-0 space-y-1.5 rounded-md border bg-card p-3" data-testid={testId}>
@@ -82,7 +80,6 @@ interface StepLineProps {
   step: AssistChecklistStep;
 }
 
-/** One panel step the request is about: what it is, where it stands, what its last check found, and the guide that says what to do on the panel. */
 function StepLine({ step }: StepLineProps) {
   const { t, i18n } = useTranslation();
   const known = isPanelStepKind(step.kind);
@@ -128,7 +125,6 @@ interface OpenButtonProps {
   onOpen: (kind: SupportVaultCredentialKind) => void;
 }
 
-/** «Apri credenziali»: asks for the reason and shows the values for a minute (the controlled opening). */
 function OpenButton({ kind, onOpen }: OpenButtonProps) {
   const { t } = useTranslation();
   const what = t(`onboardingPlan.assist.reveal.kinds.${kind}`);
@@ -177,7 +173,6 @@ function Block({ request, block, onOpen }: BlockProps) {
   const sender = block.sender;
   const steps = foreign ? block.steps.filter((step) => step.kind === 'channelAccess') : block.steps;
   const senderKnown = sender !== null && SENDERS.has(sender.sender);
-  // A credential is opened only when it is there (a missing one can only be refused) and when the request needs it.
   const canOpenPanel = offered('OctoratePanel') && block.panelUser.present;
   const canOpenPolice = offered('Police') && block.policeCredentials?.present === true;
   const canOpenIstat = offered('RegionalIstat') && istat?.present === true;
@@ -275,7 +270,6 @@ function Block({ request, block, onOpen }: BlockProps) {
 }
 
 interface AssistChecklistProps {
-  /** The request as the server answered it with the checklist (its status is what decides whether a credential can be opened). */
   request: AdminAssistRequest;
   checklist: AssistChecklistProperty[];
 }

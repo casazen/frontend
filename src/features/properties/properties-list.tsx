@@ -10,7 +10,6 @@ import { formatCurrency } from '@/lib/utils';
 import type { ListingPropertySummary, Property } from '@/types';
 import { ChannelsCell } from './components/multi-channel-status';
 import { PropertyThumb } from './components/property-thumb';
-// The drawer registers its kind when its module is loaded: the list is what opens it.
 import './components/property-drawer';
 import { formatPropertyLocation } from './property-location';
 import {
@@ -23,13 +22,11 @@ import {
   propertyServiceRequestPath,
 } from './properties-paths';
 
-/** What waits for the host before the property can receive bookings: the ones to complete and the ones suspended. */
 const needsAttention = (property: Property) => {
   const status = propertyStatus(property);
   return status === 'Pending' || status === 'Suspended';
 };
 
-/** The states in the order the host has to look at them: what is blocked first, what works last. */
 const STATUS_RANK: Record<PropertyStatus, number> = { Suspended: 0, Pending: 1, Paused: 2, Active: 3 };
 const MISSING_LABELS: Record<string, string> = {
   base_data: 'baseData', cin: 'cin', documents: 'documents', safety: 'safety',
@@ -37,24 +34,13 @@ const MISSING_LABELS: Record<string, string> = {
 };
 
 export interface PropertiesListOptions {
-  /** `property.write`: completing, reactivating, pausing, editing and deleting are for who may write the property. */
   canWrite: boolean;
-  /** `booking.read`: the calendar and the marketplace are pages of the bookings. */
   canReadBookings: boolean;
-  /** A pause, a reactivation or a deletion is on its way: the buttons that start one wait. */
   busy: boolean;
   onPause: (property: Property) => void;
   onActivate: (property: Property) => void;
   onDelete: (property: Property) => void;
-  /**
-   * The worst state of each property that has a channel, by property (`GET /properties/channel-status`): the column «Canali» and the line
-   * on the card. `null` or absent while the channel manager is not connected (the flag is off): then the list has no such column.
-   */
   channelSummaries?: ReadonlyMap<string, ListingPropertySummary> | null;
-  /**
-   * The summary of the channels was read. While it loads, or when it could not be read, the column says nothing is known (a dash): a
-   * property that is missing from an unread summary is not a property that was never published. Default: read.
-   */
   channelsKnown?: boolean;
 }
 
@@ -87,12 +73,10 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
 
     const priceOf = (property: Property) => (property.nightlyRate > 0 ? formatCurrency(property.nightlyRate, property.currency) : null);
 
-    /** The listing on the channels: the worst state, «Sincronizzazione in ritardo» and «Correggi». A property that was never published has no channel; one whose summary is not read yet has none to tell. */
     const channelsOf = (property: Property) => (
       <ChannelsCell propertyId={property.id} summary={channelSummaries?.get(property.id)} known={channelsKnown} canWrite={canWrite} />
     );
 
-    /** The one thing to do about a property, by its state. */
     const primaryAction = (property: Property): ListRowAction | null => {
       const status = propertyStatus(property);
       if (status === 'Pending' || status === 'Suspended') {
@@ -280,7 +264,6 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
             ) : undefined,
         };
       },
-      // The name of the property opens its drawer; the page of the property is the first entry of "⋯" and the foot of the drawer.
       detail: { drawerKind: PROPERTY_DRAWER_KIND },
       rowHref: (property) => propertyPath(property.id),
       cardsUntil: 'xl',

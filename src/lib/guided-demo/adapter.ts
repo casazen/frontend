@@ -77,7 +77,6 @@ function longReads(path: string, day: string): unknown {
   }
 }
 
-/** Only the two guided personas and dual have data. Unknown routes and every write stop locally. */
 export function readGuidedFixture(path: string, persona: ExtendedDemoProfile, day: string, params: Record<string, string> = {}): unknown {
   if (path === '/public/features') return {};
   if (path === '/users/me') return buildDemoProfile(persona);

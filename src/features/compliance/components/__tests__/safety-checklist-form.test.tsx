@@ -18,7 +18,6 @@ vi.mock('@/features/compliance/use-compliance', () => ({
 }));
 vi.mock('@/queries/use-properties', () => ({ useUploadPropertyDocument: vi.fn() }));
 
-// The form reads only these fields: partial objects are cast to the full hook results.
 type Hook<T extends (...args: never[]) => unknown> = ReturnType<T>;
 
 function item(code: SafetyItemCode, patch: Partial<SafetyChecklistItem> = {}): SafetyChecklistItem {
@@ -143,7 +142,6 @@ describe('SafetyChecklistForm', () => {
     expect(byCode.FireExtinguishers).toMatchObject({ answer: 'Present', quantity: 1, checkedOn: '2026-09-01' });
     expect(byCode.BdsrDeclaration).toMatchObject({ answer: 'Present' });
     expect(byCode.SmokeDetector).toMatchObject({ answer: 'Missing' });
-    // "Not applicable" is never sent: it follows from the facts.
     expect(byCode.GasDetector.answer).toBeNull();
     expect(byCode.CoDetector.answer).toBeNull();
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(expect.objectContaining({ isComplete: true })));

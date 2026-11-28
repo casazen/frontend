@@ -31,7 +31,6 @@ import {
 } from '@/types/compliance.types';
 
 const EVIDENCE_ACCEPT = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
-/** Items that collect a number of devices and where they are. */
 const WITH_DEVICES: readonly SafetyItemCode[] = ['FireExtinguishers', ...SAFETY_DETECTORS];
 const ANSWERS = ['Present', 'Missing'] as const;
 
@@ -39,7 +38,6 @@ type Answer = 'Present' | 'Missing' | null;
 
 interface ItemState {
   answer: Answer;
-  /** Imported from the old checklist and not answered again yet. */
   toReview: boolean;
   quantity: string;
   location: string;
@@ -89,7 +87,6 @@ function toFormState(checklist: SafetyChecklist): FormState {
     floorCount: floorCount?.toString() ?? '',
     floorAreas: Array.from({ length: floorCount ?? 0 }, (_, i) => checklist.facts.floorAreasSqm?.[i]?.toString() ?? ''),
     items,
-    // A new confirmation is asked on every save (SC-08).
     confirm: false,
   };
 }
@@ -139,7 +136,6 @@ function toCommand(form: FormState): SaveSafetyChecklistCommand {
 
 interface SafetyChecklistFormProps {
   propertyId: string;
-  /** Called after each successful save, with the checklist evaluated by the server. */
   onSaved?: (checklist: SafetyChecklist) => void;
 }
 
@@ -374,11 +370,9 @@ function SafetyChecklistEditor({
   );
 }
 
-/** Blockers and warnings of the last saved checklist, translated by stable code. */
 function IssuesSummary({ checklist }: { checklist: SafetyChecklist }) {
   const { t, i18n } = useTranslation();
   const extinguishers = checklist.items.find((i) => i.code === 'FireExtinguishers');
-  // Translation of the stable code in the UI language, or the text the server localized for a code unknown here.
   const blockerText = (issue: { code: string; message: string }) => {
     const key = `compliance.safety.blockers.${issue.code}`;
     return i18n.exists(key)

@@ -31,14 +31,12 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));
 
 const SETTINGS_PATH = '/app/short-rent/settings/integration';
 
-/** The parts of the plan a host with all its properties in Italy sees: every part but the one that is for properties in Switzerland. */
 const LISTED_PARTS = ONBOARDING_PART_KEYS.filter((code) => code !== 'guestRegistration');
 
 function integrationPart(code: OnboardingPartKey, overrides: Partial<IntegrationPart> = {}): IntegrationPart {
   return { ...part(code, { state: 'done', launchTarget: 'connect' }), reopenable: true, ...overrides };
 }
 
-/** The eleven parts as the settings answer them; the three nobody provides yet cannot be reopened. */
 function overview(overrides: Partial<IntegrationOverview> = {}): IntegrationOverview {
   const launchTargets: Record<OnboardingPartKey, IntegrationPart['launchTarget']> = {
     octorateConnection: 'connect',
@@ -60,7 +58,6 @@ function overview(overrides: Partial<IntegrationOverview> = {}): IntegrationOver
       integrationPart(code, {
         launchTarget: launchTargets[code],
         ...(code === 'partners' ? { state: 'notAvailable', reason: 'not_provided', reopenable: false } : {}),
-        // An organization with no active property in Switzerland: the part does not apply and the settings do not list it.
         ...(code === 'guestRegistration' ? { state: 'notAvailable', reason: 'no_swiss_property', reopenable: false } : {}),
       }),
     ),
@@ -115,7 +112,6 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
     expect(await screen.findByTestId('integration-admin-only')).toHaveTextContent(i18n.t('onboardingPlan.integration.adminOnly'));
     expect(screen.queryByTestId('connection-health-card')).not.toBeInTheDocument();
     expect(screen.queryByTestId('reopen-parts')).not.toBeInTheDocument();
-    // The settings are the administrator's: no read for anyone else, so no 403 to meet.
     expect(onboardingApi.getIntegration).not.toHaveBeenCalled();
     expect(onboardingApi.reopenPart).not.toHaveBeenCalled();
   });
@@ -127,19 +123,15 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
     expect(within(card).getByTestId('connection-state')).toHaveTextContent(i18n.t('onboardingPlan.integration.connection.state.connected'));
     expect(within(card).getByTestId('connection-last-sync')).toHaveTextContent('2026');
     expect(within(card).getByTestId('connection-last-sync')).not.toHaveTextContent(i18n.t('onboardingPlan.integration.connection.neverSynced'));
-    // Production: no «prova» label; connected: no notice of reconnection.
     expect(within(card).queryByTestId('connection-environment-test')).not.toBeInTheDocument();
     expect(within(card).queryByTestId('connection-reconnect')).not.toBeInTheDocument();
-    // The parts, each with its state and «Riapri»: the notification of the guests in Switzerland is not among them while the organization has no active property there.
     expect(screen.getByTestId('reopen-parts-list').querySelectorAll('li')).toHaveLength(11);
     for (const code of LISTED_PARTS) expect(screen.getByTestId(`reopen-part-${code}-action`)).toBeInTheDocument();
     expect(screen.queryByTestId('reopen-part-guestRegistration-action')).not.toBeInTheDocument();
-    // Who sends the schedine, for how many properties; the listings by status (every status the server sent).
     expect(screen.getByTestId('integration-sender-channelManager')).toHaveTextContent('3');
     expect(screen.getByTestId('integration-sender-notSet')).toHaveTextContent('4');
     expect(screen.getByTestId('integration-channel-Published')).toHaveTextContent('7');
     expect(screen.getByTestId('integration-channel-ToFix')).toHaveTextContent(i18n.t('onboardingPlan.integration.channels.status.ToFix'));
-    // Nothing of a token or a secret is in the page.
     expect(document.body.textContent?.toLowerCase()).not.toMatch(/token|secret|password/);
   });
 
@@ -161,7 +153,6 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
     const notice = within(card).getByTestId('connection-reconnect');
     expect(notice).toHaveAttribute('role', 'alert');
     expect(notice).toHaveTextContent(i18n.t('onboardingPlan.integration.connection.reconnect.notice'));
-    // The primary button opens the connect wizard at the consent step, in the same tab.
     const action = within(notice).getByTestId('connection-reconnect-action');
     expect(action).toHaveAttribute('href', '/app/short-rent/integrations/octorate?step=consent');
     expect(action).not.toHaveAttribute('target');
@@ -227,7 +218,6 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
   });
 
   it('ReopenPartsList_ATargetWithNoPageYet_KeepsThePersonOnThePageWithNonAncoraDisponibile', async () => {
-    // The answer names a wizard this version of the app has no page for: no navigation, no dead link.
     vi.mocked(onboardingApi.reopenPart).mockResolvedValue({ code: 'listings', launchTarget: 'brandNewWizard' as never, focus: null });
     renderPage();
 
@@ -265,7 +255,6 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
       expect(screen.getByTestId(`reopen-part-${code}-action`), code).toBeDisabled();
     }
     for (const code of ['compliance', 'channels', 'properties']) expect(screen.getByTestId(`reopen-quick-${code}`), code).toBeDisabled();
-    // The one that was pressed ignores a second press: the server is asked once.
     fireEvent.click(screen.getByTestId('reopen-part-listings-action'));
     expect(onboardingApi.reopenPart).toHaveBeenCalledTimes(1);
     finish({ code: 'listings', launchTarget: 'connect', focus: null });
@@ -280,7 +269,6 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
 
     expect(await screen.findByTestId('reopen-error')).toHaveTextContent('Questo passo non si può riaprire.');
     expect(screen.queryByTestId('where')).not.toBeInTheDocument();
-    // The buttons are back once the refusal is in.
     await waitFor(() => expect(screen.getByTestId('reopen-part-listings-action')).toBeEnabled());
   });
 

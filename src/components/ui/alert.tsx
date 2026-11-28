@@ -6,11 +6,8 @@ export type AlertVariant = "info" | "success" | "warning" | "danger";
 
 export interface AlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   variant?: AlertVariant;
-  /** A short line in bold above the text. */
   title?: React.ReactNode;
-  /** What to do about it: one or two buttons or links (`Button size="sm"`). They go under the text. */
   action?: React.ReactNode;
-  /** Replaces the icon of the variant. It is decorative: the title and the text carry the meaning. */
   icon?: LucideIcon;
 }
 
@@ -41,10 +38,6 @@ const VARIANTS: Record<AlertVariant, { box: string; icon: string; Icon: LucideIc
   },
 };
 
-/**
- * A notice inside the page. Only `danger` is announced at once (`role="alert"`); the others are `role="status"`, read
- * when the screen reader is idle. A box that is already there when the page opens is not announced either way.
- */
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({ variant = "info", title, action, icon, className, children, ...props }, ref) => {
     const { box, icon: iconTone, Icon: VariantIcon } = VARIANTS[variant];

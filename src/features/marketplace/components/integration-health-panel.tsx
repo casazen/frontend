@@ -27,11 +27,9 @@ type HealthQuery = ReturnType<typeof useMarketplaceHealth>;
 
 interface IntegrationHealthPanelProps {
   query: HealthQuery;
-  /** Whether the person may start the wizard that fixes an integration of this kind (`ota.write`, and the connector for what goes through the channel manager). */
   mayFix: (kind: string) => boolean;
 }
 
-/** What the server says of the quota of the channel manager's API, as it says it:the numbers, the share they make, when they were read and whether it warns. Never a green bar. */
 function QuotaLine({ quota }: { quota: MarketplaceQuota | null }) {
   const { t, i18n } = useTranslation();
 
@@ -70,7 +68,6 @@ interface ProblemRowProps {
   mayFix: (kind: string) => boolean;
 }
 
-/** An integration with a problem: what it is, where it stands, the problem in the words the server sent, when it was last read, and the two things to do about it: fix it, or read its card. */
 function ProblemRow({ item, mayFix }: ProblemRowProps) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -117,14 +114,9 @@ function ProblemRow({ item, mayFix }: ProblemRowProps) {
   );
 }
 
-/**
- * One property in the panel. With problems: the rows with a problem, listed, and the rest counted. With none: one calm line, not a list. A line says «no problem reported» only for
- * the integrations that are active: what waits is counted as waiting, never as working.
- */
 function PropertyGroup({ group, mayFix }: { group: PropertyHealth; mayFix: (kind: string) => boolean }) {
   const { t, i18n } = useTranslation();
   const name = group.propertyName ?? t('marketplace.mine.card.wholeOrganization');
-  // As of when «no problem reported» is said: the oldest read among the integrations it is said of, and how many were never read.
   const { oldest, never } = checkedOf(group.fine);
   const checked = formatInstant(oldest, i18n.language);
   const calm =
@@ -179,7 +171,6 @@ export function IntegrationHealthPanel({ query, mayFix }: IntegrationHealthPanel
   let body;
 
   if (query.isError) {
-    // A failed read says so: what an older read held (the query keeps it) is not the state of the connections now.
     body = <ErrorState testId="marketplace-health-error" title={t('marketplace.health.loadError')} error={query.error} onRetry={() => void query.refetch()} />;
   } else if (!query.data) {
     body = (

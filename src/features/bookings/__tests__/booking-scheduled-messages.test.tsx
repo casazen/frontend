@@ -25,7 +25,6 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: v
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => state.granted.has(permission) }),
 }));
-// The other sections of the tab Soggiorno have their own tests: here they draw nothing and ask nothing.
 vi.mock('@/features/reviews/components/review-invite-panel', () => ({ ReviewInvitePanel: () => null }));
 vi.mock('@/features/service-requests/components/service-requests-card', () => ({ ServiceRequestsCard: () => null }));
 vi.mock('@/features/service-requests/components/service-request-form', () => ({ ServiceRequestForm: () => null }));
@@ -50,7 +49,6 @@ const BOOKING: Booking = {
   updatedAt: '2026-11-01T08:00:00Z',
 };
 
-/** A message as the server answers it: planned for 08:00 in Rome on 24 November, open, with all three actions. */
 function msg(overrides: Partial<ScheduledMessage> = {}): ScheduledMessage {
   return {
     id: 'm-1',
@@ -86,7 +84,6 @@ function axiosError(status: number, data: unknown): AxiosError {
 interface RenderOptions {
   flags?: Partial<FeatureFlags>;
   canWrite?: boolean;
-  /** The whole tab Soggiorno (where the flag and the permission decide), or the section alone. */
   tab?: boolean;
 }
 
@@ -115,7 +112,6 @@ afterEach(() => {
   cleanup();
 });
 
-/** The card of one message. */
 async function cardOf(id: string) {
   const cards = await screen.findAllByTestId('scheduled-message');
   const card = cards.find((item) => item.getAttribute('data-message-id') === id);
@@ -124,7 +120,6 @@ async function cardOf(id: string) {
 }
 
 describe('the section in the tab Soggiorno (E05/F07/US02, NF-71)', () => {
-  // PERMISSION: nothing is drawn and nothing is asked while the flag is off or the person cannot read the booking.
   it('stayTab_FlagOff_DrawsNoSectionAndAsksTheServerNothing', async () => {
     state.granted = new Set(['booking.read', 'booking.write', 'property.write']);
     renderSection({ tab: true, flags: { scheduledMessages: false } });
@@ -153,7 +148,6 @@ describe('the section in the tab Soggiorno (E05/F07/US02, NF-71)', () => {
     expect(within(section).getByRole('heading', { name: 'Messaggi programmati' })).toBeInTheDocument();
     await screen.findByTestId('scheduled-message');
     expect(list).toHaveBeenCalledWith(BOOKING_ID);
-    // Read-only without the permission to write the booking: the messages, never the buttons.
     expect(screen.queryByTestId('scheduled-message-actions')).not.toBeInTheDocument();
   });
 });
@@ -169,7 +163,6 @@ describe('the timeline', () => {
     const cards = await screen.findAllByTestId('scheduled-message');
     expect(cards.map((card) => card.getAttribute('data-message-id'))).toEqual(['m-sooner', 'm-later']);
     const first = within(cards[0]);
-    // 07:00 UTC on 24 November is 08:00 in Rome (UTC+1).
     expect(first.getByTestId('scheduled-message-time')).toHaveTextContent('08:00');
     expect(first.getByTestId('scheduled-message-time')).toHaveTextContent('24');
     expect(first.getByTestId('scheduled-message-status')).toHaveTextContent('Programmato');
@@ -211,11 +204,9 @@ describe('the timeline', () => {
     expect(card.getByTestId('scheduled-message-status')).toHaveTextContent('Inviato');
     expect(card.getByTestId('scheduled-message-sent')).toHaveTextContent('Inviato il');
     expect(card.getByTestId('scheduled-message-sent')).toHaveTextContent('08:01');
-    // The key of a conversation goes in the address escaped, as every link to a conversation does.
     expect(card.getByTestId('scheduled-message-conversation')).toHaveAttribute('href', '/app/short-rent/messages/ota%3Athread-9');
     expect(card.queryByTestId('scheduled-message-actions')).not.toBeInTheDocument();
     expect(card.queryByTestId('scheduled-message-text-block')).not.toBeInTheDocument();
-    // A message that is over has no channel: that is not «no way to the guest».
     expect(card.queryByTestId('scheduled-message-channel')).not.toBeInTheDocument();
   });
 
@@ -246,7 +237,6 @@ describe('the timeline', () => {
     expect(card.getByTestId('scheduled-message-ended')).toHaveTextContent(sentence);
   });
 
-  // The message did go out: a skip that landed while the send was under way leaves the time of the send beside the state, and the screen never says that the guest will not get it.
   it('section_SkippedMessageThatHadAlreadyGoneOut_SaysTheGuestGotIt', async () => {
     list.mockResolvedValue([msg({ status: 'Skipped', skipReason: 'person', sentAt: '2026-11-24T07:00:30Z', text: null, canEdit: false, canSkip: false, canSendNow: false, channel: 'None' })]);
     renderSection();
@@ -254,7 +244,6 @@ describe('the timeline', () => {
     expect((await cardOf('m-1')).getByTestId('scheduled-message-ended')).toHaveTextContent("l'ospite l'ha ricevuto lo stesso");
   });
 
-  // UX-09: a message that did not go out is never told as sent.
   it.each([
     ['manual_verify', 'Non sappiamo se il messaggio è arrivato'],
     ['message_unconfirmed', 'non lo consideriamo inviato'],
@@ -284,14 +273,12 @@ describe('the timeline', () => {
     expect(missing).toHaveTextContent("il codice d'accesso dell'immobile");
     expect(missing).toHaveTextContent("l'orario di arrivo dell'immobile");
     expect(missing).toHaveTextContent("la verifica dell'identità dell'ospite");
-    // The data of the property are completed on the page of the property; the identity of the guest in Documenti, the tab of the booking where the check-in is followed.
     const property = card.getAllByTestId('scheduled-message-fix-property');
     expect(property).toHaveLength(2);
     for (const link of property) expect(link).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}`);
     expect(card.getByTestId('scheduled-message-fix-guest')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
   });
 
-  // PERMISSION: a link never leads to a page that answers «nessun accesso»: without the permission of the page there is the sentence and no link.
   it('section_BlockedMessage_WithoutThePermissionOfThePropertyPage_HasTheSentenceAndNoLinkToIt', async () => {
     state.granted = new Set(['booking.read']);
     list.mockResolvedValue([msg({ status: 'Blocked', blockedReason: 'variable_missing:property_address', missingVariables: ['property_address'] })]);
@@ -302,7 +289,6 @@ describe('the timeline', () => {
     expect(card.queryByTestId('scheduled-message-fix-property')).not.toBeInTheDocument();
   });
 
-  // PRIVACY: a preview issues no link and releases no code, so the text never carries either; what the host reads names them in words.
   it('section_Text_ShowsTheLinkAndTheCodeAsSentencesNeverAsCodesOrBrackets', async () => {
     list.mockResolvedValue([msg({ text: 'Ciao Mario!\nLink: [check_in_link]\nCodice: [access_code]\nRecensione: [review_link]' })]);
     renderSection();
@@ -350,7 +336,6 @@ describe('nothing scheduled', () => {
 });
 
 describe('a read that fails', () => {
-  // DATA: the query keeps the old data when a read fails. A failed read is an unknown state: the old list is never shown as the present one.
   it('section_ARefreshThatFails_IsAnUnknownStateAndNeverTheListThatWasThere', async () => {
     list.mockResolvedValueOnce([msg()]);
     list.mockRejectedValueOnce(new Error('boom'));
@@ -385,7 +370,6 @@ describe('a read that fails', () => {
 });
 
 describe('what the host may do', () => {
-  // PERMISSION: only a person who may write the booking, and only what the server says the message still allows.
   it('actions_WithoutThePermissionToWrite_AreNeverOffered_WhateverTheServerSays', async () => {
     list.mockResolvedValue([msg()]);
     renderSection({ canWrite: false });
@@ -411,7 +395,6 @@ describe('what the host may do', () => {
     expect(some.queryByTestId('scheduled-message-skip')).not.toBeInTheDocument();
     expect(some.getByTestId('scheduled-message-send-now')).toBeInTheDocument();
     expect((await cardOf('m-none')).queryByTestId('scheduled-message-actions')).not.toBeInTheDocument();
-    // Each button says which message it is about, starting with its own words (the way the date is written belongs to the locale data of the machine, so only the time is read).
     expect(all.getByTestId('scheduled-message-edit')).toHaveAccessibleName(/^Modifica il messaggio «Messaggio di arrivo» di .*08:00/);
     expect(all.getByTestId('scheduled-message-skip')).toHaveAccessibleName(/^Salta il messaggio «Messaggio di arrivo» di .*08:00/);
     expect(all.getByTestId('scheduled-message-send-now')).toHaveAccessibleName(/^Invia ora il messaggio «Messaggio di arrivo» di .*08:00/);
@@ -428,7 +411,6 @@ describe('what the host may do', () => {
     expect(within(dialog).getByText('Saltare questo messaggio?')).toBeInTheDocument();
     expect(within(dialog).getByTestId('confirmation-consequences')).toHaveTextContent("L'ospite non riceverà questo messaggio.");
     expect(within(dialog).getByTestId('confirmation-consequences')).toHaveTextContent('Non si può tornare indietro');
-    // Nothing has happened yet.
     expect(skip).not.toHaveBeenCalled();
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Salta il messaggio' }));
@@ -436,7 +418,6 @@ describe('what the host may do', () => {
     await waitFor(() => expect(skip).toHaveBeenCalledWith('m-1'));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Messaggio saltato: l'ospite non lo riceverà."));
-    // The list is read again, so the card shows what the server says now.
     expect((await cardOf('m-1')).getByTestId('scheduled-message-status')).toHaveTextContent('Saltato');
   });
 
@@ -470,7 +451,6 @@ describe('what the host may do', () => {
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Messaggio inviato.'));
   });
 
-  // UX-09: an answer of the server is not a message that went out. Only «Sent» is said as sent; a message the channel did not take, or that the guest cannot be written to, is not.
   it.each([
     ['Failed', 'error'],
     ['Skipped', 'warning'],
@@ -499,7 +479,6 @@ describe('what the host may do', () => {
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Invia ora' }));
 
-    // The dialog stays open and says what the message still waits for; nothing is told as sent.
     const problem = await within(dialog).findByTestId('scheduled-message-dialog-problem');
     expect(problem).toHaveTextContent("Non è partito: manca ancora la verifica dell'identità dell'ospite");
     expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -525,7 +504,6 @@ describe('what the host may do', () => {
     expect(toast.success).not.toHaveBeenCalled();
   });
 
-  // The buttons of a card wait for ANY write of that card: a skip on its way must not be crossed by an edit or a send. Another card is not held.
   it('card_WhileAWriteIsOnItsWay_EveryButtonOfThatCardWaitsAndTheOtherCardsDoNot', async () => {
     list.mockResolvedValue([msg({ id: 'm-a' }), msg({ id: 'm-b', plannedAtUtc: '2026-11-25T07:00:00Z' })]);
     let finish: (message: ScheduledMessage) => void = () => undefined;
@@ -560,15 +538,11 @@ describe('the edit of a message', () => {
     expect(within(dialog).getByText('La modifica vale solo per questa prenotazione: la routine e le altre prenotazioni non cambiano.')).toBeInTheDocument();
     // The stand-in of the preview is the variable it stands for, so that what is saved makes the link when the message goes out.
     expect(within(dialog).getByTestId('scheduled-message-edit-text')).toHaveValue('Ciao Mario, benvenuto! Il tuo link: {{check_in_link}}');
-    // The text of the routine is one click away while the message is not changed.
     expect(within(dialog).getByTestId('scheduled-message-original')).toBeInTheDocument();
-    // «Usa il testo della routine» is for a message that was changed.
     expect(within(dialog).queryByTestId('scheduled-message-edit-use-routine-text')).not.toBeInTheDocument();
-    // Nothing is saved until the host presses «Salva», and only a changed text can be.
     expect(within(dialog).getByTestId('scheduled-message-edit-save')).toBeDisabled();
   });
 
-  // DATA and PRIVACY: what is saved is the text with the variables, never the brackets of the preview; the host's words are not kept in the cache of the mutations afterwards.
   it('edit_Save_SendsTheTextForThisMessageWithTheVariablesAndKeepsNothingInTheCacheOfTheMutations', async () => {
     list.mockResolvedValueOnce([msg()]);
     const saved = msg({ edited: true, text: 'Ciao Mario! Parole riservate dell\'host. Il tuo link: [check_in_link]' });
@@ -579,7 +553,6 @@ describe('the edit of a message', () => {
     fireEvent.click(await screen.findByTestId('scheduled-message-edit'));
     const dialog = await screen.findByRole('dialog');
     const field = within(dialog).getByTestId('scheduled-message-edit-text') as HTMLTextAreaElement;
-    // The host writes with the stand-in of the preview as well as with the variable: both reach the server as the variable.
     fireEvent.change(field, { target: { value: "Ciao Mario! Parole riservate dell'host. Il tuo link: [check_in_link] {{guest_name}}" } });
     await waitFor(() => expect(within(dialog).getByTestId('scheduled-message-edit-save')).toBeEnabled());
     fireEvent.click(within(dialog).getByTestId('scheduled-message-edit-save'));
@@ -588,9 +561,7 @@ describe('the edit of a message', () => {
     expect(edit).toHaveBeenCalledWith('m-1', "Ciao Mario! Parole riservate dell'host. Il tuo link: {{check_in_link}} {{guest_name}}");
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(toast.success).toHaveBeenCalledWith('Messaggio modificato: la modifica vale solo per questa prenotazione.');
-    // The card shows the answer of the server.
     expect((await cardOf('m-1')).getByTestId('scheduled-message-edited')).toHaveTextContent('Modificato');
-    // PRIVACY: no mutation that holds the host's words is left once it is over.
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 
@@ -606,7 +577,6 @@ describe('the edit of a message', () => {
     fireEvent.click(within(dialog).getByTestId('scheduled-message-variable-guest_name'));
 
     await waitFor(() => expect(field).toHaveValue('Ciao {{guest_name}}, benvenuto!'));
-    // Thirteen buttons, one for each variable of a template.
     expect(within(dialog).getByRole('group', { name: 'Inserisci un dato' }).querySelectorAll('button')).toHaveLength(13);
   });
 
@@ -650,7 +620,6 @@ describe('the edit of a message', () => {
 
     fireEvent.click(await screen.findByTestId('scheduled-message-edit'));
     const dialog = await screen.findByRole('dialog');
-    // The text of the routine is not in the answer of the server for a message that was changed: the button that clears the change is the way to it.
     expect(within(dialog).queryByTestId('scheduled-message-original')).not.toBeInTheDocument();
     fireEvent.click(within(dialog).getByTestId('scheduled-message-edit-use-routine-text'));
 
@@ -660,9 +629,6 @@ describe('the edit of a message', () => {
   });
 });
 
-// DATA: the server takes OUT of the text every variable the booking has no value for (`missingVariables`: «Il check-in è dalle {{check_in_time}}.» arrives as «Il check-in è dalle.»). A text saved from it would go
-// without the datum, and the message, no longer held back for it, would go out with a gap in its sentence. The dialog says which data the text lacks, highlights the button that puts each one back, and does
-// not save without them until the host has said that the message may go without.
 describe('the edit of a message whose booking lacks data', () => {
   const blocked = () => msg({ status: 'Blocked', blockedReason: 'variable_missing:check_in_time', missingVariables: ['check_in_time'], text: 'Il check-in è dalle.' });
 
@@ -676,15 +642,12 @@ describe('the edit of a message whose booking lacks data', () => {
     const notice = within(dialog).getByTestId('scheduled-message-edit-missing');
     expect(notice).toHaveTextContent("l'orario di arrivo dell'immobile");
     expect(notice).toHaveTextContent('Se salvi così, il messaggio parte senza questi dati.');
-    // The datum is not in the text the server gave, and the button that puts it back is the one that stands out.
     expect(within(dialog).getByTestId('scheduled-message-edit-text')).toHaveValue('Il check-in è dalle.');
     expect(within(dialog).getByTestId('scheduled-message-variable-check_in_time')).toHaveAttribute('data-missing', 'true');
     expect(within(dialog).getByTestId('scheduled-message-variable-guest_name')).not.toHaveAttribute('data-missing');
-    // The data already filled in are told to become fixed text.
     expect(within(dialog).getByTestId('scheduled-message-edit-fixed-note')).toHaveTextContent('diventano testo fisso e non seguono più la prenotazione');
 
     fireEvent.change(within(dialog).getByTestId('scheduled-message-edit-text'), { target: { value: 'Il check-in è dalle. A presto!' } });
-    // The text is changed, and still there is no silent save: the host has to say that the message may go without the datum.
     expect(within(dialog).getByTestId('scheduled-message-edit-save')).toBeDisabled();
 
     fireEvent.click(within(dialog).getByTestId('scheduled-message-edit-missing-accept'));
@@ -709,7 +672,6 @@ describe('the edit of a message whose booking lacks data', () => {
     fireEvent.click(within(dialog).getByTestId('scheduled-message-variable-check_in_time'));
 
     await waitFor(() => expect(field).toHaveValue('Il check-in è dalle {{check_in_time}}.'));
-    // The datum is back in the text: nothing is left to agree to, the notice goes and the text can be saved.
     expect(within(dialog).queryByTestId('scheduled-message-edit-missing')).not.toBeInTheDocument();
     expect(within(dialog).getByTestId('scheduled-message-variable-check_in_time')).not.toHaveAttribute('data-missing');
     await waitFor(() => expect(within(dialog).getByTestId('scheduled-message-edit-save')).toBeEnabled());
@@ -767,8 +729,6 @@ describe('the edit of a message whose booking lacks data', () => {
   });
 });
 
-// DATA: a planned or a failed message whose booking lacks a datum is held back when its time comes, and the text the server gives has the datum taken out, so it is not what the guest will read yet:
-// «Manca: …» is said for every open message, not only for the blocked one.
 describe('what an open message waits for', () => {
   it.each([
     ['Scheduled', null, 'Programmato'],
@@ -784,7 +744,6 @@ describe('what an open message waits for', () => {
     expect(missing).toHaveTextContent("l'indirizzo dell'immobile");
     expect(card.getByTestId('scheduled-message-fix-property')).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}`);
     expect(card.getByTestId('scheduled-message-missing-note')).toHaveTextContent('resta fermo finché questi dati non ci sono');
-    // The state is still told as it is, and a failed message keeps its own sentence about the last send: the code of the channel is not something the message waits for.
     expect(card.getByTestId('scheduled-message-status')).toHaveTextContent(word);
     if (status === 'Failed') expect(card.getByTestId('scheduled-message-failure')).toHaveTextContent('la chat del portale non è ancora attiva');
     expect(missing.textContent).not.toMatch(/chat/i);
@@ -818,8 +777,6 @@ describe('what an open message waits for', () => {
   });
 });
 
-// DATA: a read that fails in the background (the poll, the focus of the window, the bell) makes the list give way to the unknown state, and the cards, with the dialog of the edit inside, are unmounted. What the host
-// was writing is the host's own words and is kept by the section, not by the card: the messages stay unknown (never the old list), but the text is there when the list is back.
 describe('the text the host is writing when a read fails', () => {
   it('edit_ABackgroundReadThatFails_MakesTheMessagesUnknown_ButTheTextTheHostWasWritingIsNotLost', async () => {
     const written = "Ciao Mario, a presto! Parole riservate dell'host.";
@@ -836,20 +793,17 @@ describe('the text the host is writing when a read fails', () => {
       await client.invalidateQueries({ queryKey: [SCHEDULED_MESSAGES_KEY, BOOKING_ID] });
     });
 
-    // The messages are an unknown state: no card, no dialog, no old data. The host is told that what was written is not lost.
     const problem = await screen.findByTestId('scheduled-messages-error');
     expect(screen.queryByTestId('scheduled-message')).not.toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(within(problem).getByTestId('scheduled-messages-draft-kept')).toHaveTextContent('non è perso');
 
-    // The read works again: the card is back as the server says it is, and the dialog opens on the text the host had written.
     list.mockResolvedValue([msg()]);
     fireEvent.click(screen.getByTestId('scheduled-messages-retry'));
     const second = await screen.findByRole('dialog');
     expect(within(second).getByTestId('scheduled-message-edit-text')).toHaveValue(written);
     expect(screen.queryByTestId('scheduled-messages-error')).not.toBeInTheDocument();
 
-    // And it saves as any other text, then forgets it.
     await waitFor(() => expect(within(second).getByTestId('scheduled-message-edit-save')).toBeEnabled());
     list.mockResolvedValue([msg({ edited: true, text: written })]);
     fireEvent.click(within(second).getByTestId('scheduled-message-edit-save'));
@@ -874,8 +828,6 @@ describe('the text the host is writing when a read fails', () => {
   });
 });
 
-// A second submit of a confirmation while the first is on its way. The card learns that a write is on its way a moment after the press (the mutation cache tells React on the next turn of the clock), so two
-// submits in the same instant both find the button enabled: only one request must go, and the second must not come back as a 409 shown on the card after the first one worked.
 describe('a second submit while the first is on its way', () => {
   it.each([
     ['skip', 'scheduled-message-skip', 'Salta il messaggio', msg({ status: 'Skipped', skipReason: 'person', text: null, canEdit: false, canSkip: false, canSendNow: false, channel: 'None' })],
@@ -890,7 +842,6 @@ describe('a second submit while the first is on its way', () => {
     fireEvent.click(await screen.findByTestId(buttonId));
     const dialog = await screen.findByRole('dialog');
     const confirm = within(dialog).getByRole('button', { name: confirmName });
-    // Two submits before React has been told that a write is on its way: the button is still enabled for both.
     fireEvent.click(confirm);
     fireEvent.click(confirm);
 
@@ -915,12 +866,10 @@ describe('a second submit while the first is on its way', () => {
     fireEvent.click(confirm);
     fireEvent.click(confirm);
 
-    // The refusal is told once, in the dialog, which stays open: a second submit that shared the answer did not close it as if it had worked.
     expect(await within(dialog).findByTestId('scheduled-message-dialog-problem')).toHaveTextContent('sta partendo proprio ora');
     expect(skip).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-    // The guard is let go when the write is over: the host can try again.
     await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Salta il messaggio' })).toBeEnabled());
     fireEvent.click(within(dialog).getByRole('button', { name: 'Salta il messaggio' }));
     await waitFor(() => expect(skip).toHaveBeenCalledTimes(2));

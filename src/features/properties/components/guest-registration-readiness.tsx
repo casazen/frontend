@@ -10,21 +10,13 @@ import { RefreshFailedNotice } from './guest-registration-notice';
 
 interface GuestRegistrationReadinessProps {
   propertyId: string;
-  /** What the property still lacks, as the server lists it (`swiss_municipality_missing`, `ticino_structure_id_missing`); empty when nothing is. */
   missing: readonly string[];
-  /** The property is in Ticino: its notification starts with the structure number, so the field is here. */
   ticino: boolean;
-  /** `property.write`: the number can be changed and the way to the municipality is offered. */
   canWrite: boolean;
-  /** Another change of the same card is on its way: nothing here can be pressed until it is over. */
   busy?: boolean;
-  /** Told with `true` while the structure number is being saved and with `false` when it is over, so the rest of the card waits for it. */
   onPendingChange?: (pending: boolean) => void;
-  /** A wizard sends the host to its own step where the municipality is set, without leaving the process. */
   onFixMunicipality?: () => void;
-  /** A page opens the form of the property, where the municipality is set. A wizard that has no such step offers neither. */
   municipalityHref?: string;
-  /** After the structure number is saved (the activation reads its steps again). */
   onSaved?: () => void;
 }
 
@@ -45,7 +37,6 @@ export function GuestRegistrationReadiness({
   onSaved,
 }: GuestRegistrationReadinessProps) {
   const { t } = useTranslation();
-  // Where the municipality is set: a wizard keeps the host inside its own step, a page opens the form of the property; who may not write is offered neither.
   const fixMunicipality = !canWrite ? null : onFixMunicipality ? (
     <Button type="button" variant="outline" size="sm" disabled={busy} onClick={onFixMunicipality} data-testid="guest-registration-fix-municipality">
       {t('guestRegistration.missing.fixMunicipality')}
@@ -90,14 +81,10 @@ interface StructureIdBlockProps {
   onSaved?: () => void;
 }
 
-/** The number of the structure: the field for who may write, its value for who may not. It reads what the property has first, and says so when it cannot. */
 function StructureIdBlock({ propertyId, canWrite, busy, onPendingChange, onSaved }: StructureIdBlockProps) {
   const { t } = useTranslation();
   const detail = usePropertyDetail(propertyId);
 
-  // A read that failed is not the old answer: TanStack Query keeps the data it had. What the server says about the property (404, 403), or no number to show at all, is told as a failure
-  // and replaces the field. A refresh that did not work (the network, a 5xx) with the number on screen does not: the field stays with what is being typed, and a notice says that what is
-  // shown may not be up to date.
   const status = detail.isError ? getHttpStatus(detail.error) : undefined;
   if (detail.isError && (!detail.data || status === 404 || status === 403)) {
     return (
@@ -133,7 +120,6 @@ function StructureIdBlock({ propertyId, canWrite, busy, onPendingChange, onSaved
     );
   }
 
-  // The form starts from the number the property has: it is made again only when that number changes under it (saved, or changed on another device), never while it is typed in.
   return (
     <>
       {notice}

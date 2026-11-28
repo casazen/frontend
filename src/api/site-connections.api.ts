@@ -8,11 +8,6 @@ import { ApiClient } from './client';
  * while the embeddable pages (`SiteEmbed`) are off. The paths are relative to the API base URL, which already ends in `/api`.
  */
 export const SiteConnectionsApi = {
-  /**
-   * The administrator confirms that a site may connect: the answer is the address the browser goes back to on the site (`redirectUrl`, with the one-time code and the state added).
-   * 400 `site_connection_invalid_request` for any request that breaks a rule of the contract; 429 past ten in ten minutes for the same person. A refusal of the account (401, 403) stays on
-   * the page that asked, which says that only an administrator of the agency can connect a site (`localAuthRecovery`).
-   */
   authorize: async (orgId: string, payload: SiteConnectionAuthorizeRequest): Promise<SiteConnectionAuthorizeResponse> => {
     const path = `/orgs/${orgId}/site-connections/authorize`;
     const answer = await ApiClient.post<unknown>(path, payload, { localAuthRecovery: true });
@@ -20,7 +15,6 @@ export const SiteConnectionsApi = {
     return answer as SiteConnectionAuthorizeResponse;
   },
 
-  /** The active connected sites of the org, the newest first (the revoked ones are not listed). */
   list: async (orgId: string): Promise<SiteConnection[]> => {
     const path = `/orgs/${orgId}/site-connections`;
     const data = await ApiClient.get<unknown>(path);
@@ -28,6 +22,5 @@ export const SiteConnectionsApi = {
     return data as SiteConnection[];
   },
 
-  /** «Scollega»: the credential of the site stops working at once. 204; 404 `site_connection_not_found` for a connection that is not one of the org. */
   revoke: (orgId: string, connectionId: string): Promise<void> => ApiClient.delete<void>(`/orgs/${orgId}/site-connections/${encodeURIComponent(connectionId)}`),
 };

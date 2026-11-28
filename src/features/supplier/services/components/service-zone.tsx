@@ -8,10 +8,8 @@ import type { SupplierProfile } from '@/types/supplier';
 import { ZONE_PATH } from '../lib/service-paths';
 
 const T = 'supplier.services.zone';
-/** More than this and the list says "and N more": the page is about the service, not the map. */
 const SHOWN = 6;
 
-/** The comuni the supplier works in, as names: the ones chosen from the official list, then the ones written as text. */
 function zoneNames(profile: SupplierProfile, codeOnly: (code: string) => string): string[] {
   const codes = profile.comuneIstatCodes ?? [];
   const described = new Map((profile.operatingComuni ?? []).map((comune) => [comune.istatCode, comune]));
@@ -24,10 +22,6 @@ function zoneNames(profile: SupplierProfile, codeOnly: (code: string) => string)
   ];
 }
 
-/**
- * Where the service is offered. The zone is not a choice of the service: it is the supplier's, the same for every service
- * (D10, zones are comuni), so this only shows it and says where to change it.
- */
 export function ServiceZone() {
   const { t } = useTranslation();
   const { data: profile, isLoading, isError } = useSupplierProfile();

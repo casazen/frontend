@@ -21,7 +21,6 @@ vi.mock('@/api/dashboard.api', () => ({
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
 vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => ({ user: null }) }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: [], isSuccess: true }) }));
-vi.mock('../components/home-next-step', () => ({ HomeNextStep: () => null }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
@@ -39,7 +38,6 @@ function renderDashboard(otaPartnerApi: boolean) {
   );
 }
 
-// FD-20 / D10 (A2-09): the dashboard called OTA endpoints that do not exist; the widget is behind otaPartnerApi.
 describe('DashboardPage OTA widget', () => {
   beforeEach(() => {
     vi.mocked(otaApi.getAll).mockReset();

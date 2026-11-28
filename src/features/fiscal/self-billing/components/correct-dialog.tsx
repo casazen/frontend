@@ -45,7 +45,6 @@ export function CorrectDialog({ item, onClose, onCorrected }: { item: SelfBillin
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        // While the call is on its way the dialog stays (Esc, the cross and a click outside included): closed, it would leave a failure with nowhere to be told.
         if (!open && !correct.isPending) onClose();
       }}
       title={t('selfBilling.correct.title')}

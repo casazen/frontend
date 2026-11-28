@@ -14,7 +14,6 @@ export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarousel
   const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [failedUrls, setFailedUrls] = useState<string[]>([]);
-  // Absolute storage URLs only: a legacy relative path would load the SPA's index.html on Vercel.
   const photos = displayableMediaUrls(photoUrls);
   const hasPhotos = photos.length > 0;
   const current = hasPhotos ? photos[index % photos.length] : undefined;
@@ -24,8 +23,6 @@ export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarousel
   const goNext = () => setIndex((i) => ((i % photos.length) + 1) % photos.length);
 
   return (
-    // No box around it: the photo is the picture of the page. The shape follows the screen (taller on a phone, wide on a
-    // computer, never more than 24 rem) and a property without photos gets a short strip, not a screen of nothing.
     <div
       className={cn(
         'relative w-full overflow-hidden rounded-2xl bg-muted',

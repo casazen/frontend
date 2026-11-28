@@ -8,7 +8,6 @@ import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { inviteHref } from '@/site/site-links';
 import { sitePageById, type SitePageId } from '@/site/site-pages';
 
-/** The pages of the public site of CasaZen that the header leads to (`src/site/site-pages.ts`). */
 const SITE_NAV: { id: SitePageId; key: string }[] = [
   { id: 'shortRent', key: 'site.nav.shortRent' },
   { id: 'longRent', key: 'site.nav.longRent' },
@@ -31,7 +30,6 @@ const NAV_LINK = 'text-[var(--cz-public-muted)] hover:text-[var(--cz-public-text
  */
 export function BrandHeader() {
   const { t } = useTranslation();
-  // The invitation request (only with a contact address), the same as the header of the public site.
   const inviteLink = inviteHref(supportConfig.email, t('site.invite.subject'));
 
   return (

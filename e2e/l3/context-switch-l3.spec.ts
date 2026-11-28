@@ -1,9 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { requireE2eCredentials } from '../helpers/env';
 
-/**
- * L3 — workspace context switching against real API.
- */
 test.describe('L3 context workspace switch', () => {
   test.skip(!process.env.E2E_LOCAL && !process.env.E2E_STAGING, 'Set E2E_LOCAL=1 or E2E_STAGING=1');
   test.setTimeout(120_000);
@@ -13,7 +10,6 @@ test.describe('L3 context workspace switch', () => {
   });
 
   test('AC: /api/me/contexts returns 200 and UI shows workspace chrome', async ({ page }) => {
-    // Staging UI requests use the Vite proxy to the real Railway API.
     const apiBase = process.env.E2E_STAGING === '1'
       ? '/api'
       : (process.env.E2E_LOCAL_API_URL ?? 'http://localhost:5000/api');

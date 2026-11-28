@@ -26,10 +26,8 @@ const LONG_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', y
 /** The permission of the endpoints the actions of this block call (the retry, and the save of the guests in the layer). */
 const SUBMIT_PERMISSION = 'alloggiati.submit';
 
-/** The permission the route of the check-in wizard asks: the link to it is offered only to who can open it. */
 const WIZARD_PERMISSION = 'booking.write';
 
-/** One guest the channel manager did not take: which one, why in plain words (a place names the field to correct) and when it was last tried. */
 function GuestError({ guest }: { guest: AlloggiatiChannelManagerGuestDto }) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
@@ -46,10 +44,6 @@ function GuestError({ guest }: { guest: AlloggiatiChannelManagerGuestDto }) {
   );
 }
 
-/**
- * The way to the step that sends a corrected guest: the guest check-in wizard, where «Conferma e invia» passes the guests to the channel manager (with the automatic send of the organization
- * on, a corrected guest goes by itself). It is off while a request of the block is on its way, like the other buttons.
- */
 function OpenCheckIn({ bookingId, busy }: { bookingId: string; busy: boolean }) {
   const { t } = useTranslation();
 

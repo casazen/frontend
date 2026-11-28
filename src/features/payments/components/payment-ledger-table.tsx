@@ -31,13 +31,11 @@ function Figure({ testId, children }: { testId: string; children: ReactNode }) {
   );
 }
 
-/** The words that say where the money comes from; a kind this client has no words for (the server is newer) is shown as it came. */
 function sourceWords(t: TFunction, line: PaymentLedgerLine): string {
   const key = ledgerSourceKey(line);
   return key ? t(key) : line.kind;
 }
 
-/** The fiscal document of the booking: what it is, its number when it has one, its status and whether it was collected; a link when the page of the documents can be opened. */
 function LedgerDocument({ document, href }: { document: PaymentLedgerDocument | null | undefined; href: string | null }) {
   const { t } = useTranslation();
   if (!document) return <MissingValue label={t('paymentLedger.document.none')} testId="payment-ledger-document-none" />;
@@ -67,25 +65,17 @@ function LedgerDocument({ document, href }: { document: PaymentLedgerDocument | 
 }
 
 interface PaymentLedgerTableProps {
-  /** The lines of the ledger, as the server sent them and in its order (newest first). */
   lines: readonly PaymentLedgerLine[];
-  /** The name of the table for a screen reader. */
   label: string;
-  /** The code of the booking of each line, as a link to it: for the ledger of a period. The ledger of one booking leaves it out. */
   showBooking?: boolean;
-  /** The page of the fiscal documents, when it can be opened from here (`documentLinkOf`); without it the document is told in words. */
   documentHref?: string | null;
   isLoading?: boolean;
   isError?: boolean;
   error?: unknown;
-  /** What failed to load, already translated. */
   errorTitle?: string;
   onRetry?: () => void;
-  /** The rows on screen are being read again (the next page, a payment just recorded): they stay, quieter, until the new ones are there. */
   isRefreshing?: boolean;
-  /** What the table says when the ledger has no line: the props of an `EmptyState`. */
   empty?: ComponentProps<typeof EmptyState>;
-  /** Under the table: the pages. */
   footer?: ReactNode;
   testId?: string;
 }
@@ -264,10 +254,6 @@ export function PaymentLedgerTable({
   );
 }
 
-/**
- * The state of a line: the badge the payments already use, with the same words, so «Da incassare» is one thing everywhere. Only `Paid` is shown as collected;
- * a code this client does not know goes to the badge as it came and is drawn neutral.
- */
 function StateBadge({ line }: { line: PaymentLedgerLine }) {
   return <StatusBadge kind="payment" status={ledgerBadgeStatus(line.state)} data-testid="payment-ledger-state" data-state={line.state} />;
 }

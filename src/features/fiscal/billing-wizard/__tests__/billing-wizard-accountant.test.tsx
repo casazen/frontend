@@ -28,7 +28,6 @@ vi.mock('@/api/billing-setup.api', () => ({
   applyMandateTemplate: vi.fn(),
   getBillingPreview: vi.fn(),
 }));
-// The three calls of the settings of the send to the accountant are replaced; the rest of the module (the reader of the 422 «too large») is the real one.
 vi.mock('@/api/accountant-package.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/accountant-package.api')>();
   return { ...actual, accountantPackageApi: { ...actual.accountantPackageApi, getSettings: vi.fn(), updateSettings: vi.fn(), sendTest: vi.fn() } };
@@ -55,13 +54,11 @@ vi.mock('@/hooks/use-workspace', () => ({
 vi.mock('@/hooks/use-feature-flags', () => ({
   useFeatureFlags: () => ({ flags: { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: true, ...env.flags }, isLoading: false }),
 }));
-// The plan and the listings are only asked for the administrator of an organization (the agency's steps): the plan is whatever the test says, and there are no listings.
 vi.mock('@/hooks/use-agency-plan', () => ({ useAgencyPlan: vi.fn() }));
 vi.mock('@/queries/use-properties', () => ({
   useProperties: () => ({ data: [], isPending: false, isError: false, error: null, refetch: vi.fn() }),
 }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
@@ -70,10 +67,8 @@ const getSettings = vi.mocked(accountantPackageApi.getSettings);
 const updateSettings = vi.mocked(accountantPackageApi.updateSettings);
 const sendTest = vi.mocked(accountantPackageApi.sendTest);
 
-/** What the server answers for an organization that saved nothing: no address, the send off, the day 3 and every folder. */
 const NOTHING_SAVED: AccountantPackageSettings = { enabled: false, email: null, sendDay: 3, contents: [...ACCOUNTANT_PACKAGE_FOLDERS], lastSend: null, updatedAt: null };
 
-/** An organization that sends every month, from the 7th, two folders, to an address, and whose last send went out on 3 November for October. */
 const SAVED: AccountantPackageSettings = {
   enabled: true,
   email: 'studio@esempio.it',
@@ -85,11 +80,9 @@ const SAVED: AccountantPackageSettings = {
 
 const ADDRESS = 'studio@esempio.it';
 
-/** The administrator of the organization (the owner of the account context) and a collaborator who writes the setup but does not administer the organization. */
 const ADMIN = [{ contextKey: 'account', roleKey: 'org_owner' }];
 const COLLABORATOR = [{ contextKey: 'short-rent', roleKey: 'property_manager' }];
 
-/** A refusal of the server, with the body that was sent (an error of axios holds it in its `config`). */
 function refusal(status: number, data: unknown, sent?: unknown): AxiosError {
   const config = { headers: new AxiosHeaders(), data: sent === undefined ? undefined : JSON.stringify(sent) } as InternalAxiosRequestConfig;
   return new AxiosError('failed', 'ERR_BAD_REQUEST', config, undefined, { status, statusText: '', headers: {}, config, data });
@@ -135,13 +128,11 @@ async function onStep(step: string) {
   await waitFor(() => expect(wizard()).toHaveAttribute('data-step', step), WAIT);
 }
 
-/** The step with its form on screen: the settings are read. */
 async function formOpen() {
   await onStep('accountant');
   await waitFor(() => expect(screen.getByTestId('billing-accountant-email')).toBeInTheDocument(), WAIT);
 }
 
-/** «Continua», once the button is enabled: a click on a button that is still switched off does nothing, and the test would then wait for a step that never comes. */
 async function next() {
   await waitFor(() => expect(screen.getByTestId('fiscal-billing-next')).toBeEnabled(), WAIT);
   fireEvent.click(screen.getByTestId('fiscal-billing-next'));
@@ -183,7 +174,6 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     renderWizard();
     await formOpen();
 
-    // The step has its own title, and the wizard says it is optional.
     expect(screen.getByRole('heading', { name: text('billingWizard.steps.accountant.title') })).toBeInTheDocument();
     expect(screen.getByText(text('billingWizard.steps.accountant.purpose'))).toBeInTheDocument();
     expect(screen.getByTestId('billing-accountant-email')).toHaveValue(ADDRESS);
@@ -192,12 +182,10 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     expect(screen.getByTestId('billing-accountant-folder-guestDocuments')).toBeChecked();
     expect(screen.getByTestId('billing-accountant-folder-collections')).toBeChecked();
     expect(screen.getByTestId('billing-accountant-folder-touristTax')).not.toBeChecked();
-    // The last send is told with its month and its day; the answer of the queue is not a delivery, and the page does not say it was.
     expect(screen.getByTestId('billing-accountant-last-send')).toHaveAttribute('data-result', 'sent');
     expect(screen.getByTestId('billing-accountant-last-send')).toHaveTextContent('ottobre 2026');
   });
 
-  // «We try again every morning» is a promise about the server, which tries again only while the monthly send is on: with it off the page says that nothing is tried again by itself.
   it.each<[string, boolean, string, string]>([
     ['TheMonthlySendOn', true, 'billingWizard.accountant.lastSend.retryOn', 'billingWizard.accountant.lastSend.retryOff'],
     ['TheMonthlySendOff', false, 'billingWizard.accountant.lastSend.retryOff', 'billingWizard.accountant.lastSend.retryOn'],
@@ -222,7 +210,6 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     await onStep('summary');
     expect(updateSettings).not.toHaveBeenCalled();
     expect(sendTest).not.toHaveBeenCalled();
-    // The row of the summary says what is saved, without the address of a third party.
     const summary = within(screen.getByTestId('billing-step-summary'));
     expect(summary.getByText(text('billingWizard.summary.items.accountant'))).toBeInTheDocument();
     expect(summary.getByText(text('billingWizard.summary.accountant.monthly', { day: 7 }))).toBeInTheDocument();
@@ -242,12 +229,9 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     await onStep('summary');
 
     expect(updateSettings).toHaveBeenCalledTimes(1);
-    // The settings go together, as a whole: the address cut at its ends, the day and the folders as they are now (the folder that was ticked is out; this person may not choose the owner folders).
     expect(updateSettings.mock.calls[0][0]).toEqual({ enabled: true, email: ADDRESS, sendDay: 10, contents: ['guestDocuments', 'collections'] });
     expect(within(screen.getByTestId('billing-step-summary')).getByText(text('billingWizard.summary.accountant.monthly', { day: 10 }))).toBeInTheDocument();
-    // Nothing of the settings of the send is saved as a section of the billing setup.
     expect(api.saveBillingSetupSection).not.toHaveBeenCalledWith('accountant', expect.anything());
-    // The way on moves the step in the address of the page and nothing else: the address of the accountant is not in it.
     expect(routerAddress()).toContain('step=summary');
     expect(routerAddress()).not.toContain('studio');
   });
@@ -258,12 +242,10 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
 
     turnMonthlyOn();
     await next();
-    // The message is on the field, and the summary of the problems of the step says it too.
     await waitFor(() => expect(screen.getAllByText(text('billingWizard.errors.accountantEmailMissing')).length).toBeGreaterThan(0), WAIT);
     expect(wizard()).toHaveAttribute('data-step', 'accountant');
     expect(updateSettings).not.toHaveBeenCalled();
 
-    // The address is written: the problem goes and the step is saved.
     write(ADDRESS);
     await waitFor(() => expect(screen.queryAllByText(text('billingWizard.errors.accountantEmailMissing'))).toHaveLength(0), WAIT);
     await next();
@@ -291,12 +273,9 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     await next();
     await waitFor(() => expect(screen.getAllByText(text('billingWizard.errors.accountantEmail')).length).toBeGreaterThan(0), WAIT);
     expect(wizard()).toHaveAttribute('data-step', 'accountant');
-    // What was typed is still there.
     expect(screen.getByTestId('billing-accountant-email')).toHaveValue(ADDRESS);
   });
 
-  // Privacy rule: the address of the accountant is the personal data of a third party. A refused save keeps the answer of the server and not the request that carried the address, and nothing
-  // of the mutation outlives the page (`gcTime: 0`).
   it('AccountantStep_ARefusedSave_KeepsNeitherTheAddressNorTheRequestAndNothingOutlivesThePage', async () => {
     updateSettings.mockRejectedValue(refusal(422, { code: 'accountant_package_recipient_invalid' }, { email: ADDRESS }));
     const { client } = renderWizard();
@@ -314,7 +293,6 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
       expect((error as AxiosError).response?.status).toBe(422);
       expect(JSON.stringify(error)).not.toContain(ADDRESS);
     }
-    // The address is in the form of the page and nowhere else: not in the address of the page (the router's: the step is there, so the check is not looking at an empty address), not in the browser's storage.
     expect(routerAddress()).toContain('step=accountant');
     expect(routerAddress()).not.toContain('studio');
     expect(routerAddress()).not.toContain(ADDRESS);
@@ -330,7 +308,6 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     renderWizard();
     await formOpen();
 
-    // The address is not a plain one: it is not kept. The day is.
     write('non-un-indirizzo');
     fireEvent.change(screen.getByTestId('billing-accountant-day'), { target: { value: '12' } });
     await waitFor(() => expect(screen.getByTestId('billing-save-exit')).toBeEnabled(), WAIT);
@@ -356,7 +333,6 @@ describe('«Invia una prova» (E15/F02/US02/T01)', () => {
     const result = await screen.findByTestId('billing-accountant-test-result', undefined, WAIT);
     expect(updateSettings).toHaveBeenCalledTimes(1);
     expect(sendTest).toHaveBeenCalledTimes(1);
-    // The test goes to the address that is SAVED: the address of the screen is saved first, so the e-mail never goes to an older one.
     expect(updateSettings.mock.invocationCallOrder[0]).toBeLessThan(sendTest.mock.invocationCallOrder[0]);
     expect(updateSettings.mock.calls[0][0]).toMatchObject({ enabled: true, email: ADDRESS });
     expect(result).toHaveTextContent('ottobre 2026');
@@ -364,7 +340,6 @@ describe('«Invia una prova» (E15/F02/US02/T01)', () => {
     expect(result).toHaveTextContent(/in coda/i);
     expect(result).not.toHaveTextContent(/consegnat|recapitat/i);
 
-    // The settings are read again (the month sent is recorded), and what the person typed is still what they typed.
     await waitFor(() => expect(getSettings.mock.calls.length).toBeGreaterThan(1), WAIT);
     expect(screen.getByTestId('billing-accountant-email')).toHaveValue(ADDRESS);
   });
@@ -415,7 +390,6 @@ describe('«Invia una prova» (E15/F02/US02/T01)', () => {
     expect(screen.queryByTestId('billing-accountant-test-result')).not.toBeInTheDocument();
   });
 
-  // A call with no answer at all (the ten minutes of the test ran out, the connection dropped: no `response`) may have gone through: the server may have made the package and queued the e-mail.
   it.each([
     ['TheTenMinutesRanOut', AxiosError.ECONNABORTED, 'timeout of 600000ms exceeded'],
     ['TheConnectionDropped', AxiosError.ERR_NETWORK, 'Network Error'],
@@ -455,7 +429,6 @@ describe('«Invia una prova» (E15/F02/US02/T01)', () => {
     expect(failure).toHaveTextContent(text('billingWizard.accountant.test.tooLargeCount', { files: 5200, max: 5000 }));
   });
 
-  // Defect class «a button is pressed while another request of the card is on its way»: while the test is on its way nothing else of the wizard can start a request.
   it('AccountantTest_WhileItIsOnItsWay_TheTestTheWayOnAndTheWayOutTakeNoSecondPress', async () => {
     getSettings.mockResolvedValue(SAVED);
     let answer: (queued: AccountantPackageEmailQueued) => void = () => undefined;
@@ -472,7 +445,6 @@ describe('«Invia una prova» (E15/F02/US02/T01)', () => {
     expect(screen.getByTestId('billing-accountant-test-button')).toBeDisabled();
     expect(screen.getByTestId('fiscal-billing-next')).toBeDisabled();
     expect(screen.getByTestId('billing-save-exit')).toBeDisabled();
-    // The way back is shut as well: the test takes minutes, and its answer lives in this step (leaving it would lose the answer).
     expect(screen.getByTestId('fiscal-billing-back')).toBeDisabled();
     expect(sendTest).toHaveBeenCalledTimes(1);
 
@@ -495,7 +467,6 @@ describe('who sees the step, and when (E15/F02/US02/T01)', () => {
 
     expect(screen.queryByTestId('billing-accountant-email')).not.toBeInTheDocument();
     expect(screen.queryByTestId('billing-accountant-test-button')).not.toBeInTheDocument();
-    // The step is optional: «Continua» moves on, nothing is sent, and the summary does not pretend to know the answer.
     await next();
     await onStep('summary');
     expect(updateSettings).not.toHaveBeenCalled();
@@ -510,7 +481,6 @@ describe('who sees the step, and when (E15/F02/US02/T01)', () => {
 
     expect(screen.getByTestId('billing-read-only')).toHaveTextContent(text('billingWizard.readOnly.noPermission'));
     const fields = Array.from(screen.getByTestId('billing-step-accountant').querySelectorAll<HTMLElement>('input, select, textarea, button'));
-    // The address, the monthly send, the day, the three folders this person may choose and the test.
     expect(fields.length).toBeGreaterThanOrEqual(7);
     for (const field of fields) expect(field, field.getAttribute('data-testid') ?? field.tagName).toBeDisabled();
     await next();
@@ -519,8 +489,6 @@ describe('who sees the step, and when (E15/F02/US02/T01)', () => {
     expect(sendTest).not.toHaveBeenCalled();
   });
 
-  // Permission rule: a refusal (403) of the test, or of the save that goes before it, means the role or the reach of the person is not what the settings need: the whole wizard turns read-only, as a
-  // refused save of «Continua» does, and nothing else of the step can be pressed.
   it.each<[string, 'send' | 'save']>([
     ['TheTest', 'send'],
     ['TheSaveThatGoesBeforeTheTest', 'save'],
@@ -538,11 +506,9 @@ describe('who sees the step, and when (E15/F02/US02/T01)', () => {
     const controls = Array.from(screen.getByTestId('billing-step-accountant').querySelectorAll<HTMLElement>('input, select, textarea, button'));
     expect(controls.length).toBeGreaterThanOrEqual(6);
     for (const control of controls) expect(control, control.getAttribute('data-testid') ?? control.tagName).toBeDisabled();
-    // The test is asked only when the save that goes before it went through.
     expect(sendTest).toHaveBeenCalledTimes(where === 'send' ? 1 : 0);
   });
 
-  // Flag rule: with the package of the accountant off the wizard is the one it was, and nothing of the settings is asked of the server.
   it('AccountantStep_FlagOff_HasNoStepNoLabelAndAsksNothingOfTheServer', async () => {
     env.flags = {};
     renderWizard();
@@ -574,14 +540,10 @@ describe('who sees the step, and when (E15/F02/US02/T01)', () => {
   });
 });
 
-// Permission rule (backend `AccountantPackageSettingsService`): on an agency's organization only a caller who holds `agency.statement.view` may choose the folders that carry the owner accounting; for
-// anyone else the save is refused (422 `accountant_package_owner_accounting_required`). The wizard's `agency` is the administrator of an organization on the agency plan: the folders are offered and sent
-// only to that person.
 describe('the folders of the owner accounting are for who may choose them (E15/F02/US02/T01)', () => {
   const OWNER_FOLDERS = ['ownerInvoices', 'statements', 'agencySummary', 'vat', 'withholding'];
   const OTHER_FOLDERS = ['guestDocuments', 'touristTax', 'collections'];
 
-  /** Who looks at the step: the administrator of an organization on the agency plan, the administrator of one that is not an agency, or a collaborator (of an organization on the agency plan: the plan alone decides nothing). */
   function lookingAs(who: 'agencyAdministrator' | 'administrator' | 'collaborator') {
     env.contexts = who === 'collaborator' ? COLLABORATOR : ADMIN;
     env.flags = { accountantPackage: true, agencyTier: true };
@@ -615,7 +577,6 @@ describe('the folders of the owner accounting are for who may choose them (E15/F
     for (const folder of OTHER_FOLDERS) expect(screen.getByTestId(`billing-accountant-folder-${folder}`), folder).toBeChecked();
     expect(screen.getByText(text('billingWizard.accountant.contents.hintNoOwnerFolders'))).toBeInTheDocument();
 
-    // The server holds every folder (its default for an organization that saved none): what this person saves holds none of the five, which the backend would refuse on an agency's organization.
     write(ADDRESS);
     await next();
     await onStep('summary');
@@ -629,7 +590,6 @@ describe('the folders of the owner accounting are for who may choose them (E15/F
     renderWizard();
     await formOpen();
 
-    // What they cannot see is not ticked and does not count as a folder chosen: the save would be refused for it.
     for (const folder of OTHER_FOLDERS) expect(screen.getByTestId(`billing-accountant-folder-${folder}`), folder).not.toBeChecked();
     fireEvent.change(screen.getByTestId('billing-accountant-day'), { target: { value: '12' } });
     await next();
@@ -651,7 +611,6 @@ describe('the folders of the owner accounting are for who may choose them (E15/F
 
     await next();
     await onStep('summary');
-    // The owner folders an administrator chose stay as they are: only a change of what this person sees is saved.
     expect(updateSettings).not.toHaveBeenCalled();
   });
 
@@ -665,7 +624,6 @@ describe('the folders of the owner accounting are for who may choose them (E15/F
     await pressTest();
     const failure = await screen.findByTestId('billing-accountant-test-failure', undefined, WAIT);
     expect(failure).toHaveTextContent(text('billingWizard.accountant.test.ownerAccounting'));
-    // The refusal is about the test: the person has no owner folder to take out, so none of the folders is blamed.
     expect(screen.queryByTestId('billing-accountant-contents-error')).not.toBeInTheDocument();
   });
 });

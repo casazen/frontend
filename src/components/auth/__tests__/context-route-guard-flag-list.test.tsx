@@ -35,7 +35,6 @@ function renderDocumentsRoute(flags: Partial<FeatureFlags>, isLoading = false) {
   );
 }
 
-// E06/F03/US04/T01: the page of the fiscal documents serves two sources, each behind a flag of its own: it exists while either of them is on.
 describe('ContextRouteGuard with a list of feature flags', () => {
   beforeEach(() => {
     vi.mocked(useWorkspace).mockReturnValue({

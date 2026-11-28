@@ -13,16 +13,10 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { formatBookingCode, isValidBookingCode } from '@/lib/booking-code';
 import type { GuestBookingEmailLookup, GuestBookingPhoneLookup } from '@/types';
 
-/**
- * What the form gives back when the guest sends it: the booking code as the backend expects it (`XXXXX-XXXXX`) and ONE proof, the email or the last four digits of the
- * phone. It has no site: the page that holds the form knows which one it is and adds `orgSlug` (`GuestBookingLookupPayload`). With the phone the key `email` is absent.
- */
 export type GuestAccessProof = Omit<GuestBookingEmailLookup, 'orgSlug'> | Omit<GuestBookingPhoneLookup, 'orgSlug'>;
 
-/** The two ways to prove a booking (NF-143). */
 type ProofMethod = 'email' | 'phone';
 
-// The messages are i18n keys: FormFieldError translates them when rendering.
 const bookingCodeField = z
   .string()
   .trim()
@@ -35,10 +29,8 @@ const emailField = z
   .min(1, 'publicBooking.guestBookings.emailRequired')
   .email('publicBooking.emailValidation');
 
-/** Exactly four digits: no letters, no spaces, no sign. */
 const phoneLast4Field = z.string().trim().regex(/^\d{4}$/, 'publicBooking.guestBookings.proofPhoneInvalid');
 
-// The two forms have the same fields (one shape for react-hook-form); each checks only the proof it is for.
 const emailLookupSchema = z.object({ bookingCode: bookingCodeField, email: emailField, phoneLast4: z.string() });
 const phoneLookupSchema = z.object({ bookingCode: bookingCodeField, email: z.string(), phoneLast4: phoneLast4Field });
 
@@ -47,7 +39,6 @@ type LookupForm = z.infer<typeof emailLookupSchema>;
 interface GuestAccessFormProps {
   /** The code the form starts with: the one of the link of an email, or of the session that ended; empty otherwise. */
   initialCode: string;
-  /** A request is on its way: the fields and the button wait. */
   pending: boolean;
   onSubmit: (proof: GuestAccessProof) => void;
 }
@@ -67,7 +58,6 @@ export function GuestAccessForm({ initialCode, pending, onSubmit }: GuestAccessF
   const { flags } = useFeatureFlags();
   const proofChoice = flags.whiteLabelHost;
   const [chosen, setChosen] = useState<ProofMethod>('email');
-  // A flag that goes off while the form is open leaves the email, the one way that is always there.
   const method: ProofMethod = proofChoice ? chosen : 'email';
 
   const {
@@ -83,7 +73,6 @@ export function GuestAccessForm({ initialCode, pending, onSubmit }: GuestAccessF
 
   const chooseMethod = (next: ProofMethod) => {
     setChosen(next);
-    // What was typed for the other proof, and what was said about it, does not stay behind.
     resetField('email');
     resetField('phoneLast4');
     clearErrors(['email', 'phoneLast4']);

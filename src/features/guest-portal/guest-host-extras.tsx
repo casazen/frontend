@@ -50,7 +50,6 @@ export function GuestHostExtras({ path, language }: { path: string; language: La
   const returnUrl = new URL(window.location.pathname, window.location.origin);
   returnUrl.search = new URLSearchParams({ lang: language, page: 'extras' }).toString();
 
-  // The cards sit on the page (UX round 2026-11): no padded box around them, and in an order paying is the one filled button.
   return (
     <div className="stay-stack" data-testid="guest-host-extras">
       {content.isPending && <p role="status">{labels[1]}</p>}

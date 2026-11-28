@@ -30,8 +30,6 @@ const { isSiteServed, renderSitePages, renderSiteSitemap, SITE_ASSET_DIR } = awa
   pathToFileURL(resolve(ssrDir, 'entry-server.js')).href
 );
 
-// Production without the company data (the company does not exist yet): the site is not served, so its files are not
-// published either (they would be reachable at /_site/…). `src/site/site-gate.ts`.
 if (!isSiteServed(process.env.VERCEL_ENV)) {
   console.log('prerender-site: production without the company data (VITE_LEGAL_NAME, VITE_LEGAL_VAT_ID): the public site is not built');
   await rm(templatePath);
@@ -39,7 +37,6 @@ if (!isSiteServed(process.env.VERCEL_ENV)) {
   process.exit(0);
 }
 
-// The year of the copyright line, in Italy (the build may run in another time zone around New Year).
 const year = Number(new Intl.DateTimeFormat('en', { timeZone: 'Europe/Rome', year: 'numeric' }).format(new Date()));
 
 const outDir = resolve(dist, SITE_ASSET_DIR);

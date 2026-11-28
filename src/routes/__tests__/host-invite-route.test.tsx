@@ -17,7 +17,6 @@ describe('route /invito-host/:token', () => {
   });
 
   it('Route_InviteLink_IsOutsideTheOnboardingGuardAndTheProtectedRoute', () => {
-    // A new account must reach the page (and accept the invite) before any onboarding redirect, and without a loop.
     const types = (matches ?? []).map((m) => (isValidElement(m.route.element) ? m.route.element.type : null));
 
     expect(types).not.toContain(OnboardingGuard);

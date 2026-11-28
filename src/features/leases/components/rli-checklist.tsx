@@ -18,7 +18,6 @@ interface Props {
 
 type ChecklistItemState = 'done' | 'failed' | 'todo';
 
-/** Marks of the checklist (symbols, not text): ✓ only for a step that happened. */
 const CHECKLIST_MARKS: Record<ChecklistItemState, string> = { done: '✓', failed: '✗', todo: '○' };
 
 function checklistItemState(item: RliChecklistItem): ChecklistItemState {
@@ -64,7 +63,6 @@ export function RliChecklist({ leaseId }: Props) {
         )}
         {data && (
           <>
-            {/* Once registered the deadline no longer matters. */}
             {!data.items.some((item) => item.key === 'rli_registered' && item.done) && (
               <p
                 data-testid="rli-deadline-countdown"
@@ -86,7 +84,6 @@ export function RliChecklist({ leaseId }: Props) {
                       data-testid={`rli-checklist-item-${item.key}`}
                       data-state={state}
                     >
-                      {/* The tick only for a step that really happened (LT-01): a failed attempt is never ticked. */}
                       <span aria-hidden className={state === 'failed' ? 'text-destructive' : undefined}>
                         {CHECKLIST_MARKS[state]}
                       </span>

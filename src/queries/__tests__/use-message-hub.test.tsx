@@ -34,7 +34,6 @@ describe('the hooks of the hub of messages (NF-61)', () => {
     const second = renderHook(() => useMessageHubThreads({ needsReply: true }), { wrapper });
     await waitFor(() => expect(messageHubApi.list).toHaveBeenCalledTimes(2));
 
-    // The list is changed by other screens (an answer from a booking, a thread read): the second visit does not trust the first one.
     expect(second.result.current.data).toEqual(PAGE);
     expect(messageHubApi.list).toHaveBeenCalledWith({ needsReply: true });
   });
@@ -47,7 +46,6 @@ describe('the hooks of the hub of messages (NF-61)', () => {
     const options = client.getQueryCache().findAll({ queryKey: ['message-hub', 'threads'] })[0].observers[0].options;
     expect(options.refetchInterval).toBe(MESSAGE_HUB_POLL_MS);
     expect(MESSAGE_HUB_POLL_MS).toBe(60_000);
-    // Not while the tab is hidden: the poll pauses by itself.
     expect(options.refetchIntervalInBackground).toBeFalsy();
     expect(options.refetchOnWindowFocus).toBe(true);
   });
@@ -60,7 +58,6 @@ describe('the hooks of the hub of messages (NF-61)', () => {
     expect(messageHubApi.list).toHaveBeenCalledTimes(1);
     expect(messageHubApi.unread).toHaveBeenCalledTimes(1);
 
-    // What the real-time channel does when a guest writes: it writes the count of the bell.
     act(() => {
       client.setQueryData(UNREAD_COUNT_KEY, 3);
     });
@@ -83,7 +80,6 @@ describe('the hooks of the hub of messages (NF-61)', () => {
 
   it('useMessageHubThreads_InAppNotificationsChange_ReadsAgainTheOpenConversationButNotTheFilesTheTemplatesOrTheContacts', async () => {
     const { client, wrapper } = setup();
-    // The queries of an open conversation, with the keys the hooks of `use-message-thread` give them.
     const reads = {
       thread: vi.fn().mockResolvedValue({}),
       file: vi.fn().mockResolvedValue(new Blob(['x'])),
@@ -104,15 +100,12 @@ describe('the hooks of the hub of messages (NF-61)', () => {
     );
     await waitFor(() => expect(Object.values(result.current).every((query) => query.isSuccess)).toBe(true));
 
-    // What the window coming back to the front, a thread read or the real-time channel do: the notifications are written.
     act(() => {
       client.setQueryData(UNREAD_COUNT_KEY, 3);
     });
 
-    // The list and the conversation that is open follow it...
     await waitFor(() => expect(messageHubApi.list).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(reads.thread).toHaveBeenCalledTimes(2));
-    // ...the pictures, the templates and the ways to reach the guest do not: each would be a request to the channel for nothing.
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(reads.file).toHaveBeenCalledTimes(1);
     expect(reads.templates).toHaveBeenCalledTimes(1);
@@ -128,7 +121,6 @@ describe('the hooks of the hub of messages (NF-61)', () => {
     act(() => {
       client.setQueryData(['bookings', 'approval-requests'], []);
     });
-    // Give a wrongly triggered reading the time to start.
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(messageHubApi.list).toHaveBeenCalledTimes(1);

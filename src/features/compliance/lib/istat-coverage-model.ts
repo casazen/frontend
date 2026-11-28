@@ -9,7 +9,6 @@ export type CoverageShown = 'covered' | 'notCovered' | 'toVerify';
 
 type CoverageFields = Pick<PropertyIstatCoverage, 'regionKnown' | 'coverage' | 'nextStep' | 'verifiedAt'>;
 
-/** A row the staff checked against its source: the territory is known and the answer holds the day it was checked. */
 export function isVerified(coverage: Pick<PropertyIstatCoverage, 'regionKnown' | 'verifiedAt'>): boolean {
   return coverage.regionKnown === true && typeof coverage.verifiedAt === 'string' && coverage.verifiedAt !== '';
 }
@@ -50,7 +49,6 @@ export function istatTakenCareOf(coverage: CoverageFields & Pick<PropertyIstatCo
   return !channelManagerSends || coverage.istatSender === 'ChannelManager';
 }
 
-/** How the notice names the region and the portal of its system: the system is never guessed, so a region without one says so. */
 export type RegionShown = { kind: 'named'; region: string; system: string } | { kind: 'noSystem'; region: string } | { kind: 'unknown' };
 
 const textOf = (value: string | null | undefined): string => (typeof value === 'string' ? value.trim() : '');
@@ -62,7 +60,6 @@ export function regionShown(coverage: Pick<PropertyIstatCoverage, 'regionKnown' 
   return system === '' ? { kind: 'noSystem', region } : { kind: 'named', region, system };
 }
 
-/** The deadline in plain words: a day of the following month, every day, or «da verificare». A monthly deadline without a day of the month is not a deadline: it is never guessed. */
 export type DeadlineShown = { kind: 'monthly'; day: number } | { kind: 'daily' } | { kind: 'toVerify' };
 
 export function deadlineShown(coverage: Pick<PropertyIstatCoverage, 'deadlineKind' | 'deadlineDay'>): DeadlineShown {
@@ -72,10 +69,8 @@ export function deadlineShown(coverage: Pick<PropertyIstatCoverage, 'deadlineKin
   return { kind: 'toVerify' };
 }
 
-/** The one action of the notice: the guided step of the panel, the portal of the region, the request to support, or none (the sending does not go through the channel manager and no portal is stated). */
 export type NoticeAction = 'panelStep' | 'portalGuide' | 'support' | 'none';
 
-/** The address of the portal of the region as the notice may link it: https only, whatever the answer says (a value of the table is data, never a link to trust). */
 export function portalAddress(coverage: Pick<PropertyIstatCoverage, 'portalUrl'>): string | null {
   return isHttpsAddress(coverage.portalUrl) ? coverage.portalUrl : null;
 }

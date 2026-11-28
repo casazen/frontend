@@ -23,7 +23,6 @@ const LEVEL_WORDS: Record<OrgCapabilityLevel, { labelKey: string }> = {
   No: { labelKey: 'team.actions.role.levelNo' },
 };
 
-/** One side of the difference: what the person gains or loses, each thing with the level it ends at. */
 function ChangeList({ icon: Icon, title, empty, items }: { icon: LucideIcon; title: string; empty: string; items: RoleChange[] }) {
   const { t } = useTranslation();
   return (
@@ -73,7 +72,6 @@ function ChangeRoleForm({ row, initialRole, onClose }: { row: PersonRow; initial
       return;
     }
     onClose();
-    // «Annulla» gives the role back for real: the same call with the role of before. The change reaches the other servers within a minute.
     toastUndo(t('team.actions.role.done', { name: row.name, role: orgRoleLabel(selected, t) }), {
       description: t('team.actions.role.doneHint'),
       undo: async () => {
@@ -139,11 +137,6 @@ function ChangeRoleForm({ row, initialRole, onClose }: { row: PersonRow; initial
   );
 }
 
-/**
- * «Cambia ruolo» (AM-04b-FU1): the roles the caller may give, as cards, and what changes for the person before anything is saved.
- * The role is saved when the button is pressed, and «Annulla» in the toast that follows gives the old one back. `initialRole` starts
- * with another role chosen: «Rendi X ...» of the page «Cosa vede» (AM-04b-FU2) opens it on the role that was being tried.
- */
 export function ChangeRoleDialog({
   row,
   open,

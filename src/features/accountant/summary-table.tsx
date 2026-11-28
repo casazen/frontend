@@ -11,15 +11,12 @@ const COLUMN_WIDTH_REM = 7;
 export interface TableColumn<Row> {
   id: string;
   header: string;
-  /** A column of figures: right aligned, with digits of one width. */
   numeric?: boolean;
-  /** The cell names its row: it is the `<th scope="row">` of it, which a screen reader reads before each figure of the row. */
   rowHeader?: boolean;
   cell: (row: Row) => ReactNode;
 }
 
 interface SummaryTableProps<Row> {
-  /** What the table is, for a screen reader (the caption) and for the keyboard (the name of the scrolling region). */
   caption: string;
   testId: string;
   columns: readonly TableColumn<Row>[];
@@ -27,10 +24,6 @@ interface SummaryTableProps<Row> {
   rowKey: (row: Row, index: number) => string;
 }
 
-/**
- * A compact table of the summary of the agency: one row for each row the server sent, in the order it sent them, and nothing more (no total row, no sum of the rows: the figures are the
- * server's, and rows in different currencies are never added together). It scrolls sideways on a phone in a region of its own, so the keyboard can reach it.
- */
 export function SummaryTable<Row>({ caption, testId, columns, rows, rowKey }: SummaryTableProps<Row>) {
   return (
     <div
@@ -75,15 +68,12 @@ export function SummaryTable<Row>({ caption, testId, columns, rows, rowKey }: Su
 
 interface TableBlockProps {
   title: string;
-  /** A line under the title that says what the table is or what its figures lack. */
   note?: string;
-  /** The table takes both columns of the section on a wide screen (it has too many columns for one). */
   wide?: boolean;
   testId: string;
   children: ReactNode;
 }
 
-/** A table of the summary with its name above it: a heading of the level under the section, no box around it (a card in a card is what the calm screens took away). */
 export function TableBlock({ title, note, wide = false, testId, children }: TableBlockProps) {
   const titleId = useId();
   return (
@@ -101,7 +91,6 @@ export function TableBlock({ title, note, wide = false, testId, children }: Tabl
   );
 }
 
-/** What a figure is when the server has none for it (a cost nobody reported, a payment nobody records for a caller who reaches only some properties): never zero. */
 export function NotAvailable({ label }: { label: string }) {
   return <span className="text-foreground/70">{label}</span>;
 }

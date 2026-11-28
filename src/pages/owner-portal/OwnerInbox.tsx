@@ -14,7 +14,6 @@ import { useOwnerConversations, useOwnerInboxPreferences, useSetOwnerInboxPrefer
 
 const WHEN: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
 
-/** The notification preference: an e-mail when the agency writes. The e-mail only says that there is a message and links back here, never its words. */
 function InboxPreferences() {
   const { t } = useTranslation();
   const preferences = useOwnerInboxPreferences();
@@ -59,7 +58,6 @@ export function OwnerInbox() {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const conversations = useOwnerConversations();
-  // The address asks for a form with a topic; the person can also open it. Not kept anywhere: the address is the only memory.
   const [formOpen, setFormOpen] = useState(() => searchParams.has('topic'));
 
   return (

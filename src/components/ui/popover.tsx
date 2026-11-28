@@ -4,14 +4,7 @@ import { cn } from '@/lib/utils';
 
 const Popover = PopoverPrimitive.Root;
 const PopoverTrigger = PopoverPrimitive.Trigger;
-const PopoverAnchor = PopoverPrimitive.Anchor;
 
-/**
- * A bubble anchored to its trigger (`@radix-ui/react-popover`, UI-07): opened by a click or a tap, from the keyboard by
- * Enter or Space on the trigger, closed by Esc or by a click outside, with the focus handed back to the trigger. It moves
- * out of the way of the edges of the screen by itself. The bubble is a light card, like the menus: a dark one needs a color
- * that the tokens do not have yet.
- */
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
@@ -34,4 +27,4 @@ const PopoverContent = React.forwardRef<
 ));
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
+export { Popover, PopoverTrigger, PopoverContent };

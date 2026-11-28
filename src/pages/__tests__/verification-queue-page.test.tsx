@@ -136,13 +136,10 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
     await screen.findByText('Villa Demo');
 
     const villa = card('Villa Demo');
-    // The property and the arrival and departure of the stay (read as written, no shift of the day).
     expect(villa.getByText(/10 ottobre 2099/)).toBeInTheDocument();
     expect(villa.getByText(/12 ottobre 2099/)).toBeInTheDocument();
-    // Why it is here: the comparison fell between the two thresholds.
     expect(villa.getByTestId('verification-why')).toHaveAttribute('data-reason', 'uncertain');
     expect(villa.getByTestId('verification-why')).toHaveTextContent(i18n.t('verification.why.uncertain'));
-    // Every check of the automatic outcome, with its value and its threshold where it has them.
     const reasons = villa.getAllByTestId('verification-reason');
     expect(reasons).toHaveLength(5);
     expect(reasons[0]).toHaveTextContent('Qualità della foto: superato');
@@ -160,7 +157,6 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
     const casa = card('Casa Mare');
     expect(casa.getByTestId('verification-why')).toHaveTextContent(i18n.t('verification.why.operator_requested'));
     expect(casa.queryByTestId('verification-checks')).not.toBeInTheDocument();
-    // Without an address on file the operator is sent to the booking to find the contact.
     expect(casa.queryByTestId('verification-guest-email')).not.toBeInTheDocument();
     expect(casa.getByTestId('verification-contact-hint')).toHaveTextContent(i18n.t('verification.guest.noContact'));
     expect(casa.getByRole('link', { name: new RegExp(i18n.t('verification.guest.openBooking')) })).toHaveAttribute(
@@ -170,8 +166,6 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
   });
 
   it('VerificationQueuePage_AFailedAttemptThenARequestForAPerson_SaysWhatTheLastCheckFoundAndThatTheGuestMayHaveAskedNeverThatTheFacesDoNotMatch', async () => {
-    // The API does not say why the verification was handed to a person: a guest who failed an attempt and then asked for one carries the reasons of
-    // that attempt, exactly like one the flow handed over. The words must not state a cause the page does not know.
     const failedThenAsked: PendingVerification = {
       bookingId: BOOKING_D,
       propertyId: 'p-4',
@@ -247,7 +241,6 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
 
     await screen.findByTestId('verification-metrics-error');
     expect(screen.queryByTestId('verification-metric-ok')).not.toBeInTheDocument();
-    // The queue is still usable.
     expect(screen.getByText('Villa Demo')).toBeInTheDocument();
   });
 
@@ -256,22 +249,18 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
     await waitFor(() => expect(screen.getByTestId('verification-metric-ok')).toHaveTextContent('12'));
     expect(screen.getByTestId('verification-metrics')).toHaveTextContent(/15 set/);
 
-    // A live event (or a decision) makes the queue and the figures be read again, and this time the figures cannot be read.
     vi.mocked(verificationApi.getMetrics).mockRejectedValue(httpError(400));
     await act(async () => {
       await client.invalidateQueries({ queryKey: [VERIFICATION_KEY] });
     });
 
-    // TanStack keeps the data of the first read on the error: they must not stay on the card with the period as if they were current.
     const unavailable = await screen.findByTestId('verification-metrics-error');
     expect(unavailable).toHaveTextContent(i18n.t('verification.metrics.unavailable'));
     expect(screen.queryByTestId('verification-metric-ok')).not.toBeInTheDocument();
     expect(screen.queryByTestId('verification-metric-operator-share')).not.toBeInTheDocument();
     expect(screen.getByTestId('verification-metrics')).not.toHaveTextContent(/15 set/);
-    // The queue is still usable.
     expect(screen.getByText('Villa Demo')).toBeInTheDocument();
 
-    // Trying again brings the figures back.
     vi.mocked(verificationApi.getMetrics).mockResolvedValue({ ...metrics, ok: 13 });
     fireEvent.click(within(unavailable).getByRole('button', { name: i18n.t('verification.metrics.retry') }));
 
@@ -367,7 +356,6 @@ describe('VerificationQueuePage (E03/F04/US03/T02)', () => {
 
     await waitFor(() => expect(villa.getByTestId('verification-decide')).toBeDisabled());
     for (const button of villa.getAllByRole('button')) expect(button).toBeDisabled();
-    // Another card is a card of its own.
     expect(card('Casa Mare').getByTestId('verification-decide')).toBeEnabled();
 
     finish();

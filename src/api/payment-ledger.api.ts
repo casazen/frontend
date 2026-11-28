@@ -25,9 +25,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** A member the API leaves out when it is empty: missing, `null` or a text. */
 const isOptionalText = (value: unknown) => value === undefined || value === null || typeof value === 'string';
-/** The same for a figure: a number the server wrote, never a text that looks like one. */
 const isOptionalFigure = (value: unknown) => value === undefined || value === null || (typeof value === 'number' && Number.isFinite(value));
 
 function isDocument(value: unknown): value is PaymentLedgerDocument {
@@ -41,10 +39,6 @@ function isDocument(value: unknown): value is PaymentLedgerDocument {
   );
 }
 
-/**
- * A line the screens can draw without guessing: the codes, the day and the gross amount are there and are of the right type. A line that is not one is a load
- * error for the whole answer, never a row left out: a ledger that silently misses a row could be read as one that is in order.
- */
 function isLine(value: unknown): value is PaymentLedgerLine {
   return (
     isRecord(value) &&
@@ -66,7 +60,6 @@ function isLine(value: unknown): value is PaymentLedgerLine {
   );
 }
 
-/** A body that is not the ledger of a booking (the SPA's `index.html` behind a wrong rewrite) is a load error, never an empty ledger. */
 function ensureBookingLedger(data: unknown, path: string): PaymentLedgerBooking {
   if (!isRecord(data) || typeof data.bookingId !== 'string' || !Array.isArray(data.lines) || !data.lines.every(isLine)) {
     throw new UnexpectedApiResponseError(path);
@@ -77,7 +70,6 @@ function ensureBookingLedger(data: unknown, path: string): PaymentLedgerBooking 
     channel: typeof data.channel === 'string' ? data.channel : '',
     currency: typeof data.currency === 'string' ? data.currency : '',
     lines: data.lines,
-    // The API writes `degraded: true` when the collections of the channel could not be read; a missing member is the ordinary answer.
     degraded: data.degraded === true,
   };
 }
@@ -107,11 +99,6 @@ export async function getBookingLedger(bookingId: string): Promise<PaymentLedger
   return ensureBookingLedger(await readLedger(path), path);
 }
 
-/**
- * One page of the lines of a period (`GET api/payment-ledger`), newest first: `from` and `to` are Europe/Rome days (both included, `from` after `to` is a 400
- * `payment_ledger_invalid_range`), `page` counts from 1 and `pageSize` is 20 when missing and 100 at most. The lines the caller's scope does not reach are not
- * in it; a `propertyId` or a `bookingId` the caller may not read the payments of is a 404.
- */
 export async function listLedger(criteria: PaymentLedgerCriteria, page: number, pageSize: number): Promise<PaymentLedgerPage> {
   return ensurePage(await readLedger(PATH, { ...criteria, page, pageSize }), PATH);
 }

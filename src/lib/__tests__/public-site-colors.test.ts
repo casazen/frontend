@@ -11,7 +11,6 @@ import {
 } from '../public-site-colors';
 import { PUBLIC_SITE_THEMES, PUBLIC_SITE_THEME_PALETTES } from '../public-site-themes';
 
-/** A coarse grid over the whole RGB cube (7 steps per channel = 343 colors) plus the greys and the extremes. */
 const STEPS = [0, 42, 85, 128, 170, 213, 255];
 const GRID_COLORS = STEPS.flatMap((r) =>
   STEPS.flatMap((g) => STEPS.map((b) => `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`)),
@@ -28,7 +27,6 @@ describe('contrastRatio', () => {
   });
 
   it('contrastRatio_WhiteOnOldCtaColor_IsBelowAA_AsInTheAudit', () => {
-    // A3-32: white on #e07a5f was 2.95:1.
     const ratio = contrastRatio('#ffffff', '#e07a5f');
     expect(ratio).toBeGreaterThan(2.9);
     expect(ratio).toBeLessThan(3);
@@ -52,7 +50,6 @@ describe('readableTextOn', () => {
   });
 
   it('readableTextOn_MidToneWhereNearBlackIsNotEnough_FallsBackToPureBlack', () => {
-    // Luminance about 0.19: white and #111827 both stay below 4.5:1, black does not.
     const { color, ratio } = readableTextOn('#7a7a7a');
     expect(contrastRatio('#ffffff', '#7a7a7a')).toBeLessThan(AA_TEXT_CONTRAST);
     expect(contrastRatio('#111827', '#7a7a7a')).toBeLessThan(AA_TEXT_CONTRAST + 1);
@@ -129,7 +126,6 @@ describe('analyzePrimaryColor', () => {
       for (const color of GRID_COLORS) {
         const { onPrimary, hover, soft, ink } = analyzePrimaryColor(color, themeId)!;
         const label = `${color} on ${themeId}`;
-        // The ink is the text on the tint of the color, on the page and on the cards; the text on the fill holds under the pointer.
         expect(contrastRatio(ink, soft), `${label}: ink ${ink} on soft ${soft}`).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
         expect(contrastRatio(ink, bg), `${label}: ink ${ink} on bg`).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
         expect(contrastRatio(ink, surface), `${label}: ink ${ink} on card`).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);

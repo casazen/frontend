@@ -50,7 +50,6 @@ describe('the steps of the assisted notification (E31/F02/US02/T02, NF-131)', ()
   });
 
   it('isFutureDay_ADayThatHasNotStartedInSwitzerland_CannotBeDeclared', () => {
-    // 23:30 UTC of the 19th is already the 20th in Zurich.
     expect(isFutureDay({ day: '2026-11-20' }, new Date('2026-11-19T20:30:00Z'))).toBe(true);
     expect(isFutureDay({ day: '2026-11-20' }, new Date('2026-11-19T23:30:00Z'))).toBe(false);
     expect(isFutureDay({ day: '2026-11-19' }, new Date('2026-11-19T20:30:00Z'))).toBe(false);
@@ -78,7 +77,6 @@ describe('the guests as fields to copy', () => {
       'arrival',
       'departure',
     ]);
-    // Dates as the Swiss write them, the document as a word, the rest as it was recorded.
     expect(Object.fromEntries(fields.map((field) => [field.id, field.value]))).toMatchObject({
       birthDate: '04.01.1984',
       arrival: '19.11.2026',

@@ -18,7 +18,6 @@ describe('propertiesApi.downloadDocument (FD-07)', () => {
     const result = await propertiesApi.downloadDocument('p-1', 'd-1');
 
     expect(axios.get).toHaveBeenCalledWith('/properties/p-1/documents/d-1/download', { responseType: 'blob' });
-    // Never an anonymous call: the request goes through the token interceptor (no `public` flag).
     expect(vi.mocked(axios.get).mock.calls[0][1]).not.toHaveProperty('public');
     expect(result).toBe(blob);
   });

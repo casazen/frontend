@@ -17,7 +17,6 @@ describe('route manifest: the wizard «Fatturazione» (E11/F02/US01/T01)', () =>
     expect(entry?.context).toBe('short-rent');
   });
 
-  // Permission rule: what the backend asks to read. The wizard is read-only for who may not write (no `property.write`, or an access to only some of the properties).
   it('RouteManifest_BillingWizard_IsOpenedByWhoReadsThePropertiesAndThePaymentsNotOnlyByWhoWrites', () => {
     expect(entry?.requiredPermissions).toEqual(['property.read', 'payment.read']);
 
@@ -28,7 +27,6 @@ describe('route manifest: the wizard «Fatturazione» (E11/F02/US01/T01)', () =>
     expect(entry && hasEntryPermission(entry, () => true)).toBe(true);
   });
 
-  // Flag rule: with the issuance off the route is not there for anyone and its address leads to the home of the area, as the backend answers 404.
   it('RouteManifest_BillingWizard_WithTheIssuanceOffIsNotThereForAnyone', () => {
     expect(entry?.featureFlag).toBe('fiscalDocumentIssuance');
     expect(entry && isEntryFeatureEnabled(entry, DEFAULT_FEATURE_FLAGS)).toBe(false);
@@ -46,7 +44,6 @@ describe('route manifest: the wizard «Fatturazione» (E11/F02/US01/T01)', () =>
   });
 
   it('RouteManifest_BillingWizard_HighlightsIncassiAndItsTrailGoesThroughTheFiscalPage', () => {
-    // Like the other pages of the fiscal section: the entry of the section is the one highlighted.
     const active = resolveActiveNavEntry(BILLING_SETUP_PATH, getNavMatchEntries('short-rent', () => true, ISSUANCE));
     expect(active?.path).toBe('/app/short-rent/payments');
 
@@ -59,7 +56,6 @@ describe('route manifest: the wizard «Fatturazione» (E11/F02/US01/T01)', () =>
     expect(trail.map((step) => step.to)).toEqual(['/app/short-rent/payments', '/app/short-rent/fiscal', undefined]);
   });
 
-  // The page is loaded for the first time here, with the whole wizard behind it: the 5 s of the default are not enough on a loaded CI runner.
   it('RouteManifest_BillingWizard_LoadsAPageThatIsAComponent', { timeout: 30_000 }, async () => {
     const page = await entry?.component();
 
@@ -86,7 +82,6 @@ describe('route manifest: the old address of the issuer wizard leads to the wiza
     expect(searchOfLegacy('?step=address')).toBe('?step=issuer');
     expect(searchOfLegacy('?step=issuer')).toBe('?step=issuer');
     expect(searchOfLegacy('?step=summary')).toBe('?step=summary');
-    // The choice of the issuer is gone with its step, and a step nobody knows opens the wizard where it opens by itself, at what is missing.
     expect(searchOfLegacy('?step=who')).toBe('');
     expect(searchOfLegacy('?step=fatto')).toBe('');
     expect(searchOfLegacy('?step=somewhere&other=1')).toBe('');

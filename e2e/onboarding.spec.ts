@@ -39,7 +39,6 @@ test.describe('Role-based onboarding (#198)', () => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await completeOnboardingFromRentalChoice(page, 1);
-    // A new landlord starts with the first property (the guide of the leases page asks for the lease next).
     await expect(page).toHaveURL(/\/app\/long-rent\/properties\/new\?first=1/, { timeout: 15_000 });
   });
 

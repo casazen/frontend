@@ -87,7 +87,6 @@ export const demoComplianceSummary: ComplianceSummaryResult = {
   },
 };
 
-/** `checkout-wizard/start` as the API answers it (CO-17): 5 steps, nothing answered yet. */
 export const demoCheckoutWizard: CheckoutWizardState = {
   bookingId: DEMO_CHECKOUT_BOOKING_ID,
   bookingStatus: 'CheckedIn',
@@ -138,7 +137,6 @@ const SAFETY_ITEM_CODES: SafetyItemCode[] = [
   'EmergencyInstructions',
 ];
 
-/** Safety checklist (CO-07) of a property that has not answered it yet: every item "not answered", facts unknown. */
 const demoSafetyChecklistUnanswered: SafetyChecklist = {
   schemaVersion: 1,
   legalBasis: 'D.L. 145/2023 art. 13-ter',
@@ -176,10 +174,6 @@ const demoSafetyChecklistUnanswered: SafetyChecklist = {
   updatedAt: null,
 };
 
-/**
- * The compliance reads of any property (not only the demo one): a safety sheet not answered yet and an activation with its blockers
- * open. The wizard "Aggiungi immobile" reads both for the property it has just created, whatever its id.
- */
 export async function mockCompliancePendingForAnyProperty(page: Page): Promise<void> {
   await page.route('**/api/properties/*/compliance/safety-checklist', async (route) => {
     if (route.request().method() !== 'GET') {
@@ -260,7 +254,6 @@ export async function mockComplianceApi(page: Page): Promise<void> {
   });
 }
 
-/** A Ticino property of the host with one arrival day still to notify to the cantonal police (E30/F02/US03, casazen/backend#979). */
 export const DEMO_TICINO_PROPERTY_ID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 export const DEMO_TICINO_BOOKING_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 export const DEMO_TICINO_DAY = '2026-11-19';
@@ -296,7 +289,6 @@ export function demoTicinoDay(overrides: Partial<TicinoNotificationDay> = {}): T
   };
 }
 
-/** The cockpit of the host with that arrival day listed as a thing to do (`NotifyTicinoPolice`, the day in `period`); empty once the day is declared. */
 export function demoTicinoSummary(declared: boolean): ComplianceSummaryResult {
   const empty = { count: 0, items: [] };
   return {
@@ -325,17 +317,11 @@ export function demoTicinoSummary(declared: boolean): ComplianceSummaryResult {
   };
 }
 
-/** What the mock of the Ticino notification has seen: the declarations the host made, and how many files it was asked for. */
 interface TicinoNotificationServer {
   declarations: DeclareTicinoDayRequest[];
   files: number;
 }
 
-/**
- * The API of the guided notification to the Ticino police for the property of `DEMO_TICINO_PROPERTY_ID`, with the state a server keeps: the day to notify, its file, the
- * declaration (POST and DELETE of `…/ticino-notification/declare`) and the summary of the cockpit, which lists the day until it is declared and not after. Answers over the
- * defaults of the fixture (the last route registered wins), so a spec calls it after `test` has set them up.
- */
 export async function mockTicinoNotificationApi(page: Page): Promise<TicinoNotificationServer> {
   const server: TicinoNotificationServer = { declarations: [], files: 0 };
   let declaration: TicinoDeclaration | null = null;
@@ -349,7 +335,6 @@ export async function mockTicinoNotificationApi(page: Page): Promise<TicinoNotif
     await route.fulfill(json(demoTicinoSummary(declaration !== null)));
   });
 
-  // The day (`?date=` in its address), and the file of the day. The declaration below is registered after it, so it answers its own address.
   await page.route(`**/api/properties/${DEMO_TICINO_PROPERTY_ID}/swiss/ticino-notification**`, async (route) => {
     const method = route.request().method();
     if (method === 'GET') {

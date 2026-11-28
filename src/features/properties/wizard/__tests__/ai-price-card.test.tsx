@@ -50,7 +50,6 @@ const NO_AI = (reason: NonNullable<PriceSuggestion['reason']>, rate: number | nu
   basedOn: { ...BASIS, similarListings: rate === null ? 0 : 4 },
 });
 
-/** The form of the card under test, for a test that changes a field the way the host typing would. */
 const formHandle: { current: UseFormReturn<PropertyWizardValues> | null } = { current: null };
 
 function Harness({ values, currency }: { values?: Partial<PropertyWizardValues>; currency?: string }) {
@@ -72,7 +71,6 @@ function Harness({ values, currency }: { values?: Partial<PropertyWizardValues>;
     control: form.control,
     name: ['nightlyRate', 'cleaningFee', 'weekendSurcharge', 'minNights'],
   });
-  // Reading the dirty fields in the render subscribes to them, as the wizard (which saves on «Continua») does.
   const dirty = Object.keys(form.formState.dirtyFields);
   return (
     <>
@@ -109,8 +107,6 @@ describe('AiPriceCard', () => {
     vi.mocked(priceSuggestionApi.suggest).mockResolvedValue(AI_ANSWER);
   });
 
-  // ─── Offered only where it can work ────────────────────────────────────────────
-
   it('AiPriceCard_NoAiOnThePlatform_IsNotThere', async () => {
     vi.mocked(priceSuggestionApi.getAvailability).mockResolvedValue({ available: false });
 
@@ -129,8 +125,6 @@ describe('AiPriceCard', () => {
     await waitFor(() => expect(priceSuggestionApi.getAvailability).toHaveBeenCalled());
     expect(screen.queryByTestId('property-wizard-ai-price')).not.toBeInTheDocument();
   });
-
-  // ─── It asks first ─────────────────────────────────────────────────────────────
 
   it('AiPriceCard_AiAvailable_AsksFirstAndCallsNothing', async () => {
     renderCard();
@@ -190,8 +184,6 @@ describe('AiPriceCard', () => {
     await screen.findByTestId('property-wizard-ai-price-yes');
     expect(screen.queryByTestId('property-wizard-ai-price-tip')).not.toBeInTheDocument();
   });
-
-  // ─── The answer ────────────────────────────────────────────────────────────────
 
   it('AiPriceCard_TheAiAnswers_ShowsThePriceTheRangeTheExtrasWhyAndWhatItWasBasedOn', async () => {
     renderCard();
@@ -262,8 +254,6 @@ describe('AiPriceCard', () => {
     expect(screen.getByTestId('property-wizard-ai-price-declined')).toBeInTheDocument();
     expect(values()).toEqual({ rate: '100', cleaning: '', weekend: '', minNights: 1 });
   });
-
-  // ─── When the AI is not behind the answer ──────────────────────────────────────
 
   it('AiPriceCard_TheAiDidNotAnswerButThereAreSimilarHomes_ShowsTheirPriceAndSaysSo', async () => {
     vi.mocked(priceSuggestionApi.suggest).mockResolvedValue(NO_AI('ai_unavailable', 130));

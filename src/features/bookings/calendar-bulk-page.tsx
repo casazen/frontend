@@ -24,21 +24,13 @@ import {
 
 const CALENDAR_PATH = '/app/short-rent/bookings/calendar';
 
-/** The draft of the wizard keeps what the host chose in this browser: dates, properties and what to change (no personal data, no credentials). */
 const BULK_DRAFT_ID = 'calendar-bulk';
 const BULK_DRAFT_VERSION = 1;
 
-/** The last button is offered only when the answers meet the rules of the steps and the preview has said what would happen. */
 const previewReady = (preview: { isSuccess: boolean }, values: BulkChangeValues): boolean => firstInvalidStep(values) === null && preview.isSuccess;
 
-/** What the wizard gives back when the last button is pressed: the process of the change, which the result follows. */
 type BulkChangeResult = CalendarChange;
 
-/**
- * "Cambia più giorni" (E08/F05/US03/T03, NF-78, NF-05, NF-02): a bulk change of the calendar in four steps on the wizard kit: which properties, which days, what changes and a
- * summary that says in plain words what will happen before anything is sent. "Apply changes" applies the change all or nothing, and the result says what happened to each
- * property. Nothing leaves the wizard: "Save and exit" goes back to the calendar, and the draft is kept (resumed when the wizard is opened again).
- */
 function BulkChangeWizard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -76,7 +68,6 @@ function BulkChangeWizard() {
       label: t('booking.calendar.bulk.steps.summary.label'),
       title: t('booking.calendar.bulk.steps.summary.title'),
       purpose: t('booking.calendar.bulk.steps.summary.purpose'),
-      // Nothing is applied before the summary has said what would happen: the last button is off until the preview has answered.
       nextDisabled: !previewReady(preview, values) || apply.isPending,
       render: () => <SummaryStep preview={preview} />,
     },
@@ -92,8 +83,6 @@ function BulkChangeWizard() {
       finishFailedMessage={t('booking.calendar.bulk.applyFailed')}
       onFinish={(values) => apply.mutateAsync(toChangeRequest(values))}
       draft={{ version: BULK_DRAFT_VERSION, accept: (saved) => Array.isArray((saved.values as Partial<BulkChangeValues>).propertyIds) }}
-      // No `onExit`: the shell would add "Cancel" to the first step, which deletes the draft and leaves. The one way out is "Save and exit" (above the buttons), which keeps it.
-      // The result opened again (a reload) has nothing to say: the changes are on the calendar.
       renderDone={({ result, values }) =>
         result ? <BulkChangeDone change={result} values={values} changedDays={preview.data ? changedDaysOf(preview.data) : undefined} /> : <ReloadedDone />
       }
@@ -107,7 +96,6 @@ function BulkChangeWizard() {
   );
 }
 
-/** The result of a change, opened again after a reload: the process is not known any more, so the page says where the changes are and goes back to the calendar. */
 function ReloadedDone() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -121,7 +109,6 @@ function ReloadedDone() {
   );
 }
 
-/** The route of the bulk change wizard: for who may write properties (`property.write`, in the route manifest). */
 export function CalendarBulkPage() {
   const { t } = useTranslation();
 

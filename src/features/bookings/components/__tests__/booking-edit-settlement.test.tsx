@@ -62,7 +62,6 @@ describe('BookingEditSettlement (the money before the save, NF-75)', () => {
   });
 
   it('render_PriceChangesButNoMoneyMovesOnline_SaysNothingIsPaidFromHere', () => {
-    // A booking the host entered (or one paid at the property): the price follows the dates, the money is settled by hand.
     render(<BookingEditSettlement quote={quote({ action: 'none', amount: 0, difference: 70 })} />);
 
     expect(screen.getByTestId('booking-edit-settlement-action')).toHaveTextContent(/Da qui non parte nessun pagamento/);

@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonCard } from '@/components/ui/skeleton';
 
-/** While a page of the tenant portal is read: the shape of a card, announced once as «Caricamento…», never the bare word (UX round 2026-11). */
 export function TenantLoading() {
   const { t } = useTranslation();
   return (
@@ -12,7 +11,6 @@ export function TenantLoading() {
   );
 }
 
-/** Loading and error of a tenant page, or null when the contract is ready. */
 export function TenantGate({
   status,
   error,

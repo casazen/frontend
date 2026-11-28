@@ -10,20 +10,12 @@ import { fingerprintOfCanvas } from '../lib/document-fingerprint';
 import { assessFrame, FIRST_HINT, isSteady, nextHint, overlayOf, steadySince, workingSizeOf, type GuideHint, type HintState } from '../lib/document-guidance';
 
 interface DocumentCameraGuideProps {
-  /** The side the next photo is of: the button says it. */
   side: DocumentSide;
-  /** A call of the step is in flight (this one or another): nothing can be taken or sent. */
   busy: boolean;
-  /**
-   * Sends the photo, with the difference hash of the frame it was made from. Resolves `true` when the API answered (the photo is let go at once, whatever the answer was) and `false` when the call failed
-   * (the frame stays on the screen, to be sent again without taking it again).
-   */
   onPhoto: (photo: File, fingerprint: string | null) => Promise<boolean>;
-  /** The frame looks like the front that was taken before (a hint: the guest may take it again or send it anyway). */
   looksLikeTheFront: (fingerprint: string) => boolean;
 }
 
-/** Why the camera is not there: the browser blocked it, there is none, this page cannot use one (no secure connection, an old browser), or anything else. */
 type CameraProblem = 'denied' | 'not_found' | 'unsupported' | 'unknown';
 
 /** Where the camera is: opening, running, stopped because a frame was taken, stopped because the page is hidden, or the reason it is not there. */
@@ -51,10 +43,8 @@ const HINT_TEXT: Record<GuideHint, string> = {
   blur: 'checkin.identity.document.camera.hint.blur',
 };
 
-/** How often the frame is looked at (about five times a second: enough for a hand that moves, and cheap on a phone). */
 const SAMPLE_INTERVAL_MS = 200;
 
-/** The shape of the view before the camera has said what its frames are. */
 const DEFAULT_FRAME = { width: 16, height: 9 };
 
 function cameraProblemOf(error: unknown): CameraProblem {
@@ -64,12 +54,10 @@ function cameraProblemOf(error: unknown): CameraProblem {
   return 'unknown';
 }
 
-/** The browser can open a camera at all (it cannot on a page without a secure connection). */
 function canOpenCamera(): boolean {
   return typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getUserMedia === 'function';
 }
 
-/** Lets the pixels of a canvas go. */
 function emptyCanvas(canvas: HTMLCanvasElement | null) {
   if (canvas) {
     canvas.width = 0;
@@ -77,7 +65,6 @@ function emptyCanvas(canvas: HTMLCanvasElement | null) {
   }
 }
 
-/** Calls `onEnd` when a track of the stream ends by itself (the camera was taken by another app, or unplugged). A track that is stopped by the page does not call it. */
 function watchForTheEnd(stream: MediaStream, onEnd: () => void) {
   for (const track of stream.getTracks()) {
     if (typeof track.addEventListener === 'function') track.addEventListener('ended', onEnd);
@@ -105,7 +92,6 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
   const fingerprint = useRef<string | null>(null);
   const steady = useRef<number | null>(null);
   const hintState = useRef<HintState>(FIRST_HINT);
-  // Where the camera is, for the one listener of the page that cannot read the state of a render.
   const latestCamera = useRef<CameraState>('starting');
 
   const [attempt, setAttempt] = useState(0);
@@ -125,7 +111,6 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
     if (videoRef.current) videoRef.current.srcObject = null;
   }, []);
 
-  /** Starts again from nothing: the checks begin to be counted anew, and the camera opens (once more). */
   const restart = useCallback(() => {
     steady.current = null;
     hintState.current = FIRST_HINT;
@@ -135,13 +120,11 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
     setAttempt((value) => value + 1);
   }, []);
 
-  /** Opens the rear camera; `isCurrent` says whether the screen is still the one that asked (it may have been left while the browser asked the guest). */
   const openCamera = useCallback(
     async (isCurrent: () => boolean) => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 } }, audio: false });
         if (!isCurrent() || document.hidden) {
-          // Left, or hidden, while the browser asked: nothing keeps the camera.
           stream.getTracks().forEach((track) => track.stop());
           if (isCurrent()) setCamera('paused');
           return;
@@ -169,7 +152,6 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
     return () => {
       current = false;
       stopCamera();
-      // The frame that may be held and the copy the checks look at: let go with the screen.
       emptyCanvas(shot);
       emptyCanvas(sampleRef.current);
     };
@@ -179,7 +161,6 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
     latestCamera.current = camera;
   }, [camera]);
 
-  // A hidden page keeps no camera on: it is stopped, and opened again when the page comes back.
   useEffect(() => {
     const onVisibility = () => {
       if (document.hidden) {
@@ -193,7 +174,6 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [restart, stopCamera]);
 
-  // The live checks: a frame, brought to a small size, a few times a second, while the camera runs.
   useEffect(() => {
     if (camera !== 'live') return undefined;
     const timer = window.setInterval(() => {
@@ -201,7 +181,6 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
       if (!video) return;
       const { videoWidth, videoHeight } = video;
       if (!videoWidth || !videoHeight) {
-        // The camera is open and has no picture yet.
         steady.current = null;
         hintState.current = nextHint(hintState.current, 'waiting');
         setHint(hintState.current.shown);
@@ -231,14 +210,12 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
     return () => window.clearInterval(timer);
   }, [camera]);
 
-  /** Lets the frame that was taken go: the canvas is emptied and nothing derived from it is kept. */
   const letGoOfTheShot = (canvas: HTMLCanvasElement | null = shotRef.current) => {
     emptyCanvas(canvas);
     fingerprint.current = null;
   };
 
   const sendShot = async () => {
-    // The canvas that holds the frame, not whatever the screen holds when the answer comes: the answer may end the screen, and the pixels go all the same.
     const shot = shotRef.current;
     if (!shot || submitting.current) return;
     submitting.current = true;
@@ -256,7 +233,6 @@ export function DocumentCameraGuide({ side, busy, onPhoto, looksLikeTheFront }: 
       if (answered) {
         letGoOfTheShot(shot);
         setHeld('none');
-        // Whatever the answer said (the other side, or the same one again with its guidance) a new photo is asked: the camera opens again. When the answer ended the step this screen is gone.
         restart();
       } else {
         setHeld('failed');

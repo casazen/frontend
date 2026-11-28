@@ -14,22 +14,18 @@ export interface IcsEvent {
 }
 
 const CRLF = '\r\n';
-/** A line is at most 75 octets, the continuation lines begin with a space (RFC 5545 §3.1). */
 const MAX_OCTETS = 75;
 
-/** An instant as the file writes it: `20261105T080000Z`. Empty for something that is not a date. */
 function stamp(instant: string | Date): string {
   const date = typeof instant === 'string' ? new Date(instant) : instant;
   if (Number.isNaN(date.getTime())) return '';
   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 }
 
-/** A text value: backslash, semicolon, comma and line breaks escaped. */
 function escapeText(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
 }
 
-/** A content line folded at 75 octets (not in the middle of a character). */
 function fold(line: string): string {
   const encoder = new TextEncoder();
   const parts: string[] = [];

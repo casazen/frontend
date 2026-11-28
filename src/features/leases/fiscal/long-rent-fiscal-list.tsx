@@ -10,7 +10,6 @@ import { todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import { fiscalMonthLabel, fiscalRateLabel, fiscalTenantName, fiscalTermText } from './long-rent-fiscal-format';
 
-/** The page of a lease: the name of the tenant leads there. */
 const leasePath = (row: LongRentFiscalRow) => `/app/long-rent/leases/${row.leaseId}`;
 
 const SUB_LINE = 'mt-0.5 block break-words text-sm text-foreground/70';
@@ -21,19 +20,16 @@ const regimeText = (row: LongRentFiscalRow, t: TFunction) =>
 const accrualDetail = (row: LongRentFiscalRow, t: TFunction) =>
   t('longRentFiscal.accrualDetail', { count: row.monthsInYear, rent: formatCurrency(row.monthlyRentEur) });
 
-/** What the register holds for the year, in words: the amount, or that CasaZen tracks none of it. */
 function collectedText(row: LongRentFiscalRow, t: TFunction): string {
   return row.collectedEur === null ? t('longRentFiscal.collectedNone') : formatCurrency(row.collectedEur);
 }
 
-/** The tax of a row in one line: the estimated amount, or that it is not estimated. */
 function taxText(row: LongRentFiscalRow, t: TFunction): string {
   return row.tax.status === 'CedolareEstimated' && row.tax.amountEur !== null
     ? formatCurrency(row.tax.amountEur)
     : t('longRentFiscal.notEstimated');
 }
 
-/** Why a row has no figure, or the rate of the one it has: the line under the tax. */
 function taxDetail(row: LongRentFiscalRow, t: TFunction, language: string): string {
   switch (row.tax.status) {
     case 'CedolareEstimated':
@@ -45,7 +41,6 @@ function taxDetail(row: LongRentFiscalRow, t: TFunction, language: string): stri
   }
 }
 
-/** An amount with its base under it. A plain function and not a component: this file exports functions, not components. */
 function amountCell(main: ReactNode, detail?: ReactNode): ReactNode {
   return (
     <span className="block">
@@ -151,7 +146,6 @@ export function buildLongRentFiscalList(t: TFunction, language: string, year: nu
         </p>
       ),
     }),
-    // Five columns and the sidebar do not fit before a wide screen: cards until then.
     cardsUntil: 'xl',
     csv: false,
     countLabel: (count) => t('leaseList.count', { count }),
@@ -164,10 +158,6 @@ export function buildLongRentFiscalList(t: TFunction, language: string, year: nu
   });
 }
 
-/**
- * The list of the fiscal report of a year in the words of the person; it follows the language. `today` is the day the server made the
- * report (`generatedOn`, Europe/Rome): the periods of the leases are told over or not from it; until the report is there, the clock.
- */
 export function useLongRentFiscalList(year: number, today?: string): ListDefinition<LongRentFiscalRow> {
   const { t, i18n } = useTranslation();
   return useMemo(() => buildLongRentFiscalList(t, i18n.language, year, today ?? todayInRome()), [t, i18n.language, year, today]);

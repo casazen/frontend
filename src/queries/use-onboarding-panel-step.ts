@@ -4,30 +4,21 @@ import { nextPollDelayMs } from '@/lib/onboarding-panel';
 import type { PanelStep, StartedPanelStep, StartPanelStepRequest } from '@/types/onboarding.types';
 import { invalidateOnboarding } from './use-onboarding-plan';
 
-/** The guided steps of the panel of the channel manager (`/onboarding/panel-steps`, NF-107): the list of the org and the stored state of each. */
 export const PANEL_STEPS_KEY = ['onboarding', 'panel-steps'] as const;
 const PANEL_STEPS_LIST_KEY = [...PANEL_STEPS_KEY, 'list'] as const;
 const panelStepKey = (id: string) => [...PANEL_STEPS_KEY, 'step', id] as const;
 
-/**
- * What a step that moved on (verified, confirmed, handed to support) touches: the plan, the path and the activation checklist, the lists of the
- * six flows (a connection that works turns a property from «to complete» to ready), the connection and the import of the listings, and the
- * «Da fare» list, where the step had its item. Only the screens that show them ask the server again; the others read on their next visit.
- */
 function invalidateAfterPanelStep(queryClient: QueryClient): void {
   invalidateOnboarding(queryClient);
-  // The list, not the step a page follows: that one is kept as the server answered (`remember`) and is read at its own pace.
   void queryClient.invalidateQueries({ queryKey: PANEL_STEPS_LIST_KEY });
   void queryClient.invalidateQueries({ queryKey: ['onboarding', 'flows'] });
   void queryClient.invalidateQueries({ queryKey: ['octorate'] });
 }
 
-/** The state of a step as the server answers a read, a check or a confirmation: the cache of the page that follows it. */
 function remember(queryClient: QueryClient, step: PanelStep): void {
   queryClient.setQueryData(panelStepKey(step.id), step);
 }
 
-/** The step without what only the start returns: the address of the panel is single-use and never goes in the cache. */
 function withoutAddresses(started: StartedPanelStep): PanelStep {
   const step: Partial<StartedPanelStep> = { ...started };
   delete step.panelUrl;
@@ -62,7 +53,6 @@ export function usePanelStepStatus(id: string | undefined, options?: { enabled?:
     queryFn: () => onboardingApi.getPanelStepStatus(id ?? ''),
     enabled: Boolean(id) && (options?.enabled ?? true),
     initialData: options?.initialData,
-    // The step the page holds is not read again at once: the server asked for the first check to wait.
     staleTime: 0,
     refetchInterval: (query) => nextPollDelayMs(query.state.data, Date.now()),
     refetchIntervalInBackground: false,
@@ -85,17 +75,11 @@ export function useStartPanelStep() {
     gcTime: 0,
     onSuccess: (started) => {
       remember(queryClient, withoutAddresses(started));
-      // The list and the «Da fare» list: the step has its item from the moment it is stored.
       invalidateAfterPanelStep(queryClient);
     },
   });
 }
 
-/**
- * The explicit trigger of a check: the window of the panel was closed, or the tab got the focus again. The server holds it to a minimum gap
- * from the previous one and answers the stored state when it is too early, so a page that triggers it often is harmless. A step that comes back
- * done moves the rest of the app on.
- */
 export function useVerifyPanelStep() {
   const queryClient = useQueryClient();
 
@@ -108,10 +92,6 @@ export function useVerifyPanelStep() {
   });
 }
 
-/**
- * The person says the step is done, which the server accepts only after a real check found that CasaZen cannot tell. 409
- * `panel_step_verification_required`, `panel_step_not_valid`, `panel_step_assist_open`: the screen says which.
- */
 export function useConfirmPanelStep() {
   const queryClient = useQueryClient();
 
@@ -121,15 +101,10 @@ export function useConfirmPanelStep() {
       remember(queryClient, step);
       invalidateAfterPanelStep(queryClient);
     },
-    // A refusal says the state moved on (a check ran, support took it): read it again.
     onError: () => void queryClient.invalidateQueries({ queryKey: PANEL_STEPS_LIST_KEY }),
   });
 }
 
-/**
- * The end of a panel that sends the person back (`redirectCallback`): the `state` of the address is used once, in the body (it never stays in the
- * address or the history), and the step is verified. The answer is not kept (`gcTime: 0`). 422 `panel_step_state_invalid`.
- */
 export function useCompletePanelStepCallback() {
   const queryClient = useQueryClient();
 

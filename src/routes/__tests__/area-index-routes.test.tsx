@@ -45,7 +45,6 @@ vi.mock('@/contexts/workspace-provider', async () => {
   }
   return { WorkspaceProvider };
 });
-// The shell and the pages are not under test: the route tree around them is.
 vi.mock('@/components/layout/context-layout', async () => {
   const { Outlet } = await import('react-router-dom');
   return { ContextLayout: () => <Outlet /> };
@@ -66,7 +65,6 @@ function context(contextKey: AppContextKey, permissions: string[], defaultRoute:
 const shortRent = context('short-rent', ['property.read', 'booking.read'], '/app/short-rent');
 const longRent = context('long-rent', LONG_RENT_PERMISSIONS, '/app/long-rent/leases');
 const admin = context('admin', ['admin.stats.read', 'admin.users.read'], '/app/admin');
-// The backend still sends the old address of the supplier console as its default route.
 const supplier = context('supplier', ['supplier.inbox.read'], '/supplier/inbox');
 
 function renderApp(entry: string) {
@@ -126,8 +124,6 @@ describe('the bare address of an area opens its home (UI-00)', () => {
   });
 
   it('AreaIndex_UserNotInTheArea_GoesToTheHomeOfHisOwnArea', async () => {
-    // Not an empty long-rent shell: the area of the user (its backend default route is the old supplier address, which
-    // the route table sends on to the canonical one).
     workspaceState.contexts = [supplier];
     const router = renderApp('/app/long-rent');
 

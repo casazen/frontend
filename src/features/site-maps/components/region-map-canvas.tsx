@@ -22,11 +22,10 @@ import { useElementSize } from './use-element-size';
 import { useMapData } from './use-map-data';
 import { useMapView } from './use-map-view';
 
-/** Touch screens and narrow ones: the card is a sheet and the pins are touched, not hovered. */
 const PHONE = '(hover: none), (width < 64rem)';
 
 function draw(lat: number, lon: number, spanKm: number, aspect: number, width: number, labels: RegionMapProps['labels'], highlight: string, version: number): string {
-  void version; // the data a map draws are loaded on demand: the version only says that something new is there to draw
+  void version;
   return regionMapSvg({ lat, lon, spanKm, aspect }, { width, labels, highlight: highlight ? highlight.split('|') : [] });
 }
 
@@ -35,7 +34,6 @@ function pinName(t: TFunction, pin: MapPinData): string {
   return t('siteMap.pinLabel', { name: pin.name, label: pin.label });
 }
 
-/** The map itself: loaded on demand by `RegionMap`, together with the engine and the data. */
 export default function RegionMapCanvas(props: RegionMapProps) {
   const { pins, onSelect, onActiveChange, highlightIds, view: initial, labels = 'auto', highlightTowns, aspect, hideCard = false } = props;
   const { t } = useTranslation();
@@ -58,8 +56,6 @@ export default function RegionMapCanvas(props: RegionMapProps) {
     onActiveChange?.(id);
   };
 
-  // positions: rounded to two decimals (an exact one is refused in development), in Italy or Switzerland, pulled to land when the rounding put them in the sea.
-  // A house whose host never gave a position (`0, 0`) is put at its comune, the town of that name in the data of the map (the data are in once the map draws).
   const placed = pins.flatMap((pin) => {
     const own = isPositionSet(pin.lat, pin.lon) ? publicPoint(pin) : null;
     const p = own && isMappable(own) ? own : townPoint(pin.place);
@@ -86,11 +82,9 @@ export default function RegionMapCanvas(props: RegionMapProps) {
     { spanKm, widthPx: size.w },
   );
   const said = (v: View) => setAnnounce(t('siteMap.zoomAnnounce', { km: Math.round(v.spanKm) }));
-  // pins that would sit on top of each other at this zoom are grouped in one bubble
   const groups = new Map<number, number[]>();
   group.forEach((rep, i) => groups.set(rep, [...(groups.get(rep) ?? []), i]));
 
-  // pins in the order of the map, from the top to the bottom and from the left to the right: the order of the Tab key
   const order = at.map((_, i) => i).sort((a, b) => at[a].y - at[b].y || at[a].x - at[b].x);
   const selectedPin = at.find((a) => a.pin.id === selectedId)?.pin;
   const card: MapCardData | null = selectedPin ? mapCardOfPin(selectedPin, t) : null;
@@ -100,7 +94,6 @@ export default function RegionMapCanvas(props: RegionMapProps) {
     if (next) said(next);
   };
 
-  /* --- the wheel zooms only with Ctrl or Cmd: the page keeps its scrolling --- */
   const { view } = mv;
   useEffect(() => {
     const el = box.current;
@@ -116,7 +109,6 @@ export default function RegionMapCanvas(props: RegionMapProps) {
     return () => el.removeEventListener('wheel', onWheel);
   });
 
-  /* --- dragging with the pointer (mouse, pen and, on a map that fills its parent, touch) --- */
   const touchPan = aspect === undefined;
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 || (e.target as Element).closest('button, a, [data-map-ui]')) return;
@@ -145,7 +137,6 @@ export default function RegionMapCanvas(props: RegionMapProps) {
     }
   };
 
-  /* --- keyboard: arrows move the map when it has the focus, + and - zoom, 0 fits, Esc lets go of the selection --- */
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Escape' && selectedId) {
       e.stopPropagation();

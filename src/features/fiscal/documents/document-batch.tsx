@@ -8,19 +8,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { getProblemMessage } from '@/lib/api-errors';
 import { BATCH_MAX, batchReasonOf, type BatchOutcome } from './document-model';
 
-/** What the search for the drafts of the period found, as the page says it. */
 export type SelectNote = { kind: 'selected'; count: number; more: boolean } | { kind: 'none' } | { kind: 'failed' };
 
 interface BatchControlsProps {
-  /** The drafts ticked, on this page and on the others. */
   count: number;
-  /** «Seleziona tutte le bozze del periodo» can be asked: the filters do not exclude drafts and the period has no problem. */
   canSelectPeriod: boolean;
-  /** The search for the drafts of the period is running. */
   searching: boolean;
-  /** A bulk issue is running. */
   issuing: boolean;
-  /** A write is running on one of the ticked drafts (one made again, one issued from its detail...): the bulk issue waits for it, as the buttons of that draft do. */
   waiting: boolean;
   note: SelectNote | null;
   onSelectPeriod: () => void;
@@ -95,19 +89,12 @@ export function DocumentBatchControls({ count, canSelectPeriod, searching, issui
 
 interface BatchConfirmProps {
   count: number;
-  /** The bulk issue is running: the confirmation cannot be given a second time. */
   busy: boolean;
-  /** A write is running on one of the documents (one made again...): the confirmation waits for it. */
   waiting: boolean;
   onClose: () => void;
-  /** Issues them. A rejection keeps the dialog open and is told in it, in the words of its code. */
   onConfirm: () => Promise<void>;
 }
 
-/**
- * The confirmation of a bulk issue: how many documents, that each one gets its number in order and can no longer be changed, and that one that cannot be issued does not stop the others (the
- * answer says which and why). A refusal of the whole request (more than the limit, a network error) is told here and the dialog stays open.
- */
 export function BatchConfirmDialog({ count, busy, waiting, onClose, onConfirm }: BatchConfirmProps) {
   const { t } = useTranslation();
   const [problem, setProblem] = useState<string | null>(null);
@@ -116,7 +103,6 @@ export function BatchConfirmDialog({ count, busy, waiting, onClose, onConfirm }:
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        // While the bulk issue is on its way the dialog stays: closed, a failure of the call would have nowhere to be told, and the person would not know what was issued.
         if (!open && !busy) onClose();
       }}
       title={t('fiscalDocuments.batch.confirm.title', { count })}
@@ -146,15 +132,10 @@ export function BatchConfirmDialog({ count, busy, waiting, onClose, onConfirm }:
 
 interface BatchResultProps {
   outcome: BatchOutcome;
-  /** What names a document of the answer (its kind, number and recipient), from what the page knows of it. */
   labelOf: (id: string) => string;
   onClose: () => void;
 }
 
-/**
- * What a bulk issue came to (E12/F02/US01/T01): one line that says it, and, for every document that was not issued, its name and why in plain words. Everything issued is said only when every row was
- * issued and nothing is left over; one failed row is always told (how many were issued out of how many, and the documents that were not), never hidden under a sentence that says it all went well.
- */
 export function BatchResultDialog({ outcome, labelOf, onClose }: BatchResultProps) {
   const { t } = useTranslation();
   const failed = outcome.failures.length;

@@ -33,7 +33,6 @@ function fillTheForm(name = 'Mario Rossi') {
   });
 }
 
-// DB-02b: the message and the address of a visitor go to the host only if the visitor agreed to it.
 describe('ContactHostDialog (DB-02b, privacy)', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');

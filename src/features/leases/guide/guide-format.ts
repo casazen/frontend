@@ -1,14 +1,10 @@
-/** An amount in whole euros, for a sentence that says «circa»: "1.820 €". */
 export function formatWholeEuro(amount: number): string {
   return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(Math.round(amount));
 }
 
 export interface SplitSource {
-  /** The name of the page or of the law. */
   label: string;
-  /** Its address, when the text has one. */
   url: string | null;
-  /** What the server wrote after the address (a remark on the rule), when there is something. */
   note: string;
 }
 

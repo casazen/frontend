@@ -25,7 +25,6 @@ describe('lease labels (A7-15, A7-26)', () => {
   });
 
   it.each(Object.entries(LOCALES))('statusLabels_%s_ExactlyTheBackendStatuses', (_, locale) => {
-    // One label per LeaseStatus of the backend enum, none for statuses that do not exist.
     expect(Object.keys(locale.leases.statusLabel).sort()).toEqual([...LEASE_STATUSES].sort());
   });
 

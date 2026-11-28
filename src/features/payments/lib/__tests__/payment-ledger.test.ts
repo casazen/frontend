@@ -20,7 +20,6 @@ import {
   providerCurrencyOf,
 } from '../payment-ledger';
 
-// The route of the fiscal documents is another task's: what is asked of it here is controlled by each test, so none of them depends on whether it has landed.
 vi.mock('@/config/route-manifest', () => ({
   getManifestEntry: vi.fn(),
   hasEntryPermission: vi.fn(),
@@ -49,7 +48,6 @@ describe('formatLedgerAmount (money rule: the figure of the server, in the langu
   it('formatLedgerAmount_Euro_ItalianAndEnglishAreWrittenWithTheirOwnSeparators', () => {
     expect(formatLedgerAmount(12345.5, 'EUR', 'it')).toMatch(/^12\.345,50\s€$/);
     expect(formatLedgerAmount(12345.5, 'EUR', 'en')).toBe('€12,345.50');
-    // The grouping is the one of the language (Italian has none under five digits): the format is Intl's, nothing of the page's own.
     expect(formatLedgerAmount(1234.5, 'EUR', 'it')).toMatch(/^1234,50\s€$/);
   });
 
@@ -61,9 +59,7 @@ describe('formatLedgerAmount (money rule: the figure of the server, in the langu
   });
 
   it('formatLedgerAmount_AFigureWithMoreDecimals_IsNotRoundedToTheCent', () => {
-    // What the server sent is what is shown: the format does not cut it.
     expect(formatLedgerAmount(12.345, 'EUR', 'it')).toMatch(/^12,345\s€$/);
-    // And a figure that is already to the cent keeps its two decimals.
     expect(formatLedgerAmount(12.5, 'EUR', 'it')).toMatch(/^12,50\s€$/);
   });
 
@@ -126,7 +122,6 @@ describe('the state of a line (money rule: only a line that is paid says collect
   it('ledgerBadgeStatus_AStateTheClientDoesNotKnow_GoesAsItCameAndIsNeverCollected', () => {
     expect(ledgerBadgeStatus('SomethingNew')).toBe('SomethingNew');
     expect(word('SomethingNew')).toBe('SomethingNew');
-    // A name that is a member of every object must not be mistaken for a state.
     expect(ledgerBadgeStatus('constructor')).toBe('constructor');
     expect(ledgerBadgeStatus('toString')).toBe('toString');
   });
@@ -148,7 +143,6 @@ describe('ledgerSourceKey (where the money comes from)', () => {
 
   it('ledgerSourceKey_AChannelLine_SaysCollectedByTheChannelOnlyWhenItIsPaidAndTheChannelCollectsIt', () => {
     expect(ledgerSourceKey(line({ kind: 'Ota', collectedBy: 'Channel', state: 'Paid' }))).toBe('paymentLedger.source.OtaCollected');
-    // Still to collect: never "Incassato dal canale".
     expect(ledgerSourceKey(line({ kind: 'Ota', collectedBy: 'Channel', state: 'ToCollect' }))).toBe('paymentLedger.source.Ota');
     expect(ledgerSourceKey(line({ kind: 'Ota', collectedBy: 'Unknown', state: 'Paid' }))).toBe('paymentLedger.source.Ota');
     expect(ledgerSourceKey(line({ kind: 'Ota', collectedBy: 'Host', state: 'Paid' }))).toBe('paymentLedger.source.OtaHost');
@@ -230,7 +224,6 @@ describe('ledgerReadOf (a read that failed is never an empty ledger, and a 404 i
     [{ enabled: true, isError: true, status: undefined, hasData: false }, 'failed'],
     [{ enabled: true, isError: true, status: 403, hasData: false }, 'forbidden'],
     [{ enabled: true, isError: true, status: 404, hasData: false }, 'notFound'],
-    // The query keeps its old lines when a later read fails: the error wins.
     [{ enabled: true, isError: true, status: 404, hasData: true }, 'notFound'],
     [{ enabled: true, isError: true, status: 500, hasData: true }, 'failed'],
   ] as const)('ledgerReadOf_%j_Is_%s', (input, expected) => {

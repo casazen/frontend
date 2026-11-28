@@ -10,7 +10,6 @@ import { EMPTY_INQUIRY_DRAFT, INQUIRY_LIMITS, type InquiryDraft } from './inquir
  */
 const KEY_PREFIX = 'casazen.supplier-inquiry.';
 const FORMAT = 1;
-/** How long a draft lives after its last change. */
 export const INQUIRY_DRAFT_TTL_MS = 6 * 60 * 60 * 1000;
 
 const keyOf = (slug: string) => `${KEY_PREFIX}${slug}`;
@@ -19,7 +18,6 @@ function text(value: unknown, max: number): string {
   return typeof value === 'string' ? value.slice(0, max) : '';
 }
 
-/** A draft rebuilt from what the storage held, member by member; null when it is not one. */
 function rebuild(value: unknown): InquiryDraft | null {
   if (typeof value !== 'object' || value === null) return null;
   const raw = value as Record<string, unknown>;
@@ -34,7 +32,6 @@ function rebuild(value: unknown): InquiryDraft | null {
   };
 }
 
-/** The draft of this supplier, or null when there is none, it has expired or it cannot be read. */
 export function readInquiryDraft(slug: string, now: number = Date.now()): InquiryDraft | null {
   try {
     const raw = window.localStorage.getItem(keyOf(slug));

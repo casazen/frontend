@@ -35,7 +35,6 @@ describe('NextStepCard (UI-16)', () => {
   it('NextStepCard_Everything_ShowsExactlyTheWordsOfTheCallerInTheOrderOfTheActivationChecklist', () => {
     const { container } = renderCard();
 
-    // Kicker, title, detail, position, the button: the order and the elements of the step it was taken from.
     expect(container.textContent).toBe('Prossimo passoCollega StripeServono pochi minuti.Passo 3 di 7Collega Stripe');
     expect(Array.from(container.firstElementChild!.children).map((child) => child.tagName)).toEqual(['P', 'H2', 'P', 'P', 'A']);
   });
@@ -75,7 +74,6 @@ describe('NextStepCard (UI-16)', () => {
     expect(screen.getByRole('heading', { level: 3 })).toBeInTheDocument();
     cleanup();
 
-    // Inside a block with a heading of its own (the activation checklist) the title is not a heading.
     renderCard({ titleAs: 'p' });
     expect(screen.queryByRole('heading')).not.toBeInTheDocument();
     expect(screen.getByText('Collega Stripe', { selector: 'p' })).toBeInTheDocument();
@@ -91,10 +89,8 @@ describe('NextStepCard (UI-16)', () => {
     const { container } = renderCard();
 
     const card = container.firstElementChild!;
-    // A plain card with the accent on its left edge, not a tinted box: guidance must not read as a notice or an error.
     expect(card).toHaveClass('rounded-lg', 'border', 'bg-card', 'p-4', 'text-left', 'before:bg-primary');
     expect(card.className).not.toMatch(/\bbg-primary\/5\b/);
-    // `foreground/70`, not `muted-foreground` (4.4:1 on white): the same choice as the other primitives.
     expect(screen.getByText('Servono pochi minuti.')).toHaveClass('text-foreground/70');
     expect(screen.getByText('Passo 3 di 7')).toHaveClass('text-foreground/70');
     expect(screen.getByText('Prossimo passo')).toHaveClass('text-primary-text');

@@ -9,7 +9,6 @@ export const LIST_RETURN_STORAGE_KEY = 'casazen:list-return';
 
 type RememberedLists = Record<string, string>;
 
-/** What the list asked to remember, nothing when the storage is missing (private mode, a server) or holds something else. */
 function readRemembered(): RememberedLists {
   try {
     const raw = window.sessionStorage.getItem(LIST_RETURN_STORAGE_KEY);
@@ -20,16 +19,10 @@ function readRemembered(): RememberedLists {
   }
 }
 
-/** A query string as `location.search` gives it: starts with "?" and has no fragment. Anything else is not trusted. */
 function isQueryString(value: unknown): value is string {
   return typeof value === 'string' && /^\?[^#]+$/.test(value);
 }
 
-/**
- * Keeps `search` (`?status=Confirmed`) as the state of the list `listKey`; an empty one forgets it. The detail drawer that may be
- * open on the list (`?detail=booking:…`, UI-15) is not part of the list: the way back from the page of that booking leads to the
- * list, not to the list with the drawer open again.
- */
 export function rememberList(listKey: string, search: string): void {
   const remembered = readRemembered();
   const kept = hasDetailParam(search) ? searchWithDetail(search, null) : search;
@@ -42,16 +35,11 @@ export function rememberList(listKey: string, search: string): void {
   }
 }
 
-/** The query string the list `listKey` was left with, or an empty string. */
 export function recallList(listKey: string): string {
   const search = readRemembered()[listKey];
   return isQueryString(search) ? search : '';
 }
 
-/**
- * `to` with the state its list was left in. An address that already has a query or a fragment is the caller's choice and
- * is left as it is, so are the addresses of pages that are not lists (nothing was remembered for them).
- */
 export function withListReturn(to: string): string {
   if (to.includes('?') || to.includes('#')) return to;
   return `${to}${recallList(to)}`;

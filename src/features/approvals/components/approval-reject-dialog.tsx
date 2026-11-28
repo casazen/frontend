@@ -10,22 +10,12 @@ import type { useRejectItem } from '@/queries/approvalQueue';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
 interface ApprovalRejectDialogProps {
-  /** The item to reject; `null` while the dialog is closed. */
   item: ApprovalQueueItem | null;
-  /**
-   * The mutation belongs to the page, not to the dialog: the host may close the dialog (the X, Esc, a tap outside) while the request goes on, and the rejection
-   * must still be written below with its reason, and the page must keep its buttons waiting until it is over.
-   */
   reject: ReturnType<typeof useRejectItem>;
   onClose: () => void;
-  /** The item was rejected: it as the API answered it, with the reason it saved. */
   onRejected: (item: ApprovalQueueItem) => void;
 }
 
-/**
- * Reject an item (AC-NF68-3): the reason is mandatory (at most 500 characters), is saved on the item and is shown on the page afterwards. An empty reason
- * is not sent: the field says so. The API stays the judge (422 `approval_rejection_reason_required`).
- */
 export function ApprovalRejectDialog({ item, reject, onClose, onRejected }: ApprovalRejectDialogProps) {
   return (
     <Dialog
@@ -64,7 +54,6 @@ function RejectDialogBody({ item, reject, onClose, onRejected }: Omit<ApprovalRe
           onClose();
         },
         onError: (failure) => {
-          // The toast of the hook says why. An item that is not there any more is not kept open in a dialog; a reason the API refuses stays on the form.
           if (itemIsGone(failure)) onClose();
           else if (getHttpStatus(failure) === 422) setError(getProblemMessage(failure, t) ?? t('approval.reject.reasonRequired'));
         },

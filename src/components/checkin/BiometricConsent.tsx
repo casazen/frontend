@@ -9,19 +9,13 @@ import type { CheckInLegalText } from '@/types/public-checkin.types';
 interface LegalTextBlockProps {
   text: CheckInLegalText;
   testId: string;
-  /** The language the page is shown in: a text the registry has only in another language says so. */
   pageLanguage: string;
 }
 
-/**
- * One text of the registry as the guest reads it (E22/F02/US01/T01): the words are the registry's and come sanitized twice (by the server and here, with the same allowlist as the other
- * legal pages), in the language of the file served; a draft (outside production only) says so with a badge, and a text that is not in the language of the page says which one it is in.
- */
 function LegalTextBlock({ text, testId, pageLanguage }: LegalTextBlockProps) {
   const { t } = useTranslation();
   const served = text.language.trim().toLowerCase();
   const servedLocale = GUEST_LOCALES.find((locale) => locale === served);
-  // Only a language the page has a name for is named: the note is for the guest who reads English where the page is German, not for a file in a language nobody knows.
   const inOtherLanguage = servedLocale !== undefined && servedLocale !== pageLanguage.trim().toLowerCase().split(/[-_]/)[0];
 
   return (
@@ -41,28 +35,15 @@ function LegalTextBlock({ text, testId, pageLanguage }: LegalTextBlockProps) {
 }
 
 interface BiometricConsentProps {
-  /** `loading` while the texts are asked, `error` when they could not be read, `ready` with what the registry served. */
   status: 'loading' | 'error' | 'ready';
-  /**
-   * The text of the consent the registry served (in production only an approved one; none while there is none). The guest agrees to this text, and its `version` is what the consent
-   * posts back (ADR-013-R9): the page has no wording and no version of its own.
-   */
   consent: CheckInLegalText | null;
-  /** The notice of a property that keeps no document (Ticino), when the registry served it for this stay. */
   notice: CheckInLegalText | null;
-  /** The sentence that says why the texts are not there (`error` only), already in the words of the page. */
   errorMessage?: string;
-  /** The guest asks to read the texts again. */
   onRetry: () => void;
-  /** The guest agrees to the face check, to the text of this `version` that was on the screen. */
   onConsent: (version: string) => void;
-  /** The guest refuses it: a person verifies the identity instead (never a dead end). */
   onDecline: () => void;
-  /** An answer is being sent: both buttons stay disabled. */
   isLoading?: boolean;
-  /** The texts are being read again (the registry published a new version, or the guest came back to the page): what is on the screen may be old, so only the way to a person stays open. */
   refreshing?: boolean;
-  /** The language the page is shown in (`it`, `en`, `de`, `fr`, `es`). */
   pageLanguage: string;
   /**
    * The answers are two ways to be verified, of equal weight (self-hosted verification, E70/F03/US01/T01): «Verifica automatica» (agreeing to the text) and «Verifica con una persona» (refusing it), side by side,

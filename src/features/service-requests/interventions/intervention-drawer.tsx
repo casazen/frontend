@@ -19,19 +19,12 @@ import { useInterventionActions } from './use-intervention-actions';
 
 const LINK = 'h-auto min-h-11 whitespace-normal py-2';
 
-/** The name of the drawer of an intervention: its service, or its category. Nothing until the request is there (the drawer names itself). */
 export function InterventionDrawerTitle({ id }: DetailTitleProps) {
   const { t } = useTranslation();
   const { data: request } = useIntervention(id);
   return request ? <>{requestTitle(request, t)}</> : null;
 }
 
-/**
- * An intervention in the drawer (UI-15, SR-08): what it is and how it stands, in a block of its own what to do now (the one step the
- * server names, told like the page does), the details, the supplier and, once it took the request, how to reach it, the photos of the
- * work and the history. The rest is on the page of the request, one press away («Apri la scheda completa»). The calendar and the Home
- * open the same drawer with the id of the request.
- */
 export function InterventionDrawerContent({ id }: DetailContentProps) {
   const { t } = useTranslation();
   const permissions = useHostPermissions();
@@ -41,7 +34,6 @@ export function InterventionDrawerContent({ id }: DetailContentProps) {
   if (isLoading) return <SkeletonLine lines={5} />;
 
   if (!request) {
-    // Only a 404 is «not found»: an API error is shown as an error, with a way to try again.
     if (isError && getHttpStatus(error) !== 404) {
       return <ErrorState title={t('interventions.drawer.loadError')} error={error} onRetry={() => void refetch()} />;
     }

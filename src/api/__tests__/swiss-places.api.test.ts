@@ -28,7 +28,6 @@ describe('SwissPlacesApi (official directory of the Swiss places, E29/F01/US01/T
 
     await SwissPlacesApi.searchLocalities('lugano');
 
-    // `public: true` would drop the access token and the backend policy would answer 401.
     expect(get.mock.calls[0]![1]).not.toHaveProperty('public');
   });
 
@@ -53,7 +52,6 @@ describe('SwissPlacesApi (official directory of the Swiss places, E29/F01/US01/T
     const failure = new Error('swiss_places_unavailable');
     get.mockRejectedValueOnce(failure);
 
-    // A 422 of a directory that is not loaded is the picker's to say: it must not be turned into an empty list.
     await expect(SwissPlacesApi.searchLocalities('6900')).rejects.toBe(failure);
   });
 });

@@ -7,9 +7,6 @@ import itLocale from '@/i18n/locales/it.json';
 import type { DashboardOverview } from '@/types/dashboard.types';
 import { HomeNumbers } from '../components/home-numbers';
 
-// NF-96 / AC-NF96-1: ADR, RevPAR and the year-over-year trend live on the Reports page. The Home keeps its calm rules: one "Now"
-// block and at most three numbers. This is the guard that a later change does not add them back.
-
 const OVERVIEW: DashboardOverview = {
   period: { kind: 'Month', from: '2026-11-01', to: '2026-11-30', nights: 30 },
   today: '2026-11-05',
@@ -33,7 +30,6 @@ const OVERVIEW: DashboardOverview = {
 
 const REPORT_ONLY_NUMBERS = /\bADR\b|RevPAR/i;
 
-/** Every text of a branch of a locale file. */
 function textsOf(tree: unknown): string[] {
   if (typeof tree === 'string') return [tree];
   if (Array.isArray(tree)) return tree.flatMap(textsOf);
@@ -41,7 +37,6 @@ function textsOf(tree: unknown): string[] {
   return [];
 }
 
-/** The strip of the Home, rendered with the revenue it shows to who may read payments (the fullest it gets). */
 function renderNumbers(): HTMLElement {
   render(
     <MemoryRouter>
@@ -63,7 +58,6 @@ describe('the calm rules of the Home (NF-96)', () => {
   it('HomeNumbers_FullestOverview_RendersAtMostThreeNumbers', () => {
     const strip = renderNumbers();
 
-    // The strip is a list; the list of the next arrivals is not a number, the other items are the tiles.
     const items = Array.from(strip.querySelector('ul')?.children ?? []);
     const tiles = items.filter((item) => item.querySelector('[data-testid="home-next-arrivals"]') === null);
 

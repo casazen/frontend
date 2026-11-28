@@ -6,11 +6,6 @@ import { requestWhen } from './request-model';
 
 const T = 'supplier.requests.quote.summary';
 
-/**
- * The quote as the customer reads it, to read and not to change (SP-04b): the lines and the total, the time (the request's own, or the
- * other one the quote offers, which is not held), the note, when it was sent and until when the customer can answer. It says what the
- * server says: the total is the one it added up. The host and the customer of the showcase reuse it for their answer (SR-08, LR-08, SP-12c).
- */
 export function QuoteSummary({ quote, showcase }: { quote: ServiceRequestQuote; showcase: boolean }) {
   const { t, i18n } = useTranslation();
   const money = (cents: number) => formatMoney(cents, i18n.language);

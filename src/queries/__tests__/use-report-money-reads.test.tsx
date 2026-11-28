@@ -31,7 +31,6 @@ interface Read {
 const FIRST: Input = { period: { from: '2026-09-01', to: '2026-09-30' }, propertyId: 'p-1' };
 const OTHER: Input = { period: { from: '2026-08-01', to: '2026-08-31' }, propertyId: 'p-2' };
 
-/** The three money reads: the hook, the call it makes to the server and the key under which the query is kept. */
 const READS: ReadonlyArray<{ name: string; useRead: (input: Input) => Read; call: () => ReturnType<typeof vi.fn>; key: (input: Input) => unknown[] }> = [
   {
     name: 'useCollectionsReport',
@@ -71,14 +70,12 @@ describe('the money reads: always fresh, never kept, never the figures of anothe
 
     const first = renderHook(() => useRead(FIRST), { wrapper });
     await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
-    // Stale as soon as it arrives (not fresh for 5 minutes) and kept for no time (not for 10) once nothing shows it.
     expect(first.result.current.isStale).toBe(true);
     expect(client.getQueryCache().find({ queryKey: key(FIRST) })?.options.gcTime).toBe(0);
 
     first.unmount();
     await waitFor(() => expect(client.getQueryCache().find({ queryKey: key(FIRST) })).toBeUndefined());
 
-    // Opened again: nothing is left to show, and the figures are asked of the server again.
     const second = renderHook(() => useRead(FIRST), { wrapper });
     expect(second.result.current.data).toBeUndefined();
     await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
@@ -102,7 +99,6 @@ describe('the money reads: always fresh, never kept, never the figures of anothe
     const { result, rerender } = renderHook((input: Input) => useRead(input), { wrapper, initialProps: FIRST });
     await waitFor(() => expect(result.current.data).toEqual({ figures: 'before' }));
 
-    // The next read never answers: while it is on its way there is nothing to show, and nothing that looks like the figures of the new days.
     call().mockReturnValueOnce(new Promise(() => undefined));
     rerender(OTHER);
 

@@ -12,11 +12,6 @@ interface EmbedGtmFieldProps {
   config: OrgDomainConfig;
 }
 
-/**
- * The Google Tag Manager container of the agency (E41/F03/US01, NF-149), one field in a quiet row: `GTM-` and 4 to 12 letters or digits, trimmed and upper-cased, checked here
- * before any request is made. Saving an empty field clears the container. A refusal of the server is shown under the field with its own words. The field follows what the server
- * holds: it shows the saved value when the page opens (and after a reload), and the value as the server stored it after a save. While a save is on its way the field and the button are off.
- */
 export function EmbedGtmField({ orgId, config }: EmbedGtmFieldProps) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -24,7 +19,6 @@ export function EmbedGtmField({ orgId, config }: EmbedGtmFieldProps) {
   const [draft, setDraft] = useState(saved ?? '');
   const [formatError, setFormatError] = useState(false);
 
-  // The field follows the server: adjusted while rendering when the saved value changes (a save, a read again, another visit), never in an effect.
   const [syncedFrom, setSyncedFrom] = useState(saved);
   if (saved !== syncedFrom) {
     setSyncedFrom(saved);

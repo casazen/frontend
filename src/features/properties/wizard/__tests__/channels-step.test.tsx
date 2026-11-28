@@ -90,7 +90,6 @@ describe('ChannelsStep (E02/F03/US01/T04)', () => {
       expect(within(channel(code)).getByRole('checkbox', { name: `Pubblica su ${name}` })).toBeChecked();
       expect(within(channel(code)).getByText('Da pubblicare')).toBeInTheDocument();
     }
-    // The line says where the CIN is not sent yet (NF-30).
     expect(screen.getByTestId('property-wizard-channels-cin-line')).toHaveTextContent('Il CIN resta in CasaZen: per ora non viene inviato a Booking.com, Airbnb, Vrbo.');
   });
 
@@ -117,7 +116,6 @@ describe('ChannelsStep (E02/F03/US01/T04)', () => {
     expect(within(booking).getByText('Da correggere')).toBeInTheDocument();
     expect(within(booking).getByRole('progressbar', { name: 'Completezza del contenuto: 60%' })).toBeInTheDocument();
     expect(screen.getByTestId('property-wizard-channel-reason-booking_xml')).toHaveTextContent('Servono più foto per questo canale');
-    // An error on one channel does not hide the others: each one says its own state.
     expect(within(channel('airbnb_xml')).getByText('In invio')).toBeInTheDocument();
     expect(within(channel('homeaway')).getByText('Pubblicato')).toBeInTheDocument();
 
@@ -225,7 +223,6 @@ describe('ChannelsStep (E02/F03/US01/T04)', () => {
   });
 
   it('aChannelChangedOutsideCasaZen_IsToldBeforeAnyPublication_WithTheWayToTheChoice', () => {
-    // The To do of a change made outside CasaZen leads to this step: the host does not have to be refused first to find the choice.
     withRows(row('booking_xml', { status: 'Published', changedOutside: ['descriptions', 'rooms'] }), row('airbnb_xml'));
     render(<Harness />);
 

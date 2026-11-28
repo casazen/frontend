@@ -93,7 +93,6 @@ export function NotificationChannelsSection({ preferences }: NotificationChannel
   );
 }
 
-/** The id of the line that says why a channel cannot be switched, which the switches of that channel point at (a card has its own copy). */
 function reasonId(idPrefix: string, channel: NotificationChannel, eventType?: string): string {
   return `${idPrefix}-reason-${eventType ? `${eventType}-` : ''}${channel}`;
 }
@@ -105,7 +104,6 @@ interface EventRowProps {
   idPrefix: string;
 }
 
-/** One kind of event: its name, one line about it, a mark when the caller never chose, and its four switches. It saves by itself. */
 function EventRow({ row, availability, layout, idPrefix }: EventRowProps) {
   const { t } = useTranslation();
   const save = useSaveNotificationPreferences();
@@ -113,8 +111,6 @@ function EventRow({ row, availability, layout, idPrefix }: EventRowProps) {
   const legalId = `${idPrefix}-${row.eventType}-legal`;
   const titleId = `${idPrefix}-${row.eventType}-title`;
 
-  // While a save is on its way the row shows what is being saved and never what the server had a moment ago, so a switch does not jump back and
-  // forth; a second switch moved in the meantime builds on it. A refused save ends the wait and the row shows the server's again.
   const channels = save.isPending ? (save.variables?.events?.[0]?.channels ?? row.channels) : row.channels;
 
   const change = (channel: NotificationChannel, on: boolean) => {
@@ -169,7 +165,6 @@ function EventRow({ row, availability, layout, idPrefix }: EventRowProps) {
         </th>
         {NOTIFICATION_CHANNELS.map((channel) => (
           <td key={channel} className="px-2 py-1 text-center">
-            {/* The label is the target (44 px): the switch is 24 px high, and the touch rules leave switches out of their hit area. */}
             <label className="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center has-[:disabled]:cursor-not-allowed">
               {switchFor(channel)}
             </label>

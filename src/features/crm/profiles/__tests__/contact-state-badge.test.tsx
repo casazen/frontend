@@ -23,7 +23,6 @@ describe('contactStateOf: the e-mail state of a profile or of a contact (NF-89)'
   });
 
   it('contactStateOf_AGuestWhoOptedOut_IsNeverReachableWhateverTheBasis', () => {
-    // The rule that matters: an opt-out wins over a consent, even one the list still counts as reachable.
     expect(contactStateOf({ hasAddress: true, basis: 'Consent', reachable: true, suppressed: true })).toBe('unsubscribed');
   });
 });
@@ -44,7 +43,6 @@ describe('ContactStateBadge', () => {
 
       const badge = screen.getByTestId('contact-state-badge');
       expect(badge).toHaveAttribute('data-state', state);
-      // A word, and an explanation that is a sentence of its own: never an unresolved key.
       expect(badge.textContent).toBeTruthy();
       expect(badge.textContent).not.toMatch(/^crm\./);
       expect(badge.getAttribute('title')).toBeTruthy();

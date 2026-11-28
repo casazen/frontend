@@ -4,13 +4,8 @@ import { getStatusView } from '@/components/shared/status/status-view';
 import type { BillingSubscriptionStatus } from '@/types';
 import { BillingDisclosure } from './billing-disclosure';
 
-/** The states a subscription goes through, in the order a person meets them; "no subscription" is the state before all of them. */
 const LISTED: readonly BillingSubscriptionStatus[] = ['active', 'trialing', 'past_due', 'incomplete', 'unpaid', 'canceled'];
 
-/**
- * "Cosa significano gli stati dell'abbonamento": each state with the sentence of the status dictionary (the same words the badge and
- * the explainers of the app use), the one the org is in marked.
- */
 export function SubscriptionStates({ status }: { status: BillingSubscriptionStatus }) {
   const { t, i18n } = useTranslation();
   const current = getStatusView('subscription', status, 'host', t, i18n).label;

@@ -31,10 +31,6 @@ import {
 } from './use-org-settings';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
-/**
- * What the form edits. The operator data (DB-03b-a: backend `OrgOperatorRules`) and the phone (AM-08b-b) are text boxes: empty means
- * "not entered". The language of the account (AM-08b-b) is Italian until it is changed.
- */
 type OrgSettingsForm = Pick<OrgSettings, 'name' | 'slug' | 'contactEmail' | 'contactEmailPublic'> & {
   legalName: string;
   registeredOffice: string;
@@ -43,23 +39,17 @@ type OrgSettingsForm = Pick<OrgSettings, 'name' | 'slug' | 'contactEmail' | 'con
 };
 type FieldErrors = Partial<Record<'name' | 'slug' | 'contactEmail', string>>;
 
-/** Page of the public site's branding: logo, hero, color, tagline, theme (BK-12). */
 const SITE_APPEARANCE_PATH = '/app/short-rent/settings/site-appearance';
 
-/** Route prefix of an org's public booking site (a path, not text to translate). */
 const PUBLIC_PATH_PREFIX = '/book/';
 
-/** Longest legal name and registered office the backend accepts (`OrgOperatorRules`); the server checks again. */
 const LEGAL_NAME_MAX_LENGTH = 200;
 const REGISTERED_OFFICE_MAX_LENGTH = 300;
 
-/** Longest phone the backend takes before it drops the separators (`UpdateOrgSettingsDto.ContactPhone`); the server checks again. */
 const CONTACT_PHONE_MAX_LENGTH = 40;
 
-/** Same shape the backend accepts ([EmailAddress]): one `@` with text on both sides; the server validates again. */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
 
-/** Translation keys of the client-side checks; the server validates again and answers with its own message. */
 function validate(form: OrgSettingsForm): FieldErrors {
   const errors: FieldErrors = {};
   if (!form.name.trim()) errors.name = 'orgSettings.errors.nameRequired';
@@ -70,15 +60,12 @@ function validate(form: OrgSettingsForm): FieldErrors {
 }
 
 interface SlugStatusProps {
-  /** The typed address is not the saved one: only then it is worth checking. */
   slugChanged: boolean;
   typedSlug: string;
-  /** The typed address once it stopped changing: the one the check is about. */
   debouncedSlug: string;
   availability: ReturnType<typeof useOrgSlugAvailability>;
 }
 
-/** Whether the address being typed is free: checking, free, taken (and why), or not checked (the save checks again). */
 function SlugStatus({ slugChanged, typedSlug, debouncedSlug, availability }: SlugStatusProps) {
   const { t } = useTranslation();
 
@@ -114,7 +101,6 @@ function SlugStatus({ slugChanged, typedSlug, debouncedSlug, availability }: Slu
   );
 }
 
-/** Org identity settings (US-004 extension, A1-22, A1-23) in the short-rent shell. */
 export function OrganizationSettingsPage() {
   return (
     <AppShell>
@@ -123,14 +109,9 @@ export function OrganizationSettingsPage() {
   );
 }
 
-/**
- * Content of the org settings page, without a shell: the short-rent route wraps it in its shell
- * ({@link OrganizationSettingsPage}), the long-rent route gets the long-rent shell from the context layout.
- */
 export function OrganizationSettingsContent({
   showSiteAppearanceLink = false,
 }: {
-  /** Short-rent shell only: the public booking site (and its branding page) belongs to short-term rentals. */
   showSiteAppearanceLink?: boolean;
 }) {
   const { t } = useTranslation();
@@ -145,12 +126,6 @@ export function OrganizationSettingsContent({
   );
 }
 
-/**
- * What the org says about itself: its name, the address of its booking site and the email that receives the messages of CasaZen, with
- * the choice of showing the email on the site. One form, one save (`PUT /api/orgs/me/settings`, the same fields and rules as ever,
- * for the org billing administrator alone). It tells loading, a failed read and a person who may not use it; the page that holds it
- * gives it a title.
- */
 export function OrganizationSettings({ showSiteAppearanceLink = false }: { showSiteAppearanceLink?: boolean }) {
   const { t } = useTranslation();
   const { contexts, activeContext } = useWorkspace();
@@ -170,7 +145,6 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
     defaultLanguage: 'it',
   });
   const [submitted, setSubmitted] = useState(false);
-  // Sync the form from the server settings whenever they (re)load (adjusting state during render).
   const [synced, setSynced] = useState<OrgSettings | undefined>(undefined);
   if (settingsQuery.data !== synced) {
     setSynced(settingsQuery.data);
@@ -258,7 +232,6 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
   };
 
   return (
-    // The columns follow the width of this block, not the one of the screen: the form is also half of the account settings page.
     <div className="@container min-w-0">
       <form onSubmit={handleSave} noValidate className="min-w-0 space-y-5" data-testid="org-settings-form">
         {org?.planTier ? (
@@ -268,7 +241,6 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
           </div>
         ) : null}
         <div className={FIELD_COLUMNS}>
-          {/* How the org is known and reached: the name and address of its site, the email and the phone. */}
           <div className="min-w-0 space-y-5 rounded-xl border bg-card p-4 sm:p-6">
             <Field label={t('orgSettings.nameLabel')} error={fieldErrors.name}>
               <Input
@@ -357,7 +329,6 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
             </Field>
           </div>
 
-          {/* Who runs it by law, and the language and currency of the account. */}
           <div className="min-w-0 space-y-5 rounded-xl border bg-card p-4 sm:p-6">
             {/* Who runs the site (DB-03b-a): shown in the footer of the booking site with the VAT number of the fiscal profile. */}
             <div className="space-y-4" data-testid="org-operator-section">
@@ -388,7 +359,6 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
               </Field>
             </div>
 
-            {/* Language and currency (AM-08b-b): the language is the account's choice; the currency and the time zone are the product's, shown and not asked. */}
             <div className="space-y-3" data-testid="org-language-section">
               <div className="space-y-1.5">
                 <p className="text-sm font-medium leading-snug">{t('orgSettings.languageLabel')}</p>
@@ -419,7 +389,6 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
           </Button>
         </div>
 
-        {/* The public site's branding has its own page in the short-rent shell (BK-12). */}
         {showSiteAppearanceLink ? (
           <p className="text-sm text-foreground/70" data-testid="org-settings-site-appearance-hint">
             {t('orgSettings.siteAppearanceHint')}{' '}
@@ -429,11 +398,9 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
           </p>
         ) : null}
       </form>
-      {/* In the first column, under the fields it is read with: a switch at the far end of a wide row would be far from its name. */}
       <div className={FIELD_COLUMNS}>
         <ServiceRequestBackupsSetting />
       </div>
-      {/* The identity check of the guests (E22/F02/US01/T02): only while the identity verification is on; with it off the page has nothing more than it always had. */}
       <div className={FIELD_COLUMNS}>
         {activeContext === 'long-rent' && <BiometricSettingsCard />}
       </div>

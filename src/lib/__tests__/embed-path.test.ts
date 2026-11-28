@@ -4,10 +4,6 @@ import { isEmbedPath } from '@/lib/embed-path';
 import { isPublicUnauthenticatedPath } from '@/lib/secure-origin';
 import { toAppPath, toHostPath } from '@/routes/host-site-window';
 
-/**
- * The pages of the embeddable widgets (NF-144) are frames of other sites: they never mount the sign-in and never read the storage. What
- * recognises them is `isEmbedPath`, which the start-up (the language, the sign-in gate, the landing touch) asks before anything else.
- */
 describe('isEmbedPath', () => {
   it.each([
     '/embed',
@@ -18,7 +14,6 @@ describe('isEmbedPath', () => {
     '/embed/villa-rossi/booking',
     '/embed/villa-rossi/property/casa-mare',
     '/embed/booking?lang=en&v=1',
-    // The router matches a path without looking at the case: what it renders as a widget must read nothing either.
     '/EMBED/booking',
   ])('isEmbedPath_%s_IsAnEmbedPage', (path) => {
     expect(isEmbedPath(path)).toBe(true);
@@ -50,7 +45,6 @@ describe('the pages of the widgets and the rest of the app', () => {
   it.each(['/embed/booking', '/embed/property/casa-mare', '/embed/guest-access'])(
     'toAppPath_%s_IsUnchangedOnAnAgencyHost',
     (path) => {
-      // The router window of an agency's domain only rewrites the segments of the booking site: `/embed/…` is the route itself.
       expect(toAppPath(path, 'villa-rossi')).toBe(path);
       expect(toHostPath(path, 'villa-rossi')).toBe(path);
     },
@@ -72,7 +66,6 @@ describe('readStoredLocale', () => {
     ['/embed/booking?lang=', 'it'],
     ['/embed/booking', 'it'],
   ])('readStoredLocale_EmbedPage_%s_IsTheLanguageOfTheAddressAndNeverReadsTheStorage', (address, expected) => {
-    // A language chosen on the site is in the storage, and the frame of another site must not see it.
     localStorage.setItem(LOCALE_STORAGE_KEY, expected === 'en' ? 'it' : 'en');
     window.history.replaceState({}, '', address);
     const getItem = vi.spyOn(Storage.prototype, 'getItem');

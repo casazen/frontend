@@ -15,7 +15,6 @@ vi.mock('@/api/payment-ledger.api', () => ({ getBookingLedger: vi.fn(), listLedg
 vi.mock('@/api/payments.api', () => ({ paymentsApi: { create: vi.fn(), getAll: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }) }));
 
-// The page of the fiscal documents is another task's: what the section is told about it is controlled here, so no assertion depends on whether it has landed.
 vi.mock('@/config/route-manifest', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/config/route-manifest')>()),
   getManifestEntry: vi.fn(),
@@ -94,7 +93,6 @@ describe('BookingLedgerSection, who may read it (permission rule)', () => {
     permissions.read = false;
     const { container } = renderSection();
 
-    // A read they may not make would be a 403 (told as a refusal, see payment-ledger-refusal.test.tsx): it is never made, and nothing is said about it.
     expect(container).toBeEmptyDOMElement();
     expect(getBookingLedger).not.toHaveBeenCalled();
     await act(async () => {});
@@ -132,7 +130,6 @@ describe('BookingLedgerSection, what a failed read says (a read that failed is n
     renderSection();
     await waitFor(() => expect(rows()).toHaveLength(1));
 
-    // The next read (a payment was recorded somewhere, the booking went out of the reach of the caller) is a 404: the cached lines are not the ledger of a booking that is not found.
     await act(async () => {
       await client.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
     });
@@ -181,7 +178,6 @@ describe('BookingLedgerSection, the notice of a channel that could not be read (
 
     const notice = await screen.findByTestId('payment-ledger-degraded');
     expect(notice).toHaveTextContent('I dettagli del canale non sono disponibili in questo momento');
-    // A notice, not an alert: it is not announced at once and it is not an error, and the stored lines are still there.
     expect(notice).toHaveAttribute('role', 'status');
     expect(screen.queryByRole('alert')).toBeNull();
     expect(rows()).toHaveLength(1);
@@ -223,7 +219,6 @@ describe('BookingLedgerSection, no lines and the lines of a booking', () => {
     renderSection();
     await waitFor(() => expect(rows()).toHaveLength(1));
 
-    // What `useCreatePayment` does when "Registra incasso" succeeds, and what a refund and the changes of a booking do too.
     await act(async () => {
       await client.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
     });
@@ -234,7 +229,6 @@ describe('BookingLedgerSection, no lines and the lines of a booking', () => {
   });
 
   it('BookingLedgerSection_RegistraIncassoSucceeds_TheLedgerIsReadAgainAndShowsTheNewLine', async () => {
-    // The mutation behind the button is the real one (`useCreatePayment`): what it marks stale on success is what refreshes the ledger.
     function RecordPaymentButton() {
       const create = useCreatePayment();
       return (
@@ -272,7 +266,6 @@ describe('BookingLedgerSection, no lines and the lines of a booking', () => {
 
     view.unmount();
 
-    // The amounts of a booking do not stay in the browser's memory after the booking is left (and are asked again when it is opened).
     await waitFor(() => expect(client.getQueryCache().getAll()).toHaveLength(0));
   });
 });
@@ -285,7 +278,6 @@ describe('BookingLedgerSection, the link to the document', () => {
     vi.mocked(getBookingLedger).mockResolvedValue(ledger([line()]));
     renderSection();
 
-    // The same line is drawn twice (the table and the card of a phone): both link the document.
     const links = await screen.findAllByTestId('payment-ledger-document-link');
     expect(links).toHaveLength(2);
     for (const link of links) expect(link).toHaveAttribute('href', '/app/short-rent/fiscal/documents');
@@ -298,7 +290,6 @@ describe('BookingLedgerSection, the link to the document', () => {
     renderSection();
 
     await waitFor(() => expect(rows()).toHaveLength(1));
-    // They would be turned away from that page: the link is not drawn, the document is still told.
     expect(screen.queryByTestId('payment-ledger-document-link')).toBeNull();
     expect(within(rows()[0]).getByTestId('payment-ledger-document')).toHaveTextContent('Fattura n. 2026/12');
   });

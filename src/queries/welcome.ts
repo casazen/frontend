@@ -9,10 +9,6 @@ const WELCOME_PAGE_QUERY = 'welcome-page';
 const welcomeLinkKey = (propertyId: string) => [WELCOME_LINK_QUERY, propertyId] as const;
 const welcomePageKey = (token: string) => [WELCOME_PAGE_QUERY, token] as const;
 
-/**
- * The welcome link of a property, for the host (E07/F04/US02/T02): `{ active, url, createdAt }`, `active: false` when it has none. Read again
- * whenever the page of the property opens: the link is made and replaced from here only, but on other devices too.
- */
 export function useWelcomeLink(propertyId: string) {
   return useQuery({
     queryKey: welcomeLinkKey(propertyId),
@@ -22,7 +18,6 @@ export function useWelcomeLink(propertyId: string) {
   });
 }
 
-/** Makes the link of the property when it has none; the answer replaces the one on screen. */
 export function useCreateWelcomeLink(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation<WelcomeLink, unknown, void>({
@@ -31,7 +26,6 @@ export function useCreateWelcomeLink(propertyId: string) {
   });
 }
 
-/** Replaces the code: the QR printed with the old one stops working at once. The new link replaces the one on screen. */
 export function useRotateWelcomeLink(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation<WelcomeLink, unknown, void>({

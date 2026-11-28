@@ -16,7 +16,6 @@ import {
 describe('buildSelection, the selection of the bulk configuration never means «all» by accident (NF-105)', () => {
   it('BuildSelection_NothingChosen_IsNoSelection', () => {
     expect(buildSelection(null, EMPTY_FILTER)).toEqual({ selection: null, problem: null });
-    // A filter typed while nothing is chosen does not choose anything.
     expect(buildSelection(null, { ...EMPTY_FILTER, comuni: '047017' }).selection).toBeNull();
   });
 

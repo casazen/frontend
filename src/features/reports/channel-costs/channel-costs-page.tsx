@@ -31,7 +31,6 @@ export function ChannelCostsPage() {
         {canRead ? (
           <ChannelCostsContent />
         ) : (
-          // The route keeps who may not read payments out; a page reached some other way asks the server for nothing and says so.
           <>
             <PageHeader title={t('reports.channelCosts.title')} description={t('reports.channelCosts.description')} crumbs="auto" />
             <Alert variant="info" data-testid="channel-costs-no-access">
@@ -48,7 +47,6 @@ function ChannelCostsContent() {
   const { t } = useTranslation();
   const filters = useMoneyReportFilters('last3Months');
   const { days, propertyId, problem } = filters;
-  // The server is not asked for days it would refuse: the page says why, and shows nothing of an earlier choice.
   const asked = problem === null;
 
   const query = useChannelCostsReport(days, propertyId, asked);
@@ -81,7 +79,6 @@ function ChannelCostsContent() {
             </p>
           ) : (
             <>
-              {/* The figures have no symbol: the server adds every property in its own currency and does not say it, so the page says so first. */}
               <div className="space-y-2">
                 <p className="text-sm text-foreground/70" data-testid="channel-costs-currency-note">
                   {t('reports.money.currencyNote')}

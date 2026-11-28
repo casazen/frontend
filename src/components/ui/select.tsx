@@ -3,16 +3,11 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size"> {
-  /** `sm` is for toolbars and filters (36 px). */
   size?: "default" | "sm";
-  /** Same as `aria-invalid`; a `Field` with an error sets `aria-invalid` for you. */
   invalid?: boolean;
-  /** Classes of the box around the `<select>`: its width in a toolbar (`w-48`), margins. `className` goes on the `<select>`. */
   wrapperClassName?: string;
 }
 
-// The red state needs more than the border: a global rule makes the `border-*` color utilities do nothing today, so
-// the invalid field also gets a 1 px outline right over its border.
 const INVALID =
   "aria-[invalid=true]:border-destructive aria-[invalid=true]:outline aria-[invalid=true]:outline-1 aria-[invalid=true]:-outline-offset-1 aria-[invalid=true]:outline-destructive";
 

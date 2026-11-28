@@ -16,7 +16,6 @@ const BOOKING_ID = 'b-1';
 
 const incomplete = { dataComplete: false } as AlloggiatiStatusDto;
 
-/** The client of the app does not read an unobserved query again by default (`refetchOnMount: false`). */
 function renderNotice(notice: React.ReactElement, seed?: AlloggiatiStatusDto) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, refetchOnMount: false } } });
   if (seed) client.setQueryData([ALLOGGIATI_KEY, 'status', BOOKING_ID], seed);
@@ -73,7 +72,6 @@ describe('GuestDataNotice', () => {
   });
 
   it('GuestDataNotice_InlineMode_ReadsTheStatusAgainWhenItOpensWhateverTheCacheHolds', async () => {
-    // The panel of the wizard saves guests while the notice is not on screen: what it shows must be what the server holds now.
     renderNotice(createElement(GuestDataNotice, { bookingId: BOOKING_ID, inline: true, onComplete: vi.fn() }), { dataComplete: true } as AlloggiatiStatusDto);
 
     await waitFor(() => expect(alloggiatiApi.getStatus).toHaveBeenCalledWith(BOOKING_ID));

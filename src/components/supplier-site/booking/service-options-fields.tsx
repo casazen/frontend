@@ -27,10 +27,6 @@ interface ServiceOptionsFieldsProps {
   onOption: (code: string, quantity: number) => void;
 }
 
-/**
- * What changes the price of the service the customer chose: the hours, the sets or the square meters of its own price, the size of the
- * home, each supplement. It only says what was chosen; the total is the server's (`POST …/quote`), never added up here.
- */
 export function ServiceOptionsFields({ service, selection, onQuantity, onSurface, onOption }: ServiceOptionsFieldsProps) {
   const { t, i18n } = useTranslation();
   const surfaceId = useId();

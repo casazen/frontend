@@ -25,7 +25,6 @@ describe('describeServiceError', () => {
     expect(found.kind).toBe('invalid');
     expect(found.status).toBe(422);
     expect(found.fields).toEqual(['name', 'supplements[1].amountCents', 'supplements[2].per']);
-    // Each name once, and not a word of the JSON.
     expect(found.message).toBe('Controlla questi dati: Nome, Supplementi.');
     expect(found.message).not.toMatch(/amountCents|supplements\[/);
   });
@@ -110,7 +109,6 @@ describe('formPathOfField', () => {
     ['supplements[1].amountCents', 'supplements.1.amount'],
     ['supplements[12].per', 'supplements.12.per'],
     ['supplements[2].max', 'supplements.2.max'],
-    // The code comes from the label: a problem with it is a problem of the label.
     ['supplements[3].code', 'supplements.3.label'],
   ])('FormPathOfField_%s_Is%s', (field, path) => {
     expect(formPathOfField(field)).toBe(path);

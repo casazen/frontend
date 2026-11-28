@@ -21,18 +21,11 @@ import type { SeoReviewEvent, SeoRevisionPreview } from '@/types/seo.types';
 import { contentStatusKey, isAiWrittenContent, isPublishableContent, SEO_REVIEW_NOTE_MAX_LENGTH } from './seo-review-helpers';
 
 interface SeoReviewDialogProps {
-  /** Page under review; null closes the dialog. Mount it with `key={pageId}` so the form restarts for each page. */
   pageId: string | null;
   onClose: () => void;
-  /** Closes the dialog and moves the SEO page to the AI provider form. */
   onConfigureAi?: () => void;
 }
 
-/**
- * Review of an SEO page (SE-01, A8-04, A8-21): the text waiting for approval next to the published one, both as the public
- * page shows them (sanitized), the review history, and the approval of the exact revision read, with an explicit legal
- * review confirmation and an optional note kept in the audit.
- */
 export function SeoReviewDialog({ pageId, onClose, onConfigureAi }: SeoReviewDialogProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError } = useSeoPageDetail(pageId);
@@ -289,7 +282,6 @@ function RevisionPanel({ heading, revision, published, emptyText, testId }: Revi
           </p>
           {revision.bodyHtml ? (
             <>
-              {/* Only a text a model really wrote carries the notice: a "not generated" state has none to show. */}
               <AiContentNotice visible={isAiWrittenContent(revision.contentStatus)} kind={published ? 'seo' : 'draft'} />
               <article
                 className="prose prose-sm prose-neutral max-w-none dark:prose-invert"

@@ -42,7 +42,6 @@ const SECTIONS: { value: Section; label: string }[] = [
 
 const KIND_NAME: Record<LocalKind, string> = { country: 'Campagna', coast: 'Costa', historic: 'Centro storico' };
 
-/** Points of interest of the review: a letter, the bearing (0 = north, 90 = east) and the distance in metres. */
 const POIS = [
   { l: 'A', b: 90, d: 400 },
   { l: 'B', b: 270, d: 500 },
@@ -223,7 +222,6 @@ function ChecksSection() {
       }
     }
     checks.push({ name: 'localPlace: sempre dentro il riquadro (1200 punti casuali, mare in ogni direzione)', pass: outside === 0, info: `${outside} fuori` });
-    // the packs against the base: every town of a pack, rounded to two decimals like a house, is on land or at most 1.5 km from it
     const towns = [...LOMBARDIA.towns, ...SVIZZERA.towns];
     let moved = 0;
     let far = 0;
@@ -235,7 +233,6 @@ function ChecksSection() {
       if (km > far) far = km;
     }
     checks.push({ name: 'i centri dei pacchetti (arrotondati a 2 decimali) cadono a terra o a meno di 1,5 km', pass: far <= 1.6, info: `${moved} su ${towns.length} spostati a terra, al massimo di ${far.toFixed(2)} km` });
-    // the region of a set of positions
     const at = (...ids: string[]): House[] => HOUSES.filter((h) => ids.includes(h.id));
     const idOf = (pts: LatLon[]) => getRegionForPoints(pts, { aspect: 4 / 3 }).id;
     const ids = [idOf(at('milano', 'lugano')), idOf(at('como')), idOf(at('zurigo')), idOf(at('milano', 'roma')), idOf([]), idOf([{ lat: 45.07, lon: 7.69 }])];
@@ -291,7 +288,6 @@ function ChecksSection() {
   );
 }
 
-/** The schematic maps of the public site (DB-19a), to look at them and to approve them by image: `/dev/maps?s=region|local|components|checks`. */
 export default function MapsPage() {
   const [params, setParams] = useSearchParams();
   const section: Section = SECTIONS.find((s) => s.value === params.get('s'))?.value ?? 'region';

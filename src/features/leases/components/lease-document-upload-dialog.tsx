@@ -11,25 +11,16 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { EMPTY_DOCUMENT, documentReady, prepareDocument, type DocumentSelection } from '@/lib/document-pdf';
 import { leaseDocumentsKey } from '@/queries/use-lease-documents';
 
-/** The same limit as the Documents tab of the lease: one PDF, or the photos of its pages put in one, up to 20 MB. */
 const MAX_BYTES = 20 * 1024 * 1024;
 
 interface LeaseDocumentUploadDialogProps {
   leaseId: string;
-  /** What the file is for the lease: it is saved among its documents under this kind (the attestation, the receipt, the signed contract). */
   kind: LeaseDocumentKind;
-  /** What the window says it is for, already translated («Carica l'attestazione»). */
   title: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * One document for a lease, from the screen where it was found missing: a PDF, or the photos of its pages that the browser puts in one
- * (`DocumentPages`, the same box as the Documents tab). The file is saved among the documents of the lease under its kind, and every
- * screen that shows them reads the list again. Nothing else of the lease changes. A window that is closed keeps nothing of what was
- * chosen.
- */
 export function LeaseDocumentUploadDialog({ leaseId, kind, title, open, onOpenChange }: LeaseDocumentUploadDialogProps) {
   const { t } = useTranslation();
   const client = useQueryClient();

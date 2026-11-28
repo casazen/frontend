@@ -18,31 +18,20 @@ import { AssistReopenDialog } from './assist-reopen-dialog';
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** The 409 that says a request of the same step is already open: the request that is open is the answer. */
 const ALREADY_OPEN_CODE = 'assist_request_already_open';
 
 interface AssistRequestButtonProps {
-  /** The part of the plan the step belongs to (`compliance`, `channels`). */
   part: OnboardingPartKey;
-  /** What help is asked with: `panelPolice`, `panelIstat`, `panelChannelAccess` or `part`. */
   context: AssistRequestContext;
-  /** The property the step is about; none for the whole org. */
   propertyId?: string | null;
-  /** The channel of a channel access. */
   channelCode?: string | null;
   /**
    * `needHelp` is the same request under the words of the fallback of a result CasaZen cannot read («Mi serve aiuto»); `askSupport` is the same request under the words of a notice that
    * says something is not verified yet, such as the coverage of the ISTAT of a region («Chiedi al supporto»).
    */
   label?: 'doItForMe' | 'needHelp' | 'askSupport';
-  /** The line that says where the request stands and the link to «Da fare»: one on a page is enough. */
   showStatus?: boolean;
-  /** «Fallo per me» is the default action of the screen (a host with new properties: CasaZen support does the step, PO-19). */
   primary?: boolean;
-  /**
-   * The step the request is about is done (verified, or confirmed): a request that support closed for it is then told as its outcome, «Verificato» or «Dichiarato dal supporto»,
-   * with «Non funziona». A request that was closed for a step that is not done any more (it was started again) says nothing: its outcome is of the past.
-   */
   stepDone?: boolean;
 }
 
@@ -74,11 +63,8 @@ function AssistRequest({ part, context, propertyId, channelCode, label = 'doItFo
   const request = useRequestAssist();
   const reopen = useReopenAssistRequest();
   const [reopeningId, setReopeningId] = useState<string | null>(null);
-  // Any request of this card in flight: none of its buttons can be pressed meanwhile.
   const busy = request.isPending || reopen.isPending;
 
-  // What support has open for this step (the context, the property and the channel: a request for another channel is not this step's): from the list the
-  // server gave, or from the answer of the request made a moment ago.
   const listed = findOpenAssist(requests.data, context, propertyId, channelCode);
   const made = request.data && (request.data.status === 'Requested' || request.data.status === 'InProgress') ? request.data : undefined;
   const open = listed ?? made;
@@ -90,7 +76,6 @@ function AssistRequest({ part, context, propertyId, channelCode, label = 'doItFo
     try {
       await reopen.mutateAsync({ id: reopeningId, note });
     } finally {
-      // The note is free text of the person: the mutation does not keep it once it is done (the dialog says a refusal from the error it was thrown).
       reopen.reset();
     }
     toast.success(t('onboardingPlan.panel.assist.notWorking.reopened'));

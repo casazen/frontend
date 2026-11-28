@@ -7,12 +7,10 @@ import type { SeoEventName, SeoEventPayload } from '@/types/seo.types';
 
 declare global {
   interface Window {
-    /** Plausible's tracking function, present only when its script was added to the site. */
     plausible?: (event: string, options?: { props?: Record<string, string> }) => void;
   }
 }
 
-/** Where the events go: the API of the app (the same base URL as every request). */
 const EVENTS_PATH = '/public/seo/events';
 
 /**
@@ -43,7 +41,6 @@ export function buildSeoEventPayload(
 function sendWithBeacon(payload: SeoEventPayload): boolean {
   if (typeof navigator === 'undefined' || typeof navigator.sendBeacon !== 'function') return false;
   try {
-    // A beacon survives the page unload: the CTA link opens another page right after the click.
     const body = new Blob([JSON.stringify(payload)], { type: 'application/json' });
     return navigator.sendBeacon(`${env.api.baseUrl}${EVENTS_PATH}`, body);
   } catch {

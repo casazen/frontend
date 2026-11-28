@@ -17,13 +17,10 @@ export function useOrgDomain(orgId?: string, enabled = true, options: { fresh?: 
     queryKey: [ORG_DOMAIN_QUERY_KEY, orgId],
     queryFn: () => DomainApi.getDomain(orgId!),
     enabled: !!orgId && enabled,
-    // `fresh`: for a screen that builds links from the settings. The domain is changed and checked on another page, so it is read again on every visit and
-    // whenever the window comes back (the client does not read an unobserved query again by default, even one that was marked stale).
     ...(options.fresh ? { refetchOnMount: 'always' as const, staleTime: 0 } : {}),
   });
 }
 
-/** Where the links of the booking site are, and how sure that is. */
 export interface OrgBookingSite {
   site: BookingSite;
   /**
@@ -33,10 +30,6 @@ export interface OrgBookingSite {
    */
   status: 'ready' | 'loading' | 'restricted' | 'failed';
   retry: () => void;
-  /**
-   * The domain settings the links were built from, for a page that shows more of them than the address (the surfaces, the tracking: `Incorpora nel tuo sito`, E41/F03/US01). Only with
-   * `status` `ready`: a read that failed leaves the settings of the last one that worked in the query, and they are not given out as if they were current.
-   */
   config?: OrgDomainConfig;
 }
 
@@ -72,7 +65,6 @@ export function useSetOrgDomain(orgId?: string) {
       queryClient.invalidateQueries({ queryKey: [ORG_DOMAIN_QUERY_KEY, orgId] });
       toast.success(i18n.t('domain.settings.saved'));
     },
-    // e.g. 422 subdomains_not_configured (no PublicHost__BaseDomain, SE-03): the reason, not a generic failure.
     onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('domain.settings.saveFailed')),
   });
 }
@@ -87,21 +79,15 @@ export function useVerifyOrgDomain(orgId?: string) {
       if (result.domainVerificationStatus === 'Verified') {
         toast.success(i18n.t('domain.settings.verifySuccess'));
       } else {
-        // The reason in the user's language (stable code), the server text for a code this app does not know.
         toast.warning(
           describeDomainIssue(result.detail, result.message, i18n.t) ?? i18n.t('domain.settings.verifyFailed'),
         );
       }
     },
-    // e.g. 403 plan_required (the plan lapsed): the reason, not a generic failure.
     onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('domain.settings.verifyFailed')),
   });
 }
 
-/**
- * The three choices of the agency about what runs on its own domain (E40/F02/US02, NF-140..NF-142). The whole configuration that comes back is written into the cache of the page: it
- * shows the saved state as the server holds it (the choices, what is really on, where the sign-in of the owners stands) without asking again.
- */
 export function useSetDomainSurfaces(orgId?: string) {
   const queryClient = useQueryClient();
 
@@ -115,10 +101,6 @@ export function useSetDomainSurfaces(orgId?: string) {
   });
 }
 
-/**
- * Asks again for the sign-in of the owners on the agency's own domain, after the registration failed. The configuration that comes back goes into the cache like the one of the
- * switches, and the toast tells what the server says now (still failed, registering, active), not only that the request went out.
- */
 export function useRequestOwnerLogin(orgId?: string) {
   const queryClient = useQueryClient();
 

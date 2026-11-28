@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import type { CSSProperties } from 'react';
 import '@/features/public-booking/property-page.css';
 
-/** The classes of the energy certificate (APE), from the best to the worst, with a tint from green to red for the eye. */
 const ENERGY_CLASSES = [
   { id: 'A4', tint: '#1a8a3e' },
   { id: 'A3', tint: '#3a9a2c' },
@@ -17,9 +16,7 @@ const ENERGY_CLASSES = [
 ] as const;
 
 interface EnergyScaleProps {
-  /** The class printed on the APE (`A4` to `G`). A value that is not one of them shows nothing: the system never guesses it. */
   energyClass: string | null | undefined;
-  /** The global energy performance index in kWh/m² per year; only said together with the class. */
   energyIndex?: number | null;
 }
 

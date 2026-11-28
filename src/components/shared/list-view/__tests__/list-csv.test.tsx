@@ -138,7 +138,6 @@ describe('the file', () => {
 
     expect(savedName).toBe('stays-2026-10-09.csv');
     expect(saved?.type).toBe('text/csv;charset=utf-8');
-    // The bytes of the file start with the byte order mark of UTF-8 (EF BB BF), which `Blob.text()` would hide.
     const bytes = new Uint8Array((await saved?.arrayBuffer()) ?? new ArrayBuffer(0));
     expect(Array.from(bytes.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]);
     expect(new TextDecoder().decode(bytes.slice(3))).toBe('"a"');

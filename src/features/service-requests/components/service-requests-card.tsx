@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { Inbox, Loader2, type LucideIcon } from 'lucide-react';
+import { InfoCard } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -8,7 +9,6 @@ import type { ServiceRequestContextKey, ServiceRequestListResponse } from '@/typ
 import { ServiceRequestTimeline } from './service-request-timeline';
 
 interface ServiceRequestsCardProps {
-  /** A list query of `useServiceRequests` (stay or property) or `useLongRentServiceRequests` (property). */
   query: {
     data?: ServiceRequestListResponse;
     isLoading: boolean;
@@ -17,17 +17,14 @@ interface ServiceRequestsCardProps {
     isFetching?: boolean;
     refetch: () => unknown;
   };
-  /** Translated text of the empty state. */
   emptyText: string;
   context?: ServiceRequestContextKey;
-  /** Header action, e.g. the "request a supplier" dialog trigger. */
   action?: ReactNode;
   showStay?: boolean;
-  /** The caller may pay and re-request (`property.write` of the context); default true. */
   canManage?: boolean;
   testId?: string;
-  /** A part of a page without a box around it (a title and its content), for a page made of plain sections; default: a card. */
   plain?: boolean;
+  icon?: LucideIcon;
 }
 
 /**
@@ -43,6 +40,7 @@ export function ServiceRequestsCard({
   canManage = true,
   testId = 'service-requests-card',
   plain = false,
+  icon,
 }: ServiceRequestsCardProps) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -61,12 +59,21 @@ export function ServiceRequestsCard({
       </Button>
     </div>
   ) : items.length === 0 ? (
-    <p className="text-sm text-muted-foreground" data-testid="service-requests-empty">
+    <p className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="service-requests-empty">
+      {icon ? <Inbox aria-hidden="true" className="size-4 shrink-0" /> : null}
       {emptyText}
     </p>
   ) : (
-    <ServiceRequestTimeline requests={items} context={context} showStay={showStay} canManage={canManage} />
+    <ServiceRequestTimeline requests={items} context={context} showStay={showStay} canManage={canManage} compact={icon !== undefined} />
   );
+
+  if (icon) {
+    return (
+      <InfoCard icon={icon} title={t('serviceRequest.timelineTitle')} aside={action} data-testid={testId}>
+        {content}
+      </InfoCard>
+    );
+  }
 
   if (plain) {
     return (

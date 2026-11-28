@@ -8,7 +8,6 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 import type { ArchiveDocument, ArchiveExportQuery, ArchiveListQuery, ArchiveTypesQuery } from '@/types';
 
-/** Root of every query key of the document archive. */
 const DOCUMENT_ARCHIVE_KEY = 'document-archive';
 
 /**
@@ -29,10 +28,6 @@ export function useDocuments(query: ArchiveListQuery, enabled = true) {
   });
 }
 
-/**
- * The types the caller may read, each with how many documents match `query` (the type itself left out of it). The server never sends a type
- * the caller may not read, so the page offers exactly these and no other. Read again on every visit and every return to the tab, like the list.
- */
 export function useDocumentTypes(query: ArchiveTypesQuery, enabled = true) {
   return useQuery({
     queryKey: [DOCUMENT_ARCHIVE_KEY, 'types', query],
@@ -76,19 +71,12 @@ export function useDownloadArchiveDocument() {
   });
 }
 
-/** What the export needs besides the period: a way to stop it, and to hear how many bytes of the ZIP came so far. */
 interface ExportRequest {
   query: ArchiveExportQuery;
   signal?: AbortSignal;
   onProgress?: (bytes: number) => void;
 }
 
-/**
- * Downloads the ZIP of a period and saves it. Like a single document it keeps nothing once nobody watches it (`gcTime: 0`), saves inside
- * its function and keeps a failure without its request. It says nothing itself: the dialog that asks for it tells the refusals (422
- * `archive_export_too_large` with the number of files, a period the server does not accept) next to the button, and a cancelled call is
- * not a failure.
- */
 export function useExportArchive() {
   return useMutation({
     mutationFn: async ({ query, signal, onProgress }: ExportRequest): Promise<void> => {

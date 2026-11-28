@@ -23,16 +23,8 @@ export const PROPERTIES_KEY = 'properties';
 /** The reading again of one APE: outside the key of the documents, so that refreshing them never runs the OCR again. */
 const APE_READ_KEY = 'ape-read';
 
-/**
- * The rows of the host's list of Affitti brevi (SR-07a): the short-stay properties with the state, what is missing and the nights
- * told by the server. The list and its drawer read the same query, so a change made in one shows in the other.
- */
 export const SHORT_PROPERTIES_OVERVIEW = { mode: 'short', view: 'overview' } as const;
 
-/**
- * `fresh`: read again from the server every time the list is shown, even when it is cached (the page of the list: a property
- * is created, edited or paused on other pages, where this list is not watched, so a refresh there would not reach it).
- */
 export function useProperties(
   params?: Record<string, string | number | boolean | undefined>,
   options: { fresh?: boolean; enabled?: boolean } = {},
@@ -40,13 +32,11 @@ export function useProperties(
   return useQuery({
     queryKey: [PROPERTIES_KEY, params],
     queryFn: () => propertiesApi.getAll(params),
-    // `enabled: false`: a screen of a person who may not read the properties asks for nothing (the server would answer 403).
     enabled: options.enabled ?? true,
     ...(options.fresh ? { refetchOnMount: 'always' as const } : {}),
   });
 }
 
-/** `fresh`: read again from the server on mount even when cached (a form that starts from the stored values). */
 export function useProperty(id: string, options: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, id],
@@ -56,10 +46,6 @@ export function useProperty(id: string, options: { fresh?: boolean } = {}) {
   });
 }
 
-/**
- * How many properties the org has of how many its plan allows (SR-07a), read again every time it is asked for: a property is
- * created or deleted on other pages. A refusal (no permission) leaves it empty: the server still decides on a create.
- */
 export function usePlanUsage(enabled = true) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, 'plan-usage'],
@@ -70,7 +56,6 @@ export function usePlanUsage(enabled = true) {
   });
 }
 
-/** Cancellation policies a short-stay property can reference (global catalog). */
 export function useCancellationPolicies(enabled = true) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, 'cancellation-policies'],
@@ -80,7 +65,6 @@ export function useCancellationPolicies(enabled = true) {
   });
 }
 
-/** Documents of a property (APE included), shared cache with the lease form. */
 export function usePropertyDocuments(id: string | undefined) {
   return useQuery({
     queryKey: [PROPERTIES_KEY, id, 'documents'],
@@ -98,7 +82,6 @@ export function usePropertyDetail(id: string, options: { fresh?: boolean } = {})
   });
 }
 
-/** The section that creates the property decides its mode: it is always sent, never inferred from guests and rate. */
 export function useCreateProperty(rentalMode: RentalMode) {
   const queryClient = useQueryClient();
 
@@ -106,13 +89,10 @@ export function useCreateProperty(rentalMode: RentalMode) {
     mutationFn: (data: CreatePropertyDto) => propertiesApi.create({ ...data, rentalMode }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
-      // Usage changed → plan badge / create gating must refetch (#202, AC8).
       queryClient.invalidateQueries({ queryKey: ENTITLEMENT_QUERY_KEY });
       toast.success(i18n.t('toast.propertyCreated'));
     },
     onError: (error: unknown) => {
-      // Plan-limit (403/409) is surfaced as an Italian message + upgrade CTA by the call site
-      // (create page inline alert / list dialog toast), so skip the generic error toast here.
       if (isPlanLimitError(error)) return;
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.propertyCreateFailed'));
     },
@@ -184,11 +164,6 @@ export function useActivateProperty() {
   });
 }
 
-/**
- * Soft delete (`DELETE /properties/{id}`). The backend refuses with 409 `property_has_upcoming_bookings` or
- * `property_has_active_leases`: `getProblemMessage` turns those codes into their own text (`apiErrors.codes`).
- * `explainBlocked`: for a page that tells those two refusals itself, with the way out (the account list): no toast for them.
- */
 export function useDeleteProperty({ explainBlocked = false }: { explainBlocked?: boolean } = {}) {
   const queryClient = useQueryClient();
 
@@ -211,10 +186,6 @@ export function useDeleteProperty({ explainBlocked = false }: { explainBlocked?:
   });
 }
 
-/**
- * Puts a member in charge of a property, or nobody (AM-03). No toast: the dialog that asks for it says how each property went. The
- * lists that show the person in charge are read again afterwards, also after a refusal (the page was showing an old state).
- */
 export function useSetPropertyResponsible() {
   const queryClient = useQueryClient();
 
@@ -238,14 +209,12 @@ export function useUploadPropertyDocument() {
       documentType: PropertyDocumentType;
     }) => propertiesApi.uploadDocument(propertyId, file, documentType),
     onSuccess: (document, variables) => {
-      // The upload of an APE has just read its code and class: no page asks the server to read the same file again.
       if (variables.documentType === 'Ape' && document?.id) {
         queryClient.setQueryData([APE_READ_KEY, document.id], document);
         if (!hasApeIdentification(document)) rememberApeReadFoundNothing(document.id);
       }
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] });
-      // The required documents are a step of the activation wizard (A5-18).
       queryClient.invalidateQueries({ queryKey: ['compliance', 'activation', variables.propertyId] });
       toast.success(i18n.t('toast.documentUploaded'));
     },
@@ -277,7 +246,6 @@ export function useDeletePropertyDocument() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] });
       queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'documents'] });
-      // The required documents are a step of the activation wizard (A5-18).
       queryClient.invalidateQueries({ queryKey: ['compliance', 'activation', variables.propertyId] });
       toast.success(i18n.t('toast.documentDeleted'));
     },
@@ -287,7 +255,6 @@ export function useDeletePropertyDocument() {
   });
 }
 
-/** LT-10: cadastral identification of the unit (foglio, particella, subalterno, categoria, rendita). */
 export function useUpdatePropertyCadastral() {
   const queryClient = useQueryClient();
 
@@ -304,7 +271,6 @@ export function useUpdatePropertyCadastral() {
   });
 }
 
-/** LT-10: code and energy class printed on an APE document. */
 export function useUpdateApeIdentification() {
   const queryClient = useQueryClient();
 
@@ -339,7 +305,6 @@ export function useReadApeIdentification() {
         queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY, variables.propertyId, 'detail'] }),
       ]);
     },
-    // Asked by a click: a reading that could not run is said (the reading by itself stays quiet and leaves the fields).
     onError: (error) => {
       toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('toast.apeReadFailed'));
     },
@@ -375,8 +340,6 @@ export function useApeAutoRead(propertyId: string | undefined, document: Propert
     staleTime: Infinity,
     gcTime: Infinity,
     retry: false,
-    // A reading that failed (timeout, server error) must not run the OCR of the server again at every focus of the window: the
-    // page tries once per visit (a new mount), and "Leggi dall'APE" tries on request.
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });

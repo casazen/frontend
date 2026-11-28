@@ -30,7 +30,6 @@ describe('propertyFormSchema cinCode', () => {
   });
 });
 
-// E29/F01/US02/T01 (NF-124): the Swiss municipality the host confirms from the official directory.
 const SWISS_PROPERTY: Property = {
   id: 'prop-ch',
   name: 'Casa sul lago',
@@ -82,7 +81,6 @@ describe('propertyFormSchema swissMunicipalityCode', () => {
   });
 
   it('swissMunicipalityCode_ASwissPropertyWithNothingConfirmed_PassesTheWholeForm', () => {
-    // Never blocks a save: a place that is not confirmed is only asked for.
     const result = propertyFormSchema.safeParse(valuesOf(SWISS_PROPERTY));
     expect(result.success).toBe(true);
   });

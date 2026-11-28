@@ -71,7 +71,6 @@ describe('notifications real-time client', () => {
     hub.handlers.get('alertReceived')?.(payload);
     hub.handlers.get('alertReceived')?.({ nonsense: true });
 
-    // One connection carries both methods; an alert is not a change and a change is not an alert.
     expect(factory).toHaveBeenCalledTimes(1);
     expect(alerts).toEqual([payload]);
     expect(changes).toEqual([]);
@@ -144,7 +143,6 @@ describe('notifications real-time client', () => {
 
     const first = factory.mock.results[0];
     expect(first).toBeDefined();
-    // The closed hub: the client builds a new connection.
     const closedHub = (await first.value) as FakeHub;
     closedHub.closed();
     await vi.advanceTimersByTimeAsync(reconnectDelay(1) + 1);
@@ -214,7 +212,6 @@ describe('parseAlert', () => {
   });
 
   it('parseAlert_PayloadWithMoreThanTheReferences_KeepsOnlyTheReferences', () => {
-    // ADR-025-R5: whatever a newer server adds, nothing but the five references reaches the queue and the screen.
     const parsed = parseAlert({ ...payload, guestName: 'Mario Rossi', guestEmail: 'mario.rossi@example.com' });
 
     expect(parsed).toEqual(payload);

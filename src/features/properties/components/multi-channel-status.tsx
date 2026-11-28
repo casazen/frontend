@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Clock } from 'lucide-react';
+import { Clock, CloudOff } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,6 @@ import { propertyWizardPath } from '../properties-paths';
 import { useChannelName } from './channel-name';
 import { OutsideChangeDialog } from './outside-change-dialog';
 
-/** «Sincronizzazione in ritardo»: the channel manager has not confirmed the content for more than a day (NF-09, ADR-034). */
 export function SyncDelayedBadge({ className }: { className?: string }) {
   const { t } = useTranslation();
 
@@ -30,18 +29,11 @@ export function SyncDelayedBadge({ className }: { className?: string }) {
 
 interface SummaryProps {
   propertyId: string;
-  /** The worst state of the property across its channels and the alert of a channel not confirmed for a day: the summary endpoint's row. */
   worstStatus: ChannelPublishStatus;
   syncAlert: boolean;
-  /** `property.write`: «Correggi» leads to the wizard, which is for who may write. */
   canWrite: boolean;
 }
 
-/**
- * The listing of a property in one line, for the list of the properties: the worst state of its channels, «Sincronizzazione in ritardo» when
- * a channel is not confirmed, and «Correggi» when something is to fix. «Correggi» opens the wizard at the channels, where the state of each
- * one and what lacks are told: the list knows only the worst state.
- */
 export function ChannelSummary({ propertyId, worstStatus, syncAlert, canWrite }: SummaryProps) {
   const { t } = useTranslation();
 
@@ -63,16 +55,10 @@ export function ChannelSummary({ propertyId, worstStatus, syncAlert, canWrite }:
 }
 
 interface ChannelsCellProps extends Pick<SummaryProps, 'propertyId' | 'canWrite'> {
-  /** The summary of the property, when it has a channel. */
   summary: ListingPropertySummary | undefined;
-  /** The summary of the list was read: only then is «no summary» the answer «never published». While it loads, or when it could not be read, nothing is known. */
   known: boolean;
 }
 
-/**
- * The «Canali» cell of the list of the properties: the worst state of the channels of a property, «Non pubblicato» when the summary was
- * read and the property is not in it, and a dash while the summary loads or cannot be read — never «Non pubblicato» for what is not known.
- */
 export function ChannelsCell({ propertyId, summary, known, canWrite }: ChannelsCellProps) {
   const { t } = useTranslation();
 
@@ -123,7 +109,8 @@ export function MultiChannelStatus({ propertyId, canWrite, cinValid }: DetailPro
   }
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-foreground/70" data-testid="multi-channel-status-empty">
+      <p className="flex items-center gap-2 text-sm text-foreground/70" data-testid="multi-channel-status-empty">
+        <CloudOff aria-hidden="true" className="size-4 shrink-0" />
         {t('listingStatus.none')}
       </p>
     );
@@ -133,18 +120,19 @@ export function MultiChannelStatus({ propertyId, canWrite, cinValid }: DetailPro
 
   return (
     <div className="space-y-3" data-testid="multi-channel-status">
-      <ul className="space-y-2">
+      <ul className="divide-y divide-border">
         {rows.map((row) => (
-          <li key={row.channel} className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1" data-testid={`multi-channel-${row.channel}`} data-status={row.status}>
+          <li key={row.channel} className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2 first:pt-0 last:pb-0" data-testid={`multi-channel-${row.channel}`} data-status={row.status}>
             <span className="min-w-0 break-words text-sm font-medium">{channelName(row.channel)}</span>
-            <StatusBadge kind="channel" status={row.status} />
-            {row.syncAlert ? <SyncDelayedBadge /> : null}
+            <span className="flex min-w-0 flex-wrap items-center justify-end gap-1.5">
+              {row.syncAlert ? <SyncDelayedBadge /> : null}
+              <StatusBadge kind="channel" status={row.status} />
+            </span>
             {row.status === 'ToFix' && row.reason ? <span className="basis-full text-sm text-foreground/70">{row.reason}</span> : null}
           </li>
         ))}
       </ul>
       {outsideRows.length > 0 ? (
-        // Somebody changed the content on a channel after the last publication: the host is told here and can choose which version stays.
         <div className="flex min-w-0 flex-wrap items-center gap-3 rounded-lg bg-muted p-3" role="status" data-testid="multi-channel-outside">
           <p className="min-w-0 flex-1 text-sm">{t('listingStatus.outside.notice')}</p>
           {canWrite ? (

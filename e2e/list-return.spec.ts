@@ -3,11 +3,6 @@ import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { resetE2eStorage } from './helpers/locale';
 
-/**
- * UI-05, on the list of bookings of SR-04: the chip, the search and the filters are in the address, and the way back from a
- * booking leads to the list as the user left it (the breadcrumb on a computer, the link back on a phone). Demo mode (L2): the
- * API is mocked, and the mock does what the server does: it narrows the rows by the chip (`view`) and by the text (`q`).
- */
 const LIST = '/app/short-rent/bookings';
 
 function booking(id: string, firstName: string, status: string) {
@@ -32,10 +27,8 @@ function booking(id: string, firstName: string, status: string) {
 }
 
 const BOOKINGS = [booking('bk-1', 'Mario', 'Confirmed'), booking('bk-2', 'Giulia', 'Pending'), booking('bk-3', 'Luca', 'Cancelled')];
-/** The chip each booking is in. */
 const VIEW_OF: Record<string, string> = { 'bk-1': 'upcoming', 'bk-2': 'toConfirm', 'bk-3': 'cancelled' };
 
-/** The bookings of the mock that a request asks for: the chip and the text, as the server reads them. */
 function answer(url: URL, all = BOOKINGS, viewOf = VIEW_OF) {
   const view = url.searchParams.get('view') ?? 'all';
   const text = (url.searchParams.get('q') ?? '').toLowerCase();
@@ -85,19 +78,15 @@ async function mockBookings(page: Page, all = BOOKINGS, viewOf = VIEW_OF) {
 const rows = (page: Page) => page.locator('tbody tr').filter({ hasText: 'Rossi' });
 const search = (page: Page) => page.getByRole('main').getByPlaceholder(/Cerca|Search/);
 const chip = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
-/** The booking of Mario, whichever way the list shows it (a row of the table, a card on a phone): its name opens the drawer of the booking (UI-15). */
 const marioOpener = (page: Page) => page.getByRole('button', { name: 'Mario Rossi', exact: true }).first();
-/** "Apri la scheda completa" of the drawer that is open: the page of the booking. */
 const openThePage = (page: Page) => page.getByRole('link', { name: 'Apri la scheda completa' }).click();
 
-/** Filters the list: the "Tutte" chip (the list starts from "In arrivo") and "mar" in the search. */
 async function filterTheList(page: Page) {
   await page.goto(demoUrl(LIST, 'short-stay'), { waitUntil: 'domcontentloaded' });
   await expect(rows(page)).toHaveCount(1);
 
   await chip(page, 'Tutte').click();
   await expect(page).toHaveURL(/chip=all/);
-  // The list has drawn itself with the chip (the three bookings) before the search is typed, as a person does.
   await expect(rows(page)).toHaveCount(3);
   await search(page).fill('mar');
   await expect(page).toHaveURL(/q=mar/);
@@ -180,7 +169,6 @@ test.describe('Filters of the list in the address (UI-05, SR-04)', () => {
 
       await page.getByRole('complementary', { name: 'Navigazione principale' }).getByRole('link', { name: 'Prenotazioni' }).click();
 
-      // The plain list is the one that starts from "In arrivo".
       await expect(rows(page)).toHaveCount(1);
       await expect(search(page)).toHaveValue('');
       expect(new URL(page.url()).searchParams.get('chip')).toBeNull();

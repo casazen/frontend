@@ -6,20 +6,14 @@ import { AgendaEventItem, DayStateLabel, PendingDayBadge } from './agenda-event-
 interface AgendaDayViewProps {
   day: WorkingDayView;
   today: string;
-  /** A "Disponibile" event of the calendar holds this day until it is answered. */
   pending: boolean;
-  /** What "Chiudi / Riapri questo giorno" asked is being saved. */
   busy: boolean;
-  /** The day is opened (`true`) or closed (`false`) for the customers. */
   onToggle: (open: boolean) => void;
 }
 
-/** One day: how it stands, what is in it in order of time, and the way to close it or open it again. */
 export function AgendaDayView({ day, today, pending, busy, onToggle }: AgendaDayViewProps) {
   const { t } = useTranslation();
   const state = dayStateOf(day);
-  // Only a day still to come that has hours is closed or reopened here: a rest day of the week and time off are not decided in this
-  // place, and a day that an event of the calendar holds is decided by the answer to that event (the block above the agenda).
   const toggleable =
     !pending && day.date >= today && day.bands.length > 0 && (state === 'open' || state === 'closed' || state === 'closedByCalendar');
   const reopens = state !== 'open';

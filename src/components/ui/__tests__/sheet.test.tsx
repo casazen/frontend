@@ -33,7 +33,6 @@ function Harness({
 const dialog = () => screen.getByRole('dialog', { name: 'Altro' });
 const handle = () => screen.getByTestId('sheet-handle');
 
-/** A finger (or a mouse) pulls the handle down by `distance` px. */
 function pull(distance: number, { release = true }: { release?: boolean } = {}) {
   fireEvent.pointerDown(handle(), { pointerId: 1, pointerType: 'touch', clientY: 400 });
   fireEvent.pointerMove(handle(), { pointerId: 1, pointerType: 'touch', clientY: 400 + distance });
@@ -142,7 +141,6 @@ describe('Sheet from the bottom (UI-04b)', () => {
     it('Sheet_Bottom_ATapOnTheDimmedPageClosesIt', async () => {
       const onOpenChange = vi.fn();
       render(<Harness side="bottom" onOpenChange={onOpenChange} />);
-      // Radix starts listening for a press outside the sheet one tick after it opens.
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
       });
@@ -167,7 +165,6 @@ describe('Sheet from the bottom (UI-04b)', () => {
       pull(60, { release: false });
 
       expect(dialog().style.transform).toBe('translateY(60px)');
-      // No easing while it follows the finger, and the closing animation starts from where it is.
       expect(dialog().style.transition).toBe('none');
       expect(dialog().style.getPropertyValue('--sheet-drag')).toBe('60px');
     });
@@ -263,7 +260,6 @@ describe('Sheet from the bottom (UI-04b)', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'apri' }));
 
-      // A new element: nothing is left of the drag that closed the old one.
       expect(dialog().style.transform).toBe('');
     });
   });

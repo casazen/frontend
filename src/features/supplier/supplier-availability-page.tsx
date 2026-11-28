@@ -25,12 +25,6 @@ import { agendaParams, agendaRange, eachDay, readAgendaView, type AgendaView } f
 import { pendingFreeEventDates } from './lib/free-events';
 import { buildWorkingDays } from './lib/supplier-agenda';
 
-/**
- * Agenda e disponibilità (SP-07a): the jobs and the commitments of the supplier as a day, a week or a month, the days it closed,
- * and the hours it works in a normal week. The view and the day are in the address (`?vista=giorno|settimana|mese`, `?data=`):
- * a phone starts from the day, a computer from the week. The calendar events marked "Disponibile" that wait for an answer are
- * the one block that asks for something. A day is closed or reopened from its page (a day of the week or of the month opens it).
- */
 export function SupplierAvailabilityPage() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
@@ -41,7 +35,6 @@ export function SupplierAvailabilityPage() {
   const requestedDate = params.get('data') ?? '';
   const date = isStayDate(requestedDate) ? requestedDate : today;
   const { from, to } = agendaRange(view, date);
-  // The hours are changed in this page (SP-07b): the block that asks for them and the section of the hours open the same editor.
   const [editingHours, setEditingHours] = useState(false);
 
   const agendaQuery = useSupplierAgendaCalendar(from, to);
@@ -54,7 +47,6 @@ export function SupplierAvailabilityPage() {
   const agenda = agendaQuery.data;
   const freeEvents = freeEventsQuery.data?.items;
   const pendingDates = useMemo(() => pendingFreeEventDates(freeEvents ?? []), [freeEvents]);
-  // A failed check shows nothing: the agenda is still right, and the check is read again the next time the page opens.
   const conflictsData = conflictsQuery.data;
   const conflicts = conflictsData && Array.isArray(conflictsData.items) ? conflictsData.items : undefined;
   const conflictMarks = useMemo(() => conflictSeverities(conflicts), [conflicts]);

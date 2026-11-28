@@ -8,14 +8,11 @@ import type { FiscalDocumentEmailQueued, FiscalDocumentEntry } from '@/types';
 import { CreditNoteDialog, DiscardDraftDialog, IssueDocumentDialog, SendDocumentEmailDialog } from './document-dialogs';
 import { documentActionsOf, documentNameOf, documentWriteActionsOf, emailLinkDayOf, unavailabilityOf, type Unavailable } from './document-model';
 
-/** What happened to the document of a bar, for the screen that keeps something about it (a selection, an open detail). */
 export type DocumentChange = 'issued' | 'discarded' | 'credited';
 
 interface DocumentActionBarProps {
   document: FiscalDocumentEntry;
-  /** The flags of the backend, which say whether the PDF of an imported document can be asked. */
   flags: Partial<FeatureFlags>;
-  /** The person may change documents: the right to write payments (`payment.write`) AND the flag of the issuance of CasaZen. Without both, no button that changes a document is drawn. */
   canWrite: boolean;
   onChanged?: (id: string, change: DocumentChange) => void;
 }
@@ -38,7 +35,6 @@ export function DocumentActionBar({ document, flags, canWrite, onChanged }: Docu
   const refresh = useRefreshFiscalDocument();
   const busy = useDocumentsBusy({ documentIds: [document.id] });
   const [dialog, setDialog] = useState<'issue' | 'credit' | 'discard' | 'email' | null>(null);
-  // What the server said when this screen last queued the e-mail of the document: the server keeps no «sent» state, so «Rinvia» is only ever said of an e-mail this screen saw queued.
   const [emailed, setEmailed] = useState<FiscalDocumentEmailQueued | null>(null);
   const [gone, setGone] = useState<ReadonlySet<Unavailable>>(() => new Set());
   const actions = documentActionsOf(document, flags);

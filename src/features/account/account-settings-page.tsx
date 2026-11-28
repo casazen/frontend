@@ -15,7 +15,6 @@ import { AccountPrivacySection } from './account-privacy-section';
 import { SettingsJumpNav, type JumpSection } from './settings-jump-nav';
 import { settingsSectionId } from './settings-sections';
 
-// The pages of the rental areas that this one gathers: it shows what they show, to the people who may open them, with the same endpoints.
 const PAYMENTS_PATH = '/app/short-rent/settings/payments';
 const SITE_APPEARANCE_PATH = '/app/short-rent/settings/site-appearance';
 /** "Fatturazione e piano" of the account area (AM-08a): the invoicing data live there, here is only the way to it, once the page exists. */
@@ -33,7 +32,6 @@ export function AccountSettingsPage() {
   const { contexts, hasPermission } = useWorkspace();
   const reach: Reach = { contexts, hasPermission };
 
-  // The same queries the sections make: the page reads them only to know what to put first.
   const orgSettings = useOrgSettings(isOrgBillingAdmin(contexts));
   const showPayments = reachableEntry([PAYMENTS_PATH], reach) !== undefined;
   const payments = useConnectPayments(showPayments);
@@ -43,7 +41,6 @@ export function AccountSettingsPage() {
   const billing = reachableEntry([BILLING_PATH], reach);
   const showPrivacy = isOrgBillingAdmin(contexts);
 
-  // The sections the person has on this page, in the order they are on it: the row of links «Vai a…» and `?section=` (AM-08b-e).
   const jumpSections: JumpSection[] = [
     { id: 'company', label: t('nav.organization') },
     ...(showPayments ? [{ id: 'payments' as const, label: t('settings.connectPaymentsTitle') }] : []),
@@ -72,7 +69,6 @@ export function AccountSettingsPage() {
       ) : null}
       {focus === 'payments' ? <PaymentsFocus payments={payments} /> : null}
 
-      {/* What the org says about itself on the left, how it gets paid and where it pays on the right (under each other on a narrow screen). */}
       <div className={cn(PAGE_COLUMNS, 'gap-8')}>
         <PlainSection id={settingsSectionId('company')} className="scroll-mt-4" title={t('nav.organization')} data-testid="account-settings-organization">
           <p className="text-sm text-foreground/70">{t('orgSettings.formDescription')}</p>
@@ -99,7 +95,6 @@ export function AccountSettingsPage() {
             </PlainSection>
           ) : null}
 
-          {/* The data of the organization, to take away (AM-08b-c): the endpoint is the one of the org billing administrator. */}
           {showPrivacy ? <AccountPrivacySection /> : null}
         </div>
       </div>

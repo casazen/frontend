@@ -60,7 +60,6 @@ export function InquiryMessages({ request, actions }: { request: SupplierService
 
   let composer;
   if (!canWrite) {
-    // Closed (refused, cancelled, done) or the supplier suspended: the messages can be read, not added to.
     composer = (
       <p className="text-sm text-foreground/70" data-testid="supplier-inquiry-read-only">
         {t(actions.suspended ? 'supplier.requests.suspendedHint' : `${T}.closed`)}

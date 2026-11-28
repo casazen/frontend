@@ -14,11 +14,6 @@ import type {
   RoutineExecutionResult,
 } from '@/types';
 
-// What the editor of a routine, the library and the page know of the contract of the routines API (`RoutinesController`, `RoutineActionRules`, `RoutineConditions`): the
-// events and actions it offers, the limits the server holds them to, the condition of ADR-014 as the API reads it and the log of an execution. Pure: nothing here asks the server.
-
-// ─── Events ───────────────────────────────────────────────────────────────────────────────────────────────
-
 /**
  * The events the editor offers. Not `WeeklyRecurrence`: the API saves no routine on it (422 `routine_event_not_available`) because no job writes it yet, so offering it would be
  * offering a routine that can never be saved.
@@ -37,13 +32,10 @@ export const EDITOR_EVENT_TYPES: readonly RoutineEventType[] = [
   'GuestMessageReceived',
 ];
 
-/** The events that are a time before or after a day of the stay: they take `{ days, hours }`, the others an empty configuration. */
 export const TIME_EVENT_TYPES: readonly RoutineEventType[] = ['BeforeCheckin', 'AfterCheckin', 'BeforeCheckout', 'AfterCheckout'];
 
-/** The most days (and hours) of a time event the server takes (`RoutineLimits.MaxEventConfigMember`). */
 export const MAX_EVENT_OFFSET = 365;
 
-/** The options of the event picker: the ones of the editor, and the event the routine already has when it is one more (a routine saved some other way). Never `WeeklyRecurrence`. */
 export function eventOptionsFor(current?: RoutineEventType): RoutineEventType[] {
   const offered = [...EDITOR_EVENT_TYPES];
   return current && current !== 'WeeklyRecurrence' && !offered.includes(current) ? [...offered, current] : offered;
@@ -51,7 +43,6 @@ export function eventOptionsFor(current?: RoutineEventType): RoutineEventType[] 
 
 const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
 
-/** The key of the name of an event in the locale files (`routines.events.<name>`; they have one for every type of the API). */
 export function eventLabelKey(type: RoutineEventType): string {
   return `routines.events.${lowerFirst(type)}`;
 }
@@ -65,9 +56,6 @@ export function parseEventConfig(eventConfig: string | undefined): { days: numbe
   }
 }
 
-// ─── Actions ──────────────────────────────────────────────────────────────────────────────────────────────
-
-/** Every action of the API, in the order the editor lists them: all of them are listed, the ones that cannot run yet are disabled (`isActionUnavailable`). */
 export const ACTION_TYPES: ReadonlyArray<{ type: RoutineActionType; labelKey: string }> = [
   { type: 'Wait', labelKey: 'routines.actionTypes.wait' },
   { type: 'MessageToGuest', labelKey: 'routines.actionTypes.messageToGuest' },
@@ -81,37 +69,27 @@ export const ACTION_TYPES: ReadonlyArray<{ type: RoutineActionType; labelKey: st
   { type: 'AddTag', labelKey: 'routines.actionTypes.addTag' },
 ];
 
-/** The key of the name of an action, or `undefined` for a type this version does not know (shown as it comes). */
 export function actionLabelKey(type: string): string | undefined {
   return ACTION_TYPES.find((action) => action.type === type)?.labelKey;
 }
 
-/** The most actions a routine has (`RoutineLimits.MaxActions`). */
 export const MAX_ACTIONS = 10;
 
-/** The longest text of a `CreateActivity` (`RoutineActionRules.MaxActivityTextLength`) and the furthest deadline (`MaxActivityDueInDays`). */
 export const MAX_ACTIVITY_TEXT_LENGTH = 140;
 export const MAX_ACTIVITY_DUE_IN_DAYS = 60;
 
-/** The longest a `Wait` lasts, in days (`RoutineActionRules.MaxWaitDays`): days and hours together. */
 export const MAX_WAIT_DAYS = 365;
 
-/** What the catalog (`GET api/routines/actions`) says of each action: whether it can run today. Absent until the catalog is read. */
 export type ActionAvailability = ReadonlyMap<RoutineActionType, boolean>;
 
 export function toAvailability(catalog: readonly RoutineActionCatalogItem[] | undefined): ActionAvailability | undefined {
   return catalog ? new Map(catalog.map((item) => [item.type, item.available])) : undefined;
 }
 
-/**
- * Whether the catalog says the action cannot run. Only what it says: with no catalog (not read yet, or it could not be read) nothing is marked, and the server decides when the
- * routine is switched on (422 `routine_action_not_available`), so the page never claims more than it knows.
- */
 export function isActionUnavailable(availability: ActionAvailability | undefined, type: RoutineActionType): boolean {
   return availability?.get(type) === false;
 }
 
-/** The actions of a list that the catalog says cannot run, each once, in the order of the list. */
 export function unavailableActionTypes(availability: ActionAvailability | undefined, actions: ReadonlyArray<Pick<RoutineAction, 'type'>>): RoutineActionType[] {
   const found: RoutineActionType[] = [];
   for (const { type } of actions) {
@@ -138,28 +116,21 @@ export function nextKeyOf(items: ReadonlyArray<{ key: number }>): number {
   return items.reduce((largest, item) => Math.max(largest, item.key), 0) + 1;
 }
 
-/** A whole number written with digits only; `null` for anything else (a sign, a decimal, a letter, nothing). */
 export function parseWhole(text: string): number | null {
   const trimmed = text.trim();
   return /^\d{1,9}$/.test(trimmed) ? Number(trimmed) : null;
 }
 
-/** An action in the editor: what the person typed for each member the editor knows, and the rest of the stored configuration, which it keeps as it is. */
 export interface ActionDraft {
-  /** The identity of the line in the list (the position changes when one is removed). */
   key: number;
   type: RoutineActionType | '';
-  /** `Wait`: how long, as typed. */
   days: string;
   hours: string;
-  /** `CreateActivity`: the words of the To do and its deadline in days (empty: none), as typed. */
   text: string;
   dueInDays: string;
-  /** `MessageToGuest`: the template, as typed. */
   templateId: string;
   tag: string;
   aiCondition: string;
-  /** The members of the stored configuration that the editor has no field for. */
   rest: RoutineActionConfig;
 }
 
@@ -179,7 +150,6 @@ export function newActionDraft(key: number, type: RoutineActionType | ''): Actio
 
 const asText = (value: unknown) => (typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '');
 
-/** The line of the list that shows a stored action. */
 export function actionToDraft(key: number, action: RoutineAction): ActionDraft {
   const config = isRecord(action.config) ? action.config : {};
   const edited = EDITED_MEMBERS[action.type] ?? [];
@@ -198,10 +168,6 @@ export function actionToDraft(key: number, action: RoutineAction): ActionDraft {
   };
 }
 
-/**
- * What is wrong with the configuration of a line, as the server would say it (`RoutineActionRules`), as the key of a text; `null` when it is valid. A wait lasts from an
- * hour to 365 days; the To do has words (1 to 140 characters) and a deadline of 0 to 60 days, or none.
- */
 export function actionProblemKey(draft: ActionDraft): string | null {
   if (!draft.type) return 'routines.chooseAction';
   if (draft.type === 'Wait') {
@@ -222,7 +188,6 @@ export function actionProblemKey(draft: ActionDraft): string | null {
   return null;
 }
 
-/** The action a valid line stands for, with the numbers as numbers (the server refuses a number written as a text). */
 export function draftToAction(draft: ActionDraft): RoutineAction {
   switch (draft.type) {
     case '': throw new Error('Select a routine action before saving');
@@ -246,17 +211,10 @@ export function draftToAction(draft: ActionDraft): RoutineAction {
   }
 }
 
-// ─── The condition of a routine (ADR-014): the five fields a routine reads ───────────────────────────────────
-
-/** The condition version the API reads (`Condition.Version`, a text). */
 export const CONDITION_VERSION = '1.0';
 
 export type ConditionFieldKind = 'properties' | 'channel' | 'count';
 
-/**
- * The fields a routine condition can read: the facts of the booking an event is about (`RoutineConditions.SupportedFields`) with the operators each takes (`FieldCatalog`).
- * Any other field of the catalog (the payment, the check-in, the identity, the language…) has no value in a routine and is refused by the server, so the editor does not offer it.
- */
 export const CONDITION_FIELDS: ReadonlyArray<{
   fieldId: RoutineConditionField;
   kind: ConditionFieldKind;
@@ -280,7 +238,6 @@ export const CONDITION_OPERATOR_KEYS: Record<RoutineConditionOperator, string> =
   between: 'routines.condition.operators.between',
 };
 
-/** The channels of a booking (`BookingSource`, by the name the API uses), with the words the app already has for them. */
 export const CONDITION_CHANNELS: ReadonlyArray<{ name: string; labelKey: string }> = [
   { name: 'Direct', labelKey: 'crm.channels.Direct' },
   { name: 'Manual', labelKey: 'crm.channels.Manual' },
@@ -300,32 +257,25 @@ export function conditionFieldOf(fieldId: RoutineConditionField) {
   return CONDITION_FIELDS.find((field) => field.fieldId === fieldId) ?? CONDITION_FIELDS[0];
 }
 
-/** One rule in the editor: the field, the operator and what the person chose or typed for the value, whichever shape the operator takes. */
 export interface RuleDraft {
   key: number;
   fieldId: RoutineConditionField;
   operator: RoutineConditionOperator;
-  /** `in` and `notIn` (the ids of properties, the names of channels): the choices. */
   list: string[];
-  /** `equals` and `notEquals` of a channel, the number of `equals`, `greaterThan` and `lessThan`, as typed. */
   single: string;
-  /** `between`: the two numbers as typed. */
   low: string;
   high: string;
 }
 
-/** A new rule: the channel is one of a list. */
 export function newRuleDraft(key: number): RuleDraft {
   return { key, fieldId: 'channel', operator: 'in', list: [], single: '', low: '', high: '' };
 }
 
-/** The rule on another field: its first operator and nothing chosen (what was chosen for another field means nothing here). */
 export function withField(rule: RuleDraft, fieldId: RoutineConditionField): RuleDraft {
   const field = conditionFieldOf(fieldId);
   return { ...rule, fieldId: field.fieldId, operator: field.operators[0], list: [], single: '', low: '', high: '' };
 }
 
-/** Whether a rule takes a list of choices (`in`, `notIn`), two numbers (`between`) or one value. */
 export function ruleShape(rule: Pick<RuleDraft, 'operator'>): 'list' | 'range' | 'single' {
   if (rule.operator === 'in' || rule.operator === 'notIn') return 'list';
   return rule.operator === 'between' ? 'range' : 'single';
@@ -361,7 +311,6 @@ export function ruleToCondition(rule: RuleDraft): RoutineConditionRule | null {
   return number === null ? null : { fieldId: field.fieldId, operator: rule.operator, value: number };
 }
 
-/** The condition of a group of rules, or `null` for none (the API reads an empty object as "no condition"). A rule that is not complete makes it `undefined`: the form is not valid. */
 export function conditionFromRules(operator: 'AND' | 'OR', rules: readonly RuleDraft[]): RoutineCondition | null | undefined {
   if (rules.length === 0) return null;
   const built = rules.map(ruleToCondition);
@@ -369,7 +318,6 @@ export function conditionFromRules(operator: 'AND' | 'OR', rules: readonly RuleD
   return { version: CONDITION_VERSION, groups: [{ operator, rules: built as RoutineConditionRule[] }] };
 }
 
-/** The rule a stored one is, or `null` when it is not one the editor can show whole (another field, an operator the field does not take, a value of another kind). */
 function ruleFromCondition(key: number, stored: unknown): RuleDraft | null {
   if (!isRecord(stored)) return null;
   const field = CONDITION_FIELDS.find((candidate) => candidate.fieldId === stored.fieldId);
@@ -397,13 +345,10 @@ function ruleFromCondition(key: number, stored: unknown): RuleDraft | null {
   return single === null ? null : { ...draft, single };
 }
 
-/** What the editor makes of the condition a routine has. */
 export type ConditionRead =
   | { kind: 'rules'; operator: 'AND' | 'OR'; rules: RuleDraft[] }
-  /** A condition the editor cannot show whole (several groups, a field a routine does not read, a value of another kind): it is left as it is, never rewritten. */
   | { kind: 'unsupported' };
 
-/** Reads the `conditionJson` of a routine: blank, `{}` and a condition with no group are "always"; one group of rules on the five fields is shown; anything else is kept as it is. */
 export function readCondition(conditionJson: string | undefined): ConditionRead {
   const none: ConditionRead = { kind: 'rules', operator: 'AND', rules: [] };
   if (!conditionJson || conditionJson.trim() === '') return none;
@@ -430,11 +375,8 @@ export function readCondition(conditionJson: string | undefined): ConditionRead 
   return { kind: 'rules', operator: group.operator, rules: rules as RuleDraft[] };
 }
 
-// ─── The log of a routine ───────────────────────────────────────────────────────────────────────────────
-
 const ACTION_OUTCOMES: readonly RoutineActionOutcome[] = ['done', 'simulated', 'blocked', 'skipped', 'failed', 'waiting'];
 
-/** The words of how an action of an execution ended. `simulated` is told as what it is: nothing ran, and `skipped` as an action that had nothing to do (the reason follows). */
 export const ACTION_OUTCOME_KEYS: Record<RoutineActionOutcome, string> = {
   done: 'routines.log.action.done',
   simulated: 'routines.log.action.simulated',
@@ -446,7 +388,6 @@ export const ACTION_OUTCOME_KEYS: Record<RoutineActionOutcome, string> = {
 
 export type ExecutionTone = 'success' | 'neutral' | 'danger';
 
-/** The words of how an execution ended (`RoutineExecutionOutcomes`) and the look of its badge: only `Failed` is red, what is not finished is not a failure. */
 export const EXECUTION_OUTCOMES: ReadonlyArray<{ outcome: string; labelKey: string; tone: ExecutionTone }> = [
   { outcome: 'Success', labelKey: 'routines.log.outcome.success', tone: 'success' },
   { outcome: 'Failed', labelKey: 'routines.log.outcome.failed', tone: 'danger' },
@@ -455,13 +396,6 @@ export const EXECUTION_OUTCOMES: ReadonlyArray<{ outcome: string; labelKey: stri
   { outcome: 'Pending', labelKey: 'routines.log.outcome.pending', tone: 'neutral' },
 ];
 
-/**
- * The headline of an execution in the log: how it ended and the look of its badge. The server calls an execution `Success` when every action ended done, simulated or blocked, so the
- * word alone says too much: «Completata», in green, is for a run in which at least one action was really done. A run whose actions were only simulated (a routine in test mode), only
- * blocked (a guardrail, a stay that did not happen) or only skipped (an action that had nothing to do for the stay: a booking of a portal, a guest with no address…) did nothing for real, and says
- * so in neutral: «Simulata» (a simulation that has a blocked action in it is still a simulation), «Bloccata» or «Nulla da fare». Every other outcome keeps its own words and tone, and one this
- * version does not know is said as unknown.
- */
 export function executionHeadline(outcome: string, actions: ReadonlyArray<Pick<RoutineExecutionActionResult, 'outcome'>>): { labelKey: string; tone: ExecutionTone } {
   const known = EXECUTION_OUTCOMES.find((candidate) => candidate.outcome === outcome);
   if (!known) return { labelKey: 'routines.log.outcome.unknown', tone: 'neutral' };
@@ -478,7 +412,6 @@ export function executionHeadline(outcome: string, actions: ReadonlyArray<Pick<R
   return { labelKey: known.labelKey, tone: known.tone };
 }
 
-/** The stable codes an execution or one of its actions carries (`RoutineCodes`) and the sentence that tells each. A code that is not here is not shown: never a raw code. */
 const EXECUTION_CODES: ReadonlyArray<{ code: string; labelKey: string }> = [
   { code: 'routine_condition_invalid', labelKey: 'routines.log.code.conditionInvalid' },
   { code: 'routine_action_not_available', labelKey: 'routines.log.code.actionNotAvailable' },
@@ -507,7 +440,6 @@ const EXECUTION_CODES: ReadonlyArray<{ code: string; labelKey: string }> = [
   { code: 'cleaning_supplier_currency_unsupported', labelKey: 'routines.log.code.cleaningSupplierCurrency' },
   { code: 'routine_review_needs_booking', labelKey: 'routines.log.code.reviewNeedsBooking' },
   { code: 'review_invite_not_sent', labelKey: 'routines.log.code.reviewInviteNotSent' },
-  // Why an action skipped a booking (`ReviewInviteSkipReasons`, E26/F01/US01/T01): nothing was asked of the guest.
   { code: 'reviews_disabled', labelKey: 'routines.log.code.reviewsDisabled' },
   { code: 'not_direct', labelKey: 'routines.log.code.notDirect' },
   { code: 'not_confirmed', labelKey: 'routines.log.code.notConfirmed' },
@@ -540,12 +472,10 @@ export function actionReasonKey(action: Pick<RoutineExecutionActionResult, 'type
 
 const TIME_ZONE_DESIGNATOR = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/i;
 
-/** The instants of the API are UTC: a time written without a zone is UTC too, and never the clock of the browser. */
 export function utcInstant(value: string): string {
   return value.includes('T') && !TIME_ZONE_DESIGNATOR.test(value) ? `${value}Z` : value;
 }
 
-/** Reads the `resultJson` of an execution: what each action did and the code of the whole. Never throws: what is not a result is an empty one. */
 export function parseExecutionResult(resultJson: string | undefined): RoutineExecutionResult {
   const empty: RoutineExecutionResult = { actions: [] };
   let parsed: unknown;

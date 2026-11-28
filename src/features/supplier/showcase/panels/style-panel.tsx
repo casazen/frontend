@@ -21,12 +21,10 @@ import { MediaUpload } from './media-upload';
 import { isRefused, type PanelProps } from './panel-types';
 import { StyleCards } from './style-cards';
 
-/** The three ways the supplier's name is drawn: its initials and its name, its name alone, or the logo it uploads (SP-13b). */
 const LOGO_MODES = ['mark', 'text', 'image'] as const;
 type LogoMode = (typeof LOGO_MODES)[number];
 
 interface StylePanelProps extends PanelProps {
-  /** The categories of the supplier's profile: the style recommended for the trade comes from them. */
   categories: string[];
 }
 
@@ -42,19 +40,16 @@ export function StylePanel({ doc, change, invalid, categories }: StylePanelProps
   const recommended = recommendedStyleFor(categories);
   const style = resolveSiteStyle(doc.style, categories);
   const font = resolveSiteFont(doc.font, style);
-  // The card of the image is chosen as soon as the person picks it, but the draft says "image" only once there is one to show.
   const [imageChosen, setImageChosen] = useState(doc.logo?.mode === 'image');
   const logoUrl = doc.logo?.mode === 'image' && isDisplayableMediaUrl(doc.logo.url) ? doc.logo.url : null;
   const logoMode: LogoMode = imageChosen ? 'image' : doc.logo?.mode === 'text' ? 'text' : 'mark';
 
   const chooseLogo = (mode: LogoMode) => {
     setImageChosen(mode === 'image');
-    // The initials and the name leave the image behind: the card of the image starts again from the upload.
     if (mode !== 'image') change({ logo: { mode } });
   };
   const logoRefused = isRefused(invalid, 'logo');
 
-  // What is typed in the field of the color; the draft only holds a color that is readable.
   const [typed, setTyped] = useState(doc.color ?? '');
   const typedColor = normalizeHexColor(typed);
   const readable = siteButtonColor(typed);
@@ -64,7 +59,6 @@ export function StylePanel({ doc, change, invalid, categories }: StylePanelProps
 
   const setColor = (value: string) => {
     setTyped(value);
-    // An emptied field is "the color of the style"; a color is saved only when white text reads on it.
     if (value.trim() === '') {
       change({ color: null });
       return;

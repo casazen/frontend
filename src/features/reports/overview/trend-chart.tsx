@@ -23,12 +23,9 @@ import {
   type OverviewMetric,
 } from './overview-model';
 
-/** A bar that starts after today is a forecast of the stays already confirmed: it is hatched, never only lighter. */
 const FORECAST = 'bg-[repeating-linear-gradient(45deg,var(--color-primary)_0_3px,transparent_3px_6px)] ring-1 ring-inset ring-primary';
-/** With more bars than this the values do not fit above them: they stay in the table, and in the tooltip of each bar. */
 const MAX_LABELLED = 6;
 
-/** One line of a trend: one entry for each bucket, in order, and the same buckets one year earlier where there is something to compare. */
 export interface TrendChartSeries {
   key: string;
   label: string;
@@ -41,25 +38,14 @@ interface TrendChartProps {
   buckets: readonly TrendBucket[];
   series: readonly TrendChartSeries[];
   currency: string;
-  /** The trend was asked next to the year before: the bars of the year before are drawn, a missing one is "n.d.". */
   compared: boolean;
-  /** How the lines are cut, to say why a number does not exist (a channel has no occupancy) and what the lines are called. */
   groupBy?: PerformanceGroupBy;
-  /** The name of the block; by default the Reports page's ("Andamento per settimana"). */
   title?: string;
-  /** The level of the heading of the block: `h2` where the chart is a section of its own, `h3` inside the overview. */
   titleAs?: 'h2' | 'h3';
-  /** Today in Europe/Rome; the weeks that start after it are the forecast. */
   today?: string;
   testId?: string;
 }
 
-/**
- * The trend of the overview (NF-96): the bars of the Home's chart for any of the four numbers, each week or month next to the same
- * one a year earlier, the weeks to come hatched. The bars are drawn for the eye only: the same numbers are in a table for a screen
- * reader. With more than one line (by property or by channel) one is shown at a time, chosen from a list. CSS only, no charting
- * library; every number is the server's and only its bar is scaled to the tallest of the chart.
- */
 export function TrendChart({
   unit,
   buckets,
@@ -81,7 +67,6 @@ export function TrendChart({
   const [seriesKey, setSeriesKey] = useState('');
   const format = useMemo(() => overviewFormat(locale, currency), [locale, currency]);
 
-  // A line that is no longer there (the cut changed) leaves the first one: derived, nothing to reset.
   const line = series.find((item) => item.key === seriesKey) ?? series[0];
   const heading = title ?? t(unit === 'month' ? 'reports.overview.trend.titleMonth' : 'reports.overview.trend.titleWeek');
   const na = t('reports.overview.na');
@@ -194,7 +179,6 @@ export function TrendChart({
         </div>
       )}
 
-      {/* In a box of its own: a table ignores the 1 px of `sr-only` and would make a phone scroll sideways. */}
       <div id={tableId} className={showTable ? 'max-h-96 overflow-auto rounded-xl border' : 'sr-only'}>
         <table className="w-full border-collapse text-sm [&_td]:px-3 [&_td]:py-2 [&_td]:text-right [&_td]:tabular-nums [&_th]:px-3 [&_th]:py-2 [&_tr]:border-b" data-testid={`${testId}-table`}>
           <caption className="sr-only">{`${heading} · ${lineName} · ${metricName}`}</caption>

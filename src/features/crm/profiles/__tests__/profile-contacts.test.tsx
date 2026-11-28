@@ -104,7 +104,6 @@ describe('ProfileContacts: the contacts of a profile (E07/F01/US04/T02, NF-89)',
     ['a confirmed consent', contact({ confirmation: 'Confirmed', marketable: true, reachabilityReason: null })],
     ['a soft opt-in', contact({ legalBasis: 'SoftOptIn', origin: 'DirectBooking', marketable: true, reachabilityReason: null })],
     ['a service-only address', contact({ legalBasis: 'ServiceOnly', origin: 'Manual', reachabilityReason: 'no_basis' })],
-    // What the server sends for a number with the guest's consent: it may receive marketing, and nothing of CasaZen sends on the channel yet.
     ['a phone number with a consent', contact({ id: 'c-phone', channel: 'Phone', value: '+39 333 1234567', marketable: true, reachabilityReason: 'channel_not_available' })],
     ['a WhatsApp number with a consent', contact({ id: 'c-wa', channel: 'WhatsApp', value: '+39 333 1234567', marketable: true, reachabilityReason: 'channel_not_available' })],
   ])('ProfileContacts_%s_HasNothingToConfirm', (_name, item) => {
@@ -171,7 +170,6 @@ describe('ProfileContacts: the contacts of a profile (E07/F01/US04/T02, NF-89)',
     ['no_basis', 'crm.contacts.reachability.noBasis'],
     ['channel_not_available', 'crm.contacts.reachability.channelNotAvailable'],
   ] as const)('ProfileContacts_ReasonOf_%s_IsOneSentence', (reason, key) => {
-    // As the server sends it: only `channel_not_available` comes with `marketable: true` (the consent is there, the channel is not).
     renderContacts([contact({ reachabilityReason: reason, marketable: reason === 'channel_not_available', legalBasis: 'ServiceOnly' })]);
 
     expect(screen.getByTestId('crm-contact-reachability')).toHaveTextContent(i18n.t(key));
@@ -186,7 +184,6 @@ describe('ProfileContacts: the contacts of a profile (E07/F01/US04/T02, NF-89)',
 
   it.each(['it', 'en'])('ProfileContacts_AWhatsAppNumberWithConsent_SaysCasaZenDoesNotSendOnThatChannelAndNeverThatYouCanWriteToIt (%s)', async (language) => {
     await i18n.changeLanguage(language);
-    // The combination the server emits for a WhatsApp or phone number with the guest's consent: marketable, and the channel not available.
     renderContacts([contact({ id: 'c-wa', channel: 'WhatsApp', value: '+39 333 1234567', marketable: true, reachabilityReason: 'channel_not_available' })]);
 
     const sentence = screen.getByTestId('crm-contact-reachability');
@@ -195,7 +192,6 @@ describe('ProfileContacts: the contacts of a profile (E07/F01/US04/T02, NF-89)',
   });
 
   it('ProfileContacts_NoReasonAndNotMarketable_StillSaysItCannotBeWrittenTo', () => {
-    // Not a shape the server sends, but the page never says "you can" without the server saying so.
     renderContacts([contact({ marketable: false, reachabilityReason: null })]);
 
     expect(screen.getByTestId('crm-contact-reachability')).toHaveTextContent(i18n.t('crm.contacts.reachability.unknown'));
@@ -206,7 +202,6 @@ describe('ProfileContacts: the contacts of a profile (E07/F01/US04/T02, NF-89)',
 
     const link = within(screen.getByTestId('crm-contacts-withdrawals')).getByRole('link', { name: i18n.t('crm.contacts.withdrawalsLink') });
     expect(link).toHaveAttribute('href', `/app/short-rent/guests/${GUEST}?tab=privacy`);
-    // No control of this section withdraws a consent.
     expect(screen.queryByRole('button', { name: /revoca|ritira|withdraw|opt.?out/i })).not.toBeInTheDocument();
   });
 

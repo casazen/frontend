@@ -7,7 +7,6 @@ import { CasaZenRing } from '@/components/brand/casazen-mark';
  * is written out in full (no string built from parts), so that Tailwind finds it when it scans this folder.
  */
 
-/** The accents a tile can take: terracotta and ink of the brand, and the colors of the areas of the app. */
 export type Tint = 'terra' | 'ink' | 'salvia' | 'savoia' | 'ametista';
 
 const TILE: Record<Tint, string> = {
@@ -18,7 +17,6 @@ const TILE: Record<Tint, string> = {
   ametista: 'bg-ametista-100 text-ametista-800',
 };
 
-/** The tinted square that carries the icon of a card. Decoration: the title next to it says what it is. */
 export function IconTile({
   icon: Icon,
   tint = 'terra',
@@ -37,12 +35,10 @@ export function IconTile({
   );
 }
 
-/** The small colored label above a heading. */
 export function Eyebrow({ children }: { children: ReactNode }) {
   return <p className="inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-terra-800 before:h-px before:w-8 before:bg-current">{children}</p>;
 }
 
-/** The band a section sits on: the page alternates paper tones, and one dark band gives it a center of gravity. */
 export type SectionTone = 'plain' | 'cream' | 'terra' | 'salvia' | 'ink';
 
 const SECTION: Record<SectionTone, { band: string; title: string; intro: string }> = {
@@ -58,7 +54,6 @@ interface SectionProps {
   intro?: string;
   children?: ReactNode;
   tone?: SectionTone;
-  /** A large tile above the title, for the sections that are a single call to action. */
   icon?: LucideIcon;
   tint?: Tint;
 }
@@ -89,13 +84,7 @@ interface FeatureCardProps {
   text?: string;
   icon?: LucideIcon;
   tint?: Tint;
-  /** The level of the title: a card right under the `h1` of the page is an `h2`, one under a section an `h3`. */
   heading?: 'h2' | 'h3';
-  /**
-   * There is something under the text (a list, a link: the `children`). The cards of a grid line up part by part, so they all
-   * have the same rows: give `extra` to every card of a grid where one has something under its text, to those that have
-   * nothing too.
-   */
   extra?: boolean;
   children?: ReactNode;
 }
@@ -147,7 +136,6 @@ export function BulletList({ items }: { items: string[] }) {
 
 const BUTTON = 'inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2';
 
-/** The call to action. `inverse` is the same button on a dark band. */
 export function PrimaryLink({ href, children, inverse = false, onClick }: { href: string; children: ReactNode; inverse?: boolean; onClick?: () => void }) {
   const colors = inverse
     ? 'bg-terra-400 text-ink-800 hover:bg-terra-300 focus-visible:outline-white'
@@ -170,7 +158,6 @@ export function SecondaryLink({ href, children, inverse = false, onClick }: { hr
   );
 }
 
-/** The top of a page that is not the home page: the title (the `h1`), a line under it and, optionally, the call to action. */
 export function PageHeader({ title, intro, children, preview }: { title: string; intro: string; children?: ReactNode; preview?: ReactNode }) {
   return (
     <section className="relative overflow-hidden border-b border-ink-700/10 bg-gradient-to-b from-terra-50 to-cream-50">
@@ -187,7 +174,6 @@ export function PageHeader({ title, intro, children, preview }: { title: string;
   );
 }
 
-/** A row of figures under the hero: facts about the product, each with the sentence that says what it counts. */
 export function FactsStrip({ items }: { items: { value: string; label: string }[] }) {
   return (
     <section className="border-y border-ink-700/10 bg-white">
@@ -203,7 +189,6 @@ export function FactsStrip({ items }: { items: { value: string; label: string }[
   );
 }
 
-/** A list of short points with a check mark: the points of a feature, on a light or on the dark band. */
 export function CheckList({ items, onDark = false }: { items: string[]; onDark?: boolean }) {
   return (
     <ul className="space-y-3">
@@ -229,7 +214,6 @@ interface CompareProps {
   after: string[];
 }
 
-/** The usual way against the way with CasaZen, two columns: the plain one first, the dark one that carries the answer. */
 export function Compare({ beforeTitle, before, afterTitle, after }: CompareProps) {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
@@ -254,11 +238,6 @@ export function Compare({ beforeTitle, before, afterTitle, after }: CompareProps
   );
 }
 
-/**
- * Numbered cards, one per step. A step with a title has a text under it; one without is a sentence on its own. Like the
- * `FeatureCard`s, the cards are subgrids of the list from the second column on (`md`): the number, the title and the text of
- * each line up with those of its neighbours.
- */
 export function Steps({ items }: { items: { title?: string; text: string }[] }) {
   const titled = items.some((item) => item.title);
   return (
@@ -281,10 +260,6 @@ export function Steps({ items }: { items: { title?: string; text: string }[] }) 
   );
 }
 
-/**
- * Questions and answers that open on a click: native `<details>`, so they work in the static page without a script and with
- * the keyboard. All closed when the page loads (the same HTML on the server and in the browser).
- */
 export function Faq({ items }: { items: { question: string; answer: string }[] }) {
   return (
     <div className="max-w-3xl divide-y divide-ink-700/10 rounded-3xl border border-ink-700/10 bg-white shadow-soft">

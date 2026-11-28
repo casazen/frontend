@@ -34,7 +34,6 @@ describe('the queries of the regime of the registration of the guests (E29/F02/U
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(guestRegistrationKey(PROPERTY_ID).slice(0, 2)).toEqual(['properties', PROPERTY_ID]);
-    // `useUpdateProperty` invalidates `['properties', id]`: what the card says about what is missing is read again with no call of its own.
     await act(async () => {
       await client.invalidateQueries({ queryKey: ['properties', PROPERTY_ID] });
     });
@@ -66,7 +65,6 @@ describe('the queries of the regime of the registration of the guests (E29/F02/U
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['compliance'] });
   });
 
-  // Privacy: whatever keeps a failure (the state of a mutation, the cache of the mutations) holds the answer of the server, never the request that was sent.
   it('useSetGuestRegistrationOverride_TheCallFails_TheErrorKeepsTheStatusAndTheCodeButNotTheRequestAndNothingIsKept', async () => {
     const failure = problemError(422, { code: 'guest_registration_override_not_applicable' });
     failure.config!.data = JSON.stringify({ override: 'Required' });
@@ -87,7 +85,6 @@ describe('the queries of the regime of the registration of the guests (E29/F02/U
     expect(error.config?.data).toBeUndefined();
     expect(JSON.stringify(error.config ?? {})).not.toContain('Required');
 
-    // Not kept once nothing observes it.
     unmount();
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });

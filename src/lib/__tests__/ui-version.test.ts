@@ -12,7 +12,6 @@ describe('isNotRedesignedMatch', () => {
     [],
     [{ route: {} }],
     [{ route: { handle: { other: true } } }],
-    // Only an explicit `redesign: false` keeps the current look: a route that is redesigned says nothing (or `true`).
     [{ route: { handle: { redesign: true } } }],
     [{ route: { handle: { redesign: 'false' } } }],
     [{ route: { handle: 'redesign' } }],

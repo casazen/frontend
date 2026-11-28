@@ -18,23 +18,18 @@ import type { StayCalendarData } from './use-public-calendar';
 import './stay-pickers.css';
 
 export interface SearchProps {
-  /** The id of the destination chosen; empty for all. */
   destination: string;
   onDestinationChange: (id: string) => void;
   destinations: readonly Destination[];
   stay: StayValue;
   onStayChange: (patch: Partial<StayValue>) => void;
-  /** The nights of the site: for each day the lowest price among its homes, taken when none is free. */
   calendar: StayCalendarData;
   maxGuests?: number;
   petsAllowed?: boolean;
-  /** The "Dove" field: not for a site with one home. */
   showDestination?: boolean;
-  /** Called by the search button when the dates are chosen. */
   onSearch: () => void;
 }
 
-/** What the three fields say, in words. */
 function useSearchSummary({ destination, destinations, stay }: Pick<SearchProps, 'destination' | 'destinations' | 'stay'>) {
   const { t, i18n } = useTranslation();
   const locale = siteLocale(i18n.language);
@@ -185,11 +180,6 @@ function DesktopSearchBar({
   );
 }
 
-/**
- * The field of a phone (DB-20): one button that says where, when and who in two lines and opens a sheet that fills the screen
- * with the three one under the other (the one in use open, the others closed with their value on the right) and "Cerca
- * disponibilità" at the bottom.
- */
 export function SearchTrigger({
   destination,
   onDestinationChange,

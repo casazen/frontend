@@ -6,7 +6,6 @@ import { LEGAL_DOCUMENT_PATHS } from '@/features/legal/legal-paths';
 import type { SiteModel } from '@/lib/supplier-site/site-model';
 import { useCookiePreferencesStore } from '@/store/cookie-preferences-store';
 
-/** How many comuni the footer names; the rest are in the block "Dove lavoriamo". */
 const FOOTER_COMUNI = 5;
 
 /**

@@ -8,8 +8,6 @@ import axios from '@/lib/axios';
 import type { TouristTaxComuneSummary } from '@/types';
 import { RecordPaymentDialog } from '../record-payment-dialog';
 
-// The host records what they paid to a comune. The amount goes to the server as text with a dot; what the server refuses next to a field
-// stays on that field with everything typed, and a failure no field explains is told by the toast.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), delete: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
 
@@ -44,7 +42,6 @@ const SAVED = {
   hasReceipt: true,
 };
 
-/** Axios error as the HTTP client rejects it, with the problem body of the API. */
 function httpError(status: number, data: object): AxiosError {
   const config = { headers: new AxiosHeaders() };
   return new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, null, { status, statusText: '', headers: {}, config, data });
@@ -87,7 +84,6 @@ describe('RecordPaymentDialog (NF-100)', () => {
     const { onClose } = renderDialog();
 
     typeInto('record-payment-amount', '1.250,00');
-    // The dialog says how it read the amount before it is recorded.
     expect(await screen.findByText(/Lo leggo come 1\.?250,00\s*€/)).toBeInTheDocument();
     typeInto('record-payment-reference', ' RAV 0042 ');
     fireEvent.change(screen.getByTestId('record-payment-receipt'), {
@@ -134,7 +130,6 @@ describe('RecordPaymentDialog (NF-100)', () => {
     expect(await screen.findByText('Questo comune non risulta tra quelli dei tuoi immobili in Italia.')).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
     expect(toast.error).not.toHaveBeenCalled();
-    // Everything typed is still there.
     expect(screen.getByTestId('record-payment-amount')).toHaveValue('125,50');
   });
 

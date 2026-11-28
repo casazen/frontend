@@ -5,7 +5,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'vitest';
 
-// Il motore di ricerca del manuale (public/guida/assets/guida-ricerca.js) gira nel browser: qui lo carichiamo come lo carica la pagina.
 const qui = path.dirname(fileURLToPath(import.meta.url));
 const guida = path.join(qui, '..', 'public', 'guida');
 function carica(dati) {
@@ -66,11 +65,10 @@ test('niente risultati per sole parole vuote, parole sconosciute o una sola paro
   assert.deepEqual(g.cerca('come fare', 5), []);
   assert.deepEqual(g.cerca('xyzzy', 5), []);
   assert.deepEqual(g.cerca('', 5), []);
-  assert.deepEqual(g.cerca('vacanza casa', 5), []);      // «casa» compare in quasi tutte le voci: da sola non basta
-  assert.ok(g.cerca('casa', 5).length > 0);              // ma chi scrive solo «casa» vede qualcosa
+  assert.deepEqual(g.cerca('vacanza casa', 5), []);
+  assert.ok(g.cerca('casa', 5).length > 0);
 });
 
-// Oltre mille ricerche in sequenza: su una macchina carica (CI compresa) superano i 5 secondi predefiniti di vitest.
 test('sul manuale vero: il titolo di ogni voce, scritto come domanda, riporta quella voce nei primi 3 risultati', { timeout: 120_000 }, () => {
   const dir = path.join(guida, 'guida-indice.js');
   const window = {};

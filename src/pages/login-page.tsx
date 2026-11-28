@@ -11,7 +11,6 @@ import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
 import { startedRecently, rememberStart, RESTART_WINDOW_MS } from '@/lib/login-restart-guard';
 
-/** When this page last sent the visitor to Auth0 (`sessionStorage`, one tab). */
 const LAST_START_KEY = 'casazen.login-started-at';
 
 /**
@@ -32,7 +31,6 @@ export function LoginPage() {
   const { pathname } = useLocation();
   const [params] = useSearchParams();
   const candidate = safeReturnTo(params.get('returnTo'));
-  // Only application routes can be a post-login target; never external URLs or /login itself.
   const destination = candidate && new URL(candidate, window.location.origin).pathname;
   const ownerPage = destination === ownerPortalPaths.home ||
     (destination?.startsWith(ownerPortalPaths.home + '/') &&
@@ -40,7 +38,6 @@ export function LoginPage() {
   const returnTo = destination?.startsWith('/app/') || ownerPage ? candidate
     : pathname === ownerPortalPaths.signIn ? ownerPortalPaths.home : null;
   const { t } = useTranslation();
-  // Decided once, when the page opens.
   const [redirect] = useState(() => !startedRecently(LAST_START_KEY));
   const started = useRef(false);
   const [slowInitialization, setSlowInitialization] = useState(false);

@@ -70,7 +70,6 @@ describe('useSaveListingTexts (the save of the profile replaces it as a whole)',
       en: { title: 'New title', description: 'A quiet house.', rules: 'No parties' },
       de: { title: 'Neuer Titel' },
     });
-    // What the server stored is what the cache holds now: the origins shown next to the texts follow it.
     expect(client.getQueryData(siteProfileKey('p1'))).toMatchObject({ translations: { de: { title: 'Neuer Titel' } } });
   });
 

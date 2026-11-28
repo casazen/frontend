@@ -6036,37 +6036,46 @@
     }
   },
   "guide": {
+    "ask": "Ask CasaZen",
     "button": "Guide",
-    "description": "It walks you through step by step: what you have done, what to do now and what comes next.",
+    "description": "The CasaZen manual: search, or pick what you need.",
+    "forThisPage": "On this page",
+    "fullManual": "Open the full manual (in Italian)",
     "help": {
-      "fullManual": "Full manual (in Italian): step-by-step guides and FAQ",
-      "manual": "Open the CasaZen manual",
-      "support": "Write to support",
-      "text": "The manual explains every area in plain words. If you get stuck, write to us: we will answer.",
-      "textNoSupport": "The manual explains every area in plain words.",
-      "title": "Need a hand?"
+      "support": "Write to support"
     },
     "open": "Open the guide",
+    "openChapter": "Open the chapter “{{title}}”",
     "openWithCount_one": "Open the guide: {{count}} urgent thing to do",
     "openWithCount_other": "Open the guide: {{count}} urgent things to do",
+    "search": {
+      "empty": "No results in the manual.",
+      "failed": "The manual cannot be opened right now.",
+      "label": "Search the manual",
+      "pending": "Searching the manual…",
+      "placeholder": "E.g. add a property",
+      "retry": "Try again"
+    },
     "setup": {
-      "all": "See all the steps",
       "continue": "Continue",
       "label": "The steps to set up CasaZen",
-      "now": "Now",
-      "progress": "{{done}} of {{total}} steps done",
-      "titleChecklist": "Activate your booking site",
-      "titlePath": "Get started with CasaZen"
+      "now": "Now"
     },
-    "title": "Your guide",
-    "todo": {
-      "all": "See everything to do",
-      "count_one": "{{count}} thing to do, in the order to do it.",
-      "count_other": "{{count}} things to do, in the order to do them.",
-      "countUrgent_one": "{{count}} thing to do, {{urgent}} urgent: start from the top.",
-      "countUrgent_other": "{{count}} things to do, {{urgent}} urgent: start from the top.",
-      "nothing": "Nothing to do for now: all in order.",
-      "title": "To do now"
+    "title": "User guide",
+    "topics": {
+      "faq": "FAQ",
+      "glossary": "Glossary",
+      "howTo": "How to",
+      "start": "First steps",
+      "title": "Start here"
+    },
+    "type": {
+      "faq": "Frequently asked question",
+      "flusso": "Complete walkthrough",
+      "funzione": "Feature",
+      "howto": "How to",
+      "pagina": "Chapter",
+      "termine": "Glossary term"
     },
     "welcome": {
       "intro_one": "CasaZen walks you through one step at a time: there is {{count}} step to be up and running.",
@@ -6079,7 +6088,7 @@
       "pathTitle_one": "Your path: {{count}} step",
       "pathTitle_other": "Your path: {{count}} steps",
       "promise": {
-        "guide": "The Guide at the top right always tells you what to do next.",
+        "guide": "The Guide at the top right explains how to do everything.",
         "pause": "You can stop whenever you like: pick up where you left off, nothing is lost.",
         "steps": "We show you one thing at a time, in the right order."
       },
@@ -7545,6 +7554,7 @@
       "action": "Actions",
       "booking": "Bookings",
       "guest": "Guests",
+      "guide": "Guide",
       "page": "Pages",
       "property": "Properties",
       "recent": "Recent"
@@ -7607,6 +7617,7 @@
       "action": "Action",
       "booking": "Booking",
       "guest": "Guest",
+      "guide": "Guide",
       "page": "Page",
       "property": "Property"
     },
@@ -8906,32 +8917,7 @@
   "connectionHealth": {
     "activate": "Activate or reconnect the submission",
     "archiveLink": "Upload the receipts to the proof archive",
-    "credentials": {
-      "none": "CasaZen doesn't hold the credentials of the Alloggiati Web portal: you upload the receipts yourself.",
-      "stored": "The portal credentials are saved in CasaZen but not verified: you upload the receipts yourself.",
-      "usable": "The portal credentials are verified: CasaZen can download the receipts."
-    },
     "description": "Who sends the guest data to the police and ISTAT, and whether the submission works.",
-    "detail": {
-      "Active": {
-        "CasaZen": "CasaZen holds the portal credentials and can send the data.",
-        "ChannelManager": "Your channel manager confirms that the connection works and that the daily automatic submission is on.",
-        "other": "The submission shows as active."
-      },
-      "Inactive": {
-        "CasaZen": "CasaZen can't send the data with the saved credentials.",
-        "ChannelManager": "Your channel manager says the submission is not active: the guest data don't go out by themselves.",
-        "other": "The submission does not show as active."
-      },
-      "Manual": "You send the data to the portals yourself: CasaZen reminds you of the deadlines.",
-      "Unknown": {
-        "CasaZen": "CasaZen can't verify the submission with the saved credentials.",
-        "ChannelManager": "CasaZen can't verify this connection: your channel manager doesn't say whether the submission is active.",
-        "other": "CasaZen can't verify this connection."
-      }
-    },
-    "disclosureBody": "The state is read from your channel manager: CasaZen does not confirm it by itself and does not import the result.",
-    "disclosureTitle": "Data consulted on Octorate",
     "instructions": {
       "CasaZen": "Check the Alloggiati Web portal credentials saved in CasaZen.",
       "ChannelManager": {
@@ -8939,12 +8925,13 @@
         "Unknown": "Check in the panel of your channel manager that the connection with the police is active and that the daily automatic submission is on, then come back here and check again."
       }
     },
-    "istatSeeNotice": "Whether the channel manager sends the ISTAT depends on your region: see the notice below.",
+    "istatSeeNotice": "See the notice below",
     "lastRun": "Last automatic submission: {{when}}",
     "loadError": "We couldn't read the state of the submission.",
     "loading": "Reading the state of the submission…",
     "notFound": "We can't find this property.",
     "outsideItaly": "Outside Italy the guest data are not sent to the police and ISTAT from here.",
+    "outsideItalyShort": "Not applicable outside Italy",
     "reason": {
       "connection_not_checked_yet": "We haven't checked it yet: we read it the next time you open this page.",
       "credentials_refused": "The portal refused the saved credentials.",
@@ -11023,40 +11010,47 @@
       "mustNotNotify": "I do not have to notify",
       "mustNotify": "I have to notify",
       "required": "For this property the notification is due.",
-      "reversible": "The answer blocks nothing and you can change it at any time.",
       "saveFailed": "I could not save the answer. Try again."
     },
     "facts": {
-      "channel": "Where and how to notify",
+      "channel": "How",
       "deadline": "Deadline",
-      "obligation": "What the canton asks",
+      "obligation": "Obligation",
       "portal": "Official portal",
-      "retention": "How long to keep the data",
-      "support": "What CasaZen does"
+      "retention": "Retention"
     },
     "missing": {
       "fixMunicipality": "Set the municipality",
-      "swiss_municipality_missing": "The municipality is missing. Without it we do not know which rules apply to your guests: choose it from the postal code and the locality, in the property details.",
-      "ticino_structure_id_missing": "The structure identification number is missing: it is needed to prepare the notification to the Ticino police.",
+      "swiss_municipality_missing": "The municipality is missing.",
+      "ticino_structure_id_missing": "The structure identification number is missing.",
       "title": "To complete",
       "unknown": "There is still something to complete."
-    },
-    "obligation": {
-      "KeepRegister": "You must keep a register of the guests and show it to the police if asked.",
-      "Optional": "Keeping a register of the guests is optional.",
-      "ReportToAuthority": "You must send the guests' data to the authority.",
-      "Unknown": "The sources do not say for certain what the canton asks."
-    },
-    "privateRentals": {
-      "No": "It does not apply to whoever lets a private home.",
-      "Partial": "It applies only in part to whoever lets a private home.",
-      "Unknown": "It is not certain whether it applies to whoever lets a private home.",
-      "Yes": "It also applies to whoever lets a private home."
     },
     "retention": {
       "none": "The sources give no period",
       "years_one": "{{count}} year",
       "years_other": "{{count}} years"
+    },
+    "short": {
+      "channel": {
+        "EmailFile": "File by e-mail",
+        "None": "Nothing sent: keep a register",
+        "Paper": "Paper form",
+        "PortalFileUpload": "File on the portal",
+        "PortalForm": "Form on the portal",
+        "VendorInterface": "From your software"
+      },
+      "obligation": {
+        "KeepRegister": "Register to keep",
+        "Optional": "Optional",
+        "ReportToAuthority": "Notification required",
+        "Unknown": "To check"
+      },
+      "privateRentals": {
+        "No": "not for private homes",
+        "Partial": "partly for private homes",
+        "Unknown": "private homes to check"
+      }
     },
     "step": {
       "complete": "Nothing is missing to notify the guests.",
@@ -11065,12 +11059,6 @@
     "structureId": {
       "loading": "Reading the structure number…",
       "value": "Identification number: {{value}}"
-    },
-    "support": {
-      "AssistedNotification": "CasaZen prepares the guests' data for you to copy and reminds you of the deadline; you make the notification.",
-      "FileExport": "Prepares the file in the official format: you upload it on the portal.",
-      "GuestRegister": "CasaZen prepares the guest register for you to download and print, with a column for the signature; you keep it and show it to the police if asked.",
-      "InformationOnly": "Tells you what the canton asks: it sends nothing."
     },
     "toVerify": "To check with the municipality or the police"
   },
@@ -11302,6 +11290,9 @@
     "label": "More information",
     "labelFor": "About: {{title}}",
     "learnMore": "Learn more"
+  },
+  "manual": {
+    "open": "Open in the manual"
   },
   "hostContact": {
     "consent": "I agree that my message and my email are sent to {{host}}, to receive the answer.",
@@ -11540,7 +11531,7 @@
     "feedsTitle": "Linked calendars",
     "feedsLoadError": "Could not load the linked calendars.",
     "retry": "Try again",
-    "noFeeds": "No calendar linked yet: add the iCal link from Airbnb, Booking.com or another channel.",
+    "noFeeds": "No calendar linked yet.",
     "channels": {
       "Airbnb": "Airbnb",
       "BookingCom": "Booking.com",
@@ -11585,13 +11576,10 @@
     "syncStarted": "Sync started: the blocked dates update as soon as it ends.",
     "exportTitle": "Export link for OTAs",
     "exportDescription": "Airbnb, Booking.com and your other channels read from this link the bookings made on CasaZen and your manual blocks, so they do not sell those dates twice.",
-    "exportContentNote": "CasaZen exports direct and manual bookings (and your blocks), not the bookings that came from the OTAs nor the dates imported from their calendars: link every OTA to the others too, for example the Booking.com calendar on Airbnb and the Airbnb one on Booking.com.",
     "exportLoading": "Loading the export link…",
     "exportPrivate": "Keep it private: anyone with the link can see the dates taken.",
-    "exportHowTo": "Where to paste it",
     "exportAirbnbSteps": "in your listing open Availability → Calendar sync → Import calendar, paste the link and give it a name (e.g. CasaZen).",
     "exportBookingSteps": "in the Extranet open Rates & availability, in the section for syncing calendars, add a calendar to import and paste the link.",
-    "exportRefreshNote": "OTAs read the link again from time to time: changes do not show up at once.",
     "copyFailed": "Could not copy: select the link and copy it by hand.",
     "regenerate": "Regenerate link",
     "regenerateTitle": "Regenerate the export link?",
@@ -20626,15 +20614,19 @@
     },
     "version": {
       "between": "From {{from}} to {{to}}",
-      "cleaning": "Cleaning flat fee per stay: {{amount}}",
-      "document": "Signed mandate: on file",
+      "documentMissing": "Not recorded",
+      "documentPresent": "On file",
+      "ended": "Ended",
       "feesAgency": "Fees on card payments: borne by the agency",
+      "feesAgencyShort": "Paid by the agency",
       "feesOwner": "Fees on card payments: borne by the owner",
+      "feesOwnerShort": "Paid by the owner",
       "from": "From {{from}}",
       "inForce": "In force",
-      "linen": "Linen flat fee per stay: {{amount}}",
       "noDocument": "Signed mandate: not recorded",
-      "terms": "Commission {{percent}}, {{vat}}. Base: {{base}}.",
+      "others_one": "One other version",
+      "others_other": "{{count}} other versions",
+      "perStay": "per stay",
       "upcoming": "Not in force yet"
     }
   },
@@ -21559,6 +21551,9 @@
     }
   },
   "ownerProfile": {
+    "actions": {
+      "edit": "Edit"
+    },
     "approveDialog": {
       "confirm": "Record the approval",
       "consequence1": "The approval stays on record with the name and the date.",
@@ -21569,7 +21564,7 @@
       "nameHint": "The accountant or the qualified person who approved the rule.",
       "title": "Approval of rule {{rule}} version {{version}}"
     },
-    "description": "Who the owner is for statements, payments and withholdings, how he is paid and which tax rule applies. Sensitive data is hidden.",
+    "descriptionShort": "Data for statements, payments and withholding.",
     "dialog": {
       "choose": "Choose…",
       "countryHint": "Two letters, for example IT or CH.",
@@ -21599,6 +21594,7 @@
     "facts": {
       "empty": "Not given",
       "hide": "Hide the data",
+      "missing": "To be set",
       "reveal": "Show the full data",
       "rule": "rule {{rule}} version {{version}}",
       "title": "Profile in force",
@@ -21665,7 +21661,7 @@
     "history": {
       "current": "In force",
       "noRule": "No rule",
-      "title": "Earlier versions"
+      "title": "Version history"
     },
     "loadError": "We cannot read the financial data.",
     "loading": "Reading the financial data…",
@@ -21679,9 +21675,12 @@
     "notFound": "This owner does not exist",
     "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
     "onboarding": {
+      "allClear": "All clear",
       "complete": "The activation reports nothing left to complete for this owner.",
       "completeAction": "Complete it in the activation",
       "title": "What the activation still misses",
+      "toFix_one": "{{count}} thing to fix",
+      "toFix_other": "{{count}} things to fix",
       "unavailable": "The owners' activation is not available now: shares and mandate are completed there once it is."
     },
     "options": {
@@ -21716,18 +21715,62 @@
       "title": "Shares by period",
       "until": "to {{date}}"
     },
+    "panels": {
+      "role": "Role and length of the mandate"
+    },
+    "path": {
+      "currencyMissing": "Currency to set",
+      "documents": {
+        "incomplete": "Some data is missing",
+        "none": "No issuer profile",
+        "ready": "Ready to issue"
+      },
+      "ibanMissing": "Account to set",
+      "notFilled": "To fill in",
+      "open": "Open",
+      "progress": "{{done}} of {{total}} steps complete",
+      "progressLabel": "Progress of the path",
+      "rule": {
+        "approvedBy": "Approved by {{name}}",
+        "value": "{{rule}} version {{version}}"
+      },
+      "status": {
+        "documents": {
+          "done": "Ready",
+          "todo": "To complete"
+        },
+        "identity": {
+          "done": "Complete",
+          "todo": "To complete"
+        },
+        "mandate": {
+          "done": "In force",
+          "todo": "Missing"
+        },
+        "payments": {
+          "done": "Complete",
+          "todo": "To complete"
+        },
+        "rule": {
+          "done": "Approved",
+          "todo": "To approve"
+        }
+      },
+      "step": "Step {{number}}",
+      "title": "The path"
+    },
     "policy": {
       "approve": "Record the approval",
       "approved": "Approved",
       "approvedBy": "Approved by {{name}} on {{date}}.",
       "approvedShort": "approved",
-      "available": "Tax rules of the agency: {{count}}",
       "components": "Base items",
       "hash": "fingerprint {{hash}}…",
       "name": "{{rule}} version {{version}} · {{jurisdiction}}",
       "new": "New rule",
       "no": "No",
       "none": "The profile has no tax rule.",
+      "openSource": "Open the document",
       "pending": "To approve",
       "pendingShort": "to approve",
       "rate": "Rate",
@@ -21740,6 +21783,7 @@
       "source": "Official source",
       "taxCode": "Tax code",
       "title": "Tax rule and approval",
+      "validity": "Validity",
       "waiting": "It is waiting for the accountant's approval.",
       "withholding": "Withholding at payment",
       "years_one": "{{count}} year",
@@ -21808,18 +21852,54 @@
       "taxResidenceMissing": "The tax residence is missing.",
       "vatNumberInvalid": "The VAT number is not valid."
     },
+    "reports": {
+      "empty": "There are no reports to show yet."
+    },
+    "status": {
+      "notCovered": "Month not covered",
+      "ready": "Ready from {{from}}",
+      "todo": "To complete"
+    },
+    "summary": {
+      "currency": "Currency {{currency}}",
+      "fiscalCode": "Tax code {{code}}",
+      "foreignTaxId": "Foreign ID {{code}}",
+      "iban": "IBAN {{iban}}",
+      "inForce": "Profile in force from {{from}}",
+      "inForceBetween": "Profile in force from {{from}} to {{to}}",
+      "residence": "Resident in {{country}}",
+      "vat": "VAT no. {{code}}"
+    },
+    "tabs": {
+      "documents": "Stay documents",
+      "done": "complete",
+      "identity": "Identity",
+      "label": "Sections of the financial data",
+      "mandate": "Mandate",
+      "overview": "Overview",
+      "payments": "Payments",
+      "reports": "Reports and history",
+      "rule": "Tax rule",
+      "todo": "to complete"
+    },
     "title": "Financial data of {{owner}}",
     "titleGeneric": "Owner's financial data",
     "units": {
-      "count": "Short-let apartments: {{managed}} managed by the agency, {{external}} declared outside the agency, {{total}} in all.",
+      "chip": {
+        "past": "Over the limit",
+        "within": "Within the limit"
+      },
       "description": "A natural person without a VAT number may let a limited number of apartments as short lets; beyond it, the activity is presumed to be a business. The ones the owner lets without the agency count too.",
       "errors": {
         "units": "Write a whole number from 0 to {{max}}: 0 if there are none."
       },
+      "external": "Declared outside",
       "hint": "From 0 to 1000. Write 0 if there are none: leaving it empty does not count.",
       "label": "Apartments let outside the agency",
+      "limit": "Limit: {{max}}",
       "loadError": "We cannot read the limit of apartments",
       "loading": "Reading the limit of apartments…",
+      "managed": "Managed by the agency",
       "notApplicable": "The limit is about natural persons without a VAT number: this owner is a business already and there is nothing to declare.",
       "notForYou": "You have no access to this data.",
       "notFound": "Owner not found.",
@@ -21828,6 +21908,7 @@
       "save": "Save the number",
       "saved": "Number saved.",
       "title": "Short lets outside the agency",
+      "total": "In total",
       "withinLimit": "Within the limit of {{max}} apartments for a natural person."
     },
     "warning": {
@@ -21865,8 +21946,7 @@
         "model": "Choose how revenue, expenses and advances are recognized.",
         "rule": "Select the jurisdiction and the policy approved by the accountant.",
         "review": "Check the summary. Go back to correct any details."
-      },
-      "edit": "Edit details"
+      }
     }
   },
   "owners": {
@@ -22359,10 +22439,10 @@
         "steps": [
           "If invited, open the invitation with the recipient account. If setting up your own business, choose your role, area and plan before confirming the legal documents and proceeding to billing.",
           "Use “Pause setup” while choosing your plan or reviewing your choices. Saved choices remain in this tab for 24 hours. Reloading restores the saved step and you confirm the documents again.",
-          "When Start with CasaZen is available, the administrator can open the plan from the Short stays home. For Italian properties, choose who submits guest data and review the summary before confirming. The plan shows the next task. You can leave and return from Home or the Guide.",
+          "When Start with CasaZen is available, the administrator can open the plan from the Short stays home. For Italian properties, choose who submits guest data and review the summary before confirming. The plan shows the next task. You can leave and return from Home.",
           "Choose Short-term rentals, Long-term rentals, Administration or Suppliers. Available areas and actions depend on your role and assigned properties.",
-          "Check the area and organization at the top. On a phone, open More to switch areas. On a computer, use the sidebar selector. Choose Search to find pages you can access.",
-          "Ask CasaZen finds accessible pages by name. In short-term rentals, ask which arrivals today have incomplete check-in. Check the scope shown and open a booking to verify it. The demo uses sample records. You can also open arrivals directly from the Dashboard.",
+          "Check the area and organization at the top. On a phone, open More to switch areas. On a computer, use the sidebar selector. Choose Search to find pages you can access and topics of the manual.",
+          "Ask CasaZen finds accessible pages by name and, when you ask how to do something, points to the manual topics. In short-term rentals, ask which arrivals today have incomplete check-in. Check the scope shown and open a booking to verify it. The demo uses sample records. You can also open arrivals directly from the Dashboard.",
           "To start operations: prepare properties, check availability and rates, enter bookings, complete guest details and review upcoming reporting tasks."
         ]
       },
@@ -22647,6 +22727,8 @@
       "cinDescription": "The National Identification Code (CIN) is mandatory under D.L. 145/2023 for all accommodation facilities in Italy. Format: IT + ISTAT municipality code (6 digits) + category (2 characters) + alphanumeric code (up to 8 characters), e.g. IT015146C2ABCDEFGH.",
       "editCin": "Edit CIN",
       "managePricing": "Manage suggestions",
+      "amenitiesMore": "Show {{count}} more",
+      "amenitiesLess": "Show fewer",
       "viewOnPublicSite": "View on public site",
       "newBooking": "New booking",
       "allBookings": "See the bookings",
@@ -22721,8 +22803,6 @@
       "loadError": "The photos could not be loaded.",
       "retry": "Try again",
       "emptyTitle": "No photos",
-      "emptyDescription": "Add photos of the property: guests also choose by looking at the pictures.",
-      "emptyReadOnly": "No photos have been uploaded for this property.",
       "emptyAction": "Upload the first photo",
       "cover": "Cover",
       "setCover": "Set as cover",
@@ -22784,7 +22864,8 @@
         "saving": "Saving...",
         "save": "Save CIN"
       },
-      "istatMismatch": "The comune inside the CIN differs from the comune of the property. This is not an error: a CIN does not change after a relocation or reclassification. Just check that it is the CIN of this property."
+      "istatMismatch": "The comune inside the CIN differs from the comune of the property. This is not an error: a CIN does not change after a relocation or reclassification. Just check that it is the CIN of this property.",
+      "istatMismatchShort": "Different CIN comune"
     },
     "ota": {
       "title": "OTA Integrations",
@@ -23230,7 +23311,7 @@
     },
     "loadError": "We cannot read who cleans this property: we do not know how it is set.",
     "loading": "Loading who cleans…",
-    "none": "Nobody was chosen to clean this property. Until you choose, the cleaning at check-out does not start by itself: it stays in the to do list as «Cleaning to arrange».",
+    "none": "Nobody chosen to clean this property.",
     "notFound": "We cannot find this property any more.",
     "problem": {
       "duration": "The length is from 5 to 1,440 minutes, in whole numbers.",
@@ -23244,10 +23325,10 @@
     "retry": "Try again",
     "routine": {
       "link": "Go to the automations",
-      "off": "The routine «Cleaning at check-out» is not on: until you switch it on no cleaning starts by itself.",
-      "on": "The routine «Cleaning at check-out» is on: the cleaning starts by itself at check-out.",
-      "onNoCleaner": "The routine «Cleaning at check-out» is on, but this property has no active cleaner: no cleaning starts for this property.",
-      "unknown": "From here we cannot tell whether the routine «Cleaning at check-out» is on: check it in the automations."
+      "off": "Routine off: no automatic cleaning",
+      "on": "Starts by itself at check-out",
+      "onNoCleaner": "No cleaner set: won't start by itself",
+      "unknown": "Routine status unknown"
     },
     "save": "Save",
     "saved": "Who cleans was saved",
@@ -23262,7 +23343,7 @@
       "stored": "Person already set"
     },
     "state": {
-      "off": "Off: the setting stays saved but the cleaning does not start by itself.",
+      "off": "Off",
       "on": "On"
     },
     "summary": {
@@ -23270,16 +23351,12 @@
       "duration": "Length",
       "minutes_one": "{{count}} minute",
       "minutes_other": "{{count}} minutes",
-      "noCurrency": "The currency is not stated: the amount is shown without a symbol.",
       "noPrice": "No price stated",
       "price": "Agreed price",
       "staffNamed": "{{name}} (staff)",
       "staffUnknown": "A member of the staff",
-      "state": "State",
       "supplierUnknown": "A supplier",
       "time": "Start time",
-      "timeDefault": "{{time}} (default time: the property has no check-out time)",
-      "timeOfProperty": "{{time}} (the check-out time of the property)",
       "trusted": "Trusted"
     },
     "suppliers": {
@@ -33421,7 +33498,7 @@
     "commitFailed": "Could not complete the action."
   },
   "comoStayTour": {
-    "departures": "Stays with a missing departure or a departure date different from the tax calculation: {{count}}. Their amounts are excluded from totals.",
+    "departures": "Stays to reconcile: {{count}} (excluded from totals)",
     "title": "Monthly return · Como",
     "period": "Return month",
     "taxable": "Taxable guests",
@@ -33430,9 +33507,8 @@
     "reason": "Exemption reason",
     "guests": "Guests",
     "overnights": "Guest nights",
-    "missing": "Stays with missing or outdated figures: {{count}}. Their amounts are excluded from the totals.",
-    "channel": "Departures this month with tax collected by a platform: {{count}}. Check intermediary statements for all collections in the month, including those for stays departing in other months.",
-    "basis": "Figures include departures in the selected month with confirmed host-collected tax. Check exemption reasons before filing in StayTour.",
+    "missing": "Stays to complete or reconfirm: {{count}} (excluded from totals)",
+    "channel": "Tax collected by a platform: {{count}} stays",
     "attach": "Archive the StayTour confirmation",
     "archive": "View confirmations for this month",
     "error": "Report unavailable",
@@ -34367,6 +34443,11 @@
     }
   },
   "ownerIssuer": {
+    "chip": {
+      "incomplete": "To complete",
+      "none": "To set up",
+      "ready": "Ready"
+    },
     "confirmNote": "The choices «to confirm» are prudent values: the accountant confirms them, and you can change them whenever you want.",
     "description": "In Italy the owner issues the document of the stay, with its own data and its own series: CasaZen issues it in its name. Here you say who issues for this owner.",
     "facts": {

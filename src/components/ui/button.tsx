@@ -5,28 +5,14 @@ import { PRESS_FEEDBACK } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /**
-   * `soft` is the accent of the area in a light tint (the secondary action next to a primary one); `danger-outline` is
-   * the destructive action that is not the main one of the page (the filled `destructive` is for the confirmation).
-   */
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "soft" | "danger-outline";
   size?: "default" | "sm" | "lg" | "icon";
   asChild?: boolean;
-  /**
-   * Work in progress: a spinner goes before the label, the button announces `aria-busy` and ignores clicks (and the
-   * submit of its form). It stays focusable, so the person who pressed it does not lose their place, and it keeps its
-   * label: the label can say what is going on ("Saving...").
-   */
   loading?: boolean;
-  /** Icon after the label. Decorative (hidden from assistive technology): the label says what the button does. */
   iconRight?: React.ReactNode;
-  /** Takes the whole width of its container (forms on a phone, cards). */
   block?: boolean;
 }
 
-// `soft` and `danger-outline` read semantic tokens that the redesign defines (`--color-primary-soft`, `--color-primary-text`,
-// `--color-danger-foreground`). Until they exist, the fallbacks derive the same thing from the tokens of today: the tint of the
-// primary on the page background (text 4.9:1, 4.7:1 on hover) and a red that meets AA on white (6.5:1).
 const SOFT_BG =
   "bg-[color:var(--color-primary-soft,color-mix(in_oklab,var(--color-primary)_10%,var(--color-background)))]";
 const SOFT_TEXT = "text-[color:var(--color-primary-text,var(--color-primary))]";
@@ -44,7 +30,6 @@ const variantStyles = {
   "danger-outline": cn("border border-destructive/40 bg-background hover:bg-destructive/10", DANGER_TEXT),
 };
 
-// Touch screens get at least 44 px (WCAG 2.5.5, product rule); mouse and keyboard keep the sizes they always had.
 const sizeStyles = {
   default: "h-10 px-4 py-2 pointer-coarse:min-h-11",
   sm: "h-9 rounded-md px-3 pointer-coarse:min-h-11",
@@ -68,8 +53,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // `transition-[…scale]`: what `transition-colors` moved, and the press of the finger (`PRESS_FEEDBACK`), which a link-like button
-    // skips. `box-shadow` is not in the list on purpose: the focus ring is a shadow, and a ring that fades in is a ring that is late.
     const classes = cn(
       "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-[color,background-color,border-color,text-decoration-color,fill,stroke,scale] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
       variant !== "link" && PRESS_FEEDBACK,
@@ -80,8 +63,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className
     );
 
-    // While it works the button ignores the click, but it is not `disabled`: a disabled button drops the focus of the
-    // person who has just pressed it. A native submit is cancelled together with the click, so the form is not sent twice.
     const handlers = {
       "aria-busy": loading || undefined,
       "aria-disabled": loading || undefined,
@@ -97,7 +78,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       </span>
     ) : null;
 
-    // Nothing to add around the label: render what the button has always rendered.
     if (!spinner && !trailing) {
       const Comp = asChild ? Slot : "button";
       return (
@@ -108,7 +88,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     if (asChild) {
-      // `Slottable` puts the spinner and the icon inside the element that receives the button (a link, a router link).
       return (
         <Slot className={classes} ref={ref} {...handlers} {...props}>
           {spinner}

@@ -15,10 +15,8 @@ import { openablePage, pathWithId } from './availability';
  * anything.
  */
 
-/** The cache entries (by the first element of their query key) that hold each kind of object. */
 const CACHE_ROOTS = { property: 'properties', booking: 'bookings', guest: 'guests' } as const;
 
-/** The detail page of a property in each area that has one, in the order tried when the area the user is in has none. */
 const PROPERTY_PAGES: ReadonlyArray<{ area: AppContextKey; pattern: string }> = [
   { area: 'short-rent', pattern: '/app/short-rent/properties/:id' },
   { area: 'long-rent', pattern: '/app/long-rent/properties/:id' },
@@ -36,7 +34,6 @@ function text(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-/** The rows a cached answer holds: a list, a page (`{ items }`) or a single record. */
 function rowsOf(data: unknown): Row[] {
   if (Array.isArray(data)) return data.filter(isRow);
   if (isRow(data) && Array.isArray(data.items)) return data.items.filter(isRow);
@@ -93,7 +90,6 @@ function collect(client: QueryClient): Seen {
   return seen;
 }
 
-/** "20 ott – 23 ott", or nothing when the stay has no valid dates. */
 function stayLabel(context: CommandContext, from: string, to: string): string {
   if (!from || !to) return '';
   const style: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
@@ -103,7 +99,6 @@ function stayLabel(context: CommandContext, from: string, to: string): string {
   });
 }
 
-/** Where a property leads: the detail page of the area the user is in, else of the first area that has one the user may open. */
 function propertyDestination(context: CommandContext) {
   const inThisArea = PROPERTY_PAGES.filter((page) => page.area === context.activeArea);
   const elsewhere = PROPERTY_PAGES.filter((page) => page.area !== context.activeArea);

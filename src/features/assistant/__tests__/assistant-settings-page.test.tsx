@@ -178,7 +178,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       fireEvent.change(screen.getByTestId('assistant-signature'), { target: { value: 'Sofia e Luca' } });
       fireEvent.click(screen.getByTestId('assistant-rules-save'));
 
-      // The whole set goes back, the hours as the server writes them and the threshold the screen does not show, as it was read: a save never resets it.
       await waitFor(() =>
         expect(assistantSettingsApi.saveRules).toHaveBeenCalledWith({
           enabled: true,
@@ -262,7 +261,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
     });
 
     it('rulesForm_RulesChangedBySomebodyElseWhileTheFormWasOpen_AreNotOverwrittenInSilence', async () => {
-      // The other administrator changed the tone and the version moved: what the server holds is NOT what this form started from.
       const other: AssistantRules = { ...RULES, tone: 'Formal', instructionVersion: 4 };
       renderPage();
 
@@ -270,12 +268,10 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       vi.mocked(assistantSettingsApi.getRules).mockResolvedValue(other);
       fireEvent.click(screen.getByTestId('assistant-rules-save'));
 
-      // Nothing is sent (a whole-set save would have written the old tone over the other's), the refusal is said, and the form shows what the server holds now.
       expect(await screen.findByTestId('assistant-rules-save-error')).toHaveTextContent('non è stato salvato nulla');
       expect(assistantSettingsApi.saveRules).not.toHaveBeenCalled();
       await waitFor(() => expect(screen.getByTestId('assistant-tone-Formal')).toHaveAttribute('aria-pressed', 'true'));
       expect(screen.getByTestId('assistant-signature')).toHaveValue('Sofia');
-      // The refusal outlives the form that was started again with the other values.
       expect(screen.getByTestId('assistant-rules-save-error')).toBeInTheDocument();
     });
 
@@ -290,13 +286,11 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       fireEvent.click(screen.getByTestId('assistant-rules-save'));
 
       await waitFor(() => expect(assistantSettingsApi.saveRules).toHaveBeenCalledTimes(1));
-      // The form started again with the other administrator's signature, and the 409 is still said: the refusal did not go with the old form.
       await waitFor(() => expect(screen.getByTestId('assistant-signature')).toHaveValue('Altro amministratore'));
       expect(screen.getByTestId('assistant-rules-save-error')).toHaveTextContent('Qualcuno ha cambiato le istruzioni dell’assistente');
     });
 
     it('rulesForm_OnlyTheVersionOfTheInstructionsMoved_IsNoConflictAndTheSaveGoesOut', async () => {
-      // An answer of the knowledge or an exception of a property moved the version; the rules of this form are the same: nothing would be overwritten.
       vi.mocked(assistantSettingsApi.saveRules).mockResolvedValue(RULES);
       renderPage();
 
@@ -315,7 +309,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       vi.mocked(assistantSettingsApi.getRules).mockRejectedValue(httpError(500));
       fireEvent.click(screen.getByTestId('assistant-rules-save'));
 
-      // What cannot be checked is not written: the refusal is the general one, and nothing was sent.
       expect(await screen.findByTestId('assistant-rules-save-error')).toHaveTextContent('Non è stato possibile salvare le regole');
       expect(assistantSettingsApi.saveRules).not.toHaveBeenCalled();
     });
@@ -358,10 +351,8 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       expect(within(wifi).getByTestId('assistant-situation-mode')).toHaveTextContent('Prepara una bozza');
       expect(within(wifi).getByTestId('assistant-situation-answer')).toHaveTextContent('La risposta parte dai dati dell’immobile: Wi-Fi.');
       expect(within(wifi).getByTestId('assistant-situation-origin')).toHaveTextContent('Valore predefinito');
-      // A situation nobody configured has no start: no date is shown, and the row says what that means (not eligible for the automatic modes), it does not stay silent.
       expect(within(wifi).queryByTestId('assistant-situation-since')).not.toBeInTheDocument();
       expect(within(wifi).getByTestId('assistant-situation-since-unknown')).toHaveTextContent('Inizio non noto: non idonea alle modalità automatiche.');
-      // One that has a start shows the date, and not the sentence of the unknown one.
       const checkIn = rows.find((row) => row.getAttribute('data-code') === 'check_in_time')!;
       expect(within(checkIn).getByTestId('assistant-situation-since')).toHaveTextContent('In vigore dal');
       expect(within(checkIn).queryByTestId('assistant-situation-since-unknown')).not.toBeInTheDocument();
@@ -403,7 +394,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       fireEvent.click(within(dialog).getByTestId('assistant-mode-Escalate'));
       fireEvent.click(within(dialog).getByTestId('assistant-situation-save'));
 
-      // The topic that was read goes back with the new mode: changing one field never drops the others.
       await waitFor(() => expect(assistantSettingsApi.saveSituation).toHaveBeenCalledWith('wifi', { mode: 'Escalate', template: null, source: 'WiFi' }));
     });
 
@@ -438,7 +428,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       fireEvent.click(within(dialog).getByTestId('assistant-situation-save'));
       await waitFor(() => expect(assistantSettingsApi.saveSituation).toHaveBeenCalledTimes(1));
 
-      // The person closes the dialog (Esc) while the request goes on, and then the server refuses it: the dialog that would say so is gone, the table says it.
       fireEvent.keyDown(dialog, { key: 'Escape', code: 'Escape' });
       await waitFor(() => expect(screen.queryByTestId('assistant-situation-dialog')).not.toBeInTheDocument());
       expect(screen.queryByTestId('assistant-situations-save-error')).not.toBeInTheDocument();
@@ -456,11 +445,9 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       const dialog = await screen.findByTestId('assistant-situation-dialog');
       fireEvent.click(within(dialog).getByTestId('assistant-situation-save'));
 
-      // The dialog is open: it says it, and the table does not say it twice.
       expect(await within(dialog).findByTestId('assistant-situation-error')).toHaveTextContent('Il testo della risposta non è valido');
       expect(screen.queryByTestId('assistant-situations-save-error')).not.toBeInTheDocument();
 
-      // The person has read it and closes the dialog: nothing of it is left on the table.
       fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
       await waitFor(() => expect(screen.queryByTestId('assistant-situation-dialog')).not.toBeInTheDocument());
       expect(screen.queryByTestId('assistant-situations-save-error')).not.toBeInTheDocument();
@@ -528,12 +515,10 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       expect(screen.getByTestId('assistant-property-enabled')).toHaveValue('inherit');
       expect(screen.getByTestId('assistant-property-tone')).toHaveValue('inherit');
       expect(screen.getByTestId('assistant-property-exceptions')).toHaveTextContent('Come l’organizzazione: Cordiale');
-      // «From your listing», «Missing information» and «Your answers», and the note about the access codes.
       expect(await screen.findByTestId('assistant-fact')).toHaveTextContent('Dalle 15:00 alle 20:00.');
       expect(screen.getByTestId('assistant-missing')).toHaveTextContent('Parcheggio');
       expect(screen.getAllByTestId('assistant-entry')).toHaveLength(2);
       expect(screen.getByTestId('assistant-access-codes-note')).toHaveTextContent('non vengono mai letti dall’assistente');
-      // Nothing to remove while the property follows the organization.
       expect(screen.queryByTestId('assistant-property-reset')).not.toBeInTheDocument();
     });
 
@@ -549,7 +534,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       vi.mocked(assistantSettingsApi.savePropertySettings).mockResolvedValue(NO_EXCEPTIONS);
       renderPage(`${URL}&propertyId=p1`);
 
-      // The organization forbids Parking; this property forbids nothing, and accepts drafts at a lower threshold: both are said, none in silence.
       expect(await screen.findByTestId('assistant-relaxed-topics')).toHaveTextContent('Parcheggio');
       expect(screen.getByTestId('assistant-relaxed-threshold')).toHaveTextContent('0.7');
       expect(screen.getByTestId('assistant-relaxed-threshold')).toHaveTextContent('0.8');
@@ -557,7 +541,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       fireEvent.change(screen.getByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
       fireEvent.click(screen.getByTestId('assistant-property-save'));
 
-      // A looser rule is not saved with one click: the person confirms what it loosens (the two sentences of the warnings) and only then it goes out.
       const dialog = await screen.findByRole('dialog');
       expect(dialog).toHaveTextContent('Salvare regole meno restrittive?');
       expect(dialog).toHaveTextContent('Parcheggio');
@@ -611,7 +594,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
     });
 
     it('propertyPanel_ExceptionsChangedBySomebodyElseWhileTheFormWasOpen_AreNotOverwrittenInSilence', async () => {
-      // Somebody else gave the property its own tone meanwhile: the exceptions the server holds are not the ones this form started from.
       const other: PropertyAssistantSettings = { ...NO_EXCEPTIONS, tone: 'Friendly', updatedAt: '2026-11-13T10:00:00Z' };
       renderPage(`${URL}&propertyId=p1`);
 
@@ -622,7 +604,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
 
       expect(await screen.findByTestId('assistant-property-save-error')).toHaveTextContent('non è stato salvato nulla');
       expect(assistantSettingsApi.savePropertySettings).not.toHaveBeenCalled();
-      // The form shows what the server holds now, and the refusal outlives the form that was started again.
       await waitFor(() => expect(screen.getByTestId('assistant-property-tone')).toHaveValue('Friendly'));
       expect(screen.getByTestId('assistant-property-save-error')).toBeInTheDocument();
     });
@@ -638,13 +619,11 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       fireEvent.click(screen.getByTestId('assistant-property-save'));
 
       await waitFor(() => expect(assistantSettingsApi.savePropertySettings).toHaveBeenCalledTimes(1));
-      // The form started again with the other person's signature, and the 409 is still said.
       await waitFor(() => expect(screen.getByTestId('assistant-property-signature')).toHaveValue('Firma di un altro'));
       expect(screen.getByTestId('assistant-property-save-error')).toHaveTextContent('Qualcuno ha cambiato le istruzioni dell’assistente');
     });
 
     it('propertyPanel_OnlyTheDateOfTheLastSaveMoved_IsNoConflictAndTheSaveGoesOut', async () => {
-      // The server moves `updatedAt` on a save that changes nothing: the exceptions are the same, so nothing would be overwritten.
       vi.mocked(assistantSettingsApi.savePropertySettings).mockResolvedValue(NO_EXCEPTIONS);
       renderPage(`${URL}&propertyId=p1`);
 
@@ -660,7 +639,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
     it('propertyPanel_ChoosingAListOfItsOwn_StartsFromTheOrganizationsListNotFromNothing', async () => {
       renderPage(`${URL}&propertyId=p1`);
 
-      // Once the rules of the organization are there (they say what it forbids), «this property only» starts with that list and nothing is loosened yet.
       await waitFor(() => expect(screen.getByTestId('assistant-property-exceptions')).toHaveTextContent('Come l’organizzazione: Parcheggio'));
       fireEvent.click(screen.getByTestId('assistant-topics-own'));
 
@@ -673,7 +651,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       vi.mocked(assistantSettingsApi.savePropertySettings).mockResolvedValue(NO_EXCEPTIONS);
       renderPage(`${URL}&propertyId=p1`);
 
-      // This property keeps the organization's ban on Parking; the person takes it away and saves.
       fireEvent.click(await screen.findByTestId('assistant-property-topic-Parking'));
       expect(await screen.findByTestId('assistant-relaxed-topics')).toHaveTextContent('Parcheggio');
       fireEvent.click(screen.getByTestId('assistant-property-save'));
@@ -689,7 +666,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       vi.mocked(assistantSettingsApi.savePropertySettings).mockResolvedValue(NO_EXCEPTIONS);
       renderPage(`${URL}&propertyId=p1`);
 
-      // The property follows the organization's forbidden topics and only the tone changes: nothing is loosened, nothing is asked.
       await waitFor(() => expect(screen.getByTestId('assistant-property-exceptions')).toHaveTextContent('Come l’organizzazione: Parcheggio'));
       fireEvent.change(screen.getByTestId('assistant-property-tone'), { target: { value: 'Formal' } });
       fireEvent.click(screen.getByTestId('assistant-property-save'));
@@ -820,7 +796,6 @@ describe('the settings of the assistant (E05/F05/US04/T02)', () => {
       expect(within(own).getByRole('button', { name: 'Elimina' })).toBeDisabled();
       expect(within(own).getByRole('switch')).toBeDisabled();
       expect(screen.getByTestId('assistant-entry-add')).toBeDisabled();
-      // Switching it off sends the whole entry with the one change.
       expect(assistantSettingsApi.updatePropertyEntry).toHaveBeenCalledWith('p1', 'e1', {
         topic: 'WiFi',
         kind: 'Faq',

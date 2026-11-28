@@ -9,7 +9,6 @@ import type { SetIstatCredentialsRequest } from '@/types/onboarding.types';
 
 /** What the ISTAT part needs to show the regional ISTAT credentials: they are the same kind of thing as the police ones, and are held by the wizard in the same way. */
 export interface IstatCredentialsStepProps {
-  /** Whether the property has them: `null` while that is read, or when the read failed (the step then says nothing about it). */
   configured: boolean | null;
   /** What was typed: it lives in the wizard, like the police credentials, so that the main button of the wizard can save it and a change of step does not lose it. */
   values: SetIstatCredentialsRequest;
@@ -22,7 +21,6 @@ export interface IstatCredentialsStepProps {
 interface IstatStepProps {
   propertyId: string;
   istat: IstatCredentialsStepProps;
-  /** A request of the wizard is in flight (this one or another): nothing here can be pressed again meanwhile. */
   busy: boolean;
   /** Enter in a field saves the credentials of the block (it never submits the form of the wizard, which would go on to the next step with them left behind). */
   onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;

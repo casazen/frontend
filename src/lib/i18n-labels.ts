@@ -58,7 +58,6 @@ export function getDocumentTypeLabel(type: string, t: TranslateFn): string {
   return t(`checkin.documentType.${type}`);
 }
 
-/** Label of a property document type (`Ape`, `CinCertificate`...), shared with the upload dialog. */
 export function getPropertyDocumentTypeLabel(type: string, t: TranslateFn): string {
   if (!type) return '';
   return translateEnumValue('shared.documentUpload.types', type.charAt(0).toLowerCase() + type.slice(1), t);
@@ -68,12 +67,10 @@ export function getGenderLabel(gender: string, t: TranslateFn): string {
   return t(`checkin.gender.${gender}`);
 }
 
-/** Italian end-user copy shown when a write is blocked by the org's plan limit (#202, AC8/AC12). */
 export function getPlanLimitMessage(): string {
   return i18n.t('common.planLimitMessage');
 }
 
-/** Italian CTA label pointing at the (billing-spec-owned) upgrade route. */
 export function getPlanUpgradeCta(): string {
   return i18n.t('common.planUpgradeCta');
 }
@@ -86,12 +83,10 @@ export function getFiscalRegimeLabel(regime: string, t: TranslateFn): string {
   return t(`leases.fiscalRegimeLabel.${regime}`);
 }
 
-/** Contract type of a lease (LT-10): libero 4+4, concordato 3+2, transitorio. */
 export function getLeaseContractTypeLabel(contractType: string, t: TranslateFn): string {
   return translateEnumValue('leases.contractTypeLabel', contractType, t);
 }
 
-/** Tax regime of a lease (LT-10), separate from the contract type. */
 export function getLeaseTaxRegimeLabel(taxRegime: string, t: TranslateFn): string {
   return translateEnumValue('leases.taxRegimeLabel', taxRegime, t);
 }
@@ -113,26 +108,19 @@ export function getLeaseStatusLabel(status: string, t: TranslateFn): string {
   return translateEnumValue('leases.statusLabel', status, t);
 }
 
-/** Timeline entry of a lease (`LeaseEventType`). */
 export function getLeaseEventTypeLabel(eventType: string, t: TranslateFn): string {
   return translateEnumValue('leases.eventType', eventType, t);
 }
 
-/**
- * RLI checklist item: the translation of its stable key in the UI language, or the label the server
- * localized from `Accept-Language` for a key this frontend does not know yet.
- */
 export function getRliChecklistItemLabel(item: { key: string; label: string }, t: TranslateFn): string {
   const key = `leases.rli.checklistItem.${item.key}`;
   return i18n.exists(key) ? t(key) : item.label;
 }
 
-/** State of the RLI registration of a lease (`toRegister`, `inProgress`, ..., see `getRliRegistrationState`). */
 export function getRliRegistrationStateLabel(state: string, t: TranslateFn): string {
   return translateEnumValue('leases.rli.state', state, t);
 }
 
-/** Why the last RLI registration attempt failed (stable code from the API), or a generic text for an unknown code. */
 export function getRliFailureLabel(code: string | null | undefined, t: TranslateFn): string {
   const key = `leases.rli.failure.${code}`;
   return code && i18n.exists(key) ? t(key) : t('leases.rli.failure.unknown');
@@ -142,12 +130,10 @@ export function getLeasePartyRoleLabel(role: string, t: TranslateFn): string {
   return translateEnumValue('leases.partyRole', role, t);
 }
 
-/** Label of an application role (`Admin`, `PropertyOwner`, ...). */
 export function getRoleLabel(role: string, t: TranslateFn): string {
   return translateEnumValue('roles', role, t);
 }
 
-/** Label of a plan tier (`Starter`, `Pro`, `Scale`). */
 export function getPlanTierLabel(tier: string, t: TranslateFn): string {
   return translateEnumValue('plan.tier', tier, t);
 }
@@ -158,7 +144,6 @@ const RENTAL_TYPE_KEYS: Record<RentalType, string> = {
   Both: 'onboarding.bothTitle',
 };
 
-/** Label of the operator type chosen during onboarding. */
 export function getRentalTypeLabel(rentalType: string, t: TranslateFn): string {
   const key = RENTAL_TYPE_KEYS[rentalType as RentalType];
   return key ? t(key) : rentalType;

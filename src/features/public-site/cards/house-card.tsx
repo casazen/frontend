@@ -25,27 +25,16 @@ import { PhotoCarousel } from './photo-carousel';
 import { SITE_TAG_ICONS, isSiteTag } from './site-tags';
 import './house-card.css';
 
-/** The amenities a row card shows as icons: the ones guests look for first (the catalog puts them first). */
 const ROW_AMENITIES = 5;
-/** The labels a row card writes out. */
 const ROW_TAGS = 3;
 
 export interface HouseCardProps {
   card: PublicStayCard;
-  /**
-   * The slug of the booking site: the page of the home and the list of hearts belong to it. In the search across all the sites it is
-   * left out: each home brings its own (`card.orgSlug`), there is no list of hearts and the host is named on the card.
-   */
   orgSlug?: string;
-  /** `grid` for the home, `row` for the results: more facts, the amenities, the labels and the cancellation. */
   variant?: 'grid' | 'row';
-  /** The nights of the stay chosen (`result.nights`): with them the card gives the total, without them the night price. */
   nights?: number | null;
-  /** The stay chosen: the page of the home opens with the same dates and guests. */
   stay?: StayState | null;
-  /** The link with the map (`useMapLink().bind(id)`): the card lights its pin and the pin lights the card. */
   mapLink?: HTMLAttributes<HTMLElement>;
-  /** The photo of the first cards is the one the page waits for. */
   eager?: boolean;
 }
 
@@ -60,18 +49,14 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const linkOf = useCardLink();
-  // Inside the frame of a widget nothing is fixed to the window (the explanation of the tax is a bubble at every width, not a sheet from the bottom of the frame).
   const embed = useEmbed();
   const locale = siteLocale(i18n.language);
-  // Across all the sites the home brings the slug of its own site; on a site it is the site's.
   const site = orgSlug ?? card.orgSlug ?? '';
   const ofAllSites = orgSlug === undefined;
   const host = ofAllSites ? card.hostName?.trim() : '';
-  // The page of the home on the site; inside the frame of a widget it is the property widget of the same frame.
   const to = linkOf(site, card, stay);
   const facts = cardFacts(card);
   const price = cardPrice(card, nights);
-  // The currency is the one the home says; a home that says none is written with no symbol and the phrase that says so (`formatPrice`).
   const currency = card.price.currency;
   const place = placeOfCard(card, i18n.language);
   const favourite = isGuestFavourite(card);
@@ -88,7 +73,6 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
     facts.areaSqm ? t('siteHome.card.area', { count: facts.areaSqm }) : null,
   ].filter(Boolean);
 
-  // The photo opens the home too (the link is stretched over the text; the photo has to be above it to be swiped).
   const openFromPhoto = (event: MouseEvent<HTMLDivElement>) => {
     if ((event.target as Element).closest('button, a')) return;
     navigate(to);

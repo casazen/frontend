@@ -42,25 +42,17 @@ import { useSavedViews } from './use-saved-views';
 
 export interface ListViewProps<Row> {
   list: ListDefinition<Row>;
-  /** `client`: all the rows. `server`: the rows of the page the server answered for the state in the address. */
   rows: readonly Row[];
   mode?: ListMode;
-  /** The first load: placeholders in place of the rows. */
   isLoading?: boolean;
-  /** A load after the first (the search changed): the rows that are there stay, a little dimmed. */
   isRefreshing?: boolean;
   isError?: boolean;
   error?: unknown;
-  /** What failed to load, already translated. Default: "Impossibile caricare l'elenco". */
   errorTitle?: string;
   onRetry?: () => void;
-  /** `server` mode: how many rows there are in all, for the count and the pages. */
   totalCount?: number;
-  /** `server` mode: the rows in a page. With it, and more rows than a page, the list has previous and next. */
   pageSize?: number;
-  /** `server` mode: the numbers on the quick filters that need attention (`urgent`) or only have a size (`counted`), by id. */
   chipCounts?: Readonly<Record<string, number | undefined>>;
-  /** Whose saved views these are. Without it the list offers none. */
   viewsScope?: ListViewsScope | null;
   testId?: string;
   className?: string;
@@ -125,18 +117,12 @@ export function ListView<Row>({
   const isBoard = state.layout === 'board' && Boolean(list.board);
   const columns = useMemo(() => visibleColumns(list, state.columns), [list, state.columns]);
 
-  // `client` mode: the list narrows and orders the rows. The counters of the quick filters count the rows the search and the
-  // filters leave, whichever quick filter is on.
   const chipRows = useMemo(() => (mode === 'client' ? filterListRows(list, rows, state, { ignoreChip: true }) : rows), [mode, list, rows, state]);
   const shown = useMemo(
     () => (mode === 'client' ? sortListRows(list, filterListRows(list, rows, state), state.sort, i18n.language) : rows),
     [mode, list, rows, state, i18n.language],
   );
 
-  /* ------------------------------------------------------------------------------------------------ Opening a row */
-
-  // The detail of a row is either a slot of this list (`localDetail`, a panel that is state of the list) or the global drawer of
-  // the shell (`drawerDetail`, UI-15: it opens from the address, the list only asks for it).
   const localDetail = list.detail && !isDrawerDetail(list.detail) ? list.detail : undefined;
   const drawerDetail = isDrawerDetail(list.detail) ? list.detail : undefined;
   const [detailKey, setDetailKey] = useState<string | null>(null);
@@ -164,7 +150,6 @@ export function ListView<Row>({
     if (href) void navigate(href);
   };
 
-  /** Whatever opens a row, made of `children`: the button of its drawer, or the link to its page. Nothing if it opens nothing. */
   const opener = (row: Row, children: ReactNode): ReactNode => {
     if (list.detail) {
       return (
@@ -183,7 +168,6 @@ export function ListView<Row>({
     );
   };
 
-  /** A cell that asks for the opener where it wants it; a name that does not is wholly the opener. */
   const withOpener = (row: Row, build: (cell: ListCell) => ReactNode, always: boolean): ReactNode => {
     let asked = false;
     const node = build({
@@ -219,9 +203,6 @@ export function ListView<Row>({
     return card(row);
   };
 
-  /* ------------------------------------------------------------------------------------------------- Row actions */
-
-  /** The menu of a row: its own entries and, after them, the swipe actions that are not there yet (a gesture is never the only way). */
   const menuOf = (row: Row): readonly ListMenuEntry[] => {
     const entries = [...(list.menu?.(row) ?? [])];
     const swipe = list.swipe?.(row);
@@ -235,13 +216,9 @@ export function ListView<Row>({
   };
   const hasRowActions = Boolean(list.primaryAction || list.menu || list.swipe);
 
-  /* ------------------------------------------------------------------------------------------------------ Selection */
-
   const bulk = list.bulk ?? [];
   const hasBulk = bulk.length > 0 && !isBoard;
   const [selectMode, setSelectMode] = useState(false);
-  // The selection belongs to the rows it was made on: another search, filter, quick filter or page forgets it (for good: going
-  // back to the same quick filter does not bring it back).
   const selectionScope = JSON.stringify([state.q, state.chip, state.filters, state.page]);
   const [selection, setSelection] = useState<{ scope: string; keys: string[] }>({ scope: selectionScope, keys: [] });
   if (selection.scope !== selectionScope) setSelection({ scope: selectionScope, keys: [] });
@@ -254,8 +231,6 @@ export function ListView<Row>({
     setSelectMode(!selectMode);
   };
 
-  /* ---------------------------------------------------------------------------------------------------------- CSV */
-
   const exportRows = (toExport: readonly Row[]) => {
     downloadCsv(csvFileName(list), listToCsv(columns, toExport, csvSeparatorFor(list, i18n.language)));
     toast.success(t('listView.export.done', { count: toExport.length }));
@@ -267,8 +242,6 @@ export function ListView<Row>({
       : mode === 'server' && total > shown.length
         ? t('listView.export.menuPage', { count: shown.length })
         : t('listView.export.menu', { count: shown.length });
-
-  /* ---------------------------------------------------------------------------------------------- Actions on many */
 
   const [confirming, setConfirming] = useState<{ action: ListBulkAction<Row>; rows: Row[] } | null>(null);
 
@@ -305,8 +278,6 @@ export function ListView<Row>({
         },
   );
 
-  /* ------------------------------------------------------------------------------------------------------- Board */
-
   const moveCard = async (row: Row, to: string) => {
     const board = list.board;
     if (!board) return;
@@ -319,7 +290,6 @@ export function ListView<Row>({
       toast.error(getProblemMessage(failure, t) ?? t('listView.board.moveFailed'));
       return;
     }
-    // Nothing back: the page has told the person itself.
     if (!result) return;
     if (!result.ok) {
       toast.warning(result.title, { description: result.reason });
@@ -330,8 +300,6 @@ export function ListView<Row>({
     if (undo) toastUndo(title, { description: result.description, undo });
     else toast.success(title, { description: result.description });
   };
-
-  /* ------------------------------------------------------------------------------------------------------ States */
 
   const refined = isRefined(list, state) || state.page > 1;
   const nothingAtAll = !isLoading && !isError && (mode === 'client' ? rows.length === 0 : shown.length === 0 && !refined);
@@ -365,7 +333,6 @@ export function ListView<Row>({
     const { icon, ...rest } = list.empty;
     content = <EmptyState icon={icon ?? Inbox} {...rest} />;
   } else if (noResults) {
-    // With no words and no filter it is the quick filter alone that leaves nothing: the list may say so its own way.
     const ownText = state.q.trim() === '' && activeFilterCount(state) === 0 ? list.noResults?.byChip?.[state.chip] : undefined;
     content = (
       <EmptyState

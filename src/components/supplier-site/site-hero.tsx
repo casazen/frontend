@@ -9,7 +9,6 @@ import type { SiteModel, SiteTrustItem } from '@/lib/supplier-site/site-model';
 import { InquiryLink, SiteFinder } from './site-finder';
 import { SiteMedia } from './site-media';
 
-/** The one signal of trust above the fold: "Verificato", else the jobs done. Nothing else is said before the page is scrolled. */
 function HeroSignal({ item }: { item: SiteTrustItem | null }) {
   const { t } = useTranslation();
   if (!item) return null;
@@ -23,7 +22,6 @@ function HeroSignal({ item }: { item: SiteTrustItem | null }) {
   );
 }
 
-/** What the cover offers to do: the finder while the bookings are open, else, at most, a way down to the services. */
 function HeroAction({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   const services = model.services && model.services.length > 0 ? model.services : null;
@@ -52,11 +50,6 @@ function HeroAction({ model }: { model: SiteModel }) {
   );
 }
 
-/**
- * The cover of the home (SP-09-FE): the supplier's sentence (or its name), a line under it and **one** action. With a full-width
- * scene (styles «acqua» and «scintilla») the text sits on the picture under a dark veil; in the light cover (styles «fresco» and
- * «naturale») the picture is on the right and carries the first free slot. Without a photo the picture is a neutral fill (VT-D19).
- */
 export function SiteHero({ model }: { model: SiteModel }) {
   const { t, i18n } = useTranslation();
   const full = model.hero === 'full';

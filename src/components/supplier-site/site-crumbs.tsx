@@ -4,11 +4,9 @@ import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 
 interface Crumb {
   label: string;
-  /** Without it the crumb is the page the person is on. */
   to?: string;
 }
 
-/** "Home › Servizi › Name": where the person is on the site; the last crumb is the page itself and not a link. */
 export function SiteCrumbs({ slug, items }: { slug: string; items: Crumb[] }) {
   const { t } = useTranslation();
   const all: Crumb[] = [{ label: t('supplierSite.crumbs.home'), to: supplierSitePaths.home(slug) }, ...items];

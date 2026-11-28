@@ -4,7 +4,6 @@ import { withoutRequest } from '@/features/marketplace/activation/use-sequential
 import type { DecideShortLetTaxCommand } from '@/types';
 import { OWNER_ACCOUNTING_KEY } from './use-owner-accounting';
 
-/** Root of the query keys of the checks of the Italian short-let withholding (E18/F01/US03/T01): the stays of a company tenant and the limit of units of an owner. */
 const OWNER_TAX_CHECKS_KEY = 'owner-tax-checks';
 
 const ownerTaxChecksKeys = {
@@ -28,10 +27,6 @@ export function useCompanyTenantCases(enabled: boolean) {
   });
 }
 
-/**
- * The stays that still wait for a decision, on their own. The list of every stay keeps only the 200 with the latest check-out, the decided ones among them, so a stay older than that which still waits for its decision is
- * not in it: the dialog of the decision asks for the waiting ones (`enabled` only when the list did not hold the stay it was opened on) before it tells that the stay needs none. `null` when the server refuses it (403).
- */
 export function usePendingCompanyTenantCases(enabled: boolean) {
   return useQuery({
     queryKey: ownerTaxChecksKeys.pendingCases,
@@ -63,15 +58,10 @@ export function useDecideCompanyTenant() {
         queryClient.invalidateQueries({ queryKey: [OWNER_TAX_CHECKS_KEY] }),
         queryClient.invalidateQueries({ queryKey: [OWNER_ACCOUNTING_KEY] }),
       ]),
-    // A refusal (the stay needs no decision any more, the booking is not there) says that the list on screen is not what the server has: it is read again.
     onError: () => queryClient.invalidateQueries({ queryKey: [OWNER_TAX_CHECKS_KEY] }),
   });
 }
 
-/**
- * The limit of units of an owner today: the apartments the agency manages for it, the ones it declared outside the agency, the limit and whether it is presumed to run a business. Read again at every visit; `null` when the
- * server refuses it to the caller (403).
- */
 export function useOwnerUnitsCheck(ownerId: string | undefined, enabled: boolean) {
   return useQuery({
     queryKey: ownerTaxChecksKeys.units(ownerId ?? ''),

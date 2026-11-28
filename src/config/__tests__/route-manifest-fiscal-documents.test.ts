@@ -17,7 +17,6 @@ describe('route manifest: the fiscal documents (E06/F03/US04/T01)', () => {
     expect(entry?.context).toBe('short-rent');
   });
 
-  // Permission rule: what the backend asks. The list, the files and the downloads need `payment.read`; the setting that tells who issues needs `property.read` as well.
   it('RouteManifest_FiscalDocuments_NeedsThePermissionsOfTheEndpointsItReads', () => {
     expect(entry?.requiredPermissions).toEqual(['property.read', 'payment.read']);
 
@@ -28,7 +27,6 @@ describe('route manifest: the fiscal documents (E06/F03/US04/T01)', () => {
     expect(entry && hasEntryPermission(entry, allow)).toBe(true);
   });
 
-  // Flag rule: with both flags off (the default of the backend) nothing changes for anyone: no tab, no link, and the address leads to the home of the area.
   it('RouteManifest_FiscalDocuments_WithBothFlagsOffIsNotThereForAnyone', () => {
     expect(entry?.featureFlag).toEqual(['fiscalDocumentIssuance', 'octorateDocumentImport']);
 
@@ -61,15 +59,12 @@ describe('route manifest: the fiscal documents (E06/F03/US04/T01)', () => {
     expect(tabs.indexOf(FISCAL_DOCUMENTS_PATH)).toBe(tabs.indexOf('/app/short-rent/fiscal') + 1);
   });
 
-  // The tab of whoever may not read what the page reads is not drawn: no tab that ends on a reserved page.
   it('RouteManifest_FiscalDocuments_IsNoTabForWhoMayNotReadPayments', () => {
     const withoutPayments = (_context: string, permission: string) => permission !== 'payment.read';
 
     expect(getNavSection('/app/short-rent/fiscal', withoutPayments, ISSUANCE).map((page) => page.path)).not.toContain(FISCAL_DOCUMENTS_PATH);
   });
 
-  // The payment ledger (E06/F04/US01/T04) draws the link to the documents only when this entry is in the manifest, its flags are on and the caller holds what it asks
-  // (`documentLinkOf`). With the flags off the link is not drawn; with them on it lights up by itself, on the very route of this page.
   it('RouteManifest_FiscalDocuments_TheLinkOfThePaymentLedgerLightsUpByItselfOnlyWhereThePageExists', () => {
     const withoutPayments = (_context: string, permission: string) => permission !== 'payment.read';
 
@@ -95,7 +90,6 @@ describe('feature flags of the fiscal documents', () => {
 
     const flags = parseFeatureFlags({ fiscalDocumentIssuance: true, octorateDocumentImport: 'yes' });
     expect(flags.fiscalDocumentIssuance).toBe(true);
-    // Anything but `true` is off.
     expect(flags.octorateDocumentImport).toBe(false);
   });
 
@@ -112,7 +106,6 @@ describe('feature flags of the fiscal documents', () => {
     expect(isFeatureRuleEnabled(undefined, undefined)).toBe(true);
     expect(isFeatureRuleEnabled(DEFAULT_FEATURE_FLAGS, 'octorateConnector')).toBe(false);
     expect(isFeatureRuleEnabled({ ...DEFAULT_FEATURE_FLAGS, octorateConnector: true }, 'octorateConnector')).toBe(true);
-    // A page nobody can turn on is hidden, not shown.
     expect(isFeatureRuleEnabled({ ...DEFAULT_FEATURE_FLAGS, octorateConnector: true }, [])).toBe(false);
   });
 });

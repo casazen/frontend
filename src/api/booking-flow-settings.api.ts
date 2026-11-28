@@ -7,9 +7,7 @@ import type { BookingFlowSettings, UpdateBookingFlowSettingsRequest } from '@/ty
  * (`localAuthRecovery`): a booking page never turns into «no access» because of it.
  */
 export const bookingFlowSettingsApi = {
-  /** The settings in force: the row of the organization, or the defaults (`isDefault`, every step automatic) while it has none. */
   get: () => ApiClient.get<BookingFlowSettings>('/settings/booking-flow', undefined, { localAuthRecovery: true }),
 
-  /** Saves the settings: days 0 to `maxCheckInLinkDaysBefore`, or 422 `booking_flow_days_out_of_range` and nothing is saved. */
   update: (request: UpdateBookingFlowSettingsRequest) => ApiClient.put<BookingFlowSettings>('/settings/booking-flow', request),
 };

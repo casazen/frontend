@@ -21,7 +21,6 @@ import { TenantErasureResultDialog } from './tenant-erasure-result-dialog';
 import { tenantCitizenshipText, tenantLeaseEndText, tenantName, tenantPaymentNote, tenantPunctualityDetail } from './tenant-format';
 import { TenantPrivacySection } from './tenant-privacy';
 
-/** The page while the person loads: the shape of the page, no spinner in the middle of nothing. */
 function TenantSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="tenant-loading">
@@ -41,7 +40,6 @@ function TenantSkeleton({ label }: { label: string }) {
   );
 }
 
-/** «Adesso», only when a rent of the person is late: the one thing on the sheet that cannot wait, with the way to the register where it is reminded. */
 function LateRentBlock({ overdue }: { overdue: NonNullable<TenantDetail['overdue']> }) {
   const { t, i18n } = useTranslation();
   const month = monthOfDate(overdue.oldestDueDate);
@@ -65,7 +63,6 @@ function LateRentBlock({ overdue }: { overdue: NonNullable<TenantDetail['overdue
   );
 }
 
-/** One line of a list of the sheet: a title, a line under it, and what stands at the end. */
 function Line({ title, sub, end, late }: { title: ReactNode; sub?: ReactNode; end?: ReactNode; late?: boolean }) {
   return (
     <li className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
@@ -98,7 +95,6 @@ export function TenantDetailPage() {
   if (isLoading) {
     content = <TenantSkeleton label={t('longRentTenants.detail.loading')} />;
   } else if (isError && getHttpStatus(error) !== 404) {
-    // An API error is never shown as "not found" (only a 404 is).
     content = (
       <div className="min-w-0 space-y-6">
         <PageHeader crumbs="auto" title={t('longRentTenants.detail.fallbackTitle')} />

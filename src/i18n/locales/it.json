@@ -6036,37 +6036,46 @@
     }
   },
   "guide": {
+    "ask": "Chiedi a CasaZen",
     "button": "Guida",
-    "description": "Ti accompagna passo per passo: cosa hai già fatto, cosa fare adesso e cosa viene dopo.",
+    "description": "Il manuale di CasaZen: cerca, o scegli cosa ti serve.",
+    "forThisPage": "In questa pagina",
+    "fullManual": "Apri il manuale completo",
     "help": {
-      "fullManual": "Manuale completo: guide passo passo e domande frequenti",
-      "manual": "Apri il manuale di CasaZen",
-      "support": "Scrivi all'assistenza",
-      "text": "Il manuale spiega ogni area con parole semplici. Se ti blocchi, scrivici: ti rispondiamo noi.",
-      "textNoSupport": "Il manuale spiega ogni area con parole semplici.",
-      "title": "Ti serve una mano?"
+      "support": "Scrivi all'assistenza"
     },
     "open": "Apri la guida",
+    "openChapter": "Apri il capitolo «{{title}}»",
     "openWithCount_one": "Apri la guida: {{count}} cosa urgente da fare",
     "openWithCount_other": "Apri la guida: {{count}} cose urgenti da fare",
+    "search": {
+      "empty": "Nessun risultato nel manuale.",
+      "failed": "Il manuale non si apre in questo momento.",
+      "label": "Cerca nel manuale",
+      "pending": "Cerco nel manuale…",
+      "placeholder": "Es. aggiungere un immobile",
+      "retry": "Riprova"
+    },
     "setup": {
-      "all": "Vedi tutti i passi",
       "continue": "Continua",
       "label": "I passi per configurare CasaZen",
-      "now": "Adesso",
-      "progress": "{{done}} di {{total}} passi fatti",
-      "titleChecklist": "Attiva il tuo sito di prenotazione",
-      "titlePath": "Inizia con CasaZen"
+      "now": "Adesso"
     },
-    "title": "La tua guida",
-    "todo": {
-      "all": "Vedi tutte le cose da fare",
-      "count_one": "{{count}} cosa da fare, nell'ordine in cui farla.",
-      "count_other": "{{count}} cose da fare, nell'ordine in cui farle.",
-      "countUrgent_one": "{{count}} cosa da fare, {{urgent}} urgente: parti dall'alto.",
-      "countUrgent_other": "{{count}} cose da fare, {{urgent}} urgenti: parti dall'alto.",
-      "nothing": "Niente da fare per ora: tutto in ordine.",
-      "title": "Da fare adesso"
+    "title": "Guida utente",
+    "topics": {
+      "faq": "Domande frequenti",
+      "glossary": "Glossario",
+      "howTo": "Come fare",
+      "start": "Primi passi",
+      "title": "Parti da qui"
+    },
+    "type": {
+      "faq": "Domanda frequente",
+      "flusso": "Percorso completo",
+      "funzione": "Funzione",
+      "howto": "Come fare",
+      "pagina": "Capitolo",
+      "termine": "Termine del glossario"
     },
     "welcome": {
       "intro_one": "CasaZen ti accompagna un passo alla volta: c'è {{count}} passo per essere operativo.",
@@ -6079,7 +6088,7 @@
       "pathTitle_one": "Il tuo percorso: {{count}} passo",
       "pathTitle_other": "Il tuo percorso: {{count}} passi",
       "promise": {
-        "guide": "La Guida in alto a destra ti dice sempre cosa fare dopo.",
+        "guide": "La Guida in alto a destra ti spiega come fare ogni cosa.",
         "pause": "Puoi fermarti quando vuoi: riprendi da dove eri, non perdi nulla.",
         "steps": "Ti mostriamo una cosa alla volta, nell'ordine giusto."
       },
@@ -7545,6 +7554,7 @@
       "action": "Azioni",
       "booking": "Prenotazioni",
       "guest": "Ospiti",
+      "guide": "Guida",
       "page": "Pagine",
       "property": "Immobili",
       "recent": "Recenti"
@@ -7607,6 +7617,7 @@
       "action": "Azione",
       "booking": "Prenotazione",
       "guest": "Ospite",
+      "guide": "Guida",
       "page": "Pagina",
       "property": "Immobile"
     },
@@ -8906,32 +8917,7 @@
   "connectionHealth": {
     "activate": "Attiva o ricollega l'invio",
     "archiveLink": "Carica le ricevute nell'archivio delle prove",
-    "credentials": {
-      "none": "CasaZen non ha le credenziali del portale Alloggiati Web: le ricevute le carichi tu.",
-      "stored": "Le credenziali del portale sono salvate in CasaZen ma non verificate: le ricevute le carichi tu.",
-      "usable": "Le credenziali del portale sono verificate: CasaZen può scaricare le ricevute."
-    },
     "description": "Chi invia i dati degli ospiti a Polizia e ISTAT e se l'invio funziona.",
-    "detail": {
-      "Active": {
-        "CasaZen": "CasaZen ha le credenziali del portale e può inviare i dati.",
-        "ChannelManager": "Il tuo channel manager conferma che il collegamento funziona e che l'invio automatico giornaliero è acceso.",
-        "other": "L'invio risulta attivo."
-      },
-      "Inactive": {
-        "CasaZen": "CasaZen non riesce a inviare i dati con le credenziali salvate.",
-        "ChannelManager": "Il tuo channel manager dice che l'invio non è attivo: i dati degli ospiti non partono da soli.",
-        "other": "L'invio non risulta attivo."
-      },
-      "Manual": "Invii tu i dati ai portali: CasaZen ti ricorda le scadenze.",
-      "Unknown": {
-        "CasaZen": "CasaZen non riesce a verificare l'invio con le credenziali salvate.",
-        "ChannelManager": "CasaZen non riesce a verificare questa connessione: il tuo channel manager non dice se l'invio è attivo.",
-        "other": "CasaZen non riesce a verificare questa connessione."
-      }
-    },
-    "disclosureBody": "Lo stato viene letto dal tuo channel manager: CasaZen non lo conferma da sola e non ne importa il risultato.",
-    "disclosureTitle": "Dati consultati su Octorate",
     "instructions": {
       "CasaZen": "Controlla le credenziali del portale Alloggiati Web salvate in CasaZen.",
       "ChannelManager": {
@@ -8939,12 +8925,13 @@
         "Unknown": "Controlla nel pannello del tuo channel manager che il collegamento con la Polizia sia attivo e che l'invio automatico giornaliero sia acceso, poi torna qui e controlla di nuovo."
       }
     },
-    "istatSeeNotice": "Se l'ISTAT parte dal channel manager dipende dalla tua regione: vedi l'avviso qui sotto.",
+    "istatSeeNotice": "Vedi l'avviso qui sotto",
     "lastRun": "Ultimo invio automatico: {{when}}",
     "loadError": "Non riusciamo a leggere lo stato dell'invio.",
     "loading": "Leggo lo stato dell'invio…",
     "notFound": "Non troviamo questo immobile.",
     "outsideItaly": "Fuori dall'Italia i dati degli ospiti non si inviano a Polizia e ISTAT da qui.",
+    "outsideItalyShort": "Non previsto fuori dall'Italia",
     "reason": {
       "connection_not_checked_yet": "Non l'abbiamo ancora controllata: la leggiamo alla prossima apertura.",
       "credentials_refused": "Il portale ha rifiutato le credenziali salvate.",
@@ -11023,40 +11010,47 @@
       "mustNotNotify": "Non devo notificare",
       "mustNotify": "Devo notificare",
       "required": "Per questa struttura la notifica è dovuta.",
-      "reversible": "La risposta non blocca nulla e si può cambiare in qualsiasi momento.",
       "saveFailed": "Non sono riuscito a salvare la risposta. Riprova."
     },
     "facts": {
-      "channel": "Dove e come si notifica",
+      "channel": "Come",
       "deadline": "Scadenza",
-      "obligation": "Cosa chiede il cantone",
+      "obligation": "Obbligo",
       "portal": "Portale ufficiale",
-      "retention": "Conservazione dei dati",
-      "support": "Cosa fa CasaZen"
+      "retention": "Conservazione"
     },
     "missing": {
       "fixMunicipality": "Indica il comune",
-      "swiss_municipality_missing": "Manca il comune. Senza il comune non sappiamo quali regole valgono per i tuoi ospiti: lo scegli dal CAP e dalla località, nei dati dell'immobile.",
-      "ticino_structure_id_missing": "Manca il numero identificativo della struttura: serve per preparare la notifica alla polizia ticinese.",
+      "swiss_municipality_missing": "Manca il comune.",
+      "ticino_structure_id_missing": "Manca il numero identificativo della struttura.",
       "title": "Da completare",
       "unknown": "C'è ancora qualcosa da completare."
-    },
-    "obligation": {
-      "KeepRegister": "Devi tenere un registro degli ospiti e mostrarlo alla polizia se lo chiede.",
-      "Optional": "Tenere un registro degli ospiti è facoltativo.",
-      "ReportToAuthority": "Devi trasmettere i dati degli ospiti all'autorità.",
-      "Unknown": "Le fonti non dicono con certezza cosa chiede il cantone."
-    },
-    "privateRentals": {
-      "No": "Non vale per chi affitta una casa privata.",
-      "Partial": "Vale solo in parte per chi affitta una casa privata.",
-      "Unknown": "Non è certo se vale per chi affitta una casa privata.",
-      "Yes": "Vale anche per chi affitta una casa privata."
     },
     "retention": {
       "none": "Le fonti non indicano un periodo",
       "years_one": "{{count}} anno",
       "years_other": "{{count}} anni"
+    },
+    "short": {
+      "channel": {
+        "EmailFile": "File via e-mail",
+        "None": "Nessun invio: registro",
+        "Paper": "Modulo cartaceo",
+        "PortalFileUpload": "File sul portale",
+        "PortalForm": "Modulo sul portale",
+        "VendorInterface": "Dal tuo gestionale"
+      },
+      "obligation": {
+        "KeepRegister": "Registro da tenere",
+        "Optional": "Facoltativa",
+        "ReportToAuthority": "Notifica obbligatoria",
+        "Unknown": "Da verificare"
+      },
+      "privateRentals": {
+        "No": "non per le case private",
+        "Partial": "in parte per le case private",
+        "Unknown": "case private da verificare"
+      }
     },
     "step": {
       "complete": "Per notificare gli ospiti non manca nulla.",
@@ -11065,12 +11059,6 @@
     "structureId": {
       "loading": "Leggo il numero della struttura…",
       "value": "Numero identificativo: {{value}}"
-    },
-    "support": {
-      "AssistedNotification": "CasaZen prepara i dati degli ospiti da copiare e ti ricorda la scadenza; la notifica la fai tu.",
-      "FileExport": "Prepara il file nel formato ufficiale: lo carichi tu sul portale.",
-      "GuestRegister": "CasaZen prepara il registro degli ospiti da scaricare e stampare, con una colonna per la firma; lo conservi tu e lo mostri alla polizia se lo chiede.",
-      "InformationOnly": "Ti dice cosa chiede il cantone: non invia nulla."
     },
     "toVerify": "Da verificare con il comune o la polizia"
   },
@@ -11302,6 +11290,9 @@
     "label": "Maggiori informazioni",
     "labelFor": "Cos'è: {{title}}",
     "learnMore": "Scopri di più"
+  },
+  "manual": {
+    "open": "Apri nel manuale"
   },
   "hostContact": {
     "consent": "Accetto che il messaggio e la mia email siano inviati a {{host}}, per ricevere la risposta.",
@@ -11540,7 +11531,7 @@
     "feedsTitle": "Calendari collegati",
     "feedsLoadError": "Impossibile caricare i calendari collegati.",
     "retry": "Riprova",
-    "noFeeds": "Nessun calendario collegato: aggiungi il link iCal di Airbnb, Booking.com o di un altro canale.",
+    "noFeeds": "Nessun calendario collegato.",
     "channels": {
       "Airbnb": "Airbnb",
       "BookingCom": "Booking.com",
@@ -11585,13 +11576,10 @@
     "syncStarted": "Sincronizzazione avviata: le date bloccate si aggiornano appena termina.",
     "exportTitle": "Link di esportazione per le OTA",
     "exportDescription": "Airbnb, Booking.com e gli altri canali leggono da questo link le prenotazioni fatte su CasaZen e i tuoi blocchi manuali, così non vendono quelle date una seconda volta.",
-    "exportContentNote": "CasaZen esporta le prenotazioni dirette e manuali (e i tuoi blocchi), non quelle arrivate dalle OTA né le date importate dai loro calendari: ogni OTA va collegata anche alle altre, per esempio il calendario di Booking.com su Airbnb e quello di Airbnb su Booking.com.",
     "exportLoading": "Caricamento del link di esportazione…",
     "exportPrivate": "Tienilo riservato: chiunque abbia il link vede le date occupate.",
-    "exportHowTo": "Dove incollarlo",
     "exportAirbnbSteps": "nell'annuncio apri Disponibilità → Sincronizzazione calendari → Importa calendario, incolla il link e dagli un nome (es. CasaZen).",
     "exportBookingSteps": "nell'Extranet apri Tariffe e disponibilità, nella sezione per sincronizzare i calendari, aggiungi un calendario da importare e incolla il link.",
-    "exportRefreshNote": "Le OTA rileggono il link periodicamente: le modifiche non compaiono subito.",
     "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano.",
     "regenerate": "Rigenera link",
     "regenerateTitle": "Rigenerare il link di esportazione?",
@@ -20626,15 +20614,19 @@
     },
     "version": {
       "between": "Dal {{from}} al {{to}}",
-      "cleaning": "Forfait pulizie per soggiorno: {{amount}}",
-      "document": "Mandato firmato: presente",
+      "documentMissing": "Non registrato",
+      "documentPresent": "Presente",
+      "ended": "Terminata",
       "feesAgency": "Commissioni sui pagamenti con carta: a carico dell'agenzia",
+      "feesAgencyShort": "A carico dell'agenzia",
       "feesOwner": "Commissioni sui pagamenti con carta: a carico del proprietario",
+      "feesOwnerShort": "A carico del proprietario",
       "from": "Dal {{from}}",
       "inForce": "In vigore",
-      "linen": "Forfait biancheria per soggiorno: {{amount}}",
       "noDocument": "Mandato firmato: non registrato",
-      "terms": "Provvigione {{percent}}, {{vat}}. Base: {{base}}.",
+      "others_one": "Un'altra versione",
+      "others_other": "Altre {{count}} versioni",
+      "perStay": "per soggiorno",
       "upcoming": "Non ancora in vigore"
     }
   },
@@ -21559,6 +21551,9 @@
     }
   },
   "ownerProfile": {
+    "actions": {
+      "edit": "Modifica"
+    },
     "approveDialog": {
       "confirm": "Registra l'approvazione",
       "consequence1": "L'approvazione resta registrata con il nome e la data.",
@@ -21569,7 +21564,7 @@
       "nameHint": "Il commercialista o la persona qualificata che ha approvato la regola.",
       "title": "Approvazione della regola {{rule}} versione {{version}}"
     },
-    "description": "Chi è il proprietario per rendiconti, pagamenti e ritenute, come viene pagato e quale regola fiscale vale. I dati sensibili sono nascosti.",
+    "descriptionShort": "Dati per rendiconti, pagamenti e ritenute.",
     "dialog": {
       "choose": "Scegli…",
       "countryHint": "Due lettere, per esempio IT o CH.",
@@ -21599,6 +21594,7 @@
     "facts": {
       "empty": "Non indicato",
       "hide": "Nascondi i dati",
+      "missing": "Da indicare",
       "reveal": "Mostra i dati per intero",
       "rule": "regola {{rule}} versione {{version}}",
       "title": "Profilo in vigore",
@@ -21665,7 +21661,7 @@
     "history": {
       "current": "In vigore",
       "noRule": "Nessuna regola",
-      "title": "Versioni precedenti"
+      "title": "Storico delle versioni"
     },
     "loadError": "Non riusciamo a leggere i dati finanziari.",
     "loading": "Leggo i dati finanziari…",
@@ -21679,9 +21675,12 @@
     "notFound": "Questo proprietario non c'è",
     "notFoundBody": "Non esiste, oppure appartiene a un'altra organizzazione. Torna alla chiusura mensile.",
     "onboarding": {
+      "allClear": "Tutto a posto",
       "complete": "Nell'attivazione non risulta niente da completare per questo proprietario.",
       "completeAction": "Completa nell'attivazione",
       "title": "Cosa manca nell'attivazione",
+      "toFix_one": "{{count}} cosa da sistemare",
+      "toFix_other": "{{count}} cose da sistemare",
       "unavailable": "L'attivazione dei proprietari non è disponibile adesso: quote e mandato si completano lì quando lo sarà."
     },
     "options": {
@@ -21716,18 +21715,62 @@
       "title": "Quote per periodo",
       "until": "al {{date}}"
     },
+    "panels": {
+      "role": "Ruolo e durata del mandato"
+    },
+    "path": {
+      "currencyMissing": "Valuta da indicare",
+      "documents": {
+        "incomplete": "Mancano alcuni dati",
+        "none": "Nessun profilo emittente",
+        "ready": "Pronto a emettere"
+      },
+      "ibanMissing": "Conto da indicare",
+      "notFilled": "Da compilare",
+      "open": "Apri",
+      "progress": "{{done}} di {{total}} passi completati",
+      "progressLabel": "Avanzamento del percorso",
+      "rule": {
+        "approvedBy": "Approvata da {{name}}",
+        "value": "{{rule}} versione {{version}}"
+      },
+      "status": {
+        "documents": {
+          "done": "Pronto",
+          "todo": "Da completare"
+        },
+        "identity": {
+          "done": "Completo",
+          "todo": "Da completare"
+        },
+        "mandate": {
+          "done": "In vigore",
+          "todo": "Manca"
+        },
+        "payments": {
+          "done": "Completo",
+          "todo": "Da completare"
+        },
+        "rule": {
+          "done": "Approvata",
+          "todo": "Da approvare"
+        }
+      },
+      "step": "Passo {{number}}",
+      "title": "Il percorso"
+    },
     "policy": {
       "approve": "Registra l'approvazione",
       "approved": "Approvata",
       "approvedBy": "Approvata da {{name}} il {{date}}.",
       "approvedShort": "approvata",
-      "available": "Regole fiscali dell'agenzia: {{count}}",
       "components": "Voci della base",
       "hash": "impronta {{hash}}…",
       "name": "{{rule}} versione {{version}} · {{jurisdiction}}",
       "new": "Nuova regola",
       "no": "No",
       "none": "Il profilo non ha una regola fiscale.",
+      "openSource": "Apri il documento",
       "pending": "Da approvare",
       "pendingShort": "da approvare",
       "rate": "Aliquota",
@@ -21740,6 +21783,7 @@
       "source": "Fonte ufficiale",
       "taxCode": "Codice tributo",
       "title": "Regola fiscale e approvazione",
+      "validity": "Validità",
       "waiting": "Aspetta l'approvazione del commercialista.",
       "withholding": "Ritenuta al pagamento",
       "years_one": "{{count}} anno",
@@ -21808,18 +21852,54 @@
       "taxResidenceMissing": "Manca la residenza fiscale.",
       "vatNumberInvalid": "La partita IVA non è valida."
     },
+    "reports": {
+      "empty": "Per ora non ci sono report da mostrare."
+    },
+    "status": {
+      "notCovered": "Mese non coperto",
+      "ready": "Pronto dal {{from}}",
+      "todo": "Da completare"
+    },
+    "summary": {
+      "currency": "Valuta {{currency}}",
+      "fiscalCode": "CF {{code}}",
+      "foreignTaxId": "ID estero {{code}}",
+      "iban": "IBAN {{iban}}",
+      "inForce": "Profilo in vigore dal {{from}}",
+      "inForceBetween": "Profilo in vigore dal {{from}} al {{to}}",
+      "residence": "Residenza {{country}}",
+      "vat": "P. IVA {{code}}"
+    },
+    "tabs": {
+      "documents": "Documenti dei soggiorni",
+      "done": "completo",
+      "identity": "Anagrafica",
+      "label": "Sezioni dei dati finanziari",
+      "mandate": "Mandato",
+      "overview": "Riepilogo",
+      "payments": "Pagamenti",
+      "reports": "Report e storico",
+      "rule": "Regola fiscale",
+      "todo": "da completare"
+    },
     "title": "Dati finanziari di {{owner}}",
     "titleGeneric": "Dati finanziari del proprietario",
     "units": {
-      "count": "Appartamenti in affitto breve: {{managed}} gestiti dall'agenzia, {{external}} dichiarati fuori dall'agenzia, {{total}} in tutto.",
+      "chip": {
+        "past": "Oltre il limite",
+        "within": "Entro il limite"
+      },
       "description": "Una persona fisica senza partita IVA può affittare in locazione breve un numero limitato di appartamenti; oltre, l'attività è presunta d'impresa. Contano anche quelli che il proprietario affitta senza passare dall'agenzia.",
       "errors": {
         "units": "Scrivi un numero intero da 0 a {{max}}: 0 se non ne ha."
       },
+      "external": "Dichiarati fuori",
       "hint": "Da 0 a 1000. Scrivi 0 se non ne ha: lasciare vuoto non vale.",
       "label": "Appartamenti che affitta fuori dall'agenzia",
+      "limit": "Limite: {{max}}",
       "loadError": "Non riusciamo a leggere il limite degli appartamenti",
       "loading": "Leggo il limite degli appartamenti…",
+      "managed": "Gestiti dall'agenzia",
       "notApplicable": "Il limite riguarda le persone fisiche senza partita IVA: questo proprietario è già un'impresa e non c'è niente da dichiarare.",
       "notForYou": "Non hai accesso a questi dati.",
       "notFound": "Proprietario non trovato.",
@@ -21828,6 +21908,7 @@
       "save": "Salva il numero",
       "saved": "Numero salvato.",
       "title": "Affitti brevi fuori dall'agenzia",
+      "total": "In tutto",
       "withinLimit": "Entro il limite di {{max}} appartamenti per una persona fisica."
     },
     "warning": {
@@ -21865,8 +21946,7 @@
         "model": "Scegli come riconoscere ricavi, costi e anticipi.",
         "rule": "Seleziona la giurisdizione e la regola approvata dal commercialista.",
         "review": "Verifica il riepilogo. Puoi tornare indietro per correggere i dati."
-      },
-      "edit": "Modifica i dati"
+      }
     }
   },
   "owners": {
@@ -22359,10 +22439,10 @@
         "steps": [
           "Se hai ricevuto un invito, apri il link con l’account destinatario. Se stai creando la tua attività, scegli il ruolo, l’area e il piano prima di confermare i documenti e passare alla fatturazione.",
           "Nella scelta del piano o nel riepilogo puoi usare «Metti in pausa». Le scelte salvate restano in questa scheda per 24 ore. Dopo una ricarica riprendi dal passaggio salvato e confermi di nuovo i documenti.",
-          "Se è attivo «Inizia con CasaZen», l’amministratore può aprire il piano dalla Home Affitti brevi. Per gli immobili italiani, scegli chi invia i dati degli ospiti e controlla il riepilogo prima di confermare. Il piano mostra il prossimo compito. Puoi uscire e ritrovarlo dalla Home o dalla Guida.",
+          "Se è attivo «Inizia con CasaZen», l’amministratore può aprire il piano dalla Home Affitti brevi. Per gli immobili italiani, scegli chi invia i dati degli ospiti e controlla il riepilogo prima di confermare. Il piano mostra il prossimo compito. Puoi uscire e ritrovarlo dalla Home.",
           "Scegli l’area di lavoro: Affitti brevi, Affitti lunghi, Amministrazione o Fornitori. Le aree e le azioni disponibili dipendono dal tuo ruolo e dagli immobili assegnati.",
-          "Verifica area e organizzazione in alto. Su telefono apri Altro per cambiare area. Su computer usa il selettore della barra laterale. Scegli Cerca per trovare le pagine a cui hai accesso.",
-          "Chiedi a CasaZen cerca le pagine accessibili per nome. In Affitti brevi puoi chiedere quali arrivi di oggi hanno il check-in incompleto. Controlla l’ambito indicato e scegli una prenotazione per verificarla. In demo i dati sono di esempio. Puoi sempre aprire gli arrivi direttamente dal Cruscotto.",
+          "Verifica area e organizzazione in alto. Su telefono apri Altro per cambiare area. Su computer usa il selettore della barra laterale. Scegli Cerca per trovare le pagine a cui hai accesso e gli argomenti del manuale.",
+          "Chiedi a CasaZen cerca le pagine accessibili per nome e, se chiedi come fare una cosa, indica gli argomenti del manuale. In Affitti brevi puoi chiedere quali arrivi di oggi hanno il check-in incompleto. Controlla l’ambito indicato e scegli una prenotazione per verificarla. In demo i dati sono di esempio. Puoi sempre aprire gli arrivi direttamente dal Cruscotto.",
           "Per avviare il lavoro operativo: prepara gli immobili, verifica disponibilità e tariffe, inserisci le prenotazioni, completa i dati degli ospiti e controlla gli adempimenti in scadenza."
         ]
       },
@@ -22647,6 +22727,8 @@
       "cinDescription": "Il Codice Identificativo Nazionale (CIN) è obbligatorio ai sensi del D.L. 145/2023 per tutte le strutture ricettive in Italia. Formato: IT + codice ISTAT del comune (6 cifre) + categoria (2 caratteri) + codice alfanumerico (fino a 8 caratteri), es. IT015146C2ABCDEFGH.",
       "editCin": "Modifica CIN",
       "managePricing": "Gestisci i suggerimenti",
+      "amenitiesMore": "Mostra altri {{count}}",
+      "amenitiesLess": "Mostra meno",
       "viewOnPublicSite": "Vedi sul sito pubblico",
       "newBooking": "Nuova prenotazione",
       "allBookings": "Vedi le prenotazioni",
@@ -22721,8 +22803,6 @@
       "loadError": "Non è stato possibile caricare le foto.",
       "retry": "Riprova",
       "emptyTitle": "Nessuna foto",
-      "emptyDescription": "Aggiungi le foto della proprietà: gli ospiti scelgono anche guardando le immagini.",
-      "emptyReadOnly": "Per questa proprietà non sono state caricate foto.",
       "emptyAction": "Carica la prima foto",
       "cover": "Copertina",
       "setCover": "Imposta come copertina",
@@ -22784,7 +22864,8 @@
         "saving": "Salvataggio...",
         "save": "Salva CIN"
       },
-      "istatMismatch": "Il comune indicato nel CIN è diverso dal comune dell'immobile. Non è un errore: il CIN non cambia dopo un trasferimento o una riclassificazione. Controlla solo che sia il CIN di questo immobile."
+      "istatMismatch": "Il comune indicato nel CIN è diverso dal comune dell'immobile. Non è un errore: il CIN non cambia dopo un trasferimento o una riclassificazione. Controlla solo che sia il CIN di questo immobile.",
+      "istatMismatchShort": "Comune del CIN diverso"
     },
     "ota": {
       "title": "Integrazioni OTA",
@@ -23230,7 +23311,7 @@
     },
     "loadError": "Non riusciamo a leggere chi pulisce questo immobile: non sappiamo come è impostato.",
     "loading": "Carico chi pulisce…",
-    "none": "Nessuno è stato scelto per pulire questo immobile. Finché non lo scegli la pulizia al check-out non parte da sola: resta tra le attività da fare, come «Pulizia da richiedere».",
+    "none": "Nessuno scelto per pulire questo immobile.",
     "notFound": "Non troviamo più questo immobile.",
     "problem": {
       "duration": "La durata va da 5 a 1.440 minuti, in numeri interi.",
@@ -23244,10 +23325,10 @@
     "retry": "Riprova",
     "routine": {
       "link": "Vai alle automazioni",
-      "off": "La routine «Pulizia al check-out» non è attiva: finché non la attivi non parte nessuna pulizia da sola.",
-      "on": "La routine «Pulizia al check-out» è attiva: la pulizia parte da sola al check-out.",
-      "onNoCleaner": "La routine «Pulizia al check-out» è attiva, ma questo immobile non ha chi pulisce attivo: per questo immobile non parte nessuna pulizia.",
-      "unknown": "Da qui non sappiamo se la routine «Pulizia al check-out» è attiva: controlla nelle automazioni."
+      "off": "Routine spenta: nessuna pulizia da sola",
+      "on": "Parte da sola al check-out",
+      "onNoCleaner": "Manca chi pulisce: non parte da sola",
+      "unknown": "Stato della routine non noto"
     },
     "save": "Salva",
     "saved": "Chi pulisce è stato salvato",
@@ -23262,7 +23343,7 @@
       "stored": "Persona già impostata"
     },
     "state": {
-      "off": "Spenta: l'impostazione resta salvata ma la pulizia non parte da sola.",
+      "off": "Spenta",
       "on": "Attiva"
     },
     "summary": {
@@ -23270,16 +23351,12 @@
       "duration": "Durata",
       "minutes_one": "{{count}} minuto",
       "minutes_other": "{{count}} minuti",
-      "noCurrency": "La valuta non è indicata: l'importo è mostrato senza simbolo.",
       "noPrice": "Nessun prezzo indicato",
       "price": "Prezzo concordato",
       "staffNamed": "{{name}} (staff)",
       "staffUnknown": "Una persona dello staff",
-      "state": "Stato",
       "supplierUnknown": "Un fornitore",
       "time": "Ora di inizio",
-      "timeDefault": "{{time}} (orario predefinito: l'immobile non ha un'ora di check-out)",
-      "timeOfProperty": "{{time}} (l'ora del check-out dell'immobile)",
       "trusted": "Di fiducia"
     },
     "suppliers": {
@@ -33421,7 +33498,7 @@
     "commitFailed": "Non è stato possibile completare l'operazione."
   },
   "comoStayTour": {
-    "departures": "Soggiorni da riconciliare per data di uscita mancante o diversa da quella usata per il calcolo: {{count}}. Gli importi sono esclusi dai totali.",
+    "departures": "Soggiorni da riconciliare: {{count}} (esclusi dai totali)",
     "title": "Dichiarazione mensile · Como",
     "period": "Mese della dichiarazione",
     "taxable": "Ospiti imponibili",
@@ -33430,9 +33507,8 @@
     "reason": "Causale",
     "guests": "Ospiti",
     "overnights": "Pernottamenti",
-    "missing": "Soggiorni con dati mancanti o da riconfermare: {{count}}. I relativi importi sono esclusi dai totali.",
-    "channel": "Soggiorni con uscita nel mese e riscossione del portale: {{count}}. Verifica sugli estratti degli intermediari tutte le riscossioni del mese, anche per soggiorni con uscita in altri mesi.",
-    "basis": "I totali comprendono i soggiorni con uscita nel mese e imposta confermata a carico del gestore. Verifica le causali di esenzione prima della dichiarazione su StayTour.",
+    "missing": "Soggiorni da completare o riconfermare: {{count}} (esclusi dai totali)",
+    "channel": "Imposta riscossa dal portale: {{count}} soggiorni",
     "attach": "Archivia la conferma di StayTour",
     "archive": "Consulta le conferme del mese",
     "error": "Rendiconto indisponibile",
@@ -34367,6 +34443,11 @@
     }
   },
   "ownerIssuer": {
+    "chip": {
+      "incomplete": "Da completare",
+      "none": "Da impostare",
+      "ready": "Pronto"
+    },
     "confirmNote": "Le scelte «da confermare» sono valori prudenti: li conferma il commercialista e li puoi cambiare quando vuoi.",
     "description": "In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale: CasaZen lo emette a suo nome. Qui dici chi emette per questo proprietario.",
     "facts": {

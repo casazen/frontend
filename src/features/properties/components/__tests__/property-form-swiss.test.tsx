@@ -8,10 +8,8 @@ import type { Property } from '@/types';
 import type { SwissLocality } from '@/types/swiss-places.types';
 import { PropertyForm } from '../property-form';
 
-// The whole form is rendered and the search waits a quarter of a second after the last key: the awaits get more room on a loaded machine.
 configure({ asyncUtilTimeout: 5_000 });
 
-// The Swiss place picker reads the official directory (E29/F01/US02/T01): its answers are set per test.
 const api = vi.hoisted(() => ({ searchLocalities: vi.fn(), getMunicipality: vi.fn() }));
 
 vi.mock('@/api/swiss-places.api', () => ({ SWISS_SEARCH_MIN_LENGTH: 2, SwissPlacesApi: api }));
@@ -29,7 +27,6 @@ vi.mock('@/queries/use-comuni', () => ({
   useComune: () => ({ data: undefined, isError: false }),
 }));
 
-// Rows as the directory gives them (the official BFS number of Lugano is 5192; the other numbers are invented).
 const locality = (postalCode: string, name: string, municipalityCode: string, municipalityName: string): SwissLocality => ({
   postalCode,
   name,
@@ -43,7 +40,6 @@ const PARADISO = locality('6900', 'Paradiso', '5195', 'Paradiso');
 const VIGANELLO = locality('6962', 'Viganello', '5192', 'Lugano');
 const DIRECTORY = [LUGANO, MASSAGNO, PARADISO, VIGANELLO];
 
-/** A small directory with the search of the API: a postal code by its first digits, a name by what it contains. */
 function searchDirectory(query: string): SwissLocality[] {
   const text = query.trim().toLowerCase();
   if (/^\d+$/.test(text)) return DIRECTORY.filter((item) => item.postalCode.startsWith(text));
@@ -79,7 +75,6 @@ const ITALIAN_PROPERTY: Property = {
   updatedAt: '2026-11-01T10:00:00Z',
 };
 
-/** A house in Switzerland whose place the host has not confirmed (an old record: the postal code and the city only). */
 const SWISS_PROPERTY: Property = {
   ...ITALIAN_PROPERTY,
   id: 'prop-ch',
@@ -93,7 +88,6 @@ const SWISS_PROPERTY: Property = {
   timezone: 'Europe/Zurich',
 };
 
-/** The same house once the host confirmed Lugano (TI): the record carries the municipality, its name and its canton. */
 const CONFIRMED_PROPERTY: Property = {
   ...SWISS_PROPERTY,
   swissMunicipalityCode: '5192',
@@ -128,7 +122,6 @@ const label = (key: string) => screen.getByLabelText(i18n.t(key));
 const city = () => label('property.form.city');
 const postalCode = () => label('property.form.postalCode');
 const country = () => label('property.country');
-// The native selects of the form are comboboxes too: the picker is found by its own test id.
 const placeInput = () => screen.getByTestId('swiss-picker-input');
 
 function submit() {
@@ -142,7 +135,6 @@ beforeEach(async () => {
   api.getMunicipality.mockResolvedValue({ municipalityCode: '5192', name: 'Lugano', cantonCode: 'TI' });
 });
 
-// Whole-form interactions: generous timeout for loaded CI machines, as the other form suites.
 describe('PropertyForm Swiss place (E29/F01/US02/T01, NF-124)', { timeout: 20_000 }, () => {
   it('typing 6900 in a Swiss property proposes Lugano (TI) and the confirmed place is saved on the property', async () => {
     const onSubmit = renderForm({ property: { ...SWISS_PROPERTY, postalCode: '' } });
@@ -152,7 +144,6 @@ describe('PropertyForm Swiss place (E29/F01/US02/T01, NF-124)', { timeout: 20_00
     expect(proposal).toHaveTextContent('Conferma il comune: 6900 Lugano · TI');
     fireEvent.click(screen.getByRole('button', { name: i18n.t('swissPlace.picker.confirm') }));
 
-    // The place fills the postal code, the city and the municipality; the canton is a quiet label, and the text is the place's.
     await waitFor(() => expect(placeInput()).toHaveValue('6900 Lugano · TI'));
     expect(screen.getByTestId('swiss-picker-municipality')).toHaveTextContent('Comune: Lugano · Cantone: TI');
     expect(postalCode()).toHaveValue('6900');
@@ -182,7 +173,6 @@ describe('PropertyForm Swiss place (E29/F01/US02/T01, NF-124)', { timeout: 20_00
     expect(city()).toHaveValue('Sorengo');
     expect(city()).not.toHaveAttribute('readonly');
 
-    // Saving is never blocked by a place that is not confirmed: nothing is chosen for the host.
     submit();
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit.mock.calls[0][0]).toMatchObject({ city: 'Sorengo', postalCode: '6900', swissMunicipalityCode: null });
@@ -261,10 +251,8 @@ describe('PropertyForm Swiss place (E29/F01/US02/T01, NF-124)', { timeout: 20_00
     submit();
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit.mock.calls[0][0]).toMatchObject({ country: 'IT', currency: 'EUR' });
-    // A house of Italy never sends a Swiss municipality.
     expect(onSubmit.mock.calls[0][0]).not.toHaveProperty('swissMunicipalityCode');
 
-    // Back to Switzerland: the place that was cleared is not there any more, the host confirms it again.
     fireEvent.change(country(), { target: { value: 'CH' } });
     expect(await screen.findByTestId('property-swiss-place-field')).toBeInTheDocument();
     expect(placeInput()).toHaveValue('');

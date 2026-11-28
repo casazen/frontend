@@ -9,11 +9,6 @@ interface OwnerTableProps {
   testId?: string;
 }
 
-/**
- * The agency's view (NF-96): one row for each property owner with the number of its properties and the four numbers weighted by the
- * share it holds, then the properties nobody owns and the total, in the order and with the values the server sends. Owners and the
- * unassigned row add up to the total of the Home; the browser adds nothing up. Only the name of an owner is shown, nothing personal.
- */
 export function OwnerTable({ report, testId = 'reports-owner-table' }: OwnerTableProps) {
   const { t, i18n } = useTranslation();
   const format = useMemo(() => overviewFormat(i18n.language, report.currency), [i18n.language, report.currency]);

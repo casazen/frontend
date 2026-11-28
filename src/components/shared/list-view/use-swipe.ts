@@ -1,29 +1,21 @@
 import { useCallback, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 
-/** How far the card follows the finger, px. */
 export const SWIPE_MAX_DISTANCE = 96;
-/** The action runs when the card is let go this far along (a share of the distance above). */
 export const SWIPE_FIRE_AT = 0.7;
-/** A horizontal move of this many px makes it a swipe; a vertical one (before that) makes it a scroll of the page. */
 const LOCK_AFTER = 6;
 const GIVE_UP_AFTER = 8;
-/** After a swipe the click that follows the lift of the finger is swallowed for this long, ms. */
 const SWALLOW_CLICK_FOR = 400;
 
-/** The side the finger goes to: `right` pulls the card to the right and shows what is at its left edge. */
 export type SwipeSide = 'right' | 'left';
 
 export interface UseSwipeOptions {
-  /** `false` turns the gesture off (a list that is being selected from, a card with nothing to swipe to). */
   enabled: boolean;
   canRight: boolean;
   canLeft: boolean;
-  /** The card was let go past the threshold. */
   onFire: (side: SwipeSide) => void;
 }
 
 export interface UseSwipe {
-  /** The element that moves with the finger. */
   surfaceRef: RefObject<HTMLDivElement | null>;
   handlers: {
     onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
@@ -96,7 +88,6 @@ export function useSwipe({ enabled, canRight, canLeft, onFire }: UseSwipeOptions
   const onPointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
       if (!enabled || !event.isPrimary || event.pointerType === 'mouse') return;
-      // The buttons of the card keep their own press: a finger that starts on one is not starting a swipe.
       if ((event.target as HTMLElement).closest('[data-no-swipe]')) return;
       gesture.current = { x: event.clientX, y: event.clientY, dx: 0, locked: false };
     },

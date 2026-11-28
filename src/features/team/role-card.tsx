@@ -17,16 +17,10 @@ const ROLE_ICONS: Record<OrgRole, LucideIcon> = {
 };
 
 export type RoleCardProps = Omit<ChoiceCardProps, 'type' | 'title' | 'description' | 'icon' | 'value' | 'role'> & {
-  /** The role of the matrix this card is for (not `role`: that is the ARIA attribute of every input). */
   info: OrgRoleInfo;
   availableAreas?: readonly RentalArea[];
 };
 
-/**
- * A role to choose, in the words of the person who chooses: its name, what it is for in a sentence, and what it can and cannot do,
- * from the matrix the backend gives (`GET /api/orgs/me/roles`), for both rental areas. It is a `ChoiceCard`: a real radio input
- * underneath, so it works with the form of a wizard (`register('role')`) and with a controlled dialog (`checked`, `onChange`).
- */
 export const RoleCard = forwardRef<HTMLInputElement, RoleCardProps>(function RoleCard({ info, availableAreas = RENTAL_AREAS, ...input }, ref) {
   const { t } = useTranslation();
   const model = buildAccessPreview(info, availableAreas);

@@ -44,7 +44,6 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
   });
 
   await page.route('**/api/bookings**', async (route) => {
-    // `**/api/bookings**` also matches the Vite module `/src/api/bookings.api.ts`: only the API is answered.
     if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
       await route.fallback();
       return;
@@ -61,7 +60,6 @@ async function mockDashboardApis(page: import('@playwright/test').Page): Promise
   });
 
   await page.route('**/api/payments**', async (route) => {
-    // `**/api/payments**` also matches the Vite module `/src/api/payments.api.ts`: only the API is answered.
     if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
       await route.fallback();
       return;
@@ -176,7 +174,6 @@ test.describe('Compliance wizards (#295)', () => {
     expect(summaryResp.status()).toBe(200);
 
     await expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 15_000 });
-    // Each thing the cockpit counts is a row with its own button.
     await expect(page.getByTestId('compliance-summary-properties-link')).toHaveCount(1);
     await expect(page.getByTestId('compliance-summary-checkouts-link')).toHaveCount(1);
     await expect(page.getByTestId('compliance-summary-checkins-link')).toHaveCount(1);
@@ -202,7 +199,6 @@ test.describe('Compliance wizards (#295)', () => {
     await expect(page.getByTestId('compliance-status-badge')).toHaveText(/Pending|In attesa/i);
   });
 
-  // The mock has the contract of the API (action + target, CO-04): the routes come from the app, not from the mock.
   test('AC13: summary widget rows deep-link to relevant wizards', async ({ page }) => {
     await page.goto(demoUrl('/app/short-rent/compliance', 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('compliance-summary-widget')).toBeVisible({ timeout: 15_000 });

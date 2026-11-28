@@ -58,7 +58,6 @@ const segment = (overrides: Partial<IdentitySegment> = {}): IdentitySegment => (
   ...overrides,
 });
 
-/** Three segments, one of each mode: observation for every property, automatic and qualified for «Casa Mare», suspended for «Casa Monti». */
 const threeSegments = (): IdentitySegment[] => [
   segment(),
   segment({
@@ -112,7 +111,6 @@ function workspaceOf(contexts: ContextBootstrapDto[]): WorkspaceContextValue {
 interface RenderOptions {
   flags?: Partial<FeatureFlags>;
   contexts?: ContextBootstrapDto[];
-  /** What surrounds the section: a page that has a form of its own. */
   wrap?: (section: ReactNode) => ReactNode;
 }
 
@@ -133,9 +131,7 @@ function renderSection({ flags = {}, contexts = [contextOf('short-rent')], wrap 
 const rows = () => screen.findAllByTestId('identity-segment');
 const rowOf = async (id: string) => (await rows()).find((row) => row.getAttribute('data-segment-id') === id) as HTMLElement;
 const radio = (row: HTMLElement, name: string) => within(row).getByRole('radio', { name }) as HTMLInputElement;
-/** «Applica» of a segment: the button that sends the mode chosen in its group (it is there only while the choice is not the mode in force). */
 const applyOf = (row: HTMLElement) => within(row).getByTestId('identity-segment-apply');
-/** What the host does to change a mode: chooses it in the group and presses «Applica». */
 const chooseAndApply = (row: HTMLElement, name: string) => {
   fireEvent.click(radio(row, name));
   fireEvent.click(applyOf(row));
@@ -159,7 +155,6 @@ afterEach(() => {
 
 describe('identity-segments-section: who sees it and what it asks (E70/F03/US01/T02, AC1)', () => {
   it('hidden for non admins', () => {
-    // The API answers 403 to a member of the org who is not its administrator: the section is not drawn for them and asks nothing, whatever the flags say.
     renderSection({ contexts: [contextOf('short-rent', 'property_manager')] });
 
     expect(screen.queryByTestId('identity-segments-section')).not.toBeInTheDocument();
@@ -187,7 +182,6 @@ describe('identity-segments-section: who sees it and what it asks (E70/F03/US01/
     expect(await screen.findByTestId('identity-segments-section')).toBeInTheDocument();
     expect(await rows()).toHaveLength(3);
     expect(biometricSettingsApi.getSegments).toHaveBeenCalledTimes(1);
-    // Nothing of the properties is asked until a segment is added.
     expect(propertiesApi.getAll).not.toHaveBeenCalled();
   });
 });
@@ -198,19 +192,16 @@ describe('identity-segments-section: the list (E70/F03/US01/T02, AC2)', () => {
     const list = await rows();
 
     const [all, mare, monti] = list;
-    // Observation, every property, not qualified: the reason in plain words.
     expect(within(all).getByTestId('identity-segment-property')).toHaveTextContent('Tutte le strutture');
     expect(within(all).getByTestId('identity-segment-kind')).toHaveTextContent(`${CIE} · Safari su iPhone e iPad`);
     expect(within(all).getByTestId('identity-segment-mode')).toHaveTextContent('Osservazione');
     expect(all).toHaveAttribute('data-mode', 'observation');
     expect(within(all).getByTestId('identity-segment-qualification')).toHaveTextContent(i18n.t('biometricSettings.segments.reason.segment_not_qualified'));
-    // Automatic and qualified for the policy in force: «qualificato», with the version, and it approves.
     expect(within(mare).getByTestId('identity-segment-property')).toHaveTextContent('Casa Mare');
     expect(within(mare).getByTestId('identity-segment-kind')).toHaveTextContent('Chrome su Android');
     expect(within(mare).getByTestId('identity-segment-mode')).toHaveTextContent('Automatica');
     expect(within(mare).getByTestId('identity-segment-qualification')).toHaveTextContent('Qualificato per la politica 2026.11-1.');
     expect(within(mare).queryByTestId('identity-segment-not-approving')).not.toBeInTheDocument();
-    // Suspended: the reason of the suspension, and why it is not qualified.
     expect(within(monti).getByTestId('identity-segment-property')).toHaveTextContent('Casa Monti');
     expect(within(monti).getByTestId('identity-segment-mode')).toHaveTextContent('Sospesa');
     expect(within(monti).getByTestId('identity-segment-suspended-reason')).toHaveTextContent('Troppi rifiuti su Android');
@@ -261,7 +252,6 @@ describe('identity-segments-section: the list (E70/F03/US01/T02, AC2)', () => {
     const [row] = await rows();
     expect(within(row).getByTestId('identity-segment-kind')).toHaveTextContent('web:desktop-edge-of-the-future');
     expect(within(row).getByTestId('identity-segment-qualification')).toHaveTextContent(i18n.t('biometricSettings.segments.reason.other'));
-    // A mode it does not know is observation, the prudent one.
     expect(row).toHaveAttribute('data-mode', 'observation');
     expect(radio(row, 'Osservazione')).toBeChecked();
   });
@@ -301,7 +291,6 @@ describe('identity-segments-section: the list (E70/F03/US01/T02, AC2)', () => {
       await client.refetchQueries({ queryKey: IDENTITY_SEGMENTS_QUERY_KEY });
     });
 
-    // The query keeps the older answer in memory, but the section says it cannot be read: a 404 is never the list of before.
     expect(client.getQueryData(IDENTITY_SEGMENTS_QUERY_KEY)).toBeDefined();
     expect(await screen.findByTestId('identity-segments-error')).toBeInTheDocument();
     expect(screen.queryByTestId('identity-segment')).not.toBeInTheDocument();
@@ -317,14 +306,12 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(radio(row, 'Osservazione')).toBeEnabled();
     expect(radio(row, 'Sospesa')).toBeEnabled();
     expect(radio(row, 'Osservazione')).toBeChecked();
-    // The sentence is tied to the radio, so a screen reader says why it is off.
     expect(radio(row, 'Automatica')).toHaveAccessibleDescription(i18n.t('biometricSettings.segments.automaticNeedsQualification'));
 
     fireEvent.click(radio(row, 'Automatica'));
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
   });
 
-  /** A segment that is qualified and still in observation: the one «Automatica» can be chosen for. */
   const qualifiedInObservation = () => {
     vi.mocked(biometricSettingsApi.getSegments).mockResolvedValue(
       overview({ segments: [segment({ id: 'segment-q', qualified: true, qualificationReason: null, qualifiedPolicyVersion: '2026.11-1', autoApprovalReason: 'segment_observation' })] }),
@@ -340,7 +327,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     const row = await rowOf('segment-q');
     expect(radio(row, 'Automatica')).toBeEnabled();
 
-    // Choosing it sends nothing and «Applica» asks to confirm; nothing is sent before the confirmation either.
     fireEvent.click(radio(row, 'Automatica'));
     expect(radio(row, 'Automatica')).toBeChecked();
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
@@ -355,7 +341,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledWith('segment-q', { mode: 'automatic' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('biometricSettings.segments.saved')));
-    // What the server answered is what is shown, and there is nothing left to apply.
     await waitFor(() => expect(radio(row, 'Automatica')).toBeChecked());
     expect(within(row).getByTestId('identity-segment-mode')).toHaveTextContent('Automatica');
     expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
@@ -374,13 +359,10 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
     expect(radio(row, 'Osservazione')).toBeChecked();
     expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
-    // «Applica», which had the focus, is gone: the keys go on from the group of the segment and not from the top of the page.
     await waitFor(() => expect(radio(row, 'Osservazione')).toHaveFocus());
   });
 
   it('IdentitySegmentsSection_TheKeysMoveThroughTheGroupOfAQualifiedSegment_NothingIsSentAndAutomaticIsNeverTurnedOn', async () => {
-    // The arrow keys go from «Osservazione» through «Automatica» to «Sospesa». In a group of radios an arrow key checks the next radio with a click (a click is what the browser sends, and what is sent here, as the repository has
-    // no keyboard library): it must write nothing, and «Automatica», passed on the way, must not be turned on.
     qualifiedInObservation();
     renderSection();
     const row = await rowOf('segment-q');
@@ -397,10 +379,8 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(radio(row, 'Sospesa')).toBeChecked();
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    // The segment is still what it was.
     expect(within(row).getByTestId('identity-segment-mode')).toHaveTextContent('Osservazione');
 
-    // «Applica» goes on with what the keys stopped at: the reason is asked, and still nothing has been sent. «Automatica» never was.
     fireEvent.click(applyOf(row));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(i18n.t('biometricSettings.segments.suspend.title'))).toBeInTheDocument();
@@ -430,7 +410,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     const row = await rowOf('segment-mare-android');
 
     fireEvent.click(radio(row, 'Osservazione'));
-    // Choosing sends nothing.
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
     fireEvent.click(applyOf(row));
 
@@ -438,7 +417,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     await waitFor(() => expect(row).toHaveAttribute('data-mode', 'observation'));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
-    // The group, which was off while the request was on its way, has the focus again.
     await waitFor(() => expect(radio(row, 'Osservazione')).toHaveFocus());
   });
 
@@ -447,18 +425,15 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     const row = await rowOf('segment-mare-android');
 
     fireEvent.click(radio(row, 'Sospesa'));
-    // Choosing asks and sends nothing; «Applica» asks for the reason.
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     fireEvent.click(applyOf(row));
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(i18n.t('biometricSettings.segments.suspend.title'))).toBeInTheDocument();
-    // The segment is still what it was, and nothing was sent.
     expect(within(row).getByTestId('identity-segment-mode')).toHaveTextContent('Automatica');
     const confirm = within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.suspend.confirm') });
     expect(confirm).toBeDisabled();
 
-    // Spaces are no reason.
     fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: '    ' } });
     expect(confirm).toBeDisabled();
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
@@ -505,11 +480,9 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
-    // The group shows the mode in force again, with nothing to apply, and has the focus («Applica», which opened the dialog, is gone).
     expect(radio(row, 'Automatica')).toBeChecked();
     expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
     await waitFor(() => expect(radio(row, 'Automatica')).toHaveFocus());
-    // The next time it opens it is empty.
     chooseAndApply(row, 'Sospesa');
     expect(await within(await screen.findByRole('dialog')).findByTestId('identity-segment-suspend-reason')).toHaveValue('');
   });
@@ -532,7 +505,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledWith('segment-q', { mode: 'automatic' }));
     await waitFor(() => expect(confirm).toBeDisabled());
 
-    // On its way: Esc and the X do not take the dialog away, so the answer is never given where nobody looks.
     fireEvent.keyDown(dialog, { key: 'Escape' });
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.close') }));
     expect(screen.getByRole('dialog')).toBe(dialog);
@@ -545,7 +517,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(screen.getByRole('dialog')).toBe(dialog);
     expect(row).toHaveAttribute('data-mode', 'observation');
     expect(toast.success).not.toHaveBeenCalled();
-    // Now the way out is open again, and what was chosen is dropped with the dialog.
     fireEvent.keyDown(dialog, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(radio(row, 'Osservazione')).toBeChecked();
@@ -576,7 +547,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     const dialog = await screen.findByRole('dialog');
     fireEvent.change(within(dialog).getByTestId('identity-segment-suspend-reason'), { target: { value: 'Esiti anomali' } });
 
-    // The list is read again in the background (the window comes back to the front) and the read fails: the section says it cannot be read, and the dialog is still there with what was typed.
     vi.mocked(biometricSettingsApi.getSegments).mockRejectedValue(httpError(404));
     await act(async () => {
       await client.refetchQueries({ queryKey: IDENTITY_SEGMENTS_QUERY_KEY });
@@ -585,12 +555,10 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(screen.getByRole('dialog')).toBe(dialog);
     expect(within(dialog).getByTestId('identity-segment-suspend-reason')).toHaveValue('Esiti anomali');
 
-    // The suspension is sent from the dialog all the same, and the dialog closes when the server has answered.
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('biometricSettings.segments.suspend.confirm') }));
     await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledWith('segment-mare-android', { mode: 'suspended', reason: 'Esiti anomali' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    // The answer of the server is written into the list, which is there again with the segment suspended and no dialog of its own to come back.
     expect(await rowOf('segment-mare-android')).toHaveAttribute('data-mode', 'suspended');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
@@ -617,12 +585,10 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(confirm).toBeDisabled());
 
-    // On its way: Esc and the X do not take the dialog away (a click outside comes through the same way), and so nothing can be answered where nobody looks.
     fireEvent.keyDown(dialog, { key: 'Escape' });
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.close') }));
     expect(screen.getByRole('dialog')).toBe(dialog);
 
-    // The answer is a refusal: it is told inside the dialog, which stays with its text, and the segment is what it was. Now the way out is open again.
     await act(async () => {
       refuse(error);
     });
@@ -641,7 +607,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
 
     chooseAndApply(row, 'Osservazione');
 
-    // No dialog on the way back to observation: the refusal is told on the segment, which is what it was, and the choice that was not saved is not left in the group.
     expect(await within(row).findByRole('alert')).toHaveTextContent(i18n.t('biometricSettings.segments.saveFailed'));
     await waitFor(() => expect(radio(row, 'Automatica')).toBeChecked());
     expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
@@ -678,7 +643,6 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
   });
 
   it('IdentitySegmentsSection_TheReasonDialog_DoesNotSubmitAFormAroundTheSection', async () => {
-    // A page that holds the section inside a form of its own: confirming the dialog (drawn outside the form but inside it for React) must not submit it.
     const submitted = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
     renderSection({ wrap: (section) => <form onSubmit={submitted}>{section}</form> });
     const row = await rowOf('segment-mare-android');
@@ -715,7 +679,6 @@ describe('identity-segments-section: a new segment (E70/F03/US01/T02)', () => {
 
     fireEvent.click(screen.getByTestId('identity-segment-add'));
     const form = await screen.findByTestId('identity-segment-form');
-    // «Tutte le strutture» is the first choice, and the homes of the org follow it.
     expect(within(form).getByLabelText('Struttura')).toHaveValue('');
     await waitFor(() => expect(within(form).getByRole('option', { name: 'Casa Mare' })).toBeInTheDocument());
     fireEvent.change(within(form).getByLabelText('Browser dell\'ospite'), { target: { value: 'web:desktop-safari' } });
@@ -723,7 +686,6 @@ describe('identity-segments-section: a new segment (E70/F03/US01/T02)', () => {
 
     await waitFor(() => expect(biometricSettingsApi.createSegment).toHaveBeenCalledWith({ formatId: 'it-cie', channel: 'web:desktop-safari' }));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('biometricSettings.segments.added')));
-    // It is in the list, in observation, and the form is closed.
     await waitFor(() => expect(screen.getAllByTestId('identity-segment')).toHaveLength(4));
     expect(screen.queryByTestId('identity-segment-form')).not.toBeInTheDocument();
     expect(await rowOf('segment-new')).toHaveAttribute('data-mode', 'observation');
@@ -844,7 +806,6 @@ describe('the model of the segments (E70/F03/US01/T02)', () => {
     const sameProperty = segment({ id: 'segment-mare-ios', propertyId: 'property-mare', propertyName: 'Casa Mare', channel: 'web:ios-safari' });
     const everyProperty = segment({ id: 'segment-all-android', channel: 'web:android-chrome' });
 
-    // Every property first, then by name of the property, then format and channel (as the API lists them).
     expect(withSegment(list, sameProperty).map((entry) => entry.id)).toEqual(['segment-all-ios', 'segment-mare-android', 'segment-mare-ios', 'segment-monti-desktop']);
     expect(withSegment(list, everyProperty).map((entry) => entry.id)).toEqual(['segment-all-android', 'segment-all-ios', 'segment-mare-android', 'segment-monti-desktop']);
   });

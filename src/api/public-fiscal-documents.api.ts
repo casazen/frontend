@@ -13,29 +13,19 @@ import type { DownloadedFile } from './file.api';
  * the token, which no cache, no state and no log may keep.
  */
 
-/** What the guest sees of the document: nothing else is in the answer. */
 export interface PublicFiscalDocument {
   id: string;
-  /** `Invoice`, `Receipt` or `CreditNote`: the name of the kind as the API writes it (a value this page does not know is shown as a plain «document»). */
   kind: string;
   number: string;
-  /** The day of the issue, `yyyy-MM-dd`. */
   issueDate: string;
   total: number;
-  /** The ISO code of the currency of the document (`EUR`, `CHF`); `null` when the answer carries none: the page then says so and shows no symbol. */
   currency: string | null;
 }
 
-/** A PDF is a few hundred kB: more than the 30 s of every other call, on a connection that is not fast (as for the host's own download). */
 const DOWNLOAD_TIMEOUT_MS = 120_000;
 
-/** The statuses that say the LINK does not open: the 404 `document_link_invalid` the API gives for every token that is wrong, expired or foreign and for a document that is not there, and a 401 or a 403 (a refusal of the same kind). */
 const LINK_REFUSAL_STATUSES: readonly number[] = [401, 403, 404];
 
-/**
- * Whether a failed call says the link does not open: the server refused it (401, 403 or 404, the same answer for every reason). Any other failure (no answer, a server that failed, too many calls in a minute,
- * an answer that is not what the server gives) says nothing about the link: it is a passing error, the guest may ask again, and the page never tells such a guest that the link has expired.
- */
 export function isLinkRefusal(error: unknown): boolean {
   const status = getHttpStatus(error);
   return status !== undefined && LINK_REFUSAL_STATUSES.includes(status);
@@ -47,10 +37,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/**
- * The name the API gave the file (`Content-Disposition`, whatever the case of the header), or `null` when the page cannot read it: a browser reads a header of
- * another origin only if the API exposes it, and the caller then saves under the name it built.
- */
 function dispositionOf(headers: unknown): string | null {
   if (!isRecord(headers)) return null;
   for (const [name, value] of Object.entries(headers)) {
@@ -80,20 +66,12 @@ function summaryOf(value: unknown): PublicFiscalDocument | null {
   return { id: value.id, kind: value.kind, number: value.number, issueDate: value.issueDate, total: value.total, currency };
 }
 
-/**
- * The name a PDF is saved under when the page cannot read the one the API gave it (`Content-Disposition`): `documento-A-12.pdf`, from the number of
- * the document and nothing else. Never the name of the guest: a file name is shown in the folder of downloads and kept there.
- */
 export function pdfFileNameOf(number: string): string {
   const slug = number.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^[-.]+|-+$/g, '');
   return slug ? `documento-${slug}.pdf` : 'documento.pdf';
 }
 
 export const publicFiscalDocumentsApi = {
-  /**
-   * The summary of the document of the link (`POST api/public/fiscal-documents/{id}`, token in the body). 404 `document_link_invalid` for a wrong, expired or
-   * foreign token, a document that is not there and one that cannot be sent: the same answer for all, and nothing of the document in it.
-   */
   getDocument: async (documentId: string, token: string): Promise<PublicFiscalDocument> => {
     const path = `/public/fiscal-documents/${enc(documentId)}`;
     try {
@@ -105,10 +83,6 @@ export const publicFiscalDocumentsApi = {
     }
   },
 
-  /**
-   * The PDF of the document of the link (`POST api/public/fiscal-documents/{id}/pdf`, token in the body), in the language of the page (`Accept-Language`: the
-   * API draws the PDF in the language of the request). An answer that is not a PDF is a failure, never a file saved as one.
-   */
   downloadPdf: async (documentId: string, token: string, language: string): Promise<DownloadedFile> => {
     const path = `/public/fiscal-documents/${enc(documentId)}/pdf`;
     try {

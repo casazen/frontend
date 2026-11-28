@@ -53,7 +53,6 @@ const READ = ['payment.read', 'property.read', 'booking.read'];
 const WRITE = [...READ, 'payment.write'];
 const BOOKING_ID = 'b0000000-0000-4000-8000-000000000001';
 
-/** Every button and box that changes a document or starts to (or sends it to a real person): the draft, the issued invoice, its e-mail to the guest, the bulk issue. None of them may be drawn without the right to write payments. */
 const CHANGING = [
   'fiscal-document-issue',
   'fiscal-document-refresh',
@@ -102,7 +101,6 @@ describe('no write action without payment.write (permission rule)', () => {
 
     const table = await screen.findByRole('table');
     expect(within(table).getAllByTestId('fiscal-document-row')).toHaveLength(2);
-    // Reading is not touched: the issued invoice still has its PDF.
     expect(within(table).getByTestId('fiscal-document-pdf')).toBeInTheDocument();
     expect(changingButtonsIn(globalThis.document)).toEqual([]);
   });
@@ -126,7 +124,6 @@ describe('no write action without payment.write (permission rule)', () => {
     for (const testId of ['fiscal-document-issue', 'fiscal-document-refresh', 'fiscal-document-discard', 'fiscal-document-select'])
       expect(within(draftRow).getByTestId(testId), testId).toBeInTheDocument();
     expect(within(draftRow).queryByTestId('fiscal-document-credit')).not.toBeInTheDocument();
-    // An issued invoice is credited, never issued again, discarded or made again.
     expect(within(issuedRow).getByTestId('fiscal-document-credit')).toBeInTheDocument();
     for (const testId of ['fiscal-document-issue', 'fiscal-document-refresh', 'fiscal-document-discard', 'fiscal-document-select'])
       expect(within(issuedRow).queryByTestId(testId), testId).not.toBeInTheDocument();
@@ -147,7 +144,6 @@ describe('the e-mail of an issued document to its guest (permission rule: only w
   const ISSUED_ID = document().id;
   const DRAFT_ID = draft().id;
 
-  /** Opens the confirmation of the e-mail of the issued row. */
   async function openTheEmailOfTheIssuedRow() {
     const [draftRow, issuedRow] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
     fireEvent.click(within(issuedRow).getByTestId('fiscal-document-email'));
@@ -161,7 +157,6 @@ describe('the e-mail of an issued document to its guest (permission rule: only w
     const { draftRow, dialog } = await openTheEmailOfTheIssuedRow();
 
     expect(within(draftRow).queryByTestId('fiscal-document-email')).not.toBeInTheDocument();
-    // The e-mail goes to a real guest: the button asks first, it sends nothing.
     expect(within(dialog).getByText('Inviare il documento al cliente?')).toBeInTheDocument();
     expect(api.sendDocumentEmail).not.toHaveBeenCalled();
   });
@@ -177,13 +172,11 @@ describe('the e-mail of an issued document to its guest (permission rule: only w
     await waitFor(() => expect(api.sendDocumentEmail).toHaveBeenCalledTimes(1));
     expect(api.sendDocumentEmail).toHaveBeenCalledWith(ISSUED_ID);
     expect(api.sendDocumentEmail).not.toHaveBeenCalledWith(DRAFT_ID);
-    // «In coda» with the last day of the link, and never «consegnata»: the server only queues the e-mail.
     await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
     const told = String(vi.mocked(toast.success).mock.calls[0]?.[0]);
     expect(told).toContain('E-mail in coda');
     expect(told).toMatch(/19 dic/);
     expect(told).not.toMatch(/consegnat/i);
-    // The documents are read again, and the row that queued the e-mail says so and offers the same call as «Rinvia e-mail».
     await waitFor(() => expect(vi.mocked(api.listDocuments).mock.calls.length).toBeGreaterThan(1));
     const [, issuedRow] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
     expect(await within(issuedRow).findByTestId('fiscal-document-email-queued')).toHaveTextContent('E-mail in coda');

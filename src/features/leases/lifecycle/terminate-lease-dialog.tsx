@@ -33,7 +33,6 @@ export function TerminateLeaseDialog({ open, lease, subject, onClose }: Terminat
 
   const start = parseStayDate(lease.startDate);
   const end = parseStayDate(leaseTermEnd(lease));
-  // The first day that is an ending: the day after the lease began. A period of a single day (data written before this rule) has none.
   const min = start ? addDays(start, 1) : '';
   const hasRoom = min === '' || end === '' || min <= end;
   const dateValid = hasRoom && isStayDate(on) && (min === '' || on >= min) && (end === '' || on <= end);
@@ -48,7 +47,7 @@ export function TerminateLeaseDialog({ open, lease, subject, onClose }: Terminat
     try {
       await terminate.mutateAsync({ leaseId: lease.id, input: { on } });
     } catch {
-      return; // The hook told why and read the lease again.
+      return;
     }
     toast.success(t('leaseLifecycle.terminate.done', { date: longDay(on, i18n.language) }));
   }

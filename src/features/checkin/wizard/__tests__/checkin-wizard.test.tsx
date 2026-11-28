@@ -45,7 +45,6 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('@/components/shared/breadcrumb', () => ({ Breadcrumb: () => null }));
 
-// A form this size takes a few seconds in jsdom, more on a loaded runner: explicit conditions only, no fixed waits (QA-INFRA-01).
 configure({ asyncUtilTimeout: 15_000 });
 const FORM_TEST_TIMEOUT_MS = 40_000;
 
@@ -74,7 +73,6 @@ function savedGuest(position: number, overrides: Partial<CheckInWizardGuest> = {
   };
 }
 
-/** The booker shown before any guest is registered: only the name is known. */
 const unsavedBooker: CheckInWizardGuest = {
   saved: false,
   position: 0,
@@ -188,7 +186,6 @@ function change(scope: ReturnType<typeof within>, label: RegExp, value: string) 
 
 const next = () => fireEvent.click(screen.getByTestId('checkin-wizard-next'));
 
-/** Fills the personal data the booker lacks (the name is known). */
 function fillBookerPersonalData() {
   const card = within(screen.getByTestId('stay-guest-0'));
   change(card, /^Sesso/, 'Male');
@@ -274,7 +271,6 @@ describe('CheckInWizardPage', () => {
       await waitFor(() => expect(screen.getByTestId('checkin-wizard-form')).toHaveAttribute('data-step', step));
       expect(screen.getByRole('button', { name: /^Cos'è: / })).toBeInTheDocument();
       expect(screen.getByTestId('checkin-wizard-save-exit')).toBeInTheDocument();
-      // No link of the page leaves the wizard but the stepper and the footer; the leaving actions are the two named by the brief.
       const form = screen.getByTestId('checkin-wizard-form');
       expect(within(form).queryAllByRole('link').filter((link) => !(link.getAttribute('href') ?? '').includes('step='))).toEqual([]);
       if (step !== 'send') next();
@@ -297,7 +293,6 @@ describe('CheckInWizardPage', () => {
     change(card, /^Provincia di residenza/, 'rm');
     next();
 
-    // The document comes next: the server saves no head without it, so nothing is saved on this step.
     await screen.findByTestId('checkin-wizard-documents');
     expect(checkInWizardApi.saveGuests).not.toHaveBeenCalled();
 
@@ -316,7 +311,6 @@ describe('CheckInWizardPage', () => {
       residenceInItaly: true,
       residenceComuneName: 'Roma',
       residenceProvince: 'RM',
-      // The exemption of the tourist tax goes back as it came (none): the server takes the list as the whole truth.
       taxExemptionCode: null,
     });
     expect(guests[0]).not.toHaveProperty('tourismType');
@@ -381,7 +375,6 @@ describe('CheckInWizardPage', () => {
     change(within(screen.getByTestId('stay-guest-0-document')), /^Numero documento/, 'CA12345AB');
     next();
 
-    // The field is on the other step: the host lands there with the error on it (the shell clears the errors when the step changes).
     await waitFor(() => expect(screen.getByTestId('checkin-wizard-form')).toHaveAttribute('data-step', 'guests'));
     const card = within(screen.getByTestId('stay-guest-0'));
     expect(await card.findByText('Sigla non valida.')).toBeInTheDocument();
@@ -446,7 +439,6 @@ describe('CheckInWizardPage', () => {
 
       await screen.findByTestId('stay-guest-0-document');
       await waitFor(() => expect(document.activeElement?.id).toBe('guest-0-documentNumber'));
-      // Never to another page: the wizard is still the page.
       expect(screen.getByTestId('checkin-wizard-form')).toHaveAttribute('data-step', 'documents');
     });
 
@@ -499,7 +491,6 @@ describe('CheckInWizardPage', () => {
       renderWizard();
 
       const first = await screen.findByTestId('tax-guest-0');
-      // The minor exempt by age is shown as automatic, with no list to choose from.
       expect(within(screen.getByTestId('tax-guest-1')).getByTestId('tax-guest-1-age')).toHaveTextContent('Esente per età (automatico)');
       expect(within(screen.getByTestId('tax-guest-1')).queryByRole('combobox')).not.toBeInTheDocument();
       expect(within(first).getByTestId('tax-guest-0-amount')).toHaveTextContent('4,00');
@@ -509,13 +500,11 @@ describe('CheckInWizardPage', () => {
       fireEvent.change(within(first).getByTestId('tax-exemption-0'), { target: { value: 'resident' } });
 
       await waitFor(() => expect(checkInWizardApi.setExemptions).toHaveBeenCalledTimes(1));
-      // Only the guest the host changed goes: the API leaves the other positions as they are.
       expect(vi.mocked(checkInWizardApi.setExemptions).mock.calls[0]).toEqual([BOOKING_ID, [{ position: 0, code: 'resident' }]]);
       await waitFor(() => expect(within(screen.getByTestId('tax-guest-0')).getByTestId('tax-guest-0-amount')).toHaveTextContent('0,00'));
     });
 
     it('taxStep_ExemptionWhoseReasonIsHidden_IsNeverSentBackAsNullWhenTheHostChoosesForAnotherGuest', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
-      // Guest 1 is exempt for a reason the person at the screen may not read (no `guest.read`): the API sends the kind and no code.
       const tax = touristTax({
         total: 4,
         guests: [
@@ -542,7 +531,6 @@ describe('CheckInWizardPage', () => {
       fireEvent.change(within(screen.getByTestId('tax-guest-0')).getByTestId('tax-exemption-0'), { target: { value: 'resident' } });
 
       await waitFor(() => expect(checkInWizardApi.setExemptions).toHaveBeenCalledTimes(1));
-      // Position 1 is not in the request: it would have cleared an exemption nobody at this screen can see.
       expect(vi.mocked(checkInWizardApi.setExemptions).mock.calls[0]).toEqual([BOOKING_ID, [{ position: 0, code: 'resident' }]]);
     });
 
@@ -599,17 +587,14 @@ describe('CheckInWizardPage', () => {
 
       const alert = await screen.findByTestId('checkin-wizard-tax-missing-rate');
       expect(alert).toHaveTextContent("Manca l'imposta del comune");
-      // No amount, no zero: the step does not draw the guests or the total while the rate is unknown.
       expect(screen.queryByTestId('checkin-wizard-tax-guests')).not.toBeInTheDocument();
       expect(screen.queryByTestId('checkin-wizard-tax-breakdown')).not.toBeInTheDocument();
       expect(screen.getByTestId('checkin-wizard-tax')).not.toHaveTextContent(/0,00/);
 
       fireEvent.click(screen.getByTestId('checkin-wizard-tax-enter-rate'));
       const rate = within(await screen.findByTestId('checkin-wizard-tax-rate'));
-      // The button waits for the rate the organization declared before (if any) to be read.
       await waitFor(() => expect(rate.getByTestId('tax-rate-save')).toBeEnabled());
       fireEvent.click(rate.getByTestId('tax-rate-save'));
-      // Plain words for what is missing, and the focus on the first field.
       expect(await rate.findByText('Scrivi un importo da 0,01 a 50 euro')).toBeInTheDocument();
       expect(rate.getByText("Indica da dove viene l'importo")).toBeInTheDocument();
       await waitFor(() => expect(document.activeElement?.id).toBe('tax-rate-rate'));
@@ -630,12 +615,10 @@ describe('CheckInWizardPage', () => {
           maxNights: null,
           seasonStart: null,
           seasonEnd: null,
-          // The stay began on 10 October and the organization had no rate: from the check-in, or its first night would stay without one.
           effectiveFrom: '2026-10-10',
           sourceNote: 'Delibera del comune',
         },
       ]);
-      // Back on the same step, with the amounts now.
       await waitFor(() => expect(screen.queryByTestId('checkin-wizard-tax-rate')).not.toBeInTheDocument());
       expect(screen.getByTestId('checkin-wizard-form')).toHaveAttribute('data-step', 'tax');
       expect(await screen.findByTestId('checkin-wizard-tax-breakdown')).toBeInTheDocument();
@@ -673,7 +656,6 @@ describe('CheckInWizardPage', () => {
       fireEvent.click(rate.getByTestId('tax-rate-save'));
 
       await waitFor(() => expect(checkInWizardApi.saveMunicipalityRate).toHaveBeenCalledTimes(1));
-      // Saved again with no day, the API would read "today" and take the rate away from every earlier night of every stay of the comune.
       expect(vi.mocked(checkInWizardApi.saveMunicipalityRate).mock.calls[0][1]).toMatchObject({
         ratePerPersonPerNight: 3.5,
         effectiveFrom: '2026-09-01',
@@ -744,7 +726,6 @@ describe('CheckInWizardPage', () => {
 
       const route = await screen.findByTestId('checkin-wizard-send-route');
       expect(route).toHaveAttribute('data-route', 'senderCasaZen');
-      // The direct send is a process of CasaZen's own, only on activation: the text no longer says that CasaZen does not send «yet», and promises nothing.
       expect(route).toHaveTextContent('invio diretto');
       expect(route).toHaveTextContent('questo pulsante non invia nulla alla Questura');
       expect(route).not.toHaveTextContent(/non invia ancora/);
@@ -872,20 +853,16 @@ describe('CheckInWizardPage', () => {
 
       fireEvent.change(screen.getByTestId('document-photo-0-input'), { target: { files: [photo()] } });
 
-      // The reading fills what was empty.
       await waitFor(() => expect(within(screen.getByTestId('stay-guest-0-document')).getByLabelText(/^Numero documento/)).toHaveValue('CA12345AB'));
       expect(screen.getByTestId('document-photo-0-filled')).toBeInTheDocument();
-      // The photo went to the request only, under a neutral name (the file name can be a person's).
       expect(checkInWizardApi.readDocument).toHaveBeenCalledTimes(1);
       const [bookingId, sent, fileName] = vi.mocked(checkInWizardApi.readDocument).mock.calls[0];
       expect(bookingId).toBe(BOOKING_ID);
       expect(sent).toBeInstanceOf(Blob);
       expect(fileName).toBe('document.jpg');
-      // The preview was an object URL for the time of the reading, and it is revoked.
       expect(urls.create).toHaveBeenCalledTimes(1);
       expect(urls.revoke).toHaveBeenCalledWith('blob:document-photo-1');
       expect(screen.queryByTestId('document-photo-0-reading')).not.toBeInTheDocument();
-      // Nothing of the photo, or of the guest, sits in the browser: no draft, no local storage, no session storage.
       expect(sessionStorage.length).toBe(0);
       const stored = Object.keys(localStorage)
         .map((key) => `${key}=${localStorage.getItem(key)}`)

@@ -2,7 +2,6 @@ import { vi } from 'vitest';
 
 const CONDITION = /\(width\s*(<=|>=|<|>)\s*([\d.]+)rem\)/g;
 
-/** True when a window `widthPx` wide matches a media query made of `(width <op> N rem)` conditions (the ones of the app). */
 function matchesWidth(query: string, widthPx: number): boolean {
   const width = widthPx / 16;
   const conditions = [...query.matchAll(CONDITION)];
@@ -16,11 +15,6 @@ function matchesWidth(query: string, widthPx: number): boolean {
   });
 }
 
-/**
- * Gives the test a window of `widthPx` (jsdom has no `matchMedia`): the width queries of the app (`PHONE_QUERY` and the
- * others, in `rem` as Tailwind writes them) answer for it. `resize` changes the width and tells whoever listens, as a
- * browser does. Undo with `vi.unstubAllGlobals()` in `afterEach`.
- */
 export function stubViewportWidth(widthPx: number) {
   let width = widthPx;
   const listeners = new Set<{ query: string; listener: () => void }>();

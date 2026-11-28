@@ -8,7 +8,6 @@ interface OwnerActionButtonsProps {
   actions: RowActions;
   busy?: boolean;
   onAsk: (action: ActionKey) => void;
-  /** Prefix of the `data-testid`s (`row-<owner>` on the month page). */
   testId: string;
 }
 

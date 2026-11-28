@@ -22,7 +22,6 @@ const LEVEL_MARKS: Record<OrgCapabilityLevel, { icon: LucideIcon; labelKey: stri
 
 const LEVELS: readonly OrgCapabilityLevel[] = ['Yes', 'Read', 'No'];
 
-/** The name of a group of the matrix: the rental areas are named as the area switcher names them; `both` is the suppliers' interventions. */
 function groupName(group: string, t: TFunction): string {
   return group === 'both' ? t('team.roles.groups.both') : areaName(group, t);
 }
@@ -53,7 +52,6 @@ function Legend() {
   );
 }
 
-/** From `md`: one row for each capability, one column for each role. */
 function MatrixTable({ roles }: { roles: readonly OrgRoleInfo[] }) {
   const { t } = useTranslation();
   const groups = buildRoleMatrix(roles);
@@ -100,7 +98,6 @@ function MatrixTable({ roles }: { roles: readonly OrgRoleInfo[] }) {
   );
 }
 
-/** Under `md`: one block for each role, with what it can manage, only look at, and not do. */
 function MatrixCards({ roles }: { roles: readonly OrgRoleInfo[] }) {
   const { t } = useTranslation();
   const groups = buildRoleMatrix(roles);
@@ -125,11 +122,6 @@ function MatrixCards({ roles }: { roles: readonly OrgRoleInfo[] }) {
   );
 }
 
-/**
- * «Chi può fare cosa»: the matrix of the roles as the backend gives it (`GET /api/orgs/me/roles`), in words that need no explaining.
- * A table from `md` (a row for each capability, a column for each role) and, on a phone, one block for each role; the legend of the
- * three levels above them. Nothing here is a list of permissions: it is what a role does, in the words of the product.
- */
 export function RoleMatrix({ roles }: { roles: readonly OrgRoleInfo[] }) {
   return (
     <div className="min-w-0 space-y-4" data-testid="role-matrix">

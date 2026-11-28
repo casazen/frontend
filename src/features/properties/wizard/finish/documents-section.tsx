@@ -9,14 +9,9 @@ import type { ComplianceWizardStep } from '@/types/compliance.types';
 
 interface DocumentsSectionProps {
   propertyId: string;
-  /** The `documents` step of the activation: what the region of the property asks for and is still missing. */
   step: ComplianceWizardStep | undefined;
 }
 
-/**
- * The documents the region asks for, as the server lists what is still missing (`documents` step of the activation), with the dialog
- * that already exists to upload one and the ones on file. Uploading reads the activation again (the mutation does it).
- */
 export function DocumentsSection({ propertyId, step }: DocumentsSectionProps) {
   const { t } = useTranslation();
   const detail = usePropertyDetail(propertyId, { fresh: true });

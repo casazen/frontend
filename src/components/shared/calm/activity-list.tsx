@@ -6,25 +6,17 @@ import { cn } from '@/lib/utils';
 import { QUIET_ACTION, TOUCH_TARGET } from './calm-styles';
 
 export interface ActivityItem {
-  /** Stable, for React. */
   id: string;
-  /** When it happened, an ISO instant with its offset (`2026-10-16T09:30:00Z`): it orders the list and is the `datetime` of the entry. */
   at: string;
-  /** The moment as the person reads it ("ieri alle 18:30"). Default: day, month and time in Europe/Rome, in the language of the app (with the year when it is not this year). */
   when?: string;
-  /** What happened, as a short sentence. */
   text: string;
-  /** Who did it: "Tu", "Elisa", "CasaZen". */
   actor?: string;
 }
 
 export interface ActivityListProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   items: readonly ActivityItem[];
-  /** `newest` (default) puts the latest first, as a feed does; `oldest` reads as a story, from the start. */
   order?: 'newest' | 'oldest';
-  /** Show only `limit` entries, and a button that says `label` ("Mostra altro") to show the rest. */
   more?: { limit: number; label: string };
-  /** The name of the list for a screen reader ("Attività recente"). Not needed when a heading above it names it. */
   label?: string;
 }
 
@@ -51,7 +43,6 @@ export function ActivityList({ items, order = 'newest', more, label, className, 
   const [expanded, setExpanded] = React.useState(false);
   const firstRevealed = React.useRef<HTMLLIElement>(null);
 
-  // Put in order only when the entries or the order change, not when the list is opened.
   const sorted = React.useMemo(() => {
     const dated = items.map((item) => ({ item, instant: instantOf(item.at) }));
     dated.sort((a, b) => {
@@ -70,7 +61,6 @@ export function ActivityList({ items, order = 'newest', more, label, className, 
   if (items.length === 0) return null;
 
   const shown = sorted.slice(0, more && !expanded ? Math.max(more.limit, 0) : sorted.length);
-  // The entry that the button brought in first: the focus goes there when the button is gone.
   const revealedFrom = more && expanded ? Math.max(more.limit, 0) : -1;
   const thisYear = todayInRome().slice(0, 4);
 

@@ -71,7 +71,6 @@ const booking = (overrides: Partial<Booking> = {}): Booking => ({
   ...overrides,
 });
 
-/** The change options of a booking that came from a channel (Airbnb), open or closed for the cancellation. */
 const channelOptions = (overrides: Partial<BookingChangeOptions> = {}): BookingChangeOptions => ({
   canEdit: false,
   canCancel: true,
@@ -125,7 +124,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
     );
     renderDialog();
 
-    // What the server does for the host (BK-02, PO 2026-10-08): everything paid by card goes back, and it cannot be taken back.
     expect(await screen.findByTestId('cancel-full-refund')).toHaveTextContent(/Rimborso totale \(400,00\s€\)/);
     expect(screen.getByText(/l'ospite riceve sempre tutto ciò che ha pagato con carta, qualunque sia la politica di cancellazione: non puoi rimborsare meno/)).toBeInTheDocument();
     expect(screen.getByTestId('cancel-irreversible')).toHaveTextContent('L\'annullamento e il rimborso non si possono annullare né ritirare.');
@@ -145,7 +143,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
     renderDialog();
 
     await screen.findByTestId('cancel-full-refund');
-    // The partial refund, the amount and the sentences that promised them are not in the dialog: the host cannot refund less.
     expect(screen.queryByLabelText('Rimborso parziale')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Importo da rimborsare')).not.toBeInTheDocument();
     expect(screen.queryByRole('radio')).not.toBeInTheDocument();
@@ -196,7 +193,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
   });
 
   it('confirm_BookingThatCannotBeRead_StillOffersTheCancellationWithTheMoney', async () => {
-    // The server decides the path anyway: a booking that could not be read is taken for one CasaZen holds the money of.
     vi.mocked(bookingsApi.getById).mockRejectedValue(problem(500, { status: 500 }));
     vi.mocked(bookingsApi.getCancellationQuote).mockResolvedValue(quote());
     renderDialog();
@@ -221,7 +217,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Annulla prenotazione' }, WAIT));
 
     await waitFor(() => expect(bookingsApi.cancel).toHaveBeenCalled(), WAIT);
-    // The portal passes the event of the dialog's form on to the form that holds it in the tree: the confirmation must stop it.
     expect(submitted).not.toHaveBeenCalled();
   });
 
@@ -277,7 +272,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
       renderDialog();
 
       await screen.findByTestId('cancel-sync-note', undefined, WAIT);
-      // The booking is read again after the cancellation, and the channel manager has not answered: that read never comes back.
       vi.mocked(bookingsApi.getById).mockReturnValue(new Promise(() => undefined));
       confirm();
 
@@ -298,7 +292,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
       renderDialog();
 
       await screen.findByTestId('cancel-sync-note', undefined, WAIT);
-      // What the server holds once the cancellation is made.
       vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Cancelled', octorateSync: row }));
       confirm();
 
@@ -366,7 +359,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
     });
 
     it('confirm_CancellationStillBeingSentTenMinutesAfterTheOpening_StopsAskingAndSaysThereIsNoAnswerYet', async () => {
-      // The push started and stopped halfway: the row says Pending for good, and the host cannot ask again from there.
       vi.useFakeTimers({ shouldAdvanceTime: true });
       try {
         vi.mocked(bookingsApi.getById).mockResolvedValue(mirrored());
@@ -388,7 +380,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
         await vi.advanceTimersByTimeAsync(2 * SYNC_WATCH_MS);
         expect(vi.mocked(bookingsApi.getById).mock.calls.length).toBe(settled);
 
-        // «Controlla di nuovo» reads the booking once more, and the answer that has come is shown.
         vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ status: 'Cancelled', octorateSync: sync({ state: 'Synced', lastOperation: 'Cancel' }) }));
         fireEvent.click(within(waiting).getByRole('button', { name: 'Controlla di nuovo' }));
 
@@ -421,7 +412,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
 
       expect(await screen.findByRole('heading', { name: 'Chiedi al tuo channel manager di annullare questa prenotazione' }, WAIT)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: "Chiedi l'annullamento" })).toBeInTheDocument();
-      // The channel collects its own bookings: there is no refund to choose and no quote of the money to read (which would need `payment.read`).
       expect(screen.queryByText(/Rimborso/)).not.toBeInTheDocument();
       expect(bookingsApi.getCancellationQuote).not.toHaveBeenCalled();
     });
@@ -432,7 +422,6 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
       renderDialog();
 
       fireEvent.change(await screen.findByLabelText('Motivo (visibile solo a te)', undefined, WAIT), { target: { value: 'Ospite irreperibile' } });
-      // After the cancellation the booking is read again: it is cancelled, and the dialog must still say what happened.
       vi.mocked(bookingsApi.getById).mockResolvedValue(channelBooking(channelOptions({ canCancel: false, cancelReasonCode: 'booking_already_cancelled' })));
       fireEvent.click(screen.getByRole('button', { name: "Chiedi l'annullamento" }));
 
@@ -457,10 +446,8 @@ describe('CancelBookingDialog (BK-02)', { timeout: 20000 }, () => {
       expect(error).toHaveAttribute('data-code', code);
       expect(error).toHaveTextContent("Il canale non l'ha annullata: la prenotazione è rimasta com'era.");
       expect(error).toHaveTextContent("Per cancellare questa prenotazione di Airbnb chiedi all'ospite di annullarla su Airbnb.");
-      // Never a success that did not happen.
       expect(screen.queryByText('Prenotazione annullata.')).not.toBeInTheDocument();
       expect(screen.queryByTestId('cancel-channel-done')).not.toBeInTheDocument();
-      // The host can ask again.
       expect(screen.getByRole('button', { name: "Chiedi l'annullamento" })).toBeEnabled();
     });
 

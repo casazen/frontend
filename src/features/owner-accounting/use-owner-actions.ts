@@ -15,7 +15,6 @@ export function useOwnerActions(ctx: ActionContext) {
   const generateVersion = useGenerateVersion();
   const [asked, setAsked] = useState<ActionKey | null>(null);
 
-  /** A new version from the ledger now; it throws when the server refuses, so a dialog can stay open and say why. */
   const generate = async (): Promise<OwnerStatementVersion> => {
     const version = await generateVersion.mutateAsync({ year: ctx.period.year, month: ctx.period.month, ownerId: ctx.ownerId });
     const text = version.status === 'Flagged' ? 'ownerAccounting.actions.generate.flagged' : 'ownerAccounting.actions.generate.success';
@@ -23,7 +22,6 @@ export function useOwnerActions(ctx: ActionContext) {
     return version;
   };
 
-  /** The version in force is approved or published: a new one supersedes it, which is said and confirmed first. */
   const replacing = ctx.version?.status === 'Approved' || ctx.version?.status === 'Published';
 
   const ask = (action: ActionKey) => {

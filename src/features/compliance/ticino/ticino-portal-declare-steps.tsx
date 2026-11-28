@@ -5,14 +5,12 @@ import type { TicinoNotificationDay } from '@/types/swissCompliance.types';
 import { dayStateOf } from './ticino-day-model';
 import { closedLineOf } from './ticino-day-text';
 
-/** The portal is a page on https: whatever else an answer says is not offered as a link. */
 function portalHrefOf(day: Pick<TicinoNotificationDay, 'portalUrl'>): string | null {
   return /^https:\/\//i.test(day.portalUrl) ? day.portalUrl : null;
 }
 
 interface TicinoPortalStepProps {
   day: TicinoNotificationDay;
-  /** The person pressed the link to the portal: the layer goes on to the declaration, which is where they land when they come back. */
   onOpened: () => void;
 }
 
@@ -51,12 +49,10 @@ interface TicinoDeclareStepProps {
   day: TicinoNotificationDay;
   /** The person may declare the police communication of the property (`alloggiati.submit`, what the endpoint asks). */
   canSubmit: boolean;
-  /** The day has not started in Switzerland: it cannot be declared. */
   future: boolean;
   busy: boolean;
   onDeclare: () => void;
   onUndeclare: () => void;
-  /** Back to the step of the portal, for who has not uploaded the file yet. */
   onBackToPortal: () => void;
 }
 
@@ -77,7 +73,6 @@ export function TicinoDeclareStep({ day, canSubmit, future, busy, onDeclare, onU
           <CheckCircle2 aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary" />
           <span className="min-w-0 break-words">{closed}</span>
         </p>
-        {/* With the receipt of the portal filed the day stays closed whatever happens to the declaration (the undo removes only the declaration): nothing would be reopened, and the others of the team would be told it was. */}
         {state === 'declared' && canSubmit && day.receiptCount === 0 ? (
           <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={onUndeclare} data-testid="ticino-undeclare">
             {t('swiss.declare.undo')}

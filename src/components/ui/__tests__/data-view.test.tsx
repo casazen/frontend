@@ -45,7 +45,6 @@ function Harness(props: Partial<DataViewProps<Guest>>) {
 
 const table = () => screen.getByRole('table', { name: 'Ospiti' });
 const list = () => screen.getByRole('list', { name: 'Ospiti' });
-/** The names, in the order of the rows of the table. */
 const order = () => within(table()).getAllByRole('rowheader').map((cell) => cell.textContent);
 const header = (name: string) => within(table()).getByRole('columnheader', { name });
 
@@ -190,7 +189,6 @@ describe('DataView (UI-07)', () => {
 
       fireEvent.click(within(header('Notti')).getByRole('button'));
 
-      // As text "10" would come before "2".
       expect(order()).toEqual(['Anna Bianchi', 'Mario Rossi', 'Zeno Verdi']);
       fireEvent.click(within(header('Notti')).getByRole('button'));
       expect(order()).toEqual(['Zeno Verdi', 'Mario Rossi', 'Anna Bianchi']);
@@ -216,7 +214,6 @@ describe('DataView (UI-07)', () => {
 
       fireEvent.click(within(header('Nome')).getByRole('button'));
 
-      // By surname: Bianchi, Rossi, Verdi.
       expect(order()).toEqual(['Anna Bianchi', 'Mario Rossi', 'Zeno Verdi']);
     });
 
@@ -245,7 +242,6 @@ describe('DataView (UI-07)', () => {
       render(<Harness sort={sort} onSortChange={onSortChange} />);
 
       expect(header('Nome')).toHaveAttribute('aria-sort', 'descending');
-      // The rows are as the caller sent them.
       expect(order()).toEqual(['Zeno Verdi', 'Anna Bianchi', 'Mario Rossi']);
 
       fireEvent.click(within(header('Nome')).getByRole('button'));
@@ -372,7 +368,6 @@ describe('DataView (UI-07)', () => {
     it('DataView_WithoutSelectedProp_KeepsTheSelectionItself', () => {
       render(<Harness selectable bulkActions={(rows) => <span>{rows.length} da gestire</span>} />);
 
-      // No `rowLabel`: the boxes are all called the same.
       fireEvent.click(within(table()).getAllByRole('checkbox', { name: 'Seleziona la riga' })[0]);
 
       expect(screen.getByText('1 da gestire')).toBeInTheDocument();
@@ -398,8 +393,6 @@ describe('DataView (UI-07)', () => {
     it('DataView_Loading_ShowsTheSkeletonsOfTheTwoRepresentationsEachAnnouncedAndNoRows', () => {
       render(<Harness isLoading />);
 
-      // The placeholders of UI-02, one for the table and one for the list; a media query shows one of them, and the other
-      // is `display: none`, which a screen reader does not read (jsdom has no CSS: both are here).
       const statuses = screen.getAllByRole('status');
       expect(statuses).toHaveLength(2);
       for (const status of statuses) {
@@ -477,7 +470,6 @@ describe('DataView (UI-07)', () => {
     });
   });
 
-  // What the unified list (ListView, UI-14) asks of the table: all of it optional, none of it changes a list that does not use it.
   describe('what the unified list builds on', () => {
     it('DataView_OnRowClick_IsCalledForAClickOnTheRowInTheTableAndOnTheCard', () => {
       const onRowClick = vi.fn();

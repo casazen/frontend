@@ -16,17 +16,14 @@ vi.mock('@/api/concordatofacile.api', () => ({ ConcordatoFacileApi: { sync: vi.f
 
 const sync = vi.mocked(ConcordatoFacileApi.sync);
 
-/** The API keeps 1 January 3000 as the start of a draft saved with only its property. */
 const PLACEHOLDER_DATE = '3000-01-01T00:00:00Z';
 
-/** A canone concordato draft saved with only its property, for the guided service. */
 const partnerDraft = (overrides: Partial<LeaseDetail> = {}) => buildDetail({ status: 'Draft', contractType: 'Concordato', startDate: PLACEHOLDER_DATE, ...overrides });
 
 const answer = (state: CfSyncResponse['state'], leaseStatus: CfSyncResponse['leaseStatus'] = 'Draft'): CfSyncResponse => ({ state, leaseStatus });
 
 interface Setup {
   flags?: Partial<FeatureFlags>;
-  /** The permissions of the person (`true` for all, none given: a page rendered with no workspace). */
   workspace?: 'all' | { deny: string[] };
 }
 
@@ -166,7 +163,6 @@ describe('useCfCompletion', () => {
     await waitFor(() => expect(result.current.state).toBe('WaitingForSignature'));
     expect(sync).toHaveBeenCalledTimes(3);
 
-    // The practice is what the lease waits for now: nothing changes by itself in a few seconds, so it is not asked again.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(CF_SYNC_POLL_MS * 3);
     });

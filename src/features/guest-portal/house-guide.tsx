@@ -7,31 +7,18 @@ type GuideField = (typeof guideFields)[number];
 
 const icons: Record<GuideField, LucideIcon> = { arrival: LogIn, checkInHours: Clock, house: House, departure: LogOut, checkOutHours: DoorOpen, parking: SquareParking, contacts: Phone, localTips: MapPin, access: KeyRound, wifi: Wifi };
 
-/**
- * The order of a guest, not the order of the form of the host (`guideFields`): on the day of arrival they look for how to get
- * there, how to get in, the Wi-Fi and where to park; the house, the departure and the tips come after.
- */
 const GUEST_ORDER: readonly GuideField[] = ['arrival', 'access', 'wifi', 'parking', 'checkInHours', 'house', 'departure', 'checkOutHours', 'contacts', 'localTips'];
 
-/** Open from the start: the three that answer «how do I get in and get online». */
 const OPEN_FIRST: ReadonlySet<GuideField> = new Set<GuideField>(['arrival', 'access', 'wifi']);
 
-/** The fields that are a way to follow, and so may become numbered steps. */
 const STEP_FIELDS: ReadonlySet<GuideField> = new Set<GuideField>(['arrival', 'access']);
 
 interface HouseGuideSectionsProps {
-  /** What the host wrote. A stay whose host wrote nothing may come without it: then there are no sections (never a crash of the page). */
   guide: HouseGuide | null | undefined;
-  /**
-   * The names of the sections in the language of the page. The guest portal speaks five languages of its own (not the language
-   * of the app), so it hands them in; without them the names are the app's.
-   */
   labels?: Partial<Record<GuideField, string>>;
-  /** «Passo 2 di 6» in the language of the page; without it, the app's. */
   stepLabel?: (step: number, total: number) => string;
 }
 
-/** The guide of the house for the guest: one section per thing the host wrote, the way in first, the way to follow as numbered steps. */
 export function HouseGuideSections({ guide, labels, stepLabel }: HouseGuideSectionsProps) {
   const { t } = useTranslation();
   const title = (field: GuideField) => labels?.[field] ?? t(`guestPortal.guide.${field}`);

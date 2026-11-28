@@ -5,7 +5,6 @@ export interface Size {
   h: number;
 }
 
-/** The size of an element, kept up to date (it is 0 × 0 until the browser has laid the element out). */
 export function useElementSize<T extends HTMLElement>(): [RefObject<T | null>, Size] {
   const ref = useRef<T>(null);
   const [size, setSize] = useState<Size>({ w: 0, h: 0 });

@@ -14,7 +14,6 @@ interface ModeLinkProps {
   testId: string;
 }
 
-/** One of the two ways to let a property: a card that is a link to the creation in its section. */
 function ModeLink({ to, icon: Icon, title, text, testId }: ModeLinkProps) {
   return (
     <Link
@@ -39,10 +38,6 @@ interface AddPropertyDialogProps {
   rights: AccountPropertyRights;
 }
 
-/**
- * «Aggiungi un immobile» (AM-13): which way it will be let decides the section that creates it, and each section has its own form
- * (there is no second wizard here). Only the sections the person may write are offered.
- */
 export function AddPropertyDialog({ open, onOpenChange, rights }: AddPropertyDialogProps) {
   const { t } = useTranslation();
 

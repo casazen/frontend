@@ -23,10 +23,6 @@ import { MissingValue } from '@/components/shared/missing-value';
 
 const LINK = 'rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
-/**
- * The drafts ticked for a bulk issue (E12/F02/US01/T01), as the list shows them: a box on every draft CasaZen issues and none on any other document. `disabled` while a bulk issue, or the search for
- * the drafts of the period, is running: nothing can be ticked or unticked under it.
- */
 export interface DocumentSelection {
   selected: ReadonlySet<string>;
   disabled: boolean;
@@ -34,7 +30,6 @@ export interface DocumentSelection {
   onTogglePage: (documents: readonly FiscalDocumentEntry[], select: boolean) => void;
 }
 
-/** The box of a draft: 16 px of box in the 44 px of a finger, named by what it selects. */
 function SelectBox({ checked, indeterminate = false, disabled, label, onChange, testId }: { checked: boolean; indeterminate?: boolean; disabled: boolean; label: string; onChange: () => void; testId?: string }) {
   return (
     <label className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center">
@@ -46,7 +41,6 @@ function SelectBox({ checked, indeterminate = false, disabled, label, onChange, 
         disabled={disabled}
         onChange={onChange}
         ref={(input) => {
-          // "Some of them" has no attribute, only a property.
           if (input) input.indeterminate = indeterminate && !checked;
         }}
         data-testid={testId}
@@ -55,7 +49,6 @@ function SelectBox({ checked, indeterminate = false, disabled, label, onChange, 
   );
 }
 
-/** The booking of the document: a link to it for who may read bookings, the words alone for who may not, and a note for a document that belongs to no booking. */
 function BookingCell({ document, canReadBookings }: { document: FiscalDocumentEntry; canReadBookings: boolean }) {
   const { t } = useTranslation();
   const href = bookingLinkOf(document, canReadBookings);
@@ -105,10 +98,6 @@ function TotalFigure({ document, language }: { document: FiscalDocumentEntry; la
   );
 }
 
-/**
- * The kind and the number, the day of the issue and who issued it: the number and the day are the ones of the server. With `onOpen` the name is the button that opens the detail of the document
- * (the row opens with a click too, for the pointer: the keyboard has this button).
- */
 function DocumentCell({ document, language, onOpen }: { document: FiscalDocumentEntry; language: string; onOpen?: (document: FiscalDocumentEntry) => void }) {
   const { t } = useTranslation();
   const sourceKey = documentSourceKey(document.source);
@@ -138,7 +127,6 @@ function DocumentCell({ document, language, onOpen }: { document: FiscalDocument
       <span className="mt-0.5 block text-xs font-normal text-foreground/70" data-testid="fiscal-document-source">
         {sourceKey ? t(sourceKey) : document.source}
       </span>
-      {/* A booking may have several documents (the receipt of the owner, the invoice of the agency for its services): what each one is for, and who issued it when the server says so. */}
       {purposeKey || document.issuerName ? (
         <span className="mt-0.5 block text-xs font-normal text-foreground/70" data-testid="fiscal-document-purpose" data-purpose={document.purpose}>
           {[purposeKey ? t(purposeKey) : null, document.issuerName ? t('fiscalDocuments.list.issuedBy', { issuer: document.issuerName }) : null].filter((part) => part !== null).join(' · ')}
@@ -149,33 +137,21 @@ function DocumentCell({ document, language, onOpen }: { document: FiscalDocument
 }
 
 interface DocumentListProps {
-  /** The documents, as the server sent them and in its order (newest first). */
   documents: readonly FiscalDocumentEntry[];
-  /** The name of the table for a screen reader. */
   label: string;
-  /** Whether the caller may read bookings: without it the booking is told in words and is not a link. */
   canReadBookings: boolean;
-  /** The flags of the backend, which say whether the PDF of an imported document can be asked. */
   flags: Partial<FeatureFlags>;
-  /** The person may change documents: the right to write payments AND the flag of the issuance. Without both no button that changes a document is drawn, and no draft has a box. */
   canWrite?: boolean;
-  /** Opens the detail of a document: its name is a button, and the row opens with a click. */
   onOpen?: (document: FiscalDocumentEntry) => void;
-  /** The drafts ticked for a bulk issue; without it no draft has a box. */
   selection?: DocumentSelection;
-  /** What happened to a document through its buttons (issued, discarded, credited): the page forgets what it kept of it. */
   onChanged?: (id: string, change: DocumentChange) => void;
   isLoading?: boolean;
   isError?: boolean;
   error?: unknown;
-  /** What failed to load, already translated. */
   errorTitle?: string;
   onRetry?: () => void;
-  /** The rows on screen are being read again (the next page, a document just issued): they stay, quieter, until the new ones are there. */
   isRefreshing?: boolean;
-  /** What the list says when it has no document: the props of an `EmptyState`. */
   empty: ComponentProps<typeof EmptyState>;
-  /** Under the list: the count and the pages. */
   footer?: ReactNode;
   testId?: string;
 }
@@ -209,8 +185,6 @@ export function DocumentList({
 }: DocumentListProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
-  // Every draft CasaZen issues has a box. The box of the head ticks only the drafts of the stays: a credit note that is a draft is a correction the host looks at one by one, and its own box is
-  // ticked by hand (as «Seleziona tutte le bozze del periodo» leaves it out too).
   const drafts = useMemo(() => documents.filter(isBatchDraft), [documents]);
   const stayDrafts = useMemo(() => drafts.filter(isPeriodDraft), [drafts]);
   const allDrafts = selection !== undefined && stayDrafts.length > 0 && stayDrafts.every((draft) => selection.selected.has(draft.id));
@@ -228,7 +202,6 @@ export function DocumentList({
                   indeterminate={someDrafts}
                   disabled={selection.disabled || stayDrafts.length === 0}
                   label={t('fiscalDocuments.batch.selectPage')}
-                  // Ticking takes the drafts of the stays; unticking clears every box of the page, a credit note ticked by hand included.
                   onChange={() => selection.onTogglePage(allDrafts ? drafts : stayDrafts, !allDrafts)}
                   testId="fiscal-documents-select-page"
                 />

@@ -1,4 +1,3 @@
-// Dev-server-only fixture: imports the production component; never included in the production build.
 import { createRoot } from 'react-dom/client';
 import { useForm, useWatch } from 'react-hook-form';
 import '@/styles/globals.css';

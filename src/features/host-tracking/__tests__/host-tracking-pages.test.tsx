@@ -36,7 +36,6 @@ vi.mock('@/api/public-site-search.api', () => ({
     getSiteCalendar: vi.fn(),
   },
 }));
-// The Payment Element is Stripe's: the checkout only has to show it once the booking exists.
 vi.mock('@/features/public-booking/components/stripe-intent-payment', () => ({
   StripeIntentPayment: () => <div data-testid="stripe-element" />,
 }));
@@ -123,7 +122,6 @@ const quote: DirectBookingQuote = {
 
 type Message = Record<string, unknown>;
 const layer = (): Message[] => ((window as DataLayerWindow).dataLayer ?? []) as Message[];
-/** What the pages pushed: the messages that name an event, not the `gtm.js` one. */
 const events = (): Message[] => layer().filter((message) => typeof message.event === 'string' && message.event !== 'gtm.js');
 
 function deferred<T>() {
@@ -153,10 +151,8 @@ describe('the pages of the funnel and the analytics of the agency', { timeout: 2
   beforeEach(async () => {
     vi.clearAllMocks();
     resetPage();
-    // Only the clock: "today" in Europe/Rome is 5 October 2026, timers stay real.
     freezeClock(`${TODAY}T10:00:00Z`);
     await i18n.changeLanguage('it');
-    // An agency's own domain, with the container set and the visitor's statistics allowed: everything the pages report is then reported.
     setHostSite(HOST);
     window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
     vi.mocked(publicOrgApi.getOrgProperty).mockResolvedValue(property);
@@ -188,7 +184,6 @@ describe('the pages of the funnel and the analytics of the agency', { timeout: 2
       await waitFor(() => expect(screen.getByTestId('price-breakdown-total')).toHaveTextContent('502,50'));
       await waitFor(() => expect(events()).toHaveLength(1));
 
-      // The `Total` line is 50250 cents: 502.5 in the currency of the quote, not 50250 and not the total in euros of the old format.
       expect(events()[0]).toEqual({
         event: 'begin_checkout',
         ecommerce: { currency: 'EUR', value: 502.5, items: [{ item_id: PROPERTY_ID, item_name: 'Villa Mare', item_category: 'Napoli', price: 502.5, quantity: 1 }] },
@@ -230,7 +225,6 @@ describe('the pages of the funnel and the analytics of the agency', { timeout: 2
 
       await screen.findByRole('heading', { level: 1, name: 'Villa Mare' });
       await waitFor(() => expect(publicBookingApi.quoteDirectBooking).toHaveBeenCalled());
-      // The quote of the stay is on its way: the event waits for the total of the server.
       expect(events()).toHaveLength(0);
 
       await act(async () => {
@@ -339,7 +333,6 @@ describe('the pages of the funnel and the analytics of the agency', { timeout: 2
       );
 
       await screen.findAllByTestId('house-card');
-      // The homes of all the sites are no list of this agency: no event, and not even the queue of the tag manager is created.
       expect(events()).toHaveLength(0);
       expect((window as DataLayerWindow).dataLayer).toBeUndefined();
     });
@@ -369,7 +362,6 @@ describe('the pages of the funnel and the analytics of the agency', { timeout: 2
     }
 
     function renderOutcome() {
-      // The address the guest really has: the token of the link is in it, and the page is one of those that report the purchase.
       window.history.pushState({}, '', `/booking/${BOOKING_ID}?token=${TOKEN}`);
       return render(
         <QueryClientProvider client={newClient()}>
@@ -411,7 +403,6 @@ describe('the pages of the funnel and the analytics of the agency', { timeout: 2
         event: 'purchase',
         ecommerce: { transaction_id: BOOKING_ID, currency: 'EUR', value: 550, items: [{ item_id: PROPERTY_ID, item_name: 'Trastevere Suite', price: 550, quantity: 1 }] },
       });
-      // The code the guest is shown and the token of the link are not in anything the page pushed.
       expect(JSON.stringify(layer())).not.toContain(BOOKING_CODE);
       expect(JSON.stringify(layer())).not.toContain(TOKEN);
     });
@@ -425,7 +416,6 @@ describe('the pages of the funnel and the analytics of the agency', { timeout: 2
 
       renderOutcome();
 
-      // A booking that the backend has not confirmed is no purchase, and nothing is kept for it.
       await screen.findByTestId(testId);
       expect(events()).toHaveLength(0);
       expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();

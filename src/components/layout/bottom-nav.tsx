@@ -15,28 +15,17 @@ interface BottomNavProps {
   contextKey: AppContextKey;
 }
 
-/**
- * The counter that "Altro" shows on its own: what carries a risk of a sanction is never hidden behind it. The urgent items of the "To do" list
- * (ADR-026-R12) are not in "Altro" any more: they are a tab of the Cruscotto, and the «Guida» of the header carries their number on every page.
- */
 const COMPLIANCE_COUNT: NavCountKey = 'compliance';
 
-// A column of the bar is a fifth of a 360 px screen (72 px) and the widest name ("Prenotazioni", "Disponibilità") is
-// about 67 px in Inter at 11 px semibold: it fits with no ellipsis (the tabs have no side padding, the room is the
-// column's). On the narrowest phones (320 px, 64 px a column) the text goes down to 10 px, 61 px wide.
-// The name comes first in the markup and last on the screen (`flex-col-reverse`): a screen reader reads "Prenotazioni, 2
-// richieste da approvare" and not the counter, which sits on the icon, before the name.
 const ITEM_CLASS =
   'relative flex min-h-11 min-w-0 flex-1 flex-col-reverse items-center justify-center gap-0.5 px-0 text-[11px] font-semibold leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring max-[340px]:text-[10px]';
 const ITEM_ACTIVE = 'text-[color:var(--color-primary-text,var(--color-primary))]';
 const ITEM_INACTIVE = 'text-muted-foreground';
 
-/** The accent line on top of the tab of the open page (decorative: `aria-current` says it to everyone else). */
 function ActiveLine() {
   return <span aria-hidden="true" className="absolute inset-x-1/4 top-0 h-[3px] rounded-b-full bg-primary" />;
 }
 
-/** The icon, in a pill that takes the soft accent when the tab is the open page. */
 function BarIcon({ active, children }: { active: boolean; children: React.ReactNode }) {
   return (
     <span
@@ -64,7 +53,6 @@ export function BottomNav({ contextKey }: BottomNavProps) {
   const { bottomEntries, moreEntries, hasMore, hasBar, activeTab, sidebarOpen, setSidebarOpen } = useMobileNav(contextKey);
   const setBottomBarVisible = useUiStore((state) => state.setBottomBarVisible);
   const counts = useNavCounts([...bottomEntries, ...moreEntries]);
-  // A risk of a sanction behind "Altro" is not hidden by it: the tab says there is something, in red, before the sheet is opened.
   const moreFines = moreEntries.some((entry) => entry.navCount === COMPLIANCE_COUNT) ? (counts[COMPLIANCE_COUNT] ?? 0) : 0;
 
   useEffect(() => {
@@ -93,7 +81,6 @@ export function BottomNav({ contextKey }: BottomNavProps) {
             <Link
               key={entry.path}
               to={entry.path}
-              // A shorter name on the bar is only what is seen: the link is still called by the name of the menu (it contains the short one).
               aria-label={shortName ? getNavLabel(entry, t) : undefined}
               aria-current={isActive ? 'page' : undefined}
               className={cn(ITEM_CLASS, isActive ? ITEM_ACTIVE : ITEM_INACTIVE)}
@@ -114,8 +101,6 @@ export function BottomNav({ contextKey }: BottomNavProps) {
         {hasMore ? (
           <button
             type="button"
-            // The sheet gives the focus back to the button that opened it, to this one when the opener took no focus (a tap
-            // on Safari).
             data-more-trigger=""
             aria-haspopup="dialog"
             aria-expanded={sidebarOpen}

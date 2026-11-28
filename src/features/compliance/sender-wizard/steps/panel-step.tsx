@@ -9,9 +9,7 @@ import { senderPanelResume } from '../sender-wizard-model';
 
 interface SenderPanelStepProps {
   propertyId: string;
-  /** The connection was seen by CasaZen (or the person confirmed it after CasaZen could not tell): the wizard goes on to the test. */
   onContinue: () => void;
-  /** «Salva ed esci»: the guided step stays as it is (its «Da fare» is already there) and so does the draft of the wizard. */
   onSaveAndExit: () => void;
 }
 

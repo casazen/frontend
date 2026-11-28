@@ -5,12 +5,6 @@ import { pinE2eLocale } from './helpers/locale';
 import { mockServiceCategoriesApi } from './helpers/service-categories-mock';
 import { DEMO_CHECKOUT_BOOKING_ID, DEMO_PROPERTY_ID, demoCheckoutWizard, mockComplianceApi } from './helpers/compliance-mock';
 
-/**
- * UI-11: the check-out of a stay is the pilot of the wizard kit (`WizardShell`, the automatic draft, "What happens now").
- * L2 (demo mode, mocked API). The ids and test ids that the Golden Journey of the CI clicks through are the same as before
- * (`checkout-step-next`, `checkout-complete-button`, ...), and so is the text it waits for after the last step.
- */
-
 const BOOKING_ID = DEMO_CHECKOUT_BOOKING_ID;
 const CHECKOUT_URL = demoUrl(`/app/short-rent/bookings/${BOOKING_ID}/checkout`, 'short-stay');
 const NOTE = 'Chiavi nella cassetta';
@@ -36,7 +30,6 @@ interface Mocked {
   completions: Array<Record<string, unknown>>;
 }
 
-/** The API of the wizard: it starts at the first step every time (as a server that never saved the progress), saves progress and closes the stay. */
 async function mockCheckoutApi(page: Page): Promise<Mocked> {
   const calls: Mocked = { progress: [], completions: [] };
   let closed = false;
@@ -86,7 +79,6 @@ const heading = (page: Page, name: string) => page.getByRole('heading', { level:
 const next = (page: Page) => page.getByTestId('checkout-step-next');
 const step = (page: Page) => page.getByTestId('checkout-wizard-form');
 
-/** Walks the wizard up to the last step: departure confirmed, cleaning skipped, tax collected at the property. */
 async function goToLastStep(page: Page): Promise<void> {
   await page.getByTestId('checkout-confirm-departure').click();
   await next(page).click();
@@ -117,7 +109,6 @@ test.describe('Wizard kit pilot: check-out of a stay (UI-11)', () => {
     await expect(step(page)).toHaveAttribute('data-step', 'stay-summary');
     await expect(page.getByRole('list', { name: 'Passaggi' })).toBeVisible();
     await expect(next(page)).toHaveText('Continua: Alloggiati');
-    // Opening the page does not write `?step=` (links to the page are compared with the address as it is).
     expect(new URL(page.url()).searchParams.has('step')).toBe(false);
   });
 
@@ -134,7 +125,6 @@ test.describe('Wizard kit pilot: check-out of a stay (UI-11)', () => {
     await expect(summary).toContainText("Conferma che l'ospite ha lasciato la struttura.");
     await expect(summary).toBeFocused();
     await expect(step(page)).toHaveAttribute('data-step', 'stay-summary');
-    // The note for a screen reader is a polite status, not an alert that would interrupt it.
     await expect(page.getByRole('status').filter({ hasText: "C'è 1 campo da controllare" })).toHaveCount(1);
 
     await page.getByTestId('checkout-confirm-departure').click();
@@ -153,7 +143,6 @@ test.describe('Wizard kit pilot: check-out of a stay (UI-11)', () => {
     await expect(heading(page, 'Alloggiati Web')).toBeVisible();
     await expect(heading(page, 'Alloggiati Web')).toBeFocused();
     expect(new URL(page.url()).searchParams.get('step')).toBe('alloggiati');
-    // The server learns where the host is, with the answers so far.
     await expect.poll(() => calls.progress.at(-1)).toMatchObject({ currentStep: 'alloggiati', departureConfirmed: true });
 
     await page.goBack();
@@ -173,7 +162,6 @@ test.describe('Wizard kit pilot: check-out of a stay (UI-11)', () => {
     await page.getByTestId('checkout-property-notes').fill(NOTE);
     await expect(page.getByTestId('wizard-draft-saved')).toContainText(/Bozza salvata alle \d{2}:\d{2}/, { timeout: 5_000 });
 
-    // The reload: the address goes back to the one of the page (the server starts at the first step again).
     await page.goto(CHECKOUT_URL, { waitUntil: 'domcontentloaded' });
     await expect(heading(page, 'Riepilogo soggiorno')).toBeVisible({ timeout: 20_000 });
     const banner = page.getByTestId('wizard-draft-banner');
@@ -209,11 +197,9 @@ test.describe('Wizard kit pilot: check-out of a stay (UI-11)', () => {
     await expect(heading(page, 'Riepilogo soggiorno')).toBeVisible({ timeout: 20_000 });
     await goToLastStep(page);
 
-    // The last button checks the step: nothing is sent until the host says whether the property is ready.
     await page.getByTestId('checkout-complete-button').click();
     await expect(page.getByTestId('wizard-error-summary')).toContainText('Indica se la proprietà è pronta per il prossimo ospite.');
     expect(calls.completions).toEqual([]);
-    // What was answered before is in the summary, each answer with a link back to its step.
     const summary = page.getByTestId('checkout-summary');
     await expect(summary.getByRole('link', { name: /^Modifica / })).toHaveCount(3);
 
@@ -226,9 +212,7 @@ test.describe('Wizard kit pilot: check-out of a stay (UI-11)', () => {
     await expect(page.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}`);
     await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/short-rent/compliance');
     expect(new URL(page.url()).searchParams.get('step')).toBe('fatto');
-    // The text the Golden Journey waits for is the toast of the completion, and it is the only element with it.
     await expect(page.getByText(/Check-out completato/i)).toHaveCount(1);
-    // The booking is checked out now, and the confirmation is still on screen (not the card "already done").
     await expect(page.getByTestId('checkout-already-done')).toHaveCount(0);
     expect(calls.completions).toHaveLength(1);
     expect(calls.completions[0]).toMatchObject({ confirmDeparture: true, cleaningChoice: 'Skip', touristTaxCollection: 'CollectedAtProperty', propertyReady: true });
@@ -255,7 +239,6 @@ test.describe('Wizard kit pilot: check-out of a stay (UI-11)', () => {
 
 const WIDER_LETTERS = 'body, body * { letter-spacing: 0.08em !important; }';
 
-/** The box of an element that slides into place (a toast does): once it has stopped. */
 async function settled(locator: Locator) {
   let previous = '';
   await expect
@@ -277,7 +260,6 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
     test(`AC-W8: at ${width} px, with wider letters, nothing sticks out and the buttons stay above the bottom bar`, async ({ page }) => {
       await pinE2eLocale(page, 'it');
       await mockCheckoutApi(page);
-      // Short on purpose: the step is taller than the screen, so the buttons have to stay in view while the page scrolls.
       await page.setViewportSize({ width, height: 520 });
       await page.goto(CHECKOUT_URL, { waitUntil: 'domcontentloaded' });
       await expect(heading(page, 'Riepilogo soggiorno')).toBeVisible({ timeout: 20_000 });
@@ -286,8 +268,6 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
       await page.getByTestId('checkout-property-notes').fill(NOTE);
       await page.getByTestId('checkout-property-ready-no').click();
 
-      // The wizard and its buttons, not the breadcrumb of the page above them (the "Breadcrumb" component does not wrap, and
-      // the page already had it: UI-05 replaces it with a back link on a phone).
       const measures = async () =>
         page.evaluate(() => {
           const root = document.documentElement;
@@ -312,7 +292,6 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
           };
         });
 
-      // At the top of the page the buttons are stuck right above the bottom bar (the step is taller than the screen).
       await page.evaluate(() => window.scrollTo(0, 0));
       const top = await measures();
       expect(top.outside, 'nothing of the wizard sticks out of the screen').toEqual([]);
@@ -323,26 +302,21 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
       expect(top.barBottom!, 'and they are not left far above it').toBeGreaterThanOrEqual(top.navTop! - 4);
       for (const height of top.buttons) expect(height, 'tap targets are 44 px').toBeGreaterThanOrEqual(44);
 
-      // At the end of the page the last field is not under the buttons.
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       const notes = await page.getByTestId('checkout-property-notes').boundingBox();
       const bar = await page.getByTestId('checkout-complete-button').boundingBox();
       expect(notes, 'the notes are on the page').not.toBeNull();
       expect(notes!.y + notes!.height, 'the notes end above the buttons').toBeLessThanOrEqual(bar!.y + 1);
-      // What the page puts after the wizard (the way out, "Save and exit", where the link back to the booking was) is not left under the buttons either: they stay above it.
-      // It is a tap target of its own, and there is no link back to the booking under the wizard any more.
       const exit = await page.getByTestId('checkout-save-exit').boundingBox();
       expect(exit, '"Save and exit" is on the page').not.toBeNull();
       expect(exit!.height, 'a tap target of 44 px').toBeGreaterThanOrEqual(44);
       expect(exit!.y, 'and it starts below the buttons').toBeGreaterThanOrEqual(bar!.y + bar!.height - 1);
       await expect(page.getByRole('link', { name: 'Torna alla prenotazione' })).toHaveCount(0);
 
-      // The summary and its links fit too.
       await expect(page.getByTestId('checkout-summary').getByRole('link', { name: /^Modifica / }).first()).toBeVisible();
       const after = await measures();
       expect(after.outside).toEqual([]);
 
-      // The confirmation fits as well, and its two actions are big enough to tap.
       await page.getByTestId('checkout-complete-button').click();
       await expect(heading(page, 'Il soggiorno è chiuso')).toBeVisible({ timeout: 15_000 });
       const done = await measures();
@@ -358,7 +332,6 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
   test('AC-W9: when the server refuses, the message is on the screen above the buttons and the toast comes up over their bar', async ({ page }) => {
     await pinE2eLocale(page, 'it');
     await mockCheckoutApi(page);
-    // The server refuses to close the stay: its reason is in the page (under the buttons' step) and in a toast.
     await page.route(`**/api/bookings/${BOOKING_ID}/checkout-wizard/complete`, async (route) => {
       await route.fulfill({
         status: 422,
@@ -375,7 +348,6 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
     await page.getByTestId('checkout-complete-button').click();
 
     await expect(page.getByTestId('checkout-complete-error')).toBeVisible();
-    // The focus goes to the message: the button that was busy has lost it, and the page scrolls the message in.
     await expect(page.getByTestId('checkout-complete-error')).toBeFocused();
     const toast = page.locator('[data-sonner-toast]').first();
     await expect(toast).toBeVisible();
@@ -383,11 +355,8 @@ test.describe('Wizard kit pilot on a phone (UI-11)', () => {
     const reason = await settled(page.getByTestId('checkout-complete-error'));
     const buttons = (await page.getByTestId('checkout-complete-button').boundingBox())!;
     const nav = (await page.locator('nav[aria-label="Navigazione mobile"]').boundingBox())!;
-    // The toast is raised over the room of the bar of the buttons (72 px), not only over the bottom bar...
     expect(box.y + box.height, 'the toast comes up over the bar of the buttons').toBeLessThanOrEqual(nav.y - 72);
-    // ...and wherever the page is scrolled to (the focus took it to the message), it does not cover the buttons.
     expect(box.y < buttons.y + buttons.height && box.y + box.height > buttons.y, 'the toast does not cover the buttons').toBe(false);
-    // The message of the page is in view too, above the buttons and not under them.
     expect(reason.y, 'the message is on the screen').toBeGreaterThanOrEqual(0);
     expect(reason.y + reason.height, 'and above the buttons').toBeLessThanOrEqual(buttons.y);
   });

@@ -5,11 +5,6 @@ import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { INTERNAL_ACTIVITIES_KEY } from '@/lib/query-client';
 
-/**
- * How often the "To do" list and the number on the nav are read again while the page is visible. An item closes by itself when its
- * condition is met, but the server dispatches the events of the condition about once a minute (ADR-022, ADR-026): a read right after
- * the write may still show the item, the next ones do not. The window focus and the network coming back read it again too.
- */
 const TODO_POLL_MS = 60_000;
 
 export function useMyActivities() {

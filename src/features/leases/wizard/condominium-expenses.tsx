@@ -23,13 +23,6 @@ const EXPENSE_CADENCES = [
   'Semiannual',
 ] as const;
 
-/**
- * Condominium expenses on «Condizioni economiche».
- * A fiscal year already on the property proposes the monthly amount. That first read is not repeated
- * Opening it does not POST an empty body: that write comes back as a budget and drops settle-at-consuntivo.
- * With nothing loaded, the totals of the previous consuntivo and the new preventivo, or a hand-typed
- * amount, are sent. Paying, and the prior-year balance, are not done here.
- */
 export function CondominiumExpenses({
   propertyId,
   leaseId,
@@ -71,7 +64,6 @@ export function CondominiumExpenses({
 
   function acceptShown() {
     if (!shown || saved) return;
-    // The fiscal-year amount is already on screen. Keeping it must not POST {} again.
     remember(shown, {});
   }
 
@@ -308,7 +300,6 @@ export function CondominiumExpenses({
   );
 }
 
-/** A second click must not send `{}`: that body is a different mode and drops settle-at-consuntivo. */
 function requestHasFigures(request: ProposeTenantExpense): boolean {
   return (
     request.manualAmount !== undefined ||

@@ -10,7 +10,6 @@ interface SupplierProfile {
   email: string;
   categories: string[];
   comuni: string[];
-  /** Comuni chosen from the official ISTAT list (SU-04). */
   comuneIstatCodes?: string[];
   bio?: string | null;
   photoUrls: string[];
@@ -39,7 +38,6 @@ interface ActivationStatus {
 
 const MOCK_TOS_VERSION = '2026-10-v1';
 
-/** What the API derives from the stored profile (SU-05): the requirements of each wizard step. */
 function activationOf(profile: SupplierProfile, savedStep: number | null): ActivationStatus {
   const step = (id: string, blocker: string | null, required = true): ActivationStep => ({
     id,
@@ -96,9 +94,7 @@ export async function mockSupplierConsoleApi(
 ): Promise<void> {
   const active = options?.active ?? false;
   const inboxItems = options?.inboxItems ?? [];
-  // The number of requests waiting for the supplier's answer: the counter of "Richieste" in the menu reads `toAnswer` of `inbox/counts` (SP-08b).
   const toAnswer = options?.toAnswer ?? 0;
-  // Stateful like the API: what the wizard saves is what the next read returns (SU-05).
   let profile: SupplierProfile = active
     ? { ...demoSupplierProfile, status: 'Active', categories: ['cleaning'], comuni: ['H501'], bio: 'Servizi demo', tosAcceptedAt: new Date().toISOString() }
     : { ...demoSupplierProfile };
@@ -155,8 +151,6 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
-    // The home of the console (SP-04, SP-04e): the days, the counts, the three numbers and the checklist. An active supplier with nothing
-    // to answer and nothing to count; one that is not active has not begun.
     if (/\/supplier\/today(\?|$)/.test(url)) {
       await route.fulfill({
         status: 200,
@@ -285,7 +279,6 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
-    // The jobs of the next 30 days with something wrong (SP-03b): none.
     if (url.includes('/calendar/conflicts') && method === 'GET') {
       await route.fulfill({
         status: 200,
@@ -314,7 +307,6 @@ export async function mockSupplierConsoleApi(
       return;
     }
 
-    // Agenda for Disponibilità (SP-03): hours, closed days, blocks and requests.
     if (/\/calendar(\?|$)/.test(url) && method === 'GET') {
       const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((weekday) => ({
         weekday,

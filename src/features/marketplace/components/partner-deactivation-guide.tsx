@@ -6,18 +6,11 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { useMarketplaceEntry } from '@/queries/use-marketplace';
 
 interface PartnerDeactivationGuideProps {
-  /** The code of the partner. */
   code: string;
   name: string;
-  /** The property the activation is for: the card is read for it. */
   propertyId: string | undefined;
 }
 
-/**
- * How to turn a partner off on the partner's own site (E09/F03/US02/T02, MKT-05, AC-NF58-4): the instructions the card of the partner carries (`deactivation.text`), word for
- * word. CasaZen turns nothing off at a partner, so the step after this one is the host's: «I did it». The instructions are not a condition of that step: a partner whose text cannot be read
- * still says so, and the host who already knows how may go on.
- */
 export function PartnerDeactivationGuide({ code, name, propertyId }: PartnerDeactivationGuideProps) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -30,7 +23,6 @@ export function PartnerDeactivationGuide({ code, name, propertyId }: PartnerDeac
         {t('marketplace.deactivate.partner.stepsTitle', { name })}
       </h3>
       {entry.isError ? (
-        // A 404 is «not found» whatever the cache still holds of an older read (the query keeps the last data on an error).
         getHttpStatus(entry.error) === 404 ? (
           <p className="text-sm text-muted-foreground" data-testid="deactivate-partner-guide-not-found">
             {t('marketplace.deactivate.partner.notFound')}

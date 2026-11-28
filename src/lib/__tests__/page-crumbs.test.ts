@@ -28,7 +28,6 @@ describe('getManifestCrumbs (UI-05)', () => {
   });
 
   it('getManifestCrumbs_PageDeeperThanADetail_SkipsTheRecordItHangsFrom', () => {
-    // `/properties/:id` is one property, not a place with a name: the trail goes through the list.
     expect(crumbs('short-rent', '/app/short-rent/properties/prop-1/edit')).toEqual([
       { label: 'Immobili', to: '/app/short-rent/properties' },
       { label: 'Questa pagina' },
@@ -65,7 +64,6 @@ describe('getManifestCrumbs (UI-05)', () => {
 
   it('getManifestCrumbs_AddressTheManifestDoesNotKnow_HasNoTrail', () => {
     expect(crumbs('short-rent', '/app/short-rent/nowhere/at/all')).toEqual([]);
-    // A page of another area is not looked for in this one.
     expect(crumbs('long-rent', '/app/short-rent/bookings/abc')).toEqual([]);
   });
 
@@ -77,7 +75,6 @@ describe('getManifestCrumbs (UI-05)', () => {
   });
 
   it('getManifestCrumbs_PageAboveIsBehindAFlag_NeedsTheFlagOn', () => {
-    // OTA is a tab of Immobili: with its flag off the step of OTA is left out, the one of the section stays.
     const withoutOta = [{ label: 'Immobili', to: '/app/short-rent/properties' }, { label: 'Questa pagina' }];
     expect(crumbs('short-rent', '/app/short-rent/ota/create')).toEqual(withoutOta);
     expect(crumbs('short-rent', '/app/short-rent/ota/create', { features: { otaPartnerApi: false } })).toEqual(withoutOta);

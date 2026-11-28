@@ -16,11 +16,6 @@ export function useBillingContext(): BillingContextKey | null {
   return resolveBillingContext(pathname, userContexts);
 }
 
-/**
- * Plan page for the current page (org badge); `null` when the user has no rental context and when it is a member of the
- * org who may not manage the plan (AM-00): a link would only lead to a page that asks for the owner. Outside the workspace
- * the contexts are unknown and only the current path counts.
- */
 export function usePlanPagePath(): string | null {
   const context = useBillingContext();
   const workspace = useContext(WorkspaceContext);

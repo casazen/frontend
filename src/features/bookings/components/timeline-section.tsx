@@ -21,20 +21,13 @@ import { HostTimeline } from './host-timeline';
 const BOOKINGS_PATH = '/app/short-rent/bookings';
 
 interface TimelineSectionProps {
-  /** First day shown. */
   start: string;
-  /** How many days. */
   zoom: number;
-  /** One property, or empty for every property of the host. */
   propertyId: string;
-  /** The id of the item the address points to (`?focus=`): it is brought into view and its drawer opens once. */
   focusId: string;
-  /** The price and the rules of the days of the window (E08/F05/US03/T01), read by the page for the days shown; absent when the caller may not read them. */
   dayLayer?: DayLayer;
-  /** The read of the days failed (not for a missing right to read them): the Timeline goes on without them and says so. */
   dayLayerFailed?: boolean;
   onRetryDayLayer?: () => void;
-  /** The days selected and how they are selected (E08/F05/US03/T02); without `onPressDay` the days cannot be selected. */
   selection?: DaySelection | null;
   onPressDay?: (propertyId: string, day: string, shift: boolean, origin?: string) => void;
   onClearSelection?: () => void;
@@ -70,13 +63,11 @@ export function TimelineSection({
 
   const handleOpen = useCallback(
     (item: HostCalendarItem, opener: HTMLElement) => {
-      // A page without a drawer (outside the shell) still takes a booking to its own page.
       if (!drawer.open(drawerKindOf(item), item.id, { opener }) && item.type === 'Booking') navigate(`${BOOKINGS_PATH}/${item.id}`);
     },
     [drawer, navigate],
   );
 
-  // `?focus=`: the item is brought into view and its drawer opens, once for this address (closing the drawer does not open it again).
   const focusItem = useMemo(() => (focusId ? data?.items.find((item) => item.id === focusId) : undefined), [data, focusId]);
   useEffect(() => {
     if (!focusItem || isPlaceholderData) return;
@@ -87,7 +78,6 @@ export function TimelineSection({
     drawer.open(drawerKindOf(focusItem), focusItem.id, { opener: element });
   }, [focusItem, isPlaceholderData, drawer]);
 
-  // An API error is never shown as an empty calendar. (A refresh that fails while the days are on screen leaves them there.)
   if (isError && !data) {
     return <ErrorState title={t('booking.calendar.loadError')} error={error} onRetry={() => void refetch()} />;
   }
@@ -118,7 +108,6 @@ export function TimelineSection({
     );
   }
 
-  // Where the host connects Airbnb or Booking.com: the calendars of the property when there is only one, else the properties.
   const connectHref = data.properties.length === 1 ? propertyTabPath(data.properties[0].id, 'ical') : PROPERTIES_PATH;
 
   return (

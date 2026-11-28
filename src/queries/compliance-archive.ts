@@ -14,7 +14,6 @@ import type {
   UploadComplianceProofInput,
 } from '@/types';
 
-/** Root of every query key of the archive of the proofs. */
 export const COMPLIANCE_ARCHIVE_KEY = 'compliance-archive';
 
 /**
@@ -34,10 +33,6 @@ export function useComplianceEvidence(filters: ComplianceArchiveFilters, enabled
   });
 }
 
-/**
- * The coverage report of a period: what is expected, with the proof CasaZen holds for each obligation. Behind the traffic light (the server answers
- * 404 while it is off), so the page asks only when its flag is on (`enabled`). Read again like the list: a proof is uploaded, a stay arrives.
- */
 export function useCoverageReport(filters: ComplianceReportFilters, enabled = true) {
   return useQuery({
     queryKey: [COMPLIANCE_ARCHIVE_KEY, 'report', filters],
@@ -49,7 +44,6 @@ export function useCoverageReport(filters: ComplianceReportFilters, enabled = tr
   });
 }
 
-/** The proofs of one stay and the log of what was sent for it, by whom (CasaZen, the channel manager, the host). */
 export function useBookingCompliance(bookingId: string, enabled = true) {
   return useQuery({
     queryKey: [COMPLIANCE_ARCHIVE_KEY, 'booking', bookingId],
@@ -115,11 +109,6 @@ interface ExportProofsRequest {
   propertyId?: string;
 }
 
-/**
- * Downloads the ZIP of the proofs of a period and saves it. Like a single proof it keeps nothing once nobody watches it (`gcTime: 0`), saves inside
- * its function and keeps a failure without its request. The page tells the refusals (a period too large, one the server does not accept) next to the
- * button.
- */
 export function useExportProofs() {
   return useMutation({
     mutationFn: async ({ from, to, propertyId }: ExportProofsRequest): Promise<void> => {
@@ -139,7 +128,6 @@ interface ExportReportRequest {
   filters: ComplianceReportFilters;
 }
 
-/** Downloads the coverage report of a period as a PDF or a CSV and saves it. Same rules as the ZIP of the proofs. */
 export function useExportCoverageReport() {
   return useMutation({
     mutationFn: async ({ format, filters }: ExportReportRequest): Promise<void> => {

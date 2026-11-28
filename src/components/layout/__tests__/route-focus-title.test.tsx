@@ -8,10 +8,6 @@ import { AppShellContext } from '../app-shell-context';
 import { PageHeader } from '../page-header';
 import { RouteFocus } from '../route-focus';
 
-/**
- * UI-05: a page without a heading is announced by the title of the tab (`RouteFocus`), which is now the title of the page
- * with the name of its area and not "CasaZen" on every page.
- */
 function Shell() {
   const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
@@ -31,7 +27,6 @@ function Shell() {
   );
 }
 
-/** A page that has a name for the tab and no heading (a custom screen). */
 function PageWithoutHeading() {
   usePageTitle('Riepilogo');
   return <p>Niente h1</p>;
@@ -88,7 +83,6 @@ describe('RouteFocus and the title of the page (UI-05)', () => {
     advance(160);
 
     expect(screen.getByTestId('route-announcer')).toHaveTextContent(/^Prenotazioni$/);
-    // The tab, meanwhile, carries the full title.
     expect(document.title).toBe('Prenotazioni · Affitti brevi · CasaZen');
   });
 });

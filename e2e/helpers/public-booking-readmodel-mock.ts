@@ -4,7 +4,6 @@ import type { PublicStayCard, PublicStaysResult } from '../../src/types/public-s
 
 export const PUBLIC_SEARCH_PROPERTY_ID = '11111111-1111-1111-1111-111111111111';
 
-/** The homes as the public search across all the sites lists them (`GET /api/public/stays`): free, each with its site and host. */
 function platformStaysResult(results: PublicPropertyDto[]): PublicStaysResult {
   const items: PublicStayCard[] = results.map((property) => ({
     id: property.id,
@@ -81,9 +80,6 @@ export const mockPublicSearchResults: PublicPropertyDto[] = [
   },
 ];
 
-/**
- * Mocks anonymous public booking read endpoints (#212).
- */
 export async function mockPublicBookingReadApi(
   page: Page,
   results: PublicPropertyDto[] = mockPublicSearchResults,

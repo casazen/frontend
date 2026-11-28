@@ -10,7 +10,6 @@ vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn(), delete: 
 const ENTITY_ID = '2aeecf5b-b367-412e-a74d-e04bb8f28f16';
 const SAVED_AT = '2026-11-06T09:30:00.123Z';
 
-/** The body of a draft as the server sends it: the typed `data` is a member of it, next to the version. */
 const draftBody = (overrides: Record<string, unknown> = {}) => ({
   type: 'BookingEdit',
   entityId: ENTITY_ID,

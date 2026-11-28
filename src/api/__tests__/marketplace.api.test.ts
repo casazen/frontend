@@ -51,7 +51,6 @@ describe('getMarketplaceHealth', () => {
     await getMarketplaceHealth('prop-1', 'en');
     const options = rawGet.mock.calls[0]?.[1] as { validateStatus: (status: number) => boolean };
 
-    // A 403 is answered, not thrown: the interceptor of the client would send the person to the page of no access.
     expect([200, 204, 403, 404].map((status) => options.validateStatus(status))).toEqual([true, true, true, true]);
     expect([400, 401, 409, 422, 500, 502, 503].map((status) => options.validateStatus(status))).toEqual([false, false, false, false, false, false, false]);
   });
@@ -68,7 +67,6 @@ describe('getMarketplaceHealth', () => {
     rawGet.mockResolvedValue({ status: 200, data: '<html>proxy</html>' });
     await expect(getMarketplaceHealth(undefined, 'it')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
 
-    // A row that is not an activation makes the whole read an error: a shorter list would say «no problem» about what it left out.
     rawGet.mockResolvedValue({ status: 200, data: { items: [HEALTH_ROW, { activationId: 'x' }] } });
     await expect(getMarketplaceHealth(undefined, 'it')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
   });
@@ -99,7 +97,6 @@ describe('getMarketplaceActive', () => {
 
     expect(clientGet).toHaveBeenCalledWith('/marketplace/active', { propertyId: 'prop-1', lang: 'en' });
     expect(data.integrations[0]).toMatchObject({ property: null, isDeclared: true, declaredAt: '2026-11-10T00:00:00Z', verifiedAt: null });
-    // What a row leaves out is `null`, never made up.
     expect(data.integrations[1]).toMatchObject({ property: { id: 'prop-1', name: 'Villa Rosa' }, lastSyncedAt: null, declaredAt: null, verifiedAt: null });
   });
 
@@ -118,7 +115,6 @@ describe('the change of an activation', () => {
 
     const outcome = await deactivateActivation('act 1/x');
 
-    // The id is encoded, and the body says yes: nothing else is sent.
     expect(clientPost).toHaveBeenCalledWith('/marketplace/activations/act%201%2Fx/deactivate', { confirmed: true });
     expect(outcome.status).toBe('Pending');
   });

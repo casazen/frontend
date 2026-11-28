@@ -6,7 +6,6 @@ import { getHttpStatus, isTransientRequestError } from '@/lib/api-errors';
  * send them.
  */
 
-/** The waits between a try that failed and the next one: 1 s, 2 s, 4 s. That is three tries after the first, and then the upload gives up. */
 export const RETRY_DELAYS_MS: readonly number[] = [1_000, 2_000, 4_000];
 
 /**
@@ -15,28 +14,19 @@ export const RETRY_DELAYS_MS: readonly number[] = [1_000, 2_000, 4_000];
  */
 export const OFFLINE_WAIT_MS = 30_000;
 
-/** What an upload ended in. */
 export type UploadOutcome<T> =
-  /** The server answered (whatever it decided): the answer. */
   | { kind: 'answered'; answer: T }
-  /** The network or the server did not answer after the tries (or the browser stayed offline): the frames are worth keeping, the same request may be sent again with the same key. */
   | { kind: 'gave-up'; error: unknown }
-  /** The server answered with a refusal a repeat would not change (a 4xx, or a failure that is not the network's): not repeated. */
   | { kind: 'refused'; error: unknown }
-  /** The guest stopped the upload (its `AbortSignal` was aborted) before the server answered: the request that was on its way is given up, and nothing is sent, repeated or waited for any more. */
   | { kind: 'cancelled' };
 
 /** The things an upload needs of the browser, so that a test can bring its own. */
 export interface UploadEnvironment {
-  /** The browser says it has a connection. */
   isOnline: () => boolean;
-  /** Resolves `true` as soon as the browser is online (now, or when its `online` event comes), and `false` when `timeoutMs` has passed first. */
   waitForOnline: (timeoutMs: number) => Promise<boolean>;
-  /** Resolves after `ms`. */
   sleep: (ms: number) => Promise<void>;
 }
 
-/** The environment of the browser the page runs in. A browser that does not say whether it is online (`navigator.onLine` missing) is taken as online: the request itself tells. */
 export function browserEnvironment(): UploadEnvironment {
   const isOnline = () => typeof navigator === 'undefined' || navigator.onLine !== false;
   return {
@@ -60,9 +50,6 @@ export function browserEnvironment(): UploadEnvironment {
   };
 }
 
-/**
- * A failure that a repeat may fix: no answer at all (offline, timeout, the request aborted) or a 5xx other than 501. An answer of the 4xx family is the server saying no, and the same request would get the same no.
- */
 export function isWorthRepeating(error: unknown): boolean {
   return isTransientRequestError(error);
 }
@@ -72,13 +59,8 @@ export function isRateLimited(error: unknown): boolean {
   return getHttpStatus(error) === 429;
 }
 
-/** What a wait gives when the upload was stopped while it lasted. */
 const ABORTED = Symbol('aborted');
 
-/**
- * What `promise` gives, or {@link ABORTED} as soon as `signal` aborts, whichever comes first. The promise is left to settle on its own (a wait for the connection or a pause between two tries costs nothing when it ends
- * later; a request that was on its way is cancelled by the same signal, where the caller handed it to the request). Without a signal it is the promise itself.
- */
 function orAborted<T>(promise: Promise<T>, signal: AbortSignal | undefined): Promise<T | typeof ABORTED> {
   if (!signal) return promise;
   if (signal.aborted) return Promise.resolve(ABORTED);
@@ -128,7 +110,6 @@ export async function uploadPresence<T>(
       if (answer === ABORTED) return { kind: 'cancelled' };
       return { kind: 'answered', answer };
     } catch (error) {
-      // The request that was on its way was cancelled with the upload: it is not a failure of the network, and it is not repeated.
       if (signal?.aborted) return { kind: 'cancelled' };
       if (!isWorthRepeating(error)) return { kind: 'refused', error };
       lastError = error;

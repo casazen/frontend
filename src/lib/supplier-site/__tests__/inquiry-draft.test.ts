@@ -37,7 +37,6 @@ describe('the draft of a request on measure on the device (privacy)', () => {
   });
 
   it('readInquiryDraft_AFileWithTheConsentInIt_NeverBringsItBack', () => {
-    // Whatever else a stored file carries (an old version, a hand edit), only the members of the draft are read back: the consent is asked every time.
     window.localStorage.setItem(
       'casazen.supplier-inquiry.rossi',
       JSON.stringify({ v: 1, savedAt: NOW, draft: { ...typed, privacyAccepted: true, consent: true, privacyNoticeVersion: 'v1', website: 'robot' } }),
@@ -58,7 +57,6 @@ describe('the draft of a request on measure on the device (privacy)', () => {
   it('startingInquiryDraft_TheAddressNamesAnotherComune_WinsOverTheRememberedOne', () => {
     writeInquiryDraft('rossi', typed, Date.now());
 
-    // The person comes from a message about Monza: the remembered Milano is dropped, the rest is kept, and the page resolves the code to a name.
     const started = startingInquiryDraft('rossi', { comune: '108033' });
 
     expect(started.comune).toBeUndefined();

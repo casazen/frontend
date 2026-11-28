@@ -56,13 +56,11 @@ describe('the state of the list of the messages (NF-61)', () => {
     const [path, query] = messagesOfBookingPath(BOOKING).split('?');
 
     expect(path).toBe('/app/short-rent/messages');
-    // Every conversation of the booking, answered or not (not only «Da rispondere»), and nothing else narrows the list.
     expect(parseInboxState(new URLSearchParams(query))).toEqual({ view: 'all', channel: null, propertyId: null, bookingId: BOOKING, q: '', page: 1 });
     expect(inboxFilters(parseInboxState(new URLSearchParams(query)))).toEqual({ bookingId: BOOKING, page: 1, pageSize: INBOX_PAGE_SIZE });
   });
 
   it('inboxFilters_Reviews_AsksForTheReviewsOfTheGuestsAndNothingElseWhileEveryOtherViewNeverAsksForOne', () => {
-    // The chip «Recensioni» (E05/F06/US02) sets `kind=review`; it has no «da rispondere» or «non lette» of a conversation, and the default view carries no kind at all.
     expect(inboxFilters(parseInboxState(new URLSearchParams('view=reviews')))).toEqual({ kind: 'Review', page: 1, pageSize: INBOX_PAGE_SIZE });
     expect(inboxFilters(parseInboxState(new URLSearchParams('view=reviews&channel=Airbnb&q=rossi&page=2')))).toEqual({
       kind: 'Review',

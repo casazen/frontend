@@ -13,18 +13,15 @@ import {
 } from '@/config/route-manifest';
 import { getNavLabel } from '@/lib/nav-labels';
 
-/** A step of the trail that leads to a page (breadcrumb): the last one is the page itself and has no address. */
 export interface PageCrumb {
   label: string;
   to?: string;
 }
 
-/** An entry has a name to show in a trail when the menus have one for it. */
 function isNamed(entry: RouteManifestEntry): boolean {
   return Boolean(entry.navKey ?? entry.navLabel);
 }
 
-/** `/app/x/:id` is a record of the list, not a place with a name of its own. */
 function hasParameters(entry: RouteManifestEntry): boolean {
   return entry.path.includes(':');
 }
@@ -33,7 +30,6 @@ function dynamicSegments(entry: RouteManifestEntry): number {
   return entry.path.split('/').filter((segment) => segment.startsWith(':')).length;
 }
 
-/** The entry of the manifest that is the page at `pathname`: the one with the fewest parameters when several fit. */
 function findEntry(contextKey: AppContextKey, pathname: string): RouteManifestEntry | undefined {
   return ROUTE_MANIFEST.filter(
     (entry) => entry.context === contextKey && matchPath({ path: entry.path, end: true }, pathname) !== null,
@@ -46,7 +42,6 @@ function findEntry(contextKey: AppContextKey, pathname: string): RouteManifestEn
  */
 function findParent(entry: RouteManifestEntry): RouteManifestEntry | undefined {
   const home = getDefaultRoute(entry.context);
-  // A tab of the Cruscotto («Da fare», «Da approvare») hangs from the home itself: the area that starts the trail already leads there.
   if (entry.navParent) return entry.navParent === home ? undefined : getManifestEntry(entry.navParent);
 
   return ROUTE_MANIFEST.filter(
@@ -62,10 +57,8 @@ function findParent(entry: RouteManifestEntry): RouteManifestEntry | undefined {
 interface ManifestCrumbsOptions {
   contextKey: AppContextKey;
   pathname: string;
-  /** The name of the page that is open (the title of the page): the last step of the trail. */
   current: string;
   t: TFunction;
-  /** Without them every page of the trail is offered: the caller that knows the user passes what the user may open. */
   hasPermission?: PermissionPredicate;
   features?: Partial<FeatureFlags>;
 }

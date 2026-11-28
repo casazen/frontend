@@ -7,7 +7,6 @@
 export const BOOKING_TABS = ['details', 'messages', 'guest', 'payment', 'history', 'portal', 'alloggiati'] as const;
 export type BookingTab = (typeof BOOKING_TABS)[number];
 
-/** The tabs the page shows. */
 export type BookingPanel = Exclude<BookingTab, 'alloggiati'>;
 
 /** The tab a `?tab=` opens: an old or unknown value opens the first one, `alloggiati` opens Documenti. */

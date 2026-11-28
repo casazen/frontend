@@ -10,7 +10,6 @@ const api = vi.hoisted(() => ({ getStatus: vi.fn(), search: vi.fn(), getByIstatC
 
 vi.mock('@/api/comuni.api', () => ({ COMUNE_SEARCH_MIN_LENGTH: 2, ComuniApi: api }));
 
-// Rows of the official ISTAT list (ISTAT, 21/02/2026).
 const MILANO: Comune = {
   istatCode: '015146',
   cadastralCode: 'F205',

@@ -34,7 +34,6 @@ import { OctoratePanelStep } from './components/octorate-panel-step';
 /** At least 44 px high on every device (the product rule), and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** What the server stores as the step of the wizard a channel access comes back to when the connect wizard of the existing listings started it (backend `ResumeStepCode`). */
 const EXISTING_INVENTORY_ACCESS_RESUME = 'existingInventoryAccess';
 
 /**
@@ -48,15 +47,9 @@ function pathAfter(step: PanelStep | undefined, part: OnboardingPartKey): string
   if (resume?.wizardType === 'OnboardingActivation' && resume.stepCode === EXISTING_INVENTORY_ACCESS_RESUME) {
     return `${OCTORATE_CONNECT_PATH}?step=${EXISTING_CHANNELS_STEP_ID}`;
   }
-  // The access to a channel started by the activation wizard of the marketplace (E09/F02/US04) goes back to its access step, for the property and the channel.
-  // The police connection started by the sender wizard (E03/F01/US02/T02) goes back to that wizard, at the step it stored, for the property of the step: same tab, same step.
   return activationResumePath(step) ?? senderResumePath(step) ?? partPath(part);
 }
 
-/**
- * The end of a panel that sends the person back to CasaZen (`?step=<id>&state=<state>`): the state is taken out of the address at once and sent
- * in the body, once; the server then verifies the step, which the page shows as any other result. Nothing of it is logged or kept.
- */
 function usePanelStepCallback() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [callback] = useState(() => readPanelStepCallback(searchParams));
@@ -70,7 +63,6 @@ function usePanelStepCallback() {
     complete({ id: callback.stepId, state: callback.state });
   }, [callback, complete, setSearchParams]);
 
-  // Pending from the first render of a visit that came back from the panel (before the call leaves, while it is on its way): the step is shown once it ended.
   return { returned: callback !== null, pending: callback !== null && !isError && !isSuccess, error: isError ? error : null };
 }
 
@@ -78,11 +70,9 @@ interface PanelPageProps {
   children: ReactNode;
   title: string;
   description?: string;
-  /** Where «Torna al piano» leads: the plan, or the part the step belongs to. */
   backTo?: string;
 }
 
-/** The frame of the pages of a guided step: the title, the way back to the plan, and the content. */
 function PanelPage({ children, title, description, backTo = ONBOARDING_PLAN_PATH }: PanelPageProps) {
   const { t } = useTranslation();
 
@@ -130,7 +120,6 @@ export function OnboardingPanelStepPage() {
   const part = panelPartOf(kind);
   const propertyId = searchParams.get('propertyId')?.trim() || null;
   const channelCode = kind === 'channelAccess' ? searchParams.get('channelCode')?.trim() || null : null;
-  // «Fallo per me» first: the part page sends the host who has new properties here (PO-19), where CasaZen support does the panel step.
   const assistFirst = searchParams.get('assist') === '1';
   const isAdmin = isOrgBillingAdmin(contexts);
 
@@ -147,7 +136,6 @@ export function OnboardingPanelStepPage() {
       </p>
     );
   } else if (kind === 'channelAccess' && !channelCode) {
-    // A channel access is about one channel: without it there is nothing to open, and the server would answer 422.
     content = (
       <Alert variant="warning" data-testid="panel-step-channel-missing">
         {t('onboardingPlan.panel.channelMissing')}
@@ -192,11 +180,6 @@ export function OnboardingPanelStepPage() {
   );
 }
 
-/**
- * `/app/short-rent/onboarding/panel?step=<id>`: where the «Da fare» of a guided step left half way leads (the item knows the id of the step, not its
- * kind). It reads the steps of the org, finds that one and opens its page, keeping the single-use state of a callback if the address brought one;
- * a step that no longer exists leads back to the plan. Anyone who is not the organization administrator is told who does the step.
- */
 export function OnboardingPanelResumePage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
@@ -237,7 +220,6 @@ export function OnboardingPanelResumePage() {
   const found = steps.data.find((candidate) => candidate.id.toLowerCase() === stepId.toLowerCase());
   if (!found || !isPanelStepKind(found.kind)) return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
 
-  // The callback (`state`) goes along: the page of the kind is the one that uses it, once.
   const target = panelStepPath({ kind: found.kind, propertyId: found.propertyId, channelCode: found.channelCode });
   const state = searchParams.get('state');
   const carried = state ? `${target}${target.includes('?') ? '&' : '?'}step=${encodeURIComponent(stepId)}&state=${encodeURIComponent(state)}` : target;

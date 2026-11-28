@@ -4,14 +4,12 @@ import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { applyNotificationsChange, refreshAfterGap } from '../use-notifications-realtime';
 
-/** The keys a change makes stale, as the cache is asked to read them again. */
 function invalidatedBy(change: () => void, queryClient: QueryClient): unknown[][] {
   const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
   change();
   return invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
 }
 
-// E20/F01/US02: the section of the stay on the booking page (the proofs, the send log and where its guests stand on the channel manager) shows what happens without a reload.
 describe('the section of a stay on the booking page, live', () => {
   it('applyNotificationsChange_GuestCheckInCompleted_ReadsAgainTheSectionOfTheStayNotTheListOrTheFilesOfTheArchive', () => {
     const queryClient = new QueryClient();
@@ -30,7 +28,6 @@ describe('the section of a stay on the booking page, live', () => {
       const queryClient = new QueryClient();
       const keys = invalidatedBy(() => applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'b-1' }), queryClient);
 
-      // A write to the channel manager that failed, or a receipt that did not come, is on the open page of the stay at once.
       expect(keys).toContainEqual([ALLOGGIATI_KEY, 'status']);
       expect(keys).toContainEqual([COMPLIANCE_ARCHIVE_KEY, 'booking']);
       expect(keys).not.toContainEqual([COMPLIANCE_ARCHIVE_KEY, 'list']);

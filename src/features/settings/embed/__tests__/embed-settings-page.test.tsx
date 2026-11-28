@@ -26,7 +26,6 @@ vi.mock('@/api/domain.api', () => ({ DomainApi: { getDomain: vi.fn() } }));
 vi.mock('@/api/org-tracking.api', () => ({ OrgTrackingApi: { setTracking: vi.fn() } }));
 vi.mock('@/api/site-connections.api', () => ({ SiteConnectionsApi: { list: vi.fn(), revoke: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
-// The deployment the bundle was built for (`VERCEL_ENV`, written by `vite.config.ts`): a test chooses it.
 const build = vi.hoisted(() => ({ deployEnv: '' }));
 vi.mock('@/config/deploy-env', () => ({
   get deployEnv() {
@@ -63,7 +62,6 @@ const SURFACES: DomainSurfaces = {
   effective: { guestArea: true, ownerPortal: false, ownerLoginReady: false, linksOnOwnDomain: true },
 };
 
-/** An org on the platform path: no domain of its own. */
 const PLATFORM: OrgDomainConfig = {
   orgId: 'org-1',
   publicHostMode: 'CasazenPath',
@@ -76,7 +74,6 @@ const PLATFORM: OrgDomainConfig = {
   tracking: { gtmContainerId: null },
 };
 
-/** An org with a verified domain of its own and the surfaces of it. */
 const OWN: OrgDomainConfig = {
   ...PLATFORM,
   publicHostMode: 'CustomDomain',
@@ -89,14 +86,12 @@ const OWN: OrgDomainConfig = {
 const HOMES = [
   { id: 'p1', name: 'Casa Mare', city: 'Lugano', slug: 'casa-mare', isActive: true, isPaused: false, complianceStatus: 'Active' },
   { id: 'p2', name: 'Villa Lago', city: 'Locarno', slug: null, isActive: true, isPaused: false, complianceStatus: 'Active' },
-  // Paused: the widget would show nothing, so it is not offered.
   { id: 'p3', name: 'Casa in pausa', city: 'Ascona', slug: 'casa-in-pausa', isActive: true, isPaused: true, complianceStatus: 'Active' },
 ];
 
 const PLACES = [
   { id: 'lugano', label: 'Lugano', comune: 'Lugano', count: 3 },
   { id: 'locarno', label: 'Locarno', comune: 'Locarno', count: 1 },
-  // An id the bar would not take: it is not put in the code.
   { id: 'con spazio', label: 'Non valido', comune: 'Altro', count: 1 },
 ];
 
@@ -131,7 +126,6 @@ const lastMount = () => {
   return { element: call[0] as HTMLElement, options: call[1] as Record<string, unknown> };
 };
 
-/** The attributes of the widget element in a piece of HTML, by the name of the option of the loader: what a page that holds the pasted snippet gives it. */
 function attributesOf(html: string): Record<string, string> {
   const page = document.createElement('div');
   page.innerHTML = html;
@@ -164,7 +158,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
   });
 
   afterEach(async () => {
-    // The preview settles in a promise: let it do so inside act, before the page goes.
     await act(async () => undefined);
     cleanup();
     vi.clearAllMocks();
@@ -178,7 +171,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
     const notAdmin = (_context: string, permission: string) => permission !== ORG_BILLING_ADMIN_PERMISSION;
 
     it('embedSettings_route_requiresBillingAdmin', async () => {
-      // The route: the tab of the account administrator, right after the domain it extends, behind the flag.
       expect(entry).toMatchObject({ context: 'short-rent', navParent: '/app/short-rent/settings', orgBillingAdmin: true, requiredPermissions: [], featureFlag: 'siteEmbed', navKey: 'nav.embed' });
       if (!entry) throw new Error('the page is not in the manifest');
       expect(hasEntryPermission(entry, notAdmin)).toBe(false);
@@ -188,7 +180,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(tabs[tabs.indexOf('/app/short-rent/settings/domain') + 1]).toBe('/app/short-rent/settings/embed');
       expect(getNavChildren('/app/short-rent/settings', notAdmin, flags).map((tab) => tab.path)).not.toContain('/app/short-rent/settings/embed');
 
-      // The page itself: whoever opens its address without being the administrator is told so, and neither the domain nor the tracking is asked for.
       workspace.hasPermission.mockImplementation(notAdmin);
       renderPage();
 
@@ -199,7 +190,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(OrgTrackingApi.setTracking).not.toHaveBeenCalled();
       expect(useProperties).not.toHaveBeenCalled();
       expect(useOrgDestinations).not.toHaveBeenCalled();
-      // Nor the connected sites: the list is the administrator's, and a refused read would send the whole app to the page of no access.
       expect(SiteConnectionsApi.list).not.toHaveBeenCalled();
     });
 
@@ -272,12 +262,10 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
 
       expect(screen.getByTestId('embed-status-domain')).toHaveTextContent(`prenota.tuavilla.test${i18n.t('domain.state.verified')}`);
       expect(screen.getByTestId('embed-status-guest-area')).toHaveTextContent(i18n.t('embed.settings.status.surfaceOwn'));
-      // The portal of the owners is chosen but its sign-in is not ready: it is not on the domain yet, and the line says so.
       expect(screen.getByTestId('embed-status-owner-portal')).toHaveTextContent(i18n.t('embed.settings.status.surfaceCasazen'));
       expect(screen.getByTestId('embed-status-owner-login')).toHaveTextContent(i18n.t('domain.surfaces.ownerLogin.state.pendingManual'));
       expect(screen.getByTestId('embed-status-links')).toHaveTextContent(i18n.t('embed.settings.status.linksOwn'));
       expect(screen.getByTestId('embed-status-manage')).toHaveAttribute('href', '/app/short-rent/settings/domain');
-      // It extends the tab of the domain, it never repeats its form.
       for (const testId of ['host-mode-radio', 'custom-domain-input', 'subdomain-input', 'save-domain-settings']) {
         expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
       }
@@ -362,12 +350,10 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       pickWidget('property');
 
       const select = screen.getByTestId('embed-property-select');
-      // The paused home is not offered; the first of the others is the choice at once.
       expect(within(select).getAllByRole('option').map((option) => option.textContent)).toEqual(['Casa Mare (Lugano)', 'Villa Lago (Locarno)']);
       expect(attributesOf(snippetText())).toMatchObject({ widget: 'property', property: 'casa-mare' });
       expect(useProperties).toHaveBeenCalledWith({ mode: 'short' }, { fresh: true, enabled: true });
 
-      // A home with no slug goes by its id, as the links of the site do.
       fireEvent.change(select, { target: { value: 'p2' } });
       expect(attributesOf(snippetText())).toMatchObject({ widget: 'property', property: 'p2' });
     });
@@ -386,7 +372,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
     });
 
     it('picker_PropertyHiddenByTheHost_IsNotOfferedAndIsNeverTheStart', async () => {
-      // The switch «Mostra la casa sul sito» of the host: a home it hides answers 404 to the widget, active, not paused and compliant as it may be.
       const hidden = { ...HOMES[0], id: 'p4', name: 'Casa nascosta', slug: 'casa-nascosta', publishedOnSite: false };
       vi.mocked(useProperties).mockReturnValue({ data: [hidden, { ...HOMES[0], publishedOnSite: true }], isLoading: false, isError: false, refetch: vi.fn() } as unknown as ReturnType<typeof useProperties>);
       renderPage();
@@ -436,7 +421,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
     });
 
     it('picker_PropertyHomesReadAgainFails_GivesNoCodeFromTheOlderRead_AndOffersToTryAgain', async () => {
-      // A read that fails leaves the homes of the last one that worked in the query: the page says they could not be read, so no code and no preview stand on them.
       const refetch = vi.fn();
       vi.mocked(useProperties).mockReturnValue({ data: HOMES, isLoading: false, isError: true, refetch } as unknown as ReturnType<typeof useProperties>);
       renderPage();
@@ -463,7 +447,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
 
       pickWidget('search');
 
-      // Nothing to copy until there is a page for the bar to lead to.
       expect(screen.queryByTestId('embed-snippet')).not.toBeInTheDocument();
       expect(screen.getByTestId('embed-snippet-copy')).toBeDisabled();
       expect(useOrgDestinations).toHaveBeenCalledWith('villa-mare', { fresh: true });
@@ -472,7 +455,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
 
       const attributes = attributesOf(snippetText());
       expect(attributes).toMatchObject({ widget: 'search', base: 'https://prenota.tuavilla.test', target: 'https://www.tuavilla.test/prenota' });
-      // The two places the bar takes; the one with an id it would drop is not in the code.
       expect(JSON.parse(attributes.destinations ?? '[]')).toEqual([
         { id: 'lugano', label: 'Lugano' },
         { id: 'locarno', label: 'Locarno' },
@@ -535,7 +517,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(writeText).toHaveBeenCalledWith(snippetText());
       expect(await screen.findByRole('button', { name: i18n.t('embed.settings.snippet.copied') })).toBeInTheDocument();
 
-      // Another choice is another code: the button says «Copia» again.
       pickWidget('guest-access');
       expect(screen.getByTestId('embed-snippet-copy')).toHaveTextContent(i18n.t('embed.settings.snippet.copy'));
     });
@@ -569,7 +550,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       await waitFor(() => expect(mount).toHaveBeenCalledTimes(2));
       const second = lastMount();
       expect(second.options).toMatchObject({ widget: 'guest-access' });
-      // A new element: the loader mounts an element once, and the old one has left the page.
       expect(second.element).not.toBe(first.element);
       expect(first.element.isConnected).toBe(false);
       expect(screen.getByTestId('embed-preview-host')).toContainElement(second.element);
@@ -597,7 +577,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       await waitFor(() => expect(lastMount().options).toMatchObject({ widget: 'search' }));
 
       expect(lastMount().options).toMatchObject({ preview: true, target: 'https://www.tuavilla.test/prenota' });
-      // A widget in a frame is the real one: it has no such switch.
       pickWidget('booking');
       await waitFor(() => expect(lastMount().options).toMatchObject({ widget: 'booking' }));
       expect(lastMount().options).not.toHaveProperty('preview');
@@ -616,7 +595,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       await waitFor(() => expect(lastMount().options).toMatchObject({ widget }));
       await screen.findByTestId('embed-snippet');
 
-      // The text pasted in a page: the loader reads its attributes as the options of the element. The preview passes the same values.
       const { preview, ...options } = lastMount().options;
       expect(options).toEqual(attributesOf(snippetText()));
       expect(preview).toBe(widget === 'search' ? true : undefined);
@@ -635,7 +613,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(script.async).toBe(true);
       expect(screen.getByTestId('embed-preview')).toHaveAttribute('data-state', 'loading');
 
-      // The choice changes while the file is on its way: still one script, and only the choice that stands is mounted.
       pickWidget('guest-access');
       expect(scripts()).toHaveLength(1);
       (window as EmbedWindow).CasaZenEmbed = { mount };
@@ -660,10 +637,8 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(failed).toHaveTextContent(i18n.t('embed.settings.preview.failed', { address: 'prenota.tuavilla.test' }));
       expect(screen.getByTestId('embed-preview')).toHaveAttribute('data-state', 'failed');
       expect(mount).not.toHaveBeenCalled();
-      // The code is still there: the host can paste it.
       expect(screen.getByTestId('embed-snippet')).toBeInTheDocument();
 
-      // Trying again puts a new script (the one that failed has left the page) and mounts when it comes.
       fireEvent.click(screen.getByTestId('embed-preview-retry'));
       await waitFor(() => expect(scripts()).toHaveLength(1));
       (window as EmbedWindow).CasaZenEmbed = { mount };
@@ -712,14 +687,11 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       await loaded();
 
       const manual = screen.getByTestId('embed-plugin-manual') as HTMLDetailsElement;
-      // Collapsed: the steps are the way, the manual set-up is only for whoever does not connect the plugin.
       expect(manual.open).toBe(false);
       expect(within(manual).getByText(i18n.t('embed.settings.plugin.manual.title'))).toBeInTheDocument();
       expect(screen.getByTestId('embed-plugin-address')).toHaveTextContent(i18n.t('embed.settings.plugin.manual.address', { address: 'https://prenota.tuavilla.test' }));
-      // The domain of the agency knows who it is: there is no slug to write.
       expect(screen.getByTestId('embed-plugin-slug')).toHaveTextContent(i18n.t('embed.settings.plugin.manual.slugNotNeeded'));
       expect(screen.getByTestId('embed-plugin-slug')).not.toHaveTextContent('villa-mare');
-      // It sits under the steps, not before them.
       expect(screen.getByTestId('embed-plugin-steps').compareDocumentPosition(manual) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
@@ -732,7 +704,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
     });
 
     it('plugin_DownloadLink_IsThereWithNothingSet_OnTheDevelopChannel', async () => {
-      // No variable, a local or CI build: the link is there, and it is the asset of the develop channel.
       renderPage();
       await loaded();
 
@@ -775,7 +746,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
     });
 
     it('plugin_DownloadLink_IsInEveryStateOfTheDomain', async () => {
-      // The button is shown in every case: with a domain of its own, with the address of CasaZen, with a domain that waits for its DNS.
       for (const config of [OWN, PLATFORM, { ...PLATFORM, publicHostMode: 'CustomDomain', customDomain: 'www.tuavilla.test' } as OrgDomainConfig]) {
         withDomain(config);
         const view = renderPage();
@@ -813,7 +783,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       type(value);
       fireEvent.click(save());
 
-      // Refused before any request, with the rule in words.
       expect(await screen.findByText(i18n.t('embed.settings.gtm.invalid'))).toBeInTheDocument();
       expect(input()).toHaveAttribute('aria-invalid', 'true');
       expect(OrgTrackingApi.setTracking).not.toHaveBeenCalled();
@@ -831,9 +800,7 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(OrgTrackingApi.setTracking).toHaveBeenCalledTimes(1);
       await waitFor(() => expect(input()).toHaveValue('GTM-ABC123'));
       expect(toast.success).toHaveBeenCalledWith(i18n.t('embed.settings.gtm.saved'));
-      // Nothing more to save: what the field shows is what the server holds.
       expect(save()).toBeDisabled();
-      // The domain settings were not read again: the answer of the server is what the page shows.
       expect(DomainApi.getDomain).toHaveBeenCalledTimes(1);
     });
 
@@ -865,7 +832,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(input()).toHaveValue('GTM-ABCD');
       expect(toast.success).not.toHaveBeenCalled();
 
-      // Writing again takes the refusal away.
       type('GTM-ABCDE');
       expect(screen.queryByText(detail)).not.toBeInTheDocument();
     });
@@ -889,7 +855,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(save()).toBeDisabled();
       first.unmount();
 
-      // A new visit: nothing of the first one is kept on the page, the settings are read again.
       renderPage();
       await loaded();
 
@@ -924,7 +889,6 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
 describe('the texts of the page', () => {
   const sources = import.meta.glob<string>(['/src/features/settings/embed/*.ts', '/src/features/settings/embed/*.tsx'], { query: '?raw', import: 'default', eager: true });
 
-  /** Every text of a block with the path of its key, and the keys of each of its objects in the order the file has them. */
   function scan(node: unknown, path: string, texts: [string, string][] = [], orders: [string, string[]][] = []) {
     if (typeof node === 'string') texts.push([path, node]);
     else if (node !== null && typeof node === 'object') {
@@ -940,7 +904,6 @@ describe('the texts of the page', () => {
   ] as const)('texts_%s_AreInAlphabeticalOrderNameNoOtherBookingSystemAndNeverConvertACurrency', (_language, locale) => {
     const { texts, orders } = scan(locale.embed.settings, 'embed.settings');
     texts.push(['nav.embed', locale.nav.embed]);
-    // The scan really reaches the block.
     expect(texts.length).toBeGreaterThan(70);
 
     for (const [path, keys] of orders) expect(keys, path).toEqual([...keys].sort());
@@ -961,13 +924,11 @@ describe('the texts of the page', () => {
     for (const source of Object.values(sources)) {
       for (const match of source.matchAll(/\bt\(\s*['"]([A-Za-z0-9_.-]+)['"]/g)) keys.add(match[1] ?? '');
     }
-    // The keys the code builds: the confirmations of the container, the texts of each widget, the state of a custom domain and the step of the owner sign-in (the words of the tab of the domain).
     for (const outcome of ['saved', 'cleared']) keys.add(`embed.settings.gtm.${outcome}`);
     for (const widget of ['booking', 'property', 'guestAccess', 'search']) for (const part of ['label', 'help']) keys.add(`embed.settings.widgets.${widget}.${part}`);
     for (const state of ['verified', 'waitingDns', 'activating', 'failed']) keys.add(`domain.state.${state}`);
     for (const state of ['failed', 'notRequested', 'pendingAutomatic', 'pendingManual', 'ready']) keys.add(`domain.surfaces.ownerLogin.state.${state}`);
 
-    // The scan really reaches the code of the page.
     expect(keys.size).toBeGreaterThan(60);
     expect([...keys].filter((key) => !has(key))).toEqual([]);
   });
@@ -978,7 +939,6 @@ describe('the texts of the page', () => {
   });
 
   it('texts_TheCodeOfThePage_NeverUsesTheStorageOfTheBrowser', () => {
-    // The page keeps nothing on the device: not what was chosen, not what was written.
     expect(Object.values(sources).some((source) => /localStorage|sessionStorage|document\.cookie/.test(source))).toBe(false);
   });
 });

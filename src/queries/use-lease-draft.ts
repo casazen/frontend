@@ -6,15 +6,9 @@ import { leasesApi } from '@/api/leases.api';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { ImportSignedInput, LeaseContractType, LeaseOrigin } from '@/types';
 
-/** The first part of the key of every query about the draft of a lease (the draft, its reading, its review): whoever changes it invalidates by it. */
 export const DRAFT_KEY = 'lease-draft';
 const LEASES_KEY = 'leases';
 
-/**
- * The guided draft of a lease, read once when the wizard opens. The wizard owns it from then on: it does not read it again when the
- * window gets the focus (the answers on the screen would change under the person's hands), only when the person asks to reload after
- * a conflict. It holds names, fiscal codes and residences in clear: it is not kept once the page is closed (`gcTime: 0`).
- */
 export function useLeaseDraft(id: string) {
   return useQuery({
     queryKey: [DRAFT_KEY, id],
@@ -40,11 +34,6 @@ export function useForgetLeaseReads(leaseId: string) {
   }, [queryClient, leaseId]);
 }
 
-/**
- * Brings in a contract already signed elsewhere (`POST /leases/:id/import`, LR-13). It cannot be taken back: the lease is Signed from
- * then on, no longer a draft, and the PDF and the day cannot be corrected. What is known of the lease is dropped, so the pages that
- * read it next ask the server again. The step that calls it tells what went wrong (no toast): the person is looking at it.
- */
 export function useImportSignedLease(leaseId: string) {
   const forgetReads = useForgetLeaseReads(leaseId);
   return useMutation({
@@ -53,13 +42,8 @@ export function useImportSignedLease(leaseId: string) {
   });
 }
 
-/** How often the reading of a contract is asked how far it has got: the server reads for seconds, so nothing sooner than this. */
 const READING_POLL_MS = 3000;
 
-/**
- * Where the reading of the contract the owner uploaded is (NL-DOCS): asked again every few seconds while it is going on and not at all
- * once it is over. It holds field names and ids, no value of a person; not kept once the page is closed (`gcTime: 0`).
- */
 export function useDraftReading(id: string, enabled = true) {
   return useQuery({
     queryKey: [DRAFT_KEY, id, 'reading'],
@@ -73,19 +57,11 @@ export function useDraftReading(id: string, enabled = true) {
   });
 }
 
-/**
- * Marks what is known of the reading of a draft as old: a contract document was just uploaded to it, so the next answer is `Reading`
- * (CF-IMPORT: the contract ConcordatoFacile delivers is uploaded to its draft from the page of the documents, which shows the reading).
- */
 export function useRefreshDraftReading(id: string) {
   const queryClient = useQueryClient();
   return useCallback(() => queryClient.invalidateQueries({ queryKey: [DRAFT_KEY, id, 'reading'] }), [queryClient, id]);
 }
 
-/**
- * The checks of the review of a draft, read again every time the review is opened: they depend on what was saved a moment ago.
- * `gcTime: 0`: nothing of it is kept once the page is closed.
- */
 export function useLeaseReview(id: string, enabled = true) {
   return useQuery({
     queryKey: [DRAFT_KEY, id, 'review'],
@@ -97,7 +73,6 @@ export function useLeaseReview(id: string, enabled = true) {
   });
 }
 
-/** The figures of the long-term area (terms, notice, deposit limit, types): read from the server, never written in the interface. */
 export function useLongRentRules() {
   return useQuery({
     queryKey: ['long-rent', 'rules'],
@@ -105,10 +80,6 @@ export function useLongRentRules() {
   });
 }
 
-/**
- * The landlord the wizard starts the parties from. Personal data in clear: not kept after the page (`gcTime: 0`). `enabled`: only a
- * draft that has no landlord yet needs it.
- */
 export function useLandlordDefaults(enabled: boolean) {
   return useQuery({
     queryKey: ['long-rent', 'landlord-defaults'],

@@ -16,7 +16,6 @@ import { StayGuestsEditDialog } from './stay-guests-edit-dialog';
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
-/** Record fields whose official code the API reports in `codes` (the others have no table). */
 const CODED_FIELDS: Partial<Record<AlloggiatiRecordField, keyof AlloggiatiGuestRowDto['codes']>> = {
   type: 'type',
   birthComune: 'birthComune',
@@ -74,7 +73,6 @@ function fieldValue(
     case 'dateOfBirth':
       return guest.dateOfBirth ? formatRecordDate(guest.dateOfBirth) : '';
     case 'bornInItaly':
-      // Migrated from the single-guest model: the old free-text place, still to classify (Italy or abroad).
       return '';
     case 'birthProvince':
       return guest.birthProvince ?? '';
@@ -113,11 +111,8 @@ function GuestStatusBadge({ guest }: { guest: AlloggiatiGuestRowDto }) {
 
 interface AlloggiatiGuestSummaryProps {
   bookingId: string;
-  /** The host may edit the guests (booking.write). */
   canEdit?: boolean;
-  /** The host may see the full document numbers (guest.read): shown masked until he asks. */
   canRevealDocuments?: boolean;
-  /** The host may download the record file (guest.read: it holds the identity documents). */
   canDownloadRecordFile?: boolean;
 }
 
@@ -134,7 +129,6 @@ export function AlloggiatiGuestSummary({
   const { t } = useTranslation();
   const { data, isLoading, isError, refetch } = useAlloggiatiGuestSummary(bookingId);
   const [editing, setEditing] = useState(false);
-  // Full document numbers the host asked to see, by position (CO-09): the summary shows them masked.
   const [revealed, setRevealed] = useState<Record<number, string>>({});
   const [revealing, setRevealing] = useState<number | null>(null);
   const [downloading, setDownloading] = useState(false);
@@ -148,7 +142,6 @@ export function AlloggiatiGuestSummary({
     }
   }
 
-  /** Asks the API for the full number of one guest (audited); null when it cannot be read. */
   async function reveal(position: number): Promise<string | null> {
     if (revealed[position]) return revealed[position];
     setRevealing(position);
@@ -166,10 +159,6 @@ export function AlloggiatiGuestSummary({
     }
   }
 
-  /**
-   * Downloads the record file (CO-13). It is not a communication: nothing is sent and the status does not change, so
-   * the host still uploads it on the portal and declares the submission.
-   */
   async function downloadRecordFile(arrivalDate: string) {
     setDownloading(true);
     try {
@@ -293,7 +282,6 @@ export function AlloggiatiGuestSummary({
           };
         });
         const maskedNumber = guest.requiresDocument && !!guest.documentNumberMasked && !revealedNumber;
-        // "Copia tutto" is an explicit request for the data to paste on the portal: the full number included.
         const copyAll = async () => {
           const number = maskedNumber && canRevealDocuments ? await reveal(index) : revealedNumber;
           await copy(

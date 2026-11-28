@@ -19,26 +19,20 @@ import { newIdempotencyKey } from '../lib/presence-upload';
 import type { PresenceCancelResult, PresenceChallengeResult, PresenceSendResult } from '../use-identity-verification';
 
 interface PresenceSequenceCaptureProps {
-  /** Asks for a challenge (the hook of the step). `isCurrent` says whether this screen is still the one that wants the answer. */
   startChallenge: (isCurrent?: () => boolean) => Promise<PresenceChallengeResult>;
-  /** Sends the sequence with the key of its recording (the hook of the step). It repeats a request that did not get through, with the same frames and the same key. */
   sendSequence: (sequence: PresenceSequence, idempotencyKey: string) => Promise<PresenceSendResult>;
   /**
    * Stops the upload that is on its way and asks for a person (the hook of the step): the request is cancelled, and a person is asked for unless the server had already answered. The way to a person under the screen is
    * disabled while the upload lasts; this is the one that is open then.
    */
   cancelSequence: () => Promise<PresenceCancelResult>;
-  /** A call of the step is in flight (this one or another): the buttons stay disabled. */
   busy: boolean;
 }
 
-/** What the camera is asked for (ADR-013-R11): the front camera, small frames, no sound. */
 const CAMERA_CONSTRAINTS: MediaStreamConstraints = { video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false };
 
-/** How often the prompts are looked at (ten times a second: a countdown that changes by the second, and a move that changes on time). */
 const TICK_MS = 100;
 
-/** Why the camera is not there: the browser blocked it, there is none, another app has it, this page cannot use one (no secure connection, an old browser), or anything else. */
 type CameraProblem = 'denied' | 'not_found' | 'busy' | 'unsupported' | 'unknown';
 
 const CAMERA_TEXT: Record<CameraProblem, string> = {
@@ -72,17 +66,14 @@ function cameraProblemOf(error: unknown): CameraProblem {
   return 'unknown';
 }
 
-/** The browser can open a camera at all (it cannot on a page without a secure connection). */
 function canOpenCamera(): boolean {
   return typeof navigator !== 'undefined' && typeof navigator.mediaDevices?.getUserMedia === 'function';
 }
 
-/** The screen is wider than it is high (a phone held sideways, a desktop): turning the phone, or a window that changes shape, flips it. */
 function isLandscape(): boolean {
   return window.innerWidth >= window.innerHeight;
 }
 
-/** Calls `onEnd` when a track of the stream ends by itself (the camera was taken by another app, or unplugged). A track that is stopped by the page does not call it. */
 function watchForTheEnd(stream: MediaStream, onEnd: () => void) {
   for (const track of stream.getTracks()) {
     if (typeof track.addEventListener === 'function') track.addEventListener('ended', onEnd);
@@ -98,7 +89,6 @@ function subscribeToTheConnection(onChange: () => void) {
   };
 }
 
-/** Whether the browser says it is online: the upload waits for it when it is not. */
 function useIsOnline(): boolean {
   return useSyncExternalStore(
     subscribeToTheConnection,
@@ -113,13 +103,11 @@ function useIsOnline(): boolean {
  */
 type Phase = 'preparing' | 'ready' | 'starting' | 'recording' | 'uploading' | 'cancelling' | 'kept' | 'camera-problem' | 'failed';
 
-/** The sentence of a recording that is kept: no connection, or a service that does not answer; any other reason (too many requests) has its own sentence among the problems of the step. */
 const KEPT_TEXT: Partial<Record<IdentityProblem, string>> = {
   network: 'checkin.identity.presence.kept.offline',
   processing: 'checkin.identity.presence.kept.server',
 };
 
-/** A line above the camera that says what happened to the recording before. */
 type Notice = 'not_prepared' | 'expired' | 'hidden' | 'rotated' | 'lost';
 
 const NOTICE_TEXT: Record<Notice, string> = {
@@ -130,7 +118,6 @@ const NOTICE_TEXT: Record<Notice, string> = {
   lost: 'checkin.identity.presence.notice.lost',
 };
 
-/** What the guest is asked now: the lead-in or a move (with its place in the challenge), and the seconds left of it. */
 interface PromptView {
   kind: 'lead-in' | 'step';
   index: number;
@@ -142,11 +129,9 @@ interface PromptView {
 interface CaptureState {
   phase: Phase;
   problem: CameraProblem | null;
-  /** Why the recording that did not get through is kept: the network, or too many requests. */
   kept: IdentityProblem | null;
   notice: Notice | null;
   prompt: PromptView | null;
-  /** The size of the pictures of the camera, to give the view their shape (a phone upright gives upright pictures). */
   frame: { width: number; height: number } | null;
 }
 
@@ -178,7 +163,6 @@ function reduce(state: CaptureState, action: CaptureAction): CaptureState {
     case 'prompt': {
       const { prompt } = state;
       const next = action.prompt;
-      // The countdown is looked at ten times a second and changes once: the screen is drawn again only when what it shows is different.
       if (prompt === next || (prompt && next && prompt.kind === next.kind && prompt.index === next.index && prompt.seconds === next.seconds)) return state;
       return { ...state, prompt: next };
     }
@@ -198,36 +182,30 @@ function reduce(state: CaptureState, action: CaptureAction): CaptureState {
   }
 }
 
-/** The recording as it is made: the plan of the prompts, the token of the challenge it answers and its key. */
 interface Recording {
   plan: PromptPlan & { steps: PresenceMove[] };
   challengeToken: string;
   key: string;
 }
 
-/** The recording that is held after it was taken: what is sent, its key, and how many times the guest may still send it by hand (once). */
 interface Attempt {
   key: string;
   sequence: PresenceSequence;
   manualRetriesLeft: number;
 }
 
-/** What interrupts the screen: the phone turned (or the window changed its shape) while recording, the page went to the background, or the camera was taken away. */
 type Interruption = 'rotated' | 'hidden' | 'camera';
 
-/** What the guest sees of a place in the prompts, or `null` once they are over. */
 function promptOf(phase: PromptPhase, plan: Recording['plan']): PromptView | null {
   if (phase.kind === 'lead-in') return { kind: 'lead-in', index: 0, total: plan.steps.length, move: null, seconds: secondsLeft(phase.remainingMs) };
   if (phase.kind === 'step') return { kind: 'step', index: phase.index, total: plan.steps.length, move: plan.steps[phase.index], seconds: secondsLeft(phase.remainingMs) };
   return null;
 }
 
-/** The plan of the prompts of a challenge. */
 function planOf(challenge: PresenceChallenge): Recording['plan'] {
   return { leadInMs: challenge.leadInMs, stepMs: challenge.stepMs, steps: challenge.steps };
 }
 
-/** The challenge is still good when the prompts will have ended: one that runs out before the start, or in the middle of the recording, is asked for again. */
 function outlivesTheRecording(challenge: PresenceChallenge): boolean {
   return Date.parse(challenge.expiresAt) > Date.now() + totalDurationMs(planOf(challenge));
 }
@@ -265,15 +243,11 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
   const landscapeAtStartRef = useRef(true);
   const startingRef = useRef(false);
   const uploadingRef = useRef(false);
-  /** The guest stopped the upload to ask for a person, and the request for her is on its way: a second tap does nothing, and an end of the upload that is not an answer is not shown. */
   const cancellingRef = useRef(false);
-  /** The page went to the background and the camera was let go: it is opened again when the page is back. */
   const hiddenRef = useRef(false);
   const phaseRef = useRef<Phase>('preparing');
   const mounted = useRef(false);
-  /** Counts the starts of the screen: an answer that comes for an older start is not for this one. */
   const epoch = useRef(0);
-  // What the callbacks that live across renders read of the props and of the state: the latest ones.
   const latest = useRef({ startChallenge, sendSequence, cancelSequence });
   useEffect(() => {
     latest.current = { startChallenge, sendSequence, cancelSequence };
@@ -291,14 +265,12 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     timerRef.current = null;
   }, []);
 
-  /** Lets the frames of the recording go (the arrays are emptied in place), whether they were sent or not. */
   const letGoOfTheAttempt = useCallback(() => {
     const attempt = attemptRef.current;
     attemptRef.current = null;
     if (attempt) releaseSequence(attempt.sequence);
   }, []);
 
-  /** Stops the recording that is on its way and lets its frames go. */
   const discardRecording = useCallback(() => {
     clearTimer();
     recorderRef.current?.discard();
@@ -306,19 +278,13 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     recordingRef.current = null;
   }, [clearTimer]);
 
-  /**
-   * What the phone does to the screen while it works: a recording is thrown away, with its frames, and the guest is told why. Resolves true when the screen must start again with a new challenge (the phone was turned
-   * while recording: the camera is still there), and false when it is done (the camera was let go and a page that comes back opens it again, or the camera ended by itself and the guest is told so).
-   */
   const interrupt = useCallback(
     (reason: Interruption): boolean => {
       const current = phaseRef.current;
-      // The frames are on their way to the server, or kept for the guest to send again: the camera is off and there is nothing to spoil.
       if (uploadingRef.current || attemptRef.current) return false;
       const recording = recorderRef.current !== null;
 
       if (reason === 'rotated') {
-        // Turning the phone only matters to a recording: frames of two shapes are not one sequence.
         if (!recording) return false;
         discardRecording();
         dispatch({ type: 'preparing', notice: 'rotated' });
@@ -326,7 +292,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
       }
 
       if (reason === 'hidden') {
-        // A page in the background keeps no camera on: it is let go, and opened again when the page is back. A recording that was on its way is thrown away, and the guest is told.
         if (!recording && current !== 'preparing' && current !== 'starting' && current !== 'ready') return false;
         epoch.current += 1;
         discardRecording();
@@ -336,7 +301,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
         return false;
       }
 
-      // The camera ended by itself.
       if (!recording && !streamRef.current) return false;
       epoch.current += 1;
       discardRecording();
@@ -347,14 +311,12 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     [discardRecording, stopCamera],
   );
 
-  /** Opens the camera of the front. `isCurrent` says whether the screen is still the one that asked (it may have been left while the browser asked the guest). */
   const openCamera = useCallback(
     async (isCurrent: () => boolean): Promise<'ok' | 'stale' | CameraProblem> => {
       if (!canOpenCamera()) return 'unsupported';
       try {
         const stream = await navigator.mediaDevices.getUserMedia(CAMERA_CONSTRAINTS);
         if (!isCurrent() || document.hidden) {
-          // Left, or sent to the background, while the browser asked: nothing keeps the camera, and a page that comes back opens it again.
           stream.getTracks().forEach((track) => track.stop());
           if (isCurrent()) hiddenRef.current = true;
           return 'stale';
@@ -386,7 +348,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
         const asked = await latest.current.startChallenge(isCurrent);
         if (!isCurrent() || asked.kind === 'stale' || asked.kind === 'moved') return;
         if (asked.kind === 'failed') {
-          // A camera that stays open while the screen says it did not work (a turn of the phone left it open) is let go: the next try opens it again.
           stopCamera();
           dispatch({ type: 'failed' });
           return;
@@ -420,7 +381,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
       if (manual) attempt.manualRetriesLeft -= 1;
       dispatch({ type: 'uploading' });
       try {
-        // The hook never rejects; a defect that did would leave the guest on a screen that waits for ever, so it is a call that failed.
         const result = await latest.current.sendSequence(attempt.sequence, attempt.key).catch((): PresenceSendResult => ({ kind: 'failed' }));
         if (!mounted.current) return;
         if (result.kind === 'answered') {
@@ -476,7 +436,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     }
   };
 
-  /** The prompts are over (or the frames are at their limit): the sequence is taken, the camera is stopped, and the sequence is sent. */
   const finishRecording = useCallback(async () => {
     const recorder = recorderRef.current;
     const recording = recordingRef.current;
@@ -487,14 +446,12 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     const mine = epoch.current;
 
     const sequence = await recorder.finish();
-    // The camera is of no use once the sequence is taken: it is off before a single frame is sent.
     stopCamera();
     if (!mounted.current || epoch.current !== mine) {
       releaseSequence(sequence);
       return;
     }
     if (sequence.frames.length === 0) {
-      // The browser gave no picture, or could not encode one: there is nothing to send. A new challenge, a new recording.
       dispatch({ type: 'preparing', notice: 'not_prepared' });
       void prepare();
       return;
@@ -514,7 +471,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     dispatch({ type: 'prompt', prompt: promptOf(phase, recording.plan) });
   }, [finishRecording]);
 
-  /** The prompts begin and the first frame is taken at once; the key of this recording is made now. */
   const beginRecording = (challenge: PresenceChallenge, video: HTMLVideoElement, canvas: HTMLCanvasElement) => {
     const recording: Recording = { plan: planOf(challenge), challengeToken: challenge.challengeToken, key: newIdempotencyKey() };
     recordingRef.current = recording;
@@ -536,10 +492,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     timerRef.current = window.setInterval(tick, TICK_MS);
   };
 
-  /**
-   * The guest starts. A challenge that would run out before the end of the prompts is asked for again first, without a word (the camera stays as it is). A second tap while this is under way, or while the recording
-   * runs, does nothing.
-   */
   const start = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -554,7 +506,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
         const asked = await latest.current.startChallenge(isCurrent);
         if (!isCurrent() || asked.kind === 'stale' || asked.kind === 'moved') return;
         if (asked.kind === 'failed') {
-          // The camera was open for the recording that did not start: it is let go with the failure, and the next try opens it again (`prepare`).
           stopCamera();
           dispatch({ type: 'failed' });
           return;
@@ -574,7 +525,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     const canvas = canvasRef.current;
     void prepare();
     return () => {
-      // The screen goes (an answer, the way to a person, another step): every track is stopped, and the frames and the canvas are let go.
       mounted.current = false;
       epoch.current += 1;
       discardRecording();
@@ -587,7 +537,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     };
   }, [discardRecording, letGoOfTheAttempt, prepare, stopCamera]);
 
-  // A page in the background, a phone that is turned, a window that changes shape: what the recording needs is not there any more.
   useEffect(() => {
     const onVisibility = () => {
       if (document.hidden) {
@@ -610,13 +559,11 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
     };
   }, [interrupt, prepare]);
 
-  /** The guest tries the camera again after allowing it (the challenge they have is still good). */
   const retryCamera = () => {
     dispatch({ type: 'preparing' });
     void prepare(true);
   };
 
-  /** The guest starts the recording over, with a new challenge. */
   const startOver = () => {
     dispatch({ type: 'preparing' });
     void prepare();
@@ -649,7 +596,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
         </Alert>
       )}
 
-      {/* The frames are drawn here and nowhere else; it is never shown, and it is one element for the whole life of the screen. It is emptied when the answer comes and when the screen goes. */}
       <canvas ref={canvasRef} aria-hidden="true" className="hidden" data-testid="checkin-presence-canvas" />
 
       {phase === 'camera-problem' && problem ? (

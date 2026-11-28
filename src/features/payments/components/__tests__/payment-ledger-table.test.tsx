@@ -34,7 +34,6 @@ function renderTable(lines: PaymentLedgerLine[], props: Partial<React.ComponentP
   );
 }
 
-/** The rows of the table (the same rows are also drawn as cards for a phone: the table is the one with roles). */
 const rowsOf = () => within(screen.getByRole('table', { name: 'Incassi della prenotazione' })).getAllByTestId('payment-ledger-row');
 const cell = (row: HTMLElement, id: string) => within(row).getByTestId(`payment-ledger-${id}`);
 
@@ -52,7 +51,6 @@ describe('PaymentLedgerTable, the amounts (money rules)', () => {
 
     const [row] = rowsOf();
     expect(cell(row, 'gross')).toHaveTextContent(/^100,00\s€$/);
-    // The commission is a deduction: it is written with a minus; the net is the figure of the server.
     expect(cell(row, 'fee')).toHaveTextContent(/^-3,20\s€$/);
     expect(cell(row, 'net')).toHaveTextContent(/^96,80\s€$/);
     expect(cell(row, 'credit')).toHaveTextContent('8 nov 2026');
@@ -67,11 +65,9 @@ describe('PaymentLedgerTable, the amounts (money rules)', () => {
     expect(cell(euro, 'gross')).toHaveTextContent(/€/);
     expect(cell(euro, 'gross')).not.toHaveTextContent(/CHF/);
     expect(cell(francs, 'gross')).toHaveTextContent(/^200,00\sCHF$/);
-    // The fee and the net of a line without a currency of the provider are in the currency of the line.
     expect(cell(francs, 'fee')).toHaveTextContent(/^-6,00\sCHF$/);
     expect(cell(francs, 'net')).toHaveTextContent(/^194,00\sCHF$/);
     expect(francs).not.toHaveTextContent('€');
-    // No row has a total, and no figure of the table is the sum of two lines.
     expect(screen.queryByText(/300/)).toBeNull();
     expect(screen.getByRole('table').querySelector('tfoot')).toBeNull();
   });
@@ -139,7 +135,6 @@ describe('PaymentLedgerTable, the state of each line (money rule: nothing that i
       ['Failed', 'Non riuscito'],
       ['Canceled', 'Annullato'],
     ]);
-    // Each state has an icon besides its word: it is never told by color alone.
     for (const row of rowsOf()) expect(stateOf(row).querySelector('svg')).not.toBeNull();
   });
 
@@ -161,7 +156,6 @@ describe('PaymentLedgerTable, the state of each line (money rule: nothing that i
     const [paid, toCollect, host] = rowsOf();
     expect(cell(paid, 'source')).toHaveTextContent('Incassato dal canale');
     expect(stateOf(paid)).toHaveTextContent('Incassato');
-    // A line still to collect never says collected, not in its source either.
     expect(cell(toCollect, 'source')).toHaveTextContent('Dal canale');
     expect(cell(toCollect, 'source')).not.toHaveTextContent('Incassato');
     expect(stateOf(toCollect)).toHaveTextContent('Da incassare');
@@ -188,7 +182,6 @@ describe('PaymentLedgerTable, the document of the booking', () => {
     const document = within(row).getByTestId('payment-ledger-document');
     expect(document).toHaveTextContent('Fattura n. 2026/12');
     expect(within(row).getByTestId('payment-ledger-document-state')).toHaveTextContent('Emessa · Da incassare');
-    // The page of the documents is not offered here: the document is told in words and is no link.
     expect(within(document).queryByRole('link')).toBeNull();
   });
 

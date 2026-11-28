@@ -5,12 +5,10 @@ import { cn } from '@/lib/utils';
 import type { FiscalDocumentEntry } from '@/types';
 import { documentStatesOf, type DocumentState } from './document-model';
 
-/** The code at the end of the key of a state (`fiscalDocuments.list.state.toSend` is `toSend`): what the tests and the page read it by. */
 function codeOf(state: DocumentState): string {
   return state.key.slice(state.key.lastIndexOf('.') + 1);
 }
 
-/** One state: an icon and a word on a soft background. The icon is always there, so the state is never told by color alone. */
 export function StatePill({ state, testId }: { state: DocumentState; testId: string }) {
   const { t } = useTranslation();
   const Icon = STATUS_ICONS[state.icon];

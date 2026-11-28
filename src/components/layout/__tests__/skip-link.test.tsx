@@ -45,7 +45,6 @@ describe('SkipLink', () => {
     fireEvent(link, click);
 
     expect(screen.getByRole('main')).toHaveFocus();
-    // Left to the browser, the link would add `#main-content` to the address and to the history.
     expect(click.defaultPrevented).toBe(true);
   });
 

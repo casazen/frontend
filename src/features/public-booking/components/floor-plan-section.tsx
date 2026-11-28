@@ -11,14 +11,8 @@ import { cn } from '@/lib/utils';
 import type { PublicPropertyDetailDto } from '@/types';
 import '@/features/public-booking/property-page.css';
 
-/** The search parameter that keeps the level in the address: a link to the page can open on the upper floor. */
 const LEVEL_PARAM = 'livello';
 
-/**
- * «Planimetria» (DB-04a): the plan the host uploaded, one tab per level (the level is in the address), the area of the level and a
- * button to see the plan big. Only the levels that have an image are shown, and the section is not there without any: the system
- * draws no plan of its own and invents no rooms.
- */
 export function FloorPlanSection({ property }: { property: PublicPropertyDetailDto }) {
   const { t, i18n } = useTranslation();
   const portal = usePortalRootProps();

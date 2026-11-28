@@ -13,15 +13,12 @@ import { StayCalendar } from './stay-calendar';
 import type { StayCalendarData } from './use-public-calendar';
 import './stay-pickers.css';
 
-/** The stay as the pickers handle it: the dates and the guests. */
 export interface StayValue extends StayRange, GuestsValue {}
 
-/** What a sheet holds: the calendar, the guests, or both. */
 export type StaySection = 'dates' | 'guests' | 'both';
 
 export interface StaySheetProps {
   section: StaySection;
-  /** The element that opens it (one button): the focus comes back to it when it closes. */
   trigger: ReactElement;
   value: StayValue;
   onChange: (patch: Partial<StayValue>) => void;
@@ -30,17 +27,12 @@ export interface StaySheetProps {
   petsAllowed?: boolean;
   childrenAges?: (number | null)[];
   onChildrenAgesChange?: (ages: (number | null)[]) => void;
-  /** To open and close it from outside; without them it manages itself. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** The title of the sheet of a phone (and the name of the popover for a screen reader). */
   title: string;
   description?: string;
-  /** The label of the one button that closes it. */
   doneLabel?: string;
-  /** Called when the person has chosen the arrival and the departure. */
   onRangeComplete?: () => void;
-  /** Extra content at the end (the sheet of the search puts the button that searches there). */
   footer?: ReactNode;
 }
 
@@ -96,7 +88,6 @@ export function StaySheet({
           value={value}
           onChange={handleRange}
           data={calendar}
-          // The months one under the other are for the sheet of a phone; a popover (also a narrow one of a frame) pages through them.
           layout={fromTablet || embed ? 'paged' : 'scroll'}
           months={fromTablet ? 2 : 1}
         />
@@ -115,7 +106,6 @@ export function StaySheet({
     </>
   );
 
-  // The focus goes where a person chooses: the day of the grid that takes the tab stop, else the first field.
   const focusInside = (event: Event) => {
     const target =
       contentRef.current?.querySelector<HTMLElement>('[data-date][tabindex="0"]') ??

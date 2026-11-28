@@ -13,14 +13,8 @@ import { withoutRequest } from '@/features/marketplace/activation/use-sequential
 import { classifyVideoCallError, videoCallProblemKey } from '@/features/verification/lib/video-call-model';
 import { retryTransientErrors } from '@/lib/query-client';
 
-/** Root of the verification queries: the queue and the figures. A decision, and a guest who hands a verification over, make the whole root stale. */
 export const VERIFICATION_KEY = 'verification';
 
-/**
- * Pending verifications within the operator's perimeter (AC-NF12-3). The queue changes whenever a guest hands a verification over or another
- * operator decides one, so it is read again every time the page opens and goes stale at once (the page open in front of the operator is kept
- * current by the real-time channel). It lists guests with their names and e-mail addresses: it is not kept once the page is closed (`gcTime: 0`).
- */
 export function usePendingVerifications() {
   return useQuery({
     queryKey: [VERIFICATION_KEY, 'pending'],
@@ -32,7 +26,6 @@ export function usePendingVerifications() {
   });
 }
 
-/** The figures of the verifications of the last 30 days (or of `period`) for the bookings the operator reaches (NF-51 monitoring). Numbers only. */
 export function useVerificationMetrics(period?: VerificationMetricsPeriod) {
   return useQuery({
     queryKey: [VERIFICATION_KEY, 'metrics', period?.from ?? null, period?.to ?? null],
@@ -43,11 +36,6 @@ export function useVerificationMetrics(period?: VerificationMetricsPeriod) {
   });
 }
 
-/**
- * What a decision of an operator changes, apart from the queue: the figures, the red mark of the compliance cockpit and the counter of the menu
- * (`operator_decision_required`). The "To do" of the verification closes with the decision: the list of the activities is read again by the global
- * rule of the cache of the mutations.
- */
 function useRefreshAfterDecision() {
   const queryClient = useQueryClient();
   return () => {
@@ -56,13 +44,8 @@ function useRefreshAfterDecision() {
   };
 }
 
-/**
- * The writes of the operator carry a note or a reason written in their own words about a guest: the mutation does not outlive the card that
- * made it (`gcTime: 0`) and what it keeps of a failure is the answer without the request that was sent (`withoutRequest`), which holds the text.
- */
 const DECISION_MUTATION_OPTIONS = { gcTime: 0 } as const;
 
-/** Request a new selfie photo from the guest (AC-NF12-5). */
 export function useRequestNewPhoto() {
   const refresh = useRefreshAfterDecision();
 
@@ -118,10 +101,6 @@ export function useProposeVideoCall() {
   });
 }
 
-/**
- * Record manual verification decision (AC-NF12-6). An approval releases the access code of the property to the guest and e-mails it (the server
- * sends nothing when the property has no code), and says so; a rejection releases and sends nothing.
- */
 export function useRecordVerification() {
   const refresh = useRefreshAfterDecision();
 
@@ -150,7 +129,6 @@ export function useRecordVerification() {
   });
 }
 
-/** Reject the guest's check-in (AC-NF12-7). */
 export function useRejectVerification() {
   const refresh = useRefreshAfterDecision();
 

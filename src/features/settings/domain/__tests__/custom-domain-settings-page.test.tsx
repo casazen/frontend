@@ -121,7 +121,6 @@ describe('CustomDomainSettingsPage (BK-17, A3-25)', () => {
     const panel = await screen.findByTestId('domain-status-panel');
     expect(panel).toHaveAttribute('data-state', 'waitingDns');
     expect(screen.getByTestId('domain-status-badge')).toHaveTextContent(i18n.t('domain.state.waitingDns'));
-    // The reason in the user's language, not the server text.
     expect(screen.getByTestId('domain-state-description')).toHaveTextContent(i18n.t('domain.issues.ownership_txt_missing'));
     expect(panel).not.toHaveTextContent('messaggio del server');
     expect(screen.getByTestId('domain-last-check')).not.toHaveTextContent(i18n.t('domain.neverChecked'));
@@ -133,10 +132,8 @@ describe('CustomDomainSettingsPage (BK-17, A3-25)', () => {
     expect(within(dns).getByTestId('dns-record-cname')).toHaveTextContent('cname.example-target.test');
     expect(within(dns).getByTestId('dns-record-a')).toHaveTextContent('203.0.113.10');
     expect(within(dns).queryByTestId('dns-record-provider-txt')).not.toBeInTheDocument();
-    // The SSL note is translated by the app, not the Italian text of the server.
     expect(dns).toHaveTextContent(i18n.t('domain.dns.sslNote'));
     expect(dns).not.toHaveTextContent('nota server');
-    // A pending domain is not yet "your site": no link to it.
     expect(screen.queryByText(i18n.t('domain.settings.customDomainUrl'), { exact: false })).not.toBeInTheDocument();
   });
 
@@ -311,7 +308,6 @@ describe('CustomDomainSettingsPage: what runs on the agency domain (E40/F02/US02
     vi.clearAllMocks();
   });
 
-  // Nothing changes without the flag of the backend: it sends no surfaces, and the page is the one of before (the tests above are its proof).
   it.each([
     ['null', { surfaces: null }],
     ['absent', {}],
@@ -358,7 +354,6 @@ describe('CustomDomainSettingsPage: what runs on the agency domain (E40/F02/US02
 
     fireEvent.click(links);
 
-    // The three booleans, as the server holds them with the one that moved.
     await waitFor(() =>
       expect(DomainApi.setSurfaces).toHaveBeenCalledWith('org-1', {
         guestAreaOnOwnDomain: true,
@@ -367,7 +362,6 @@ describe('CustomDomainSettingsPage: what runs on the agency domain (E40/F02/US02
       }),
     );
     expect(DomainApi.setSurfaces).toHaveBeenCalledTimes(1);
-    // The page shows what the server answered: the choice is on, and the links say the address they use.
     expect(await screen.findByTestId('domain-surface-links-note')).toHaveTextContent('https://www.tuavilla.it');
     expect(links).toBeChecked();
     expect(toast.success).toHaveBeenCalledWith(i18n.t('domain.settings.saved'));
@@ -383,7 +377,6 @@ describe('CustomDomainSettingsPage: what runs on the agency domain (E40/F02/US02
     fireEvent.change(input, { target: { value: 'www.altro.it' } });
     fireEvent.click(await screen.findByRole('switch', { name: i18n.t('domain.surfaces.guestArea.label') }));
 
-    // The answer is a new configuration with the same saved mode: the form is not filled again from it.
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('domain.settings.saved')));
     await waitFor(() => expect(screen.getByRole('switch', { name: i18n.t('domain.surfaces.guestArea.label') })).toBeEnabled());
     expect(screen.getByTestId('custom-domain-input')).toHaveValue('www.altro.it');
@@ -398,10 +391,8 @@ describe('CustomDomainSettingsPage: what runs on the agency domain (E40/F02/US02
     vi.mocked(DomainApi.getDomain).mockResolvedValue(verified({ surfaces: SURFACES }));
     renderPage(client);
 
-    // At once, from the cache: the form is the saved mode, not the default one.
     expect(screen.getByTestId('host-mode-radio')).toHaveValue('CustomDomain');
     expect(screen.getByTestId('custom-domain-input')).toHaveValue('www.tuavilla.it');
-    // And the server is asked: the domain was verified in the meantime, so the block of the surfaces is there.
     expect(await screen.findByTestId('domain-surfaces-panel')).toBeInTheDocument();
     expect(DomainApi.getDomain).toHaveBeenCalledTimes(1);
   });

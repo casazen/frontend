@@ -7,7 +7,6 @@ import axios from '@/lib/axios';
 import { useAuth } from '@/hooks/use-auth';
 import type { OrgInvitationLookup } from '@/types/org-team.types';
 
-// The page pulls in the consents step and the whole shell; importing it can take a while on a loaded machine.
 configure({ asyncUtilTimeout: 8_000 });
 vi.setConfig({ testTimeout: 60_000 });
 
@@ -19,7 +18,6 @@ beforeAll(async () => {
   ({ InviteAcceptPage } = await import('../invite-accept-page'));
 }, 240_000);
 
-/** What the backend reads: 64 lowercase hex characters. */
 const TOKEN = 'a1'.repeat(32);
 const STORAGE_KEY = 'cz-org-invite';
 const login = vi.fn();
@@ -43,7 +41,6 @@ function mockAuth(authenticated: boolean) {
   } as unknown as ReturnType<typeof useAuth>);
 }
 
-/** The real address bar of jsdom: the page is opened the way the link of the email opens it. */
 function openAt(path: string) {
   window.history.pushState({}, '', path);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -78,7 +75,6 @@ describe('InviteAcceptPage: the secret of the link', () => {
 
     expect(await screen.findByTestId('invite-accept-signup')).toBeInTheDocument();
 
-    // Out of the address bar and the history entry, in the storage of this tab only.
     await waitFor(() => expect(window.location.search).toBe(''));
     expect(window.location.href).not.toContain(TOKEN);
     expect(sessionStorage.getItem(STORAGE_KEY)).toBe(TOKEN);

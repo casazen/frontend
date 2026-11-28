@@ -103,7 +103,6 @@ describe('InboxPage (NF-61)', () => {
   it('InboxPage_ChipRecensioni_ListsTheReviewsOfTheGuestsAndTurnsTheViewsOffAndTheDefaultViewHasNone', async () => {
     renderInbox();
     await screen.findByTestId('message-thread-row');
-    // The default view is the conversations: it asks for no review.
     expect(lastFilters()).toEqual({ needsReply: true, page: 1, pageSize: 20 });
     expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'false');
 
@@ -113,7 +112,6 @@ describe('InboxPage (NF-61)', () => {
     expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'true');
     for (const view of ['toRespond', 'all', 'unread']) expect(screen.getByTestId(`messages-view-${view}`), view).toHaveAttribute('aria-pressed', 'false');
 
-    // Pressed again, it goes back to where the page starts (the list of that view is the one already read, so nothing new is asked).
     fireEvent.click(screen.getByTestId('messages-view-reviews'));
     await waitFor(() => expect(screen.getByTestId('messages-view-toRespond')).toHaveAttribute('aria-pressed', 'true'));
     expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'false');
@@ -167,7 +165,6 @@ describe('InboxPage (NF-61)', () => {
     expect(messageHubApi.list).not.toHaveBeenCalled();
 
     await waitFor(() => expect(lastFilters()).toEqual({ needsReply: true, q: 'rossi', page: 1, pageSize: 20 }));
-    // One request for the whole word, not one for each key.
     expect(vi.mocked(messageHubApi.list).mock.calls.filter(([filters]) => filters?.q === 'ro')).toHaveLength(0);
   });
 

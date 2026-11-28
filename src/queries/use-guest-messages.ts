@@ -8,19 +8,12 @@ import type { GuestSession, GuestThread } from '@/types';
 
 const GUEST_THREAD_QUERY = 'guest-thread';
 
-/** How often the thread is read again while the page is open and visible (no real-time channel in v1). */
 const THREAD_POLL_MS = 60_000;
 
 function threadKey(session: GuestSession) {
   return [GUEST_THREAD_QUERY, session.bookingCode, session.expiresAt] as const;
 }
 
-/**
- * The thread of the guest's booking (DB-14b). Read when the page opens, when the guest comes back to the window and every minute while
- * the page is visible (TanStack Query pauses the interval in a hidden tab and when the browser is offline). A 401 means the session ended:
- * the booking is read again, which finds it out and sends the guest back to the form. A 404 means the booking has no thread: the section
- * hides itself.
- */
 export function useGuestThread(session: GuestSession) {
   const queryClient = useQueryClient();
   return useQuery({

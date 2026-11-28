@@ -59,7 +59,6 @@ describe('the privacy of a tenant on their sheet (LR-09)', () => {
     fireEvent.click(screen.getByTestId('tenant-erasure-action'));
     const dialog = await screen.findByRole('dialog');
 
-    // The window says what it does, naming the lease that holds the data back, and nothing has been asked of the server.
     expect(within(dialog).getByTestId('confirmation-consequences')).toHaveTextContent('Casa Trastevere');
     expect(post).not.toHaveBeenCalled();
 
@@ -92,7 +91,6 @@ describe('the privacy of a tenant on their sheet (LR-09)', () => {
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(1));
     expect(get.mock.calls[0][0]).toBe('/long-rent/tenants/tenant-1/export');
     expect(get.mock.calls[0][1]).toMatchObject({ responseType: 'blob' });
-    // The name of the file says nothing of the person.
     expect(vi.mocked(saveBlobAs).mock.calls[0][1]).toBe('dati-personali.json');
   });
 });

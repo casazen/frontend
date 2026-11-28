@@ -2,7 +2,6 @@ import type { TFunction } from 'i18next';
 import type { RegimeOutcome } from './guide-answers';
 import { formatWholeEuro } from './guide-format';
 
-/** The codes with which the server says why it could not work the IRPEF out; the window has a sentence for each (an unknown one has none). */
 export const IRPEF_REASONS = [
   'not_configured',
   'brackets_outdated',
@@ -10,11 +9,6 @@ export const IRPEF_REASONS = [
   'concordato_ata_relief_not_verified',
 ];
 
-/**
- * The verdict of the comparison between the two regimes in the words of the person: the sentence (which costs less in the first year and by
- * how much, or that it cannot be said yet) and, when there is one, the line that says what is missing. The window opens with it and the
- * summary line of the tool says the same.
- */
 export function describeRegimeOutcome(outcome: RegimeOutcome, t: TFunction): { sentence: string; detail: string | null } {
   switch (outcome.kind) {
     case 'cedolareCheaper':

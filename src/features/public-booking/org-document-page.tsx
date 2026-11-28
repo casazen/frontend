@@ -13,7 +13,6 @@ interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
-/** The host of an https address, for the guest to see where the link goes; null when it cannot be read. */
 function hostOf(url: string): string | null {
   try {
     return new URL(url).host;

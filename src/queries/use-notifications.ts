@@ -2,18 +2,12 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { NOTIFICATIONS_PAGE_SIZE, notificationsApi, type NotificationPage } from '@/api/notifications.api';
 import { retryTransientErrors } from '@/lib/query-client';
 
-/** Root of every notification query: invalidating it reads the list and the count again. */
 export const NOTIFICATIONS_QUERY = 'notifications';
 export const UNREAD_COUNT_KEY = [NOTIFICATIONS_QUERY, 'unread-count'] as const;
 const LIST_KEY = [NOTIFICATIONS_QUERY, 'list'] as const;
 
-/** Safety net while the real-time channel is down: the count is read again at this pace (and on focus and reconnect). */
 const DISCONNECTED_POLL_MS = 60_000;
 
-/**
- * The number on the bell. The real-time channel writes it directly (`notificationsChanged`); the window focus and the network
- * coming back read it again, and `pollWhileDisconnected` adds a slow poll for as long as the socket is down.
- */
 export function useUnreadNotificationCount({ enabled = true, pollWhileDisconnected = false }: { enabled?: boolean; pollWhileDisconnected?: boolean } = {}) {
   return useQuery({
     queryKey: UNREAD_COUNT_KEY,
@@ -28,7 +22,6 @@ export function useUnreadNotificationCount({ enabled = true, pollWhileDisconnect
   });
 }
 
-/** The notifications of the bell, the most recent first, a page at a time. Read only while the list is open. */
 export function useNotificationList(enabled: boolean) {
   return useInfiniteQuery({
     queryKey: LIST_KEY,
@@ -43,7 +36,6 @@ export function useNotificationList(enabled: boolean) {
   });
 }
 
-/** Marks one notification as read; the count and the list are read again. */
 export function useMarkNotificationRead() {
   const queryClient = useQueryClient();
   return useMutation({

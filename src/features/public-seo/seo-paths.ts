@@ -1,10 +1,5 @@
-/**
- * Hub of the published SEO pages (SE-02 / A8-02): the public entry point to every `/p/*` page, linked from the footer
- * of the CasaZen public pages. The backend builds its canonical URL and sitemap entry from the same path.
- */
 export const SEO_HUB_PATH = '/p/affitti-brevi';
 
-/** A page of the hub that the home page links to directly: the comune as people write it, and the path of the page. */
 export interface SeoFeaturedPage {
   comune: string;
   path: string;
@@ -25,5 +20,4 @@ export const SEO_FEATURED_GUIDES: readonly SeoFeaturedPage[] = [
   { comune: 'Bologna', path: '/p/affitti-brevi/emilia-romagna/bologna' },
 ];
 
-/** The tourist tax pages the home page links to (same rule as `SEO_FEATURED_GUIDES`). */
 export const SEO_FEATURED_TAX_PAGES: readonly SeoFeaturedPage[] = [{ comune: 'Como', path: '/p/tassa-soggiorno/como' }];

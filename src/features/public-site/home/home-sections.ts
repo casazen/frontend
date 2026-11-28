@@ -1,6 +1,5 @@
 export type HomeSectionId = 'case' | 'perche' | 'zone' | 'domande';
 
-/** In the order they are on the page. */
 const HOME_SECTION_IDS: readonly HomeSectionId[] = ['case', 'perche', 'zone', 'domande'];
 
 export function isHomeSectionId(value: string | null | undefined): value is HomeSectionId {

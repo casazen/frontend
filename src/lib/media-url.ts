@@ -13,7 +13,6 @@ export function isDisplayableMediaUrl(url: string | null | undefined): url is st
   }
 }
 
-/** The displayable (absolute) URLs of a photo list, in order. */
 export function displayableMediaUrls(urls: readonly (string | null | undefined)[] | null | undefined): string[] {
   return (urls ?? []).filter(isDisplayableMediaUrl);
 }
