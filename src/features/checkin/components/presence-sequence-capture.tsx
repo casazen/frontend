@@ -590,12 +590,6 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
         <p className="text-sm text-muted-foreground">{t('checkin.identity.presence.instructions')}</p>
       </div>
 
-      {notice && (
-        <Alert variant="warning" role="alert" data-testid="checkin-presence-notice" data-notice={notice}>
-          {t(NOTICE_TEXT[notice])}
-        </Alert>
-      )}
-
       <canvas ref={canvasRef} aria-hidden="true" className="hidden" data-testid="checkin-presence-canvas" />
 
       {phase === 'camera-problem' && problem ? (
@@ -669,39 +663,49 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSe
             )}
           </div>
 
-          {(phase === 'ready' || phase === 'starting') && (
-            <Button type="button" size="lg" disabled={busy || phase === 'starting'} onClick={() => void start()} className="w-full sm:w-auto" data-testid="checkin-presence-start">
-              <Video className="mr-2 h-4 w-4" aria-hidden="true" />
-              {t('checkin.identity.presence.start')}
-            </Button>
-          )}
-
-          {phase === 'uploading' && (
-            <Button type="button" size="lg" variant="outline" onClick={() => void cancel()} className="w-full sm:w-auto" data-testid="checkin-presence-cancel">
-              <X className="mr-2 h-4 w-4" aria-hidden="true" />
-              {t('checkin.identity.presence.cancel')}
-            </Button>
-          )}
-
-          {phase === 'kept' && kept && (
-            <div className="space-y-3" data-testid="checkin-presence-kept" data-problem={kept}>
-              <Alert variant="warning" role="alert">
-                {t(KEPT_TEXT[kept] ?? problemKey(kept))}
-              </Alert>
-              <Button type="button" size="lg" disabled={busy} onClick={() => void upload(true)} className="w-full sm:w-auto" data-testid="checkin-presence-send-again">
-                <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
-                {t('checkin.identity.presence.kept.sendAgain')}
+          {/* Room for a button in every phase: when «Inizia» or «Riprova» goes, the way to a person below must not rise under the finger that taps a second time. */}
+          <div className="min-h-11" data-testid="checkin-presence-actions">
+            {(phase === 'ready' || phase === 'starting') && (
+              <Button type="button" size="lg" disabled={busy || phase === 'starting'} onClick={() => void start()} className="w-full sm:w-auto" data-testid="checkin-presence-start">
+                <Video className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('checkin.identity.presence.start')}
               </Button>
-            </div>
-          )}
+            )}
 
-          {phase === 'failed' && (
-            <Button type="button" size="lg" disabled={busy} onClick={startOver} className="w-full sm:w-auto" data-testid="checkin-presence-retry">
-              <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
-              {t('checkin.identity.presence.retry')}
-            </Button>
-          )}
+            {phase === 'uploading' && (
+              <Button type="button" size="lg" variant="outline" onClick={() => void cancel()} className="w-full sm:w-auto" data-testid="checkin-presence-cancel">
+                <X className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('checkin.identity.presence.cancel')}
+              </Button>
+            )}
+
+            {phase === 'kept' && kept && (
+              <div className="space-y-3" data-testid="checkin-presence-kept" data-problem={kept}>
+                <Alert variant="warning" role="alert">
+                  {t(KEPT_TEXT[kept] ?? problemKey(kept))}
+                </Alert>
+                <Button type="button" size="lg" disabled={busy} onClick={() => void upload(true)} className="w-full sm:w-auto" data-testid="checkin-presence-send-again">
+                  <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+                  {t('checkin.identity.presence.kept.sendAgain')}
+                </Button>
+              </div>
+            )}
+
+            {phase === 'failed' && (
+              <Button type="button" size="lg" disabled={busy} onClick={startOver} className="w-full sm:w-auto" data-testid="checkin-presence-retry">
+                <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+                {t('checkin.identity.presence.retry')}
+              </Button>
+            )}
+          </div>
         </>
+      )}
+
+      {/* Under the actions and not above the video: the notice leaves when a recording starts, and nothing at or above the actions may move then. */}
+      {notice && (
+        <Alert variant="warning" role="alert" data-testid="checkin-presence-notice" data-notice={notice}>
+          {t(NOTICE_TEXT[notice])}
+        </Alert>
       )}
     </section>
   );

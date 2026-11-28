@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { devices, type Page } from '@playwright/test';
+import { devices, type Locator, type Page } from '@playwright/test';
 import { test, expect } from './test';
 import { installFakeCamera, liveCameraTracks, showCardSide } from './helpers/fake-camera';
 import { LOCK_CODE, PRESENCE_PLAN, mockIdentityApi, type IdentityApiMock, type IdentityCall } from './helpers/identity-api-mock';
@@ -177,6 +177,151 @@ async function screenTurnsDuringTheRecording(page: Page): Promise<void> {
   await expectTheCameraReleased(page);
 }
 
+interface Click {
+  x: number;
+  y: number;
+  hit: { testId: string; top: number; bottom: number } | null;
+  assistedTop: number | null;
+}
+
+type Pointer = 'mouse' | 'touch';
+
+// The second tap of a double tap finds the page as the first one left it: so the page is read inside the click, not a moment later.
+async function watchTheClicks(page: Page): Promise<() => Promise<Click[]>> {
+  await page.evaluate(() => {
+    const seen: Click[] = [];
+    (window as unknown as { __czClicks: Click[] }).__czClicks = seen;
+    document.addEventListener(
+      'click',
+      (event) => {
+        const element = event.target instanceof Element ? event.target.closest('[data-testid]') : null;
+        const box = element?.getBoundingClientRect();
+        seen.push({
+          x: event.clientX,
+          y: event.clientY,
+          hit: element && box ? { testId: element.getAttribute('data-testid') ?? '', top: box.top, bottom: box.bottom } : null,
+          assistedTop: document.querySelector('[data-testid="checkin-identity-assisted-path"]')?.getBoundingClientRect().top ?? null,
+        });
+      },
+      true,
+    );
+  });
+  return () => page.evaluate(() => (window as unknown as { __czClicks?: Click[] }).__czClicks ?? []);
+}
+
+async function tapTwice(page: Page, button: Locator, pointer: Pointer): Promise<void> {
+  await expect(button).toBeEnabled(FIRST);
+  await button.evaluate((element) => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  const box = await button.boundingBox();
+  if (!box) throw new Error('The button to tap has no box');
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const reached = await button.evaluate((element, point) => element.contains(document.elementFromPoint(point.x, point.y)), { x, y });
+  if (!reached) throw new Error('Something covers the button at the point to tap');
+  if (pointer === 'mouse') {
+    await page.mouse.dblclick(x, y);
+    return;
+  }
+  await page.touchscreen.tap(x, y);
+  await page.touchscreen.tap(x, y);
+}
+
+function expectTheSecondTapMissedTheWayToAPerson(clicks: Click[], button: string): void {
+  expect(clicks).toHaveLength(2);
+  const [first, second] = clicks;
+  if (!first.hit || second.assistedTop === null) throw new Error('The taps did not find the button and the way to a person');
+  expect(first.hit.testId).toBe(button);
+  expect(second.y).toBeGreaterThanOrEqual(first.hit.top);
+  expect(second.y).toBeLessThanOrEqual(first.hit.bottom);
+  expect(second.hit?.testId).not.toBe('checkin-identity-assisted-path');
+  expect(second.assistedTop).toBeGreaterThan(first.hit.bottom);
+}
+
+async function expectOneRecordingAndNoPerson(page: Page, identity: IdentityApiMock, said: string[]): Promise<void> {
+  await expect(page.getByTestId('identity-result-ok')).toBeVisible(AFTER_RECORDING);
+  await expect(page.getByTestId('identity-lock-code')).toHaveText(LOCK_CODE);
+  expect(identity.calls('request-operator')).toHaveLength(0);
+  const uploads = identity.calls('presence');
+  expect(uploads).toHaveLength(1);
+  expectARecording(uploads[0]);
+  await expectTheCameraReleased(page);
+  expectAnonymousCallsAndCleanAddresses(identity);
+  await expectNothingKept(page, said, [LOCK_CODE, uploads[0].headers['idempotency-key'], uploads[0].fields.challengeToken]);
+}
+
+// The new challenge comes late, so that the second tap of the double tap arrives while the guest is still waiting for it.
+const LATE_CHALLENGE_MS = 500;
+
+async function breakTheChallenges(page: Page): Promise<() => void> {
+  let broken = true;
+  await page.route('**/presence-challenge', async (route) => {
+    if (broken) {
+      await route.fulfill({ status: 500, json: { status: 500, code: 'presence_challenge_failed' } });
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, LATE_CHALLENGE_MS));
+    await route.fallback();
+  });
+  return () => {
+    broken = false;
+  };
+}
+
+async function doubleTapOnStart(page: Page, pointer: Pointer): Promise<void> {
+  const said = listenToTheConsole(page);
+  const identity = await mockIdentityApi(page, { startAt: 'presence' });
+  await installFakeCamera(page);
+  await page.goto(identity.entry);
+
+  await expectReadyToRecord(page);
+  const clicks = await watchTheClicks(page);
+  await tapTwice(page, page.getByTestId('checkin-presence-start'), pointer);
+  expectTheSecondTapMissedTheWayToAPerson(await clicks(), 'checkin-presence-start');
+
+  await expectOneRecordingAndNoPerson(page, identity, said);
+}
+
+async function doubleTapOnRetry(page: Page, pointer: Pointer): Promise<void> {
+  const said = listenToTheConsole(page);
+  const identity = await mockIdentityApi(page, { startAt: 'presence' });
+  const mend = await breakTheChallenges(page);
+  await installFakeCamera(page);
+  await page.goto(identity.entry);
+
+  await expect(presenceOf(page)).toHaveAttribute('data-phase', 'failed', FIRST);
+  expect(identity.challenges()).toHaveLength(0);
+  mend();
+  const clicks = await watchTheClicks(page);
+  await tapTwice(page, page.getByTestId('checkin-presence-retry'), pointer);
+  expectTheSecondTapMissedTheWayToAPerson(await clicks(), 'checkin-presence-retry');
+
+  await expectReadyToRecord(page);
+  expect(identity.challenges()).toHaveLength(1);
+  await startRecording(page);
+  await expectOneRecordingAndNoPerson(page, identity, said);
+}
+
+async function doubleTapOnStartWithANotice(page: Page): Promise<void> {
+  const said = listenToTheConsole(page);
+  const identity = await mockIdentityApi(page, { startAt: 'presence', plan: LONG_PLAN });
+  await installFakeCamera(page);
+  await page.goto(identity.entry);
+
+  await startRecording(page);
+  const size = page.viewportSize();
+  if (!size) throw new Error('The page has no viewport to turn');
+  await page.setViewportSize({ width: size.height, height: size.width });
+  await expect(page.getByTestId('checkin-presence-notice')).toHaveAttribute('data-notice', 'rotated', FIRST);
+  await expectReadyToRecord(page);
+
+  const clicks = await watchTheClicks(page);
+  await tapTwice(page, page.getByTestId('checkin-presence-start'), 'mouse');
+  expectTheSecondTapMissedTheWayToAPerson(await clicks(), 'checkin-presence-start');
+  await expect(page.getByTestId('checkin-presence-notice')).toHaveCount(0);
+
+  await expectOneRecordingAndNoPerson(page, identity, said);
+}
+
 // Chromium emulation of the phones (size, touch, user agent), not their engines.
 const PHONES = ['iPhone 13', 'Pixel 7'] as const;
 
@@ -313,7 +458,6 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
     await connectionBreaksDuringTheUpload(page);
   });
 
-  // The start button is not double-tapped on purpose: when it goes away the way to a person moves up under the pointer.
   test('(e) a double tap on the shutter sends one photo', async ({ page }) => {
     test.slow();
     const identity = await mockIdentityApi(page, { startAt: 'document', documentDelayMs: 600 });
@@ -366,6 +510,7 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
     expect(new Set(uploads.map((upload) => upload.fields.challengeToken)).size).toBe(1);
     expect(new Set(uploads.map((upload) => upload.framesDigest)).size).toBe(1);
     expect(identity.challenges()).toHaveLength(challengesBefore);
+    expect(identity.calls('request-operator')).toHaveLength(0);
     await expect(page.getByTestId('checkin-identity-problem')).toHaveCount(0);
     await expectTheCameraReleased(page);
   });
@@ -457,6 +602,21 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
     expect(identity.calls('presence-challenge')).toHaveLength(0);
   });
 
+  test('(i) a double click on «Inizia» starts one recording and never asks for a person', async ({ page }) => {
+    test.slow();
+    await doubleTapOnStart(page, 'mouse');
+  });
+
+  test('(j) a double click on «Riprova» after a failed attempt prepares one new recording and never asks for a person', async ({ page }) => {
+    test.slow();
+    await doubleTapOnRetry(page, 'mouse');
+  });
+
+  test('(k) a double click on «Inizia» while a notice is on the screen never asks for a person', async ({ page }) => {
+    test.slow();
+    await doubleTapOnStartWithANotice(page);
+  });
+
   for (const name of PHONES) {
     const { viewport, userAgent, deviceScaleFactor, isMobile, hasTouch } = devices[name];
 
@@ -471,6 +631,16 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
       test('the phone is turned during the recording: it is thrown away and a new challenge is asked for', async ({ page }) => {
         test.slow();
         await screenTurnsDuringTheRecording(page);
+      });
+
+      test('a double tap on «Inizia» starts one recording and never asks for a person', async ({ page }) => {
+        test.slow();
+        await doubleTapOnStart(page, 'touch');
+      });
+
+      test('a double tap on «Riprova» after a failed attempt prepares one new recording and never asks for a person', async ({ page }) => {
+        test.slow();
+        await doubleTapOnRetry(page, 'touch');
       });
     });
   }
