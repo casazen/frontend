@@ -28,7 +28,6 @@ vi.mock('@/api/public-booking.api', () => ({
     createDirectBooking: vi.fn(),
     resumeCheckoutPayment: vi.fn(),
     getCheckoutOutcome: vi.fn(),
-    getPropertyAvailability: vi.fn(),
   },
 }));
 // The booking widget (a card of it leads here) asks the search of the site.

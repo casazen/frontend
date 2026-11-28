@@ -146,17 +146,6 @@ export function useContinueExistingInventory() {
   });
 }
 
-/** The scenario the host declared for each property or group it reaches. */
-export function useInventoryIntents(options?: { enabled?: boolean }) {
-  return useQuery({
-    queryKey: INVENTORY_INTENTS_KEY,
-    queryFn: () => octorateApi.getInventoryIntents(),
-    enabled: options?.enabled ?? true,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: false,
-  });
-}
-
 /**
  * Declares the scenario of each property (or group) of a mixed portfolio (`PUT api/octorate/inventory-intents`). `newInventory` is refused while an
  * import or a mapping exists (409 `inventory_intent_change_refused`): it is never an automatic recovery, and the step says so.

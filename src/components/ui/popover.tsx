@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 
 const Popover = PopoverPrimitive.Root;
 const PopoverTrigger = PopoverPrimitive.Trigger;
-const PopoverAnchor = PopoverPrimitive.Anchor;
 
 /**
  * A bubble anchored to its trigger (`@radix-ui/react-popover`, UI-07): opened by a click or a tap, from the keyboard by
@@ -34,4 +33,4 @@ const PopoverContent = React.forwardRef<
 ));
 PopoverContent.displayName = PopoverPrimitive.Content.displayName;
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
+export { Popover, PopoverTrigger, PopoverContent };
