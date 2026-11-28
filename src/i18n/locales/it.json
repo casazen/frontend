@@ -20637,15 +20637,19 @@
     },
     "version": {
       "between": "Dal {{from}} al {{to}}",
-      "cleaning": "Forfait pulizie per soggiorno: {{amount}}",
-      "document": "Mandato firmato: presente",
+      "documentMissing": "Non registrato",
+      "documentPresent": "Presente",
+      "ended": "Terminata",
       "feesAgency": "Commissioni sui pagamenti con carta: a carico dell'agenzia",
+      "feesAgencyShort": "A carico dell'agenzia",
       "feesOwner": "Commissioni sui pagamenti con carta: a carico del proprietario",
+      "feesOwnerShort": "A carico del proprietario",
       "from": "Dal {{from}}",
       "inForce": "In vigore",
-      "linen": "Forfait biancheria per soggiorno: {{amount}}",
       "noDocument": "Mandato firmato: non registrato",
-      "terms": "Provvigione {{percent}}, {{vat}}. Base: {{base}}.",
+      "others_one": "Un'altra versione",
+      "others_other": "Altre {{count}} versioni",
+      "perStay": "per soggiorno",
       "upcoming": "Non ancora in vigore"
     }
   },
@@ -21570,6 +21574,9 @@
     }
   },
   "ownerProfile": {
+    "actions": {
+      "edit": "Modifica"
+    },
     "approveDialog": {
       "confirm": "Registra l'approvazione",
       "consequence1": "L'approvazione resta registrata con il nome e la data.",
@@ -21580,7 +21587,7 @@
       "nameHint": "Il commercialista o la persona qualificata che ha approvato la regola.",
       "title": "Approvazione della regola {{rule}} versione {{version}}"
     },
-    "description": "Chi è il proprietario per rendiconti, pagamenti e ritenute, come viene pagato e quale regola fiscale vale. I dati sensibili sono nascosti.",
+    "descriptionShort": "Dati per rendiconti, pagamenti e ritenute.",
     "dialog": {
       "choose": "Scegli…",
       "countryHint": "Due lettere, per esempio IT o CH.",
@@ -21610,6 +21617,7 @@
     "facts": {
       "empty": "Non indicato",
       "hide": "Nascondi i dati",
+      "missing": "Da indicare",
       "reveal": "Mostra i dati per intero",
       "rule": "regola {{rule}} versione {{version}}",
       "title": "Profilo in vigore",
@@ -21676,7 +21684,7 @@
     "history": {
       "current": "In vigore",
       "noRule": "Nessuna regola",
-      "title": "Versioni precedenti"
+      "title": "Storico delle versioni"
     },
     "loadError": "Non riusciamo a leggere i dati finanziari.",
     "loading": "Leggo i dati finanziari…",
@@ -21690,9 +21698,12 @@
     "notFound": "Questo proprietario non c'è",
     "notFoundBody": "Non esiste, oppure appartiene a un'altra organizzazione. Torna alla chiusura mensile.",
     "onboarding": {
+      "allClear": "Tutto a posto",
       "complete": "Nell'attivazione non risulta niente da completare per questo proprietario.",
       "completeAction": "Completa nell'attivazione",
       "title": "Cosa manca nell'attivazione",
+      "toFix_one": "{{count}} cosa da sistemare",
+      "toFix_other": "{{count}} cose da sistemare",
       "unavailable": "L'attivazione dei proprietari non è disponibile adesso: quote e mandato si completano lì quando lo sarà."
     },
     "options": {
@@ -21727,18 +21738,62 @@
       "title": "Quote per periodo",
       "until": "al {{date}}"
     },
+    "panels": {
+      "role": "Ruolo e durata del mandato"
+    },
+    "path": {
+      "currencyMissing": "Valuta da indicare",
+      "documents": {
+        "incomplete": "Mancano alcuni dati",
+        "none": "Nessun profilo emittente",
+        "ready": "Pronto a emettere"
+      },
+      "ibanMissing": "Conto da indicare",
+      "notFilled": "Da compilare",
+      "open": "Apri",
+      "progress": "{{done}} di {{total}} passi completati",
+      "progressLabel": "Avanzamento del percorso",
+      "rule": {
+        "approvedBy": "Approvata da {{name}}",
+        "value": "{{rule}} versione {{version}}"
+      },
+      "status": {
+        "documents": {
+          "done": "Pronto",
+          "todo": "Da completare"
+        },
+        "identity": {
+          "done": "Completo",
+          "todo": "Da completare"
+        },
+        "mandate": {
+          "done": "In vigore",
+          "todo": "Manca"
+        },
+        "payments": {
+          "done": "Completo",
+          "todo": "Da completare"
+        },
+        "rule": {
+          "done": "Approvata",
+          "todo": "Da approvare"
+        }
+      },
+      "step": "Passo {{number}}",
+      "title": "Il percorso"
+    },
     "policy": {
       "approve": "Registra l'approvazione",
       "approved": "Approvata",
       "approvedBy": "Approvata da {{name}} il {{date}}.",
       "approvedShort": "approvata",
-      "available": "Regole fiscali dell'agenzia: {{count}}",
       "components": "Voci della base",
       "hash": "impronta {{hash}}…",
       "name": "{{rule}} versione {{version}} · {{jurisdiction}}",
       "new": "Nuova regola",
       "no": "No",
       "none": "Il profilo non ha una regola fiscale.",
+      "openSource": "Apri il documento",
       "pending": "Da approvare",
       "pendingShort": "da approvare",
       "rate": "Aliquota",
@@ -21751,6 +21806,7 @@
       "source": "Fonte ufficiale",
       "taxCode": "Codice tributo",
       "title": "Regola fiscale e approvazione",
+      "validity": "Validità",
       "waiting": "Aspetta l'approvazione del commercialista.",
       "withholding": "Ritenuta al pagamento",
       "years_one": "{{count}} anno",
@@ -21819,18 +21875,54 @@
       "taxResidenceMissing": "Manca la residenza fiscale.",
       "vatNumberInvalid": "La partita IVA non è valida."
     },
+    "reports": {
+      "empty": "Per ora non ci sono report da mostrare."
+    },
+    "status": {
+      "notCovered": "Mese non coperto",
+      "ready": "Pronto dal {{from}}",
+      "todo": "Da completare"
+    },
+    "summary": {
+      "currency": "Valuta {{currency}}",
+      "fiscalCode": "CF {{code}}",
+      "foreignTaxId": "ID estero {{code}}",
+      "iban": "IBAN {{iban}}",
+      "inForce": "Profilo in vigore dal {{from}}",
+      "inForceBetween": "Profilo in vigore dal {{from}} al {{to}}",
+      "residence": "Residenza {{country}}",
+      "vat": "P. IVA {{code}}"
+    },
+    "tabs": {
+      "documents": "Documenti dei soggiorni",
+      "done": "completo",
+      "identity": "Anagrafica",
+      "label": "Sezioni dei dati finanziari",
+      "mandate": "Mandato",
+      "overview": "Riepilogo",
+      "payments": "Pagamenti",
+      "reports": "Report e storico",
+      "rule": "Regola fiscale",
+      "todo": "da completare"
+    },
     "title": "Dati finanziari di {{owner}}",
     "titleGeneric": "Dati finanziari del proprietario",
     "units": {
-      "count": "Appartamenti in affitto breve: {{managed}} gestiti dall'agenzia, {{external}} dichiarati fuori dall'agenzia, {{total}} in tutto.",
+      "chip": {
+        "past": "Oltre il limite",
+        "within": "Entro il limite"
+      },
       "description": "Una persona fisica senza partita IVA può affittare in locazione breve un numero limitato di appartamenti; oltre, l'attività è presunta d'impresa. Contano anche quelli che il proprietario affitta senza passare dall'agenzia.",
       "errors": {
         "units": "Scrivi un numero intero da 0 a {{max}}: 0 se non ne ha."
       },
+      "external": "Dichiarati fuori",
       "hint": "Da 0 a 1000. Scrivi 0 se non ne ha: lasciare vuoto non vale.",
       "label": "Appartamenti che affitta fuori dall'agenzia",
+      "limit": "Limite: {{max}}",
       "loadError": "Non riusciamo a leggere il limite degli appartamenti",
       "loading": "Leggo il limite degli appartamenti…",
+      "managed": "Gestiti dall'agenzia",
       "notApplicable": "Il limite riguarda le persone fisiche senza partita IVA: questo proprietario è già un'impresa e non c'è niente da dichiarare.",
       "notForYou": "Non hai accesso a questi dati.",
       "notFound": "Proprietario non trovato.",
@@ -21839,6 +21931,7 @@
       "save": "Salva il numero",
       "saved": "Numero salvato.",
       "title": "Affitti brevi fuori dall'agenzia",
+      "total": "In tutto",
       "withinLimit": "Entro il limite di {{max}} appartamenti per una persona fisica."
     },
     "warning": {
@@ -21876,8 +21969,7 @@
         "model": "Scegli come riconoscere ricavi, costi e anticipi.",
         "rule": "Seleziona la giurisdizione e la regola approvata dal commercialista.",
         "review": "Verifica il riepilogo. Puoi tornare indietro per correggere i dati."
-      },
-      "edit": "Modifica i dati"
+      }
     }
   },
   "owners": {
@@ -34378,6 +34470,11 @@
     }
   },
   "ownerIssuer": {
+    "chip": {
+      "incomplete": "Da completare",
+      "none": "Da impostare",
+      "ready": "Pronto"
+    },
     "confirmNote": "Le scelte «da confermare» sono valori prudenti: li conferma il commercialista e li puoi cambiare quando vuoi.",
     "description": "In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale: CasaZen lo emette a suo nome. Qui dici chi emette per questo proprietario.",
     "facts": {

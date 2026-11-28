@@ -1,10 +1,11 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Building2, CheckCircle2, ExternalLink, Info, Lock, Scale } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
+import { HelpTip } from '@/components/ui/help-tip';
 import { Input } from '@/components/ui/input';
 import { isFeatureEnabled } from '@/config/feature-flags';
 import { OwnerAccountingError } from '@/features/owner-accounting/components/owner-accounting-error';
@@ -13,6 +14,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useDeclareExternalUnits, useOwnerUnitsCheck } from '@/queries/use-owner-tax-checks';
 import type { OwnerUnitsCheck } from '@/types';
+import { Metric, MetricRow, OwnerCard, QuietNote, StateChip } from './owner-ui';
 
 /** The most apartments an owner can declare outside the agency (the backend refuses more: 422 `owner_external_units_invalid`). */
 const MAX_UNITS = 1000;
@@ -79,15 +81,9 @@ function UnitsForm({ ownerId, check }: { ownerId: string; check: OwnerUnitsCheck
 
 interface OwnerTaxChecksSectionProps {
   ownerId: string;
-  /** Who may write the finances of the owner (`agency.owner.financial.manage`): the others read the number and cannot change it. */
   canManage: boolean;
 }
 
-/**
- * «Affitti brevi fuori dall'agenzia» of an owner (E18/F01/US03/T01, NF-117, ⚖ I8): how many apartments the owner lets short outside the agency and the limit of a private person, counting the ones the agency manages
- * for it. Past the limit the owner is presumed to run a business: its stays get no withholding of the short lets, and the page says so in words, beside the numbers and not as a guess. It exists only behind the flag
- * `taxReportingExports` (the backend answers 404 without it), the number is saved only by who manages the owners' finances and is never a 0 by omission, and a refused read is told as such, never as «within the limit».
- */
 export function OwnerTaxChecksSection({ ownerId, canManage }: OwnerTaxChecksSectionProps) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
@@ -96,8 +92,8 @@ export function OwnerTaxChecksSection({ ownerId, canManage }: OwnerTaxChecksSect
   if (!enabled) return null;
 
   let content;
+  let chip: ReactNode = null;
   if (getHttpStatus(check.error) === 404) {
-    // A 404 is «not found» whatever the cache still holds (a failed read keeps the old data).
     content = (
       <p className="break-words text-sm text-foreground/70" data-testid="owner-units-not-found">
         {t('ownerProfile.units.notFound')}
@@ -113,37 +109,53 @@ export function OwnerTaxChecksSection({ ownerId, canManage }: OwnerTaxChecksSect
     content = <OwnerAccountingError error={check.error} title={t('ownerProfile.units.loadError')} onRetry={() => void check.refetch()} />;
   } else if (check.data === null) {
     content = (
-      <p className="break-words text-sm text-foreground/70" data-testid="owner-units-not-for-you">
+      <QuietNote icon={Lock} data-testid="owner-units-not-for-you">
         {t('ownerProfile.units.notForYou')}
-      </p>
+      </QuietNote>
     );
   } else {
     const data = check.data;
-    content = (
-      <div className="space-y-3">
-        {data.applies ? (
-          <>
-            <p className="break-words text-sm" data-testid="owner-units-count">
-              {t('ownerProfile.units.count', { managed: data.managedUnits, external: data.externalUnits, total: data.totalUnits, max: data.maxUnits })}
-            </p>
-            <p className="break-words text-sm font-medium" data-testid="owner-units-status" data-presumed={data.presumedBusiness}>
-              {data.presumedBusiness ? t('ownerProfile.units.pastLimit', { max: data.maxUnits }) : t('ownerProfile.units.withinLimit', { max: data.maxUnits })}
-            </p>
-            {canManage ? <UnitsForm key={data.externalUnits} ownerId={ownerId} check={data} /> : <p className="break-words text-sm text-foreground/70">{t('ownerProfile.units.readOnly')}</p>}
-          </>
+    if (data.applies) {
+      chip = data.presumedBusiness ? <StateChip tone="warning">{t('ownerProfile.units.chip.past')}</StateChip> : <StateChip tone="success">{t('ownerProfile.units.chip.within')}</StateChip>;
+    }
+    content = data.applies ? (
+      <>
+        <MetricRow columns={3} data-testid="owner-units-count">
+          <Metric icon={Building2} label={t('ownerProfile.units.managed')} value={data.managedUnits} testId="owner-units-managed" />
+          <Metric icon={ExternalLink} label={t('ownerProfile.units.external')} value={data.externalUnits} testId="owner-units-external" />
+          <Metric icon={Scale} label={t('ownerProfile.units.total')} value={data.totalUnits} detail={t('ownerProfile.units.limit', { max: data.maxUnits })} testId="owner-units-total" />
+        </MetricRow>
+        {data.presumedBusiness ? (
+          <Alert variant="warning" data-testid="owner-units-status" data-presumed="true">
+            {t('ownerProfile.units.pastLimit', { max: data.maxUnits })}
+          </Alert>
         ) : (
-          <p className="break-words text-sm text-foreground/70" data-testid="owner-units-not-applicable">
-            {t('ownerProfile.units.notApplicable')}
-          </p>
+          <QuietNote icon={CheckCircle2} data-testid="owner-units-status" data-presumed="false">
+            {t('ownerProfile.units.withinLimit', { max: data.maxUnits })}
+          </QuietNote>
         )}
-      </div>
+        {canManage ? (
+          <UnitsForm key={data.externalUnits} ownerId={ownerId} check={data} />
+        ) : (
+          <QuietNote icon={Lock}>{t('ownerProfile.units.readOnly')}</QuietNote>
+        )}
+      </>
+    ) : (
+      <QuietNote icon={Info} data-testid="owner-units-not-applicable">
+        {t('ownerProfile.units.notApplicable')}
+      </QuietNote>
     );
   }
 
   return (
-    <PlainSection title={t('ownerProfile.units.title')} data-testid="owner-units-section">
-      <p className="break-words text-sm text-foreground/70">{t('ownerProfile.units.description')}</p>
+    <OwnerCard
+      icon={Building2}
+      title={t('ownerProfile.units.title')}
+      chip={chip}
+      help={<HelpTip title={t('ownerProfile.units.title')}>{t('ownerProfile.units.description')}</HelpTip>}
+      data-testid="owner-units-section"
+    >
       {content}
-    </PlainSection>
+    </OwnerCard>
   );
 }

@@ -5731,12 +5731,13 @@ Funzionalità: Elenco dei proprietari; Cosa fa: Mostra ogni proprietario con tip
 Funzionalità: Stato dell'attivazione dei proprietari; Cosa fa: Dice a che punto sono proprietari, quote, dati per i rendiconti e inviti; Dove si trova: Guida › «Vedi tutti i passi» › «Proprietari e rendiconti»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Vedere a che punto è l'attivazione dei proprietari
 Funzionalità: Aggiungere proprietari da file; Cosa fa: Importa i proprietari da un file .csv o .xlsx e li associa agli immobili già in CasaZen, con le quote; Dove si trova: Guida › «Vedi tutti i passi» › «Proprietari e rendiconti»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Aggiungere i proprietari da un file
 Funzionalità: Aggiungere un proprietario a mano; Cosa fa: Controlla e importa una sola riga scritta nella pagina; Dove si trova: «Proprietari e rendiconti» › «Aggiungi a mano»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Aggiungere un proprietario a mano
-Funzionalità: Dati finanziari; Cosa fa: Profilo fiscale, conto di pagamento, mandato, regola fiscale e cosa manca; Dove si trova: Proprietari › «Dati finanziari»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Completare i dati finanziari di un proprietario
+Funzionalità: Dati finanziari; Cosa fa: Una pagina a sezioni con il percorso del proprietario: Riepilogo, Anagrafica, Pagamenti, Mandato, Documenti dei soggiorni, Regola fiscale, Report e storico; Dove si trova: Proprietari › «Dati finanziari»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Completare i dati finanziari di un proprietario
 Funzionalità: Mandato; Cosa fa: Provvigione, IVA, forfait e commissioni sui pagamenti, a versioni nel tempo; Dove si trova: Dati finanziari › Mandato; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Registrare il mandato di un proprietario
-Funzionalità: Regola fiscale; Cosa fa: Dice se c'è una ritenuta al pagamento; l'approvazione del commercialista si registra qui; Dove si trova: Dati finanziari › Regola fiscale e approvazione; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Creare una regola fiscale e registrarne l'approvazione
-Funzionalità: Indirizzo di fatturazione; Cosa fa: Indirizzo per fattura, QR-fattura e bonifico al proprietario; Dove si trova: Dati finanziari › Indirizzo di fatturazione; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Salvare l'indirizzo di fatturazione
-Funzionalità: Emittente dei documenti dei soggiorni; Cosa fa: Dice chi emette il documento del soggiorno per questo proprietario; Dove si trova: Dati finanziari › Emittente dei documenti dei soggiorni; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Impostare chi emette i documenti dei soggiorni
-Funzionalità: Affitti brevi fuori dall'agenzia; Cosa fa: Conta gli appartamenti che il proprietario affitta senza di te, per la regola dell'«impresa presunta»; Dove si trova: Dati finanziari › Affitti brevi fuori dall'agenzia; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Dichiarare gli appartamenti affittati fuori dall'agenzia
+Funzionalità: Regola fiscale; Cosa fa: Dice se c'è una ritenuta al pagamento; l'approvazione del commercialista si registra qui; Dove si trova: Dati finanziari › Regola fiscale; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Creare una regola fiscale e registrarne l'approvazione
+Funzionalità: Indirizzo di fatturazione; Cosa fa: Indirizzo per fattura, QR-fattura e bonifico al proprietario; Dove si trova: Dati finanziari › Pagamenti; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Salvare l'indirizzo di fatturazione
+Funzionalità: Emittente dei documenti dei soggiorni; Cosa fa: Dice chi emette il documento del soggiorno per questo proprietario; Dove si trova: Dati finanziari › Documenti dei soggiorni; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Impostare chi emette i documenti dei soggiorni
+Funzionalità: Affitti brevi fuori dall'agenzia; Cosa fa: Conta gli appartamenti che il proprietario affitta senza di te, per la regola dell'«impresa presunta»; Dove si trova: Dati finanziari › Regola fiscale; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Dichiarare gli appartamenti affittati fuori dall'agenzia
+Funzionalità: Documenti emessi a nome del proprietario; Cosa fa: Un solo file ZIP per il commercialista del proprietario, con i documenti di un mese o di un anno; Dove si trova: Dati finanziari › Report e storico; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Scaricare i documenti emessi per il commercialista del proprietario
 Funzionalità: Inviti al portale; Cosa fa: Invia ai proprietari il link per entrare nel portale; Dove si trova: Proprietari e rendiconti › «4. Accesso al portale»; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Invitare i proprietari al portale
 Funzionalità: Portale del proprietario; Cosa fa: Rendiconti, calendario, documenti, messaggi e contatti, dalla parte del proprietario; Dove si trova: Indirizzo del portale (arriva con l'invito); Chi può usarla: proprietario; Disponibilità: Su attivazione; Come si usa: Usare il portale (parte «Il portale del proprietario»)
 Funzionalità: Commissioni dei canali; Cosa fa: Dice quanto trattiene un portale quando la prenotazione non riporta la commissione; Dove si trova: Amministrazione › Chiusura mensile › Commissioni dei canali; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Impostare le commissioni dei canali
@@ -5824,7 +5825,7 @@ Ti serve: essere titolare o amministratore, il piano Agency e il percorso «Iniz
 1. Apri Guida (in alto) › «Vedi tutti i passi» e, nella pagina «Inizia con CasaZen», premi «Apri» sulla riga «Proprietari e rendiconti». La riga dice quanti proprietari ci sono e quanti hanno dati da completare.
 2. Leggi «Come stanno le due parti dell'attivazione»: «Strutture operative» (gli immobili funzionano con i canali) e «Rendicontazione proprietari» (finché è da completare, i rendiconti non partono; il riquadro elenca gli immobili e i proprietari che mancano, con il motivo).
 3. Leggi le quattro fasi («1. Proprietari», «2. Associazioni e quote», «3. Dati per rendiconti», «4. Accesso al portale»): ognuna è «Da iniziare», «Da completare» o «Completato». Parti dalla prima che non è completata.
-4. Per un solo proprietario apri Amministrazione › Proprietari › «Dati finanziari»: il riquadro in alto dice se i dati sono pronti o cosa manca, e più sotto «Cosa manca nell'attivazione» ha il pulsante «Completa nell'attivazione».
+4. Per un solo proprietario apri Amministrazione › Proprietari › «Dati finanziari»: nel «Riepilogo» il riquadro in alto dice se i dati sono pronti o cosa manca, «Il percorso» mostra i passi con il loro stato e, in fondo, «Cosa manca nell'attivazione» ha il pulsante «Completa nell'attivazione».
 
 #### Controllare l'elenco dei proprietari
 
@@ -5866,20 +5867,21 @@ I dati scritti restano nella pagina solo finché lavori lì: non vengono salvati
 #### Completare i dati finanziari di un proprietario
 
 Ti serve: essere titolare o amministratore. Per ogni proprietario tieni pronti: codice fiscale o partita IVA (o l'identificativo fiscale estero), residenza fiscale, nome legale e indirizzo, IBAN e valuta di pagamento, il mandato (provvigione, IVA, eventuali forfait), l'indirizzo di fatturazione e la regola fiscale approvata dal commercialista (Creare una regola fiscale e registrarne l'approvazione). Si compila un proprietario alla volta, in sette schermate; il file dei proprietari può già portare valuta, IBAN e BIC. Con tanti proprietari prepara prima una tabella con questi dati.
-1. Apri Amministrazione › Proprietari e premi «Dati finanziari» del proprietario. La pagina si intitola «Dati finanziari di» e il nome.
-2. Leggi il riquadro in evidenza, in alto: dice se i dati sono pronti («I dati sono pronti dal…») o cosa manca («Manca la regola fiscale», «I dati finanziari sono incompleti», «La regola fiscale aspetta l'approvazione»…). Il pulsante grande è il prossimo passo: «Completa i dati», «Crea una regola» o «Registra l'approvazione».
-3. Premi «Nuova versione dei dati» (in alto) oppure «Completa i dati». Si apre una procedura in sette passi: «Chi è il proprietario?», «Residenza e dati fiscali», «Come riceve i pagamenti?», «Il mandato di gestione», «Ricavi e commissioni», «La regola contabile» e «Controlla i dati». Usa «Continua» e «Indietro».
-4. Scegli «Vale dal» (il primo giorno in cui i nuovi dati valgono: per il primo profilo, il primo giorno del primo mese che devi ancora chiudere) e compila i campi: tipo di soggetto, nome legale, residenza fiscale, codice fiscale o partita IVA, valuta e IBAN, ruolo e periodo del mandato («Locatore», «Proprietario» o «Usufruttuario»), «Quando contano gli incassi», «Spese e commissioni», «Fondo di cassa», giurisdizione (per esempio IT, CH o CH-TI: il paese o cantone di cui valgono le regole fiscali del proprietario) e «Regola fiscale».
+1. Apri Amministrazione › Proprietari e premi «Dati finanziari» del proprietario. La pagina si intitola «Dati finanziari di» e il nome; accanto al titolo vedi lo stato: «Pronto dal…» oppure «Da completare».
+2. Si apre il «Riepilogo». Leggi il riquadro in evidenza, in alto: dice se i dati sono pronti («I dati sono pronti dal…») o cosa manca («Manca la regola fiscale», «I dati finanziari sono incompleti», «La regola fiscale aspetta l'approvazione»…). Il pulsante grande è il prossimo passo: «Completa i dati», «Crea una regola» o «Registra l'approvazione».
+3. Sotto, «Il percorso» elenca i passi: «Anagrafica», «Pagamenti», «Mandato», «Documenti dei soggiorni» (su attivazione) e «Regola fiscale». Ognuno dice «Completo» o «Da completare» e mostra i dati principali; premilo per aprire la sua sezione. Le stesse sezioni sono nell'elenco a sinistra (sul telefono, nel menu sopra la pagina), ognuna con la spunta o il segnale di attenzione, più «Report e storico».
+4. Premi «Nuova versione dei dati» (in alto) oppure «Completa i dati». Si apre una procedura in sette passi: «Chi è il proprietario?», «Residenza e dati fiscali», «Come riceve i pagamenti?», «Il mandato di gestione», «Ricavi e commissioni», «La regola contabile» e «Controlla i dati». Usa «Continua» e «Indietro». Se premi «Modifica» in una sezione la procedura si apre già al passo che la riguarda.
+5. Scegli «Vale dal» (il primo giorno in cui i nuovi dati valgono: per il primo profilo, il primo giorno del primo mese che devi ancora chiudere) e compila i campi: tipo di soggetto, nome legale, residenza fiscale, codice fiscale o partita IVA, valuta e IBAN, ruolo e periodo del mandato («Locatore», «Proprietario» o «Usufruttuario»), «Quando contano gli incassi», «Spese e commissioni», «Fondo di cassa», giurisdizione (per esempio IT, CH o CH-TI: il paese o cantone di cui valgono le regole fiscali del proprietario) e «Regola fiscale».
    - «Quando contano gli incassi» decide in quale mese entra nel rendiconto l'incasso di un soggiorno: «Quando incassa» oppure «Alla fine del soggiorno».
    - «Spese e commissioni» («Al lordo» o «Al netto della commissione») e «Fondo di cassa» («Nessun fondo» o «Fondo di riserva») sono scelte di contabilità: se non sai quale scegliere, chiedilo al commercialista.
-5. Premi «Salva la nuova versione». Compare «Dati finanziari salvati».
-Cosa succede dopo: la versione vale dal giorno scelto; quella di prima finisce il giorno prima. Quello che è già registrato non cambia. La pagina mostra anche «Versioni precedenti».
+6. Premi «Salva la nuova versione». Compare «Dati finanziari salvati».
+Cosa succede dopo: la versione vale dal giorno scelto; quella di prima finisce il giorno prima. Quello che è già registrato non cambia. In «Report e storico» trovi lo «Storico delle versioni».
 Attenzione: il primo profilo di un proprietario vale dal giorno scelto in poi: i mesi prima restano bloccati e un profilo non si può spostare indietro dopo. Fallo partire dal primo mese che devi ancora chiudere. Se i dati partono dopo il mese che stai chiudendo, vedi «I dati non coprono» quel mese e il suo rendiconto resta bloccato.
-Sotto il riquadro in evidenza trovi anche «Cosa manca nell'attivazione»: l'elenco delle cose da completare (mandato, quote, conto, indirizzo…) con il pulsante «Completa nell'attivazione».
+In fondo al «Riepilogo» trovi anche «Cosa manca nell'attivazione»: l'elenco delle cose da completare (mandato, quote, conto, indirizzo…) con il pulsante «Completa nell'attivazione». Dove un dato che serve ai rendiconti manca, la sezione lo scrive in giallo («Da indicare»).
 
 #### Registrare il mandato di un proprietario
 
-1. Apri i Dati finanziari del proprietario e vai alla sezione Mandato.
+1. Apri i Dati finanziari del proprietario e vai alla sezione Mandato: in alto vedi il mandato in vigore, con la provvigione e i forfait in evidenza, e le altre versioni in un elenco che si apre.
 2. Premi «Nuova versione».
 3. Scrivi «Valido dal» (deve essere dopo l'inizio dell'ultima versione) e la «Provvigione (%)», da 0 a 100.
 4. Scegli «IVA sulla provvigione e sui forfait»: «+ IVA» (l'IVA si aggiunge in fattura) oppure «IVA inclusa».
@@ -5891,7 +5893,7 @@ Sotto il riquadro in evidenza trovi anche «Cosa manca nell'attivazione»: l'ele
 #### Creare una regola fiscale e registrarne l'approvazione
 
 Ti serve: essere titolare o amministratore e un commercialista che ti dia i valori. Senza una regola approvata il pagamento a un proprietario non si registra e sul mese compaiono anomalie. Chiedi al commercialista: 1) se c'è una ritenuta e, se sì, aliquota e codice tributo; 2) quali voci entrano nella base (codici come «rent», «cleaning»); 3) l'indirizzo (https) della norma o fonte ufficiale e la sua impronta, il codice di 64 caratteri che identifica quel documento; 4) da quando vale; 5) per quanti anni conservare le prove. Se per quel proprietario non c'è ritenuta, lascia vuota la casella «La regola prevede una ritenuta al pagamento». La regola approvata si sceglie poi nei dati di ogni proprietario: non va rifatta ogni volta.
-1. In Dati finanziari, sezione «Regola fiscale e approvazione», premi «Nuova regola».
+1. In Dati finanziari apri la sezione «Regola fiscale»: nella scheda «Regola fiscale e approvazione» premi «Nuova regola».
 2. Scrivi codice e versione della regola, la giurisdizione (per esempio IT, CH o CH-TI) e da quando vale.
 3. Se la regola prevede una ritenuta al pagamento, spunta «La regola prevede una ritenuta al pagamento» e scrivi «Aliquota della ritenuta (%)», «Codice tributo» e le «Voci della base lorda».
 4. Scrivi l'indirizzo della fonte ufficiale (https://) e la sua impronta (64 caratteri), l'arrotondamento e gli anni di conservazione.
@@ -5902,7 +5904,7 @@ Una regola approvata non si cambia più: per cambiare un valore serve una nuova 
 
 #### Salvare l'indirizzo di fatturazione
 
-1. Nei Dati finanziari, sezione «Indirizzo di fatturazione», scrivi «Via», «Numero civico», «CAP», «Località», «Provincia o cantone» e «Paese» (due lettere, per esempio IT o CH).
+1. Nei Dati finanziari apri la sezione «Pagamenti»: nella scheda «Indirizzo di fatturazione» premi «Modifica» e scrivi «Via», «Numero civico», «CAP», «Località», «Provincia o cantone» e «Paese» (due lettere, per esempio IT o CH).
 2. In Italia la provincia è obbligatoria (le due lettere della sigla).
 3. Premi «Salva l'indirizzo». Salvandolo sostituisci quello di prima.
 Serve per la fattura dell'agenzia, la QR-fattura e il bonifico al proprietario.
@@ -5910,7 +5912,7 @@ Serve per la fattura dell'agenzia, la QR-fattura e il bonifico al proprietario.
 #### Impostare chi emette i documenti dei soggiorni
 
 Questa parte è su attivazione. In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale: CasaZen lo emette a suo nome.
-1. Nei Dati finanziari, sezione «Emittente dei documenti dei soggiorni», scegli «Chi emette»: «Persona fisica» (ricevuta a suo nome, con il bollo quando serve), «Regime forfettario» (fattura senza IVA) o «Società o professionista» (fattura elettronica con il suo sezionale).
+1. Nei Dati finanziari apri la sezione «Documenti dei soggiorni» e premi «Modifica» nella scheda «Emittente dei documenti dei soggiorni»; scegli «Chi emette»: «Persona fisica» (ricevuta a suo nome, con il bollo quando serve), «Regime forfettario» (fattura senza IVA) o «Società o professionista» (fattura elettronica con il suo sezionale).
 2. Compila i dati richiesti: nome, codice fiscale, partita IVA se c'è, indirizzo, sezionale, «IVA sul soggiorno» e gli altri campi che vedi.
 3. Premi «Salva il profilo». Se manca qualcosa leggi «Mancano ancora…»: finché il profilo non è completo CasaZen non prepara i documenti dei suoi soggiorni.
 Le scelte «da confermare» sono valori prudenti: li conferma il commercialista e li puoi cambiare quando vuoi. Come funzionano poi i documenti è in Regime fiscale e documenti fiscali.
@@ -5918,10 +5920,18 @@ Le scelte «da confermare» sono valori prudenti: li conferma il commercialista 
 #### Dichiarare gli appartamenti affittati fuori dall'agenzia
 
 Questa parte è su attivazione. Una persona fisica senza partita IVA può affittare in locazione breve un numero limitato di appartamenti. Oltre quel limite l'attività è presunta d'impresa: il proprietario appare con l'avviso «Impresa presunta» e i suoi soggiorni non hanno la ritenuta delle locazioni brevi. Contano anche gli appartamenti che affitta senza passare da te.
-1. Apri i Dati finanziari del proprietario e vai a «Affitti brevi fuori dall'agenzia».
+1. Apri i Dati finanziari del proprietario, sezione «Regola fiscale», e vai alla scheda «Affitti brevi fuori dall'agenzia»: tre numeri dicono quanti appartamenti gestisci tu, quanti sono dichiarati fuori e il totale rispetto al limite.
 2. Scrivi in «Appartamenti che affitta fuori dall'agenzia» un numero intero da 0 al massimo indicato. Scrivi 0 se non ne ha: lasciare vuoto non vale.
 3. Premi «Salva il numero».
 L'avviso non blocca niente: rendiconti e pagamenti vanno avanti. La pagina suggerisce di valutare un profilo emittente d'impresa.
+
+#### Scaricare i documenti emessi per il commercialista del proprietario
+
+Questa parte è su attivazione. Serve che CasaZen abbia emesso dei documenti a nome del proprietario.
+1. Apri i Dati finanziari del proprietario e vai alla sezione «Report e storico».
+2. Nella scheda «Documenti emessi a nome del proprietario» scegli il «Periodo»: un mese oppure un anno.
+3. Premi «Scarica per il commercialista del proprietario» e aspetta il file. Se qualcosa non va, la pagina lo scrive accanto al pulsante.
+Il file è uno solo (ZIP): contiene i PDF e gli XML dei documenti emessi a nome del proprietario nel periodo, il loro elenco (CSV ed Excel) e l'indice con l'impronta di ogni file.
 
 #### Invitare i proprietari al portale
 

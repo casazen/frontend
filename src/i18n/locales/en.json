@@ -20637,15 +20637,19 @@
     },
     "version": {
       "between": "From {{from}} to {{to}}",
-      "cleaning": "Cleaning flat fee per stay: {{amount}}",
-      "document": "Signed mandate: on file",
+      "documentMissing": "Not recorded",
+      "documentPresent": "On file",
+      "ended": "Ended",
       "feesAgency": "Fees on card payments: borne by the agency",
+      "feesAgencyShort": "Paid by the agency",
       "feesOwner": "Fees on card payments: borne by the owner",
+      "feesOwnerShort": "Paid by the owner",
       "from": "From {{from}}",
       "inForce": "In force",
-      "linen": "Linen flat fee per stay: {{amount}}",
       "noDocument": "Signed mandate: not recorded",
-      "terms": "Commission {{percent}}, {{vat}}. Base: {{base}}.",
+      "others_one": "One other version",
+      "others_other": "{{count}} other versions",
+      "perStay": "per stay",
       "upcoming": "Not in force yet"
     }
   },
@@ -21570,6 +21574,9 @@
     }
   },
   "ownerProfile": {
+    "actions": {
+      "edit": "Edit"
+    },
     "approveDialog": {
       "confirm": "Record the approval",
       "consequence1": "The approval stays on record with the name and the date.",
@@ -21580,7 +21587,7 @@
       "nameHint": "The accountant or the qualified person who approved the rule.",
       "title": "Approval of rule {{rule}} version {{version}}"
     },
-    "description": "Who the owner is for statements, payments and withholdings, how he is paid and which tax rule applies. Sensitive data is hidden.",
+    "descriptionShort": "Data for statements, payments and withholding.",
     "dialog": {
       "choose": "Choose…",
       "countryHint": "Two letters, for example IT or CH.",
@@ -21610,6 +21617,7 @@
     "facts": {
       "empty": "Not given",
       "hide": "Hide the data",
+      "missing": "To be set",
       "reveal": "Show the full data",
       "rule": "rule {{rule}} version {{version}}",
       "title": "Profile in force",
@@ -21676,7 +21684,7 @@
     "history": {
       "current": "In force",
       "noRule": "No rule",
-      "title": "Earlier versions"
+      "title": "Version history"
     },
     "loadError": "We cannot read the financial data.",
     "loading": "Reading the financial data…",
@@ -21690,9 +21698,12 @@
     "notFound": "This owner does not exist",
     "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
     "onboarding": {
+      "allClear": "All clear",
       "complete": "The activation reports nothing left to complete for this owner.",
       "completeAction": "Complete it in the activation",
       "title": "What the activation still misses",
+      "toFix_one": "{{count}} thing to fix",
+      "toFix_other": "{{count}} things to fix",
       "unavailable": "The owners' activation is not available now: shares and mandate are completed there once it is."
     },
     "options": {
@@ -21727,18 +21738,62 @@
       "title": "Shares by period",
       "until": "to {{date}}"
     },
+    "panels": {
+      "role": "Role and length of the mandate"
+    },
+    "path": {
+      "currencyMissing": "Currency to set",
+      "documents": {
+        "incomplete": "Some data is missing",
+        "none": "No issuer profile",
+        "ready": "Ready to issue"
+      },
+      "ibanMissing": "Account to set",
+      "notFilled": "To fill in",
+      "open": "Open",
+      "progress": "{{done}} of {{total}} steps complete",
+      "progressLabel": "Progress of the path",
+      "rule": {
+        "approvedBy": "Approved by {{name}}",
+        "value": "{{rule}} version {{version}}"
+      },
+      "status": {
+        "documents": {
+          "done": "Ready",
+          "todo": "To complete"
+        },
+        "identity": {
+          "done": "Complete",
+          "todo": "To complete"
+        },
+        "mandate": {
+          "done": "In force",
+          "todo": "Missing"
+        },
+        "payments": {
+          "done": "Complete",
+          "todo": "To complete"
+        },
+        "rule": {
+          "done": "Approved",
+          "todo": "To approve"
+        }
+      },
+      "step": "Step {{number}}",
+      "title": "The path"
+    },
     "policy": {
       "approve": "Record the approval",
       "approved": "Approved",
       "approvedBy": "Approved by {{name}} on {{date}}.",
       "approvedShort": "approved",
-      "available": "Tax rules of the agency: {{count}}",
       "components": "Base items",
       "hash": "fingerprint {{hash}}…",
       "name": "{{rule}} version {{version}} · {{jurisdiction}}",
       "new": "New rule",
       "no": "No",
       "none": "The profile has no tax rule.",
+      "openSource": "Open the document",
       "pending": "To approve",
       "pendingShort": "to approve",
       "rate": "Rate",
@@ -21751,6 +21806,7 @@
       "source": "Official source",
       "taxCode": "Tax code",
       "title": "Tax rule and approval",
+      "validity": "Validity",
       "waiting": "It is waiting for the accountant's approval.",
       "withholding": "Withholding at payment",
       "years_one": "{{count}} year",
@@ -21819,18 +21875,54 @@
       "taxResidenceMissing": "The tax residence is missing.",
       "vatNumberInvalid": "The VAT number is not valid."
     },
+    "reports": {
+      "empty": "There are no reports to show yet."
+    },
+    "status": {
+      "notCovered": "Month not covered",
+      "ready": "Ready from {{from}}",
+      "todo": "To complete"
+    },
+    "summary": {
+      "currency": "Currency {{currency}}",
+      "fiscalCode": "Tax code {{code}}",
+      "foreignTaxId": "Foreign ID {{code}}",
+      "iban": "IBAN {{iban}}",
+      "inForce": "Profile in force from {{from}}",
+      "inForceBetween": "Profile in force from {{from}} to {{to}}",
+      "residence": "Resident in {{country}}",
+      "vat": "VAT no. {{code}}"
+    },
+    "tabs": {
+      "documents": "Stay documents",
+      "done": "complete",
+      "identity": "Identity",
+      "label": "Sections of the financial data",
+      "mandate": "Mandate",
+      "overview": "Overview",
+      "payments": "Payments",
+      "reports": "Reports and history",
+      "rule": "Tax rule",
+      "todo": "to complete"
+    },
     "title": "Financial data of {{owner}}",
     "titleGeneric": "Owner's financial data",
     "units": {
-      "count": "Short-let apartments: {{managed}} managed by the agency, {{external}} declared outside the agency, {{total}} in all.",
+      "chip": {
+        "past": "Over the limit",
+        "within": "Within the limit"
+      },
       "description": "A natural person without a VAT number may let a limited number of apartments as short lets; beyond it, the activity is presumed to be a business. The ones the owner lets without the agency count too.",
       "errors": {
         "units": "Write a whole number from 0 to {{max}}: 0 if there are none."
       },
+      "external": "Declared outside",
       "hint": "From 0 to 1000. Write 0 if there are none: leaving it empty does not count.",
       "label": "Apartments let outside the agency",
+      "limit": "Limit: {{max}}",
       "loadError": "We cannot read the limit of apartments",
       "loading": "Reading the limit of apartments…",
+      "managed": "Managed by the agency",
       "notApplicable": "The limit is about natural persons without a VAT number: this owner is a business already and there is nothing to declare.",
       "notForYou": "You have no access to this data.",
       "notFound": "Owner not found.",
@@ -21839,6 +21931,7 @@
       "save": "Save the number",
       "saved": "Number saved.",
       "title": "Short lets outside the agency",
+      "total": "In total",
       "withinLimit": "Within the limit of {{max}} apartments for a natural person."
     },
     "warning": {
@@ -21876,8 +21969,7 @@
         "model": "Choose how revenue, expenses and advances are recognized.",
         "rule": "Select the jurisdiction and the policy approved by the accountant.",
         "review": "Check the summary. Go back to correct any details."
-      },
-      "edit": "Edit details"
+      }
     }
   },
   "owners": {
@@ -34378,6 +34470,11 @@
     }
   },
   "ownerIssuer": {
+    "chip": {
+      "incomplete": "To complete",
+      "none": "To set up",
+      "ready": "Ready"
+    },
     "confirmNote": "The choices «to confirm» are prudent values: the accountant confirms them, and you can change them whenever you want.",
     "description": "In Italy the owner issues the document of the stay, with its own data and its own series: CasaZen issues it in its name. Here you say who issues for this owner.",
     "facts": {
