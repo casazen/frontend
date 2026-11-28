@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { CrmApi } from '@/api/crm.api';
 import { queryClient as appQueryClient } from '@/lib/query-client';
 import type { CrmProfileDetail } from '@/types/crm.types';
-import { useGuestCrmProfile, useGuestCrmProfiles } from '../crm';
+import { CRM_GUESTS_KEY, useCrmOverview, useGuestCrmProfile, useGuestCrmProfiles } from '../crm';
 
 vi.mock('@/api/crm.api', () => ({
   CrmApi: { getGuests: vi.fn(), getGuest: vi.fn(), setTags: vi.fn(), sendConfirmation: vi.fn() },
@@ -51,5 +51,48 @@ describe('the CRM profiles are read again on every visit, with the options of th
 
     await waitFor(() => expect(CrmApi.getGuest).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(second.result.current.isFetching).toBe(false));
+  });
+
+  it('useCrmOverview_AsksFourListsOfOneRow_AndReadsTheirTotals', async () => {
+    vi.mocked(CrmApi.getGuests).mockImplementation(async (params) => {
+      const totalCount = params?.minStays === 3 ? 6 : params?.minStays === 2 ? 14 : params?.reachableByEmail ? 25 : 40;
+      return { items: [], totalCount, page: 1, pageSize: 1 };
+    });
+
+    const { result } = renderHook(() => useCrmOverview(), { wrapper });
+
+    await waitFor(() => expect(result.current).toEqual({ guests: 40, reachableByEmail: 25, returned: 14, loyal: 6 }));
+    expect(vi.mocked(CrmApi.getGuests).mock.calls.map(([params]) => params)).toEqual(
+      expect.arrayContaining([
+        { page: 1, pageSize: 1 },
+        { reachableByEmail: true, page: 1, pageSize: 1 },
+        { minStays: 2, page: 1, pageSize: 1 },
+        { minStays: 3, page: 1, pageSize: 1 },
+      ]),
+    );
+  });
+
+  it('useCrmOverview_OneListFails_IsUndefinedSoTheStripIsNeverHalfDrawn', async () => {
+    client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    vi.mocked(CrmApi.getGuests).mockImplementation(async (params) => {
+      if (params?.minStays === 3) throw new Error('boom');
+      return { items: [], totalCount: 7, page: 1, pageSize: 1 };
+    });
+
+    const { result } = renderHook(() => useCrmOverview(), { wrapper });
+
+    await waitFor(() => expect(CrmApi.getGuests).toHaveBeenCalledTimes(4));
+    await waitFor(() => expect(client.isFetching()).toBe(0));
+    expect(result.current).toBeUndefined();
+  });
+
+  it('useCrmOverview_ATagOrAMergeChangesTheList_ReadsTheNumbersAgain', async () => {
+    const { result } = renderHook(() => useCrmOverview(), { wrapper });
+    await waitFor(() => expect(result.current).toBeDefined());
+    expect(CrmApi.getGuests).toHaveBeenCalledTimes(4);
+
+    await client.invalidateQueries({ queryKey: CRM_GUESTS_KEY });
+
+    expect(CrmApi.getGuests).toHaveBeenCalledTimes(8);
   });
 });

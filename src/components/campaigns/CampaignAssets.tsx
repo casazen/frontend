@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { CalendarDays, ChevronDown, Mail, Megaphone, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiClient } from '@/api/client';
 import { assetQueryKey, saveAssetDraft, type GeneratedContent } from '@/api/marketing-studio.api';
 import { Button } from '@/components/ui/button';
+import { eventDateText } from '@/features/marketing/event-date';
+import { ToneTile } from '@/features/marketing/tone-tile';
+import { cn } from '@/lib/utils';
 import { MarketingError } from './MarketingInputs';
 
 const assets = '/campaigns/studio/assets';
@@ -26,7 +30,7 @@ export function CampaignAssets() {
 }
 
 function Asset({ item }: { item: GeneratedContent }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const client = useQueryClient();
   const [showResults, setResults] = useState(false);
   const [open, setOpen] = useState(false);
@@ -67,11 +71,24 @@ function Asset({ item }: { item: GeneratedContent }) {
       ),
     onSuccess: () => toast.success(t('marketingStudio.copied')),
   });
+  const ChannelIcon = email ? Mail : item.channel.endsWith('-ads') ? Megaphone : Share2;
   return (
-    <article className="rounded-xl border bg-card p-4">
-      <button type="button" className="w-full text-left" onClick={() => setOpen(!open)} aria-expanded={open}>
-        <span className="text-sm text-muted-foreground">{t('marketingStudio.channels.' + item.channel)}</span>
-        <h3 className="font-semibold">{item.subject}</h3>
+    <article className="rounded-2xl border bg-card p-4 sm:p-5">
+      <button type="button" className="flex w-full items-start gap-3 text-left" onClick={() => setOpen(!open)} aria-expanded={open}>
+        <ToneTile icon={ChannelIcon} tone={email ? 'neutral' : 'info'} />
+        <span className="min-w-0 flex-1 space-y-0.5">
+          <span className="block text-xs font-semibold uppercase tracking-wide text-foreground/70">{t('marketingStudio.channels.' + item.channel)}</span>
+          <span className="block break-words font-semibold leading-snug">{item.subject}</span>
+          {item.sourceEvent ? (
+            <span className="flex items-center gap-1.5 pt-0.5 text-sm text-foreground/75">
+              <CalendarDays aria-hidden="true" className="size-4 shrink-0" />
+              <span className="min-w-0 break-words">
+                {item.sourceEvent.name} · {eventDateText(item.sourceEvent.date, i18n.language)}
+              </span>
+            </span>
+          ) : null}
+        </span>
+        <ChevronDown aria-hidden="true" className={cn('mt-1 size-5 shrink-0 text-foreground/60 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <div className="mt-3 space-y-3">

@@ -268,7 +268,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     it('GroupedNavLinks_PagesOfASection_AreNotEntriesOfTheMenu', () => {
       renderNav('/app/short-rent');
 
-      for (const name of ['Ospiti', 'CRM Ospiti', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Da approvare', 'Profilo']) {
+      for (const name of ['Ospiti', 'Ospiti e marketing', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Da approvare', 'Profilo']) {
         expect(screen.queryByRole('link', { name }), name).not.toBeInTheDocument();
       }
     });

@@ -106,21 +106,29 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
     expect(CrmMergeApi.getCandidates).toHaveBeenCalledWith(1, 20);
     expect(card.getByTestId('crm-merge-likelihood')).toHaveTextContent('Molto probabilmente la stessa persona');
     const reasons = within(card.getByTestId('crm-merge-reasons'));
-    expect(reasons.getByText('Hanno lo stesso nome e la stessa data di nascita.')).toBeInTheDocument();
-    expect(reasons.getByText('Hanno lo stesso numero di telefono.')).toBeInTheDocument();
+    expect(reasons.getByText('Stesso nome e stessa data di nascita')).toBeInTheDocument();
+    expect(reasons.getByText('Stesso numero di telefono')).toBeInTheDocument();
 
     const [first, second] = card.getAllByTestId('crm-merge-profile').map((section) => within(section));
     expect(first.getByRole('heading', { name: 'Mario Rossi' })).toBeInTheDocument();
     expect(first.getByText('IT')).toBeInTheDocument();
-    expect(first.getByText('3')).toBeInTheDocument();
-    expect(first.getByText('14 set 2026')).toBeInTheDocument();
+    expect(first.getByText('3 soggiorni')).toBeInTheDocument();
+    expect(first.getByText('Ultimo soggiorno 14 set 2026')).toBeInTheDocument();
     expect(first.getByText('Casa Mare, Trullo Verde')).toBeInTheDocument();
-    expect(first.getByText(/E-mail · Prenotazione sul sito diretto/)).toBeInTheDocument();
     expect(first.getByText('m***@example.it')).toBeInTheDocument();
     expect(second.getByRole('heading', { name: 'M. Rossi' })).toBeInTheDocument();
     expect(second.getByText(i18n.t('crm.merge.profile.noStay'))).toBeInTheDocument();
-    expect(second.getByText(/Telefono · Check-in online/)).toBeInTheDocument();
     expect(second.getByText('*********567')).toBeInTheDocument();
+  });
+
+  it('MergePage_ACard_PutsTheTwoGuestsFacingEachOtherWithTheirFacesAndTheLikelihoodBetween', async () => {
+    renderPage();
+
+    const card = within(await screen.findByTestId('crm-merge-card'));
+    expect(card.getAllByTestId('crm-avatar')).toHaveLength(2);
+    expect(card.getAllByRole('heading')[0]).toBe(card.getByTestId('crm-merge-likelihood'));
+    expect(card.getByTestId('crm-merge-open')).toHaveTextContent(i18n.t('crm.merge.card.merge'));
+    expect(card.getByTestId('crm-merge-dismiss-open')).toHaveTextContent(i18n.t('crm.merge.card.notSame'));
   });
 
   it('MergePage_ACard_NeverShowsADateOfBirthOrADocument', async () => {
@@ -129,7 +137,7 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
     renderPage();
 
     const text = (await screen.findByTestId('crm-merge-card')).textContent ?? '';
-    expect(text).toContain('la stessa data di nascita');
+    expect(text).toContain('stessa data di nascita');
     expect(text).not.toMatch(/nascita[^.]*\d/i);
     expect(text).not.toMatch(/document|passaport|codice fiscale|identity|birth date of/i);
     expect(text.match(/\d{1,2} [a-z]{3} \d{4}/gi)).toEqual(['14 set 2026']);
@@ -278,7 +286,7 @@ describe('MergePage: the merge proposals the host decides (E07/F01/US04/T03)', (
 
     renderPage();
     expect(await screen.findAllByTestId('crm-merge-card')).toHaveLength(2);
-    expect(screen.getByTestId('crm-merge-count')).toHaveTextContent('45 proposte da rivedere');
+    expect(screen.getByTestId('crm-merge-count')).toHaveTextContent('45 schede da controllare');
 
     fireEvent.click(screen.getByRole('button', { name: i18n.t('listView.pagination.next') }));
 

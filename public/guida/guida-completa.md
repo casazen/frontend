@@ -131,7 +131,7 @@ Gruppo: La tua offerta; Voce: Immobili; Schede in alto: Interventi, Fornitori fi
 Gruppo: La tua offerta; Voce: Sito di prenotazione; Schede in alto: –
 Gruppo: La tua offerta; Voce: Marketplace; Schede in alto: –
 Gruppo: Gestione; Voce: Incassi; Schede in alto: Ricavi, Report, Commercialista (su attivazione), Documenti, Regime fiscale, Documenti fiscali (su attivazione)
-Gruppo: Gestione; Voce: CRM Ospiti (su attivazione); Schede in alto: Pubblici, Campagne, Duplicati
+Gruppo: Gestione; Voce: Ospiti e marketing (su attivazione); Schede in alto: Ospiti, Gruppi, Campagne, Schede doppie
 Gruppo: In fondo; Voce: Impostazioni; Schede in alto: Organizzazione, Consiglia CasaZen, Aspetto sito, Dominio pubblico, Incorpora nel tuo sito (su attivazione), Documenti sito, Stripe Connect, Piano, Fatturazione, Portale ospiti (su attivazione), AI
 Non vedi tutte le voci: dipendono da ruolo, permessi e funzioni attive. In Amministrazione trovi «Home», «Persone», «Immobili», in fondo «Fatturazione» e «Impostazioni» (con il piano Agency anche «Proprietari» e «Chiusura mensile»). Affitti lunghi ha «Panoramica», «Immobili» e, in fondo, «Impostazioni» (schede «Organizzazione», «Consiglia CasaZen», «Piano», «Fatturazione»).
 
@@ -608,7 +608,7 @@ Riservatezza.
 #### Impostazioni AI
 
 Impostazioni › AI raccoglie ciò che usa l'intelligenza artificiale. Serve poter modificare gli immobili. Trovi:
-- Routine AI («Apri le routine», «Sfoglia i modelli»): «Organizza il lavoro sugli arrivi e le partenze. Scegli cosa avvia una routine, controlla le azioni e provala prima di attivarla». Esempio: «Al check-out › Richiedi la pulizia dell'immobile». Se il tuo piano non include il modulo, vedi «Il modulo non è attivo per la tua organizzazione» e, per l'amministratore, «Gestisci piano e moduli». Vedi Routine AI, CRM e marketing.
+- Routine AI («Apri le routine», «Sfoglia i modelli»): «Organizza il lavoro sugli arrivi e le partenze. Scegli cosa avvia una routine, controlla le azioni e provala prima di attivarla». Esempio: «Al check-out › Richiedi la pulizia dell'immobile». Se il tuo piano non include il modulo, vedi «Il modulo non è attivo per la tua organizzazione» e, per l'amministratore, «Gestisci piano e moduli». Vedi Routine AI, ospiti e marketing.
 - Assistente («Rivedi le regole per le risposte agli ospiti», «Apri le impostazioni»): compare solo se l'assistente per i messaggi è attivo per te (su attivazione).
 - Confronto del volto con il documento (se il tuo piano include l'identificazione degli ospiti): se è accesa, l'ospite scatta un selfie e un programma lo confronta con la foto del documento; se è spenta, a verificare è sempre una persona. Imposti la «Soglia di accettazione» (da quel valore in su il volto è accettato da solo, sotto decide l'operatore) e i «Tentativi dell'ospite» (da 1 a 5; dopo questi tentativi passa a un operatore). Finché non salvi valgono i valori predefiniti; salvando, diventano quelli della tua organizzazione.
 - Le impostazioni del fornitore AI e dei modelli sono della piattaforma e le gestisce il personale CasaZen: non le vedi.
@@ -787,7 +787,7 @@ Se l'elenco è molto lungo mostra le più urgenti: risolvile e le altre compaion
 - Account, persone, ruoli e piano: preferenze di notifica, persone e ruoli.
 - Prenotazioni e calendario: dettaglio, calendario e check-in.
 - Messaggi, assistente e recensioni: conversazioni con gli ospiti e recensioni.
-- Routine AI, CRM e marketing: routine AI e campagne.
+- Routine AI, ospiti e marketing: routine AI e campagne.
 - Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili: scadenze di legge.
 
 ## Inizia qui
@@ -1816,7 +1816,7 @@ Funzionalità: Blocca date; Cosa fa: Chiude le notti per proprietario, manutenzi
 Funzionalità: Crea soggiorno OTA; Cosa fa: Trasforma un blocco di un calendario iCal in un soggiorno con i dati dell'ospite; Dove si trova: Calendario › blocco; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Creare un soggiorno da un blocco di un altro canale
 Funzionalità: Flusso; Cosa fa: Scegli quali passaggi fa CasaZen e quali fai tu; Dove si trova: Prenotazioni › scheda «Flusso»; Chi può usarla: amministratore (gli altri la leggono); Disponibilità: Disponibile; Come si usa: Scegliere cosa fa CasaZen da solo
 Funzionalità: Portale ospiti della prenotazione; Cosa fa: Gestisci l'area dell'ospite per quel soggiorno; Dove si trova: Scheda › menu «Portale ospiti»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Vedi Portale ospite
-Funzionalità: Messaggi programmati; Cosa fa: Mostra i messaggi che le routine manderanno all'ospite; Dove si trova: Scheda › «Soggiorno»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Vedi Routine AI, CRM e marketing
+Funzionalità: Messaggi programmati; Cosa fa: Mostra i messaggi che le routine manderanno all'ospite; Dove si trova: Scheda › «Soggiorno»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Vedi Routine AI, ospiti e marketing
 
 ### Come funziona
 
@@ -2179,7 +2179,7 @@ CasaZen non apre le serrature e non crea né revoca codici. Conserva (cifrato) i
 - la verifica dell'identità (su attivazione, spenta di partenza) è riuscita;
 - il soggiorno è in arrivo o in corso;
 - se la tua organizzazione chiede l'imposta di soggiorno prima del codice, l'imposta è stata pagata.
-Se la verifica dell'identità non è attiva, da CasaZen non parte nessun codice, nemmeno con la routine «Invia codice di accesso» (Routine AI, CRM e marketing). Dai tu l'accesso all'ospite: per esempio con un messaggio (Messaggi, assistente e recensioni) oppure scrivendo le istruzioni nella «Guida della casa» del portale, che l'ospite legge dopo il check-in.
+Se la verifica dell'identità non è attiva, da CasaZen non parte nessun codice, nemmeno con la routine «Invia codice di accesso» (Routine AI, ospiti e marketing). Dai tu l'accesso all'ospite: per esempio con un messaggio (Messaggi, assistente e recensioni) oppure scrivendo le istruzioni nella «Guida della casa» del portale, che l'ospite legge dopo il check-in.
 
 #### Cosa fa CasaZen con i dati
 
@@ -2210,7 +2210,7 @@ Cartellino della scheda: Scaduto, oppure nessun link generato o e-mail con il li
 2. Scrivi nome o email nel campo «Cerca per nome o email...». La lista mostra 20 ospiti per pagina con «Anagrafica», «Email», «Città» e «Data Creazione»; puoi aggiungere «Telefono» e «Paese».
 3. Premi «Dettagli» (o sul nome). La scheda ha quattro parti: «Soggiorni» (con «In casa ora», «Prossimo soggiorno» o «Ultimo soggiorno»), «Dati dell'ospite», «Documenti» e «Privacy».
 4. In «Documenti» il numero del documento è nascosto: premi «Mostra» per vederlo e «Nascondi» per coprirlo. Con «Scarica scansione documento» scarichi la copia, se l'ospite l'ha caricata.
-Il comando di esportazione salva l'elenco in un file CSV. Il CRM con tag e storico spesa è un'altra cosa: Routine AI, CRM e marketing.
+Il comando di esportazione salva l'elenco in un file CSV. Il CRM con tag e storico spesa è un'altra cosa: Routine AI, ospiti e marketing.
 
 #### Mandare il link per il check-in online
 
@@ -2362,7 +2362,7 @@ Dipende dal passaggio. La foto letta dal check-in guidato viene eliminata dopo l
 - Prenotazioni e calendario: stati, arrivo e partenza.
 - Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili: comunicazione degli ospiti alla Questura.
 - Imposta di soggiorno, archivio documenti e check-out: tassa di soggiorno dell'ospite.
-- Routine AI, CRM e marketing: profili CRM con tag e consensi marketing.
+- Routine AI, ospiti e marketing: profili CRM con tag e consensi marketing.
 - Portale ospite: l'area dell'ospite.
 
 ## Messaggi, assistente e recensioni
@@ -2405,7 +2405,7 @@ Funzionalità: Richiesta di recensione; Cosa fa: Manda una email all'ospite con 
 Nella casella di risposta, «Modelli» mostra due elenchi:
 - «I tuoi modelli»: i testi pronti già presenti nella tua organizzazione. In questa versione l'app non ha una pagina per crearli o modificarli. Se non ne hai, compare «Non hai ancora modelli di messaggio»: scrivi il messaggio a mano.
 - «Modelli del canale»: i testi offerti dal portale, dove li offre, in sola lettura.
-Premendo un modello il testo entra nella casella: lo leggi e lo cambi prima di inviare. I dati della prenotazione (nome dell'ospite, date, indirizzo, orari, link del check-in, link per la recensione, codice prenotazione, come si entra, il tuo nome) vengono scritti da CasaZen al momento della preparazione. Se con il modello il testo supera i 2000 caratteri, ti viene chiesto di accorciarlo. Le routine che mandano messaggi scelgono anch'esse tra i modelli presenti (Routine AI, CRM e marketing).
+Premendo un modello il testo entra nella casella: lo leggi e lo cambi prima di inviare. I dati della prenotazione (nome dell'ospite, date, indirizzo, orari, link del check-in, link per la recensione, codice prenotazione, come si entra, il tuo nome) vengono scritti da CasaZen al momento della preparazione. Se con il modello il testo supera i 2000 caratteri, ti viene chiesto di accorciarlo. Le routine che mandano messaggi scelgono anch'esse tra i modelli presenti (Routine AI, ospiti e marketing).
 
 #### L'assistente messaggi con l'AI
 
@@ -2422,7 +2422,7 @@ Cosa legge. Le risposte che scrivi tu, le informazioni lette dal tuo annuncio e 
 
 #### I messaggi programmati
 
-Su attivazione (Cosa significa «Su attivazione»?). Le routine (Routine AI, CRM e marketing) possono mandare messaggi all'ospite in momenti precisi (per esempio due giorni prima dell'arrivo). Nella scheda «Soggiorno» di una prenotazione vedi l'elenco «Messaggi programmati» per quel soggiorno, con lo stato: «Programmato», «Inviato», «Saltato», «Scaduto», «Annullato», «Bloccato», «Invio non riuscito».
+Su attivazione (Cosa significa «Su attivazione»?). Le routine (Routine AI, ospiti e marketing) possono mandare messaggi all'ospite in momenti precisi (per esempio due giorni prima dell'arrivo). Nella scheda «Soggiorno» di una prenotazione vedi l'elenco «Messaggi programmati» per quel soggiorno, con lo stato: «Programmato», «Inviato», «Saltato», «Scaduto», «Annullato», «Bloccato», «Invio non riuscito».
 - Di norma un messaggio parte tra le 8:00 e le 21:00 (ora italiana), e CasaZen li pianifica fino a 30 giorni prima. Se lo invii subito fuori da quella fascia, nell'elenco compare «Inviato fuori orario».
 - Un messaggio Bloccato non parte finché non c'è un dato che manca (per esempio il codice d'accesso, il link del check-in o l'orario di arrivo): l'elenco dice «Manca:» e ti porta alla schermata giusta.
 - Se l'orario previsto è passato da troppo tempo, il messaggio non viene mandato in ritardo.
@@ -2492,7 +2492,7 @@ Dopo l'invio il messaggio è come qualsiasi altro tuo messaggio e non si può ri
 
 #### Gestire un messaggio programmato
 
-Ti serve: le routine attive (Routine AI, CRM e marketing) e una prenotazione con un messaggio programmato.
+Ti serve: le routine attive (Routine AI, ospiti e marketing) e una prenotazione con un messaggio programmato.
 1. Apri la prenotazione › «Soggiorno» › «Messaggi programmati».
 2. Per cambiare il testo premi «Modifica». I pulsanti «Inserisci un dato» mettono nel testo i dati che CasaZen scrive al momento dell'invio; i dati già compilati diventano testo fisso. Premi «Salva». «Usa il testo della routine» cancella la tua modifica.
 3. Per non mandarlo premi «Salta», poi «Salta il messaggio». Non si torna indietro.
@@ -2540,7 +2540,7 @@ Si scrive una volta sola. Se il portale non conferma l'invio, compare «Da verif
 #### Flusso: dal soggiorno alla recensione
 
 1. Il soggiorno finisce (Prenotazioni e calendario).
-2. Un giorno dopo il check-out una routine (Routine AI, CRM e marketing) o tu chiedete la recensione all'ospite (Chiedere una recensione a un ospite).
+2. Un giorno dopo il check-out una routine (Routine AI, ospiti e marketing) o tu chiedete la recensione all'ospite (Chiedere una recensione a un ospite).
 3. L'ospite scrive la recensione dalla pagina del link, entro 14 giorni.
 4. Tu rispondi dalla scheda «Recensioni» (Rispondere a una recensione). Per i portali la leggi in Messaggi › «Recensioni».
 
@@ -2580,7 +2580,7 @@ Non da solo. Puoi rispondere (una volta) e, per le recensioni del tuo sito, segn
 
 #### Dove creo i miei modelli di messaggio?
 
-In questa versione l'app non ha una pagina per creare o modificare i modelli: «I tuoi modelli» mostra solo quelli già presenti nella tua organizzazione (se non ce ne sono compare «Non hai ancora modelli di messaggio»). Puoi scrivere il messaggio a mano o usare i «Modelli del canale», dove il portale li offre. Per i testi che l'assistente deve usare in una situazione (per esempio il Wi-Fi) scrivi il «Testo della risposta» in Impostazioni › Assistente › Situazioni. Le routine con un messaggio scelgono tra i modelli presenti (Routine AI, CRM e marketing).
+In questa versione l'app non ha una pagina per creare o modificare i modelli: «I tuoi modelli» mostra solo quelli già presenti nella tua organizzazione (se non ce ne sono compare «Non hai ancora modelli di messaggio»). Puoi scrivere il messaggio a mano o usare i «Modelli del canale», dove il portale li offre. Per i testi che l'assistente deve usare in una situazione (per esempio il Wi-Fi) scrivi il «Testo della risposta» in Impostazioni › Assistente › Situazioni. Le routine con un messaggio scelgono tra i modelli presenti (Routine AI, ospiti e marketing).
 
 #### Posso scrivere agli ospiti su WhatsApp o per SMS da CasaZen?
 
@@ -2598,19 +2598,19 @@ No. CasaZen scrive per le conversazioni dei portali e del tuo sito e, per le cam
 
 - Prenotazioni e calendario: la scheda della prenotazione e la scheda «Messaggi».
 - Ospiti e check-in online: il link per il check-in online, spesso mandato per messaggio.
-- Routine AI, CRM e marketing: routine che mandano messaggi e richiedono recensioni.
+- Routine AI, ospiti e marketing: routine che mandano messaggi e richiedono recensioni.
 - Cruscotto, Da fare, notifiche e assistente: la coda «Da approvare».
 - Canali, calendari e Octorate: collegare i portali e attivare la chat.
 - Portale ospite: la chat del portale ospite.
 
-## Routine AI, CRM e marketing
+## Routine AI, ospiti e marketing
 
-Sezione: Affitti brevi · Si trova in: Affitti brevi › Routine AI · Affitti brevi › CRM Ospiti · Per: Gestore, Amministratore
+Sezione: Affitti brevi · Si trova in: Affitti brevi › Routine AI · Affitti brevi › Ospiti e marketing · Per: Gestore, Amministratore
 
 ### In breve
 
-Routine AI ti permette di dire a CasaZen «quando succede questo, fai quest'altro»: per esempio mandare le istruzioni d'arrivo due giorni prima, creare la pulizia al check-out o chiedere la recensione. Ogni routine si prova prima su una prenotazione vera, in simulazione. CRM Ospiti mostra i profili degli ospiti con soggiorni, spesa e possibilità di scrivergli, ti aiuta a unire i duplicati e prepara pubblici e campagne email.
-Entrambi sono su attivazione (Cosa significa «Su attivazione»?): di partenza sono spenti e, se non sono attivi per la tua organizzazione, le voci di menu non compaiono. Il CRM è in fase di rifinitura: quello che trovi funziona, ma l'invio c'è solo per email (non per WhatsApp né per telefono). Se ti servono, scrivi all'assistenza di CasaZen: in alto premi Guida e scegli «Scrivi all'assistenza».
+Routine AI ti permette di dire a CasaZen «quando succede questo, fai quest'altro»: per esempio mandare le istruzioni d'arrivo due giorni prima, creare la pulizia al check-out o chiedere la recensione. Ogni routine si prova prima su una prenotazione vera, in simulazione. Ospiti e marketing mostra le schede degli ospiti con soggiorni, spesa e possibilità di scrivergli, ti aiuta a unire le schede doppie e, con procedure guidate e l'aiuto dell'AI, prepara i gruppi di ospiti e le campagne e-mail.
+Entrambi sono su attivazione (Cosa significa «Su attivazione»?): di partenza sono spenti e, se non sono attivi per la tua organizzazione, le voci di menu non compaiono. «Ospiti e marketing» è in fase di rifinitura: quello che trovi funziona, ma l'invio c'è solo per email (non per WhatsApp né per telefono). Se ti servono, scrivi all'assistenza di CasaZen: in alto premi Guida e scegli «Scrivi all'assistenza».
 
 ### Funzionalità
 
@@ -2619,19 +2619,21 @@ Funzionalità: Nuova routine; Cosa fa: Scegli evento, momento, condizioni e azio
 Funzionalità: Prova su una prenotazione; Cosa fa: Simula la routine su un soggiorno reale senza fare nulla; Dove si trova: Routine › «Prova su una prenotazione»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Provare una routine prima di attivarla
 Funzionalità: Attiva, pausa, modalità test; Cosa fa: Decidi se la routine esegue azioni reali, simulate o nessuna; Dove si trova: Scheda della routine; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Attivare o mettere in pausa una routine
 Funzionalità: Registro delle esecuzioni; Cosa fa: Cosa ha fatto la routine, soggiorno per soggiorno; Dove si trova: Routine › «Registro»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Leggere il registro delle esecuzioni
-Funzionalità: Elenco profili ospiti; Cosa fa: Ospiti con soggiorni, spesa, canali, tag e raggiungibilità; Dove si trova: CRM Ospiti; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Trovare un ospite nel CRM
-Funzionalità: Profilo ospite; Cosa fa: Totali, come viaggia, storico, tag e contatti; Dove si trova: CRM Ospiti › nome; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Trovare un ospite nel CRM
-Funzionalità: Tag; Cosa fa: Parole tue per ritrovare gli ospiti; Dove si trova: Profilo ospite; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Aggiungere tag a un ospite
-Funzionalità: Duplicati; Cosa fa: Propone di unire profili della stessa persona; Dove si trova: CRM Ospiti › «Duplicati»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Unire due profili duplicati
-Funzionalità: Pubblici; Cosa fa: Gruppi di ospiti da raggiungere con una campagna; Dove si trova: CRM Ospiti › «Pubblici»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Creare un pubblico
-Funzionalità: Campagne; Cosa fa: Email di marketing agli ospiti, con approvazione e rapporto; Dove si trova: CRM Ospiti › «Campagne»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Creare e mandare una campagna
+Funzionalità: Elenco ospiti; Cosa fa: Ospiti con soggiorni, spesa, canali e raggiungibilità, con un riepilogo in alto; Dove si trova: Ospiti e marketing › «Ospiti»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Trovare un ospite
+Funzionalità: Scheda ospite; Cosa fa: Totali, come viaggia, storico, tag e contatti; Dove si trova: Ospiti e marketing › nome; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Trovare un ospite
+Funzionalità: Tag; Cosa fa: Parole tue per ritrovare gli ospiti; Dove si trova: Scheda ospite; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Aggiungere tag a un ospite
+Funzionalità: Schede doppie; Cosa fa: Propone di unire le schede della stessa persona; Dove si trova: Ospiti e marketing › «Schede doppie»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Unire due schede doppie
+Funzionalità: Gruppi di ospiti; Cosa fa: Elenchi di ospiti con qualcosa in comune, con le regole in parole semplici e il numero di ospiti, da scegliere o da descrivere all'AI; Dove si trova: Ospiti e marketing › «Gruppi»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Creare un gruppo di ospiti
+Funzionalità: Importazione di ospiti; Cosa fa: Porta nella tua lista gli ospiti di un file Excel o CSV, in quattro passi, riconoscendo da sola le colonne; Dove si trova: Ospiti e marketing › «Gruppi» › «Importa ospiti da un file»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Importare ospiti da un file
+Funzionalità: Campagne e-mail; Cosa fa: Procedura guidata per scrivere ai tuoi ospiti, con idee dell'AI, approvazione, programmazione e risultati; Dove si trova: Ospiti e marketing › «Campagne»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Scrivere e mandare una campagna
+Funzionalità: Impostazioni del marketing; Cosa fa: Stile dei testi (anche proposto dall'AI), dettagli delle case, quante e-mail al mese, chi è fedele, newsletter periodica; Dove si trova: Ospiti e marketing › «Campagne» › «Impostazioni marketing»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Impostare lo stile e le regole del marketing
 
 ### Come funziona
 
 #### Cosa è attivo e cosa no
 
 - Routine AI. Di partenza è spenta. Per usarla servono due cose: che CasaZen la abiliti e che il modulo «AI Agents» sia nella tua offerta. Se non vedi «Routine AI» nel menu, o la pagina dice «Le automazioni non sono disponibili in questo momento», non è attiva: chiedine l'attivazione all'assistenza di CasaZen (in alto premi Guida e scegli «Scrivi all'assistenza»). Il modulo si aggiunge da Amministrazione con «Gestisci piano e moduli» (Account, persone, ruoli e piano).
-- CRM Ospiti. Di partenza è spento. È in fase di rifinitura: quello che trovi funziona (elenco e profili, tag, unione dei duplicati, pubblici, campagne email con approvazione, programmazione e rapporto). Per mandare una campagna serve anche il modulo «CRM e Marketing» nella tua offerta.
+- Ospiti e marketing. Di partenza è spento. È in fase di rifinitura: quello che trovi funziona (elenco e schede degli ospiti, tag, unione delle schede doppie, gruppi di ospiti, campagne e-mail con approvazione, programmazione e risultati). Per mandare una campagna serve anche il modulo «CRM e Marketing» nella tua offerta.
 - Cosa non c'è. Non c'è l'invio su WhatsApp né per telefono o SMS: l'ospite può dare il consenso a questi canali, ma CasaZen per ora scrive solo per email.
 
 #### Le routine
@@ -2650,10 +2652,10 @@ Dove agiscono. Le routine valgono per tutta l'organizzazione. Per salvarle e pro
 Modulo aggiuntivo. «AI Agents» è un componente della tua offerta («Agenti preimpostati e personalizzati per gestire soggiorni, organizzare pulizie e comunicare con gli ospiti in autonomia»). Se non è attivo, la pagina dice «Le automazioni non sono disponibili in questo momento».
 Messaggi programmati. I messaggi che una routine manderà a un soggiorno compaiono, con orario e stato, nella scheda «Soggiorno» della prenotazione (I messaggi programmati).
 
-#### Il CRM Ospiti
+#### Ospiti e marketing
 
-Il CRM costruisce un profilo per ogni ospite che ha soggiornato nei tuoi immobili: soggiorni, spesa, canali di prenotazione, recensioni, come viaggia (da solo, in coppia, in famiglia, in gruppo), tag e contatti. Vedi solo gli ospiti dei soggiorni negli immobili a cui hai accesso.
-Raggiungibilità: cosa puoi scrivere a chi. Ogni profilo ha uno stato che dice se puoi scrivergli per novità e offerte:
+La sezione costruisce una scheda per ogni ospite che ha soggiornato nei tuoi immobili: soggiorni, spesa, canali di prenotazione, recensioni, come viaggia (da solo, in coppia, in famiglia, in gruppo), tag e contatti. Vedi solo gli ospiti dei soggiorni negli immobili a cui hai accesso. Ha quattro schede in alto: Ospiti (l'elenco), Gruppi (a chi scrivere), Campagne (cosa scrivere) e Schede doppie (le persone comparse due volte). In cima all'elenco trovi un riepilogo (quanti ospiti, quanti raggiungibili via e-mail, quanti sono tornati e quanti sono fedeli) e, se serve, un solo consiglio sul prossimo passo.
+Raggiungibilità: cosa puoi scrivere a chi. Ogni scheda ha uno stato che dice se puoi scrivergli per novità e offerte:
 - Raggiungibile, con consenso: l'ospite ha dato il consenso e ha confermato l'email.
 - Raggiungibile, cliente diretto: ha prenotato direttamente da te; puoi proporgli servizi simili a quelli già acquistati, e ogni messaggio ha il link per annullare l'iscrizione.
 - Da confermare: ha dato il consenso ma non ha ancora confermato l'indirizzo: per ora non puoi scrivergli.
@@ -2661,20 +2663,22 @@ Raggiungibilità: cosa puoi scrivere a chi. Ogni profilo ha uno stato che dice s
 - Iscrizione annullata: ha chiesto di non ricevere più email promozionali.
 - Nessun contatto: non c'è un indirizzo utilizzabile.
 Il consenso al marketing. Lo dà l'ospite nel check-in online (Ospiti e check-in online): è facoltativo e non blocca il check-in. Tu non lo puoi dare al suo posto: puoi solo registrarne la revoca su sua richiesta, dalla sua scheda «Privacy». Una campagna parte solo per chi ha il consenso (o è «cliente diretto») e un indirizzo utilizzabile.
-Cosa è disponibile e cosa no. Elenco e profili, tag, unione dei duplicati, pubblici, campagne email con approvazione, programmazione e rapporto funzionano. Non c'è l'invio su altri canali (WhatsApp, telefono): CasaZen per ora scrive solo per email. L'invio di una campagna richiede anche che il modulo sia compreso nella tua offerta («CRM e Marketing»).
+Cosa è disponibile e cosa no. Elenco e schede, tag, unione delle schede doppie, gruppi di ospiti, campagne e-mail con approvazione, programmazione e risultati funzionano. Non c'è l'invio su altri canali (WhatsApp, telefono): CasaZen per ora scrive solo per email. L'invio di una campagna richiede anche che il modulo sia compreso nella tua offerta («CRM e Marketing»).
 
-#### I duplicati
+#### Le schede doppie
 
-CasaZen accosta due profili che potrebbero essere la stessa persona (stessa email, stesso telefono, stesso nome con la stessa data di nascita, stesso nome nello stesso immobile). Non unisce mai nulla da solo: decidi tu.
+CasaZen accosta due schede che potrebbero essere la stessa persona (stessa email, stesso telefono, stesso nome con la stessa data di nascita, stesso nome nello stesso immobile): per esempio chi ha prenotato prima su un portale e poi sul tuo sito. Non unisce mai nulla da solo: decidi tu.
 
-#### I pubblici e le campagne
+#### I gruppi e le campagne
 
-Un pubblico è un gruppo di ospiti scelto con regole (per esempio «ha soggiornato almeno 2 volte»), con l'anteprima di quanti sono. Nel menu si chiama «Pubblici», ma i pulsanti e i campi lo chiamano anche «segmento» («Crea segmento», «Nome del segmento»): è la stessa cosa. Una campagna è un'email a un pubblico. Il percorso è: Bozza → In attesa di approvazione → Approvata → Programmata → Invio in corso → Inviata (o Fallita). Una campagna passa da «Da approvare» (Cruscotto: Cruscotto, Da fare, notifiche e assistente) prima di partire.
+Un gruppo è un elenco di ospiti con qualcosa in comune (per esempio «ha soggiornato almeno 2 volte»), scelto con regole che la schermata scrive in parole semplici, con il numero di ospiti che raggiunge. Lo puoi scegliere tra i gruppi già pronti (ospiti recenti, alla prima visita, di ritorno, fedeli, da riconquistare, con un soggiorno in arrivo, tutti gli ospiti e, se hai più case, chi è stato in ognuna), descriverlo all'AI con parole tue o costruirlo da zero. Nella procedura guidata il numero si aggiorna mentre aggiungi o togli regole, e conta solo gli ospiti che hanno accettato di ricevere e-mail. Nei vecchi testi e nei messaggi di errore lo stesso gruppo si chiama anche «segmento» o «pubblico».
+Una campagna è un'e-mail a un gruppo. La procedura guidata «Nuova campagna» ti chiede, un passo alla volta: l'obiettivo (ringraziare chi è stato da te, far tornare chi manca da tempo, proporre un'offerta o un periodo libero, raccontare un evento nella tua zona, premiare gli ospiti fedeli, oppure scegliere tu di cosa parlare), la casa e il gruppo (ti consiglia il gruppo adatto all'obiettivo e, se non esiste ancora, lo crea per te), l'eventuale evento (l'AI lo cerca vicino alla casa nel periodo che scegli) e il messaggio (l'AI scrive oggetto e testo, tu li correggi e vedi l'anteprima dell'e-mail). Alla fine controlli il riepilogo e la mandi per l'approvazione. Se chiudi la finestra a metà, alla prossima apertura puoi riprendere da dove eri.
+Nella scheda «Campagne» ogni campagna mostra a che punto è: Bozza → Approvazione → Approvata → Programmata → Inviata, e dice qual è il prossimo passo con il pulsante giusto. In alto compaiono le idee dell'AI (per esempio un evento in zona): le apri nella procedura guidata, le rivedi e le mandi per l'approvazione. Una campagna passa da «Da approvare» (Cruscotto: Cruscotto, Da fare, notifiche e assistente) prima di partire.
 Quando una campagna parte:
 - si rivalutano i destinatari al momento dell'invio;
 - si saltano gli ospiti che hanno annullato l'iscrizione o non sono raggiungibili;
 - ogni email ha il link per annullare l'iscrizione;
-- c'è un limite mensile di email per ogni ospite (2 al mese, se non lo cambia l'organizzazione);
+- c'è un limite mensile di email per ogni ospite (2 al mese, se non lo cambia l'organizzazione dalle «Impostazioni marketing»; con «Nessuna» non parte nulla);
 - se il modulo viene spento prima dell'invio, la campagna programmata torna «Approvata» e non parte.
 
 ### Come fare
@@ -2726,10 +2730,10 @@ Una routine con azioni non ancora disponibili si può provare in simulazione ma 
 3. Aprila per vedere le singole azioni («Eseguita», «Simulata: non è stato fatto nulla», «Saltata», «Bloccata», «Non riuscita») e il perché: per esempio «Il codice di accesso parte solo dopo la verifica dell'identità dell'ospite», «Questo immobile non ha chi pulisce» o «L'invito per questa prenotazione è già stato inviato».
 Il registro mostra le ultime esecuzioni.
 
-#### Trovare un ospite nel CRM
+#### Trovare un ospite
 
-Ti serve: CRM Ospiti attivo e il permesso di leggere gli ospiti. I profili arrivano dalle prenotazioni: un ospite compare dopo il primo soggiorno concluso.
-1. Apri Affitti brevi › CRM Ospiti.
+Ti serve: «Ospiti e marketing» attivo e il permesso di leggere gli ospiti. Le schede arrivano dalle prenotazioni: un ospite compare dopo il primo soggiorno concluso.
+1. Apri Affitti brevi › Ospiti e marketing: si apre la scheda «Ospiti».
 2. Scrivi nel campo «Cerca un ospite» (parte del nome, oppure email o telefono interi).
 3. Restringi con «Filtri»: «Prenotato su», «Lingua», «Paese» (codice a due lettere, per esempio IT), «Tag», «Raggiungibile via e-mail», «Soggiorni» (almeno N). Ordina per «Ultimo soggiorno», «Nome (A-Z)», «Spesa più alta» o «Più soggiorni».
 4. Premi sul nome per aprire il profilo: «In breve» (soggiorni, spesa totale e media, anticipo medio), «Come viaggia», «Dove prenota», «Immobili», «Recensioni», «Storico dei soggiorni» e «Contatti».
@@ -2750,32 +2754,59 @@ Ti serve: un ospite con il consenso al marketing dato ma non ancora confermato (
 3. L'ospite riceve un'email per confermare l'iscrizione.
 Non puoi rimandare la richiesta dopo pochi minuti, né oltre il numero massimo di richieste a quell'indirizzo, né a chi ha chiesto di non ricevere più email.
 
-#### Unire due profili duplicati
+#### Unire due schede doppie
 
 Ti serve: il permesso di modificare gli ospiti.
-1. Apri CRM Ospiti › Duplicati.
-2. Leggi «Perché li abbiamo accostati».
-3. Se sono la stessa persona premi «Unisci», scegli quale profilo tenere e premi «Unisci i profili». Lo storico e i contatti dell'altro passano a quello che tieni; nessun consenso cambia. Non si può annullare.
-4. Se sono persone diverse premi «Non sono la stessa persona» e conferma: la coppia non ti viene più riproposta.
+1. Apri Ospiti e marketing › Schede doppie.
+2. Leggi perché CasaZen ha accostato le due schede.
+3. Se sono la stessa persona scegli di unirle, indica quale scheda tenere e conferma. Lo storico e i contatti dell'altra passano a quella che tieni; nessun consenso cambia. Non si può annullare.
+4. Se sono persone diverse dillo e conferma: la coppia non ti viene più riproposta.
 
-#### Creare un pubblico
+#### Creare un gruppo di ospiti
 
-Ti serve: CRM Ospiti attivo e il permesso per il marketing.
-1. Apri CRM Ospiti › Pubblici e premi «Crea segmento» (un pubblico e un segmento sono la stessa cosa).
-2. Scrivi il «Nome del segmento» (per esempio «Ospiti frequenti»).
-3. Aggiungi le regole (campo, confronto, valore) e scegli se valgono «tutte» o «almeno una», oppure descrivi il pubblico a parole e lascia che l'AI proponga le regole.
-4. Salva, poi premi «Anteprima» per vedere quanti destinatari ci sono.
+Ti serve: «Ospiti e marketing» attivo e il permesso per il marketing.
+1. Apri Ospiti e marketing › Gruppi e premi «Crea un gruppo» (o «Crea il tuo primo gruppo», o scegli direttamente uno dei «Gruppi già pronti»).
+2. Passo «Scegli»: scrivi con parole tue chi vuoi raggiungere e premi «Proponi con l'AI», oppure tocca un gruppo già pronto (per ognuno vedi quanti ospiti sono). Con «Parto da zero» costruisci le regole da solo.
+3. Passo «Controlla»: leggi le regole in parole semplici e guarda il numero di «ospiti raggiunti», che cambia mentre lavori. Con la matita cambi una regola, con la X la togli, con «Aggiungi una regola» scegli tra ultimo soggiorno, numero di soggiorni, tipo di ospite, casa, lingua, paese, etichetta e spesa. Con più regole decidi se devono valere tutte o almeno una.
+4. Passo «Conferma»: dai un nome al gruppo e premi «Crea il gruppo».
+5. Alla fine puoi premere «Scrivi una campagna per questo gruppo» e continuare senza uscire.
+Per portare dentro gli ospiti passati da un file vedi «Importare ospiti da un file».
 
-#### Creare e mandare una campagna
+#### Importare ospiti da un file
 
-Ti serve: il permesso per il marketing; il modulo «CRM e Marketing» nella tua offerta; almeno un pubblico; ospiti con il consenso al marketing e un'e-mail utilizzabile.
-1. Apri CRM Ospiti › Campagne e premi «Crea campagna». Serve almeno un pubblico.
-2. Scegli il «Segmento» (cioè il pubblico; vedi i destinatari), scrivi «Oggetto» e «Corpo», oppure premi «Genera con AI».
-3. Premi «Salva bozza».
-4. Premi «Invia per approvazione». Chi può decidere la approva dal Cruscotto.
-5. Dopo l'approvazione premi «Programma invio», scegli «Data» e «Ora» e premi «Programma».
-6. Dopo l'invio apri «Visualizza rapporto»: «Inviate», «Aperte», «Cliccate», «Rimbalzate», «Errori», «Disiscrizioni».
+Ti serve: «Ospiti e marketing» attivo, il permesso per il marketing, almeno una casa e un file CSV o Excel (.xlsx) fino a 2 MB, con i titoli delle colonne nella prima riga e un ospite per riga, ognuno con almeno un'e-mail o un telefono.
+1. Apri Ospiti e marketing › Gruppi e premi «Importa ospiti da un file».
+2. Passo «File»: trascina il file nel riquadro o premi «Scegli il file». Il file viene letto e non viene conservato. Se non è un CSV o un Excel, o supera i 2 MB, te lo dice subito.
+3. Passo «Colonne»: sotto «Così leggeremo i primi ospiti» vedi come verranno letti i primi ospiti. Le colonne che CasaZen ha riconosciuto sono già abbinate («Riconosciuta»); se serve, cambiale con il menu accanto a ogni dato. Serve almeno una colonna con le e-mail o con i telefoni, e una colonna si può usare per un dato solo. Le date vanno scritte come 31/12/2025 oppure 2025-12-31.
+4. Passo «Permesso»: scegli «Hanno acconsentito a ricevere le tue e-mail», «Hanno già soggiornato da te» (serve la data dell'ultimo soggiorno: se non l'hai abbinata, scegli lì la colonna) oppure «Solo messaggi legati al soggiorno». Nel dubbio l'ultima è la scelta più prudente. Resta registrato su ogni contatto.
+5. Passo «Provenienza»: scegli la casa in cui hanno soggiornato (se il file comprende più case, importalo una volta per casa) e scrivi da dove arrivano i contatti, per esempio «Modulo di iscrizione del sito, 2025»: resta registrato come prova.
+6. Premi «Importa gli ospiti». Alla fine vedi quanti ospiti sono stati aggiunti, quanti c'erano già e le righe che non si sono potute leggere, ognuna con il motivo; da lì puoi creare subito un gruppo.
+Gli ospiti che hai già (stessa e-mail o stesso telefono) non vengono duplicati. I numeri di telefono e gli indirizzi anonimi di Booking.com e Airbnb servono solo per i messaggi legati al soggiorno, non per le promozioni.
+
+#### Scrivere e mandare una campagna
+
+Ti serve: il permesso per il marketing; il modulo «CRM e Marketing» nella tua offerta; almeno una casa; ospiti con il consenso al marketing e un'e-mail utilizzabile.
+1. Apri Ospiti e marketing › Campagne e premi «Nuova campagna». Puoi anche partire da un gruppo («Scrivi una campagna» sulla sua scheda) o da un'idea dell'AI («Rivedi e invia»).
+2. Passo «Obiettivo»: scegli cosa vuoi ottenere. Sotto ogni obiettivo vedi il gruppo consigliato.
+3. Passo «Ospiti»: scegli la casa (se ne hai più di una) e il gruppo. Quello consigliato è già selezionato; se non esiste ancora, CasaZen lo crea quando premi «Continua». Con «Crea un altro gruppo» ne fai uno nuovo senza uscire.
+4. Solo per l'obiettivo sull'evento, passo «Evento»: scegli il periodo, premi «Cerca eventi» (può durare fino a un minuto), scegli un evento oppure «Salta, scrivo senza evento».
+5. Passo «Messaggio»: premi «Scrivilo con l'AI» (per le offerte e per «Scelgo io di cosa parlare» scrivi prima di cosa si tratta: l'AI non inventa date, prezzi o sconti). Correggi «Oggetto dell'e-mail» e «Testo del messaggio», e guarda l'anteprima. Con «Più breve», «Più caloroso» o «Più formale» fai riscrivere il testo; con «Preferisco scriverlo io» scrivi tutto a mano.
+6. Passo «Invio»: controlla il riepilogo e premi «Invia per approvazione» (oppure «Salva come bozza»). Chi può decidere la approva da «Da approvare» (Cruscotto).
+7. Dopo l'approvazione, nella scheda della campagna scegli quando farla partire («Domani alle 10», «Sabato alle 10» o una data e un'ora tue) e premi «Programma».
+8. Dopo l'invio apri «Vedi testo e risultati»: «Inviate», «Aperte», «Clic», «Disiscritti».
+Se chiudi la finestra a metà, alla prossima apertura trovi «Hai una campagna a metà»: «Riprendi» o «Ricomincia» (finché non ricarichi la pagina).
 Una campagna inviata non si ritira. Le email partono solo agli ospiti che hanno dato il consenso e non hanno annullato l'iscrizione.
+
+#### Impostare lo stile e le regole del marketing
+
+Ti serve: «Ospiti e marketing» attivo, il permesso per il marketing e l'accesso a tutte le case: chi vede solo alcune case trova un avviso e non può cambiare le impostazioni.
+1. Apri Ospiti e marketing › Campagne e premi «Impostazioni marketing».
+2. Passo «Stile»: scegli uno stile pronto (caldo e familiare, elegante e curato, diretto e pratico, allegro e spiritoso) oppure incolla un tuo testo o il link del tuo sito (deve iniziare con https://) e premi «Proponi uno stile»: lo propone l'AI e tu lo correggi nel riquadro «Il tuo stile, con parole tue». Con «Torna al testo di prima» recuperi quello che c'era.
+3. Passo «Case»: facoltativo. Per ogni casa puoi indicare il sito (https://) e le note da ricordare nei messaggi.
+4. Passo «Regole»: scegli quante e-mail di marketing al mese, al massimo, riceve ogni ospite («Nessuna», «Una al mese» o «Fino a due al mese»), dopo quanti soggiorni un ospite è «fedele» e dopo quanti mesi senza soggiorni va «riconquistato».
+5. Passo «Newsletter»: scegli se vuoi che l'AI prepari una newsletter a intervalli regolari. Se sì, scegli la casa, il gruppo di ospiti (o creane uno), ogni quanto e cosa deve contenere. Ogni numero arriva in «Da approvare»: non parte niente senza il tuo via libera.
+6. Passo «Riepilogo»: ricontrolla e premi «Salva le impostazioni». Con «Cambia» torni al passo che vuoi.
+Con «Nessuna» le campagne non partono finché non cambi la scelta. Lo stile conta per i testi che scrive l'AI; le regole sui soggiorni e sui mesi decidono chi finisce nei gruppi «Ospiti fedeli» e «Da riconquistare».
 
 ### Flussi completi
 
@@ -2790,13 +2821,13 @@ Una campagna inviata non si ritira. Le email partono solo agli ospiti che hanno 
 #### Flusso: da un ospite a una campagna
 
 1. L'ospite dà il consenso nel check-in online (Ospiti e check-in online) e conferma l'indirizzo.
-2. Il profilo CRM diventa «Raggiungibile, con consenso».
-3. Crei un pubblico e una campagna, la mandi in approvazione e la programmi.
+2. La sua scheda diventa «Raggiungibile, con consenso».
+3. Crei un gruppo e una campagna con le procedure guidate, la mandi in approvazione e la programmi.
 4. CasaZen manda le email e, a ogni email, mette il link per annullare l'iscrizione.
 
 ### Regole e limiti
 
-- Routine AI e CRM Ospiti sono spenti di partenza: compaiono solo se attivati per la tua organizzazione.
+- Routine AI e «Ospiti e marketing» sono spenti di partenza: compaiono solo se attivati per la tua organizzazione.
 - Al massimo 50 routine per organizzazione.
 - Una routine nasce in pausa; l'attivazione con azioni reali chiede conferma.
 - Le routine vedono solo l'organizzazione intera: chi ha accesso a pochi immobili non le gestisce.
@@ -2804,12 +2835,13 @@ Una campagna inviata non si ritira. Le email partono solo agli ospiti che hanno 
 - Le azioni con un messaggio vogliono un modello di messaggio già presente: l'app non ha una pagina per crearne.
 - Il codice di accesso parte solo dopo la verifica dell'identità riuscita.
 - Campagne: serve il modulo CRM nella tua offerta, destinatari con consenso e indirizzo utilizzabile, link di disiscrizione in ogni email, limite di 2 email al mese per ospite (se non cambiato). Solo email: niente WhatsApp, telefono o SMS.
+- L'AI scrive solo bozze: non invia nulla e non inventa date, prezzi o sconti. Ogni testo lo rileggi e lo approvi tu prima che parta.
 - Tag: 50 per ospite, 40 caratteri ciascuno.
-- Per leggere i profili serve poter leggere gli ospiti; per unire i duplicati e modificare i tag serve poterli modificare; pubblici e campagne richiedono il permesso per il marketing. Titolare e amministratori hanno già tutti i permessi.
+- Per leggere le schede serve poter leggere gli ospiti; per unire le schede doppie e modificare i tag serve poterli modificare; gruppi e campagne richiedono il permesso per il marketing. Titolare e amministratori hanno già tutti i permessi.
 
 ### Domande frequenti
 
-#### Perché non vedo «Routine AI» o «CRM Ospiti» nel menu?
+#### Perché non vedo «Routine AI» o «Ospiti e marketing» nel menu?
 
 Perché non sono attivi per la tua organizzazione: sono funzioni su attivazione e di partenza sono spente (Cosa significa «Su attivazione»?). Chiedine l'attivazione all'assistenza di CasaZen: in alto premi Guida e scegli «Scrivi all'assistenza». Il modulo («AI Agents», «CRM e Marketing») si aggiunge anche da Amministrazione con «Gestisci piano e moduli».
 
@@ -2827,7 +2859,7 @@ I messaggi non ancora partiti non partono più: nell'elenco della prenotazione i
 
 #### Perché un ospite non può ricevere la mia campagna?
 
-Può non avere dato il consenso, non aver confermato l'indirizzo, aver annullato l'iscrizione, avere un indirizzo di un portale (solo servizio), oppure aver già ricevuto il numero massimo di email del mese.
+Può non avere dato il consenso, non aver confermato l'indirizzo, aver annullato l'iscrizione, avere un indirizzo di un portale (solo servizio), oppure aver già ricevuto il numero massimo di email del mese. Se nessuna campagna parte, controlla anche che nelle «Impostazioni marketing» non sia scelto «Nessuna» come numero di e-mail al mese.
 
 #### Il CRM manda messaggi su WhatsApp?
 
@@ -2841,9 +2873,9 @@ Il codice parte solo se la verifica dell'identità dell'ospite è riuscita (su a
 
 - Azione: cosa fa una routine (mandare un messaggio, creare una pulizia…).
 - Modalità test (simulazione): la routine scrive nel registro cosa farebbe, ma non fa nulla.
-- Pubblico: gruppo di ospiti scelto con regole (la schermata lo chiama anche «segmento»).
+- Gruppo: elenco di ospiti scelto con regole (nei vecchi testi si chiama anche «segmento» o «pubblico»).
 - Consenso: il permesso dell'ospite a ricevere novità e offerte.
-- Profilo CRM: scheda dell'ospite con soggiorni, spesa e contatti.
+- Scheda ospite: la pagina dell'ospite con soggiorni, spesa e contatti.
 
 ### Vedi anche
 
@@ -8812,7 +8844,7 @@ Sono pagine semplici, senza menu, che non richiedono l'accesso e funzionano anch
 - Benvenuto (pagina del QR stampato per una casa). L'ospite vede «Benvenuto a …» e può lasciare un contatto per ricevere novità e offerte: sceglie E-mail o WhatsApp, conferma di avere almeno 18 anni e preme «Invia la mia scelta». Se sceglie l'e-mail, riceve un messaggio con un link per confermare: finché non conferma, non gli viene scritto. Se il codice non è più valido: «Questa pagina non è attiva».
 - Conferma iscrizione: la pagina del link nell'e-mail («Confermi la tua iscrizione?» › «Conferma iscrizione»). Un link scaduto o modificato dà un messaggio chiaro.
 - Annulla iscrizione: la pagina del link in fondo a ogni e-mail promozionale («Vuoi annullare l'iscrizione?» › «Annulla iscrizione»). Le comunicazioni sul soggiorno, come conferme e istruzioni di arrivo, continuano ad arrivare.
-Come prepari QR, pubblici e campagne: Routine AI, CRM e marketing.
+Come prepari QR, pubblici e campagne: Routine AI, ospiti e marketing.
 
 ### Come fare
 
@@ -8930,7 +8962,7 @@ Sul sito vero di CasaZen il pulsante «Accedi» non c'è: chi ha già un account
 - Dominio, widget e plugin WordPress: l'indirizzo e i widget.
 - Portale ospite: la pagina personale del soggiorno.
 - Imposta di soggiorno, archivio documenti e check-out: come CasaZen gestisce l'imposta.
-- Routine AI, CRM e marketing: QR, campagne e pubblici per le offerte.
+- Routine AI, ospiti e marketing: QR, campagne e pubblici per le offerte.
 - Come si entra: invito o registrazione: come si entra in CasaZen.
 
 ## App mobile CasaZen

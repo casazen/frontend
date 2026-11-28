@@ -157,7 +157,7 @@ Vedi solo le aree che il tuo ruolo permette e solo gli immobili che ti sono asse
 | La tua offerta | Sito di prenotazione | – |
 | La tua offerta | Marketplace | – |
 | Gestione | Incassi | Ricavi, Report, Commercialista (su attivazione), Documenti, Regime fiscale, Documenti fiscali (su attivazione) |
-| Gestione | CRM Ospiti (su attivazione) | Pubblici, Campagne, Duplicati |
+| Gestione | Ospiti e marketing (su attivazione) | Ospiti, Gruppi, Campagne, Schede doppie |
 | In fondo | Impostazioni | Organizzazione, Consiglia CasaZen, Aspetto sito, Dominio pubblico, Incorpora nel tuo sito (su attivazione), Documenti sito, Stripe Connect, Piano, Fatturazione, Portale ospiti (su attivazione), AI |
 
 Non vedi tutte le voci: dipendono da ruolo, permessi e funzioni attive. In Amministrazione trovi «Home», «Persone», «Immobili», in fondo «Fatturazione» e «Impostazioni» (con il piano Agency anche «Proprietari» e «Chiusura mensile»). Affitti lunghi ha «Panoramica», «Immobili» e, in fondo, «Impostazioni» (schede «Organizzazione», «Consiglia CasaZen», «Piano», «Fatturazione»).

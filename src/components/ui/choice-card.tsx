@@ -9,6 +9,7 @@ export interface ChoiceCardProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   title: React.ReactNode;
   description?: React.ReactNode;
   icon?: LucideIcon;
+  media?: React.ReactNode;
   className?: string;
 }
 
@@ -25,7 +26,7 @@ export interface ChoiceCardProps extends Omit<React.InputHTMLAttributes<HTMLInpu
  * Put them in a `ChoiceGroup`, which is the `fieldset` and names the question.
  */
 export const ChoiceCard = React.forwardRef<HTMLInputElement, ChoiceCardProps>(function ChoiceCard(
-  { type = 'radio', title, description, icon: Icon, className, ...input },
+  { type = 'radio', title, description, icon: Icon, media, className, ...input },
   ref,
 ) {
   return (
@@ -40,7 +41,11 @@ export const ChoiceCard = React.forwardRef<HTMLInputElement, ChoiceCardProps>(fu
       )}
     >
       <input ref={ref} type={type} className="peer sr-only" {...input} />
-      {Icon ? (
+      {media ? (
+        <span aria-hidden="true" className="block overflow-hidden rounded-lg">
+          {media}
+        </span>
+      ) : Icon ? (
         <span
           aria-hidden="true"
           className="grid h-10 w-10 place-items-center rounded-lg bg-muted text-foreground/70 transition-colors peer-checked:bg-foreground peer-checked:text-background"

@@ -42,7 +42,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(foot.getByRole('link')).toHaveText(['Impostazioni']);
       const inNoMenu = [
         'Ospiti',
-        'CRM Ospiti',
+        'Ospiti e marketing',
         'Recensioni',
         'Ricavi',
         'Report',

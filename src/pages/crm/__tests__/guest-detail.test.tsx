@@ -294,7 +294,7 @@ describe('GuestDetail: one CRM profile read by its id (E07/F01/US04/T02)', () =>
     renderDetail();
 
     const note = within(await screen.findByTestId('crm-profile-merge-note'));
-    expect(note.getByText(/2 possibili duplicati/)).toBeInTheDocument();
+    expect(note.getByText(/2 schede doppie/)).toBeInTheDocument();
     expect(note.getByRole('link', { name: i18n.t('crm.detail.mergeLink') })).toHaveAttribute('href', '/app/short-rent/crm/merge');
   });
 

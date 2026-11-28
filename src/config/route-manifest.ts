@@ -1559,9 +1559,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   // The CRM and marketing module (NF-23, NF-95, ADR-021, E07): aggregated guest data for marketing and segmentation, filtered by HostScope.
   // It is unfinished, so every page of it is behind the flag `crmMarketing` (backend `CrmMarketing`): while the flag is off the entry is in
-  // no menu and the addresses lead to the home of the area. The entry «CRM Ospiti» is in the group «Gestione» of the main menu, after Incassi;
+  // no menu and the addresses lead to the home of the area. The entry «Ospiti e marketing» is in the group «Gestione» of the main menu, after Incassi;
   // the pages of the epic hang from it as tabs (`navParent` set to its path), in
-  // this order: `nav.crmSegments`, `nav.crmCampaigns`, `nav.crmAutomations`, `nav.crmMerge`.
+  // this order: «Ospiti» (the entry itself, `nav.crmGuestsTab`), `nav.crmSegments`, `nav.crmCampaigns`, `nav.crmAutomations`, `nav.crmMerge`.
   // Convention: each page task of the epic adds its own entry here with `featureFlag: 'crmMarketing'` and `navParent:
   // '/app/short-rent/crm/guests'`, never a menu entry of its own. The pages the e-mails link to (`/unsubscribe`, `/marketing/confirm`, the
   // consent and welcome pages) are public routes, not entries of this table, and are never behind the flag: an e-mail already sent keeps working.
@@ -1573,6 +1573,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['guest.read'],
     featureFlag: 'crmMarketing',
     navKey: 'nav.crm',
+    navTabKey: 'nav.crmGuestsTab',
     navGroup: 'management',
     navPlacement: 'primary',
     navOrder: 8,

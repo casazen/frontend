@@ -2,9 +2,9 @@ import { ApiClient } from './client';
 import type {
   Campaign,
   CampaignReport,
+  ConditionDefinition,
   CreateDraftDto,
   CreateSegmentDto,
-  FieldDefinition,
   ScheduleCampaignDto,
   Segment,
   SegmentPreviewResult,
@@ -19,7 +19,10 @@ export const campaignsApi = {
   getSegmentPreview: (segmentId: string, propertyId?: string) =>
     ApiClient.get<SegmentPreviewResult>(`/campaigns/segments/${segmentId}/preview`, propertyId ? {propertyId} : undefined),
 
-  getFields: () => ApiClient.get<FieldDefinition[]>('/campaigns/fields'),
+  previewCondition: (condition: ConditionDefinition, propertyId?: string) =>
+    ApiClient.post<SegmentPreviewResult>('/campaigns/segments/preview', { condition, propertyId }),
+
+  suggestSegment: (brief: string) => ApiClient.post<CreateSegmentDto>('/campaigns/studio/suggest-segment', { brief }),
 
   getCampaigns: () => ApiClient.get<Campaign[]>('/campaigns'),
 

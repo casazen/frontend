@@ -1,161 +1,188 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AppShell } from '@/components/layout/app-shell';
-import { PageHeader } from '@/components/layout/page-header';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { LoadingScreen } from '@/components/shared/loading-screen';
-import { CampaignEditor } from '@/components/campaigns/CampaignEditor';
-import { MarketingSettingsForm } from '@/components/campaigns/MarketingSettingsForm';
+import { Plus, Send, Settings2, Share2 } from 'lucide-react';
+import type { GeneratedContent } from '@/api/marketing-studio.api';
 import { CampaignAssets } from '@/components/campaigns/CampaignAssets';
-import { MarketingError } from '@/components/campaigns/MarketingInputs';
-import { useCampaignReport, useCampaigns, useSubmitForApproval, useScheduleCampaign } from '@/queries/campaigns';
-import type { Campaign } from '@/types/campaign.types';
+import { CampaignEditor } from '@/components/campaigns/CampaignEditor';
+import { PageHeader } from '@/components/layout/page-header';
+import { ErrorState } from '@/components/shared/error-state';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CampaignCard } from '@/features/marketing/campaign-card';
+import { CAMPAIGN_GOALS, type GoalId } from '@/features/marketing/campaign-goals';
+import { CampaignWizard } from '@/features/marketing/campaign-wizard';
+import { CampaignArt } from '@/features/marketing/illustrations';
+import { IdeasStrip } from '@/features/marketing/ideas-strip';
+import { PickCard } from '@/features/marketing/pick-card';
+import { SettingsWizard } from '@/features/marketing/settings-wizard';
+import { useCampaigns } from '@/queries/campaigns';
 
-const sections = ['campaignList', 'compose', 'assets', 'settings'] as const;
+interface WizardRequest {
+  goalId?: GoalId;
+  idea?: GeneratedContent;
+}
+
+const STARTER_GOALS = CAMPAIGN_GOALS.slice(0, 3);
+const EMPTY_STEPS = ['group', 'write', 'approve'] as const;
 
 export function CampaignsPage() {
   const { t } = useTranslation();
-  const [section, setSection] = useState<(typeof sections)[number]>('campaignList');
+  const [params, setParams] = useSearchParams();
   const campaigns = useCampaigns();
-  return (
-    <AppShell>
-      <div className="workspace-page space-y-5">
-        <PageHeader title={t('campaigns.title')} description={t('campaigns.description')} crumbs="auto" />
-        <div className="flex flex-wrap gap-2" aria-label={t('campaigns.title')}>
-          {sections.map((key) => (
-            <Button
-              key={key}
-              variant={key === section ? 'default' : 'outline'}
-              aria-pressed={key === section}
-              onClick={() => setSection(key)}
-            >
-              {t('marketingStudio.' + key)}
-            </Button>
-          ))}
-        </div>
-        {section === 'campaignList' && (
-          <section className="space-y-3">
-            <MarketingError error={campaigns.error} />
-            {campaigns.isLoading && <LoadingScreen />}
-            {campaigns.data?.length === 0 && (
-              <div className="rounded-xl border p-5">
-                <h2 className="font-semibold">{t('campaigns.emptyTitle')}</h2>
-                <p>{t('campaigns.emptyList')}</p>
-              </div>
-            )}
-            {campaigns.data?.map((c) => (
-              <CampaignCard key={c.id} campaign={c} />
-            ))}
-          </section>
-        )}
-        {section === 'compose' && <CampaignEditor onSaved={() => setSection('campaignList')} />}
-        {section === 'assets' && <CampaignAssets />}
-        {section === 'settings' && (
-          <>
-            <MarketingSettingsForm />
-            <details className="rounded-xl border bg-card p-4">
-              <summary className="cursor-pointer font-semibold">{t('marketingStudio.visibility')}</summary>
-              <ol className="mt-3 list-decimal space-y-2 pl-5">
-                {['googlePartner', 'googleInventory', 'siteVisibility'].map((key) => (
-                  <li key={key}>{t('marketingStudio.' + key)}</li>
-                ))}
-              </ol>
-              <Link className="mt-3 block text-primary underline" to="/app/short-rent/vetrina">
-                {t('marketingStudio.storefront')}
-              </Link>
-            </details>
-          </>
-        )}
-      </div>
-    </AppShell>
-  );
-}
+  const [wizard, setWizard] = useState<WizardRequest | null>(() => (params.has('new') ? {} : null));
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [contentOpen, setContentOpen] = useState(false);
+  const [ideasOpen, setIdeasOpen] = useState(false);
+  const ideasRef = useRef<HTMLDetailsElement>(null);
 
-function CampaignCard({ campaign }: { campaign: Campaign }) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [date, setDate] = useState('');
-  const [dateError, setDateError] = useState(false);
-  const submit = useSubmitForApproval();
-  const schedule = useScheduleCampaign();
-  const report = useCampaignReport(open && campaign.status === 'Sent' ? campaign.id : '');
-  const statusKey = campaign.status[0].toLowerCase() + campaign.status.slice(1);
+  useEffect(() => {
+    if (!params.has('new')) return;
+    const next = new URLSearchParams(params);
+    next.delete('new');
+    setParams(next, { replace: true });
+  }, [params, setParams]);
+
+  const showAllIdeas = () => {
+    setIdeasOpen(true);
+    requestAnimationFrame(() => ideasRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
+
   return (
-    <article className="rounded-xl border bg-card p-4">
-      <button
-        type="button"
-        className="flex w-full flex-wrap items-center justify-between gap-3 text-left"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-      >
-        <span>
-          <span className="block text-sm text-muted-foreground">{campaign.segmentName}</span>
-          <strong>{campaign.subject}</strong>
-        </span>
-        <span className="rounded-full bg-muted px-3 py-1 text-sm">{t('campaigns.status.' + statusKey)}</span>
-      </button>
-      {open && (
-        <div className="mt-4 space-y-3">
-          <p className="whitespace-pre-wrap">{campaign.body}</p>
-          {campaign.status === 'Draft' && (
-            <Button disabled={submit.isPending} onClick={() => submit.mutate({ campaignId: campaign.id })}>
-              {t('campaigns.editor.submitForApproval')}
-            </Button>
-          )}
-          {campaign.status === 'PendingApproval' && (
-            <Link className="text-primary underline" to="/app/short-rent/approval-queue">
-              {t('marketingStudio.reviewQueue')}
-            </Link>
-          )}
-          {campaign.status === 'Approved' && (
-            <form
-              className="flex flex-wrap items-end gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const instant = new Date(date);
-                if (!(instant.getTime() > Date.now())) {
-                  setDateError(true);
-                  return;
-                }
-                schedule.mutate({ campaignId: campaign.id, scheduledAt: instant.toISOString() });
-              }}
-            >
-              <label>
-                {t('campaigns.editor.schedule')}
-                <Input type="datetime-local" required aria-invalid={dateError} value={date} onChange={(e) => {
-                  setDate(e.target.value);
-                  setDateError(false);
-                }} />
-                {dateError && <span role="alert">{t('marketingStudio.futureTime')}</span>}
-              </label>
-              <Button type="submit" disabled={schedule.isPending || !date}>
-                {t('campaigns.editor.scheduleButton')}
-              </Button>
-            </form>
-          )}
-          {campaign.scheduledAt && (
-            <p>{t('campaigns.scheduledAt', { date: new Date(campaign.scheduledAt).toLocaleString() })}</p>
-          )}
-          {campaign.sentAt && <p>{t('campaigns.sentAt', { date: new Date(campaign.sentAt).toLocaleString() })}</p>}
-          {report.data && (
-            <dl className="grid gap-3 sm:grid-cols-3">
-              {(
-                ['sentCount', 'errorCount', 'unsubscribeCount', 'openedCount', 'clickedCount', 'bouncedCount'] as const
-              ).map((key, i) => (
-                <div key={key}>
-                  <dt>
-                    {t('campaigns.report.' + ['sent', 'errors', 'unsubscribes', 'opened', 'clicked', 'bounced'][i])}
-                  </dt>
-                  <dd>{report.data[key]}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-          <MarketingError error={submit.error ?? schedule.error ?? report.error} />
+    <div className="min-w-0 space-y-6" data-testid="campaigns-page">
+      <PageHeader
+        icon={Send}
+        title={t('marketingHub.campaigns.title')}
+        description={t('marketingHub.campaigns.description')}
+        primary={{ label: t('marketingHub.campaigns.create'), icon: Plus, onClick: () => setWizard({}), testId: 'campaigns-create' }}
+        secondary={[
+          { label: t('marketingHub.campaigns.content'), icon: Share2, onClick: () => setContentOpen(true), testId: 'campaigns-content' },
+          { label: t('marketingStudio.settings'), icon: Settings2, onClick: () => setSettingsOpen(true), testId: 'campaigns-settings' },
+        ]}
+      />
+
+      <IdeasStrip onUse={(idea) => setWizard({ idea })} onSeeAll={showAllIdeas} />
+
+      {campaigns.isPending ? (
+        <div className="space-y-3">
+          <Skeleton className="h-52 rounded-2xl" />
+          <Skeleton className="h-52 rounded-2xl" />
         </div>
-      )}
-    </article>
+      ) : null}
+
+      {campaigns.isError ? (
+        <ErrorState title={t('campaigns.loadError')} error={campaigns.error} onRetry={() => void campaigns.refetch()} testId="campaigns-error" />
+      ) : null}
+
+      {campaigns.data && campaigns.data.length === 0 ? (
+        <div className="space-y-8" data-testid="campaigns-empty">
+          <section className="overflow-hidden rounded-3xl bg-primary-soft ring-1 ring-inset ring-border">
+            <div className="grid items-center gap-6 p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_15rem]">
+              <div className="min-w-0 space-y-4">
+                <h2 className="text-balance text-2xl font-semibold tracking-tight">{t('marketingHub.campaigns.empty.title')}</h2>
+                <p className="max-w-prose text-foreground/80">{t('marketingHub.campaigns.empty.text')}</p>
+                <ol className="space-y-2 text-sm">
+                  {EMPTY_STEPS.map((item, index) => (
+                    <li key={item} className="flex items-center gap-3">
+                      <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-card text-sm font-bold text-primary-text ring-1 ring-inset ring-border">
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0">{t(`marketingHub.campaigns.empty.steps.${item}`)}</span>
+                    </li>
+                  ))}
+                </ol>
+                <Button type="button" className="max-md:hidden" onClick={() => setWizard({})} data-testid="campaigns-empty-create">
+                  <Plus aria-hidden="true" className="size-4" />
+                  {t('marketingHub.campaigns.create')}
+                </Button>
+              </div>
+              <CampaignArt className="hidden w-full md:block" />
+            </div>
+          </section>
+          <section aria-labelledby="starter-goals-title" className="space-y-3">
+            <h2 id="starter-goals-title" className="text-lg font-semibold">
+              {t('marketingHub.campaigns.empty.starters')}
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {STARTER_GOALS.map((goal) => (
+                <PickCard
+                  key={goal.id}
+                  icon={goal.icon}
+                  tone={goal.tone}
+                  title={t(`marketingHub.goals.${goal.id}.title`)}
+                  description={t(`marketingHub.goals.${goal.id}.description`)}
+                  onPick={() => setWizard({ goalId: goal.id })}
+                  testId={`campaign-starter-${goal.id}`}
+                />
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {campaigns.data && campaigns.data.length > 0 ? (
+        <section aria-labelledby="campaign-list-title" className="space-y-3">
+          <h2 id="campaign-list-title" className="text-lg font-semibold">
+            {t('marketingHub.campaigns.listTitle')}
+          </h2>
+          <div className="space-y-3" data-testid="campaign-list">
+            {campaigns.data.map((campaign) => (
+              <CampaignCard key={campaign.id} campaign={campaign} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <details
+        ref={ideasRef}
+        open={ideasOpen}
+        onToggle={(event) => setIdeasOpen(event.currentTarget.open)}
+        className="rounded-2xl border bg-card p-4 sm:p-5"
+        data-testid="campaigns-ideas-view"
+      >
+        <summary className="cursor-pointer font-semibold">{t('marketingHub.campaigns.viewIdeas')}</summary>
+        <div className="mt-4 space-y-4">
+          <p className="max-w-prose text-foreground/75">{t('marketingHub.campaigns.ideasIntro')}</p>
+          <CampaignAssets />
+        </div>
+      </details>
+
+      <CampaignWizard
+        open={wizard !== null}
+        onOpenChange={(open) => {
+          if (!open) setWizard(null);
+        }}
+        initialGoalId={wizard?.goalId}
+        initialIdea={wizard?.idea}
+      />
+
+      <SettingsWizard
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onWriteCampaign={() => {
+          setSettingsOpen(false);
+          setWizard({});
+        }}
+      />
+
+      <Dialog open={contentOpen} onOpenChange={setContentOpen}>
+        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{t('marketingHub.campaigns.content')}</DialogTitle>
+            <DialogDescription>{t('marketingHub.campaigns.contentIntro')}</DialogDescription>
+          </DialogHeader>
+          {contentOpen ? (
+            <CampaignEditor
+              title={t('marketingHub.campaigns.content')}
+              onSaved={() => {
+                setContentOpen(false);
+                setIdeasOpen(true);
+              }}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

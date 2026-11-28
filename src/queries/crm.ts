@@ -1,9 +1,9 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CrmApi } from '@/api/crm.api';
 import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
-import type { CrmProfileDetail, CrmProfileListParams } from '@/types/crm.types';
+import type { CrmProfileDetail, CrmProfileList, CrmProfileListParams } from '@/types/crm.types';
 
 export const CRM_KEY = 'crm';
 
@@ -29,6 +29,35 @@ export function useGuestCrmProfiles(params?: CrmProfileListParams) {
     queryFn: () => CrmApi.getGuests(params),
     placeholderData: keepPreviousData,
     refetchOnMount: 'always',
+  });
+}
+
+export interface CrmOverview {
+  guests: number;
+  reachableByEmail: number;
+  returned: number;
+  loyal: number;
+}
+
+const OVERVIEW_FILTERS: readonly CrmProfileListParams[] = [{}, { reachableByEmail: true }, { minStays: 2 }, { minStays: 3 }];
+const OVERVIEW_STALE_MS = 60_000;
+
+function combineOverview(results: ReadonlyArray<{ data: number | undefined }>): CrmOverview | undefined {
+  const counts = results.map((result) => result.data);
+  if (counts.some((count) => count === undefined)) return undefined;
+  const [guests, reachableByEmail, returned, loyal] = counts as number[];
+  return { guests, reachableByEmail, returned, loyal };
+}
+
+export function useCrmOverview(): CrmOverview | undefined {
+  return useQueries({
+    queries: OVERVIEW_FILTERS.map((filters) => ({
+      queryKey: [...CRM_GUESTS_KEY, 'overview', filters],
+      queryFn: () => CrmApi.getGuests({ ...filters, page: 1, pageSize: 1 }),
+      select: (list: CrmProfileList) => list.totalCount,
+      staleTime: OVERVIEW_STALE_MS,
+    })),
+    combine: combineOverview,
   });
 }
 

@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { Building2, Globe, PenLine, type LucideIcon } from 'lucide-react';
 import { GUEST_LOCALE_OPTIONS } from '@/features/checkin/lib/guest-locale';
 
 /**
@@ -23,6 +24,12 @@ export function channelLabel(t: TFunction, channel: string, portal?: string | nu
   if (channel === 'OtherChannel' && portal?.trim()) return portal.trim();
   const known = CRM_CHANNELS.find((entry) => entry.channel === channel);
   return known ? t(known.labelKey) : channel;
+}
+
+export function channelIcon(channel: string): LucideIcon {
+  if (channel === 'Direct') return Globe;
+  if (channel === 'Manual' || channel === 'Local') return PenLine;
+  return Building2;
 }
 
 /** The name of a language, written in the language of the app, for a language the product has texts for; the code otherwise. */

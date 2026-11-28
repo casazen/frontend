@@ -1,4 +1,4 @@
-import { MarketingSetupEntry } from '@/components/campaigns/MarketingSettingsForm';
+import { MarketingSetupEntry } from '@/features/marketing/setup-entry';
 import { useCommercialProfile } from '@/hooks/use-commercial-profile';
 import { commercialPartAllowed, commercialRouteAllowed } from './commercial-access';
 import { Fragment, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';

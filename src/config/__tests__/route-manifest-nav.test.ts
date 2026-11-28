@@ -1117,6 +1117,7 @@ describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/
   it('puts the CRM entry in «Gestione» of short-rent once crmMarketing is on, as an entry of its own', () => {
     const crm = entryOf('/app/short-rent/crm/guests');
     expect(crm.navKey).toBe('nav.crm');
+    expect(crm.navTabKey).toBe('nav.crmGuestsTab');
     expect(crm.navPlacement).toBe('primary');
     expect(crm.navGroup).toBe('management');
     expect(crm.navParent).toBeUndefined();

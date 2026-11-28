@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { campaignsApi } from '@/api/campaigns.api';
 import type {
+  ConditionDefinition,
   CreateDraftDto,
   CreateSegmentDto,
   ScheduleCampaignDto,
@@ -8,16 +9,17 @@ import type {
 } from '@/types/campaign.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
-import { getProblemMessage } from '@/lib/api-errors';
+import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 
+const UNSUPPORTED_STATUSES = [404, 405];
 const SEGMENTS_KEY = 'segments';
 const CAMPAIGNS_KEY = 'campaigns';
-const FIELDS_KEY = 'campaign-fields';
 
-export function useSegments() {
+export function useSegments(enabled = true) {
   return useQuery({
     queryKey: [SEGMENTS_KEY],
     queryFn: () => campaignsApi.getSegments(),
+    enabled,
   });
 }
 
@@ -44,17 +46,33 @@ export function usePreviewCount(segmentId: string, propertyId?: string) {
   });
 }
 
-export function useFields() {
+export function usePreviewCondition(condition: ConditionDefinition | null, propertyId?: string) {
   return useQuery({
-    queryKey: [FIELDS_KEY],
-    queryFn: () => campaignsApi.getFields(),
+    queryKey: [SEGMENTS_KEY, 'preview-condition', condition, propertyId ?? null],
+    queryFn: async () => {
+      try {
+        return await campaignsApi.previewCondition(condition as ConditionDefinition, propertyId);
+      } catch (error) {
+        if (UNSUPPORTED_STATUSES.includes(getHttpStatus(error) ?? 0)) return null;
+        throw error;
+      }
+    },
+    enabled: condition !== null,
+    retry: false,
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 }
 
-export function useCampaigns() {
+export function useSuggestSegment() {
+  return useMutation({ mutationFn: (brief: string) => campaignsApi.suggestSegment(brief) });
+}
+
+export function useCampaigns(enabled = true) {
   return useQuery({
     queryKey: [CAMPAIGNS_KEY],
     queryFn: () => campaignsApi.getCampaigns(),
+    enabled,
     refetchOnMount: 'always',
     refetchInterval: (query) =>
       query.state.data?.some((c) => c.status === 'PendingApproval' || c.status === 'Scheduled') ? 15000 : false,

@@ -1,11 +1,11 @@
-import { CopyCheck } from 'lucide-react';
+import { CopyCheck, GitMerge } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/page-header';
-import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { ListPagination } from '@/components/shared/list-view/list-pagination';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { CrmEmptyState } from '@/features/crm/lib/crm-empty-state';
 import { cn } from '@/lib/utils';
 import { useMergeCandidates } from '@/queries/crm-merge';
 import { MergeCandidateCard } from './merge-candidate-card';
@@ -41,14 +41,15 @@ export function MergePage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="crm-merge-page">
-      <PageHeader title={t('crm.merge.title')} description={t('crm.merge.description')} />
+      <PageHeader icon={GitMerge} title={t('crm.merge.title')} description={t('crm.merge.description')} />
 
       {isLoading ? <SkeletonCard lines={6} label={t('crm.merge.loading')} /> : null}
 
       {isError ? <ErrorState title={t('crm.merge.loadError')} error={error} onRetry={() => void refetch()} testId="crm-merge-error" /> : null}
 
       {!isLoading && !isError && data && data.items.length === 0 ? (
-        <EmptyState
+        <CrmEmptyState
+          testId="crm-merge-empty"
           icon={CopyCheck}
           title={t('crm.merge.empty.title')}
           description={t('crm.merge.empty.description')}

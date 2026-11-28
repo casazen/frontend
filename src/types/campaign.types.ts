@@ -1,7 +1,5 @@
 type CampaignStatus = 'Draft' | 'PendingApproval' | 'Approved' | 'Scheduled' | 'Sending' | 'Sent' | 'Failed';
 
-export type ConditionFieldType = 'Text' | 'Number' | 'Date' | 'Boolean' | 'Enum' | 'Set';
-
 interface ConditionField {
   fieldId: string;
   operator: string;
@@ -16,13 +14,6 @@ export interface ConditionGroup {
 export interface ConditionDefinition {
   version: string;
   groups: ConditionGroup[];
-}
-
-export interface FieldDefinition {
-  fieldId: string;
-  fieldType: ConditionFieldType;
-  displayNameKey: string;
-  operators: string[];
 }
 
 export interface Segment {

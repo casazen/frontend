@@ -9138,12 +9138,12 @@
       "withdrawalsLink": "Open the privacy tab"
     },
     "detail": {
-      "backToList": "Back to the profiles",
+      "backToList": "Back to the guests",
       "channels": {
         "empty": "No completed stay yet.",
         "title": "Where they book"
       },
-      "fallbackTitle": "Guest profile",
+      "fallbackTitle": "Guest card",
       "group": {
         "average": "On average {{adults}} adults and {{children}} children per stay.",
         "couple": "Usually travels as a couple.",
@@ -9172,15 +9172,15 @@
         "title": "Stay history",
         "truncated": "Showing the latest {{count}} stays: the totals count all of them."
       },
-      "loadError": "We cannot load the profile",
-      "loading": "Loading the profile…",
-      "mergeLink": "Review the duplicates",
-      "mergeProposals_one": "A possible duplicate of this guest is waiting for your decision.",
-      "mergeProposals_other": "{{count}} possible duplicates of this guest are waiting for your decision.",
+      "loadError": "We cannot load the card",
+      "loading": "Loading the card…",
+      "mergeLink": "Review the duplicate cards",
+      "mergeProposals_one": "This guest may have a duplicate card: it is waiting for your decision.",
+      "mergeProposals_other": "This guest may have {{count}} duplicate cards: they are waiting for your decision.",
       "noStayYet": "No completed stay yet",
       "notFound": {
-        "description": "The profile does not exist, or it is not among the properties you have access to.",
-        "title": "Profile not found"
+        "description": "The card does not exist, or it is not among the properties you have access to.",
+        "title": "Card not found"
       },
       "properties": {
         "empty": "No property yet.",
@@ -9240,7 +9240,7 @@
         "button": "Filters",
         "buttonActive": "Filters ({{active}})"
       },
-      "region": "Search and filter the profiles",
+      "region": "Search and filter the guests",
       "search": {
         "hint": "Type a part of the name, or the whole e-mail address or phone number.",
         "label": "Search for a guest",
@@ -9259,130 +9259,158 @@
       }
     },
     "list": {
+      "actions": {
+        "campaign": "Write a campaign",
+        "group": "Create a group",
+        "import": "Import guests"
+      },
       "channels": "Booking channels",
       "columns": {
-        "channels": "Channels",
+        "channels": "Booked on",
         "email": "E-mail",
         "guest": "Guest",
         "lastStay": "Latest stay",
-        "spend": "Spend",
-        "stays": "Stays"
+        "stays": "Stays and spend"
       },
-      "count_one": "{{count}} profile",
-      "count_other": "{{count}} profiles",
-      "description": "Your guests, with their stays and whether you can write to them. You only see who stayed at the properties you have access to.",
+      "count_one": "{{count}} guest",
+      "count_other": "{{count}} guests",
+      "description": "Everyone who has stayed with you. From here you choose who to write to.",
       "empty": {
-        "description": "Profiles come with the bookings: when a guest stays with you, you will find them here.",
-        "title": "No guests yet"
+        "description": "Guests arrive with their bookings: as soon as someone stays with you, you will find them here. If you already have a list, you can also load it from a file.",
+        "help": "How it works",
+        "import": "Import guests",
+        "title": "Your guests will show up here"
       },
-      "label": "Guest profiles",
-      "lastStay": "latest stay {{date}}",
-      "loadError": "We cannot load the guest profiles",
-      "mergeProposal": "Possible duplicate",
-      "mergeProposalHint": "Another profile may be the same person: you will find it among the duplicates to review.",
-      "mergeProposalHintReadOnly": "Another profile may be the same person: whoever can edit the guests decides on it.",
+      "label": "Guest list",
+      "loadError": "We cannot load your guests",
+      "mergeProposal": "Possible duplicate card",
+      "mergeProposalHint": "This guest may appear twice: check the duplicate cards to decide.",
+      "mergeProposalHintReadOnly": "This guest may appear twice: whoever can edit the guests decides.",
       "moreTags_one": "+{{count}} more",
       "moreTags_other": "+{{count}} more",
       "noMatch": {
         "action": "Clear the filters",
         "description": "Try fewer filters or another search.",
-        "title": "No profile matches the filters"
+        "title": "No guest matches the filters"
       },
       "noName": "Guest without a name",
+      "noStays": "No stays yet",
       "staysCount_one": "{{count}} stay",
       "staysCount_other": "{{count}} stays",
       "tags": "Tags",
-      "title": "Guest CRM"
+      "title": "Guests"
     },
     "merge": {
       "card": {
-        "label": "Possible duplicate: {{a}} and {{b}}",
-        "merge": "Merge",
-        "mergeAria": "Merge {{a}} and {{b}}",
-        "notSame": "They are not the same person",
-        "notSameAria": "They are not the same person: {{a}} and {{b}}"
+        "label": "Possible duplicate card: {{a}} and {{b}}",
+        "merge": "They are the same person: merge",
+        "mergeAria": "They are the same person: merge {{a}} and {{b}}",
+        "notSame": "They are different people",
+        "notSameAria": "They are different people: {{a}} and {{b}}"
       },
-      "count_one": "{{count}} proposal to review",
-      "count_other": "{{count}} proposals to review",
-      "description": "CasaZen found guests who may be the same person. It never merges anything by itself: you decide.",
+      "count_one": "{{count}} card to check",
+      "count_other": "{{count}} cards to check",
+      "description": "Sometimes the same guest shows up twice, for example they booked on Airbnb and then on your website. Here you can merge the two cards: the history and the contacts stay together. CasaZen never merges anything by itself: you decide.",
       "dialog": {
-        "confirm": "Merge the profiles",
-        "consent": "No consent changes: every contact stays as it is, with its basis and its confirmation.",
-        "description": "Choose the profile to keep: the other one will no longer show in your lists.",
+        "confirm": "Merge the two cards",
+        "consent": "Choices about e-mails do not change: whoever said yes or no stays as they were.",
+        "description": "Choose the card to keep: the other one will no longer show in your lists.",
         "final": "This cannot be undone.",
-        "history": "The history and the contacts of the other profile move to the one you keep.",
-        "legend": "Which profile do you want to keep?",
+        "history": "The history and the contacts of the other card move to the one you keep.",
+        "legend": "Which card do you want to keep?",
         "stays_one": "{{count}} stay",
         "stays_other": "{{count}} stays",
-        "title": "Merge the two profiles"
+        "title": "Merge the two cards"
       },
       "dismiss": {
         "confirm": "Yes, they are different people",
-        "description": "CasaZen will not propose this pair again. No profile changes.",
+        "description": "CasaZen will not propose this pair again. No card changes.",
         "title": "Are they two different people?"
       },
       "dismissDone": "Done: this pair will not be proposed to you again.",
       "dismissError": "We could not save your decision. Try again in a few moments.",
       "empty": {
-        "action": "Go to the profiles",
-        "description": "When CasaZen finds two guests who may be the same person, you will see them here and decide.",
-        "title": "No duplicates to review"
+        "action": "Go to the guests",
+        "description": "When CasaZen finds two cards that may be the same person, you will see them here and decide.",
+        "title": "No duplicate cards: all in order"
       },
-      "label": "Possible duplicates",
+      "label": "Duplicate cards to check",
       "likelihood": {
         "likely": "Likely the same person",
         "possible": "Possibly the same person",
         "veryLikely": "Very likely the same person"
       },
-      "loadError": "We cannot load the possible duplicates",
-      "loading": "Loading the possible duplicates…",
-      "mergeDone": "Profiles merged.",
-      "mergeError": "We could not merge the profiles. Try again in a few moments.",
+      "loadError": "We cannot load the duplicate cards",
+      "loading": "Loading the duplicate cards…",
+      "mergeDone": "Cards merged.",
+      "mergeError": "We could not merge the cards. Try again in a few moments.",
       "profile": {
         "contacts": "Contacts",
         "country": "Country",
         "lastStay": "Latest stay",
+        "lastStayOn": "Latest stay {{date}}",
         "noContacts": "No contact",
         "noName": "Guest without a name",
         "noStay": "No stay",
-        "position": "Profile {{position}}",
         "properties": "Properties",
-        "stays": "Stays"
+        "stays": "Stays",
+        "staysCount_one": "{{count}} stay",
+        "staysCount_other": "{{count}} stays"
       },
       "reasons": {
-        "sameEmail": "They share the same e-mail address.",
-        "sameNameBirth": "They have the same name and the same date of birth.",
-        "sameNameSameProperty": "They have the same name and stayed at the same property.",
-        "samePhone": "They share the same phone number.",
-        "title": "Why we put them together",
-        "unknown": "They have other things in common."
+        "sameEmail": "Same e-mail address",
+        "sameNameBirth": "Same name and same date of birth",
+        "sameNameSameProperty": "Same name and same property",
+        "samePhone": "Same phone number",
+        "title": "Why we think they are the same person",
+        "unknown": "They have other things in common"
       },
-      "title": "Possible duplicates"
+      "title": "Duplicate cards"
+    },
+    "nextStep": {
+      "campaign": {
+        "cta": "Write the first campaign",
+        "detail": "Choose who to write to and what to say: it takes a few minutes.",
+        "title": "Write your first campaign"
+      },
+      "group": {
+        "cta": "Create the first group",
+        "detail": "A group is a list of guests picked for a reason, for example those who already came back. Then you can write only to them.",
+        "title": "Create your first group of guests"
+      },
+      "kicker": "Next step"
+    },
+    "overview": {
+      "guests": "Guests",
+      "label": "Your guests in numbers",
+      "loyal": "Loyal (3+ stays)",
+      "reachable": "Reachable by e-mail",
+      "returning": "Came back at least once"
     },
     "state": {
       "consent": {
-        "hint": "The guest gave their consent and confirmed their e-mail address: you can write to them about news and offers.",
-        "label": "Reachable, with consent"
+        "hint": "They agreed to receive e-mails from you and confirmed their address: you can write to them about news and offers.",
+        "label": "Accepted e-mails"
       },
       "noContact": {
         "hint": "There is no e-mail address to write to: either there is none, or it was left without any permission to use it.",
-        "label": "No contact"
+        "label": "No e-mail"
       },
       "serviceOnly": {
-        "hint": "You can write to them only about their stay (confirmations, arrival instructions, invoices), not about news and offers. This is the case for the addresses of booking portals and for guests who gave no consent.",
-        "label": "Service only"
+        "hint": "You can write to them only about their stay (confirmations, arrival instructions, invoices), not about news and offers. This is the case for the addresses of booking portals and for guests who did not agree to receive e-mails.",
+        "label": "Stay messages only"
       },
       "softOptIn": {
         "hint": "They booked directly with you: you may offer them services similar to those they bought, and every message carries a link to unsubscribe.",
-        "label": "Reachable, direct customer"
+        "label": "Direct customer: you can write"
       },
       "toConfirm": {
-        "hint": "They gave their consent but have not confirmed their e-mail address yet (or they asked not to receive e-mails any more). For now you cannot write to them about news and offers: open the profile to see which.",
-        "label": "To confirm"
+        "hint": "They agreed to receive e-mails but have not confirmed their address yet (or they asked not to receive e-mails any more). For now you cannot write to them about news and offers: open the card to see which.",
+        "label": "Must confirm the e-mail"
       },
       "unsubscribed": {
         "hint": "They asked not to receive promotional e-mails any more, so you cannot write to them about news and offers. Messages about a stay can still reach them.",
-        "label": "Unsubscribed"
+        "label": "No more e-mails"
       }
     },
     "tags": {
@@ -17215,11 +17243,12 @@
     "supplierShowcase": "Showcase",
     "compliance": "Compliance",
     "complianceAudit": "Compliance audit",
-    "crm": "Guest CRM",
+    "crm": "Guests & marketing",
     "crmAutomations": "Automations",
     "crmCampaigns": "Campaigns",
-    "crmMerge": "Duplicates",
-    "crmSegments": "Audiences",
+    "crmGuestsTab": "Guests",
+    "crmMerge": "Duplicate cards",
+    "crmSegments": "Groups",
     "demoEnvironment": "Demo environment",
     "documents": "Documents",
     "collapse": "Collapse menu",
