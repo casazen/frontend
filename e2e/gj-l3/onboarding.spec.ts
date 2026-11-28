@@ -136,25 +136,19 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.locator('#nightlyRate').fill('120');
       await page.getByTestId('quick-property-submit').click();
 
-      // After creating the property, the host can open the setup checklist from the guide on the dashboard.
+      // After creating the property, the host lands on the dashboard and the guide of the header is the manual.
       await expect(page).toHaveURL(/\/app\/short-rent$/, { timeout: 30_000 });
       // «Inizia con CasaZen» as the first wizard: the welcome opens over the Home of a new host, once; «Più tardi» leaves the Home to the journey.
       await expect(page.getByTestId('first-run-wizard')).toBeVisible({ timeout: 30_000 });
       await page.getByTestId('first-run-later').click();
       await expect(page.getByTestId('first-run-wizard')).toHaveCount(0);
       await page.getByTestId('guide-button').click();
-      const checklist = page.getByTestId('guide-setup');
-      await expect(checklist).toBeVisible({ timeout: 30_000 });
-      const propertyStep = checklist.getByRole('listitem').filter({ hasText: 'Primo immobile' });
-      await expect(propertyStep).toHaveAttribute('data-state', 'done');
-      await expect(checklist.locator('[aria-current="step"]')).toHaveCount(1);
-      await expect(checklist.getByTestId('guide-setup-continue')).toBeVisible();
-      await expectNoHorizontalOverflow(page, 'setup checklist in the guide');
-      // A long step title still has enough space to read comfortably on a phone.
-      const organizationTitle = checklist.getByText(/nome e indirizzo dell.organizzazione/i);
-      await expect(organizationTitle).toBeVisible();
-      expect((await organizationTitle.boundingBox())?.width ?? 0).toBeGreaterThan(200);
-      await shot(page, 'host-3-guide-checklist');
+      const guide = page.getByTestId('guide-panel');
+      await expect(guide.getByTestId('guide-search')).toBeVisible({ timeout: 30_000 });
+      await expect(guide.getByTestId('guide-topics')).toBeVisible();
+      await expect(guide.getByTestId('guide-setup')).toHaveCount(0);
+      await expectNoHorizontalOverflow(page, 'user guide panel');
+      await shot(page, 'host-3-guide-manual');
       console.log(`[onboarding-l3] short-rent host: QR -> property created in ${Math.round((Date.now() - t0) / 1000)}s`);
 
       // The oracle: the org exists on Pro and the property is stored with its comune.

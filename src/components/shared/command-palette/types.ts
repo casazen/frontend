@@ -10,7 +10,7 @@ import type { AppLocale } from '@/i18n/config';
  * What an item of the palette is (UI-06). Each kind has a group with a heading. The server search (UI-13) brings its own
  * kinds (contracts, tenants, suppliers): they are added here, with their group in `COMMAND_GROUPS`.
  */
-export type CommandKind = 'page' | 'action' | 'property' | 'booking' | 'guest';
+export type CommandKind = 'page' | 'action' | 'property' | 'booking' | 'guest' | 'guide';
 
 interface CommandItemBase {
   /**

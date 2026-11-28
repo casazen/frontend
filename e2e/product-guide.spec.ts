@@ -2,14 +2,26 @@ import { test, expect } from './test';
 import { demoUrl, setDemoProfile } from './helpers/demo-profile';
 import { pinE2eLocale } from './helpers/locale';
 
-test('guide opens from the header and remains usable on a phone', async ({ page }) => {
+test('the guide panel of the header is the manual: search, topics and the full manual in their own tab', async ({ page }) => {
   await pinE2eLocale(page, 'it');
   await setDemoProfile(page, 'short-stay');
   await page.goto(demoUrl('/app/short-rent', 'short-stay'));
-  // The «Guida» of the header opens the panel of the guide; the manual is one link of it.
   await page.getByTestId('guide-button').click();
-  await page.getByTestId('guide-panel').getByRole('link', { name: 'Apri il manuale di CasaZen' }).click();
-  await expect(page).toHaveURL(/\/app\/short-rent\/help/);
+  const panel = page.getByTestId('guide-panel');
+  await expect(panel.getByRole('searchbox', { name: 'Cerca nel manuale' })).toBeVisible();
+  await expect(panel.getByTestId('guide-topics').getByRole('listitem')).toHaveCount(4);
+  const fullManual = panel.getByTestId('guide-full-manual');
+  await expect(fullManual).toHaveAttribute('href', '/guida/');
+  await expect(fullManual).toHaveAttribute('target', '_blank');
+  await expect(panel.getByTestId('guide-setup')).toHaveCount(0);
+  await expect(panel.getByTestId('guide-todo')).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test('guide topics page remains usable on a phone', async ({ page }) => {
+  await pinE2eLocale(page, 'it');
+  await setDemoProfile(page, 'short-stay');
+  await page.goto(demoUrl('/app/short-rent/help', 'short-stay'));
   await expect(page.getByRole('heading', { name: 'Guida CasaZen' })).toBeVisible();
   await page.getByRole('searchbox', { name: 'Cerca nella guida' }).fill('ricevuta del portale');
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(1);
