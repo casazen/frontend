@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import type { TenantErasureLease, TenantErasureResult } from '@/types';
 import { fullDay } from '../lib/rent-register';
 
-/** What the request did on one lease, in a sentence: done, done except for who has another lease, or set for the day after the lease ends. */
 function leaseSentence(lease: TenantErasureLease, t: TFunction, language: string): string {
   switch (lease.status) {
     case 'Anonymized':
@@ -20,7 +19,6 @@ function leaseSentence(lease: TenantErasureLease, t: TFunction, language: string
 }
 
 interface TenantErasureResultDialogProps {
-  /** The answer to show; `null` keeps the window closed. */
   result: TenantErasureResult | null;
   onClose: () => void;
 }

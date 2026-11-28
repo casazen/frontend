@@ -8,19 +8,10 @@ import { leaseTenantName } from '../lib/lease-list-format';
 import { leaseSheetPath } from '../lib/lease-next-step';
 import { monthName, monthOfDate, rentRegisterPath, shiftMonth } from '../lib/rent-register';
 
-/**
- * The dates of the agenda of the long-term area (LR-05) as the pages show them: a row for each, the quick filters, the months
- * they are grouped in, the windows of time and the file. It reads what the server sends for a date (`LongRentDeadline`): which
- * dates there are, and which are late, is the server's; the page works none out.
- */
-
 export interface DeadlineContext {
   t: TFunction;
-  /** Today in Europe/Rome (`YYYY-MM-DD`). */
   today: string;
 }
-
-// ------------------------------------------------------------------------------------------------ the kinds of date
 
 // The keys are written out so that the i18n test finds a missing translation (`*Key:` properties are scanned).
 const TYPE_TITLES = [
@@ -32,18 +23,11 @@ const TYPE_TITLES = [
 ] as const;
 const UNKNOWN_TYPE_TITLE = { titleKey: 'longRentDeadlines.type.unknown' } as const;
 
-/** What the date is, in a few words: «Registrazione del contratto», «Canone di 600,00 €». A kind this version does not know (a newer backend) is told neutrally. */
 function typeTitle(item: LongRentDeadline, t: TFunction): string {
   const { titleKey } = TYPE_TITLES.find((entry) => entry.type === item.type) ?? UNKNOWN_TYPE_TITLE;
   return t(titleKey, { amount: formatCurrency(item.amount ?? 0) });
 }
 
-// ----------------------------------------------------------------------------------------------- the quick filters
-
-/**
- * The quick filters of the agenda (`?chip=`), each one the kinds of date it holds. «Firme e registrazioni» and «Rinnovi e
- * disdette» also hold, in the design, the start of a lease and the return of the deposit: the server does not list them yet.
- */
 const FILTERS = [
   { id: 'all', labelKey: 'longRentDeadlines.filters.all', types: null },
   { id: 'registrations', labelKey: 'longRentDeadlines.filters.registrations', types: ['RliRegistration'] },
@@ -54,10 +38,8 @@ const FILTERS = [
 
 export type DeadlineFilterId = (typeof FILTERS)[number]['id'];
 
-/** The filters as the page offers them: their id (in the address) and the key of their name. */
 export const DEADLINE_FILTER_OPTIONS: ReadonlyArray<{ id: DeadlineFilterId; labelKey: string }> = FILTERS;
 
-/** The filter an address asks for; anything else is every kind. */
 export function deadlineFilterOf(chip: string | null): DeadlineFilterId {
   return FILTERS.find((filter) => filter.id === chip)?.id ?? 'all';
 }
@@ -67,37 +49,28 @@ export function filterDeadlines(items: readonly LongRentDeadline[], filterId: De
   return types ? items.filter((item) => types.includes(item.type)) : [...items];
 }
 
-// ------------------------------------------------------------------------------------------------ the windows of time
-
-/** The days a window of the agenda covers (both included). */
 export type DeadlineWindow = Required<Pick<LongRentDeadlinesParams, 'from' | 'to'>>;
 
-/** How far the agenda looks: ninety days, then half a year, then a year (366 days, the most the server answers for). */
 const WINDOW_DAYS = [90, 180, 366] as const;
 
 export const FIRST_WINDOW_DAYS: number = WINDOW_DAYS[0];
 
-/** The window of `days` days from today. */
 export function agendaWindow(today: string, days: number): DeadlineWindow {
   return { from: today, to: addDays(today, days) };
 }
 
-/** The next longer window, or `null` when the year is already there. */
 export function longerWindowDays(days: number): number | null {
   return WINDOW_DAYS.find((step) => step > days) ?? null;
 }
 
 const OVERVIEW_MONTHS = 4;
 
-/** The window the overview looks at: from today to the same day four months later (or the last day of that month). */
 export function overviewWindow(today: string): DeadlineWindow {
   const month = shiftMonth(monthOfDate(today), OVERVIEW_MONTHS);
   const lastDay = Number(endOfMonth(`${month}-01`).slice(8, 10));
   const day = Math.min(Number(today.slice(8, 10)), lastDay);
   return { from: today, to: `${month}-${String(day).padStart(2, '0')}` };
 }
-
-// --------------------------------------------------------------------------------------------------------- the rows
 
 /** When it is, next to the date: «Scaduta da 3 giorni» in red when it is past and still open, «tra 5 giorni» otherwise. */
 function whenText(item: LongRentDeadline, t: TFunction): { text: string; tone?: CalmTone } {
@@ -130,7 +103,6 @@ function tenantOf(item: LongRentDeadline, t: TFunction): string {
   return leaseTenantName({ tenantFirstName: item.tenantFirstName, tenantLastName: item.tenantLastName }, t);
 }
 
-/** A date as a row of the agenda: the day, what it is, whose lease and which property, how far it is, and the page that deals with it. */
 export function deadlineRow(item: LongRentDeadline, { t, today }: DeadlineContext): DayListItem {
   const when = whenText(item, t);
   return {
@@ -144,14 +116,10 @@ export function deadlineRow(item: LongRentDeadline, { t, today }: DeadlineContex
   };
 }
 
-// ------------------------------------------------------------------------------------------- the dates of one lease
-
-/** How many of the installments still to come the sheet of a lease lists (the late ones are always there): the rest is in its payments. */
 const NEXT_RENTS_ON_THE_SHEET = 2;
 
 export interface LeaseDeadlineRows {
   rows: DayListItem[];
-  /** The installments left out of the rows: the tab of the payments has them all. */
   moreRents: number;
 }
 
@@ -190,17 +158,12 @@ export function leaseDeadlineRows(items: readonly LongRentDeadline[], { t }: Pic
   return { rows, moreRents: rents.length - kept.size };
 }
 
-// ---------------------------------------------------------------------------------------------------------- months
-
 export interface DeadlineMonth {
-  /** `yyyy-MM`. */
   month: string;
-  /** «Novembre 2026». */
   title: string;
   items: LongRentDeadline[];
 }
 
-/** The dates grouped by the month they fall in, the months in order. */
 export function groupByMonth(items: readonly LongRentDeadline[], language: string): DeadlineMonth[] {
   const months = new Map<string, LongRentDeadline[]>();
   for (const item of items) {
@@ -215,17 +178,10 @@ export function groupByMonth(items: readonly LongRentDeadline[], language: strin
     });
 }
 
-// ------------------------------------------------------------------------------------------------------------- file
-
-/** `scadenze-2026-10-24-2027-01-22.csv`: the window the file holds. */
 export function deadlinesCsvName(from: string, to: string): string {
   return `scadenze-${from}-${to}.csv`;
 }
 
-/**
- * The file of the dates on the screen: one line each, `;` between the cells, a name that starts with a sign of a formula
- * written with a quote in front (`buildCsv` does it, as for every list). Nothing leaves the page.
- */
 export function deadlinesCsv(items: readonly LongRentDeadline[], { t }: DeadlineContext): string {
   const header = [
     t('longRentDeadlines.csv.columns.date'),

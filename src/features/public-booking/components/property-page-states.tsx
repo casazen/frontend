@@ -5,12 +5,10 @@ import { Button } from '@/components/ui/button';
 import { PublicSiteState } from '@/features/public-site/components/public-site-state';
 import { cn } from '@/lib/utils';
 
-/** A placeholder block, in the tone of the site's own border color (not the console's gray) and still when motion is reduced. */
 function Bone({ className }: { className?: string }) {
   return <div className={cn('animate-pulse rounded-md bg-[var(--cz-public-border)] motion-reduce:animate-none', className)} />;
 }
 
-/** The page while it loads: the same blocks in the same places, so nothing jumps when the content arrives. */
 export function PropertyPageSkeleton() {
   const { t } = useTranslation();
 
@@ -45,7 +43,6 @@ export function PropertyPageSkeleton() {
   );
 }
 
-/** The list of amenities while its code arrives: a few lines where the list will be. */
 export function AmenitySkeleton() {
   return (
     <div aria-hidden className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2" data-testid="amenities-skeleton">
@@ -57,13 +54,10 @@ export function AmenitySkeleton() {
 }
 
 interface PropertyNotFoundProps {
-  /** `/book/:orgSlug`: where the other homes are. */
   basePath: string;
-  /** The e-mail the host chose to publish, when there is one. */
   contactEmail?: string | null;
 }
 
-/** The property does not exist or is not bookable online (the API answers 404 for both): say so and point to the other homes. */
 export function PropertyNotFound({ basePath, contactEmail }: PropertyNotFoundProps) {
   const { t } = useTranslation();
 
@@ -92,7 +86,6 @@ interface PropertyLoadErrorProps {
   onRetry: () => void;
 }
 
-/** The property could not be loaded for another reason (network, server): it is not "not found", and it can be tried again. */
 export function PropertyLoadError({ orgName, basePath, onRetry }: PropertyLoadErrorProps) {
   const { t } = useTranslation();
 

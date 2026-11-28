@@ -9,7 +9,6 @@ export type StrFiscalRegime =
   | 'RegimeForfettario'
   | 'IrpefOrdinaria';
 
-/** Every regime of the backend model, in the order the dashboard offers them. */
 export const STR_FISCAL_REGIMES: readonly StrFiscalRegime[] = [
   'CedolareSecca21',
   'CedolareSecca26',
@@ -18,7 +17,6 @@ export const STR_FISCAL_REGIMES: readonly StrFiscalRegime[] = [
   'RegimeForfettario',
 ];
 
-/** Stable codes of `FiscalPropertyRow.taxNote` and of the report lines (backend `FiscalTaxNotes`). */
 export type FiscalTaxNote =
   | 'irpef_ordinaria_not_computed'
   | 'short_stay_threshold_exceeded'
@@ -30,21 +28,16 @@ export interface FiscalPropertyRow {
   name: string;
   recommendedRegime: StrFiscalRegime | null;
   assignedRegime: StrFiscalRegime | null;
-  /** False until the host confirms or assigns a regime; auto-detection never applies silently. */
   regimeConfirmed: boolean;
   isPrimaryForCedolare: boolean;
-  /** Short-term stays in the tax year: the apartment counts toward its taxpayer's threshold. */
   shortStayInTaxYear: boolean;
-  /** Index of the property's taxpayer in `FiscalRegimeSnapshot.taxpayers`. */
   taxpayerIndex: number;
-  /** Rate of the assigned cedolare regime (fraction, from backend configuration). */
   cedolareRate: number | null;
   taxNote: FiscalTaxNote | null;
   /** Regimes the host can assign now (threshold and partita IVA rules of the backend). */
   availableRegimes: StrFiscalRegime[];
 }
 
-/** One taxpayer (titolare fiscale): the short-rental threshold is per taxpayer, not per org. */
 export interface FiscalTaxpayerSummary {
   index: number;
   fiscalCodeMasked: string | null;
@@ -57,7 +50,6 @@ export interface FiscalTaxpayerSummary {
 export interface FiscalRegimeSnapshot {
   taxYear: number;
   strPropertyCount: number;
-  /** At least one taxpayer is over the threshold (business activity presumed). */
   requiresPartitaIva: boolean;
   hasPartitaIva: boolean;
   disclaimer: string;
@@ -74,20 +66,17 @@ export interface FiscalTaxProfile {
   fiscalDataRetentionUntil: string | null;
 }
 
-/** Partial update of the tax profile: only the fields sent change (`fiscalCode: ''` clears it). */
 export interface FiscalTaxProfileUpdate {
   hasPartitaIva?: boolean;
   partitaIvaNumber?: string;
   fiscalCode?: string;
 }
 
-/** Report period: calendar dates `YYYY-MM-DD`, both included. */
 export interface FiscalReportPeriod {
   from: string;
   to: string;
 }
 
-/** Rates and legal sources applied by the reports (backend configuration). */
 export interface FiscalReportRules {
   cedolareRate: number;
   cedolareReducedRate: number;
@@ -102,15 +91,11 @@ export interface AnnualIncomeLine {
   propertyId: string;
   name: string;
   regime: StrFiscalRegime | null;
-  /** Payments completed in the period, refunds deducted (tourist tax included). */
   grossIncome: number;
   withholding: number;
   net: number;
-  /** Tourist tax included in `grossIncome` (amount recorded on the stays). */
   touristTax: number;
-  /** Gross rent: `grossIncome - touristTax`. */
   rentalIncome: number;
-  /** Not recorded in CasaZen: always null. */
   commissions: number | null;
   /** Cedolare secca only; null when the tax is not estimated (`taxNote` says why). */
   taxableIncome: number | null;
@@ -167,7 +152,6 @@ export interface WithholdingReport {
     net: number;
     propertyName: string;
     bookingCode: string;
-    /** Payment date in Europe/Rome (`YYYY-MM-DD`). */
     paidOn: string;
     withholdingSource: 'None' | 'AutoOta' | 'Manual';
   }>;
@@ -221,7 +205,6 @@ export interface TouristTaxReport {
 export type FiscalReportKind = 'annual' | 'withholding' | 'touristTax';
 export type FiscalExportFormat = 'csv' | 'pdf';
 
-/** Backend path of a report; the summary and the withholding are per tax year. */
 function reportPath(kind: FiscalReportKind, taxYear: number): string {
   switch (kind) {
     case 'annual':
@@ -251,7 +234,6 @@ export const fiscalApi = {
       '/fiscal/simulate',
       { taxYear, hypotheticalStrCount },
     ),
-  /** CSV or PDF of a report; a problem body (JSON Blob) is parsed so `getProblemMessage` can read it. */
   downloadReport: async (
     kind: FiscalReportKind,
     taxYear: number,

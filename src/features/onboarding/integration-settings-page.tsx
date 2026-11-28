@@ -30,7 +30,6 @@ export function IntegrationSettingsPage() {
   const overview = useOnboardingIntegration({ enabled: isAdmin });
 
   const notFound = overview.isError && getHttpStatus(overview.error) === 404;
-  // TanStack Query keeps the data it had when a later read fails: a 404 is «not found» all the same, and any other failure with older data is said on top of it.
   const failed = overview.isError && (!overview.data || notFound);
   const stale = overview.isError && !failed;
 

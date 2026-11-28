@@ -110,7 +110,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     permissions.canWrite = true;
-    // On a wide desktop the inbox stays beside the conversation.
     window.matchMedia = ((query: string) => ({
       matches: query === '(width >= 64rem)' || query === '(width >= 96rem)',
       media: query,
@@ -137,7 +136,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     renderThread();
 
     expect(await screen.findByText('Che ore sono il check-in?')).toBeInTheDocument();
-    // The key is the one of the address, back as the server gave it.
     expect(messageHubApi.getThread).toHaveBeenCalledWith(KEY);
 
     expect(screen.queryByTestId('booking-card')).not.toBeInTheDocument();
@@ -147,7 +145,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     expect(card).toHaveTextContent('Sofia Marino');
     expect(card).toHaveTextContent('3 notti');
     expect(card).toHaveTextContent('3 ospiti');
-    // The amounts in simple words (a commission, a net, what was paid and what is left).
     const amounts = within(card).getByTestId('booking-card-amounts');
     expect(amounts).toHaveTextContent('Totale');
     expect(amounts).toHaveTextContent('Commissione del canale');
@@ -155,7 +152,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     expect(amounts).toHaveTextContent('Già pagato');
     expect(amounts).toHaveTextContent('Ancora da pagare');
     expect(amounts).toHaveTextContent(/67,50/);
-    // Links to the booking and to the guest.
     expect(within(card).getByTestId('booking-card-open')).toHaveAttribute('href', '/app/short-rent/bookings/b-1');
     expect(within(card).getByTestId('booking-card-profile')).toHaveAttribute('href', '/app/short-rent/guests/g-1');
     expect(screen.getByTestId('channel-badge')).toHaveTextContent('Airbnb');
@@ -207,7 +203,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     await openStayDetails();
     expect(screen.getByTestId('booking-card-none')).toHaveTextContent('Non c\'è ancora una prenotazione');
     expect(screen.queryByTestId('booking-card')).not.toBeInTheDocument();
-    // On an Airbnb request the composer says that links and contacts cannot be sent before the booking.
     expect(screen.getByTestId('reply-no-contacts')).toHaveTextContent('Prima della prenotazione il canale non permette di scrivere link');
   });
 
@@ -223,7 +218,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     fireEvent.click(screen.getByTestId('reply-send'));
 
     expect(await screen.findByTestId('pending-error')).toHaveTextContent('Prima della prenotazione il canale non permette di scrivere link');
-    // Sending it again would be refused the same way: the host edits it, and the text is back in the box.
     fireEvent.click(screen.getByTestId('pending-edit'));
     expect(textbox()).toHaveValue('Chiamami al 333 1234567');
     expect(screen.queryByTestId('pending-error')).not.toBeInTheDocument();
@@ -240,11 +234,9 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     typeMessage('Chiamami al 333 1234567');
     fireEvent.click(screen.getByTestId('reply-send'));
     await screen.findByTestId('pending-error');
-    // The box stays open while a message is refused: the host goes on with another one.
     typeMessage('Ci vediamo alle 15.');
     fireEvent.click(screen.getByTestId('pending-edit'));
 
-    // Nothing the host typed is lost: the refused words come first, the new ones stay under them.
     expect(textbox()).toHaveValue('Chiamami al 333 1234567\n\nCi vediamo alle 15.');
     expect(screen.queryByTestId('pending-error')).not.toBeInTheDocument();
   });
@@ -258,9 +250,7 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     fireEvent.click(send);
     fireEvent.click(send);
 
-    // The row of the message is the one of the page while it is sent and the stored one when the server answers: asked again each time.
     await waitFor(() => expect(screen.getByText('Dalle 15.')).toBeInTheDocument());
-    // A second click on the button finds the box already empty: nothing goes twice.
     expect(messageHubApi.reply).toHaveBeenCalledTimes(1);
     expect(messageHubApi.reply).toHaveBeenCalledWith(KEY, 'Dalle 15.', expect.stringMatching(/^[A-Za-z0-9_-]{8,64}$/));
     await waitFor(() => expect(screen.getAllByTestId('delivery-sent')).toHaveLength(1));
@@ -324,7 +314,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     fireEvent.click(await screen.findByTestId('delivery-retry'));
     await waitFor(() => expect(messageHubApi.reply).toHaveBeenCalledTimes(1));
     expect(messageHubApi.reply).toHaveBeenLastCalledWith(KEY, 'Dalle 15.', 'resend-m-7');
-    // On this page the refused message has no second button.
     await waitFor(() => expect(screen.queryByTestId('delivery-retry')).not.toBeInTheDocument());
 
     // The conversation opened again before the list carried the new message: the same message gives the same key, and the server answers
@@ -341,7 +330,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     vi.mocked(messageHubApi.getThread).mockResolvedValue(thread({ messages: [hostMessage('m-7', 'Error'), hostMessage('m-8', 'Sent')] }));
     renderThread();
 
-    // The refusal stays on screen as it happened, and nothing offers to send the same words a second time.
     expect(await screen.findByTestId('delivery-error')).toHaveTextContent('Non inviato');
     expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
   });
@@ -413,7 +401,6 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
   });
 
   it('ThreadPage_ServerFailure_IsAnErrorWithARetryNeverAnEmptyConversation', async () => {
-    // A refusal is not retried by itself (a 5xx would be, once, after a second).
     vi.mocked(messageHubApi.getThread).mockRejectedValue(httpError(403));
     renderThread();
 

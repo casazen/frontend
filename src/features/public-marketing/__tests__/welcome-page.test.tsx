@@ -64,10 +64,8 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     for (const testId of ['welcome-consent-email', 'welcome-consent-whatsapp', 'welcome-adult']) {
       expect(isTicked(testId), testId).toBe(false);
     }
-    // WhatsApp waits for a number: disabled, with the reason beside it, until one is typed.
     expect(field('welcome-consent-whatsapp')).toBeDisabled();
     expect(field('welcome-whatsapp-hint')).toBeInTheDocument();
-    // The text of the consent is shown with the version the server gave.
     expect(field('welcome-consent-text')).toBeInTheDocument();
     expect(field('welcome-consent-version')).toHaveTextContent('2026-11-v1');
     type('welcome-phone', PHONE);
@@ -79,7 +77,6 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     renderPage();
     const form = await screen.findByTestId('welcome-form');
 
-    // The page collects an address and a number: the notice opens beside the form, in a new tab, so what was typed is not lost.
     const link = within(form).getByRole('link', { name: 'informativa privacy' });
     expect(link).toHaveAttribute('href', '/legale/privacy');
     expect(link).toHaveAttribute('target', '_blank');
@@ -123,7 +120,6 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
       tick('welcome-adult');
       fireEvent.click(field('welcome-submit'));
 
-      // The same words whether the address was new, known, confirmed or opted out: the page never reads what the server says it did.
       expect(await screen.findByRole('heading', { level: 1, name: 'Controlla la tua e-mail per confermare' })).toBeInTheDocument();
       expect(screen.getByTestId('welcome-page')).toHaveAttribute('data-state', 'done');
       expect(screen.queryByTestId('welcome-form')).not.toBeInTheDocument();
@@ -144,7 +140,6 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     renderPage();
     await screen.findByTestId('welcome-form');
 
-    // The e-mail box stays unticked: the address typed is not consented to, so it is not sent.
     type('welcome-email', EMAIL);
     type('welcome-phone', PHONE);
     tick('welcome-consent-whatsapp');
@@ -169,7 +164,6 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     renderPage();
     await screen.findByTestId('welcome-form');
 
-    // The API reads the address only with the E-mail box: a guest who wants WhatsApp only is not asked for one (data minimisation).
     type('welcome-phone', PHONE);
     tick('welcome-consent-whatsapp');
     tick('welcome-adult');
@@ -184,7 +178,6 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
       consentVersion: '2026-11-v1',
       language: 'it',
     });
-    // No e-mail was asked for, so none is promised: the end does not say «controlla la tua e-mail» (and does not depend on the server's answer).
     expect(await screen.findByRole('heading', { level: 1, name: 'Grazie, abbiamo ricevuto la tua scelta' })).toBeInTheDocument();
     expect(screen.getByTestId('welcome-page')).toHaveAttribute('data-state', 'done');
     expect(screen.getByTestId('welcome-page')).not.toHaveTextContent(/e-mail/i);
@@ -205,7 +198,6 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     expect(await screen.findByText('Inserisci un indirizzo email valido')).toBeInTheDocument();
     expect(submitConsent).not.toHaveBeenCalled();
 
-    // The address is needed only with this box: with the E-mail box off (and WhatsApp on) its message goes away and the choice goes through.
     type('welcome-phone', PHONE);
     tick('welcome-consent-whatsapp');
     tick('welcome-consent-email');
@@ -222,10 +214,8 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     submitConsent.mockResolvedValue({ confirmationSent: true });
     renderPage();
     await screen.findByTestId('welcome-form');
-    // The hint of the phone asks for the prefix before anything is typed.
     expect(screen.getByText(/prefisso internazionale/)).toBeInTheDocument();
 
-    // The server puts its own calling code in front of such a number: the consent would be recorded for somebody else's phone.
     type('welcome-email', EMAIL);
     type('welcome-phone', '333 1234567');
     tick('welcome-consent-whatsapp');
@@ -247,7 +237,6 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     renderPage();
     await screen.findByTestId('welcome-form');
 
-    // No consent is given on the number, so no prefix is asked and the number does not leave the page.
     type('welcome-email', EMAIL);
     type('welcome-phone', '333 1234567');
     tick('welcome-consent-email');
@@ -271,7 +260,6 @@ describe('WelcomePage (CRM-03, NF-90)', () => {
     tick('welcome-adult');
     fireEvent.click(field('welcome-submit'));
 
-    // What was ticked was for the old text: the new one is shown, with nothing ticked, and nothing was recorded.
     expect(await screen.findByTestId('welcome-submit-error')).toHaveTextContent('aggiornato');
     await waitFor(() => expect(field('welcome-consent-version')).toHaveTextContent('2026-12-v2'));
     expect(isTicked('welcome-consent-email')).toBe(false);

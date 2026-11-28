@@ -10,31 +10,22 @@ import { MESSAGE_HUB_CHANNELS, type MessageHubChannel, type MessageHubFilters } 
  * does not exist, an id that is not an id) is ignored, so a stale link or a typed address never breaks the page.
  */
 
-/**
- * «Da rispondere» is where the page starts (AC-NF61-2); «Tutte» and «Non lette» are the other two views of the conversations. «Recensioni» (`reviews`, E05/F06/US02, NF-69) lists the
- * reviews of the guests, of the booking site and of the channels, and nothing else: they are in no other view.
- */
 export type InboxView = 'toRespond' | 'all' | 'unread' | 'reviews';
 
 export const INBOX_VIEWS: readonly InboxView[] = ['toRespond', 'all', 'unread', 'reviews'];
 
 export const DEFAULT_INBOX_VIEW: InboxView = 'toRespond';
 
-/** Rows a page of the list has. */
 export const INBOX_PAGE_SIZE = 20;
 
-/** The backend counts the first 64 characters of a search (`MessageHubFilter.QueryMaxLength`). */
 export const INBOX_SEARCH_MAX_LENGTH = 64;
 
 export interface InboxState {
   view: InboxView;
   channel: MessageHubChannel | null;
   propertyId: string | null;
-  /** The conversation of one booking: the address a booking leads to, not something the person types. */
   bookingId: string | null;
-  /** The search as it is applied: trimmed. */
   q: string;
-  /** From 1. */
   page: number;
 }
 
@@ -54,7 +45,6 @@ const isView = (value: string | null): value is InboxView => INBOX_VIEWS.some((v
 const channelOf = (value: string | null): MessageHubChannel | null => MESSAGE_HUB_CHANNELS.find((channel) => channel === value) ?? null;
 const idOf = (value: string | null): string | null => (value !== null && ID.test(value) ? value : null);
 
-/** The list as the address describes it. */
 export function parseInboxState(params: URLSearchParams): InboxState {
   const view = params.get(INBOX_PARAM.view);
   const page = Number(params.get(INBOX_PARAM.page));
@@ -68,10 +58,6 @@ export function parseInboxState(params: URLSearchParams): InboxState {
   };
 }
 
-/**
- * `params` with `changes` applied, the rest of the address left alone. A change of anything but the page goes back to the first page, and
- * a value that is the default (or empty) is taken out of the address.
- */
 export function withInboxState(params: URLSearchParams, changes: Partial<InboxState>): URLSearchParams {
   const next = new URLSearchParams(params);
   const set = (name: string, value: string | null) => {
@@ -88,12 +74,10 @@ export function withInboxState(params: URLSearchParams, changes: Partial<InboxSt
   return next;
 }
 
-/** The filters the API takes for a state of the list. */
 export function inboxFilters(state: InboxState): MessageHubFilters {
   return {
     ...(state.view === 'toRespond' ? { needsReply: true } : {}),
     ...(state.view === 'unread' ? { unread: true } : {}),
-    // The reviews are listed under their own filter (`kind=review`), and only under it: the other views never carry one.
     ...(state.view === 'reviews' ? { kind: 'Review' as const } : {}),
     ...(state.channel ? { channel: state.channel } : {}),
     ...(state.propertyId ? { propertyId: state.propertyId } : {}),
@@ -104,7 +88,6 @@ export function inboxFilters(state: InboxState): MessageHubFilters {
   };
 }
 
-/** True when anything narrows the list beyond the view: what «Azzera i filtri» takes away. */
 export function hasInboxFilters(state: InboxState): boolean {
   return state.channel !== null || state.propertyId !== null || state.bookingId !== null || state.q !== '';
 }

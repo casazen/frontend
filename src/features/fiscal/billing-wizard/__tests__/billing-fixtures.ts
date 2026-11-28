@@ -1,6 +1,5 @@
 import type { BillingSetup, BillingSetupItem, BillingSetupSection, FiscalIssuerPreview, FiscalTaxRule } from '@/types';
 
-/** One section of the setup, with what is saved in it and what is missing. */
 export function section(name: string, values: Record<string, unknown>, missing: BillingSetupItem[] = [], applies = true): BillingSetupSection {
   return { section: name, applies, complete: missing.length === 0, values, missing };
 }
@@ -9,14 +8,12 @@ export function item(key: string, sectionName: string, reason = 'required', coun
   return count === undefined ? { key, section: sectionName, reason } : { key, section: sectionName, reason, count };
 }
 
-/** The setup as the server sends it: every section in the order of the wizard, with its values, and the rest of the sections as they are for an organization that is no agency. */
 export function setupOf(sections: BillingSetupSection[]): BillingSetup {
   return { complete: sections.every((entry) => entry.complete), sections };
 }
 
 const DEFAULTS = { defaultGuestDocumentSeries: '{year}', defaultOwnerInvoiceSeries: 'PM{year}' };
 
-/** A Swiss issuer that has said everything but who collects the tourist tax and how the documents are issued. */
 export function swissSetup(): BillingSetup {
   return setupOf([
     section('issuer', { countryCode: 'CH', legalName: 'Casa Lugano SA', addressStreet: 'Via Nassa', addressCivic: '12', postalCode: '6900', city: 'Lugano', province: 'TI' }),
@@ -36,7 +33,6 @@ export function swissSetup(): BillingSetup {
   ]);
 }
 
-/** An Italian issuer, a private person, that has said everything. */
 export function italianSetup(): BillingSetup {
   return setupOf([
     section('issuer', { countryCode: 'IT', legalName: 'Mario Rossi', addressStreet: 'Via Roma', addressCivic: '1', postalCode: '20121', city: 'Milano', province: 'MI', fiscalCode: 'RSSMRA80A01F205X' }),
@@ -50,7 +46,6 @@ export function italianSetup(): BillingSetup {
   ]);
 }
 
-/** A setup in which the issuer has not said a country yet: the server answers its default country, and the country is still a missing item. */
 export function emptySetup(): BillingSetup {
   return setupOf([
     section('issuer', { countryCode: 'IT' }, [item('country_missing', 'issuer'), item('legal_name_missing', 'issuer'), item('address_missing', 'issuer')]),

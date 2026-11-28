@@ -8,7 +8,6 @@ import { leasesApi } from '@/api/leases.api';
 import { useTriggerRegistration } from '@/queries/use-leases';
 import type { LeaseDetail, RliChecklist } from '@/types';
 
-/** Shared payment-first registration flow for the wizard and the lease sheet. The API verifies payment before filing. */
 export function useRegistrationFlow(lease: LeaseDetail, checklist: RliChecklist | undefined) {
   const { t } = useTranslation();
   const triggerRegistration = useTriggerRegistration();
@@ -32,7 +31,6 @@ export function useRegistrationFlow(lease: LeaseDetail, checklist: RliChecklist 
     }
   };
 
-  // The mutation reports its own errors (toast with the server's reason): only swallow the rejection.
   const handleDelegaConfirm = async (payload: { tosVersion: string; attestationAccepted: boolean }) => {
     try {
       await triggerRegistration.mutateAsync({
@@ -41,7 +39,6 @@ export function useRegistrationFlow(lease: LeaseDetail, checklist: RliChecklist 
         attestationAccepted: payload.attestationAccepted,
       });
     } catch {
-      // Keep the delegation open so payment settlement delays can be retried.
       return;
     }
     handleDelegaOpenChange(false);

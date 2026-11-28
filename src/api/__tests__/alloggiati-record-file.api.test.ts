@@ -18,7 +18,6 @@ describe('alloggiatiApi.downloadRecordFile (CO-13)', () => {
     const result = await alloggiatiApi.downloadRecordFile('b-1');
 
     expect(axios.get).toHaveBeenCalledWith('/alloggiati/b-1/record-file', { responseType: 'blob' });
-    // Never an anonymous call: the request goes through the token interceptor (no `public` flag).
     expect(vi.mocked(axios.get).mock.calls[0][1]).not.toHaveProperty('public');
     expect(result).toBe(blob);
   });

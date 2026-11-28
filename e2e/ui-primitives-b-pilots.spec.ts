@@ -11,15 +11,7 @@ import {
   untilStill,
 } from './helpers/ui-checks';
 
-/**
- * UI-07: the pages that adopt the new primitives (a pilot each), with the API of the demo mode mocked. The primitives
- * themselves, one by one, are in `ui-primitives-b.spec.ts`.
- */
-
 const PHONES = [360, 390] as const;
-
-// ---------------------------------------------------------------------------------------------------------------------------
-// DataView: the list of guests
 
 interface GuestSummary {
   id: string;
@@ -50,7 +42,6 @@ const GUESTS: GuestSummary[] = [
 async function mockGuestsList(page: Page, guests: GuestSummary[] = GUESTS) {
   await page.route('**/api/guests**', async (route) => {
     const path = new URL(route.request().url()).pathname.replace(/\/$/, '');
-    // `**/api/guests**` also matches the Vite module `/src/api/guests.api.ts`: only the list of the API is answered.
     if (path !== '/api/guests' || route.request().method() !== 'GET') {
       await route.fallback();
       return;
@@ -97,7 +88,6 @@ test.describe('DataView in the list of guests (pilot)', () => {
       await expect(cards).toBeVisible();
       await expect(cards.getByRole('listitem')).toHaveCount(3);
       await expectInsideTheScreen(page, cards, `${width} px, the cards`);
-      // The email that has no place to break is broken, not pushed out.
       await expectNothingSticksOut(page, `${width} px, guests with wider letters`);
 
       await cards.getByRole('link', { name: /Mario Rossi/ }).click();
@@ -128,9 +118,6 @@ test.describe('DataView in the list of guests (pilot)', () => {
     await expectNoAxeViolations(page, { include: '[data-testid="guest-list"]' });
   });
 });
-
-// ---------------------------------------------------------------------------------------------------------------------------
-// Tabs: the booking detail
 
 async function openBooking(page: Page, width: number, search = '', source?: 'Direct') {
   await mockAlloggiatiApi(page);
@@ -216,7 +203,6 @@ test.describe('Tabs in the booking detail (pilot)', () => {
 
     await expect(tabs.getByRole('tab')).toHaveText(['Soggiorno', 'Check-in online', 'Pagamento']);
     await expect(page.getByTestId('booking-tab-details')).toHaveAttribute('aria-selected', 'true');
-    // The other parameters of the address (here the profile of the demo) are kept, in their order.
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('href', `/app/short-rent/bookings/${DEMO_BOOKING_ID}?demoProfile=short-stay&tab=guest`);
     await expect(page.getByTestId('booking-tab-details')).toHaveAttribute('href', `/app/short-rent/bookings/${DEMO_BOOKING_ID}?demoProfile=short-stay`);
 
@@ -259,9 +245,6 @@ test.describe('Tabs in the booking detail (pilot)', () => {
       await menu.selectOption('guest');
       await expect(page).toHaveURL(/tab=guest/);
       await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
-      // What this checks is the menu of the tabs, not the rest of the page: the content of the tab is the page's own, and with
-      // the wide letters of the runner (Linux) a button of the guest section ("Segna come inviato manualmente") is 14 px past
-      // the edge at 360 px, as it was before the tabs.
       await expectInsideTheScreen(page, menu, `${width} px, the menu of the tabs, once a tab is open`);
     });
   }
@@ -272,9 +255,6 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     await expectNoAxeViolations(page, { include: '[role="tablist"]' });
   });
 });
-
-// ---------------------------------------------------------------------------------------------------------------------------
-// HelpTip: the iCal dialog of the supplier
 
 async function openSupplierCalendar(page: Page, width: number) {
   await mockSupplierConsoleApi(page, { active: true });

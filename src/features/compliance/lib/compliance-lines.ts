@@ -8,7 +8,6 @@ import { dueTime } from './due-time';
  * the adempimenti) and never works a light out.
  */
 export interface ComplianceLine {
-  /** One per item: the action, its target and, for a month, the month. */
   id: string;
   action: ComplianceCockpitAction;
   state: 'green' | 'yellow' | 'red';
@@ -32,7 +31,6 @@ const PROPERTY_ACTIONS: readonly ComplianceCockpitAction[] = [
   'NotifyGuestsAuthority',
 ];
 
-/** The worst light first, then the nearest deadline, then the order the card knows its actions in. */
 function byUrgency(a: ComplianceLine, b: ComplianceLine, actions: readonly ComplianceCockpitAction[]): number {
   return LIGHT_RANK[a.state] - LIGHT_RANK[b.state] || dueTime(a.dueAt) - dueTime(b.dueAt) || actions.indexOf(a.action) - actions.indexOf(b.action);
 }
@@ -57,30 +55,22 @@ function linesOf(
   return lines.sort((a, b) => byUrgency(a, b, actions));
 }
 
-/** The compliance lines of one stay, worst first. Empty when the summary lists none (an older API, the traffic light off, or an item past what the server lists). */
 export function stayLinesOf(summary: Partial<ComplianceSummaryResult> | null | undefined, bookingId: string): ComplianceLine[] {
   return bookingId ? linesOf(summary, STAY_ACTIONS, (item) => item.bookingId === bookingId) : [];
 }
 
-/** The compliance lines of one property, worst first. */
 export function propertyLinesOf(summary: Partial<ComplianceSummaryResult> | null | undefined, propertyId: string): ComplianceLine[] {
   return propertyId ? linesOf(summary, PROPERTY_ACTIONS, (item) => item.propertyId === propertyId) : [];
 }
 
-/** The lines that still ask something or are in hand: everything but what the API says is in order. */
 export const pendingLines = (lines: readonly ComplianceLine[]): ComplianceLine[] => lines.filter((line) => line.state !== 'green');
 
-/** What a card lists of its lines. */
 export interface LinesView {
-  /** The lines that still ask something or are in hand, the worst first, without the one the block already says: at most `max`. */
   shown: ComplianceLine[];
-  /** How many of those were left out. */
   hidden: number;
-  /** The lines in order: listed only when nothing at all is left to do (next to something to do they are noise). */
   inOrder: ComplianceLine[];
 }
 
-/** What a card lists of the lines of its stay or property: the few that still ask something, or, when nothing does, what is in order. */
 export function viewOfLines(lines: readonly ComplianceLine[], { skip, max = 3 }: { skip?: string; max?: number } = {}): LinesView {
   const pending = pendingLines(lines);
   const listed = pending.filter((line) => line.id !== skip);
@@ -88,5 +78,4 @@ export function viewOfLines(lines: readonly ComplianceLine[], { skip, max = 3 }:
   return { shown, hidden: listed.length - shown.length, inOrder: pending.length === 0 ? lines.filter((line) => line.state === 'green') : [] };
 }
 
-/** Whether a card has anything to say of its lines. */
 export const hasLinesToShow = (view: LinesView): boolean => view.shown.length > 0 || view.inOrder.length > 0;

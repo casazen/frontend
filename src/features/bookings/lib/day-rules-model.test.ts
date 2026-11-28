@@ -50,7 +50,6 @@ describe('price typed as text (E08/F05/US03/T02, money rule)', () => {
   it('toChangeRequest_PriceTypedWithAComma_IsSentAsTheNumberTypedAndNotRounded', () => {
     const request = toChangeRequest(SELECTION, rules({ price: { action: 'Set', text: '120,5' } }));
     expect(request.price).toEqual({ action: 'Set', value: 120.5 });
-    // What goes on the wire is the same figure the host wrote.
     expect(JSON.parse(JSON.stringify(request)).price.value).toBe(120.5);
     expect(toChangeRequest(SELECTION, rules({ price: { action: 'Set', text: '99.99' } })).price.value).toBe(99.99);
   });

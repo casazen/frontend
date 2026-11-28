@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-/** Past this many characters, or lines, the text is cut to a few lines with a button to read the rest. */
 const LONG_TEXT_CHARACTERS = 420;
 const LONG_TEXT_LINES = 6;
 
-/** The description the host wrote: its own line breaks kept, long texts folded. */
 export function PropertyDescription({ text, id }: { text: string; id?: string }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);

@@ -56,7 +56,6 @@ const feeds = (count: number): CalendarOverview => ({
 
 const NO_STRIPE = { connectedAccountId: null, chargesEnabled: false, payoutsEnabled: false, detailsSubmitted: false, requirementsDue: [] };
 
-/** The rows of the active list and of the health, written as the server writes them: made-up names, as the real ones are entered by the administrator. */
 const row = (over: Partial<MarketplaceActiveIntegration> = {}): MarketplaceActiveIntegration => ({
   kind: 'Channel',
   code: 'PORTAL1',
@@ -115,7 +114,6 @@ function Where() {
   return <output data-testid="where">{useLocation().search}</output>;
 }
 
-/** Where a link leads: its path and its parameters. */
 function target(testId: string) {
   const url = new URL(screen.getByTestId(testId).getAttribute('href') ?? '', 'http://localhost');
   return { path: url.pathname, params: url.searchParams };
@@ -148,7 +146,6 @@ beforeEach(async () => {
   await i18n.changeLanguage('it');
 });
 
-// A card that opened its detail card leaves who opened it to the drawer: forgotten after the test, as the tests of the drawer of the app do.
 afterEach(async () => {
   cleanup();
   await settleDrawer();
@@ -161,10 +158,8 @@ describe('MarketplaceMinePage · Attivi', () => {
     renderPage();
 
     const list = await screen.findByTestId('marketplace-active-integrations');
-    // CasaZen's own calendars, and what the server lists.
     expect(within(list).getByTestId('marketplace-integration-calendars')).toHaveTextContent('2 calendari collegati');
     expect(within(list).getByTestId('marketplace-active-Channel-PORTAL1-prop-1')).toHaveTextContent('TEST Portal');
-    // The suppliers already used are in the same tab, with the way to the page of each.
     const providers = await screen.findByTestId('marketplace-providers-section');
     expect(within(providers).getByText('Pulizie Express Srl')).toBeInTheDocument();
     expect(screen.getByTestId('marketplace-provider-sup-1-open')).toHaveTextContent('2 richieste aperte');
@@ -172,7 +167,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     const link = target('marketplace-provider-sup-1-link');
     expect(link.path).toBe('/app/short-rent/marketplace/suppliers/sup-1');
     expect(link.params.has('propertyId')).toBe(false);
-    // The tab is read for the whole scope of the caller, not for one property, and nothing is asked of the suppliers' search.
     expect(api.getMarketplaceActive).toHaveBeenCalledWith(undefined, 'it');
     expect(api.getMarketplaceHealth).toHaveBeenCalledWith(undefined, 'it');
     expect(api.fetchMarketplaceSuppliers).not.toHaveBeenCalled();
@@ -226,7 +220,6 @@ describe('MarketplaceMinePage · Attivi', () => {
 
     const portal = await screen.findByTestId('marketplace-active-Channel-PORTAL1-prop-1');
     expect(within(portal).getByTestId('marketplace-active-Channel-PORTAL1-prop-1-status')).toHaveTextContent('Da correggere');
-    // 14:05 UTC is 15:05 in Rome (Europe/Rome, the fallback when the property has no time zone of its own).
     const sync = within(portal).getByTestId('marketplace-active-Channel-PORTAL1-prop-1-sync');
     expect(sync).toHaveTextContent('12 novembre 2026');
     expect(sync).toHaveTextContent('15:05');
@@ -235,7 +228,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(within(portal).getByTestId('marketplace-active-Channel-PORTAL1-prop-1-error')).toHaveTextContent('Il collegamento è spento sul channel manager.');
     expect(within(portal).getByTestId('marketplace-active-Channel-PORTAL1-prop-1-quota')).toHaveTextContent('La quota del channel manager è quasi esaurita.');
 
-    // A function that waits for the license is «Richiesta» (never «Attivo»), has no sync to tell, and says when the change was asked.
     const chat = screen.getByTestId('marketplace-active-LicensedFunction-chat-prop-1');
     expect(within(chat).getByTestId('marketplace-active-LicensedFunction-chat-prop-1-status')).toHaveTextContent('Richiesta');
     expect(within(chat).getByTestId('marketplace-active-LicensedFunction-chat-prop-1-sync')).toHaveTextContent('non ancora eseguito');
@@ -257,20 +249,16 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(within(declared).getByTestId('marketplace-active-Partner-beds-org-trust')).toHaveTextContent('Attivazione dichiarata da te il 10 novembre 2026');
     expect(declared).toHaveTextContent("Tutta l'organizzazione");
     expect(declared).not.toHaveTextContent(/verificata/i);
-    // A partner is declared by the host and never read: nothing says it was «not checked yet».
     expect(within(declared).queryByTestId('marketplace-active-Partner-beds-org-sync')).not.toBeInTheDocument();
 
     expect(screen.getByTestId('marketplace-active-Partner-sure-prop-2-trust')).toHaveTextContent('Attivazione verificata il 9 novembre 2026');
-    // Neither declared nor verified: nothing is claimed.
     expect(screen.queryByTestId('marketplace-active-Partner-plain-prop-2-trust')).not.toBeInTheDocument();
   });
 
   it('MarketplaceMinePage_DeclaredFunction_SaysTheDayOfRome_AndAPartnerTheDayTheHostGave', async () => {
     api.getMarketplaceActive.mockResolvedValue({
       integrations: [
-        // A function of the license is declared at the instant the host asks for it: 23:30 UTC of the 12th is the 13th in Rome.
         row({ kind: 'LicensedFunction', code: 'chat', name: 'TEST Chat', status: 'Pending', isDeclared: true, declaredAt: '2026-11-12T23:30:00Z', lastSyncedAt: null }),
-        // A partner's is midnight UTC of the day the host gave: that day, whatever the zone.
         row({ kind: 'Partner', code: 'beds', name: 'TEST Beds', property: null, isDeclared: true, declaredAt: '2026-11-10T00:00:00Z', lastSyncedAt: null }),
       ],
       providers: [],
@@ -302,7 +290,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     const fn = target('marketplace-active-LicensedFunction-chat-prop-1-fix');
     expect(fn.path).toBe('/app/short-rent/marketplace/request/chat');
     expect(fn.params.get('propertyId')).toBe('prop-1');
-    // The panel offers the same two ways: Fix goes to the wizard, Details to the card.
     expect(target('marketplace-health-problem-Channel-PORTAL1-prop-1-fix').path).toBe('/app/short-rent/marketplace/activate/channel/PORTAL1');
     expect(target('marketplace-health-problem-LicensedFunction-chat-prop-1-fix').path).toBe('/app/short-rent/marketplace/request/chat');
   });
@@ -316,7 +303,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     await screen.findByTestId('marketplace-health-problem-Channel-PORTAL1-prop-1');
     expect(screen.queryByTestId('marketplace-health-problem-Channel-PORTAL1-prop-1-fix')).not.toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-active-Channel-PORTAL1-prop-1-fix')).not.toBeInTheDocument();
-    // What there is to read is still there.
     expect(screen.getByTestId('marketplace-health-problem-Channel-PORTAL1-prop-1-details')).toBeInTheDocument();
   });
 
@@ -328,7 +314,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     });
     renderPage();
     await screen.findByTestId('marketplace-active-integrations');
-    // What goes through the channel manager does not exist with the connector off (the server says 404 to it): only the partner and what CasaZen has of its own are in the tab.
     expect(await screen.findByTestId('marketplace-active-Partner-beds-org')).toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-active-Channel-PORTAL1-prop-1')).not.toBeInTheDocument();
     expect(api.getMarketplaceHealth).not.toHaveBeenCalled();
@@ -360,13 +345,11 @@ describe('MarketplaceMinePage · Attivi', () => {
 
     const panel = await screen.findByTestId('marketplace-health-panel');
     const groups = within(panel).getByTestId('marketplace-health-properties').children;
-    // The property with the problem is first, with the problem listed; the other one is a single calm line, not a list.
     expect(groups[0]).toHaveAttribute('data-testid', 'marketplace-health-property-prop-1');
     expect(within(groups[0] as HTMLElement).getByTestId('marketplace-health-problem-Channel-PORTAL1-prop-1')).toHaveTextContent('Il canale non ha accettato la richiesta.');
     expect(groups[1]).toHaveAttribute('data-testid', 'marketplace-health-property-prop-2');
     expect(within(groups[1] as HTMLElement).queryAllByRole('listitem')).toHaveLength(0);
     expect(screen.getByTestId('marketplace-health-property-prop-2-calm')).toHaveTextContent('2 integrazioni attive, nessun problema segnalato.');
-    // As of when it is said: the last check (Europe/Rome), for the problem and for the calm line.
     expect(screen.getByTestId('marketplace-health-property-prop-2-checked')).toHaveTextContent('Ultimo controllo: 12 novembre 2026');
     expect(screen.getByTestId('marketplace-health-property-prop-2-checked')).toHaveTextContent('15:05');
     expect(screen.getByTestId('marketplace-health-problem-Channel-PORTAL1-prop-1-sync')).toHaveTextContent('15:05');
@@ -382,7 +365,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(checked).toHaveTextContent('1 non è ancora stata controllata.');
     cleanup();
 
-    // None was ever read: no date is made up.
     api.getMarketplaceHealth.mockResolvedValue(items(item({ lastSyncedAt: null }), item({ activationId: 'a2', code: 'PORTAL2', name: 'TEST Two', lastSyncedAt: null })));
     renderPage();
     const never = await screen.findByTestId('marketplace-health-property-prop-1-checked');
@@ -417,7 +399,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(await screen.findByTestId('marketplace-health-quota-warn')).toHaveTextContent('quasi esaurita');
     cleanup();
 
-    // No sync has read it: nothing is said of a share.
     api.getMarketplaceHealth.mockResolvedValue(items(item({ quota: null })));
     renderPage();
     expect(await screen.findByTestId('marketplace-health-quota-unknown')).toHaveTextContent('non è ancora stata letta');
@@ -431,7 +412,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     const error = await screen.findByTestId('marketplace-health-error');
     expect(error).toHaveTextContent('Non riesco a leggere lo stato dei collegamenti.');
     expect(screen.queryByText(/nessun problema segnalato/)).not.toBeInTheDocument();
-    // The integrations that the other read gave are still listed, with nothing said of their health.
     expect(screen.getByTestId('marketplace-active-Channel-PORTAL1-prop-1')).toBeInTheDocument();
     expect(screen.queryByTestId('marketplace-active-Channel-PORTAL1-prop-1-error')).not.toBeInTheDocument();
 
@@ -445,7 +425,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     renderPage();
 
     await screen.findByTestId('marketplace-health-problem-Channel-PORTAL1-prop-1');
-    // The same read now answers 404: not found, and the problem of the first read is gone from the panel (no cached rows under it).
     api.getMarketplaceHealth.mockResolvedValueOnce({ outcome: 'notFound' });
     fireEvent.click(screen.getByTestId('marketplace-health-refresh'));
     expect(await screen.findByTestId('marketplace-health-not-found')).toHaveTextContent('non è disponibile');
@@ -468,7 +447,6 @@ describe('MarketplaceMinePage · Attivi', () => {
   });
 
   it('MarketplaceMinePage_CalendarsReadFails_IsNotTheEmptyTab_AndSaysSoWithARetry', async () => {
-    // The list of the server is empty, but the state of the calendars could not be read: nothing is known of them, so «nothing is on» is not told.
     api.getMarketplaceActive.mockResolvedValue({ integrations: [], providers: [] });
     api.getCalendarOverview.mockRejectedValue(new Error('boom'));
     renderPage();
@@ -477,7 +455,6 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(error).toHaveTextContent('Non riesco a leggere lo stato dei calendari o dei pagamenti con carta.');
     expect(screen.queryByText('Nessuna integrazione attiva')).not.toBeInTheDocument();
 
-    // Reading again brings the answer: nothing is on, and now every read has said so.
     api.getCalendarOverview.mockResolvedValue(feeds(0));
     fireEvent.click(within(error).getByRole('button', { name: 'Riprova' }));
     expect(await screen.findByText('Nessuna integrazione attiva')).toBeInTheDocument();
@@ -498,7 +475,6 @@ describe('MarketplaceMinePage · Attivi', () => {
 
     fireEvent.click(await screen.findByTestId('marketplace-active-Channel-PORTAL1-prop-1-details'));
 
-    // The card of an integration that is on is opened from the Active tab: «Gestisci» would lead to the page the person is already on.
     const dialog = await screen.findByRole('dialog');
     expect(await within(dialog).findByText('It sells.')).toBeInTheDocument();
     expect(within(dialog).queryByTestId('marketplace-entry-action')).not.toBeInTheDocument();

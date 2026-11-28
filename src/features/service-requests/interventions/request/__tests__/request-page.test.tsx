@@ -37,8 +37,6 @@ vi.mock('@/api/service-requests.api', () => ({
 }));
 vi.mock('@/api/host-supplier-catalog.api', () => ({ fetchHostSupplierServices: vi.fn(), fetchHostSupplierSlots: vi.fn() }));
 
-// The partners come from the catalog of the marketplace: the test gives the ones it wants (made up, as the real ones are entered by the
-// administrator and written nowhere in the code).
 const catalog = vi.hoisted(() => ({ partners: [] as unknown[], loading: false }));
 vi.mock('@/queries/use-marketplace', () => ({
   usePartnersByServiceCategory: () => {
@@ -119,7 +117,6 @@ function refusal(status: number, code: string) {
   return new AxiosError('failed', AxiosError.ERR_BAD_REQUEST, undefined, undefined, { status, data: { code }, statusText: '', headers: {}, config: {} } as unknown as AxiosResponse);
 }
 
-// The test clock is 24 September 2026, 14:00 in Rome: the work is the day after, at 10:00 (08:00 UTC, summer time).
 function renderPage(query = `propertyId=${PROPERTY_ID}&type=cleaning&date=2026-09-25`) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const url = `/app/short-rent/interventions/request${query ? `?${query}` : ''}`;
@@ -136,7 +133,6 @@ function renderPage(query = `propertyId=${PROPERTY_ID}&type=cleaning&date=2026-0
 const next = () => fireEvent.click(screen.getByTestId('request-next'));
 const stepIs = (id: string) => waitFor(() => expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', id), WAIT);
 
-/** From the proposals (the address names the property and the kind of work) to the summary: the supplier, the slot. */
 async function reachSummary() {
   fireEvent.click(await screen.findByTestId(`request-supplier-${SUPPLIER_ID}`, undefined, WAIT));
   next();
@@ -177,10 +173,8 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     vi.mocked(createServiceRequest).mockResolvedValue({ id: 'sr-1', status: 'Richiesto' } as ServiceRequest);
     renderPage();
 
-    // The address answers the property and the service: the wizard opens where the host has something to choose.
     await stepIs('proposals');
     await reachSummary();
-    // What the supplier will see is said before the host sends; a guest is never among it.
     expect(screen.getByTestId('request-supplier-sees')).toHaveTextContent('Non vede mai i dati dei tuoi ospiti');
     fireEvent.click(screen.getByTestId('request-finish'));
 
@@ -194,9 +188,7 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
       serviceListingId: SERVICE_ID,
       scheduledStartUtc: '2026-09-25T08:00:00.000Z',
     });
-    // The server takes the length from the service: a length of the host would stop it checking the slot.
     expect(sent.durationMinutes).toBeUndefined();
-    // The request is for the house: no stay was needed.
     expect(sent.bookingId).toBeUndefined();
     expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toHaveAttribute('href', '/app/short-rent/interventions/sr-1');
   });
@@ -233,7 +225,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
     fireEvent.click(await screen.findByTestId(`request-supplier-${SUPPLIER_ID}`, undefined, WAIT));
     next();
-    // The stay is offered, not asked: it is optional, and the day of the work follows its check-out when it is linked.
     const select = await screen.findByTestId('request-stay', undefined, WAIT);
     await waitFor(() => expect(within(select).getAllByRole('option').length).toBeGreaterThan(1), WAIT);
     fireEvent.change(select, { target: { value: STAY_ID } });
@@ -254,12 +245,10 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     await stepIs('property');
     fireEvent.click(await screen.findByTestId(`request-property-${OTHER_PROPERTY_ID}`, undefined, WAIT));
     next();
-    // CasaZen is the rule and it is advised.
     await stepIs('channel');
     expect(await screen.findByTestId('request-channel-casazen', undefined, WAIT)).toBeChecked();
     expect(screen.getByTestId('request-channel-casazen').closest('label')).toHaveTextContent('Consigliato');
     next();
-    // The kind of work, as tiles with the number of suppliers around the property.
     await stepIs('service');
     const cleaning = await screen.findByTestId('request-category-cleaning', undefined, WAIT);
     await waitFor(() => expect(cleaning.closest('label')).toHaveTextContent('1 fornitore'), WAIT);
@@ -285,7 +274,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     await screen.findByTestId(`request-property-${PROPERTY_ID}`, undefined, WAIT);
     next();
 
-    // Said on the field and in the summary of what is missing.
     expect((await screen.findAllByText('Scegli l\'immobile.', undefined, WAIT)).length).toBeGreaterThan(0);
     expect(screen.getByTestId('request-wizard')).toHaveAttribute('data-step', 'property');
   });
@@ -297,7 +285,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
     const first = await screen.findByTestId(`request-supplier-${SUPPLIER_ID}`, undefined, WAIT);
 
-    // The server decides it from the load and the reliability of the supplier and sends a word: only that card carries it.
     const badge = await screen.findByTestId('supplier-recommended-badge', undefined, WAIT);
     expect(screen.getAllByTestId('supplier-recommended-badge')).toHaveLength(1);
     expect(badge).toHaveTextContent('Consigliato');
@@ -305,7 +292,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     expect(first.closest('label')).toHaveTextContent('Fornitore di fiducia');
     expect(screen.getByTestId('request-supplier-b1b2c3d4-0000-4000-8000-000000000002').closest('label')).toHaveTextContent('Marketplace CasaZen');
     expect(screen.getByTestId('request-supplier-b1b2c3d4-0000-4000-8000-000000000002').closest('label')).not.toContainElement(badge);
-    // The order is the server's, and the host is told what it means.
     expect(screen.getByText(/in ordine di affidabilità e disponibilità/)).toBeInTheDocument();
   });
 
@@ -315,7 +301,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
     const empty = await screen.findByTestId('request-no-suppliers', undefined, WAIT);
     expect(empty).toHaveTextContent("In questo territorio non c'è ancora una rete CasaZen per questa categoria.");
-    // The partners of the cleaning: the ones the catalog lists for it, each with its own site and what it does.
     expect(within(empty).getByTestId('marketplace-partner-test-cleaning-link')).toHaveAttribute('href', 'https://example.com/cleaning');
     expect(within(empty).getByTestId('marketplace-partner-test-cleaning')).toHaveTextContent('Cleaning for short stays.');
     expect(within(empty).queryByTestId('marketplace-partner-test-checkin')).not.toBeInTheDocument();
@@ -330,16 +315,13 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     renderPage(`propertyId=${PROPERTY_ID}`);
 
     await stepIs('channel');
-    // Nobody of CasaZen in the zone: the partners are the way, and the reason is said; CasaZen cannot be picked.
     expect(await screen.findByTestId('request-no-network', undefined, WAIT)).toHaveTextContent('Non ci sono ancora fornitori disponibili');
     await waitFor(() => expect(screen.getByTestId('request-channel-external')).toBeChecked(), WAIT);
     expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
     next();
 
-    // Only the kinds of work an external partner covers.
     await stepIs('service');
     const cleaning = await screen.findByTestId('request-category-cleaning', undefined, WAIT);
-    // The tile names the partners of the catalog that cover the service.
     expect(cleaning.closest('label')).toHaveTextContent('TEST Cleaning');
     fireEvent.click(cleaning);
     expect(screen.queryByTestId('request-category-plumbing')).not.toBeInTheDocument();
@@ -347,7 +329,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
     await stepIs('partners');
     expect(await screen.findByTestId('marketplace-partner-test-cleaning-link', undefined, WAIT)).toHaveAttribute('target', '_blank');
-    // The wizard ends here: the work is organised on the partner's site, so nothing goes to CasaZen.
     fireEvent.click(screen.getByTestId('request-finish'));
     expect(await screen.findByText('Ora tocca al partner', undefined, WAIT)).toBeInTheDocument();
     expect(createServiceRequest).not.toHaveBeenCalled();
@@ -360,7 +341,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     renderPage(`propertyId=${PROPERTY_ID}`);
 
     await stepIs('channel');
-    // Nobody of CasaZen in the zone and no partner either: the reason is said, without promising partners.
     const note = await screen.findByTestId('request-no-network', undefined, WAIT);
     expect(note).toHaveTextContent('Non ci sono ancora fornitori disponibili');
     expect(note).not.toHaveTextContent('partner');
@@ -368,7 +348,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
   });
 
-  // The kinds of work of this wizard are cleaning and plumbing. A partner counts only for one of them: the service step shows no other.
   const PARTNERS_COVERING_NOTHING: Array<[string, string[] | null]> = [
     ['NoServiceListed', null],
     ['AnEmptyListOfServices', []],
@@ -378,8 +357,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
   it.each(PARTNERS_COVERING_NOTHING)(
     'RequestInterventionPage_PartnerWith%s_TheExternalChannelIsNotOffered_AndNobodyIsSteeredToIt',
     async (_name, serviceCategories) => {
-      // The catalog has a partner, but it covers none of the kinds of work the wizard offers: the service step would show no tile for the
-      // external channel, and with CasaZen out the host would be left with nothing to pick. It is as if the catalog had no partner.
       catalog.partners = [{ ...cleaningPartner, serviceCategories }];
       vi.mocked(fetchMarketplaceSuppliers).mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
       renderPage(`propertyId=${PROPERTY_ID}`);
@@ -400,7 +377,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     renderPage(`propertyId=${PROPERTY_ID}`);
 
     await stepIs('channel');
-    // As it is today while nothing covers a service: the external channel is there, and it is not chosen for the host.
     expect(await screen.findByTestId('request-channel-external', undefined, WAIT)).not.toBeChecked();
   });
 
@@ -408,7 +384,6 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     renderPage(`propertyId=${PROPERTY_ID}&type=cleaning&supplierOrgId=${SUPPLIER_ID}&serviceId=${SERVICE_ID}&date=2026-09-25`);
 
     await stepIs('details');
-    // The page of a supplier gave the supplier and the service: the host only says when.
     expect(await screen.findByTestId(`request-service-${SERVICE_ID}`, undefined, WAIT)).toBeChecked();
     await waitFor(() => expect(screen.getByTestId('request-chosen-supplier')).toHaveTextContent('Pulizie Rossi'), WAIT);
     fireEvent.click(await screen.findByTestId('request-slot-10:00', undefined, WAIT));
@@ -456,9 +431,7 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     fireEvent.click(screen.getByTestId('request-finish'));
 
     expect(await screen.findByTestId('request-finish-error', undefined, WAIT)).toHaveTextContent('Questo orario è appena stato preso');
-    // The router moves with a transition, a moment after the message: the step is the one of the slots.
     await stepIs('details');
-    // The supplier and the service are still chosen: only the time has to be chosen again.
     expect(screen.getByTestId('request-chosen-supplier')).toHaveTextContent('Pulizie Rossi');
     expect(await screen.findByTestId(`request-service-${SERVICE_ID}`, undefined, WAIT)).toBeChecked();
     expect(screen.queryByTestId('wizard-done-primary')).not.toBeInTheDocument();

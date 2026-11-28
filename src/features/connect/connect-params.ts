@@ -14,16 +14,12 @@ const MAX_SITE_LENGTH = 300;
 const MAX_RETURN_LENGTH = 2048;
 const MAX_STATE_LENGTH = 128;
 const MAX_CHALLENGE_LENGTH = 128;
-/** The return address with the code and the state the server adds to it. */
 const MAX_REDIRECT_LENGTH = MAX_RETURN_LENGTH + 512;
 
-/** The request of the plugin, ready for the server, with the host of the site as the page shows it. */
 export interface ConnectRequest extends SiteConnectionAuthorizeRequest {
-  /** The host of the site (with its port when it is not the default one), as the browser writes it: a name with letters of another alphabet shows in its `xn--` form, which cannot pass for another site. */
   siteHost: string;
 }
 
-/** An address of the web with a host and no user name or password, or `null`. */
 function webAddress(value: string, maxLength: number): URL | null {
   if (value.length > maxLength || value !== value.trim()) return null;
   try {
@@ -35,13 +31,11 @@ function webAddress(value: string, maxLength: number): URL | null {
   }
 }
 
-/** The value of a parameter that is there and is not empty, or `null`. */
 function present(params: URLSearchParams, name: string, maxLength: number): string | null {
   const value = params.get(name);
   return value !== null && value.trim() !== '' && value.length <= maxLength ? value : null;
 }
 
-/** The request the address carries, or `null` when something is missing or is not what the plugin writes. */
 export function readConnectRequest(params: URLSearchParams): ConnectRequest | null {
   const site = present(params, 'site', MAX_SITE_LENGTH);
   const returnUrl = present(params, 'return', MAX_RETURN_LENGTH);
@@ -55,7 +49,6 @@ export function readConnectRequest(params: URLSearchParams): ConnectRequest | nu
   return { siteUrl: site, siteHost: siteAddress.host, returnUrl, state, codeChallenge: challenge, codeChallengeMethod: 'S256' };
 }
 
-/** What goes to the server: the request without what only the page needs (the host it shows). */
 export function toAuthorizeRequest(request: ConnectRequest): SiteConnectionAuthorizeRequest {
   const { siteUrl, returnUrl, state, codeChallenge, codeChallengeMethod } = request;
   return { siteUrl, returnUrl, state, codeChallenge, codeChallengeMethod };

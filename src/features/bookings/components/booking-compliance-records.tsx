@@ -10,24 +10,17 @@ import type { ComplianceSendLogLine } from '@/types';
 const LONG_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 const LONG_DATE_TIME: Intl.DateTimeFormatOptions = { ...LONG_DATE, hour: '2-digit', minute: '2-digit' };
 
-/** The kinds of the send log and the ways to send that have words of their own: any other value gets the generic ones, never its raw name. */
 const LOG_KINDS: ReadonlySet<string> = new Set(['AlloggiatiGuests', 'IstatPeriod', 'TouristTaxPeriod', 'DocumentsDeleted']);
 const LOG_SENDERS: ReadonlySet<string> = new Set(['CasaZen', 'ChannelManager', 'Manual']);
 
-/** Newest first, whatever order the server sent them in (the one that was last made is the one the host looks for). */
 function newestFirst<T>(items: readonly T[], when: (item: T) => string): T[] {
   return [...items].sort((left, right) => Date.parse(when(right)) - Date.parse(when(left)));
 }
 
-/**
- * What was sent for the stay, who sent it and when: one line of the log. A line the channel manager holds says «affidato», never «inviato»: it is the channel manager that sends.
- * The line of the documents deleted after the receipt is not a send (E20/F02/US01/T02): CasaZen did it, with the date, and it never says «inviato».
- */
 function SendLogRow({ line }: { line: ComplianceSendLogLine }) {
   const { t, i18n } = useTranslation();
   const kind = LOG_KINDS.has(line.kind) ? line.kind : 'other';
   const sender = LOG_SENDERS.has(line.sender) ? line.sender : 'other';
-  // A declaration of the host carries the day it said it sent it, not a moment: no time of the day is told for it.
   const when = formatRomeDateTime(line.sentAt, i18n.language, line.sender === 'Manual' ? LONG_DATE : LONG_DATE_TIME);
 
   return (
@@ -50,7 +43,6 @@ function SendLogRow({ line }: { line: ComplianceSendLogLine }) {
 
 interface BookingComplianceRecordsProps {
   bookingId: string;
-  /** False while the section is not offered (the connector is off, the person cannot read bookings, the stay owes nothing): nothing is asked then. */
   enabled: boolean;
 }
 
@@ -69,7 +61,6 @@ export function BookingComplianceRecords({ bookingId, enabled }: BookingComplian
 
   if (!enabled) return null;
 
-  // The query keeps its last data when a read fails: a 404 is «not found» whatever it still holds.
   if (archive.isError && getHttpStatus(archive.error) === 404) {
     return (
       <p className="text-sm text-foreground/70" data-testid="booking-records-not-found">
@@ -101,7 +92,6 @@ export function BookingComplianceRecords({ bookingId, enabled }: BookingComplian
   return (
     <div className="space-y-6" data-testid="booking-compliance-records">
       {archive.isError ? (
-        // A later read failed: what is on the screen may be older than what the server holds, and the person is told.
         <div className="flex flex-wrap items-center gap-2" role="status" data-testid="booking-records-stale">
           <p className="text-sm text-foreground/70">{t('complianceArchive.booking.stale')}</p>
           <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => void archive.refetch()}>

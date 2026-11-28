@@ -1,17 +1,12 @@
 import type { CheckInLinkDelivery, CheckInLinkDeliveryState } from '@/types/checkin-link.types';
 import type { CheckInLinkEmailStatus } from '@/types/public-checkin.types';
 
-/** How a line about the link is drawn: done, working on its own, waiting for something that is not the host's to do, or a problem. An icon and a word always go with it. */
 export type DeliveryTone = 'done' | 'working' | 'waiting' | 'problem';
 
-/** What the guest panel of a booking says about the way of the check-in link to the guest (E23/F01/US02, NF-122): one line, the sentence under it, and who has to act. */
 export interface DeliveryLine {
   tone: DeliveryTone;
-  /** The key of the line: where the link stands. */
   labelKey: string;
-  /** The key of the sentence under it (what the link waits for, or why it did not arrive); `null` when the line says it all. */
   hintKey: string | null;
-  /** The link has not reached the guest and the host may have to carry it: «Copia link» is offered to whoever can already copy one. */
   needsTheHost: boolean;
 }
 
@@ -67,15 +62,12 @@ const MAX_AUTOMATIC_ATTEMPTS = 3;
  */
 const LINK_REPLACED_REASONS: ReadonlySet<string> = new Set(['host_link', 'link_replaced']);
 
-/** The sentence of a failed delivery for its code. */
 function failureReasonKey(code: string | null | undefined): string {
   return (code && Object.hasOwn(FAILURE_REASONS, code) ? FAILURE_REASONS[code] : UNKNOWN_FAILURE_REASON).reasonKey;
 }
 
 interface DeliveryContext {
-  /** The state of the e-mail of the same link, as the check-in session records it: the real outcome of an e-mail the delivery only handed to the queue. */
   emailStatus?: CheckInLinkEmailStatus | null;
-  /** The link cannot be used any more (the guest completed the check-in, or it expired): what it was waiting for no longer matters. */
   linkClosed: boolean;
 }
 
@@ -124,10 +116,6 @@ export function describeDelivery(delivery: CheckInLinkDelivery | null | undefine
   return waiting ? { tone: 'waiting', ...waiting, needsTheHost: true } : null;
 }
 
-/**
- * The link the host may copy: only for who holds the permission to copy one (`booking.write`), only while the link has not reached the guest and the
- * delivery is open, and only when the server gave it. Whatever the server sent to a caller without the permission is never used.
- */
 export function linkToCopy(delivery: CheckInLinkDelivery | null | undefined, line: DeliveryLine | null, canWrite: boolean): string | null {
   if (!canWrite || !delivery || delivery.ended || !line?.needsTheHost) return null;
   const link = delivery.checkInLink?.trim();

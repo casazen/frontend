@@ -11,10 +11,6 @@ const NOTE_TEXT: Record<NoteTone, string> = {
   danger: 'text-danger-foreground',
 };
 
-/**
- * A line with a tone: its icon and its words say it, the color is never the only signal. The rows of the Home use it, and the
- * pages of the adempimenti too.
- */
 export function NoteLine({ note }: { note: RowNote }) {
   const Icon = NOTE_ICONS[note.tone];
   return (

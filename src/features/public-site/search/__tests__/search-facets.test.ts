@@ -30,10 +30,8 @@ describe('facetsOfServer (SEARCH-GLOBAL): the controls of the search across all 
   });
 
   it('FacetsOfServer_AnswerOnItsWay_IsNotKnownYetAndAnswerWithoutFacets_SaysNoCurrency', () => {
-    // «Not in yet» is not «none»: nothing is written about the currency until the answer is there (and a chip of the price waits for it).
     expect(NO_FACETS.currencyState).toBe('pending');
     expect(facetsOfServer(undefined).currencyState).toBe('pending');
-    // The answer came (or failed) with no facets: the wait is over, and the data say no currency.
     expect(facetsOfServer(null).currencyState).toBe('none');
     expect(facetsOfServer(null).currency).toBeNull();
   });
@@ -59,7 +57,6 @@ describe('facetsOfServer (SEARCH-GLOBAL): the controls of the search across all 
     expect(result.prices).toEqual({ min: 110, max: 310 });
     expect(result.areas).toEqual({ min: 30, max: 140 });
     expect(result.maxGuests).toBe(8);
-    // The labels the page does not know are not drawn, and the known ones come in the order of the vocabulary.
     expect(result.tags).toEqual([
       { tag: 'mare', count: 5 },
       { tag: 'piscina', count: 3 },
@@ -75,7 +72,6 @@ describe('facetsOfServer (SEARCH-GLOBAL): the controls of the search across all 
   });
 
   it('FacetsOfServer_NoCurrencySaid_HasNoCurrencyAndNoneIsGuessed', () => {
-    // The currency comes only from the data (CHF-MONEY): the sliders do not speak euros when the server did not say so.
     expect(facetsOfServer({ maxGuests: 2, petsAllowed: true, tags: [] }).currency).toBeNull();
     expect(facetsOfServer({ maxGuests: 2, petsAllowed: true, tags: [], currency: null }).currency).toBeNull();
     expect(facetsOfServer({ maxGuests: 2, petsAllowed: true, tags: [], currency: '' }).currency).toBeNull();
@@ -97,11 +93,9 @@ describe('facetsOfCards (DB-07c): a site reads the same from every home it has',
   });
 
   it('FacetsOfCards_HomesOfTwoCurrencies_HaveNoCommonCurrencyAndNoneIsChosenForThem', () => {
-    // A slider has one currency: with two there is none to speak, and it is not the euro that is picked (CHF-MONEY).
     const facets = facetsOfCards([card(), card({ id: 'p-2', price: { currency: 'CHF', perNightCents: 20_000 } })]);
 
     expect(facets.currency).toBeNull();
-    // The currency is not missing, there are two: the state says so, and the sliders write the numbers alone (no phrase that says it is not available).
     expect(facets.currencyState).toBe('mixed');
   });
 
@@ -123,7 +117,6 @@ describe('facetsOfCards (DB-07c): a site reads the same from every home it has',
   });
 
   it('FacetsOfCards_HomesNotInYet_AreNotKnownAndAreNotNone', () => {
-    // The list of the homes is on its way: nothing is known, which is not «the homes say no currency».
     expect(facetsOfCards(undefined)).toEqual(NO_FACETS);
     expect(facetsOfCards(undefined).currencyState).toBe('pending');
   });
@@ -163,7 +156,6 @@ describe('writeFacetPrice (CHF-MONEY): a price of the filters is written the way
   });
 
   it('WriteFacetPrice_HomesOfTwoCurrencies_IsTheNumberAloneWithNoSymbolAndNoPhrase', () => {
-    // The currency is not missing: there are two, and a slider has no one to name. So there is no symbol, and no phrase that would say it is not available.
     expect(writeFacetPrice(150, mixed, 'it-IT', italian)).toBe('150');
     expect(writeFacetPrice(150, mixed, 'en-GB', english)).toBe('150');
     expect(writeFacetPrice(150.5, mixed, 'en-GB', english)).toBe('150.50');

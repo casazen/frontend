@@ -33,7 +33,6 @@ const check = () => form!.trigger();
 
 function Harness({ values = FILLED }: { values?: PropertyWizardValues }) {
   const own = useForm<PropertyWizardValues>({ defaultValues: values, resolver: zodResolver(descriptionsStepSchema) as never });
-  // The test asks the form to validate, as «Continua» does.
   useEffect(() => {
     form = own;
   }, [own]);
@@ -54,7 +53,6 @@ describe('DescriptionsStep (NF-31)', () => {
     expect(tab('en')).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByRole('textbox', { name: /^Titolo$/ })).toHaveValue('Trullo con piscina');
     expect(screen.getByTestId('property-wizard-suggest')).toBeInTheDocument();
-    // The English fields are in the other tab: not on screen until it is opened.
     expect(screen.queryByRole('textbox', { name: /Titolo \(Inglese\)/ })).not.toBeInTheDocument();
 
     fireEvent.click(tab('en'));
@@ -116,7 +114,6 @@ describe('DescriptionsStep (NF-31)', () => {
       await check();
     });
 
-    // Both tabs have a problem: the first one, Italian, is the one that opens.
     expect(tab('it')).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('Scrivi il titolo in italiano.')).toBeInTheDocument();
   });

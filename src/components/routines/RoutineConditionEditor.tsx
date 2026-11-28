@@ -27,7 +27,6 @@ export interface ConditionDraft {
 interface RoutineConditionEditorProps {
   value: ConditionDraft;
   onChange: (next: ConditionDraft) => void;
-  /** The properties of the host the `propertyId` rule can choose among. */
   properties: ReadonlyArray<{ id: string; name: string }>;
   propertiesStatus: 'idle' | 'loading' | 'error' | 'ready';
 }
@@ -40,7 +39,6 @@ interface ChoiceListProps {
   testId: string;
 }
 
-/** A few checkboxes under a legend: the properties or the channels a rule is about. */
 function ChoiceList({ legend, choices, chosen, onChange, testId }: ChoiceListProps) {
   const baseId = useId();
   const toggle = (value: string, on: boolean) => onChange(on ? [...chosen, value] : chosen.filter((item) => item !== value));
@@ -227,7 +225,6 @@ export function RoutineConditionEditor({ value, onChange, properties, properties
                   </div>
                 )}
 
-                {/* The server knows the lead time only of the bookings CasaZen takes itself: for a booking of a portal it is not known and a rule on it is never met. */}
                 {rule.fieldId === 'bookingLeadTime' && (
                   <p className="text-sm text-muted-foreground" data-testid={`condition-lead-time-note-${index}`}>
                     {t('routines.condition.leadTimeNote')}

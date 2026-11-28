@@ -23,7 +23,6 @@ export function VetrinaPage() {
 
   const orgSlug = org?.slug ?? null;
   const orgBookingPath = orgSlug ? buildOrgBookingPath(orgSlug) : null;
-  // Where the site really is (its own domain or subdomain, else the platform): the links the host copies are on it, not on the address of the page they sit on (NF-123).
   const bookingSite = useOrgBookingSite(org?.id, orgSlug);
 
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId) ?? null;
@@ -41,7 +40,6 @@ export function VetrinaPage() {
     <AppShell>
       {orgBookingPath && bookingSite ? (
         <div className="flex min-w-0 flex-col gap-4 lg:h-[calc(100dvh-var(--header-height)-3rem)] lg:min-h-0">
-          {/* The tabs of the section (the head draws them) sit tight on the preview: the room under them is the padding of this band. */}
           <div className="shrink-0 [&_nav>div]:mb-0">
             <PageHeader title={t('directBooking.title')} description={t('directBooking.description')} />
             <div className="mt-3 empty:hidden">

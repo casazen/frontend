@@ -5,7 +5,6 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import type { LongRentLeaseCounters } from '@/types';
 import { contractGroups } from './overview-model';
 
-/** The server counts leases by stage. The property directory opens the individual contracts. */
 export function ContractGroups({ leases }: { leases: LongRentLeaseCounters }) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();

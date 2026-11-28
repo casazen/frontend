@@ -3,30 +3,20 @@ import { cn } from '@/lib/utils';
 export interface ChoiceListOption {
   value: string;
   title: string;
-  /** What the choice means, in one line. */
   description?: string;
   disabled?: boolean;
-  /** `data-testid` of the radio under the row. */
   testId?: string;
 }
 
 interface ChoiceListProps {
-  /** The question the rows answer: it names the group and is written above it. */
   legend: string;
   name: string;
   options: ChoiceListOption[];
-  /** The value chosen, or an empty text while nothing is. */
   value: string;
   onChange: (value: string) => void;
   className?: string;
 }
 
-/**
- * One question and its answers as ONE quiet block (LR-WIZ-1): a row for each answer, a real radio, the answer in bold and a line under it
- * that says what it means. Not cards side by side — three equal boxes with an icon and a tick each ask the eye to choose before the
- * person has read — but a list that is read from the top. The row chosen is tinted; the whole row is the target, which is at least
- * 44 px high.
- */
 export function ChoiceList({ legend, name, options, value, onChange, className }: ChoiceListProps) {
   return (
     <fieldset className={cn('m-0 min-w-0 border-0 p-0', className)}>

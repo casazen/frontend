@@ -27,7 +27,6 @@ function renderPage(path = '/login') {
   );
 }
 
-/** `/login` has no page of its own: the address sends the visitor straight to Auth0 (product owner, 2026-10-16). */
 describe('LoginPage', () => {
   beforeEach(async () => {
     sessionStorage.clear();

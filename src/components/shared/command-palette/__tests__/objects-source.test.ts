@@ -148,7 +148,6 @@ describe('the objects the pages loaded (UI-06)', () => {
     for (const secret of ['@example.com', '+39', '333', '5550123', 'Via Roma', '*****123', 'allergico', '450', 'Vista lago']) {
       expect(everything, secret).not.toContain(secret);
     }
-    // And nothing that is not shown is used to find them.
     for (const entry of objectsOf(client)) expect(entry.keywords).toBeUndefined();
   });
 

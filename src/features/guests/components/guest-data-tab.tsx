@@ -10,10 +10,6 @@ interface GuestDataTabProps {
   guest: Guest;
 }
 
-/**
- * The tab Dati dell'ospite: who the guest is, where they live and the notes about them, as the page always showed them, in
- * sections without a box. A value the guest has not given is a dash, so the host sees what is still missing.
- */
 export function GuestDataTab({ guest }: GuestDataTabProps) {
   const { t } = useTranslation();
 

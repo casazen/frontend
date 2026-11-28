@@ -30,7 +30,6 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
   const { data, isLoading, isError, error, refetch, isFetching } = useProperties({ mode: 'long' });
   const properties = data ?? [];
   const noProperties = !isLoading && !isError && data !== undefined && properties.length === 0;
-  // Null until the person picks one: then the property of the link "new contract" of a property page, once it is in the list.
   const [chosen, setChosen] = useState<string | null>(null);
   const propertyId = chosen ?? (defaultPropertyId && properties.some((property) => property.id === defaultPropertyId) ? defaultPropertyId : '');
   const createDraft = useCreateCfDraft();
@@ -40,7 +39,6 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
 
   const create = async () => {
     if (started.current || createDraft.isPending) return;
-    // Pressable with no house chosen (LR-WIZ-1): the focus goes to the list and the line under it says what is missing.
     if (!propertyId) {
       setPressed((count) => count + 1);
       focusProperty();
@@ -49,11 +47,9 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
     started.current = true;
     try {
       const draft = await createDraft.mutateAsync(propertyId);
-      // Replaced, not pushed: "back" from the sheet of the contract must not land on this form again.
       navigate(`/app/long-rent/leases/${draft.id}`, { replace: true });
     } catch {
       started.current = false;
-      // useCreateCfDraft.onError says why; the property stays chosen to try again (the server gives back the draft it made).
     }
   };
 
@@ -66,7 +62,6 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
         void create();
       }}
     >
-      {/* The property and, beside it once the form is wide, what happens next (under it when it is not). */}
       <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
         {isError ? (
           <div

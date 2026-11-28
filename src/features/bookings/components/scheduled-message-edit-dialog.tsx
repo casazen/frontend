@@ -11,27 +11,17 @@ import { TEMPLATE_VARIABLES, missingFromText, missingItemOf, withVariablesInPlac
 import { ScheduledMessageText } from './scheduled-message-text';
 
 interface ScheduledMessageEditDialogProps {
-  /** The message to edit; the dialog reads the text as it is now. */
   message: ScheduledMessage;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /**
-   * Saves the text of THIS message, or goes back to the text of the routine with `null`. The request belongs to the card, not to the dialog: the host may close the dialog while it goes on, and
-   * its answer must still be dealt with (the failure on the card, the list read again). It resolves when the answer has been dealt with; a refusal is handed back as `problem`.
-   */
   onSave: (text: string | null) => void | Promise<void>;
-  /** Some write of this message is on its way: nothing in the dialog can be pressed meanwhile. */
   busy: boolean;
-  /** What the server refused, in words: it is shown on the field and goes when the host types again. */
   problem: string | null;
   onProblemSeen: () => void;
-  /** What the host has typed and not saved, kept by the section: the field starts with it when the dialog opens again (an unknown state of the list takes the cards, and this dialog, away for a while). */
   draft: string | undefined;
-  /** Told the whole text at every change, to be kept. */
   onDraftChange: (text: string) => void;
 }
 
-/** The button that was pressed and has not been answered yet: it is the one that shows the work in progress. */
 type Pressed = 'save' | 'routine' | null;
 
 /**
@@ -77,7 +67,6 @@ function EditDialogBody({ message, onOpenChange, onSave, busy, problem, onProble
   // The set of missing data the host agreed to leave out (as the text of the names it was given for): a different set, because a variable was taken out of the text again, is a new question.
   const [agreedFor, setAgreedFor] = useState<string | null>(null);
   const area = useRef<HTMLTextAreaElement>(null);
-  // Where the cursor goes after a variable was put in: the field is written again first, so the cursor is placed once it has.
   const cursorAfter = useRef<number | null>(null);
 
   useEffect(() => {
@@ -91,7 +80,6 @@ function EditDialogBody({ message, onOpenChange, onSave, busy, problem, onProble
   const typed = text.trim();
   const changed = typed !== initial.trim();
   const tooLong = typed.length > GUEST_MESSAGE_MAX_LENGTH;
-  // The data the booking lacks and the text does not name: saved like this, the message goes without them.
   const absent = missingFromText(message, text);
   const absentKey = absent.join('|');
   const agreed = absent.length === 0 || agreedFor === absentKey;
@@ -174,7 +162,6 @@ function EditDialogBody({ message, onOpenChange, onSave, busy, problem, onProble
           </p>
           <div role="group" aria-labelledby={variablesLabelId} className="flex flex-wrap gap-2">
             {TEMPLATE_VARIABLES.map((variable) => {
-              // The button that puts back a datum the text lacks is the filled one, and says why through the notice above.
               const isAbsent = absent.includes(variable.name);
               return (
                 <Button
@@ -196,7 +183,6 @@ function EditDialogBody({ message, onOpenChange, onSave, busy, problem, onProble
           </div>
         </div>
 
-        {/* The text of the routine is the text the message has until it is changed: while it is not, it stays here to read (and to put back) as the host works. A changed message goes back to it with the button below. */}
         {!message.edited && initial ? (
           <details className="rounded-md border px-3" data-testid="scheduled-message-original">
             <summary className="flex min-h-11 cursor-pointer items-center rounded-sm text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">

@@ -4,16 +4,10 @@ import { displayableMediaUrls } from '@/lib/media-url';
 import { cn } from '@/lib/utils';
 
 interface PropertyThumbProps {
-  /** `photoUrls` of the property: the first one that can be shown is the cover. */
   photoUrls: readonly string[] | undefined;
-  /** The size and the shape, as classes (default: a 48 px square). */
   className?: string;
 }
 
-/**
- * The cover photo of a property, or a building when it has none. It is decoration: the name of the property is always next to
- * it, so a screen reader skips it.
- */
 export function PropertyThumb({ photoUrls, className }: PropertyThumbProps) {
   const [failedCover, setFailedCover] = useState<string>();
   const cover = displayableMediaUrls(photoUrls)[0];

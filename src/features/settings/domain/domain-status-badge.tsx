@@ -5,7 +5,6 @@ import { getDomainState, type DomainState } from './domain-state';
 
 interface DomainStatusBadgeProps {
   status: DomainVerificationStatus;
-  /** Why the domain is not verified (backend code): tells "waiting for DNS" from "activating". */
   detail?: string | null;
 }
 

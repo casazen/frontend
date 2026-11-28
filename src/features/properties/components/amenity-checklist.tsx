@@ -3,16 +3,10 @@ import { Label } from '@/components/ui/label';
 import { useAmenityCatalog, useAmenityLabels } from '@/queries/use-amenity-catalog';
 
 interface AmenityChecklistProps {
-  /** The amenities the property has. */
   selected: readonly string[];
   onToggle: (amenity: string) => void;
 }
 
-/**
- * The amenities of the property as checkboxes, for the form that edits it. What can be chosen and how it is called come from the
- * catalog of the amenities (NF-33), the one source of both; while the catalog is not there the amenities the property already has stay
- * on screen, and so does one the catalog does not know (nothing the property has is hidden, or taken away by a save).
- */
 export function AmenityChecklist({ selected, onToggle }: AmenityChecklistProps) {
   const catalog = useAmenityCatalog();
   const amenityLabel = useAmenityLabels();

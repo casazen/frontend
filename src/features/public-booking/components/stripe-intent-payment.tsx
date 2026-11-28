@@ -15,17 +15,13 @@ export interface PaymentRefusal {
 
 interface StripeIntentFormProps {
   mode: StripeIntentMode;
-  /** Where Stripe sends the guest back after a redirect method: the outcome page of the booking (BK-07). */
   returnUrl: string;
   /** The intent was submitted without a redirect: its status as far as Stripe.js knows (never the booking's). */
   onSubmitted: (status: ClientPaymentStatus) => void;
   onError: (message: string) => void;
-  /** Told with `onError` which kind of refusal it was: a page that must tell a declined card from an intent that can no longer be paid reads it (the check-in, for the tourist tax). */
   onRefusal?: (refusal: PaymentRefusal) => void;
-  /** The words of the button; left out, "Paga subito" / "Conferma" as the checkout has always said. A block that is not a charge says so here. */
   submitLabel?: string;
   busyLabel?: string;
-  /** Told when a confirmation starts and when it ends: a page with other buttons beside the form holds them while the money moves (the check-in page, in a step). */
   onProcessingChange?: (processing: boolean) => void;
 }
 
@@ -34,7 +30,6 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, onRefusal, su
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
-  // One confirmation at a time: the button is disabled while it runs, and a second click that comes before the page has drawn that is ignored here too (money: never two charges).
   const confirming = useRef(false);
 
   const submit = async () => {
@@ -82,7 +77,6 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, onRefusal, su
   return (
     <div className="space-y-4" data-testid={mode === 'payment' ? 'checkout-payment-step' : 'checkout-setup-step'}>
       <PaymentElement />
-      {/* `type="button"`: the element sits inside the form of the check-in page, where a button with no type would send the whole check-in. */}
       <Button type="button" className="w-full" onClick={() => void submit()} disabled={processing || !stripe || !elements}>
         {processing ? busyLabel : idleLabel}
       </Button>
@@ -92,19 +86,12 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, onRefusal, su
 
 interface StripeIntentPaymentProps extends StripeIntentFormProps {
   publishableKey: string;
-  /** Connected account of the host: the checkout makes direct charges. Without one (a charge on the platform) Stripe.js uses the platform's own account. */
   stripeAccountId?: string | null;
   clientSecret: string;
-  /** How the element looks: the theme and color of the site (`stripeAppearance`). Left out, Stripe's own look. */
   appearance?: Appearance;
-  /** The language of the element (`stripeLocale`). Left out, the one of the browser. */
   locale?: StripeElementLocale;
 }
 
-/**
- * Stripe Payment Element for the PaymentIntent ("Paga subito") or the SetupIntent ("Paga alla scadenza") of a booking.
- * Used by the checkout and, to pay the same hold again, by the outcome page.
- */
 export function StripeIntentPayment({
   publishableKey,
   stripeAccountId,

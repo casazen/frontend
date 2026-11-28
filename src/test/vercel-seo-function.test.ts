@@ -2,10 +2,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GET, HEAD, isAppHost, requestHost, seoRoute, seoUpstreamUrl } from '../../api/seo';
 
-/**
- * Vercel function that serves crawlers the HTML of the public pages (BK-15): the route table, the validation of what
- * reaches the backend, the Host of the request, and how every backend answer is passed on (200, real 404, 301, outage).
- */
 const API_BASE = 'https://api.example.test/api';
 const PAGE =
   '<!doctype html><html lang="it"><head><title>Villa Lago — Rossi</title></head><body><h1>Villa Lago</h1></body></html>';
@@ -266,7 +262,6 @@ describe('api/seo.ts GET', () => {
     });
 
     it('GET_OrgOwnHostUnknownToTheBackend_IsA404NotTheSinglePageApp', async () => {
-      // A custom domain still waiting for its verification: nothing to index, and no app to show.
       fetchMock.mockResolvedValue(new Response(PAGE, { status: 404, headers: { 'X-Seo-Host': 'unknown' } }));
 
       const response = await GET(request('kind=host&path=/', { 'x-forwarded-host': 'www.pending.example.test' }));
@@ -323,7 +318,6 @@ describe('api/seo.ts GET', () => {
   it.each(['preview', 'development', undefined])(
     'GET_NotProduction_%s_AddsNoindexToTheHeadersOfTheCrawlerPage',
     async (vercelEnv) => {
-      // Test and preview deployments are never indexed (their robots.txt is Disallow: /, this is the second line).
       vi.stubEnv('VERCEL_ENV', vercelEnv as string);
       fetchMock.mockResolvedValue(new Response(PAGE, { status: 200 }));
 

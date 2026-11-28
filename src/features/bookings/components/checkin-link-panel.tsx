@@ -31,7 +31,6 @@ const STATUS_VARIANT: Record<GuestCheckInSessionStatus, 'default' | 'secondary' 
   Scaduto: 'destructive',
 };
 
-/** The icon and the tones of each kind of line about the delivery: an icon and a word always go together, the color is never the only signal. */
 const DELIVERY_TONE: Record<DeliveryTone, { Icon: LucideIcon; icon: string; spin?: boolean }> = {
   done: { Icon: Check, icon: 'text-green-600' },
   working: { Icon: Loader2, icon: 'text-muted-foreground', spin: true },
@@ -39,19 +38,15 @@ const DELIVERY_TONE: Record<DeliveryTone, { Icon: LucideIcon; icon: string; spin
   problem: { Icon: TriangleAlert, icon: 'text-destructive' },
 };
 
-/** Which of the two links of the panel was copied last: the one of the delivery («Copia link») or the one the host just generated. */
 type CopiedLink = 'delivery' | 'issued' | null;
 
 interface CheckInLinkPanelProps {
   bookingId: string;
-  /** The host may generate and send links (booking.write). */
   canWrite: boolean;
-  /** Contextual actions are offered only after the session status has loaded. */
   children?: ReactNode;
   useGuestPortal?: boolean;
 }
 
-/** State of the link email, as recorded by the API: never "sent" when nothing left (A5-26). */
 function EmailState({ session }: { session: CheckInSessionStatusDto }) {
   const { t } = useTranslation();
   switch (session.emailStatus) {
@@ -88,10 +83,8 @@ function EmailState({ session }: { session: CheckInSessionStatusDto }) {
 interface DeliveryStateProps {
   delivery: CheckInLinkDelivery;
   line: DeliveryLine;
-  /** The link to copy: only for who may copy one and only while the link waits for the host. */
   link: string | null;
   copied: boolean;
-  /** A new link is being made or sent: it replaces this one, which stops working, so it is not offered to be copied meanwhile. */
   busy: boolean;
   onCopy: (link: string) => void;
 }
@@ -150,8 +143,6 @@ export function CheckInLinkPanel({ bookingId, canWrite, children, useGuestPortal
   const { data: session, isLoading, isError, refetch } = useBookingCheckInSession(bookingId);
   const submitted = session?.status === 'Completo' || session?.status === 'AlloggiatiInviato';
   const guestData = useAlloggiatiStatus(bookingId, submitted);
-  // The delivery runs in the backend only while the connector of the channel manager is on AND one of the two flags is (`ChatOn`, `ContactOn` of `CheckInLinkDeliveryService`). With the
-  // connector off what the server still records is not for a screen: nothing is asked and nothing is drawn, and the panel is what it was.
   const deliveryOn = !useGuestPortal && flags.octorateConnector && (flags.portalChatCheckInLink || flags.guestContactInfo);
   const delivery = useCheckInLinkDelivery(bookingId, deliveryOn);
   const resend = useResendCheckInLink(bookingId);
@@ -184,8 +175,6 @@ export function CheckInLinkPanel({ bookingId, canWrite, children, useGuestPortal
   const hasLink = status !== null && !completed;
   const busy = resend.isPending || create.isPending;
 
-  // The query keeps the last answer when a read fails, so an error says nothing about what the answer was: a booking that is gone (404) has no delivery, and any other failure
-  // leaves where the link stands UNKNOWN. Both leave the old answer out: its state and its «Copia link» are never shown as the present one. Only the unknown state is told.
   const deliveryGone = delivery.isError && getHttpStatus(delivery.error) === 404;
   const deliveryUnreadable = delivery.isError && !deliveryGone;
   const deliveryData = delivery.isError ? undefined : delivery.data;
@@ -203,7 +192,6 @@ export function CheckInLinkPanel({ bookingId, canWrite, children, useGuestPortal
       toast.success(t('checkin.linkCopied'));
       setTimeout(() => setCopied(null), 2000);
     } catch {
-      // The link of the delivery is never in the page (it is only copied), so «seleziona il link» would lead nowhere: the way on is a new link, which «Genera link da copiare» shows.
       toast.error(t(which === 'delivery' ? 'checkin.link.delivery.copyFailed' : 'checkin.link.copyFailed'));
     }
   };

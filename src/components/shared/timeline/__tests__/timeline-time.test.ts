@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatAbsolute, formatRelative } from '../timeline-time';
 
-// 12:00 UTC of Friday 16 October 2026: 14:00 in Rome (CEST, UTC+2).
 const NOW = new Date('2026-10-16T12:00:00Z');
 const ago = (ms: number) => new Date(NOW.getTime() - ms);
 const MINUTE = 60_000;
@@ -11,7 +10,6 @@ const DAY = 24 * HOUR;
 describe('times of the timeline (UI-15)', () => {
   describe('formatAbsolute', () => {
     it('formatAbsolute_ThisYear_IsTheDayAndTheHourInRome', () => {
-      // 09:30 UTC is 11:30 in Rome.
       expect(formatAbsolute(new Date('2026-10-16T09:30:00Z'), NOW, 'it')).toBe('16 ott, 11:30');
     });
 
@@ -20,7 +18,6 @@ describe('times of the timeline (UI-15)', () => {
     });
 
     it('formatAbsolute_LateEveningUtc_IsAlreadyTomorrowInRome', () => {
-      // 22:30 UTC on 16 October is 00:30 on the 17th in Rome.
       expect(formatAbsolute(new Date('2026-10-16T22:30:00Z'), NOW, 'it')).toBe('17 ott, 00:30');
     });
 
@@ -55,15 +52,12 @@ describe('times of the timeline (UI-15)', () => {
     });
 
     it('formatRelative_JustAfterMidnightInRome_StillCountsTheTimeThatPassedWithinTheDay', () => {
-      // 23:30 in Rome on the 15th (21:30 UTC) seen at 00:10 in Rome on the 16th (22:10 UTC on the 15th): 40 minutes, not "yesterday".
       const lateNow = new Date('2026-10-15T22:10:00Z');
 
       expect(formatRelative(new Date('2026-10-15T21:30:00Z'), lateNow, 'it')).toBe('40 minuti fa');
     });
 
     it('formatRelative_BeyondADay_CountsTheCalendarDaysOfRomeNotTheHours', () => {
-      // Now is 00:30 in Rome on the 17th (22:30 UTC on the 16th); the event is at 23:00 in Rome on the 15th: 25 and a half
-      // hours earlier, which is two calendar days (not "yesterday").
       const lateNow = new Date('2026-10-16T22:30:00Z');
 
       expect(formatRelative(new Date('2026-10-15T21:00:00Z'), lateNow, 'en')).toBe('2 days ago');

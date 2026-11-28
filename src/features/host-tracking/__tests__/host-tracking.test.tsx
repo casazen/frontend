@@ -42,7 +42,6 @@ const BOOKING_CODE = 'K7M4Q-9XP2H';
 
 type Message = Record<string, unknown>;
 const layer = (): Message[] => ((window as DataLayerWindow).dataLayer ?? []) as Message[];
-/** What the pages of the funnel pushed: the messages that name an event, not the `gtm.js` one. */
 const events = (): Message[] => layer().filter((message) => typeof message.event === 'string' && message.event !== 'gtm.js');
 const scripts = () => document.head.querySelectorAll(GTM_SCRIPTS);
 const accept = () => window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
@@ -101,7 +100,6 @@ const CHECKOUT: CheckoutInput = {
   total: 502.5,
 };
 
-/** What the four pages of the funnel call, in one place: each test gives each of them its data (null: that page has nothing to report). */
 function Funnel({
   cards = null,
   view = null,
@@ -166,7 +164,6 @@ describe('HostTracking and the events of the funnel', () => {
         </>,
       );
 
-      // No script of the tag manager, no message in its queue (the queue is not even created), no cookie and nothing kept for the purchase.
       expect(scripts()).toHaveLength(0);
       expect((window as DataLayerWindow).dataLayer).toBeUndefined();
       expect(document.cookie).toBe('');
@@ -187,7 +184,6 @@ describe('HostTracking and the events of the funnel', () => {
 
       expect(scripts()).toHaveLength(0);
       expect((window as DataLayerWindow).dataLayer).toBeUndefined();
-      // Where a page may not measure at all the choice of the visitor is not even read, and nothing is kept for the purchase.
       expect(read).not.toHaveBeenCalled();
       expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();
     });
@@ -206,7 +202,6 @@ describe('HostTracking and the events of the funnel', () => {
 
       expect(scripts()).toHaveLength(0);
       expect((window as DataLayerWindow).dataLayer).toBeUndefined();
-      // A widget uses no storage of the agency's domain, not even to read: whatever of the funnel is shown in a frame measures nothing.
       expect(read).not.toHaveBeenCalled();
       expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();
     });
@@ -228,7 +223,6 @@ describe('HostTracking and the events of the funnel', () => {
         </>,
       );
 
-      // A tag manager reads the whole address: the code or the token of the guest is never handed to the container, and the choice of the visitor is not even read there.
       expect(scripts()).toHaveLength(0);
       expect((window as DataLayerWindow).dataLayer).toBeUndefined();
       expect(read).not.toHaveBeenCalled();
@@ -270,7 +264,6 @@ describe('HostTracking and the events of the funnel', () => {
       expect(scripts()).toHaveLength(1);
       expect(layer()).toEqual([{ 'gtm.start': expect.any(Number), event: 'gtm.js' }]);
 
-      // Re-renders, a route change that keeps the page, a layout that mounts it again: nothing more.
       page.rerender(<HostTracking />);
       page.rerender(<HostTracking />);
       page.unmount();
@@ -326,7 +319,6 @@ describe('HostTracking and the events of the funnel', () => {
         </>,
       );
 
-      // A script cannot be unloaded: it stays until the next load of the page. But nothing is pushed to it, and nothing is kept for the purchase.
       expect(scripts()).toHaveLength(1);
       expect(events()).toHaveLength(1);
       expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();
@@ -339,7 +331,6 @@ describe('HostTracking and the events of the funnel', () => {
 
       render(EVERYTHING);
 
-      // The container first (whatever the order of the effects), then each event preceded by the reset of `ecommerce`: a CHF home gives CHF.
       expect(layer()).toEqual([
         { 'gtm.start': expect.any(Number), event: 'gtm.js' },
         { ecommerce: null },
@@ -365,7 +356,6 @@ describe('HostTracking and the events of the funnel', () => {
     });
 
     it('hostTracking_whenTheVisitorAcceptsLater_theEventsOfThePageGoThenAfterTheContainer', () => {
-      // The page that holds the events comes BEFORE the one that loads the container: the container still goes first.
       render(
         <>
           <Funnel cards={CARDS} view={VIEW} />
@@ -386,12 +376,10 @@ describe('HostTracking and the events of the funnel', () => {
       const page = render(<Funnel cards={CARDS} />);
       expect(events()).toHaveLength(1);
 
-      // A refetch hands the same homes in a new array, a toggle of the map renders again: the same set.
       page.rerender(<Funnel cards={[...CARDS]} />);
       page.rerender(<Funnel cards={CARDS.map((home) => ({ ...home }))} />);
       expect(events()).toHaveLength(1);
 
-      // Other homes are another set; the first one, shown again, was already counted; an empty list says nothing.
       page.rerender(<Funnel cards={[card(7)]} />);
       expect(events()).toHaveLength(2);
       page.rerender(<Funnel cards={CARDS} />);
@@ -399,14 +387,12 @@ describe('HostTracking and the events of the funnel', () => {
       page.rerender(<Funnel cards={null} />);
       expect(events()).toHaveLength(2);
 
-      // The same homes for other dates are priced differently: another set.
       page.rerender(<Funnel cards={[card(0, { price: { currency: 'CHF', perNightCents: 24000, totalCents: 120000 } })]} />);
       expect(events()).toHaveLength(3);
     });
 
     it('hostTracking_viewItemList_reportsTheFirst20Homes', () => {
       accept();
-      // Homes as a site really has them (a UUID and a name): 20 of them are about 4.6 KB, over the 4 KB of the messages of the widgets, which do not apply to the page's own `dataLayer`.
       const homes = Array.from({ length: 35 }, (_, position) =>
         card(position, { id: `6f1c2b8e-3a4d-4e5f-8a9b-0c1d2e3f4a${10 + position}`, name: `Appartamento Vista Lago ${position}` }),
       );
@@ -428,7 +414,6 @@ describe('HostTracking and the events of the funnel', () => {
       page.rerender(<Funnel view={VIEW} />);
       expect(events()).toHaveLength(1);
 
-      // The guest changes the dates: the same home, the same visit.
       page.rerender(<Funnel view={null} />);
       page.rerender(<Funnel view={{ ...VIEW, total: 510 }} />);
       expect(events()).toHaveLength(1);
@@ -445,11 +430,9 @@ describe('HostTracking and the events of the funnel', () => {
       page.rerender(<Funnel checkout={CHECKOUT} />);
       expect(events()).toHaveLength(1);
 
-      // The steps of the checkout draw the page again and the quote of the same stay can come again (the ages of the children): the same checkout.
       page.rerender(<Funnel checkout={{ ...CHECKOUT, total: 505 }} />);
       expect(events()).toHaveLength(1);
 
-      // Another stay of the same home is another checkout, with its own total.
       page.rerender(<Funnel checkout={{ ...CHECKOUT, stay: { ...CHECKOUT.stay, checkOut: '2026-10-28' }, total: 670 }} />);
       expect(events()).toHaveLength(2);
       expect(events()[1].ecommerce).toMatchObject({ currency: 'CHF', value: 670 });
@@ -473,7 +456,6 @@ describe('HostTracking and the events of the funnel', () => {
   describe('the purchase', () => {
     it('hostTracking_purchase_carriesNoPersonalData', () => {
       accept();
-      // What the page knows of the guest (the code they are shown, what they typed) is not in the outcome the hook reads, and would not be read if it were.
       const known = { ...outcome(), guestEmail: 'mario.rossi@example.com', guestFirstName: 'Mario', token: 'tok_checkout_secret', phone: '+39 333 1234567' } as unknown as CheckoutOutcome;
 
       render(<Funnel confirmation={known} />);
@@ -526,17 +508,14 @@ describe('HostTracking and the events of the funnel', () => {
       const page = render(<Funnel confirmation={outcome({ state: 'AwaitingHostApproval' })} />);
       expect(events()).toHaveLength(0);
 
-      // The host approves: the page, polling, now says `Confirmed`.
       page.rerender(<Funnel confirmation={outcome()} />);
       page.rerender(<Funnel confirmation={outcome()} />);
       expect(events()).toHaveLength(1);
 
-      // A reload, a second tab and the link of the e-mail opened a week later are the page mounted again, with the memory of the browser and none of the page.
       page.unmount();
       render(<Funnel confirmation={outcome()} />);
       expect(events()).toHaveLength(1);
 
-      // Another booking is another purchase.
       cleanup();
       render(<Funnel confirmation={outcome({ bookingId: OTHER_BOOKING_ID })} />);
       expect(events()).toHaveLength(2);
@@ -549,7 +528,6 @@ describe('HostTracking and the events of the funnel', () => {
       render(<Funnel confirmation={outcome()} />);
       expect(JSON.parse(window.localStorage.getItem(PURCHASES_STORAGE_KEY) ?? '[]')).toEqual([BOOKING_ID]);
 
-      // The visitor says no in the notice (or in the panel of the choices): what the statistics kept goes with the choice, as the source of the visit does.
       const consent = renderHook(() => useConsent());
       act(() => consent.result.current.choose('rejected'));
 

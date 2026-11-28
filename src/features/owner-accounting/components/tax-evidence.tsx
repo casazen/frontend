@@ -14,7 +14,6 @@ interface TaxEvidenceViewProps {
    * the time recorded its base and its amount in the currency of the payout, which is the one they are written in. With neither, the figures have no symbol and the page says so.
    */
   payoutCurrency?: string | null;
-  /** The names of the properties of the agency, by id: the facts of a stay carry the id only. */
   propertyNames?: ReadonlyMap<string, string>;
 }
 

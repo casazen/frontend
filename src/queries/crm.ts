@@ -5,16 +5,12 @@ import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import type { CrmProfileDetail, CrmProfileList, CrmProfileListParams } from '@/types/crm.types';
 
-/** Root of every query key of the CRM profiles. */
 export const CRM_KEY = 'crm';
 
-/** The pages of the list of profiles, whatever the filters: what a change of a profile reads again. */
 export const CRM_GUESTS_KEY = [CRM_KEY, 'guests'] as const;
 
-/** Every profile in detail, whatever its id: what a merge (which changes two of them) reads again. */
 export const CRM_GUEST_KEY = [CRM_KEY, 'guest'] as const;
 
-/** The query key of one profile in detail. */
 export function crmGuestKey(id: string) {
   return [...CRM_GUEST_KEY, id] as const;
 }
@@ -80,11 +76,6 @@ export function useGuestCrmProfile(id: string | undefined) {
   });
 }
 
-/**
- * Replaces the tags of a profile (`PUT api/crm/guests/{id}/tags`). What the server accepted is what the page shows from now on, and the
- * list reads its tags again; a refusal (422 `crm_tags_invalid`, 404 `crm_profile_not_found`) is told in plain words and the profile is
- * read again, so the page shows what the server has.
- */
 export function useSaveProfileTags() {
   const queryClient = useQueryClient();
 

@@ -1,7 +1,3 @@
-/**
- * Countryside generator (DB-19a): a farmhouse with its trulli among olive groves and dry-stone walls, a provincial road, farm
- * tracks that follow the field edges and the white hill town at the corner.
- */
 import { ellipsePoly, pip, polyCentroid, sampleCurve, type Poly, type Pt } from '../geometry';
 import { PI, hash2, hashStr, rngOf } from '../numeric';
 import type { LocalGen } from './gen-coast';
@@ -38,7 +34,6 @@ export function genCountry(seed: string): LocalGen<CountryData> {
     [10 + J(3), 70 + J(2)], [-8, 66 + J(3)],
   ];
   const road = samples(roadCtrl, 1.2);
-  // fields (BSP) and the «court» of the house as a plot of its own
   const bsp = bspField(rand, FRAME, { target: 58, jitter: 0.45, ang: J(1.2) + 0.4, k: 1.18, minCompact: 0.38 });
   const courtPoly = rectPoly(home[0] + J(0.8), home[1] + J(0.8), 10.5 + J(1), 8 + J(1), J(0.3));
   const fieldPolys: Poly[] = bsp.blocks.filter((b) => {
@@ -90,7 +85,6 @@ export function genCountry(seed: string): LocalGen<CountryData> {
     homeTrulli.push({ c: [home[0] + Math.cos(a) * 2.3, home[1] + Math.sin(a) * 1.9], r: 0.82 + rand() * 0.38 });
   }
   const homeWing = rectPoly(home[0] + J(0.8), home[1] + J(0.8), 3 + J(0.6), 1.8, J(0.6));
-  // the town: a hill with contour lines and dense blocks
   const hills = [1.6, 1.35, 1.14].map((s) => blobPts(rand, tc[0], tc[1], trx * s, trY * s, 12, 0.07, trot));
   const townBsp = bspField(rand, ellipsePoly(tc[0], tc[1], trx, trY, trot, 34), { target: 8.5, jitter: 0.42, ang: trot + J(0.6), k: 1.2, minCompact: 0.5 });
   const distTc = (q: Poly): number => {

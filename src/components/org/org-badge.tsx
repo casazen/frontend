@@ -8,11 +8,6 @@ import { PlanBadge } from './plan-badge';
 
 const BADGE_CLASS = 'flex items-center gap-2 rounded-md px-2 py-1';
 
-/**
- * Org + plan indicator for the app header (#202, AC11). Links to the plan page of the current shell (short-rent or
- * long-rent, PL-16); from the admin or supplier shell to the plan page of the user's rental context, and to nothing when
- * the user has none.
- */
 export function OrgBadge({ area }: { area?: AppContextKey }) {
   const { t } = useTranslation();
   const { org, isLoading } = useCurrentUser();

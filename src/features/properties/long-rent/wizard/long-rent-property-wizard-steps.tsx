@@ -17,7 +17,6 @@ import {
   type LongRentPropertyWizardValues,
 } from './long-rent-property-wizard-model';
 
-/** Step 1: the name and the place of the property, the one thing the API cannot do without. */
 export function AddressStep() {
   const { t } = useTranslation();
   const {
@@ -34,7 +33,6 @@ export function AddressStep() {
         <Input autoComplete="off" placeholder={t('property.form.placeholder.name')} data-testid="long-rent-wizard-name" {...register('name')} />
       </Field>
 
-      {/* The comune is chosen from the official list; its name is the city, and the region follows it on the server. */}
       <div data-testid="property-comune-field">
         <Field label={t('property.form.comune.label')} hint={t('property.form.comune.hint')} error={errors.comuneIstatCode ?? errors.city}>
           {(fieldProps) => (
@@ -68,7 +66,6 @@ export function AddressStep() {
   );
 }
 
-/** Step 2: the cadastral identification of the unit. All of it is optional: the contract prints it, the property does not need it. */
 export function CadastralStep() {
   const { t } = useTranslation();
   const {
@@ -100,7 +97,6 @@ export function CadastralStep() {
   );
 }
 
-/** Step 3: the pages of the APE, if the landlord has them at hand. Code and class are read from them after the property exists. */
 export function ApeStep() {
   const { t } = useTranslation();
   const {
@@ -124,7 +120,6 @@ export function ApeStep() {
   );
 }
 
-/** "Foglio 12 · Particella 345 · Categoria A/2 · Rendita 450,00 €", or nothing when no field was filled in. */
 function cadastralSummary(values: LongRentPropertyWizardValues, t: TFunction): string {
   const income = parseIncome(values.cadastralIncome);
   const parts: Array<[string, string]> = [
@@ -140,7 +135,6 @@ function cadastralSummary(values: LongRentPropertyWizardValues, t: TFunction): s
     .join(' · ');
 }
 
-/** What the APE chosen is, in a few words: the name of its file, or how many photos are made one PDF. */
 function apeSummary(values: LongRentPropertyWizardValues, t: TFunction): string {
   const pages = values.ape.pages;
   if (pages.length === 0) return '';
@@ -148,7 +142,6 @@ function apeSummary(values: LongRentPropertyWizardValues, t: TFunction): string 
   return t('longRentProperties.wizard.review.apePages', { count: pages.length });
 }
 
-/** Step 4: the answers, each with its "Modifica", and a plain note when something the contract needs is still missing. */
 export function ReviewStep() {
   const { t } = useTranslation();
   const { control } = useFormContext<LongRentPropertyWizardValues>();
@@ -162,7 +155,6 @@ export function ReviewStep() {
     { id: 'cadastral', label: t('longRentProperties.wizard.review.cadastral'), value: cadastralSummary(values, t), stepId: 'cadastral' },
     { id: 'ape', label: t('longRentProperties.wizard.review.ape'), value: apeSummary(values, t), stepId: 'ape' },
   ];
-  // The contract needs both; the property does not: said once, calmly, before the last button.
   const missing = !isCadastralComplete(values) || !hasApeSelection(values);
 
   return (

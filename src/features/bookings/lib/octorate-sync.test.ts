@@ -25,7 +25,6 @@ describe('syncPollInterval', () => {
   });
 
   it('syncPollInterval_PushStillPendingAtTheLimit_StopsAskingForEver', () => {
-    // A push that stopped halfway leaves the row Pending and the host cannot ask again from there: a page that went on asking would say "being sent" for good.
     const watch = { openedAt: OPENED, askedAt: null };
     expect(syncPollInterval(sync('Pending'), watch, OPENED + SYNC_PENDING_LIMIT_MS - 1)).not.toBe(false);
     expect(syncPollInterval(sync('Pending'), watch, OPENED + SYNC_PENDING_LIMIT_MS)).toBe(false);
@@ -102,7 +101,6 @@ describe('syncReasonKey', () => {
     for (const key of keys) {
       expect(i18n.exists(key, { lng: language }), key).toBe(true);
     }
-    // Every known code has a sentence of its own, and an unknown one the generic.
     expect(new Set(CODES.map(syncReasonKey)).size).toBe(CODES.length);
     expect(syncReasonKey('a_code_nobody_knows')).toBe('booking.syncReason.unknown');
     expect(syncReasonKey(null)).toBe('booking.syncReason.unknown');
@@ -114,7 +112,6 @@ describe('syncRetriesByItself', () => {
     expect(syncRetriesByItself('octorate_unavailable')).toBe(true);
   });
 
-  // A payment the channel manager refused to record is left to the host (only one that failed for want of an answer is delivered again, and the row cannot tell which).
   it.each(['octorate_rejected', 'octorate_dates_unavailable', 'octorate_not_mirrored', 'octorate_payments_not_recorded', null, undefined])(
     'syncRetriesByItself_WaitsForTheHost_%s',
     (code) => {

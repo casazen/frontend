@@ -5,10 +5,6 @@ import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { PublicOrgDto } from '@/types';
 
-/**
- * BK-14 (A3-21) on the real route table: the operator's privacy notice and terms are public pages of the org's booking
- * site, reachable by an anonymous guest (no login), and the old English spelling of the terms leads to the same page.
- */
 const org: PublicOrgDto = {
   slug: 'villa-parco',
   displayName: 'Villa Parco',
@@ -71,7 +67,6 @@ describe('operator document routes (BK-14)', () => {
 
     expect(await screen.findByTestId('org-document-privacy')).toHaveTextContent('Informativa di Villa Parco');
     expect(router.state.location.pathname).toBe('/book/villa-parco/privacy');
-    // Inside the booking site (header and footer), not a CasaZen page.
     expect(screen.getByTestId('public-site-shell')).toBeInTheDocument();
     expect(screen.getByTestId('footer-privacy')).toHaveAttribute('href', '/book/villa-parco/privacy');
   });

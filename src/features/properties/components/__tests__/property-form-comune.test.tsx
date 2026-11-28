@@ -22,7 +22,6 @@ vi.mock('@/queries/use-properties', () => ({
   useCancellationPolicies: () => ({ data: [], isLoading: false, isError: false, error: null }),
 }));
 
-// The amenities of the form come from the catalog (`useAmenityCatalog`): a small one here, the catalog is not under test.
 vi.mock('@/queries/use-amenity-catalog', () => ({
   useAmenityCatalog: () => ({
     data: {
@@ -38,7 +37,6 @@ vi.mock('@/queries/use-amenity-catalog', () => ({
   useAmenityLabels: () => (name: string) => ({ WiFi: 'Wi-Fi', Kitchen: 'Cucina' })[name] ?? name,
 }));
 
-// Rows of the official ISTAT list (ISTAT, 21/02/2026).
 const MILANO: Comune = {
   istatCode: '015146',
   cadastralCode: 'F205',

@@ -14,7 +14,6 @@ import type { MarketplaceActivationStatus, MarketplaceEntryKind, MarketplaceInte
 import { changeErrorText, leftUnchanged } from '../lib/change-errors';
 import { PartnerDeactivationGuide } from './partner-deactivation-guide';
 
-/** What is turned off: the activation, what it is, and the property it is for (`null`: the whole organization). */
 export interface DeactivateTarget {
   activationId: string;
   kind: MarketplaceEntryKind;
@@ -27,7 +26,6 @@ interface DeactivateIntegrationDialogProps {
   target: DeactivateTarget;
   /** The deactivation of the card: it is the card's, so that every button of the card is shut while it is on its way. */
   deactivate: ReturnType<typeof useDeactivateActivation>;
-  /** Closes the dialog (the card stops mounting it): what was typed or ticked is forgotten with it. */
   onClose: () => void;
 }
 
@@ -45,11 +43,9 @@ export function DeactivateIntegrationDialog({ target, deactivate, onClose }: Dea
   const preview = useDeactivationPreview(target.activationId);
   const [confirmed, setConfirmed] = useState(false);
   const [notDone, setNotDone] = useState<MarketplaceActivationStatus | null>(null);
-  // The call is made once: a second press before the first answer comes (or Escape while it is on its way) does nothing.
   const inFlight = useRef(false);
   const partner = target.kind === 'Partner';
   const busy = deactivate.isPending;
-  // What the person confirms is what was shown: the effect is read, and has been ticked.
   const ready = !!preview.data && !preview.isError && confirmed;
 
   const handleOpenChange = (open: boolean) => {
@@ -65,7 +61,6 @@ export function DeactivateIntegrationDialog({ target, deactivate, onClose }: Dea
     try {
       const change = await deactivate.mutateAsync(target.activationId);
       if (change.status !== 'Deactivated') {
-        // Partial, or not what was asked: it is said as that, and the dialog stays (a dialog that throws is kept open by the confirmation dialog).
         setNotDone(change.status);
         throw new Error('The activation was not deactivated');
       }
@@ -75,7 +70,6 @@ export function DeactivateIntegrationDialog({ target, deactivate, onClose }: Dea
     }
   };
 
-  // The words of a refusal, and whether the activation was left as it was (said outside the markup: a key given to a function is not text to translate).
   const failure = deactivate.isError ? changeErrorText(deactivate.error, t, 'marketplace.deactivate.failed') : null;
 
   const description = target.property
@@ -90,7 +84,6 @@ export function DeactivateIntegrationDialog({ target, deactivate, onClose }: Dea
       description={description}
       confirmLabel={partner ? t('marketplace.deactivate.partner.confirm') : t('marketplace.deactivate.confirm')}
       cancelLabel={t('marketplace.deactivate.keep')}
-      // «Lascia com'è» is the main button, and what turns off is the quiet red one: the destructive action is never the primary one.
       variant="danger-outline"
       cancelVariant="default"
       confirmDisabled={!ready}
@@ -103,7 +96,6 @@ export function DeactivateIntegrationDialog({ target, deactivate, onClose }: Dea
         <section className="space-y-1.5" aria-label={t('marketplace.deactivate.effectsTitle')} data-testid="deactivate-effects">
           <h3 className="text-sm font-semibold">{t('marketplace.deactivate.effectsTitle')}</h3>
           {preview.isError ? (
-            // A 404 is «not found» whatever the cache still holds of an older read.
             getHttpStatus(preview.error) === 404 ? (
               <Alert variant="warning" data-testid="deactivate-preview-not-found">
                 {t('marketplace.deactivate.previewNotFound')}

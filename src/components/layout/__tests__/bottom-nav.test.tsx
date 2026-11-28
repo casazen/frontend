@@ -87,7 +87,6 @@ describe('BottomNav (UI-04b)', () => {
 
       arrange(['supplier']);
       renderBar('supplier', '/app/supplier/dashboard');
-      // The fourth place of the supplier is "Servizi e prezzi" (SP-06, SP-D11), written "Servizi" on the bar; the showcase is in "Altro".
       expect(labels()).toEqual(['Dashboard', 'Richieste', 'Disponibilità', 'Servizi']);
     });
 
@@ -95,11 +94,9 @@ describe('BottomNav (UI-04b)', () => {
       arrange(['supplier']);
       renderBar('supplier', '/app/supplier/dashboard');
 
-      // "Servizi e prezzi" is wider than a column of a 360 px screen and would end in an ellipsis: the bar shows "Servizi".
       const services = within(bar()).getByRole('link', { name: 'Servizi e prezzi' });
       expect(services).toHaveTextContent(/^Servizi$/);
       expect(services).toHaveAttribute('href', '/app/supplier/services');
-      // The entries that fit keep their own name, and no name is given twice.
       expect(within(bar()).getByRole('link', { name: 'Disponibilità' })).toHaveTextContent(/^Disponibilità$/);
       expect(within(bar()).queryByRole('link', { name: 'Servizi' })).not.toBeInTheDocument();
 
@@ -114,7 +111,6 @@ describe('BottomNav (UI-04b)', () => {
       arrange(['long-rent']);
       renderBar('long-rent', '/app/long-rent/leases');
 
-      // Contracts are reached from the property, including on mobile.
       expect(labels()).toEqual(['Panoramica', 'Immobili']);
       expect(more()).toBeInTheDocument();
     });
@@ -187,7 +183,6 @@ describe('BottomNav (UI-04b)', () => {
     });
 
     it('BottomNav_PageOfTheEntry_MarksTheDestinationItHangsFrom', () => {
-      // The iCal calendar of the supplier hangs from the availability, which is a destination of the bar.
       arrange(['supplier']);
       renderBar('supplier', '/app/supplier/calendar');
 
@@ -196,7 +191,6 @@ describe('BottomNav (UI-04b)', () => {
     });
 
     it('BottomNav_PageTheBarDoesNotList_MarksAltro', () => {
-      // Incassi is a main entry of the menu but not one of the four destinations of the bar.
       renderBar('short-rent', '/app/short-rent/payments');
 
       expect(more()).toHaveAttribute('aria-current', 'page');
@@ -212,7 +206,6 @@ describe('BottomNav (UI-04b)', () => {
     });
 
     it('BottomNav_PageInNoMenu_MarksAltroNotTheFirstTab', () => {
-      // Plan and billing are in no menu (they are reached from the badge of the organization).
       renderBar('short-rent', '/app/short-rent/settings/plan');
 
       expect(more()).toHaveAttribute('aria-current', 'page');
@@ -260,7 +253,6 @@ describe('BottomNav (UI-04b)', () => {
       renderBar('short-rent', '/app/short-rent');
       fireEvent.click(more());
 
-      // `aria-current` says where the user is, `aria-expanded` that the sheet is open.
       expect(more()).toHaveAttribute('aria-expanded', 'true');
       expect(more()).not.toHaveAttribute('aria-current');
       expect(within(bar()).getByRole('link', { name: 'Cruscotto' })).toHaveAttribute('aria-current', 'page');
@@ -282,7 +274,6 @@ describe('BottomNav (UI-04b)', () => {
       const bookings = within(bar()).getByRole('link', { name: /Prenotazioni/ });
       expect(within(bookings).getByTestId('nav-count')).toHaveTextContent('2');
       expect(bookings).toHaveAccessibleName('Prenotazioni, 2 richieste da approvare');
-      // The other tabs have none.
       expect(screen.getAllByTestId('nav-count')).toHaveLength(1);
     });
 
@@ -311,7 +302,6 @@ describe('BottomNav (UI-04b)', () => {
         '/app/short-rent/bookings',
         '/app/short-rent/properties',
       ]);
-      // The adempimenti are behind "Altro": their number is asked for too, to mark the tab.
       expect(paths).toContain('/app/short-rent/compliance');
     });
 
@@ -333,7 +323,6 @@ describe('BottomNav (UI-04b)', () => {
     });
 
     it('BottomNav_UrgentActivities_AreNotToldOnAltroSinceTheyAreATabOfTheCruscottoAndOnTheGuide', () => {
-      // The «Da fare» list is a tab of the Cruscotto (the first place of the bar) and the «Guida» of the header carries its number.
       vi.mocked(useNavCounts).mockReturnValue({ activities: 2 });
       renderBar('short-rent');
 
@@ -353,7 +342,6 @@ describe('BottomNav (UI-04b)', () => {
     it('BottomNav_Rendered_IsTallEnoughForTheHomeIndicatorOfThePhone', () => {
       renderBar('short-rent');
 
-      // The bar is its own height plus the safe area, and its tabs keep the 64 px above it.
       expect(bar().style.height).toBe('calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))');
       expect(bar().firstElementChild).toHaveClass('pb-[env(safe-area-inset-bottom)]');
     });
@@ -370,7 +358,6 @@ describe('BottomNav (UI-04b)', () => {
       renderBar('short-rent');
 
       const tab = within(bar()).getByRole('link', { name: 'Prenotazioni' });
-      // 11 px semibold (10 px under 340 px), one line, and an ellipsis only as a last resort.
       expect(tab).toHaveClass('text-[11px]', 'max-[340px]:text-[10px]');
       expect(within(tab).getByText('Prenotazioni')).toHaveClass('truncate');
     });
@@ -392,7 +379,6 @@ describe('BottomNav (UI-04b)', () => {
 
       expect(useUiStore.getState().bottomBarVisible).toBe(true);
 
-      // Nothing is left behind when the bar goes (a page with no bar).
       unmount();
       expect(useUiStore.getState().bottomBarVisible).toBe(false);
     });

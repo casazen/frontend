@@ -15,7 +15,6 @@ function Probe() {
   return <p>{isLoading ? 'loading' : `ota=${flags.otaPartnerApi}`}</p>;
 }
 
-/** Says whether the flags are known, which is what tells «off» from «could not be read». */
 function ErrorProbe() {
   const { isLoading, isError } = useFeatureFlags();
   return <p>{isLoading ? 'loading' : `unreadable=${isError === true}`}</p>;
@@ -84,7 +83,6 @@ describe('parseFeatureFlags', () => {
     expect(parseFeatureFlags({ otaPartnerApi: true, somethingElse: true })).toEqual({ ...allOff, otaPartnerApi: true });
     expect(parseFeatureFlags({ eSignProvider: true })).toEqual({ ...allOff, eSignProvider: true });
     expect(parseFeatureFlags({ aiSupplierDiscovery: true })).toEqual({ ...allOff, aiSupplierDiscovery: true });
-    // The key the backend sends for `Features:AgencyTier` (GET /api/public/features).
     expect(parseFeatureFlags({ agencyTier: true })).toEqual({ ...allOff, agencyTier: true });
     expect(parseFeatureFlags({ otaPartnerApi: 'true', aiSupplierDiscovery: 1 })).toEqual(allOff);
     expect(parseFeatureFlags(null)).toEqual(allOff);
@@ -94,13 +92,11 @@ describe('parseFeatureFlags', () => {
   it.each(['whiteLabelHost', 'auth0HostSync', 'siteEmbed'] as const)(
     'knows the flag of the site integration %s (E40, backend Features:*): off by default, on only when the server says true',
     (key) => {
-      // The keys the backend sends for `Features:WhiteLabelHost`, `Features:Auth0HostSync` and `Features:SiteEmbed`.
       expect(DEFAULT_FEATURE_FLAGS[key]).toBe(false);
       expect(parseFeatureFlags({ [key]: true })[key]).toBe(true);
       expect(parseFeatureFlags({ [key]: 'true' })[key]).toBe(false);
       expect(parseFeatureFlags({ [key]: 1 })[key]).toBe(false);
       expect(parseFeatureFlags({})[key]).toBe(false);
-      // One flag does not turn on another.
       const others = Object.entries(parseFeatureFlags({ [key]: true })).filter(([name, on]) => name !== key && on);
       expect(others).toEqual([]);
     },

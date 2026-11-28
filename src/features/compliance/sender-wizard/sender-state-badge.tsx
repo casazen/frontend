@@ -3,10 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import type { SenderOutcome } from './sender-wizard-model';
 
-/**
- * The look of an outcome: an icon, a word and a colour together (the colour is never the only sign). Only `active` is green, and `active` is only ever the word of the
- * server; the host's own word («Dichiarato attivo») and what CasaZen cannot tell are shown as what they are, never as working.
- */
 const LOOK: Record<SenderOutcome, { Icon: LucideIcon; tone: string }> = {
   active: {
     Icon: CheckCircle2,
@@ -39,7 +35,6 @@ interface SenderStateBadgeProps {
   testId?: string;
 }
 
-/** «Attivo», «Dichiarato attivo», «Non verificato», «Non attivo», «Invio a mano» or «Non ancora disponibile»: the state of the sender in one word. */
 export function SenderStateBadge({ outcome, testId = 'sender-state' }: SenderStateBadgeProps) {
   const { t } = useTranslation();
   const { Icon, tone } = LOOK[outcome];

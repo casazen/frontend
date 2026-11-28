@@ -20,15 +20,12 @@ import type { PropertyWizardValues } from '../property-wizard-model';
 interface FinishStepProps {
   form: UseFormReturn<PropertyWizardValues>;
   propertyId: string;
-  /** The activation as the server answers it now (read again after every save); the wizard keeps it, the button of the footer needs it too. */
   activation: ComplianceActivationResult | undefined;
   activationFailed: boolean;
   onRetryActivation: () => void;
-  /** Blockers of the last refused attempt to activate (409), if any. */
   refused: readonly ActivationBlocker[] | null;
   tosAccepted: boolean;
   onTosChange: (accepted: boolean) => void;
-  /** The host acknowledged the reminders still open (the documents, the safety sheet). */
   remindersAccepted: boolean;
   onRemindersChange: (accepted: boolean) => void;
 }

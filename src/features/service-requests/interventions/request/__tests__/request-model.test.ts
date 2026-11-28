@@ -60,9 +60,7 @@ describe('the request the wizard sends (SR-08b)', () => {
   it('toCreateRequest_CatalogService_SendsTheServiceAndTheSlotButNeverALength', () => {
     const request = toCreateRequest(values());
 
-    // 10:00 in Rome on 3 November 2026 is 09:00 UTC (winter time): the slot the server offered.
     expect(request).toMatchObject({ serviceListingId: SERVICE_ID, scheduledStartUtc: '2026-11-03T09:00:00.000Z', supplierOrgId: SUPPLIER_ID, propertyId: PROPERTY_ID });
-    // With a length the server would stop checking the slot against the agenda of the supplier.
     expect(request.durationMinutes).toBeUndefined();
   });
 
@@ -71,7 +69,6 @@ describe('the request the wizard sends (SR-08b)', () => {
 
     expect(request.serviceListingId).toBeUndefined();
     expect(request.durationMinutes).toBe(45);
-    // Summer time: 08:30 in Rome is 06:30 UTC.
     expect(request.scheduledStartUtc).toBe('2027-07-10T06:30:00.000Z');
   });
 
@@ -92,7 +89,6 @@ describe('the request the wizard sends (SR-08b)', () => {
   });
 
   it('requestProblemOf_RefusalsThatSendTheHostBack_NameTheStepAndOtherAnswersAreTheServers', () => {
-    // The slots, the service and the stay are in the details; the supplier is in the proposals.
     expect(requestProblemOf(problem(409, 'supplier_slot_unavailable'))).toEqual({ kind: 'slotTaken', step: 'details' });
     expect(requestProblemOf(problem(409, 'supplier_commitment_conflict'))).toEqual({ kind: 'commitmentConflict', step: 'details' });
     expect(requestProblemOf(problem(422, 'service_request_supplier_outside_comune'))).toEqual({ kind: 'supplierOutsideComune', step: 'proposals' });
@@ -111,7 +107,6 @@ describe('where the wizard starts (SR-08b)', () => {
 
     expect(start).toMatchObject({ propertyId: PROPERTY_ID, bookingId: '', category: 'cleaning', supplierOrgId: SUPPLIER_ID, serviceId: SERVICE_ID, day: '2026-11-03' });
     expect(prefilled).toBe(true);
-    // A category the catalog does not have is not taken.
     expect(requestDefaults(new URLSearchParams('type=gardening'), ['cleaning'], '2026-11-03').values.category).toBe('');
     expect(requestDefaults(new URLSearchParams(''), ['cleaning'], '2026-11-03').prefilled).toBe(false);
   });
@@ -122,9 +117,7 @@ describe('where the wizard starts (SR-08b)', () => {
     expect(openingStepFor(none, 'casazen')).toBe('property');
     expect(openingStepFor({ ...none, propertyId: PROPERTY_ID }, 'casazen')).toBe('channel');
     expect(openingStepFor({ ...none, propertyId: PROPERTY_ID, category: 'cleaning' }, 'casazen')).toBe('proposals');
-    // The page of a supplier gives the supplier and the kind of work: the host goes straight to the details.
     expect(openingStepFor({ propertyId: PROPERTY_ID, category: 'cleaning', supplierOrgId: SUPPLIER_ID }, 'casazen')).toBe('details');
-    // With an external partner the wizard stops at the partners.
     expect(openingStepFor({ ...none, propertyId: PROPERTY_ID, category: 'cleaning' }, 'external')).toBe('partners');
   });
 
@@ -149,12 +142,10 @@ describe('the turnover and the slots (SR-08b)', () => {
   it('turnoverWindow_NobodyArrivesOrNobodyLeaves_IsOpenEndedOrNothing', () => {
     expect(turnoverWindow('2026-11-03', [stay('2026-11-01', '2026-11-03')])).toEqual({ from: '10:00', to: null });
     expect(turnoverWindow('2026-11-04', [stay('2026-11-01', '2026-11-03')])).toBeNull();
-    // A cancelled stay leaves nobody.
     expect(turnoverWindow('2026-11-03', [stay('2026-11-01', '2026-11-03', 'Cancelled')])).toBeNull();
   });
 
   it('slotsOfDay_And_slotsInWindow_KeepTheSlotsOfTheDayInsideTheAdvisedHours', () => {
-    // Winter time: 09:00Z is 10:00 in Rome.
     const slots = [
       { startUtc: '2026-11-03T08:00:00Z', endUtc: '2026-11-03T10:00:00Z' },
       { startUtc: '2026-11-03T09:00:00Z', endUtc: '2026-11-03T11:00:00Z' },
@@ -164,7 +155,6 @@ describe('the turnover and the slots (SR-08b)', () => {
 
     const day = slotsOfDay(slots, '2026-11-03');
     expect(day.map((slot) => slot.time)).toEqual(['09:00', '10:00', '14:00']);
-    // 09:00 is before the guests leave; 14:00–16:00 ends after the next ones may arrive.
     expect(slotsInWindow(day, { from: '10:00', to: '15:00' }).map((slot) => slot.time)).toEqual(['10:00']);
     expect(slotsInWindow(day, { from: '10:00', to: null }).map((slot) => slot.time)).toEqual(['10:00', '14:00']);
     expect(slotsInWindow(day, null)).toHaveLength(3);
@@ -172,7 +162,6 @@ describe('the turnover and the slots (SR-08b)', () => {
 });
 
 describe('the rules of the steps (SR-08b)', () => {
-  // 3 November 2026, 07:30 UTC = 08:30 in Rome.
   const schemas = requestStepSchemas(() => new Date('2026-11-03T07:30:00Z'));
   const issues = (candidate: RequestValues) => {
     const result = schemas.details.safeParse(candidate);
@@ -202,14 +191,12 @@ describe('the rules of the steps (SR-08b)', () => {
   });
 
   it('detailsSchema_DayThatHasPassed_IsRefused', () => {
-    // A time on a day that has passed has passed too: the day is the first thing to say.
     expect(issues(values({ day: '2026-11-02' }))[0]).toEqual(['day', 'requestWizard.errors.dayPast']);
     expect(issues(values({ day: '2026-11-03' }))).toEqual([]);
   });
 
   it('detailsSchema_NotesTooLong_AreRefused_AndAStayIsNeverRequired', () => {
     expect(issues(values({ notes: 'x'.repeat(1001) }))).toEqual([['notes', 'requestWizard.errors.notesTooLong']]);
-    // The request is for the house: no stay is not a problem.
     expect(issues(values({ bookingId: '' }))).toEqual([]);
   });
 
@@ -267,7 +254,6 @@ describe('the proposal of the AI as the answers of the wizard (WIZ-AI-REQUEST)',
     const outcome = assistOutcome(proposal(), { notes: 'Portare le chiavi di scorta.', aiSummary: '' }, CATALOG);
 
     expect(outcome?.values.notes).toBeUndefined();
-    // The choices are still the AI's: only the notes are the host's.
     expect(outcome?.values.category).toBe('plumbing');
     expect(outcome?.values.aiSummary).toBe('Il rubinetto della cucina perde acqua.');
   });
@@ -311,7 +297,6 @@ describe('what the summary says (SR-08b, decision D9)', () => {
     await i18n.changeLanguage('it');
 
     for (const key of [...SUPPLIER_SEES.before, ...SUPPLIER_SEES.after, SUPPLIER_SEES.never]) expect(i18n.t(key), key).not.toBe(key);
-    // The notes and the contacts come only with the take.
     expect(SUPPLIER_SEES.before.join()).not.toMatch(/notes|contact/);
     expect(SUPPLIER_SEES.after.join()).toMatch(/notes/);
     expect(i18n.t(SUPPLIER_SEES.never)).toContain('ospiti');

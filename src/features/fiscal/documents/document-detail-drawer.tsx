@@ -35,7 +35,6 @@ import { DocumentStateBadge, StatePill } from './document-state-badge';
 
 const LINK = 'rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
-/** A block of the detail: a small title and what it holds. */
 function Block({ title, children, testId }: { title: string; children: ReactNode; testId?: string }) {
   return (
     <section className="space-y-2" data-testid={testId}>
@@ -45,7 +44,6 @@ function Block({ title, children, testId }: { title: string; children: ReactNode
   );
 }
 
-/** One line of a list of totals: what it is on the left, the figure on the right. */
 function TotalRow({ label, children, strong = false, testId }: { label: string; children: ReactNode; strong?: boolean; testId?: string }) {
   return (
     <div className={cn('flex min-w-0 items-baseline justify-between gap-4', strong && 'border-t border-border pt-2 font-semibold')}>
@@ -185,7 +183,6 @@ function VatBlock({ detail, language }: { detail: FiscalDocumentDetail; language
   );
 }
 
-/** What the document comes to, as the server wrote it, in the currency of the document. */
 function TotalsBlock({ detail, language }: { detail: FiscalDocumentDetail; language: string }) {
   const { t } = useTranslation();
   const money = (amount: number) => formatDocumentAmount(amount, detail.currency, language);
@@ -212,7 +209,6 @@ function TotalsBlock({ detail, language }: { detail: FiscalDocumentDetail; langu
   );
 }
 
-/** One part of a payment the server splits in two: how it stands (words, tone and an icon, never color alone) on the left, its amount on the right, as the neighbouring figures are drawn. */
 function PaymentPartRow({ part, amount, testId }: { part: PaymentPart; amount: string; testId: string }) {
   return (
     <div className="flex min-w-0 items-center justify-between gap-4" data-testid={testId}>
@@ -226,10 +222,6 @@ function PaymentPartRow({ part, amount, testId }: { part: PaymentPart; amount: s
   );
 }
 
-/**
- * The payment of a document the server says is split in two (the portal collected the stay and left the tourist tax to the host): what the portal collected, when it collected something, and the tourist tax still
- * to pay at the property, with the amounts the server wrote in the currency of the document. A document whose currency is not a code has its amounts written without a symbol, and the block says so.
- */
 function PaymentSplitRows({ split, currency, language }: { split: PaymentSplit; currency: string; language: string }) {
   const { t } = useTranslation();
   const money = (amount: number) => formatDocumentAmount(amount, currency, language);
@@ -249,7 +241,6 @@ function PaymentSplitRows({ split, currency, language }: { split: PaymentSplit; 
   );
 }
 
-/** Who issued the document as it was when it was issued: the snapshot when the server sends it, else a pointer to the PDF, which is made from it. Nothing for a draft or a document of the channel manager. */
 function IssuerBlock({ detail }: { detail: FiscalDocumentDetail }) {
   const { t } = useTranslation();
   if (detail.source !== 'CasaZen' || detail.status !== 'Issued') return null;
@@ -279,11 +270,9 @@ interface DrawerBodyProps {
   flags: Partial<FeatureFlags>;
   canWrite: boolean;
   canReadBookings: boolean;
-  /** What the person came for (the address of a «Da fare» item, `?step=correct`): the guided correction opens at once when it is asked and the person may do it. */
   intent?: DocumentIntent;
   onClose: () => void;
   onChanged?: (id: string, change: DocumentChange) => void;
-  /** Goes on in another document (the invoice a correction issued) without leaving the page. */
   onOpenDocument?: (id: string) => void;
 }
 
@@ -379,7 +368,6 @@ function DrawerBody({ documentId, flags, canWrite, canReadBookings, intent, onCl
             <VatBlock detail={detail} language={language} />
             <TotalsBlock detail={detail} language={language} />
 
-            {/* The two parts of a payment the server splits (what the portal collected, the tourist tax still to pay at the property) take the place of the single state; any other document keeps what it had. */}
             {paymentSplit || payment ? (
               <Block title={t('fiscalDocuments.detail.payment.title')} testId="fiscal-document-payment-block">
                 {paymentSplit ? (
@@ -410,7 +398,6 @@ function DrawerBody({ documentId, flags, canWrite, canReadBookings, intent, onCl
               canWrite={canWrite}
               onChanged={(id, change) => {
                 onChanged?.(id, change);
-                // A draft that was dropped is no document to look at any more.
                 if (change === 'discarded') onClose();
               }}
             />
@@ -422,18 +409,13 @@ function DrawerBody({ documentId, flags, canWrite, canReadBookings, intent, onCl
 }
 
 interface DocumentDetailDrawerProps {
-  /** The document to show; `null` closes the drawer. */
   documentId: string | null;
   onClose: () => void;
-  /** The flags of the backend, which say whether the PDF of an imported document can be asked. */
   flags: Partial<FeatureFlags>;
-  /** The person may change documents: `payment.write` and the flag of the issuance of CasaZen. */
   canWrite: boolean;
   canReadBookings: boolean;
-  /** What the person came for (`?step=correct` of the address a «Da fare» item opens): the guided correction opens at once when it is asked and the person may do it. */
   intent?: DocumentIntent;
   onChanged?: (id: string, change: DocumentChange) => void;
-  /** Goes on in another document without leaving the page (the invoice a correction issued). */
   onOpenDocument?: (id: string) => void;
 }
 

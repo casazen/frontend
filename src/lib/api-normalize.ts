@@ -1,6 +1,5 @@
 import type { UserSummary } from '@/types';
 
-/** Maps backend user DTO fields (camelCase or legacy PascalCase) to frontend shape. */
 export function normalizeUserSummary(raw: Record<string, unknown>): UserSummary {
   return {
     id: String(raw.id ?? raw.Id ?? ''),

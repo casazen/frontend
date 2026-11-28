@@ -19,17 +19,14 @@ import { PhotoPicker } from './photo-picker';
 
 const L = SHOWCASE_LIMITS.gallery;
 
-/** `list` with the item at `index` replaced. */
 const replaceAt = <T,>(list: readonly T[], index: number, item: T): T[] => list.map((current, position) => (position === index ? item : current));
 
-/** What goes into `cover`: nothing when there is neither a photo nor a description. */
 function coverOf(url: string | null | undefined, alt: string | null | undefined) {
   const photo = (url ?? '').trim();
   const description = alt ?? '';
   return photo === '' && description === '' ? null : { url: photo === '' ? null : photo, alt: description === '' ? null : description };
 }
 
-/** The photo drawn small, or a neutral box that says there is none. */
 function PhotoThumb({ url, className }: { url: string | null | undefined; className: string }) {
   const { t } = useTranslation();
   if (isDisplayableMediaUrl(url)) {
@@ -43,7 +40,6 @@ function PhotoThumb({ url, className }: { url: string | null | undefined; classN
   );
 }
 
-/** What the photo being chosen is for: the cover, or the photo (or the "before" photo) of a job. */
 type Picking = { kind: 'cover' } | { kind: 'work'; index: number; field: 'photoUrl' | 'beforeUrl' };
 
 /**
@@ -138,7 +134,6 @@ export function WorksPanel({ doc, change, invalid }: PanelProps) {
           removedMessage={t('supplier.showcase.editor.works.removed')}
           max={SHOWCASE_LIMITS.gallery.items}
           renderItem={(work, index) => {
-            // "Before and after" is on while the member `beforeUrl` exists (an empty one is on with no photo yet): nothing local to lose when rows move.
             const compare = work.beforeUrl !== undefined && work.beforeUrl !== null;
             const compareId = `showcase-work-${index}-compare`;
             return (

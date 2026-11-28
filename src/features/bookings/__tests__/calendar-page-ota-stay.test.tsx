@@ -25,7 +25,6 @@ vi.mock('@/api/bookings.api', () => ({ bookingsApi: { getCalendar: vi.fn(), crea
 vi.mock('@/queries/use-properties', () => ({ useProperties: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// A reservation imported from Airbnb that the host can turn into an OTA stay (CO-21).
 const AIRBNB_BLOCK: CalendarItemDto = {
   type: 'ical-block',
   id: 'blk1',
@@ -43,7 +42,6 @@ const AIRBNB_BLOCK: CalendarItemDto = {
   convertible: true,
 };
 
-// An OTA stay whose reservation left the Airbnb calendar: "da verificare".
 const STAY_TO_CHECK: CalendarItemDto = {
   type: 'booking',
   id: 'stay-9',
@@ -157,7 +155,6 @@ describe('CalendarPage OTA stays from iCal blocks (CO-21)', () => {
 
     expect(screen.getByRole('list', { name: 'Legenda del calendario' })).toHaveTextContent('Soggiorno OTA da verificare');
     expect(title.closest('.host-calendar-event')).toHaveClass('host-calendar-event--toReview');
-    // The tooltip of the event says it too.
     expect(title.closest('[title]')).toHaveAttribute('title', expect.stringContaining('Da verificare'));
   });
 });

@@ -125,7 +125,6 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
   });
 
   it('BiometricSettingsCard_NotTheOrgAdministrator_ShowsNothingAndAsksNothing', () => {
-    // The API answers 403 to a member of the org who is not its administrator: the card is not drawn for them.
     renderCard({ contexts: [contextOf('short-rent', 'property_manager')] });
 
     expect(screen.queryByTestId('biometric-settings-card')).not.toBeInTheDocument();
@@ -140,13 +139,10 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
     expect(field('biometric-escalate').value).toBe('0.7');
     expect(field('biometric-attempts').value).toBe('3');
     expect(screen.getByTestId('biometric-enabled')).toBeChecked();
-    // The brief's words: under the first threshold the operator decides.
     expect(screen.getByText(/Sotto questa soglia decide l'operatore\./)).toBeInTheDocument();
     expect(screen.getByTestId('biometric-provisional')).toHaveTextContent('Soglie provvisorie');
     expect(screen.getByTestId('biometric-provisional-explain')).toBeInTheDocument();
-    // Nothing to save until something changes.
     expect(screen.getByTestId('biometric-save')).toBeDisabled();
-    // The status of the models is for the platform administrators only.
     expect(screen.queryByTestId('biometric-models')).not.toBeInTheDocument();
     expect(biometricSettingsApi.getModelsStatus).not.toHaveBeenCalled();
   });
@@ -226,7 +222,6 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
   it('BiometricSettingsCard_AReadThatFailsAfterAGoodOne_IsAnErrorAndTheProvisionalLabelOfTheOldAnswerIsNotDrawn', async () => {
     const { client } = renderCard();
     await loaded();
-    // The first read said that the thresholds are provisional.
     expect(screen.getByTestId('biometric-provisional')).toBeInTheDocument();
 
     vi.mocked(biometricSettingsApi.get).mockRejectedValue(httpError(403));
@@ -234,7 +229,6 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
       await client.refetchQueries({ queryKey: BIOMETRIC_SETTINGS_QUERY_KEY });
     });
 
-    // The query keeps the older answer in memory, but the card says it cannot be read: what the older answer said about the thresholds is not known any more, the label included.
     expect(client.getQueryData(BIOMETRIC_SETTINGS_QUERY_KEY)).toBeDefined();
     expect(await screen.findByTestId('biometric-settings-error')).toBeInTheDocument();
     expect(screen.queryByTestId('biometric-settings-form')).not.toBeInTheDocument();
@@ -263,7 +257,6 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
     expect(rows[1]).toHaveTextContent('AuraFace');
     expect(rows[1]).toHaveTextContent(i18n.t('biometricSettings.models.reason.hash_not_configured'));
     expect(rows[1]).toHaveTextContent(i18n.t('biometricSettings.models.notPinned'));
-    // No path, no hash, no address: the API does not send them and the card has no place for them.
     expect(screen.getByTestId('biometric-models').textContent ?? '').not.toMatch(/[A-Za-z]:\\|\/models\/|sha256:/i);
   });
 
@@ -291,7 +284,6 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
     expect(within(screen.getByTestId('biometric-settings-card')).getByTestId('identity-segments-section')).toBe(section);
     expect(await screen.findAllByTestId('identity-segment')).toHaveLength(1);
     expect(biometricSettingsApi.getSegments).toHaveBeenCalledTimes(1);
-    // The settings and the segments are two reads: each tells for itself when it cannot be read.
     expect(screen.getByTestId('biometric-settings-form')).toBeInTheDocument();
   });
 
@@ -314,13 +306,11 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
     typeInto('biometric-attempts', '4');
     expect(screen.getByTestId('biometric-save')).toBeEnabled();
 
-    // The mode is chosen in the group and sent with «Applica» (a suspension asks for its reason first).
     fireEvent.click(await screen.findByRole('radio', { name: 'Sospesa' }));
     fireEvent.click(await screen.findByTestId('identity-segment-apply'));
     fireEvent.change(await screen.findByTestId('identity-segment-suspend-reason'), { target: { value: 'Prova' } });
     fireEvent.click(screen.getByRole('button', { name: 'Sospendi il segmento' }));
 
-    // Any write of the card in flight: the boxes and the button of the settings wait for it as well.
     await waitFor(() => expect(biometricSettingsApi.updateSegment).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByTestId('biometric-save')).toBeDisabled());
     expect(field('biometric-attempts')).toBeDisabled();

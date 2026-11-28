@@ -4,9 +4,7 @@ import { formatStayDate } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import type { DashboardOverview, DashboardSeriesBucket } from '@/types/dashboard.types';
 
-/** A bar that starts after today is a forecast of the stays already confirmed: it is hatched, never only lighter. */
 const FORECAST = 'bg-[repeating-linear-gradient(45deg,var(--color-primary)_0_3px,transparent_3px_6px)] ring-1 ring-inset ring-primary';
-/** With more bars than this the values do not fit above them: they stay in the table, and in the tooltip of each bar. */
 const MAX_LABELLED = 6;
 
 interface RevenueChartProps {
@@ -14,11 +12,6 @@ interface RevenueChartProps {
   currency: string;
 }
 
-/**
- * The one chart of the Home: revenue by week (or by month beyond two months), the period next to the same days of the one
- * before, the value written on the bars and the weeks to come hatched. The bars are drawn for the eye only: the same
- * numbers are in a table for a screen reader.
- */
 export function RevenueChart({ series, currency }: RevenueChartProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;

@@ -37,7 +37,6 @@ function listDefinition() {
   return renderHook(() => useBookingsList({ canWrite: true, properties: [], handlers })).result.current;
 }
 
-/** The cell of the channel column for a row, drawn on its own. */
 function renderChannelCell(row: BookingListItem) {
   const column = listDefinition().columns.find((candidate) => candidate.id === 'channel');
   if (!column) throw new Error('the list has no channel column');
@@ -83,7 +82,6 @@ describe('booking list: channels', () => {
     const cell = screen.getByTestId('booking-source');
     expect(cell).toHaveTextContent('Expedia');
     expect(screen.getByTestId('booking-ota-badge')).toHaveTextContent('OTA');
-    // The channel has its own icon next to the name.
     expect(cell.querySelector('svg')).not.toBeNull();
   });
 
@@ -98,15 +96,12 @@ describe('booking list: channels', () => {
   });
 
   it('BookingsList_RowWithoutOtaSourceInTheAnswer_HasNoOtaBadge', () => {
-    // An older answer has no `otaSource` at all.
     renderChannelCell(item({ source: 'Airbnb', channel: 'Airbnb' }));
 
     expect(screen.getByTestId('booking-source')).toHaveTextContent('Airbnb');
     expect(screen.queryByTestId('booking-ota-badge')).toBeNull();
   });
 
-  // A portal of the channel manager that has no channel of its own (`OtherChannel`): the API sends the name the channel manager gave it in
-  // `channelLabel`, and the booking is not a stay made from an iCal block.
   it('BookingsList_PortalWithNoChannelOfItsOwn_IsToldByItsNameWithTheOtaBadgeAndNoIcalLine', () => {
     renderChannelCell(item({ source: 'OtherChannel', channel: 'Other', otaSource: 'OtherChannel', channelLabel: 'Portale Mare' }));
 
@@ -137,7 +132,6 @@ describe('booking list: channels', () => {
     const filter = listDefinition().filters?.find((candidate) => candidate.id === 'channel');
     if (!filter || filter.type !== 'multi' || typeof filter.options === 'function') throw new Error('the channel filter is a list of options');
 
-    // The four portals have an option of their own, in the order of the API, and `Other` is the last.
     expect(filter.options.map((option) => option.value)).toEqual(['Direct', 'Manual', 'Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda', 'Other']);
     expect(filter.options.map((option) => option.label)).toEqual([
       'Sito diretto',
@@ -201,7 +195,6 @@ describe('texts of the channels and of the sources', () => {
     expect(bookingSourceName({ source: 'OtherChannel', channelLabel: 'Portale Mare' }, t)).toBe('Portale Mare');
     expect(bookingSourceName({ source: 'OtherChannel', channelLabel: null }, t)).toBe('Altro portale');
     expect(bookingSourceName({ source: 'OtherChannel' }, i18n.getFixedT('en'))).toBe('Another portal');
-    // The label of a feed is the label of the feed, never the name of the booking; any other source keeps the label of its source.
     expect(bookingSourceName({ source: 'OtherChannel', icalFeedId: 'feed-1', channelLabel: 'camera 2' }, t)).toBe('Altro portale');
     expect(bookingSourceName({ source: 'Airbnb', channelLabel: 'camera 2' }, t)).toBe('Airbnb');
   });
@@ -210,7 +203,6 @@ describe('texts of the channels and of the sources', () => {
     const t = i18n.getFixedT('it');
     expect(bookingChannelText({ icalFeedId: 'feed-1', channelLabel: 'camera 2' }, t)).toBe('iCal · camera 2');
     expect(bookingChannelText({ icalFeedId: 'feed-1', channelLabel: null }, t)).toBe('Calendario iCal');
-    // A `channelLabel` with no feed is the name of a portal of the channel manager, not the label of a feed.
     expect(bookingChannelText({ icalFeedId: null, channelLabel: 'Portale Mare' }, t)).toBeNull();
     expect(bookingChannelText({}, t)).toBeNull();
   });

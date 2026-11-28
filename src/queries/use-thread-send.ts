@@ -22,7 +22,6 @@ export interface SentThreadMessage<M extends { id: string } = GuestThreadMessage
   replayed: boolean;
 }
 
-/** One key per message (8 to 64 letters, digits, `-` or `_`): sending the same message again with it never writes it twice. */
 export function newIdempotencyKey(): string {
   return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()

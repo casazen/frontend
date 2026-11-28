@@ -3,7 +3,6 @@ import type { PublicCheckInContextDto } from '@/types/public-checkin.types';
 import { offeredGuestLocales, type GuestLocale } from '../lib/guest-locale';
 import { LanguageSwitcher } from './language-switcher';
 
-/** The language of the page: the switcher and what it says when the choice could not be saved or the texts could not be loaded. */
 export function GuestLanguageBar({ locale, chooseLanguage, context, languageNotSaved, languageNotLoaded }: {
   locale: GuestLocale;
   chooseLanguage: (locale: GuestLocale) => void;

@@ -103,7 +103,6 @@ describe('the answers of the API', () => {
   });
 
   it('afterConsent_NotOffered_GoesToAPersonButNothingIsConcludedUntilTheGuestAsks', () => {
-    // The verification is not offered and nobody was asked: the API says `operator`, and the page waits for the guest to ask.
     const next = afterConsent(start({ step: 'operator', biometricOffered: false }), {
       consentRecorded: false,
       result: 'operator',
@@ -180,7 +179,6 @@ describe('the answers of the API', () => {
     expect(held.lockCode).toBeNull();
     expect(held.lockCodeHeld).toBe('tourist_tax_due');
 
-    // A code that came is what the guest sees: no «held» next to it.
     const given = afterSelfie(start({ step: 'selfie' }), { result: 'ok', guidanceCodes: [], attemptsRemaining: 2, operatorPathOpen: true, lockCode: '4821', lockCodeHeld: 'tourist_tax_due' });
     expect(given.lockCode).toBe('4821');
     expect(given.lockCodeHeld).toBeNull();
@@ -329,7 +327,6 @@ describe('the words of the identity step in the five languages of the page', () 
     ['es', guestEs],
   ] as const;
 
-  /** What the API sends in `CaptureGuidanceCodes` (backend `IIdentityVerificationAgent`). */
   const API_CODES = [
     'show_your_face',
     'one_face_only',
@@ -347,12 +344,10 @@ describe('the words of the identity step in the five languages of the page', () 
     'use_valid_document',
     'tip_remove_glasses',
     'tip_remove_mask',
-    // The document on two sides (E22/F01/US01/T02): which side comes next.
     'document_back_needed',
     'document_front_needed',
     'document_not_recognized',
     'active_pose_retry',
-    // The targeted codes of the document step of the self-hosted flow (E71/F01/US03/T01): what is wrong with the photo of a side.
     'document_not_found',
     'document_edges_not_visible',
     'document_layout_mismatch',
@@ -392,13 +387,10 @@ describe('the words of the identity step in the five languages of the page', () 
       'checkin.identity.result.operator.text',
       'checkin.biometric.consent.accept',
       'checkin.biometric.consent.decline',
-      // The texts of the consent come from the registry; the page keeps the words around them.
       ...['draft', 'loadFailed', 'loading', 'retry', 'servedIn', 'unavailable'].map((part) => `checkin.biometric.consent.${part}`),
-      // The document on two sides, with the drawing of where the lines of letters are.
       ...['back.fileLabel', 'back.illustration', 'back.instructions', 'back.pick', 'back.pickAgain', 'frontReceived', 'sideProgress', 'instructions'].map(
         (part) => `checkin.identity.document.${part}`,
       ),
-      // The door of the property.
       ...['title', 'description', 'modeLabel', 'modeCode', 'modeSurname', 'codeLabel', 'codeHint', 'surnameLabel', 'surnameHint', 'arrivalLabel', 'arrivalHint', 'submit', 'submitting'].map(
         (part) => `checkin.door.${part}`,
       ),
@@ -411,7 +403,6 @@ describe('the words of the identity step in the five languages of the page', () 
   });
 
   it('theTextsTheRegistryServes_AreNotInTheCataloguesAnyMore_TheyHaveOneSource', () => {
-    // The wording of the consent is the registry's (E22/F01/US02/T02): a copy in the page would drift from the version that is recorded.
     const removed = ['description', 'documentKept', 'optional', 'optionalTitle', 'purpose', 'purposeTitle'].map((part) => `checkin.biometric.consent.${part}`);
 
     for (const [, catalogue] of catalogues) expect(removed.filter((key) => lookup(catalogue, key) !== undefined)).toEqual([]);
@@ -465,7 +456,6 @@ describe('the document on two sides (E22/F02/US01/T01)', () => {
     expect(next.documentSideNeeded).toBe('back');
     expect(next.documentTwoSided).toBe(true);
     expect(next.documentSidesTaken).toEqual(['front']);
-    // The photo that was taken was good: the page does not say it was not.
     expect(next.documentRefused).toBe(false);
   });
 
@@ -503,7 +493,6 @@ describe('the document on two sides (E22/F02/US01/T01)', () => {
   });
 
   it('afterDocument_TicinoWithTheServerSatisfiedAfterTheFrontOnly_StillAsksForTheBackBecauseBothComeAgainWithTheSelfie', () => {
-    // After a reload in Ticino the server has both sides, so it is satisfied by the front alone; the selfie of a property that keeps nothing carries both pictures.
     const reloaded = start({ step: 'selfie', documentNotArchived: true, documentSides: ['front', 'back'] });
     expect(reloaded.stage).toBe('document');
     expect(reloaded.documentTwoSided).toBe(true);

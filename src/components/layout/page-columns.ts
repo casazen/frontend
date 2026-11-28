@@ -13,25 +13,13 @@
  */
 export const PAGE_COLUMNS = 'grid grid-cols-1 gap-6 xl:grid-cols-2 xl:items-start';
 
-/**
- * {@link PAGE_COLUMNS} from `2xl` and not from `xl`, for sections that need about 600 px to be read: a table, a chart, a row of
- * fields with buttons. Between `xl` and `2xl` they stay under each other and use the whole width.
- */
 export const PAGE_COLUMNS_WIDE = 'grid grid-cols-1 gap-6 2xl:grid-cols-2 2xl:items-start';
 
-/**
- * {@link PAGE_COLUMNS} for a block that is not always as wide as the page (a form that also sits in the card of a wizard): the width
- * of its container decides, not the one of the screen. The parent of the grid has to be a container (`@container`).
- */
 export const CONTAINER_COLUMNS = 'grid grid-cols-1 gap-6 @4xl:grid-cols-2 @4xl:items-start';
 
 /** One column of {@link PAGE_COLUMNS} that holds several sections: they stack. `min-w-0` lets a wide child shrink instead of pushing the grid out. */
 export const PAGE_COLUMN = 'min-w-0 space-y-6';
 
-/**
- * The main part of a page and what goes with it (3 : 2), as the homes do (they keep their own copy of it, from `xl`): the main part is
- * the first child. From `2xl` and not from `xl`: what goes beside the main part here opens plans and forms, and needs about 480 px.
- */
 export const PAGE_MAIN_ASIDE = 'grid grid-cols-1 gap-8 2xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] 2xl:items-start';
 
 /**

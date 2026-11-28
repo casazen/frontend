@@ -1,8 +1,11 @@
 import { useId, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Banknote, Moon, Store, TriangleAlert, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ApiClient } from '@/api/client';
+import { Figure, Figures, IconFact, IconFacts } from '@/components/shared/calm';
+import { StatusPill } from '@/components/shared/status/status-pill';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProofUploadDialog } from '@/features/compliance/components/proof-upload-dialog';
@@ -50,14 +53,15 @@ export function ComoStayTourReport({ propertyId, propertyName }: { propertyId: s
       {validMonth && report.isLoading && <p role="status">{t(key + 'loading')}</p>}
       {report.isError && <div role="alert">{t(key + 'error')} <Button variant="ghost" onClick={() => void report.refetch()}>{t(key + 'retry')}</Button></div>}
       {data && <>
-        <p className="text-sm text-muted-foreground">{t(key + 'basis')}</p>
-        {data.departuresToReview > 0 && <p role="status">{t(key + 'departures', { count: data.departuresToReview })}</p>}
-        {data.unconfirmedStays > 0 && <p role="status">{t(key + 'missing', { count: data.unconfirmedStays })}</p>}
-        <dl className="grid gap-3 sm:grid-cols-3">
-          <div><dt>{t(key + 'taxable')}</dt><dd className="font-semibold">{data.taxableGuests}</dd></div>
-          <div><dt>{t(key + 'nights')}</dt><dd className="font-semibold">{data.taxableGuestNights}</dd></div>
-          <div><dt>{t(key + 'amount')}</dt><dd className="font-semibold">{money.format(data.hostTax)}</dd></div>
-        </dl>
+        {(data.departuresToReview > 0 || data.unconfirmedStays > 0) && <div className="flex flex-col items-start gap-1.5">
+          {data.departuresToReview > 0 && <StatusPill tone="warning" icon={TriangleAlert} role="status">{t(key + 'departures', { count: data.departuresToReview })}</StatusPill>}
+          {data.unconfirmedStays > 0 && <StatusPill tone="warning" icon={TriangleAlert} role="status">{t(key + 'missing', { count: data.unconfirmedStays })}</StatusPill>}
+        </div>}
+        <Figures className="grid-cols-3 items-end">
+          <Figure icon={Users} label={t(key + 'taxable')}>{data.taxableGuests}</Figure>
+          <Figure icon={Moon} label={t(key + 'nights')}>{data.taxableGuestNights}</Figure>
+          <Figure icon={Banknote} label={t(key + 'amount')}>{money.format(data.hostTax)}</Figure>
+        </Figures>
         {Object.keys(data.exemptions).length > 0 && <table className="w-full text-left text-sm">
           <thead><tr><th>{t(key + 'reason')}</th><th>{t(key + 'guests')}</th><th>{t(key + 'overnights')}</th></tr></thead>
           <tbody>{Object.entries(data.exemptions).map(([reason, count]) => <tr key={reason}>
@@ -65,7 +69,7 @@ export function ComoStayTourReport({ propertyId, propertyName }: { propertyId: s
             <td>{count.guests}</td><td>{count.guestNights}</td>
           </tr>)}</tbody>
         </table>}
-        <p className="text-sm">{t(key + 'channel', { count: data.channelStaysToReconcile })}</p>
+        {data.channelStaysToReconcile > 0 && <IconFacts><IconFact icon={Store}>{t(key + 'channel', { count: data.channelStaysToReconcile })}</IconFact></IconFacts>}
       </>}
       {validMonth && canReadProofs && <div className="flex flex-wrap gap-2">
         {canAttach && <Button type="button" variant="outline" onClick={() => setUpload(true)}>{t(key + 'attach')}</Button>}

@@ -15,7 +15,6 @@ export const LEGAL_DOCUMENT_PATHS: Record<LegalDocumentKey, string> = {
 
 export const LEGAL_DOCUMENT_KEYS: LegalDocumentKey[] = ['tos', 'privacy', 'dpa'];
 
-/** Date a version is in force, as a calendar date in Europe/Rome (the backend stores it in UTC). */
 export function formatLegalDate(iso: string, language: string): string {
   return new Intl.DateTimeFormat(language, { dateStyle: 'long', timeZone: 'Europe/Rome' }).format(new Date(iso));
 }

@@ -2,7 +2,6 @@ const DIGITS = /^\d+$/;
 const DECIMALS = /^\d{0,2}$/;
 
 export interface ParsedEuros {
-  /** The amount in cents; `null` when the text is blank or is not an amount. */
   cents: number | null;
   problem: 'blank' | 'invalid' | null;
 }
@@ -31,7 +30,6 @@ export function parseEuros(input: string): ParsedEuros {
     const groupsOnly = !before.includes(other) && before.includes(separator);
     const lonely = !before.includes(other) && !before.includes(separator);
     if (groupsOnly || (lonely && after.length === 3 && before.length >= 1 && before.length <= 3)) {
-      // "1.234.567" and "1.500": thousands only.
       integer = text.split(separator).join('');
     } else {
       integer = before.split(other).join('').split(separator).join('');
@@ -39,7 +37,6 @@ export function parseEuros(input: string): ParsedEuros {
     }
   }
 
-  // ",50" and ".5" are fifty cents: the zero before the point is not asked.
   if (integer === '' && decimals !== '') integer = '0';
   if (!DIGITS.test(integer) || !DECIMALS.test(decimals)) return { cents: null, problem: 'invalid' };
   return { cents: Number(integer) * 100 + Number(decimals.padEnd(2, '0')), problem: null };
@@ -53,7 +50,6 @@ export function centsToInput(cents: number | null | undefined, decimalSeparator:
   return rest === 0 ? String(whole) : `${whole}${decimalSeparator}${String(rest).padStart(2, '0')}`;
 }
 
-/** An amount to read: `45 €`, `45,50 €`, `€45` in English. Whole amounts have no decimals. */
 export function formatMoney(cents: number, locale: string): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',

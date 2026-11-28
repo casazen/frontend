@@ -25,22 +25,13 @@ interface BookingStayTabProps {
   booking: Booking;
 }
 
-/**
- * The tab Soggiorno: what the stay is (property, dates, guests, where it came from, the code the guest knows), who the guest is,
- * the supplier requests of the stay and, with the flag `scheduledMessages` on, the messages the routines will send to the guest
- * (E05/F07/US02, NF-71) for who may read the booking. Sections without a box: a title and what it says.
- */
 export function BookingStayTab({ booking }: BookingStayTabProps) {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
-  // The stay's own requests (D2), with the same query as the app's booking screen.
   const canReadProperty = hasPermission('short-rent', 'property.read');
   const property = useProperty(canReadProperty ? booking.propertyId : '').data;
-  // Always ask for the stay's requests when the booking page is open: the list is what the host sees after creating one
-  // (GJ L3 pay-at-property). Gating the query on property.read hid the card after the cleaning wizard returned.
   const serviceRequests = useServiceRequests({ bookingId: booking.id, pageSize: 50 });
-  // Creating a request and managing an existing intervention are distinct permissions.
   const canManageSupplierRequests = hasPermission('short-rent', 'property.write');
   const canRequestSupplier = hasPermission('short-rent', 'servicerequest.write') && booking.status !== 'Cancelled';
   const cleaningAction = canRequestSupplier ? (
@@ -57,12 +48,8 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
   ) : undefined;
   const canWrite = hasPermission('short-rent', 'booking.write');
   const canRead = hasPermission('short-rent', 'booking.read');
-  // A booking of a channel that the channel does not let the host change or cancel from CasaZen (E08/F03/US02, NF-75, NF-76): the one sentence that says how to ask the
-  // guest or the channel, in place of the action. It replaces the lock sentence below, which would send the host to cancel a booking that cannot be cancelled here.
   const modifyGuidance = canWrite ? channelGuidanceOf(booking.changeOptions, 'modify') : null;
   const cancelGuidance = canWrite ? channelGuidanceOf(booking.changeOptions, 'cancel') : null;
-  // Why the dates and guests cannot be changed (SR-05c), for who would have changed them: the page offers no "Modifica" then, and the
-  // server's `canEdit` says why. A cancelled booking says it itself.
   const editLock =
     canWrite && !modifyGuidance && booking.canEdit && !booking.canEdit.allowed && booking.canEdit.reason !== 'Cancelled' ? booking.canEdit.reason : null;
 
@@ -136,7 +123,6 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
         {guest && <section className="min-w-0 rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="stay-guest-heading">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-primary-soft font-semibold text-primary-text">{guestInitials || <UserRound className="size-5" />}</span>
-            {/* The name of the guest is the title of the page: the card says what it is about and holds the ways to reach them. */}
             <div className="min-w-0">
               <h2 id="stay-guest-heading" className="font-semibold">{t('booking.detailPage.guestInformationTitle')}</h2>
               <p className="sr-only">{guestName}</p>
@@ -164,7 +150,6 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
                   {channelText}
                 </span>
               ) : null}
-              {/* Where it came from (NF-123): «Portale Airbnb», «Sito dell'agenzia», «Sito CasaZen» or «Manuale». */}
               <BookingOriginBadge booking={booking} className="mt-1 flex w-fit" />
             </Fact>
           ) : null}
@@ -173,7 +158,6 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
         </Facts>
       </details>
 
-      {/* The one section of the reviews of the stay (E05/F06/US02): the host asks the guest of the site for a review (DB-12b) and reads the reviews of the guests, of the site and of the channel. It draws nothing where there is nothing to say. */}
       <BookingReviewsSection booking={booking} canWrite={canWrite} />
 
       {serviceRequests.data?.items.length === 0 && !serviceRequests.isError ? cleaningAction : <ServiceRequestsCard
@@ -185,7 +169,6 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
         action={cleaningAction}
       />}
 
-      {/* NF-71: what the routines will send to the guest of this stay, after the sections above (they keep their place). Only with the flag on and for who may read the booking: off, nothing is drawn and nothing is asked. */}
       {flags.scheduledMessages && canRead ? <BookingScheduledMessages booking={booking} canWrite={canWrite} /> : null}
     </div>
   );

@@ -5,11 +5,8 @@ import { TILE_PRESS_FEEDBACK } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 export interface ChoiceCardProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'title' | 'className'> {
-  /** One choice among several (radio, default) or one of many that can be chosen together (checkbox). */
   type?: 'radio' | 'checkbox';
-  /** What is chosen, in a few words. */
   title: React.ReactNode;
-  /** What it means, in a line. */
   description?: React.ReactNode;
   icon?: LucideIcon;
   /** A picture or any other content shown in place of the icon (a photo of the house). Decorative: the title says what is chosen. */
@@ -59,10 +56,7 @@ export const ChoiceCard = React.forwardRef<HTMLInputElement, ChoiceCardProps>(fu
         </span>
       ) : null}
       <span className="break-words font-semibold leading-snug">{title}</span>
-      {/* `foreground/70` and not `muted-foreground`: that token is 4.1:1 on the tint of a chosen card, a text needs 4.5:1. */}
       {description ? <span className="break-words text-sm text-foreground/70">{description}</span> : null}
-      {/* The tick: a disc for one choice, a square for several; empty until chosen. Not read: the input says it. An inset ring,
-          not a border: the border color of every element is fixed by a rule of `globals.css` that the utilities cannot beat. */}
       <span
         aria-hidden="true"
         className={cn(
@@ -78,20 +72,13 @@ export const ChoiceCard = React.forwardRef<HTMLInputElement, ChoiceCardProps>(fu
 });
 
 export interface ChoiceGroupProps {
-  /** The question the cards answer ("Come vuoi pubblicare il sito?"). It names the group for a screen reader. */
   legend: React.ReactNode;
-  /** Show the question above the cards. Default: it is only for screen readers (the page usually says it already). */
   legendVisible?: boolean;
-  /** The narrowest a card may get, in `rem`, before the cards move to a new row. Default 11. */
   minCardWidth?: number;
   children: React.ReactNode;
   className?: string;
 }
 
-/**
- * The `fieldset` of a set of `ChoiceCard`s: the question, and the cards in a grid that shares the row among them (two cards
- * are two halves, not two narrow strips) and wraps to the next row when they would get narrower than `minCardWidth`.
- */
 export function ChoiceGroup({ legend, legendVisible = false, minCardWidth = 11, children, className }: ChoiceGroupProps) {
   return (
     <fieldset className={cn('m-0 min-w-0 border-0 p-0', className)}>

@@ -24,7 +24,6 @@ vi.mock('@/api/manual-blocks.api', () => ({ manualBlocksApi: { create: vi.fn(), 
 vi.mock('@/queries/use-properties', () => ({ useProperties: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-// The nights a scheduled change to long-term closes: from the night before the day of the change (PM-02).
 const MODE_CHANGE_BLOCK: CalendarItemDto = {
   type: 'ical-block',
   id: 'mc1',
@@ -93,7 +92,6 @@ describe('CalendarPage: the nights closed by a change of mode (PM-03)', () => {
 
     const details = await openTheBlock();
 
-    // Said as it is: the host did not close these nights, the change did, and they open again if the change is cancelled.
     const block = within(details).getByTestId('mode-change-block');
     expect(block).toHaveTextContent(i18n.t('propertyMode.calendar.explanation'));
     expect(block).toHaveTextContent(i18n.t('propertyMode.calendar.reopen'));
@@ -106,7 +104,6 @@ describe('CalendarPage: the nights closed by a change of mode (PM-03)', () => {
   it('CalendarPage_ModeChangeBlock_NoWritePermission_ExplainsWithoutTheLink', async () => {
     renderPage({ permissions: ['booking.write'] });
     const details = await openTheBlock();
-    // Whoever looks at the calendar is told why the nights are closed; "they open again if you cancel" is a way out they do not have.
     expect(within(details).getByTestId('mode-change-block')).toHaveTextContent(i18n.t('propertyMode.calendar.explanation'));
     expect(within(details).queryByText(i18n.t('propertyMode.calendar.reopen'))).not.toBeInTheDocument();
     expect(within(details).queryByTestId('mode-change-block-manage')).not.toBeInTheDocument();
@@ -119,7 +116,6 @@ describe('CalendarPage: the nights closed by a change of mode (PM-03)', () => {
     await screen.findByRole('button', { name: 'Giorno' });
 
     fireEvent.click(screen.getByRole('button', { name: 'Blocca date' }));
-    // The form to close dates is the one of the panel of the days (E08/F05/US03/T02).
     const form = screen.getByTestId('manual-block-form');
 
     const options = within(within(form).getByLabelText('Motivo')).getAllByRole('option').map((option) => (option as HTMLOptionElement).value);

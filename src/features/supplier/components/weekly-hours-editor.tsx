@@ -23,9 +23,7 @@ import {
 } from '../lib/weekly-hours';
 
 interface WeeklyHoursEditorProps {
-  /** The hours were saved. */
   onSaved?: () => void;
-  /** Shows "Annulla" beside the save button and calls this: what was changed is dropped. */
   onCancel?: () => void;
 }
 
@@ -34,12 +32,6 @@ function hoursPayloadKey(data: { configuredAt?: string | null; days: unknown }):
   return data.configuredAt ?? JSON.stringify(data.days);
 }
 
-/**
- * The weekly working hours as they are changed (SP-07b): one line a day with its bands, up to three (a morning, a lunch break and an
- * afternoon), on the Rome clock. A day is open or a rest day; a band is two times and can be taken away; a day gets another with "Aggiungi
- * una fascia". Saving sends the whole week (`PUT api/supplier/availability/hours` replaces it), after checking what the API checks: every end
- * after its start and no two bands of a day over each other, said under the day that has the problem. An empty week is rest every day.
- */
 export function WeeklyHoursEditor({ onSaved, onCancel }: WeeklyHoursEditorProps) {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierHours();
@@ -49,7 +41,6 @@ export function WeeklyHoursEditor({ onSaved, onCancel }: WeeklyHoursEditorProps)
   const [problems, setProblems] = useState<Partial<Record<WeekdayName, DayProblem>>>({});
   const [saveProblem, setSaveProblem] = useState<string | null>(null);
 
-  // Hydrate once per server payload key (not object identity — query mocks often return a new object each render).
   const payloadKey = data ? hoursPayloadKey(data) : null;
   if (data && payloadKey !== null && payloadKey !== hydratedKey) {
     setHydratedKey(payloadKey);

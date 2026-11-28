@@ -11,50 +11,36 @@
  */
 
 export interface CalendarStay {
-  /** `XXXXX-XXXXX`: the `UID` of the event is made from it. */
   code: string;
   title: string;
-  /** The zone or the city. Never a street and a number. */
   place: string;
-  /** Lines of text for the notes of the event, in the language of the guest. */
   notes: string[];
-  /** `YYYY-MM-DD`. */
   checkIn: string;
-  /** `YYYY-MM-DD`: the day the guest leaves. */
   checkOut: string;
-  /** The host name of the site the file comes from, which ends the `UID`; no CasaZen domain is written in the frontend (D3). */
   uidHost?: string;
 }
 
 const STAY_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const MAX_LINE_OCTETS = 75;
-/** Without a site to name, the reserved top-level domain keeps the `UID` well formed (RFC 2606). */
 const UID_FALLBACK_HOST = 'booking.invalid';
 
-/** `20261024` of `2026-10-24`, or null when the text is not a stay date. */
 function compactDate(date: string): string | null {
   const match = STAY_DATE.exec(date);
   return match ? `${match[1]}${match[2]}${match[3]}` : null;
 }
 
-/** The days of a stay as the formats of the calendars want them, or null when they are not two days in order. */
 function stayDays(stay: Pick<CalendarStay, 'checkIn' | 'checkOut'>): { start: string; end: string } | null {
   const start = compactDate(stay.checkIn);
   const end = compactDate(stay.checkOut);
   return start && end && end > start ? { start, end } : null;
 }
 
-/** A text value of the file: backslash, semicolon, comma and every kind of new line, as RFC 5545 §3.3.11 writes them. */
 export function escapeIcsText(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
 }
 
 const encoder = new TextEncoder();
 
-/**
- * A content line of at most 75 octets, longer ones folded: CRLF and one space, which counts as an octet of the next line. The cut is
- * between characters (code points), never inside a multi-byte one.
- */
 export function foldIcsLine(line: string): string {
   if (encoder.encode(line).length <= MAX_LINE_OCTETS) return line;
 
@@ -76,12 +62,10 @@ export function foldIcsLine(line: string): string {
   return parts.join('\r\n ');
 }
 
-/** `20261024T090000Z`: an instant in UTC, without separators and without milliseconds. */
 function utcStamp(instant: Date): string {
   return instant.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 }
 
-/** The `UID` of the event: the same for the same booking, whatever the day it is downloaded. */
 function eventUid(stay: CalendarStay, days: { start: string; end: string }): string {
   const code = stay.code.replace(/[^A-Za-z0-9]/g, '').toLowerCase();
   return `${code || `${days.start}-${days.end}`}@${stay.uidHost?.trim() || UID_FALLBACK_HOST}`;
@@ -116,7 +100,6 @@ export function buildIcs(stay: CalendarStay, stamp: Date): string {
   return `${lines.map(foldIcsLine).join('\r\n')}\r\n`;
 }
 
-/** The page of Google Calendar that adds the stay, with the title, the days and the place; empty when there are no days. */
 export function googleCalendarUrl(stay: Pick<CalendarStay, 'title' | 'place' | 'checkIn' | 'checkOut'>): string {
   const days = stayDays(stay);
   if (!days) return '';
@@ -125,7 +108,6 @@ export function googleCalendarUrl(stay: Pick<CalendarStay, 'title' | 'place' | '
   return `https://calendar.google.com/calendar/render?${query.toString()}`;
 }
 
-/** The page of Outlook.com that adds the stay, with the title, the days and the place; empty when there are no days. */
 export function outlookCalendarUrl(stay: Pick<CalendarStay, 'title' | 'place' | 'checkIn' | 'checkOut'>): string {
   const days = stayDays(stay);
   if (!days) return '';

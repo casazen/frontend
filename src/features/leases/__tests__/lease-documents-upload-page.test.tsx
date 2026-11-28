@@ -18,9 +18,7 @@ const practice = 'P-0123456789ABCDEF';
 const lookupUrl = `/concordatofacile/practices/${practice}/lease`;
 const path = '/app/long-rent/documents/upload';
 const get = vi.mocked(axios.get); const post = vi.mocked(axios.post);
-// A link of the app, or a contract the person has confirmed: the documents come at once (CF-FIX-FU4).
 function renderPage(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage), LEASE_CONFIRMED_STATE); }
-// A link from outside (the button of the e-mail, an old link with only the lease): the page asks which contract before anything else.
 function renderFromOutside(query = '') { return renderAt(`${path}${query}`, path, createElement(LeaseDocumentsUploadPage)); }
 
 describe('lease-owned partner documents', () => {
@@ -100,7 +98,6 @@ describe('lease-owned partner documents', () => {
     await waitFor(() => expect(get).toHaveBeenCalled());
   });
 
-  // CF-FIX: the button «Carica i dati in CasaZen» of ConcordatoFacile opens this page with `?practice=P-…`.
   it('a practice the server links to a lease shows the documents of that lease, never the list of contracts', async () => {
     get.mockImplementation((url) => {
       if (url === lookupUrl) return Promise.resolve({ data: { leaseId: id, practiceId: practice, status: 'InProgress', manualSelectionRequired: false } });
@@ -163,8 +160,6 @@ describe('lease-owned partner documents', () => {
     expect(get.mock.calls.some(([url]) => String(url).includes('/concordatofacile/'))).toBe(false);
   });
 
-  // CF-FIX-FU4: a link from outside says which contract, the person has not: one explicit step before the upload, for the practice of the
-  // e-mail and for the old link with only the lease, with the way to another contract.
   it.each([
     ['a practice the server links to a lease', `?practice=${practice}`, 'confirmWithPractice'],
     ['an old link with only the lease', `?leaseId=${id}`, 'confirmWithoutPractice'],
@@ -180,7 +175,6 @@ describe('lease-owned partner documents', () => {
 
     const confirm = await screen.findByTestId('cf-documents-confirm');
     expect(confirm).toHaveTextContent(i18n.t(`guidedContract.${key}`, { practice, lease: 'Casa Trastevere · Roma' }));
-    // Nothing can be uploaded, and the contract is not shown, before the person has said it is the right one.
     expect(screen.queryByLabelText(i18n.t('documentPages.select'))).not.toBeInTheDocument();
     expect(get.mock.calls.some(([url]) => url === `/leases/${id}/documents`)).toBe(false);
 
@@ -206,8 +200,6 @@ describe('lease-owned partner documents', () => {
     expect(screen.queryByTestId('cf-documents-confirm')).not.toBeInTheDocument();
   });
 
-  // CF-IMPORT: the contract ConcordatoFacile delivers goes on to «Completa e importa il contratto» only from the draft it was made for,
-  // once a contract document is there; any other contract is left alone (it does not even ask how a reading stands).
   it.each([
     ['the draft of the partner with the contract uploaded', { origin: 'Imported', isConcordatoFacileSource: true }, 'Done', true, true],
     ['the draft of the partner before any contract is uploaded', { origin: 'Imported', isConcordatoFacileSource: true }, 'None', false, true],
@@ -253,13 +245,10 @@ describe('lease-owned partner documents', () => {
     expect(screen.queryByRole('button', { name: i18n.t('cfDocuments.import.action') })).not.toBeInTheDocument();
   });
 
-  // CF-DONE: an upload moves the lease of the guided service on without leaving the page. The server reads the file into the draft and,
-  // once the practice allows it, imports the contract and declares the registration; the page tells what became of the lease.
   describe('the lease of the guided service follows its practice', () => {
     const syncUrl = `/leases/${id}/concordatofacile/sync`;
     const syncCalls = () => post.mock.calls.filter(([url]) => url === syncUrl);
 
-    /** The same page with the service on (the flags of a person are off without a provider): the sync is asked once the contract is confirmed. */
     function renderWithService(query: string, state: unknown = LEASE_CONFIRMED_STATE) {
       const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
       return render(
@@ -275,7 +264,6 @@ describe('lease-owned partner documents', () => {
       );
     }
 
-    /** The lease of the service as the server has it now: `status()` says which, the documents none. */
     function mockServiceLease(status: () => 'Draft' | 'Signed' | 'Registered' = () => 'Draft') {
       get.mockImplementation((url) => {
         if (url === `/leases/${id}`) return Promise.resolve({ data: buildDetail({ id, origin: 'Imported', isConcordatoFacileSource: true, status: status() }) });
@@ -293,7 +281,7 @@ describe('lease-owned partner documents', () => {
       mockServiceLease(() => status);
       post.mockImplementation((url) => {
         if (url !== syncUrl) return Promise.reject(httpError(404));
-        status = leaseStatus; // the server read the documents and moved the lease on
+        status = leaseStatus;
         return Promise.resolve({ data: { state, leaseStatus } });
       });
 
@@ -319,11 +307,9 @@ describe('lease-owned partner documents', () => {
       mockServiceLease();
       post.mockResolvedValue({ data: { state: 'WaitingForContract', leaseStatus: 'Draft' } });
 
-      // A link from outside: the history entry carries no confirmation (`null`: an explicit `undefined` would take the default one).
       renderWithService(`?leaseId=${id}`, null);
 
       const confirm = await screen.findByTestId('cf-documents-confirm-button');
-      // A link from outside decides nothing on its own: not even the lease is moved on before the person has confirmed it.
       await new Promise((resolve) => setTimeout(resolve, 20));
       expect(post).not.toHaveBeenCalled();
       fireEvent.click(confirm);

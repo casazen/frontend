@@ -1,10 +1,8 @@
 import { useTranslation } from 'react-i18next';
 
-/** Language the generated guides are written in: the regulations they explain are Italian. */
 const ITALIAN = 'it';
 
 interface SeoContentLanguageNoteProps {
-  /** Language the text of the page is written in (`SeoPagePublic.contentLanguage`). */
   contentLanguage: string;
 }
 

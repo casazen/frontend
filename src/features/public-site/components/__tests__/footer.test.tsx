@@ -33,7 +33,6 @@ describe('Footer legal links (BK-14, A3-21)', () => {
     expect(terms).toHaveTextContent(i18n.t('publicSite.operatorTerms'));
     expect(privacy).toHaveAttribute('target', '_blank');
     expect(privacy).toHaveAttribute('rel', 'noopener noreferrer');
-    // The CasaZen documents are not offered on the host's brand.
     expect(screen.queryByTestId('footer-legal')).not.toBeInTheDocument();
     expect(screen.queryByTestId('footer-subprocessors')).not.toBeInTheDocument();
   });

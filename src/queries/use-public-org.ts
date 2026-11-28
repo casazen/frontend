@@ -35,7 +35,6 @@ export function useOrgPublicProperty(slug: string | undefined, propertyId: strin
   });
 }
 
-/** BK-14: the operator's privacy notice or booking terms of an org's public site. */
 export function useOrgDocument(slug: string | undefined, kind: OrgSiteDocumentKind) {
   return useQuery({
     queryKey: ['public-org-document', slug, kind],

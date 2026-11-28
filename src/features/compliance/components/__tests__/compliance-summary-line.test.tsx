@@ -31,7 +31,6 @@ describe('ComplianceSummaryLine ("Sono in regola?" in one line, NF-52)', () => {
     expect(line).toHaveAttribute('data-tone', 'success');
   });
 
-  // Green is what the server proves: with no light at all an empty list says nothing of what nobody evaluated (traffic light off, older server).
   it.each(['page', 'home'] as const)('render_%s_NothingToDoButNoLightAtAll_SaysNothingNeverAllClear', (variant) => {
     const { container } = renderLine(lights({}), variant);
 
@@ -39,7 +38,6 @@ describe('ComplianceSummaryLine ("Sono in regola?" in one line, NF-52)', () => {
   });
 
   it('render_NothingToDoButSomethingWithNoLight_IsNotAllClear', () => {
-    // An item with no light is «da verificare»: it counts as something to do, whatever the other counters say.
     renderLine(lights({ needs: 1, unknown: 1 }));
 
     expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('1 cosa da fare');
@@ -74,7 +72,6 @@ describe('ComplianceSummaryLine ("Sono in regola?" in one line, NF-52)', () => {
   it.each([
     [lights({ needs: 2, red: 1, yellow: 1 }), 'danger'],
     [lights({ needs: 1, yellow: 1 }), 'warning'],
-    // Nothing could be said about them: not red, not green, and never «tutto in regola».
     [lights({ needs: 2, unknown: 2 }), 'info'],
     [lights({ needs: 40, unlisted: 40 }), 'info'],
   ])('render_%j_HasTheToneOfItsWorstLight_%s', (summary, tone) => {
@@ -88,7 +85,6 @@ describe('ComplianceSummaryLine ("Sono in regola?" in one line, NF-52)', () => {
     renderLine(lights({ needs: 3, red: 2, yellow: 1 }), 'home');
 
     const line = screen.getByTestId('home-compliance-line');
-    // On the Home only the total: what each light counts is on the page.
     expect(line).toHaveTextContent('3 cose da fare');
     expect(line).not.toHaveTextContent('da sistemare');
     const link = screen.getByTestId('home-compliance-all');

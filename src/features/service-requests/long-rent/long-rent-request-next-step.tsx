@@ -17,18 +17,13 @@ const DATE_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', h
 
 interface RequestNextStepProps {
   request: ServiceRequest;
-  /** `property.write` (long-rent): who may only read a request sees what it is waiting for, and no button. */
   canManage: boolean;
-  /** «Paga»: asks for the payment session and opens the window of the card. */
   onPay: () => void;
   paying: boolean;
-  /** «Segna come pagato»: asks to confirm first. */
   onMarkPaid: () => void;
-  /** «Richiedi di nuovo» / «Invia a un altro fornitore»: opens the window of the request, ready with what this one asked. */
   onRequestAgain: () => void;
 }
 
-/** Whose turn it is in each phase: the landlord's, the supplier's, or nobody's (it is over). */
 const PHASE_TURN: Record<HostPhase, 'you' | 'supplier' | null> = {
   proposal: 'you',
   waiting: 'supplier',
@@ -71,13 +66,11 @@ export function RequestNextStep({ request, canManage, onPay, paying, onMarkPaid,
   const phase = hostPhaseOf(request);
   const names = supplierRef(request, t);
   const when = whenText(request, language, t, true);
-  /** "venerdì 30 ottobre, 10:00–12:30 · 2 ore": the day and, when the request has one, the time. */
   const line = (w: { day: string | null; time: string | null }) => [w.day, w.time].filter(Boolean).join(', ');
   const turn = PHASE_TURN[phase];
   const money = (cents: number | null | undefined) => (cents === null || cents === undefined ? null : formatMoney(cents, language));
   const amount = money(request.price?.amountCents);
 
-  // A block always has a way to go on: where the landlord has nothing to do (or may not do it), the list of the requests.
   const allRequests: CalmAction = { label: t('longRentRequests.next.allRequests'), href: `${longRentPropertyPath(request.propertyId)}?tab=requests` };
   const ifAllowed = (action: CalmAction): CalmAction => (canManage ? action : allRequests);
 
@@ -96,7 +89,6 @@ export function RequestNextStep({ request, canManage, onPay, paying, onMarkPaid,
     />
   );
 
-  /** A new request nobody answered yet. A request with a proposal that cannot be read is told the same way. */
   const waiting = () => {
     const respondBy = instantToCome(request.respondBy);
     const by = respondBy ? formatRomeDateTime(respondBy, language, DATE_TIME) : null;

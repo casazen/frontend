@@ -1,13 +1,11 @@
 import { AxiosError } from 'axios';
 import type { AxiosAdapter, AxiosResponse } from 'axios';
 
-/** What the server answers to a request: the status and the body. */
 export interface WireReply {
   status: number;
   data?: unknown;
 }
 
-/** A request of the wire page as the server receives it: the method, the path, the currency of a list of payable payouts (the only parameter of a read) and the body of a write, parsed. */
 export interface WireRequest {
   method: string;
   path: string;
@@ -15,7 +13,6 @@ export interface WireRequest {
   body: unknown;
 }
 
-/** The body of a request as the adapter gets it: the JSON text the client wrote, parsed again. */
 function bodyOf(data: unknown): unknown {
   if (typeof data !== 'string') return data;
   try {

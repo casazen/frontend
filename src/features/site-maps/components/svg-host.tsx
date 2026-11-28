@@ -1,10 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { mountMapSvg } from '../mount-svg';
 
-/**
- * The SVG text of the engine as real nodes, filling the box it is in. The drawing is decorative (`aria-hidden`): whatever it
- * shows is also in the text of the page.
- */
 export function SvgHost({ svg, className = '' }: { svg: string; className?: string }) {
   const host = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {

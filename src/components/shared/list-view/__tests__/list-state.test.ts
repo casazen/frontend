@@ -175,7 +175,6 @@ describe('what narrows the list', () => {
     expect(isRefined(list, read('chip=all&q=%20%20'))).toBe(false);
     expect(isRefined(list, read('chip=all&q=anna'))).toBe(true);
     expect(isRefined(list, read('chip=all&f_property=trullo'))).toBe(true);
-    // The list starts from "Upcoming", which is already narrower than "All".
     expect(isRefined(list, read(''))).toBe(true);
   });
 

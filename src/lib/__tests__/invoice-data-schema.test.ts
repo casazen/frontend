@@ -34,10 +34,6 @@ function httpError(status: number, data: unknown): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
-/**
- * The rules of the invoice data of a booking (FIS-01, NF-81), mirror of the backend `InvoiceDataFormats.Validate`: the same normalization, the same
- * order of the failures and the same codes, for the host in the booking and for the guest at the check-in.
- */
 describe('validateInvoiceData - who must be identified', () => {
   it('validateInvoiceData_PrivatePersonInItalyWithAFiscalCode_IsValid', () => {
     expect(failuresOf({ name: 'Mario Rossi', fiscalCode: FISCAL_CODE })).toEqual([]);
@@ -45,7 +41,6 @@ describe('validateInvoiceData - who must be identified', () => {
 
   it('validateInvoiceData_PrivatePersonInItalyWithoutAFiscalCode_NeedsOne', () => {
     expect(failuresOf({ name: 'Mario Rossi' })).toEqual([{ field: 'fiscalCode', code: 'invoice_data_recipient_required' }]);
-    // A VAT number does not stand for the fiscal code of a person.
     expect(failuresOf({ name: 'Mario Rossi', vatNumber: VAT_NUMBER })).toEqual([{ field: 'fiscalCode', code: 'invoice_data_recipient_required' }]);
   });
 
@@ -59,13 +54,10 @@ describe('validateInvoiceData - who must be identified', () => {
     expect(failuresOf({ recipientKind: 'Company', name: 'Rossi S.r.l.' })).toEqual([{ field: 'vatNumber', code: 'invoice_data_recipient_required' }]);
   });
 
-  // The server asks no address (`InvoiceDataFormats.Validate`: only what is written is checked, and nothing but the identification of the recipient
-  // makes a 422), so the screens keep the address under «More options».
   it('validateInvoiceData_NoAddressAtAll_IsValidForEveryKindOfRecipientBecauseTheServerAsksNone', () => {
     expect(failuresOf({ name: 'Mario Rossi', fiscalCode: FISCAL_CODE })).toEqual([]);
     expect(failuresOf({ recipientKind: 'Company', name: 'Rossi S.r.l.', vatNumber: VAT_NUMBER })).toEqual([]);
     expect(failuresOf({ countryCode: 'DE', name: 'Hans Meier' })).toEqual([]);
-    // Part of an address is not an address that is wrong: only what is written is checked.
     expect(failuresOf({ name: 'Mario Rossi', fiscalCode: FISCAL_CODE, city: 'Roma' })).toEqual([]);
   });
 
@@ -82,7 +74,6 @@ describe('validateInvoiceData - who must be identified', () => {
 
   it('validateInvoiceData_VatNumberOfAnotherCountryWrittenWithoutItsPrefix_GetsThePrefixOfTheCountryBeforeTheCheck', () => {
     expect(failuresOf({ countryCode: 'DE', recipientKind: 'Company', vatNumber: '123456789' })).toEqual([]);
-    // The same digits in Italy are an Italian number with a check digit, which they do not have.
     expect(failuresOf({ countryCode: 'IT', recipientKind: 'Company', vatNumber: '123456789' })).toEqual([
       { field: 'vatNumber', code: 'invoice_data_vat_number_invalid' },
     ]);

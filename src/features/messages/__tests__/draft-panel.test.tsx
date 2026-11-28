@@ -145,11 +145,9 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
       expect(screen.queryByText(/altra conversazione/)).not.toBeInTheDocument();
       expect(screen.queryByText('Una campagna.')).not.toBeInTheDocument();
       expect(screen.getByTestId('assistant-draft-meta')).toHaveTextContent('Orario di check-in');
-      // The words say how sure the assistant is; the number is only in the tip.
       expect(screen.getByTestId('assistant-draft-confidence')).toHaveTextContent('Alta affidabilità');
       expect(screen.getByTestId('assistant-draft-confidence')).toHaveAttribute('data-level', 'high');
       expect(screen.queryByText(/92\s*%/)).not.toBeInTheDocument();
-      // Nothing is sent without the approval, and the guest is not told: the notice is on the panel.
       expect(screen.getByTestId('assistant-draft-transparency')).toHaveTextContent('Non parte nulla senza la tua approvazione');
       expect(screen.getByRole('button', { name: 'Approva e invia' })).toBeEnabled();
       expect(screen.getByRole('button', { name: 'Modifica' })).toBeEnabled();
@@ -191,10 +189,8 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
 
       fireEvent.click(await screen.findByRole('button', { name: 'Approva e invia' }));
 
-      // Any request of the card in flight: no button takes a second click.
       await waitFor(() => expect(screen.getByRole('button', { name: 'Modifica' })).toBeDisabled());
       expect(screen.getByRole('button', { name: 'Rifiuta' })).toBeDisabled();
-      // The button that started it says it is busy (a loading button is not `disabled`: it keeps the focus) and takes no second click.
       expect(screen.getByRole('button', { name: /Approva e invia/ })).toHaveAttribute('aria-busy', 'true');
       fireEvent.click(screen.getByRole('button', { name: /Approva e invia/ }));
       expect(approvalQueueApi.approve).toHaveBeenCalledTimes(1);
@@ -203,13 +199,11 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([]);
       pending.resolve(item({ status: 'Approved', originActionStatus: 'Executed', originActionResult: 'Sent' }));
 
-      // What went out is said, and the conversation that is open and the lists of the hub are read again.
       expect(await screen.findByTestId('assistant-draft-notice')).toHaveTextContent('Messaggio inviato all\'ospite.');
       await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['message-hub', 'thread'] }));
     });
 
     it('draftPanel_ApproveThatWentOut_KeepsEveryButtonWaitingUntilTheListIsReadAgain', async () => {
-      // The approval is answered and the list that is read again is not back yet: the draft is still in it, and a message that went out is not offered «Approva e invia» again.
       const reading = deferred<ApprovalQueueItem[]>();
       vi.mocked(approvalQueueApi.approve).mockResolvedValue(item({ status: 'Approved', originActionStatus: 'Executed', originActionResult: 'Sent' }));
       renderPanel();
@@ -226,7 +220,6 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
       expect(screen.getByRole('button', { name: 'Rifiuta' })).toBeDisabled();
       expect(screen.queryByTestId('assistant-draft-notice')).not.toBeInTheDocument();
 
-      // The list is back without the draft: what went out is said and nothing is left to approve.
       reading.resolve([]);
       expect(await screen.findByTestId('assistant-draft-notice')).toHaveTextContent('Messaggio inviato all\'ospite.');
       expect(screen.queryByTestId('assistant-draft-text')).not.toBeInTheDocument();
@@ -281,7 +274,6 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
     });
 
     it('draftPanel_SaveAndApproveThatWentOut_KeepsTheEditorWaitingAndNeverShowsTheOriginalTextAgain', async () => {
-      // The edit is saved and approved; the list that is read again is not back yet and still holds the original text: it is not shown with a button that approves it.
       const reading = deferred<ApprovalQueueItem[]>();
       vi.mocked(approvalQueueApi.edit).mockResolvedValue(item({ editedContentText: 'Il check-in è dalle 16.' }));
       vi.mocked(approvalQueueApi.approve).mockResolvedValue(
@@ -429,7 +421,6 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
       fireEvent.click(await screen.findByRole('button', { name: "Chiedi una bozza all'assistente" }));
       expect(await screen.findByTestId('assistant-draft-outcome')).toBeInTheDocument();
 
-      // A draft arrives later (the job of the assistant) and the host approves it: once it is gone the old sentence is not the state of the panel.
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([item()]);
       await client.invalidateQueries({ queryKey: ['approval-queue'] });
       const approveButton = await screen.findByRole('button', { name: 'Approva e invia' });
@@ -459,7 +450,6 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
       fireEvent.click(await screen.findByRole('button', { name: "Chiedi una bozza all'assistente" }));
       expect(await screen.findByTestId('assistant-draft-request-error')).toBeInTheDocument();
 
-      // The job of the assistant writes a draft meanwhile: it is the draft that counts, not the failure of the request.
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([item()]);
       await client.invalidateQueries({ queryKey: ['approval-queue'] });
 

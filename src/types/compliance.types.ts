@@ -13,16 +13,13 @@ export interface ComplianceWizardStep {
   status: ComplianceStepStatus;
   blocker: boolean;
   message?: string | null;
-  /** External guidance link of the step (CIN: configured on the backend). */
   linkUrl?: string | null;
-  /** Only on the `tourist-tax` step. */
   touristTax?: ActivationTouristTax | null;
   /**
    * What keeps this step incomplete, with stable codes (e.g. `safety_gas_detector_missing`). On a step that does not block (the
    * documents and the safety sheet since 2026-11-01) they are the points of the reminder still open.
    */
   blockers?: ActivationBlocker[];
-  /** Non-blocking notes of the step with stable codes (SU-04): the step may be complete and still carry them. */
   warnings?: ActivationWarning[];
 }
 
@@ -36,7 +33,6 @@ interface ActivationWarning {
   message: string;
 }
 
-/** One reason why the activation is blocked: stable code, localized message from the API. */
 export interface ActivationBlocker {
   step: string;
   code: string;
@@ -46,11 +42,8 @@ export interface ActivationBlocker {
 /** Tourist tax of the property's comune in the activation wizard: a warning, never a blocker. */
 export interface ActivationTouristTax {
   city: string;
-  /** Rate in force today, or null when CasaZen has no rate for the comune. */
   rate: ActivationTouristTaxRate | null;
-  /** Slug of the public page `/p/tassa-soggiorno/:comune`, only when it exists. */
   publicPageSlug: string | null;
-  /** True when the comune has rates only per accommodation category, unknown for the property (BK-03). */
   categoryRequired?: boolean;
 }
 
@@ -66,22 +59,17 @@ export interface ComplianceActivationResult {
   steps: ComplianceWizardStep[];
 }
 
-/** 200 of `POST .../activation/complete`: the property is active (blocking steps left answer 409). */
 export interface ComplianceActivationCompleteResult {
   complianceStatus: PropertyComplianceStatus;
   incompleteBlockers?: string[] | null;
 }
 
-/** Body of the 409 `property_activation_blocked` of `POST .../activation/complete` (CO-07). */
 export interface ActivationBlockedProblem {
   complianceStatus: PropertyComplianceStatus | null;
-  /** Ids of the blocking steps left. */
   incompleteBlockers: string[];
-  /** Every blocker with its step and stable code. */
   blockers: ActivationBlocker[];
 }
 
-/** The safety checklist is saved on its own endpoint (CO-07), never with the activation. */
 export interface CompletePropertyActivationCommand {
   tosAccepted?: boolean;
   /**
@@ -91,17 +79,14 @@ export interface CompletePropertyActivationCommand {
   remindersAcknowledged?: boolean;
 }
 
-// ─── D.L. 145/2023 art. 13-ter safety checklist (CO-07) ──────────────────────
-
-/** Items in display order; ids of `.claude/context/regulations/sicurezza.md` in the comments. */
 export const SAFETY_ITEM_CODES = [
-  'FireExtinguishers', // SC-02
-  'GasDetector', // SC-04
-  'CoDetector', // SC-05
-  'SystemsCompliance', // SC-06
-  'BdsrDeclaration', // SC-07
-  'SmokeDetector', // SC-F1, recommended
-  'EmergencyInstructions', // SC-F2, recommended
+  'FireExtinguishers',
+  'GasDetector',
+  'CoDetector',
+  'SystemsCompliance',
+  'BdsrDeclaration',
+  'SmokeDetector',
+  'EmergencyInstructions',
 ] as const;
 export type SafetyItemCode = (typeof SAFETY_ITEM_CODES)[number];
 
@@ -111,7 +96,6 @@ export type CombustionAppliance = (typeof COMBUSTION_APPLIANCES)[number];
 export const SAFETY_DETECTOR_TYPES = ['Battery', 'Mains', 'FixedSystem'] as const;
 export type SafetyDetectorType = (typeof SAFETY_DETECTOR_TYPES)[number];
 
-/** Stored answer; `ToReview` only comes from the old checklist and is never sent. */
 type SafetyItemAnswer = 'Present' | 'Missing' | 'ToReview';
 export type SafetyItemRequirement = 'Required' | 'Optional' | 'NotApplicable' | 'Undetermined';
 type SafetyItemStatus = 'Present' | 'Missing' | 'NotAnswered' | 'ToReview' | 'NotApplicable';
@@ -120,10 +104,8 @@ export type SafetyNotApplicableReason = 'NoGasNoCombustion' | 'NotEntrepreneuria
 export interface SafetyChecklistFacts {
   entrepreneurial: boolean | null;
   hasGasSupply: boolean | null;
-  /** null = not answered, [] = no combustion appliance. */
   combustionAppliances: CombustionAppliance[] | null;
   floorCount: number | null;
-  /** m² of floor of each floor of the unit, in order; null when not given. */
   floorAreasSqm: number[] | null;
 }
 
@@ -136,9 +118,7 @@ export interface SafetyChecklistItem {
   quantity: number | null;
   location: string | null;
   detectorType: SafetyDetectorType | null;
-  /** yyyy-MM-dd */
   checkedOn: string | null;
-  /** yyyy-MM-dd */
   expiresOn: string | null;
   evidenceDocumentId: string | null;
   evidenceFileName: string | null;
@@ -169,7 +149,6 @@ export interface SafetyChecklist {
 
 export interface SaveSafetyChecklistItem {
   code: SafetyItemCode;
-  /** "Not applicable" is never sent: it follows from the facts. */
   answer: 'Present' | 'Missing' | null;
   quantity: number | null;
   location: string | null;
@@ -183,7 +162,6 @@ export interface SaveSafetyChecklistItem {
 export interface SaveSafetyChecklistCommand {
   facts: SafetyChecklistFacts;
   items: SaveSafetyChecklistItem[];
-  /** Final confirmation of these answers by the host (SC-08). */
   confirm: boolean;
 }
 
@@ -199,7 +177,6 @@ export const COMPLIANCE_COCKPIT_ACTIONS = [
   'SendAlloggiati',
   'ResolveAlloggiatiFailure',
   'ConfirmPropertyReady',
-  // CHK-12 (E03/F02/US01/T03, NF-52): appended by the backend, never renamed. An older API does not send them.
   'VerifyIdentity',
   'UploadAlloggiatiReceipt',
   'ActivateOctorateSend',
@@ -208,31 +185,18 @@ export const COMPLIANCE_COCKPIT_ACTIONS = [
   'EnterMunicipalityTaxRate',
   'DeclareTouristTax',
   'RenewPoliceCredentials',
-  // casazen/backend#979: an arrival day of a property in canton Ticino whose guests are not notified to the cantonal police yet.
   'NotifyTicinoPolice',
-  // casazen/backend#979 (E31/F02/US01/T01): an arrival day of a property in another canton with an electronic duty, whose guests are not notified to the cantonal authority yet.
   'NotifyGuestsAuthority',
 ] as const;
 export type ComplianceCockpitAction = (typeof COMPLIANCE_COCKPIT_ACTIONS)[number];
 
-/**
- * The traffic light of an item (`ComplianceLight` of the backend, NF-52), serialized by name: green only with an archived proof, yellow
- * while the data are entrusted to a sender within the deadline and the receipt is awaited (or the period is open), red when the host has
- * to act. Anything else a server sends, or nothing, is "da verificare": the client never works a light out, green least of all.
- */
 export const COMPLIANCE_LIGHTS = ['Green', 'Yellow', 'Red'] as const;
 export type ComplianceLightName = (typeof COMPLIANCE_LIGHTS)[number];
 
-/**
- * Stable snake_case codes of `ComplianceSummaryItem.reason` (`ComplianceReasonCodes` of the backend), in the order of the lights: the
- * web app translates each one (`compliance.reason.<code>`). A code is never renamed; one this list does not know gets a generic text.
- */
 export const COMPLIANCE_REASON_CODES = [
-  // Green.
   'receipt_archived',
   'identity_verified',
   'cin_valid',
-  // Yellow.
   'awaiting_receipt',
   'entrusted_to_channel_manager',
   'external_verification_required',
@@ -240,7 +204,6 @@ export const COMPLIANCE_REASON_CODES = [
   'selfie_awaited',
   'period_open',
   'connection_unverified',
-  // Red.
   'evidence_missing',
   'deadline_overdue',
   'receipt_missing',
@@ -256,7 +219,6 @@ export const COMPLIANCE_REASON_CODES = [
   'credentials_refused',
   'cin_missing',
   'cin_invalid',
-  // The items that existed before the lights: red, with nothing more specific to say.
   'activation_incomplete',
   'guest_data_missing',
   'checkout_due',
@@ -265,13 +227,11 @@ export const COMPLIANCE_REASON_CODES = [
 ] as const;
 
 export interface ComplianceSummaryItem {
-  /** Target of the action: equal to `propertyId` or `bookingId`. */
   id: string;
   label: string;
   action: ComplianceCockpitAction;
   /** Set for `ActivateProperty`, null otherwise. */
   propertyId: string | null;
-  /** Set for every action on a booking, null for `ActivateProperty`. */
   bookingId: string | null;
   /**
    * What the item still lacks, with stable codes (SR-03): the blockers of a property to activate (`field` is the step of the
@@ -285,12 +245,7 @@ export interface ComplianceSummaryItem {
    * not send it yet (the page then reads it from the Home's "Da fare", where it can).
    */
   dueAt?: string | null;
-  /**
-   * "Am I compliant?" (NF-52): the traffic light of the item. Only a server with the traffic light on sends it (`Features:ComplianceTrafficLight`,
-   * off by default): without it, or with a value this list does not know, the item is "da verificare", never green.
-   */
   light?: ComplianceLightName | null;
-  /** Why the item has its light: a code of {@link COMPLIANCE_REASON_CODES} that the web app translates; an unknown one gets a generic text, never the code. */
   reason?: string | null;
   /** The month (`yyyy-MM`) of an ISTAT or tourist tax item; null or absent for the others. */
   period?: string | null;
@@ -311,26 +266,16 @@ export interface ComplianceSummaryResult {
   propertiesPending: ComplianceSummarySection;
   guestCheckInsIncomplete: ComplianceSummarySection;
   checkoutsDue: ComplianceSummarySection;
-  /** Alloggiati communications in error or rejected. */
   alloggiatiFailures: ComplianceSummarySection;
   /** Alloggiati communications the host must send on the Questura portal: CasaZen does not transmit (CO-11). */
   alloggiatiManualRequired: ComplianceSummarySection;
-  /** Stays checked out whose property was not declared ready for the next guest (CO-17). */
   turnoversPending: ComplianceSummarySection;
-  // The sections of CHK-12 (E03/F02/US01/T03) are add-only: an older API, or one with the traffic light off, sends none or sends them empty. Each lists
-  // its items with their light, the green ones too (red first, at most 50); its `count` is how many need attention (not green), which can be more
-  // than the items it lists.
-  /** The identity of the guest who leaves the document, for the stays arriving soon (`VerifyIdentity`). */
   identityPending?: ComplianceSummarySection;
-  /** The communications sent, entrusted to the channel manager or declared sent, with the receipt archived or awaited (`UploadAlloggiatiReceipt`). */
   receiptsToUpload?: ComplianceSummarySection;
-  /** The stays the channel manager does not send by itself, which the host sends by hand (`SendAlloggiatiManually`). */
   manualSendsRequired?: ComplianceSummarySection;
-  /** The police send of the channel manager that is not active (`ActivateOctorateSend`) and the police credentials that were refused (`RenewPoliceCredentials`). */
   connectionsToFix?: ComplianceSummarySection;
   /** The ISTAT (`UploadIstatProof`) and tourist tax (`DeclareTouristTax`) of the closed months, with their `period`, and the rates that are not known (`EnterMunicipalityTaxRate`). */
   periodItems?: ComplianceSummarySection;
-  /** The arrival days of the Ticino properties whose guests are not notified to the cantonal police yet (`NotifyTicinoPolice`, the day in `period`, yyyy-MM-dd). */
   ticinoNotifications?: ComplianceSummarySection;
   /**
    * The arrival days of the properties in the other cantons with an electronic duty (`Required`) whose guests are not notified to the cantonal authority yet (`NotifyGuestsAuthority`, the day
@@ -340,7 +285,6 @@ export interface ComplianceSummaryResult {
   swissNotifications?: ComplianceSummarySection;
 }
 
-/** The 5 steps of the check-out wizard, in order (CO-17, A5-24): `steps[].id` and `currentStep` of the API. */
 export const CHECKOUT_WIZARD_STEPS = ['stay-summary', 'alloggiati', 'cleaning', 'tourist-tax', 'property-ready'] as const;
 export type CheckoutWizardStepId = (typeof CHECKOUT_WIZARD_STEPS)[number];
 
@@ -352,19 +296,14 @@ interface CheckoutWizardStep {
   message?: string | null;
 }
 
-/** Step 3: request to a supplier of the property's comune, or skipped. */
 export type CheckoutCleaningChoice = 'Request' | 'Skip';
 
-/** Step 4: how the tourist tax of the stay was collected, as declared by the host. */
 export const TOURIST_TAX_COLLECTIONS = ['CollectedOnline', 'CollectedAtProperty', 'NotCollected', 'NotDue'] as const;
 export type TouristTaxCollection = (typeof TOURIST_TAX_COLLECTIONS)[number];
 
-/** The check-out wizard of a stay: `checkout-wizard/start`, `GET checkout-wizard`, progress and property ready (CO-17). */
 export interface CheckoutWizardState {
   bookingId: string;
-  /** `CheckedIn` while the wizard is open, `CheckedOut` once completed. */
   bookingStatus: string;
-  /** Step the wizard opens on (saved progress; the last one after the check-out). */
   currentStep: string;
   startedAt: string | null;
   completedAt: string | null;
@@ -374,7 +313,6 @@ export interface CheckoutWizardState {
     propertyId: string;
     propertyName: string;
     propertyCity: string;
-    /** Stay dates (midnight UTC, no time zone). */
     checkInDate: string;
     checkOutDate: string;
     nights: number;
@@ -387,7 +325,6 @@ export interface CheckoutWizardState {
   };
   alloggiati: {
     status: AlloggiatiWebStatus;
-    /** Sent with a receipt, or declared sent by the host. */
     sent: boolean;
     deadlineAt: string;
     isOverdue: boolean;
@@ -398,19 +335,15 @@ export interface CheckoutWizardState {
     supplierOrgId: string | null;
     category: string | null;
     notes: string | null;
-    /** Request created with the check-out, tied to the stay. */
     requestId: string | null;
   };
   touristTax: {
-    /** Tax recorded on the booking when CasaZen priced it; null when CasaZen has no amount (never invented). */
     recordedAmount: number | null;
     currency: string;
-    /** Paid online with the booking: "online" is proposed. */
     collectedWithOnlinePayment: boolean;
     collection: TouristTaxCollection | null;
   };
   propertyReady: {
-    /** While the wizard is open the saved answer; after the check-out true only once declared. */
     ready: boolean | null;
     readyAt: string | null;
     notes: string | null;
@@ -418,33 +351,26 @@ export interface CheckoutWizardState {
 }
 
 export interface CheckoutWizardCompleteResult {
-  /** True only when the host declared the property ready. */
   propertyReady: boolean;
   bookingStatus: string;
   serviceRequestId: string | null;
   wizard: CheckoutWizardState;
 }
 
-/** The elements "What happens now" tells about after the check-out, one line each (NF-45, NF-05): the channel manager only for a booking that is mirrored there. */
 type CheckoutResultElementId = 'departure' | 'channelManager' | 'alloggiati' | 'cleaning' | 'touristTax' | 'propertyReady';
 
-/** How an element stands: `done`, `attention` (not completed: still to do, or on its way) or `problem` (it failed). It is said in words as well, never by colour alone. */
 export type CheckoutResultTone = 'done' | 'attention' | 'problem';
 
-/** One line of the result: the element, how it stands and what is said about it. */
 export interface CheckoutResultLine {
   element: CheckoutResultElementId;
   tone: CheckoutResultTone;
   text: string;
 }
 
-/** Body of `POST /bookings/:id/checkout-wizard/start` (CO-08). */
 export interface CheckoutWizardStartCommand {
-  /** The host confirms that the guest arrived: registers the arrival of a confirmed booking first. */
   registerArrival?: boolean;
 }
 
-/** Answers of the wizard, saved with `PUT /bookings/:id/checkout-wizard/progress` as the host moves (CO-17). */
 export interface CheckoutWizardProgressCommand {
   currentStep: CheckoutWizardStepId;
   departureConfirmed: boolean;
@@ -462,7 +388,6 @@ export interface CheckoutWizardCompleteCommand {
   supplierOrgId?: string | null;
   serviceNotes?: string | null;
   serviceCategory?: string | null;
-  /** The host confirms that the guest arrived: registers the arrival with the check-out. */
   registerArrival?: boolean;
   cleaningChoice?: CheckoutCleaningChoice | null;
   touristTaxCollection?: TouristTaxCollection | null;

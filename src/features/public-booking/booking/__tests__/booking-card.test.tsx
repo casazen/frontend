@@ -15,11 +15,6 @@ import type { DirectBookingQuote, PublicCalendarDto, PublicPropertyDetailDto } f
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getOrgPropertyCalendar: vi.fn() } }));
 vi.mock('@/api/public-booking.api', () => ({ publicBookingApi: { quoteDirectBooking: vi.fn() } }));
 
-/**
- * The booking card is money: the total it shows is the one the server worked out and the one the checkout will charge. Here the
- * server's total is NOT the sum of the nights, the cleaning and the rate shown elsewhere (it holds a tourist tax and a weekend
- * night), so a card that added things up by itself would show another number.
- */
 const TODAY = '2026-10-05';
 const PROPERTY_ID = '6f1c2b8e-3a4d-4e5f-8a9b-0c1d2e3f4a5b';
 
@@ -79,7 +74,6 @@ const quote: DirectBookingQuote = {
   ],
 };
 
-/** The answer of the server to a quote it refuses: a 422 with the stable `code` (and the `limit` and `date` of the rule) in its problem body. */
 function refusal(data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
@@ -91,7 +85,6 @@ function refusal(data: unknown): AxiosError {
   });
 }
 
-/** The calendar of the home with the rules of the host on some days (NF-36). */
 function calendarWith(rules: Record<string, Partial<PublicCalendarDto['days'][number]>>): PublicCalendarDto {
   return { ...calendar, days: calendar.days.map((day) => ({ ...day, ...rules[day.date] })) };
 }
@@ -127,7 +120,6 @@ describe('BookingCard', () => {
     renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
 
     await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
-    // Not 3 x 150 + 40 = 490, not the 507 of the lodging: the total is the one of the quote, to the cent.
     expect(screen.getByTestId('booking-price')).not.toHaveTextContent('490');
     expect(screen.getByTestId('price-breakdown-total')).toHaveTextContent('519,50');
     expect(screen.getByTestId('booking-announce')).toHaveTextContent('519,50');
@@ -139,7 +131,6 @@ describe('BookingCard', () => {
   });
 
   it('BookingCard_HouseInSwissFrancs_WritesEveryAmountOfTheServerInFrancsNotInEuros', async () => {
-    // CHF-MONEY: the quote and the calendar say the currency of the house, and the card writes the amounts in it.
     vi.mocked(publicOrgApi.getOrgPropertyCalendar).mockResolvedValue({ ...calendar, currency: 'CHF' });
     vi.mocked(publicBookingApi.quoteDirectBooking).mockResolvedValue({ ...quote, currency: 'CHF' });
     renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2', { ...property, currency: 'CHF' });
@@ -174,7 +165,6 @@ describe('BookingCard', () => {
     renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2&pets=1', { ...property, petsPolicy: 'Yes' });
 
     await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
-    // What the guest said travels with the stay: the checkout reads it from the address and tells the host.
     expect(screen.getByTestId('booking-cta')).toHaveAttribute('href', expect.stringContaining('pets=1'));
     expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
   });
@@ -185,11 +175,9 @@ describe('BookingCard', () => {
     const problem = await screen.findByTestId('stay-problem');
     expect(problem).toHaveAttribute('data-problem', 'petsNotAllowed');
     expect(problem).toHaveTextContent('Questa casa non ammette animali');
-    // Not booked into a home without them as if the guest had not said it: no quote is asked and the button leads nowhere.
     expect(publicBookingApi.quoteDirectBooking).not.toHaveBeenCalled();
     expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
 
-    // The way out: the guest travels without the pet, and the stay can be booked.
     fireEvent.click(screen.getByTestId('stay-problem-exit'));
     await waitFor(() => expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50'));
     expect(screen.queryByTestId('stay-problem')).not.toBeInTheDocument();
@@ -218,7 +206,6 @@ describe('BookingCard', () => {
       expect(problem).toHaveTextContent('Gli arrivi sono chiusi il 16 ottobre.');
       expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
 
-      // The way out is the first dates for as long a stay that the rule does not refuse: the night after, not the closed one.
       expect(screen.getByTestId('stay-problem-exit')).toHaveTextContent('Prime date libere');
       fireEvent.click(screen.getByTestId('stay-problem-exit'));
       await waitFor(() =>
@@ -260,7 +247,6 @@ describe('BookingCard', () => {
     });
 
     it('BookingCard_ArrivalOutsideTheAdvanceWindow_SaysSoAndTheWayOutLooksFromToday', async () => {
-      // Today is the 5th: the 16th is 11 days ahead and the rule of every night allows 7 at most.
       const rules = Object.fromEntries(calendar.days.map((day) => [day.date, { maxAdvanceDays: 7 }]));
       vi.mocked(publicOrgApi.getOrgPropertyCalendar).mockResolvedValue(calendarWith(rules));
       renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2');
@@ -269,7 +255,6 @@ describe('BookingCard', () => {
       expect(problem).toHaveAttribute('data-problem', 'advance');
       expect(screen.getByTestId('booking-cta')).not.toHaveAttribute('href');
 
-      // From the 16th on there is nothing (every night is further ahead): the way out starts from today.
       fireEvent.click(screen.getByTestId('stay-problem-exit'));
       await waitFor(() =>
         expect(publicBookingApi.quoteDirectBooking).toHaveBeenCalledWith(
@@ -300,8 +285,6 @@ describe('BookingCard', () => {
     });
 
     it('BookingCard_QuoteRefusedForTheMinimumOfTheArrivalDate_SaysTheNumberOfTheServerAndStretchesTheStayToIt', async () => {
-      // The home asks for no minimum and the calendar (older than the rule) none either; the rule of that night asks for five: the server
-      // says it in `limit`, and the card says the same. The server takes any stay of five nights or more.
       vi.mocked(publicBookingApi.quoteDirectBooking).mockImplementation(async (payload) => {
         const nights = nightsBetween(payload.checkInDate, payload.checkOutDate);
         if (nights < 5) throw refusal({ code: 'direct_booking_min_nights_not_met', limit: 5 });
@@ -311,8 +294,6 @@ describe('BookingCard', () => {
 
       expect(await screen.findByTestId('stay-problem')).toHaveTextContent('Il soggiorno minimo è di 5 notti.');
 
-      // The way out is the five nights the server asked for (the 16th to the 21st), not the one night that the calendar knows of, which is
-      // shorter than the three nights the guest has.
       expect(screen.getByTestId('stay-problem-exit')).toHaveTextContent('Allunga fino a 5 notti');
       fireEvent.click(screen.getByTestId('stay-problem-exit'));
       await waitFor(() =>
@@ -325,8 +306,6 @@ describe('BookingCard', () => {
     });
 
     it('BookingCard_QuoteRefusedForAMinimumThatIsNotAboveTheStay_OffersNoShorterStayOnlyToClearTheDates', async () => {
-      // The refusal carries no limit and the home asks for two nights: «stretching» the three nights of the guest to two would give back a
-      // shorter stay than the one that was refused. That is no way out; the dates are cleared instead.
       vi.mocked(publicBookingApi.quoteDirectBooking).mockRejectedValue(refusal({ code: 'direct_booking_min_nights_not_met' }));
       renderCard('?checkin=2026-10-16&checkout=2026-10-19&guests=2', { ...property, minNights: 2 });
 

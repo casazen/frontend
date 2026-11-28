@@ -6,16 +6,10 @@
  * its property and its days (E18/F01/US03/T01: «never the tenant»).
  */
 
-/** What a person decides about the stay of a company tenant: it stays a short let (the agency withholds) or it is not one (no withholding). */
 export type ShortLetTaxRegime = 'ShortLet' | 'NotShortLet';
 
-/** Which stays of a company tenant a list asks for. */
 export type CompanyTenantCaseState = 'Pending' | 'Decided';
 
-/**
- * A stay of a company tenant in the property of a private owner (`GET api/owner-tax-decisions`, the most recent check-out first, at most 200): what the person needs to find it and the decision in force, if any.
- * `decidedByUserId` is the id of the account that decided: an internal id, never shown.
- */
 export interface CompanyTenantCase {
   bookingId: string;
   bookingCode: string;
@@ -28,14 +22,12 @@ export interface CompanyTenantCase {
   decidedByUserId: string | null;
 }
 
-/** The decision to record (`POST api/owner-tax-decisions`): the regime and the reason are required, the reason being a note of the agency of 1 to 500 characters. */
 export interface DecideShortLetTaxCommand {
   bookingId: string;
   regime: ShortLetTaxRegime;
   reason: string;
 }
 
-/** The decision in force after a `POST`: the same decision again answers the same one, nothing is written twice. */
 export interface ShortLetTaxDecision {
   id: string;
   bookingId: string;

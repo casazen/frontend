@@ -46,7 +46,6 @@ describe('AppToaster (UI-04b)', () => {
     useUiStore.setState({ bottomBarVisible: true });
     render(<AppToaster />);
 
-    // The bar is the phone's: a tablet has the sidebar, and the toasts stay where they were.
     const toaster = await showAToast();
 
     expect(toaster).toHaveAttribute('data-y-position', 'top');
@@ -62,7 +61,6 @@ describe('AppToaster (UI-04b)', () => {
 
     expect(toaster).toHaveAttribute('data-y-position', 'bottom');
     expect(toaster).toHaveAttribute('data-x-position', 'center');
-    // Over 600 px the library reads `offset`, under it `mobileOffset`: both lift the toasts above the bar.
     expect(toaster.style.getPropertyValue('--offset-bottom')).toBe(ABOVE_THE_BAR);
     expect(toaster.style.getPropertyValue('--mobile-offset-bottom')).toBe(ABOVE_THE_BAR);
   });
@@ -81,7 +79,6 @@ describe('AppToaster (UI-04b)', () => {
   });
 
   it('AppToaster_PhoneWithTheBarAndAFixedPrimaryAction_RaisesTheToastsOverBoth', async () => {
-    // UI-05: a page that fixes its primary action above the bar must not have its toasts hidden behind it.
     stubViewportWidth(390);
     useUiStore.setState({ bottomBarVisible: true, mobilePrimaryVisible: true });
     render(<AppToaster />);
@@ -129,7 +126,6 @@ describe('AppToaster (UI-04b)', () => {
   });
 
   it('AppToaster_ComputerWithAPrimaryActionInTheHeader_KeepsTheToastsAtTheTopRight', async () => {
-    // The action is fixed to the bottom only on a phone: elsewhere it is a button next to the title.
     stubViewportWidth(1280);
     useUiStore.setState({ bottomBarVisible: true, mobilePrimaryVisible: true });
     render(<AppToaster />);
@@ -140,7 +136,6 @@ describe('AppToaster (UI-04b)', () => {
   });
 
   it('AppToaster_PhoneWithoutTheBar_KeepsTheToastsAtTheTopRightLikeTheComputer', async () => {
-    // The public pages and the login have no bar; the booking bar of the public site and the cookie notice are at the bottom.
     stubViewportWidth(390);
     render(<AppToaster />);
 

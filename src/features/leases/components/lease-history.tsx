@@ -5,7 +5,6 @@ import { getLeaseEventTypeLabel } from '@/lib/i18n-labels';
 import type { LeaseEvent } from '@/types';
 import { leaseEventActor } from '../lib/lease-sheet';
 
-/** The latest events of the lease; "Mostra tutta la cronologia" shows the rest. */
 const EVENTS_SHOWN = 5;
 
 export function LeaseHistory({ leaseId, events, initiallyOpen }: { leaseId: string; events: readonly LeaseEvent[]; initiallyOpen: boolean }) {

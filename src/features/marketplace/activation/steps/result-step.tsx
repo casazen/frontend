@@ -20,19 +20,11 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 interface ResultStepProps {
   context: ActivationContext;
-  /** How each property ended; `null` when the screen is opened again (a reload): the wizard is over and there is nothing to report but where to look. */
   outcomes: readonly ActivationOutcome[] | null;
-  /** Where the closing button leads: the page the wizard was opened from, else the Marketplace. */
   exitPath: string;
-  /** Opens the wizard at the step that failed, for that property. */
   onFix: (propertyId: string, step: ActivationStepId) => void;
 }
 
-/**
- * The result of the activation (E09/F02/US04/T02, UX-05 point 2, UX-10): one line for each property, Active or To fix with the reason in simple words and a «Correggi»
- * that opens the wizard at the step that failed; what CasaZen does by itself and when; and one next step. The closing button goes where the wizard was opened from.
- * A property is shown as Active only when the server said so after the last step.
- */
 export function ResultStep({ context, outcomes, exitPath, onFix }: ResultStepProps) {
   const { t } = useTranslation();
   const name = context.channelName ?? t('marketplace.activation.thisChannel');

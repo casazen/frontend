@@ -59,13 +59,6 @@ function PlanFoot() {
   );
 }
 
-/**
- * Immobili, in the Amministrazione (AM-13): every property of the account, short-term and long-term, in the unified list. One row
- * each, with how it is let, its state, who is in charge and how many people can open it; the name opens a drawer that says who they
- * are and what waits for the property. What is done with a property is done in the pages that already exist (its page in its section,
- * its activation, the change of mode of PM-03, whose way back is this list); here the owner decides who looks after it, and deletes it.
- * Everything is read from the endpoints that are there (`GET /properties`, `/leases`, `/orgs/me/members`, `/entitlement`).
- */
 export function AccountPropertiesPage() {
   const { t } = useTranslation();
   const { org } = useCurrentUser();
@@ -85,13 +78,11 @@ export function AccountPropertiesPage() {
     [openDrawer],
   );
   const onAssignOne = useCallback((row: AccountPropertyRow) => setPicker({ rows: [row] }), []);
-  // The promise is the list's: it says "done" and offers "Annulla" when it resolves, so it resolves only when the dialog did it all.
   const onAssignMany = useCallback(
     (rows: AccountPropertyRow[]) =>
       rows.length === 0 ? Promise.reject(new Error('No property to put somebody in charge of')) : new Promise<void>((resolve) => setPicker({ rows, onAllDone: resolve })),
     [],
   );
-  // What "Annulla" does: each property goes back to the person who was in charge before (or to nobody).
   const onRestore = useCallback(
     async (rows: AccountPropertyRow[]) => {
       for (const row of rows) await setResponsible({ id: row.property.id, userId: row.responsible?.userId ?? null });
@@ -112,7 +103,6 @@ export function AccountPropertiesPage() {
     onAdd,
   });
 
-  // Some columns come from other reads than the properties: when one failed it is said, never filled with a guess.
   const unavailable = data.rows !== undefined && !data.othersLoading && !(data.membersKnown && data.peopleKnown && data.leasesKnown);
 
   return (

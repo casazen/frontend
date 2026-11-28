@@ -35,10 +35,6 @@ const DURATIONS = [30, 60, 90, 120, 180, 240, 360];
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
-/**
- * A service of the supplier's catalog the request is for (the page of a supplier in the marketplace, MKT): the request keeps it, so the
- * supplier sees which service was asked and its price. The category is the service's own, and its duration is where the form starts.
- */
 export interface RequestedService {
   id: string;
   name: string;
@@ -48,38 +44,23 @@ export interface RequestedService {
 
 interface ServiceRequestFormProps {
   propertyId: string;
-  /** Long-rent only: the lease contract the request is made for (LR-03c, the sheet of a contract); the server checks it is a lease of the property. */
   leaseId?: string;
-  /**
-   * Rental context the request is opened in (decision D2): `short-rent` → for one stay of the property (`bookingId`
-   * required by the API); `long-rent` → for the property, never a booking.
-   */
   context?: ServiceRequestContextKey;
-  /** Short-rent: the stay (booking detail). Without it the form asks which stay of the property. */
   bookingId?: string;
   /**
    * Europe/Rome day of the job (`YYYY-MM-DD`). Short-rent booking detail passes the check-out; otherwise the form
    * uses the check-out of the stay it asks for. Long-rent asks the host for the day.
    */
   jobDate?: string;
-  /** Supplier already chosen (marketplace). Without it the form lists the property's suppliers for the category. */
   supplierOrgId?: string;
   preselectedCategory?: string;
-  /** Short-rent only: the service of the supplier the request is for. It fixes the category, so the form does not ask for it. */
   service?: RequestedService;
-  /** Notes the form starts with (re-requesting after a rejection starts from the notes of the rejected request). */
   initialNotes?: string;
-  /**
-   * Suppliers left out of the list: the ones that already rejected this job (SU-09). The API does not forbid asking
-   * them again, the host just does not get them offered by default.
-   */
   excludeSupplierOrgIds?: string[];
-  /** `otherSupplier`: the request replaces one a supplier rejected (title and hint say so). */
   mode?: 'new' | 'otherSupplier';
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
-  /** The request was made and the window is closed: the page that wants to show the new request takes it from here (LR-08b). */
   onCreated?: (request: ServiceRequest) => void;
 }
 
@@ -136,8 +117,6 @@ export function ServiceRequestForm({
   const asksStay = isShortRent && !bookingId;
   const asksSupplier = !supplierOrgId;
 
-  // The check-out of the stay is the day of the job. Loaded when the form asks which stay, or when a known stay was
-  // not given its day by the caller.
   const stays = usePropertyBookings(open && isShortRent && (asksStay || !jobDate) ? propertyId : undefined);
   const stayOptions = orderStaysForRequest(stays.data ?? []);
   const supplierCategory = selectedCategory || undefined;
@@ -162,7 +141,6 @@ export function ServiceRequestForm({
   const stayForDay = stayOptions.find((b) => b.id === effectiveStay);
   const day = isShortRent ? jobDate || (stayForDay ? stayDateOf(stayForDay.checkOutDate) : '') : pickedDate;
   const duration = Number(durationMinutes);
-  // The duration of the service asked for is one of the choices even when it is not one of the usual ones (45 minutes, 2 hours and a half).
   const serviceMinutes = service?.durationMinutes ?? null;
   const durations = serviceMinutes && !DURATIONS.includes(serviceMinutes) ? [...DURATIONS, serviceMinutes].sort((a, b) => a - b) : DURATIONS;
   const scheduleReady = !!day && /^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) && durations.includes(duration);
@@ -259,7 +237,6 @@ export function ServiceRequestForm({
           )}
 
           {service ? (
-            // The service fixes the category: the supplier is asked for this very service.
             <p className="text-sm" data-testid="service-request-service">
               <span className="text-muted-foreground">{t('serviceRequest.forService')} </span>
               <span className="break-words font-medium">{service.name}</span>

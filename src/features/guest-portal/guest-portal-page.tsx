@@ -125,7 +125,6 @@ const copy = {
   openMaps: ['Apri nelle mappe', 'Open in maps', 'In Karten öffnen', 'Ouvrir dans les cartes', 'Abrir en mapas'],
   phaseCancelled: ['Prenotazione cancellata', 'Booking cancelled', 'Buchung storniert', 'Réservation annulée', 'Reserva cancelada'],
   openGuide: ['Apri la guida', 'Open the guide', 'Hausführer öffnen', 'Ouvrir le guide', 'Abrir la guía'],
-  // The sections of the house guide, in the language of the guest (the guide used to show them in the language of the app).
   guideArrival: ['Come arrivare', 'Getting here', 'Anreise', 'Comment arriver', 'Cómo llegar'],
   guideAccess: ['Istruzioni di accesso', 'Access instructions', 'Zugangshinweise', 'Instructions d’accès', 'Instrucciones de acceso'],
   guideWifi: ['Wi-Fi', 'Wi-Fi', 'WLAN', 'Wi-Fi', 'Wi-Fi'],
@@ -222,7 +221,6 @@ function GuestPortalPage({ token }: { token: string }) {
   const shouldPayTax = taxAvailable && tax.data && guestTaxOutlook(tax.data) === 'payable';
   const nextStep = shouldPayTax ? 'payTax' : overview?.checkInCompleted ? 'guide' : 'complete';
   const text = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
-  // The house guide speaks the language of the guest, as the rest of the portal (its sections and «Passo 2 di 6»).
   const guideLabels = {
     arrival: text('guideArrival'),
     access: text('guideAccess'),
@@ -261,8 +259,6 @@ function GuestPortalPage({ token }: { token: string }) {
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' }).format(new Date());
   const phase = stay && (stay.status === 'checkedOut' || stay.status === 'cancelled' || today >= stay.checkOut)
     ? 'after' : stay && today >= stay.checkIn ? 'during' : 'before';
-  // The state of the stay in a few words (UX round 2026-11): a cancelled stay says so (it read «Dopo la partenza»), and before the
-  // arrival the pill counts the days, in the language of the guest («Arrivo tra 12 giorni», «Anreise morgen»).
   const daysToArrival = stay ? Math.round((Date.parse(stay.checkIn.slice(0, 10)) - Date.parse(today)) / 86_400_000) : 0;
   const phaseLabel = stay?.status === 'cancelled'
     ? text('phaseCancelled')
@@ -270,8 +266,6 @@ function GuestPortalPage({ token }: { token: string }) {
       ? `${text('arrivalDate')} ${new Intl.RelativeTimeFormat(language, { numeric: 'auto' }).format(daysToArrival, 'day')}`
       : text(phase);
 
-  // The check-in row of the home: a check-in that is done (to see it again, while the stay is on) or one still to do once the stay is over; while it is to do before that,
-  // the main button of «Prossimo passo» is the way in, and its words say when it cannot be done yet.
   const showCheckInRow = overview?.checkInCompleted ? phase !== 'after' : phase === 'after' && Boolean(stay?.checkInAvailable);
   const home = !checkingIn && !services && !extras && !guide && !details && !chat && !documents && !payments
     && !supplierOrders && !review && !privacy && !cancellation;
@@ -359,8 +353,6 @@ function GuestPortalPage({ token }: { token: string }) {
             ) : extras ? (
               <GuestHostExtras path={path} language={language} />
             ) : guide ? (
-              // The essentials first (UX round 2026-11): where it is, the way to the map and the code to get in, then the guide in
-              // the order of the arrival day (`HouseGuideSections`), then the rules.
               <div className="stay-card stay-content">
                 <h2>{text('address')}</h2>
                 <p>{[stay.address, stay.city].filter(Boolean).join(', ')}</p>
@@ -464,14 +456,10 @@ function GuestPortalPage({ token }: { token: string }) {
                   </section>
                 )}
                 {phase !== 'after' && <h2 className="stay-sections-title">{text('everything')}</h2>}
-                {/* Only what the bar (Soggiorno · Guida · Servizi · Chat · Altro) does not already lead to: the guide, the services and the chat are its tabs, so they are
-                    not rows here as well, and a row has no line under it that says what it holds (UX round 3). */}
                 <div className="stay-links">
                   {phase !== 'after' && <StaySectionLink to={href('details')} icon={CalendarDays} label={text('details')} />}
                   <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} />
                   {phase === 'after' && <StaySectionLink to={href('privacy')} icon={ClipboardCheck} label={text('privacy')} />}
-                  {/* The check-in is the main button of «Prossimo passo» while it is to do (and its words say when it cannot be done yet): the row is for what has
-                      no button: a check-in that is done, to see it again, and one that is still to do after the stay. */}
                   {showCheckInRow && <StaySectionLink to={checkIn} icon={ClipboardCheck} label={text(overview?.checkInCompleted ? 'done' : 'checkInSection')} />}
                 </div>
               </>

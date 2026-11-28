@@ -39,7 +39,6 @@ import {
 import { ShowcaseWorkPage } from './showcase-work-page';
 import { useShowcasePublish } from './use-showcase-publish';
 
-/** The badge of the state: a word and an icon, never a color alone. */
 const BADGE_TONE = {
   neutral: 'bg-muted text-foreground ring-border',
   success: 'bg-success-soft text-success-foreground ring-success-border',
@@ -63,12 +62,6 @@ function StateBadge({ content }: { content: ShowcaseContent }) {
   );
 }
 
-/**
- * "Il mio sito vetrina", the overview (SP-13c): where the showcase stands (draft, online, changes to publish, paused), the one thing to do
- * now, its address with the ways to share it, what is missing or what a publication would change, the two true numbers and the settings
- * (pause, throw the changes away). **One** highlighted block: what it asks depends on the state. Publishing and pausing can be taken
- * back from the toast that follows; throwing the changes away asks first and says what it does.
- */
 export function SupplierShowcaseHubPage() {
   const { t, i18n } = useTranslation();
   const [params] = useSearchParams();
@@ -78,7 +71,6 @@ export function SupplierShowcaseHubPage() {
   const discard = useDiscardShowcaseChanges();
   const pause = usePauseShowcase();
   const resume = useResumeShowcase();
-  // "Condividi il link" of the confirmation of the wizard opens the overview with the sheet already up.
   const [shareOpen, setShareOpen] = useState(() => params.get('condividi') === '1');
   const [discardOpen, setDiscardOpen] = useState(false);
 
@@ -94,7 +86,6 @@ export function SupplierShowcaseHubPage() {
   }
   if (content.isLoading || !content.data) return <LoadingScreen message={t('supplier.showcase.loading')} className="h-auto flex-1" />;
 
-  // `?step=` opens the work view: the panels with the live preview beside them.
   const step = editorStepOf(params.get('step'));
   if (step) return <ShowcaseWorkPage content={content.data} step={step} />;
 
@@ -146,7 +137,6 @@ export function SupplierShowcaseHubPage() {
     }
   };
 
-  // The one block that is highlighted: it asks for what the state asks.
   const fixAction: CalmAction = fixable
     ? { label: t('supplier.showcase.focus.fix', { item: t(`supplier.showcase.readiness.${fixable.item.code}`) }), href: fixable.path }
     : { label: t('supplier.showcase.focus.refresh'), onClick: () => void content.refetch() };
@@ -188,7 +178,6 @@ export function SupplierShowcaseHubPage() {
       secondary: { label: t('supplier.showcase.focus.open'), onClick: openPublic },
     };
   } else if (data.version === 0 && data.readiness.canPublish) {
-    // Nothing was ever written and nothing is missing: the guided creation is the way in; the editor stays next to it.
     focus = {
       tone: 'neutral',
       kicker: t('supplier.showcase.focus.now'),
@@ -233,7 +222,6 @@ export function SupplierShowcaseHubPage() {
 
       <FocusBlock {...focus} data-testid="supplier-showcase-focus" />
 
-      {/* The quiet sections two by two from `xl`, in their order (under each other on a narrower screen); none, no room left for them. */}
       <div className={cn(PAGE_COLUMNS, 'empty:hidden')}>
         {url || data.publicPath ? (
           <PlainSection title={t('supplier.showcase.address.title')} data-testid="supplier-showcase-address">

@@ -37,7 +37,6 @@ export function getDomainState(status: DomainVerificationStatus, detail?: string
   return detail && PLATFORM_CODES.has(detail) ? 'activating' : 'waitingDns';
 }
 
-/** Where the sign-in of the owners on the agency's own domain stands, as the words of the line say it (`domain.surfaces.ownerLogin.state.*`): one per state the server can be in, and two for `Pending` (CasaZen enables it by hand, or it registers by itself). */
 export type OwnerLoginLine = 'failed' | 'notRequested' | 'pendingAutomatic' | 'pendingManual' | 'ready';
 
 export function ownerLoginState(surfaces: Pick<DomainSurfaces, 'ownerLoginHostState' | 'ownerLoginAutomatic'>): OwnerLoginLine {
@@ -53,10 +52,6 @@ export function ownerLoginState(surfaces: Pick<DomainSurfaces, 'ownerLoginHostSt
   }
 }
 
-/**
- * Explanation of an issue code in the user's language, or the message the server sent for a code this version of the
- * app does not know, or `undefined` when there is nothing to explain.
- */
 export function describeDomainIssue(
   detail: string | null | undefined,
   serverMessage: string | null | undefined,

@@ -251,7 +251,6 @@ describe('RentSchedulePanel (LT-06)', () => {
     expect(rows[2]).toHaveTextContent('card_declined');
     expect(within(rows[3]).getByTestId('rent-installment-status')).toHaveTextContent('Pagamento in corso');
     expect(within(rows[4]).getByTestId('rent-installment-status')).toHaveTextContent('Da incassare');
-    // Paid or in flight: no action; to collect or failed: link and offline payment.
     expect(within(rows[0]).queryByRole('button')).not.toBeInTheDocument();
     expect(within(rows[3]).queryByRole('button')).not.toBeInTheDocument();
     expect(within(rows[2]).getByRole('button', { name: 'Segna come pagata' })).toBeInTheDocument();
@@ -338,8 +337,6 @@ describe('RentSchedulePanel (LT-06)', () => {
     await waitFor(() => expect(get.mock.calls.filter(([url]) => url === RENT_URL).length).toBeGreaterThan(1));
   });
   it('render_LeaseGetsSigned_ReadsTheLedgerAgainAndOffersTheSchedule', async () => {
-    // A7-29 (found by the e2e): the panel was rendered while the lease was a draft and kept "not signed yet" after the
-    // landlord uploaded the signed contract, until a reload.
     let signed = false;
     get.mockImplementation((url: string) => {
       if (String(url).includes('bank-links')) return Promise.resolve({ data: { linked: false } });

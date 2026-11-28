@@ -73,7 +73,6 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-/** The list of the page is the call with the price of the address; the homes of the controls are the call with no filters. */
 const isTheList = (query: object) => 'minPrice' in query;
 
 function renderPage() {
@@ -93,7 +92,6 @@ function renderPage() {
 describe('the chip of the price of the results of a site', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    // Only the clock is frozen; timers stay real.
     freezeClock('2026-10-05T10:00:00Z');
     await i18n.changeLanguage('it');
     vi.mocked(publicSiteSearchApi.getDestinations).mockResolvedValue([]);
@@ -123,7 +121,6 @@ describe('the chip of the price of the results of a site', () => {
     vi.mocked(publicSiteSearchApi.getStays).mockImplementation((_slug, query) => (isTheList(query) ? Promise.resolve(found([stay('a', currency)])) : homes.promise));
     renderPage();
 
-    // The list is in; the homes the controls (and the currency of the chip) are worked out from are not.
     await screen.findAllByTestId('house-card');
     expect(screen.queryByTestId('search-active-filters')).not.toBeInTheDocument();
     expect(document.body).not.toHaveTextContent('valuta non disponibile');
@@ -150,7 +147,6 @@ describe('the chip of the price of the results of a site', () => {
   });
 
   it('SiteSearchPage_HomesOfTheControlsThatCouldNotBeRead_EndTheWaitAndTheChipSaysTheCurrencyIsNotAvailable', async () => {
-    // The wait ends with the answer, whatever it is: a failed call does not hide the chip of a filter that is on for ever. The data say no currency, and the chip says so.
     vi.mocked(publicSiteSearchApi.getStays).mockImplementation((_slug, query) =>
       isTheList(query) ? Promise.resolve(found([stay('a', 'EUR')])) : Promise.reject(new Error('offline')),
     );

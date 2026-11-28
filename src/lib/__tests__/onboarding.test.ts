@@ -56,7 +56,6 @@ describe('onboarding helpers', () => {
 
   it('needsOnboarding_SupplierOnlyWithoutOrg_ReturnsFalse', () => {
     expect(needsOnboarding({ roles: ['Supplier'] }, { orgId: null })).toBe(false);
-    // A supplier who is also a host needs the host org.
     expect(needsOnboarding({ roles: ['Supplier', 'PropertyOwner'] }, { orgId: null })).toBe(true);
   });
 
@@ -65,7 +64,6 @@ describe('onboarding helpers', () => {
     expect(needsOnboarding({ roles: ['PropertyOwner'] }, legacyHost)).toBe(true);
     const staleConsents = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', onboardingRequired: true };
     expect(needsOnboarding({ roles: ['PropertyOwner'] }, staleConsents)).toBe(true);
-    // Admins and supplier-only users keep their own area.
     expect(needsOnboarding({ roles: ['Admin'] }, legacyHost)).toBe(false);
     expect(needsOnboarding({ roles: ['Supplier'] }, legacyHost)).toBe(false);
     const done = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', onboardingRequired: false };
@@ -76,7 +74,6 @@ describe('onboarding helpers', () => {
     const onboarded = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', rentalType: 'ShortTerm' as const };
     expect(needsConsentRenewal({ ...onboarded, consentsAccepted: false })).toBe(true);
     expect(needsConsentRenewal({ ...onboarded, consentsAccepted: true })).toBe(false);
-    // Older backend without the field: nothing to renew.
     expect(needsConsentRenewal(onboarded)).toBe(false);
     expect(needsConsentRenewal({ ...onboarded, onboardingCompletedAt: null, consentsAccepted: false })).toBe(false);
     expect(needsConsentRenewal({ ...onboarded, orgId: null, consentsAccepted: false })).toBe(false);
@@ -84,7 +81,6 @@ describe('onboarding helpers', () => {
   });
 
   it('lacksCurrentConsents_WithOrgAndCompletedOnboarding_IgnoresTheRentalType', () => {
-    // No rental type yet: not a renewal of the same type, but a plain update still cannot record the consents.
     const noType = { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', rentalType: null };
     expect(lacksCurrentConsents({ ...noType, consentsAccepted: false })).toBe(true);
     expect(needsConsentRenewal({ ...noType, consentsAccepted: false })).toBe(false);
@@ -104,11 +100,9 @@ describe('onboarding helpers', () => {
   });
 
   it('detects onboarding completion via timestamp (#277)', () => {
-    // With onboardingCompletedAt, user never needs onboarding (immutable)
     expect(
       needsOnboarding({ roles: [] }, { orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z' })
     ).toBe(false);
-    // Without timestamp, falls back to role + org check
     expect(needsOnboarding({ roles: [] }, { orgId: null, onboardingCompletedAt: null })).toBe(true);
   });
 
@@ -142,13 +136,9 @@ describe('onboarding helpers', () => {
     expect(getPostOnboardingRoute('LongTerm', null, { firstRun: true, guidedSetup: true })).toBe('/app/long-rent/properties/new?first=1');
     expect(getPostOnboardingRoute('ShortTerm', null, { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
     expect(getPostOnboardingRoute('LongTerm', null, { firstRun: true })).toBe('/app/long-rent/properties/new?first=1');
-    // `Both` starts with short rent; the long-term area is one click away.
     expect(getPostOnboardingRoute('Both', null, { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
-    // The bare home of an area is "nowhere in particular": a new host starts with its first property.
     expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent', { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
-    // A deep link the guard remembered is kept.
     expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent/bookings/42', { firstRun: true })).toBe('/app/short-rent/bookings/42');
-    // Not the first run (a renewal of the consents): the home or the origin, never a creation form.
     expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent', { firstRun: false })).toBe('/app/short-rent');
     expect(getFirstPropertyRoute('LongTerm')).toBe('/app/long-rent/properties/new?first=1');
   });
@@ -163,13 +153,9 @@ describe('onboarding helpers', () => {
   });
 
   it('canEditOnboarding requires both timestamp and orgId', () => {
-    // No profile = cannot edit
     expect(canEditOnboarding(null)).toBe(false);
-    // No timestamp = cannot edit
     expect(canEditOnboarding({ orgId: 'org-1', onboardingCompletedAt: null })).toBe(false);
-    // No orgId = cannot edit
     expect(canEditOnboarding({ orgId: null, onboardingCompletedAt: '2026-06-16T12:00:00Z' })).toBe(false);
-    // Both present = can edit
     expect(canEditOnboarding({ orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z' })).toBe(true);
   });
 
@@ -177,13 +163,11 @@ describe('onboarding helpers', () => {
     expect(getHomeRouteForUser({ roles: ['LongTermLandlord'] })).toBe('/app/long-rent');
     expect(getHomeRouteForUser({ roles: ['PropertyOwner', 'LongTermLandlord'] })).toBe('/app/short-rent');
     expect(getHomeRouteForUser({ roles: ['Admin'] })).toBe('/app/admin');
-    // Supplier-only users land on the activation wizard of their console (A4-02); an active supplier moves on.
     expect(getHomeRouteForUser({ roles: ['Supplier'] })).toBe('/app/supplier/activation');
   });
 
   it('getHomeRouteForUser_LinkedSupplierWithoutRoleInToken_ReturnsSupplierConsole', () => {
     expect(getHomeRouteForUser({ roles: [] }, { orgId: 's-1', supplierOrgId: 's-1' })).toBe('/app/supplier/activation');
-    // A host with a supplier profile keeps the host home; the context switch opens the console.
     expect(getHomeRouteForUser({ roles: ['PropertyOwner'] }, { orgId: 'h-1', supplierOrgId: 's-1' })).toBe(
       '/app/short-rent',
     );
@@ -192,9 +176,7 @@ describe('onboarding helpers', () => {
   it('needsOnboarding_LinkedSupplier_NeverSendsToHostOnboarding', () => {
     expect(isLinkedSupplier({ supplierOrgId: 's-1' })).toBe(true);
     expect(isLinkedSupplier({ supplierOrgId: null })).toBe(false);
-    // Linked before the Supplier role reaches the token: no roles, no completed host onboarding.
     expect(needsOnboarding({}, { orgId: 's-1', supplierOrgId: 's-1', onboardingCompletedAt: null }, [])).toBe(false);
-    // No org, no roles, no supplier link: host onboarding (with the supplier option).
     expect(needsOnboarding({}, { orgId: null, supplierOrgId: null, onboardingCompletedAt: null }, [])).toBe(true);
   });
 });
@@ -265,7 +247,6 @@ describe('first property pending', () => {
 
   it('needsFirstProperty_OnboardingStillRequiredOrNoOrgOrNoRentalType_ReturnsFalse', () => {
     const profile = { ...onboarded, hasProperties: false };
-    // The wizard comes first (consents stay a hard requirement).
     expect(needsFirstProperty(host, { ...profile, onboardingRequired: true }, undefined, home)).toBe(false);
     expect(needsFirstProperty(host, { ...profile, orgId: null }, undefined, home)).toBe(false);
     expect(needsFirstProperty(host, { ...profile, rentalType: null }, undefined, home)).toBe(false);
@@ -289,13 +270,10 @@ describe('first property pending', () => {
   });
 
   it('needsFirstProperty_ConnectionOfTheChannelManagerAndItsCallback_ReturnsFalseSoTheWizardOpens', () => {
-    // Who has the listings on the channel manager and none in CasaZen yet comes from the connection; the channel manager sends the host
-    // back to the same page (the query string, with the code and the state, is not part of the path the guard reads).
     const profile = { ...onboarded, hasProperties: false };
     for (const path of ['/app/short-rent/integrations/octorate', '/app/short-rent/integrations/octorate/']) {
       expect(needsFirstProperty(host, profile, undefined, path)).toBe(false);
     }
-    // Only that page: a path that merely starts with the same letters still leads to the first property.
     expect(needsFirstProperty(host, profile, undefined, '/app/short-rent/integrations/octorate-other')).toBe(true);
   });
 
@@ -307,7 +285,6 @@ describe('first property pending', () => {
       expect(needsFirstProperty(host, profile, undefined, path)).toBe(false);
       expect(needsFirstProperty({ roles: ['LongTermLandlord'] }, { ...profile, rentalType: 'LongTerm' as const }, undefined, path)).toBe(false);
     }
-    // Only that page: a path that merely starts with the same letters still leads to the first property.
     expect(needsFirstProperty(host, profile, undefined, '/app/connected')).toBe(true);
     expect(needsFirstProperty(host, profile, undefined, '/app/connect-other')).toBe(true);
   });
@@ -327,7 +304,6 @@ describe('host set up by the server, access token without role claims', () => {
   it('getRentalTypeOfHostSetUpByServer_OrgFinishedOnboardingRentalTypeAndNoPaymentWaiting_ReturnsTheRentalType', () => {
     expect(getRentalTypeOfHostSetUpByServer(setUp)).toBe('LongTerm');
     expect(getRentalTypeOfHostSetUpByServer({ ...setUp, rentalType: 'Both' })).toBe('Both');
-    // An older backend does not send the flags: only what it does send counts.
     expect(getRentalTypeOfHostSetUpByServer({ orgId: 'org-1', onboardingCompletedAt: setUp.onboardingCompletedAt, rentalType: 'ShortTerm' })).toBe('ShortTerm');
     expect(getRentalTypeOfHostSetUpByServer({ ...setUp, onboardingRequired: null, consentsAccepted: null, commercialSetupRequired: null })).toBe('LongTerm');
   });
@@ -343,7 +319,6 @@ describe('host set up by the server, access token without role claims', () => {
     expect(getRentalTypeOfHostSetUpByServer(undefined)).toBeNull();
     expect(getRentalTypeOfHostSetUpByServer({ ...setUp, orgId: null })).toBeNull();
     expect(getRentalTypeOfHostSetUpByServer({ ...setUp, onboardingCompletedAt: null })).toBeNull();
-    // An invited member has no rental type of its own: the roles of its token decide where it goes.
     expect(getRentalTypeOfHostSetUpByServer({ ...setUp, rentalType: null })).toBeNull();
     expect(getRentalTypeOfHostSetUpByServer({ ...setUp, isActive: false })).toBeNull();
   });

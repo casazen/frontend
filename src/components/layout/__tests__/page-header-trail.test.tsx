@@ -11,10 +11,6 @@ import { Button } from '@/components/ui/button';
 import { AppShellContext } from '../app-shell-context';
 import { PageHeader } from '../page-header';
 
-/**
- * The head every page has before UI-05 (the one of the UI-04a CI fix, which makes it fit a phone), copied as it was: what the
- * 64 pages must keep rendering, to the last class.
- */
 function HeadBeforeUi05({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
@@ -50,7 +46,6 @@ describe('PageHeader without the props of UI-05 (the 64 pages that use it)', () 
     document.title = 'CasaZen';
   });
 
-  // The shapes the pages use: a title alone, with its description, with an action that is one button, a row of buttons or a link.
   const SAMPLE: Array<[string, { title: string; description?: string; action?: () => React.ReactNode }]> = [
     ['title only', { title: 'Cruscotto' }],
     ['title and description', { title: 'Prenotazioni', description: 'Gestisci tutte le prenotazioni dei tuoi immobili' }],
@@ -83,7 +78,6 @@ describe('PageHeader without the props of UI-05 (the 64 pages that use it)', () 
   });
 
   it('PageHeader_WithoutTheNewProps_NeedsNoRouterAndDrawsNoTrail', () => {
-    // Pages are rendered on their own in many tests: the head of a page that does not use the new props asks nothing of its surroundings.
     render(<PageHeader title="Prenotazioni" description="Tutte" />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeInTheDocument();
@@ -140,7 +134,6 @@ describe('PageHeader with the trail (UI-05)', () => {
     expect(within(trail).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Affitti brevi', 'Prenotazioni', '1a2b3c4d']);
     expect(within(trail).getByRole('link', { name: 'Affitti brevi' })).toHaveAttribute('href', '/app/short-rent');
     expect(within(trail).getByRole('link', { name: 'Prenotazioni' })).toHaveAttribute('href', '/app/short-rent/bookings');
-    // The page itself is not a link, and says it is the one that is open.
     expect(within(trail).queryByRole('link', { name: '1a2b3c4d' })).not.toBeInTheDocument();
     expect(within(trail).getByText('1a2b3c4d')).toHaveAttribute('aria-current', 'page');
     expect(trail).toHaveClass('hidden', 'md:block');
@@ -168,7 +161,6 @@ describe('PageHeader with the trail (UI-05)', () => {
   it('PageHeader_EmptyCrumbs_DrawNoTrailAndNoBackLink', () => {
     render(inShell('short-rent', <PageHeader title="Cruscotto" crumbs={[]} />));
 
-    // The Cruscotto has the tabs of its section (Da fare, Da approvare…): no trail is drawn above them.
     expect(screen.queryByRole('navigation', { name: 'Percorso di navigazione' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('back-link')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeInTheDocument();
@@ -195,8 +187,6 @@ describe('PageHeader with the trail (UI-05)', () => {
   });
 
   it('PageHeader_AutoCrumbsOnAPageWithNothingAboveIt_DrawNothing', () => {
-    // The marketplace is a page of the main menu with nothing above it and no section of its own (Prenotazioni has tabs, and they
-    // are a navigation too).
     render(inShell('short-rent', <PageHeader title="Marketplace" crumbs="auto" />, '/app/short-rent/marketplace'));
 
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
@@ -282,7 +272,6 @@ describe('PageHeader primary action (UI-05)', () => {
     const { rerender } = render(inShell('short-rent', <PageHeader title="Pagamento" primary={{ label: 'Salva', onClick: vi.fn() }} />));
     expect(screen.getByRole('button', { name: 'Salva' })).toHaveClass('bg-primary');
 
-    // A page that only reads (its numbers are the focal point) has no filled button: its one action is outline, as a button and as a link.
     rerender(inShell('short-rent', <PageHeader title="Incassi" primary={{ label: 'Esporta', onClick: vi.fn(), variant: 'outline' }} />));
     expect(screen.getByRole('button', { name: 'Esporta' })).toHaveClass('border-input');
     expect(screen.getByRole('button', { name: 'Esporta' })).not.toHaveClass('bg-primary');
@@ -294,12 +283,10 @@ describe('PageHeader primary action (UI-05)', () => {
   it('PageHeader_PrimaryAction_IsASingleElementThatTheCssMovesToTheBottomOfThePhone', () => {
     render(inShell('short-rent', <PageHeader title="Pagamento" primary={{ label: 'Salva', onClick: vi.fn() }} />));
 
-    // One copy only: keyboards, screen readers and tests see a single button, wherever the stylesheet puts it.
     expect(screen.getAllByRole('button', { name: 'Salva' })).toHaveLength(1);
     const wrapper = screen.getByTestId('page-header-primary');
     expect(wrapper).toHaveAttribute('data-mobile-primary', 'bar');
     expect(wrapper).toHaveClass('max-md:fixed', 'max-md:inset-x-0', 'max-md:bottom-(--primary-bottom)');
-    // Fixed under the bottom bar's z-index and over the page, with the page showing through the strip around the button.
     expect(wrapper).toHaveClass('max-md:z-40', 'max-md:pointer-events-none');
     expect(screen.getByRole('button', { name: 'Salva' })).toHaveClass('max-md:pointer-events-auto', 'max-md:h-12', 'max-md:w-full');
   });
@@ -336,7 +323,6 @@ describe('PageHeader primary action (UI-05)', () => {
     expect(wrapper).toHaveAttribute('data-mobile-primary', 'none');
     expect(wrapper).not.toHaveClass('max-md:fixed');
     expect(wrapper.style.getPropertyValue('--primary-bottom')).toBe('');
-    // Still a finger-sized button.
     expect(screen.getByRole('button', { name: 'Nuovo immobile' })).toHaveClass('max-md:min-h-11');
   });
 
@@ -465,7 +451,6 @@ describe('PageHeader secondary actions (UI-05)', () => {
     act(() => trigger.focus());
     const menu = await openMenu();
 
-    // Radix puts the focus on the menu, the arrow moves it to an item, Escape closes it and the focus returns to the button.
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     await waitFor(() => expect(within(menu).getByRole('menuitem', { name: 'Modifica' })).toHaveFocus());
     fireEvent.keyDown(within(menu).getByRole('menuitem', { name: 'Modifica' }), { key: 'ArrowDown' });
@@ -473,7 +458,6 @@ describe('PageHeader secondary actions (UI-05)', () => {
     fireEvent.keyDown(within(menu).getByRole('menuitem', { name: 'Duplica' }), { key: 'Escape' });
 
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    // Radix gives the focus back one tick after the menu is gone.
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 

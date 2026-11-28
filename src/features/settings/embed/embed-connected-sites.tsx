@@ -28,7 +28,6 @@ export function EmbedConnectedSites({ orgId }: EmbedConnectedSitesProps) {
   const [target, setTarget] = useState<SiteConnection | null>(null);
   const [asking, setAsking] = useState(false);
 
-  // The dialog closes whatever the answer: the toast of the mutation says what happened, and the list is read again.
   const confirmRevoke = async () => {
     if (!target) return;
     try {
@@ -41,7 +40,6 @@ export function EmbedConnectedSites({ orgId }: EmbedConnectedSitesProps) {
 
   let body: ReactNode;
   if (sites.isError) {
-    // First: a failed read leaves the sites of the last one that worked in the query, and they are not shown as if they were current.
     body = (
       <Alert
         variant="danger"
@@ -119,7 +117,6 @@ export function EmbedConnectedSites({ orgId }: EmbedConnectedSitesProps) {
         isLoading={revoke.isPending}
         onConfirm={confirmRevoke}
         onCloseAutoFocus={(event) => {
-          // The row that opened the dialog is gone once its connection is revoked: the focus goes to the title of the block, which stays.
           if (!revokedRef.current) return;
           revokedRef.current = false;
           event.preventDefault();

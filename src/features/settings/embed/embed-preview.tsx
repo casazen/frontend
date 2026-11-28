@@ -4,7 +4,6 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { EMBED_LOADER_PATH } from './embed-snippet';
 
-/** The part of `window.CasaZenEmbed` (the object the loader puts on the page) that the preview uses. */
 interface EmbedLoader {
   mount: (element: HTMLElement, options: Record<string, unknown>) => void;
 }
@@ -29,7 +28,6 @@ function loadEmbedLoader(base: string): Promise<EmbedLoader> {
   return new Promise<EmbedLoader>((resolve, reject) => {
     const src = `${base}${EMBED_LOADER_PATH}`;
     let tag = document.querySelector<HTMLScriptElement>(`script[${LOADER_SCRIPT_MARK}]`);
-    // One that waits for another address (the domain changed meanwhile) is not the one that is wanted.
     if (tag && tag.src !== src) {
       tag.remove();
       tag = null;
@@ -59,9 +57,7 @@ function loadEmbedLoader(base: string): Promise<EmbedLoader> {
 }
 
 interface EmbedPreviewProps {
-  /** The origin the widget comes from: the same one as the code that is shown (`resolveEmbedBase`). */
   base: string;
-  /** The options of `CasaZenEmbed.mount`: the same values as the attributes of the code (`buildEmbedMountOptions`). */
   options: Record<string, string | boolean>;
 }
 
@@ -77,7 +73,6 @@ export function EmbedPreview({ base, options }: EmbedPreviewProps) {
   const [attempt, setAttempt] = useState(0);
   const [outcome, setOutcome] = useState<{ signature: string; ok: boolean } | null>(null);
 
-  // What is shown, as one text: the effect depends on it alone, so a parent that draws again with the same choice leaves the widget as it is. A new attempt is a new text.
   const signature = JSON.stringify([base, options, attempt]);
   const state = outcome?.signature !== signature ? 'loading' : outcome.ok ? 'ready' : 'failed';
 

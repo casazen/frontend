@@ -7,9 +7,6 @@ import {
   emptyPropertyList,
 } from '../fixtures/properties.fixtures';
 
-/**
- * Stateful in-memory mock for property list, create, and detail endpoints.
- */
 export async function mockPropertiesApi(page: Page, initial: Property[] = emptyPropertyList): Promise<void> {
   const store = { properties: [...initial] };
   await mockComuniApi(page);
@@ -31,7 +28,6 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
       return;
     }
 
-    // The photos step of the wizard reads the gallery of the property it has just created: none yet.
     if (method === 'GET' && /\/properties\/[^/]+\/images\/?$/.test(path)) {
       await route.fulfill({
         status: 200,
@@ -61,7 +57,6 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
       return;
     }
 
-    // The wizard of a new property asks how many properties the plan allows (SR-07a): a plan with room, whatever the store holds.
     if (method === 'GET' && path.endsWith('/properties/plan-usage')) {
       await route.fulfill({
         status: 200,
@@ -111,7 +106,6 @@ export async function mockPropertiesApi(page: Page, initial: Property[] = emptyP
       return;
     }
 
-    // PATCH semantics on PUT (A2-04): what the body carries is changed, the rest stays. The API answers 204.
     if (method === 'PUT' && byIdMatch) {
       const index = store.properties.findIndex((p) => p.id === byIdMatch[1]);
       if (index < 0) {
@@ -219,15 +213,10 @@ export async function fillPropertyWizard(page: Page, values: PropertyWizardInput
   await page.getByLabel('Indirizzo', { exact: true }).fill(values.address);
   await page.getByTestId('comune-picker-input').fill(values.comune);
   await page.getByRole('option', { name: new RegExp(`^${values.comune}`) }).first().click();
-  // The region under the field is read from the chosen comune: it is there once the choice has taken effect.
   await expect(page.getByTestId('comune-picker-region')).toBeVisible();
   if (values.postalCode) await page.getByLabel('CAP', { exact: true }).fill(values.postalCode);
 }
 
-/**
- * Goes through the first step of the wizard and presses «Continua»: that is where the property is created. Returns the answer of the
- * creation, so the test can look at its status; the wizard is then on its next step.
- */
 export async function createPropertyWithWizard(page: Page, values: PropertyWizardInput) {
   await fillPropertyWizard(page, values);
   const created = page.waitForResponse(
@@ -237,7 +226,6 @@ export async function createPropertyWithWizard(page: Page, values: PropertyWizar
   return created;
 }
 
-/** iCal calendars of a property (PC-10, PC-12): no feed connected, an export link. */
 export async function mockPropertyIcalApi(page: Page): Promise<void> {
   await page.route('**/api/properties/*/ical/**', async (route) => {
     if (route.request().method() !== 'GET') {
@@ -268,11 +256,6 @@ const AMENITY_CATALOG = {
   ],
 };
 
-/**
- * The listing data the wizard reads and writes besides the property (NF-31, NF-32, NF-34, NF-35): the rooms, the length-of-stay discounts,
- * the site profile with the texts of the other languages, the captions of the photos and the catalog of the amenities. Empty to begin
- * with; what is saved is echoed back, as the server does. Without it the wizard cannot open on a property that exists.
- */
 export async function mockListingDataApi(page: Page): Promise<void> {
   const state = { rooms: [] as unknown[], discounts: [] as unknown[], translations: {} as Record<string, unknown> };
   const json = (body: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });

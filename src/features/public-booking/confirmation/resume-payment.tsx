@@ -17,7 +17,6 @@ interface ResumePaymentProps {
   label: string;
   online: boolean;
   onSubmitted: (status: ClientPaymentStatus) => void;
-  /** The backend says there is no hold or no payment left: the page reads the booking again. */
   onUnavailable: () => void;
 }
 

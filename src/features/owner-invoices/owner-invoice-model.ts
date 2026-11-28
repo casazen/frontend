@@ -1,38 +1,28 @@
 import { toCents } from '@/features/owner-accounting/owner-accounting-model';
 import type { OwnerInvoiceLine, OwnerInvoiceListItem } from '@/types';
 
-/** An invoice that is a draft has no number yet: the server gives it at the issue. */
 export const isDraft = (invoice: Pick<OwnerInvoiceListItem, 'status'>): boolean => invoice.status === 'Draft';
 
-/** An invoice that was issued and numbered. */
 export const isIssued = (invoice: Pick<OwnerInvoiceListItem, 'status'>): boolean => invoice.status === 'Issued';
 
-/**
- * The live invoice made from a version: the one that is not credited in full (an invoice credited in full frees its owner and month for a new one, and stays in the list as history).
- * `null` when the version has none.
- */
 export function liveInvoiceOfVersion(invoices: readonly OwnerInvoiceListItem[], versionId: string): OwnerInvoiceListItem | null {
   return invoices.find((invoice) => invoice.statementVersionId === versionId && !invoice.creditedInFull) ?? null;
 }
 
-/** The live invoice the owner has for the month, from whatever version of the statement it was made: a month holds one. */
 export function liveInvoiceOfMonth(invoices: readonly OwnerInvoiceListItem[]): OwnerInvoiceListItem | null {
   return invoices.find((invoice) => !invoice.creditedInFull) ?? null;
 }
 
-/** The invoices of the version that were credited in full: history, shown as such and never as the invoice of the month. */
 export function creditedInvoicesOfVersion(invoices: readonly OwnerInvoiceListItem[], versionId: string): OwnerInvoiceListItem[] {
   return invoices.filter((invoice) => invoice.statementVersionId === versionId && invoice.creditedInFull);
 }
 
-/** How an issued invoice is paid. `unknown` is a state of a later server: it is told by its code, never as paid. */
 export type InvoiceSettlement =
   | { kind: 'offset' }
   | { kind: 'toPay'; amountDue: number }
   | { kind: 'credited' }
   | { kind: 'unknown'; state: string };
 
-/** How the invoice is paid, once it is issued: offset in the statement, to pay with the amount, or credited. `null` for a draft, which has no payment. */
 export function settlementOf(invoice: Pick<OwnerInvoiceListItem, 'creditedInFull' | 'payment'>): InvoiceSettlement | null {
   if (invoice.creditedInFull) return { kind: 'credited' };
   if (invoice.payment === null) return null;

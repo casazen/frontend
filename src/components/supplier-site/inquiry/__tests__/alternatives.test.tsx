@@ -6,10 +6,6 @@ import i18n from '@/i18n/config';
 import type { PublicAlternative } from '@/api/public-supplier-booking.api';
 import { Alternatives } from '../alternatives';
 
-/**
- * «Altri professionisti per te» (SP-10c, SP-12c): what the server offers to a customer whose supplier did not answer. It shows the
- * showcase of each (the link is the only way on), never a contact, and says plainly when there is nobody to suggest, with no promise.
- */
 const rossi: PublicAlternative = {
   name: 'Rossi Servizi',
   slug: 'rossi-servizi',
@@ -41,10 +37,8 @@ describe('the other professionals offered to the customer', () => {
 
     expect(screen.getByRole('link', { name: 'Rossi Servizi' })).toHaveAttribute('href', '/fornitori/rossi-servizi');
     expect(screen.getByRole('link', { name: 'Bianchi Pulizie' })).toHaveAttribute('href', '/fornitori/bianchi-pulizie');
-    // «Verificato» only for the one the server says is; the typical time only where it was measured.
     expect(screen.getAllByText('Verificato')).toHaveLength(1);
     expect(screen.getAllByText(/Di solito risponde in circa/)).toHaveLength(1);
-    // No way to reach anybody outside CasaZen.
     expect(container.querySelector('a[href^="tel:"], a[href^="mailto:"]')).toBeNull();
   });
 

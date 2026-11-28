@@ -16,7 +16,6 @@ interface EmbedStateProps {
   /** `alert` when something went wrong and the guest has to act (retry); otherwise the state is plain content. */
   role?: 'alert';
   testId: string;
-  /** The way out: one action, the focal point of the state. */
   children?: ReactNode;
 }
 
@@ -33,7 +32,6 @@ function EmbedState({ icon: Icon, title, description, role, testId, children }: 
   );
 }
 
-/** Shown while the flags and the org are read: a few quiet bars, announced once to a screen reader. */
 export function EmbedSkeleton() {
   const { t } = useTranslation();
   const block = 'animate-pulse rounded bg-black/10 motion-reduce:animate-none';
@@ -50,14 +48,12 @@ export function EmbedSkeleton() {
   );
 }
 
-/** The widget does not answer: the feature is off for this site, the address is not one of a widget or asks for a protocol this app does not speak. */
 export function EmbedUnavailable() {
   const { t } = useTranslation();
 
   return <EmbedState icon={Ban} testId="embed-unavailable" title={t('embed.unavailable.title')} description={t('embed.unavailable.description')} />;
 }
 
-/** The org the widget should show does not exist (a 404): not «could not be loaded», which is another state. */
 export function EmbedNotFound() {
   const { t } = useTranslation();
 
@@ -77,10 +73,6 @@ export function EmbedError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-/**
- * The home of the property widget does not exist, or it cannot be booked online (the API answers 404 for both). Said as the page of the site says it, and with
- * no way out of the frame: the page that frames the widget is told (`error`) and shows its own link to the site.
- */
 export function EmbedPropertyNotFound() {
   const { t } = useTranslation();
 

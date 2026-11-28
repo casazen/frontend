@@ -16,8 +16,6 @@ vi.mock('@/queries/use-alerts', async (importOriginal) => ({
   useRemindAlert: () => ({ isPending: false, mutate: vi.fn() }),
 }));
 
-// E24/F01/US02/T01: the alert of a stay that needs the host (`BookingNeedsReview`) comes with its «Da fare» (the cleaning at check-out that could not be made, or whose dates changed): the
-// list of what is to do is read again at once, so the page open in front of the host shows the item without waiting for the next read.
 describe('useAlertSignalr: what an alert that arrives makes stale', () => {
   let client: QueryClient;
   let invalidate: ReturnType<typeof vi.spyOn>;

@@ -1,21 +1,16 @@
 import type { Page, Route } from '@playwright/test';
 import type { SupplierService, SupplierServiceWeekday } from '../../src/types/supplier-services';
 
-/** A service of the catalog as `GET api/supplier/services` answers it (SP-02): the type the screens read. */
 export type MockService = SupplierService;
 
 export interface SupplierServicesMock {
-  /** The services as the API holds them now. */
   services: () => MockService[];
-  /** Every call that reached the catalog, in order: what a spec asserts to know what the screen sent. */
   calls: { method: string; path: string; body?: unknown }[];
-  /** Changes a service behind the back of the page (another tab, another user): its version moves on. */
   touch: (id: string, changes?: Partial<MockService>) => void;
 }
 
 const WEEK: SupplierServiceWeekday[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-/** A photo that needs no network: a small drawing as a `data:` address (the screens show absolute `https`, `http`, `blob` and `data` addresses). */
 export function drawing(label: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="60"><rect width="80" height="60" fill="#8fb3a6"/><text x="6" y="34" font-size="12" fill="#10231c">${label}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
@@ -60,18 +55,11 @@ function missingFor(service: MockService): string[] {
   return missing;
 }
 
-/** The names of the files of a multipart body (`filename="cucina.png"`): the mock needs no more of it. */
 function uploadedNames(buffer: Buffer | null): string[] {
   if (!buffer) return [];
   return [...buffer.toString('latin1').matchAll(/filename="([^"]+)"/g)].map((match) => match[1]!);
 }
 
-/**
- * The catalog of services of the supplier, stateful like the API (SP-02): the list with its limit, create (a draft), read,
- * replace with the `version` (409 if stale), publish (422 with `fields` while something is missing), pause, duplicate, delete,
- * photos (`multipart`, the first is the cover; `photoUrls` of a replace can only keep or reorder the service's own). Register it
- * after `mockSupplierConsoleApi`: the later route is the one that answers.
- */
 export async function mockSupplierServicesApi(page: Page, options: { services?: MockService[]; limit?: number } = {}): Promise<SupplierServicesMock> {
   const store = new Map((options.services ?? []).map((service) => [service.id, service]));
   const limit = options.limit ?? 30;

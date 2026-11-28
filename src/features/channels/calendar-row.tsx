@@ -13,7 +13,6 @@ import { cn } from '@/lib/utils';
 import type { PropertyIcalFeedChannel } from '@/types/property-ical';
 import { feedHealth, needsCheck, updatedWhen, type CalendarRow, type FeedRow } from './lib/calendar-rows';
 
-/** The icon and the color of each channel (the same icons as the timeline of the calendar); the name is always written next to them. */
 const CHANNELS: Record<PropertyIcalFeedChannel, { icon: LucideIcon; className: string }> = {
   Airbnb: { icon: House, className: 'bg-primary-soft text-primary-text ring-primary/30' },
   BookingCom: { icon: Building2, className: STATUS_TONE_CLASSES.info },
@@ -36,22 +35,14 @@ function ChannelChip({ channel }: { channel: PropertyIcalFeedChannel }) {
 
 interface CalendarRowItemProps {
   row: CalendarRow;
-  /** The backend's threshold for "not tried for a while" (from the answer of the overview). */
   staleAfterMinutes: number;
   now: Date;
-  /** Who may sync and link calendars (`property.write`); the others see the state and no button. */
   canWrite: boolean;
-  /** The sync of this calendar was asked for and the answer has not come yet. */
   requested: boolean;
   onSync: (row: FeedRow) => void;
   onCopyLink: (row: FeedRow) => void;
 }
 
-/**
- * A row of the page "Canali e calendari" (SR-10b), on the row of the pages of the adempimenti: a property and one of its calendars with
- * the channel, when it was last read and, when it needs a look, the badge "Da ricontrollare" and the error in words; or a property with
- * no calendar and the way to link one. The one button of a calendar is "Sincronizza ora"; "Copia il link di CasaZen" is in "⋯".
- */
 export function CalendarRowItem({ row, staleAfterMinutes, now, canWrite, requested, onSync, onCopyLink }: CalendarRowItemProps) {
   const { t, i18n } = useTranslation();
 
@@ -84,7 +75,6 @@ export function CalendarRowItem({ row, staleAfterMinutes, now, canWrite, request
   const health = feedHealth(feed, staleAfterMinutes, now, requested);
   const syncing = health === 'syncing';
   const name = [row.propertyName, feed.label?.trim() || t(`ical.channels.${feed.channel}`)].join(', ');
-  // The error of the last import, translated from its stable code (the backend text only when the frontend has none).
   const error = health === 'failed' ? (translateErrorCode(feed.lastErrorCode, t) ?? feed.lastError ?? t('channels.failed')) : undefined;
   const updated = feed.lastImportAt
     ? t('channels.updated', { when: updatedWhen(feed.lastImportAt, now, i18n.language) })

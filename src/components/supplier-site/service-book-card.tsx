@@ -28,7 +28,6 @@ import type { Comune } from '@/types/comune.types';
 import { FinderComuneField } from './finder-comune-field';
 import { OptionField } from '@/components/supplier-site/option-field';
 
-/** Pause after the last change before the estimate is asked: one request per decision, not per press (the server allows 30 a minute). */
 const ESTIMATE_DEBOUNCE_MS = 400;
 const FIRST_SLOTS = 3;
 const MAX_HOURS = 12;
@@ -54,7 +53,6 @@ export function ServiceBookCard({ model, service }: ServiceBookCardProps) {
   const [comune, setComune] = useState<Comune | null>(null);
   const onQuote = service.requiresQuote || service.priceFromCents === null;
 
-  // The body is debounced as a string: a new object on every render would restart the wait forever.
   const bodyKey = JSON.stringify(toQuoteBody(service, selection));
   const waited = useDebouncedValue(bodyKey, ESTIMATE_DEBOUNCE_MS);
   const body = useMemo<PublicQuoteRequestBody>(() => JSON.parse(waited) as PublicQuoteRequestBody, [waited]);

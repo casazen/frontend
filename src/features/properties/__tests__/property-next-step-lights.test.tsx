@@ -71,7 +71,6 @@ function renderStep(options: { status?: PropertyStatus; photos?: string[]; canWr
       { client },
       createElement(
         MemoryRouter,
-        // The card sits on the page of the property, above every tab.
         { initialEntries: [`/app/short-rent/properties/${PROPERTY_ID}`] },
         createElement(PropertyNextStep, {
           property: property(options.photos),
@@ -99,9 +98,7 @@ afterEach(() => {
   cleanup();
 });
 
-// E03/F03/US01/T02 (NF-52, AC-NF52-9): the property card shows the light of its compliance items, with the same component and words as the page.
 describe('PropertyNextStep and the compliance lights of the property', () => {
-  // The tourist tax rate has no page of its own (it is entered in the guided check-in of a stay): the reason says where, and there is no button (INC-14).
   it('PropertyNextStep_RedEnterMunicipalityTaxRate_SaysWhereTheRateIsEnteredAndOffersNoButton', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('EnterMunicipalityTaxRate', 'Red', 'municipality_rate_missing')) }));
     renderStep();
@@ -112,14 +109,12 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     // As the manual says: in the guided check-in of a stay, at the step «Imposta di soggiorno».
     expect(block).toHaveTextContent("Non conosciamo l'imposta di soggiorno del comune: inseriscila nel check-in guidato di un soggiorno, al passo «Imposta di soggiorno» (non vale zero).");
     expect(block).toHaveAttribute('data-tone', 'warning');
-    // No page enters the rate, so no button: the block leads back to the list and does not say «Tocca a te».
     expect(screen.queryByTestId('property-next-compliance')).not.toBeInTheDocument();
     expect(within(block).queryByRole('link', { name: /Controlla l'invio|Inserisci l'imposta/ })).not.toBeInTheDocument();
     expect(block).not.toHaveTextContent('Tocca a te');
     expect(within(block).getByRole('link', { name: 'Torna agli immobili' })).toHaveAttribute('href', '/app/short-rent/properties');
   });
 
-  // The police send is activated by its wizard (E03/F01/US02/T02), another page than the one the card is on: the button leads to it, for the property of the card.
   it('PropertyNextStep_RedActivateOctorateSend_OffersTheButtonThatOpensTheSenderWizard', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('ActivateOctorateSend', 'Red', 'connection_inactive')) }));
     renderStep();
@@ -146,7 +141,6 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(
       summaryOf({
         periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08', dueAt: '2026-09-10T00:00:00Z' })),
-        // The tourist tax rate leads to the page of the property, which has no field for it yet: no button. The police credentials lead to another page.
         connectionsToFix: section(item('EnterMunicipalityTaxRate', 'Yellow', 'municipality_rate_missing'), item('RenewPoliceCredentials', 'Yellow', 'connection_unverified')),
       }),
     );
@@ -161,7 +155,6 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     expect(within(credentials).getByTestId('compliance-line-action')).toHaveAttribute('href', '/app/short-rent/alloggiati');
   });
 
-  // The police send is activated by its wizard (E03/F01/US02/T02): the line of the list under the block leads to it as well.
   it('PropertyNextStep_OtherLineAboutThePoliceSend_KeepsItsButtonToTheSenderWizard', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(
       summaryOf({
@@ -207,7 +200,6 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     renderStep();
 
     const lines = await screen.findByTestId('compliance-lines');
-    // Five items need something: one is the block, three are listed and one is counted.
     expect(within(lines).getAllByTestId('compliance-line')).toHaveLength(3);
     expect(screen.getByTestId('compliance-lines-more')).toHaveTextContent('e 1 altro adempimento');
     expect(within(screen.getByTestId('compliance-lines-more')).getByRole('link')).toHaveAttribute('href', '/app/short-rent/compliance');
@@ -256,7 +248,6 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     workspace.granted = ['property.read', 'property.write'];
     renderStep();
 
-    // The summary asks `booking.read`: a bare 403 on a GET would take the user to «nessun accesso».
     expect(await screen.findByTestId('property-next-step')).toHaveAttribute('data-next-step', 'allInOrder');
     expect(fetchComplianceSummary).not.toHaveBeenCalled();
   });
@@ -281,7 +272,6 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     await waitFor(() => expect(screen.getByTestId('property-next-step')).toHaveAttribute('data-next-step', 'compliance'));
   });
 
-  // A read that fails is «non lo so», never «tutto in ordine»: the block says it could not check and offers to try again.
   it.each([
     ['a server error', () => httpError(500)],
     ['a 403', () => httpError(403)],
@@ -296,7 +286,6 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     expect(block).not.toHaveTextContent('Tutto in ordine');
     expect(block).toHaveAttribute('data-tone', 'neutral');
 
-    // «Riprova» reads the lights again: with an answer the card is the one it always is.
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ connectionsToFix: section(item('RenewPoliceCredentials', 'Red', 'credentials_refused')) }));
     fireEvent.click(within(block).getByRole('button', { name: 'Riprova' }));
 
@@ -317,13 +306,10 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     vi.mocked(fetchComplianceSummary).mockRejectedValue(httpError(500));
     renderStep({ photos: [] });
 
-    // A photo is asked, not claimed to be fine: the block is not «tutto in ordine», so there is nothing to take back.
     expect(await screen.findByTestId('property-next-step')).toHaveAttribute('data-next-step', 'addPhotos');
   });
 
   it('PropertyNextStep_UserWhoMayNotWriteTheProperty_IsLedToThePageNotToldToDoIt', async () => {
-    // The page of the item is one this user can open (the archive asks `booking.read`); without `booking.write` the button only opens it («Apri») and
-    // the block does not say it is their turn.
     workspace.granted = ['property.read', 'booking.read'];
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08' })) }));
     renderStep({ canWrite: false });

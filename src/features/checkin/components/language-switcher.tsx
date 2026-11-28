@@ -4,11 +4,8 @@ import { Label } from '@/components/ui/label';
 import { GUEST_LOCALE_OPTIONS, type GuestLocale } from '../lib/guest-locale';
 
 interface LanguageSwitcherProps {
-  /** The language the page is shown in. */
   value: GuestLocale;
-  /** The guest chose another language. */
   onChange: (locale: GuestLocale) => void;
-  /** The languages offered, in the order of the page (default: all five). */
   locales?: readonly GuestLocale[];
 }
 

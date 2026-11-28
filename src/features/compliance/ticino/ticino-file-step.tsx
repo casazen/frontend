@@ -8,19 +8,12 @@ import { closedLineOf, whenText } from './ticino-day-text';
 
 interface TicinoFileStepProps {
   day: TicinoNotificationDay;
-  /** The person may read the guests (`guest.read`, what the file of the API asks: it lists them by name). */
   canDownload: boolean;
   busy: boolean;
-  /** The file of the day, which asks the person first when the day is closed (the layer does it). */
   onDownload: (format: TicinoFileFormat) => void;
-  /** The sheet of the group of a stay. */
   onGroupSheet: (bookingId: string) => void;
 }
 
-/**
- * Step 2 «Scarica il file»: the CSV of the day (the XML only when the day fits it) and, for a group of six or more, the sheet of its members. A day that is closed says
- * who uploaded it and when before the file is asked again: the portal may create duplicates (the confirmation itself is the layer's).
- */
 export function TicinoFileStep({ day, canDownload, busy, onDownload, onGroupSheet }: TicinoFileStepProps) {
   const { t, i18n } = useTranslation();
   const groups = groupRowsOf(day);

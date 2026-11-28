@@ -4,7 +4,6 @@ import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX, suggestListingText, type Li
 
 const t = i18n.getFixedT('it');
 
-// The labels of the catalog of the amenities (`GET /api/public/amenities`), Italian: the text takes its names from there.
 const LABELS: Record<string, string> = { WiFi: 'Wi-Fi', Pool: 'Piscina', Garden: 'Giardino', Gym: 'Palestra' };
 const label = (amenity: string) => LABELS[amenity] ?? amenity;
 
@@ -24,7 +23,6 @@ describe('suggestListingText', () => {
   it('suggestListingText_WhatWasEntered_SaysThatAndNothingElse', () => {
     const text = suggestListingText({ ...apartment, areaSqm: '70', amenities: ['WiFi', 'Pool', 'Garden', 'Gym'] }, t, label);
 
-    // Every word comes from a field of the first steps: no «check-in semplice», no view, no quiet. Only the first three amenities.
     expect(text.title).toBe('Appartamento a Como · 4 ospiti');
     expect(text.description).toBe(
       'Appartamento «Casa Lago» a Como. Ospita fino a 4 persone. 2 camere da letto, 3 letti e 1 bagno. Superficie: 70 m². Tra le dotazioni: Wi-Fi, Piscina e Giardino.',
@@ -34,7 +32,6 @@ describe('suggestListingText', () => {
   it('suggestListingText_DataMissing_LeavesTheSentenceOut', () => {
     const text = suggestListingText({ ...apartment, accommodationType: 'RoomOrSuite', bedrooms: 0, beds: 1, maxGuests: 1, name: '' }, t, label);
 
-    // No name, no area, no amenity: those sentences are not made up. A studio flat has no bedrooms, and says so.
     expect(text.title).toBe('Stanza o suite a Como · 1 ospite');
     expect(text.description).toBe('Stanza o suite a Como. Ospita 1 persona. Monolocale, 1 letto e 1 bagno.');
   });
@@ -46,7 +43,6 @@ describe('suggestListingText', () => {
 
     expect(text.title.length).toBeLessThanOrEqual(LISTING_TITLE_MAX);
     expect(text.description.length).toBeLessThanOrEqual(LISTING_DESCRIPTION_MAX);
-    // The headline falls back to the kind and the place when the guests do not fit, and is never cut in the middle of a word.
     const plain = `Appartamento a ${city}`;
     expect(plain.startsWith(text.title)).toBe(true);
     expect([' ', undefined]).toContain(plain[text.title.length]);

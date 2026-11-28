@@ -16,7 +16,6 @@ import { cancellationPolicyLine } from '../rules/policy-line';
 
 const hours = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, index) => `${String(from + index).padStart(2, '0')}:00`);
 
-/** The hours offered for arrival, departure and quiet time (whole hours: what a host says on the phone). */
 const CHECK_IN_TIMES = hours(14, 20);
 const CHECK_OUT_TIMES = hours(8, 12);
 const QUIET_FROM_TIMES = hours(21, 23);
@@ -27,7 +26,6 @@ const PETS_OPTIONS = ['No', 'OnRequest', 'Yes'] as const;
 const PARTIES_OPTIONS = ['No', 'OnRequest'] as const;
 const CHILDREN_OPTIONS = ['No', 'OnRequest', 'Yes'] as const;
 
-/** The hours of the list plus the one the property has, if it is another (an API client may have stored 15:30): never hidden. */
 function withCurrent(list: readonly string[], current: string): string[] {
   return current !== '' && !list.includes(current) ? [...list, current].sort() : [...list];
 }
@@ -37,7 +35,6 @@ interface TimeSelectProps {
   name: 'checkInFrom' | 'checkOutBy' | 'quietHoursFrom' | 'quietHoursTo';
   label: string;
   list: readonly string[];
-  /** Offers «Nessuno»: for what may be left unsaid. */
   blank?: string;
 }
 
@@ -84,11 +81,6 @@ interface RulesStepProps {
   form: UseFormReturn<PropertyWizardValues>;
 }
 
-/**
- * Step 5 · «Quali regole valgono in casa?» (SR-07c): arrival and departure, smoking, pets, parties, children (NF-37), quiet hours, what extra guests pay,
- * and **which of the five cancellation policies of the catalog** the host offers. Every answer is the host's: nothing is preselected for
- * the policy, and the line under each one is made of its own numbers (`cancellationPolicyLine`), not of the catalog's description.
- */
 export function RulesStep({ form }: RulesStepProps) {
   const { t } = useTranslation();
   const policies = useCancellationPolicies();

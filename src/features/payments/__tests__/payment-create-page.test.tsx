@@ -28,7 +28,6 @@ function mockBookings(state: Record<string, unknown>) {
   queries.useBookings.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null, refetch: vi.fn(), ...state });
 }
 
-/** The list of the payments, with the address it was opened on (`?chip=collected`). */
 function PaymentsListStub() {
   const { search } = useLocation();
   return (
@@ -89,7 +88,6 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
   it('PaymentCreatePage_BookingSelect_ListsTheBookingsTheHostCollectsItself', () => {
     renderPage();
 
-    // The Airbnb booking is not offered: the portal collects the money (SR-06b).
     const options = within(screen.getByLabelText('Prenotazione *')).getAllByRole('option');
     expect(options.map((o) => o.textContent)).toEqual(['Seleziona una prenotazione', 'Giulia Bianchi - b1000000']);
     expect(within(screen.getByLabelText('Metodo di pagamento *')).getAllByRole('option').map((o) => o.textContent)).toEqual([
@@ -134,7 +132,6 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
       }),
     );
     expect(await screen.findByText('Elenco dei pagamenti')).toBeInTheDocument();
-    // The list opens on «Incassati»: the page opens on «In arrivo», which leaves out the stays that are over.
     expect(screen.getByTestId('list-address')).toHaveTextContent('?chip=collected');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
@@ -145,7 +142,6 @@ describe('PaymentCreatePage (pilot of the UI primitives): the form', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
 
     expect(screen.getByText('Elenco dei pagamenti')).toBeInTheDocument();
-    // Nothing was recorded: the list opens as it always does.
     expect(screen.getByTestId('list-address').textContent).toBe('');
     expect(mutateAsync).not.toHaveBeenCalled();
   });

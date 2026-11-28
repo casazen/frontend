@@ -41,13 +41,8 @@ import { SettingsError, SettingsLoading, SettingsNoAccess, SettingsNotFound } fr
 
 type Mode = 'inherit' | 'own';
 
-/**
- * Whether the rules of the organization are known to the form: what an exception loosens can be said only against them, so a save is offered only when they are `ready`
- * (still being read, `loading`; not readable, `failed`; the person may not read them, `forbidden`).
- */
 type RulesStatus = 'ready' | 'loading' | 'failed' | 'forbidden';
 
-/** What the form of the exceptions holds: every field starts as «as the organization» until it is changed. */
 interface ExceptionFields {
   enabled: 'inherit' | 'off' | 'on';
   tone: AssistantTone | 'inherit';
@@ -74,7 +69,6 @@ function fieldsOf(settings: PropertyAssistantSettings): ExceptionFields {
   };
 }
 
-/** The body of the save: the WHOLE set of the exceptions (a `null` field is «as the organization»); the threshold of confidence is sent back as it was read. */
 function requestOf(fields: ExceptionFields, settings: PropertyAssistantSettings): SavePropertyAssistantSettingsRequest {
   return {
     enabled: fields.enabled === 'inherit' ? null : fields.enabled === 'on',
@@ -106,16 +100,10 @@ function problemsOf(fields: ExceptionFields): Partial<Record<'signature' | 'hour
 interface ExceptionsFormProps {
   propertyId: string;
   settings: PropertyAssistantSettings;
-  /** The rules of the organization, when the person may read them: the value an exception falls back to, and what an exception loosens. */
   rules: AssistantRules | undefined;
   canEdit: boolean;
-  /**
-   * The two mutations belong to `PropertyAssistantPanel`, not to this form: the form is started again whenever the server holds other exceptions (after a save, or when
-   * somebody else changed them), and a refusal that lived inside it (the 409, or the exceptions that changed while it was open) would be gone with the remount.
-   */
   save: ReturnType<typeof useSavePropertyAssistantSettings>;
   reset: ReturnType<typeof useRemovePropertyAssistantSettings>;
-  /** Whether `rules` is known (see {@link RulesStatus}): without the rules of the organization the form cannot say what an exception loosens, so it offers no save. */
   rulesStatus: RulesStatus;
   /** Reads the rules of the organization again (the retry of a reading that failed). */
   onReloadRules: () => void;
@@ -136,11 +124,9 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset, rul
   const rulesReady = rulesStatus === 'ready';
   const update = (patch: Partial<ExceptionFields>) => setFields((current) => ({ ...current, ...patch }));
 
-  // What the exceptions loosen, said before it is saved and after: a looser rule of a property is never relaxed in silence.
   const loosened = relaxedTopics(rules?.forbiddenTopics ?? [], fields.topicsMode === 'own' ? fields.forbiddenTopics : null);
   const lowerThreshold = relaxedThreshold(settings.confidenceThreshold, rules?.confidenceThreshold);
   const loosens = loosened.length > 0 || lowerThreshold;
-  // What the person confirms before such a save, one sentence each (the same ones the warnings above the button say).
   const loosenings = [
     ...(loosened.length > 0 ? [t('assistant.property.relaxedTopics', { topics: loosened.map((name) => topicText(name, t, i18n)).join(', ') })] : []),
     ...(lowerThreshold ? [t('assistant.property.relaxedThreshold', { value: settings.confidenceThreshold, organization: rules?.confidenceThreshold })] : []),
@@ -153,14 +139,12 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset, rul
   const organizationTopics =
     rules === undefined ? null : rules.forbiddenTopics.length === 0 ? t('assistant.property.noTopics') : rules.forbiddenTopics.map((name) => topicText(name, t, i18n)).join(', ');
 
-  // `base` is what this form started from: the save reads the exceptions again and sends nothing if somebody else changed them meanwhile.
   const send = () => save.mutate({ propertyId, request: requestOf(fields, settings), base: settings });
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     setAttempted(true);
     if (!canEdit || !rulesReady || Object.keys(problems).length > 0) return;
-    // A rule looser than the organization's is never saved with one click: the person confirms what it loosens first (the dialog is outside this form).
     if (loosens) {
       setConfirmingLoosen(true);
       return;
@@ -296,7 +280,6 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset, rul
           </Alert>
         ) : null}
 
-        {/* Without the rules of the organization the form cannot say what an exception loosens: no save is offered until they are read, and the reason is said. */}
         {canEdit && rulesStatus === 'loading' ? (
           <Alert variant="info" role="status" data-testid="assistant-property-rules-loading">
             {t('assistant.property.rulesLoading')}
@@ -330,7 +313,6 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset, rul
         ) : null}
       </form>
 
-      {/* Outside the form: a confirmation dialog inside a form would submit it. A rule looser than the organization's is saved only after this one. */}
       {canEdit ? (
         <ConfirmationDialog
           open={confirmingLoosen}
@@ -371,11 +353,8 @@ function ExceptionsForm({ propertyId, settings, rules, canEdit, save, reset, rul
 
 interface PropertyAssistantPanelProps {
   propertyId: string;
-  /** The person may read the exceptions and the knowledge of the property (`property.read`). */
   canRead: boolean;
-  /** The person may change them (`property.write`). */
   canEdit: boolean;
-  /** The person may read the rules of the organization (`booking.read`): what each exception falls back to. */
   canReadRules: boolean;
 }
 
@@ -389,14 +368,11 @@ export function PropertyAssistantPanel({ propertyId, canRead, canEdit, canReadRu
   const { t } = useTranslation();
   const settings = usePropertyAssistantSettings(propertyId, canRead);
   const rules = useAssistantRules(canReadRules);
-  // The saves live here, above the form that is started again: their refusals outlive the reading again that follows them.
   const save = useSavePropertyAssistantSettings();
   const reset = useRemovePropertyAssistantSettings();
-  // A person who may not read the rules of the organization never knows what an exception loosens (and nothing is asked of the server for them).
   const rulesStatus: RulesStatus = !canReadRules ? 'forbidden' : rules.data ? 'ready' : rules.isError ? 'failed' : 'loading';
 
   if (!canRead) return <SettingsNoAccess message={t('assistant.noAccess.property')} testId="assistant-property-no-access" />;
-  // A 404 is «not found» even when an older answer is still in the cache (the query keeps its data on an error).
   if (settings.isError && isNotFound(settings.error)) {
     return <SettingsNotFound title={t('assistant.property.notFound')} hint={t('assistant.property.notFoundHint')} testId="assistant-property-not-found" />;
   }
@@ -405,7 +381,6 @@ export function PropertyAssistantPanel({ propertyId, canRead, canEdit, canReadRu
 
   return (
     <div className="min-w-0 space-y-8" data-testid="assistant-property-panel" data-property-id={propertyId}>
-      {/* The form starts from what the server holds and starts again when that changes (after a save, or when someone else changed the exceptions). */}
       <ExceptionsForm key={JSON.stringify(settings.data)} propertyId={propertyId} settings={settings.data} rules={rules.data} canEdit={canEdit} save={save} reset={reset} rulesStatus={rulesStatus} onReloadRules={() => void rules.refetch()} />
       <KnowledgeList scope={{ kind: 'property', propertyId }} canRead={canRead} canEdit={canEdit} />
     </div>

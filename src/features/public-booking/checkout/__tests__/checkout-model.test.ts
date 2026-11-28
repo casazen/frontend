@@ -30,7 +30,6 @@ describe('paymentOptionOf', () => {
   it('paymentOptionOf_EachChoice_IsTheOptionTheCardIsChargedUnder', () => {
     expect(paymentOptionOf('instant', 'now')).toBe('Immediate');
     expect(paymentOptionOf('instant', 'deadline')).toBe('OnCancellationDeadline');
-    // A request takes no card whatever the payment choice says.
     expect(paymentOptionOf('request', 'now')).toBe('OnSite');
     expect(paymentOptionOf('request', 'deadline')).toBe('OnSite');
   });
@@ -38,7 +37,6 @@ describe('paymentOptionOf', () => {
 
 describe('the offers boxes of the checkout (NF-90)', () => {
   it('EmptyDetails_TheTwoOffersBoxes_AreNeverPreselected', () => {
-    // The guest ticks them or they stay «no»: a blank draft, and the one the page starts from, have both unticked.
     expect(EMPTY_DETAILS.offersEmail).toBe(false);
     expect(EMPTY_DETAILS.offersWhatsApp).toBe(false);
     expect(EMPTY_DRAFT.details.offersEmail).toBe(false);
@@ -82,11 +80,9 @@ describe('buildBookingPayload', () => {
     expect(bothPayload.marketingConsentWhatsApp).toBe(true);
     expect(buildBookingPayload({ ...stay, draft: onlyEmail, marketingConsentVersion: '2026-10' }).marketingConsentWhatsApp).toBe(false);
     expect(buildBookingPayload({ ...stay, draft: onlyWhatsApp, marketingConsentVersion: '2026-10' }).marketingConsentEmail).toBe(false);
-    // Never preselected: the default answer is "no" on each channel, and it is sent as a "no".
     const untouched = buildBookingPayload({ ...stay, draft, marketingConsentVersion: '2026-10' });
     expect(untouched.marketingConsentEmail).toBe(false);
     expect(untouched.marketingConsentWhatsApp).toBe(false);
-    // The single «send me offers» of before is gone, whatever the boxes say.
     expect(bothPayload).not.toHaveProperty('marketingConsent');
     expect(untouched).not.toHaveProperty('marketingConsent');
   });
@@ -99,7 +95,6 @@ describe('buildBookingPayload', () => {
   });
 
   it('buildBookingPayload_WhatsAppTickedOnANumberThatDoesNotSayItsCountry_NeverSendsTheConsent', () => {
-    // The form refuses this too; the server would put its own calling code in front of the number and record the consent for a stranger's phone.
     const national = { ...draft, details: { ...draft.details, phone: '333 1234567', offersEmail: true, offersWhatsApp: true } };
     const international = { ...draft, details: { ...draft.details, phone: '0039 333 1234567', offersWhatsApp: true } };
 
@@ -114,7 +109,6 @@ describe('buildBookingPayload', () => {
     for (const version of [null, undefined, '']) {
       expect(buildBookingPayload({ ...stay, draft, softOptInNoticeVersion: version })).not.toHaveProperty('softOptInNoticeVersion');
     }
-    // A notice, not a consent: it travels with or without the boxes and ticks nothing.
     const withNotice = buildBookingPayload({ ...stay, draft, softOptInNoticeVersion: '2026-11' });
     expect(withNotice).not.toHaveProperty('marketingConsentEmail');
     expect(withNotice).not.toHaveProperty('marketingConsentWhatsApp');
@@ -143,7 +137,6 @@ describe('buildBookingPayload', () => {
   it('buildBookingPayload_GuestsTravelWithAPet_TellsTheHostFirstInTheRequests', () => {
     expect(buildBookingPayload({ ...stay, pets: true, draft }).specialRequests).toBe(PETS_NOTE);
     expect(buildBookingPayload({ ...stay, pets: true, draft: { ...draft, requests: '  Arrivo tardi  ' } }).specialRequests).toBe(`${PETS_NOTE}\nArrivo tardi`);
-    // No pet, no note: the requests are only what the guest wrote.
     expect(buildBookingPayload({ ...stay, pets: false, draft: { ...draft, requests: 'Arrivo tardi' } }).specialRequests).toBe('Arrivo tardi');
     expect(buildBookingPayload({ ...stay, pets: false, draft })).not.toHaveProperty('specialRequests');
   });
@@ -156,13 +149,11 @@ describe('buildBookingPayload', () => {
   });
 
   it('buildBookingPayload_Attribution_IsSentAsItIsOnlyWhenThereIsOne', () => {
-    // Where the guest came from (NF-123): a source, a campaign, the host of a site. Nothing of it is the guest's, and a booking with none sends no block.
     const attribution = { source: 'agency-site', medium: 'link', campaign: 'estate-2026', referrer: 'www.agenzia.it' };
 
     expect(buildBookingPayload({ ...stay, draft, attribution }).attribution).toEqual(attribution);
     expect(buildBookingPayload({ ...stay, draft })).not.toHaveProperty('attribution');
     expect(buildBookingPayload({ ...stay, draft, attribution: undefined })).not.toHaveProperty('attribution');
-    // The guest's own data never ride in it, and it changes nothing of what the guest typed.
     const payload = buildBookingPayload({ ...stay, draft, attribution });
     expect(JSON.stringify(payload.attribution)).not.toMatch(/mario|rossi|example/i);
     expect(payload.guest).toEqual({ firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', country: 'IT' });

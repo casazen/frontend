@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 
-/** The values a page takes from the fragment of its link: the ones it cannot go on without and the ones it takes when they are there. */
 export interface SignedFragmentFields<Required extends string, Optional extends string = never> {
   readonly required: readonly Required[];
   readonly optional?: readonly Optional[];
 }
 
-/** What was read: every required value and, when the link has them, the optional ones. */
 export type SignedFragmentValues<Required extends string, Optional extends string = never> = Record<Required, string> &
   Partial<Record<Optional, string>>;
 
@@ -33,7 +31,6 @@ export function parseSignedFragment<Required extends string, Optional extends st
   return values as SignedFragmentValues<Required, Optional>;
 }
 
-/** Takes the fragment out of the address bar, leaving the path, the query and the state of the history entry (the router's) as they are. */
 function clearAddressBar(): void {
   const { pathname, search, hash } = window.location;
   if (hash === '') return;
@@ -52,7 +49,6 @@ function clearAddressBar(): void {
 export function useSignedFragment<Required extends string, Optional extends string = never>(
   fields: SignedFragmentFields<Required, Optional>,
 ): SignedFragmentValues<Required, Optional> | null {
-  // Read while rendering and cleaned in an effect: the render may run twice (StrictMode) and must give the same answer both times.
   const [values] = useState(() => parseSignedFragment(window.location.hash, fields));
 
   useEffect(() => {

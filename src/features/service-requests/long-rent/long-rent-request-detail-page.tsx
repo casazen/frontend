@@ -39,10 +39,8 @@ const PAYMENT_MODE_KEYS: Readonly<Record<string, { labelKey: string }>> = {
   Manual: { labelKey: 'longRentRequests.detail.paymentMode.Manual' },
 };
 
-/** From the take on, the request has the way it is paid fixed; before it, `Manual` is only the default of the API. */
 const PAYMENT_MODE_KNOWN = new Set(['PresoInCarico', 'InCorso', 'Completato', 'Pagato']);
 
-/** The page while the request loads: the shape of the page, no spinner in the middle of nothing. */
 function DetailSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="long-rent-request-loading">
@@ -67,14 +65,11 @@ type RequestDialog = 'cancel' | 'markPaid' | 'again';
 
 interface RequestDetailProps {
   request: ServiceRequest;
-  /** `property.write` (long-rent): who may only read a request sees it, and has no button. */
   canManage: boolean;
-  /** A card payment was sent to Stripe: the backend says it is paid when Stripe confirms to it, a little later. */
   paymentSent: boolean;
   onPaymentSent: (status: ClientPaymentStatus) => void;
 }
 
-/** What the page says of a request: the block of the next step, its details, and under «Mostra dettagli» the supplier and the history. */
 function RequestDetail({ request, canManage, paymentSent, onPaymentSent }: RequestDetailProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
@@ -106,7 +101,6 @@ function RequestDetail({ request, canManage, paymentSent, onPaymentSent }: Reque
 
   return (
     <div className="min-w-0 space-y-6" data-testid="long-rent-request-page">
-      {/* The trail (Affitti lunghi › Immobili › this property › this request) and, on a phone, the link back to the list (UI-05). */}
       <PageHeader
         crumbs={[
           { label: t('nav.properties'), to: '/app/long-rent/properties' },
@@ -238,15 +232,8 @@ function RequestDetail({ request, canManage, paymentSent, onPaymentSent }: Reque
   );
 }
 
-/**
- * `/app/long-rent/service-requests/:id`: one request to a supplier of Affitti lunghi (LR-08b). The header says what it is and
- * where, with its state and the menu «⋯» (the property, and «Annulla intervento» while it can still be cancelled); under it the
- * one highlighted block, «Prossimo passo», told by the state of the request; then its details, and under «Mostra dettagli» the
- * supplier and the history. A request outside the landlord's scope is not found, as on the server.
- */
 export function LongRentRequestDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
-  // One page per request: what was open (a window, a payment) is not carried over to the next one.
   return <LongRentRequestPage key={id} id={id} />;
 }
 
@@ -255,14 +242,12 @@ function LongRentRequestPage({ id }: { id: string }) {
   const { hasPermission } = useWorkspace();
   const canManage = hasPermission('long-rent', 'property.write');
   const [searchParams] = useSearchParams();
-  // A payment sent to Stripe (from the window, or back from the page of the bank): the request is read again until it is paid.
   const [clientStatus, setClientStatus] = useState<ClientPaymentStatus | null>(() => clientStatusFromRedirect(searchParams.get('redirect_status')));
   const paymentSent = clientStatus === 'succeeded' || clientStatus === 'processing';
   const { data: request, isLoading, isError, error, refetch } = useLongRentServiceRequest(id, { poll: paymentSent });
 
   if (isLoading) return <DetailSkeleton label={t('longRentRequests.detail.loading')} />;
 
-  // An API error is never shown as «not found» (only a 404 is).
   if (isError && getHttpStatus(error) !== 404) {
     return (
       <div className="min-w-0 space-y-6">

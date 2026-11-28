@@ -8,10 +8,6 @@ import { snapKm } from './region/land';
 import { geoBase } from './region/registry';
 import { LAT_KM, LON_KM, ORIGIN_LAT, ORIGIN_LON, publicPoint, toKm, type LatLon } from './view';
 
-/**
- * The position moved to land: unchanged when it already is on land or when no shore is within `maxKm` (1.5 by default). The
- * position is the one of a house, so two decimals at most (see `publicPoint`); the result may have more, it is only for drawing.
- */
 export function snapToLand(point: LatLon, { maxKm = 1.5 }: { maxKm?: number } = {}): LatLon {
   const base = geoBase();
   const given = publicPoint(point);

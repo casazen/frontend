@@ -11,7 +11,6 @@ export function useCanoneConcordatoEligibility() {
   });
 }
 
-/** Zones of the agreement of the property's comune (LT-13): the calculator offers them as a select. */
 export function useCanoneConcordatoZones(propertyId: string | undefined) {
   return useQuery({
     queryKey: ['canone-concordato', 'zones', propertyId],
@@ -20,7 +19,6 @@ export function useCanoneConcordatoZones(propertyId: string | undefined) {
   });
 }
 
-/** Whether the backend allows the IMU notification of the lease now (contract type, status, agreement data). */
 export function useImuNotificationStatus(leaseId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: imuNotificationStatusKey(leaseId),
@@ -45,7 +43,6 @@ export function useExportImuNotification() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (leaseId: string) => canoneConcordatoApi.exportImuNotification(leaseId),
-    // The export is recorded in the lease timeline.
     onSuccess: (_data, leaseId) => {
       void queryClient.invalidateQueries({ queryKey: ['leases', leaseId] });
     },

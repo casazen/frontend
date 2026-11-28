@@ -48,7 +48,6 @@ vi.mock('@/api/checkin.api', () => ({
 
 const TOKEN = 'tok-presence';
 
-/** A challenge as the API sends it: a lead-in of half a second, two moves of a second, ten frames a second. */
 const challengeBody = (overrides: Partial<PresenceChallenge> = {}): PresenceChallenge => ({
   challengeToken: 'challenge-1',
   steps: ['turn_left', 'look_up'],
@@ -97,10 +96,6 @@ function httpError(status: number, data?: unknown): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
-/**
- * The 409 `identity_already_closed` of `presence-challenge` as the server sends it: the bare problem (`ApiProblem`: type, title, status, detail, instance, `code` and `traceId`) and NO `state`. The document, the selfie, the
- * presence and the opening send the state with this code; the challenge does not (`IssuePresenceChallenge`, tested on the backend by `IssuePresenceChallenge_AClosedVerification_Is409IdentityAlreadyClosed_AndNothingIsIssued`).
- */
 const closedChallengeBody = {
   type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10',
   title: 'Conflict',
@@ -111,16 +106,13 @@ const closedChallengeBody = {
   traceId: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
 };
 
-/** The context of the link as the page reads it again: only what the identity step reads of it. */
 const linkSays = (identityVerification: IdentityVerificationState) => ({ identityVerification }) as unknown as PublicCheckInContextDto;
 
-/** What the canvases were asked to encode, and what was drawn. */
 let encoded: Array<{ width: number; height: number; type: string | undefined; quality: unknown }> = [];
 
 const originalWidth = Object.getOwnPropertyDescriptor(HTMLVideoElement.prototype, 'videoWidth');
 const originalHeight = Object.getOwnPropertyDescriptor(HTMLVideoElement.prototype, 'videoHeight');
 
-/** A camera that works: a stream with one track that can be stopped. */
 function stubCamera(rejectWith?: { name: string }) {
   const stop = vi.fn();
   const track = { stop, addEventListener: vi.fn() };
@@ -130,19 +122,16 @@ function stubCamera(rejectWith?: { name: string }) {
   return { stop, getUserMedia };
 }
 
-/** Lets what is waiting (the answer of the camera, a promise of the send) settle, with the clock where it is. */
 const settle = () =>
   act(async () => {
     await vi.advanceTimersByTimeAsync(0);
   });
 
-/** Moves the clock by `ms`, in the one hold React wants for what that sets in motion. */
 const advance = (ms: number) =>
   act(async () => {
     await vi.advanceTimersByTimeAsync(ms);
   });
 
-/** Moves the clock in small steps until the condition holds (the screen is awaited, never a window of time guessed in advance). */
 async function advanceUntil(done: () => boolean, step = 100, limit = 200) {
   for (let spent = 0; spent < limit && !done(); spent += 1) await advance(step);
   expect(done()).toBe(true);
@@ -156,7 +145,6 @@ const canvas = () => screen.getByTestId('checkin-presence-canvas') as HTMLCanvas
 
 type CaptureProps = ComponentProps<typeof PresenceSequenceCapture>;
 
-/** What was handed to the send, as it was at that moment: the screen lets the frames go once the answer is in, so a test reads them here and not from the arguments of the call. */
 interface Sent {
   frames: Blob[];
   timestamps: number[];
@@ -164,7 +152,6 @@ interface Sent {
   key: string;
 }
 
-/** A send that answers with each of the given results in turn (the last one for ever), and notes what it was given. */
 function recordingSender(...results: Array<Awaited<ReturnType<CaptureProps['sendSequence']>>>) {
   const sent: Sent[] = [];
   const sendSequence = vi.fn<CaptureProps['sendSequence']>(async (sequence, key) => {
@@ -183,13 +170,11 @@ function renderCapture(overrides: Partial<CaptureProps> = {}) {
   return { ...view, startChallenge, sendSequence, cancelSequence, sent, update: (next: Partial<CaptureProps>) => view.rerender(<PresenceSequenceCapture {...props} {...next} />) };
 }
 
-/** The camera is open and the guest can start: the button of the start is there and awake. */
 async function waitForTheStart() {
   await settle();
   await advanceUntil(() => screen.queryByTestId('checkin-presence-start') !== null && !startButton().disabled);
 }
 
-/** The guest starts and the prompts run to their end (the sequence is taken and handed to the send). */
 async function recordTheWholeSequence(send: { mock: { calls: unknown[] } }) {
   await waitForTheStart();
   fireEvent.click(startButton());
@@ -283,7 +268,6 @@ describe('presence-sequence-capture: the challenge, the camera and the preview (
     await settle();
 
     expect(phase()).toBe('failed');
-    // No camera was asked for before there was a challenge to follow.
     expect(rig.getUserMedia).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByTestId('checkin-presence-retry'));
@@ -313,7 +297,6 @@ describe('presence-sequence-capture: the prompts (AC2)', () => {
       await advance(100);
     }
 
-    // The moves of the challenge are the server's (`turn_left`, then `look_up`); the words are the ones the guest hears for them (see the mapping below).
     expect(announced).toEqual([text('checkin.identity.presence.leadIn'), text('checkin.identity.presence.move.turnToTheRight'), text('checkin.identity.presence.move.lookUp')]);
     expect(arrows).toEqual(['lead-in', 'turn_left', 'look_up']);
     await advanceUntil(() => view.sendSequence.mock.calls.length > 0);
@@ -326,7 +309,6 @@ describe('presence-sequence-capture: the prompts (AC2)', () => {
     fireEvent.click(startButton());
     await settle();
 
-    // The lead-in is half a second: one second shown, then the first move starts with its two seconds... of one second each.
     const countdown = () => screen.getByTestId('checkin-presence-countdown');
     expect(countdown()).toHaveTextContent('1');
     expect(countdown()).toHaveAttribute('role', 'timer');
@@ -342,7 +324,6 @@ describe('presence-sequence-capture: the prompts (AC2)', () => {
     stubCamera();
     renderCapture();
 
-    // It exists from the first render, empty or with the state of the screen: a live region that appears with its text is not announced.
     expect(prompt()).toHaveAttribute('aria-live', 'assertive');
     expect(prompt()).toHaveAttribute('aria-atomic', 'true');
     await waitForTheStart();
@@ -351,7 +332,6 @@ describe('presence-sequence-capture: the prompts (AC2)', () => {
     await settle();
     expect(prompt()).toHaveAttribute('aria-live', 'assertive');
     expect(prompt()).toHaveTextContent(text('checkin.identity.presence.leadIn'));
-    // The countdown is not inside it: a number every second would be read out every second.
     expect(prompt()).not.toContainElement(screen.getByTestId('checkin-presence-countdown'));
   });
 
@@ -371,8 +351,6 @@ describe('presence-sequence-capture: the prompts (AC2)', () => {
 });
 
 describe('presence-sequence-capture: the moves are asked the way the guest turns in a mirror (AC2)', () => {
-  // The server names a move by the picture it receives, as the camera gives it (`turn_right`: the nose goes to the RIGHT of the frame); the frames are sent as the camera gives them, and the guest looks at a mirror:
-  // what goes to the right of the frame is the guest's LEFT, and the left of the screen they look at. So the move the server calls `turn_right` is asked as «turn your head to the left», with an arrow that points left.
   it.each([
     ['turn_left', 'turnToTheRight', 'arrow-right'],
     ['turn_right', 'turnToTheLeft', 'arrow-left'],
@@ -408,7 +386,6 @@ describe('presence-sequence-capture: the moves are asked the way the guest turns
     const view = renderCapture();
     await recordTheWholeSequence(view.sendSequence);
 
-    // The preview is a mirror for the guest; the picture the server gets is the one of the camera.
     expect(screen.getByTestId('checkin-presence-video').className).toContain('-scale-x-100');
     expect(view.sent[0].frames.length).toBeGreaterThan(20);
     expect(transforms).toEqual([]);
@@ -425,7 +402,6 @@ describe('presence-sequence-capture: the frames (AC3)', () => {
     const sequence = view.sent[0];
     const { key } = sequence;
     expect(sequence.challengeToken).toBe('challenge-1');
-    // 2.5 s at ten frames a second.
     expect(sequence.frames.length).toBeGreaterThanOrEqual(24);
     expect(sequence.frames.length).toBeLessThanOrEqual(27);
     expect(sequence.timestamps).toHaveLength(sequence.frames.length);
@@ -458,7 +434,6 @@ describe('presence-sequence-capture: the frames (AC3)', () => {
     const sequence = view.sent[0];
     expect(sequence.frames).toHaveLength(5);
     expect(sequence.timestamps).toEqual([0, 100, 200, 300, 400]);
-    // Not at the end of the prompts (2.5 s): when the frames ran out.
     expect(Date.now() - startedAt).toBeLessThan(1_500);
   });
 
@@ -511,7 +486,6 @@ describe('presence-sequence-capture: one key for each recording (AC4, AC5)', () 
     expect(sent[0].key).toBe('11111111-1111-4111-8111-111111111111');
     expect(sent[1].key).toBe('22222222-2222-4222-8222-222222222222');
     expect(sent[1].challengeToken).toBe('challenge-2');
-    // The frames of the first recording are gone and the second has its own.
     expect(sent[0].frames[0]).not.toBe(sent[1].frames[0]);
     expect(sent[1].frames.length).toBeGreaterThan(20);
   });
@@ -614,7 +588,6 @@ describe('presence-sequence-capture: frames only in memory and dropped after upl
     await settle();
 
     const [sequence] = view.sendSequence.mock.calls[0];
-    // What was sent is let go: the arrays that held the frames are empty, and so is the canvas they were drawn on.
     expect(sequence.frames).toHaveLength(0);
     expect(sequence.timestamps).toHaveLength(0);
     expect(canvas().width).toBe(0);
@@ -713,7 +686,6 @@ describe('presence-sequence-capture: the legacy selfie stays for the legacy path
     expect(screen.getByTestId('checkin-presence')).toBeInTheDocument();
     expect(screen.queryByTestId('checkin-selfie-capture')).not.toBeInTheDocument();
     expect(screen.queryByTestId('selfie-take')).not.toBeInTheDocument();
-    // The way to a person stays under the recording.
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeEnabled();
     expect(publicCheckinApi.startSelfieChallenge).not.toHaveBeenCalled();
   });
@@ -827,7 +799,6 @@ describe('presence-sequence-capture: the legacy selfie stays for the legacy path
     expect(publicCheckinApi.postSelfie).not.toHaveBeenCalled();
   });
 
-  // The 409 of the challenge is the real one: the bare problem, with no `state`. The page reads the state of the link and shows what it says, and deduces nothing from the 409.
   it('IdentityStep_TheVerificationPassedInAnotherTabWhileAskingForTheChallenge_TheLinkSaysSoAndItIsShownDone', async () => {
     const rig = stubCamera();
     vi.mocked(publicCheckinApi.startPresenceChallenge).mockRejectedValue(httpError(409, closedChallengeBody));
@@ -843,7 +814,6 @@ describe('presence-sequence-capture: the legacy selfie stays for the legacy path
     expect(screen.queryByTestId('identity-result-operator')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
     expect(rig.getUserMedia).not.toHaveBeenCalled();
-    // Nobody is asked for a person on a guess.
     expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
   });
 
@@ -873,7 +843,6 @@ describe('presence-sequence-capture: the legacy selfie stays for the legacy path
     renderStep(state());
     await settle();
 
-    // Neither a pass nor a person is deduced: the guest is told that it did not work and can try again, or ask for a person.
     expect(phase()).toBe('failed');
     expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text(`checkin.identity.problem.${problem}`));
     expect(screen.queryByTestId('identity-result-ok')).not.toBeInTheDocument();
@@ -915,7 +884,6 @@ describe('presence-sequence-capture: the legacy selfie stays for the legacy path
     await act(async () => {
       await result.current.sendDocument(photo);
     });
-    // A self-hosted verification goes from the document to the presence.
     expect(result.current.progress?.stage).toBe('presence');
 
     const sequence = { frames: [new Blob(['frame'], { type: 'image/jpeg' })], timestamps: [0], challengeToken: 'challenge-1' };
@@ -967,7 +935,6 @@ describe('the presence in the model of the identity step (E72/F02/US01/T01)', ()
     expect(readPresenceAnswer({ result: 'approved' })).toBeNull();
     expect(readPresenceAnswer('<html></html>')).toBeNull();
     expect(readPresenceAnswer(null)).toBeNull();
-    // The older name of the codes is read too, and only texts are codes.
     expect(readPresenceAnswer({ result: 'retry', guidanceCodes: ['presence_quality', 4, ''] })?.guidance).toEqual(['presence_quality']);
   });
 
@@ -1009,7 +976,6 @@ describe('the presence in the model of the identity step (E72/F02/US01/T01)', ()
   it('closedAnswerOf_TheBareProblemOfTheChallenge_IsAClosedVerificationWithNoStateAndNeverAPerson', () => {
     expect(closedAnswerOf(httpError(409, closedChallengeBody))).toEqual({ state: null });
     expect(closedAnswerOf(httpError(409, { ...closedChallengeBody, state: state({ step: 'done', result: 'ok', closed: true, outcome: 'ok' }) }))).toMatchObject({ state: { closed: true, outcome: 'ok' } });
-    // A state that does not say the verification is closed is no state of a closed one: the caller reads the link.
     expect(closedAnswerOf(httpError(409, { ...closedChallengeBody, state: state() }))).toEqual({ state: null });
     expect(closedAnswerOf(httpError(409, { code: 'presence_challenge_unavailable' }))).toBeNull();
     expect(closedAnswerOf(httpError(422, closedChallengeBody))).toBeNull();
@@ -1042,7 +1008,6 @@ describe('the words of the presence in the five languages of the page', () => {
     return key.split('.').reduce<unknown>((node, part) => (node !== null && typeof node === 'object' ? (node as Record<string, unknown>)[part] : undefined), tree);
   }
 
-  /** The keys of the page that the presence screens write out in their sources: every one is a text in every language, and none is a `defaultValue`. */
   const sources = import.meta.glob<string>(['../components/presence-sequence-capture.tsx', '../identity-result.tsx', '../lib/identity-model.ts'], {
     query: '?raw',
     import: 'default',
@@ -1083,7 +1048,6 @@ describe('the words of the presence in the five languages of the page', () => {
 });
 
 describe('presence-sequence-capture: accessibility', () => {
-  // axe-core waits on timers of its own: these tests run on the real clock, and wait for the screen, not for a window of time.
   beforeEach(() => {
     vi.useRealTimers();
   });

@@ -7,10 +7,6 @@ interface PublicOrgErrorPageProps {
   onRetry: () => void;
 }
 
-/**
- * The org of a public site could not be loaded for a reason other than "it does not exist" (server error, no network).
- * Not the "site not found" page: that would tell the guest the site is gone when it is only unreachable (BK-13).
- */
 export function PublicOrgErrorPage({ onRetry }: PublicOrgErrorPageProps) {
   const { t } = useTranslation();
 

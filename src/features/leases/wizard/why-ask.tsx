@@ -3,11 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-/**
- * «Perché lo chiediamo?» (LR-WIZ-1): the reason for a question, shut by default and opened by the person, only where the question makes
- * people hesitate (the fiscal code, the deposit); with `summary` the same box carries another short help («Quale scegliere?»). A native
- * `details`: it opens with a tap, Enter or Space, and does not send the form it sits in.
- */
 export function WhyAsk({ children, summary, className }: { children: ReactNode; summary?: string; className?: string }) {
   const { t } = useTranslation();
   return (

@@ -7,9 +7,7 @@ import { formatStayDate } from '@/lib/stay-dates';
 interface ReceiptRecoveryStepsProps {
   /** The portal of Alloggiati Web the configuration of the API names (`alloggiatiPortalUrl`, https): the first step opens it. Without a valid address the step tells where to go and offers no link: the client never writes one. */
   portalUrl?: string;
-  /** The day the receipt is about (`yyyy-MM-dd`), when the form has one: the second step names it. */
   day?: string;
-  /** The place where the file is chosen or dropped: the third step leads to it, and it stays the one field of the form that holds the file. */
   children: ReactNode;
 }
 

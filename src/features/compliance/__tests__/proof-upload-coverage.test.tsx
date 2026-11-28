@@ -21,7 +21,6 @@ import { ProofUploadDialog, type ProofUploadPrefill, type ProofUploadProperty } 
 vi.mock('@/lib/axios', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/axios')>()), default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() } }));
 
-// The page of a stay: the status it shows and what the person may do come from here (the connector flag comes from the provider).
 const stay = vi.hoisted(() => ({ status: undefined as AlloggiatiStatusDto | undefined, granted: [] as string[] }));
 vi.mock('@/queries/use-alloggiati', () => ({ useAlloggiatiStatus: () => ({ data: stay.status, isLoading: false }) }));
 vi.mock('@/hooks/use-workspace', () => ({
@@ -35,12 +34,7 @@ const D = '7e8f9a0b-1c2d-4e3f-9a4b-5c6d7e8f9a0b';
 const E = '2c3d4e5f-6a7b-4c8d-9e0f-a1b2c3d4e5f6';
 const BOOKING_ID = '11111111-1111-4111-8111-111111111111';
 const NAMES: Record<string, string> = { [A]: 'Casa Como', [B]: 'Villa Rosa', [C]: 'Attico Lecco', [D]: 'Chalet Lugano', [E]: 'Villa Lunga' };
-/** The stays each flat has that a receipt of the day would put in order. */
 const STAYS: Record<string, number> = { [A]: 2, [B]: 1, [C]: 3, [D]: 0 };
-/**
- * The properties of the organization as the list of the API gives them: an id, a name and how the flat is let, no country (the API does not send one). Three are in Italy and `D` is in
- * Switzerland, which only the server knows: it refuses `D` among several flats (see `serverSays`). `E` is let long-term: it owes no communication and is never offered.
- */
 const PROPERTIES: ProofUploadProperty[] = [
   { id: A, name: NAMES[A], rentalMode: 'Short' },
   { id: B, name: NAMES[B], rentalMode: 'Short' },
@@ -52,7 +46,6 @@ const DAY = '2026-11-14';
 const PORTAL = 'https://portal.example.test/ricevute/';
 
 const asked = { coverage: [] as URLSearchParams[], properties: [] as unknown[] };
-/** What `GET /api/public/features` answers: the provider reads it once when the page opens and the dialog reads it again when it opens; a test says what the server answers by then. */
 const server = { flags: (): Promise<Record<string, boolean>> => Promise.resolve({}) };
 const onClose = vi.fn();
 
@@ -65,21 +58,18 @@ function problem(status: number, code?: string): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: code ? { code } : {}, statusText: '', headers: {}, config });
 }
 
-/** What the server says a receipt of `DAY` would prove for the flats asked for, in the order asked. */
 function coverageOf(params: URLSearchParams): ReceiptCoverage {
   const ids = params.getAll('propertyIds');
   const properties = ids.map((id) => ({ propertyId: id, propertyName: NAMES[id], stays: STAYS[id] }));
   return { day: params.get('day') ?? '', stays: properties.reduce((sum, flat) => sum + flat.stays, 0), properties };
 }
 
-/** The server as it is: a flat outside Italy (here `D`) is refused among several flats (422), whatever the list of the API says of it. */
 function serverSays(params: URLSearchParams): ReceiptCoverage {
   const ids = params.getAll('propertyIds');
   if (ids.length > 1 && ids.includes(D)) throw problem(422, 'compliance_proof_coverage_invalid');
   return coverageOf(params);
 }
 
-/** The answer of the upload of a receipt: the flats it covers and the stays it proves. */
 function saved(ids: string[], coveredStays: number | null, kind: ComplianceProofKind = 'AlloggiatiReceipt'): ComplianceArchiveEntry {
   return {
     id: 'proof-1',
@@ -107,7 +97,6 @@ interface Answers {
   booking?: ComplianceBookingArchive;
 }
 
-/** The GET calls of the page, answered by their address; `asked.coverage` keeps the query string of every question about a receipt. */
 function answer({ coverage = serverSays, booking = archiveOf() }: Answers = {}) {
   vi.mocked(axios.get).mockImplementation((async (url: string, config?: { params?: unknown }) => {
     if (url === '/compliance/archive/proofs/coverage') {
@@ -117,7 +106,6 @@ function answer({ coverage = serverSays, booking = archiveOf() }: Answers = {}) 
     }
     if (url === '/public/features') return { data: await server.flags() };
     if (url === '/properties') {
-      // The list as the API would give it unfiltered: a page that does not ask for the short-rent flats gets the long-term one too.
       asked.properties.push(config?.params);
       return { data: PROPERTIES };
     }
@@ -127,7 +115,6 @@ function answer({ coverage = serverSays, booking = archiveOf() }: Answers = {}) 
   }) as never);
 }
 
-/** What the page sent in the one upload: the form it posted. */
 function posted(): FormData {
   expect(axios.post).toHaveBeenCalledTimes(1);
   const [url, body] = vi.mocked(axios.post).mock.calls[0];
@@ -182,8 +169,6 @@ afterEach(() => {
 });
 
 describe('the receipt covers the flats the host chose', () => {
-  // The data rule: what the host chose is what is asked and what is stored. The summary and the upload speak of the same flats, in the same order, the one the receipt is filed under first;
-  // a list is written the way the API reads it (`propertyIds` repeated), and nothing but the day and the flats is in the address of the question.
   it('dialog_ReceiptForSeveralFlats_SendsExactlyTheChosenFlatsAndAsksTheSummaryAboutTheSameOnes', async () => {
     vi.mocked(axios.post).mockResolvedValue({ data: saved([A, B], 3) });
     renderDialog();
@@ -193,8 +178,6 @@ describe('the receipt covers the flats the host chose', () => {
     expect(asked.coverage[0].getAll('propertyIds')).toEqual([A]);
     expect([...new Set(asked.coverage[0].keys())]).toEqual(['day', 'propertyIds']);
 
-    // The flats offered are the ones of the list, one by one, the one of the request first, ticked and fixed. The list says nothing of the country, so none is left out, and there is no
-    // button that ticks them all: a receipt covers the flats the host chose.
     const flats = screen.getByTestId('proof-upload-flats');
     expect(within(flats).getAllByRole('checkbox').map((box) => box.getAttribute('data-testid'))).toEqual([`proof-upload-flat-${A}`, `proof-upload-flat-${B}`, `proof-upload-flat-${C}`, `proof-upload-flat-${D}`]);
     expect(screen.getByTestId(`proof-upload-flat-${A}`)).toBeDisabled();
@@ -220,7 +203,6 @@ describe('the receipt covers the flats the host chose', () => {
     expect(form.getAll('propertyIds')).toEqual([A, B]);
     expect((form.get('file') as File).name).toBe('ricevuta.pdf');
 
-    // The outcome, after: the flats it covers as the server stored them and the stays it put in order, in the same layer, with one way out.
     const outcome = await screen.findByTestId('proof-upload-outcome');
     expect(within(outcome).getByTestId('proof-upload-outcome-flats')).toHaveTextContent('Casa Como');
     expect(within(outcome).getByTestId('proof-upload-outcome-flats')).toHaveTextContent('Villa Rosa');
@@ -231,7 +213,6 @@ describe('the receipt covers the flats the host chose', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  // A list never means «every flat»: with no other flat ticked the receipt covers the flat of the request alone, and the form carries no list at all.
   it('dialog_ReceiptForOneFlat_SendsNoListOfFlatsNeverEveryFlat', async () => {
     renderDialog();
     expect(await total()).toHaveTextContent('Diventano in regola: 2 soggiorni');
@@ -242,7 +223,6 @@ describe('the receipt covers the flats the host chose', () => {
     const form = await waitFor(() => posted());
     expect(form.get('propertyId')).toBe(A);
     expect(form.getAll('propertyIds')).toEqual([]);
-    // Every question about the receipt was about that flat alone (the answer of the upload reads the summary once more, for the same flat).
     expect(asked.coverage.every((params) => params.getAll('propertyIds').join() === A)).toBe(true);
   });
 
@@ -266,13 +246,9 @@ describe('the receipt covers the flats the host chose', () => {
     expect(form.get('kind')).toBe('IstatProof');
     expect(form.get('day')).toBe('2026-10-01');
     expect(form.getAll('propertyIds')).toEqual([]);
-    // A proof of another kind is done when it is saved: no outcome of stays, the layer closes as it always did.
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
-  // The list of the API says nothing of the country of a flat, so a flat outside Italy (here `D`) is offered like the others and only the server knows it: it refuses it among several flats
-  // (422 `compliance_proof_coverage_invalid`). The summary then says plainly what a receipt can cover and how to take the flat off, with no «Riprova» (asking again would get the same), and
-  // the summary and the save come back as soon as the flat is off: nothing stays blocked.
   it('dialog_FlatOutsideItalyTicked_SummaryRefusalSaysWhatAReceiptCoversAndHowToTakeTheFlatOffThenTheSaveComesBack', async () => {
     renderDialog({ flags: { purgeDocumentsAfterReceipt: true } });
     expect(await total()).toHaveTextContent('Diventano in regola: 2 soggiorni');
@@ -286,7 +262,6 @@ describe('the receipt covers the flats the host chose', () => {
     expect(within(refusal).queryByTestId('proof-upload-coverage-retry')).not.toBeInTheDocument();
     expect(screen.queryByTestId('proof-upload-coverage')).not.toBeInTheDocument();
     expect(lastCoverage().getAll('propertyIds')).toEqual([A, D]);
-    // The server refused the question itself: going on without the count would be refused the same way, so no confirmation is offered (taking the flat off mends it).
     expect(screen.queryByTestId('proof-upload-coverage-go-on')).not.toBeInTheDocument();
     expect(screen.getByTestId('proof-upload-submit')).toBeDisabled();
 
@@ -297,7 +272,6 @@ describe('the receipt covers the flats the host chose', () => {
     await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeEnabled());
   });
 
-  // The same refusal can come with the save (the host went on without waiting for the summary): it is told in the same words, in the layer, and the flat can be taken off to save again.
   it('dialog_UploadRefusedBecauseAFlatIsOutsideItaly_SaysSoAndTheHostCanTakeTheFlatOffAndSaveAgain', async () => {
     vi.mocked(axios.post).mockRejectedValueOnce(problem(422, 'compliance_proof_coverage_invalid'));
     renderDialog();
@@ -355,8 +329,6 @@ describe('the receipt covers the flats the host chose', () => {
     expect(screen.getByTestId('proof-upload-flats')).not.toHaveTextContent(NAMES[E]);
   });
 
-  // The summary is a GET that carries the id of every flat in its address (about 49 characters each) and the server reads a request line of at most 8 KB, which is about 160 flats: the dialog lets
-  // a receipt name at most 100, says so, and the question about 100 flats still fits the request line.
   it('dialog_MoreFlatsThanASummaryCanCarry_CannotBeTickedAndTheLimitIsSaid', { timeout: 30_000 }, async () => {
     const many: ProofUploadProperty[] = Array.from({ length: 102 }, (_, index) => ({
       id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
@@ -369,7 +341,6 @@ describe('the receipt covers the flats the host chose', () => {
     expect(screen.getByTestId('proof-upload-flats')).toHaveTextContent('al massimo 100');
     expect(screen.queryByTestId('proof-upload-flats-limit')).not.toBeInTheDocument();
 
-    // The flat of the request and 99 more: a hundred.
     for (const flat of many.slice(1, 100)) fireEvent.click(screen.getByTestId(`proof-upload-flat-${flat.id}`));
 
     await waitFor(() => expect(lastCoverage().getAll('propertyIds')).toHaveLength(100));
@@ -379,7 +350,6 @@ describe('the receipt covers the flats the host chose', () => {
     expect(screen.getByTestId(`proof-upload-flat-${many[99].id}`)).toBeEnabled();
     expect(lastCoverage().toString().length).toBeLessThan(8 * 1024 - 512);
 
-    // A flat taken off opens the place again.
     fireEvent.click(screen.getByTestId(`proof-upload-flat-${many[99].id}`));
     await waitFor(() => expect(screen.queryByTestId('proof-upload-flats-limit')).not.toBeInTheDocument());
     expect(screen.getByTestId(`proof-upload-flat-${many[100].id}`)).toBeEnabled();
@@ -405,8 +375,6 @@ describe('what the host is told before saving and after', () => {
     return { promise, resolve };
   };
 
-  // The deletion of the photos of the documents cannot be undone: with its flag on the host reads what it will touch before saving and cannot save without it; with the flag off the
-  // dialog says nothing of a deletion and waits for nothing (nothing changes).
   it('dialog_DeletionAfterTheReceiptOn_TellsItBeforeSavingAndWaitsForTheSummary', async () => {
     const pending = nothingYet();
     answer({ coverage: () => pending.promise });
@@ -432,13 +400,11 @@ describe('what the host is told before saving and after', () => {
     fireEvent.click(screen.getByTestId('proof-upload-submit'));
 
     expect(await screen.findByTestId('proof-upload-outcome-purge')).toHaveTextContent('Non si può annullare');
-    // The job that deletes writes the line of the send log after the upload, with no event for the page: the outcome says the line is coming and that the page does not refresh by itself.
     const line = screen.getByTestId('proof-upload-outcome-purge-log');
     expect(line).toHaveTextContent('Documenti cancellati dopo la ricevuta');
     expect(line).toHaveTextContent('La pagina non si aggiorna da sola');
   });
 
-  // With no stay put in order nothing is deleted for this receipt: the outcome says nothing of deleted documents, nor of a line to come.
   it('dialog_DeletionAfterTheReceiptOnAndNoStayPutInOrder_TellsNothingOfDeletedDocuments', async () => {
     vi.mocked(axios.post).mockResolvedValue({ data: saved([A], 0) });
     renderDialog({ flags: { purgeDocumentsAfterReceipt: true } });
@@ -472,8 +438,6 @@ describe('what the host is told before saving and after', () => {
     expect(screen.queryByTestId('proof-upload-outcome-purge-log')).not.toBeInTheDocument();
   });
 
-  // The summary is never a number that is not true: a read that fails is a failure with a way to try again (never a count, never the count of an older choice), and a flat the server
-  // does not find (404) is told as such whatever the cache still holds of an older read of the same choice.
   it('dialog_SummaryThatFails_IsAFailureWithAWayToTryAgainNeverACount', async () => {
     answer({
       coverage: () => {
@@ -485,7 +449,6 @@ describe('what the host is told before saving and after', () => {
     const failure = await screen.findByTestId('proof-upload-coverage-error', undefined, { timeout: 5000 });
     expect(failure).toHaveTextContent('Non riusciamo a contare i soggiorni che diventano in regola');
     expect(screen.queryByTestId('proof-upload-coverage')).not.toBeInTheDocument();
-    // Nothing irreversible is waiting (the deletion is off): the receipt can still be saved, with nothing to confirm.
     chooseFile();
     expect(screen.getByTestId('proof-upload-submit')).toBeEnabled();
     expect(screen.queryByTestId('proof-upload-coverage-go-on')).not.toBeInTheDocument();
@@ -512,8 +475,6 @@ describe('what the host is told before saving and after', () => {
     expect(document.body.textContent).not.toMatch(/Diventano in regola/);
   });
 
-  // With the deletion on, a summary that cannot be read shuts the save and says why. It does not shut it for good: the host can try again, or confirm that the deletion cannot be undone and save
-  // without the count, for that choice of flats only (another choice asks it again).
   it('dialog_DeletionAfterTheReceiptOnAndSummaryThatFails_SaysWhyTheSaveWaitsAndOnlyAConfirmationOpensIt', async () => {
     answer({
       coverage: () => {
@@ -553,13 +514,11 @@ describe('what the host is told before saving and after', () => {
 
     fireEvent.click(screen.getByTestId(`proof-upload-flat-${B}`));
 
-    // Another choice of flats is another question: its summary fails too, and the host confirms again.
     await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeDisabled());
     expect(await screen.findByTestId('proof-upload-coverage-go-on', undefined, { timeout: 5000 })).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByTestId('proof-upload-submit')).toBeDisabled();
   });
 
-  // A failure that has a reason of its own (here a refusal of the permission) still says why the save waits, and the way on is the same.
   it('dialog_DeletionAfterTheReceiptOnAndSummaryRefusedForAReasonOfItsOwn_StillSaysWhyTheSaveWaits', async () => {
     answer({
       coverage: () => {
@@ -588,7 +547,6 @@ describe('what the host is told before saving and after', () => {
   });
 });
 
-/** A page that keeps the dialog closed until the host asks: the provider reads the flags when the page opens, the dialog reads them again when it opens. */
 function PageWithTheDialog() {
   const [open, setOpen] = useState(false);
   return (
@@ -608,7 +566,6 @@ function PageWithTheDialog() {
   );
 }
 
-/** A session that began with the deletion off: the provider has read the flags, and the dialog is still closed. */
 async function sessionThatBeganWithTheDeletionOff() {
   const client = newClient();
   render(
@@ -622,8 +579,6 @@ async function sessionThatBeganWithTheDeletionOff() {
 }
 
 describe('the flags of the deletion are read again when the dialog opens', () => {
-  // The provider reads the flags once a session: a tab opened before the deletion was switched on still holds it off, and the server deletes all the same. The dialog reads them again when it
-  // opens and goes by what the server says now: nothing is saved while that read is on its way, and then the host is told before saving, as with the flag on from the start.
   it('dialog_DeletionSwitchedOnAfterTheSessionBegan_IsReadWhenTheDialogOpensAndWarnsBeforeSaving', async () => {
     await sessionThatBeganWithTheDeletionOff();
     let answerNow!: (flags: Record<string, boolean>) => void;
@@ -635,7 +590,6 @@ describe('the flags of the deletion are read again when the dialog opens', () =>
     fireEvent.click(screen.getByTestId('open-the-dialog'));
     chooseFile();
 
-    // The flags are being read again: nothing is saved on the old value, and nothing is warned on it either.
     expect(await total()).toHaveTextContent('Diventano in regola: 2 soggiorni');
     expect(screen.getByTestId('proof-upload-submit')).toBeDisabled();
     expect(screen.queryByTestId('proof-upload-purge-warning')).not.toBeInTheDocument();
@@ -648,7 +602,6 @@ describe('the flags of the deletion are read again when the dialog opens', () =>
     expect(await screen.findByTestId('proof-upload-outcome-purge')).toHaveTextContent('Non si può annullare');
   });
 
-  // A read that fails leaves the host with the flags the session has, as before: the save is not held for ever on a read that will not come.
   it('dialog_FlagsThatCannotBeReadAgain_AreTheOnesTheSessionHasAndTheSaveIsNotHeld', async () => {
     await sessionThatBeganWithTheDeletionOff();
     server.flags = () => Promise.reject(problem(500));
@@ -699,8 +652,6 @@ describe('the receipt from the page of a stay', () => {
     stay.status = statusOf();
   });
 
-  // The host files the receipt of the day of the stay without leaving the page: the layer opens with the flat and the arrival day chosen, and the guide opens the portal the configuration of
-  // the API names. After the upload the page reads again what it shows (the proofs of the stay, the status of the stays).
   it('section_ReceiptOfTheStay_IsFiledFromThePageWithTheArrivalDayAndTheFlatsChosen', async () => {
     vi.mocked(axios.post).mockResolvedValue({ data: saved([A, C], 5) });
     const client = renderSection();
@@ -711,13 +662,10 @@ describe('the receipt from the page of a stay', () => {
     const dialog = await screen.findByTestId('proof-upload-dialog');
     expect(within(dialog).getByTestId('proof-upload-property')).toHaveValue(A);
     expect(within(dialog).getByTestId('proof-upload-day')).toHaveValue(DAY);
-    // Only the receipt can be filed from here: no choice of kind.
     expect(within(dialog).queryByTestId('proof-upload-kind')).not.toBeInTheDocument();
-    // The address of the portal is the one the API sent with the archive, never one written in the client.
     await waitFor(() => expect(within(dialog).getByTestId('proof-upload-portal-link')).toHaveAttribute('href', PORTAL));
     expect(await total()).toHaveTextContent('Diventano in regola: 2 soggiorni');
 
-    // The other flats arrive with the properties of the organization: the short-rent ones, asked for as such (the list is not unfiltered), and none let long-term.
     fireEvent.click(await within(dialog).findByTestId(`proof-upload-flat-${C}`));
     expect(asked.properties).toEqual([{ mode: 'short' }]);
     expect(within(dialog).queryByTestId(`proof-upload-flat-${E}`)).not.toBeInTheDocument();

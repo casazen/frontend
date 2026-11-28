@@ -56,7 +56,6 @@ export const mockOrgProperties: PublicPropertyDto[] = [
   },
 ];
 
-/** The homes above as the search of the site (`GET …/stays`) lists them: the night price, free for any stay, no total. */
 export function mockStayCards(properties: PublicPropertyDto[] = mockOrgProperties): PublicStayCard[] {
   return properties.map((property) => ({
     id: property.id,
@@ -93,7 +92,6 @@ export function mockStaysResult(cards: PublicStayCard[] = mockStayCards()): Publ
   };
 }
 
-/** The nights of the whole site for the next four months, all free: the «Quando» field of the home has something to draw. */
 function mockSiteCalendar() {
   const day = 24 * 60 * 60 * 1000;
   const today = new Date();
@@ -110,7 +108,6 @@ function mockSiteCalendar() {
   };
 }
 
-/** The public calendar of a property (DB-03b): a year of free nights from today, every night at the rate of the home. */
 export function mockPublicCalendar(propertyId: string = mockOrgPropertyId, nightlyRate: number = 165): PublicCalendarDto {
   const today = todayInRome();
   return {
@@ -130,7 +127,6 @@ export function mockPublicCalendar(propertyId: string = mockOrgPropertyId, night
 }
 
 export async function mockBrandedBookingApi(page: Page): Promise<void> {
-  // Without it the demo server answers with index.html and the widget cannot read booked dates.
   await page.route('**/api/public/bookings/property/*/availability*', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
@@ -151,7 +147,6 @@ export async function mockBrandedBookingApi(page: Page): Promise<void> {
       return;
     }
 
-    // The calendar comes before the property: its address starts with the one of the property.
     if (url.includes('/calendar')) {
       await route.fulfill({
         status: 200,
@@ -176,7 +171,6 @@ export async function mockBrandedBookingApi(page: Page): Promise<void> {
       return;
     }
 
-    // The search of the site (DB-07a): the home and the results read the homes, the places and the nights of the site from here.
     const path = new URL(url).pathname;
     if (path.endsWith('/stays')) {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mockStaysResult()) });

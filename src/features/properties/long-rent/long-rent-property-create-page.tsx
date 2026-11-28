@@ -17,10 +17,6 @@ import { LongRentPropertyWizard } from './wizard/long-rent-property-wizard';
 
 const LONG_RENT_LEASES_PATH = '/app/long-rent/leases';
 
-/**
- * New long-term property. The first property of a new landlord (`?first=1`, set by the onboarding) is the short form, and then the
- * guide of the first steps asks the rest; any other is the wizard "Aggiungi immobile" (LR-07c), which ends on "Crea il contratto".
- */
 export function LongRentPropertyCreatePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -31,21 +27,16 @@ export function LongRentPropertyCreatePage() {
   const { data: entitlement } = useEntitlement();
   const [planLimitHit, setPlanLimitHit] = useState(false);
 
-  // The server enforces the plan limit; the entitlement read only avoids filling a form that cannot be saved.
   const blockedByPlan = planLimitHit || entitlement?.canAddProperty === false;
 
-  // The short form of the first property: it creates and goes to the guide, which asks for the APE and the contract.
   const handleQuickSubmit = async (data: CreatePropertyDto) => {
     setPlanLimitHit(false);
     try {
       await createProperty.mutateAsync(data);
-      // The profile carries `hasProperties`: refresh it before leaving, or the guard would send the host back here.
       await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
       toast.success(t('property.quick.created'));
       navigate(LONG_RENT_LEASES_PATH);
     } catch (error) {
-      // Other errors are shown by the mutation's toast; the form stays filled in. A duplicate address goes back to the
-      // form, which shows it under the address field (PC-06).
       if (isPlanLimitError(error)) setPlanLimitHit(true);
       else if (isDuplicateAddressError(error)) throw error;
     }
@@ -68,7 +59,6 @@ export function LongRentPropertyCreatePage() {
           className="rounded-xl border-l-4 border-destructive bg-destructive/10 px-4 py-4 text-sm"
         >
           <p className="font-medium text-destructive">{getPlanLimitMessage()}</p>
-          {/* The plan page of the long-rent shell (PL-16): never the short-rent one. */}
           <Link
             to={getPlanUpgradePath('long-rent')}
             className="mt-1 inline-flex min-h-11 items-center font-medium text-primary underline underline-offset-2"
@@ -90,7 +80,6 @@ export function LongRentPropertyCreatePage() {
           />
         </div>
       ) : blockedByPlan ? null : (
-        // Over the plan there is nothing to fill in: the notice above says why and where to go. What was typed stays in the draft.
         <div className={FOCUS_COLUMN}>
           <LongRentPropertyWizard onPlanLimit={() => setPlanLimitHit(true)} onExit={() => navigate(LONG_RENT_PROPERTIES_PATH)} />
         </div>

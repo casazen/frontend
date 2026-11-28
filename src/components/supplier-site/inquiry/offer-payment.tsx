@@ -12,18 +12,14 @@ import { supplierSitePaths } from '@/lib/supplier-site/site-paths';
 import type { QuietCall } from './types';
 import { useViewPolling } from './use-view-polling';
 
-/** While the card is through and the request is not taken yet, the page asks again every few seconds. */
 const TAKE_POLL_MS = 4_000;
 
 interface OfferPaymentProps {
   view: PublicBookingView;
   offer: PublicBookingOffer;
-  /** The color of the buttons of the site, for the Payment Element. */
   buttonColor: string;
   quiet: QuietCall;
-  /** Something went wrong in the background (the take after the card): the page above says it where the person is looking. */
   onFailure: (failure: RequestFailure) => void;
-  /** Asks for the card again (accepting again gives the same session while the card is not blocked). */
   onContinue: () => void;
   busy: boolean;
 }
@@ -51,7 +47,6 @@ export function OfferPayment({ view, offer, buttonColor, quiet, onFailure, onCon
     tick: async () => {
       const outcome = await quiet((access) => publicBookingApi.acceptOffer(access, offer.sentAt));
       if (outcome.ok) return 'asked';
-      // The block was released, the time went, the card could not be charged: the card has to be asked for again.
       setConfirmed(false);
       onFailure(outcome.failure);
       return null;
@@ -96,7 +91,6 @@ export function OfferPayment({ view, offer, buttonColor, quiet, onFailure, onCon
               mode="payment"
               publishableKey={session.publishableKey}
               clientSecret={session.clientSecret}
-              // A card with 3-D Secure normally stays in the page; if the bank sends the person away, it comes back to its own request.
               returnUrl={`${window.location.origin}${supplierSitePaths.request(view.supplier.slug)}?code=${encodeURIComponent(view.publicCode)}`}
               appearance={stripeAppearanceFor(buttonColor)}
               locale={stripeLocale(i18n.language)}

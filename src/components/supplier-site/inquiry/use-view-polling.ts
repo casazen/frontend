@@ -1,17 +1,12 @@
 import { useEffect, useRef } from 'react';
 
 interface ViewPollingOptions {
-  /** Nothing is asked while this is false. */
   enabled: boolean;
-  /** The wait between two readings while things change. */
   baseMs: number;
-  /** The most the wait grows to while nothing changes (it doubles twice). */
   maxMs: number;
-  /** One reading. Gives what it saw (a string that is the same while nothing changes), or null when it asked nothing or failed. */
   tick: () => Promise<string | null>;
 }
 
-/** A tab that comes back to the front asks at once, but not twice in this many milliseconds. */
 const MIN_GAP_MS = 5_000;
 
 /**

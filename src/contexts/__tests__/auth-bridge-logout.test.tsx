@@ -23,7 +23,6 @@ vi.mock('@/lib/axios', () => ({ setApiAuthHandlers: vi.fn() }));
 import { AuthAppProviders, useAuthBridge } from '../auth-bridge';
 import { setApiAuthHandlers } from '@/lib/axios';
 
-/** One button for each way out of the session. */
 function Probe() {
   const { logout, logoutToLogin } = useAuthBridge();
   return (
@@ -58,7 +57,6 @@ describe('sign out and the drafts of the guided flows', () => {
 
     expect(readWizardDraft('property-new', { userId: 'auth0|u1', orgId: 'org-1' })).toBeNull();
     expect(readWizardDraft('checkout-b1', { userId: 'auth0|u1', orgId: null })).toBeNull();
-    // Only the drafts: whatever else the app keeps in the tab is not its business here.
     expect(sessionStorage.getItem('casazen.pendingCheckout')).toBe('{"keep":"me"}');
     expect(auth0Logout).toHaveBeenCalledTimes(1);
   });

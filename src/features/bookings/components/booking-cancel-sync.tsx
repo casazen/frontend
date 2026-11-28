@@ -5,19 +5,13 @@ import type { Booking } from '@/types';
 import { syncReasonKey, syncRetriesByItself } from '../lib/octorate-sync';
 
 interface BookingCancelSyncProps {
-  /** The booking as the detail reads it, after the cancellation: its `octorateSync` is what the channel manager holds of the last thing CasaZen sent. */
   booking: Booking;
-  /** Another call of the dialog is under way: nothing here can be started meanwhile. */
   busy: boolean;
-  /** What the call that asked again answered when it refused (404, 409...), as a sentence; `null` when it did not. */
   retryError: string | null;
   /** "Retry now" asks for the cancellation to be sent again. */
   onRetry: () => void;
-  /** The dialog has stopped asking for a cancellation that is still `Pending` (`useSyncWatch`): the line says that there is no answer yet, and offers «Check again». */
   waitOver?: boolean;
-  /** «Check again» reads the booking once more and waits for one more minute. */
   onCheckAgain?: () => void;
-  /** The booking is being read again (what «Check again» asked for). */
   checking?: boolean;
 }
 
@@ -50,7 +44,6 @@ export function BookingCancelSync({ booking, busy, retryError, onRetry, waitOver
   }
 
   if (sync.state === 'Pending') {
-    // Still `Pending` when the dialog stopped asking: nothing has come back, which is neither a cancellation sent nor a failure, and the host can look again.
     if (waitOver) {
       return (
         <Alert
@@ -84,7 +77,6 @@ export function BookingCancelSync({ booking, busy, retryError, onRetry, waitOver
     );
   }
 
-  // `Failed`, or `Conflict`: the reservation changed in the channel manager and it did not accept the cancellation. The cancellation in CasaZen stands either way.
   return (
     <Alert
       variant="warning"

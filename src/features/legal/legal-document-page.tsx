@@ -8,10 +8,6 @@ import { sanitizeHtml } from '@/lib/sanitize-html';
 import type { LegalDocumentKey } from '@/types/onboarding.types';
 import { formatLegalDate, LEGAL_INDEX_PATH } from './legal-paths';
 
-/**
- * Public page of a legal document (PL-14, A1-06): version and date in force from the backend, and the text provided by
- * the product owner (D14). While the text is missing the page says it is being prepared: never an invented text.
- */
 export function LegalDocumentPage({ documentKey }: { documentKey: LegalDocumentKey }) {
   const { t } = useTranslation();
   const language = useLegalLanguage();

@@ -17,7 +17,6 @@ type FileKind = 'signed' | 'registration' | 'questura';
 interface FileRow {
   kind: FileKind;
   label: string;
-  /** When it happened ("firmato il 12 marzo 2026"), when the lease says it. */
   detail: string | null;
   fileName: string;
   fetch: () => Promise<Blob>;
@@ -34,7 +33,6 @@ interface FileRow {
 export function LeaseFiles({ lease }: { lease: LeaseDetail }) {
   const { t, i18n } = useTranslation();
   const [downloading, setDownloading] = useState<FileKind | null>(null);
-  // The same read as the archive panel below (same key): one request, shared.
   const archive = useLeaseDocuments(lease.id);
   // Only a lease with an extra-EU tenant has a Questura communication, so only then is its status asked (the deadlines tab reads it too).
   const checklist = useRliChecklist(lease.id, { enabled: lease.hasExtraEUTenant });

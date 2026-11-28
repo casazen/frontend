@@ -20,13 +20,11 @@ vi.mock('@/api/marketplace.api', async (importOriginal) => ({
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: [{ contextKey: 'short-rent', roleKey: 'property_owner' }] }) }));
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { octorateOnboarding: true } }) }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const ROSA = property('prop-1', 'Casa Rosa');
 const AZZURRA = property('prop-2', 'Casa Azzurra');
 
-/** The host has these properties; `unlinked` have no confirmed listing on the channel manager. */
 function givenProperties(properties = [ROSA, AZZURRA], unlinked: string[] = [], overrides: Partial<ReturnType<typeof plan>> = {}) {
   vi.mocked(propertiesApi.getAll).mockResolvedValue(properties);
   vi.mocked(getActivationPlan).mockImplementation(async (_kind, _code, propertyId) =>
@@ -64,7 +62,6 @@ describe('the first step: which properties', () => {
     });
     renderActivation(ACTIVATION_PATH);
 
-    // The property whose plan was not read does not vanish: it is named, with the way to read it again; the one that was read is in the list.
     const notice = await screen.findByTestId('activation-unread', {}, WAIT);
     expect(notice).toHaveTextContent(i18n.t('marketplace.activation.property.unread', { names: 'Casa Azzurra' }));
     expect(screen.getByTestId('activation-property-prop-1')).toBeInTheDocument();
@@ -94,7 +91,6 @@ describe('the first step: which properties', () => {
 
   it('PropertyStep_DraftOfTheTabThatDoesNotNameThePropertyOfTheAddress_IsDroppedSoTheWizardOpensOnTheOneThePersonCameFor', async () => {
     givenProperties();
-    // The draft that an earlier visit left in this tab names another property.
     writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'property', values: { propertyIds: ['prop-1'], hotelIds: {} } });
     renderActivation(`${ACTIVATION_PATH}?propertyId=prop-2`);
 
@@ -105,7 +101,6 @@ describe('the first step: which properties', () => {
 
   it('PropertyStep_DraftOfTheTabThatNamesThePropertyOfTheAddress_IsKeptWithEverythingItHolds', async () => {
     givenProperties();
-    // The person comes back (from the panel of the channel manager, from «Salva ed esci») to the properties they had chosen.
     writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'property', values: { propertyIds: ['prop-1', 'prop-2'], hotelIds: {} } });
     renderActivation(`${ACTIVATION_PATH}?propertyId=prop-2&step=property`);
 
@@ -117,10 +112,8 @@ describe('the first step: which properties', () => {
     givenProperties([ROSA, AZZURRA, property('prop-3', 'Casa Verde')], ['prop-3']);
     renderActivation(`${ACTIVATION_PATH}?propertyId=prop-3`);
 
-    // The property of the address cannot be chosen: it is not shown as chosen and is not counted, and the step does not go on with it.
     await screen.findByTestId('activation-not-linked-prop-3', {}, WAIT);
     await waitFor(() => expect(screen.getByTestId('activation-property-count')).toHaveTextContent(i18n.t('marketplace.activation.property.selected', { count: 0 })), WAIT);
-    // It is also gone from the answers of the wizard (the draft says so), not only from the screen.
     await waitFor(() => expect(readWizardDraft(WIZARD_DRAFT_ID, SCOPE)?.values.propertyIds).toEqual([]), WAIT);
     fireEvent.click(primaryButton());
     expect((await screen.findAllByText(i18n.t('marketplace.activation.errors.noProperty'), {}, WAIT)).length).toBeGreaterThan(0);
@@ -134,7 +127,6 @@ describe('the first step: which properties', () => {
 
     fireEvent.click(primaryButton());
 
-    // Said under the choice and in the summary of the problems of the shell.
     expect((await screen.findAllByText(i18n.t('marketplace.activation.errors.noProperty'), {}, WAIT)).length).toBeGreaterThan(0);
     await onStep('property');
   });
@@ -147,10 +139,8 @@ describe('the first step: a property that cannot be chosen', () => {
 
     const note = await screen.findByTestId('activation-not-linked-prop-2', {}, WAIT);
     expect(note).toHaveTextContent(`Casa Azzurra ${i18n.t('marketplace.activation.property.notLinked.item')}`);
-    // It cannot be chosen: there is no choice for it, and the one that is linked is the only one offered.
     expect(screen.queryByTestId('activation-property-prop-2')).not.toBeInTheDocument();
     expect(screen.getByTestId('activation-property-prop-1')).toBeInTheDocument();
-    // The one way out of the wizard: the page where the connect and mapping wizard starts.
     expect(screen.getByTestId('activation-link-properties')).toHaveAttribute('href', CHANNELS_PAGE_PATH);
   });
 

@@ -17,7 +17,6 @@ type AuthResult = ReturnType<typeof useAuth>;
 
 const contexts: ContextBootstrapDto[] = [
   { contextKey: 'short-rent', displayName: 'Affitti brevi', roleKey: 'property_owner', permissions: [], defaultRoute: '/app/short-rent' },
-  // The backend still names the list of leases as the home; the workspace opens the Panoramica (LR-05) to a role that may read the leases.
   { contextKey: 'long-rent', displayName: 'Affitti lungo termine', roleKey: 'long_term_landlord', permissions: ['property.read', 'lease.read'], defaultRoute: '/app/long-rent/leases' },
 ];
 
@@ -44,8 +43,6 @@ function mount(path: string) {
   );
 }
 
-// "Ricordando l'ultima area": the selector goes through the workspace, which keeps the area in the browser
-// (`casazen:active-context`; keeping it on the server too is UI-13).
 describe('AreaSwitcher with the workspace (UI-04a)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -79,7 +76,6 @@ describe('AreaSwitcher with the workspace (UI-04a)', () => {
     await waitFor(() => expect(screen.getByTestId('pathname').textContent).toBe('/app/long-rent'));
     expect(screen.getByTestId('active-context')).toHaveTextContent('long-rent');
     expect(window.localStorage.getItem(ACTIVE_CONTEXT_STORAGE_KEY)).toBe('long-rent');
-    // The area name is the one of the app, not the one the backend sends ("Affitti lungo termine").
     expect(screen.getByTestId('area-switcher')).toHaveTextContent('Affitti lunghi');
   });
 

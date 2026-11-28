@@ -7,17 +7,11 @@ import { orgDocumentPath } from '@/lib/org-document-paths';
 interface ConsentCheckboxProps {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
-  /** Slug of the org whose site this is: the consent names the operator's own privacy notice and terms (BK-14, A3-21). */
   orgSlug: string;
 }
 
 const LINK_CLASS = 'public-site-link';
 
-/**
- * Consent of the guest to the processing of their data for the booking. The operator's privacy notice and terms are
- * links to the operator's own pages of this site, opened in a new tab so the form is not lost: what the guest consents
- * to is readable before the consent is given.
- */
 export function ConsentCheckbox({ checked, onCheckedChange, orgSlug }: ConsentCheckboxProps) {
   const newTab = { target: '_blank', rel: 'noopener noreferrer' } as const;
 

@@ -19,7 +19,6 @@ interface BookingModelInput {
   orgSlug: string;
   hostLabel: string;
   contactEmail: string | null;
-  /** The ages the guest gave (the checkout asks them); the quote uses them when every child has one, else the oldest age of a minor. */
   childrenAges?: readonly (number | null)[];
 }
 
@@ -41,8 +40,6 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
   const nights = nightsBetween(stay.checkIn, stay.checkOut);
   const acceptsBookings = property.acceptsBookings !== false;
 
-  // What the calendar already says of the stay, so the server is not asked about dates that cannot be had: a taken night, and the rules
-  // of the host on the days (closed arrival or departure, the nights, the advance).
   const calendarProblem = useMemo<{ problem: StayProblemKind; minNights?: number; maxNights?: number } | null>(() => {
     if (calendar.status !== 'ready' || nights <= 0) return null;
     const index = buildCalendarIndex(calendar.days, calendar.today, calendar.end);
@@ -57,7 +54,6 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
   }, [calendar.status, calendar.days, calendar.today, calendar.end, nights, stay.checkIn, stay.checkOut]);
 
   const overCapacity = problems.includes('overCapacity');
-  // The guest said a pet comes and the home takes none: said at once, with the way out, and the home is not offered for booking.
   const petsNotAllowed = problems.includes('petsNotAllowed');
   // Every child has an age: that is what the quote is asked with, and the tax is exact. Otherwise the oldest age of a minor.
   const knownAges = useMemo(() => {
@@ -86,7 +82,6 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
       const body = isAxiosError(query.error) ? query.error.response?.data : undefined;
       const problem = problemOfCode(getProblemCode(body));
       if (problem !== 'failed') {
-        // A refusal for a rule of the nights carries the limit it broke (the minimum of the arrival date, the maximum): that completes the sentence.
         const limit = limitOfProblem(body);
         return {
           status: 'problem',
@@ -119,7 +114,6 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
   }, [calendar.status, calendar.days, calendar.today, property.nightlyRate]);
 
   const canBook = quote.status === 'ready' && online && acceptsBookings;
-  // The checkout is given the whole stay of the address, the pet included: what the guest said is not lost on the way to it.
   const checkoutHref = canBook ? linkTo(buildPropertyCheckoutPath(orgSlug, property)) : null;
 
   return {
@@ -138,7 +132,6 @@ export function useBookingModel({ property, orgSlug, hostLabel, contactEmail, ch
     online,
     acceptsBookings,
     fromPriceCents,
-    // The currency the data say: the quote's own once it is in, else the home's. Never a default: a home that says none is written with no symbol.
     currency: quote.status === 'ready' ? quote.quote.currency : property.currency,
     checkoutHref,
     linkTo,

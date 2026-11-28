@@ -34,7 +34,6 @@ interface StepPaymentProps {
   onBack: () => void;
   onEditDetails: () => void;
   onEditStay: () => void;
-  /** The booking, once it exists: the stay and the data are fixed until it is paid or let go. It lives in the flow, so going back and forth does not make another. */
   booking: DirectBookingResponse | null;
   onBooked: (booking: DirectBookingResponse) => void;
 }
@@ -55,7 +54,6 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
   const queryClient = useQueryClient();
   const locale = siteLocale(i18n.language);
 
-  // The booking is made once: a second press (a double tap, a slow connection) before the answer comes does nothing.
   const inFlight = useRef(false);
   const [error, setError] = useState<string | null>(null);
   // A 409 on dates this tab has already booked: the guest's own hold (A3-15), offered back instead of a dead end.
@@ -75,14 +73,11 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
   const detailsOk = detailsSchema.safeParse(draft.details).success;
   const details = draft.details;
 
-  // The stay changed and "Paga alla scadenza" no longer applies: the guest pays now.
   useEffect(() => {
     if (draft.pay === 'deadline' && ready && !deferredDate) onDraft({ pay: 'now' });
   }, [draft.pay, ready, deferredDate, onDraft]);
 
   const outcomePath = (result: DirectBookingResponse) => buildCheckoutOutcomePath(orgSlug, result.bookingId, result.checkoutToken);
-  // The page that follows greets the guest by their first name and says which address the confirmation went to. Both travel in the history
-  // state of this navigation, for that page only: never in the address, never stored.
   const goToOutcome = (result: DirectBookingResponse, state: CheckoutOutcomeLocationState) =>
     navigate(outcomePath(result), { state: { guestEmail: details.email.trim(), guestFirstName: details.firstName.trim(), ...state } });
 
@@ -108,13 +103,10 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
           adults: stay.adults,
           children: stay.children,
           pets: stay.pets,
-          // The ages go only when the tax depends on them and every child has one.
           childrenAges: ready.quote.touristTax.ageRulesApply ? completeChildrenAges(ages) : undefined,
           draft: { ...draft, pay, extras: selections },
           marketingConsentVersion: org.marketingConsentVersion,
           softOptInNoticeVersion: org.softOptInNoticeVersion,
-          // Where the guest came from: the `utm_*` of the address (a link the agency copied) and, with them or with the consent to statistics (DB-02b), the host of the site they
-          // came from. Read now, kept nowhere.
           attribution: bookingAttributionOf(searchParams, document.referrer, window.location.origin, hasConsent('statistics')),
         }),
       );
@@ -126,14 +118,12 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
         checkIn: stay.checkIn,
         checkOut: stay.checkOut,
       });
-      // "Pay at the property" is a request waiting for the email confirmation and the host (D5): nothing to pay here.
       if (result.paymentOption === 'OnSite') {
         goToOutcome(result, {});
         return;
       }
       onBooked(result);
     } catch (failure) {
-      // Every checkout error has its own message (the code of the ProblemDetails of the backend).
       setError(getProblemMessage(failure, t) ?? t('publicBooking.checkoutError'));
       if (isAxiosError(failure) && getProblemCode(failure.response?.data) === 'guest_host_extra_unavailable') {
         onDraft({ extras: [], consent: false });

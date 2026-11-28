@@ -13,7 +13,6 @@ import { CHANNELS_PAGE_PATH } from '../../lib/marketplace-paths';
 import { WIZARD_LINK_CLASS } from '../../components/wizard-frame';
 import { problemCodeOf, propertyAvailability, propertyNameOf, type ActivationContext, type ActivationWizardValues } from '../activation-wizard-model';
 
-/** The words of a status: the ones of the cards of the marketplace (a request that waits and an activation that is not finished are both «In attesa»). */
 const STATUS_TEXT: Readonly<Record<MarketplaceActivationStatus, string | null>> = {
   Active: 'marketplace.status.Active',
   Pending: 'marketplace.status.Pending',
@@ -34,7 +33,6 @@ function addressOf(property: Property): string {
   return [property.address, property.city].filter(Boolean).join(', ');
 }
 
-/** What stops the step as a whole: the connection to the channel manager is missing, the portal is not for this person, or a plan could not be read. */
 function PlanProblem({ context }: { context: ActivationContext }) {
   const { t } = useTranslation();
   const code = problemCodeOf(context.planError);
@@ -77,12 +75,6 @@ interface PropertyStepProps {
   context: ActivationContext;
 }
 
-/**
- * Step «Immobili» (E09/F02/US04/T01): the host's properties that have a confirmed listing on the channel manager (the plan of the portal says it),
- * one or more of them. Each chosen property is activated in its turn. A property with no confirmed listing is told with one sentence and the way
- * to fix it (the Channels page, where the connect wizard starts): it is the only place this step lets the person go to, and the draft stays.
- * A host whose channel manager is not connected at all is told so in one sentence, with the same way.
- */
 export function PropertyStep({ context }: PropertyStepProps) {
   const { t } = useTranslation();
   const { control, setValue, getValues, formState } = useFormContext<ActivationWizardValues>();
@@ -90,7 +82,6 @@ export function PropertyStep({ context }: PropertyStepProps) {
   const { properties, plans, channelName } = context;
   const name = channelName ?? t('marketplace.activation.thisChannel');
 
-  // A property whose plan was not read has nothing to say yet: it is in neither list.
   const linked: Property[] = [];
   const notLinked: Property[] = [];
   for (const property of properties) {
@@ -114,7 +105,6 @@ export function PropertyStep({ context }: PropertyStepProps) {
     );
   }, [staleKey, setValue, getValues]);
 
-  // With one property that can be chosen and none chosen yet, CasaZen chooses it (UX-04: fill in what it knows). Once: the person may take it away.
   const preselected = useRef(false);
   const onlyChoice = linked.length === 1 && chosen.length === 0 ? linked[0].id : null;
   useEffect(() => {
@@ -178,7 +168,6 @@ export function PropertyStep({ context }: PropertyStepProps) {
         </Alert>
       ) : null}
 
-      {/* A plan that could not be read leaves its property in neither list: it is told, with the way to read it again, and never dropped in silence. */}
       {context.unreadProperties.length > 0 ? (
         <Alert
           variant="warning"

@@ -17,10 +17,8 @@ import { acceptsRefusal } from './accept-refusal';
 
 const PATH = '/fiscal/self-billing';
 
-/** The drafts of a month are made from the owner ledger of the month for every holder and portal that needs one: it takes longer than the 30 s of every other call on an agency with many owners. */
 const DRAFTS_TIMEOUT_MS = 5 * 60_000;
 
-/** The 403 of the self-billed invoices is an answer of these calls (the whole organization only), not a failure of the app: it is thrown again as the error it is, with the response, and never sends the whole app to the page of no access. */
 function refusalOf(response: AxiosResponse): AxiosError {
   return new AxiosError(`Request failed with status code ${response.status}`, AxiosError.ERR_BAD_REQUEST, response.config, response.request, response);
 }
@@ -167,7 +165,6 @@ function notDueOf(value: unknown): SelfBillingNotDue | null {
   return { reason: value.reason, channel: value.channel, stays: value.stays, amount: value.amount, currency: value.currency };
 }
 
-/** A draft that holds the number of a rejected TD17 and that the drafts of the month kept: its holder, portal and number, and the code of why. */
 function keptOf(value: unknown): SelfBillingKept | null {
   if (
     !isRecord(value) ||
@@ -190,10 +187,6 @@ function keptOf(value: unknown): SelfBillingKept | null {
   };
 }
 
-/**
- * What the drafts of a month did: the counts and every row. An answer that is not one is a load error: the page never says «done» over a body it could not read. `kept` (the drafts that hold the number of a
- * rejected TD17 and are kept) is additive: an older server does not send it and has no such draft, so it is read as none; sent as anything but a list of drafts it is a load error, never read as «none».
- */
 function generationOf(data: unknown, path: string): SelfBillingGeneration {
   if (!isRecord(data)) throw new UnexpectedApiResponseError(path);
   const drafts = Array.isArray(data.drafts) ? data.drafts.map(outcomeOf) : null;
@@ -231,10 +224,6 @@ function generationOf(data: unknown, path: string): SelfBillingGeneration {
   };
 }
 
-/**
- * The self-billed invoices (TD17) of the organization, drafts and issued ones, the newest month first (`GET api/fiscal/self-billing`, `agency.invoice.manage`, the whole organization): `period` (`yyyy-MM`) narrows
- * the list to a month. 422 `self_billing_period_invalid`. A 403 is thrown as the refusal it is (no redirect to the no-access page).
- */
 export async function listSelfBilling(period?: string): Promise<SelfBillingListItem[]> {
   const response = await axios.get<unknown>(PATH, { params: period ? { period } : undefined, validateStatus: acceptsRefusal });
   if (response.status === 403) throw refusalOf(response);
@@ -243,7 +232,6 @@ export async function listSelfBilling(period?: string): Promise<SelfBillingListI
   return rows as SelfBillingListItem[];
 }
 
-/** One TD17 with its lines (`GET api/fiscal/self-billing/{id}`). 404 `fiscal_document_not_found` for a document of another organization or one that is not a TD17. */
 export async function getSelfBilling(id: string): Promise<SelfBillingDetail> {
   const path = `${PATH}/${encodeURIComponent(id)}`;
   const response = await axios.get<unknown>(path, { validateStatus: acceptsRefusal });
@@ -251,10 +239,6 @@ export async function getSelfBilling(id: string): Promise<SelfBillingDetail> {
   return detailOf(response.data, path);
 }
 
-/**
- * The drafts of a month for every holder and portal that needs a TD17 (`POST api/fiscal/self-billing/drafts`, `{ period: 'yyyy-MM' }`): made, or made again, with the holders that need one and cannot get one yet and the
- * commissions that are not self-billed. 422 `self_billing_period_invalid`, `self_billing_period_not_ended` (the month is not over), `self_billing_not_configured`.
- */
 export async function createSelfBillingDrafts(period: string): Promise<SelfBillingGeneration> {
   const path = `${PATH}/drafts`;
   const response = await axios.post<unknown>(path, { period }, { timeout: DRAFTS_TIMEOUT_MS });
@@ -272,7 +256,6 @@ export async function issueSelfBilling(id: string, request: SelfBillingIssueRequ
   return detailOf(response.data, path);
 }
 
-/** The draft of a TD17 discarded (`DELETE api/fiscal/self-billing/{id}`): no number is consumed, and its holder, portal and month are free for a new draft. 422 `document_not_draft`, `document_replacement_holds_number` (a draft that replaces a rejected TD17 is issued, never discarded). */
 export async function discardSelfBilling(id: string): Promise<void> {
   await axios.delete(`${PATH}/${encodeURIComponent(id)}`);
 }

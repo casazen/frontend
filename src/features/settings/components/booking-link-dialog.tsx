@@ -19,25 +19,16 @@ import type { Property } from '@/types';
 import type { OrgBookingSite } from '../domain/use-org-domain';
 
 const COPIED_FEEDBACK_MS = 2_000;
-/** What the field of the campaign takes: the token made of it is at most this long (`sanitizeCampaign`). */
 const CAMPAIGN_MAX_LENGTH = 60;
 
 interface BookingLinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   property: Pick<Property, 'id' | 'name' | 'slug' | 'maxGuests'>;
-  /** The home is on the booking site. While it is not, the link opens a page that is not there yet, and the dialog says so. */
   publishable: boolean;
-  /** Where the site is: the address the link starts from, and how sure that is. */
   bookingSite: OrgBookingSite;
 }
 
-/**
- * The link for the website of the agency (E27/F01/US02, NF-123): the agency picks, for one home, the dates it wants the guest to find already chosen (optional), the
- * guests, the language and a name for the campaign, and copies the link (or prints its QR) to put on its own page of that home. The address is the one of the site
- * as it really is (its own domain or subdomain, else the platform), and the link says where the guest comes from (`utm_source=agency-site`), so the booking made from
- * it shows «Sito dell'agenzia» to the host. Nothing is saved: the link is worked out from what is on the screen, and the form starts again each time it opens.
- */
 export function BookingLinkDialog({ open, onOpenChange, property, publishable, bookingSite }: BookingLinkDialogProps) {
   const { t } = useTranslation();
 
@@ -54,7 +45,6 @@ export function BookingLinkDialog({ open, onOpenChange, property, publishable, b
   );
 }
 
-/** What is on the screen of the dialog. It is the content of the dialog, so it is made again (and starts empty) every time the dialog opens. */
 function BookingLinkForm({ property, publishable, bookingSite }: Omit<BookingLinkDialogProps, 'open' | 'onOpenChange'>) {
   const { t, i18n } = useTranslation();
   const maxGuests = Math.max(1, property.maxGuests);
@@ -68,7 +58,6 @@ function BookingLinkForm({ property, publishable, bookingSite }: Omit<BookingLin
   const today = todayInRome();
   const checkInPast = checkIn !== '' && checkIn < today;
   const checkOutNotAfter = checkIn !== '' && checkOut !== '' && checkOut <= checkIn;
-  // The dates go in the link as a pair, and only when they are a stay the page of the home would take.
   const datesOk = checkIn !== '' && checkOut !== '' && !checkInPast && !checkOutNotAfter;
 
   const campaignToken = campaignLabelToken(campaign);
@@ -96,12 +85,10 @@ function BookingLinkForm({ property, publishable, bookingSite }: Omit<BookingLin
       await navigator.clipboard.writeText(link);
       setCopied(true);
     } catch {
-      // No clipboard (insecure context, permission denied): the agency copies the address by hand, from the box.
       toast.error(t('directBooking.urlCopyError'));
     }
   };
 
-  // The sign is for the guests of the agency's page: in the language of the link.
   const print = () => {
     if (!image) return;
     const opened = openQrPrintSheet({

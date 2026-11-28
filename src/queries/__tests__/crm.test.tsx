@@ -20,7 +20,6 @@ const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider 
 describe('the CRM profiles are read again on every visit, with the options of the real query client (E07/F01/US04)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // The options of the app (a read stays fresh for minutes and nothing is read again on mount), not the ones a test usually picks.
     client = new QueryClient({ defaultOptions: appQueryClient.getDefaultOptions() });
     vi.mocked(CrmApi.getGuests).mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
     vi.mocked(CrmApi.getGuest).mockResolvedValue({ id: PROFILE } as CrmProfileDetail);
@@ -28,13 +27,11 @@ describe('the CRM profiles are read again on every visit, with the options of th
   afterEach(() => client.clear());
 
   it('theRealClient_KeepsAReadFreshForMinutes_SoOnlyAnExplicitRefetchOnMountReadsAgain', () => {
-    // The premise of the proofs below: with a fresh time of zero they would pass without the option.
     expect(appQueryClient.getDefaultOptions().queries?.staleTime).toBeGreaterThanOrEqual(60_000);
     expect(appQueryClient.getDefaultOptions().queries?.refetchOnMount).toBe(false);
   });
 
   it('useGuestCrmProfiles_AVisitRightAfterAnother_ReadsTheListAgain', async () => {
-    // A consent withdrawn (or a guest erased) in the privacy tab of the guest record does not touch the list: the next visit must read it.
     const first = renderHook(() => useGuestCrmProfiles({ page: 1, pageSize: 20 }), { wrapper });
     await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
     first.unmount();

@@ -37,7 +37,6 @@ function isHttpUrl(value: string): boolean {
   }
 }
 
-/** `MM-dd` of a real day (29 February included), as the backend `TouristTaxSeason`. */
 function isSeasonDay(value: string): boolean {
   const match = /^(\d{2})-(\d{2})$/.exec(value);
   if (!match) return false;
@@ -49,7 +48,6 @@ function isSeasonDay(value: string): boolean {
 const optionalAmount = (max: number, message: string) =>
   z.number({ error: message }).min(0.01, message).max(max, message).nullable();
 
-// Messages are i18n keys: FormFieldError translates them when rendering.
 const taxRateSchema = z
   .object({
     city: z.string().trim().min(2, 'taxRates.validation.cityRequired').max(100, 'taxRates.validation.cityTooLong'),
@@ -123,7 +121,6 @@ const taxRateSchema = z
 
 type TaxRateFormValues = z.infer<typeof taxRateSchema>;
 
-/** `YYYY-MM-DD` of a date sent by the API (UTC midnight of the calendar date). */
 function toDateInput(value: Date | string | null | undefined): string {
   if (!value) return '';
   return typeof value === 'string' ? value.slice(0, 10) : utcStayDate(value);
@@ -180,7 +177,6 @@ function toFormValues(existing: TouristTaxRate | null | undefined): TaxRateFormV
 interface TaxRateFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Rejects when the API call fails: the dialog then stays open with the values typed. */
   onSubmit: (data: CreateTouristTaxRateDto) => Promise<void>;
   isLoading?: boolean;
   existing?: TouristTaxRate | null;
@@ -200,7 +196,6 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
     defaultValues: toFormValues(existing),
   });
 
-  // The dialog stays mounted: load the rate being edited (or empty values) every time it opens.
   useEffect(() => {
     if (open) reset(toFormValues(existing));
   }, [open, existing, reset]);
@@ -234,7 +229,6 @@ export function TaxRateForm({ open, onOpenChange, onSubmit, isLoading, existing 
     try {
       await onSubmit(payload);
     } catch {
-      // The page shows the API error (getProblemMessage); keep the dialog open to fix the values.
       return;
     }
     onOpenChange(false);

@@ -11,10 +11,8 @@ import { hasYearEndCurrency, yearEndAmount } from './tourist-tax-year-end-model'
 import { YearEndRead } from './year-end-read';
 import { FIGURE, HEAD, STICKY } from './year-end-table-style';
 
-/** Where the properties are listed and edited: where the Swiss municipality of a house is completed. */
 const PROPERTIES_PATH = '/app/short-rent/properties';
 
-/** The stays of a group and, under them, its nights: the two numbers the count of Ticino is made of. */
 function StaysAndNights({ stays, nights }: { stays: number; nights: number }) {
   const { t } = useTranslation();
   return (
@@ -32,7 +30,6 @@ function PropertyCell({ property }: { property: TicinoPropertyCount }) {
     <th scope="row" className={`${STICKY} px-3 py-2 text-left align-top font-normal`}>
       <span className="break-words font-medium">{property.propertyName}</span>
       {place ? <span className="block break-words text-xs text-foreground/70">{place}</span> : null}
-      {/* A property in Switzerland whose canton is not known may be in Ticino: it is in the count and marked, so the count never looks complete when it is not. */}
       {property.cantonUnknown ? (
         <Badge variant="warning" className="mt-1" data-testid="year-end-ticino-canton-unknown">
           {t('reports.touristTax.yearEnd.ticino.unknown.marker')}
@@ -78,7 +75,6 @@ function TicinoFigures({ year, count }: FiguresProps) {
       ) : null}
 
       {properties.length === 0 ? (
-        // Said in words: no property in Ticino (and none of unknown canton) has nothing to count.
         <p className="text-sm text-foreground/70" data-testid="year-end-ticino-empty">
           {t('reports.touristTax.yearEnd.ticino.empty', { year })}
         </p>
@@ -139,7 +135,6 @@ interface TicinoSectionProps {
   query: UseQueryResult<TicinoYearlyCount>;
 }
 
-/** The yearly count of the nights in Ticino, on screen: what the third file of the page holds (E18/F01/US02/T03, NF-117), due to the tourist board by 5 January of the next year. Nothing is filed by CasaZen. */
 export function TicinoSection({ year, query }: TicinoSectionProps) {
   const { t } = useTranslation();
   return (

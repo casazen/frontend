@@ -115,7 +115,6 @@ describe('the section «Recensioni» of the booking (E05/F06/US02, NF-69)', () =
       expect(rows[0]).toHaveTextContent('4,5 su 5');
       expect(rows[0]).toHaveTextContent('Casa pulita e host gentilissimo.');
       expect(rows[0]).toHaveTextContent('Airbnb');
-      // Where the reply stands, in words: never published until the channel says so.
       expect(within(rows[0]).getByTestId('booking-review-reply-state')).toHaveTextContent('Senza risposta');
       expect(within(rows[1]).getByTestId('booking-review-reply-state')).toHaveTextContent('Risposta da verificare');
       expect(within(rows[0]).getByRole('link', { name: 'Apri nei Messaggi' })).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent(KEY)}?view=reviews`);
@@ -199,7 +198,6 @@ describe('the section «Recensioni» of the booking (E05/F06/US02, NF-69)', () =
       renderSection({ booking: booking({ source }) });
 
       expect(await screen.findByTestId('booking-reviews-limit')).toHaveTextContent(`${name} non permette a CasaZen di leggere le recensioni né di rispondere`);
-      // No placeholder review, no «no review yet» as if it could be read, and nothing to refresh.
       expect(screen.queryByTestId('booking-review-item')).not.toBeInTheDocument();
       expect(screen.queryByTestId('booking-reviews-empty')).not.toBeInTheDocument();
       expect(screen.queryByTestId('booking-reviews-refresh')).not.toBeInTheDocument();
@@ -256,7 +254,6 @@ describe('the section «Recensioni» of the booking (E05/F06/US02, NF-69)', () =
 
       expect(await screen.findByTestId('booking-review-item')).toHaveTextContent('5 su 5');
       expect(screen.getAllByRole('region')).toHaveLength(1);
-      // The guest reviewed: the review is in the list, so the sentence does not send the host to another page for it.
       expect(screen.getByTestId('review-invite-reviewed')).toHaveTextContent("L'ospite ha lasciato una recensione.");
       expect(screen.queryByRole('link', { name: 'Vedi le recensioni' })).not.toBeInTheDocument();
       expect(screen.queryByTestId('booking-reviews-refresh')).not.toBeInTheDocument();

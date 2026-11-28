@@ -22,13 +22,11 @@ import { languageOfTag } from '@/lib/site-language';
 import { cn } from '@/lib/utils';
 import type { HostContactPayload } from '@/types';
 
-// The limits of the backend (`HostContactRules`): the screen says them before the host's server has to.
 const MESSAGE_MIN = 5;
 const MESSAGE_MAX = 2000;
 const NAME_MAX = 100;
 const EMAIL_MAX = 254;
 
-// The messages are i18n keys: `Field` / `FormFieldError` translate them when rendering.
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'validation.required').max(NAME_MAX, 'hostContact.errors.name'),
   email: z.string().trim().min(1, 'hostContact.errors.email').max(EMAIL_MAX, 'hostContact.errors.email').email('hostContact.errors.email'),
@@ -39,7 +37,6 @@ const contactSchema = z.object({
 
 type ContactForm = z.infer<typeof contactSchema>;
 
-/** What the answer of the backend asks the form to say, by field: a code it refuses a body with, else a sentence for the whole form. */
 function readSendError(error: unknown): { field?: 'email' | 'message' | 'consent'; key: string } {
   const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
   if (code === 'host_contact_email_invalid') return { field: 'email', key: 'hostContact.errors.email' };
@@ -150,7 +147,6 @@ function ContactHostForm({
                 disabled={send.isPending}
                 aria-invalid={errors.consent ? true : undefined}
                 aria-describedby={errors.consent ? `${consentId}-error` : undefined}
-                // The border of the app is a pale line: the ring keeps the box visible against the card (AA 1.4.11).
                 className="mt-0.5 h-5 w-5 ring-1 ring-[var(--cz-public-muted)] data-[state=checked]:ring-0"
               />
               <Label htmlFor={consentId} className="text-sm font-normal leading-snug">
@@ -162,7 +158,6 @@ function ContactHostForm({
         )}
       />
 
-      {/* The honeypot: a field no person sees or reaches. A message that fills it is dropped by the backend, with the same answer. */}
       <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
         <label>
           {t('hostContact.honeypot')}
@@ -194,22 +189,13 @@ function ContactHostForm({
   );
 }
 
-/**
- * "Scrivi a {host}" (DB-02b): a visitor who has no booking yet writes a few lines to the host, who gets them by email and answers
- * from their own mailbox. The dialog (a sheet from the bottom on a phone, themed like the site) asks for an address the host can
- * answer to, the message and the consent to send both to the host; it says how to fix what is wrong, shows when the message went, and
- * does not send while the guest is offline. The `trigger` is the button that opens it, drawn by the page (a link in the footer, a
- * button where there is nothing else to do); `propertyId` ties the message to the home the visitor was looking at.
- */
 export function ContactHostDialog({
   site,
   hostName,
   propertyId,
   trigger,
 }: {
-  /** The slug of the booking site. */
   site: string;
-  /** How the host is named ("Giulia"), or the name of the site. */
   hostName: string;
   propertyId?: string;
   trigger: ReactElement;

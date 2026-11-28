@@ -10,7 +10,6 @@ import { useCloseSelfBilling, useSelfBillingBusy } from '@/queries/use-self-bill
 import type { SelfBillingDetail, SelfBillingListItem } from '@/types';
 import { CLOSE_NOTE_MAX, CLOSE_REASONS, closeProblemOf, closeRequestOf, type CloseProblem } from '../self-billing-model';
 
-/** The closing cannot be undone: choosing a reason with the keyboard never confirms it (Enter on a radio would submit the form of the dialog); the confirmation is the button. */
 const keepFromSubmitting = (event: KeyboardEvent<HTMLInputElement>) => {
   if (event.key === 'Enter') event.preventDefault();
 };
@@ -31,8 +30,6 @@ export function CloseNotDueDialog({ item, onClose }: { item: SelfBillingListItem
   const [reason, setReason] = useState('');
   const [note, setNote] = useState('');
   const [problem, setProblem] = useState<{ kind: CloseProblem; words: string } | null>(null);
-  // What the person can put right in the dialog (a missing reason, a note that is too long) does not keep the confirmation off, and is told away as soon as they touch the form; what the server refused and asking again as it is
-  // will not change does keep it off (the dialog can still be left).
   const putRight = problem?.kind === 'reasonRequired' || problem?.kind === 'noteTooLong';
   const refused = problem !== null && problem.kind !== 'failed' && !putRight;
 
@@ -61,14 +58,12 @@ export function CloseNotDueDialog({ item, onClose }: { item: SelfBillingListItem
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        // While the call is on its way the dialog stays (Esc, the cross and a click outside included): closed, it would leave a failure with nowhere to be told.
         if (!open && !close.isPending) onClose();
       }}
       title={t('selfBilling.close.title')}
       description={item.number ? t('selfBilling.close.description', { number: item.number }) : t('selfBilling.close.descriptionUnknown')}
       confirmLabel={problem?.kind === 'failed' ? t('shared.errorState.retry') : t('selfBilling.close.confirm')}
       variant="destructive"
-      // Taller than the other confirmations of the page (the reasons, the note and three consequences): on a short window it scrolls inside, and the confirmation is never out of reach.
       contentClassName="sm:max-h-[90dvh] sm:overflow-y-auto"
       consequences={[t('selfBilling.close.consequenceClosed'), t('selfBilling.close.consequenceReserved'), t('selfBilling.close.consequenceRegister')]}
       confirmDisabled={reason === '' || refused || busy}

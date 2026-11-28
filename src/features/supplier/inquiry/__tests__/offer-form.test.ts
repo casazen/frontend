@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { SupplierOffer } from '@/types/supplier-inquiry';
 import { emptyOfferForm, hoursOf, offerFormOf, offerPayloadOf, offerProblemsOf, type OfferForm } from '../offer-form';
 
-/** A sheet filled in as a supplier would: two lines, a day in November (winter time in Rome, UTC+1), nine o'clock, an hour and a half. */
 function filled(overrides: Partial<OfferForm['quote']> = {}, hours = '1,5'): OfferForm {
   const form = emptyOfferForm();
   return {
@@ -30,7 +29,6 @@ describe('offerPayloadOf (SP-08e): what is sent is what the supplier wrote, in c
         { label: 'Pulizia a fondo', quantity: 1, unitAmountCents: 8000 },
         { label: 'Prodotti', quantity: 1, unitAmountCents: 2050 },
       ],
-      // 09:00 in Rome in November is 08:00 UTC; an hour and a half later is 09:30.
       startUtc: '2026-11-10T08:00:00.000Z',
       endUtc: '2026-11-10T09:30:00.000Z',
       note: 'Porto io i prodotti.',
@@ -41,7 +39,6 @@ describe('offerPayloadOf (SP-08e): what is sent is what the supplier wrote, in c
     const body = offerPayloadOf(filled({ note: '   ' }));
 
     expect(body).not.toHaveProperty('note');
-    // The server adds the lines up: the total is never sent.
     expect(body).not.toHaveProperty('totalCents');
   });
 
@@ -60,7 +57,6 @@ describe('offerProblemsOf (SP-08e)', () => {
 
   it('offerProblemsOf_TimeMissingOrPast_IsTold', () => {
     expect(offerProblemsOf(filled({ day: '' }), NOW)).toMatchObject({ time: 'timeRequired', valid: false });
-    // 09:00 Rome on the 9th is 08:00 UTC, before "now" (12:00 UTC).
     expect(offerProblemsOf(filled({ day: '2026-11-09' }), NOW)).toMatchObject({ time: 'timePast', valid: false });
   });
 
@@ -95,7 +91,6 @@ describe('offerFormOf (SP-08e): replacing the offer that waits', () => {
   it('offerFormOf_AnOfferWithAQuantity_FoldsItIntoTheAmountOfTheLineAndKeepsTheTotal', () => {
     const body = offerPayloadOf(offerFormOf(offer, ','));
 
-    // Three hours at 10 euro: the sheet has one amount per line, so the new offer says 30 euro once. The total is the same.
     expect(body?.lines).toEqual([{ label: 'Ore di lavoro', quantity: 1, unitAmountCents: 3000 }]);
     expect(body?.startUtc).toBe('2026-11-10T08:00:00.000Z');
     expect(body?.endUtc).toBe('2026-11-10T10:00:00.000Z');

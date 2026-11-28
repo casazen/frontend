@@ -11,44 +11,30 @@ import type { BookingSite } from '@/lib/booking-link';
  * attribute, whatever it holds.
  */
 
-/** The widgets of the loader (`§6` of the site integration analysis): the booking engine, one home, the entry of the guest area and the search bar. */
 export const EMBED_WIDGETS = ['booking', 'property', 'guest-access', 'search'] as const;
 export type EmbedWidget = (typeof EMBED_WIDGETS)[number];
 
-/** Where the loader is served from, under the address of the site: the version is part of the path, and a change that breaks the contract is another one. */
 export const EMBED_LOADER_PATH = '/embed/v1/embed.js';
 
-/** A place the search bar offers: the same shape the bar reads (`data-casazen-destinations`, the JSON of `[{ id, label }]`). */
 export interface EmbedDestination {
   id: string;
   label: string;
 }
 
-/** Where the widgets and the loader come from. */
 export interface EmbedBase {
-  /** The origin: the agency's own domain when it has one that is served, else the one of CasaZen. */
   base: string;
-  /** The slug of the org, only on the CasaZen domain (`data-casazen-org`); `null` on the agency's own domain, which knows who it is. */
   org: string | null;
 }
 
 export interface EmbedSnippetInput extends EmbedBase {
   widget: EmbedWidget;
-  /** The slug of the home of the `property` widget. */
   property?: string | null;
-  /** The address of the page of the agency that holds the booking engine, for the `search` bar (already read by `readSearchTarget`). */
   target?: string | null;
-  /** The places of the site for the `search` bar. */
   destinations?: readonly EmbedDestination[];
 }
 
-/** The name of an option of the loader and its value as text. */
 export type EmbedAttribute = readonly [name: string, value: string];
 
-/**
- * The origin the code is served from, and whether it needs the slug of the org: on the agency's own host (a verified custom domain or a CasaZen subdomain: the
- * origin of `site`) the host is enough, on the platform the origin of CasaZen and the slug of the org say who the widget is for.
- */
 export function resolveEmbedBase(site: BookingSite): EmbedBase {
   return { base: new URL(site.baseUrl).origin, org: site.ownHost ? null : site.orgSlug };
 }
@@ -60,13 +46,10 @@ export function escapeAttribute(value: string): string {
   return value.replace(/[&"'<>]/g, (character) => ATTRIBUTE_ENTITIES[character] ?? character);
 }
 
-// The rules of the search bar for the places it takes (`src/embed/search-form.ts`, `parseDestinations`): the file of the bar runs in the page of another website and takes
-// nothing from the app, so they are written here again; an entry the bar would drop is not put in the code.
 const DESTINATION_ID = /^[A-Za-z0-9._~-]{1,100}$/;
 const MAX_DESTINATIONS = 200;
 const MAX_DESTINATION_LABEL_LENGTH = 80;
 
-/** The places the bar can use: at most 200, an id of the characters of a slug, a label of 1 to 80 characters (spaces collapsed), no id twice. The rest is left out. */
 export function publicDestinations(list: readonly EmbedDestination[]): EmbedDestination[] {
   const seen = new Set<string>();
   const kept: EmbedDestination[] = [];
@@ -80,7 +63,6 @@ export function publicDestinations(list: readonly EmbedDestination[]): EmbedDest
   return kept;
 }
 
-/** What the person typed as the page that holds the booking engine: nothing yet, something that is not an address of the web, or the address. */
 export type SearchTarget = { state: 'empty' } | { state: 'invalid' } | { state: 'valid'; url: string };
 
 const MAX_TARGET_LENGTH = 2048;
@@ -103,10 +85,6 @@ export function readSearchTarget(raw: string): SearchTarget {
   }
 }
 
-/**
- * The attributes of the widget, in the order they are written: which widget, where it comes from, the language (`auto`: the one of the page that holds it) and what the
- * widget needs (the slug of the home, the page and the places of the bar). A value that is missing is left out, never written empty.
- */
 export function embedAttributes(input: EmbedSnippetInput): EmbedAttribute[] {
   const attributes: EmbedAttribute[] = [
     ['widget', input.widget],
@@ -123,10 +101,6 @@ export function embedAttributes(input: EmbedSnippetInput): EmbedAttribute[] {
   return attributes;
 }
 
-/**
- * The code to paste: the line that loads the loader (`async`, once per page whatever the number of widgets) and the element the loader fills. One attribute per line, so
- * that it reads well in a box and in a page builder.
- */
 export function buildEmbedSnippet(input: EmbedSnippetInput): string {
   const script = `<script src="${escapeAttribute(`${input.base}${EMBED_LOADER_PATH}`)}" async></script>`;
   const attributes = embedAttributes(input)
@@ -146,21 +120,14 @@ export function buildEmbedMountOptions(input: EmbedSnippetInput): Record<string,
   return options;
 }
 
-/**
- * Where the ZIP of the plugin of each channel is published (the rolling releases `wp-plugin-main` and `wp-plugin-develop` of the repository, `docs/technical/wordpress-plugin.md`,
- * PLG-FE-PUBLISH, NF-200): the asset `casazen.zip` keeps its address, only its content changes with every push of the branch of the channel.
- */
 const PLUGIN_RELEASES = 'https://github.com/casazen/frontend/releases/download';
 
-/** The channels of the plugin: `main` carries the address of the production console, `develop` the one of the test console. */
 export type PluginChannel = 'main' | 'develop';
 
-/** The channel of a build: `main` for a Vercel Production build (`VERCEL_ENV=production`), `develop` for every other one (a preview, a local or a CI build). */
 export function pluginChannel(deployEnv: unknown): PluginChannel {
   return deployEnv === 'production' ? 'main' : 'develop';
 }
 
-/** An address on `https` with no user name or password, as the browser writes it, or `null` for anything else (nothing, text that is not an address, `http`, a credential). */
 function httpsAddress(raw: unknown): string | null {
   if (typeof raw !== 'string' || raw.trim() === '') return null;
   try {
@@ -171,10 +138,6 @@ function httpsAddress(raw: unknown): string | null {
   }
 }
 
-/**
- * The address the plugin is downloaded from: the ZIP of the channel of the build, so the page always has the link and nobody has to set anything. `override` is the optional
- * `VITE_WORDPRESS_PLUGIN_URL` (the ZIP of a release with a version, for instance): it wins when it is an address on `https`, and an invalid one is ignored, never shown.
- */
 export function pluginDownloadUrl(override: unknown, deployEnv: unknown): string {
   return httpsAddress(override) ?? `${PLUGIN_RELEASES}/wp-plugin-${pluginChannel(deployEnv)}/casazen.zip`;
 }

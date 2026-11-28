@@ -30,12 +30,6 @@ function Requirement({ ok, title, children }: { ok: boolean; title: ReactNode; c
   );
 }
 
-/**
- * «Cosa serve per il contratto» (LR-06a): the address, the cadastral data and the energy certificate (APE) of the property, and how
- * to put right what is missing. The APE is uploaded here, in a window over the page: the draft is saved on the server, nothing typed
- * is lost. For a contract made in CasaZen the draft cannot be confirmed without the APE; for one already signed it is only a notice
- * (`imported`). `needs` are what the server says the property lacks, once the draft exists; before that only the APE is known.
- */
 export function PropertyRequirements({ property, needs, imported }: { property: Property; needs?: LeaseNeed[]; imported: boolean }) {
   const { t } = useTranslation();
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -51,12 +45,9 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
   });
 
   const documentsLoaded = !loadingDocuments && !documentsFailed && documents !== undefined;
-  // The contract states the code and the energy class of the last APE uploaded (LT-10): the review waits for them.
   const ape = latestApeDocument(documents);
   const apeMissing = documentsLoaded && !ape;
   const apeToIdentify = documentsLoaded && !!ape && !hasApeIdentification(ape);
-  // An APE whose code and class are not there yet: the server reads it again, once per document; the fields come only for what is
-  // still missing. An APE just uploaded was read by its upload, which puts that answer in the same cache.
   const apeRead = useApeAutoRead(property.id, documentsLoaded ? ape : undefined);
   const readingApe = apeToIdentify && apeRead.isFetching;
   const cadastralMissing = needs?.some((need) => need.code === 'cadastral_missing');
@@ -81,7 +72,6 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
                 </p>
                 <p className="text-muted-foreground">{t('leaseWizardGuide.property.cadastralExplain')}</p>
                 <Button asChild variant="outline" size="sm" className="max-sm:min-h-11">
-                  {/* The tab "Dati" of the property: where the cadastral identification is (LR-07d). */}
                   <Link to={longRentPropertyDataPath(property.id)}>{t('leaseWizard.property.cadastralAdd')}</Link>
                 </Button>
               </>
@@ -114,7 +104,6 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
             </div>
           ) : null}
 
-          {/* `lw-ape-identification`: where the need `ape_identification_missing` points (the reading, then the two fields to type). */}
           {apeToIdentify && ape && readingApe ? (
             <p
               id="lw-ape-identification"
@@ -156,7 +145,6 @@ export function PropertyRequirements({ property, needs, imported }: { property: 
         </Requirement>
       </ul>
       {notice ? <p className="text-sm text-muted-foreground">{notice}</p> : null}
-      {/* Outside the list: once the APE is on file the notice goes, the window stays for its code and class. */}
       <DocumentUploadDialog propertyId={property.id} onlyType="Ape" open={uploadOpen} onOpenChange={setUploadOpen} />
     </section>
   );

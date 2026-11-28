@@ -33,10 +33,6 @@ export const GUEST_ERROR_KEYS: Record<string, string> = {
   CheckInVehiclePlateInvalid: 'checkin.errors.vehiclePlateInvalid',
 };
 
-/**
- * The text, in the language of the page, of a message key the API sent in `codes`; `undefined` for a key the page does not know, and
- * the caller then shows the message of the server.
- */
 export function translateGuestServerCode(code: string, t: TranslateFn): string | undefined {
   if (!Object.hasOwn(GUEST_ERROR_KEYS, code)) return undefined;
   const key = GUEST_ERROR_KEYS[code];

@@ -12,12 +12,9 @@ import type { PublicStayCard } from '@/types/public-stays.types';
 
 interface ResultsMapPaneProps {
   cards: readonly PublicStayCard[];
-  /** The slug of the booking site; left out in the search across all the sites, where each home brings its own. */
   orgSlug?: string;
-  /** The nights of the stay chosen: with them a pin says the total, without them the night. */
   nights: number | null;
   stay: StayState | null;
-  /** The link between the list and the map (`useMapLink`): a card lights its pin and a pin lights its card. */
   link: MapLink;
 }
 
@@ -48,7 +45,6 @@ export function ResultsMapPane({ cards, orgSlug, nights, stay, link }: ResultsMa
           lat: card.latitude,
           lon: card.longitude,
           place: card.comune,
-          // The currency of the pin is the one the home says; a home that says none has its price written with no symbol and the phrase that says so.
           label: formatPrice(cents, card.price.currency, locale, t),
           name: card.name,
           href: linkOf(orgSlug ?? card.orgSlug ?? '', card, stay),
@@ -64,7 +60,6 @@ export function ResultsMapPane({ cards, orgSlug, nights, stay, link }: ResultsMa
     [cards, nights, orgSlug, stay, locale, i18n.language, t, linkOf],
   );
 
-  // The card of the pin selected, only in a frame: the pin may be gone when the list changed under it, and then there is no card.
   const selectedPin = embed ? pins.find((pin) => pin.id === selectedId) : undefined;
   const flowCard = selectedPin ? mapCardOfPin(selectedPin, t) : null;
 

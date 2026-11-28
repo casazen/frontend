@@ -16,7 +16,6 @@ describe('notificationPreferencesApi (E05/F03/US02, NF-65)', () => {
 
     const result = await notificationPreferencesApi.get();
 
-    // The user is the one of the token: nobody can read the settings of another person by changing the address.
     expect(ApiClient.get).toHaveBeenCalledWith('/me/notification-preferences');
     expect(result).toEqual(defaultPreferences());
   });

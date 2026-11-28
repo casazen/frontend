@@ -28,12 +28,6 @@ const SEPA_ACCOUNT_PATH = '/app/long-rent/payments';
 
 const startedLast = (a: LeaseSummary, b: LeaseSummary) => parseStayDate(b.startDate).localeCompare(parseStayDate(a.startDate));
 
-/**
- * The panels of the tabs of the page of a long-term property (LR-07d), each one made of sections without a box. The fourth tab,
- * Interventi, is the list of requests to suppliers that the page already had (`LongRentServiceRequests`).
- */
-
-/** Whether the APE is on file, in a line when it is and in a notice when it is not (the lease cannot be made without it). */
 function ApeStatus({ hasApe }: { hasApe: boolean }) {
   const { t } = useTranslation();
 
@@ -75,7 +69,6 @@ export function ContractsPanel({ leases, propertyId, canCreateLease }: { leases:
   );
 }
 
-/** Documenti: whether the APE is there and the documents of the property, with the upload that opens on the APE. */
 export function DocumentsPanel({ propertyId, documents }: { propertyId: string; documents: ReturnType<typeof usePropertyDocuments> }) {
   const { t } = useTranslation();
 
@@ -100,12 +93,6 @@ export function DocumentsPanel({ propertyId, documents }: { propertyId: string; 
   );
 }
 
-/**
- * Spese condominiali of this property. There is no condominium balance sheet, payment report or owner-to-condo charge
- * list yet: this section shows the current acconto and conguaglio on each contract's ledger, the preventivo and
- * conguaglio notices, and the two existing pages that come closest (the fiscal file, and the SEPA account in settings).
- * Canoni are not listed here.
- */
 export function ExpensesPanel({ leases }: { leases: readonly LeaseSummary[] | undefined }) {
   const { t } = useTranslation();
   if (!leases) return null;
@@ -234,10 +221,6 @@ function CondoLease({ lease }: { lease: LeaseSummary }) {
   );
 }
 
-/**
- * Manutenzione of this property: the requests the tenant sent on each contract, the same list as
- * `/app/long-rent/leases/:id/manutenzione`. No contract, no requests.
- */
 export function MaintenancePanel({ leases }: { leases: readonly LeaseSummary[] | undefined }) {
   const { t } = useTranslation();
   if (!leases) return null;
@@ -265,7 +248,6 @@ export function MaintenancePanel({ leases }: { leases: readonly LeaseSummary[] |
   );
 }
 
-/** Dati: where the property is and how big, and the cadastral identification the contract prints. */
 export function DataPanel({ property }: { property: Property }) {
   const { t } = useTranslation();
 

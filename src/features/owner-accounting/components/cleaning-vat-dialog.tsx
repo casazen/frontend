@@ -28,7 +28,6 @@ type SaveAnswer = ReturnType<typeof useAnswerCleaningVat>;
 
 interface QuestionFormProps {
   question: CleaningVatQuestion;
-  /** The answer on its way (the dialog stays open while it is). */
   save: SaveAnswer;
   onClose: () => void;
 }
@@ -45,11 +44,9 @@ function QuestionForm({ question, save, onClose }: QuestionFormProps) {
   const [remember, setRemember] = useState(false);
   const [rememberRefused, setRememberRefused] = useState(false);
   const [problem, setProblem] = useState<CleaningVatProblem | null>(null);
-  // What was sent last: «Riprova» sends it again (the same answer again changes nothing, so a call whose outcome is not known is safe to repeat).
   const [attempt, setAttempt] = useState<CleaningVatAnswerCommand | null>(null);
   // A request is on its way: the state of the mutation says it a moment later than the click, so a second click in between is stopped here.
   const sending = useRef(false);
-  // The person may have left the page while the answer was on its way: the answer is told, but nothing of the address is touched then.
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -82,7 +79,6 @@ function QuestionForm({ question, save, onClose }: QuestionFormProps) {
     } catch (error) {
       const kind = cleaningVatProblemOf(error);
       setProblem(kind);
-      // The answer can be sent again without «Ricorda»: the box goes (the caller may not tick it) or is cleared (it was ticked for an answer that cannot be remembered).
       if (kind === 'rememberForbidden') setRememberRefused(true);
       if (kind === 'rememberForbidden' || kind === 'rememberUnknown') setRemember(false);
     } finally {
@@ -198,7 +194,6 @@ function QuestionForm({ question, save, onClose }: QuestionFormProps) {
   );
 }
 
-/** A question that is not there for this person (not found, not theirs to answer): said in a few words, with the way out. */
 function Refusal({ problem, onClose }: { problem: CleaningVatProblem; onClose: () => void }) {
   const { t } = useTranslation();
   return (
@@ -216,7 +211,6 @@ function Refusal({ problem, onClose }: { problem: CleaningVatProblem; onClose: (
 }
 
 interface QuestionDialogProps {
-  /** The cleaning request the question is about (its id, from the address that the «Da fare» opens). */
   requestId: string;
   onClose: () => void;
 }
@@ -231,7 +225,6 @@ export function CleaningVatQuestionDialog({ requestId, onClose }: QuestionDialog
   const { t } = useTranslation();
   const query = useCleaningVatQuestion(requestId);
   const save = useAnswerCleaningVat(requestId);
-  // A read that failed is a failed read, whatever an earlier answer left in the cache.
   const question = query.isError ? undefined : query.data;
 
   let body: ReactNode;

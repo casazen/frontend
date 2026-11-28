@@ -17,42 +17,22 @@ interface FooterProps {
   displayName?: string;
   contactEmail?: string | null;
   showPoweredBy?: boolean;
-  /** The slogan of the host (`Org.Tagline`), under its name: a booking site shows it, the CasaZen pages do not. */
   tagline?: string | null;
   /**
    * Who runs the booking site (DB-03b-a): legal name, registered office and VAT number, each only if the host entered it. The
    * block "Operatore" is there only when at least one is; the CasaZen pages never get it.
    */
   operator?: PublicOperator | null;
-  /**
-   * CasaZen public pages only: the SEO hub and the CasaZen legal documents for hosts (DPA, subprocessors). A host's
-   * booking site (`/book/*`) is the host's brand: it keeps only the Privacy and Terms links, opened in a new tab so the
-   * guest does not leave the booking. The CasaZen pages also get CasaZen's own footer (the logo on the dark ink of the brand),
-   * the host's site the light one that follows its theme.
-   */
   showSeoHubLink?: boolean;
-  /**
-   * Slug of the org whose booking site this is (BK-14, A3-21): Privacy and Terms then link to the operator's own
-   * documents of that site (`/book/{slug}/privacy`, `/book/{slug}/termini`), not to the CasaZen ones.
-   */
   orgSlug?: string;
-  /** How the host is named on the site (DB-03, `Org.HostName`, "Giulia"): "Ti ospita Giulia" under the slogan. None: no line. */
   hostName?: string | null;
-  /** The phone number the host chose to publish (DB-03, `+` or digits only): a `tel:` link in the contacts. None: no line. */
   phone?: string | null;
-  /**
-   * The host can take a payment on this site now (DB-03, `acceptsBookings`): only then does the footer say that the payments are
-   * secure with Stripe (D24: a sentence, not logos written by hand). A site that cannot take payments says nothing about them.
-   */
   acceptsBookings?: boolean;
-  /** The homes of the site, for the column "Le case" (the first eight; more, and "Tutte le case" leads to the landing page). None: no column. */
   properties?: ReadonlyArray<Pick<PublicPropertyDto, 'id' | 'slug' | 'name'>>;
 }
 
-/** How many homes the footer names: the rest is one link to the landing page. */
 const MAX_HOUSES = 8;
 
-// A label, not a heading: the headings of the page wear the display font of the theme, these are small captions.
 const TITLE_CLASS = 'mb-1 text-xs font-semibold uppercase tracking-wider text-[var(--cz-public-muted)]';
 const LINK_CLASS =
   'inline-flex min-h-8 max-w-full items-center break-words underline-offset-4 hover:text-[var(--cz-public-primary-text)] hover:underline pointer-coarse:min-h-11';
@@ -73,16 +53,12 @@ export function Footer({
   const { t } = useTranslation();
   const infoTitleId = useId();
   const housesTitleId = useId();
-  // "Cookie" opens the panel of the choices again, wherever the visitor is (DB-02b).
   const openCookiePreferences = useCookiePreferencesStore((state) => state.openPreferences);
-  // Only what the host entered (the backend sends null for the rest, never an empty string); no line, no block.
   const operatorName = operator?.legalName?.trim() || null;
   const operatorOffice = operator?.registeredOffice?.trim() || null;
   const operatorVat = operator?.vatNumber?.trim() || null;
   const hasOperator = Boolean(operatorName || operatorOffice || operatorVat);
   const year = new Date().getFullYear();
-  // The pages always exist: the CasaZen ones say "in preparation" until the product owner provides the text (PL-14, D14),
-  // the operator's say "not published" until the host publishes theirs (BK-14).
   const newTab = showSeoHubLink ? {} : { target: '_blank', rel: 'noopener noreferrer' };
   const operatorSite = !showSeoHubLink && orgSlug ? orgSlug : null;
   const privacyPath = operatorSite ? orgDocumentPath(operatorSite, 'privacy') : LEGAL_DOCUMENT_PATHS.privacy;
@@ -140,13 +116,9 @@ export function Footer({
     );
   }
 
-  // The footer of a booking site, light on the surface of the theme of the host: its name and slogan, who hosts and who runs it
-  // (the operator, if the host entered the data), its homes, the way to its documents and to the choices on cookies, its
-  // contacts if it published them, the language, and the line of the law of the page. Only what exists is shown: no line, no block.
   const housesShown = orgSlug ? (properties ?? []).slice(0, MAX_HOUSES) : [];
   const hostLabel = hostName?.trim() || null;
   const phoneNumber = phone?.trim() || null;
-  // "Scrivi a {host}" is always there on a host's site: the message goes to the address the host keeps, published or not.
   const contactName = hostLabel || displayName || t('hostContact.theHost');
   const hasContacts = Boolean(contactEmail || phoneNumber || acceptsBookings || operatorSite);
 
@@ -286,7 +258,6 @@ export function Footer({
       <div className="border-t">
         <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-3 py-4 text-xs text-[var(--cz-public-muted)] sm:flex-row sm:items-center sm:justify-between md:px-4">
           {displayName ? <p>© {year} {displayName}</p> : <span />}
-          {/* The language, at every width: a tablet has no switch in its header (DB-02b). */}
           <LanguageSwitch className="self-start text-[var(--cz-public-text)] sm:self-auto" />
           {showPoweredBy ? (
             <p className="inline-flex items-center gap-1.5">

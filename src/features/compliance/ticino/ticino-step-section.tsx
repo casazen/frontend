@@ -6,7 +6,6 @@ import type { TicinoStepId, TicinoStepState } from './ticino-day-model';
 
 interface TicinoStepSectionProps {
   id: TicinoStepId;
-  /** The number of the step (1 to 5). */
   position: number;
   state: TicinoStepState;
   open: boolean;

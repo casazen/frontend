@@ -21,15 +21,12 @@ import {
 } from '../lib/checkin-wizard-model';
 import { useFocusFromAddress } from '../lib/use-focus-from-address';
 
-/** The photo is read in memory by the server, which takes JPEG and PNG up to 10 MB. */
 const MAX_PHOTO_BYTES = 10_000_000;
 const PHOTO_TYPES = ['image/jpeg', 'image/png'];
 
-/** What a reading left for the host to look at. */
 interface ReadingReview {
   reading: DocumentReading;
   merge: ReadingMerge;
-  /** What the photo shows for the fields in conflict, until the host decides. */
   read: Partial<Record<ReadableGuestField, string>>;
 }
 
@@ -57,7 +54,6 @@ function DocumentPhotoReader({ bookingId, form, index }: DocumentPhotoReaderProp
 
   const readPhoto = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    // Emptied at once: the browser keeps no reference to the photo once the request has it.
     event.target.value = '';
     if (!file) return;
     setReview(null);
@@ -78,7 +74,6 @@ function DocumentPhotoReader({ bookingId, form, index }: DocumentPhotoReaderProp
       const values = formValuesFromReading(reading.fields);
       const current = form.getValues(`guests.${index}`);
       const merge = mergeReading(current, values);
-      // What was empty is filled; what the host typed differently waits for the host's answer.
       for (const name of merge.filled) form.setValue(field(name), values[name] ?? '', { shouldDirty: true });
       setReview({ reading, merge, read: values });
     } catch (error) {

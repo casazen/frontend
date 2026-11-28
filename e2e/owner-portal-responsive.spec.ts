@@ -3,13 +3,6 @@ import { expect, test } from './test';
 import { pinE2eLocale } from './helpers/locale';
 import { expectNoAxeViolations, expectNothingSticksOut } from './helpers/ui-checks';
 
-/**
- * The owner portal on a phone and on a desktop (E07/F07/US01/T03, NF-111, AC-NF111-6): the four widths of the brief, 390x844 and 360x740 (phones), 768 (tablet) and 1280
- * (desktop). On every page of the portal: nothing makes the page scroll sideways, every button, link and field is at least 44 px high, nothing fixed sits on a button, the
- * lists are cards (no table), and axe (colors and names included) finds nothing. The menu is reached with the keyboard in the order the eye reads it, with a visible focus.
- * The API is the demo stack: `page.route` stands in for the backend.
- */
-
 const VIEWPORTS = [
   { name: 'phone 390', width: 390, height: 844 },
   { name: 'small phone 360', width: 360, height: 740 },
@@ -17,7 +10,6 @@ const VIEWPORTS = [
   { name: 'desktop 1280', width: 1280, height: 800 },
 ] as const;
 
-/** A day `offset` days from today, `yyyy-MM-dd`. */
 function day(offset: number): string {
   const date = new Date();
   date.setUTCDate(date.getUTCDate() + offset);
@@ -121,7 +113,6 @@ const STATEMENTS = [
   },
 ];
 
-/** The statement the newer version replaced: its lines, its tourist tax box and the way to the version that took its place. */
 const STATEMENT_DETAIL = {
   statement: STATEMENTS[1],
   ownerName: 'Maria Bianchi',
@@ -285,7 +276,6 @@ const PAGES = [
   { name: 'a property', path: '/portale-proprietari/immobili/prop-1', ready: 'owner-recent-bookings' },
 ] as const;
 
-/** Every button, link and field a person touches is at least 44 px high, on any device and whatever the pointer. */
 async function expectTouchTargets(page: Page, where: string) {
   const small = await page.evaluate(() => {
     const visible = (element: Element) => {
@@ -312,7 +302,6 @@ async function expectTouchTargets(page: Page, where: string) {
   expect(small, `${where}: every target is at least 44 px high`).toEqual([]);
 }
 
-/** Nothing sits on a button: the element at the middle of each one (scrolled into view) is the button itself or something inside it. */
 async function expectNothingCoversAButton(page: Page, where: string) {
   const covered = await page.evaluate(() => {
     const buttons = Array.from(document.querySelectorAll<HTMLElement>('main button, main a[href]')).filter((element) => {
@@ -351,7 +340,6 @@ test.describe('Owner portal: phones, tablet and desktop (E07/F07/US01/T03)', () 
           await expectNothingSticksOut(page, `${portalPage.name} at ${viewport.width}`);
           await expectTouchTargets(page, `${portalPage.name} at ${viewport.width}`);
           await expectNothingCoversAButton(page, `${portalPage.name} at ${viewport.width}`);
-          // The lists are cards: nothing to scroll sideways inside the page.
           await expect(page.locator('main table')).toHaveCount(0);
           await expectNoAxeViolations(page);
         });
@@ -385,7 +373,6 @@ test.describe('Owner portal: phones, tablet and desktop (E07/F07/US01/T03)', () 
         await page.keyboard.press('Tab');
         await expect(page.getByTestId('owner-sign-out')).toBeFocused();
 
-        // Enter on a link of the menu opens its page.
         await nav.getByRole('link', { name: 'Messaggi', exact: true }).focus();
         await page.keyboard.press('Enter');
         await expect(page).toHaveURL(/\/portale-proprietari\/messaggi$/);
@@ -408,7 +395,6 @@ test.describe('Owner portal: phones, tablet and desktop (E07/F07/US01/T03)', () 
       await expect(sent).toContainText('Richiesta inviata');
       await expect(sent).toContainText('Non è ancora un soggiorno confermato');
       await expect(sent).not.toContainText('Confermato');
-      // An approved stay whose dates are not blocked yet is not «confirmed» either.
       await expect(page.locator('[data-testid="owner-stay"][data-state="approved_syncing"]')).toContainText('non è ancora confermato');
       await expect(page.locator('[data-testid="owner-stay"][data-state="sync_failed"]')).toContainText('Non è confermato');
     });
@@ -420,7 +406,6 @@ test.describe('Owner portal: phones, tablet and desktop (E07/F07/US01/T03)', () 
 
       await page.goto('/portale-proprietari/contabilita', { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('owner-statements')).toBeVisible();
-      // The amounts are there, in the currency of the statement, and the sentence that said they were not is gone.
       await expect(page.getByTestId('owner-statement-net').first()).toContainText('CHF');
       await expect(page.getByTestId('owner-pm-invoice-total').first()).toContainText('CHF');
       await expect(page.getByTestId('owner-accounting-note')).toHaveCount(0);

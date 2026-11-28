@@ -11,12 +11,10 @@ interface ToolRowProps {
   title: string;
   summary: string;
   detail?: string | null;
-  /** The button that opens the tool; none when the tool cannot be used yet (a contract with no rent to compare). */
   open?: { label: string; onClick: () => void };
   testId: string;
 }
 
-/** A tool of the guide in one row: what it answers, the answer so far in a sentence, and the button that opens it. */
 function ToolRow({ title, summary, detail, open, testId }: ToolRowProps) {
   return (
     <li className="min-w-0 space-y-2 py-4" data-testid={testId}>
@@ -36,18 +34,11 @@ function ToolRow({ title, summary, detail, open, testId }: ToolRowProps) {
 
 interface GuideToolsProps {
   lease: LeaseDetail;
-  /** The tax comparison, once the server has worked it out; `undefined` while it has not (or for a lease with no rent). */
   advisory: CedolareAdvisory | undefined;
-  /** The check of the rent against the agreement: for a canone concordato only. */
   showRent: boolean;
   onOpenTool: (tool: GuideTool) => void;
 }
 
-/**
- * «Strumenti»: the two tools of the guide, each in one row with the answer the contract's data already give (LR-GUIDE-1). The tax
- * comparison for every contract; the check of the rent against the agreement for a canone concordato. Nothing else is a tool: the rest
- * is advice, or data.
- */
 export function GuideTools({ lease, advisory, showRent, onOpenTool }: GuideToolsProps) {
   const { t } = useTranslation();
   const hasRent = lease.monthlyRent > 0;

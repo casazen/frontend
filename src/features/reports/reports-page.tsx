@@ -23,7 +23,6 @@ import { useReportsList } from '@/features/reports/reports-list';
 export function ReportsPage() {
   const { t } = useTranslation();
   const viewsScope = useListViewsScope();
-  // The rows of the pages behind a flag (the year-end tourist tax) are in the list only while the flag is on.
   const { flags } = useFeatureFlags();
   const rows = useMemo(() => reportsFor(flags), [flags]);
   const [downloading, setDownloading] = useState<DownloadableReport | null>(null);

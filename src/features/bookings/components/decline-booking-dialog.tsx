@@ -10,17 +10,11 @@ import type { Booking } from '@/types';
 const MESSAGE_MAX_LENGTH = 500;
 
 interface DeclineBookingDialogProps {
-  /** The request to decline; nothing is drawn without one. */
   booking: Pick<Booking, 'id' | 'guest'> | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * Declines a "pay at the property" request (BK-06): it is cancelled, its dates are free again and the guest is emailed, with
- * the message of the host if there is one (optional, at most 500 characters). An error is told by the toast of the mutation
- * and leaves the dialog open.
- */
 export function DeclineBookingDialog({ booking, open, onOpenChange }: DeclineBookingDialogProps) {
   const { t } = useTranslation();
   const decline = useDeclineBookingRequest();

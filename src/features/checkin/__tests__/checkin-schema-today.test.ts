@@ -22,7 +22,6 @@ function dateOfBirthIssues(dateOfBirth: string): string[] {
 }
 
 describe('stayGuestFormSchema date of birth in the future (QA-CLOCK-FE)', () => {
-  // A guest in New York: at 19:30 of the 24th there it is already the 25th in Rome, as for the backend.
   withBrowserTimeZone('America/New_York');
 
   afterEach(() => {

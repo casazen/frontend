@@ -49,7 +49,6 @@ describe('The AI help of the texts of the showcase', () => {
     expect(screen.getByRole('button', { name: /Su cosa si basa/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Come avere una bozza migliore/ })).toBeInTheDocument();
     expect(screen.getByLabelText(/Due righe su di te/)).toBeInTheDocument();
-    // The other questions wait behind a button: the first look is one box and one button.
     expect(screen.queryByLabelText(/Da quanto lavori/)).not.toBeInTheDocument();
   });
 
@@ -90,7 +89,6 @@ describe('The AI help of the texts of the showcase', () => {
     const intro = screen.getByTestId('supplier-showcase-ai-field-intro');
     expect(within(intro).getByRole('checkbox')).not.toBeChecked();
     expect(within(intro).getByText('Sostituisce il testo che hai già scritto.')).toBeInTheDocument();
-    // Only what was really used: the categories, three zones and «altre 1», the number of services, and that the answers were used.
     expect(within(result).getByTestId('supplier-showcase-ai-basis')).toHaveTextContent(
       'Basato su: Pulizie, Giardinaggio · Seveso, Cesano Maderno, Desio e altre 1 · 2 servizi · le tue righe',
     );
@@ -112,7 +110,6 @@ describe('The AI help of the texts of the showcase', () => {
     const [message, options] = sonner.toast.success.mock.calls.at(-1) as [string, { action: { label: string; onClick: () => void } }];
     expect(message).toBe('Bozza inserita');
     expect(options.action.label).toBe('Annulla');
-    // The undo runs after the click (the toast waits one tick before it calls it): what was there comes back, and the mark goes with it.
     options.action.onClick();
     await waitFor(() => expect(change).toHaveBeenLastCalledWith({ tagline: null, prep: null }));
     expect(onTakenBack).toHaveBeenCalledWith(['tagline', 'prep']);

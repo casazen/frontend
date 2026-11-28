@@ -10,7 +10,6 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-/** Space between the edge of the rail and its tooltip (px). */
 const GAP = 8;
 
 interface Anchor {
@@ -18,8 +17,6 @@ interface Anchor {
   left: number;
 }
 
-// One tooltip at a time: an icon the keyboard has the focus on and another one under the pointer would each show its name,
-// two labels in the rail. The last one asked for wins; the others put themselves away.
 let owner: string | null = null;
 const ownerListeners = new Set<() => void>();
 
@@ -39,25 +36,21 @@ function subscribeToOwner(listener: () => void) {
 const getOwner = () => owner;
 const getServerOwner = () => null;
 
-/** True when the focus is the keyboard's: a click that gives a button the focus must not call for a tooltip. */
 function isKeyboardFocus(target: HTMLElement): boolean {
   try {
     return target.matches(':focus-visible');
   } catch {
-    // A browser (or a test environment) that does not know the selector: any focus counts.
     return true;
   }
 }
 
 interface RailTooltip {
-  /** Handlers to spread on the element the tooltip names (the icon of the rail). */
   triggerProps: {
     onPointerEnter: (event: PointerEvent<HTMLElement>) => void;
     onPointerLeave: () => void;
     onFocus: (event: FocusEvent<HTMLElement>) => void;
     onBlur: () => void;
   };
-  /** The tooltip, to render next to the element (it is moved to the end of the page, see below); `null` while hidden. */
   tooltip: ReactNode;
 }
 
@@ -99,7 +92,6 @@ export function useRailTooltip(label: string, enabled: boolean): RailTooltip {
       if (event.key === 'Escape') hide();
     };
     document.addEventListener('keydown', onKeyDown);
-    // Captured: the menu is a scrolling box inside the sidebar, its scroll does not bubble up to the window.
     window.addEventListener('scroll', hide, true);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
@@ -107,7 +99,6 @@ export function useRailTooltip(label: string, enabled: boolean): RailTooltip {
     };
   }, [visible, hide]);
 
-  // An icon that goes away with its tooltip showing (the sidebar unmounts) leaves no owner behind.
   useEffect(
     () => () => {
       if (getOwner() === id) setOwner(null);
@@ -118,7 +109,6 @@ export function useRailTooltip(label: string, enabled: boolean): RailTooltip {
   return {
     triggerProps: {
       onPointerEnter: (event) => {
-        // A finger has no hover: the tooltip would only flash while the page opens.
         if (enabled && event.pointerType !== 'touch') show(event.currentTarget);
       },
       onPointerLeave: hide,

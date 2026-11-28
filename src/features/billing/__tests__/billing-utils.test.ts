@@ -54,7 +54,6 @@ describe('billing-utils', () => {
 
   it('isOrgBillingAdmin_OwnerOfEitherRentalContextOrPlatformAdmin_IsBillingAdmin', () => {
     expect(isOrgBillingAdmin([contextOf('short-rent')])).toBe(true);
-    // PL-16 (A1-36): a landlord with only long-term leases manages the plan of its org.
     expect(isOrgBillingAdmin([contextOf('long-rent')])).toBe(true);
     expect(isOrgBillingAdmin([contextOf('admin')])).toBe(true);
     expect(isOrgBillingAdmin([contextOf('supplier')])).toBe(false);

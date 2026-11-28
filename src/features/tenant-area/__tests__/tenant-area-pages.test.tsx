@@ -106,7 +106,6 @@ describe('tenant area', () => {
   });
 
   it('shows the breakdown and the bank details, and a transfer declaration does not mark the installment paid', async () => {
-    // 23:30 UTC is already the next calendar day in Zurich. The default must not be the UTC date.
     freezeClock('2026-01-15T23:30:00Z');
     get.mockResolvedValue({ data: area });
     post.mockResolvedValue({
@@ -171,7 +170,6 @@ describe('tenant area', () => {
     expect(screen.queryByText(/Rossi/)).not.toBeInTheDocument();
     expect(screen.queryByText(/180/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Preventivo/)).not.toBeInTheDocument();
-    // The state is the chip of the list, under the title, once; «La richiesta va al gestore» is for who writes the request (the form), not for who reads it.
     expect(screen.getAllByTestId('tenant-request-status')).toHaveLength(1);
     expect(screen.getByTestId('tenant-request-status')).toHaveClass('rounded-full');
     expect(screen.getByRole('heading', { level: 1 }).parentElement).toContainElement(screen.getByTestId('tenant-request-status'));

@@ -15,7 +15,6 @@ interface CodeTableInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>
   source: CodeTableSource;
   name: string;
   code: string | null;
-  /** Citizenship shows the adjective (Italiana), not the country (Italia). */
   purpose?: 'place' | 'citizenship';
   onValueChange: (value: CodeTableValue) => void;
 }
@@ -29,11 +28,6 @@ function useDelayedValue(value: string, delay: number): string {
   return delayed;
 }
 
-/**
- * One text field and one suggestion list. Choosing an entry sets the official code once and closes the list.
- * The browser's own suggestion popup is not used: together with a datalist it asked for the same value twice,
- * and an id containing "name" made it fill the field with the guest's name.
- */
 export function CodeTableInput({
   id,
   list,
@@ -48,8 +42,6 @@ export function CodeTableInput({
   const available = isListAvailable(source, list);
   const shown = purpose === 'citizenship' ? citizenshipAdjective(name) : name;
   const query = useDelayedValue(name.trim(), SEARCH_DELAY_MS);
-  // The session may not list the imported tables. The codes endpoint is still the one that has them:
-  // an empty answer means nothing was imported, and a row can still be chosen.
   const search = useQuery({
     queryKey: ['alloggiati-codes', source.scope, list, purpose, query],
     queryFn: () => source.search(list, query),
@@ -84,7 +76,6 @@ export function CodeTableInput({
         onChange={(event) => choose(event.target.value)}
         {...inputProps}
       />
-      {/* Shown while the field is focused, including when the answer arrives after the focus. */}
       {entries.length > 0 && !code && (
         <ul
           id={listId}

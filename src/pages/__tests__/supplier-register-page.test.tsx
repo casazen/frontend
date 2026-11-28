@@ -138,7 +138,6 @@ describe('SupplierRegisterPage', () => {
         { authenticated: false },
       );
 
-      // SU-02: the claim token is kept for the claim page and travels in the login appState.
       const claim = { token: claimToken, email: 'nuovo@example.com', expiresAt: claimExpiresAt };
       expect(JSON.parse(localStorage.getItem('cz-supplier-claim') ?? 'null')).toEqual(claim);
 
@@ -162,7 +161,6 @@ describe('SupplierRegisterPage', () => {
       vi.mocked(fetchSupplierRegistrationOptions).mockResolvedValue({ selfServeEnabled: true, pilotComuni: [] });
       renderPage('/register');
 
-      // Any comune of the official list: the picker, never a closed list of pilots.
       const comune = await screen.findByLabelText(t('supplier.register.comune'));
       expect(comune.tagName).toBe('INPUT');
     });
@@ -222,7 +220,6 @@ describe('SupplierRegisterPage', () => {
       fill(t('supplier.register.phone'), '+39 06 1');
       fireEvent.click(screen.getByRole('button', { name: t('supplier.register.complete') }));
 
-      // Already linked: nothing to confirm, the wizard opens by itself.
       await screen.findByText('activation wizard');
       expect(registerSupplier).toHaveBeenCalledWith(
         { email: 'host@example.com', comuneCode: 'H501', legalName: 'Host Servizi', phone: '+39 06 1' },

@@ -37,13 +37,11 @@ interface RowsInput {
   ledger: RentLedger | undefined;
   rules: LongRentRules | undefined;
   apeMissing: boolean;
-  /** A canone concordato not registered yet whose attestation is not among its documents: told as a thing left to do (once it is registered the benefits block tells it). */
   attestationMissing: boolean;
   t: TFunction;
   language: string;
 }
 
-/** «tra 18 giorni», «oggi», «scaduta da 3 giorni»: the days left to the deadline, as the server counts them. */
 function dueText(days: number | null | undefined, t: TFunction): string {
   if (days === null || days === undefined) return '';
   if (days < 0) return t('leaseWizard.done.due.overdue', { count: -days });
@@ -51,16 +49,10 @@ function dueText(days: number | null | undefined, t: TFunction): string {
   return t('leaseWizard.done.due.inDays', { count: days });
 }
 
-/** «4 anni», «30 mesi»: a length of months as people say it. */
 function lengthText(months: number, t: TFunction): string {
   return months % 12 === 0 ? t('leaseWizard.dates.years', { count: months / 12 }) : t('leaseWizard.dates.months', { count: months });
 }
 
-/**
- * Who does what now, in a few rows, with the dates and the amounts the server gives: the deadline of the registration, the first rent,
- * the end of the period and the last day for the notice. The only figures the interface works out are the last day for the notice and
- * the length of a renewal, from the months the server states (`rules`): nothing of law is written here.
- */
 function doneRows({ lease, checklist, ledger, rules, apeMissing, attestationMissing, t, language }: RowsInput): Row[] {
   const day = (value: string | null | undefined) => formatStayDate(parseStayDate(value), language);
   const rows: Row[] = [];
@@ -72,7 +64,6 @@ function doneRows({ lease, checklist, ledger, rules, apeMissing, attestationMiss
   } else if (registration === 'inProgress') {
     rows.push({ text: t('leases.rli.inProgressHint'), icon: FileCheck2 });
   } else if (lease.isConcordatoFacileSource === true) {
-    // A contract the guided service prepared is registered by the service (CF-END): what is left to the person is the declaration.
     const deadline = day(lease.registrationDeadline);
     rows.push({ text: deadline ? t('leaseRound.service.row', { date: deadline }) : t('leaseRound.service.rowUnknown'), icon: FileCheck2 });
   } else {
@@ -144,14 +135,11 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
   const imported = lease.origin === 'Imported';
   const checklist = useRliChecklist(lease.id);
   const ledger = useRentLedger(lease.id, lease.status);
-  // A contract brought in may have no APE: it is a thing to do, never a stop (the property is read as the first step reads it).
   const documents = useQuery({
     queryKey: ['properties', lease.propertyId, 'documents'],
     queryFn: () => propertiesApi.getDocuments(lease.propertyId),
     enabled: imported,
   });
-  // A canone concordato asks for its attestation: not registered yet, a missing one is a row of what is left to do; registered, the
-  // follow-up block below tells it (and reads the documents itself).
   const concordato = isConcordatoLease(lease);
   const benefits = showsBenefits(lease);
   const leaseDocuments = useLeaseDocuments(lease.id, concordato && !benefits);
@@ -166,7 +154,6 @@ export function LeaseDone({ lease, rules }: { lease: LeaseDetail; rules: LongRen
     ledger: ledger.data,
     rules,
     apeMissing: imported && documents.isSuccess && !latestApeDocument(documents.data),
-    // The guided service delivers the contract and its attestation in one file: any contract file uploaded to its lease holds it (CF-DONE).
     attestationMissing: concordato && !benefits && leaseDocuments.isSuccess && !hasAttestation(leaseDocuments.data, lease.isConcordatoFacileSource === true),
     t,
     language: i18n.language,

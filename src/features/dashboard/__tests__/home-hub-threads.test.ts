@@ -34,7 +34,6 @@ function rows(threads: MessageHubThread[], propertyId = '') {
   return buildTodoRows(today, [], { propertyId, canWrite: true, hasPermission: () => true, threads }, { t: i18n.getFixedT('it'), locale: 'it' });
 }
 
-// NF-61: the row «Rispondi a {ospite}» of the Home counts the conversations of the channels too (the list asked with includeOta).
 describe('the rows of the Home for the conversations of the hub (NF-61)', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
@@ -48,7 +47,6 @@ describe('the rows of the Home for the conversations of the hub (NF-61)', () => 
     expect(row.action).toEqual(expect.objectContaining({ kind: 'link', to: row.to }));
     expect(row.sub).toBe('Casa Mare · «Che ore sono il check-in?»');
     expect(row.unread).toBe(2);
-    // The booking of the stay keeps its drawer.
     expect(row.bookingId).toBe('b-2');
   });
 

@@ -10,7 +10,6 @@ const entryOf = (path: string) => {
   return entry;
 };
 
-/** The source of the entrance QR page: the route and the page agree on the name of the parameter through it. */
 const qrPageSource = Object.values(
   import.meta.glob<string>('/src/pages/PropertyQrCode.tsx', { query: '?raw', import: 'default', eager: true }),
 )[0];
@@ -25,7 +24,6 @@ describe('route-manifest identification and entrance QR (E03/F01/US03)', () => {
       navParent: '/app/short-rent/compliance',
       navKey: 'nav.identification',
     });
-    // In no menu: it is a tab of the section, and the entry it hangs from stays the highlighted one.
     expect(entry.navPlacement).toBeUndefined();
     expect(getVisibleNavEntries('short-rent', () => true).map((page) => page.path)).not.toContain(IDENTIFICATION);
     expect(getNavChildren('/app/short-rent/compliance', () => true).map((page) => page.path)).toContain(IDENTIFICATION);

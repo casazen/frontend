@@ -30,13 +30,10 @@ import type { PropertyWizardValues, WizardStepId } from '../property-wizard-mode
 interface ChannelsStepProps {
   form: UseFormReturn<PropertyWizardValues>;
   propertyId: string;
-  /** Opens a step of the wizard: the «Correggi» of a channel goes to the step that lacks data. */
   goTo: (stepId: string) => void;
-  /** The host took the descriptions of the channel manager: the wizard starts the fields of its form from what the server holds now. */
   onAdopted?: (adopted: AdoptedTexts) => void;
 }
 
-/** The texts a refused publication says are missing, by their code (`en.title`): the words the host knows them by. */
 const KNOWN_TEXTS = new Set(['it.title', 'it.description', 'en.title', 'en.description']);
 
 /**
@@ -151,8 +148,6 @@ export function ChannelsStep({ form, propertyId, goTo, onAdopted }: ChannelsStep
       ) : null}
 
       {outsideRows.length > 0 ? (
-        // A channel somebody changed outside CasaZen is told here, before «Pubblica» (the To do of the change leads to this step), with the
-        // way to the choice: nothing is overwritten without it, and the host does not have to be refused first to find it.
         <Alert
           variant="warning"
           data-testid="property-wizard-channels-outside"
@@ -208,7 +203,6 @@ interface ChannelCardProps {
   cinValid: boolean | undefined;
 }
 
-/** One channel: its name and state, what it takes to be published, and the way to the steps that lack data. */
 function ChannelCard({ entry, name, chosen, onChoose, goTo, cinValid }: ChannelCardProps) {
   const { t } = useTranslation();
   const { row } = entry;
@@ -229,7 +223,6 @@ function ChannelCard({ entry, name, chosen, onChoose, goTo, cinValid }: ChannelC
       </div>
 
       {entry.managed ? (
-        // The content of this channel is edited on the channel itself: CasaZen sends nothing to it and says so (NF-27).
         <p className="text-sm text-foreground/70" data-testid={`property-wizard-channel-managed-${entry.code}`}>
           {t('propertyWizard.channels.managed', { channel: name })}
         </p>
@@ -277,7 +270,6 @@ interface PublishProblemAlertProps {
   goTo: (stepId: string) => void;
 }
 
-/** What a refused publication says, answered where the host is looking. */
 function PublishProblemAlert({ problem, goTo }: PublishProblemAlertProps) {
   const { t } = useTranslation();
   if (!problem) return null;
@@ -318,7 +310,6 @@ function PublishProblemAlert({ problem, goTo }: PublishProblemAlertProps) {
         </Alert>
       );
     case 'modified-outside':
-      // Said by the alert above (the status lists the channels that changed) and answered in the dialog, which the refusal has just opened.
       return null;
     default:
       return (

@@ -6,7 +6,6 @@ import { channelLabel, formatRate, formatSummedCents } from '@/features/reports/
 import type { ChannelCostRow } from '@/types';
 
 interface CostSummaryLineProps {
-  /** The rows in the order the server sent them: the highest cost rate first. */
   rows: readonly ChannelCostRow[];
 }
 
@@ -24,7 +23,6 @@ export function CostSummaryLine({ rows }: CostSummaryLineProps) {
 
   const sentence = (row: ChannelCostRow): string => {
     const channel = channelLabel(row.source, t);
-    // The amount carries no currency (the server adds every property in its own, with no conversion): the number alone.
     const amount = formatSummedCents(row.commissionCents, locale);
     const rate = formatRate(row.costRate, locale);
 

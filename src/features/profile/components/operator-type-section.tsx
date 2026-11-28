@@ -16,7 +16,6 @@ export function OperatorTypeSection() {
 
   return (
     <Card>
-      {/* The title alone, like the card of the profile next to this one: a button in the header would make it taller and put the title lower. */}
       <CardHeader>
         <CardTitle>{t('profile.operatorType')}</CardTitle>
       </CardHeader>
@@ -25,7 +24,6 @@ export function OperatorTypeSection() {
           <p className="text-sm text-muted-foreground">{t('profile.currentType')}</p>
           <p className="font-medium">{isLoading ? t('profile.loading') : label}</p>
         </div>
-        {/* "Annulla" of the edit wizard comes back to this profile page. */}
         <Button variant="outline" size="sm" asChild>
           <Link to="/onboarding?mode=edit" state={{ from: pathname }}>{t('profile.editType')}</Link>
         </Button>

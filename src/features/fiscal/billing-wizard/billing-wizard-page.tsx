@@ -96,12 +96,10 @@ import { TouristTaxStep } from './steps/tourist-tax-step';
 import { VatStep } from './steps/vat-step';
 import { useRechargeWaiverConfirmation } from './use-recharge-waiver-confirmation';
 
-/** The name a step has in the texts: the id of the step, with no dash. */
 const stepKeyOf = (id: BillingStepId) => (id === BILLING_STEPS.touristTax ? 'touristTax' : id === BILLING_STEPS.ownerIssuers ? 'ownerIssuers' : id);
 
 interface BillingWizardProps {
   setup: BillingSetup;
-  /** The organization is on the agency plan and the person is its administrator: the steps of the portals and of the mandate exist. */
   agency: boolean;
 }
 
@@ -122,8 +120,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
 
   const canWrite = hasPermission('short-rent', 'property.write');
   const access = useBillingAccess(canWrite);
-  // The reach of the person is learned from the server, before the first step is shown (a person who reaches only some of the properties never sees a field they could fill).
-  // A refusal at a save says it too, for a person whose reach changed meanwhile.
   const [refused, setRefused] = useState(false);
   const partialScope = access.data === false || refused;
   const readOnly = !canWrite || partialScope;
@@ -139,11 +135,9 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const saveRules = useSaveChannelCommissionRules();
   const apply = useApplyMandateTemplate();
   const preview = useBillingPreview();
-  // The listings, the holders and the rules are the agency's: nothing is asked of the server for anyone else.
   const properties = useProperties({ mode: 'short' }, { enabled: agency, fresh: true });
   const holders = useChannelAccountHolders(agency && flags.ownerInvoicing);
   const rules = useChannelCommissionRules(agency);
-  // The step «Commercialista» (E15/F02/US02/T01) exists only while the package of the accountant is on: with the flag off nothing is asked of the server and the wizard is the one it was.
   const accountantOn = flags.accountantPackage;
   // The Italian steps (E17/F03/US01): «Proprietari che emettono» exists for an agency whose Italian owners still missed a profile when the wizard opened (the step does not vanish under the person's hands when
   // the last profile is made: the setup is read again, the step list is not), and «Invio allo SDI» while the sending to the SDI is on: with the flag off the wizard is the one it was.
@@ -156,7 +150,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   // when the query still holds the answer it had: a failed read keeps its data), so that nothing is ever saved over a module that is not there. They are the settings as THIS person sees them:
   // the folders that carry the owner accounting are the agency's, and only the administrator of an organization on the agency plan (`agency`) may choose them (`accountantSettingsFor`).
   const accountantSettings = accountantSettingsFor(accountant.isError && getHttpStatus(accountant.error) === 404 ? null : accountant.data, agency);
-  // No button of the wizard takes a second press while a request of the person is on its way: the save of a step, the application of the mandate, the test send, the way out.
   const [leaving, setLeaving] = useState(false);
   const saving =
     save.isPending ||
@@ -169,15 +162,10 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
     saveAccountant.isPending ||
     sendAccountant.isPending;
 
-  // The wizard starts from the setup as it was when the page opened: a later read of it (the window comes back, a save) does not change the answers under the person's hands.
   const [today] = useState(() => todayInRome());
   const [defaults] = useState(() => initialValues(setup, { organizationName: org?.name ?? '', today }));
-  // The portals the server says collect the Swiss tourist tax by default, read from the setup as it is now (a country chosen in this wizard has its own). They are proposed in the step, and what a
-  // draft compares the answers with already holds them: a proposal the person left as it was is not something they wrote.
   const proposedCollectors = readOnly ? [] : platformDefaultsOf(setup);
   const baseline = withProposal(defaults, proposedCollectors);
-  // The tourist tax of the Italian portals, as the setup says it now (a confirmation answers with the section, which replaces it here at once): nothing of it when the server sends none
-  // (an older server, or a person who reaches only some of the properties, for whom it leaves it out). A person who may not change the setup reads what was confirmed and is asked nothing.
   const italianTax = italianTouristTaxOf(setup);
   const portals = italianTax
     ? { view: readOnly ? { ...italianTax, proposals: [] } : italianTax, confirm: confirmPortals, busy: saving || leaving, onRefused: () => setRefused(true) }
@@ -251,7 +239,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         return { sent };
       }
       if (id === BILLING_STEPS.accountant) {
-        // The settings of the send go as a whole, to their own endpoint: what the person did not touch is not sent again, and nothing is sent when they touched nothing (the step is optional).
         const { request } = accountantChange(accountantSettings, values, draft ? 'draft' : 'whole');
         if (request) {
           await saveAccountant.mutateAsync(request);
@@ -266,7 +253,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       }
       return { sent };
     } catch (error) {
-      // The settings of the send are the organization's too: a refusal of the role or of the reach turns the wizard read-only, as for the rest of the setup.
       if (isNeedsWholeOrg(error) || (id === BILLING_STEPS.accountant && isAccountantRefused(error))) setRefused(true);
       setProblems([...problemsOf(error, values.countryCode), ...accountantProblemsOf(error)]);
       throw error;
@@ -279,13 +265,11 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       if (!readOnly) {
         try {
           const { sent } = await saveStep(stepId as BillingStepId, values, true);
-          // «Salvato» only for what is true: part of what was written may have been left out (not valid, or terms the step never saves), and a draft may have had nothing to send.
           const left = draftLeftOut(stepId as BillingStepId, values, { initial: baseline, onRecord, accountant: accountantSettings });
           if (left.length === 0) toast.success(t(sent ? 'billingWizard.exit.saved' : 'billingWizard.exit.nothingNew'));
           else if (stepId === BILLING_STEPS.mandate) toast.warning(t('billingWizard.exit.mandateNotSaved'));
           else toast.warning(t(sent ? 'billingWizard.exit.savedPartly' : 'billingWizard.exit.notSaved'));
         } catch (error) {
-          // A person whose reach turned out to be only some of the properties has nothing of theirs to keep: they leave. Any other refusal keeps them here, with what they typed.
           if (!isNeedsWholeOrg(error)) {
             toast.error(getProblemMessage(error, t) ?? t('billingWizard.exit.failed'));
             return false;
@@ -307,7 +291,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
 
   const definition = (id: BillingStepId, values: BillingWizardValues): WizardStep<BillingWizardValues> => {
     const key = stepKeyOf(id);
-    // A person who may not change the setup reads every step as it is: no check stops them from moving on over data they cannot fix.
     const checked = <T,>(schema: T): T | undefined => (readOnly ? undefined : schema);
     const base = {
       id,
@@ -337,10 +320,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         return {
           ...base,
           schema: values.countryCode === 'CH' ? checked(touristTaxStepSchema) : undefined,
-          // The confirmation of a portal is an answer of its own (saved at once, not by «Continua»): the step does not move on while it is on its way, nor while any other request of the wizard is
-          // (`saving`: a write that asks for the waiver of the recharge is one of them).
           nextDisabled: leaving || saving,
-          // The proposal is read from the setup as it is now (the country may have been chosen in this wizard, and the portals that collect the tax by default are the server's answer for it).
           render: () => frame(id, <TouristTaxStep country={values.countryCode} proposed={proposedCollectors} portals={portals} />),
         };
       case BILLING_STEPS.channels:
@@ -361,7 +341,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       case BILLING_STEPS.italy:
         return { ...base, schema: checked(italyStepSchema), render: () => frame(id, <ItalyStep />) };
       case BILLING_STEPS.ownerIssuers:
-        // Its own calls (the profiles of the owners): the step saves nothing in the setup, and the count of what is missing is the setup's, read again after every save of a profile.
         return { ...base, render: () => frame(id, <OwnerIssuersStep missing={ownerIssuersMissing(setup)} />) };
       case BILLING_STEPS.sdi:
         // Read-only: the state of the connection to the SDI and of each issuer, as the server says it.
@@ -403,7 +382,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const stepsFor = (values: BillingWizardValues) => stepIdsFor(values.countryCode, agency, accountantOn, italian).map((id) => definition(id, values));
   const openOn = firstMissingStep(setup, stepIdsFor(defaults.countryCode, agency, accountantOn, italian)) ?? BILLING_STEPS.summary;
 
-  // The reach of the person is read before the first step: nobody is offered a field they could not fill, not even for the time of the question.
   if (canWrite && access.isPending) {
     return (
       <div data-testid="billing-access-loading">
@@ -425,7 +403,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         stepsFor={stepsFor}
         initialStepId={openOn}
         defaultValues={defaults}
-        // The answers are on the server, step by step: nothing is kept in the browser, and no old draft of this tab can be laid over what the server has.
         draft={false}
         // The test send of the step «Commercialista» takes minutes and its answer lives in the step: while it is on its way the way between the steps is shut too, so that the answer is not lost.
         // The same for every other request of the wizard (`saving`): the confirmation of a portal in the step «Tassa di soggiorno» (a refusal or a failure is told in the step) and the writes of the
@@ -433,7 +410,6 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         navigationDisabled={leaving || saving}
         finishLabel={t('billingWizard.finishLabel')}
         finishFailedMessage={t('billingWizard.saveFailed')}
-        // Nothing is saved at the last button: every step saved itself. It only closes the wizard, and the confirmation says what the server says is still missing.
         onFinish={() => undefined}
         onExit={() => navigate(home.to)}
         renderDone={() => <BillingWizardDone home={home} />}
@@ -448,13 +424,11 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
           finishError: 'fiscal-billing-finish-error',
         }}
       />
-      {/* Outside the wizard and its form: a dialog inside a form would submit it. It opens only when the server asked for the confirmation of the waiver of the recharge. */}
       {waiver.dialog}
     </>
   );
 }
 
-/** The wizard for an agency's administrator: whether the organization is on the agency plan is read first (it decides the steps), and a plan that cannot be read is told as such. */
 function BillingWizardWithPlan({ setup }: { setup: BillingSetup }) {
   const { t } = useTranslation();
   const plan = useAgencyPlan();
@@ -463,7 +437,6 @@ function BillingWizardWithPlan({ setup }: { setup: BillingSetup }) {
   return <BillingWizard setup={setup} agency={plan.isAgency} />;
 }
 
-/** Decides whether the plan is asked: it is read from an endpoint of the administrator of the organization, which anyone else would be refused, so nobody else asks it. */
 function BillingWizardLoaded({ setup }: { setup: BillingSetup }) {
   const { contexts } = useWorkspace();
   const { flags } = useFeatureFlags();
@@ -480,7 +453,6 @@ function BillingWizardLoaded({ setup }: { setup: BillingSetup }) {
 export function BillingWizardPage() {
   const { t } = useTranslation();
   const setup = useBillingSetup();
-  // A 404 is a setup that is not there (the issuance is off): it is that even when the query still holds the answer it had, which it keeps when a later read fails.
   const notFound = setup.isError && getHttpStatus(setup.error) === 404;
 
   return (
@@ -490,7 +462,6 @@ export function BillingWizardPage() {
         {notFound ? (
           <Navigate to={AREA_HOME_PATH} replace />
         ) : setup.data ? (
-          // A read that fails after the wizard is open (a transient error when the window comes back) does not take the form from under the person's hands.
           <BillingWizardLoaded setup={setup.data} />
         ) : setup.isError ? (
           <ErrorState title={t('billingWizard.loadError')} error={setup.error} onRetry={() => void setup.refetch()} testId="fiscal-billing-error" />

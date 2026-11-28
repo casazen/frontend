@@ -27,8 +27,6 @@ function dateInput(labelKey: string): HTMLInputElement {
 }
 
 describe('RevenuePage default period (QA-CLOCK-FE)', () => {
-  // In Rome a local midnight is the day before in UTC: the old toISOString() range started on the last day of the
-  // previous month.
   withBrowserTimeZone('Europe/Rome');
 
   beforeEach(async () => {
@@ -70,7 +68,6 @@ describe('RevenuePage default period (QA-CLOCK-FE)', () => {
   });
 
   it('RevenuePage_FirstNightOfTheMonthInRome_StartsFromTheNewMonth', () => {
-    // 22:30 UTC of 30 September is 00:30 of 1 October in Rome.
     freezeClock('2026-09-30T22:30:00Z');
 
     renderPage();

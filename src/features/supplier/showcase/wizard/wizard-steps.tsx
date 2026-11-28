@@ -20,7 +20,6 @@ import { bookingsReasonKey, PAYMENTS_SETTINGS_PATH, SERVICES_PATH } from '../sho
 import { ShowcasePreview } from '../showcase-preview';
 import type { WizardValues } from './wizard-model';
 
-/** The live preview of the wizard: the draft of the server with what is being typed on top, not on a phone (there it would be below the fold). */
 function WizardPreview({ publicPath, draft, patch }: { publicPath: string | null; draft: ShowcaseDocument; patch: Partial<ShowcaseDocument> }) {
   const phone = useMediaQuery(PHONE_QUERY);
   const doc = useMemo(() => ({ ...draft, ...patch }), [draft, patch]);
@@ -34,7 +33,6 @@ interface StyleStepProps {
   draft: ShowcaseDocument;
 }
 
-/** First step, "Stile": the four styles (the one for the trade marked) and the page drawn as it is chosen. */
 export function StyleStep({ categories, publicPath, draft }: StyleStepProps) {
   const form = useFormContext<WizardValues>();
   const style = useWatch({ control: form.control, name: 'style' });
@@ -54,7 +52,6 @@ interface PresentationStepProps {
   prefilled: boolean;
 }
 
-/** Second step, "Presentazione": the sentence in large type (at least 12 characters) and the introduction. */
 export function PresentationStep({ publicPath, draft, prefilled }: PresentationStepProps) {
   const { t } = useTranslation();
   const form = useFormContext<WizardValues>();
@@ -105,7 +102,6 @@ export function PresentationStep({ publicPath, draft, prefilled }: PresentationS
 
 const isActive = (service: SupplierService) => service.status === 'Active';
 
-/** Third step, "Servizi": which of the active services the page shows (at least one); the others are listed apart with the reason. */
 export function ServicesStep({ services }: { services: readonly SupplierService[] }) {
   const { t } = useTranslation();
   const form = useFormContext<WizardValues>();
@@ -161,18 +157,15 @@ export function ServicesStep({ services }: { services: readonly SupplierService[
 }
 
 interface SummaryStepProps {
-  /** The showcase as the server has it now (every step saved before this one): the checks are its. */
   content: ShowcaseContent;
   services: readonly SupplierService[];
 }
 
-/** Last step, "Riepilogo": what was chosen with a way back to each answer, the checks of the server, and why the bookings would stay closed. */
 export function SummaryStep({ content, services }: SummaryStepProps) {
   const { t } = useTranslation();
   const form = useFormContext<WizardValues>();
   const values = useWatch({ control: form.control }) as WizardValues;
   const chosen = services.filter((service) => values.services.includes(service.slug)).map((service) => service.name);
-  // Not being published is what this step is about to change: the reasons that stay after it are what is worth saying.
   const reasonKey = bookingsReasonKey(content.bookings.blockedBy.filter((reason) => reason !== 'not_published'));
 
   return (

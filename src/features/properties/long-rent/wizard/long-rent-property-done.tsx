@@ -30,7 +30,6 @@ export function LongRentPropertyDone({ result }: { result: LongRentPropertyWizar
 
   const ready = isReadyForContract(result, ape ?? undefined);
   const identified = ape ? isApeIdentified(ape) : false;
-  // The reading found them (in the file or in the register): the contract prints them, so they are said. Typed by hand: the person knows.
   const readSource = uploaded?.apeIdentificationSource ?? null;
 
   const whatNext = [

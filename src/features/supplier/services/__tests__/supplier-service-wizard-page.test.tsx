@@ -5,8 +5,6 @@ import { expectNoAxeViolations } from '@/test/axe';
 import { SupplierServiceWizardPage } from '../supplier-service-wizard-page';
 import { addressNow, connectApi, createFakeCatalog, makeDraft, makeService, problem, renderRouted } from './service-test-kit';
 
-// A step is a validation, a save, a new address and a new screen: on a machine that is busy it takes more than the second that a
-// query waits by default.
 configure({ asyncUtilTimeout: 5000 });
 
 const api = vi.hoisted(() => ({
@@ -42,14 +40,12 @@ const png = (name: string) => new File(['x'], name, { type: 'image/png' });
 /** A message of a failed "Continue" is under its field and in the summary of the step: it is on the screen at least once. */
 const shownMessage = async (text: string) => (await screen.findAllByText(text)).length > 0;
 
-/** The first step as a supplier fills it. The categories come from the API, so the select shows them a moment later. */
 async function fillFirstStep(name = 'Pulizia cambio ospiti') {
   await screen.findByRole('option', { name: 'Pulizie' });
   type('service-name', name);
   fireEvent.change(screen.getByTestId('service-category'), { target: { value: 'cleaning' } });
 }
 
-/** Goes through the first three steps with what is needed and stops on the last one (photos and preview). */
 async function reachPhotos(catalog: ReturnType<typeof createFakeCatalog>) {
   await fillFirstStep();
   next();
@@ -76,7 +72,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
     it('saves the draft at every step with the version the last answer had, and publishes at the end', async () => {
       const { catalog } = renderWizard();
 
-      // 1 · what the service is. The draft is born here: a POST with what is known, no price and the default duration yet.
       await fillFirstStep();
       expect(screen.getByRole('heading', { level: 2, name: 'Cosa offri?' })).toBeInTheDocument();
       type('service-summary', 'La casa pronta per il prossimo ospite.');
@@ -100,7 +95,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
         included: ['Pulizia completa', 'Cambio biancheria'],
         excluded: [],
       });
-      // The address is the one of the draft from then on: a reload gives it back.
       await waitFor(() => expect(addressNow(screen)).toBe(`${PATH}?step=price&bozza=new-1`));
       expect(screen.getByTestId('service-wizard-saved')).toHaveTextContent('Bozza salvata alle');
 
@@ -128,7 +122,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
         }),
       );
 
-      // 3 · how long, which days, how much notice: Monday to Friday, a day of notice.
       fireEvent.click(screen.getByTestId('service-weekday-Saturday'));
       fireEvent.click(screen.getByTestId('service-weekday-Sunday'));
       fireEvent.change(screen.getByTestId('service-duration'), { target: { value: '90' } });
@@ -140,7 +133,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
         expect.objectContaining({ version: 2, durationMinutes: 90, minNoticeHours: 24, weekdays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] }),
       );
 
-      // 4 · the photos go up as they are chosen; the last button saves the form and publishes.
       fireEvent.change(screen.getByTestId('service-photos-input'), { target: { files: [png('cucina.png'), png('bagno.png')] } });
       await waitFor(() => expect(screen.getAllByTestId('photo-list-item')).toHaveLength(2));
       expect(catalog.upload).toHaveBeenCalledWith('new-1', expect.any(Array));
@@ -197,7 +189,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       await fillFirstStep();
       next();
       await stepTitle('Quanto costa?');
-      // The price step is left with a supplement that has nothing in it and a price of 0 ("Back" does not check the step).
       fireEvent.click(screen.getByTestId('service-supplement-add'));
       type('service-amount', '0');
       fireEvent.click(screen.getByTestId('service-wizard-back'));
@@ -314,7 +305,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       expect(screen.getAllByTestId('service-supplement')).toHaveLength(10);
       expect(screen.getByTestId('service-supplement-add')).toBeDisabled();
 
-      // A flat amount is added once: there is no quantity to limit, so there is no field for it.
       expect(screen.queryByLabelText('Massimo')).not.toBeInTheDocument();
       fireEvent.change(screen.getAllByLabelText('Quando si aggiunge')[0]!, { target: { value: 'set' } });
       expect(screen.getAllByLabelText('Massimo')).toHaveLength(1);
@@ -354,7 +344,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
         '7 giorni',
       ]);
       expect(screen.getByTestId('service-confirmation-note')).toHaveTextContent('Ogni prenotazione arriva come richiesta e la confermi tu.');
-      // No "immediate booking" and no deposit: every booking is confirmed by the supplier (SP-D4, SP-D5).
       expect(screen.queryByText(/immediata|acconto/i)).not.toBeInTheDocument();
     });
   });
@@ -397,7 +386,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       expect(catalog.items()[0]?.name).toBe('Cambiato da un altro');
       expect(screen.getByRole('heading', { level: 2, name: 'Quanto costa?' })).toBeInTheDocument();
 
-      // Not a dead end: the version of the draft was read again, so going on saves what is on the screen over the other one.
       next();
       await stepTitle('Quanto dura e quando lo offri?');
       expect(catalog.items()[0]?.name).toBe('Pulizia cambio ospiti');
@@ -486,7 +474,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Sposta la foto 1 dopo' }));
 
       await waitFor(() => expect(names()).toEqual(['due.png', 'uno.png', 'tre.png']));
-      // What is typed in the form and not yet saved is not saved by a photo: the body is the service as the server has it.
       expect(catalog.update).toHaveBeenLastCalledWith(
         'new-1',
         expect.objectContaining({ photoUrls: ['https://cdn.example/new-1/due.png', 'https://cdn.example/new-1/uno.png', 'https://cdn.example/new-1/tre.png'], version: 4 }),
@@ -500,9 +487,7 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
 
       await waitFor(() => expect(names()).toEqual(['due.png', 'tre.png']));
       expect(catalog.items()[0]?.photoUrls).toEqual(['https://cdn.example/new-1/due.png', 'https://cdn.example/new-1/tre.png']);
-      // The button that opened the dialog went with its photo: the focus is on the "remove" button of the photo that took its place.
       await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Togli la foto 2' })));
-      // Confirming the removal is not the last button of the wizard: nothing was published, and the step is still this one.
       expect(catalog.publish).not.toHaveBeenCalled();
       expect(screen.getByRole('heading', { level: 2, name: 'Come lo vedranno i clienti?' })).toBeInTheDocument();
     });
@@ -544,7 +529,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       expect(within(error).getByRole('link', { name: 'Comincia un nuovo servizio' })).toHaveAttribute('href', PATH);
       expect(within(error).getByRole('link', { name: 'Torna ai servizi' })).toHaveAttribute('href', LIST);
 
-      // The page stays where it is when only its address changes: the way to begin anew has to begin, not show the same error.
       fireEvent.click(within(error).getByRole('link', { name: 'Comincia un nuovo servizio' }));
       expect(await screen.findByTestId('service-name')).toBeInTheDocument();
       expect(screen.queryByTestId('service-wizard-draft-error')).not.toBeInTheDocument();
@@ -581,7 +565,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       expect(screen.getByRole('heading', { level: 2, name: 'Cosa offri?' })).toBeInTheDocument();
       expect(addressNow(screen)).toBe(PATH);
 
-      // The wizard writes the step in the address before the one of the draft: that is not a stale link again, and must not take the form away.
       await fillFirstStep();
       next();
       await stepTitle('Quanto costa?');
@@ -642,7 +625,6 @@ describe('SupplierServiceWizardPage (SP-06)', () => {
       next();
       await stepTitle('Quanto costa?');
 
-      // The list now holds 2 of 2: the creation goes on, it does not turn into the message of the limit.
       await waitFor(() => expect(catalog.fetchList.mock.calls.length).toBeGreaterThan(1));
       expect(screen.queryByTestId('service-wizard-limit')).not.toBeInTheDocument();
       expect(screen.getByRole('heading', { level: 2, name: 'Quanto costa?' })).toBeInTheDocument();

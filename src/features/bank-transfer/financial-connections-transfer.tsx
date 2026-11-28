@@ -47,26 +47,14 @@ export interface FinancialConnectionsTransferProps {
   dueId: string;
   amount: number;
   currency: string;
-  /** Shown on the screen. The API does not take a reference: the due is the installment id. */
   reference: string;
-  /** Payment-link token. Required for `mode: 'public'`. */
   token?: string;
   publishableKey?: string | null;
-  /** Used when neither the session nor the caller already has the platform publishable key. */
   resolvePublishableKey?: () => Promise<string | null>;
-  /**
-   * The tenant due still shows the IBAN and “Ho effettuato il bonifico”. The landlord screens do not,
-   * so they leave this off.
-   */
   showManualTransfer?: boolean;
   forLandlord?: boolean;
-  /** The due already failed: the previous attempt is over and a new transfer may start. */
   dueFailed?: boolean;
-  /** True once an account is linked, so the manual transfer can stay the fallback for the other case. */
   onLinkedChange?: (linked: boolean) => void;
-  /**
-   * Landlord only: link the account that pays the condominium. No rent due is debited from this screen.
-   */
   linkOnly?: boolean;
 }
 
@@ -320,7 +308,6 @@ interface StripeRentTransferDialogProps extends Omit<FinancialConnectionsTransfe
   onOpenChange: (open: boolean) => void;
 }
 
-/** The landlord transfer, from a rent row. The tenant declaration is not on this screen. */
 export function StripeRentTransferDialog({ open, onOpenChange, ...transfer }: StripeRentTransferDialogProps) {
   const { t } = useTranslation();
   return (

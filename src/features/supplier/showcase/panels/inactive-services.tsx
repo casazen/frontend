@@ -3,10 +3,6 @@ import { useTranslation } from 'react-i18next';
 import type { SupplierService } from '@/types/supplier-services';
 import { SERVICES_PATH } from '../showcase-model';
 
-/**
- * The services that cannot be shown yet (drafts and paused ones): each with the reason and the way to its page in "Servizi e prezzi",
- * where it is finished or turned back on. Nothing here can be chosen.
- */
 export function InactiveServices({ services }: { services: readonly SupplierService[] }) {
   const { t } = useTranslation();
   if (services.length === 0) return null;

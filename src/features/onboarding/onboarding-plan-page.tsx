@@ -36,7 +36,6 @@ import { GuestPortalSetupEntry } from './components/guest-portal-setup';
 /** At least 44 px high on every device (the product rule), and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** The window of «Lo faccio dopo» stays mounted while it closes, so the part it shows is kept apart from whether it is open. */
 interface Deferring {
   part: OnboardingPart;
   open: boolean;
@@ -69,7 +68,6 @@ export function OnboardingPlanPage() {
   const sender = useOrgComplianceSender(isAdmin);
   const senderMissing = isAdmin && sender.data?.sender === null && !sender.isError;
   const senderPrimary = isAdmin && (sender.isPending || senderMissing);
-  // The offer of the bulk configuration is the administrator's (the page is, and the server asks `OrgBillingAdmin`): nobody else asks for the counts.
   const flowSummaries = useFlowSummaries({ enabled: isAdmin });
   const exit = useExitPart();
   const adminNoteId = useId();
@@ -91,12 +89,10 @@ export function OnboardingPlanPage() {
   const exitPart = requestedAvailable?.state === 'open' ? requestedAvailable : focus;
   const available = parts.filter(part => normalizePartState(part.state) !== 'notAvailable');
   const complete = available.filter(part => normalizePartState(part.state) === 'done').length;
-  // Every flow counts every property the caller reaches (each is in exactly one state of each flow), so the largest total is the number of properties.
   const propertyCount = (flowSummaries.data ?? []).reduce((largest, summary) => Math.max(largest, Number.isFinite(summary.total) ? summary.total : 0), 0);
   const offerBulk = isAdmin && propertyCount > BULK_OFFER_ABOVE;
   const showOutline = parts.some(part => part.code !== featured?.code) || showOwnerStep || offerBulk;
 
-  /** The home of the host: the plan is a page of Affitti brevi. */
   const home = getDefaultRoute('short-rent');
 
   useEffect(() => {
@@ -118,7 +114,6 @@ export function OnboardingPlanPage() {
   useEffect(() => {
     if (!focusAfterSenderSave.current || senderPrimary || plan.isPending) return;
     focusAfterSenderSave.current = false;
-    // The first link is the featured task. A finished or waiting plan has only its heading.
     const destination = nextPanel.current?.querySelector<HTMLAnchorElement>('a[href]')
       ?? nextPanel.current?.querySelector<HTMLHeadingElement>('h2')
       ?? document.getElementById('org-sender-title');
@@ -179,7 +174,6 @@ export function OnboardingPlanPage() {
       />
     );
   } else if (parts.length === 0) {
-    // An answer with no part this version knows: nothing to show, said once, never an empty shell.
     content = (
       <p className="text-sm text-foreground/70" data-testid="onboarding-plan-empty">
         {t('onboardingPlan.empty')}
@@ -236,7 +230,6 @@ export function OnboardingPlanPage() {
         <PageHeader
           title={t('onboardingPlan.workspace.title')}
           action={
-            // Always there, on every state of the page: the way out and the way to ask for help (UX-06).
             <div role="group" aria-label={t('onboardingPlan.actions.group')} className="flex flex-wrap items-center gap-2">
               <Button type="button" variant="outline" className={TOUCH_TARGET} onClick={saveAndExit} loading={exit.isPending} data-testid="onboarding-plan-exit">
                 {t(senderMissing ? 'onboardingPlan.workspace.later' : isAdmin && exitPart ? 'onboardingPlan.exit.action' : 'onboardingPlan.backToHome')}

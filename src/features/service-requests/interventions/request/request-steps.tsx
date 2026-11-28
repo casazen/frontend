@@ -52,9 +52,6 @@ import {
   type TurnoverWindow,
 } from './request-model';
 
-/* ---------------------------------------------------------------------------------------------------- ⑤ Dettagli */
-
-/** What a refusal of the supplier's catalog (it is not active, or does not cover the comune) says. */
 function CatalogProblem({ error }: { error: unknown }) {
   const { t } = useTranslation();
   const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
@@ -71,17 +68,12 @@ function CatalogProblem({ error }: { error: unknown }) {
   );
 }
 
-/** What the card of a service says: how long it takes and what it costs. */
 function serviceDescription(service: HostSupplierService, t: TFunction, language: string): string {
   const duration = service.durationMinutes === null ? t('requestWizard.who.noDuration') : formatWorkDuration(service.durationMinutes, t);
   const price = formatPrice(service, t, language);
   return `${duration} · ${price}`;
 }
 
-/**
- * The services of the supplier for the category, one to choose, or «altro lavoro» outside the catalog. A supplier with a single service
- * has it chosen already, and so does the service the address names (the page of a supplier: «Richiedi» of one of its services).
- */
 function ServiceChoices({ window }: { window: TurnoverWindow | null }) {
   const { t, i18n } = useTranslation();
   const { control, setValue, formState } = useFormContext<RequestValues>();
@@ -104,7 +96,6 @@ function ServiceChoices({ window }: { window: TurnoverWindow | null }) {
         serviceRequiresQuote: service.requiresQuote,
         servicePriceFromCents: service.priceFromCents,
         servicePriceUnit: service.priceUnit,
-        // A service without a duration has no slots: the host gives the time and the length, from the advised hours.
         ...(service.durationMinutes === null ? { startTime: proposal.startTime, durationChoice: proposal.durationChoice } : {}),
       });
     },
@@ -122,7 +113,6 @@ function ServiceChoices({ window }: { window: TurnoverWindow | null }) {
     if (serviceId === '' && items.length === 1) {
       applyService(items[0]);
     } else if (isCatalogService(serviceId) && serviceName === '') {
-      // Named by the address, not yet by a click: the catalog fills in what the summary says of it. A service that is not this supplier's is not kept.
       const named = items.find((service) => service.id === serviceId);
       if (named) applyService(named);
       else setValue('serviceId', '');
@@ -162,7 +152,6 @@ function ServiceChoices({ window }: { window: TurnoverWindow | null }) {
   );
 }
 
-/** The slots of the day, as buttons; the advised hours first for a cleaning; the nearest days when the day has none. */
 function SlotChoices({ window }: { window: TurnoverWindow | null }) {
   const { t, i18n } = useTranslation();
   const { control, setValue, formState } = useFormContext<RequestValues>();
@@ -175,14 +164,12 @@ function SlotChoices({ window }: { window: TurnoverWindow | null }) {
 
   const free = useMemo(() => slotsOfDay(slots.data?.slots ?? [], day), [slots.data, day]);
   const advised = useMemo(() => slotsInWindow(free, window), [free, window]);
-  // Returning from review must keep a previously chosen time visible, even outside the turnover window.
   const selectedOutsideWindow = Boolean(startTime) && free.some(slot => slot.time === startTime) && !advised.some(slot => slot.time === startTime);
   const filtered = window !== null && advised.length > 0 && !showEvery && !selectedOutsideWindow;
   const shown = filtered ? advised : free;
   const nearby = useMemo(() => daysWithSlots(slots.data?.slots ?? []).filter((candidate) => candidate > day).slice(0, 4), [slots.data, day]);
   const dayText = formatStayDate(day, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' });
 
-  // A time that is not free any more (someone took it, or the day was changed) is not kept: the host is asked again.
   useEffect(() => {
     if (startTime !== '' && slots.data && !free.some((slot) => slot.time === startTime)) setValue('startTime', '');
   }, [free, slots.data, startTime, setValue]);
@@ -280,7 +267,6 @@ function SlotChoices({ window }: { window: TurnoverWindow | null }) {
   );
 }
 
-/** A job the host times itself (outside the catalog, or a service with no duration): the time and the length, proposed and changeable. */
 function CustomTime() {
   const { t } = useTranslation();
   const { register, control, formState } = useFormContext<RequestValues>();
@@ -313,18 +299,12 @@ function CustomTime() {
   );
 }
 
-/** When the work is: a slot of the service, or the time the host gives. */
 function TimeChoices({ window }: { window: TurnoverWindow | null }) {
   const { control } = useFormContext<RequestValues>();
   const [serviceId, serviceMinutes] = useWatch({ control, name: ['serviceId', 'serviceMinutes'] });
   return timedByHost({ serviceId, serviceMinutes }) ? <CustomTime /> : <SlotChoices window={window} />;
 }
 
-/**
- * Step ⑤: the service of the supplier chosen, the day and the time (a free slot, or the time the host writes), how urgent it is, what the
- * supplier should know, and, if the host wants, the stay the work is linked to: it is the house that is asked for, the stay is only a
- * link. Nothing here is kept in the draft: the services and the agendas change.
- */
 export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => void; linkedStay?: Booking }) {
   const { t, i18n } = useTranslation();
   const { register, control, setValue, formState } = useFormContext<RequestValues>();
@@ -344,7 +324,6 @@ export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => vo
   const stayField = register('bookingId');
   const notAvailable = supplierOrgId !== '' && suppliers.isSuccess && !suppliers.data.items.some((supplier) => supplier.orgId === supplierOrgId);
 
-  // A supplier named by the address (the page of a supplier) is known by its id: its name is for the summary.
   useEffect(() => {
     if (supplierOrgId === '' || supplierName !== '') return;
     const supplier = suppliers.data?.items.find((candidate) => candidate.orgId === supplierOrgId);
@@ -444,9 +423,6 @@ export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => vo
   );
 }
 
-/* ------------------------------------------------------------------------------------------------- ⑥ Riepilogo */
-
-/** "10:00" plus 120 minutes is "12:00" (the wall clock of the day; a job that runs past midnight is written "24:00"). */
 function endTime(start: string, minutes: number): string {
   const [hour, minute] = start.split(':').map(Number);
   const total = hour * 60 + minute + minutes;
@@ -454,7 +430,6 @@ function endTime(start: string, minutes: number): string {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
-/** The price the summary says: the service's estimate, «su preventivo», its «da» price, or nothing known. */
 function priceLine(values: RequestValues, t: TFunction, language: string): string {
   if (!isCatalogService(values.serviceId)) return t('requestWizard.review.priceTbd');
   if (values.serviceEstimateCents !== null) return t('requestWizard.review.priceEstimate', { price: formatMoney(values.serviceEstimateCents, language) });
@@ -493,7 +468,6 @@ function BackupChoice() {
   );
 }
 
-/** Step ⑥: everything in plain words, each answer with its «Modifica», and what the supplier will see of it (decision D9). */
 export function ReviewStep({ linkedStay }: { linkedStay?: Booking }) {
   const { t, i18n } = useTranslation();
   const { control } = useFormContext<RequestValues>();

@@ -20,19 +20,16 @@ export const CONSENT_CHANGED_EVENT = 'casazen:consent-changed';
 export type ConsentChoice = 'accepted' | 'rejected';
 export type ConsentCategory = 'necessary' | 'statistics';
 
-/** What the visitor chose, or null while they have not (the banner is then on the page). */
 export function readConsentChoice(): ConsentChoice | null {
   if (typeof window === 'undefined') return null;
   try {
     const value = window.localStorage.getItem(CONSENT_STORAGE_KEY);
     return value === 'accepted' || value === 'rejected' ? value : null;
   } catch {
-    // Storage unavailable (private mode): no choice kept, so nothing optional runs.
     return null;
   }
 }
 
-/** Keeps the choice of the visitor and tells this tab. A browser that cannot store it asks again next time, and nothing optional runs. */
 export function writeConsentChoice(choice: ConsentChoice): void {
   try {
     window.localStorage.setItem(CONSENT_STORAGE_KEY, choice);
@@ -42,7 +39,6 @@ export function writeConsentChoice(choice: ConsentChoice): void {
   window.dispatchEvent(new Event(CONSENT_CHANGED_EVENT));
 }
 
-/** True when what belongs to `category` may run. The necessary ones always may; the others only after an explicit yes. */
 export function hasConsent(category: ConsentCategory): boolean {
   if (category === 'necessary') return true;
   return readConsentChoice() === 'accepted';

@@ -46,7 +46,6 @@ function ConnectErrorAlert({ message, retryable, retrying, onRetry, testId }: Co
   );
 }
 
-/** What the status badge says, and how: an icon always goes with the color. */
 const STATUS_VIEW: Record<ConnectUiStatus, { labelKey: string; variant: 'secondary' | 'warning' | 'success'; Icon: LucideIcon }> = {
   disconnected: { labelKey: 'settings.connectStatusDisconnected', variant: 'secondary', Icon: AlertCircle },
   pending: { labelKey: 'settings.connectStatusPending', variant: 'warning', Icon: Clock },
@@ -116,14 +115,9 @@ export function PaymentsFocus({ payments }: { payments: ConnectPayments }) {
 
 interface PaymentsBodyProps {
   payments: ConnectPayments;
-  /**
-   * The button that connects Stripe or finishes the verification. Not when {@link PaymentsFocus} is on the page: the page has one
-   * button for it, in the block that asks for it.
-   */
   showAction: boolean;
 }
 
-/** Where the Stripe account stands: its state in a word, what it means, the account, and the way to go on when the page does not show another. */
 export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
   const { t } = useTranslation();
   const { status, uiStatus, isLoading, isError, error, isFetching, refetch, startOnboarding, openDashboard } = payments;
@@ -156,14 +150,12 @@ export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
           </div>
 
           {uiStatus === 'active' ? <p className="text-sm text-foreground/70">{t('settings.accountActiveMessage')}</p> : null}
-          {/* «Active» says that card payments are enabled (`chargesEnabled`). The transfers to the bank account are another permission of the Stripe account (`payoutsEnabled`): while it is off, the page says so. */}
           {uiStatus === 'active' && status.payoutsEnabled === false ? (
             <p className="text-sm text-foreground/70" data-testid="connect-payouts-pending">
               {t('settings.accountPayoutsPending')}
             </p>
           ) : null}
 
-          {/* The balance, the payouts and the bank details live on Stripe: the way there, once the account is verified (AM-08b-d). */}
           {uiStatus === 'active' && status.connectedAccountId ? (
             <div className="space-y-1.5">
               <Button
@@ -216,7 +208,6 @@ export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
   );
 }
 
-/** Online payments of the org in the short-rent shell: connect the Stripe account that receives what the guests pay. */
 export function ConnectPaymentsPage() {
   const { t } = useTranslation();
   const payments = useConnectPayments();
@@ -226,8 +217,6 @@ export function ConnectPaymentsPage() {
       <div className="space-y-6">
         <PageHeader title={t('settings.connectPaymentsTitle')} description={t('settings.connectDescription')} crumbs="auto" />
 
-        {/* The block that asks for Stripe, when it does, and beside it from `xl` where the account stands; then where the plan is
-            managed. With the account active, the state and the plan side by side. Under each other on a narrower screen. */}
         <div className={cn(FOCUS_COLUMN, PAGE_COLUMNS)}>
           <PaymentsFocus payments={payments} />
           <PaymentsBody payments={payments} showAction={false} />

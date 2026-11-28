@@ -45,8 +45,6 @@ vi.mock('@/contexts/workspace-provider', async () => {
   }
   return { WorkspaceProvider };
 });
-// The one shell of the area (UI-03) is replaced by a marker: the test is about which area hosts the page, not about the
-// menus. The real `AppShell` that the short-rent pages still wrap themselves in finds the shell and adds nothing.
 vi.mock('@/components/layout/app-shell-layout', async () => {
   const { AppShellContext } = await import('@/components/layout/app-shell-context');
   return {
@@ -106,14 +104,10 @@ function renderApp(entry: string) {
   return router;
 }
 
-// The pages are lazy routes: the first render of each one loads its modules, which takes seconds on a loaded machine (the 1 s
-// default of `findBy*` gave up first). Explicit conditions only, no fixed waits: a wait ends as soon as the element is there, so
-// the ceiling costs nothing when the machine is idle (QA-INFRA-01). The test timeout has to be above it.
 configure({ asyncUtilTimeout: 15_000 });
 
 describe('plan and billing pages from the long-rent shell (PL-16)', { timeout: 30_000 }, () => {
   beforeEach(() => {
-    // The window scrolls in the shell (UI-03): `ScrollRestoration` scrolls it, jsdom has no scrolling to offer.
     window.scrollTo = vi.fn();
     workspaceContexts.value = [longRentContext];
     vi.mocked(userQueries.useCurrentUser).mockReturnValue({

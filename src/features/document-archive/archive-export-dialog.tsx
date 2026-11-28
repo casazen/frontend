@@ -19,7 +19,6 @@ import { archiveTypeMeta } from './document-type';
 
 const SHORT_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/** The box of a choice (a type of document): 44 px high, and it shows when it is on and when the keyboard is on it. */
 const CHOICE =
   'inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border bg-background px-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring';
 
@@ -41,11 +40,8 @@ function tooLargeText(t: TFunction, language: string, large: ArchiveExportTooLar
 interface ArchiveExportDialogProps {
   open: boolean;
   onClose: () => void;
-  /** The types the server says the caller may read: the dialog offers these and no other. */
   types: readonly ArchiveTypeCount[];
-  /** The properties of the caller, for the choice of one. */
   properties: ReadonlyArray<{ id: string; name: string }>;
-  /** The property the list is narrowed to: the archive starts from it. */
   propertyId?: string;
 }
 
@@ -77,14 +73,12 @@ function ExportForm({ onClose, types, properties, propertyId }: Omit<ArchiveExpo
 
   const [preset, setPreset] = useState<PeriodPresetId>('thisYear');
   const [custom, setCustom] = useState<ReportPeriod>(() => presetPeriod('thisYear', today));
-  // What the person turned off, not what is on: every type the server offers is on, whenever the list of types arrives.
   const [off, setOff] = useState<ReadonlySet<ArchiveDocumentType>>(() => new Set());
   const [property, setProperty] = useState(propertyId ?? '');
   const [failure, setFailure] = useState<string | null>(null);
   const [tooLarge, setTooLarge] = useState<ArchiveExportTooLarge | null>(null);
   const [received, setReceived] = useState(0);
 
-  // Whatever way the dialog closes (Cancel, Escape, a page that goes away) the form goes, and the download that was under way with it.
   const request = useRef<AbortController | null>(null);
   useEffect(
     () => () => {
@@ -106,7 +100,6 @@ function ExportForm({ onClose, types, properties, propertyId }: Omit<ArchiveExpo
     setTooLarge(null);
   };
   const choosePreset = (next: PeriodPresetId) => {
-    // The days to type start from the ones the person was looking at.
     if (next === 'custom') setCustom(period);
     forget();
     setPreset(next);

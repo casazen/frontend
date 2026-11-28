@@ -9,17 +9,13 @@ import { useCalendarChanges, useRetryCalendarChange } from '@/queries/use-calend
 import type { CalendarChange } from '@/types/calendar-changes.types';
 import { canRetryChange, changeGroupOf, changeReasonKey } from '../lib/calendar-change-words';
 
-/** How many of the last changes the list shows. */
 const LIST_SIZE = 10;
 
 interface CalendarChangeStatusProps {
-  /** The name of a property of a change. */
   propertyName: (propertyId: string) => string;
-  /** The caller may send a failed change again (`property.write`). */
   canRetry: boolean;
 }
 
-/** Why a change that was not sent was not: the code of its first failed property, else its own. */
 function reasonOf(change: CalendarChange): string {
   return changeReasonKey(change.properties.find((property) => property.state === 'Failed')?.errorCode ?? change.errorCode);
 }
@@ -40,8 +36,6 @@ export function CalendarChangeStatus({ propertyName, canRetry }: CalendarChangeS
   const [open, setOpen] = useState(false);
 
   if (!connectorOn) return null;
-  // The guard is the right to read properties, checked before the line is mounted (the page): a 403 that comes anyway is not said as a failure here (what the app does with a GET
-  // that is refused is the interceptor's, not this line's).
   if (changes.isError && getHttpStatus(changes.error) === 403) return null;
 
   const busy = retry.isPending;
@@ -60,7 +54,6 @@ export function CalendarChangeStatus({ propertyName, canRetry }: CalendarChangeS
   const list = changes.data ?? [];
   const waiting = list.filter((change) => changeGroupOf(change) === 'waiting');
   const failed = list.filter((change) => changeGroupOf(change) === 'failed');
-  // Nothing is on its way and nothing failed: the line is gone (and so is the list of an earlier look).
   if (waiting.length === 0 && failed.length === 0) return null;
 
   const retryable = failed.filter(canRetryChange);

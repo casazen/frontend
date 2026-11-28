@@ -24,17 +24,13 @@ import {
   shortDay,
 } from './lib/rent-register';
 
-/** What a row of the register can ask of the page: the actions that wait for their six seconds, and what each button does. */
 export interface RentsListOptions {
-  /** May declare a payment and send a reminder (`lease.create`); who may only read the register sees no button. */
   canManage: boolean;
-  /** The actions held back for «Annulla» (`reminder:<id>`, `payment:<id>`): the same one is not started twice. */
   held: ReadonlySet<string>;
   onRecord: (row: RentRegisterRow) => void;
   onRemind: (row: RentRegisterRow) => void;
 }
 
-/** The line under the state, with what is late in the one color of the row. */
 function statusNoteLine(row: RentRegisterRow, t: TFunction, language: string, today: string): ReactNode {
   const note = rentStatusNote(row, t, language, today);
   if (!note) return null;
@@ -144,7 +140,6 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
     ],
     defaultChip: 'all',
     rowHref: (row) => rentLeasePath(row.leaseId),
-    // Declaring a payment is what the landlord does here; a row that cannot take one (paid, in flight on Stripe, or a read-only role) leads to its lease.
     primaryAction: (row) =>
       canManage && isOpenInstallment(row.status)
         ? {
@@ -210,7 +205,6 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
         ),
       };
     },
-    // With the sidebar open (from `lg`) five columns and a button do not fit under 1280 px: cards until then.
     cardsUntil: 'xl',
     csv: { fileName: 'canoni' },
     countLabel: (count) => t('longRentRents.count', { count }),
@@ -223,7 +217,6 @@ export function buildRentsList(t: TFunction, language: string, options: RentsLis
   });
 }
 
-/** The register in the words of the person; it follows the language and the actions that wait. */
 export function useRentsList(options: RentsListOptions): ListDefinition<RentRegisterRow> {
   const { t, i18n } = useTranslation();
   const { canManage, held, onRecord, onRemind } = options;

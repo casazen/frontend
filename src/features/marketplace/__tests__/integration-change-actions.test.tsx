@@ -85,7 +85,6 @@ const change = (over: Partial<MarketplaceActivationChange> = {}): MarketplaceAct
   ...over,
 });
 
-/** An error of the API as axios makes it: the request that failed (with its body, which may hold a password) and the answer. */
 function apiError(status: number, data: unknown = {}, body: unknown = { password: 'secret-pass' }): AxiosError {
   const config = { headers: new AxiosHeaders(), data: JSON.stringify(body) } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, undefined, { status, statusText: '', headers: {}, config, data });
@@ -122,7 +121,6 @@ async function chooseFromMenu(name: string, item: string) {
 
 const type = (testId: string, value: string) => fireEvent.change(screen.getByTestId(testId), { target: { value } });
 
-/** Everything the page keeps in the storage of the browser, as one text. */
 const storedText = () => JSON.stringify([{ ...localStorage }, { ...sessionStorage }]);
 
 beforeEach(async () => {
@@ -146,12 +144,10 @@ describe('IntegrationSettingsDialog', () => {
     renderCard(channelRow());
     const dialog = await chooseFromMenu('TEST Portal', 'Modifica impostazioni');
 
-    // The plan of the portal says what it wants: the identifier and the login details.
     await within(dialog).findByTestId('settings-hotel-id');
     expect(api.getActivationPlan).toHaveBeenCalledWith('Channel', 'PORTAL1', 'prop-1');
     expect(screen.getByTestId('settings-password')).toHaveAttribute('type', 'password');
     expect(screen.getByTestId('settings-password')).toHaveAttribute('autocomplete', 'new-password');
-    // Nothing to change yet: nothing can be saved.
     expect(screen.getByTestId('settings-save')).toBeDisabled();
 
     type('settings-username', '  host@example.com ');
@@ -160,11 +156,9 @@ describe('IntegrationSettingsDialog', () => {
     fireEvent.click(screen.getByTestId('settings-save'));
 
     await waitFor(() => expect(api.updateActivationSettings).toHaveBeenCalledTimes(1));
-    // The identifier that was left empty is not sent: no member is «everything».
     expect(api.updateActivationSettings).toHaveBeenCalledWith('act-1', { username: 'host@example.com', password: 'secret-pass' });
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Impostazioni salvate.'));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    // Sent once and forgotten: not in a draft, not in the storage of the browser, not in the address.
     expect(storedText()).not.toContain('secret-pass');
     expect(storedText()).not.toContain('host@example.com');
     expect(window.location.href).not.toContain('secret-pass');
@@ -223,7 +217,6 @@ describe('IntegrationSettingsDialog', () => {
     expect(error).toHaveTextContent('Il canale non ha accettato la richiesta');
     expect(error).toHaveTextContent('Non è stato cambiato nulla.');
     expect(toast.success).not.toHaveBeenCalled();
-    // Kept in the dialog to be corrected, and only there.
     expect(screen.getByTestId('settings-username')).toHaveValue('host');
     expect(screen.getByTestId('settings-password')).toHaveValue('secret-pass');
     expect(storedText()).not.toContain('secret-pass');
@@ -242,7 +235,6 @@ describe('IntegrationSettingsDialog', () => {
     const error = await within(dialog).findByTestId('settings-error');
     expect(error).toHaveTextContent("Il collegamento non c'è più sul channel manager, quindi le impostazioni non si possono cambiare.");
     expect(error).toHaveTextContent('«Correggi»');
-    // The text of the code itself sends the person to the step of a wizard, which this dialog does not have.
     expect(error).not.toHaveTextContent('torna al passo');
     expect(error).toHaveTextContent('Non è stato cambiato nulla.');
   });
@@ -299,11 +291,9 @@ describe('useUpdateActivationSettings', () => {
     const error = result.current.error as AxiosError;
     expect(error.response?.status).toBe(422);
     expect((error.response?.data as { code: string }).code).toBe('marketplace_settings_required');
-    // The body that was sent is not in what the mutation keeps.
     expect(JSON.stringify(error.config?.data ?? '')).not.toContain('secret-pass');
     expect(error.config?.data).toBeUndefined();
 
-    // Not kept once nothing observes it (`gcTime: 0`, not five minutes in the cache of the mutations).
     unmount();
     await waitFor(() => expect(queryClient.getMutationCache().getAll()).toHaveLength(0));
   });
@@ -330,7 +320,6 @@ describe('LicensedFunctionChangePanel', () => {
 
     await waitFor(() => expect(clipboard.writeText).toHaveBeenCalledWith(text));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Testo copiato.'));
-    // Copying records nothing.
     expect(api.requestFunctionChange).not.toHaveBeenCalled();
   });
 

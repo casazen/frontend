@@ -129,7 +129,6 @@ describe('AutopilotDialog', () => {
     expect(within(result).getByTestId('autopilot-result-emailed')).toHaveTextContent('Anna Verdi e Bruno Neri');
     expect(within(result).getByTestId('autopilot-result-closed')).toHaveTextContent('Carla Rossi');
 
-    // The e-mail went: the message is only there for the host who wants to remind the guest another way.
     const draft = within(result).getByTestId('autopilot-chat-draft');
     expect(draft).toHaveAttribute('data-optional', 'true');
     expect(within(draft).getByTestId('autopilot-chat-whatsapp')).toHaveAttribute('href', 'https://wa.me/393331234567?text=Ciao');

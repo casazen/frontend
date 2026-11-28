@@ -10,7 +10,6 @@ import {
   swissLocalityLabel,
 } from '../swiss-place';
 
-// Rows as `GET /api/swiss/localities` gives them. The BFS numbers of Lugano and Locarno are the official ones; the others are invented.
 const locality = (postalCode: string, name: string, municipalityCode: string, municipalityName: string, cantonCode = 'TI'): SwissLocality => ({
   postalCode,
   name,
@@ -101,7 +100,6 @@ describe('proposeSwissPlace (the rules the server places a property by)', () => 
   });
 
   it('proposeSwissPlace_SeveralMunicipalitiesAndNoCity_ChoosesNone', () => {
-    // 6900 is Lugano, Massagno and Paradiso: the form lists them and the host chooses.
     expect(proposeSwissPlace([LUGANO, MASSAGNO, PARADISO], '')).toEqual({ kind: 'ambiguous', candidates: [LUGANO, MASSAGNO, PARADISO] });
     expect(proposeSwissPlace([LUGANO, MASSAGNO, PARADISO], '   ')).toEqual({ kind: 'ambiguous', candidates: [LUGANO, MASSAGNO, PARADISO] });
   });
@@ -120,7 +118,6 @@ describe('proposeSwissPlace (the rules the server places a property by)', () => 
   });
 
   it('proposeSwissPlace_TheNameOfTheMunicipalityDecidesBeforeTheOneOfTheLocality', () => {
-    // 6600 «Locarno» lies in Locarno and in Muralto: the city Locarno is the municipality of Locarno.
     const locarnoInLocarno = locality('6600', 'Locarno', '5113', 'Locarno');
     const locarnoInMuralto = locality('6600', 'Locarno', '5115', 'Muralto');
     const muralto = locality('6600', 'Muralto', '5115', 'Muralto');
@@ -129,8 +126,6 @@ describe('proposeSwissPlace (the rules the server places a property by)', () => 
   });
 
   it('proposeSwissPlace_APostalCodeInTwoCantons_IsNeverDecidedOnTheNameOfAMunicipality', () => {
-    // 6533 lies in Lumino (TI) and in San Vittore (GR): the choice changes the legal regime, so a name that is both a locality
-    // of the two municipalities decides nothing.
     const luminoInLumino = locality('6533', 'Lumino', '5099', 'Lumino', 'TI');
     const luminoInSanVittore = locality('6533', 'Lumino', '3834', 'San Vittore', 'GR');
     expect(proposeSwissPlace([luminoInLumino, luminoInSanVittore], 'Lumino').kind).toBe('ambiguous');

@@ -14,10 +14,8 @@ interface ConsentsStepProps {
   onBack?: () => void;
   onContinue: (consents: OnboardingConsentsPayload) => void;
   isLoading?: boolean;
-  /** The words of the two buttons when the step is not the one of the onboarding (the acceptance of an invitation to an org says what it does). */
   backLabel?: string;
   continueLabel?: string;
-  /** An invited person gives the four consents and nothing else is asked: no box for the marketing. */
   hideMarketing?: boolean;
 }
 
@@ -44,7 +42,6 @@ export function ConsentsStep({ onBack, onContinue, isLoading, backLabel, continu
   }
 
   if (isError || !tos || !privacy || !dpa || !subprocessors) {
-    // A1-39: never a dead end, the documents can be loaded again or the user can go back.
     return (
       <Card data-testid="onboarding-consents-error">
         <CardContent className="space-y-4 py-8 text-center">
@@ -194,7 +191,6 @@ function ConsentRow({
   onCheckedChange: (value: boolean) => void;
   label: string;
   summary?: string;
-  /** PL-14: the document the checkbox accepts, readable on its public page (new tab, the onboarding stays open). */
   document?: LegalDocumentMeta;
   href?: string;
 }) {

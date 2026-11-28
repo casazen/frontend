@@ -24,8 +24,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// NF-100 / money: the API reads `paidAmount` of a form with the culture of the request, where the Italian dot is a thousands separator,
-// so it asks for the amount as text with a dot and takes nothing else. What the host left empty is not sent.
 describe('touristTaxSummaryApi.recordRemittance (NF-100)', () => {
   it('RecordRemittance_Payment_GoesAsMultipartWithTheAmountAsTextWithADot', async () => {
     vi.mocked(axios.post).mockResolvedValueOnce({ data: REMITTANCE });
@@ -41,7 +39,6 @@ describe('touristTaxSummaryApi.recordRemittance (NF-100)', () => {
     expect(saved).toBe(REMITTANCE);
     const [url, body, config] = vi.mocked(axios.post).mock.calls[0]!;
     expect(url).toBe('/tourist-tax/remittances');
-    // The default content type of the client is JSON, which would serialize the form as JSON.
     expect(config).toMatchObject({ headers: { 'Content-Type': 'multipart/form-data' } });
     const form = body as FormData;
     expect(form.get('paidAmount')).toBe('1250.00');

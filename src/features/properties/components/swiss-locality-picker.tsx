@@ -11,26 +11,16 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import type { SwissLocality } from '@/types/swiss-places.types';
 import { fourDigitPostalCode, isSwissPlacesUnavailable, proposeSwissPlace, swissLocalityKey, swissLocalityLabel } from '../lib/swiss-place';
 
-/** Pause in typing before the search is sent: one request per word, not per key. */
 const SEARCH_DEBOUNCE_MS = 250;
 
 interface SwissLocalityPickerProps {
-  /** Id of the input: the caller's `<Label htmlFor>` points at it. */
   id: string;
-  /** BFS number (text of digits) of the municipality the host confirmed, or null when none is. */
   municipalityCode: string | null;
-  /** The postal code and the city as the form has them: while no place is confirmed, the picker proposes the one they give. */
   postalCode: string;
   city: string;
-  /**
-   * What the record already says about the municipality it stores: shown at once, without asking the directory. Without a name and a
-   * canton (a record of a list, or a municipality the directory lacks) the picker reads the municipality from the directory.
-   */
   stored?: { municipalityCode?: string | null; municipalityName?: string | null; cantonCode?: string | null };
-  /** Called with the place the host chose or confirmed, or null when the choice is cleared. */
   onChange: (place: SwissLocality | null) => void;
   disabled?: boolean;
-  /** `aria-describedby` of the input (hints and errors of the caller). */
   describedBy?: string;
   className?: string;
   'data-testid'?: string;
@@ -64,7 +54,6 @@ export function SwissLocalityPicker({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // The place picked in this session is known at once; the stored one comes with the record, or is read from the directory.
   const [picked, setPicked] = useState<SwissLocality | null>(null);
   const pickedFacts = municipalityCode && picked?.municipalityCode === municipalityCode ? picked : null;
   const storedFacts =
@@ -72,7 +61,6 @@ export function SwissLocalityPicker({
       ? { municipalityName: stored.municipalityName, cantonCode: stored.cantonCode }
       : null;
   const lookup = useSwissMunicipality(municipalityCode && !pickedFacts && !storedFacts ? municipalityCode : null);
-  // Never `lookup.data` on its own: after an error TanStack Query keeps the old data, and a 404 is "not in the directory" whatever was cached.
   const lookedUp = lookup.isSuccess ? { municipalityName: lookup.data.name, cantonCode: lookup.data.cantonCode } : null;
   const chosen = municipalityCode ? (pickedFacts ?? storedFacts ?? lookedUp) : null;
   const codeUnknown = !!municipalityCode && lookup.isError && getHttpStatus(lookup.error) === 404;
@@ -86,12 +74,10 @@ export function SwissLocalityPicker({
   const search = useSwissLocalitySearch(debounced, typing);
   const items = search.isSuccess ? search.data : [];
 
-  // The postal code of the form, while nothing is confirmed and the host is not searching by hand: only a whole one (four digits) is read.
   const proposalPostalCode = !municipalityCode && !typing ? fourDigitPostalCode(postalCode) : null;
   const proposalSearch = useSwissLocalitySearch(proposalPostalCode ?? '', proposalPostalCode !== null);
   const proposal = proposalPostalCode && proposalSearch.isSuccess ? proposeSwissPlace(proposalSearch.data, city) : null;
 
-  // The one failure to say: the search of the host, the one of the postal code, or the read of the stored municipality (a 404 is not one).
   const searchFailure = typing && search.isError && !search.isFetching ? search.error : null;
   const proposalFailure = proposalPostalCode && proposalSearch.isError && !proposalSearch.isFetching ? proposalSearch.error : null;
   const lookupFailure = municipalityCode && lookup.isError && !codeUnknown && !lookup.isFetching ? lookup.error : null;
@@ -103,7 +89,6 @@ export function SwissLocalityPicker({
     else void lookup.refetch();
   };
 
-  // The highlighted option, kept inside the list whatever the answers that arrive meanwhile.
   const activeIndex = items.length === 0 ? -1 : Math.min(Math.max(highlighted, 0), items.length - 1);
 
   const choose = (locality: SwissLocality) => {
@@ -112,7 +97,6 @@ export function SwissLocalityPicker({
     setTyping(false);
     setOpen(false);
     onChange(locality);
-    // The button that was pressed goes away with the proposal: the focus goes to the field that now shows the place.
     inputRef.current?.focus();
   };
 
@@ -141,7 +125,6 @@ export function SwissLocalityPicker({
       setOpen(true);
       setHighlighted(items.length === 0 ? 0 : activeIndex <= 0 ? items.length - 1 : activeIndex - 1);
     } else if (event.key === 'Enter') {
-      // Never submits the form while the list is open: Enter picks the highlighted place.
       if (open && activeIndex >= 0 && items[activeIndex]) {
         event.preventDefault();
         choose(items[activeIndex]);
@@ -187,7 +170,6 @@ export function SwissLocalityPicker({
       className={cn('relative space-y-1', className)}
       data-testid={testId}
       onBlur={(event) => {
-        // Leaving the picker drops what was typed without a choice; the choice already made stays.
         if (!containerRef.current?.contains(event.relatedTarget as Node | null)) stopTyping();
       }}
     >
@@ -212,7 +194,6 @@ export function SwissLocalityPicker({
             setText(event.target.value);
           }}
           onFocus={(event) => {
-            // Start from an empty query: the place chosen stays until another is picked or the field is cleared.
             if (!typing) event.currentTarget.select();
           }}
           onKeyDown={onKeyDown}
@@ -251,7 +232,6 @@ export function SwissLocalityPicker({
                 'flex cursor-pointer flex-col justify-center rounded-sm px-2 py-1.5 pointer-coarse:min-h-11',
                 index === activeIndex && 'bg-accent text-accent-foreground',
               )}
-              // mousedown, not click: the input must not lose focus (and drop the list) before the choice is made.
               onMouseDown={(event) => {
                 event.preventDefault();
                 choose(locality);

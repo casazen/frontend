@@ -22,13 +22,8 @@ import { areaKeyOf, missingLabel, reachesProperty, type AccountPropertyRow } fro
 import { ResponsiblePicker } from './responsible-picker';
 import { useAccountPropertyRights, useAccountPropertyRows, useMemberAccess } from './use-account-property-rows';
 
-/** What the address calls the drawer of a property of the account: `?detail=account-property:<id>`. */
 export const ACCOUNT_PROPERTY_DRAWER_KIND = 'account-property';
 
-/**
- * The property of the drawer, read from the list of the account: the same queries as the page, so there is no second request, and
- * what changes in one changes in both.
- */
 function useRowOfTheList(id: string) {
   const data = useAccountPropertyRows();
   return { ...data, row: data.rows?.find((candidate) => candidate.property.id === id) };
@@ -39,7 +34,6 @@ export function AccountPropertyDrawerTitle({ id }: DetailTitleProps) {
   return <>{row?.property.name ?? ''}</>;
 }
 
-/** The people who can open the property, by name and role, each one leading to what that person sees. */
 function WhoCanOpen({ row, members }: { row: AccountPropertyRow; members: readonly OrgMember[] | undefined }) {
   const { t } = useTranslation();
   const { granted, isPending, isError, retry } = useMemberAccess(members);
@@ -186,7 +180,6 @@ export function AccountPropertyDrawerContent({ id }: DetailContentProps) {
       {row.state?.kind === 'longRentProperty' ? <StatusExplainer kind="longRentProperty" status={row.state.status} actions={mainAction} /> : null}
       {row.state === null && mainAction ? <div className="flex flex-wrap gap-2">{mainAction}</div> : null}
 
-      {/* A change of mode that waits for its day, with "Annulla il passaggio": read when the drawer opens, nothing if there is none. */}
       {canRead ? <ScheduledChangeNotice area={area} propertyId={row.property.id} /> : null}
 
       <Details row={row} membersKnown={membersKnown} canWrite={canWrite} onAssign={() => setAssigning(true)} />
@@ -201,15 +194,11 @@ export function AccountPropertyDrawerContent({ id }: DetailContentProps) {
         </PlainSection>
       ) : null}
 
-      {/* Over the drawer: a dialog of its own, so the person puts somebody in charge without leaving the property. */}
       <ResponsiblePicker rows={assigning ? [row] : null} members={members ?? []} onClose={() => setAssigning(false)} />
     </div>
   );
 }
 
-// Registered when this module is loaded, which the list of the account does (it imports this file): the drawer opens from the list and
-// from a shared address (`?detail=account-property:<id>`) on that page. No `pageHref`: the page of a property depends on its mode,
-// which only the content knows ("Apri la scheda" is its button).
 registerDetail(ACCOUNT_PROPERTY_DRAWER_KIND, {
   title: AccountPropertyDrawerTitle,
   Content: AccountPropertyDrawerContent,

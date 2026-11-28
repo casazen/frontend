@@ -19,19 +19,16 @@ interface AiPriceCardProps {
   currency?: string;
 }
 
-/** The four fields of the step the suggestion can fill in. */
 type PriceFields = Pick<PropertyWizardValues, 'nightlyRate' | 'cleaningFee' | 'weekendSurcharge' | 'minNights'>;
 
 type Phase =
   | { kind: 'ask' }
   | { kind: 'declined' }
   | { kind: 'result'; suggestion: PriceSuggestion }
-  /** `previous` is what the fields held before, `applied` what the suggestion put there: the undo gives back only what is still as put. */
   | { kind: 'applied'; suggestion: PriceSuggestion; previous: PriceFields; applied: Partial<PriceFields> };
 
 const POSITIONINGS: readonly PricePositioning[] = ['Lower', 'Market', 'Higher'];
 
-/** The reasons that a new try may overcome: the budget of the month and a platform with no AI do not. */
 const RETRYABLE_REASONS: readonly PriceSuggestionReason[] = ['ai_unavailable', 'ai_invalid_answer'];
 
 const SET_OPTIONS = { shouldDirty: true, shouldValidate: true } as const;
@@ -40,7 +37,6 @@ function money(value: number, language: string, currency: string): string {
   return new Intl.NumberFormat(language, { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
 }
 
-/** Puts the fields that are given into the form, as the host typing them would: the step then validates and saves them as always. */
 function writeFields(form: UseFormReturn<PropertyWizardValues>, fields: Partial<PriceFields>) {
   if (fields.nightlyRate !== undefined) form.setValue('nightlyRate', fields.nightlyRate, SET_OPTIONS);
   if (fields.cleaningFee !== undefined) form.setValue('cleaningFee', fields.cleaningFee, SET_OPTIONS);
@@ -48,7 +44,6 @@ function writeFields(form: UseFormReturn<PropertyWizardValues>, fields: Partial<
   if (fields.minNights !== undefined) form.setValue('minNights', fields.minNights, SET_OPTIONS);
 }
 
-/** What the undo gives back: the fields of `previous` whose value is still the one the suggestion put there. */
 function fieldsToRestore(current: PriceFields, applied: Partial<PriceFields>, previous: PriceFields): Partial<PriceFields> {
   const restore: Partial<PriceFields> = {};
   if (applied.nightlyRate !== undefined && current.nightlyRate === applied.nightlyRate) restore.nightlyRate = previous.nightlyRate;
@@ -60,13 +55,6 @@ function fieldsToRestore(current: PriceFields, applied: Partial<PriceFields>, pr
   return restore;
 }
 
-/**
- * «Vuoi che calcoli io il prezzo con l'AI?» at the top of the step «Prezzi» (WIZ-AI-PRICE). The host is asked first and nothing happens
- * without a yes: one question («più basso, in linea, più alto» than the similar homes of the area), then the AI proposes the price, the
- * range of the area and the cleaning fee, the weekend surcharge and the minimum stay that go with it, with why and what it was based
- * on. The numbers go into the fields only with «Usa questi valori», and can be given back. The card is there only where an AI is in
- * effect; when the AI is not behind the answer, the card says why (and, with enough similar homes, shows the price of those alone).
- */
 export function AiPriceCard({ form, propertyId, currency = 'EUR' }: AiPriceCardProps) {
   const { t, i18n } = useTranslation();
   const availability = usePriceSuggestionAvailability(propertyId);
@@ -74,7 +62,6 @@ export function AiPriceCard({ form, propertyId, currency = 'EUR' }: AiPriceCardP
   const [phase, setPhase] = useState<Phase>({ kind: 'ask' });
   const [positioning, setPositioning] = useState<PricePositioning>('Market');
 
-  // No AI on the platform (or the read failed): the step is the one it always was.
   if (availability.data?.available !== true) return null;
 
   const calculate = () => {
@@ -230,11 +217,9 @@ interface SuggestionViewProps {
   onKeepMine: () => void;
 }
 
-/** What the AI answered: the price with its range, the extras, why, what it was based on, and the two ways out (take it, or keep one's own). */
 function SuggestionView({ suggestion, form, language, expectedCurrency, applied, retrying, onApply, onUndo, onChangePositioning, onRetry, onKeepMine }: SuggestionViewProps) {
   const { t } = useTranslation();
 
-  // No price at all: say why, and offer a new try only where it can help.
   if (suggestion.nightlyRate === null) {
     const reason = suggestion.reason ?? 'ai_unavailable';
     return (
@@ -328,11 +313,6 @@ function SuggestionView({ suggestion, form, language, expectedCurrency, applied,
   );
 }
 
-/**
- * «Basato su: Como · 3 ospiti · 75 m² · 8 dotazioni · 5 case simili su CasaZen»: only what the AI was really told. The figures of the
- * property come from the form (the steps before this one are saved: it holds what the server has); what the server says it used decides
- * what is listed.
- */
 function basedOnParts(suggestion: PriceSuggestion, form: UseFormReturn<PropertyWizardValues>, t: (key: string, options?: Record<string, unknown>) => string): string[] {
   const { basedOn } = suggestion;
   const used = new Set(basedOn.usedFields);

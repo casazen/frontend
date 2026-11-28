@@ -147,7 +147,6 @@ function mockGdprApi(page: import('@playwright/test').Page) {
   });
 
   page.route('**/api/bookings**', async (route) => {
-    // `**/api/bookings**` also matches the Vite module `/src/api/bookings.api.ts`: only the API is answered.
     if (!new URL(route.request().url()).pathname.startsWith('/api/')) {
       await route.fallback();
       return;
@@ -217,7 +216,6 @@ test.describe('Italian Compliance Golden Path', () => {
     test('admin CRUD: creates, edits, deletes a tourist tax rate', async ({ page }) => {
       await page.goto(demoUrl('/app/admin/compliance/tax-rates', 'admin'));
 
-      // Create
       await page.getByRole('button', { name: /Nuova aliquota|New rate/i }).click();
       await page.locator('#city').fill('Roma');
       await page.locator('#regionCode').fill('LAZ');
@@ -226,8 +224,6 @@ test.describe('Italian Compliance Golden Path', () => {
       await page.getByRole('button', { name: /^(Crea|Create)$/ }).click();
       await expect(page.getByText(/creata con successo|created successfully/i)).toBeVisible({ timeout: 10_000 });
 
-      // Verify appears
-      // The rate is shown with the Italian number format (3,50).
       await expect(page.getByRole('row', { name: /Roma/ })).toContainText(/3,50/);
     });
 
@@ -316,7 +312,6 @@ test.describe('Italian Compliance Golden Path', () => {
 
     test('booking creation shows tourist tax line item', async ({ page }) => {
       await mockPropertiesApi(page, [buildCreatedProperty()]);
-      // Mock booking create response with tourist tax
       await page.route('**/api/bookings/manual', async (route) => {
         if (route.request().method() !== 'POST') { await route.fallback(); return; }
         await route.fulfill({
@@ -381,7 +376,6 @@ test.describe('Italian Compliance Golden Path', () => {
         });
       });
 
-      // The Stripe account (the payment link of the payment step is offered only while it is ready): not connected here, the host takes the money at the property.
       await page.route('**/api/connect/status**', async (route) => {
         await route.fulfill({
           status: 200,
@@ -392,25 +386,20 @@ test.describe('Italian Compliance Golden Path', () => {
 
       await page.goto(demoUrl('/app/short-rent/bookings/create', 'short-stay'));
 
-      // Step 1, the stay: the arrival cannot be in the past, so far-future dates (the mocked API quotes the same whatever they are).
       await page.locator('#propertyId').selectOption({ index: 1 });
       await page.getByLabel(/Check-in/i).fill('2099-07-01');
       await page.getByLabel(/Check-out/i).fill('2099-07-05');
       await page.getByTestId('booking-wizard-next').click();
 
-      // Step 2, the guest.
       await fillHostBookingGuestContact(page);
       await page.getByTestId('booking-wizard-next').click();
 
-      // Step 3, the price: the tourist tax is a line of the price.
       await expect(page.getByTestId('booking-price-tax')).toContainText(/20[,.]00/);
       await page.getByTestId('booking-wizard-next').click();
 
-      // Step 4, how the guest pays: there is no default, the host chooses (here, at the property).
       await page.locator('label', { has: page.getByTestId('booking-payment-onSite') }).click();
       await page.getByTestId('booking-wizard-next').click();
 
-      // Step 5, the summary: the button of the wizard creates the booking.
       await expect(page.getByTestId('booking-summary-what-happens')).toBeVisible();
 
       const resp = page.waitForResponse(
@@ -437,11 +426,9 @@ test.describe('Italian Compliance Golden Path', () => {
       await expect(page.getByTestId('checkin-page')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByRole('heading', { name: /Check-in ospite|Guest check-in/i })).toBeVisible();
       await expect(page.getByTestId('checkin-progress')).toBeVisible();
-      // The first step is the document photo. Typing the data skips it; Avanti appears on the next step.
       await page.getByTestId('checkin-enter-manually').click();
 
       await page.getByRole('button', { name: /Avanti|Next/i }).click();
-      // CO-02: the document is asked again (the number on file is never sent back to the guest).
       await page.locator('#guest-0-documentType').selectOption('IdentityCard');
       await page.locator('#guest-0-documentNumber').fill('AB1234567');
       await page.locator('#guest-0-documentIssuePlaceName').fill('Roma');
@@ -468,11 +455,9 @@ test.describe('Italian Compliance Golden Path', () => {
       await page.goto(`/checkin/${DEMO_CHECKIN_TOKEN}`);
 
       await expect(page.getByTestId('checkin-page')).toBeVisible({ timeout: 15_000 });
-      // No image of the document is kept for a Swiss property (D6): the optional photo step says so.
       await expect(page.getByTestId('checkin-document-not-archived')).toBeVisible();
       await page.getByTestId('checkin-enter-manually').click();
 
-      // Never an Italian-only question of a Swiss stay: the home replaces the residence, and the plate is asked once for the whole stay.
       await expect(page.locator('#guest-0-residenceStreet')).toBeVisible();
       await expect(page.locator('#guest-0-residenceInItaly')).toHaveCount(0);
       await expect(page.locator('#guest-0-residenceStreet')).toHaveAttribute('autocomplete', 'street-address');
@@ -526,7 +511,6 @@ test.describe('Italian Compliance Golden Path', () => {
 
       await expect(page.getByTestId('booking-alloggiati-section')).toBeVisible({ timeout: 15_000 });
       await expect(page.getByTestId('alloggiati-status-badge')).toHaveText(/Da inviare manualmente|To send manually/i);
-      // The document number is masked (CO-02): the full one is never in the page until the host reveals it.
       await expect(page.getByTestId('alloggiati-guest-summary')).toContainText('*****45AB');
       await expect(page.getByTestId('alloggiati-guest-summary')).not.toContainText('CA12345AB');
 

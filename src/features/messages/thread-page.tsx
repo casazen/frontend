@@ -34,7 +34,6 @@ import { isReviewThreadKey } from './lib/review-model';
 import { buildThreadItems, resendKeyOf, resentMessageIds, type HubThreadItem } from './lib/thread-items';
 import { ReviewThreadView } from './review-thread-page';
 
-/** The sentence for a conversation the host can read and not answer, from the reason the server gives. */
 function cannotReplyKey(reason: string | null | undefined): string {
   if (reason === 'mapping_not_confirmed') return 'messages.actions.mappingNotConfirmed';
   if (reason === 'thread_closed') return 'messages.actions.threadClosed';
@@ -55,7 +54,6 @@ function ThreadSkeleton({ label }: { label: string }) {
   );
 }
 
-/** What stands in the place of the box when the host can read the conversation and not answer it: the one sentence that says why. */
 function CannotReply({ children }: { children: ReactNode }) {
   return (
     <div className="rounded-lg border bg-muted/40 p-3 text-sm" role="status" data-testid="thread-cannot-reply">
@@ -80,7 +78,6 @@ interface ConversationProps {
   busy: boolean;
 }
 
-/** The middle column: where the conversation comes from, its messages oldest first, and the box that answers it, or why there is none. */
 function Conversation({ threadKey, thread, title, listPath, bookingDetails, items, actions, resent, canWrite, draft, onDraft, onSend, busy }: ConversationProps) {
   const { t, i18n } = useTranslation();
   const online = useOnlineStatus();
@@ -209,8 +206,6 @@ function ThreadView({ threadKey }: { threadKey: string }) {
     checking: thread.isFetching,
     onRetryPending: retry,
     onEditPending: (item) => {
-      // The box stays open while a message is refused, so the host may have typed another one: that is not thrown away, the refused
-      // words go in front of it.
       setDraft(draft.trim() ? `${item.text}\n\n${draft}` : item.text);
       discard(item.key);
     },

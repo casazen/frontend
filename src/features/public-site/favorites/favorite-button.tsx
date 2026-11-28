@@ -22,7 +22,6 @@ export function FavoriteButton({
   propertyName,
   className,
 }: {
-  /** The slug of the booking site: the list is kept for each site. */
   site: string;
   propertyId: string;
   propertyName: string;

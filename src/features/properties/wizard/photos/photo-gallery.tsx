@@ -8,21 +8,13 @@ import { cn } from '@/lib/utils';
 
 interface PhotoGalleryProps {
   propertyName: string;
-  /** The photos the person sees, in display order (the first is the cover). */
   photos: readonly string[];
-  /** A change is on its way: the controls wait for it. */
   busy: boolean;
-  /** Moves the photo at `from` to the place `to` (both zero-based). */
   onMove: (from: number, to: number) => void;
   onSetCover: (url: string) => void;
   onDelete: (url: string) => void;
 }
 
-/**
- * The photos of the property in the wizard (SR-07b). The order is changed three ways, the same result: dragging a photo onto another
- * (mouse), «Sposta» before/after (keyboard, phone and screen reader: the page announces where the photo went) and, for the cover,
- * «Imposta come copertina». Deleting leaves the decision to the caller, who offers «Annulla».
- */
 export function PhotoGallery({ propertyName, photos, busy, onMove, onSetCover, onDelete }: PhotoGalleryProps) {
   const { t } = useTranslation();
   const [dragging, setDragging] = useState<number | null>(null);
@@ -47,7 +39,6 @@ export function PhotoGallery({ propertyName, photos, busy, onMove, onSetCover, o
             className={cn('min-w-0 space-y-2 rounded-xl border bg-card p-2', index === 0 && 'sm:col-span-2', dragging === index && 'opacity-50', over === index && dragging !== index && 'ring-2 ring-primary')}
             onDragStart={(event) => {
               event.dataTransfer.effectAllowed = 'move';
-              // Firefox does not start a drag that carries nothing.
               event.dataTransfer.setData('text/plain', String(index));
               setDragging(index);
             }}
@@ -129,7 +120,6 @@ export function PhotoGallery({ propertyName, photos, busy, onMove, onSetCover, o
   );
 }
 
-/** The photo; if the file cannot be read (deleted from the storage, broken link) a plain notice takes its place. */
 function PhotoImage({ url, alt }: { url: string; alt: string }) {
   const { t } = useTranslation();
   const [failed, setFailed] = useState(false);

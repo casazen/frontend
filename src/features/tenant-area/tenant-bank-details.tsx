@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import type { TenantBankDetails } from '@/types';
 
-/** Account holder, IBAN, amount, due date and the unique reference, with a copy of the reference. */
 export function TenantBankDetailsCard({ bank, currency }: { bank: TenantBankDetails; currency: string }) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);

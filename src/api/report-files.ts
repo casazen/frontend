@@ -3,17 +3,14 @@ import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type { ReportPeriod } from './reports.api';
 
-/** The days of a file name as the server writes them (`20261001`). */
 export function compactDay(day: string): string {
   return day.replaceAll('-', '');
 }
 
-/** The query of the money reports: the days (`yyyy-MM-dd`, Europe/Rome) and, when the person narrows it, one property. */
 export function reportQuery(period: ReportPeriod, propertyId: string): Record<string, string> {
   return { from: period.from, to: period.to, ...(propertyId ? { propertyId } : {}) };
 }
 
-/** The two files a money report can be downloaded as (NF-101): the CSV for a spreadsheet set to Italian, and the Excel file the accountant opens. */
 export type ReportFileFormat = 'csv' | 'xlsx';
 
 /**
@@ -28,19 +25,13 @@ export class ReportAccessDeniedError extends Error {
   }
 }
 
-/**
- * Accepts the 403 as an answer of the call. A 403 on a read makes the shared axios client send the whole app to the no-access page; the
- * report pages show a state of their own instead (the same choice `reportsApi.getByOwner` makes).
- */
 export const ACCEPT_FORBIDDEN = (status: number): boolean => (status >= 200 && status < 300) || status === 403;
 
-/** A report answer that is not an object is the page of another kind an odd proxy sends: an error to show, not data to draw. */
 export function asReportObject(url: string, data: unknown): Record<string, unknown> {
   if (typeof data !== 'object' || data === null || Array.isArray(data)) throw new UnexpectedApiResponseError(url);
   return data as Record<string, unknown>;
 }
 
-/** A file answer that says it is a web page or a JSON body is not the file that was asked for. */
 const NOT_A_FILE = /^(text\/html|application\/(json|problem\+json))/i;
 
 /**

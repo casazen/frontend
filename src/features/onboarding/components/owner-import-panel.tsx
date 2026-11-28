@@ -27,7 +27,6 @@ const ACCEPT = ['.csv', '.xlsx', 'text/csv', 'application/vnd.openxmlformats-off
 
 type FileProblem = 'type' | 'size';
 
-/** What the import would do with the owner and with the ownership of a row, in words; an action this version does not know is left out. */
 function RowEffect({ row }: { row: OwnerImportRow }) {
   const { t } = useTranslation();
   const owner = row.ownerAction ? `ownerOnboarding.import.ownerActions.${row.ownerAction}` : null;
@@ -37,7 +36,6 @@ function RowEffect({ row }: { row: OwnerImportRow }) {
     (key): key is string => key !== null,
   );
   if (parts.length === 0) return <span className="text-foreground/70">-</span>;
-  // How an owner already in the registry was found (never by e-mail): the proposed match, said before anything is written.
   const matched = row.matchedBy && ['owner_id', 'external_key', 'fiscal_identifier'].includes(row.matchedBy) ? t(`ownerOnboarding.import.matchedBy.${row.matchedBy}`) : null;
   return (
     <span className="break-words">
@@ -47,7 +45,6 @@ function RowEffect({ row }: { row: OwnerImportRow }) {
   );
 }
 
-/** The outcome of one row: ok, or each error with the column it is about, in words; never a bare code. */
 function RowStatus({ row }: { row: OwnerImportRow }) {
   const { t } = useTranslation();
   if (row.status === 'ok' && row.errors.length === 0) {
@@ -80,7 +77,6 @@ interface ResultViewProps {
   onPage: (page: number) => void;
 }
 
-/** The result of a check or of an import: the counts, one row of the answer for each row of the file, paged. It never shows a value of the file. */
 function ResultView({ result, page, onPage }: ResultViewProps) {
   const { t } = useTranslation();
   const { summary } = result;
@@ -196,18 +192,14 @@ export function OwnerImportPanel({ propertyRef }: { propertyRef?: string } = {})
   const [problem, setProblem] = useState<FileProblem | null>(null);
   // The check that opens the import: the file that was sent and what the server answered (kept here because the answer of the mutation is replaced by the one of the import).
   const [checked, setChecked] = useState<{ file: File; result: OwnerImportResult } | null>(null);
-  // The row typed by hand that is the file of the page now, as the confirmation names it: a change of the form makes its check be about another row.
   const [manual, setManual] = useState<{ file: File; row: ManualOwnerRow } | null>(null);
   const [page, setPage] = useState(0);
   const [confirming, setConfirming] = useState(false);
-  // The form of one owner entered by hand: shown on request, and emptied (a new key) when the file is forgotten or the import wrote something.
   const [manualOpen, setManualOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
   const { mutate, mutateAsync, reset, isPending, error } = check;
   const result = check.data;
-  // Only the check of THIS file opens the import: another file, or a file that was changed, is checked again; a check with no valid row opens nothing; and what an import
-  // already answered is not imported again by the same check.
   const canImport = file !== null && checked !== null && checked.file === file && checked.result.summary.valid > 0 && result?.dryRun !== false && !isPending;
   const errorMessage = useMemo(() => (error ? (getProblemMessage(error, t) ?? t('ownerOnboarding.import.error')) : null), [error, t]);
 
@@ -240,7 +232,6 @@ export function OwnerImportPanel({ propertyRef }: { propertyRef?: string } = {})
     mutate({ file: sent, dryRun: true }, { onSuccess: (answer) => setChecked({ file: sent, result: answer }) });
   }
 
-  /** The row typed by hand, as a file: checked exactly as a file chosen from the computer is. */
   function checkManual(sent: File, row: ManualOwnerRow) {
     reset();
     setProblem(null);
@@ -251,10 +242,6 @@ export function OwnerImportPanel({ propertyRef }: { propertyRef?: string } = {})
     mutate({ file: sent, dryRun: true }, { onSuccess: (answer) => setChecked({ file: sent, result: answer }) });
   }
 
-  /**
-   * A field of the form changed after the row was checked: that file, its check and its answer were about the row as it was, so none of them is what the form holds now.
-   * Once an import has answered, the form is the next row (or the same one, still to be checked again) and the answer of that import stays on the page.
-   */
   function editManual() {
     if (manual === null || file !== manual.file || result?.dryRun === false) return;
     reset();
@@ -406,7 +393,6 @@ export function OwnerImportPanel({ propertyRef }: { propertyRef?: string } = {})
         onConfirm={importFile}
       >
         {checked ? (
-          // What the check was made on and so what is written: the file, or the row typed by hand as it was sent (no tax code, no e-mail).
           <p className="break-words text-sm font-medium" data-testid="owner-import-confirm-source">
             {manual && manual.file === checked.file
               ? t('ownerOnboarding.import.confirm.row', { owner: manual.row.owner, property: manual.row.property, share: manual.row.share, start: manual.row.start })
@@ -419,7 +405,6 @@ export function OwnerImportPanel({ propertyRef }: { propertyRef?: string } = {})
           </p>
         ) : null}
         {errorMessage ? (
-          // The server refused the import: the confirmation stays where the person is, with the reason, and the same button tries again.
           <Alert variant="danger" role="alert" data-testid="owner-import-confirm-error">
             {errorMessage}
           </Alert>

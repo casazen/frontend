@@ -13,10 +13,8 @@ import {
 import { cn } from '@/lib/utils';
 import type { ListMenuEntry, ListRowAction } from './list-types';
 
-/** `/app/...` goes through the router (no reload); anything else (an `https:` link, `mailto:`) is a plain link. */
 const isInternalPath = (href: string) => href.startsWith('/') && !href.startsWith('//');
 
-/** A link that leaves the app (`external`, a map) opens in another tab, and says so to a screen reader: the app stays where it was. */
 function OutsideLink({ action, children }: { action: ListRowAction; children: ReactNode }) {
   const { t } = useTranslation();
   if (!action.external) return <a href={action.href}>{children}</a>;
@@ -33,7 +31,6 @@ interface ActionButtonProps {
   className?: string;
 }
 
-/** The one action of a row, always in sight: a link when it goes somewhere, a button when it runs something. */
 export function ListPrimaryAction({ action, className }: ActionButtonProps) {
   const Icon = action.icon;
   const content = (
@@ -60,7 +57,6 @@ export function ListPrimaryAction({ action, className }: ActionButtonProps) {
 
 function MenuItem({ action }: { action: ListRowAction }) {
   const Icon = action.icon;
-  // The text of what destroys is the red of the `danger` tokens (6.5:1 on white), not `destructive` (3.3:1 in the look of today).
   const className = cn('gap-2 pointer-coarse:min-h-11', action.danger && 'text-danger-foreground focus:text-danger-foreground');
   const content = (
     <>
@@ -83,7 +79,6 @@ function MenuItem({ action }: { action: ListRowAction }) {
   );
 }
 
-/** The entries of a menu: the actions, and the lines between groups of them. */
 export function ListMenuEntries({ entries }: { entries: readonly ListMenuEntry[] }) {
   return (
     <>
@@ -99,17 +94,12 @@ export function ListMenuEntries({ entries }: { entries: readonly ListMenuEntry[]
 }
 
 interface ListRowActionsProps {
-  /** The one thing to do about the row. */
   primary?: ListRowAction | null;
-  /** The other things, in the menu of "⋯". Nothing in it, no menu. */
   menu?: readonly ListMenuEntry[];
-  /** The name of the row, for the label of the menu button ("Altre azioni: Mario Rossi"). */
   name: string;
-  /** On a card the action takes the room there is and the buttons are fingers' size. */
   card?: boolean;
 }
 
-/** The actions of a row, in the last column of the table and at the foot of a card. */
 export function ListRowActions({ primary, menu = [], name, card = false }: ListRowActionsProps) {
   const { t } = useTranslation();
   const hasMenu = menu.some((entry) => entry !== 'separator');

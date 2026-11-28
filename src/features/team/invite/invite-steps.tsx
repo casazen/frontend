@@ -67,7 +67,6 @@ function SeatsNote({ seats }: { seats: OrgSeats | undefined }) {
   );
 }
 
-/** Step 1, «Chi vuoi invitare?»: name, email, the language of the emails and how many seats are left. No personal message (AM-D14). */
 export function WhoStep() {
   const { t } = useTranslation();
   const { register, control, formState } = useFormContext<InviteValues>();
@@ -107,7 +106,6 @@ export function WhoStep() {
   );
 }
 
-/** Step 2, «Che ruolo avrà?»: the roles the caller may give, each with what it can and cannot do. */
 export function RoleStep({ availableAreas }: { availableAreas: readonly RentalArea[] }) {
   const { t } = useTranslation();
   const { register, formState } = useFormContext<InviteValues>();
@@ -143,7 +141,6 @@ export function RoleStep({ availableAreas }: { availableAreas: readonly RentalAr
         ))}
       </ChoiceGroup>
       <FormFieldError error={formState.errors.role} />
-      {/* The whole matrix on its own page, in another tab: the wizard keeps what was typed (AM-04b-FU2). */}
       <Link
         to={ACCOUNT_ROLES_PATH}
         target="_blank"
@@ -157,7 +154,6 @@ export function RoleStep({ availableAreas }: { availableAreas: readonly RentalAr
   );
 }
 
-/** Step 3, «Dove potrà lavorare?»: the areas and, for a collaborator, all the properties or only some. */
 export function WhereStep({ availableAreas }: { availableAreas: readonly RentalArea[] }) {
   const { control, setValue, formState } = useFormContext<InviteValues>();
   const role = useWatch({ control, name: 'role' });
@@ -191,10 +187,6 @@ export function WhereStep({ availableAreas }: { availableAreas: readonly RentalA
   );
 }
 
-/**
- * Step 4, «Controlla e invia l'invito»: what was answered (each with its «Modifica»), what the person will be able to see, and what it
- * will receive. The invitation only leaves when the last button is pressed.
- */
 export function ReviewStep({ availableAreas }: { availableAreas: readonly RentalArea[] }) {
   const { t } = useTranslation();
   const wizard = useOptionalWizard();

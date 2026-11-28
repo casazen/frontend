@@ -27,7 +27,6 @@ function row(over: Partial<PersonRow>): PersonRow {
 const owner: OrgRole = 'Owner';
 const admin: OrgRole = 'Admin';
 
-/** The rules the backend enforces (`OrgTeamRules`): the screen must not offer what it will refuse, and must offer what it will accept. */
 describe('personActions', () => {
   it('personActions_Owner_IsNeverTouchedByAnyone', () => {
     for (const caller of [owner, admin]) {

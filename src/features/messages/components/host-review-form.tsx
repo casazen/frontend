@@ -29,16 +29,13 @@ import {
 } from '../lib/review-model';
 
 interface HostReviewSectionProps {
-  /** A review of a channel: only one has a review of the host (`hostReview` is `null` for the review of the booking site, which draws nothing here). */
   review: ReviewThread;
-  /** The host may write the bookings (`booking.write`): sending the review needs it. */
   canWrite: boolean;
   /** What the host has typed. The page keeps it, so that a reading of the review that fails and takes the review away from the screen does not take the words with it. */
   draft: HostReviewDraft;
   onDraft: (draft: HostReviewDraft) => void;
 }
 
-/** What the host sent, or what waits for the check on the channel: the marks, the public words and the private ones, read only. */
 function SentHostReview({ hostReview }: { hostReview: OtaHostReview }) {
   const { t, i18n } = useTranslation();
   const sentAt = hostReview.sentAt ? formatRomeDateTime(hostReview.sentAt, i18n.language) : '';
@@ -91,7 +88,6 @@ export function HostReviewSection({ review, canWrite, draft, onDraft }: HostRevi
   const verifying = hostReview.state === 'ManualVerify';
   const open = !sent && !verifying && hostReview.window === 'Open';
   const mayWrite = open && capabilities.canHostReview;
-  // Why the host cannot write now, when it cannot: the window, a send that waits for the check, the property, the channel.
   const reason = capabilities.hostReviewReason ?? capabilities.reason;
   const shownState = sent ? 'Sent' : hostReview.state;
 
@@ -167,12 +163,10 @@ interface HostReviewFormProps {
   onDraft: (draft: HostReviewDraft) => void;
 }
 
-/** The form itself: the marks, the two texts and «Invia la recensione», which asks the question before it sends. */
 function HostReviewForm({ review, draft, onDraft }: HostReviewFormProps) {
   const { t } = useTranslation();
   const online = useOnlineStatus();
   const send = useSendHostReview(review.threadKey);
-  // Any request of the page waits for the others: the review of the host goes out once, by one thing at a time.
   const busy = useIsMutating() > 0;
   const [attempted, setAttempted] = useState(false);
   const [confirming, setConfirming] = useState(false);

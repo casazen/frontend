@@ -6,14 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSaveProfileTags } from '@/queries/crm';
 
-/** Most tags a profile holds, and the longest tag: what the server accepts (ADR-021-R9). */
 const MAX_TAGS = 50;
 const MAX_TAG_LENGTH = 40;
 
 interface ProfileTagsProps {
   profileId: string;
   tags: string[];
-  /** The caller may change the tags (`guest.write`); without it they are shown and nothing more. */
   canWrite: boolean;
 }
 

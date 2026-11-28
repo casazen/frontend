@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { complianceHealthApi } from '@/api/compliance-health.api';
 
-/** Root of the query key of the connection health: one key per property. */
 export const COMPLIANCE_HEALTH_KEY = 'compliance-health';
 
 /**

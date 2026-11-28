@@ -6,12 +6,7 @@ import type { MapCardData } from './map-card-data';
 
 interface MapCardProps {
   data: MapCardData | null;
-  /** On a phone the card is a sheet from the bottom; elsewhere it sits over the map. */
   phone: boolean;
-  /**
-   * `over` (the default): over the map, or a sheet from the bottom of the window on a phone. `flow`: a block in the flow of the page, where the page puts
-   * it (under the map), whatever the width: for a page in a frame that is as tall as its content, where an overlay would be far from the guest.
-   */
   layout?: 'over' | 'flow';
   onClose: () => void;
 }
@@ -55,11 +50,6 @@ function CardBody({ data }: { data: MapCardData }) {
   );
 }
 
-/**
- * The card of the house whose pin is selected. On a computer it floats over the map, bottom left, without taking the focus; on
- * a phone it is a sheet from the bottom (touching outside or Esc closes it) and the first touch on a pin opens it: a second
- * touch, on the card, goes to the page of the house.
- */
 export function MapCard({ data, phone, layout = 'over', onClose }: MapCardProps) {
   const { t } = useTranslation();
   if (layout === 'flow') {

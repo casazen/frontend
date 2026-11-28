@@ -35,13 +35,9 @@ const T = 'propertyWizard.safetyQuick';
 
 export interface SafetyQuickSheetProps {
   propertyId: string;
-  /** The amenities chosen in the step, as the form has them now (saved or not). */
   amenities: readonly string[];
-  /** Whole square metres from the first step; null when not given. */
   areaSqm: number | null;
-  /** Called after each save, with the checklist as the server evaluated it. */
   onSaved?: (checklist: SafetyChecklist) => void;
-  /** Opens the full form (where the devices are, the dates, the proofs). Offered while nothing is changed here. */
   onOpenFull?: () => void;
 }
 
@@ -57,7 +53,6 @@ export function SafetyQuickSheet({ propertyId, amenities, areaSqm, onSaved, onOp
   const { hasPermission } = useWorkspace();
   const checklist = useSafetyChecklist(propertyId);
   const property = useProperty(propertyId);
-  // The tax data only for who may read them: a refused read would take the host out of the wizard.
   const canReadTaxData = hasPermission('short-rent', 'payment.read');
   const fiscal = useFiscalRegime(new Date().getFullYear(), canReadTaxData);
 
@@ -111,7 +106,6 @@ function PrefillNote({ reason, testId }: { reason: PrefillReason | undefined; te
   );
 }
 
-/** What is still missing after the last save, in the words of the full form (stable codes of the server). */
 function MissingList({ checklist }: { checklist: SafetyChecklist }) {
   const { t, i18n } = useTranslation();
   if (!checklist.saved || checklist.isComplete || checklist.blockers.length === 0) return null;
@@ -151,7 +145,6 @@ function QuickEditor({ propertyId, checklist, hints, onSaved, onOpenFull }: Quic
   const [dirty, setDirty] = useState(false);
   const [heatError, setHeatError] = useState(false);
 
-  /** A change of the host: the answer is theirs from now on, so its «Precompilato» goes. */
   const update = (change: (previous: QuickSafetyState) => Partial<QuickSafetyState>, keys: PrefillKey[]) => {
     setState((previous) => ({ ...previous, ...change(previous) }));
     if (keys.length > 0) {
@@ -300,7 +293,6 @@ function QuickEditor({ propertyId, checklist, hints, onSaved, onOpenFull }: Quic
       </section>
 
       <section className="space-y-3" aria-labelledby="safety-quick-floors">
-        {/* The question and its counter together (`max-w-xl`): on a wide screen the buttons do not end up at the far end of the step. */}
         <div className="flex max-w-xl flex-wrap items-center justify-between gap-3">
           <h3 id="safety-quick-floors" className="font-semibold">
             {t(`${T}.floors.question`)}

@@ -18,12 +18,10 @@ import {
   type VideoCallProblem,
 } from '../lib/video-call-model';
 
-/** What decides a verification: the same permission the server asks for the queue and for the video call (`verification.decision`). */
 const DECISION_PERMISSION = 'verification.decision';
 
 interface VideoCallFormProps {
   guestName: string;
-  /** The e-mail with the link is being queued (this dialog or another action of the card): nothing here can start another. */
   pending: boolean;
   /** Sends the link to the guest. It resolves when the e-mail was queued and rejects with the answer of the API otherwise. */
   onSend: (url: string) => Promise<unknown>;
@@ -41,7 +39,6 @@ function VideoCallForm({ guestName, pending, onSend, onCancel }: VideoCallFormPr
   const [problem, setProblem] = useState<VideoCallProblem | null>(null);
 
   const missing = url.trim() === '';
-  // The shape is checked here before anything leaves; the server decides again, and its refusal is shown in the same place.
   const fieldError =
     tried && missing
       ? t('verification.videoCall.errors.required')
@@ -50,7 +47,6 @@ function VideoCallForm({ guestName, pending, onSend, onCancel }: VideoCallFormPr
         : undefined;
 
   const submit = async (event: FormEvent) => {
-    // The dialog is drawn outside the card but sits inside it for React: the form of the dialog is the only one that submits.
     event.preventDefault();
     event.stopPropagation();
     setTried(true);
@@ -113,13 +109,6 @@ interface VideoCallDialogProps extends Omit<VideoCallFormProps, 'onCancel'> {
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * The dialog of the video call (E22/F02/US01/T02): the operator pastes the address of a meeting they made with the tool they use, and CasaZen sends it to the guest by e-mail. Then the verification
- * waits as it did: the decision after the call is the usual approval or rejection, with its note. The address is not kept here once it has gone, and not shown again.
- *
- * While the e-mail is being queued the dialog cannot be closed by any way a dialog has (the cross, the Escape key, a click outside, the grip of the sheet on a phone, which all ask `onOpenChange`
- * with `false`): what the server answers, a refusal included, is told in this dialog, and a dialog that had gone would take the answer with it.
- */
 export function VideoCallDialog({ open, onOpenChange, guestName, pending, onSend }: VideoCallDialogProps) {
   const requestOpen = (next: boolean) => {
     if (!next && pending) return;
@@ -144,11 +133,8 @@ export function VideoCallDialog({ open, onOpenChange, guestName, pending, onSend
 }
 
 interface VideoCallActionProps {
-  /** The guest of the verification, named in the dialog. */
   guestName: string;
-  /** Another write of the card is in flight: the button stays disabled until it ends. */
   busy: boolean;
-  /** The e-mail with the link is being queued. */
   pending: boolean;
   /** Sends the link; resolves when the e-mail was queued, rejects with the answer of the API otherwise. */
   onSend: (url: string) => Promise<unknown>;
@@ -160,7 +146,6 @@ function PermittedVideoCallAction({ guestName, busy, pending, onSend }: VideoCal
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
 
-  // The server decides again (404 for a verification outside the reach of the caller): this keeps the button off the page of who may not decide.
   if (!hasPermission('short-rent', DECISION_PERMISSION)) return null;
 
   return (
@@ -188,10 +173,6 @@ function PermittedVideoCallAction({ guestName, busy, pending, onSend }: VideoCal
   );
 }
 
-/**
- * The «Videochiamata» action of a verification of the queue: shown only while the identity verification is on (the flag `checkInIdentityVerification`: the backend answers 404 to the call while it
- * is off, and with it off the queue is the one it always was) and only to who holds `verification.decision`, the permission that opens the queue and decides its verifications.
- */
 export function VideoCallAction(props: VideoCallActionProps) {
   const { flags } = useFeatureFlags();
   if (!isFeatureEnabled(flags, 'checkInIdentityVerification')) return null;

@@ -28,18 +28,11 @@ import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 import { REVIEW_REPLY_MAX_LENGTH } from '@/types/review.types';
 
 interface ApprovalEditDialogProps {
-  /** The item to edit; `null` while the dialog is closed. */
   item: ApprovalQueueItem | null;
-  /**
-   * The mutations belong to the page, not to the dialog: the host may close the dialog (the X, Esc, a tap outside) while a request goes on, and the callbacks of
-   * the request must still run (the decision written below, the failure on the card), and the page must keep its buttons waiting until it is over.
-   */
   edit: ReturnType<typeof useEditItem>;
   saveAndApprove: ReturnType<typeof useSaveAndApproveItem>;
   onClose: () => void;
-  /** «Save and approve» went through: the item as the API answered it, with what the approval did. */
   onApproved: (item: ApprovalQueueItem) => void;
-  /** The edit was saved and the approval did not go through (the action failed): the item stays open on the page, with the code of the failure. */
   onApproveFailed: (id: string, originCode: string) => void;
 }
 
@@ -79,7 +72,6 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
   const [fields, setFields] = useState<EditFields>(initial);
   const [attempted, setAttempted] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
-  // The edited words of a public reply that wait for the answer to the question; `null` while nothing is asked.
   const [confirming, setConfirming] = useState<string | null>(null);
 
   const busy = edit.isPending || saveAndApprove.isPending;
@@ -101,11 +93,9 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
     setRefused(null);
   };
 
-  /** What the API answered to a save that did not go through: only a text it refuses stays on the form, the toast of the hook says the rest. */
   const failed = (error: unknown) => {
     const originCode = originActionErrorOf(error);
     if (originCode !== undefined) {
-      // The edit is saved: the item stays on the page with its new text and the reason, ready to be approved again.
       onApproveFailed(item.id, originCode);
       onClose();
     } else if (itemIsGone(error)) {
@@ -115,7 +105,6 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
     }
   };
 
-  /** The host confirmed the question: the edit is saved and the reply approved (published). The question closes either way; `failed` tells what the edit dialog shows of a refusal. */
   const publish = async (text: string) => {
     try {
       const approved = await saveAndApprove.mutateAsync({ id: item.id, text });
@@ -134,7 +123,6 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
 
     const text = editedTextOf(item, fields);
     if (approve) {
-      // A public reply cannot be taken back: nothing is published before the host has seen the exact words and said yes.
       if (reviewReply) {
         setConfirming(text);
         return;

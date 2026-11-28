@@ -9,19 +9,11 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 import type { GuestRegisterPeriod } from '@/types/guest-register.types';
 
-/** The root of the reads of the guest register (`GET …/swiss/guest-register/info`): a completed check-in changes who is in a period, so an event of a guest reads them again (`use-notifications-realtime.ts`). */
 export const GUEST_REGISTER_KEY = 'guest-register';
 
-/** The key of the count of a period of a property (`from` and `to` empty while the period is not one the server can make). */
 const guestRegisterInfoKey = (propertyId: string, period: GuestRegisterPeriod | null) =>
   [GUEST_REGISTER_KEY, propertyId, 'info', period?.from ?? '', period?.to ?? ''] as const;
 
-/**
- * What the register of a period holds, before it is downloaded (E31/F02/US02/T01, NF-130): how many lines and how long the host keeps it. Nothing is asked for a period that is not one
- * (`period` null: the screen says what is wrong with it) nor while the person is not meant to see the guests. The guests come and go with the check-ins, and nothing else watches this
- * count, so it is read again every time the layer opens, and what was read a moment ago is not asked twice. The reader looks at `isError` before `data`: TanStack Query keeps the old data
- * of a read that fails, and a 404 or a 403 is told as such with it too.
- */
 export function useGuestRegisterInfo(propertyId: string, period: GuestRegisterPeriod | null, options: { enabled?: boolean } = {}) {
   const enabled = propertyId !== '' && period !== null && (options.enabled ?? true);
   return useQuery({

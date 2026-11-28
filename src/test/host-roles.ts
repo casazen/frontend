@@ -19,15 +19,10 @@ export type ShortRentRoleKey = keyof typeof SHORT_RENT_ROLE_PERMISSIONS;
 
 export const SHORT_RENT_ROLE_KEYS = Object.keys(SHORT_RENT_ROLE_PERMISSIONS) as ShortRentRoleKey[];
 
-/** The memberships of a person who holds one role of the area of the host. */
 export function hostContextsOf(roleKey: ShortRentRoleKey): ContextBootstrapDto[] {
   return [contextOf('short-rent', roleKey, [...SHORT_RENT_ROLE_PERMISSIONS[roleKey]])];
 }
 
-/**
- * What the workspace answers (`hasPermission` of the `WorkspaceProvider`) for the memberships a person holds: a context the person does not hold says no, the pseudo-permission of the organization billing administrator
- * comes from the role keys of their contexts, any other permission from the permissions of the context.
- */
 export function workspacePredicateOf(contexts: readonly ContextBootstrapDto[]): PermissionPredicate {
   return (contextKey: AppContextKey, permission: string) => {
     const context = contexts.find((candidate) => candidate.contextKey === contextKey);

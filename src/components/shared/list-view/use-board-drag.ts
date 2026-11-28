@@ -5,22 +5,16 @@ const PICK_UP_AFTER = 5;
 /** Near the edge of the board, within this many px, it scrolls by itself so that a card can reach the columns beyond. */
 const EDGE = 56;
 const EDGE_SPEED = 14;
-/** Whatever is interactive inside a card is not a handle to drag it by. */
 const INTERACTIVE = 'a, button, input, select, textarea, label, summary, [role="menuitem"], [data-no-drag]';
 
 export interface UseBoardDragOptions {
-  /** `false` turns dragging off; the cards can still be moved with their menu. */
   enabled: boolean;
-  /** The element that scrolls sideways (the board), to scroll it when a card is held near its edge. */
   boardRef: RefObject<HTMLElement | null>;
-  /** A card (its key) was let go over a column other than the one it came from. */
   onDrop: (rowKey: string, toColumn: string, fromColumn: string | undefined) => void;
 }
 
 export interface UseBoardDrag {
-  /** The key of the card being dragged, `null` when none is. */
   dragging: string | null;
-  /** The column the card is over now. */
   over: string | null;
   onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
 }
@@ -37,7 +31,6 @@ interface Hold {
 }
 
 function columnAt(x: number, y: number): string | null {
-  // jsdom has no layout, hence no elementFromPoint: there is nothing under a pointer there.
   const element = typeof document.elementFromPoint === 'function' ? document.elementFromPoint(x, y) : null;
   return element?.closest<HTMLElement>('[data-board-column]')?.dataset.boardColumn ?? null;
 }
@@ -61,7 +54,6 @@ export function useBoardDrag({ enabled, boardRef, onDrop }: UseBoardDragOptions)
   useEffect(() => {
     drop.current = onDrop;
   });
-  // Whatever is running when the board goes away (a page left in the middle of a drag) is put away.
   const abort = useCallback(() => {
     cleanup.current?.();
     clickCleanup.current?.();
@@ -95,7 +87,6 @@ export function useBoardDrag({ enabled, boardRef, onDrop }: UseBoardDragOptions)
           ghost.removeAttribute('data-board-card');
           ghost.setAttribute('data-board-ghost', '');
           ghost.setAttribute('aria-hidden', 'true');
-          // Two elements with the same id would be a mistake on the page, and the ghost is only a picture: it has no ids, no test ids.
           for (const element of [ghost, ...ghost.querySelectorAll('[id], [data-testid]')]) {
             element.removeAttribute('id');
             element.removeAttribute('data-testid');

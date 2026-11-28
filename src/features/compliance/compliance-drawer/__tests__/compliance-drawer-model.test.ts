@@ -18,7 +18,6 @@ const t = i18n.getFixedT('it');
 const BOOKING = '11111111-1111-1111-1111-111111111111';
 const PROPERTY = '22222222-2222-2222-2222-222222222222';
 
-/** A failed call as axios builds it: the status and the body of the answer, and the request that was sent. */
 function answered(status: number, data?: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   return new AxiosError('failed', 'ERR_BAD_RESPONSE', config, undefined, { status, statusText: '', headers: {}, config, data });
@@ -86,7 +85,6 @@ describe('handoffRequestOf', () => {
     );
 
     expect(request).toEqual({ topic: 'Alloggiati', propertyId: PROPERTY, bookingId: BOOKING, period: null, returnPath: '/app/short-rent/bookings/b1?tab=guest' });
-    // The server decides where the host goes: nothing in the request names a destination.
     expect(Object.keys(request).sort()).toEqual(['bookingId', 'period', 'propertyId', 'returnPath', 'topic']);
   });
 
@@ -126,7 +124,6 @@ describe('drawerTargetOf', () => {
   });
 
   it('drawerTargetOf_StayWithTheTopicOfTheServer_IsAnAlloggiatiTargetThatNamesNoPropertyYet', () => {
-    // The summary names no property on a stay: the button reads it from the booking when it is pressed.
     expect(drawerTargetOf(item({}))).toEqual({ topic: 'Alloggiati', propertyId: null, bookingId: BOOKING });
   });
 
@@ -135,7 +132,6 @@ describe('drawerTargetOf', () => {
   });
 
   it.each([null, undefined])('drawerTargetOf_TopicOfTheServer_%s_HasNoTargetWhateverTheRowIs', (handoffTopic) => {
-    // A communication never sent, a failure CasaZen knows, a month the host sends by hand: the outcome is not only in the connected area.
     expect(drawerTargetOf(item({ handoffTopic }))).toBeUndefined();
     expect(drawerTargetOf(item({ id: PROPERTY, bookingId: null, propertyId: PROPERTY, period: '2026-10', handoffTopic }))).toBeUndefined();
   });
@@ -154,7 +150,6 @@ describe('drawerTargetOf', () => {
       propertyId: PROPERTY,
       period: '2026-10',
     });
-    // The item of a property is the property's own: its id is the property when the summary names none.
     expect(drawerTargetOf(item({ id: PROPERTY, bookingId: null, period: '2026-10', handoffTopic: 'Istat' }))?.propertyId).toBe(PROPERTY);
   });
 

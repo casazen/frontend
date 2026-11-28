@@ -11,8 +11,6 @@ import { httpError } from '../../__tests__/lease-test-utils';
 import { MAX_STATEMENT_BYTES } from '../../lib/bank-import';
 import { BankStatementImportDialog } from '../bank-statement-import-dialog';
 
-// The landlord gives the file of their bank and the server proposes which rents it pays; nothing is recorded until they confirm, and the
-// confirmation waits for its six seconds (the toast is mocked: its `commit` is what runs when they pass, its `undo` is «Annulla»).
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('@/lib/toast-undo', () => ({ toastUndo: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
@@ -96,12 +94,10 @@ function renderDialog() {
   return { onClose };
 }
 
-/** Gives the dialog a file, as a click on «Scegli il file» followed by the choice in the picker would. */
 function choose(chosen: File) {
   fireEvent.change(screen.getByTestId('bank-import-dropzone-input'), { target: { files: [chosen] } });
 }
 
-/** What the confirmation sent: the form fields as plain values. */
 function sentForm(call: number): Record<string, FormDataEntryValue> {
   const body = post.mock.calls[call][1] as FormData;
   return Object.fromEntries(body.entries());
@@ -113,7 +109,6 @@ describe('BankStatementImportDialog', () => {
   });
 
   afterEach(() => {
-    // A recording a test left waiting (its six seconds are never waited for) is let go, so the next test does not find the way in held.
     act(() => {
       for (const [, options] of vi.mocked(toastUndo).mock.calls) options.undo();
     });
@@ -173,7 +168,6 @@ describe('BankStatementImportDialog', () => {
     expect(vi.mocked(toastUndo).mock.calls[0][0]).toBe('Registro 2 incassi dall\'estratto conto');
     expect(post).not.toHaveBeenCalled();
 
-    // «Annulla»: it is dropped, nothing was ever written.
     vi.mocked(toastUndo).mock.calls[0][1].undo();
     expect(post).not.toHaveBeenCalled();
   });
@@ -239,12 +233,10 @@ describe('BankStatementImportDialog', () => {
     choose(file());
     await screen.findByTestId('bank-import-review');
 
-    // The first confirmation starts its six seconds (here the window stays open to look at it; in the app it closes).
     fireEvent.click(screen.getByRole('button', { name: 'Conferma 2 incassi' }));
     expect(toastUndo).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);
 
-    // A second window opened meanwhile has nothing to press until the first is recorded or cancelled: no click that seems to do nothing.
     const confirmButton = screen.getByRole('button', { name: 'Conferma 2 incassi' });
     expect(confirmButton).toBeDisabled();
     expect(screen.getByTestId('bank-import-confirm-note')).toHaveTextContent('Sto ancora registrando gli incassi di prima');
@@ -252,7 +244,6 @@ describe('BankStatementImportDialog', () => {
     expect(toastUndo).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('bank-import-review')).toBeInTheDocument();
 
-    // «Annulla» of the first one: the review is as the landlord left it and can go.
     act(() => {
       vi.mocked(toastUndo).mock.calls[0][1].undo();
     });
@@ -292,16 +283,13 @@ describe('BankStatementImportDialog', () => {
     renderDialog();
     choose(file());
     await screen.findByTestId('bank-import-review');
-    // With sure matches the doubtful ones are folded: one click opens them.
     expect(screen.queryByTestId('bank-import-check-row')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Da controllare (1)' }));
 
     const row = within(screen.getByTestId('bank-import-check-row'));
     expect(row.getByText(/BONIFICO 900 EURO/)).toBeInTheDocument();
     const tick = row.getByRole('checkbox');
-    // Each select is named by the credit it belongs to, so two of them are never the same control to a screen reader.
     const pick = row.getByRole('combobox', { name: /^Canone da segnare come incassato per l'accredito del 3 ott 2026 di/ });
-    // No proposal: the box cannot be ticked before a rent is chosen, and nothing is counted.
     expect(tick).toBeDisabled();
     expect(pick).toHaveValue('');
     expect(screen.getByRole('button', { name: 'Conferma 2 incassi' })).toBeEnabled();
@@ -330,7 +318,6 @@ describe('BankStatementImportDialog', () => {
     post.mockResolvedValue({ data: twoDoubtful });
     renderDialog();
     choose(file());
-    // No sure match: the doubtful ones are open from the start.
     const rows = await screen.findAllByTestId('bank-import-check-row');
     const first = within(rows[0]);
     const second = within(rows[1]);
@@ -361,7 +348,6 @@ describe('BankStatementImportDialog', () => {
     const second = within(rows[1]);
     expect(first.getByRole('checkbox')).toBeEnabled();
 
-    // The second credit takes the rent the first one proposed: ticking the first would pay it twice, so it cannot be ticked.
     fireEvent.change(second.getByRole('combobox'), { target: { value: 'rent-verdi' } });
     expect(first.getByRole('checkbox')).toBeDisabled();
     expect(first.getByRole('checkbox')).not.toBeChecked();
@@ -413,7 +399,6 @@ describe('BankStatementImportDialog', () => {
     expect(new Set(names).size).toBe(2);
     expect(names[0]).toContain('Giulia Verdi, Casa Trastevere, canone di ottobre 2026');
 
-    // Pressing the words of the row does what pressing the box does.
     const tick = sure.getAllByRole('checkbox')[0];
     expect(tick).toBeChecked();
     fireEvent.click(sure.getByText(/Giulia Verdi · Casa Trastevere/));
@@ -530,7 +515,6 @@ describe('BankStatementImportDialog', () => {
       const step = within(await screen.findByTestId('bank-import-columns'));
       expect(screen.getByText(/Non riconosco le colonne di questo file/)).toBeInTheDocument();
       expect(step.getByLabelText('La prima riga contiene i titoli delle colonne')).toBeChecked();
-      // The columns are named by their titles and show what the first movement has in them.
       expect(step.getAllByRole('option', { name: 'Bar · BONIFICO VERDI' })).toHaveLength(3);
       const continueButton = step.getByTestId('bank-import-columns-continue');
       expect(continueButton).toBeDisabled();
@@ -550,7 +534,6 @@ describe('BankStatementImportDialog', () => {
       expect((sent.file as File).name).toBe('strano.csv');
       expect(JSON.parse(sent.mapping as string)).toEqual({ headerRow: 0, date: 0, description: 1, amount: 2 });
 
-      // The confirmation sends the same mapping with the same file.
       post.mockReset();
       post.mockResolvedValue({ data: { requested: 2, confirmed: [], skipped: [] } });
       fireEvent.click(screen.getByRole('button', { name: 'Conferma 2 incassi' }));
@@ -610,7 +593,6 @@ describe('BankStatementImportDialog', () => {
 
       fireEvent.click(step.getByTestId('bank-import-columns-continue'));
 
-      // Not back to the start: the landlord changes one column and tries again, with the file already in hand.
       expect(await screen.findByTestId('bank-import-error')).toHaveTextContent('Con queste colonne non trovo nessun movimento.');
       const again = within(screen.getByTestId('bank-import-columns'));
       expect(again.getByTestId('bank-import-column-date')).toHaveValue('0');
@@ -647,7 +629,6 @@ describe('BankStatementImportDialog', () => {
 
       const step = within(await screen.findByTestId('bank-import-columns'));
 
-      // The six rows the server sends and all ten columns: the titles (row 5) and the first movement (row 6) are among them.
       expect(step.getAllByRole('row')).toHaveLength(6);
       expect(step.getByLabelText('La prima riga contiene i titoli delle colonne')).toBeChecked();
       expect(step.getAllByRole('option', { name: 'J · 900,00' })).toHaveLength(3);

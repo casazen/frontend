@@ -35,7 +35,6 @@ describe('saveReturn', () => {
     expect(saveReturn(SAVED, NOW)).toBe(true);
 
     const kept = JSON.parse(window.sessionStorage.getItem(RETURN_STORAGE_KEY) ?? 'null') as Record<string, unknown>;
-    // No name, no outcome, no address of the connected area: where to come back to, and nothing else.
     expect(Object.keys(kept).sort()).toEqual(['expiresAt', 'filters', 'handoffId', 'origin', 'route']);
     expect(kept).toEqual({ ...SAVED, expiresAt: Date.parse(IN_AN_HOUR) });
   });
@@ -107,7 +106,6 @@ describe('takeArrival', () => {
 
     expect(arrival).toEqual({ route: SAVED.route, filters: SAVED.filters, origin: SAVED.origin, focused: false });
     expect(window.sessionStorage.getItem(RETURN_STORAGE_KEY)).toBeNull();
-    // A second reading (a render run twice, a second tab of the shell) finds nothing more and changes nothing.
     expect(takeArrival(NOW)).toBe(arrival);
     expect(getArrival()).toBe(arrival);
   });
@@ -142,7 +140,6 @@ describe('openDestination', () => {
 
     expect(assign).toHaveBeenCalledTimes(1);
     expect(assign).toHaveBeenCalledWith('https://panel.example.com/home');
-    // Never a second window or tab.
     expect(open).not.toHaveBeenCalled();
     open.mockRestore();
   });

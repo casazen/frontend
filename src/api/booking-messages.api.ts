@@ -1,7 +1,6 @@
 import { ApiClient } from './client';
 import type { HostThread, HostThreadSummary, SentGuestMessage } from '@/types';
 
-/** A page of `GET /api/messages`. */
 export interface HostThreadPage {
   items: HostThreadSummary[];
   totalCount: number;
@@ -9,13 +8,11 @@ export interface HostThreadPage {
   pageSize: number;
 }
 
-/** `GET /api/messages/unread`: the guest's messages the host has not read, per booking (open threads only). */
 export interface UnreadMessagesByBooking {
   items: Array<{ bookingId: string; unreadCount: number }>;
 }
 
 export interface HostThreadFilters {
-  /** True keeps the open threads whose last message is the guest's (the «Da rispondere» of the Home). */
   needsReply?: boolean;
   propertyId?: string;
   page?: number;
@@ -32,7 +29,6 @@ function messagesPath(bookingId: string): string {
  * body, never in an address, and the answers are not kept anywhere but in the memory of the page.
  */
 export const bookingMessagesApi = {
-  /** The thread of the booking: messages oldest first, `unreadCount`, `needsReply`; `state` `Unavailable` when the booking has none. */
   getThread: (bookingId: string) => ApiClient.get<HostThread>(messagesPath(bookingId)),
 
   /**
@@ -42,12 +38,9 @@ export const bookingMessagesApi = {
   send: (bookingId: string, text: string, idempotencyKey: string) =>
     ApiClient.post<SentGuestMessage>(messagesPath(bookingId), { text }, { headers: { 'Idempotency-Key': idempotencyKey } }),
 
-  /** Marks the guest's messages as read (up to the last one) and answers the thread as it is after. */
   markRead: (bookingId: string) => ApiClient.post<HostThread>(`${messagesPath(bookingId)}/read`),
 
-  /** The threads of the host's properties, the latest message first. */
   listThreads: (filters: HostThreadFilters = {}) => ApiClient.get<HostThreadPage>('/messages', filters),
 
-  /** How many unread guest messages each booking has: one call for a whole page of bookings (calendar, lists). */
   listUnread: () => ApiClient.get<UnreadMessagesByBooking>('/messages/unread'),
 };

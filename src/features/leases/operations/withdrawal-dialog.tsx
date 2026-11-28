@@ -43,7 +43,6 @@ function WithdrawalForm({ lease, operations, onClose }: WindowProps) {
   const [months, setMonths] = useState('');
 
   const rulesMonths = rules?.noticeMonths;
-  // Serious reasons take the notice of the rules whatever is typed; the contractual faculty takes the one the contract states.
   const noticeMonths = reason === 'ContractualFaculty' && months !== '' ? Number(months) : rulesMonths;
   const monthsValid =
     noticeMonths !== undefined && Number.isInteger(noticeMonths) && noticeMonths >= 1 && noticeMonths <= withdrawal.maxContractualNoticeMonths;
@@ -54,7 +53,6 @@ function WithdrawalForm({ lease, operations, onClose }: WindowProps) {
 
   const effectiveOn = dateValid && monthsValid ? addMonths(receivedOn, noticeMonths) : '';
   const periodEnd = parseStayDate(leaseTermEnd(lease));
-  // The notice runs out after the period the lease is in: it is not an early ending, and the server would refuse it.
   const beyondPeriod = effectiveOn !== '' && periodEnd !== '' && effectiveOn > periodEnd;
   const valid = effectiveOn !== '' && !beyondPeriod;
 
@@ -66,7 +64,7 @@ function WithdrawalForm({ lease, operations, onClose }: WindowProps) {
         input: { receivedOn, reason, ...(reason === 'ContractualFaculty' ? { noticeMonths } : {}) },
       });
     } catch {
-      return; // The hook told why and read the lease again.
+      return;
     }
     toast.success(t('leaseOperations.withdrawal.done', { date: longDay(effectiveOn, i18n.language) }));
   }
@@ -239,7 +237,6 @@ export function WithdrawalDialog({ open, lease, operations, onClose }: Withdrawa
 }
 
 function WithdrawalWindow({ lease, operations, onClose }: WindowProps) {
-  // Taken once, when the window opens: the form must not turn into the next steps under the hands of who just confirmed it.
   const [startedRecorded] = useState(() => operations.withdrawal.recorded !== null);
   return startedRecorded ? (
     <WithdrawalDone lease={lease} operations={operations} onClose={onClose} />

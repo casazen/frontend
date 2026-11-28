@@ -45,7 +45,6 @@ const NOT_RETRYABLE_CODES = new Set<string>([
   CONNECT_ERROR_CODES.returnUrlNotConfigured,
 ]);
 
-/** True when retrying a failed Connect call may succeed: Stripe temporarily unavailable, network error, generic 5xx. */
 export function isRetryableConnectError(error: unknown): boolean {
   if (!isAxiosError(error)) return false;
   const code = getProblemCode(error.response?.data);

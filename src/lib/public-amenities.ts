@@ -69,7 +69,6 @@ interface AmenityMeta {
   labelKey: string;
 }
 
-/** The groups, in the order the full list shows them. */
 export const AMENITY_GROUPS: ReadonlyArray<{ id: AmenityGroup; labelKey: string }> = [
   { id: 'kitchen', labelKey: 'publicProperty.amenityGroups.kitchen' },
   { id: 'climate', labelKey: 'publicProperty.amenityGroups.climate' },
@@ -137,7 +136,6 @@ const AMENITY_CATALOG: Record<string, AmenityMeta> = {
   PrivateEntrance: { icon: DoorOpen, group: 'other', labelKey: 'publicProperty.amenities.PrivateEntrance' },
 };
 
-/** What guests look for first: these come before the rest when the list is short. The others follow in catalog order. */
 const HIGHLIGHTS = [
   'WiFi',
   'AirConditioning',
@@ -159,21 +157,17 @@ const HIGHLIGHTS = [
 
 const CATALOG_ORDER = Object.keys(AMENITY_CATALOG);
 
-/** `WiFi`, `wifi` and `Wi-Fi` are the same amenity. */
 const normalise = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
 const CATALOG_BY_NAME = new Map(CATALOG_ORDER.map((id) => [normalise(id), id]));
 
 export interface DescribedAmenity {
-  /** Stable key of the amenity (the catalog name, or the normalised value when it is not in the catalog). */
   id: string;
-  /** Translation key of the label; null for a value the catalog does not know (use `fallbackLabel`). */
   labelKey: string | null;
   fallbackLabel: string;
   icon: LucideIcon;
   group: AmenityGroup;
 }
 
-/** `SomeNewAmenity` becomes "Some new amenity"; text that already has spaces is only given a capital letter. */
 export function humanizeAmenity(raw: string): string {
   const text = raw.trim();
   if (!text) return '';
@@ -199,10 +193,6 @@ export function describeAmenity(raw: string): DescribedAmenity | null {
   return { id: normalise(text) || text, labelKey: null, fallbackLabel: humanizeAmenity(text), icon: Check, group: 'other' };
 }
 
-/**
- * The amenities of a property ready to show: no blanks, no repeats, the most wanted first, the values the catalog does not
- * know at the end in the order they came.
- */
 export function listAmenities(raw: readonly string[]): DescribedAmenity[] {
   const seen = new Set<string>();
   const known: DescribedAmenity[] = [];

@@ -26,9 +26,7 @@ import {
 interface MarkSentManuallyButtonProps {
   bookingId: string;
   status: AlloggiatiWebStatus;
-  /** Check-in date (date-only): the earliest sending date the portal accepts. */
   checkInDate: string;
-  /** Date declared by the host or receipt date, shown once sent. */
   reportedAt?: string | null;
 }
 

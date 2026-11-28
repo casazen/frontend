@@ -12,31 +12,16 @@ const FOOTER =
   'sticky bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom,0px))] z-10 space-y-2 rounded-b-2xl border-t bg-card px-4 py-3 sm:px-6 md:static md:z-auto';
 
 interface FrameProps {
-  /** The steps: a list at the side from `lg`, a bar and a button that opens the list on a phone. */
   stepper: ReactNode;
-  /** «Passo 2 di 7»: the place of this screen among the ones that apply to this contract. */
   position: { current: number; total: number };
-  /** What the person does here, with a verb. */
   title: string;
-  /** One sentence: what is done here and why it is needed. */
   summary: string;
-  /** «Ti serve in mano:» the documents and the data to have at hand; none on a screen that only waits. */
   inHand?: string;
-  /** The focus goes here when the step changes: a screen reader reads the heading of the new step. */
   titleRef?: Ref<HTMLHeadingElement>;
-  /** The fields and what goes with them. */
   children: ReactNode;
-  /** What the person can do: back, save for later, go on, and what is left to do. */
   footer: ReactNode;
 }
 
-/**
- * The frame of the wizard «Crea contratto» (LR-06a, LR-WIZ-1): the steps, the head of the screen, the step and the buttons. The head
- * says where the person is («Passo 2 di 7»), what they do (a title with a verb), why in one sentence, and what to have at hand before
- * starting. One focal point per step: the head, the fields and the one main button. On a phone the buttons are a fixed bar above the
- * bottom one. Every screen of the wizard is drawn in this frame, so it is also what tells the popup alerts that a wizard is open: they
- * wait in their queue for as long as one of these frames is on screen (ADR-025-R7).
- */
 export function LeaseWizardFrame({ stepper, position, title, summary, inHand, titleRef, children, footer }: FrameProps) {
   const { t } = useTranslation();
   const setMobilePrimaryVisible = useUiStore((state) => state.setMobilePrimaryVisible);
@@ -49,8 +34,6 @@ export function LeaseWizardFrame({ stepper, position, title, summary, inHand, ti
   return (
     <div className="grid w-full min-w-0 gap-4 lg:gap-6 lg:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)] lg:items-start" data-testid="lease-wizard">
       <div className="min-w-0 lg:sticky lg:top-5">{stepper}</div>
-      {/* The step takes the rest of the page beside the steps, as the steps of every wizard do (no narrow column with the screen empty
-          beside it). The fields of the shared form components are 40 px high; on a phone the ones of the wizard are 44, for a finger. */}
       <div className="min-w-0 rounded-2xl border bg-card shadow-sm max-sm:[&_select]:min-h-11 max-sm:[&_input:not([type=radio],[type=checkbox],[type=file])]:min-h-11">
         <header className="min-w-0 space-y-3 rounded-t-2xl border-b bg-muted/40 p-4 sm:p-6" data-testid="lease-wizard-header">
           <h2 ref={titleRef} tabIndex={-1} className="break-words text-2xl font-semibold tracking-tight outline-none" data-testid="lease-wizard-title">

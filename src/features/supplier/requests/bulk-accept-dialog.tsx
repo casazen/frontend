@@ -6,15 +6,12 @@ import type { SupplierServiceRequest } from '@/types/service-request';
 import { BLOCK_NOT_SENT, NEEDS_OFFER, NOT_IN_BLOCK, type BulkAcceptFailure } from './bulk-accept';
 import { requestPath, requestTitle, requestWhen } from './request-model';
 
-/** What the supplier is told after taking many requests at once when some of them were not taken: how many were, and each one that was not. */
 export interface BulkAcceptSummary {
   accepted: number;
   failed: BulkAcceptFailure[];
-  /** The requests that were selected, to name the ones that failed. */
   rows: ReadonlyMap<string, SupplierServiceRequest>;
 }
 
-/** Why a request was not taken: in the words of the server when it gave them (the job overlaps one already accepted, it changed meanwhile...). */
 function reasonOf(failure: BulkAcceptFailure, t: (key: string) => string): string {
   if (failure.message) return failure.message;
   if (failure.code === NOT_IN_BLOCK) return t('supplier.requests.bulk.summary.notInBulk');

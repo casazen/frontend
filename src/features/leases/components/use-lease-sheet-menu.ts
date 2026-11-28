@@ -24,7 +24,6 @@ import { leaseSheetPath } from '../lib/lease-next-step';
 export function useLeaseSheetMenu(lease: LeaseDetail, { serviceDraft }: { serviceDraft: boolean }): PageHeaderMenuItem[] {
   const { t } = useTranslation();
   const workspace = useContext(WorkspaceContext);
-  // Without a workspace (a page rendered on its own) nothing is hidden: the server decides.
   const canSign = workspace ? workspace.hasPermission('long-rent', 'lease.sign') : true;
   const importedDraft = lease.status === 'Draft' && lease.origin === 'Imported';
   const hasSomethingToRead = lease.hasSignedPdf || (canSign && !serviceDraft && !importedDraft && lease.isConcordatoFacileSource !== true);

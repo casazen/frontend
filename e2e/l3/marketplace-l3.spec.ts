@@ -4,10 +4,6 @@ import { readAccessToken } from '../helpers/auth';
 
 const API = process.env.E2E_LOCAL_API_URL ?? process.env.E2E_STAGING_API_URL ?? 'http://localhost:5000/api';
 
-/**
- * The test that writes (a request, then its cancellation) runs on a local API only: the cancellation e-mails and pushes the host, and on the
- * shared test environment that is the person who owns the test account, at every push to develop and every night.
- */
 const LOCAL_API = isLocalApi(API);
 
 type Auth = Record<string, string>;
@@ -23,10 +19,6 @@ interface Candidate {
   supplierOrgId: string;
 }
 
-/**
- * First property of the E2E user with a non-cancelled stay and an active cleaning supplier in its comune (seed data
- * of the environment), or null.
- */
 async function findCandidate(request: APIRequestContext, auth: Auth): Promise<Candidate | null> {
   const properties = await request.get(`${API}/properties`, { headers: auth });
   expect(properties.status(), 'GET /properties').toBe(200);
@@ -100,19 +92,14 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     );
     const { propertyId, stayId, supplierOrgId } = candidate!;
 
-    // The environment is long-lived and the request of a regular host is accepted at once: the job an earlier run left would overlap
-    // this one (409 supplier_commitment_conflict). So each run asks for an hour of its own (12:00 to 19:00, two hours long) and cancels
-    // its request at the end.
     const startTime = `${String(12 + (Date.now() % 8)).padStart(2, '0')}:00`;
 
-    // Supplier discovery is account-wide; the actual job is created in Interventions.
     await page.goto('/app/short-rent/marketplace/categories/cleaning');
     await page.getByTestId(`marketplace-supplier-${supplierOrgId}`).click({ timeout: 30_000 });
     await expect(page.getByTestId('marketplace-supplier-detail')).toBeVisible();
     await expect(page.getByTestId('marketplace-request-service-btn')).toHaveCount(0);
     await page.goto(`/app/short-rent/interventions/request?propertyId=${propertyId}&type=cleaning&supplierOrgId=${supplierOrgId}`);
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 30_000 });
-    // The time and the length are the host's own (a service of the catalog would go with one of its slots instead), and the stay is a link.
     await page.getByTestId('request-service-custom').check({ force: true });
     await page.getByTestId('request-stay').selectOption(stayId);
     await page.getByTestId('request-start-time').fill(startTime);
@@ -132,17 +119,14 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
       expect(body.bookingId).toBe(stayId);
       expect(body.rentalContext).toBe('ShortRent');
 
-      // Web: the booking detail lists the stay's requests.
       await page.goto(`/app/short-rent/bookings/${stayId}`);
       await expect(page.getByTestId(`service-request-${body.id}`)).toBeVisible({ timeout: 30_000 });
 
-      // App: the booking screen asks the same list by stay.
       const appList = await request.get(`${API}/service-requests?bookingId=${stayId}&pageSize=50`, { headers: auth });
       expect(appList.status()).toBe(200);
       const items = ((await appList.json()) as { items: { id: string; bookingId: string }[] }).items;
       expect(items.find((i) => i.id === body.id)?.bookingId).toBe(stayId);
     } finally {
-      // The supplier's agenda goes back as it was, also when an assertion above failed: the next run asks for the same stay.
       const cancelled = await request.post(`${API}/service-requests/${body.id}/cancel`, {
         headers: auth,
         data: { reason: 'E2E cleanup' },

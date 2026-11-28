@@ -7,10 +7,6 @@ import { AppShellLayout } from './app-shell-layout';
 
 const KNOWN_CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'admin', 'supplier', 'account'];
 
-/**
- * Layout route of the five areas: the one shell around the page of the route (UI-03). The shell stays mounted while the
- * user moves between pages, and between areas, so only the content changes.
- */
 export function ContextLayout() {
   const { t } = useTranslation();
   const { context } = useParams();
@@ -23,7 +19,6 @@ export function ContextLayout() {
     return <Navigate to="/app/choose-context" replace />;
   }
 
-  // The menus come from the contexts of the user: until they are known the shell would only be an empty frame.
   if (!isReady) {
     return <LoadingScreen message={t('shared.auth.loadingWorkspace')} />;
   }
@@ -33,7 +28,6 @@ export function ContextLayout() {
       <AppShellLayout contextKey={contextKey}>
         <Outlet />
       </AppShellLayout>
-      {/* The window scrolls: a new page opens at the top, Back and Forward bring back the position of that page. */}
       <ScrollRestoration />
     </>
   );

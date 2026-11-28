@@ -21,10 +21,8 @@ import { PracticeStatusLine } from './practice-status';
 const BUTTON = 'h-auto min-h-10 w-full whitespace-normal py-2 text-center sm:w-auto';
 const BUTTONS = 'flex flex-col gap-2 sm:flex-row sm:flex-wrap';
 
-/** The statuses in which the practice is over and the documents are with the person: the sentence under the status says to upload them. */
 const CONCLUDED: readonly CfPracticeStatus[] = ['Attested', 'Registered'];
 
-/** The block: its title and, where the form is still to be filled in, what it is about. */
 function NoticeFrame({ about = true, children }: { about?: boolean; children: ReactNode }) {
   const { t } = useTranslation();
   const titleId = useId();
@@ -39,7 +37,6 @@ function NoticeFrame({ about = true, children }: { about?: boolean; children: Re
   );
 }
 
-/** The way to the documents: the main button once the form is sent, the second one before. */
 function UploadLink({ leaseId, primary = false }: { leaseId: string; primary?: boolean }) {
   const { t } = useTranslation();
   return (
@@ -76,10 +73,8 @@ function StatusView({ leaseId, practice, syncState }: { leaseId: string; practic
   );
 }
 
-/** Why a practice is closed without an attestation, as the server says it (`closeReason`); any other reason, or none, is the plain sentence. */
 const CLOSE_REASONS = ['duplicate', 'withdrawn', 'not_compliant'] as const;
 
-/** The practice that was closed, with its number and why, in plain words: what the person fills in the form again knows what happened. */
 function ClosedPractice({ practice }: { practice: CfPracticeResponse }) {
   const { t } = useTranslation();
   const reason = CLOSE_REASONS.find((known) => known === practice.closeReason) ?? 'other';
@@ -95,14 +90,10 @@ function ClosedPractice({ practice }: { practice: CfPracticeResponse }) {
 
 interface FormViewProps {
   leaseId: string;
-  /** What the server said about the access (undefined until it has, or when it could not). */
   access: CfAccessResponse | undefined;
   accessPending: boolean;
-  /** The form was opened before, so the status is being read: until it is known nothing is offered that could make a second practice. */
   checking: boolean;
-  /** The form was opened before and the status could not be read. */
   unavailable: boolean;
-  /** The last practice of the lease, when it was closed without an attestation: the form can be filled in again. */
   closed?: CfPracticeResponse;
 }
 
@@ -125,7 +116,6 @@ function FormView({ leaseId, access, accessPending, checking, unavailable, close
   const hasAccess = access?.hasAccess === true;
   const opened = Boolean(access?.linkOpenedAt);
   const mustAccept = !accessPending && access?.privacyAccepted !== true;
-  // Pressed once: the page is on its way out when the link has been made (see `useOpenCfForm`).
   const busy = accept.isPending || form.isPending || form.isSuccess;
   const waiting = accessPending || checking;
   let proceedLabel = opened ? t('guidedContract.resume') : t('leases.partnerDraft.proceed');
@@ -138,7 +128,6 @@ function FormView({ leaseId, access, accessPending, checking, unavailable, close
       if (hasAccess) await form.mutateAsync();
       else navigate(`/app/long-rent/leases/${leaseId}/guided-contract`);
     } catch (error) {
-      // A privacy notice the server does not have is not an error to show: the access is read again and the box is there to tick.
       if (!isCfPrivacyNotAccepted(error)) setFailure(error);
     }
   };
@@ -189,7 +178,6 @@ function FormView({ leaseId, access, accessPending, checking, unavailable, close
   );
 }
 
-/** The service is on: the access and, where the form was opened before, the status of its practice decide what the block offers. */
 function LiveNotice({ leaseId, syncState }: { leaseId: string; syncState?: CfSyncState }) {
   const { access, opened, status, running, closed } = useCfPractices(leaseId);
 

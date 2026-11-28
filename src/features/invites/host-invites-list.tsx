@@ -14,10 +14,6 @@ import { HostInvitesTable } from './host-invites-table';
 
 const PAGE_SIZE = 20;
 
-/**
- * Host invites with state filter and search, resend and revoke (each asks for confirmation), filtered and paginated by
- * the server. Full width, like the other lists. The admin sees all the invites and who sent them, a host only their own.
- */
 export function HostInvitesList({ scope }: { scope: HostInviteScope }) {
   const { t } = useTranslation();
   const [page, setPage] = useState(1);

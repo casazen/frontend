@@ -7,14 +7,12 @@ import type { GuestCheckInSessionStatus } from '@/types/public-checkin.types';
 import { stayDateOf } from './booking-price';
 import { canOpenCheckOut, canRegisterArrival } from './stay-actions';
 
-/** What the booking page says is going on, and what the host has to do about it ("Cosa succede ora", SR-05). */
 type BookingNextStepKind =
   | 'answerRequest'
   | 'confirmManual'
   | 'waitingGuestEmail'
   | 'waitingPayment'
   | 'registerArrival'
-  // casazen/backend#978: the booking flow of the org does the step by itself; the host may still do it earlier.
   | 'arrivalAutomatic'
   | 'linkScheduled'
   | 'departureAutomatic'
@@ -28,21 +26,17 @@ type BookingNextStepKind =
   | 'allInOrder'
   | 'completed'
   | 'cancelled'
-  // A compliance item of the stay that is not in order while the step has nothing else to ask (NF-52): `line` is the one.
   | 'compliance';
 
 interface BookingNextStep {
   kind: BookingNextStepKind;
   tone: CalmTone;
-  /** For `compliance`: the item that is the step, the worst of the stay's. */
   line?: ComplianceLine;
 }
 
 type StayFacts = Pick<Booking, 'status' | 'source' | 'onSiteRequestState' | 'checkInDate' | 'checkOutDate'>;
 
-/** The online check-in link of a stay, as `GET /bookings/{id}/checkin-session` says it. */
 interface CheckInFacts {
-  /** Null while no link was ever made. */
   status: GuestCheckInSessionStatus | null;
   canIssueLink: boolean;
 }
@@ -52,10 +46,6 @@ interface GuestDataFacts {
   complete: boolean;
 }
 
-/**
- * What the booking flow of the org does by itself (casazen/backend#978, `GET /settings/booking-flow`): the check-in link, the arrival, the departure. Missing (not read yet,
- * or not readable): every step is the host's, as before.
- */
 export interface FlowFacts {
   sendsLink: boolean;
   registersArrival: boolean;
@@ -83,7 +73,6 @@ export function documentsNeeded(booking: StayFacts, today: string): 'checkIn' | 
   return null;
 }
 
-/** The steps that have nothing to ask of the host: a compliance item that is not in order is worth more than their «tutto in ordine». */
 const QUIET_STEPS: readonly BookingNextStepKind[] = ['stayInProgress', 'allInOrder', 'completed', 'linkScheduled', 'arrivalAutomatic', 'departureAutomatic'];
 
 /**
@@ -142,7 +131,6 @@ function stepOf(
       return { kind: 'waitingPayment', tone: 'info' };
 
     case 'Confirmed': {
-      // A stay whose arrival and departure the flow registers is closed by itself on its departure day (both together).
       if (flow?.registersArrival && flow.registersDeparture && today >= stayDateOf(booking.checkOutDate)) return { kind: 'departureAutomatic', tone: 'info' };
       if (canRegisterArrival(booking, today)) return { kind: flow?.registersArrival ? 'arrivalAutomatic' : 'registerArrival', tone: flow?.registersArrival ? 'info' : 'neutral' };
       if (canOpenCheckOut(booking, today)) return { kind: 'registerDeparture', tone: 'neutral' };
@@ -150,7 +138,6 @@ function stepOf(
       if (link?.canIssueLink && link.status === null) return flow?.sendsLink ? { kind: 'linkScheduled', tone: 'info' } : { kind: 'sendLink', tone: 'neutral' };
       if (link?.canIssueLink && link.status === 'Scaduto') return { kind: 'resendLink', tone: 'warning' };
       if (link?.status === 'Inviato' || link?.status === 'InCompilazione') return { kind: 'waitingDocuments', tone: 'info' };
-      // Nothing is owed by the guest, and the data are still incomplete: the host fills them in the wizard "Guest check-in".
       if (facts.guestData?.complete === false) return { kind: 'completeGuestData', tone: 'warning' };
       return { kind: 'allInOrder', tone: 'success' };
     }
@@ -166,7 +153,6 @@ function stepOf(
       return { kind: 'completed', tone: 'success' };
 
     default:
-      // A status this version of the app does not know (the server is newer): nothing to say, nothing to invent.
       return { kind: 'allInOrder', tone: 'neutral' };
   }
 }

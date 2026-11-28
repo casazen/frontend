@@ -4,10 +4,6 @@ import { starterContentFor, type StarterContent } from '../starter-content';
 const TRADES = ['cleaning', 'laundry', 'linen', 'plumbing', 'electrical', 'gardening', 'check-in', 'maintenance'];
 const startersOf = (): StarterContent[] => TRADES.map((trade) => starterContentFor([trade])).filter((starter): starter is StarterContent => starter !== null);
 
-/**
- * What a text of CasaZen on a page of the supplier must never say (`ANALISI.md` §16, VT-D20): a certification, a guarantee, an insurance,
- * years or experience, a time, a price, a rating, a promise or an adjective nobody measures.
- */
 const FORBIDDEN =
   /assicura|certific|garanz|garantit|\banni\b|esperien|espert|professional|qualific|\d+\s*(ore|h|giorni|minuti)|\b24\b|\bentro\b|€|\beuro\b|prezzo|gratis|gratuit|\bsempre\b|miglior|recension|stelle|\bvoto\b|leader|ottim|rapid|veloc|economic|convenien|affidabil|puntual|conformit/i;
 

@@ -170,7 +170,6 @@ describe('RouteTabs (UI-15)', () => {
       ]);
 
       const payments = link(/Pagamenti/);
-      // The label says the number (once): the number itself is hidden from assistive technology.
       expect(payments).toHaveAccessibleName(/^Pagamenti.*3 da incassare$/);
       const pill = within(payments).getByText('3').parentElement as HTMLElement;
       expect(pill).toHaveAttribute('data-tone', 'warning');

@@ -6,18 +6,12 @@ import i18n from '@/i18n/config';
 
 export const PAYMENTS_KEY = 'payments';
 
-/**
- * The root of the keys of the fiscal documents (`FISCAL_DOCUMENTS_KEY` of `use-fiscal-documents.ts`, which imports this file, so it cannot be imported here). Whether a document of a booking is
- * collected is worked out from the payments each time it is read: a payment recorded or a refund asked changes what the list, the detail and the card of the booking show.
- */
 const FISCAL_DOCUMENTS_ROOT = ['fiscal', 'documents'] as const;
 
 export function usePayments(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [PAYMENTS_KEY, params],
     queryFn: () => paymentsApi.getAll(params),
-    // The list changes from other pages (a payment recorded, a refund): an invalidation reaches it only while it is on screen, so it
-    // asks again when it opens if what it holds is stale (the client has `refetchOnMount: false`).
     refetchOnMount: true,
   });
 }
@@ -37,11 +31,6 @@ export function useRevenue(params?: RevenueParams) {
   });
 }
 
-/**
- * Records a payment the host received outside CasaZen (SR-06b). The form shows the server's reason when it refuses (more than is
- * left to collect, a booking from a portal...), so there is no toast for the failure; the booking it was recorded on is read
- * again (what came in, what is left).
- */
 export function useCreatePayment() {
   const queryClient = useQueryClient();
 
@@ -49,7 +38,6 @@ export function useCreatePayment() {
     mutationFn: (data: RecordPaymentInput) => paymentsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
-      // The key of `use-bookings.ts` (which imports this file, so it cannot be imported here): what came in changed.
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       queryClient.invalidateQueries({ queryKey: FISCAL_DOCUMENTS_ROOT });
       toast.success(i18n.t('toast.paymentCreated'));
@@ -57,7 +45,6 @@ export function useCreatePayment() {
   });
 }
 
-/** Refunds still waiting for Stripe are polled until Stripe confirms or fails them (BK-02). */
 const REFUND_POLL_INTERVAL_MS = 5000;
 
 function isRefundInProgress(refund: PaymentRefund): boolean {
@@ -74,10 +61,6 @@ export function usePaymentRefunds(id: string, enabled = true) {
   });
 }
 
-/**
- * Refund on Stripe. No toast: the dialog shows what Stripe answered (confirmed, waiting or failed)
- * and the error, so nothing claims "refunded" before Stripe does.
- */
 export function useRefundPayment() {
   const queryClient = useQueryClient();
 

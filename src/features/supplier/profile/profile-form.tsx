@@ -69,8 +69,6 @@ export function ProfileForm({ profile }: { profile: SupplierProfile }) {
   const [problem, setProblem] = useState<string | null>(null);
   const saving = updateProfile.isPending;
 
-  // A profile that arrives while nothing was typed takes the place of the form (adjusting state during render); one that arrives
-  // mid-edit does not wipe it.
   if (profile !== seen) {
     setSeen(profile);
     if (sameValues(values, baseline)) {
@@ -152,7 +150,6 @@ export function ProfileForm({ profile }: { profile: SupplierProfile }) {
           <div className="min-w-0">
             <dt className="font-medium text-foreground/70">{t('supplier.status')}</dt>
             <dd className="mt-1">
-              {/* A status this version does not know is shown as it came. */}
               <StatusBadge kind="supplier" status={profile.status as AdminSupplierStatus} data-testid="supplier-profile-status" />
             </dd>
           </div>

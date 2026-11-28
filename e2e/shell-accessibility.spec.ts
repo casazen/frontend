@@ -3,10 +3,6 @@ import { demoUrl } from './helpers/demo-profile';
 import { resetE2eStorage } from './helpers/locale';
 import { chooseLanguage, moreOfTheBar, openProfileMenu, profileMenuTrigger } from './helpers/profile-menu';
 
-/**
- * UI-03: one shell for every area, the window scrolls, and the shell takes care of the keyboard and screen reader user
- * at every change of page. Roles, names and test ids of the shell that the other specs read are left as they were.
- */
 test.describe('Shell: window scroll and accessibility (UI-03)', () => {
   test.describe('Desktop', () => {
     test.use({ viewport: { width: 1280, height: 720 } });
@@ -20,7 +16,6 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await expect(page.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeVisible();
 
       const skipLink = page.getByRole('link', { name: 'Vai al contenuto' });
-      // Out of the screen until it has the focus.
       const hidden = await skipLink.boundingBox();
       expect(hidden).not.toBeNull();
       expect(hidden!.y + hidden!.height).toBeLessThanOrEqual(0);
@@ -33,7 +28,6 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       const addressBefore = page.url();
       await page.keyboard.press('Enter');
       await expect(page.locator('main#main-content')).toBeFocused();
-      // The link does not add `#main-content` to the address or to the history.
       expect(page.url()).toBe(addressBefore);
     });
 
@@ -52,7 +46,6 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await expect(page).toHaveURL(/\/app\/short-rent\/bookings/);
       await expect(page.getByRole('heading', { level: 1, name: 'Prenotazioni' })).toBeFocused();
       await expect(page.getByTestId('route-announcer')).toHaveText('Prenotazioni');
-      // One shell: the header and the sidebar are the same elements as before the click.
       await expect(page.locator('header')).toHaveAttribute('data-e2e-mounted', 'yes');
       await expect(page.locator('aside')).toHaveAttribute('data-e2e-mounted', 'yes');
       await expect(page.getByTestId('app-shell')).toHaveCount(1);
@@ -75,7 +68,6 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await expect(page.getByRole('heading', { level: 1, name: /^Buongiorno/ })).toBeVisible();
       const avatar = profileMenuTrigger(page);
 
-      // The name of the avatar says whose menu it is, and it opens with Enter.
       await expect(avatar).toHaveAttribute('aria-label', /^Menu utente: /);
       await avatar.focus();
       await page.keyboard.press('Enter');
@@ -84,7 +76,6 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await expect(menu.getByRole('menuitem')).toHaveText(['Profilo', 'Personalizza area di lavoro', 'Esci']);
       await expect(menu.getByRole('menuitemradio')).toHaveText(['Italiano', 'English', 'Affitti brevi', 'Affitti lunghi']);
 
-      // Home and End walk the rows, Escape closes the menu and the focus is back on the avatar.
       await page.keyboard.press('End');
       await expect(menu.getByRole('menuitem', { name: 'Esci' })).toBeFocused();
       await page.keyboard.press('Home');
@@ -93,7 +84,6 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await expect(menu).toBeHidden();
       await expect(avatar).toBeFocused();
 
-      // A language is chosen with the keyboard too: the whole page, and <html lang>, follow.
       await page.keyboard.press('Enter');
       await menu.getByRole('menuitemradio', { name: 'English' }).focus();
       await page.keyboard.press('Enter');
@@ -117,7 +107,6 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await page.goto(demoUrl('/app/short-rent/payments/revenue', 'short-stay'), { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { level: 1, name: /Analisi ricavi|Revenue Analytics/i })).toBeVisible();
 
-      // It is the window that scrolls, not an inner region.
       expect(
         await page.evaluate(() => document.documentElement.scrollHeight > document.documentElement.clientHeight),
       ).toBe(true);
@@ -151,7 +140,6 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
 
       await moreOfTheBar(page).click();
       const sheet = page.getByRole('dialog');
-      // "Incassi" is a secondary entry: it is in the sheet "Altro", not in the bottom bar (see navigation.spec.ts).
       await sheet.getByRole('link', { name: /Incassi|Payments/i }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/payments/);

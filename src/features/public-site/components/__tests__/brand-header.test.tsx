@@ -34,7 +34,6 @@ describe('BrandHeader', () => {
   });
 
   it('BrandHeader_ProductionBuild_HasNoWayInToTheAppButKeepsTheSearch', () => {
-    // Only a production build has the public domain (src/config/login-entry.ts); the app is reached by its address there.
     vi.stubEnv('VITE_PUBLIC_SITE_URL', 'https://www.example.test');
 
     renderHeader();

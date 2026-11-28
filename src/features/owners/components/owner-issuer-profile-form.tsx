@@ -1,13 +1,14 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
+import { AlertTriangle, FileText, Info, Lock, Pencil } from 'lucide-react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
+import { HelpTip } from '@/components/ui/help-tip';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { isFeatureEnabled } from '@/config/feature-flags';
@@ -28,8 +29,8 @@ import {
   type OwnerIssuerField,
   type OwnerIssuerForm,
 } from '../owner-issuer-model';
+import { Fact, FactGrid, OwnerCard, QuietNote, StateChip } from './owner-ui';
 
-/** The state of the profile in words: it can issue, or it says what it still misses. A profile that does not exist is told apart from one that misses something. */
 function OwnerIssuerState({ profile }: { profile: Pick<OwnerIssuerProfile, 'exists' | 'canIssue' | 'missingFields'> }) {
   const { t } = useTranslation();
   if (!profile.exists) {
@@ -56,11 +57,8 @@ function OwnerIssuerState({ profile }: { profile: Pick<OwnerIssuerProfile, 'exis
 
 interface OwnerIssuerProfileFormProps {
   ownerId: string;
-  /** The profile as the server holds it, with the personal data in clear (`masked: false`): the form is for who may change it. */
   profile: OwnerIssuerProfile;
-  /** The profile was saved. */
   onSaved?: () => void;
-  /** The person gives up (a dialog): nothing is saved. */
   onCancel?: () => void;
 }
 
@@ -76,8 +74,6 @@ export function OwnerIssuerProfileForm({ ownerId, profile, onSaved, onCancel }: 
   const save = useSaveOwnerIssuerProfile(ownerId);
   const stored = formOf(profile);
   const [form, setForm] = useState<OwnerIssuerForm>(stored);
-  // What the form was last built from. A read that brings the same data changes nothing: the window coming back (a read more than half a minute old is read again) must never throw away what the person is
-  // typing. When the server holds something else (another person's change) the fields nobody typed in follow it, and what was typed stays.
   const [base, setBase] = useState<OwnerIssuerForm>(stored);
   if (isChanged(stored, base)) {
     setBase(stored);
@@ -90,21 +86,18 @@ export function OwnerIssuerProfileForm({ ownerId, profile, onSaved, onCancel }: 
 
   const set = (patch: Partial<OwnerIssuerForm>) => {
     setForm((current) => ({ ...current, ...patch }));
-    // What was refused is told on its field until the person changes it.
     const touched = Object.keys(patch) as OwnerIssuerField[];
     setRefused((current) => (current.some((field) => touched.includes(field)) ? current.filter((field) => !touched.includes(field)) : current));
   };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    // The form may sit in a dialog drawn outside the page but inside it for React: its submit must not reach a form around it.
     event.stopPropagation();
     if (save.isPending || (!changed && profile.exists)) return;
     setProblem(null);
     setRefused([]);
     try {
       const saved = await save.mutateAsync(requestOf(form));
-      // The form shows what the server holds now (it cuts and capitalizes what was typed), as it did when it started again after every read.
       setForm(formOf(saved));
       toast.success(saved.canIssue ? t('ownerIssuer.saved.ready') : t('ownerIssuer.saved.incomplete'));
       onSaved?.();
@@ -246,15 +239,10 @@ function regimeCodeHint(profile: Pick<OwnerIssuerProfile, 'effectiveRegimeCode'>
   return profile.effectiveRegimeCode === null ? t('ownerIssuer.fields.fatturaPaRegimeCode.hint') : t('ownerIssuer.fields.fatturaPaRegimeCode.hintCode', { code: profile.effectiveRegimeCode });
 }
 
-/**
- * The profile as the person who may not change it sees it (the server masks the personal data for them: `••••1234`): the regime, the data as they come, the sezionale and the reference of the stamp
- * duty, read-only, with the state of the profile above them. No form, and nothing that could be saved.
- */
 export function OwnerIssuerProfileFacts({ profile }: { profile: OwnerIssuerProfile }) {
   const { t } = useTranslation();
   const address = [[profile.addressStreet, profile.addressCivic].filter(Boolean).join(' '), [profile.postalCode, profile.city].filter(Boolean).join(' '), profile.province ?? ''].filter(Boolean).join(', ');
   const rows: [string, string | null][] = [
-    // A regime this client has no words for (the server is newer) is shown as it came.
     ['regime', profile.regime === null ? null : (OWNER_ISSUER_REGIMES as readonly string[]).includes(profile.regime) ? t(`ownerIssuer.regime.${profile.regime}.title`) : profile.regime],
     ['legalName', profile.legalName],
     ['fiscalCode', profile.fiscalCode],
@@ -266,29 +254,42 @@ export function OwnerIssuerProfileFacts({ profile }: { profile: OwnerIssuerProfi
 
   return (
     <div className="space-y-4" data-testid="owner-issuer-facts">
-      <OwnerIssuerState profile={profile} />
+      <IssuerStateNote profile={profile} />
       {profile.exists ? (
-        <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+        <FactGrid>
           {rows.map(([field, value]) => (
-            <div key={field} className="min-w-0">
-              <dt className="text-sm text-foreground/70">{t(`ownerIssuer.facts.${field}`)}</dt>
-              <dd className="break-words" data-testid={`owner-issuer-fact-${field}`}>
-                {value === null || value === '' ? <span className="text-foreground/60">{t('ownerIssuer.facts.empty')}</span> : value}
-              </dd>
-            </div>
+            <Fact key={field} label={t(`ownerIssuer.facts.${field}`)} value={value} testId={`owner-issuer-fact-${field}`} />
           ))}
-        </dl>
+        </FactGrid>
       ) : null}
     </div>
   );
 }
 
-/**
- * «Emittente dei documenti dei soggiorni» of the financial page of an owner (E17/F03/US01/T01): the issuer profile with which CasaZen issues the documents of the owner's stays in its name. It exists only while the
- * issuance of fiscal documents is on (the server answers 404 to the profile while it is off: nothing is drawn and nothing is asked). The server decides who may change it: for a caller who may not, it masks the
- * personal data and the page shows them read-only, for a caller it refuses outright (403) the page says that the profile is not for them, and a read that failed is a failed read with a retry, never an
- * empty form; a 404 is «not found» whatever the query still holds. The answer is dropped as soon as the page is left.
- */
+function IssuerStateChip({ profile }: { profile: Pick<OwnerIssuerProfile, 'exists' | 'canIssue'> }) {
+  const { t } = useTranslation();
+  if (!profile.exists) return <StateChip tone="neutral" data-testid="owner-issuer-chip" data-state="none">{t('ownerIssuer.chip.none')}</StateChip>;
+  if (profile.canIssue) return <StateChip tone="success" data-testid="owner-issuer-chip" data-state="ready">{t('ownerIssuer.chip.ready')}</StateChip>;
+  return <StateChip tone="warning" data-testid="owner-issuer-chip" data-state="incomplete">{t('ownerIssuer.chip.incomplete')}</StateChip>;
+}
+
+function IssuerStateNote({ profile }: { profile: Pick<OwnerIssuerProfile, 'exists' | 'canIssue' | 'missingFields'> }) {
+  const { t } = useTranslation();
+  if (profile.exists && profile.canIssue) return null;
+  if (!profile.exists) return <QuietNote icon={Info}>{t('ownerIssuer.state.none')}</QuietNote>;
+  const fields = missingFieldsOf(profile).map((field) => t(`ownerIssuer.fields.${field}.label`));
+  return <QuietNote icon={AlertTriangle}>{fields.length > 0 ? t('ownerIssuer.state.missing', { fields: fields.join(', ') }) : t('ownerIssuer.state.missingUnknown')}</QuietNote>;
+}
+
+function IssuerCard({ chip, action, help, children }: { chip?: ReactNode; action?: ReactNode; help?: ReactNode; children: ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <OwnerCard icon={FileText} title={t('ownerIssuer.title')} chip={chip} action={action} help={help} data-testid="owner-issuer-section">
+      {children}
+    </OwnerCard>
+  );
+}
+
 export function OwnerIssuerProfileSection({ ownerId }: { ownerId: string }) {
   const { flags } = useFeatureFlags();
   if (!isFeatureEnabled(flags, 'fiscalDocumentIssuance')) return null;
@@ -300,69 +301,84 @@ function SectionBody({ ownerId }: { ownerId: string }) {
   const profile = useOwnerIssuerProfile(ownerId);
   const data = profile.data;
 
-  let content;
   if (getHttpStatus(profile.error) === 404) {
-    content = (
-      <p className="break-words text-sm text-foreground/70" data-testid="owner-issuer-not-found">
-        {t('ownerIssuer.notFound')}
-      </p>
+    return (
+      <IssuerCard>
+        <p className="break-words text-sm text-foreground/70" data-testid="owner-issuer-not-found">
+          {t('ownerIssuer.notFound')}
+        </p>
+      </IssuerCard>
     );
-  } else if (profile.isPending) {
-    content = (
-      <p role="status" className="text-sm text-foreground/70">
-        {t('ownerIssuer.loading')}
-      </p>
-    );
-  } else if (profile.isError || data === undefined) {
-    content = <OwnerAccountingError error={profile.error} title={t('ownerIssuer.loadError')} onRetry={() => void profile.refetch()} />;
-  } else if (data === null) {
-    content = (
-      <p className="break-words text-sm text-foreground/70" data-testid="owner-issuer-not-for-you">
-        {t('ownerIssuer.notForYou')}
-      </p>
-    );
-  } else if (data.masked) {
-    content = (
-      <div className="space-y-4">
-        <Alert variant="info" data-testid="owner-issuer-masked-notice">
-          {t('ownerIssuer.maskedNotice')}
-        </Alert>
-        <OwnerIssuerProfileFacts profile={data} />
-      </div>
-    );
-  } else if (!isItalianProfile(data)) {
-    content = (
-      <div className="space-y-4">
-        <Alert variant="info" data-testid="owner-issuer-foreign">
-          {t('ownerIssuer.foreign')}
-        </Alert>
-        <OwnerIssuerProfileFacts profile={data} />
-      </div>
-    );
-  } else {
-    // The form starts from what the server holds and follows it (see the form): it is never started again by a read that brings the same data, so what is typed survives the window coming back. One owner, one form.
-    content = <IssuerEditor key={ownerId} ownerId={ownerId} profile={data} />;
   }
-
-  return (
-    <PlainSection title={t('ownerIssuer.title')} data-testid="owner-issuer-section">
-      <p className="break-words text-sm text-foreground/70">{t('ownerIssuer.description')}</p>
-      {content}
-    </PlainSection>
-  );
+  if (profile.isPending) {
+    return (
+      <IssuerCard>
+        <p role="status" className="text-sm text-foreground/70">
+          {t('ownerIssuer.loading')}
+        </p>
+      </IssuerCard>
+    );
+  }
+  if (profile.isError || data === undefined) {
+    return (
+      <IssuerCard>
+        <OwnerAccountingError error={profile.error} title={t('ownerIssuer.loadError')} onRetry={() => void profile.refetch()} />
+      </IssuerCard>
+    );
+  }
+  if (data === null) {
+    return (
+      <IssuerCard>
+        <QuietNote icon={Lock} data-testid="owner-issuer-not-for-you">
+          {t('ownerIssuer.notForYou')}
+        </QuietNote>
+      </IssuerCard>
+    );
+  }
+  if (data.masked) {
+    return (
+      <IssuerCard chip={<IssuerStateChip profile={data} />}>
+        <QuietNote icon={Lock} data-testid="owner-issuer-masked-notice">
+          {t('ownerIssuer.maskedNotice')}
+        </QuietNote>
+        <OwnerIssuerProfileFacts profile={data} />
+      </IssuerCard>
+    );
+  }
+  if (!isItalianProfile(data)) {
+    return (
+      <IssuerCard>
+        <QuietNote icon={Info} data-testid="owner-issuer-foreign">
+          {t('ownerIssuer.foreign')}
+        </QuietNote>
+        <OwnerIssuerProfileFacts profile={data} />
+      </IssuerCard>
+    );
+  }
+  return <IssuerEditor key={ownerId} ownerId={ownerId} profile={data} />;
 }
 
 function IssuerEditor({ ownerId, profile }: { ownerId: string; profile: OwnerIssuerProfile }) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
-  return <div className="space-y-3">
-    {!editing ? <OwnerIssuerProfileFacts profile={profile} /> : null}
-    <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)} data-testid="owner-issuer-edit">{t('ownerProfile.wizard.edit')}</Button>
-    <Dialog open={editing} onOpenChange={setEditing}>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{t('ownerIssuer.title')}</DialogTitle><DialogDescription>{t('ownerIssuer.description')}</DialogDescription></DialogHeader>
-        {editing ? <OwnerIssuerProfileForm ownerId={ownerId} profile={profile} onSaved={() => setEditing(false)} onCancel={() => setEditing(false)} /> : null}
-      </DialogContent>
-    </Dialog>
-  </div>;
+  const edit = (
+    <Button type="button" variant="outline" size="sm" aria-label={`${t('ownerProfile.actions.edit')}: ${t('ownerIssuer.title')}`} onClick={() => setEditing(true)} data-testid="owner-issuer-edit">
+      <Pencil aria-hidden="true" className="size-4" />
+      {t('ownerProfile.actions.edit')}
+    </Button>
+  );
+  return (
+    <IssuerCard chip={editing ? undefined : <IssuerStateChip profile={profile} />} action={edit} help={<HelpTip title={t('ownerIssuer.title')}>{t('ownerIssuer.description')}</HelpTip>}>
+      {!editing ? <OwnerIssuerProfileFacts profile={profile} /> : null}
+      <Dialog open={editing} onOpenChange={setEditing}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t('ownerIssuer.title')}</DialogTitle>
+            <DialogDescription>{t('ownerIssuer.description')}</DialogDescription>
+          </DialogHeader>
+          {editing ? <OwnerIssuerProfileForm ownerId={ownerId} profile={profile} onSaved={() => setEditing(false)} onCancel={() => setEditing(false)} /> : null}
+        </DialogContent>
+      </Dialog>
+    </IssuerCard>
+  );
 }

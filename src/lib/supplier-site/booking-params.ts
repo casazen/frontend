@@ -40,7 +40,6 @@ function optionsOf(raw: string | null): { code: string; quantity: number }[] | u
   for (const part of raw.split(',')) {
     const [code, quantity = '1'] = part.split(':');
     const units = whole(quantity, MAX_OPTION_QUANTITY);
-    // A code that is not a code, or one that was already picked, is dropped; the rest stays.
     if (!OPTION_CODE.test(code) || units === undefined || picked.some((option) => option.code === code)) continue;
     picked.push({ code, quantity: units });
     if (picked.length === MAX_OPTIONS) break;
@@ -48,7 +47,6 @@ function optionsOf(raw: string | null): { code: string; quantity: number }[] | u
   return picked.length > 0 ? picked : undefined;
 }
 
-/** The parameters of an address (`?service=...`): what fits, nothing else. */
 export function parseBookingParams(search: string | URLSearchParams): BookingParams {
   const query = typeof search === 'string' ? new URLSearchParams(search) : search;
   const params: BookingParams = {};
@@ -77,10 +75,8 @@ export function parseBookingParams(search: string | URLSearchParams): BookingPar
   return params;
 }
 
-/** The booking of a supplier with what is known: the path and the query, ready for a link or for `navigate`. */
 export function buildBookingPath(slug: string, params: BookingParams = {}): string {
   const query = new URLSearchParams();
-  // The same rules as reading: what would be ignored when read is not written.
   if (params.service && SERVICE_SLUG.test(params.service)) query.set('service', params.service);
   const quantity = whole(params.quantity, MAX_UNITS);
   if (quantity !== undefined) query.set('quantity', String(quantity));
@@ -98,7 +94,6 @@ export function buildBookingPath(slug: string, params: BookingParams = {}): stri
   return `${supplierSitePaths.booking(slug)}${search ? `?${search}` : ''}`;
 }
 
-/** The request on measure of a supplier (SP-12c), with the two things the customer may already have said: the service and the comune. */
 export function buildInquiryPath(slug: string, params: Pick<BookingParams, 'service' | 'comune'> = {}): string {
   const query = new URLSearchParams();
   if (params.service && SERVICE_SLUG.test(params.service)) query.set('service', params.service);

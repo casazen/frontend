@@ -15,18 +15,11 @@ import { formatMoney } from '../services/lib/service-money';
 
 const T = 'supplier.dispute';
 
-/** A complaint can exist only for a job that was taken (or done) and is paid inside CasaZen, where the money is held until it is settled. */
 const DISPUTABLE: readonly ServiceRequestStatus[] = ['PresoInCarico', 'InCorso', 'Completato', 'Pagato'];
 const KNOWN_REASONS = new Set(['not_done', 'incomplete', 'poor_quality', 'not_as_described', 'other']);
 const KNOWN_STATES = new Set(['AwaitingSupplier', 'AwaitingDecision', 'ResolvedForSupplier', 'ResolvedForCustomer', 'Withdrawn']);
 const KNOWN_OPENERS = new Set(['customer', 'host', 'system']);
 
-/**
- * The complaint about a job paid inside CasaZen (SP-15c-c), on the page and in the drawer of the request: «Il cliente ha segnalato un problema»
- * with the reason, the payer's words, the time left to reply and the supplier's one reply in its own words (text only, at most 1000
- * characters). It exists only with online payments on and for a job paid that way, and only when the server has a complaint for it (the
- * answer «none» is not an error and shows nothing).
- */
 export function RequestDispute({ request, suspended }: { request: SupplierServiceRequest; suspended: boolean }) {
   const { flags } = useFeatureFlags();
   const possible = isFeatureEnabled(flags, 'supplierOnlinePayments') && request.paymentMode === 'Online' && DISPUTABLE.includes(request.status);
@@ -35,10 +28,6 @@ export function RequestDispute({ request, suspended }: { request: SupplierServic
   return <DisputeBlock request={request} dispute={dispute.data} suspended={suspended} />;
 }
 
-/**
- * What goes with the money in each state, as the server decided it: nothing is promised about a date, and no figure is worked out here
- * (the refund is the one the server says). An outcome for the customer can weigh on the supplier's standing, said without numbers (VT-D17).
- */
 function MoneyLine({ dispute }: { dispute: SupplierServiceDispute }) {
   const { t, i18n } = useTranslation();
   const state = KNOWN_STATES.has(dispute.status) ? dispute.status : 'AwaitingDecision';
@@ -76,7 +65,6 @@ function DisputeBlock({ request, dispute, suspended }: { request: SupplierServic
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    // The block sits inside the drawer or the page: the form around them must not hear this submit.
     event.stopPropagation();
     if (!trimmed || reply.isPending) return;
     reply.mutate(trimmed, { onSuccess: () => setText('') });

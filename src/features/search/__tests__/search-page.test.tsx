@@ -120,11 +120,9 @@ describe('SearchPage (SEARCH-GLOBAL): the public search across all the booking s
     const homes = await screen.findAllByTestId('house-card');
     expect(homes).toHaveLength(2);
     expect(within(homes[0]).getByRole('link', { name: 'Casa del Faro' })).toHaveAttribute('href', '/book/villa-mare/property/casa-del-faro');
-    // A home without slug is reached by its id, on the site of its own host.
     expect(within(homes[1]).getByRole('link', { name: 'Baita Verde' })).toHaveAttribute('href', '/book/casa-monti/property/p-2');
     expect(within(homes[0]).getByTestId('house-card-host')).toHaveTextContent('Villa Mare');
     expect(within(homes[1]).getByTestId('house-card-host')).toHaveTextContent('Casa Monti');
-    // The hearts belong to a booking site: across all of them there are none.
     expect(screen.queryByTestId('favorite-button')).not.toBeInTheDocument();
   });
 
@@ -136,7 +134,6 @@ describe('SearchPage (SEARCH-GLOBAL): the public search across all the booking s
     expect(publicSiteSearchApi.getPlatformStays).toHaveBeenCalledWith(
       expect.objectContaining({ where: 'Como', checkIn: '2030-07-01', checkOut: '2030-07-05', adults: 2, children: 1 }),
     );
-    // The guest never chooses the dates twice: the page of the home opens with them.
     expect(link).toHaveAttribute('href', '/book/villa-mare/property/casa-del-faro?checkin=2030-07-01&checkout=2030-07-05&guests=3&children=1');
   });
 
@@ -198,7 +195,6 @@ describe('SearchPage (SEARCH-GLOBAL): the public search across all the booking s
 
     expect(nothing).toHaveAttribute('data-reason', 'dates');
     expect(within(nothing).getByTestId('search-alternative')).toBeInTheDocument();
-    // There is no one host to write to across all the sites.
     expect(screen.queryByTestId('search-write')).not.toBeInTheDocument();
   });
 });

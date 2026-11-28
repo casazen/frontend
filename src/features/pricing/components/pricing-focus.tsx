@@ -6,7 +6,6 @@ import { formatCurrency } from '@/lib/utils';
 import type { PricingAdapterConfig, SeasonalSuggestionsResponse } from '@/types';
 import { Button } from '@/components/ui/button';
 
-/** What the query of the suggestions says, as the block needs it (a `useQuery` result fits). */
 interface SuggestionsState {
   data: SeasonalSuggestionsResponse | undefined;
   isLoading: boolean;
@@ -25,7 +24,6 @@ interface PricingFocusProps {
   onRecalculate: () => void;
 }
 
-/** Keep actionable exceptions above the nights. Ready suggestions need only a price summary and batch actions. */
 export function PricingFocus({
   propertyId,
   config,
@@ -108,7 +106,6 @@ export function PricingFocus({
     );
   }
 
-  // The price changed after the last computation: the suggestions come from the old one.
   const computedBase = data.items[0]?.basePrice;
   if (computedBase !== undefined && computedBase !== basePrice) {
     return (

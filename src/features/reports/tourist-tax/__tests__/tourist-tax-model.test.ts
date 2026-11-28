@@ -12,7 +12,6 @@ import {
   type RecordPaymentFormValues,
 } from '../tourist-tax-model';
 
-// 24 September 2026 is "today" in Rome in these tests.
 const TODAY = '2026-09-24';
 
 function payment(overrides: Partial<RecordPaymentFormValues> = {}): RecordPaymentFormValues {
@@ -29,7 +28,6 @@ function payment(overrides: Partial<RecordPaymentFormValues> = {}): RecordPaymen
   };
 }
 
-/** The refusals of the form as `field: message`. */
 function refusals(values: RecordPaymentFormValues): string[] {
   const result = recordPaymentSchema.safeParse(values);
   return result.success ? [] : result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`);
@@ -66,17 +64,12 @@ describe('remittanceAmountText (NF-100)', () => {
   );
 
   it('AmountTyped_PointAndComma_AreReadAsAnItalianWritesThem', () => {
-    // The mistake the text exists to avoid: "12.50" read with the Italian culture is 1250. Here it stays twelve euros and fifty cents,
-    // and a point followed by exactly three digits groups the thousands (1.250 euros), as the other money fields of the app read it.
     expect(remittanceAmountCents('12.50')).toBe(1250);
     expect(remittanceAmountCents('12,50')).toBe(1250);
     expect(remittanceAmountCents('1.250')).toBe(125000);
   });
 
   it('AmountTyped_MoreThanOneSeparator_IsReadOnlyWhenTheGroupsAreOfThreeDigits', () => {
-    // Money: the reading of the thousands alone takes "1.250.00" for 125000 euros, "12.50.30" for 125030 and "1.2.3" for 123, a payment of
-    // a hundred times what the host meant. Only a text grouped like a number is read: three digits per group, one separator for the
-    // thousands and the other for the cents.
     expect(remittanceAmountCents('1.250.000')).toBe(125_000_000);
     expect(remittanceAmountCents('1.250.000,50')).toBe(125_000_050);
     expect(remittanceAmountCents('1,250,000.50')).toBe(125_000_050);
@@ -104,7 +97,6 @@ describe('recordPaymentSchema (NF-100)', () => {
   it('RecordPayment_AmountWithGroupsThatAreNotOfThreeDigits_IsRefusedOnTheAmount', () => {
     freezeClock(NOON_UTC);
 
-    // Money: a payment of a hundred times what the host meant is refused where it is typed, not recorded.
     for (const amount of ['1.250.00', '12.50.30', '1.2.3']) {
       expect(refusals(payment({ amount })), amount).toEqual(['amount: reports.touristTax.record.validation.amountInvalid']);
     }
@@ -130,7 +122,6 @@ describe('recordPaymentSchema (NF-100)', () => {
   it('RecordPayment_PeriodOfMoreThanAYear_IsRefusedAndAYearIsNot', () => {
     freezeClock(NOON_UTC);
 
-    // 366 days, both ends included, is the longest the API takes (the rule of the tourist tax report).
     expect(refusals(payment({ periodFrom: '2025-01-01', periodTo: '2026-01-01' }))).toEqual([]);
     expect(refusals(payment({ periodFrom: '2025-01-01', periodTo: '2026-01-02' }))).toEqual([
       'periodTo: reports.touristTax.record.validation.periodTooLong',

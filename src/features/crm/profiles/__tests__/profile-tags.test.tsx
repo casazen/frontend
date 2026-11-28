@@ -44,7 +44,6 @@ describe('ProfileTags: the tags of a profile (E07/F01/US04/T02)', () => {
 
     await waitFor(() => expect(CrmApi.setTags).toHaveBeenCalledWith(PROFILE, ['vip', 'famiglia']));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('crm.tags.success')));
-    // What was typed is cleared once the server has it.
     await waitFor(() => expect(addBox()).toHaveValue(''));
   });
 
@@ -97,7 +96,6 @@ describe('ProfileTags: the tags of a profile (E07/F01/US04/T02)', () => {
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('crm.tags.error')));
     expect(toast.success).not.toHaveBeenCalled();
-    // What was typed stays, so nothing is lost.
     expect(addBox()).toHaveValue('nuovo');
   });
 

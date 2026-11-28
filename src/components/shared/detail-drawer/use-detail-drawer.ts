@@ -5,24 +5,12 @@ import { focusedElement, rememberOpener } from './detail-opener';
 import { getDetail, getDetailsVersion, isHostMounted, subscribeToDetails } from './detail-registry';
 
 export interface OpenDetailOptions {
-  /**
-   * The element to give the focus back to when the drawer closes: the button that was pressed. Default: the element that has
-   * the focus when `open` is called, which is the button for a keyboard and for most clicks (not in Safari, which does not
-   * focus a button that is clicked: pass `event.currentTarget` there).
-   */
   opener?: HTMLElement | null;
 }
 
 export interface DetailDrawerApi {
-  /**
-   * Opens the drawer of a registered kind on the thing `id`. One drawer at a time: if one is open, this one takes its place.
-   * Returns false, and changes nothing, when the kind is not registered, the id is not valid (see `lib/detail-address`) or
-   * the page has no drawer host (a route outside the shell).
-   */
   open: (kind: string, id: string, options?: OpenDetailOptions) => boolean;
-  /** Closes the drawer, whoever opened it. Does nothing if none is open, and it is safe to call late or twice. */
   close: () => void;
-  /** What the address asks for: null when no drawer is open, or when the address names a kind nobody registered or an id that is not valid. */
   current: DetailRef | null;
 }
 
@@ -39,7 +27,6 @@ const withMark = (state: unknown): Record<string, unknown> => ({ ...(isRecord(st
 
 const wasOpenedHere = (state: unknown): boolean => isRecord(state) && state[OPENED_HERE] === true;
 
-/** How long a navigation that was asked for may take to show up in the address before another one is allowed anyway. */
 const PENDING_MS = 1000;
 
 /**
@@ -54,8 +41,6 @@ const PENDING_MS = 1000;
 export function useDetailDrawer(): DetailDrawerApi {
   const location = useLocation();
   const navigate = useNavigate();
-  // A kind registered after the first render (a chunk that loaded later) opens a drawer that the address already asked for:
-  // the hook renders again when the registry changes.
   useSyncExternalStore(subscribeToDetails, getDetailsVersion, getDetailsVersion);
 
   const { pathname, search, hash, state, key } = location;
@@ -78,7 +63,6 @@ export function useDetailDrawer(): DetailDrawerApi {
 
   const open = useCallback(
     (kind: string, id: string, options: OpenDetailOptions = {}): boolean => {
-      // A registered kind is a valid one (`registerDetail` refuses the others).
       if (!isValidDetailId(id) || !getDetail(kind) || !isHostMounted()) {
         if (import.meta.env.DEV) {
           console.warn(`useDetailDrawer: "${kind}:${id}" was not opened: the kind is not registered, the id is not valid, or there is no DetailDrawerHost on this page.`);
@@ -89,9 +73,7 @@ export function useDetailDrawer(): DetailDrawerApi {
 
       const here = live.current;
       const showing = readDetail(here.search);
-      // A drawer that is open is swapped, not stacked: one Back closes whichever is on the screen.
       const swapping = showing !== null && getDetail(showing.kind) !== undefined;
-      // Who gets the focus back is whoever opened the first one.
       if (!swapping) rememberOpener(options.opener !== undefined ? options.opener : focusedElement());
       pending.current = true;
       window.setTimeout(() => {

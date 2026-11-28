@@ -3,7 +3,6 @@ import { getProblemCode } from '@/lib/api-errors';
 import type { OwnerFiscalProfile, OwnerAddress, OwnerIssuerProfile, OwnerIssuerProfileRequest, OwnerIssuerRegime, PropertyOwnerSummary } from '@/types';
 import { OWNER_ISSUER_REGIMES } from '@/types';
 
-/** What the form of the issuer profile of an owner holds: every field as the text typed in it, the choices by their code. */
 export interface OwnerIssuerForm {
   regime: OwnerIssuerRegime | '';
   legalName: string;
@@ -22,7 +21,6 @@ export interface OwnerIssuerForm {
   issuerPec: string;
 }
 
-/** The fields of the form the server names when it refuses a value (`issuer_field_invalid`, and the fields a profile still misses): the names of the request. */
 export type OwnerIssuerField = keyof OwnerIssuerForm;
 
 const FIELDS: readonly OwnerIssuerField[] = [
@@ -45,12 +43,10 @@ const FIELDS: readonly OwnerIssuerField[] = [
 
 const isRegime = (value: string | null): value is OwnerIssuerRegime => value !== null && (OWNER_ISSUER_REGIMES as readonly string[]).includes(value);
 
-/** Whether a name the server speaks is a field of the form. */
 export function isOwnerIssuerField(name: string): name is OwnerIssuerField {
   return (FIELDS as readonly string[]).includes(name);
 }
 
-/** The form that starts from what the server holds: a series the owner does not have is empty (the default one, the year, is shown as the hint and not typed in). */
 export function formOf(profile: OwnerIssuerProfile): OwnerIssuerForm {
   return {
     regime: isRegime(profile.regime) ? profile.regime : '',
@@ -71,7 +67,6 @@ export function formOf(profile: OwnerIssuerProfile): OwnerIssuerForm {
   };
 }
 
-/** Whether the form says something other than what the server holds: the texts are compared cut at their ends, and a blank is the same as nothing. */
 export function isChanged(form: OwnerIssuerForm, saved: OwnerIssuerForm): boolean {
   return FIELDS.some((field) => form[field].trim() !== saved[field].trim());
 }
@@ -80,10 +75,6 @@ function keepField<K extends OwnerIssuerField>(target: OwnerIssuerForm, source: 
   target[field] = source[field];
 }
 
-/**
- * The form after the server came to hold something else than what the form was built from (`base`: a save, another person's change, a profile read again): every field the person typed over `base` stays as it was typed,
- * and every other field follows the server (`stored`). A read that brings the same data changes nothing, so nothing that is typed is ever thrown away, and a field nobody touched is never saved over what another person wrote.
- */
 export function followedForm(form: OwnerIssuerForm, base: OwnerIssuerForm, stored: OwnerIssuerForm): OwnerIssuerForm {
   const followed: OwnerIssuerForm = { ...stored };
   for (const field of FIELDS) {
@@ -94,10 +85,6 @@ export function followedForm(form: OwnerIssuerForm, base: OwnerIssuerForm, store
 
 const text = (value: string): string | undefined => (value.trim() === '' ? undefined : value.trim());
 
-/**
- * The profile as the server is asked for it: the whole profile (the server clears what is left out), every blank text left out, the codes in capitals (the fiscal code, the province, the regime
- * code, the code of the recipient), the series and the stamp reference as typed. The country is Italy: the form is the one of the Italian owners.
- */
 export function requestOf(form: OwnerIssuerForm): OwnerIssuerProfileRequest {
   return {
     regime: form.regime === '' ? undefined : form.regime,
@@ -119,7 +106,6 @@ export function requestOf(form: OwnerIssuerForm): OwnerIssuerProfileRequest {
   };
 }
 
-/** The profile of an Italian owner, the one this form edits: any other country (a Swiss profile made for ⚖ C1) is read, never overwritten by this form. */
 export function isItalianProfile(profile: Pick<OwnerIssuerProfile, 'countryCode'>): boolean {
   return profile.countryCode.trim().toUpperCase() === 'IT';
 }
@@ -129,10 +115,6 @@ export function issuesInvoices(regime: OwnerIssuerRegime | ''): boolean {
   return regime === 'VatOrdinary' || regime === 'VatFlatRate';
 }
 
-/**
- * The fields the server refuses in a 422 `issuer_field_invalid`: it lists the values that are not valid (`errors`, and the first as `field`). A name that is not a field of this form is left out, and any
- * other answer names none.
- */
 export function refusedFieldsOf(error: unknown): OwnerIssuerField[] {
   if (!isAxiosError(error) || error.response?.status !== 422) return [];
   const data: unknown = error.response.data;
@@ -143,12 +125,10 @@ export function refusedFieldsOf(error: unknown): OwnerIssuerField[] {
   return [...new Set(names.filter((name): name is string => typeof name === 'string' && isOwnerIssuerField(name)))] as OwnerIssuerField[];
 }
 
-/** The fields a profile still misses that the form has (the server names them with the names of the request; a name this form does not have is left out). */
 export function missingFieldsOf(profile: Pick<OwnerIssuerProfile, 'missingFields'>): OwnerIssuerField[] {
   return profile.missingFields.filter(isOwnerIssuerField);
 }
 
-/** Where an owner stands as an issuer, in one word the list can colour: no profile, a profile that misses something, or a profile that can issue. */
 export type OwnerIssuerState = 'none' | 'incomplete' | 'ready';
 
 export function issuerStateOf(profile: Pick<OwnerIssuerProfile, 'exists' | 'canIssue'>): OwnerIssuerState {

@@ -23,7 +23,6 @@ const reads = vi.hoisted(() => ({ canReadBookings: true }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permission !== 'booking.read' || reads.canReadBookings }),
 }));
-// The routines of the host: how many run, read by the Home for the line of the menu «Routine AI» (the page of the routines has its own tests).
 const routinesOfHost = vi.hoisted(() => ({ list: [] as Array<{ active: boolean; testMode: boolean }> }));
 vi.mock('@/queries/routines', () => ({ useRoutines: () => ({ isSuccess: true, data: routinesOfHost.list }) }));
 vi.mock('@/hooks/use-commercial-profile', async (importOriginal) => ({
@@ -75,7 +74,6 @@ describe('daily workspace', () => {
     renderDashboard();
     await screen.findByTestId('home-today');
 
-    // Next to the title there are the main button and the «⋯»: no link of its own for the routines.
     expect(screen.queryByRole('link', { name: /routine/i })).not.toBeInTheDocument();
     fireEvent.keyDown(screen.getByRole('button', { name: 'Altre azioni' }), { key: 'Enter' });
     const item = within(await screen.findByRole('menu')).getByRole('menuitem', { name: '1 routine AI attiva' });

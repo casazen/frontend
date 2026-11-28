@@ -6,9 +6,6 @@ function document(kind: LeaseDocumentKind, overrides: Partial<LeaseDocument> = {
   return { id: `${kind}-1`, leaseId: 'lease-1', kind, fileName: `${kind}.pdf`, sizeBytes: 10, uploadedAt: '2026-10-25T10:00:00Z', ...overrides };
 }
 
-// CF-DONE: the guided service delivers the signed contract and its attestation in ONE file. For the lease it prepared, any contract file
-// uploaded to it is that file, whether or not the reading recognized the attestation inside it; for any other lease only a file whose
-// reading recognized it counts, as before.
 describe('the attestation inside the contract file', () => {
   const unrecognized = document('Contract', { containsAttestation: false });
   const recognized = document('Contract', { id: 'Contract-2', containsAttestation: true });

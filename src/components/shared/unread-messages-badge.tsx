@@ -7,10 +7,6 @@ interface UnreadMessagesBadgeProps {
   className?: string;
 }
 
-/**
- * The mark of a booking with guest messages not read yet: a speech bubble and the number (99+ above that), in the accent of the
- * app. The words are for a screen reader ("2 messaggi da leggere"), so the meaning is never the color alone. Nothing at 0.
- */
 export function UnreadMessagesBadge({ count, className }: UnreadMessagesBadgeProps) {
   const { t } = useTranslation();
   if (count <= 0) return null;

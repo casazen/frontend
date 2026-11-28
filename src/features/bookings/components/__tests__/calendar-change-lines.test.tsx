@@ -80,7 +80,6 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
       await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
     });
 
-    // The screen has stopped asking by itself: neutral words (not a failure) and a button.
     expect(state()).toBe('noAnswer');
     expect(screen.getByTestId('calendar-change-property')).toHaveTextContent('non ha ancora risposto');
     const calls = vi.mocked(calendarChangesApi.get).mock.calls.length;
@@ -89,7 +88,6 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
     });
     expect(vi.mocked(calendarChangesApi.get).mock.calls.length).toBe(calls);
 
-    // "Check again" asks once more and the screen follows the change for a new while.
     await act(async () => {
       fireEvent.click(screen.getByTestId('calendar-change-check-again'));
       await vi.advanceTimersByTimeAsync(0);
@@ -108,7 +106,6 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
     });
     expect(state()).toBe('failed');
 
-    // The host reads the failure and, much later than the three minutes of the window, sends it again: the change waits again and is followed from now.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(CHANGE_WATCH_MS + CHANGE_POLL_MS * 2);
     });
@@ -147,7 +144,6 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
   });
 
   it('CalendarChangeLines_ConnectorOff_AsksForNothingAndSaysOnlySavedInCasaZen', async () => {
-    // Whatever the change says (a waiting one left from when the connector was on): with the connector off nothing is sent to the channel manager, so nothing is followed or said of it.
     renderLines(WAITING, ['property.read', 'property.write'], false);
 
     await act(async () => {
@@ -166,7 +162,6 @@ describe('CalendarChangeLines: following a change (E08/F05/US03/T02, T03, NF-36)
       await Promise.resolve();
     });
     expect(calendarChangesApi.get).not.toHaveBeenCalled();
-    // Nothing is claimed about a progress that cannot be followed, and no button asks for a read the caller may not make.
     expect(state()).toBe('noAnswer');
     expect(screen.queryByTestId('calendar-change-check-again')).not.toBeInTheDocument();
   });

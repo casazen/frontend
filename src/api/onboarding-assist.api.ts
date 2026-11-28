@@ -44,10 +44,6 @@ export const onboardingAssistApi = {
    */
   storeVaultSecret: (request: StoreSupportVaultSecretRequest) => ApiClient.put<SupportVaultSecret>('/admin/onboarding/support-vault', request),
 
-  /**
-   * «Non funziona»: the host reopens a request support marked done, with a note (organization administrator only). The request is open again and support is told. 404
-   * `assist_request_not_found`; 409 `assist_request_not_done`, `assist_request_already_open`; 422 `assist_reopen_note_required`.
-   */
   reopenRequest: (id: string, note: string) =>
     ApiClient.post<AssistRequest>(`/onboarding/assist-requests/${encodeURIComponent(id)}/reopen`, { note } satisfies ReopenAssistRequest),
 

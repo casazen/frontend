@@ -60,7 +60,6 @@ vi.mock('@/queries/use-public-seo', () => ({
 vi.mock('@/queries/use-legal', () => ({
   useLegalDocuments: () => ({ isLoading: true, isError: false }),
   useLegalLanguage: () => 'it',
-  // PL-14: no text provided yet by the product owner (D14).
   useLegalDocument: () => ({
     data: { key: 'tos', version: '2026-06-v1', effectiveAt: null, title: 't', summary: 's', available: false },
     isLoading: false,
@@ -76,7 +75,6 @@ vi.mock('@/queries/use-legal', () => ({
     refetch: vi.fn(),
   }),
 }));
-// CRM-03: the welcome page behind the QR code reads what it shows from the API; here only whether its address opens, without login or flag.
 vi.mock('@/api/welcome.api', () => ({
   welcomeApi: {
     getLink: vi.fn(),
@@ -111,7 +109,6 @@ describe('public routes without Auth0 (SE-03)', () => {
     window.sessionStorage.clear();
     assign.mockClear();
     replace.mockClear();
-    // The CTA reads the origin; the host stays a local one (no org-site resolution in these tests).
     vi.stubGlobal('location', { ...window.location, origin: PUBLIC_SITE, hostname: 'localhost', assign, replace });
   });
 
@@ -202,7 +199,6 @@ describe('public routes without Auth0 (SE-03)', () => {
     expect(url.searchParams.get('comune')).toBe('como');
     expect(url.searchParams.get('utm_source')).toBe('newsletter');
     expect(url.searchParams.get('utm_campaign')).toBe('settembre');
-    // No CTA towards a compliance checker that does not exist.
     expect(screen.queryByTestId('seo-cta-checker')).not.toBeInTheDocument();
     expect(document.querySelector('a[href*="verifica-conformita"]')).toBeNull();
   });
@@ -240,7 +236,6 @@ describe('public routes without Auth0 (SE-03)', () => {
       await router.navigate('/account-inactive');
     });
 
-    // Without Auth0 the logout of the page would do nothing (PL-03).
     expect(replace).toHaveBeenCalledWith('/account-inactive');
     expect(router.state.location.pathname).toBe('/account-inactive');
   });

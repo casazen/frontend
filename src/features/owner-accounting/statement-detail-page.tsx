@@ -146,7 +146,6 @@ function StatementLoader({ versionId }: { versionId: string }) {
 }
 
 const NO_ACTIONS: RowActions = { prepare: false, regenerate: false, approve: false, publish: false, payout: false, close: false, closeWaitsForTheEnd: false, stale: false, settled: false };
-/** The lines shown before «Mostra tutte»: a long statement is not a wall of rows. */
 const VISIBLE_LINES = 25;
 
 function StatementContent({ version, entries, touristTax }: { version: OwnerStatementVersion; entries: OwnerLedgerEntry[]; touristTax?: OwnerPortalTouristTax[] }) {
@@ -179,7 +178,6 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
   const ctx: ActionContext = { period, ownerId: version.ownerId, ownerName, version: latest, versionIds: allVersions.map((candidate) => candidate.id) };
   const controller = useOwnerActions(ctx);
   const payoutsOfMonth = (payouts.data ?? []).filter((payout) => ctx.versionIds.includes(payout.statementVersionId));
-  // What is not known is not offered: the actions wait for the versions and the readiness of the month. Whether the payments already cover the balance is not known until they are read.
   const known = versions.isSuccess && readiness.isSuccess;
   const settled = payouts.isSuccess && latest !== null && isSettled(latest, payoutsOfMonth, ctx.versionIds);
   const actions = known && isCurrent
@@ -236,8 +234,6 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
       />
 
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        {/* The block of the page comes first, also on a phone; the permanent notice that the statement is not a tax document is under it. A version a newer one replaced
-            says so here (it used to be an alert of its own, above the block), with the way to the newer one as the button. */}
         <FocusBlock
           tone={tone}
           kicker={t('ownerAccounting.statement.kicker', { period: periodName })}
@@ -265,7 +261,6 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
         </Alert>
       ) : null}
 
-      {/* The numbers of the statement are these four tiles (the opening balance is under the closing one): a line that added them up again was the same numbers twice. */}
       <StatStrip label={t('ownerAccounting.statement.figures')} data-testid="statement-figures">
         <StatTile label={t('ownerAccounting.statement.revenue')} value={money(version.revenue, version.currency)} />
         <StatTile label={t('ownerAccounting.statement.costs')} value={money(version.channelFees + version.commission + charges, version.currency)} />
@@ -292,8 +287,6 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
               </thead>
               <tbody>
                 {shown.map((entry) => {
-                  // A line for information only (the commission of a portal the agency bears) is in the table with its amount as the PDF writes it, a positive figure, quiet, and a badge that says
-                  // it counts in nothing: it is in no total of this page (`statementGroupsOf` leaves it out).
                   const informational = isInformational(entry);
                   return (
                     <tr key={entry.id} className="border-b border-border even:bg-muted/30 focus-within:bg-primary/5 last:border-0" data-testid="statement-line" data-type={entry.type} data-informational={informational ? 'true' : undefined}>
@@ -437,12 +430,10 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
   );
 }
 
-/** `2026-10-14` as `14/10`: the day of a line, with the month the page is already about. */
 function shortDate(day: string): string {
   return `${day.slice(8, 10)}/${day.slice(5, 7)}`;
 }
 
-/** The one line under the name of a line of the table: the share of the source it is, or what it is made of. Ids and amounts only. */
 function lineSummary(entry: OwnerLedgerEntry, t: ReturnType<typeof useTranslation>['t'], money: (amount: number, currency: string) => string): string {
   if (entry.type === 'OwnerPayment' || entry.type === 'AgencyPayment' || entry.type === 'Correction' || entry.type === 'Withholding') {
     return entry.description ?? t(`ownerAccounting.line.source.${entry.source}`);
@@ -450,7 +441,6 @@ function lineSummary(entry: OwnerLedgerEntry, t: ReturnType<typeof useTranslatio
   return t('ownerAccounting.lines.summary', { share: entry.sharePercent, source: money(shownAmount(entry, entry.sourceAmount), entry.originalCurrency) });
 }
 
-/** The withholding decision of a payout, as recorded when it was confirmed: read when the statement is opened, never computed here. */
 function PayoutEvidence({ payout, propertyNames }: { payout: OwnerPayout; propertyNames: ReadonlyMap<string, string> }) {
   const { t } = useTranslation();
   const { money, date } = useOwnerFormat();

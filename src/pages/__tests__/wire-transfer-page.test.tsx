@@ -36,11 +36,9 @@ const OWNER_A = 'a0000000-0000-4000-8000-0000000000a1';
 const OWNER_B = 'b0000000-0000-4000-8000-0000000000b1';
 const OWNER_C = 'c0000000-0000-4000-8000-0000000000c1';
 
-// What the server lists as payable, by currency: the franc list holds franc payouts only, the euro list euro ones only.
 const CHF_A = wirePayout({ payoutId: 'c0000000-0000-4000-8000-000000000001', ownerId: OWNER_A, ownerName: 'Marta Rossi', currency: 'CHF', amount: 1234.5 });
 const CHF_B = wirePayout({ payoutId: 'c0000000-0000-4000-8000-000000000002', ownerId: OWNER_B, ownerName: 'Luca Bianchi', currency: 'CHF', amount: 800, periodMonth: 9 });
 const EUR_B = wirePayout({ payoutId: 'e0000000-0000-4000-8000-000000000003', ownerId: OWNER_B, ownerName: 'Luca Bianchi', currency: 'EUR', amount: 830.25 });
-// The server says this owner has no IBAN.
 const CHF_NO_IBAN = wirePayout({ payoutId: 'c0000000-0000-4000-8000-000000000004', ownerId: OWNER_C, ownerName: 'Anna Verdi', currency: 'CHF', amount: 410, ownerHasIban: false });
 const REVERSED = wirePayout({ payoutId: 'd0000000-0000-4000-8000-000000000005', ownerId: OWNER_A, ownerName: 'Marta Rossi', currency: 'CHF', amount: 99, status: 'Reversed' });
 
@@ -48,8 +46,6 @@ const CHF_FILE = 'c1c1c1c1-0000-4000-8000-000000000001';
 const EUR_FILE = 'e1e1e1e1-0000-4000-8000-000000000001';
 const TODAY = todayInRome();
 
-// The server of these tests: it keeps the payable payouts of each currency, the batches and the payouts of each batch, and moves a payout from the first to the last when it makes
-// a batch, as the backend does (`payable-payouts` leaves out whatever is in a batch).
 let batches: WireBatch[];
 let payable: Record<WireCurrency, WirePayout[]>;
 let batchPayouts: Record<string, WirePayout[]>;
@@ -68,15 +64,12 @@ function renderPage() {
   return client;
 }
 
-/** The row of a payout, by its test id: while a confirmation is open the page behind it is hidden from the queries by role. */
 const rowOf = (item: { payoutId: string }) => screen.getByTestId(`wire-payout-${item.payoutId}`);
 const checkboxOf = (item: { payoutId: string }) => rowOf(item).querySelector('input[type="checkbox"]') as HTMLInputElement;
 const cardOf = (batchId: string) => screen.getByTestId(`wire-batch-${batchId}`);
-/** A 404 that carries no code of its own: the page must say «not found» in its own words, not the server's. */
 const gone = () => problem(404, '');
 const serverFailure = () => Object.assign(new Error('boom'), { isAxiosError: true, response: { status: 500, data: 'Internal error' } });
 
-/** Chooses the payouts and asks for the files: the confirmation is open and nothing was sent yet. */
 async function askForTheFiles(items: Array<{ payoutId: string }> = [CHF_A]) {
   await screen.findByTestId(`wire-payout-${items[0].payoutId}`);
   for (const item of items) fireEvent.click(checkboxOf(item));
@@ -87,7 +80,6 @@ async function askForTheFiles(items: Array<{ payoutId: string }> = [CHF_A]) {
 
 const confirmButton = (dialog: HTMLElement) => within(dialog).getByRole('button', { name: 'Crea i file per la banca' });
 
-/** The files are made: the notice of the first currency is on the page. */
 async function makeTheFiles(items: Array<{ payoutId: string }> = [CHF_A], currency = 'CHF') {
   const dialog = await askForTheFiles(items);
   fireEvent.click(confirmButton(dialog));
@@ -99,7 +91,6 @@ const setStatus = (batchId: string, status: WireBatch['status']) => {
   batches = batches.map((batch) => (batch.id === batchId ? { ...batch, status } : batch));
 };
 
-/** What the server does with a request to create a file: it makes the batch, which the list then shows, and the payouts leave the payable list for the batch. */
 function serverMakesTheBatch(request: CreateBatchRequest): CreateBatchResponse {
   const items = [...payable.CHF, ...payable.EUR].filter((item) => request.payoutIds.includes(item.payoutId));
   const currency = items[0].currency as WireCurrency;
@@ -111,7 +102,6 @@ function serverMakesTheBatch(request: CreateBatchRequest): CreateBatchResponse {
   return { batchId: id, currency, totalAmount, transferCount: items.length, executionDate: request.executionDate, format: null };
 }
 
-/** Opens the payouts of one file, once its card is on the page: they are read from the server only now. */
 const openPayoutsOf = async (batchId: string) => {
   const card = await screen.findByTestId(`wire-batch-${batchId}`);
   fireEvent.click(within(card).getByTestId('wire-batch-payouts-toggle'));
@@ -136,7 +126,6 @@ beforeEach(async () => {
   api.listBatches.mockImplementation(async () => batches);
   api.createBatch.mockImplementation(async (request: CreateBatchRequest) => serverMakesTheBatch(request));
   api.downloadBatchFile.mockImplementation(async (batchId: string) => {
-    // The server marks the batch as downloaded the first time it hands the file out.
     if (batches.find((batch) => batch.id === batchId)?.status === 'Generated') setStatus(batchId, 'Downloaded');
     return file(`attachment; filename="wire-batch-${batchId.replace(/-/g, '')}-CHF-20261114.xml"`);
   });
@@ -160,7 +149,6 @@ describe('the wire page asks the role before it reads anything (agency.wire.mana
     expect(api.getBatchPayouts).not.toHaveBeenCalled();
     expect(api.listBatches).not.toHaveBeenCalled();
     expect(screen.queryByTestId('wire-compose')).not.toBeInTheDocument();
-    // The plan is read from an endpoint of the billing administrator: for anyone else it is not even asked.
     expect(planHook).not.toHaveBeenCalled();
   });
 
@@ -171,7 +159,6 @@ describe('the wire page asks the role before it reads anything (agency.wire.mana
 
     expect(await screen.findByTestId(`wire-payout-${CHF_A.payoutId}`)).toBeInTheDocument();
     expect(screen.queryByTestId('agency-admin-required')).not.toBeInTheDocument();
-    // One list per currency, each one asked for by its own currency, and nothing is read for the payouts of a batch nobody opened.
     expect(api.listPayablePayouts).toHaveBeenCalledTimes(2);
     expect(api.listPayablePayouts.mock.calls.map(([currency]) => currency).sort()).toEqual(['CHF', 'EUR']);
     expect(api.listBatches).toHaveBeenCalledTimes(1);
@@ -223,14 +210,12 @@ describe('what the page offers is what the server lists as payable (confirmed, p
     expect(within(rowOf(CHF_A)).getByTestId('wire-payout-amount')).toHaveTextContent(/^1234,50\s*CHF$/);
     expect(within(rowOf(EUR_B)).getByTestId('wire-payout-amount')).toHaveTextContent(/^830,25\s*€$/);
     expect(rowOf(CHF_A).textContent).not.toContain('€');
-    // The server says only whether the owner has an IBAN: nothing of an account is drawn, and an owner who has one has no label about it.
     expect(within(rowOf(CHF_A)).queryByTestId('wire-payout-iban-badge')).not.toBeInTheDocument();
     expect(checkboxOf(CHF_A)).toBeEnabled();
     expect(checkboxOf(EUR_B)).toBeEnabled();
   });
 
   it('WirePage_TheFrancListNeverShowsAnEuroPayout_EvenFromAnAnswerThatMixedThem_AndNeverOffersAReversedOne', async () => {
-    // A server answer that mixed the currencies and held a reversed payout by mistake: the franc list is the franc payouts that are confirmed, and nothing else.
     payable.CHF = [CHF_A, EUR_B, REVERSED];
     payable.EUR = [];
 
@@ -261,7 +246,6 @@ describe('what the page offers is what the server lists as payable (confirmed, p
     renderPage();
     await screen.findByTestId(`wire-payout-${CHF_A.payoutId}`);
 
-    // An owner without an IBAN cannot be paid: the server refuses the whole file for it (`wire_owner_iban_missing`), so the payout is shown and cannot be chosen.
     const row = rowOf(CHF_NO_IBAN);
     expect(row).toHaveTextContent('Anna Verdi');
     expect(checkboxOf(CHF_NO_IBAN)).toBeDisabled();
@@ -309,7 +293,6 @@ describe('what the page offers is what the server lists as payable (confirmed, p
     expect(checkboxOf(CHF_B)).toBeChecked();
     expect(checkboxOf(CHF_NO_IBAN)).not.toBeChecked();
     expect(screen.getByTestId('wire-selection')).toHaveTextContent('2 pagamenti scelti in CHF · 1 pagamento scelto in EUR');
-    // The page adds up nothing: the total is the server's, once it made the file.
     expect(screen.getByTestId('wire-compose').textContent).not.toMatch(/totale/i);
 
     fireEvent.click(screen.getByTestId('wire-select-group-CHF'));
@@ -336,13 +319,11 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
 
     await makeTheFiles([CHF_A]);
 
-    // The server was asked again for the payable payouts of both currencies after the request, and its answer no longer has the payout.
     await waitFor(() => expect(api.listPayablePayouts.mock.calls.length).toBeGreaterThanOrEqual(4));
     expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument();
     expect(screen.getByTestId(`wire-payout-${CHF_B.payoutId}`)).toBeInTheDocument();
     await waitFor(() => expect(cardOf(CHF_FILE)).toBeInTheDocument());
 
-    // A reload: a new page, nothing in memory. The server's list has no payout of the batch, so none is offered, and the payouts of the batch are the batch's.
     cleanup();
     api.listPayablePayouts.mockClear();
     renderPage();
@@ -353,12 +334,10 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
     const panel = await openPayoutsOf(CHF_FILE);
     expect(await within(panel).findByTestId(`wire-batch-payout-${CHF_A.payoutId}`)).toHaveTextContent('Marta Rossi');
     expect(within(panel).queryByTestId(`wire-batch-payout-${CHF_B.payoutId}`)).not.toBeInTheDocument();
-    // Still not offered: being in a batch is the server's word, not the memory of the page.
     expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument();
   });
 
   it('WirePage_PayoutOfAnExistingBatch_IsNotOnTheSelectableList_ButIsInThePayoutsOfItsBatch', async () => {
-    // The page is opened with a franc batch that was made earlier: its payout is in no payable list, the others are.
     batches = [wireBatch({ id: CHF_FILE, status: 'Downloaded', transferCount: 1, totalAmount: 1234.5 })];
     batchPayouts[CHF_FILE] = [CHF_A];
     payable.CHF = [CHF_B, CHF_NO_IBAN];
@@ -377,7 +356,6 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
 
   it('WirePage_CreateRefusedBecauseThePayoutIsAlreadyInAFile_ReadsTheListsAgain_AndThePayoutLeavesTheList', async () => {
     api.createBatch.mockImplementation(async () => {
-      // Someone else put the payout in a file in the meantime: the server refuses it, and its list no longer has it.
       payable.CHF = payable.CHF.filter((item) => item.payoutId !== CHF_A.payoutId);
       throw problem(422, 'payouts_already_in_batch');
     });
@@ -386,7 +364,6 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
     const dialog = await askForTheFiles([CHF_A]);
     fireEvent.click(confirmButton(dialog));
 
-    // The refusal is told in words, nothing is shown as done, and the list is the server's now.
     expect(await screen.findByTestId('wire-refused-CHF')).toHaveTextContent(/già in un file per la banca/);
     expect(screen.queryByTestId('wire-created-CHF')).not.toBeInTheDocument();
     await waitFor(() => expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument());
@@ -398,7 +375,6 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
     await screen.findByTestId(`wire-payout-${CHF_A.payoutId}`);
     expect(api.listPayablePayouts).toHaveBeenCalledTimes(2);
 
-    // Another person of the agency makes a file with this payout while the page is open and out of focus.
     payable.CHF = payable.CHF.filter((item) => item.payoutId !== CHF_A.payoutId);
     act(() => focusManager.setFocused(false));
     act(() => focusManager.setFocused(true));
@@ -408,8 +384,6 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
   });
 
   it('WirePage_FileMadeButTheListsReadAgainStillHoldThePayout_ReplicaLag_TheRowDoesNotComeBack_NorCanItBeChosen', async () => {
-    // The server made the file, but the lists it answers next are those of before (a replica that is behind): the payout is still on them. The page put it in a file in this visit,
-    // so it is never offered again, whatever a list read again says (the second line of defence; the server's refusal, `payouts_already_in_batch`, is the last).
     const LATE = wirePayout({ payoutId: 'c0000000-0000-4000-8000-000000000006', ownerId: OWNER_A, ownerName: 'Marta Rossi', currency: 'CHF', amount: 55 });
     api.createBatch.mockImplementation(async (request: CreateBatchRequest) => {
       const before: Record<WireCurrency, WirePayout[]> = { CHF: [...payable.CHF], EUR: [...payable.EUR] };
@@ -421,7 +395,6 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
 
     await makeTheFiles([CHF_A]);
 
-    // The lists were read again after the request and the page holds their answer, which still has the payout: not a row of the page, and nothing to choose.
     expect(client.getQueryData<WirePayout[]>(['wire-transfers', 'payable', 'CHF'])?.map((item) => item.payoutId)).toContain(CHF_A.payoutId);
     expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument();
     expect(screen.getByTestId(`wire-payout-${CHF_B.payoutId}`)).toBeInTheDocument();
@@ -429,7 +402,6 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
     expect(screen.getByTestId('wire-selection')).toHaveTextContent('1 pagamento scelto in CHF');
     expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument();
 
-    // The window gets the focus back and the lists are read again, still with the payout (and with a payout confirmed meanwhile, which tells that the answer is on the page).
     payable.CHF = [...payable.CHF, LATE];
     act(() => focusManager.setFocused(false));
     act(() => focusManager.setFocused(true));
@@ -452,7 +424,6 @@ describe('a list as long as the server gives it may not be the whole of it (the 
     const note = await screen.findByTestId('wire-cap-note-CHF', undefined, { timeout: 15_000 });
     expect(note).toHaveTextContent('Sono elencati al massimo 1000 pagamenti in CHF, i più vecchi');
     expect(within(screen.getByTestId('wire-group-CHF')).getByTestId('wire-cap-note-CHF')).toBe(note);
-    // The euro list is short: nothing is said about it.
     expect(screen.getByTestId(`wire-payout-${EUR_B.payoutId}`)).toBeInTheDocument();
     expect(screen.queryByTestId('wire-cap-note-EUR')).not.toBeInTheDocument();
   });
@@ -501,7 +472,6 @@ describe('a read of the payable payouts that fails is told as a failure, never a
     expect(screen.queryByText('Nessun pagamento da inviare in banca')).not.toBeInTheDocument();
     expect(screen.queryByTestId('wire-create')).not.toBeInTheDocument();
 
-    // Read again: the lists come.
     api.listPayablePayouts.mockImplementation(async (currency: WireCurrency) => payable[currency]);
     fireEvent.click(within(screen.getByTestId('wire-load-error')).getByRole('button', { name: 'Riprova' }));
     expect(await screen.findByTestId(`wire-payout-${CHF_A.payoutId}`)).toBeInTheDocument();
@@ -547,7 +517,6 @@ describe('a read of the payable payouts that fails is told as a failure, never a
     expect(screen.queryByText('Nessun pagamento da inviare in banca')).not.toBeInTheDocument();
     expect(screen.queryByTestId('wire-create')).not.toBeInTheDocument();
     expect(screen.queryByTestId('agency-access-refused')).not.toBeInTheDocument();
-    // The list of the files is another read, with its own answer.
     expect(await screen.findByTestId(`wire-batch-${CHF_FILE}`)).toBeInTheDocument();
   });
 });
@@ -556,7 +525,6 @@ describe('making the files (one for each currency, from confirmed payouts, debit
   it('WirePage_Create_AsksToConfirmFirst_NamingEachFileAndTheDay_AndSendsNothingUntilConfirmed_NeverAsksForAnAccount', async () => {
     renderPage();
     expect(await screen.findByLabelText('Giorno di esecuzione')).toHaveValue(TODAY);
-    // The debit account is the issuer profile's: the page never asks for one.
     expect(screen.queryByLabelText(/conto di addebito/i)).not.toBeInTheDocument();
     const later = addDays(TODAY, 10);
     fireEvent.change(screen.getByLabelText('Giorno di esecuzione'), { target: { value: later } });
@@ -581,27 +549,21 @@ describe('making the files (one for each currency, from confirmed payouts, debit
     const sent = api.createBatch.mock.calls.map(([request]) => request as CreateBatchRequest);
     expect(sent.map((request) => [...request.payoutIds].sort())).toEqual([[CHF_A.payoutId, CHF_B.payoutId].sort(), [EUR_B.payoutId]]);
     expect(sent.every((request) => request.executionDate === TODAY)).toBe(true);
-    // Nothing but the ids and the day is sent: no account, no statement.
     expect(sent.every((request) => Object.keys(request).sort().join() === 'executionDate,payoutIds')).toBe(true);
-    // The files are what the server said, as it came: the number of transfers and the total in the currency of each.
     const chf = await screen.findByTestId('wire-created-CHF');
     expect(chf).toHaveTextContent('File in CHF creato: 2 bonifici.');
     expect(within(chf).getByTestId('wire-created-amount')).toHaveTextContent(/2034,50\s*CHF/);
     const eur = await screen.findByTestId('wire-created-EUR');
     expect(eur).toHaveTextContent('File in EUR creato: 1 bonifico.');
     expect(within(eur).getByTestId('wire-created-amount')).toHaveTextContent(/830,25\s*€/);
-    // Not done yet: created, not downloaded, not paid; and the list of the files has them.
     await waitFor(() => expect(cardOf(CHF_FILE)).toBeInTheDocument());
     expect(statusOf(CHF_FILE)).toBe('Generated');
     expect(statusOf(EUR_FILE)).toBe('Generated');
     expect(screen.queryByTestId('wire-batch-paid')).not.toBeInTheDocument();
-    // The payouts that went into a file are not offered again, and what is not chosen stays.
     expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument();
     expect(screen.queryByTestId(`wire-payout-${EUR_B.payoutId}`)).not.toBeInTheDocument();
     expect(screen.getByTestId(`wire-payout-${CHF_NO_IBAN.payoutId}`)).toBeInTheDocument();
-    // The mutations are dropped as soon as nothing watches them: no request (and no payout) is kept.
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
-    // The confirmation closes once the server has answered every request, and the notices are next to the button the person used.
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(within(screen.getByTestId('wire-compose')).getByTestId('wire-created-CHF')).toBeInTheDocument();
   });
@@ -637,7 +599,6 @@ describe('making the files (one for each currency, from confirmed payouts, debit
     const refused = await screen.findByTestId('wire-refused-CHF');
     expect(refused).toHaveTextContent('File in CHF non creato');
     expect(refused).toHaveTextContent("A questi proprietari manca l'indirizzo completo");
-    // The owners the server listed, by the name the payouts of the list carry (the server only sends their ids), each with the way to complete the data.
     const marta = within(refused).getByTestId(`wire-owner-problem-${OWNER_A}`);
     expect(marta).toHaveTextContent('Marta Rossi');
     expect(within(marta).getByRole('link', { name: 'Apri i dati finanziari' })).toHaveAttribute('href', `/app/account/owners/${OWNER_A}/financial`);
@@ -712,7 +673,6 @@ describe('making the files (one for each currency, from confirmed payouts, debit
 
     expect(await screen.findByTestId('wire-refused-CHF')).toHaveTextContent('Impossibile contattare il server');
     expect(screen.queryByTestId('wire-created-CHF')).not.toBeInTheDocument();
-    // The answer may have been lost after the file was made: the list of the files and the payable lists are read again, so the person sees what is there.
     await waitFor(() => expect(api.listBatches).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.listPayablePayouts).toHaveBeenCalledTimes(4));
   });
@@ -734,7 +694,6 @@ describe('the files of the list and their steps (the administrator\'s word, neve
   it('WireBatchList_ShowsTheDateTheCurrencyTheCountTheTotalAndTheState_AsTheServerSaysThem_AndNoIban', async () => {
     batches = [
       wireBatch({ id: CHF_FILE, currency: 'CHF', totalAmount: 2034.5, transferCount: 2, status: 'Downloaded' }),
-      // A file made before the payouts: no execution day and no message.
       wireBatch({ id: EUR_FILE, currency: 'EUR', totalAmount: 830.25, transferCount: 1, status: 'Paid', executionDate: null, format: null, paidAt: '2026-11-15T09:00:00Z' }),
     ];
     renderPage();
@@ -775,7 +734,6 @@ describe('the files of the list and their steps (the administrator\'s word, neve
     expect(saved).toHaveBeenCalledTimes(1);
     expect(saved.mock.calls[0][1]).toBe(`wire-batch-${CHF_FILE.replace(/-/g, '')}-CHF-20261114.xml`);
     expect(within(cardOf(CHF_FILE)).getByTestId('wire-batch-confirm-paid')).toBeEnabled();
-    // The file is not kept: the mutation returns nothing and is dropped.
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 
@@ -801,7 +759,6 @@ describe('the files of the list and their steps (the administrator\'s word, neve
     batches = [wireBatch({ id: CHF_FILE })];
     renderPage();
     const card = await screen.findByTestId(`wire-batch-${CHF_FILE}`);
-    // Not paid before it is downloaded.
     expect(within(card).getByTestId('wire-batch-confirm-paid')).toBeDisabled();
 
     fireEvent.click(within(card).getByTestId('wire-batch-confirm-downloaded'));
@@ -821,7 +778,6 @@ describe('the files of the list and their steps (the administrator\'s word, neve
     fireEvent.click(within(card).getByTestId('wire-batch-confirm-paid'));
     const dialog = await screen.findByRole('dialog');
 
-    // Which batch, which amount, which currency; and what it means: the administrator's word, final.
     expect(within(dialog).getByTestId('wire-confirm-summary')).toHaveTextContent('WB-C1C1C1C1');
     expect(within(dialog).getByTestId('wire-confirm-currency')).toHaveTextContent('CHF');
     expect(within(dialog).getByTestId('wire-confirm-amount')).toHaveTextContent(/2034,50\s*CHF/);
@@ -872,12 +828,10 @@ describe('the files of the list and their steps (the administrator\'s word, neve
     fireEvent.submit(dialog.querySelector('form') as HTMLFormElement);
 
     expect(api.confirmPaid).toHaveBeenCalledTimes(1);
-    // While it is on its way every button of the card waits (the one that opens the payouts of the file too), and the step shown is still the one the server last said.
     expect(within(cardOf(CHF_FILE)).getByTestId('wire-batch-download')).toBeDisabled();
     expect(within(cardOf(CHF_FILE)).getByTestId('wire-batch-confirm-paid')).toBeDisabled();
     expect(within(cardOf(CHF_FILE)).getByTestId('wire-batch-payouts-toggle')).toBeDisabled();
     expect(statusOf(CHF_FILE)).toBe('Downloaded');
-    // The other file is not held by it.
     expect(within(cardOf(EUR_FILE)).getByTestId('wire-batch-download')).toBeEnabled();
     expect(within(cardOf(EUR_FILE)).getByTestId('wire-batch-payouts-toggle')).toBeEnabled();
 
@@ -907,7 +861,6 @@ describe('the files of the list and their steps (the administrator\'s word, neve
   it('WireBatch_ServerSaysAlreadyPaid_TheServerWins_TheWordsSayItAndTheStepFollowsTheList', async () => {
     batches = [wireBatch({ id: CHF_FILE, status: 'Downloaded' })];
     api.confirmPaid.mockImplementation(async (batchId: string) => {
-      // Someone else marked it as paid in the meantime.
       setStatus(batchId, 'Paid');
       throw problem(422, 'batch_already_paid');
     });
@@ -979,7 +932,6 @@ describe('the payouts of a file (read from the server when the person opens them
     expect(within(panel).queryByTestId('wire-batch-payouts-reversed')).not.toBeInTheDocument();
     expect(within(cardOf(CHF_FILE)).getByTestId('wire-batch-payouts-toggle')).toHaveAttribute('aria-expanded', 'true');
     expect(within(cardOf(CHF_FILE)).getByTestId('wire-batch-payouts-toggle')).toHaveTextContent('Nascondi i pagamenti del file');
-    // The other file was not asked for.
     expect(within(cardOf(EUR_FILE)).queryByTestId(`wire-batch-payouts-${EUR_FILE}`)).not.toBeInTheDocument();
 
     fireEvent.click(within(cardOf(CHF_FILE)).getByTestId('wire-batch-payouts-toggle'));
@@ -1072,7 +1024,6 @@ describe('the payouts of a file (read from the server when the person opens them
     batches = [wireBatch({ id: CHF_FILE, status: 'Downloaded', transferCount: 2 })];
     batchPayouts[CHF_FILE] = [CHF_A, CHF_B];
     api.confirmPaid.mockImplementation(async (batchId: string) => {
-      // A payout of the file was reversed after the file was made: the server refuses to mark the file as paid, and the file says so now.
       batchPayouts[batchId] = [CHF_A, { ...CHF_B, status: 'Reversed' }];
       throw problem(422, 'wire_batch_payouts_reversed', { payoutIds: [CHF_B.payoutId] });
     });
@@ -1121,7 +1072,6 @@ describe('a read that fails with the last answer in memory is never drawn as if 
 
     const notice = await screen.findByTestId('read-not-updated');
     expect(notice).toHaveTextContent('quello che vedi può essere vecchio');
-    // The old list stays (it is not empty): it is told as possibly out of date, not as current.
     expect(screen.getByTestId(`wire-payout-${CHF_A.payoutId}`)).toBeInTheDocument();
 
     fireEvent.click(within(notice).getByRole('button', { name: 'Riprova' }));

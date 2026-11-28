@@ -49,7 +49,6 @@ describe('useDelayedPhotoDelete', () => {
     act(() => void toasts[0]!.undo());
     expect(result.current.held).toEqual([]);
 
-    // The window closing afterwards (the toast asks its commit as well) must not delete what the person got back.
     await act(async () => void (await toasts[0]!.commit?.()));
     expect(removeApi).not.toHaveBeenCalled();
   });
@@ -73,7 +72,6 @@ describe('useDelayedPhotoDelete', () => {
     act(() => result.current.remove(PHOTO));
     unmount();
 
-    // Nothing is lost with the screen: the delete goes out when the step goes away, and the toast closing later does not repeat it.
     await waitFor(() => expect(removeApi).toHaveBeenCalledWith('p1', PHOTO));
     await toasts[0]!.commit?.();
     expect(removeApi).toHaveBeenCalledTimes(1);

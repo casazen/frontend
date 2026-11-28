@@ -14,7 +14,6 @@ export const ORG_INVITE_ACCEPT_PATH = '/invite/accept';
 const STORAGE_KEY = 'cz-org-invite';
 const TOKEN_PATTERN = /^[0-9a-f]{64}$/;
 
-/** The token as the backend reads it (trimmed, lowercase), or `null` for anything that is not one: the link does not work. */
 export function normalizeOrgInviteToken(value: string | null | undefined): string | null {
   const token = value?.trim().toLowerCase() ?? '';
   return TOKEN_PATTERN.test(token) ? token : null;
@@ -52,28 +51,23 @@ export function readOrgInviteToken(params: URLSearchParams): string | null {
   return params.has('token') ? normalizeOrgInviteToken(params.get('token')) : readPendingOrgInvite();
 }
 
-/** `marta.rossi@example.com` → `m***@example.com`: the address an invitation is for, without giving all of it to whoever holds the link. */
 export function maskEmail(email: string): string {
   const at = email.lastIndexOf('@');
   if (at <= 0) return email;
   return `${email.slice(0, 1)}***${email.slice(at)}`;
 }
 
-/** Why a link cannot be used. The anonymous lookup says only `invalid`; the acceptance can say which. */
 export type UnusableReason = 'invalid' | 'expired' | 'used' | 'revoked';
 
-/** What the anonymous lookup of a link can fail with. */
 export type LookupFailure = 'invalid' | 'unavailable' | 'retry';
 
 export function lookupFailureOf(error: unknown): LookupFailure {
   const status = getHttpStatus(error);
-  // 410 is the one answer for every link that does not work; 400 is a malformed one.
   if (status === 410 || status === 400) return 'invalid';
   if (status === 404) return 'unavailable';
   return 'retry';
 }
 
-/** What the acceptance can fail with, by what the person has to do about it. */
 export type AcceptFailure =
   | { kind: 'unusable'; reason: UnusableReason }
   | { kind: 'emailMismatch' | 'emailNotVerified' | 'platformAdmin' | 'hasOrganization' | 'alreadyMember' | 'consents' | 'retry' | 'other' };
@@ -104,12 +98,10 @@ export function acceptFailureOf(error: unknown): AcceptFailure {
     case 'stale_documents':
       return { kind: 'consents' };
     default:
-      // No answer, a 5xx or the limit of the requests: asking again may work; anything else will not.
       return isTransientRequestError(error) || getHttpStatus(error) === 429 ? { kind: 'retry' } : { kind: 'other' };
   }
 }
 
-/** How a person without an account gets in (AM-D13). */
 export type InviteeEntryMode = 'signup' | 'password' | 'login';
 
 /**
@@ -122,7 +114,6 @@ export const INVITEE_ENTRY_MODE: InviteeEntryMode = 'signup';
 
 export interface InviteEntryButton {
   labelKey: string;
-  /** Sent to Auth0 with the login; `screen_hint: 'signup'` opens the sign-up screen. */
   authorizationParams?: Record<string, string>;
   testId: string;
 }
@@ -130,13 +121,11 @@ export interface InviteEntryButton {
 export interface InviteEntry {
   primary: InviteEntryButton;
   secondary: InviteEntryButton | null;
-  /** A line under the buttons, when the way in needs explaining. */
   hintKey: string | null;
 }
 
 const LOGIN: InviteEntryButton = { labelKey: 'invitation.entry.login', testId: 'invite-accept-login' };
 
-/** The buttons that let an invited person who is not signed in come in: the page only draws what this says. */
 export function inviteEntryAction(mode: InviteeEntryMode = INVITEE_ENTRY_MODE): InviteEntry {
   switch (mode) {
     case 'signup':

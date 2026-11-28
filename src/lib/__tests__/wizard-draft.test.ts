@@ -220,7 +220,6 @@ describe("clearAllWizardDrafts", () => {
     expect(readWizardDraft("flow", SCOPE)).toBeNull();
     expect(readWizardDraft("other", { userId: "user-2", orgId: null })).toBeNull();
     expect(sessionStorage.getItem("casazen.pendingCheckout")).toBe("x");
-    // A key that only starts with the same letters is not a draft.
     expect(sessionStorage.getItem("casazen.wizardDraftNot")).toBe("x");
   });
 

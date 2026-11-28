@@ -11,7 +11,6 @@
 
 import type { OwnerPortalTouristTax } from './owner-portal-statements.types';
 
-/** What a line of the owner ledger records. A positive amount is owed to the owner, a negative one reduces it. */
 export type OwnerLedgerEntryType =
   | 'BookingRevenue'
   | 'ChannelFee'
@@ -24,34 +23,23 @@ export type OwnerLedgerEntryType =
   | 'Withholding'
   /** The VAT an owner invoice added on top of the commission and the recharges (E14): the statement counts it with the commission. */
   | 'AgencyVat'
-  /**
-   * The commission of a portal that the agency bears itself (the agency holds the portal account and does not recharge it, FIX/BE-V2-NO-RECHARGE): a line for information only. It keeps its
-   * amount and its group, the channel fees, and is in no total and no balance of the owner (`informational`).
-   */
   | 'ChannelFeeBorneByAgency';
 
-/** Where a line of the owner ledger comes from. `MandateFlatFee` is a flat fee of the mandate for a stay, `OwnerInvoice` an owner invoice (or its credit note) of CasaZen. */
 type OwnerLedgerSourceType = 'Payment' | 'Booking' | 'OwnerCharge' | 'WireBatch' | 'Manual' | 'OwnerPayout' | 'MandateFlatFee' | 'OwnerInvoice';
 
-/** The life of a version of an owner statement. */
 export type OwnerStatementVersionStatus = 'Draft' | 'Flagged' | 'Approved' | 'Published' | 'Superseded';
 
-/** Whether the month of an owner is still open. */
 export type OwnerClosePeriodStatus = 'Open' | 'Closed';
 
-/** The life of a payout to an owner. */
 type OwnerPayoutStatus = 'Confirmed' | 'Reversed';
 
-/** The withholding decision of a payout. */
 type TaxDecision = 'Applicable' | 'NotApplicable';
 
 /** Where a tax file (an F24, the annual data) is: generated and reviewed are never filed. */
 export type TaxFilingState = 'Generated' | 'Reviewed' | 'Submitted' | 'Accepted' | 'Rejected';
 
-/** How far a link to an externally issued invoice was checked. */
 export type OwnerExternalDocumentStatus = 'Entered' | 'Verified';
 
-/** An issue of the month-end readiness: a stable code, what it is about, and whether it blocks the approval and the close. */
 export interface OwnerReadinessIssue {
   code: string;
   ownerId: string | null;
@@ -60,7 +48,6 @@ export interface OwnerReadinessIssue {
   blocking: boolean;
 }
 
-/** The readiness of one owner's month. */
 export interface OwnerPeriodReadiness {
   ownerId: string;
   status: OwnerClosePeriodStatus;
@@ -68,11 +55,9 @@ export interface OwnerPeriodReadiness {
   latestVersion: number | null;
   latestStatus: OwnerStatementVersionStatus | null;
   issues: OwnerReadinessIssue[];
-  /** No blocking issue (it includes the ones of the steps of the statement itself: a statement not yet approved is not ready). */
   ready: boolean;
 }
 
-/** `GET api/owner-accounting/periods/{year}/{month}/readiness`: the issues of the org (sources without owners) and of each owner. */
 export interface OwnerCloseReadiness {
   year: number;
   month: number;
@@ -80,7 +65,6 @@ export interface OwnerCloseReadiness {
   owners: OwnerPeriodReadiness[];
 }
 
-/** `POST api/owner-accounting/periods/{year}/{month}/post`: what the posting did. */
 export interface OwnerPostingResult {
   year: number;
   month: number;
@@ -90,7 +74,6 @@ export interface OwnerPostingResult {
   issues: OwnerReadinessIssue[];
 }
 
-/** A line of the owner ledger with its source and the facts of its amount. */
 export interface OwnerLedgerEntry {
   id: string;
   ownerId: string;
@@ -121,14 +104,9 @@ export interface OwnerLedgerEntry {
   reversesEntryId: string | null;
   description: string | null;
   postedAt: string;
-  /**
-   * True for a line for information only (today `ChannelFeeBorneByAgency`, the commission of a portal the agency bears): it is shown and left out of every total and of the balance of the owner,
-   * whatever its type. Absent on a server that does not know the rule yet: the line is then one like the others.
-   */
   informational?: boolean;
 }
 
-/** A version of an owner statement, without its published file. */
 export interface OwnerStatementVersion {
   id: string;
   ownerId: string;
@@ -159,18 +137,12 @@ export interface OwnerStatementVersion {
   createdAt: string;
 }
 
-/**
- * A version with its lines (the drill-down to the sources) and its tourist tax box. `touristTax` is the box of the statement with its amounts: one row for each stay whose tax the agency
- * collects, for information only and outside every total, the very rows the owner portal reads for the same version (one source builds both). Absent only on a server older than that box,
- * where the page keeps the text of the box and says nothing of its amounts.
- */
 export interface OwnerStatementVersionDetail {
   version: OwnerStatementVersion;
   entries: OwnerLedgerEntry[];
   touristTax?: OwnerPortalTouristTax[];
 }
 
-/** The month of an owner: the close with its reconciliation or waiver, the retention and the legal hold. */
 export interface OwnerClosePeriod {
   ownerId: string;
   year: number;
@@ -194,7 +166,6 @@ export interface OwnerClosePeriod {
   legalHoldAt: string | null;
 }
 
-/** The evidence of an owner's month, exportable as it is (`…/evidence`). */
 export interface OwnerAccountingEvidence {
   ownerId: string;
   year: number;
@@ -206,7 +177,6 @@ export interface OwnerAccountingEvidence {
   charges: unknown[];
 }
 
-/** An exchange rate of the owner accounting: one `baseCurrency` is `rate` `quoteCurrency` on `rateDate`. */
 export interface OwnerFxRate {
   id: string;
   baseCurrency: string;
@@ -217,7 +187,6 @@ export interface OwnerFxRate {
   createdAt: string;
 }
 
-/** A link of a version to an invoice issued by the agency's external fiscal system, with its audit facts. CasaZen keeps the link, never an amount. */
 export interface OwnerExternalDocument {
   id: string;
   statementVersionId: string;
@@ -262,11 +231,6 @@ export interface TaxObligationEvidence {
   facts?: PayoutFacts | null;
 }
 
-/**
- * One stay of a payout with the facts its withholding is decided on (backend `PayoutStayFact`, E18/F01/US01/T01): the owner's gross of it without the tourist tax, the tourist tax that was left out, how the ledger
- * posted it, whether it is a qualifying short let and why, whether the agency collected or handled the money and how, whether its portal already withheld, and whether it is in the base and why. The codes are
- * those of the backend (`PayoutStayReasons`, `ShortLetTreatmentReasons`, `OwnerWithholdingRules`); a code this version does not know is shown as it came. `propertyId` is `null` for a stay with no property.
- */
 export interface PayoutStayFact {
   bookingId: string;
   propertyId: string | null;
@@ -291,7 +255,6 @@ export interface PayoutStayFact {
   reason: string;
 }
 
-/** The agency's rate of the payout day, from the currency of the withholding to the one of the payout: one unit of `from` is `rate` units of `to`. */
 interface PayoutFx {
   from: string;
   to: string;
@@ -300,10 +263,6 @@ interface PayoutFx {
   day: string | null;
 }
 
-/**
- * The facts of a payout, read from the owner ledger of the version it pays and never typed (backend `PayoutFacts`): the stays with their facts, the balance, the currency of the payout and the one of the withholding (euro),
- * the rate of the day for an owner paid in another currency. Shown read only.
- */
 export interface PayoutFacts {
   source: string;
   currency: string;
@@ -321,11 +280,6 @@ export interface PayoutFacts {
   parameters: OwnerAccountingRuleParameters | null;
 }
 
-/**
- * What a payout of a version on a day would be (`GET api/owner-accounting/payouts/preview?statementVersionId=&paidOn=`), read only: the facts of the ledger, the balance still unpaid (what a payout pays, in `currency`), the
- * decision of the approved rule in force that day (its base, rate, rounding and tax code, the withholding in euro and the one kept from the payout in `currency`, the net), or `blockingCode` (and `blockingField`), the code
- * the confirmation would answer, and then no decision. Nothing of it is typed by a person.
- */
 export interface OwnerPayoutPreview {
   facts: PayoutFacts;
   balance: number;
@@ -343,7 +297,6 @@ export interface OwnerPayoutPreview {
   blockingField: string | null;
 }
 
-/** A payout to an owner with its withholding evidence (the list leaves the evidence empty, `GET …/payouts/{id}` carries it). */
 export interface OwnerPayout {
   id: string;
   ownerId: string;
@@ -364,10 +317,6 @@ export interface OwnerPayout {
   evidence: TaxObligationEvidence[];
 }
 
-/**
- * The payout to confirm (`POST api/owner-accounting/payouts`): who is paid, on which version of the statement, on which day. It carries no amount and no fact of the withholding (E18/F01/US01/T01): what is paid is the
- * balance the version still owes, and the stays, their collection and their qualifying short let are read by the server from the owner ledger. A body that sent them would have them ignored.
- */
 export interface OwnerPayoutCommand {
   idempotencyKey: string;
   ownerId: string;
@@ -395,7 +344,6 @@ export interface TaxF24Record {
   rejectionReason: string | null;
 }
 
-/** The annual tax data (Certificazione Unica) of a year, with its filing state. */
 export interface TaxReportingDataset {
   id: string;
   kind: string;
@@ -412,14 +360,10 @@ export interface TaxReportingDataset {
   generatedAt: string;
 }
 
-/** A move of a tax file along its filing states, with the reference the move needs. */
 export interface TaxFilingCommand {
   state: Exclude<TaxFilingState, 'Generated'>;
-  /** For `Submitted`: the controlled manual handoff (who sent it and how). */
   handoffReference?: string;
-  /** For `Accepted`: the receipt of the authority. */
   receiptReference?: string;
-  /** For `Rejected`: why. */
   reason?: string;
 }
 
@@ -441,7 +385,6 @@ export interface TaxReconciliation {
   reconciled: boolean;
 }
 
-/** The kind of subject of an owner's profile. */
 export type OwnerEntityKind = 'NaturalPerson' | 'LegalEntity';
 
 /**
@@ -473,7 +416,6 @@ export interface OwnerFiscalProfile {
   masked: boolean;
 }
 
-/** The new profile of an owner (`POST api/owners/{id}/fiscal-profiles`): effective from `validFrom`. */
 export interface OwnerFiscalProfileCommand {
   validFrom: string;
   entityKind: OwnerEntityKind;
@@ -495,13 +437,8 @@ export interface OwnerFiscalProfileCommand {
   accountingPolicyId?: string;
 }
 
-/**
- * The parameters of a rule set: whether a withholding applies at the payment to the owner and how. Every figure is the approved one: the
- * code of CasaZen has no default rate, no tax code and no jurisdiction.
- */
 export interface OwnerAccountingRuleParameters {
   withholdingApplies: boolean;
-  /** A member without a value is `null` in the answer of the API (and left out of the one the page sends). */
   withholdingRatePercent?: number | null;
   withholdingTaxCode?: string | null;
   requiresAgencyCollection: boolean;
@@ -511,7 +448,6 @@ export interface OwnerAccountingRuleParameters {
   retentionYears?: number | null;
 }
 
-/** A rule set of the agency: its identity, validity, official source, parameters and the approval of the qualified accountant. */
 export interface OwnerAccountingPolicy {
   id: string;
   jurisdiction: string;
@@ -527,7 +463,6 @@ export interface OwnerAccountingPolicy {
   approvedByName: string | null;
 }
 
-/** The new rule set (`POST api/owner-accounting/policies`): not approved until the accountant's approval is recorded. */
 export interface OwnerAccountingPolicyCommand {
   jurisdiction: string;
   ruleCode: string;
@@ -539,11 +474,6 @@ export interface OwnerAccountingPolicyCommand {
   parameters: OwnerAccountingRuleParameters;
 }
 
-/**
- * The mandate of an owner in force today as the list of the owners carries it (`mandateInForce` of `GET api/owners`): what a row draws and nothing more. It is the mandate of the owner as
- * a whole (a version with no ownership of its own) that covers today, the latest start when more do: a mandate of a single property and one that starts later are not in it, so a `null`
- * does not say «no mandate» (the versions of the mandate, `mandateStateOn`, answer that).
- */
 export interface OwnerMandateInForce {
   id: string;
   validFrom: string;
@@ -553,28 +483,17 @@ export interface OwnerMandateInForce {
   commissionIncludesVat: boolean;
 }
 
-/**
- * The owner of a property in the registry of the agency (`GET api/owners`): only what the pages show. Besides the person it carries what a row of «Proprietari» needs to be drawn without any other
- * read (`propertyCount`, `entityKind`, `settlementCurrency`, `mandateInForce`): the server writes them all, `null` being its own «none». A member that is absent (a server older than that list) is not
- * «none»: it was not told, and the row says nothing of it (for the mandate, the versions of the owner's mandate are read).
- */
 export interface PropertyOwnerSummary {
   id: string;
   firstName: string;
   lastName: string;
-  /** The IBAN as the registry answers it, already masked to its last four characters (`****3456`); `null` when the owner has none. Never the full account. */
   ibanMasked?: string | null;
-  /** The properties the owner holds today or will hold (an ownership not ended, on a property that still exists), each counted once. */
   propertyCount?: number;
-  /** The kind of the fiscal profile in force today (the newest when none is in force, as the page of the owner reads it); `null` for an owner with no profile. */
   entityKind?: OwnerEntityKind | null;
-  /** The settlement currency of that profile; `null` when it has none or the owner has no profile. */
   settlementCurrency?: string | null;
-  /** The mandate of the owner in force today; `null` when the list has none to say (see {@link OwnerMandateInForce}: it does not mean «no mandate»). */
   mandateInForce?: OwnerMandateInForce | null;
 }
 
-/** One missing or wrong fact of an owner or of a property: a code and the name of the field, never a value. */
 export interface OwnerOnboardingReason {
   dimension: string;
   code: string;
@@ -603,7 +522,6 @@ interface OwnerOnboardingOwner {
   warnings?: OwnerOnboardingWarning[];
 }
 
-/** A stretch of days where the shares of a property are wrong. */
 export interface OwnershipIssue {
   kind: 'gap' | 'shortfall' | 'excess' | 'ownerOverlap';
   from: string;
@@ -612,7 +530,6 @@ export interface OwnershipIssue {
   ownerId: string | null;
 }
 
-/** A property whose ownership is not ready. */
 export interface OwnerOnboardingProperty {
   propertyId: string;
   name: string;
@@ -621,7 +538,6 @@ export interface OwnerOnboardingProperty {
   issues: OwnershipIssue[];
 }
 
-/** `GET api/onboarding/owners/readiness` (behind the flag of the activation): what is missing for the registry, the ownership, the mandate, the fiscal profile and the payment data. */
 export interface OwnerOnboardingReadiness {
   asOf: string;
   summary: { financialReady: boolean };
@@ -629,12 +545,8 @@ export interface OwnerOnboardingReadiness {
   properties: OwnerOnboardingProperty[];
 }
 
-// ── The mandate and the billing address of an owner (E13/F01/US01/T01, NF-110, NF-115) ───────────────────────────────────
-
-/** What the commission of the agency is a percentage of (backend `CommissionBase`): the tourist tax is never part of it. */
 export type CommissionBase = 'GrossExclTouristTax' | 'GrossExclTouristTaxAndCleaning';
 
-/** The tax treatment of the commission for the owner's tax calculation (backend `CommissionTreatment`). */
 type CommissionTreatment = 'Deductible' | 'NotDeductible';
 
 /**
@@ -645,7 +557,6 @@ type CommissionTreatment = 'Deductible' | 'NotDeductible';
 export interface OwnerMandate {
   id: string;
   ownerId: string;
-  /** Set only on a mandate of one ownership, of before E13: the versions the API writes cover every property of the owner. */
   ownershipId: string | null;
   validFrom: string;
   validTo: string | null;
@@ -663,7 +574,6 @@ export interface OwnerMandate {
   createdByUserId: string | null;
 }
 
-/** A new version of the mandate (`POST api/owners/{id}/mandates`): the one in force ends the day before `validFrom`, which must be later than the start of every version. */
 export interface OwnerMandateCommand {
   validFrom: string;
   commissionPercent: number;
@@ -673,11 +583,9 @@ export interface OwnerMandateCommand {
   linenFlatRate: number | null;
   passthroughPaymentFees: boolean;
   withholdingTreatment: CommissionTreatment;
-  /** Where the signed mandate is, an https address: without it the activation says the document is missing. */
   documentReference?: string;
 }
 
-/** The structured billing address of an owner (`GET api/owners/{id}/address`), in clear: personal data, read only by who manages the owners' finances. */
 export interface OwnerAddress {
   ownerId: string;
   street: string | null;
@@ -688,7 +596,6 @@ export interface OwnerAddress {
   country: string | null;
 }
 
-/** The whole address (`PUT api/owners/{id}/address` replaces it): street, postal code, town and a two-letter country are required, the province too in Italy. */
 export interface OwnerAddressCommand {
   street: string;
   buildingNumber?: string;
@@ -698,16 +605,9 @@ export interface OwnerAddressCommand {
   country: string;
 }
 
-// ── The month-end for every owner at once (E13/F01/US03/T01, E13/F02/US03/T01, NF-110) ─────────────────────────────────────
-
-/** The steps of the month-end that run for many owners in one call (backend `OwnerBulkAction`, written and read by name), in the order of the month-end. */
 export const OWNER_BULK_ACTIONS = ['Post', 'Generate', 'Approve', 'Publish', 'Close'] as const;
 export type OwnerBulkAction = (typeof OWNER_BULK_ACTIONS)[number];
 
-/**
- * How far a bulk run is (backend `OwnerBulkRunStatus`, by name). `Completed` says that every owner was answered, never that every owner is done: a row can still be a failure.
- * `Failed` is the run itself failing (not one of its owners): what it did before is in its rows.
- */
 type OwnerBulkRunStatus = 'Queued' | 'Running' | 'Completed' | 'Failed';
 
 /**
@@ -740,13 +640,11 @@ export interface OwnerBulkRun {
   errorCode: string | null;
 }
 
-/** What starts a bulk run: the step, and the owners it is for (left out = every owner of the month; an empty list is refused, never «everyone»). */
 export interface OwnerBulkCommand {
   action: OwnerBulkAction;
   ownerIds?: string[];
 }
 
-/** Proposals from the signed PDF, never facts until the person reviews and saves. */
 export interface OwnerMandateReading {
   validFrom: string | null;
   commissionPercent: number | null;

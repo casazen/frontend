@@ -21,7 +21,6 @@ export const WEEKDAYS = [
 
 export type WeekdayName = (typeof WEEKDAYS)[number];
 
-/** Minutes after midnight (0–1440) as `HH:mm` on the Rome wall clock. */
 export function minutesToHm(minutes: number): string {
   if (!Number.isFinite(minutes) || minutes < 0 || minutes > 1440) return '';
   const hour = Math.floor(minutes / 60);
@@ -29,16 +28,13 @@ export function minutesToHm(minutes: number): string {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 }
 
-/** `HH:mm` to minutes after midnight, or null when the value is not a valid time. */
 export function hmToMinutes(value: string): number | null {
   const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value.trim());
   if (!match) return null;
   return Number(match[1]) * 60 + Number(match[2]);
 }
 
-/** Europe/Rome weekday of a stay date (`YYYY-MM-DD`), Monday first. */
 export function weekdayOf(date: string): WeekdayName {
-  // UTC noon of the stay date is always the same weekday as that calendar day in Rome.
   const [year, month, day] = date.split('-').map(Number);
   const utc = new Date(Date.UTC(year, month - 1, day, 12));
   const names: WeekdayName[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -55,33 +51,21 @@ export type DayEventKind = 'calendar' | 'block' | 'extra' | 'request' | 'guestOr
 export interface DayEvent {
   id: string;
   kind: DayEventKind;
-  /**
-   * What the supplier or the calendar called it; the service category (its code) for a request. Empty when it has no name:
-   * the page names the kind then.
-   */
   label: string;
-  /** Rome wall clock range, or null for an all-day item. */
   timeRange: string | null;
-  /** A request: where to open it and how it stands (the status of the API). */
   requestId?: string;
   guestOrderId?: string;
   status?: string;
-  /** A request: the service of the catalog it is for (none: the category is its name), who asks and where (SP-03b). */
   serviceName?: string | null;
   clientLabel?: string | null;
   comune?: string | null;
-  /** A request booked from the public page of the supplier. */
   fromShowcase?: boolean;
-  /** A request with something wrong in its time (the conflicts of the next 30 days): how serious the worst is. */
   conflict?: SupplierConflictSeverity;
-  /** Time off: why (`Vacation`, `Holiday`, `Illness`, `Other`). */
   reason?: string;
 }
 
-/** How a day stands for the customers: bookable, a rest day of the week, closed by the supplier or by the calendar, or time off. */
 export type DayState = 'open' | 'rest' | 'closed' | 'closedByCalendar' | 'timeOff';
 
-/** The words of each state (keys of the locale files). */
 export const DAY_STATE_LABEL_KEYS: Record<DayState, string> = {
   open: 'supplier.available',
   rest: 'supplier.agenda.state.rest',
@@ -96,7 +80,6 @@ export interface WorkingDayView {
   bands: SupplierHoursBand[];
   closed: SupplierAgendaClosedDay | null;
   events: DayEvent[];
-  /** Manual override: true = available, false = closed by hand / feed. */
   available: boolean;
 }
 
@@ -108,13 +91,11 @@ function formatClock(hour: number, minute: number): string {
   return `${pad(hour)}:${pad(minute)}`;
 }
 
-/** Inclusive Rome dates touched by a UTC window `[start, end)`. */
 function datesTouched(startUtc: string, endUtc: string): string[] {
   const start = romeWallClock(startUtc);
   const end = romeWallClock(endUtc);
   if (!start || !end) return [];
 
-  // Exclusive end at midnight: the day that is ending is the last day touched.
   let last = end.date;
   if (end.hour === 0 && end.minute === 0) {
     const previous = addDays(end.date, -1);
@@ -138,7 +119,7 @@ function timeRangeOnDay(date: string, startUtc: string, endUtc: string): string 
   const endsMidnight = end.hour === 0 && end.minute === 0;
   const endDay = endsMidnight ? addDays(end.date, -1) : end.date;
   if (startsMidnight && endsMidnight && endDay === date && start.date === date) {
-    return null; // whole day on the Rome clock
+    return null;
   }
 
   const from = start.date === date ? formatClock(start.hour, start.minute) : '00:00';
@@ -154,10 +135,6 @@ function timeRangeOnDay(date: string, startUtc: string, endUtc: string): string 
   return `${from}–${to}`;
 }
 
-/**
- * Builds the working-day cards for the supplier availability page: weekly hours, closed days,
- * calendar engagements, manual blocks and requests that fall in the range.
- */
 export function buildWorkingDays(input: {
   dates: string[];
   workingHours: SupplierAgendaHoursDay[];
@@ -166,9 +143,7 @@ export function buildWorkingDays(input: {
   blocks: SupplierAgendaBlock[];
   requests: SupplierAgendaRequest[];
   guestOrders?: { id: string; serviceName: string; requestedFor: string }[];
-  /** How serious the worst conflict of a request is, by request id (the next 30 days). */
   conflicts?: ReadonlyMap<string, SupplierConflictSeverity>;
-  /** Fallback when the calendar API is not loaded yet: the day grid from GET /availability. */
   availability?: Record<string, boolean>;
 }): WorkingDayView[] {
   const closedByDate = new Map(input.closedDays.map((day) => [day.date, day]));
@@ -212,7 +187,6 @@ export function buildWorkingDays(input: {
   }
 
   for (const request of input.requests) {
-    // What the supplier reads of a job besides its hours: the service, who asks and where, and whether its time is in trouble.
     const about = {
       kind: 'request' as const,
       label: request.category,
@@ -253,12 +227,10 @@ export function buildWorkingDays(input: {
   });
 }
 
-/** The bands of a day as the supplier reads them: `09:00–13:00, 14:00–18:00`. */
 export function formatBands(bands: SupplierHoursBand[]): string {
   return bands.map((band) => `${minutesToHm(band.startMinute)}–${minutesToHm(band.endMinute)}`).join(', ');
 }
 
-/** How a day stands. Time off comes first (it is why the day is not bookable), then a closed day, then a rest day of the week. */
 export function dayStateOf(day: Pick<WorkingDayView, 'bands' | 'closed' | 'events'>): DayState {
   if (day.events.some((event) => event.kind === 'timeOff')) return 'timeOff';
   if (day.closed) return day.closed.source === 'ICalFeed' ? 'closedByCalendar' : 'closed';

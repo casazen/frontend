@@ -17,7 +17,6 @@ const fonts = parse(read('src/styles/fonts.css'));
 const globals = parse(read('src/styles/globals.css'));
 
 const GATE = "html[data-ui='v2']";
-/** The one rule that uses the attribute inside `:where()`: it must stay below the specificity of a class. */
 const NEUTRALIZER = "html:where([data-ui='v2']) *";
 
 const normalize = (value: string) => value.replace(/\s+/g, ' ').trim();
@@ -32,7 +31,6 @@ function customProperties(node: Rule | AtRule): Declarations {
   return found;
 }
 
-/** Custom properties of the top-level rules whose selector list has `selector`. */
 function ruleDeclarations(root: Root, selector: string): Declarations {
   const found: Declarations = {};
   for (const node of root.nodes) {
@@ -41,7 +39,6 @@ function ruleDeclarations(root: Root, selector: string): Declarations {
   return found;
 }
 
-/** Custom properties of the top-level `@theme` blocks (`static` or not). */
 function themeDeclarations(root: Root, params: 'static' | ''): Declarations {
   const found: Declarations = {};
   for (const node of root.nodes) {
@@ -50,7 +47,6 @@ function themeDeclarations(root: Root, params: 'static' | ''): Declarations {
   return found;
 }
 
-/** True when `rule` is nested in an at-rule whose text (`@media (pointer: coarse)`, `@layer base`) matches. */
 function isInside(rule: Rule, atRule: RegExp): boolean {
   for (let parent: unknown = rule.parent; parent; parent = (parent as { parent?: unknown }).parent) {
     const node = parent as { type?: string; name?: string; params?: string };
@@ -83,12 +79,10 @@ const base = ruleDeclarations(tokens, GATE);
 const additive = themeDeclarations(tokens, 'static');
 const legacyTheme = themeDeclarations(globals, '');
 
-/** Where a token is looked up for an area: the area block, the redesign block, the additive tokens, the primitives. */
 function scopesOf(area: string | null): Declarations[] {
   return [area ? ruleDeclarations(tokens, `${GATE}[data-area='${area}']`) : {}, base, additive, primitives];
 }
 
-/** The hex color of `token` in an area, following the `var(--x)` aliases down to a primitive. */
 function color(token: string, area: string | null = null): string {
   const scopes = scopesOf(area);
   const lookup = (name: string) => {
@@ -106,16 +100,13 @@ function color(token: string, area: string | null = null): string {
 }
 
 const AREAS = ['short-rent', 'long-rent', 'supplier', 'admin', 'account'] as const;
-/** `null` = no area: the brand ink of the login, the area picker and the onboarding. */
 const ALL_ACCENTS: (string | null)[] = [null, ...AREAS];
 const areaName = (area: string | null) => area ?? 'no area (ink)';
 
-/** What the redesign shows text and fields on. */
 const SURFACES = ['--color-background', '--color-card', '--color-muted', '--color-surface-2'] as const;
 
 describe('tokens.css: accents', () => {
   it('Accent_PrimaryOfEachArea_IsTheDecidedOne', () => {
-    // Decision D26 (wave spec) and the task: terracotta, Savoy blue, sage, amethyst; ink where there is no area.
     expect(color('--color-primary')).toBe('#1f3a3d');
     expect(color('--color-primary', 'short-rent')).toBe('#c2410c');
     expect(color('--color-primary', 'long-rent')).toBe('#2852c9');
@@ -155,7 +146,6 @@ describe('tokens.css: contrast (WCAG 2.1 AA)', () => {
     const ratio = contrastRatio(color(foreground, area), color(background, area));
     expect(ratio, `${label}: ${foreground} ${color(foreground, area)} on ${background} ${color(background, area)}`).toBeGreaterThanOrEqual(AA_TEXT_CONTRAST);
   };
-  /** 1.4.11: borders of fields, focus ring and the parts of a control that tell its state need 3:1. */
   const component = (label: string, foreground: string, background: string, area: string | null = null) => {
     const ratio = contrastRatio(color(foreground, area), color(background, area));
     expect(ratio, `${label}: ${foreground} ${color(foreground, area)} on ${background} ${color(background, area)}`).toBeGreaterThanOrEqual(3);
@@ -165,8 +155,6 @@ describe('tokens.css: contrast (WCAG 2.1 AA)', () => {
     text('text on the accent (primary button, active item)', '--color-primary-foreground', '--color-primary', area);
     text('accent text on its soft background (soft button, badge, current item)', '--color-primary-text', '--color-primary-soft', area);
     for (const surface of SURFACES) text('accent text on a surface (links)', '--color-primary-text', surface, area);
-    // `text-primary` is used as text 62 times: fine on the page, the cards and the second surface. On `muted` terracotta
-    // is 4.4:1: there, and for links, use `text-primary-text` (6:1 and more).
     for (const surface of ['--color-background', '--color-card', '--color-surface-2']) text('primary as text', '--color-primary', surface, area);
   });
 
@@ -201,7 +189,6 @@ describe('tokens.css: contrast (WCAG 2.1 AA)', () => {
   });
 
   it.each(['success', 'warning'])('Badge_%s_IsDarkTextOnASoftBackground_NotWhiteOnA500Fill', (kind) => {
-    // The Badge used white on green-500 / yellow-500 (2.2:1 and 1.9:1); under the redesign it uses these tokens.
     expect(contrastRatio(color(`--color-${kind}-foreground`), color(`--color-${kind}-soft`))).toBeGreaterThanOrEqual(6);
   });
 });
@@ -263,40 +250,27 @@ describe('tokens.css: shape, motion, layers', () => {
   it('Touch_CoarsePointer_FieldsGrowAndButtonsGetA44pxHitAreaWithoutMovingTheLayout', () => {
     expect(primitives['--touch-min']).toBe('44px');
     const coarse = /pointer:\s*coarse/;
-    // Toggles are buttons too, and a 44 px slop on a 16 px checkbox covers the label and the next control.
     const hit = `${GATE} :is(button, [role='button'], summary):not([role='checkbox'], [role='switch'], [role='radio'])`;
     const hitArea = declarationsOf(`${hit}::after`, coarse);
     expect(hitArea.width).toBe('max(100%, var(--touch-min))');
     expect(hitArea.height).toBe('max(100%, var(--touch-min))');
-    // The slop is under every visible control. z-index 0 (not the button's own stacking context) so a neighbor on
-    // z-index 1 wins the tap; the gap, where nothing is drawn, still hits the slop.
     expect(hitArea['z-index']).toBe('0');
     expect(declarationsOf(`${hit}::before`, coarse)).toEqual({ content: "''", position: 'absolute', 'z-index': '1', inset: '0' });
     expect(declarationsOf(`${GATE} :is(a, label, input, select, textarea):not([role='button'])`, coarse)).toEqual({
       position: 'relative',
       'z-index': '1',
     });
-    // The search glyph is an absolute sibling sitting in the field's padding: the field's layer must not cover it.
     expect(declarationsOf(`${GATE} :has(> :is(input, select, textarea)) > svg`, coarse)).toEqual({ 'z-index': '2' });
-    // The hit area is a pseudo-element: no button gets taller, wider or moved, so a dense layout stays as it is.
-    // No z-index on the button: that would trap ::after and the overflow would steal the tap again.
     expect(declarationsOf(hit, coarse)).toEqual({ position: 'relative' });
-    // Fields do grow: a row of fields can take 4 px.
     expect(declarationsOf(/^html\[data-ui='v2'\] :is\( ?input:not/, coarse)).toEqual({ 'min-height': 'var(--touch-min)' });
   });
 
   it('Shadows_AreTintedWarm_ThroughTheTailwindShadowColor', () => {
-    // Tailwind's shadow utilities read `--tw-shadow-color` and fall back to black: one declaration tints all of them.
     expect(declarationsOf(`${GATE} *`, /@layer base/)['--tw-shadow-color']).toBe('rgb(28 26 23 / 0.1)');
   });
 });
 
-/**
- * Decision D8: the app without `html[data-ui='v2']` is the app as it was. `public-tokens.css` and the public site are
- * not touched either: the attribute is never set there (`ui-version-sync.test.tsx`, `not-redesigned-routes.test.tsx`).
- */
 describe('tokens.css and fonts.css: nothing changes without the redesign', () => {
-  /** The `@theme` of `globals.css` before UI-01: the look of the app today. The redesign overrides these under the attribute. */
   const LEGACY_THEME: Declarations = {
     '--color-background': 'oklch(100% 0 0)',
     '--color-foreground': 'oklch(9% 0.035 285.8)',
@@ -320,7 +294,6 @@ describe('tokens.css and fonts.css: nothing changes without the redesign', () =>
     '--radius': '0.5rem',
   };
 
-  /** Tailwind's own tokens the redesign overrides (shape, motion, font), on top of the ones of `globals.css`. */
   const TAILWIND_TOKENS_OVERRIDDEN = [
     '--radius-xs',
     '--radius-sm',
@@ -347,13 +320,10 @@ describe('tokens.css and fonts.css: nothing changes without the redesign', () =>
 
   it('GlobalsCss_ImportsTheFontsAndTheTokensAfterTailwind', () => {
     const imports = globals.nodes.filter((node): node is AtRule => node.type === 'atrule' && node.name === 'import').map((node) => normalize(node.params));
-    // `tw-animate-css` (UI-07) is the last: the animation utilities the shadcn components ask for. The fonts and the tokens stay
-    // right after Tailwind.
     expect(imports).toEqual(['"tailwindcss"', '"./design-foundations.css"', '"./fonts.css"', '"./tokens.css"', '"./workspace.css"', '"./motion.css"', '"tw-animate-css"']);
   });
 
   it('Tokens_RedesignBlock_OverridesTheExistingTokens', () => {
-    // The overrides exist (the test below would pass vacuously if the block were empty).
     for (const name of Object.keys(LEGACY_THEME).filter((token) => token !== '--radius')) expect(base[name], name).toBeDefined();
     for (const name of TAILWIND_TOKENS_OVERRIDDEN.filter((token) => token !== '--font-sans')) expect(base[name], name).toBeDefined();
     expect(ruleDeclarations(fonts, GATE)['--font-sans']).toBeDefined();
@@ -378,7 +348,7 @@ describe('tokens.css and fonts.css: nothing changes without the redesign', () =>
     for (const root of [tokens, fonts]) {
       root.walkRules((rule) => {
         for (const selector of rule.selectors.map(normalize)) {
-          if (selector === ':root') continue; // the primitives, covered by the previous test
+          if (selector === ':root') continue;
           checked += 1;
           expect(selector.startsWith(GATE) || selector === NEUTRALIZER, `"${selector}" is not under ${GATE}`).toBe(true);
         }
@@ -399,11 +369,8 @@ describe('tokens.css and fonts.css: nothing changes without the redesign', () =>
   });
 
   it('BorderColorNeutralizer_StaysBelowTheSpecificityOfAClass', () => {
-    // `html:where([data-ui='v2']) *` is (0,0,1): above the `*` rule it switches off, below any class or attribute rule of a
-    // third-party stylesheet (the calendar, the toasts), which keep their borders.
     const rule = tokens.nodes.find((node): node is Rule => node.type === 'rule' && normalize(node.selector) === NEUTRALIZER);
     expect(rule?.nodes.map((node) => (node.type === 'decl' ? `${node.prop}: ${node.value}` : ''))).toEqual(['border-color: revert-layer']);
-    // The default color of a border returns in the base layer, where the utilities (`border-input`, `border-destructive`) win.
     expect(declarationsOf(`${GATE} *`, /@layer base/)['border-color']).toBe('var(--color-border)');
   });
 });
@@ -411,7 +378,6 @@ describe('tokens.css and fonts.css: nothing changes without the redesign', () =>
 describe('fonts.css: Inter served by us', () => {
   const publicFonts = read('src/styles/public-fonts.css');
 
-  /** `@font-face` of `public-fonts.css`: family -> file (relative to `src/styles`). */
   function faces(): Map<string, string> {
     const declared = new Map<string, string>();
     for (const face of publicFonts.matchAll(/@font-face\s*\{([^}]*)\}/g)) {
@@ -458,7 +424,6 @@ describe('fonts.css: Inter served by us', () => {
     expect(link, 'a font preload with type and crossorigin in index.html').not.toBeNull();
     const href = link![1];
     expect(existsSync(resolve(process.cwd(), href.replace(/^\//, ''))), `${href} exists`).toBe(true);
-    // The preloaded file is the one the `Inter Variable` face downloads, or it would be fetched twice.
     const face = faces().get('Inter Variable');
     expect(face).toBeDefined();
     expect(resolve(process.cwd(), 'src/styles', face!)).toBe(resolve(process.cwd(), href.replace(/^\//, '')));

@@ -23,7 +23,6 @@ export async function checkStaging(env = process.env, request = fetch) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   checkStaging().catch(error => {
-    // Never print env values or response bodies: this check runs before authentication.
     console.error(error.message.startsWith('Missing staging') || error.message.startsWith('Staging API')
       ? error.message : 'Staging preflight failed: verify API URL, reachability and TLS configuration.');
     process.exitCode = 1;

@@ -9,14 +9,9 @@ import { cn } from '@/lib/utils';
 
 interface PropertyGalleryProps {
   photoUrls: string[];
-  /** Name of the property: the text alternative of every photo. */
   alt: string;
 }
 
-/**
- * Where each photo sits from `md` up: a big one on the left half and up to four on the right half (two rows of two, or fewer
- * photos taking more room each). The photos after the fifth are only in the viewer. Under `md` every photo is a slide.
- */
 function tilePlacement(index: number, count: number): string {
   if (index === 0) return count === 1 ? 'md:col-span-4 md:row-span-2' : 'md:col-span-2 md:row-span-2';
   if (index > 4) return 'md:hidden';
@@ -27,14 +22,6 @@ function tilePlacement(index: number, count: number): string {
   return '';
 }
 
-/**
- * The photos of a property: a carousel across the width of the phone (a swipe, with the counter), a mosaic from 768 px (one
- * big photo and four small ones). Every photo opens the viewer. A photo that does not load is left out; without any, a
- * plain block says so.
- *
- * In the frame of an embeddable widget (NF-144) there is no viewer: it is a dialog fixed to the window, and the window of a frame is as tall as its content, so it
- * would open far from the guest. The photos are the carousel under `md` and the mosaic of the first five from `md`; all of them are on the page of the site.
- */
 export function PropertyGallery({ photoUrls, alt }: PropertyGalleryProps) {
   const { t } = useTranslation();
   const embed = useEmbed();

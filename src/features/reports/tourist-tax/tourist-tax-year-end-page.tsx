@@ -19,7 +19,6 @@ import { YearEndDetails } from './year-end-details';
 import { YearEndFiles } from './year-end-files';
 import { hasYearEndCurrency, yearEndMoney, yearEndYears } from './tourist-tax-year-end-model';
 
-/** The page of the figures by comune, where the host also records a payment: «Apri il riepilogo per comune» leads there (it opens on the current year: it is the page of any period, not of this year). */
 const TOURIST_TAX_PATH = '/app/short-rent/reports/tourist-tax';
 
 interface FiguresProps {
@@ -27,10 +26,6 @@ interface FiguresProps {
   summary: TouristTaxSummary;
 }
 
-/**
- * The Italian tourist tax of the year in four numbers, as the server sends them (the page adds nothing up): the nights, what the stays record as due, what was remitted to the comuni and the difference, in the currency
- * the answer names. These are the figures the declaration to the comuni is made of. A stay with no tax recorded is never a tax of zero: the note says the due amount may be incomplete, and the file counts such stays apart.
- */
 function YearFigures({ year, summary }: FiguresProps) {
   const { t, i18n } = useTranslation();
   const { total, currency } = summary;
@@ -40,7 +35,6 @@ function YearFigures({ year, summary }: FiguresProps) {
   return (
     <div className="space-y-3" data-testid="year-end-figures">
       {summary.comuni.length === 0 ? (
-        // Said in words: a year with no stay in Italy and no payment has no row, and it is not a declaration of zeros.
         <p className="text-sm text-foreground/70" data-testid="year-end-empty">
           {t('reports.touristTax.yearEnd.figures.empty', { year })}
         </p>
@@ -95,14 +89,12 @@ function FiguresSection({ year, query }: FiguresSectionProps) {
       />
     );
   } else if (!data) {
-    // The server refuses the summary to this caller (`null`; no answer and no failure is a wait, told above): the access is not there, and nothing of a declaration is drawn (not zeros, not an empty year).
     body = (
       <Alert variant="info" data-testid="year-end-refused">
         {t('reports.touristTax.yearEnd.figures.refused')}
       </Alert>
     );
   } else if (data.paymentsHidden) {
-    // A caller who reaches only some of the properties: the figures of the year belong to the whole organization, so none is shown (a part of them would read as the declaration).
     body = (
       <Alert variant="info" data-testid="year-end-partial">
         {t('reports.touristTax.yearEnd.figures.partial')}
@@ -111,7 +103,6 @@ function FiguresSection({ year, query }: FiguresSectionProps) {
   } else {
     body = (
       <>
-        {/* A failed read with the last answer in memory (a 404 is told before): the figures may be out of date. */}
         {query.isError ? <StaleReadNotice onRetry={() => void query.refetch()} /> : null}
         <YearFigures year={year} summary={data} />
       </>
@@ -144,7 +135,6 @@ export function TouristTaxYearEndPage() {
   const { hasPermission } = useWorkspace();
   const years = yearEndYears();
   const [year, setYear] = useState(years[0]);
-  // The account of the agent is cut by month or by quarter: one choice for the file and for the account on screen.
   const [by, setBy] = useState<YearEndAccountCut>('month');
   const summary = useTouristTaxYearSummary(year);
 

@@ -42,7 +42,6 @@ import { ScheduledChangeNotice } from './mode/components/scheduled-change-notice
 import { useModeChangeMenuItems } from './mode/use-mode-entry';
 import { PROPERTIES_PATH, propertyEditPath, propertyNewBookingPath, propertyServiceRequestPath } from './properties-paths';
 
-/** The page while the property loads: the shape of the page, no spinner in the middle of nothing. */
 function PropertyDetailSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="property-detail-loading">
@@ -82,27 +81,21 @@ export function PropertyDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   // Read again whenever the page opens: the activation, the CIN or the pause change on other pages, where these are not watched.
   const detail = usePropertyDetail(id, { fresh: true });
-  // The record of the property, for what the detail does not carry: the compliance status (activation) and the slug of its page.
   const record = useProperty(id, { fresh: true });
   const { org } = useCurrentUser();
   const updateCin = useUpdatePropertyCin();
   const pauseProperty = usePauseProperty();
   const activateProperty = useActivateProperty();
   const deleteProperty = useDeleteProperty();
-  // OTA partner API in freeze (D10): the calendars tab keeps only the iCal calendars while the flag is off.
   const { otaPartnerApi: otaEnabled, crmMarketing: crmEnabled } = useFeatureFlags().flags;
   const { hasPermission } = useWorkspace();
-  // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
   const modeChangeItems = useModeChangeMenuItems('short-rent', id);
 
   const property = detail.data;
-  // `?tab=pricing` (the old tab of the seasonal suggestions) is a section of the overview: scroll to it once the page is there.
   const scrollToPricing = tabParam === 'pricing' && property !== undefined;
   useEffect(() => {
     if (scrollToPricing) document.getElementById(PRICING_SECTION_ID)?.scrollIntoView?.({ block: 'start' });
   }, [scrollToPricing]);
-  // The section is there once the whole page is: the skeleton shows until the record is read as well as the detail, and an effect that ran on the skeleton
-  // would find nothing and never run again. So the scroll waits for both, and the focus goes to the section too (a region named by its title).
   const scrollToConnectionHealth = scrollToHealth && property !== undefined && record.data !== undefined;
   useEffect(() => {
     if (!scrollToConnectionHealth) return;
@@ -111,14 +104,12 @@ export function PropertyDetailPage() {
     section?.focus?.({ preventScroll: true });
   }, [scrollToConnectionHealth]);
 
-  // The property is gone: leave at once. Its queries were removed with it, and reading them again would say "not found".
   if (deleteProperty.isSuccess) return <Navigate to={PROPERTIES_PATH} replace />;
 
   if (detail.isLoading || record.isLoading) {
     return <PropertyDetailSkeleton label={t('property.detail.loading')} />;
   }
 
-  // An API error is never shown as "not found" (only a 404 is, A2-36).
   const failed = detail.isError ? detail : record.isError ? record : null;
   if (failed && getHttpStatus(failed.error) !== 404) {
     return (
@@ -131,7 +122,6 @@ export function PropertyDetailPage() {
     );
   }
 
-  // A long-term property lives in the long-rent section only.
   if (property?.rentalMode === 'Long') return <Navigate to={longRentPropertyPath(property.id)} replace />;
 
   if (!property || !record.data) {
@@ -150,19 +140,16 @@ export function PropertyDetailPage() {
     );
   }
 
-  // The state is one: suspended first, then the pause the host set, then the compliance status (the same as the list and the drawer).
   const status = propertyStatus({ complianceStatus: record.data.complianceStatus, isPaused: property.isPaused });
   const canWrite = hasPermission('short-rent', 'property.write');
   const canReadBookings = hasPermission('short-rent', 'booking.read');
   const canCreateBooking = hasPermission('short-rent', 'booking.write');
   const busy = pauseProperty.isPending || activateProperty.isPending || deleteProperty.isPending;
-  // The page of the property on the booking site, when a guest can open it: a paused or unfinished property is not published.
   const publicPath =
     org?.slug && isPropertyPublishable({ isActive: record.data.isActive, isPaused: property.isPaused, complianceStatus: record.data.complianceStatus ?? undefined })
       ? buildPropertyBookingPath(org.slug, record.data)
       : null;
 
-  // The line under the name: what it has and where.
   const summary = [
     t('property.table.bedroomsCount', { count: property.bedrooms }),
     t('property.list.guestsCount', { count: property.maxGuests }),
@@ -171,7 +158,6 @@ export function PropertyDetailPage() {
     .filter(Boolean)
     .join(' · ');
 
-  // Pausing and activating are dedicated actions (A2-05): reversible (the pause offers "Annulla"), never the generic update.
   const menu: PageHeaderMenuItem[] = [
     ...(canWrite ? [{ label: t('property.list.actions.edit'), icon: Pencil, to: propertyEditPath(property.id), testId: 'property-edit' }] : []),
     ...(canCreateBooking
@@ -195,7 +181,6 @@ export function PropertyDetailPage() {
       : []),
   ];
 
-  // The test ids are how the tests reach the tabs.
   const tabs: TabItem<PropertyPanel>[] = [
     { value: 'info', icon: Building2, label: t('property.detail.tabs.info'), testId: 'property-tab-info' },
     { value: 'photos', icon: Images, label: t('property.detail.tabs.photos'), testId: 'property-tab-photos' },
@@ -204,7 +189,6 @@ export function PropertyDetailPage() {
     { value: 'documents', icon: FileText, label: t('property.detail.tabs.documents'), testId: 'property-tab-documents' },
   ];
 
-  // The backend decides whether it can go (409 with upcoming bookings or active leases): the toast of the mutation says why.
   const confirmDelete = async () => {
     try {
       await deleteProperty.mutateAsync(property.id);
@@ -216,11 +200,9 @@ export function PropertyDetailPage() {
   return (
     <AppShell>
       <div className="min-w-0 space-y-6" data-testid="property-detail-page">
-        {/* The trail (Affitti brevi › Immobili › this property) and, on a phone, the link back to the list (UI-05). */}
         <PageHeader
           crumbs="auto"
           title={property.name}
-          // The state at the start of the line of the facts (UX round 2026-11): on the right only the actions.
           status={<StatusBadge kind="property" status={status} data-testid="property-status" />}
           description={summary}
           secondary={menu}
@@ -228,10 +210,9 @@ export function PropertyDetailPage() {
 
         <ScheduledChangeNotice area="short-rent" propertyId={property.id} />
 
-        {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs layout="sidebar" label={t('property.detail.tabsLabel')} items={tabs} defaultValue="info" value={panel} selectTestId="property-tabs-select">
           {panel === 'info' && (
-            <div className="space-y-8">
+            <div className="space-y-6">
               <PropertyNextStep
                 property={property}
                 status={status}
@@ -240,11 +221,10 @@ export function PropertyDetailPage() {
                 onReactivate={() => activateProperty.mutate(property.id)}
                 reactivating={activateProperty.isPending}
               />
-              <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} />
-              {/* «Invio a Polizia e ISTAT» (CHK-12 point 7): who sends, whether it works. It asks `property.read` itself and shows nothing without it. */}
-              <ConnectionHealthPanel propertyId={property.id} timeZone={property.timezone} />
-              {/* The QR of the welcome page (CRM-03): only where the CRM module is on, and only for who may write the property (what its API asks). */}
-              {crmEnabled && canWrite ? <WelcomeQrCard propertyId={property.id} propertyName={property.name} /> : null}
+              <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath}>
+                <ConnectionHealthPanel propertyId={property.id} timeZone={property.timezone} />
+                {crmEnabled && canWrite ? <WelcomeQrCard propertyId={property.id} propertyName={property.name} /> : null}
+              </PropertyOverviewTab>
             </div>
           )}
           {panel === 'photos' && <PropertyPhotoManager propertyId={property.id} propertyName={property.name} canEdit={canWrite} />}

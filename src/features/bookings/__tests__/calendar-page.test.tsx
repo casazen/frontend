@@ -17,7 +17,6 @@ vi.mock('../components/booking-calendar', () => ({
 vi.mock('@/queries/use-bookings', () => ({ useBookingCalendar: vi.fn() }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: vi.fn() }));
 vi.mock('@/queries/use-booking-messages', () => ({ useUnreadMessagesByBooking: () => ({ data: undefined }) }));
-// The day layer (E08/F05/US03/T01) reads through the client of the queries, which this page is rendered without: it reads nothing here.
 vi.mock('@/queries/use-calendar-days', () => ({ useCalendarDays: () => ({ data: undefined, isError: false, error: null, refetch: vi.fn() }) }));
 
 function renderPage() {
@@ -29,7 +28,6 @@ function renderPage() {
 }
 
 describe('CalendarPage month range (QA-CLOCK-FE)', () => {
-  // In Rome a local midnight is the day before in UTC: the old toISOString() range was 31 August - 29 September.
   withBrowserTimeZone('Europe/Rome');
 
   beforeEach(async () => {
@@ -76,7 +74,6 @@ describe('CalendarPage month range (QA-CLOCK-FE)', () => {
   });
 
   it('CalendarPage_FirstNightOfTheMonthInRome_AsksForTheNewMonth', () => {
-    // 22:30 UTC of 30 September is 00:30 of 1 October in Rome.
     freezeClock('2026-09-30T22:30:00Z');
 
     renderPage();

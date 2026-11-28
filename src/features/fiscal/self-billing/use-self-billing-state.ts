@@ -12,7 +12,6 @@ import { useCreateSelfBillingDrafts, useSelfBilling, useSelfBillingBusy } from '
 import type { SelfBillingGeneration, SelfBillingListItem } from '@/types';
 import { SELF_BILLING_PATH, isClosedNotDue } from './self-billing-model';
 
-/** The months the filter offers, counting back from the current one. */
 const MONTHS_OFFERED = 24;
 
 /**
@@ -24,16 +23,13 @@ export function useSelfBillingState(t: TFunction) {
   const { flags } = useFeatureFlags();
   const [today] = useState(() => todayInRome());
   const thisMonth = useMemo(() => ({ year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)) }), [today]);
-  // The month that is over is the one to work on: it is when the commissions are known and the TD17 is due (by the 15th of the next month).
   const [period, setPeriod] = useState(() => periodParam(defaultPeriod(today)));
   const [openId, setOpenId] = useState<string | null>(null);
   // The rejected TD17 whose «Correggi e rimanda» is being confirmed: kept whole (not looked up in the list), so that a refusal told in the dialog stays there while the list is read again behind it.
   const [correcting, setCorrecting] = useState<SelfBillingListItem | null>(null);
-  // The kept draft whose «Chiudi come non più dovuta» is being confirmed: kept whole for the same reason.
   const [closing, setClosing] = useState<SelfBillingListItem | null>(null);
   const [generation, setGeneration] = useState<SelfBillingGeneration | null>(null);
   const list = useSelfBilling(period === '' ? undefined : period);
-  // The drafts of the list that were closed as «non più dovuta»: the rejected original they replaced says so (its replacement is not an invoice that will ever carry its number).
   const closedIds = useMemo(() => new Set((list.data ?? []).filter(isClosedNotDue).map((item) => item.id)), [list.data]);
   const drafts = useCreateSelfBillingDrafts();
   const busy = useSelfBillingBusy();
@@ -44,7 +40,6 @@ export function useSelfBillingState(t: TFunction) {
   const entry = getManifestEntry(SELF_BILLING_PATH);
   const mayManage = entry !== undefined && isEntryFeatureEnabled(entry, flags) && hasEntryPermission(entry, hasPermission);
   const mayCorrect = mayManage && isFeatureEnabled(flags, 'sdiSubmission');
-  // «Chiudi come non più dovuta» is behind the same role and the same two flags as the correction that makes the draft it closes.
   const mayClose = mayCorrect;
 
   const prepare = (target: string) => {
@@ -59,7 +54,6 @@ export function useSelfBillingState(t: TFunction) {
     );
   };
 
-  // A draft refused as outdated (409): the drafts of ITS month are made again with the same action as the button of the page, and the person is taken to its report.
   const redoDrafts = (year: number, monthOfDraft: number) => {
     const target = periodParam({ year, month: monthOfDraft });
     setPeriod(target);

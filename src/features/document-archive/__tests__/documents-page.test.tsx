@@ -66,13 +66,11 @@ const PROPERTIES = [
   { id: 'p2', name: 'Casa Mare' },
 ];
 
-/** What the client of the API throws for an answer with a problem body (the body already parsed, as `withJsonErrorBody` leaves it). */
 function problem(status: number, body: Record<string, unknown>): AxiosError {
   const config = { headers: new AxiosHeaders(), responseType: 'blob' } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: body, statusText: '', headers: {}, config });
 }
 
-/** True when `secret` is anywhere in `value`, in any text of it, however deep. */
 function holds(value: unknown, secret: string, seen = new WeakSet<object>()): boolean {
   if (typeof value === 'string') return value.includes(secret);
   if (typeof value !== 'object' || value === null || seen.has(value)) return false;
@@ -99,7 +97,6 @@ function renderPage(initial = '/app/short-rent/documents', client = new QueryCli
 
 const findTable = () => screen.findByRole('table', { name: i18n.t('documentArchive.title') });
 
-/** The button of a row, in the table (the cards of a phone have their own, in the same page). */
 const downloadButtons = () => within(screen.getByRole('table', { name: i18n.t('documentArchive.title') })).queryAllByRole('button', { name: 'Download' });
 
 beforeEach(async () => {
@@ -124,13 +121,10 @@ describe('DocumentsPage (NF-99)', () => {
     expect(table.getByText('Property document')).toBeInTheDocument();
     expect(table.getByText('Contract')).toBeInTheDocument();
     expect(table.getAllByText('Villa Rosa').length).toBeGreaterThan(0);
-    // The booking is a link to it; the size is as a person reads it; a property document stores none.
     expect(table.getByRole('link', { name: 'CZ-123' })).toHaveAttribute('href', '/app/short-rent/bookings/b1');
     expect(table.getByText(/2[.,]4 MB/)).toBeInTheDocument();
     expect(downloadButtons()).toHaveLength(2);
-    // The day is the one of the row, written as a person reads it (a stay date: never moved by the time zone of the browser).
     expect(table.getAllByText(/Oct.*12.*2026|12.*Oct.*2026/).length).toBeGreaterThan(0);
-    // The button of a row is 44 px high whatever the pointer (the table is where the mouse is).
     expect(screen.getByTestId('documents-list')).toHaveClass('[&_td_button]:min-h-11');
     expect(documentArchiveApi.list).toHaveBeenCalledWith(expect.objectContaining({ page: 1, pageSize: 25, types: undefined }));
   });
@@ -169,7 +163,6 @@ describe('DocumentsPage (NF-99)', () => {
       await findTable();
 
       await waitFor(() => expect(documentArchiveApi.types).toHaveBeenCalledWith({ from: undefined, to: undefined, propertyId: undefined, q: 'ape' }));
-      // The types themselves, which define the chips, are asked with no filter at all.
       expect(documentArchiveApi.types).toHaveBeenCalledWith({});
     });
 
@@ -320,8 +313,6 @@ describe('DocumentsPage (NF-99)', () => {
       expect(toast.success).toHaveBeenCalledWith(i18n.t('documentArchive.downloadDone'));
     });
 
-    // The API exposes `Content-Disposition` to the page: the receipt of a tourist tax payment is saved under its own name, and where the page cannot read
-    // the header (or it has no name) under the name rebuilt from the row, with no error.
     it('is saved under the name the server gives it, and under the name rebuilt from the row when the page cannot read the header', async () => {
       vi.mocked(documentArchiveApi.list).mockResolvedValue(
         page([doc('t1', { type: 'touristTax', title: 'Siracusa', propertyId: null, propertyName: null, contentType: 'application/pdf', sizeBytes: 1234 })]),
@@ -355,7 +346,6 @@ describe('DocumentsPage (NF-99)', () => {
       expect(table.queryByTestId('document-download-propertyDocument:d1')).not.toBeInTheDocument();
       expect(table.getByTestId('document-download-contract:d2')).toBeInTheDocument();
       expect(toast.error).toHaveBeenCalledWith(i18n.t('apiErrors.codes.archiveDocumentHasNoFile'));
-      // The row stays that way when the list is read again.
       expect(documentArchiveApi.list).toHaveBeenCalledTimes(1);
     });
 
@@ -384,12 +374,9 @@ describe('DocumentsPage (NF-99)', () => {
       expect(downloadButtons()).toHaveLength(2);
     });
 
-    // A file can be a contract or a proof about guests, and the request that fails holds the access token: the cache of the mutations keeps
-    // neither, and not even the mutation once nobody watches it.
     it('keeps in the cache of the mutations neither the token of the request that failed nor the file that came', async () => {
       const failed = problem(500, { code: 'boom' });
       failed.config!.headers.set('Authorization', 'Bearer SECRET-TOKEN');
-      // The test is a real one: the token is in what axios gives.
       expect(holds(failed, 'SECRET-TOKEN')).toBe(true);
       vi.mocked(documentArchiveApi.download)
         .mockRejectedValueOnce(failed)
@@ -508,13 +495,11 @@ describe('the archive of a period (NF-99)', () => {
     expect(message).toHaveTextContent('412');
     expect(message).toHaveTextContent('300');
     expect(saveBlobAs).not.toHaveBeenCalled();
-    // The dialog stays open for another period, and the button offers to try again.
     expect(dialog.getByTestId('archive-export-start')).toHaveTextContent(i18n.t('documentArchive.export.retry'));
     fireEvent.change(dialog.getByTestId('archive-export-period'), { target: { value: 'lastMonth' } });
     expect(dialog.queryByTestId('archive-export-too-large')).not.toBeInTheDocument();
   });
 
-  // The cap of the bytes counts a document that stores no size as 10 MB: 21 property documents are 210 MB, over the 200 MB, with far fewer than 300 files.
   it('says the archive is too large, not that there are too many files, when a few files go over the size', async () => {
     vi.mocked(documentArchiveApi.export).mockRejectedValueOnce(problem(422, { code: 'archive_export_too_large', fileCount: 21, maxFiles: 300, maxBytes: 209715200 }));
     const dialog = await openDialog();
@@ -522,7 +507,6 @@ describe('the archive of a period (NF-99)', () => {
     fireEvent.click(dialog.getByTestId('archive-export-start'));
 
     const message = await dialog.findByTestId('archive-export-too-large');
-    // The size is written as a person reads it, with the space that the language puts between the number and the unit: any kind of space is one.
     const expected = i18n.t('documentArchive.export.tooBig', { count: 21, max: 300, size: formatFileSize(209715200, 'en') }).replace(/\s+/g, ' ');
     expect(message).toHaveTextContent(expected);
     expect(message).toHaveTextContent(/too large/i);
@@ -583,7 +567,6 @@ describe('the archive of a period (NF-99)', () => {
     expect(await dialog.findByTestId('archive-export-progress')).toHaveTextContent(i18n.t('documentArchive.export.preparing'));
     expect(dialog.getByTestId('archive-export-period')).toBeDisabled();
     expect(dialog.getByTestId('archive-export-type-contract')).toBeDisabled();
-    // A second press does not start a second download.
     fireEvent.click(dialog.getByTestId('archive-export-start'));
     expect(documentArchiveApi.export).toHaveBeenCalledTimes(1);
 

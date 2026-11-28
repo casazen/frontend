@@ -20,7 +20,6 @@ import {
 } from '../self-billing-model';
 import { closed, failure, item, kept, original, rejected, replacement } from './self-billing-fixtures';
 
-/** The text of a key in each language, asked when the test runs (not when the file is read). */
 const it_ = (key: string, options?: Record<string, unknown>): string => i18n.getFixedT('it')(key, options);
 const en = (key: string, options?: Record<string, unknown>): string => i18n.getFixedT('en')(key, options);
 
@@ -32,7 +31,6 @@ describe('the reasons a draft that holds the number of a rejected TD17 is kept (
     expect(it_(key).length).toBeGreaterThan(40);
     expect(en(key).length).toBeGreaterThan(40);
     expect(it_(key)).not.toBe(en(key));
-    // The sentence is a sentence of its own: it says what to do or who decides, and never a code.
     expect(it_(key)).not.toContain(code);
     expect(en(key)).not.toContain(code);
   });
@@ -53,7 +51,6 @@ describe('the reasons a draft that holds the number of a rejected TD17 is kept (
     const outdated = lng === 'it' ? /né emettere né scartare|lo decide il commercialista/i : /neither issued nor discarded|decided by the accountant/i;
     const stillTrue = lng === 'it' ? /non si può emettere/i : /cannot be issued/i;
 
-    // The four reasons and the sentence of a code this client does not know: the draft has a way out now (closing it), so none of them leaves the person with «nothing can be done, the accountant decides».
     for (const key of [...KEPT_REASONS.map((code) => keptKeyOf(code)), keptKeyOf('a_reason_of_the_future')]) {
       expect(t(key, { code: 'a_reason_of_the_future' })).not.toMatch(outdated);
       expect(t(key, { code: 'a_reason_of_the_future' })).toMatch(stillTrue);
@@ -68,7 +65,6 @@ describe('the reasons a draft that holds the number of a rejected TD17 is kept (
     expect(en('selfBilling.kept.exit')).toMatch(/reserved/i);
     expect(en('selfBilling.kept.exit')).toMatch(/never given to another invoice/i);
     expect(it_('selfBilling.kept.exit')).not.toBe(en('selfBilling.kept.exit'));
-    // It names the button of the page: when the button is renamed the sentence follows, never the other way round.
     expect(it_('selfBilling.kept.exit')).toContain(it_('selfBilling.close.button').replace(/^Chiudi /, ''));
     expect(en('selfBilling.kept.exit')).toContain(en('selfBilling.close.button').replace(/^Close /, ''));
   });
@@ -127,7 +123,6 @@ describe('the words around the correction of a rejected TD17 (the «Da fare» na
   it.each(['it', 'en'] as const)('theTodoOfARejectedTd17_NamesTheButtonThePageOffers_In_%s', (lng) => {
     const t = i18n.getFixedT(lng);
 
-    // The «Da fare» that opens the page says what to press there: when the button is renamed the sentence follows, never the other way round.
     expect(t('activity.todo.type.SelfBillingRejected.why')).toContain(t('selfBilling.correct.button'));
   });
 
@@ -151,7 +146,6 @@ describe('the words around the correction of a rejected TD17 (the «Da fare» na
 describe('«Chiudi come non più dovuta»: what is offered, and the reasons of the closing (each has its words, in two different languages)', () => {
   it('canCloseNotDue_OnlyADraftThatReplacesARejectedInvoiceAndThatTheServerSaysIsKept', () => {
     expect(canCloseNotDue(kept())).toBe(true);
-    // A replacement the month still supports is issued, not closed; an ordinary draft is not a replacement; whatever is not a draft is history or issued.
     expect(canCloseNotDue(replacement())).toBe(false);
     expect(canCloseNotDue(item())).toBe(false);
     expect(canCloseNotDue(item({ keptReason: 'ledger_gives_no_td17' }))).toBe(false);
@@ -175,7 +169,6 @@ describe('«Chiudi come non più dovuta»: what is offered, and the reasons of t
     expect(it_(key as string).length).toBeGreaterThan(15);
     expect(en(key as string).length).toBeGreaterThan(15);
     expect(it_(key as string)).not.toBe(en(key as string));
-    // Words a host understands, never the code.
     expect(it_(key as string)).not.toContain(code);
     expect(en(key as string)).not.toContain(code);
   });
@@ -219,12 +212,9 @@ describe('«Chiudi come non più dovuta»: what is offered, and the reasons of t
 
     expect(new Set(sentences).size).toBe(kinds.length);
     for (const sentence of sentences) expect(sentence.length).toBeGreaterThan(20);
-    // A call that failed does not know the outcome: it asks to check the list and to try again, and never says that nothing changed.
     expect(t('selfBilling.close.problem.failed')).toMatch(lng === 'it' ? /elenco/i : /list/i);
     expect(t('selfBilling.close.problem.failed')).not.toMatch(/non è cambiato|nothing changed/i);
-    // An «already closed» draft has nothing to fix, and says so.
     expect(t('selfBilling.close.problem.alreadyClosed')).toMatch(lng === 'it' ? /nulla da correggere/i : /nothing to fix/i);
-    // The note is cut at 500 characters, and the sentence says the figure the server uses.
     expect(t('selfBilling.close.problem.noteTooLong', { max: CLOSE_NOTE_MAX })).toContain(String(CLOSE_NOTE_MAX));
   });
 

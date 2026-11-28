@@ -62,7 +62,6 @@ describe('VaultSecretForm, the user of the panel of a structure for the support 
 
     expect(screen.getByTestId('assist-vault-open')).toHaveTextContent(i18n.t('onboardingPlan.assist.vault.replace'));
     fireEvent.click(screen.getByTestId('assist-vault-open'));
-    // Write-only: the fields are empty, the password is a password field and nothing says what is stored.
     expect(screen.getByTestId('assist-vault-username')).toHaveValue('');
     expect(screen.getByTestId('assist-vault-password')).toHaveValue('');
     expect(screen.getByTestId('assist-vault-password')).toHaveAttribute('type', 'password');
@@ -92,13 +91,11 @@ describe('VaultSecretForm, the user of the panel of a structure for the support 
     await waitFor(() =>
       expect(onboardingAssistApi.storeVaultSecret).toHaveBeenCalledWith({ orgId: ORG, propertyId: PROPERTY, kind: 'OctoratePanel', username: USERNAME, password: PASSWORD }),
     );
-    // The values leave the page as soon as the server has them, and are in no cache of the queries or of the mutations.
     await waitFor(() => expect(screen.queryByTestId('assist-vault-form')).not.toBeInTheDocument());
     expect(document.body.textContent).not.toContain(PASSWORD);
     expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.assist.vault.saved'));
     await waitFor(() => expect(JSON.stringify(client.getMutationCache().getAll().map((mutation) => mutation.state))).not.toContain(PASSWORD));
     expect(JSON.stringify(client.getQueryCache().getAll().map((query) => query.state))).not.toContain(PASSWORD);
-    // Open again: the fields are empty.
     fireEvent.click(screen.getByTestId('assist-vault-open'));
     expect(screen.getByTestId('assist-vault-password')).toHaveValue('');
   });
@@ -128,10 +125,8 @@ describe('VaultSecretForm, the user of the panel of a structure for the support 
     expect(screen.getByTestId('assist-vault-password')).toHaveValue(PASSWORD);
     expect(screen.getByTestId('assist-vault-save')).toBeEnabled();
     expect(toast.success).not.toHaveBeenCalled();
-    // The password is in the field, to be corrected, and in no cache: a mutation that is watched keeps what it was asked until it is reset, and a refusal resets it too.
     await waitFor(() => expect(JSON.stringify(client.getMutationCache().getAll().map((mutation) => mutation.state))).not.toContain(PASSWORD));
     expect(JSON.stringify(client.getQueryCache().getAll().map((query) => query.state))).not.toContain(PASSWORD);
-    // The refusal stays said while the values are corrected, and a new try clears it.
     fill('assist-vault-password', `${PASSWORD}!`);
     expect(screen.getByTestId('assist-vault-error')).toBeInTheDocument();
     vi.mocked(onboardingAssistApi.storeVaultSecret).mockResolvedValueOnce({

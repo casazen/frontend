@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Copy } from 'lucide-react';
 
-/** The code of a booking (`XXXXX-XXXXX`), to keep: shown whole, with a button that copies it (and says so to a screen reader). */
 export function CodeLine({ code }: { code: string }) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);

@@ -22,7 +22,6 @@ describe('day selection (E08/F05/US03/T02)', () => {
     const first = startSelection('p1', '2026-09-12');
     expect(extendSelection(first, 'p1', '2026-09-15')).toMatchObject({ anchor: '2026-09-12', from: '2026-09-12', to: '2026-09-15' });
     expect(extendSelection(first, 'p1', '2026-09-10')).toMatchObject({ anchor: '2026-09-12', from: '2026-09-10', to: '2026-09-12' });
-    // Extending again moves the end that is not the anchor.
     const wide = extendSelection(first, 'p1', '2026-09-20');
     expect(extendSelection(wide, 'p1', '2026-09-14')).toMatchObject({ from: '2026-09-12', to: '2026-09-14' });
   });
@@ -33,7 +32,6 @@ describe('day selection (E08/F05/US03/T02)', () => {
   });
 
   it('extendSelection_NoSelectionYet_StartsAtTheOriginAndExtends', () => {
-    // Shift plus arrow on a day with nothing selected: the range runs from that day to the next.
     expect(extendSelection(null, 'p1', '2026-09-13', '2026-09-12')).toMatchObject({ anchor: '2026-09-12', from: '2026-09-12', to: '2026-09-13' });
   });
 
@@ -43,7 +41,6 @@ describe('day selection (E08/F05/US03/T02)', () => {
     expect(wide).not.toBeNull();
     expect(selectedDays(wide)).toHaveLength(MAX_SELECTION_DAYS);
     expect(wide?.from).toBe('2026-01-01');
-    // The same going back from the anchor.
     const back = extendSelection(startSelection('p1', '2026-12-31'), 'p1', '2024-01-01');
     expect(selectedDays(back)).toHaveLength(MAX_SELECTION_DAYS);
     expect(back?.to).toBe('2026-12-31');
@@ -77,7 +74,6 @@ describe('day selection (E08/F05/US03/T02)', () => {
   });
 
   it('selectedDays_TheNightOfTheSummerTimeChange_IsNeverShifted', () => {
-    // Dates are calendar dates read as written: 25 October 2026 is the night the clocks go back, and it is the 25th in any time zone.
     expect(selectedDays(extendSelection(startSelection('p1', '2026-10-24'), 'p1', '2026-10-26'))).toEqual(['2026-10-24', '2026-10-25', '2026-10-26']);
   });
 

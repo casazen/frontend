@@ -21,9 +21,7 @@ const SELECT_CLASS =
 
 interface StepDetailsProps {
   values: DetailsValues;
-  /** Called on every change, so going back and forth between the steps loses nothing. */
   onChange: (values: DetailsValues) => void;
-  /** The site has a text for the optional «send me offers» consent (its version): only then the two boxes (E-mail, WhatsApp) are there. */
   offersVersion: string | null | undefined;
   /** The site has a soft opt-in notice (art. 130 c. 4, its version): only then the notice is shown under the e-mail field. */
   softOptInNoticeVersion?: string | null;
@@ -53,7 +51,6 @@ export function StepDetails({ values, onChange, offersVersion, softOptInNoticeVe
   } = useForm<DetailsFormValues>({ resolver: zodResolver(detailsSchema), mode: 'onTouched', defaultValues: values });
   const countryOptions = useMemo(() => getCountryOptions(i18n.language), [i18n.language]);
 
-  // Kept as the guest types (and only the values that are valid are not required to be): the draft survives a step back.
   const watched = useWatch({ control });
   useEffect(() => {
     onChange({
@@ -80,10 +77,8 @@ export function StepDetails({ values, onChange, offersVersion, softOptInNoticeVe
 
   const email = watched.email ?? '';
   const suggestion = suggestEmail(email.trim());
-  // The WhatsApp box needs a number: until one is typed it cannot be ticked (a box already ticked stays free, so it can be unticked).
   const phoneTyped = (watched.phone ?? '').trim() !== '';
   const whatsAppError = translateValidationMessage(errors.offersWhatsApp?.message, t, i18n);
-  // The number is only for the arrival, until the guest chooses to be written to on WhatsApp with it: the hint says both.
   const phoneHint = offersVersion ? t('publicCheckout.details.phoneHintOffers') : t('publicCheckout.details.phoneHint');
 
   const from = shortTime(property.checkInFrom);
@@ -139,7 +134,6 @@ export function StepDetails({ values, onChange, offersVersion, softOptInNoticeVe
           </div>
           <div className="co-row">
             <Field label={t('publicBooking.phone')} hint={phoneHint} optional error={errors.phone}>
-              {/* A number typed or cleared changes what the WhatsApp box may do: its message is checked again at once, not at the next press. */}
               <Input
                 id="phone"
                 type="tel"

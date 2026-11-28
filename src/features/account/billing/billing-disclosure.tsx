@@ -3,19 +3,12 @@ import { ChevronDown } from 'lucide-react';
 
 interface BillingDisclosureProps {
   title: string;
-  /** What the part holds right now, in a line: the person need not open it to know. */
   summary?: string;
-  /** Lets the page open the part and bring it into view (the button of the plan block opens the plans). */
   detailsRef?: Ref<HTMLDetailsElement>;
   testId?: string;
   children: ReactNode;
 }
 
-/**
- * A part of the page that opens on request, for the details that do not need to be seen at first (the redesign conventions, §7bis,
- * rule 7): a title and a line under it, a hairline above, a collapsible panel. It is the native `details`, so the keyboard, the screen readers and
- * "find in page" work with no code of ours.
- */
 export function BillingDisclosure({ title, summary, detailsRef, testId, children }: BillingDisclosureProps) {
   return (
     <details ref={detailsRef} data-testid={testId} className="group min-w-0 scroll-mt-4 rounded-xl border bg-card px-4">

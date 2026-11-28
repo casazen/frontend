@@ -20,7 +20,6 @@ describe('the assisted notification of the cantons other than Ticino (E31/F02/US
     const calls = vi.mocked(axios.get).mock.calls;
     expect(calls[0]![0]).toBe(`/properties/${PROPERTY_ID}/swiss/notification-day`);
     expect(calls[0]![1]).toMatchObject({ params: { date: '2026-11-19' } });
-    // Without a day the server answers the oldest day still to notify: no date is sent.
     expect(calls[1]![1]).toMatchObject({ params: undefined });
   });
 
@@ -33,7 +32,6 @@ describe('the assisted notification of the cantons other than Ticino (E31/F02/US
 
     const [postUrl, body] = vi.mocked(axios.post).mock.calls[0]!;
     expect(postUrl).toBe(`/properties/${PROPERTY_ID}/swiss/notification-declare`);
-    // The body is the day and nothing else: no guest, no name.
     expect(body).toStrictEqual({ arrivalDay: '2026-11-19' });
     expect(vi.mocked(axios.delete).mock.calls[0]![0]).toBe(`/properties/${PROPERTY_ID}/swiss/notification-declare?arrivalDay=2026-11-19`);
   });

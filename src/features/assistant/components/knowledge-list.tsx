@@ -26,14 +26,11 @@ import { KNOWLEDGE_TOPICS, type KnowledgeEntry, type KnowledgeTopic } from '@/ty
 import { KnowledgeEntryDialog } from './knowledge-entry-dialog';
 import { SettingsError, SettingsLoading, SettingsNoAccess, SettingsNotFound } from './settings-states';
 
-/** What the answers belong to: a property, or the whole organization (every property that has no answer of its own for the same topic and kind). */
 export type KnowledgeScope = { kind: 'property'; propertyId: string } | { kind: 'organization' };
 
 interface KnowledgeListProps {
   scope: KnowledgeScope;
-  /** The person may read the answers (`property.read` for a property, `booking.read` for the organization); without it nothing is asked of the server. */
   canRead: boolean;
-  /** The person may add, change, switch and delete the answers of this scope (`property.write`; the administrator for the organization's). */
   canEdit: boolean;
 }
 
@@ -43,10 +40,8 @@ type HeadingTag = 'h2' | 'h3' | 'h4';
 
 interface EntryRowProps {
   entry: KnowledgeEntry;
-  /** The level of the heading of the answer: one under the heading of the section it is in. */
   Heading: HeadingTag;
   editable: boolean;
-  /** Any request of the list is going on: every button of every row waits for it. */
   busy: boolean;
   onEdit: (entry: KnowledgeEntry) => void;
   onToggle: (entry: KnowledgeEntry, isActive: boolean) => void;
@@ -117,7 +112,6 @@ export function KnowledgeList({ scope, canRead, canEdit }: KnowledgeListProps) {
   const query = scope.kind === 'property' ? ofProperty : ofOrganization;
 
   if (!canRead) return <SettingsNoAccess message={t('assistant.noAccess.knowledge')} testId="assistant-knowledge-no-access" />;
-  // A 404 is «not found» whatever the cache still holds: the property is not the person's, or it is gone.
   if (query.isError && isNotFound(query.error)) {
     return <SettingsNotFound title={t('assistant.property.notFound')} hint={t('assistant.property.notFoundHint')} testId="assistant-knowledge-not-found" />;
   }
@@ -143,7 +137,6 @@ export function KnowledgeList({ scope, canRead, canEdit }: KnowledgeListProps) {
   };
 
   const failure = save.isError ? save.error : remove.isError ? remove.error : null;
-  // The answers of the organization are a section of the page (h2); the sections of a property are under its name (h3), and its answers under them (h4).
   const SectionHeading: HeadingTag = scope.kind === 'organization' ? 'h2' : 'h3';
   const EntryHeading: HeadingTag = scope.kind === 'organization' ? 'h3' : 'h4';
 

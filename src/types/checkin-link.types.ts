@@ -4,7 +4,6 @@
  * portale» and never the name of the channel manager (NF-12): the codes below are the server's, and the texts a person reads are not made of them.
  */
 
-/** The way the link goes (or is going) to the guest: an e-mail, one message in the reservation chat of the portal, or the host's own hands. */
 type CheckInLinkChannel = 'Email' | 'PortalChat' | 'Manual';
 
 /**
@@ -31,14 +30,10 @@ export interface CheckInLinkDelivery {
   channel?: CheckInLinkChannel | null;
   state?: CheckInLinkDeliveryState | null;
   attempts: number;
-  /** The stable code of why a delivery failed or waits (`chat_not_licensed`, `no_conversation`, `manual_verify`, `octorate_message_error`, …). */
   lastErrorCode?: string | null;
-  /** UTC instant. */
   sentAt?: string | null;
-  /** The guest completed the check-in, the booking was cancelled, the link expired or the host issued another link. */
   ended: boolean;
   endedReason?: string | null;
-  /** UTC instant: the end of validity of the link. */
   expiresAt?: string | null;
   checkInLink?: string | null;
 }

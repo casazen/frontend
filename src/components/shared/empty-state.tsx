@@ -4,7 +4,6 @@ import { Info, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-/** What a button of the state does: go somewhere (`href`) or run something (`onClick`). Text already translated. */
 export type EmptyStateAction = { label: string } & (
   | { href: string; onClick?: () => void }
   | { href?: undefined; onClick: () => void }
@@ -13,24 +12,15 @@ export type EmptyStateAction = { label: string } & (
 interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
-  /** The level of the title: `h3` (default) under the `h2` of a section, `h2` where the state sits straight under the `h1` of a page. */
   titleAs?: "h2" | "h3";
   description: string;
-  /** The one thing to do about the emptiness ("Create the first booking"). */
   action?: EmptyStateAction;
-  /** A second way out, quieter than the first ("Import from a file"). */
   secondaryAction?: EmptyStateAction;
-  /** "How it works": a link to the page or the article that explains what this section is for. */
   helpLink?: { label: string; href: string };
-  /**
-   * Room for "Try with sample data": the button or link goes here once sample data exists. It is rendered as it comes,
-   * after the actions and next to the help link.
-   */
   sampleData?: ReactNode;
   className?: string;
 }
 
-/** `/app/...` goes through the router (no reload); anything else (an `https:` link, `mailto:`) is a plain link. */
 const isInternalPath = (href: string) => href.startsWith("/") && !href.startsWith("//");
 
 function ActionButton({ action, variant }: { action: EmptyStateAction; variant: "default" | "outline" }) {
@@ -55,10 +45,6 @@ function ActionButton({ action, variant }: { action: EmptyStateAction; variant: 
 const HELP_LINK =
   "inline-flex items-center gap-1.5 rounded-sm text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
-/**
- * A section with nothing in it yet. It says what the section is for, offers the one thing to do (and, quieter, a second
- * one) and points to how it works: an empty page is never a dead end.
- */
 export function EmptyState({
   icon: Icon,
   title,

@@ -19,23 +19,14 @@ import { ChecksStep, ChoiceStep, ConfirmStep, DateStep } from './mode-wizard-ste
 interface ModeWizardProps {
   propertyId: string;
   propertyName: string;
-  /** The section the property is in, which is also the section of the page. */
   area: ModeArea;
   entry: ModeEntry;
   currentMode: RentalMode;
-  /** What the server found for tomorrow (the first day possible and why). Without it (the last screen opened again) the bounds are worked out here. */
   firstPreview: PropertyModePreview | undefined;
-  /** The change the server already has waiting: the last screen shows it when the page is opened again on it. */
   waiting: PropertyModeChange | null;
-  /** The change was programmed: the page must not swap this wizard for the "already programmed" screen when it refreshes. */
   onScheduled: () => void;
 }
 
-/**
- * The wizard of the change of mode (PM-03): choice, day, checks, confirmation, then "What happens now". It is a `WizardShell`:
- * the step is in the address (`?step=`), each step is checked before the next one opens, and the answers are kept as a draft in
- * the session. The checks step does not let go until the server says that the day is free; the last button programs the change.
- */
 export function ModeWizard({ propertyId, propertyName, area, entry, currentMode, firstPreview, waiting, onScheduled }: ModeWizardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -104,7 +95,6 @@ export function ModeWizard({ propertyId, propertyName, area, entry, currentMode,
           saved.values.target === target && !(typeof saved.values.date === 'string' && saved.values.date < bounds.earliest),
       }}
       onExit={() => navigate(exitPathFor(area, propertyId, entry))}
-      // Opened again on the last screen (a reload): it shows the change that waits; with none there is nothing to confirm.
       renderDone={({ result }) => {
         const change = result ?? waiting;
         return change ? (

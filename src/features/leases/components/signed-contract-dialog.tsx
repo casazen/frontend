@@ -22,15 +22,9 @@ interface SignedContractDialogProps {
   leaseId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Called when the API has recorded the signature (and the window closes): the wizard goes on from there. */
   onSigned?: () => void;
 }
 
-/**
- * Offline signature (LT-02, D15): the landlord uploads the contract signed by every party (PDF) and declares the
- * stipula date, the day the last party signed. Only then the lease becomes Signed and the RLI deadline is fixed. The
- * server checks the PDF content, its size and the date again.
- */
 export function SignedContractDialog({ leaseId, open, onOpenChange, onSigned }: SignedContractDialogProps) {
   const { t } = useTranslation();
   const declare = useDeclareOfflineSignature();

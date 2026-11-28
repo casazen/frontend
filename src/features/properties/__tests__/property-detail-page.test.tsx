@@ -16,12 +16,10 @@ import i18n from '@/i18n/config';
 import { AxiosError, AxiosHeaders } from 'axios';
 
 vi.mock('@/queries/use-properties');
-// The card «Cosa fare ora» reads the lights of the compliance items from the summary of the adempimenti (NF-52): none here (tests: property-next-step-lights.test.tsx).
 vi.mock('@/api/compliance.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/compliance.api')>()),
   fetchComplianceSummary: vi.fn(),
 }));
-// The row of the scheduled change of mode reads its own endpoint (tests: mode-entry-points.test.tsx).
 vi.mock('../mode/components/scheduled-change-notice', () => ({ ScheduledChangeNotice: () => null }));
 vi.mock('@/api/service-requests.api', () => ({
   fetchServiceRequests: vi.fn(),
@@ -41,7 +39,6 @@ vi.mock('@/hooks/use-workspace', () => ({
     hasPermission: (context: string, permission: string) => context === 'short-rent' && workspace.permissions.includes(permission),
   }),
 }));
-// The QR of the welcome page (CRM-03) is covered by its own test; here only whether the page mounts it (and so reads its API) is asked.
 vi.mock('@/api/welcome.api', () => ({
   welcomeApi: {
     getLink: vi.fn(() => Promise.resolve({ active: false, url: null, createdAt: null })),
@@ -114,7 +111,6 @@ const mockDetail: PropertyDetailDto = {
   },
 };
 
-/** The record of the property (`GET /properties/:id`): what the detail does not carry, the compliance status above all. */
 const mockRecord = { id: PROPERTY_ID, name: 'Test Villa', isActive: true, isPaused: false, complianceStatus: 'Active', slug: null } as unknown as Property;
 
 function problemError(status: number): AxiosError {
@@ -163,12 +159,10 @@ function pageElement(queryClient: QueryClient, otaPartnerApi: boolean, search: s
 function renderPage(otaPartnerApi = false, search = '', crmMarketing = false) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const view = render(pageElement(queryClient, otaPartnerApi, search, crmMarketing));
-  /** Draws the page again with what the hooks answer now: the answer of a request that arrived after the first drawing. */
   const again = () => view.rerender(pageElement(queryClient, otaPartnerApi, search, crmMarketing));
   return { ...view, again };
 }
 
-/** Opens the menu "⋯" of the header and gives it back. */
 async function openTheMenu() {
   fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
   return screen.findByRole('menu');
@@ -234,7 +228,6 @@ describe('PropertyDetailPage', () => {
     expect(screen.getByRole('heading', { name: 'Test Villa' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: i18n.t('property.detail.sections.data') })).toBeInTheDocument();
     expect(screen.getByTestId('property-status')).toHaveTextContent(i18n.t('property.table.active'));
-    // One highlighted block, and for an active property with nothing to fix it says so (once the lights of its compliance items are read).
     expect(await screen.findByTestId('property-next-step')).toHaveAttribute('data-next-step', 'allInOrder');
   });
 
@@ -253,11 +246,13 @@ describe('PropertyDetailPage', () => {
 
     const note = screen.getByTestId('property-cin-istat-mismatch');
     expect(note).toHaveAttribute('role', 'note');
-    expect(note).toHaveTextContent(i18n.t('property.cin.istatMismatch'));
+    expect(note).toHaveTextContent(i18n.t('property.cin.istatMismatchShort'));
+    expect(note).not.toHaveTextContent(i18n.t('property.cin.istatMismatch'));
+    fireEvent.click(within(note).getByRole('button', { name: `Cos'è: ${i18n.t('property.drawer.cin')}` }));
+    expect(screen.getByRole('dialog')).toHaveTextContent(i18n.t('property.cin.istatMismatch'));
+    expect(screen.getByRole('link', { name: i18n.t('manual.open') })).toHaveAttribute('href', '/guida/cin-identificazione-ticino.html#cin-cosa-e-e-cosa-controlla-casazen');
   });
 
-  // A2-05: the state and the action read `isPaused`, never `isActive` — pausing is a dedicated, reversible
-  // action that never 404s the owner's own detail page (it used to, via the old IsActive filter).
   it('PropertyDetailPage_PausedProperty_ShowsPausedBadgeAndAnActivateAction', () => {
     vi.mocked(propertyQueries.usePropertyDetail).mockReturnValue({
       data: { ...mockDetail, isPaused: true, pausedAt: '2026-09-20T10:00:00Z' },
@@ -269,7 +264,6 @@ describe('PropertyDetailPage', () => {
 
     expect(screen.getByTestId('property-status')).toHaveTextContent(i18n.t('property.table.paused'));
     expect(screen.getByTestId('property-next-step')).toHaveAttribute('data-next-step', 'reactivate');
-    // The block puts it back on, with the dedicated endpoint.
     fireEvent.click(screen.getByTestId('property-next-reactivate'));
     expect(activateMutation.mutate).toHaveBeenCalledWith(PROPERTY_ID);
     expect(pauseMutation.mutate).not.toHaveBeenCalled();
@@ -316,7 +310,6 @@ describe('PropertyDetailPage', () => {
     expect(screen.queryByText(/apisecret/i)).not.toBeInTheDocument();
   });
 
-  // FD-20 / D10: with the OTA partner API off the tab keeps only the iCal calendars.
   it('shows only the iCal calendars, without the OTA card, when the otaPartnerApi flag is off', () => {
     renderPage(false);
     expect(screen.queryByRole('tab', { name: 'Canali OTA' })).not.toBeInTheDocument();
@@ -328,7 +321,6 @@ describe('PropertyDetailPage', () => {
     expect(screen.queryByText('Booking.com')).not.toBeInTheDocument();
   });
 
-  // SU-07 (D2): the property's activity lists every stay's requests, each linked to its stay.
   it('PropertyDetailPage_ServiceRequests_ListedByPropertyWithTheirStay', async () => {
     const request = {
       orgId: 'org-1',
@@ -401,7 +393,6 @@ describe('PropertyDetailPage', () => {
     expect(screen.queryByTestId('property-load-error')).not.toBeInTheDocument();
   });
 
-  // PC-16: the iCal widget of the dashboard links to `?tab=ical`.
   it('PropertyDetailPage_TabInTheUrl_OpensTheIcalCalendars', () => {
     renderPage(false, '?tab=ical');
 
@@ -449,7 +440,6 @@ describe('PropertyDetailPage', () => {
     expect(complianceHealthApi.getConnectionHealth).not.toHaveBeenCalled();
   });
 
-  // The button «Attiva l'invio» of the cockpit and of the To do opens the page on that section.
   it('PropertyDetailPage_SectionInTheUrl_ScrollsToTheConnectionHealth', () => {
     workspace.permissions = ['property.read', 'property.write', 'booking.read'];
     const scroll = vi.fn();
@@ -458,7 +448,6 @@ describe('PropertyDetailPage', () => {
 
     expect(scroll).toHaveBeenCalledTimes(1);
     expect(scroll.mock.contexts[0]).toBe(document.getElementById('connection-health'));
-    // The focus goes to the section too, so a screen reader says where the link led.
     expect(document.getElementById('connection-health')).toHaveFocus();
   });
 

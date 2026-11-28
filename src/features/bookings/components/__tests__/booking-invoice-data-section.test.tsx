@@ -9,7 +9,6 @@ import { BookingInvoiceDataSection } from '../booking-invoice-data-section';
 vi.mock('@/api/invoice-data.api', () => ({ getInvoiceData: vi.fn(), saveInvoiceData: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-/** The permissions of the person, by `<context>:<permission>`; the section reads `payment.read` and `payment.write` of the short-rent context. */
 let granted = new Set<string>();
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (context: string, permission: string) => granted.has(`${context}:${permission}`) }),
@@ -57,7 +56,6 @@ describe('BookingInvoiceDataSection - who may see and change it (permission)', (
     granted = new Set(['short-rent:booking.read']);
     renderSection();
 
-    // Nothing is drawn: the data is what an invoice is made of, never shown to a role that does not see the money.
     expect(screen.queryByTestId('booking-invoice-data')).not.toBeInTheDocument();
     await Promise.resolve();
     expect(getInvoiceData).not.toHaveBeenCalled();

@@ -2,8 +2,6 @@ import { CalendarDays, Send, Users } from 'lucide-react';
 import { defineList } from '../define-list';
 import type { ListDefinition } from '../list-types';
 
-/** A list of stays, with a little of everything a list can have: the rows and the definition the tests of the list lean on. */
-
 export type StayStatus = 'pending' | 'confirmed' | 'inProgress' | 'done' | 'cancelled';
 
 export interface Stay {
@@ -34,7 +32,6 @@ export interface StayListOptions {
   withDetail?: boolean;
   withBulk?: boolean;
   withSwipe?: boolean;
-  /** Anything else in the definition. */
   extra?: Partial<ListDefinition<Stay>>;
 }
 

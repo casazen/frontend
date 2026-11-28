@@ -48,7 +48,6 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
   });
 
   it('buildRobotsTxt_VercelProductionWithoutThePublicSite_DoesNotDeclareItsSitemap', () => {
-    // SEO-VETRINA: no company data yet, so production does not serve the public site (src/site/site-gate.ts).
     const robots = buildRobotsTxt({ vercelEnv: 'production', publicSiteUrl: PUBLIC_SITE, publicSiteEnabled: false });
     expect(robots).not.toContain('sitemap-site.xml');
     expect(robots).toContain(`Sitemap: ${PUBLIC_SITE}/sitemap.xml`);
@@ -56,8 +55,6 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
   });
 
   it('buildRobotsTxt_VercelProduction_KeepsTheBookingSitesAndGuidesCrawlable', () => {
-    // BK-15: only the private pages are disallowed; the pages that are indexed (org landing, property, /p/*) are not.
-    // Robots rules are prefix matches where `*` is any text, as Google and Bing read them.
     const isDisallowed = (path: string) =>
       DISALLOWED_PATHS.some((rule) => new RegExp(`^${rule.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}`).test(path));
 
@@ -67,14 +64,11 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/book/x/sitemap.xml',
       '/p/affitti-brevi',
       '/p/affitti-brevi/lombardia/como',
-      // An org's own host: the landing page, a property and the sitemap.
       '/',
       '/property/villa',
       '/sitemap.xml',
-      // The supplier showcases and their sitemap are indexed.
       '/fornitori/pulizie-roma',
       '/sitemap-supplier.xml',
-      // SEO-VETRINA: the pages of the public site and their sitemap.
       '/affitti-brevi',
       '/affitti-lunghi',
       '/funzionalita',
@@ -95,20 +89,16 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       '/book/x/bookings/123/cancel',
       '/book/x/requests/123/confirm',
       '/book/x/property/villa/checkout',
-      // The private pages of the booking from a supplier's site.
       '/fornitori/pulizie-roma/prenota',
       '/fornitori/pulizie-roma/conferma',
       '/fornitori/pulizie-roma/richiesta',
       '/fornitori/pulizie-roma/preventivo',
-      // The payment page of a service.
       '/service/pay/0f6c1c2e-7a4b-4d52-9d3e-2b1f6a8c9d10',
-      // The welcome page behind the QR code of a house: the token of the link is in the path.
       '/benvenuto/TEST-benvenuto-villa-lago',
       '/my-bookings',
       '/booking/0f6c',
       '/requests/0f6c/confirm',
       '/property/villa/checkout',
-      // The files behind the public site's pages, which are served at their own paths.
       '/_site/index.html',
     ]) {
       expect(isDisallowed(hidden), hidden).toBe(true);
@@ -118,7 +108,6 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
   it.each([['preview'], ['development'], [undefined]])(
     'buildRobotsTxt_NotProduction_%s_DisallowsEverythingWithoutSitemap',
     (vercelEnv) => {
-      // Preview deployments, the develop test deployment, local and CI builds are never indexed.
       const robots = buildRobotsTxt({ vercelEnv, publicSiteUrl: PUBLIC_SITE, publicSiteEnabled: true });
 
       expect(directives(robots)).toEqual(['User-agent: *', 'Disallow: /']);
@@ -137,7 +126,6 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
     [`${PUBLIC_SITE}/app`, /site root/],
     [`${PUBLIC_SITE}/?utm=1`, /site root/],
   ])('buildRobotsTxt_ProductionWithInvalidPublicSite_%s_FailsTheBuild', (publicSiteUrl, message) => {
-    // Decision D3: no default domain, so a production build cannot guess one.
     expect(() => buildRobotsTxt({ vercelEnv: 'production', publicSiteUrl, publicSiteEnabled: true })).toThrow(message);
   });
 

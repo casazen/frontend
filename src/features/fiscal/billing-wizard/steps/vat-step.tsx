@@ -9,7 +9,6 @@ import type { CleaningFeeTreatment, StayVatTreatment } from '@/types';
 import type { BillingIdentityOnRecord, BillingWizardValues, ItalianRegime } from '../billing-wizard-schema';
 
 interface VatStepProps {
-  /** What the tax profile already has: it is shown, and asked only when it is missing. */
   onRecord: BillingIdentityOnRecord;
   /** The VAT number and the fiscal code the server read from the tax profile, to show what is on record. */
   vatNumber: string;
@@ -25,7 +24,6 @@ const REGIMES: ReadonlyArray<{ value: ItalianRegime; icon: typeof Briefcase }> =
 const STAY_TREATMENTS: readonly StayVatTreatment[] = ['Standard', 'ExemptArt10'];
 const CLEANING_TREATMENTS: readonly CleaningFeeTreatment[] = ['FollowsStay', 'Service'];
 
-/** The regime code of the electronic invoice the regime usually has (RF01 ordinary, RF19 flat-rate): shown as the example of the field, never sent for the person. */
 function proposedRegimeCode(regime: BillingWizardValues['regime']): string {
   return regime === 'VatFlatRate' ? 'RF19' : 'RF01';
 }
@@ -52,7 +50,6 @@ export function VatStep({ onRecord, vatNumber, fiscalCode }: VatStepProps) {
   const swiss = country === 'CH';
 
   const chooseRegime = (value: ItalianRegime) => {
-    // The regime code belongs to the regime it was chosen for: it is emptied when the regime changes, and the server then takes the one of the rule.
     if (value !== regime) setValue('fatturaPaRegimeCode', '', { shouldDirty: true });
     setValue('regime', value, { shouldDirty: true, shouldValidate: errors.regime !== undefined });
   };
@@ -163,7 +160,6 @@ export function VatStep({ onRecord, vatNumber, fiscalCode }: VatStepProps) {
                 />
               ))}
             </ChoiceGroup>
-            {/* ⚖ I1: a prudent default that an accountant has to confirm; it is changed here, never in the code. */}
             <p className="text-sm text-foreground/70" data-testid="billing-stay-vat-hint">
               {t('billingWizard.vat.stay.hint')}
             </p>

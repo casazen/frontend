@@ -4,13 +4,8 @@ import { Button } from '@/components/ui/button';
 import { SEO_HUB_PATH } from '@/features/public-seo/seo-paths';
 import { useSeoMeta } from '@/lib/seo-meta';
 
-/**
- * Public 404 (A8-03): an unknown address shows this page, it no longer goes to `/` and from there to the login. The
- * visitor chooses: the CasaZen area (sign-in for anonymous visitors) or the public guides.
- */
 export function NotFoundPage() {
   const { t } = useTranslation();
-  // An unknown address never ends up in the index (BK-15, A8-09).
   useSeoMeta({ title: t('notFound.title'), noindex: true });
 
   return (

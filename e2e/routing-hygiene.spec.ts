@@ -88,7 +88,6 @@ test.describe('Routing hygiene and app-ready (UI-00)', () => {
 
   test.describe('legacy addresses', () => {
     test('a legacy address keeps its query and fragment on the way to the canonical page', async ({ page }) => {
-      // The Stripe return pages (?checkout=success, ?stripe_return=1) and the links of the emails come through here.
       await page.goto('/bookings?checkout=success&demoProfile=short-stay#details', { waitUntil: 'domcontentloaded' });
 
       await expect(page).toHaveURL(/\/app\/short-rent\/bookings\?checkout=success&demoProfile=short-stay#details$/);

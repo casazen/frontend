@@ -17,7 +17,6 @@ const draftSchema = z.object({
   values: z.object({ selection: selectionSchema, roomEstimate: z.string().max(24) }),
 });
 
-/** A tab can hold the choices before provisioning. Legal acceptance and billing data always start at the server. */
 export function readCommercialDraft(scope: WizardDraftScope) {
   const stored = readWizardDraft(DRAFT_ID, scope);
   if (!stored) return null;

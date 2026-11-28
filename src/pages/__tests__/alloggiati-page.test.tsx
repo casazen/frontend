@@ -100,7 +100,6 @@ const row = (evidenceClass: CoverageRow['evidenceClass'], change: Partial<Covera
   ...change,
 });
 
-/** What the server answers to «Verifica nel tuo Cassetto Compliance» (the compliance drawer of E03/F05/US02 asks it): where to go, what to look at there. */
 const handoff = (topic: ComplianceHandoff['topic'], change: Partial<ComplianceHandoff['context']> = {}): ComplianceHandoff => ({
   handoffId: 'hf_5b0e2c9a41d94c63a8d1',
   startedAt: '2026-11-13T10:00:00Z',
@@ -132,7 +131,6 @@ function problem(status: number, code?: string): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: code ? { code } : {}, statusText: '', headers: {}, config });
 }
 
-/** True when `secret` is anywhere in `value`, in any text of it, however deep. */
 function holds(value: unknown, secret: string, seen = new WeakSet<object>()): boolean {
   if (typeof value === 'string') return value.includes(secret);
   if (typeof value !== 'object' || value === null || seen.has(value)) return false;
@@ -140,7 +138,6 @@ function holds(value: unknown, secret: string, seen = new WeakSet<object>()): bo
   return Object.values(value).some((item) => holds(item, secret, seen));
 }
 
-/** A failed call as axios gives it, with the token of the caller in the request it keeps (a test of the cache of the mutations is only a real one if the token is there to be found). */
 function problemWithToken(status: number, code: string): AxiosError {
   const failed = problem(status, code);
   failed.config!.headers.set('Authorization', 'Bearer SECRET-TOKEN');
@@ -191,9 +188,7 @@ afterEach(() => {
   cleanup();
 });
 
-// E03/F03/US02/T02 (NF-47, NF-52, CHK-08, CHK-12 point 8).
 describe('the archive of the proofs: the address and the filters', () => {
-  // AC 5 and the links of the cockpit (S061): the page opens already filtered.
   it('AlloggiatiPage_LinkOfTheCockpitWithoutTheSummary_OpensTheProofsOfThatKindPropertyAndMonth', async () => {
     renderPage(`${ARCHIVE}?kind=IstatProof&property=${P1}&period=2026-08`);
 
@@ -202,12 +197,10 @@ describe('the archive of the proofs: the address and the filters', () => {
     expect(screen.getByTestId('archive-filter-property')).toHaveValue(P1);
     expect(screen.getByTestId('archive-filter-kind')).toHaveValue('IstatProof');
     expect(screen.getByTestId('archive-filter-period')).toHaveValue('2026-08');
-    // No summary without the traffic light: no tabs and no call to the report.
     expect(screen.queryByTestId('archive-tab-summary')).not.toBeInTheDocument();
     expect(complianceArchiveApi.getCoverageReport).not.toHaveBeenCalled();
   });
 
-  // The proofs of the archive are of short stays: the page asks for the short-rent flats only (its filter and the flats the dialog of a receipt offers to cover), never one let long-term.
   it('AlloggiatiPage_Flats_AreAskedForTheShortRentOnesOnly', async () => {
     renderPage();
 
@@ -224,7 +217,6 @@ describe('the archive of the proofs: the address and the filters', () => {
 
     await screen.findByTestId('coverage-report');
     expect(vi.mocked(complianceArchiveApi.getCoverageReport).mock.calls[0][0]).toEqual({ from: '2026-08-01', to: '2026-08-31', propertyId: P1 });
-    // The report has no filter by kind: the rows are narrowed here, and the page says so.
     expect(screen.getAllByTestId('coverage-row')).toHaveLength(1);
     expect(screen.getByTestId('coverage-narrowed')).toHaveTextContent('Prova ISTAT');
   });
@@ -279,8 +271,6 @@ describe('the archive of the proofs: the address and the filters', () => {
     expect(complianceArchiveApi.getCoverageReport).not.toHaveBeenCalled();
   });
 
-  // A proof is kept five years from its upload: the period list reaches back as far, so the oldest proofs that can still be there are in the reach of the page,
-  // for the list and for the ZIP of that year.
   it('AlloggiatiPage_Period_OffersTheYearsAProofIsKeptAndAnOldYearFiltersTheListAndTheZip', async () => {
     vi.mocked(complianceArchiveApi.exportProofs).mockResolvedValue({ blob: new Blob(['zip'], { type: 'application/zip' }), contentDisposition: null });
     renderPage();
@@ -330,7 +320,6 @@ describe('the archive of the proofs: the files', () => {
     expect(table).not.toHaveTextContent(/octorate/i);
   });
 
-  // AC 2: each proof downloads through the API; the page never builds a storage address.
   it('AlloggiatiPage_Download_GoesThroughTheApiAndSavesTheFileNeverALinkToTheStorage', async () => {
     const blob = new Blob(['%PDF'], { type: 'application/pdf' });
     vi.mocked(complianceArchiveApi.downloadProof).mockResolvedValue({ blob, contentDisposition: null });
@@ -343,7 +332,6 @@ describe('the archive of the proofs: the files', () => {
     expect(vi.mocked(complianceArchiveApi.downloadProof).mock.calls[0][0]).toMatchObject({ id: 'e1' });
     expect(vi.mocked(saveBlobAs).mock.calls[0][1]).toBe('prova-istat_2026-08.pdf');
     expect(toast.success).toHaveBeenCalled();
-    // No link to a file anywhere: the signed address is the API's business.
     expect(container.querySelector('a[href*="storage"], a[href*="supabase"], a[href*="/download"], a[download]')).toBeNull();
   });
 
@@ -388,8 +376,6 @@ describe('the archive of the proofs: the files', () => {
     await waitFor(() => expect(complianceArchiveApi.listEvidence).toHaveBeenCalledTimes(2));
   });
 
-  // A proof is the receipt of a communication about guests or of a tax, and the request that fails holds the access token: the cache of the mutations keeps
-  // neither, the file goes to the disk inside the mutation (its result is nothing) and not even the mutation stays once the page is left.
   it('AlloggiatiPage_DownloadThatFails_KeepsNeitherTheTokenOfTheRequestNorTheFileInTheCacheOfTheMutations', async () => {
     vi.mocked(complianceArchiveApi.downloadProof)
       .mockRejectedValueOnce(problemWithToken(500, 'boom'))
@@ -413,7 +399,6 @@ describe('the archive of the proofs: the files', () => {
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 
-  // A 404 is «not found» even with the older answer in the cache: the rows of the older read are not shown as if they were still there.
   it('AlloggiatiPage_ListThatTurnsIntoA404_IsNotFoundNeverTheOlderRows', async () => {
     vi.mocked(complianceArchiveApi.downloadProof).mockRejectedValue(problem(404, 'compliance_proof_not_found'));
     renderPage();
@@ -460,7 +445,6 @@ describe('the archive of the proofs: the files', () => {
     await waitFor(() => expect(listCall(1)).toMatchObject({ page: 2 }));
   });
 
-  // AC 3: the export button downloads the ZIP of the filtered period.
   it('AlloggiatiPage_Export_DownloadsTheZipOfTheFilteredPeriodAndProperty', async () => {
     vi.mocked(complianceArchiveApi.exportProofs).mockResolvedValue({ blob: new Blob(['zip'], { type: 'application/zip' }), contentDisposition: null });
     renderPage(`${ARCHIVE}?property=${P1}&period=2026-08`);
@@ -484,7 +468,6 @@ describe('the archive of the proofs: the files', () => {
     expect(saveBlobAs).not.toHaveBeenCalled();
   });
 
-  // The ZIP holds the receipts of a period: the mutation that builds it keeps nothing of the request that failed, nor of the file, and goes with the page.
   it('AlloggiatiPage_ExportThatFails_KeepsNeitherTheTokenOfTheRequestNorTheZipInTheCacheOfTheMutations', async () => {
     vi.mocked(complianceArchiveApi.exportProofs)
       .mockRejectedValueOnce(problemWithToken(500, 'boom'))
@@ -510,7 +493,6 @@ describe('the archive of the proofs: the files', () => {
 });
 
 describe('the archive of the proofs: permissions', () => {
-  // The tax receipts are a record of money: seen with payment.read, uploaded with payment.write (what the API asks).
   it('AlloggiatiPage_WithoutPaymentRead_OffersNoTaxKindAndIgnoresItInTheAddress', async () => {
     workspace.permissions = ['booking.read', 'alloggiati.submit'];
     renderPage(`${ARCHIVE}?kind=TouristTaxDeclaration`);
@@ -553,7 +535,6 @@ describe('the archive of the proofs: permissions', () => {
 describe('the summary of the period', () => {
   const flags = { flags: { complianceTrafficLight: true, octorateConnector: true } };
 
-  // AC 1 and 8: grouped by state, the proofs held, never an inferred result, never «all compliant» while something is missing or only the channel manager can tell.
   it('AlloggiatiPage_SummaryWithMissingAndToVerify_GroupsByStateAndNeverSaysAllIsFine', async () => {
     vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(
       report([
@@ -574,7 +555,6 @@ describe('the summary of the period', () => {
     expect(screen.getByText('Da verificare nel Cassetto Compliance (1)')).toBeInTheDocument();
     expect(screen.getByText('Prova disponibile (1)')).toBeInTheDocument();
     expect(screen.getByText('Non applicabile (1)')).toBeInTheDocument();
-    // What needs the host is open; what is proven or not owed is behind its count.
     expect(screen.getByTestId('coverage-details-OfficialProof')).not.toHaveAttribute('open');
     expect(screen.getByTestId('coverage-details-NotApplicable')).not.toHaveAttribute('open');
   });
@@ -588,15 +568,11 @@ describe('the summary of the period', () => {
     const external = await screen.findByTestId('coverage-external');
     expect(screen.getByTestId('coverage-headline')).toHaveAttribute('data-tone', 'warning');
     expect(screen.getByTestId('coverage-headline')).toHaveTextContent('1 esito da verificare nel Cassetto Compliance');
-    // The button is the one of the compliance drawer, named after the row it is on (a screen reader tells the rows apart).
     expect(within(external).getByRole('button', { name: 'Verifica nel tuo Cassetto Compliance: Soggiorno AB123-CD456 · arrivo 15 agosto 2026' })).toBeInTheDocument();
     expect(screen.getByTestId('coverage-consulted')).toHaveTextContent('Dati consultati su Octorate');
-    // No result is inferred: no «inviato», no «ok», no green.
     expect(screen.getByTestId('coverage-row').textContent).not.toMatch(/inviato correttamente|esito positivo|prova archiviata il|è in regola/i);
   });
 
-  // The button is the one of the compliance drawer: it asks the server for the stay of the row (its property, the topic the server sent) and the route of this page
-  // with its filters, which is what the host comes back to; it opens the dialog and nothing else (no proof, no light).
   it('AlloggiatiPage_VerifyFromARow_AsksTheHandoffOfThatStayAndComesBackToThisPageWithItsFilters', async () => {
     vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(
       report([row('ExternalVerificationRequired', { kind: 'Alloggiati', bookingId: 'b1', bookingCode: 'AB123-CD456', day: '2026-08-15', period: null, handoffTopic: 'Alloggiati' })]),
@@ -634,7 +610,6 @@ describe('the summary of the period', () => {
     });
   });
 
-  // The server decides which outcome the channel manager holds (`handoffTopic`): a row that does not carry it is not worked out from its kind, and has no button.
   it('AlloggiatiPage_ToVerifyRowWithoutATopicFromTheServer_OffersNoButtonAndTellsWhereTheOutcomeIs', async () => {
     vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(report([row('ExternalVerificationRequired', { handoffTopic: null })]));
     renderPage(ARCHIVE, flags);
@@ -819,9 +794,6 @@ describe('the upload of a proof', () => {
     expect(within(dialog).getByTestId('proof-upload-submit')).not.toBeDisabled();
   });
 
-  // The file is a receipt about guests and the request that fails holds the access token. The upload lives only while the dialog is open: a refusal keeps
-  // nothing of the request, and closing the dialog leaves nothing of the upload (the file, the answer, the refusal) in the cache of the mutations; a dialog
-  // opened again starts clean, without the refusal of the first one.
   it('AlloggiatiPage_UploadThatFailsAndIsClosed_LeavesNothingInTheCacheOfTheMutationsAndNoOldRefusalOnReopening', async () => {
     vi.mocked(complianceArchiveApi.uploadProof).mockRejectedValueOnce(problemWithToken(415, 'compliance_proof_type_unsupported'));
     const { client } = renderPage();
@@ -890,13 +862,11 @@ describe('the upload of a proof', () => {
     fireEvent.change(within(dialog).getByTestId('proof-upload-kind'), { target: { value: 'IstatProof' } });
 
     expect(within(dialog).queryByTestId('proof-upload-portal-step')).not.toBeInTheDocument();
-    // It never asks the person to assert that something succeeded.
     expect(dialog.textContent).not.toMatch(/è stato inviato|confermo|ho inviato/i);
   });
 });
 
 describe('what the page stopped doing', () => {
-  // AC 6 (DEB-08): the calls to endpoints that do not exist are gone from the api module and the hooks.
   it('AlloggiatiApi_NoCallToTheReportEndpointsThatDoNotExist', () => {
     expect(Object.keys(alloggiatiApi)).not.toContain('getReports');
     expect(Object.keys(alloggiatiApi)).not.toContain('getReportErrors');

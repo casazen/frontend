@@ -41,11 +41,6 @@ const URGENCY_KEYS: Record<ServiceRequestUrgency, string> = {
   Emergency: 'serviceRequest.urgencyEmergency',
 };
 
-/**
- * The state of a request in the words of the supplier. A time proposed, or a quote sent, and not answered yet is a phase, not a status of
- * the API: the request is still new, and the supplier waits for the customer. So is the request a supplier has as a backup (SP-BKP): it
- * says «Riserva» until the job is the supplier's.
- */
 export function RequestStateBadge({ request, size }: { request: SupplierServiceRequest; size?: 'default' | 'lg' }) {
   const { t } = useTranslation();
   const phase = phaseOf(request);
@@ -67,8 +62,6 @@ export function RequestStateBadge({ request, size }: { request: SupplierServiceR
     />
   );
 }
-
-/* ----------------------------------------------------------------------------------------------------- Adesso */
 
 /** A button of the quiet row under the block: at least 44 px high, and a long label wraps instead of pushing the page sideways. */
 const QUIET_BUTTON = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
@@ -94,13 +87,11 @@ function StandardRequestNow({ request, actions }: { request: SupplierServiceRequ
   const { flags } = useFeatureFlags();
   const phase = phaseOf(request);
   const plan = actionsOf(request, { onlinePayments: isFeatureEnabled(flags, 'supplierOnlinePayments') });
-  // A job the server accepted by itself (SP-04d) says so, and says how to get out of it.
   const base = phase === 'scheduled' && request.autoAccepted ? 'supplier.requests.now.scheduledAuto' : `supplier.requests.now.${phase}`;
   const online = phase === 'completed' && request.paymentMode === 'Online';
   const quoteFirst = plan.primary === 'quote';
   const toConfirm = phase === 'completed' && Boolean(request.payment?.needsAmountConfirmation || request.price?.needsCustomerConfirmation);
   const reason = reasonText(phase === 'rejected' ? request.rejectionReason : request.cancellationReason, t);
-  // SP-BKP: until when the window of the group lasts, for the sentences of a backup, and what the supplier the host chose is told.
   const until = groupDueText(request, i18n.language) ?? '';
   const primaryHintKey = phase === 'toAnswer' && request.backup?.role === 'primary' ? `supplier.requests.backup.primaryHint.${request.backup.state}` : null;
   const primaryHint = primaryHintKey && i18n.exists(primaryHintKey) ? t(primaryHintKey, { time: until }) : null;
@@ -172,7 +163,6 @@ function StandardRequestNow({ request, actions }: { request: SupplierServiceRequ
       ) : null}
       {reason ? <p className="mt-2 break-words text-foreground/80">{t('supplier.requests.now.reason', { reason })}</p> : null}
       {toConfirm ? <p className="mt-2 break-words font-medium">{t('supplier.requests.now.amountToConfirm')}</p> : null}
-      {/* The customer paid inside CasaZen and CasaZen holds the money (SP-15c): what marking the work as done starts, without a date or a number. */}
       {(phase === 'scheduled' || phase === 'inProgress') && request.paymentMode === 'Online' && request.payment?.status === 'Held' ? (
         <p className="mt-2 break-words text-foreground/80" data-testid="supplier-request-hold-note">
           {t('supplier.requests.now.holdWindow')}
@@ -181,7 +171,6 @@ function StandardRequestNow({ request, actions }: { request: SupplierServiceRequ
     </>
   );
 
-  // The quote that waits is shown where the supplier waits for the answer: what the customer reads, to the cent.
   const waitingQuote = phase === 'quotePending' && request.quote ? <QuoteSummary quote={request.quote} showcase={request.source === 'showcase'} /> : null;
   const more =
     plan.more.length > 0 ? (
@@ -244,8 +233,6 @@ function StandardRequestNow({ request, actions }: { request: SupplierServiceRequ
   );
 }
 
-/* ----------------------------------------------------------------------------------------------------- In breve */
-
 function Fact({ label, value, note, testId }: { label: string; value: ReactNode; note?: ReactNode; testId: string }) {
   return (
     <div className="min-w-0" data-testid={testId}>
@@ -256,20 +243,13 @@ function Fact({ label, value, note, testId }: { label: string; value: ReactNode;
   );
 }
 
-/** The two boxes of the side of the request page share one look: the same corners and the same thin line, no shadow. */
 const SIDE_BOX = 'rounded-xl bg-card ring-1 ring-inset ring-border';
 
-/**
- * When, where, who and how much: four short facts, in two columns in a narrow place (the drawer). The street address is for after the take (decision D9).
- * `withDetails` is the request page, where «Indirizzo e contatti» sits right under the facts: the line under «Dove» (the address, or that it comes after
- * you accept) is said there once, not twice (UX round 2026-11). The source is said only for a request of the supplier's own site, as the list does.
- */
 export function RequestFacts({ request, compact = false, withDetails = false }: { request: SupplierServiceRequest; compact?: boolean; withDetails?: boolean }) {
   const { t, i18n } = useTranslation();
   const phase = phaseOf(request);
   const when = requestWhen(request, i18n.language, true);
   const over = phase === 'rejected' || phase === 'cancelled';
-  // While a quote waits, the figure of the job is the quote's total: the price of the request is still the one it had (or "da concordare").
   const quote = phase === 'quotePending' ? (request.quote ?? null) : null;
   const price = quote ? quote.totalCents : (request.price?.amountCents ?? null);
   const net = request.payment?.netCents ?? null;
@@ -314,9 +294,6 @@ export function RequestFacts({ request, compact = false, withDetails = false }: 
   );
 }
 
-/* ------------------------------------------------------------------------------------------------ Dettagli e storia */
-
-/** A part of the page that opens on request: the title and a line under it, the content below. Native `details`: keyboard and screen reader for free. */
 function MoreGroup({ title, sub, open, testId, children }: { title: string; sub?: string; open?: boolean; testId: string; children: ReactNode }) {
   return (
     <details open={open} className="group" data-testid={testId}>
@@ -332,7 +309,6 @@ function MoreGroup({ title, sub, open, testId, children }: { title: string; sub?
   );
 }
 
-/** A label and its value. `tall` is for a value that is a link of a finger's height: the label is centred on it. */
 function Row({ label, children, testId, tall = false }: { label: string; children: ReactNode; testId?: string; tall?: boolean }) {
   return (
     <div className={cn('grid gap-x-4 gap-y-0.5 sm:grid-cols-[11rem_1fr]', tall && 'sm:items-center')}>
@@ -367,7 +343,6 @@ function JobGroup({ request, open }: { request: SupplierServiceRequest; open: bo
       <dl className="space-y-2">
         <Row label={t('supplier.requests.job.service')}>{requestTitle(request, t)}</Row>
         {request.propertyName ? <Row label={t('supplier.requests.job.property')}>{request.propertyName}</Row> : null}
-        {/* The urgency is said once, beside the day in «Quando», and only when it is not the normal one. */}
         {request.stay ? (
           <Row label={t('supplier.requests.job.stay')} testId="supplier-request-stay">
             {t('supplier.requests.job.stayDates', { from: formatStayDate(request.stay.checkIn, i18n.language), to: formatStayDate(request.stay.checkOut, i18n.language) })}
@@ -388,7 +363,6 @@ function ContactGroup({ request, open }: { request: SupplierServiceRequest; open
   const { t } = useTranslation();
   const contact = request.hostContact;
   const phase = phaseOf(request);
-  // A request that was refused or cancelled before the take never gave its contact: it is not "after you accept" any more.
   const closed = !request.contactDisclosed && (phase === 'rejected' || phase === 'cancelled');
   let content: ReactNode;
   if (request.contactDisclosed) {
@@ -435,11 +409,6 @@ function ContactGroup({ request, open }: { request: SupplierServiceRequest; open
   );
 }
 
-/**
- * What the server says about the payment of a completed job, as it says it: what the price is made of, gross, commission and net, the
- * state, how it is paid. Nothing is worked out here, and no date of payout is promised: the commission and the net come from the
- * payment record, so before there is one the panel names no percentage.
- */
 function PaymentGroup({ request }: { request: SupplierServiceRequest }) {
   const { t, i18n } = useTranslation();
   const payment = request.payment;
@@ -524,7 +493,6 @@ const HISTORY_KEYS: Record<ServiceRequestStatus, string> = {
   Annullato: 'supplier.requests.history.Annullato',
 };
 
-/** What a step says beyond its status when it is about a quote (SP-04b): an event this version does not know is shown by its status. */
 const EVENT_KEYS: Record<string, string> = {
   quote_sent: 'supplier.requests.history.quoteSent',
   quote_rejected: 'supplier.requests.history.quoteRejected',
@@ -533,12 +501,9 @@ const EVENT_KEYS: Record<string, string> = {
   quote_expired: 'supplier.requests.history.quoteExpired',
 };
 
-/** What happened to the request, in the words of the supplier: "Hai accettato la richiesta", with who did it and the reason of a refusal. */
 function historyEvents(history: readonly ServiceRequestHistoryEntry[], t: (key: string, options?: Record<string, unknown>) => string): TimelineEvent[] {
   return history.map((entry, index) => {
-    // The customer approved the quote: the step is the take of the request, which the server writes under the supplier who sent it.
     const byClient = entry.actor === 'Host' || entry.actor === 'Customer' || entry.event === 'quote_accepted';
-    // The step the server wrote by itself: the supplier turned on the automatic acceptance of its regular hosts (SP-04d).
     const automatic = entry.status === 'PresoInCarico' && entry.actor === 'System';
     const eventKey = entry.event && Object.prototype.hasOwnProperty.call(EVENT_KEYS, entry.event) ? EVENT_KEYS[entry.event] : undefined;
     const key =
@@ -553,7 +518,6 @@ function historyEvents(history: readonly ServiceRequestHistoryEntry[], t: (key: 
     return {
       id: `${entry.status}-${index}`,
       at: entry.at,
-      // A status this version does not know (the server is newer) is shown as it came, never as a key.
       title: key ? t(key) : entry.status,
       description: automatic ? t('supplier.requests.history.PresoInCaricoAutoNote') : (reasonText(entry.reason, t) ?? undefined),
       actor: byClient ? t('supplier.requests.actor.client') : entry.actor === 'System' ? t('supplier.requests.actor.system') : (entry.actorName ?? t('supplier.requests.actor.you')),
@@ -562,16 +526,11 @@ function historyEvents(history: readonly ServiceRequestHistoryEntry[], t: (key: 
   });
 }
 
-/** The history of the request, the latest step first. */
 export function RequestHistory({ request, limit }: { request: SupplierServiceRequestDetail; limit?: number }) {
   const { t } = useTranslation();
   return <Timeline testId="supplier-request-history" label={t('supplier.requests.history.label')} events={historyEvents(request.history ?? [], t)} limit={limit} />;
 }
 
-/**
- * The rest, one click away: the job (service, urgency, notes), the address and the contact (after the take), the payment when there is
- * one, and the history. A request that waits for the answer opens the job, one that is taken opens the contact.
- */
 export function RequestDetails({ request }: { request: SupplierServiceRequestDetail }) {
   const { t } = useTranslation();
   const phase = phaseOf(request);

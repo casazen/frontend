@@ -11,7 +11,6 @@ const HEAD = 'px-3 py-2 font-medium';
 const FIGURE = 'px-3 py-2 text-right align-top tabular-nums';
 const COLUMNS = 7;
 
-/** How a commission is settled is always said in words in its badge; the tone only helps the eye. */
 const MODE_VARIANTS: Record<ChannelCommissionMode, NonNullable<BadgeProps['variant']>> = {
   DeductedFromPayout: 'secondary',
   InvoicedSeparately: 'warning',
@@ -20,7 +19,6 @@ const MODE_VARIANTS: Record<ChannelCommissionMode, NonNullable<BadgeProps['varia
 
 type Group = 'channels' | 'cardFees' | 'free';
 
-/** The title of each group of rows: the commissions of the channels, the card fees of the direct stays (a line of their own) and the stays with no cost. */
 const GROUP_TITLES: Record<Group, string> = {
   channels: 'reports.channelCosts.groups.channels',
   cardFees: 'reports.channelCosts.stripe.title',
@@ -36,11 +34,8 @@ function CostRow({ row, group }: RowProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const na = t('reports.money.notAvailable');
-  // The figures carry no currency (the server adds every property in its own, with no conversion): the number alone.
   const money = (cents: number | null) => formatSummedCents(cents, locale) ?? na;
   const mode = modeOf(row);
-  // A stay nobody charges the host for (entered by hand, a local one) is "no cost" in words, never "0,00" nor "0%" (the server says it with a
-  // zero) and never "not available": only an exact zero is said so, any other figure of the server is shown as it is.
   const noCost = group === 'free' && row.commissionCents === 0;
 
   return (

@@ -8,7 +8,6 @@ import { EMPTY_DRAFT, type BookingDraft, type DraftComune } from './booking-flow
  */
 const KEY_PREFIX = 'casazen.supplier-booking.';
 const FORMAT = 1;
-/** How long a draft lives after its last change. */
 export const BOOKING_DRAFT_TTL_MS = 6 * 60 * 60 * 1000;
 
 const keyOf = (slug: string) => `${KEY_PREFIX}${slug}`;
@@ -21,7 +20,6 @@ function whole(value: unknown): number | null {
   return typeof value === 'number' && Number.isInteger(value) && value > 0 && value <= 9999 ? value : null;
 }
 
-/** The comune of a stored draft, rebuilt member by member (shared with the draft of the request on measure); undefined when it is not one. */
 export function comuneOf(value: unknown): DraftComune | null | undefined {
   if (value === null) return null;
   if (typeof value !== 'object' || value === undefined) return undefined;
@@ -30,7 +28,6 @@ export function comuneOf(value: unknown): DraftComune | null | undefined {
   return { istatCode, name: name.slice(0, 100), provinceCode: typeof provinceCode === 'string' ? provinceCode.slice(0, 2) : '' };
 }
 
-/** A draft rebuilt from what the storage held, member by member; null when it is not one. */
 function rebuild(value: unknown): BookingDraft | null {
   if (typeof value !== 'object' || value === null) return null;
   const raw = value as Record<string, unknown>;
@@ -61,7 +58,6 @@ function rebuild(value: unknown): BookingDraft | null {
   };
 }
 
-/** The draft of this supplier, or null when there is none, it has expired or it cannot be read. */
 export function readBookingDraft(slug: string, now: number = Date.now()): BookingDraft | null {
   try {
     const raw = window.localStorage.getItem(keyOf(slug));
@@ -93,10 +89,6 @@ export function clearBookingDraft(slug: string): void {
   }
 }
 
-/**
- * A draft that starts from what the address of the page said, over whatever the device remembered. If the address names another service
- * than the one remembered, what was chosen for that one (quantity, options, the slot) is left behind: it does not fit the new one.
- */
 export function startingDraft(slug: string, seed: Partial<BookingDraft>): BookingDraft {
   const stored = readBookingDraft(slug);
   const changedService = stored !== null && seed.service !== undefined && stored.service !== seed.service;

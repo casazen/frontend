@@ -8,15 +8,10 @@ import { shareMessage } from './showcase-model';
 interface ShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The absolute address of the showcase. */
   url: string;
   bookingsOpen: boolean;
 }
 
-/**
- * "Condividi": the link to copy, and a message ready to send by WhatsApp or by e-mail. Nothing is sent from here: WhatsApp and the mail
- * program open with the text written and the supplier sends it (or not). No QR code (decision VT-D15: no new dependency).
- */
 export function ShareDialog({ open, onOpenChange, url, bookingsOpen }: ShareDialogProps) {
   const { t } = useTranslation();
   const message = shareMessage(url, bookingsOpen, t);

@@ -12,14 +12,12 @@
  * PURE TYPESCRIPT, NO IMPORT FROM THE APP.
  */
 
-/** The theme variables: the primary color, the radius and the font, a page may set (`data-casazen-theme`). The text color on the primary is derived. */
 const FONTS: Record<string, string> = {
   editoriale: "Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif",
   moderno: "Inter, 'Segoe UI', system-ui, -apple-system, sans-serif",
   classico: "'Playfair Display', Didot, 'Bodoni MT', Georgia, 'Times New Roman', serif",
 };
 
-/** `#rgb` or `#rrggbb` as `#rrggbb` in lower case, or null. */
 export function readHex(value: unknown): string | null {
   const match = typeof value === 'string' ? /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value.trim()) : null;
   if (!match) return null;
@@ -27,7 +25,6 @@ export function readHex(value: unknown): string | null {
   return `#${digits.toLowerCase()}`;
 }
 
-/** A radius from 0 to 32 px (or 2 rem), the same bounds as the frames take: `12px`, `0.5rem`. Null for anything else. */
 export function readRadius(value: unknown): string | null {
   const match = typeof value === 'string' ? /^(\d{1,2}(?:\.\d{1,4})?)(px|rem)$/.exec(value.trim()) : null;
   if (!match) return null;
@@ -38,7 +35,6 @@ function channels(hex: string): [number, number, number] {
   return [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16)) as [number, number, number];
 }
 
-/** The relative luminance of a `#rrggbb` color (WCAG 2). */
 function luminance(hex: string): number {
   const [red, green, blue] = channels(hex).map((value) => {
     const unit = value / 255;
@@ -47,31 +43,21 @@ function luminance(hex: string): number {
   return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
 }
 
-/** The contrast ratio of two `#rrggbb` colors, from 1 to 21. */
 export function contrastRatio(a: string, b: string): number {
   const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (light + 0.05) / (dark + 0.05);
 }
 
-/**
- * The color of the text on a `primary` fill: white or black, whichever reads better. Whatever the primary, the better of the two is at least 4.58:1, so the
- * 4.5:1 of WCAG AA text is always met.
- */
 export function onColor(primary: string): string {
   return contrastRatio(primary, '#ffffff') >= contrastRatio(primary, '#000000') ? '#ffffff' : '#000000';
 }
 
-/** The faint tint of a color (15 % of it on white): the days between the arrival and the departure. */
 function tint(hex: string): string {
   return `#${channels(hex)
     .map((value) => Math.round(value * 0.15 + 255 * 0.85).toString(16).padStart(2, '0'))
     .join('')}`;
 }
 
-/**
- * The custom properties a theme asks for, each only when its value is valid: `--czs-primary` (a hex color) with `--czs-on-primary` and `--czs-tint`
- * derived from it, `--czs-radius` (0 to 32 px) and `--czs-font` (one of the font stacks of the booking site). An invalid member is ignored, the others stay.
- */
 export function themeVariables(theme: unknown): Record<string, string> {
   const variables: Record<string, string> = {};
   if (typeof theme !== 'object' || theme === null || Array.isArray(theme)) return variables;
@@ -89,15 +75,12 @@ export function themeVariables(theme: unknown): Record<string, string> {
   return variables;
 }
 
-/** Puts the theme on the root of the bar, through the CSSOM. */
 export function applyTheme(root: HTMLElement, theme: unknown): void {
   for (const [name, value] of Object.entries(themeVariables(theme))) root.style.setProperty(name, value);
 }
 
-/** The root of the bar, written twice. */
 const SCOPE = '.czs-root.czs-root';
 
-/** What every element of the bar starts from: nothing the theme of the page may have set is left. */
 const RESET =
   'box-sizing:border-box;margin:0;padding:0;border:0;background:none;box-shadow:none;outline:0;float:none;max-width:none;transition:none;' +
   'font-family:var(--czs-font,inherit);font-style:normal;font-weight:400;font-size:16px;line-height:1.4;letter-spacing:normal;text-transform:none;text-decoration:none;text-indent:0;text-shadow:none;' +
@@ -105,7 +88,6 @@ const RESET =
 
 const RING = 'outline:3px solid var(--czs-ink);outline-offset:2px;';
 
-/** The rules, each a list of selectors (after the scope) and what they declare. */
 const RULES: [string[], string][] = [
   [[''], `${RESET}--czs-primary:#1f3a3d;--czs-on-primary:#ffffff;--czs-tint:#e9f1f0;--czs-radius:14px;--czs-ink:#172c2e;--czs-muted:#496469;--czs-line:#798b8a;--czs-error:#b42318;display:block;position:relative;width:100%;text-align:left;`],
   [[' .czs-form'], `${RESET}display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;position:relative;padding:16px;background:#ffffff;border:1px solid var(--czs-line);border-radius:var(--czs-radius);box-shadow:0 6px 20px rgba(23,44,46,.08);`],
@@ -170,20 +152,13 @@ const RULES: [string[], string][] = [
   ],
 ];
 
-/** On a narrow bar every field has a line to itself. */
 const NARROW = `@media (max-width:520px){${SCOPE} .czs-field,${SCOPE} .czs-btn{flex:1 1 100%;}${SCOPE} .czs-months{display:block;}}`;
 
-/** The CSS of the bar. Every selector starts with `.czs-root`. */
 export const SEARCH_CSS =
   RULES.map(([selectors, declarations]) => `${selectors.map((selector) => `${SCOPE}${selector}`).join(',')}{${declarations}}`).join('') + NARROW;
 
-/** The documents and shadow roots the CSS is already in. */
 const installed = new WeakSet<object>();
 
-/**
- * Puts the CSS into the page `host` is in (or into its shadow root), once. A constructable stylesheet is tried first (not subject to the content security
- * policy of the page); a browser that has none gets a `<style>` element with the nonce of the script, which a policy with nonces lets through.
- */
 export function installStyles(host: HTMLElement, nonce: string): void {
   const root = host.getRootNode();
   const target: Document | ShadowRoot = root instanceof ShadowRoot ? root : document;

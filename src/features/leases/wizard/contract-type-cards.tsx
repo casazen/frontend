@@ -5,13 +5,11 @@ import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { getLeaseContractTypeLabel } from '@/lib/i18n-labels';
 import type { LeaseOrigin, LongRentRules } from '@/types';
 
-/** The types a contract can have, as the design lists them: the ones that cannot be chosen are shown and blocked, never hidden. */
 const TYPES = ['Libero', 'Concordato', 'Transitorio', 'Studenti'] as const;
 type CardType = (typeof TYPES)[number];
 
 const ICONS: Record<CardType, LucideIcon> = { Libero: Home, Concordato: Handshake, Transitorio: Hourglass, Studenti: GraduationCap };
 
-/** Where the line that says what each type is lives (the same lines as the first question of «Nuovo contratto»). */
 const KIND_OF_TYPE = { Libero: 'libero', Concordato: 'concordato', Transitorio: 'transitorio' } as const;
 
 interface ContractTypeCardsProps {
@@ -19,7 +17,6 @@ interface ContractTypeCardsProps {
   rules: LongRentRules;
   value: string;
   onChange: (type: string) => void;
-  /** `id` of the first card, where the focus goes when the step says the type is missing. */
   firstId?: string;
 }
 

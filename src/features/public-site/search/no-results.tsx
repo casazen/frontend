@@ -13,16 +13,11 @@ export type NoResultsReason = 'capacity' | 'dates' | 'filters' | 'favorites' | '
 
 interface NoResultsProps {
   reason: NoResultsReason;
-  /** A site can be written to (its host); across all the sites there is no one host, so the words and the button are other. */
   scope: SearchScope;
-  /** The party asked and the most guests any home of the site takes, for the sentence when the party is too big. */
   guests: number;
   maxGuests?: number;
-  /** Up to three nearby ranges with free homes, from the server (the same length as the stay). */
   alternatives: readonly PublicStayAlternative[];
-  /** The link that sets the dates of a nearby range (the page keeps the rest of the search). */
   alternativeHref: (alternative: PublicStayAlternative) => string;
-  /** The guest has some filter on (the labels, the sheet): «Togli i filtri» shows. */
   canClearFilters: boolean;
   onClearFilters: () => void;
 }
@@ -40,8 +35,6 @@ export function NoResults({ reason, scope, guests, maxGuests, alternatives, alte
   const embed = useEmbed();
   const locale = siteLocale(i18n.language);
   const words = scope.kind === 'org' ? 'siteSearch.none' : 'platformSearch.none';
-  // The sentences that send the guest to write to the host (no home for the party, nothing free, nothing bookable) have a version of their own in a frame, which has
-  // no way to write to the host: an invitation without the action would be a dead end.
   const writesToTheHost = scope.kind === 'org' && (reason === 'capacity' || reason === 'dates' || reason === 'none');
   const text =
     embed && writesToTheHost

@@ -22,7 +22,6 @@ export function recentsKey(scope: RecentScope): string {
   return `${KEY_PREFIX}:${encodeURIComponent(scope.userId)}:${encodeURIComponent(scope.area)}`;
 }
 
-/** The `id`s chosen before in `scope`, the latest first. Nothing wrong in the storage makes this throw. */
 export function readRecents(scope: RecentScope): string[] {
   try {
     const raw = localStorage.getItem(recentsKey(scope));
@@ -35,7 +34,6 @@ export function readRecents(scope: RecentScope): string[] {
   }
 }
 
-/** Puts `id` first among the recents of `scope` (it was just chosen) and forgets the oldest beyond {@link MAX_RECENTS}. */
 export function rememberRecent(scope: RecentScope, id: string): void {
   try {
     const next = [id, ...readRecents(scope).filter((known) => known !== id)].slice(0, MAX_RECENTS);

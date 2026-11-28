@@ -46,7 +46,6 @@ function RenewalForm({ lease, operations, onClose }: WindowProps) {
   const agreedValid = isStayDate(agreedEnd) && agreedEnd >= from && agreedEnd <= furthest;
   const endsOn = mode === 'standard' ? standardEnd : agreedValid ? agreedEnd : '';
 
-  // The standard renewal runs into the other lease; an agreed end only when it reaches its first day.
   const conflict = renewal.conflict;
   const blocked = conflict !== null && (mode === 'standard' || (agreedValid && agreedEnd >= parseStayDate(conflict.from)));
   const valid = endsOn !== '' && !blocked;
@@ -56,7 +55,7 @@ function RenewalForm({ lease, operations, onClose }: WindowProps) {
     try {
       await record.mutateAsync({ leaseId: lease.id, input: mode === 'agreed' ? { newEnd: agreedEnd } : {} });
     } catch {
-      return; // The hook told why and read the lease again.
+      return;
     }
     toast.success(t('leaseOperations.renewal.done', { date: longDay(endsOn, i18n.language) }));
   }
@@ -208,18 +207,11 @@ function RenewalDone({ lease, operations, onClose }: WindowProps) {
   );
 }
 
-/**
- * The window of the renewal (LR-OPS-1b, `?operazione=rinnovo`): the form that records it while it can be recorded, the next steps once it was
- * (until the next period's window opens: then a new renewal can be recorded and the form is what the row offers). Which of the two is
- * decided when the window opens: recording it closes the window (the toast says where the contract goes on to), and the row of the guide
- * offers the next steps from then on.
- */
 export function RenewalDialog({ open, lease, operations, onClose }: RenewalDialogProps) {
   return open ? <RenewalWindow lease={lease} operations={operations} onClose={onClose} /> : null;
 }
 
 function RenewalWindow({ lease, operations, onClose }: WindowProps) {
-  // Taken once, when the window opens: the form must not turn into the next steps under the hands of who just confirmed it.
   const [startedRecorded] = useState(() => !operations.renewal.available && operations.renewal.recorded !== null);
   return startedRecorded ? (
     <RenewalDone lease={lease} operations={operations} onClose={onClose} />

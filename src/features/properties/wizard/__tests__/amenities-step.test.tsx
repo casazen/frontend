@@ -17,7 +17,6 @@ const CATALOG: AmenityCatalog = {
     { name: 'Washer', icon: 'shirt', group: 'comfort', label: { it: 'Lavatrice', en: 'Washing machine' } },
     { name: 'Dishwasher', icon: 'sparkles', group: 'kitchen', label: { it: 'Lavastoviglie', en: 'Dishwasher' } },
     { name: 'Pool', icon: 'waves', group: 'outdoor', label: { it: 'Piscina', en: 'Pool' } },
-    // Decided by the house rules, not asked in this step.
     { name: 'PetFriendly', icon: 'paw', group: 'outdoor', label: { it: 'Animali ammessi', en: 'Pets allowed' } },
   ],
 };
@@ -102,7 +101,6 @@ describe('AmenitiesStep (NF-33)', () => {
     fireEvent.change(search(), { target: { value: 'lavatrice' } });
     fireEvent.click(screen.getByRole('checkbox', { name: 'Lavatrice' }));
 
-    // «Piscina» is not on screen any more, and still chosen.
     expect(chosen()).toEqual(['Pool', 'Washer']);
 
     fireEvent.change(search(), { target: { value: '' } });

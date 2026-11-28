@@ -21,10 +21,6 @@ interface MessageListProps {
   messages: readonly OwnerMessage[];
 }
 
-/**
- * The messages of a conversation, oldest first: who wrote (the agency, or the person of the portal by name), when, the words exactly as written and the file, which is
- * downloaded under a name made safe. The words are shown as text (never as markup) and kept in the page only.
- */
 export function MessageList({ conversationId, messages }: MessageListProps) {
   const { t, i18n } = useTranslation();
   const { download, busyKey } = useOwnerDownload();
@@ -78,11 +74,6 @@ export function MessageList({ conversationId, messages }: MessageListProps) {
   );
 }
 
-/**
- * The reply: the words and, when the person wants, one file (PDF, JPEG or PNG, at most 10 MB). The browser only spares an upload the server would refuse; the server scans
- * the file and has the last word, and its refusal is shown in words with the text kept. While the message is on its way the form cannot be sent again. The words are state of
- * this form: nothing is stored.
- */
 export function ReplyForm({ conversationId }: { conversationId: string }) {
   const { t } = useTranslation();
   const post = usePostOwnerMessage(conversationId);

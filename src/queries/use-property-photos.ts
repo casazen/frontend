@@ -9,7 +9,6 @@ const PROPERTIES_KEY = 'properties';
 
 const propertyPhotosKey = (propertyId: string | undefined) => [PROPERTIES_KEY, propertyId, 'photos'] as const;
 
-/** Photo gallery of a property (PC-04): the photos in display order (the first is the cover) and the upload rules. */
 export function usePropertyPhotos(propertyId: string | undefined) {
   return useQuery({
     queryKey: propertyPhotosKey(propertyId),
@@ -18,10 +17,6 @@ export function usePropertyPhotos(propertyId: string | undefined) {
   });
 }
 
-/**
- * Every change answers with the gallery as it is now: it replaces the cached one at once, and the other reads of the
- * property that show photos (list cards, record, detail with its carousel) are refreshed.
- */
 function applyGallery(queryClient: QueryClient, propertyId: string, gallery: PropertyPhotosDto) {
   queryClient.setQueryData(propertyPhotosKey(propertyId), gallery);
   void queryClient.invalidateQueries({
@@ -30,16 +25,11 @@ function applyGallery(queryClient: QueryClient, propertyId: string, gallery: Pro
   });
 }
 
-/** 404 (photo already deleted) and 409 (order of an older gallery): another tab or user changed it, show it as it is. */
 function refreshWhenOutdated(queryClient: QueryClient, propertyId: string, error: unknown) {
   const status = getHttpStatus(error);
   if (status === 404 || status === 409) void queryClient.invalidateQueries({ queryKey: propertyPhotosKey(propertyId) });
 }
 
-/**
- * Uploads photos (all or none). Errors: toast here, and the same message inline in the gallery (`error` of the
- * mutation).
- */
 export function useUploadPropertyPhotos(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -55,10 +45,6 @@ export function useUploadPropertyPhotos(propertyId: string) {
   });
 }
 
-/**
- * Uploads one photo and says nothing: the queue of the wizard (SR-07b) sends the files one at a time and tells each one's own
- * result where the person is looking, so a toast for every file would be noise. The gallery is replaced with the answer.
- */
 export function useUploadOnePropertyPhoto(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -68,10 +54,6 @@ export function useUploadOnePropertyPhoto(propertyId: string) {
   });
 }
 
-/**
- * Deletes a photo without a toast of its own: the undo toast of the wizard (SR-07b) has already told the person, and the one that
- * would say «deleted» a few seconds later would only repeat it. A failure is told by whoever called.
- */
 export function useRemovePropertyPhotoQuietly(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -81,7 +63,6 @@ export function useRemovePropertyPhotoQuietly(propertyId: string) {
   });
 }
 
-/** Deletes a photo (the storage object goes with it). */
 export function useDeletePropertyPhoto(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -97,7 +78,6 @@ export function useDeletePropertyPhoto(propertyId: string) {
   });
 }
 
-/** Saves a new order of the whole gallery (the first photo becomes the cover). */
 export function useReorderPropertyPhotos(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -110,7 +90,6 @@ export function useReorderPropertyPhotos(propertyId: string) {
   });
 }
 
-/** Makes a photo the cover of the property. */
 export function useSetPropertyCoverPhoto(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({

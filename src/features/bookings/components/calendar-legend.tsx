@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import { CALENDAR_KINDS, type CalendarKindInfo } from '../lib/calendar-kinds';
 
 interface CalendarLegendProps {
-  /** The kinds the view draws, in order: the seven of the month by default, those of the Timeline when it is the one shown. */
   kinds?: readonly CalendarKindInfo[];
 }
 

@@ -68,7 +68,6 @@ describe('BookingFlowPage (casazen/backend#978)', () => {
     for (const step of ['checkInLink', 'arrival', 'departure', 'propertyReady']) {
       expect(screen.getByTestId(`booking-flow-switch-${step}`)).toHaveAttribute('data-state', 'checked');
     }
-    // The legal steps carry no switch: CasaZen never does them in the host's place.
     expect(screen.queryByTestId('booking-flow-switch-alloggiati')).not.toBeInTheDocument();
     expect(screen.getByTestId('booking-flow-days')).toHaveValue(3);
     expect(screen.getByTestId('booking-flow-save')).toBeDisabled();

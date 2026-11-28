@@ -25,14 +25,12 @@ const LABEL = 'mb-1.5 block text-sm font-semibold text-ink-700';
 
 export function HomeSearch() {
   const { t } = useTranslation();
-  // '' on the server and while the browser hydrates, then the day in Rome (a store that never changes: no effect, no second render path).
   const today = useSyncExternalStore(subscribeNever, () => todayInRome(), noToday);
   const [arrival, setArrival] = useState('');
   const [departure, setDeparture] = useState('');
 
   const changeArrival = (value: string) => {
     setArrival(value);
-    // A departure that is not after the new arrival means nothing: it is chosen again.
     if (departure && value && departure <= value) setDeparture('');
   };
   const firstDeparture = arrival ? addDays(arrival, 1) : today ? addDays(today, 1) : undefined;

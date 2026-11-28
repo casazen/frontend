@@ -15,16 +15,11 @@ import {
 
 interface DocumentFilterBarProps {
   filters: DocumentFilters;
-  /** What is wrong with the days, or `null`: the page does not ask the server for a period it would refuse, and says why here. */
   problem: PeriodProblem | null;
   onChange: (filters: DocumentFilters) => void;
   onReset: () => void;
 }
 
-/**
- * The filters of the list (FIS-04): the period (the days of the issue, both included), the kind (invoice, credit note, receipt, proforma), who issued it («emessi da CasaZen»,
- * «dal tuo channel manager») and the status (draft, issued, dropped draft). The filters are in the page and nowhere else: not in the address, not in the browser's storage.
- */
 export function DocumentFilterBar({ filters, problem, onChange, onReset }: DocumentFilterBarProps) {
   const { t } = useTranslation();
   const set = (part: keyof DocumentFilters, value: string) => onChange({ ...filters, [part]: value });

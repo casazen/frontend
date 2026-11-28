@@ -12,18 +12,11 @@ import { longDay } from '../lifecycle/lifecycle-format';
 
 interface LetterSentFormProps {
   leaseId: string;
-  /** The first day of the lease: a letter cannot have been sent before it (the server refuses it too). */
   startDate: string;
   kind: LeaseLetterKind;
-  /** When the person marked this letter as sent last time, if ever. */
   sent: LeaseLetterSent | null;
 }
 
-/**
- * «Segna come inviata» (LR-OPS-1): the person sent the letter CasaZen prepared and says when and how. It writes one line in the history of
- * the lease and changes nothing else (the lease does not renew less, nothing is sent): the form says so in its own words. Two fields and
- * one button; once it was marked the sentence says so and the same form marks it again.
- */
 export function LetterSentForm({ leaseId, startDate, kind, sent }: LetterSentFormProps) {
   const { t, i18n } = useTranslation();
   const mark = useMarkLetterSent(leaseId);
@@ -36,13 +29,12 @@ export function LetterSentForm({ leaseId, startDate, kind, sent }: LetterSentFor
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    // The window is drawn outside the page but sits inside it for React: the submit must not go on to a form around the page.
     event.stopPropagation();
     if (!dateValid || mark.isPending) return;
     try {
       await mark.mutateAsync({ kind, input: { sentOn, means } });
     } catch {
-      return; // The hook told why.
+      return;
     }
     toast.success(t('leaseOperations.sent.saved'));
   }

@@ -9,8 +9,6 @@ import { UnsubscribePage } from '../unsubscribe-page';
 
 vi.mock('@/api/client');
 
-// CRM-08 (NF-95): the unsubscribe link of a marketing e-mail opens this page. Its signed values are in the fragment of the address, which no
-// server receives; they must go back unchanged to the API and nowhere else.
 const ORG_ID = '0b6f7a3e-5a2d-4c58-9e0a-6c8b0f2e1d11';
 const EMAIL_HASH = 'f3a9c2d4e5b6a7981c0d2e3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7';
 const SIGNATURE = '9c1e7b5a3d2f4e6a8b0c9d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a';
@@ -35,7 +33,6 @@ function renderPage() {
   );
 }
 
-/** What a console call printed, whatever it was given. */
 function asText(value: unknown): string {
   try {
     return String(value);
@@ -64,18 +61,14 @@ describe('UnsubscribePage (CRM-08)', () => {
   it('UnsubscribePage_LinkOfAnEmail_CleansTheAddressPostsTheValuesOnceOnTheClickAndPutsThemInNoLink', async () => {
     post.mockResolvedValue({ unsubscribed: true });
     const consoleSpies = (['log', 'info', 'debug', 'warn', 'error'] as const).map((method) => vi.spyOn(console, method));
-    // A value the page does not know (here a stray parameter) is never carried along.
     openLink(`${FRAGMENT}&utm_source=newsletter`);
 
     const { container } = renderPage();
 
-    // The address bar is cleaned as soon as the page has read the link: no signed value stays in a bookmark, a shared address or the history.
     await waitFor(() => expect(window.location.hash).toBe(''));
     expect(window.location.pathname).toBe('/unsubscribe');
-    // A mail scanner that only loads the page unsubscribes nobody: nothing is posted before the person asks.
     expect(title()).toHaveTextContent("Vuoi annullare l'iscrizione?");
     expect(post).not.toHaveBeenCalled();
-    // Not indexed.
     expect(document.head.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex,nofollow');
 
     fireEvent.click(unsubscribeButton());
@@ -84,7 +77,6 @@ describe('UnsubscribePage (CRM-08)', () => {
     expect(screen.getByText(/Non riceverai più e-mail promozionali da questa struttura/)).toBeInTheDocument();
     expect(screen.getByText(/potranno comunque arrivare/)).toBeInTheDocument();
 
-    // Once, anonymous, with the values exactly as the link carried them and nothing in the body.
     expect(post).toHaveBeenCalledTimes(1);
     const [url, body, options] = post.mock.calls[0];
     expect(url.startsWith('/public/marketing/unsubscribe?')).toBe(true);
@@ -98,7 +90,6 @@ describe('UnsubscribePage (CRM-08)', () => {
     expect(body).toBeUndefined();
     expect(options).toEqual({ public: true });
 
-    // In no link and no text of the page, in no storage and in no log.
     expect(container.querySelectorAll('a')).toHaveLength(0);
     const logged = consoleSpies.flatMap((spy) => spy.mock.calls.map((args) => args.map(asText).join(' ')));
     const kept = JSON.stringify([Object.entries(window.localStorage), Object.entries(window.sessionStorage), logged]);
@@ -122,7 +113,6 @@ describe('UnsubscribePage (CRM-08)', () => {
     fireEvent.click(unsubscribeButton());
 
     expect(await screen.findByRole('heading', { level: 1, name: expectedTitle })).toBeInTheDocument();
-    // No code, no technical detail, and nothing to press: that link cannot work again.
     expect(document.body).not.toHaveTextContent(code);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(post).toHaveBeenCalledTimes(1);

@@ -43,7 +43,6 @@ function keepService(client: QueryClient, service: SupplierService) {
   void client.invalidateQueries({ queryKey: supplierServiceKeys.list() });
 }
 
-/** Takes a service out of the cache and out of the list: it was deleted, here or somewhere else. */
 function dropService(client: QueryClient, id: string) {
   client.removeQueries({ queryKey: supplierServiceKeys.detail(id) });
   client.setQueryData<SupplierServiceList>(supplierServiceKeys.list(), (list) => {
@@ -53,10 +52,6 @@ function dropService(client: QueryClient, id: string) {
   void client.invalidateQueries({ queryKey: supplierServiceKeys.list() });
 }
 
-/**
- * The catalog of the supplier (30 services at most, so it is one request). It is read again when a screen opens it after it was
- * marked stale (a service made or copied while no screen showed the list): the app does not do that by default.
- */
 export function useSupplierServices() {
   return useQuery({ queryKey: supplierServiceKeys.list(), queryFn: fetchSupplierServices, refetchOnMount: true });
 }
@@ -78,7 +73,6 @@ export function useSupplierService(id: string | undefined) {
   });
 }
 
-/** What a screen does when it learns that a service is not there any more (a 404 on an action): forget it. The same function on every render. */
 export function useForgetSupplierService() {
   const client = useQueryClient();
   return useCallback((id: string) => dropService(client, id), [client]);

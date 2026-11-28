@@ -29,9 +29,7 @@ import { draftReasonText, pendingReviewDraftOf, reasonText, reviewProblemMessage
 import { PublishReplyDialog } from './publish-reply-dialog';
 
 interface ReviewDraftPanelProps {
-  /** The key of the review (`otareview:…` or `review:…`), as the page has it. */
   threadKey: string;
-  /** The host may ask for a draft: the permission to write the bookings, which the endpoint asks. */
   canAsk: boolean;
 }
 
@@ -50,13 +48,11 @@ export function ReviewDraftPanel({ threadKey, canAsk }: ReviewDraftPanelProps) {
   return <ReviewDraftPanelBody threadKey={threadKey} canAsk={canAsk} />;
 }
 
-/** A line that tells what happened to a draft the host decided on this page: it stays until the next thing the host does. */
 interface Notice {
   tone: 'success' | 'warning';
   key: string;
 }
 
-/** What the dialog of the publication is about: the draft as it stands, or the text the host has just edited (saved and approved in one step). */
 type Publishing = { kind: 'approve'; item: ApprovalQueueItem } | { kind: 'saveAndApprove'; item: ApprovalQueueItem; text: string };
 
 function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
@@ -64,28 +60,20 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
   const queryClient = useQueryClient();
   const pending = usePendingApprovals();
   const approve = useApproveItem();
-  // The edit, the rejection and the request for a draft are started from this panel and live here: a dialog closed while its request goes on must not take the callbacks of the request
-  // with it. Every button waits for ANY mutation of the page (the reply that is typed below included): a public reply is sent once, by one thing at a time.
   const edit = useEditItem();
   const saveAndApprove = useSaveAndApproveItem();
   const reject = useRejectItem();
   const request = useRequestReviewDraft(threadKey);
   const busy = useIsMutating() > 0;
 
-  // The draft the host opened the editor on (`null` while it is not open): it keeps the editor, and the words written in it, when the queue cannot be read.
   const [editing, setEditing] = useState<ApprovalQueueItem | null>(null);
   const [publishing, setPublishing] = useState<Publishing | null>(null);
   const [rejecting, setRejecting] = useState<ApprovalQueueItem | null>(null);
-  // Why the last approval of a draft failed (the code of its action), until the next try.
   const [failure, setFailure] = useState<{ id: string; code: string } | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
 
-  // A reading of the queue that failed is not «no draft» and not the draft of the last reading: the panel says it could not read.
   const draft = useMemo(() => (pending.isError ? null : pendingReviewDraftOf(pending.data, threadKey)), [pending.isError, pending.data, threadKey]);
-  // What the panel works on. While the host writes in the editor, a reading of the queue that fails does not take the editor away (the words written and not saved would be lost with
-  // it): the draft it was opened on stays and the failed reading is told above it. A reading that works and no longer holds the draft (decided by someone else) does take it away.
   const shown = draft ?? (pending.isError ? editing : null);
-  // The editor is open on the draft that is shown (the one it was opened on): another draft, which may come after this one is gone, does not open it by itself.
   const editingShown = editing !== null && shown !== null && editing.id === shown.id;
   const failureText = (code: string) => reasonText(code, t) ?? originErrorMessage(code, t);
 
@@ -156,7 +144,6 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
 
         {editingShown ? (
           <ReviewDraftEditor
-            // A new text of the same draft (the queue read again after a save) starts a new editor only when the host opens it again.
             key={shown.id}
             item={shown}
             edit={edit}
@@ -227,8 +214,6 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
     );
   }
 
-  // What the last request for a draft ended in is the state of the panel only while there is no draft: once one is there it is the draft that counts. A decision that is not `Drafted`
-  // says why it is not, and is never a success.
   const notDrafted = request.data && request.data.status !== 'Drafted' ? request.data : null;
   const requestError = request.isError && shown === null ? request.error : null;
 
@@ -287,14 +272,10 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
 }
 
 interface ReviewDraftEditorProps {
-  /** The draft being edited. The field starts from the text the approval would act with (the host's earlier edit, else the draft). */
   item: ApprovalQueueItem;
-  /** The mutation belongs to the panel: it keeps every button waiting while any request of the draft goes on. */
   edit: ReturnType<typeof useEditItem>;
   busy: boolean;
-  /** The edit is being approved (the dialog of the publication is over it). */
   publishing: boolean;
-  /** «Salva e pubblica»: the text, once it is usable; the panel asks the question and publishes. */
   onPublish: (text: string) => void;
   onClose: () => void;
 }
@@ -323,7 +304,6 @@ function ReviewDraftEditor({ item, edit, busy, publishing, onPublish, onClose }:
       {
         onSuccess: onClose,
         onError: (failure) => {
-          // The toast of the hook says why; an item that is not there any more is not kept open, a text the API refuses stays on the box.
           if (itemIsGone(failure)) onClose();
           else if (getHttpStatus(failure) === 422) setRefused(getProblemMessage(failure, t) ?? t('reviews.thread.reply.empty'));
         },

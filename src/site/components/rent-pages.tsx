@@ -25,7 +25,6 @@ interface RentGroup {
   items: readonly string[];
 }
 
-/** The groups of the short-rental page: the texts are those of the features page (`site.features.*`), one source for both. */
 const SHORT_GROUPS: readonly RentGroup[] = [
   { key: 'compliance', icon: ShieldCheck, tint: 'terra', items: ['complianceItem1', 'complianceItem2', 'complianceItem3', 'complianceItem4'] },
   { key: 'touristTax', icon: Landmark, tint: 'ametista', items: ['touristTaxItem1', 'touristTaxItem2', 'touristTaxItem3'] },
@@ -34,7 +33,6 @@ const SHORT_GROUPS: readonly RentGroup[] = [
   { key: 'suppliers', icon: Handshake, tint: 'salvia', items: ['suppliersItem1', 'suppliersItem2'] },
 ];
 
-/** The long-rental groups: the contract, the rent, the deadlines and the tax regime. */
 const LONG_GROUPS: readonly RentGroup[] = [
   { key: 'contracts', icon: FileSignature, tint: 'savoia', items: ['longRentItem1'] },
   { key: 'rent', icon: Wallet, tint: 'salvia', items: ['longRentItem2'] },
@@ -42,7 +40,6 @@ const LONG_GROUPS: readonly RentGroup[] = [
   { key: 'tax', icon: Calculator, tint: 'ametista', items: ['fiscalItem1', 'fiscalItem2'] },
 ];
 
-/** Short rental: channels, what CasaZen does, the app at work and the booking site of a host. */
 export function ShortRentPage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
@@ -86,7 +83,6 @@ export function ShortRentPage({ legal }: { legal: SiteLegal }) {
   );
 }
 
-/** Long rental: contracts, rent, deadlines and tax regime, with the contract sheet of the app. */
 export function LongRentPage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (

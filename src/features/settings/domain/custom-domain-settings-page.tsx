@@ -22,7 +22,6 @@ export function CustomDomainSettingsPage() {
   const { t } = useTranslation();
   const { org, user } = useCurrentUser();
   const { data: entitlement } = useEntitlement();
-  // `fresh`: the domain is checked and activated by the platform while the page is open (and the surfaces change with it): it is read again on every visit and whenever the window comes back.
   const { data: domainConfig, isLoading, isError, error, refetch } = useOrgDomain(org?.id, true, { fresh: true });
   const setDomain = useSetOrgDomain(org?.id);
   const verifyDomain = useVerifyOrgDomain(org?.id);
@@ -31,8 +30,6 @@ export function CustomDomainSettingsPage() {
   const [subdomain, setSubdomain] = useState('');
   const [customDomain, setCustomDomain] = useState('');
 
-  // Sync the form from the SAVED mode whenever it changes (adjusting state during render), and from a config that is already in the cache on the first render. A config that comes back with
-  // the same mode (a switch of the surfaces was saved, the domain was checked, a live event) leaves alone what the person is typing.
   const savedMode = domainConfig
     ? JSON.stringify([domainConfig.publicHostMode, domainConfig.subdomain ?? '', domainConfig.customDomain ?? ''])
     : null;
@@ -61,7 +58,6 @@ export function CustomDomainSettingsPage() {
   const canUseCustomDomain = entitlement?.canUseCustomDomain ?? domainConfig?.canUseCustomDomain ?? false;
   const effectiveMode = domainConfig?.publicHostMode ?? hostMode;
 
-  // `mutate`, not `mutateAsync`: the hook already tells the user why a save failed.
   const handleSave = () => {
     setDomain.mutate({
       hostMode,

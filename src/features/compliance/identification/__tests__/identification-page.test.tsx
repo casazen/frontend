@@ -153,8 +153,6 @@ describe('IdentificationPage (E03/F01/US03)', () => {
     );
   });
 
-  // Privacy (ADR-013): the code is write-only. It is never put in the field, it goes only in the body of the request, and once saved it is
-  // nowhere on the page nor kept by the mutation.
   it('changeCode_ExistingCode_FieldStartsEmptySendsTheCodeInTheBodyAndShowsItNoMore', async () => {
     const client = renderPage();
     fireEvent.click(await screen.findByRole('button', { name: 'Cambia codice: Casa Verdi' }));
@@ -169,7 +167,6 @@ describe('IdentificationPage (E03/F01/US03)', () => {
     vi.mocked(accessCodeApi.getStatus).mockResolvedValue(answer([{ ...withCode, updatedAt: '2026-11-05T12:00:00Z' }, withoutCode]));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Salva codice' }));
 
-    // The code travels once, in the body, trimmed; the address of the call is the property alone.
     await waitFor(() => expect(accessCodeApi.setCode).toHaveBeenCalledWith('p-1', { code: SECRET }));
     expect(accessCodeApi.setCode).toHaveBeenCalledTimes(1);
 
@@ -179,17 +176,14 @@ describe('IdentificationPage (E03/F01/US03)', () => {
     expect(screen.queryByDisplayValue(SECRET)).not.toBeInTheDocument();
     expect(document.body.textContent).not.toContain(SECRET);
 
-    // The list was read again: the state is the server's, and it still carries no code.
     await waitFor(() => expect(accessCodeApi.getStatus).toHaveBeenCalledTimes(2));
     expect(await screen.findByText(/5 novembre 2026/)).toBeInTheDocument();
     expect(document.body.textContent).not.toContain(SECRET);
 
-    // Closing the window drops it, and the mutation that carried the code goes with it (it is not kept in the cache).
     fireEvent.click(within(dialog).getByTestId('lock-code-done'));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
 
-    // And reopened it is empty again.
     fireEvent.click(screen.getByRole('button', { name: 'Cambia codice: Casa Verdi' }));
     expect(within(await screen.findByRole('dialog')).getByTestId('lock-code-input')).toHaveValue('');
   });
@@ -216,11 +210,9 @@ describe('IdentificationPage (E03/F01/US03)', () => {
     expect(error).toHaveTextContent(i18n.t('compliance.identification.dialog.error'));
     expect(error).not.toHaveTextContent(SECRET);
     expect(within(dialog).queryByTestId('lock-code-saved')).not.toBeInTheDocument();
-    // The text stays to try again, and typing again clears the message.
     expect(within(dialog).getByTestId('lock-code-input')).toHaveValue(SECRET);
     fireEvent.change(within(dialog).getByTestId('lock-code-input'), { target: { value: `${SECRET}1` } });
     expect(within(dialog).queryByTestId('lock-code-error')).not.toBeInTheDocument();
-    // The state of the list was not touched by a save that failed.
     expect(accessCodeApi.getStatus).toHaveBeenCalledTimes(1);
   });
 

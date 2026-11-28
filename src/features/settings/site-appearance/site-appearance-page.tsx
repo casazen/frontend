@@ -45,25 +45,19 @@ import {
   useUploadBrandingImage,
 } from './use-org-branding';
 
-/** Path of the org settings page, where name and public address are edited (PL-04). */
 const ORG_SETTINGS_PATH = '/app/short-rent/settings/organization';
 
-/** Route prefix of an org's public booking site (a path, not text to translate). */
 const PUBLIC_PATH_PREFIX = '/book/';
 
-/** Glyph sample of a font or color (not a word: it is the same in every language). */
 const FONT_SAMPLE = 'Aa';
 
-/** Contrast ratio as shown to the host: truncated, never rounded up (4.46 is not "4.5"), with the locale's separator. */
 function formatRatio(ratio: number, language: string): string {
   return (Math.floor(ratio * 10) / 10).toLocaleString(language, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
 interface BrandingForm {
   themeId: PublicSiteThemeId;
-  /** The font pair the host chose; null = the one its theme starts with. */
   fontId: PublicSiteFontId | null;
-  /** Text as typed; empty = theme color. */
   primaryColor: string;
   tagline: string;
 }
@@ -77,7 +71,6 @@ function toForm(branding: OrgBranding): BrandingForm {
   };
 }
 
-/** Translation keys of the client-side checks; the server validates again. */
 function validate(form: BrandingForm): Partial<Record<'primaryColor' | 'tagline', string>> {
   const errors: Partial<Record<'primaryColor' | 'tagline', string>> = {};
   if (form.primaryColor.trim() && !normalizeHexColor(form.primaryColor)) {
@@ -89,7 +82,6 @@ function validate(form: BrandingForm): Partial<Record<'primaryColor' | 'tagline'
   return errors;
 }
 
-/** "Aspetto sito" (BK-12, A3-17): logo, hero, color, tagline and theme of the public booking site. */
 export function SiteAppearancePage() {
   return (
     <AppShell>
@@ -113,7 +105,6 @@ export function SiteAppearanceContent() {
     tagline: '',
   });
   const [submitted, setSubmitted] = useState(false);
-  // Sync the form from the server branding whenever it (re)loads (adjusting state during render).
   const [synced, setSynced] = useState<OrgBranding | undefined>(undefined);
   if (brandingQuery.data !== synced) {
     setSynced(brandingQuery.data);
@@ -184,11 +175,9 @@ export function SiteAppearanceContent() {
 
     const branding = brandingQuery.data;
     const previewColor = normalizeHexColor(form.primaryColor);
-    // The picker needs a color: while the org uses the theme's own color it shows that theme's primary.
     const colorPickerValue = previewColor ?? PUBLIC_SITE_THEME_PALETTES[form.themeId].primary;
     const colorStyle = publicSiteColorStyle(previewColor, form.themeId);
     const colorAnalysis = previewColor ? analyzePrimaryColor(previewColor, form.themeId) : null;
-    // The font pair that is checked: the one chosen, or the one the theme starts with.
     const activeFontId = form.fontId ?? THEME_DEFAULT_FONT[form.themeId];
 
     return (
@@ -518,7 +507,6 @@ function ThemeSample({
   style,
 }: {
   themeId: PublicSiteThemeId;
-  /** The font pair the host chose, so the sample shows the title font of the site as it will be; null = the theme's own. */
   fontId: PublicSiteFontId | null;
   style: CSSProperties | undefined;
 }) {
@@ -537,7 +525,6 @@ function ThemeSample({
   );
 }
 
-/** Miniature of a font pair on the theme being edited: "Aa" in the title font of the pair. Decorative, the name sits next to it. */
 function FontSample({
   themeId,
   fontId,
@@ -565,22 +552,15 @@ interface SitePreviewProps {
   branding: OrgBranding;
   themeId: PublicSiteThemeId;
   fontId: PublicSiteFontId | null;
-  /** Inline color variables of the host's primary color (`publicSiteColorStyle`), undefined for the theme's own. */
   colorStyle: CSSProperties | undefined;
   tagline: string | null;
 }
 
-/**
- * Live preview of the public site's header and hero with the values being edited (not yet saved): same tokens
- * (`public-tokens.css`) and same `Hero` component as `/book/{slug}`. Without a hero image the real site shows the first
- * property photo; the preview shows the theme's gradient instead.
- */
 function SitePreview({ branding, themeId, fontId, colorStyle, tagline }: SitePreviewProps) {
   const { t } = useTranslation();
   const publicPath = `${PUBLIC_PATH_PREFIX}${encodeURIComponent(branding.slug)}`;
 
   return (
-    // The window scrolls in the shell (UI-03), so the preview sticks below the sticky header (`--header-height`) and a 1rem gap.
     <Card id="appearance-preview" className="lg:sticky lg:top-[calc(var(--header-height)+1rem)]" data-testid="site-appearance-preview">
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2 space-y-0">
         <div className="space-y-1.5">

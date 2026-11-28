@@ -1,17 +1,11 @@
-/**
- * Building blocks of the neighbourhood maps (DB-19a): drawing space, random blobs, the recursive split of an area into blocks
- * (BSP) and the graph of field edges the farm tracks follow. Everything is deterministic given the random generator.
- */
 import { clipHalf, compactness, polyArea, polyCentroid, sampleCurve, type Poly, type Pt } from '../geometry';
 import { PI, hash2, lerp, type Rand } from '../numeric';
 
-/** Drawing space is 100 × 100: of the 4:3 frame only the band VY0..VY1 is visible. */
 export const UW = 100;
 export const UH = 100;
 export const VY0 = 12.5;
 export const VY1 = 87.5;
 export const FRAME: Poly = [[-1.5, 11], [UW + 1.5, 11], [UW + 1.5, 89], [-1.5, 89]];
-/** Generation frame when the drawing is going to be rotated: it has to cover the visible band at any angle. */
 export const FRAME_WIDE: Poly = [[-30, -30], [UW + 30, -30], [UW + 30, UH + 30], [-30, UH + 30]];
 
 export interface Cut {
@@ -21,7 +15,6 @@ export interface Cut {
 }
 export interface Block {
   p: Poly;
-  /** Tone index into the palette of the layer that draws it. */
   t: number;
 }
 interface BspResult {
@@ -59,7 +52,6 @@ export function rectPoly(cx: number, cy: number, w: number, h: number, rot = 0):
   return corners.map(([x, y]): Pt => [cx + x * c - y * s, cy + x * s + y * c]);
 }
 
-/** Local coordinates of a rotated ellipse: |q| ≤ 1 inside. */
 export function ellipseNorm(p: Pt, c: Pt, rx: number, ry: number, rot: number): number {
   const dx = p[0] - c[0];
   const dy = p[1] - c[1];
@@ -72,7 +64,6 @@ export const localToWorld = (c: Pt, rot: number, x: number, y: number): Pt => [c
 
 export const samples = (pts: readonly Pt[], step = 1.5, closed = false): Pt[] => sampleCurve(pts, closed, step);
 
-/** Points along the cuts (the main streets) up to a level: they snap the points of interest. */
 export const cutSamples = (cuts: readonly Cut[], maxLv: number, step = 2.2): Pt[] => {
   const out: Pt[] = [];
   for (const c of cuts) {
@@ -83,10 +74,6 @@ export const cutSamples = (cuts: readonly Cut[], maxLv: number, step = 2.2): Pt[
   return out;
 };
 
-/**
- * Recursive split of a convex area into blocks with T junctions, like a real town: cut perpendicular to the long axis with a
- * little random angle. The cuts of the first levels are the main streets.
- */
 function bspBlocks(rand: Rand, region: Poly, { target, jitter = 0.5, minFrac = 0.3, minCompact = 0.42, density = () => 1 }: BspOptions): BspResult {
   const blocks: Poly[] = [];
   const cuts: Cut[] = [];
@@ -148,7 +135,6 @@ interface BspFieldOptions extends BspOptions {
   k?: number;
 }
 
-/** BSP in a stretched space: the blocks come out elongated by k along the direction `ang`. */
 export function bspField(rand: Rand, region: Poly, { target, jitter, ang = 0, k = 1, minFrac = 0.3, minCompact = 0.42, density = () => 1 }: BspFieldOptions): BspResult {
   const ca = Math.cos(ang);
   const sa = Math.sin(ang);
@@ -158,7 +144,6 @@ export function bspField(rand: Rand, region: Poly, { target, jitter, ang = 0, k 
   return { blocks: r.blocks.map((b) => b.map(inv)), cuts: r.cuts.map((c) => ({ a: inv(c.a), b: inv(c.b), lv: c.lv })) };
 }
 
-/** Cuts a block with the half-plane of the nearest cliff, moved by `margin`. */
 export function clipByCoast(poly: Poly, margin: number, coast: readonly Pt[], land: (x: number, y: number) => boolean, coastDist: (x: number, y: number) => number): Poly | null {
   if (poly.every((q) => land(q[0], q[1]) && coastDist(q[0], q[1]) >= margin)) return poly;
   const cen = polyCentroid(poly);
@@ -185,7 +170,6 @@ export function clipByCoast(poly: Poly, margin: number, coast: readonly Pt[], la
   return out.every((q) => land(q[0], q[1]) && coastDist(q[0], q[1]) >= margin - 0.3) ? out : null;
 }
 
-/** Cuts a block with the tangent of the nearest ellipse (blocks aligned with the ring road). */
 export function clipOutsideEllipse(poly: Poly, c: Pt, rx: number, ry: number, rot: number, margin: number): Poly | null {
   if (poly.every((q) => ellipseNorm(q, c, rx + margin, ry + margin, rot) >= 1)) return poly;
   const g = polyCentroid(poly);
@@ -211,7 +195,6 @@ export interface FieldGraph {
   path: (from: number, to: number) => Pt[];
 }
 
-/** Graph of the edges between fields: the sides are split at the T junctions, so the tracks follow them. */
 export function buildGraph(polys: readonly Poly[]): FieldGraph {
   const vid = new Map<string, number>();
   const verts: Pt[] = [];

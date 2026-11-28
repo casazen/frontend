@@ -18,13 +18,10 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const TOKEN = 'tok-swiss';
 
-/** Filling two guests over three steps takes a few seconds in jsdom, more on a loaded CI runner. */
 const FORM_TEST_TIMEOUT_MS = 30_000;
 
-// Explicit conditions only, no fixed waits (QA-INFRA-01): a wait ends as soon as its condition holds, so the ceiling costs nothing when the machine is idle.
 configure({ asyncUtilTimeout: 15_000 });
 
-/** What the API names for a property in canton Ticino (NF-132, E30/F01/US01/T01). */
 const TICINO_FIELDS = ['DocumentType', 'DocumentNumber', 'ResidenceStreet', 'ResidencePostalCode', 'ResidenceCityName', 'ResidenceCountryName'];
 
 const booker: PublicCheckInGuestPrefill = {
@@ -105,7 +102,6 @@ function fillGuest(index: number, firstName: string, dateOfBirth: string, gender
   change(card, /^Cittadinanza/, 'Italia');
 }
 
-/** The scan step is the first one: the guest who types by hand skips it. Waits until the page started the form from the guests on file. */
 async function openGuestsStep(lastCard: number) {
   await screen.findByTestId('checkin-document-step');
   fireEvent.click(screen.getByTestId('checkin-enter-manually'));
@@ -159,7 +155,6 @@ describe('the guest check-in of a Swiss property (NF-132, E30/F01/US02)', () => 
       expect(card.getByLabelText(/^CAP/)).toHaveAttribute('autocomplete', 'postal-code');
       expect(card.getByLabelText(/^Località/)).toHaveAttribute('autocomplete', 'address-level2');
       expect(card.getByLabelText(/^Stato di residenza/)).toHaveAttribute('autocomplete', 'country');
-      // Never an Italian-only question of a Swiss stay: not «in Italy or abroad», not the comune nor the province of residence.
       expect(card.queryByLabelText(/^Residenza/)).not.toBeInTheDocument();
       expect(card.queryByLabelText(/^Comune di residenza/)).not.toBeInTheDocument();
       expect(card.queryByLabelText(/^Provincia di residenza/)).not.toBeInTheDocument();
@@ -178,7 +173,6 @@ describe('the guest check-in of a Swiss property (NF-132, E30/F01/US02)', () => 
 
     await goToDocuments();
 
-    // The head gives the whole document; the adult member gives its type and number, not the place of issue nor the days.
     expect(documentCard(0).getByLabelText(/^Luogo di rilascio/)).toBeInTheDocument();
     expect(documentCard(1).getByLabelText(/^Tipo documento/)).toBeInTheDocument();
     expect(documentCard(1).getByLabelText(/^Numero documento/)).toBeInTheDocument();
@@ -241,13 +235,11 @@ describe('the guest check-in of a Swiss property (NF-132, E30/F01/US02)', () => 
       residenceStreet: 'Via Nassa 5',
       residencePostalCode: '6900',
       residenceCityName: 'Lugano',
-      // The state of residence says the guest lives abroad: the Swiss form never asked it.
       residenceInItaly: false,
       residenceCountryName: 'Svizzera',
       documentType: 'IdentityCard',
       documentNumber: 'CA12345AB',
     });
-    // The whole truth: the home the second guest left blank is sent as null, so a save never leaves a stale one.
     expect(payload.guests[1]).toMatchObject({
       type: 'FamilyMember',
       residenceStreet: null,
@@ -326,7 +318,6 @@ describe('the guest check-in of a Swiss property (NF-132, E30/F01/US02)', () => 
     fillDocument(documentCard(1), 'Passport', 'X1234567');
     await acceptAndSubmit();
 
-    // Back to the guests step, where the plate is asked, with the message of the page.
     expect(await screen.findByText('La targa non è valida: usa lettere, cifre e trattini, al massimo 20 caratteri.')).toBeInTheDocument();
     expect(screen.getByLabelText(/^Targa/)).toHaveAttribute('aria-invalid', 'true');
     expect(toast.error).not.toHaveBeenCalled();

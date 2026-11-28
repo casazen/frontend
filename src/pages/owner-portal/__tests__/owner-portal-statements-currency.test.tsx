@@ -86,11 +86,9 @@ describe('the amounts of a statement are in the currency of the data (NF-115)', 
 
     const cards = await screen.findAllByTestId('owner-statement');
     expect(cards).toHaveLength(2);
-    // The latest period first: the statement in francs, then the one in euros.
     const [francs, euros] = cards;
     expect(within(francs).getByTestId('owner-statement-net').textContent ?? '').toMatch(chfNet);
     expect(within(euros).getByTestId('owner-statement-net').textContent ?? '').toMatch(eurNet);
-    // Each card speaks only its own currency: no euro under the francs, no franc under the euros, every total of the card included.
     expect(francs.textContent).not.toMatch(/€|EUR/);
     expect(euros.textContent).not.toMatch(/CHF/);
     for (const total of within(francs).getAllByTestId(/^owner-statement-total-/)) expect(total.textContent).toMatch(/CHF/);
@@ -109,7 +107,6 @@ describe('the amounts of a statement are in the currency of the data (NF-115)', 
     expect(within(card).getByTestId('owner-statement-total-channelFees').textContent).toMatch(/^-270,00\s*CHF$/);
     expect(within(card).getByTestId('owner-statement-total-commission').textContent).toMatch(/^-216,00\s*CHF$/);
     expect(within(card).getByTestId('owner-statement-total-charges').textContent).toMatch(/^-79,50\s*CHF$/);
-    // No correction, no row for it.
     expect(within(card).queryByTestId('owner-statement-total-corrections')).toBeNull();
   });
 
@@ -125,14 +122,12 @@ describe('the amounts of a statement are in the currency of the data (NF-115)', 
     renderPortal('/portale-proprietari/contabilita/st-chf');
 
     const detail = await screen.findByTestId('owner-statement-detail');
-    // The lines are written in the currency of the statement, each part with its own total, in the order of the PDF.
     expect(within(detail).getByTestId('owner-statement-net').textContent).toMatch(/^1234,50\s*CHF$/);
     const stays = within(detail).getByTestId('owner-statement-section-stays');
     expect(stays.textContent).toMatch(/1800,00\s*CHF/);
     expect(stays.textContent).toContain('Casa Lago');
     expect(within(detail).getByTestId('owner-statement-section-recharges').textContent).toMatch(/-79,50\s*CHF/);
     expect(within(detail).queryByTestId('owner-statement-section-withholding')).toBeNull();
-    // The tourist tax is outside the net, and every stay carries the currency it was collected in: a franc row and a euro row, and a sum for each, never one mixed sum.
     const box = within(detail).getByTestId('owner-tourist-tax');
     const rows = within(box).getAllByTestId('owner-tourist-tax-row');
     expect(rows[0].textContent).toMatch(/8,00\s*CHF/);
@@ -152,15 +147,12 @@ describe('the amounts of a statement are in the currency of the data (NF-115)', 
     const cards = await screen.findAllByTestId('owner-statement');
     const withNone = cards.find((card) => card.querySelector('[data-testid="owner-statement-currency-missing"]'));
     expect(withNone).toBeDefined();
-    // The figure is there, plain: no euro and no franc invented for it, and the sentence says why.
     expect(within(withNone as HTMLElement).getByTestId('owner-statement-net').textContent).toMatch(/^987,65$/);
     expect(withNone?.textContent).not.toMatch(/€|CHF|EUR|\$/);
     expect(within(withNone as HTMLElement).getByTestId('owner-statement-currency-missing').textContent).toContain('non è indicata');
-    // The statement that has a currency says nothing of the kind.
     const withCurrency = cards.find((card) => card !== withNone) as HTMLElement;
     expect(within(withCurrency).queryByTestId('owner-statement-currency-missing')).toBeNull();
     expect(within(withCurrency).getByTestId('owner-statement-net').textContent).toMatch(/CHF/);
-    // The same for an invoice of the manager.
     const invoice = await screen.findByTestId('owner-pm-invoice');
     expect(within(invoice).getByTestId('owner-pm-invoice-total').textContent).toMatch(/^233,25$/);
     expect(within(invoice).getByTestId('owner-pm-invoice-currency-missing')).toBeInTheDocument();
@@ -173,7 +165,6 @@ describe('the amounts of a statement are in the currency of the data (NF-115)', 
 
     const invoices = await screen.findAllByTestId('owner-pm-invoice');
     expect(invoices).toHaveLength(2);
-    // The latest day first, each with its own currency and its own title.
     expect(invoices[0].textContent).toContain('Fattura n. 2026/0042 del 5 nov 2026');
     expect(within(invoices[0]).getByTestId('owner-pm-invoice-total').textContent).toMatch(/^233,25\s*CHF$/);
     expect(within(invoices[1]).getByTestId('owner-pm-invoice-total').textContent).toMatch(/^77,70\s*€$/);
@@ -184,7 +175,6 @@ describe('the amounts of a statement are in the currency of the data (NF-115)', 
   it('OwnerPortalStatementModel_TheSumIsMadeInCents_AndAnAmountThatRoundsToNothingHasNoSign', () => {
     const tax = (currency: string, amount: number) => ({ property: null, checkIn: '2026-10-10', checkOut: '2026-10-11', channel: null, bookingCode: null, currency, amount });
 
-    // 0.1 + 0.2 is 0.3, and francs and euros are never one sum.
     expect(touristTaxTotals([tax('CHF', 0.1), tax('chf', 0.2), tax('EUR', 1)])).toEqual([
       { currency: 'CHF', total: 0.3 },
       { currency: 'EUR', total: 1 },
@@ -207,7 +197,6 @@ describe('the PDF of a statement and of an invoice (one at a time, said in words
     const invoiceButton = await screen.findByTestId('owner-pm-invoice-pdf');
     await waitFor(() => expect(statementButton).toBeEnabled());
     fireEvent.click(statementButton);
-    // The button of the invoice waits for the statement that works, and a click on it asks for nothing.
     await waitFor(() => expect(invoiceButton).toBeDisabled());
     fireEvent.click(invoiceButton);
     expect(api.downloadInvoicePdf).not.toHaveBeenCalled();
@@ -218,14 +207,12 @@ describe('the PDF of a statement and of an invoice (one at a time, said in words
     expect(api.downloadStatementPdf).toHaveBeenCalledWith('st-chf');
     await waitFor(() => expect(invoiceButton).toBeEnabled());
 
-    // The invoice is asked for in the language of the page, and saved under a name with no slash in it.
     const invoiceBlob = new Blob(['%PDF-1.5']);
     api.downloadInvoicePdf.mockResolvedValueOnce(invoiceBlob);
     fireEvent.click(invoiceButton);
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(invoiceBlob, 'fattura-2026-0042.pdf'));
     expect(api.downloadInvoicePdf).toHaveBeenCalledWith('inv-chf', 'it');
 
-    // A PDF the server does not have is said in words, in a toast (UX round 2026-11); nothing is saved and the buttons come back.
     api.downloadStatementPdf.mockRejectedValueOnce(refusal(404, 'owner_statement_pdf_not_available'));
     await waitFor(() => expect(statementButton).toBeEnabled());
     fireEvent.click(statementButton);
@@ -265,7 +252,6 @@ describe('a statement that is refused is «not found», whatever an earlier answ
     await screen.findByTestId('owner-statement-detail');
     expect(document.body.textContent).toContain('Casa Lago');
 
-    // The statement is no longer one of the owner's (or is gone): TanStack Query keeps the data of the answer before, and the page must not draw it.
     api.getStatement.mockRejectedValue(refusal(404, 'owner_statement_version_not_found'));
     await act(async () => {
       await client.refetchQueries({ queryKey: [OWNER_PORTAL_KEY, 'statement', 'st-chf'] });

@@ -17,7 +17,6 @@ const SECTION_LABEL: Record<HomeSectionId, string> = {
   domande: 'siteHome.nav.faq',
 };
 
-/** Section links open the unfiltered home. Read its cards even when entering another page directly. */
 export function useSiteNavItems(slug: string | undefined, basePath: string): SiteNavItem[] {
   const { t } = useTranslation();
   const { data } = useOrgStays(slug, { adults: DEFAULT_GUESTS, children: 0 });

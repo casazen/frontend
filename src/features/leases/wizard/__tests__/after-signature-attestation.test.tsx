@@ -6,15 +6,12 @@ import { buildDetail, httpError, renderAt } from '../../__tests__/lease-test-uti
 import { AfterSignatureStep } from '../after-signature-step';
 import type { LeaseDetail } from '@/types';
 
-// CF-END: the last step of «Crea contratto» asks for the attestation of a canone concordato and never of another contract. The checklist,
-// the tax advice and the rents of the step answer 404 here: the step does not depend on them.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const get = vi.mocked(axios.get);
 const post = vi.mocked(axios.post);
 
-/** A document of the lease as the API lists it (`GET /leases/:id/documents`). */
 function attestationDocument(fileName: string) {
   return { id: 'doc-attestation', leaseId: 'lease-1', kind: 'Attestation', fileName, sizeBytes: 2048, uploadedAt: '2026-10-24T10:00:00Z' };
 }
@@ -75,7 +72,6 @@ describe('AfterSignatureStep — the attestation of a canone concordato (CF-END)
     const section = await screen.findByTestId('lease-after-attestation');
     await waitFor(() => expect(within(section).getByTestId('lease-after-attestation-status')).toHaveTextContent('Attestazione: ancora da caricare'));
     expect(section).toHaveTextContent("L'attestazione dimostra che il canone rispetta l'accordo territoriale: serve per le agevolazioni.");
-    // The declaration of the registration is not held back by it.
     expect(screen.getByTestId('lease-after-mark-registered')).toBeEnabled();
     fireEvent.click(within(section).getByRole('button', { name: "Carica l'attestazione" }));
     expect(await screen.findByTestId('lease-document-upload-dialog')).toHaveTextContent("Carica l'attestazione");
@@ -109,7 +105,6 @@ describe('AfterSignatureStep — the attestation of a canone concordato (CF-END)
     expect(screen.getByTestId('lease-after-attestation-upload')).toHaveTextContent('Carica un nuovo file');
   });
 
-  // CF-DOCS-REAL: the contract file that was uploaded holds the attestation too (the reading recognized its pages): it is not asked twice.
   it('render_ContractFileThatHoldsTheAttestation_SaysItIsIncluded_AndAsksForNothingMore', async () => {
     mockDocuments(() => [
       {
@@ -134,7 +129,6 @@ describe('AfterSignatureStep — the attestation of a canone concordato (CF-END)
     const status = await screen.findByTestId('lease-after-attestation-included');
     expect(status).toHaveTextContent('Attestazione: inclusa nel contratto caricato');
     expect(within(screen.getByTestId('lease-after-attestation')).getByTestId('lease-after-attestation-status')).toHaveTextContent('contratto-e-attestazione.pdf');
-    // No second request: nothing to upload and nothing says «ancora da caricare».
     expect(screen.queryByTestId('lease-after-attestation-upload')).not.toBeInTheDocument();
     expect(screen.getByTestId('lease-after-attestation')).not.toHaveTextContent('ancora da caricare');
   });

@@ -3,16 +3,10 @@ import { cn } from '@/lib/utils';
 import { REVIEW_MAX_RATING } from '@/types';
 
 interface RatingStarsProps {
-  /** The mark, 0 to 5. A fraction (an average) is rounded to the nearest whole star. */
   value: number;
-  /** Size of one star. */
   className?: string;
 }
 
-/**
- * Five stars, filled up to the mark. Only a picture: it is hidden from a screen reader, which reads the words next to it ("4 su 5"),
- * and the shape (filled or only an outline) says the mark without the colour.
- */
 export function RatingStars({ value, className }: RatingStarsProps) {
   const filled = Math.max(0, Math.min(REVIEW_MAX_RATING, Math.round(value)));
 

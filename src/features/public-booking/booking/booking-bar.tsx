@@ -70,7 +70,6 @@ export function BookingBar() {
     };
   }
 
-  // The sheet already shows the calendar and the guests: a request to choose them takes the focus there.
   const reach = (what: Exclude<OpenSheet, null>) => {
     const scope = sheetRef.current;
     const target =

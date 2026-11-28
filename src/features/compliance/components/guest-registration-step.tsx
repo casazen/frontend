@@ -9,15 +9,10 @@ import type { ComplianceWizardStep } from '@/types/compliance.types';
 
 interface GuestRegistrationStepProps {
   propertyId: string;
-  /** The step as the server says it now: what it lists as missing is what the panel asks for while the regimes are off. */
   step: ComplianceWizardStep;
-  /** The property is in Ticino: its notification starts with the structure number, so the field is here. */
   ticino: boolean;
-  /** Goes to the step of the wizard where the municipality is set: the host never leaves the process. */
   onFixMunicipality: () => void;
-  /** After the structure number is saved: the wizard reads its steps again. */
   onChanged: () => void;
-  /** The step the host came from, when it is another step of the wizard: the way back to it. */
   origin: { id: string; title: string } | null;
   onBackToOrigin: () => void;
 }

@@ -26,7 +26,6 @@ vi.mock('@/api/marketplace.api', async (importOriginal) => ({
 }));
 vi.mock('../partner-site', () => ({ openPartnerSite: vi.fn() }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
@@ -114,7 +113,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-/** The event the browser fires when it shows a page: `persisted` is true for one it brings back from its cache as it was left. */
 const pageShow = (persisted: boolean) => Object.assign(new Event('pageshow'), { persisted });
 
 describe('the first step: what to prepare', () => {
@@ -125,7 +123,6 @@ describe('the first step: what to prepare', () => {
     expect(await screen.findByTestId('partner-property-data', {}, WAIT)).toBeInTheDocument();
     expect(screen.getByTestId('partner-field-address-value')).toHaveTextContent('Via Roma 12');
     expect(screen.getByTestId('partner-field-bedrooms-value')).toHaveTextContent('2');
-    // The CIN is not valid: no value, so nothing to copy.
     expect(screen.getByTestId('partner-field-cinCode-value')).toHaveTextContent(i18n.t('marketplace.partnerFlow.prepare.noValue'));
     expect(screen.queryByTestId('partner-copy-cinCode')).not.toBeInTheDocument();
     expect(screen.getByTestId('partner-checklist')).toHaveTextContent('Autorizza la lettura delle prenotazioni');
@@ -169,15 +166,12 @@ describe('the hand-off to the partner', () => {
     fireEvent.click(primaryButton());
 
     await waitFor(() => expect(openPartnerSite).toHaveBeenCalledTimes(1), WAIT);
-    // The address of the partner as it is: nothing of the host or of the guests added to it.
     expect(openPartnerSite).toHaveBeenCalledWith(SITE);
-    // The entry of the history the browser's Back button returns to is the one of the step the person comes back to, with its returnTo.
     await onStep('welcome-back');
     const params = new URLSearchParams(currentLocation().slice(currentLocation().indexOf('?')));
     expect(params.get('step')).toBe('welcome-back');
     expect(params.get('propertyId')).toBe('prop-1');
     expect(params.get('returnTo')).toBe(RETURN_TO);
-    // Nothing is sent to the partner and nothing is declared yet.
     expect(declarePartner).not.toHaveBeenCalled();
   });
 
@@ -190,7 +184,6 @@ describe('the hand-off to the partner', () => {
     await waitFor(() => expect(openPartnerSite).toHaveBeenCalled(), WAIT);
 
     expect(readWizardDraft(partnerWizardId(CODE), SCOPE)?.step).toBe('welcome-back');
-    // The person opens the wizard again (from the Marketplace, with no step in the address): the draft offers to go on from where they were.
     cleanup();
     renderWizard(`${PATH}?propertyId=prop-1`);
     fireEvent.click(await screen.findByTestId('wizard-draft-resume', {}, WAIT));
@@ -207,10 +200,8 @@ describe('the hand-off to the partner', () => {
     fireEvent.click(primaryButton());
     await waitFor(() => expect(openPartnerSite).toHaveBeenCalledTimes(1), WAIT);
     await onStep('welcome-back');
-    // The page is on its way out and the button that sent it there waits for ever: a page the browser brings back as it was left would keep «Sì, l'ho completata» busy.
     expect(primaryButton()).toHaveAttribute('aria-busy', 'true');
 
-    // A normal load of the page says nothing; the page that comes back from the cache is read again (its address is already the one of «Bentornato»).
     window.dispatchEvent(pageShow(false));
     expect(reload).not.toHaveBeenCalled();
     window.dispatchEvent(pageShow(true));
@@ -273,7 +264,6 @@ describe('the step the person comes back to', () => {
     expect(declarePartner).toHaveBeenCalledTimes(1);
     expect(declarePartner).toHaveBeenCalledWith(CODE, 'prop-1', '2026-11-10');
     expect(screen.getByTestId('partner-result-badge')).toHaveTextContent(i18n.t('marketplace.status.Active'));
-    // «Declared by you», with the day: never «verified» when only the host's word backs it.
     expect(screen.getByTestId('partner-result')).toHaveTextContent(i18n.t('marketplace.partnerFlow.result.declared', { date: '10 novembre 2026' }));
     expect(screen.getByTestId('partner-result')).not.toHaveTextContent(/verificat/i);
   });

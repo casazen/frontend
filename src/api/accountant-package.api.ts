@@ -12,22 +12,14 @@ const PATH = '/accountant-package';
 const SETTINGS_PATH = `${PATH}/settings`;
 const SEND_PATH = `${PATH}/send`;
 
-/** 422: the package would hold more files, or more bytes, than one archive may (`DocumentArchive:MaxExportFiles`, `MaxExportBytes`; `AccountantPackageErrors.TooLarge` of the backend). */
 const TOO_LARGE_CODE = 'accountant_package_too_large';
 
-/** The ZIP is streamed while the server builds it, up to the caps of the document archive (200 MB by default): it may take minutes, not the 30 s of every other call. */
 const DOWNLOAD_TIMEOUT_MS = 10 * 60_000;
 
-/** The test send builds the package of the month before it answers (the e-mail only carries a link to it): as long as the download of the ZIP, not the 30 s of every other call. */
 const SEND_TIMEOUT_MS = DOWNLOAD_TIMEOUT_MS;
 
-/** A file answer that says it is a web page or a JSON body is not the ZIP that was asked for (the `index.html` of a wrong rewrite). */
 const NOT_A_FILE = /^(text\/html|application\/(json|problem\+json))/i;
 
-/**
- * Name of the downloaded package, written as the server names it (`casazen-commercialista-2026-10.zip`): the name of the file is built from the same period, so the page falls back to it
- * when the header that carries it cannot be read.
- */
 export function accountantPackageFileName(period: string): string {
   return `casazen-commercialista-${period}.zip`;
 }
@@ -70,7 +62,6 @@ function asAgencySummary(data: unknown): AgencySummary {
   return data as AgencySummary;
 }
 
-/** The last attempt of the send as the server tells it, or `null` when there was none; a body that is not one is a load error (a result that is neither `sent` nor `failed` is never guessed). */
 function asLastSend(value: unknown): AccountantPackageLastSend | null {
   if (value === null || value === undefined) return null;
   if (!isRecord(value) || typeof value.period !== 'string' || typeof value.at !== 'string' || (value.result !== 'sent' && value.result !== 'failed')) {
@@ -106,7 +97,6 @@ function asSettings(data: unknown): AccountantPackageSettings {
   };
 }
 
-/** What a test send answers: «queued» is the only success there is, so an answer that does not say it is a failure and never a send that nobody confirmed. */
 function asEmailQueued(data: unknown): AccountantPackageEmailQueued {
   if (!isRecord(data) || typeof data.period !== 'string' || data.queued !== true || typeof data.linkExpiresAt !== 'string') {
     throw new UnexpectedApiResponseError(SEND_PATH);
@@ -114,10 +104,6 @@ function asEmailQueued(data: unknown): AccountantPackageEmailQueued {
   return { period: data.period, queued: true, linkExpiresAt: data.linkExpiresAt };
 }
 
-/**
- * What the 422 `accountant_package_too_large` says (a JSON body that `withJsonErrorBody` has parsed), or `null` for any other error: how many files the package would hold and how many one
- * archive allows. With a number missing the page cannot tell by how much the period went over and says only that the package would be too large (both are `null`).
- */
 export function accountantPackageTooLarge(error: unknown): { fileCount: number | null; maxFiles: number | null } | null {
   if (!isAxiosError(error) || error.response?.status !== 422 || getProblemCode(error.response.data) !== TOO_LARGE_CODE) return null;
   const body = error.response.data as Record<string, unknown>;
@@ -134,10 +120,6 @@ export function accountantPackageTooLarge(error: unknown): { fileCount: number |
  * of the send (the address of the accountant, whether it goes every month, its day and its folders) and, with the test send, the month that the monthly e-mail then does not repeat.
  */
 export const accountantPackageApi = {
-  /**
-   * The summary of a month (`2026-10`) or a year (`2026`). `null` when the server refuses it to this caller (403): a refused read would send the whole app to the page of no access, and
-   * the page only has to say that the access is not there.
-   */
   getAgencySummary: async (period: string): Promise<AgencySummary | null> => {
     const response = await axios.get<unknown>(`${PATH}/agency-summary`, { params: { period }, validateStatus: acceptsRefusal });
     if (response.status === 403) return null;
@@ -179,11 +161,6 @@ export const accountantPackageApi = {
     return asSettings(response.data);
   },
 
-  /**
-   * Saves all the settings as a whole and answers them as saved (`PUT api/accountant-package/settings`, `property.write` and the whole organization). 422 `accountant_package_settings_invalid`,
-   * `accountant_package_recipient_invalid`, `accountant_package_recipient_missing` (the send on with no address), `accountant_package_send_day_invalid`, `accountant_package_contents_invalid` and
-   * `accountant_package_owner_accounting_required` (a folder that carries the owner accounting, from a caller who may not read it); a refused save changes nothing.
-   */
   updateSettings: async (body: SaveAccountantPackageSettingsRequest): Promise<AccountantPackageSettings> => asSettings((await axios.put<unknown>(SETTINGS_PATH, body)).data),
 
   /**

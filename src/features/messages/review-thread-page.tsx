@@ -53,7 +53,6 @@ export function ReviewThreadView({ threadKey }: { threadKey: string }) {
   const canWrite = hasPermission('short-rent', 'booking.write');
   const withList = useMediaQuery(FROM_DESKTOP_QUERY);
   const thread = useReviewThread(threadKey);
-  // `null` is a box nobody touched: it shows the words of a reply the channel refused (the host changes them and tries again), else nothing.
   const [typedReply, setTypedReply] = useState<string | null>(null);
   const [hostDraft, setHostDraft] = useState<HostReviewDraft>(EMPTY_HOST_REVIEW);
   const data = thread.data;
@@ -66,7 +65,6 @@ export function ReviewThreadView({ threadKey }: { threadKey: string }) {
 
   let content: ReactNode;
   if (thread.isError && (status === 404 || status === 400)) {
-    // «Not found» wins over any reading in the cache: a review that is gone (or never was, or is not within reach) is not shown.
     content = (
       <EmptyState
         icon={SearchX}

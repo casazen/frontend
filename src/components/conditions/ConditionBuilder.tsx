@@ -7,19 +7,12 @@ import { Plus, Trash2 } from 'lucide-react';
 import type { ConditionGroup, ConditionRule, FieldDefinition, GroupOperator } from '@/types/condition';
 
 export interface ConditionBuilderProps {
-  /** The available fields from the catalog */
   fields: FieldDefinition[];
-  /** Current condition group */
   group: ConditionGroup;
-  /** Called when the group changes */
   onChange: (group: ConditionGroup) => void;
-  /** Preview count (number of matching records) */
   previewCount?: number;
-  /** Whether preview is loading */
   previewLoading?: boolean;
-  /** Nesting level (for rendering) */
   level?: number;
-  /** Called when remove group is clicked (not shown for root level) */
   onRemove?: () => void;
 }
 
@@ -100,14 +93,12 @@ export function ConditionBuilder({
     });
   };
 
-  // Don't nest too deep (max 3 levels per ADR-014-R12)
   const canAddNestedGroup = level < 2;
 
   return (
     <div
       className={`space-y-3 ${level > 0 ? 'rounded-md border border-input bg-muted/30 p-4' : ''}`}
     >
-      {/* Group header with operator selector and remove button */}
       <div className="flex items-center gap-2">
         <Select
           value={group.operator}
@@ -132,7 +123,6 @@ export function ConditionBuilder({
           </Button>
         )}
 
-        {/* Preview count for root level only */}
         {level === 0 && previewCount !== undefined && (
           <div className="ml-auto text-sm text-muted-foreground">
             {previewLoading
@@ -142,7 +132,6 @@ export function ConditionBuilder({
         )}
       </div>
 
-      {/* Rules */}
       <div className="space-y-2">
         {group.conditions.map((rule, index) => (
           <FieldSelect
@@ -155,7 +144,6 @@ export function ConditionBuilder({
         ))}
       </div>
 
-      {/* Nested groups */}
       {group.groups && group.groups.length > 0 && (
         <div className="space-y-2">
           {group.groups.map((nestedGroup, index) => (
@@ -171,7 +159,6 @@ export function ConditionBuilder({
         </div>
       )}
 
-      {/* Add buttons */}
       <div className="flex gap-2">
         <Button variant="outline" size="sm" onClick={handleAddRule} type="button">
           <Plus className="mr-2 size-4" />

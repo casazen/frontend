@@ -2,11 +2,6 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { acceptSupplierRequests, fetchSupplierChecklist, fetchSupplierDashboard, fetchSupplierInbox, fetchSupplierInboxCounts, fetchSupplierInboxItem, fetchSupplierOverview, fetchSupplierToday } from '@/services/supplier-api';
 import type { SupplierInboxParams, SupplierOverviewPeriod } from '@/types/supplier';
 
-/**
- * A page of the supplier inbox (SU-08): the requests of a tab or of a status, filtered and paginated by the server. The rows of the
- * last search stay, a little dimmed, until those of the next one arrive. It is read again when the page opens: a take, a refusal or a
- * completion made on another page (the request's own) changed it, and the shared client does not read again on mount.
- */
 export function useSupplierInbox(params: SupplierInboxParams = { status: 'open' }, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'list', params],
@@ -18,11 +13,6 @@ export function useSupplierInbox(params: SupplierInboxParams = { status: 'open' 
 }
 
 
-/**
- * The numbers on the chips of the list of requests (SP-04e), and the counter of "Richieste" in the menu (`toAnswer`, SP-08b). Under
- * `['supplier', 'inbox']`: every action of the supplier reloads them. The page reads them again when it opens; the menu asks only when it
- * has the entry (`enabled`) and takes what the cache has (`refetchOnMount: true`: only if it is stale).
- */
 export function useSupplierInboxCounts(options?: { enabled?: boolean; refetchOnMount?: boolean | 'always' }) {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'counts'],
@@ -49,10 +39,6 @@ export function useAcceptSupplierRequests() {
 }
 
 
-/**
- * What the home shows of today and the next `days` days (SP-04e): the new requests to answer and the jobs. Under `['supplier', 'inbox']`:
- * every action of the supplier reloads it, and it is read again when the page opens (the shared client does not read again on mount).
- */
 export function useSupplierToday(days: number) {
   return useQuery({
     queryKey: ['supplier', 'inbox', 'today', days],
@@ -62,7 +48,6 @@ export function useSupplierToday(days: number) {
 }
 
 
-/** The three numbers of the home for a period and the one before it (SP-04e). Under `['supplier', 'dashboard']`: a take or a refusal reloads it. */
 export function useSupplierOverview(period: SupplierOverviewPeriod) {
   return useQuery({
     queryKey: ['supplier', 'dashboard', 'overview', period],
@@ -72,7 +57,6 @@ export function useSupplierOverview(period: SupplierOverviewPeriod) {
 }
 
 
-/** The steps of the activation checklist (SP-04): what the supplier did, and so the next step. Read again when the home opens. */
 export function useSupplierChecklist() {
   return useQuery({
     queryKey: ['supplier', 'checklist'],

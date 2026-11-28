@@ -16,7 +16,6 @@ function setup() {
   return { queryClient, wrapper };
 }
 
-/** Puts the read of the documents of a booking in the cache, as the card «Documento fiscale» of the tab Pagamento holds it, and tells whether it was made stale. */
 function seedTheDocumentsOfABooking(queryClient: QueryClient) {
   const key = [...FISCAL_DOCUMENTS_KEY, 'booking', 'b-1'];
   queryClient.setQueryData(key, []);
@@ -27,8 +26,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// Money rule: whether a document of a booking is collected is worked out from its payments each time it is read, so the card of the tab Pagamento (and the list of the documents)
-// must be read again when a payment is recorded or a refund is asked, or it keeps saying «Da incassare» next to a ledger that shows the money.
 describe('the collection of a fiscal document follows the payments', () => {
   it('UseCreatePayment_APaymentIsRecorded_MakesTheFiscalDocumentsStaleSoTheirCollectionIsReadAgain', async () => {
     vi.mocked(paymentsApi.create).mockResolvedValue({} as never);

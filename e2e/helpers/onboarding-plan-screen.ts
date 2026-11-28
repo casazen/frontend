@@ -23,7 +23,6 @@ export async function mockOnboardingPlanScreen(page: Page) {
     await target.route('**/api/public/features', route => route.fulfill({ json: { octorateOnboarding: true, octorateConnector: true } }));
     await target.route('**/api/onboarding/plan', route => route.fulfill({ json: activation }));
     await target.route('**/api/onboarding/path', route => route.fulfill({ json: activation.path }));
-    // The part page loads the properties of the flow (NF-106). Without a page shape, PartPropertyTable used to crash on `.items.length`.
     await target.route('**/api/onboarding/flows/*/properties**', route =>
       route.fulfill({ json: { items: [], totalCount: 0, page: 1, pageSize: 20 } }),
     );

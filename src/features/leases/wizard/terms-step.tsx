@@ -42,7 +42,6 @@ export function TermsStep({ rules, origin, leaseId }: { rules: LongRentRules; or
   const maxDeposit = rent > 0 ? rent * maxRents : null;
   const maxText = maxDeposit === null ? '' : formatCurrency(maxDeposit);
   const depositTooHigh = maxDeposit !== null && depositText.trim() !== '' && deposit > maxDeposit;
-  // The model of a contract made in CasaZen states the deposit, so it is asked for (0 if there is none); one already signed prints nothing.
   const depositRequired = origin !== 'Imported';
   const depositMaxHint = maxDeposit !== null && !depositTooHigh ? t('leaseWizard.terms.depositMax', { max: maxRents, amount: maxText }) : '';
   const depositHint = [depositRequired ? t('leaseWizard.terms.depositNone') : '', depositMaxHint].filter(Boolean).join(' ');

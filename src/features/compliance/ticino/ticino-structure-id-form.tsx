@@ -6,12 +6,10 @@ import { Label } from '@/components/ui/label';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { useUpdateProperty } from '@/queries/use-properties';
 
-/** The identifier as the backend stores it (`TicinoStructureId.Normalize`): no spaces, uppercase; empty when blank. */
 function normalizeTicinoStructureId(value: string): string {
   return value.replace(/\s+/g, '').toUpperCase();
 }
 
-/** 3 to 20 letters and digits, groups joined by single hyphens (`TicinoStructureId.IsValid` of the backend), e.g. `NL-12345678`. */
 function isValidTicinoStructureId(value: string): boolean {
   const normalized = normalizeTicinoStructureId(value);
   return normalized.length >= 3 && normalized.length <= 20 && /^[A-Z0-9]+(-[A-Z0-9]+)*$/.test(normalized);
@@ -20,19 +18,10 @@ function isValidTicinoStructureId(value: string): boolean {
 interface TicinoStructureIdFormProps {
   propertyId: string;
   value: string | null | undefined;
-  /** Called after a successful save (the page reloads its day). */
   onSaved?: () => void;
-  /**
-   * Called with `true` while the save is on its way and with `false` when it is over: the card of the regime keeps its other buttons off meanwhile, so no two
-   * changes of the same card are in flight at once.
-   */
   onPendingChange?: (pending: boolean) => void;
 }
 
-/**
- * The «Numero identificativo LEAR / NO-LEAR» of a Ticino property (casazen/backend#979): the first field of every row of the file for the
- * police portal, received from Ticino Turismo when the structure registers. Saved with `PUT /properties/{id}` (only this field).
- */
 export function TicinoStructureIdForm({ propertyId, value, onSaved, onPendingChange }: TicinoStructureIdFormProps) {
   const { t } = useTranslation();
   const update = useUpdateProperty();
@@ -54,7 +43,7 @@ export function TicinoStructureIdForm({ propertyId, value, onSaved, onPendingCha
     try {
       await update.mutateAsync({ id: propertyId, data: { ticinoStructureId: normalizeTicinoStructureId(draft) } });
     } catch {
-      return; // The toast of the mutation tells why; the field keeps what was typed.
+      return;
     }
     onSaved?.();
   };
@@ -80,7 +69,7 @@ export function TicinoStructureIdForm({ propertyId, value, onSaved, onPendingCha
         </Button>
       </div>
       {invalid ? <FormFieldError id={`${inputId}-error`} message={t('swiss.structureId.invalid')} /> : null}
-      <p id={`${inputId}-hint`} className="text-sm text-foreground/70">{t('swiss.structureId.hint')}</p>
+      <p id={`${inputId}-hint`} className="sr-only">{t('swiss.structureId.hint')}</p>
     </form>
   );
 }

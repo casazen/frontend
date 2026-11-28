@@ -20,7 +20,6 @@ const post = vi.mocked(axios.post);
 
 const SOURCE = 'Agenzia delle Entrate, test';
 
-/** Testing Library collapses the non-breaking space of the formatted amounts: compare the same way. */
 function normalized(text: string): string {
   return text.replace(/\s+/g, ' ');
 }
@@ -82,7 +81,6 @@ function advisory(overrides: Partial<CedolareAdvisory> = {}): CedolareAdvisory {
   };
 }
 
-/** The guide holds what the landlord answered, the panel shows it: the same arrangement here. */
 function Host() {
   const [input, setInput] = useState<CedolareAdvisoryInput | undefined>(undefined);
   return <CedolareDecisionPanel leaseId="lease-1" input={input} onInputChange={setInput} />;
@@ -118,7 +116,6 @@ describe('CedolareDecisionPanel', () => {
     expect(cedolare).toHaveTextContent(normalized(formatWholeEuro(2016)));
     expect(within(cedolare).getByText(i18n.t('leases.rli.advisory.cedolare.noRegistroBollo'))).toBeInTheDocument();
     expect(within(cedolare).getByText(i18n.t('leases.rli.advisory.chosen'))).toBeInTheDocument();
-    // The first time «alta tensione abitativa» comes up it is explained, and the comune is not claimed to be one.
     expect(screen.getByTestId('advisory-ata')).toHaveTextContent(i18n.t('leaseGuide.regime.ata.Unverified'));
     const registro = screen.getByTestId('advisory-registro');
     expect(within(registro).getByText(eur(192))).toBeInTheDocument();
@@ -167,7 +164,6 @@ describe('CedolareDecisionPanel', () => {
     const irpef = screen.getByTestId('advisory-irpef');
     expect(irpef).toHaveTextContent(i18n.t('leases.rli.advisory.ordinary.irpefToAssess'));
     expect(irpef).toHaveTextContent(i18n.t('leases.rli.advisory.ordinary.irpefInputHint'));
-    // No figure of the comparison either: it cannot be said, and the sentence says what is missing.
     const verdict = screen.getByTestId('advisory-verdict');
     expect(verdict).toHaveAttribute('data-outcome', 'incomeNeeded');
     expect(verdict).toHaveTextContent(i18n.t('leaseGuide.regime.outcome.unknown'));
@@ -246,7 +242,6 @@ describe('CedolareDecisionPanel', () => {
     const irpef = await screen.findByTestId('advisory-irpef');
     expect(irpef).toHaveTextContent(i18n.t('leases.rli.advisory.ordinary.irpefToAssess'));
     expect(irpef).toHaveTextContent(i18n.t('leases.rli.advisory.ordinary.irpefReason.brackets_outdated', { year: 2026 }));
-    // The verdict says it cannot be said and why, with the sentence the panel has always had for that reason.
     const verdict = screen.getByTestId('advisory-verdict');
     expect(verdict).toHaveAttribute('data-outcome', 'notComputed');
     expect(verdict).toHaveTextContent(i18n.t('leases.rli.advisory.ordinary.irpefReason.brackets_outdated', { year: 2026 }));

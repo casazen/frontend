@@ -4,10 +4,6 @@ import { BOOKING_ORIGINS, type Booking, type BookingChannel } from '@/types';
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
-/**
- * The icon of each channel a booking can come from, in the list, in its filter and in the facts: the portals have one of their own,
- * so a channel is never told by its name alone, and the name always goes beside the icon.
- */
 export const CHANNEL_ICONS: Record<BookingChannel, LucideIcon> = {
   Direct: Globe,
   Manual: Pencil,
@@ -20,24 +16,14 @@ export const CHANNEL_ICONS: Record<BookingChannel, LucideIcon> = {
   Other: Plug,
 };
 
-/**
- * The channel a value stands for: a `BookingChannel` or the exact source of a booking (their names coincide). A value no channel is
- * named after, such as a channel a newer API sends, is "another channel". Index `CHANNEL_ICONS` with it to draw the icon.
- */
 export function channelOf(channelOrSource: string | null | undefined): BookingChannel {
   return channelOrSource && Object.hasOwn(CHANNEL_ICONS, channelOrSource) ? (channelOrSource as BookingChannel) : 'Other';
 }
 
-/** The name of a channel (`booking.channels.*`); a value this client does not know yet is shown as it came, never as a raw key. */
 export function bookingChannelName(channel: BookingChannel | string, t: TranslateFn): string {
   return Object.hasOwn(CHANNEL_ICONS, channel) ? t(`booking.channels.${channel}`) : channel;
 }
 
-/**
- * Channel of an OTA stay created from an iCal block (CO-21), shown next to its source: "iCal · camera 2", or "iCal"
- * when its feed has no label. Null for every other booking: only a stay made from a block has a feed (`icalFeedId`, kept after the
- * calendar is disconnected), and the `channelLabel` of any other booking is not the label of a feed (see `bookingSourceName`).
- */
 export function bookingChannelText(
   booking: Pick<Booking, 'icalFeedId' | 'channelLabel'>,
   t: TranslateFn,
@@ -74,11 +60,9 @@ export function bookingOriginName(
 
   const portal = booking.originChannel ?? booking.source;
   const name = portal ? bookingSourceName({ ...booking, source: portal }, t) : null;
-  // «Altro portale» (a portal with no source of its own and no name from the channel manager) adds nothing to «Portale».
   return name && name !== getBookingSourceLabel('OtherChannel', t) ? t('booking.origin.PortalNamed', { name }) : t('booking.origin.Portal');
 }
 
-/** The OTA stay is "da verificare" (CO-21): a sync found its block gone from the feed or with other dates. */
 export function needsOtaReview(booking: Pick<Booking, 'otaReviewReason' | 'status'>): boolean {
   return !!booking.otaReviewReason && booking.status !== 'Cancelled';
 }

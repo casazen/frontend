@@ -59,7 +59,6 @@ describe('the rooms of the first step (NF-34)', () => {
     expect(defaults.rooms).toHaveLength(3);
     expect(defaults.bedrooms).toBe(2);
     expect(defaults.beds).toBe(5);
-    // Max guests, bathrooms and the area are not derived from the rooms (AC-NF34-2).
     expect(defaults.maxGuests).toBe(6);
     expect(defaults.bathrooms).toBe(2);
   });

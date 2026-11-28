@@ -1,9 +1,5 @@
 import { OWNER_PORTAL_HOME_PATH } from '@/lib/owner-invitation';
 
-/**
- * The addresses of the owner portal (E07/F07/US01/T03). Only ids ever travel in them: no name, no e-mail, no amount, no subject and no word of a
- * message (ADR-011, NF-111). `/messaggi/{id}` is the link the e-mail of the inbox carries, `/contatto` the one of the invitation of a contact.
- */
 export const OWNER_PORTAL_ROOT = OWNER_PORTAL_HOME_PATH;
 
 /**
@@ -12,25 +8,20 @@ export const OWNER_PORTAL_ROOT = OWNER_PORTAL_HOME_PATH;
  */
 export const SIGN_IN_FAILED_STATE = { signInFailed: true } as const;
 
-/** Whether the router state of a page is `SIGN_IN_FAILED_STATE`. */
 export function isSignInFailedState(state: unknown): boolean {
   return typeof state === 'object' && state !== null && (state as { signInFailed?: unknown }).signInFailed === true;
 }
 
 export const ownerPortalPaths = {
   home: OWNER_PORTAL_ROOT,
-  /** The sign-in page of the portal, on the CasaZen domain and on the own domain of an agency (E40/F02/US01/T02). */
   signIn: `${OWNER_PORTAL_ROOT}/accedi`,
-  /** Where a signed-in person whose read of the portal was refused (403) lands on the own domain of an agency, where `/app/no-access` is «not found» (E40/F02/US01/T02). */
   noAccess: `${OWNER_PORTAL_ROOT}/accesso-negato`,
   property: (propertyId: string) => `${OWNER_PORTAL_ROOT}/immobili/${encodeURIComponent(propertyId)}`,
   /** The calendar and the owner stays: of one property when the id is given, of the first one the owner has otherwise. */
   calendar: (propertyId?: string) => `${OWNER_PORTAL_ROOT}/calendario${propertyId ? `/${encodeURIComponent(propertyId)}` : ''}`,
   accounting: `${OWNER_PORTAL_ROOT}/contabilita`,
-  /** One published statement: the id of its version, nothing else (no amount, no name). */
   statement: (statementId: string) => `${OWNER_PORTAL_ROOT}/contabilita/${encodeURIComponent(statementId)}`,
   documents: `${OWNER_PORTAL_ROOT}/documenti`,
-  /** The documents CasaZen issued in the name of the owner (E17/F03/US01/T03): the page and the ZIP for its accountant. */
   issuedDocuments: `${OWNER_PORTAL_ROOT}/documenti-emessi`,
   messages: `${OWNER_PORTAL_ROOT}/messaggi`,
   conversation: (conversationId: string) => `${OWNER_PORTAL_ROOT}/messaggi/${encodeURIComponent(conversationId)}`,

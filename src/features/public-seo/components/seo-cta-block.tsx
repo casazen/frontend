@@ -9,7 +9,6 @@ import { buildSignupCtaHref } from '@/lib/signup-attribution';
 interface SeoCtaBlockProps {
   cta: SeoCta;
   comuneName: string;
-  /** Slug of the comune of the page: the click is counted for it (SE-04, AC8). */
   comuneSlug: string;
 }
 
@@ -27,8 +26,6 @@ export function SeoCtaBlock({ cta, comuneName, comuneSlug }: SeoCtaBlockProps) {
   const signupHref = buildSignupCtaHref(cta.signupUrl, { search, origin: window.location.origin });
 
   return (
-    // The brand's dark ink with the ring of the logo behind, and the call to action in the light terracotta of the dark
-    // tone of the logo (dark ink on it: 7.1:1).
     <section
       className="relative my-8 overflow-hidden rounded-3xl bg-[var(--cz-brand-ink)] p-6 text-white md:p-8"
       data-testid="seo-cta-block"

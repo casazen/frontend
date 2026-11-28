@@ -5,13 +5,11 @@ import { readMarketplaceReturnTo, withReturnTo } from '../return-to';
 const WIZARD = '/app/short-rent/marketplace/activate/channel/AIRBNB';
 const SCOPRI = '/app/short-rent/marketplace?propertyId=prop-1';
 
-/** The query string of an address, as `location.search` has it. */
 const searchOf = (address: string) => new URL(address, 'http://localhost').search;
 
 describe('readMarketplaceReturnTo', () => {
   it('readMarketplaceReturnTo_PageOfTheApp_IsReturnedAsItIs', () => {
     expect(readMarketplaceReturnTo(`?returnTo=${encodeURIComponent(SCOPRI)}`)).toBe(SCOPRI);
-    // With or without the leading question mark, among other parameters.
     expect(readMarketplaceReturnTo(`step=access&returnTo=${encodeURIComponent(SCOPRI)}`)).toBe(SCOPRI);
   });
 
@@ -21,7 +19,6 @@ describe('readMarketplaceReturnTo', () => {
     expect(readMarketplaceReturnTo('?returnTo=')).toBeNull();
   });
 
-  // The rule that keeps a wizard from sending the person out of the app (open redirect): nothing but a page of this app is accepted.
   it.each([
     ['an absolute URL', 'https://evil.example/app/short-rent'],
     ['an absolute URL of this host name on another scheme', 'javascript:alert(1)'],
@@ -46,7 +43,6 @@ describe('withReturnTo', () => {
     const address = withReturnTo(WIZARD, SCOPRI);
 
     expect(address.startsWith(`${WIZARD}?returnTo=`)).toBe(true);
-    // Encoded: the question mark and the equals sign of the address to go back to do not break the one of the wizard.
     expect(address).not.toContain('?propertyId');
     expect(readMarketplaceReturnTo(searchOf(address))).toBe(SCOPRI);
   });
@@ -73,7 +69,6 @@ describe('withReturnTo', () => {
     expect(readMarketplaceReturnTo(searchOf(withReturnTo(WIZARD, here)))).toBe('/app/short-rent/marketplace?propertyId=prop-1&q=a%26b');
   });
 
-  // The same rule, on the way out: an address that would not be read back is not put in the wizard's address at all.
   it.each([
     'https://evil.example/app/short-rent',
     '//evil.example/app/short-rent',

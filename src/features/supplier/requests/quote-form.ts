@@ -3,30 +3,20 @@ import type { SendServiceRequestQuoteDto, ServiceRequestQuote } from '@/types/se
 import { SERVICE_LIMITS } from '../services/lib/service-limits';
 import { centsToInput, parseEuros } from '../services/lib/service-money';
 
-/**
- * The limits the API holds a quote to (`ServiceRequestLimits`, SP-04b). The sheet checks them before asking; the server checks them again
- * and its answer wins. The amounts are in cents: no float ever holds a price. The total the sheet shows is for the supplier to read: it is
- * not sent, and the server adds the lines up itself.
- */
 export const QUOTE_LIMITS = {
   maxLines: 20,
   labelMaxLength: 120,
   noteMaxLength: 500,
-  /** Highest line, and highest total (100,000 €); the lowest line is 1 cent. */
   maxAmountCents: SERVICE_LIMITS.maxAmountCents,
 } as const;
 
 export interface QuoteRow {
-  /** Identity of the row for React: the position changes when a row before it is taken out. */
   key: string;
   label: string;
-  /** The amount in euros as the person typed it (`80`, `80,50`, `1.200`). */
   amount: string;
-  /** Added while the sheet was open: the focus goes to it. */
   fresh?: boolean;
 }
 
-/** What the sheet holds while the supplier writes: texts as typed, parsed only to check and to send. */
 export interface QuoteForm {
   rows: QuoteRow[];
   note: string;
@@ -40,9 +30,7 @@ export type QuoteRowProblem = 'labelRequired' | 'amountRequired' | 'amountInvali
 export type QuoteTimeProblem = 'timeRequired' | 'timeInvalid';
 
 export interface QuoteProblems {
-  /** What is wrong in each row, by its key. */
   rows: Record<string, { label: QuoteRowProblem | null; amount: QuoteRowProblem | null }>;
-  /** The lines add up to more than the API takes. */
   total: 'totalRange' | null;
   time: QuoteTimeProblem | null;
   valid: boolean;
@@ -50,20 +38,17 @@ export interface QuoteProblems {
 
 let rowCounter = 0;
 
-/** A key for a new row. */
 export function newRowKey(): string {
   rowCounter += 1;
   return `quote-row-${rowCounter}`;
 }
 
-/** A sheet for a quote that does not exist yet: one empty line. */
 export function emptyQuoteForm(): QuoteForm {
   return { rows: [{ key: newRowKey(), label: '', amount: '' }], note: '', otherTime: false, day: '', time: '' };
 }
 
 const pad = (value: number) => String(value).padStart(2, '0');
 
-/** A sheet filled with the quote that waits, to change it: the new one replaces it when it is sent. */
 export function quoteFormOf(quote: ServiceRequestQuote, decimalSeparator: ',' | '.'): QuoteForm {
   const start = quote.scheduledStart ? romeWallClock(quote.scheduledStart) : null;
   return {
@@ -78,7 +63,6 @@ export function quoteFormOf(quote: ServiceRequestQuote, decimalSeparator: ',' | 
   };
 }
 
-/** What the lines add up to, in cents, counting only the amounts that are valid: the live total under the lines. */
 export function totalCentsOf(rows: readonly QuoteRow[]): number {
   let total = 0;
   for (const row of rows) {
@@ -116,11 +100,6 @@ export function problemsOf(form: QuoteForm): QuoteProblems {
   return { rows, total, time, valid: lineCount && rowsValid && total === null && time === null };
 }
 
-/**
- * The body of `POST service-requests/{id}/quote` for a valid sheet. The lines go with their amounts in cents; the total is not sent (the
- * server adds the lines up). Another time goes as UTC instants worked out from the Rome clock, with the end after the duration the request
- * already has (the server takes the duration of the service when it is left out).
- */
 export function payloadOf(form: QuoteForm, requestMinutes: number | null): SendServiceRequestQuoteDto {
   const note = form.note.trim();
   const payload: SendServiceRequestQuoteDto = {

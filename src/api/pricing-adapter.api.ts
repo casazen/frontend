@@ -8,12 +8,10 @@ import type {
 
 const BASE = '/pricing-adapter';
 
-/** Seasonal price suggestions ("Suggerimenti stagionali") of a property. */
 export const pricingAdapterApi = {
   saveConfig: (propertyId: string, data: SavePricingAdapterConfigRequest) =>
     ApiClient.post<PricingAdapterConfig>(`${BASE}/config/${propertyId}`, data),
 
-  /** The backend answers the example rule (disabled) when the property has no configuration yet. */
   getConfig: (propertyId: string) =>
     ApiClient.get<PricingAdapterConfig>(`${BASE}/config/${propertyId}`),
 

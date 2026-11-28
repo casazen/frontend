@@ -19,7 +19,6 @@ vi.mock('@/api/checkin.api', () => ({
   publicCheckinApi: {},
 }));
 vi.mock('@/api/features.api', () => ({ featuresApi: { getFeatures: vi.fn() } }));
-// The drawing of the code is not what is tested: the image says which address it was made for.
 vi.mock('@/lib/qr-print-sheet', () => ({
   useQrDataUrl: (url: string) => (url === '' ? null : `data:image/png;base64,for:${url}`),
   openQrPrintSheet: vi.fn(() => true),
@@ -39,7 +38,6 @@ function httpError(status: number, data?: unknown): AxiosError {
 interface RenderOptions {
   flag?: boolean;
   canWrite?: boolean;
-  /** The flags are still being read (every one of them is off in that time). */
   isLoading?: boolean;
   /** The flags could not be read (every one of them is off, but only because none is known). */
   isError?: boolean;
@@ -115,7 +113,6 @@ describe('the QR code of the entrance of a property (E22/F02/US01/T01)', () => {
     await waitFor(() => expect(imageOf()).toBe(`data:image/png;base64,for:${FIRST}`));
 
     fireEvent.click(screen.getByTestId('property-door-qr-rotate'));
-    // Nothing is replaced by the first tap: the host is told that the printed code stops working.
     expect(propertyDoorQrApi.rotate).not.toHaveBeenCalled();
     expect(screen.getByText(/smette di funzionare subito/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Rigenera il codice' }));
@@ -135,7 +132,6 @@ describe('the QR code of the entrance of a property (E22/F02/US01/T01)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Rigenera il codice' }));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('property.qr.door.rotateFailed')));
-    // Whether the code was replaced is not known after a failed call: the one that is in force now is what is shown.
     await waitFor(() => expect(imageOf()).toBe(`data:image/png;base64,for:${SECOND}`));
     expect(toast.success).not.toHaveBeenCalled();
   });
@@ -163,7 +159,6 @@ describe('the QR code of the entrance of a property (E22/F02/US01/T01)', () => {
 
 describe('the code that is printed depends on the flag, so the page waits for it (post-merge review of E22/F02/US01/T01)', () => {
   it('PropertyQrCodePage_TheFlagsAreStillBeingRead_ShowsNoCodeAndAsksNothing', () => {
-    // Every flag is off while they are read: the static code, which leads to a page that does not exist, must not be on the screen with «Stampa» in that time.
     renderPage({ flag: false, isLoading: true });
 
     expect(screen.getByText(i18n.t('property.qr.loading'))).toBeInTheDocument();
@@ -184,7 +179,6 @@ describe('the code that is printed depends on the flag, so the page waits for it
   });
 
   it('PropertyQrCodePage_TheFlagsAreReadAgainFromTryAgain_ShowsTheCodeOfTheDoorOnceTheFlagIsKnownToBeOn', async () => {
-    // With the real provider: the first read fails and the page says so; the second one finds the flag on.
     vi.mocked(featuresApi.getFeatures).mockRejectedValueOnce(httpError(500)).mockResolvedValue({ checkInIdentityVerification: true });
     renderPage({ provider: true });
 

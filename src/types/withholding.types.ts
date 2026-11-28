@@ -11,13 +11,11 @@ export interface WithholdingSummary {
   ownerSummaries: WithholdingOwnerSummary[];
 }
 
-/** The withholding of one owner in the month. */
 interface WithholdingOwnerSummary {
   ownerId: string;
   ownerName: string;
   totalBase: number;
   totalWithholding: number;
-  /** The payouts the withholding comes from (a reversal is not one). */
   payoutCount: number;
 }
 
@@ -27,5 +25,5 @@ interface WithholdingOwnerSummary {
  */
 export interface RecordPaymentRequest {
   f24Id: string;
-  paidAt: string; // ISO instant
+  paidAt: string;
 }

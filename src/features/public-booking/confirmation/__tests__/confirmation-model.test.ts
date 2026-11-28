@@ -100,7 +100,6 @@ describe('buildNextSteps', () => {
 
     expect(ids(steps)).toEqual(['email', 'host', 'ifAccepted', 'arrival']);
     expect(states(steps)).toEqual(['current', 'todo', 'todo', 'todo']);
-    // Only the arrival has a day of its own: the answer of the host is not given a made-up one (D24).
     expect(steps.filter((step) => step.date !== null).map((step) => step.id)).toEqual(['arrival']);
   });
 

@@ -3,10 +3,6 @@ import type { TFunction } from 'i18next';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import type { BrandingImageKind } from '@/types';
 
-/**
- * Limits of the public-site branding (BK-12). Mirror of the backend `Casazen.Core/Branding/OrgBrandingRules.cs`,
- * which validates again (image type and pixel size from the bytes): keep the two in sync.
- */
 export const TAGLINE_MAX_LENGTH = 160;
 
 export interface BrandingImageLimits {
@@ -22,13 +18,10 @@ export const BRANDING_IMAGE_LIMITS: Record<BrandingImageKind, BrandingImageLimit
   hero: { maxBytes: 10 * 1024 * 1024, minWidth: 1200, minHeight: 400, maxWidth: 8000, maxHeight: 8000 },
 };
 
-/** PNG, JPEG, WebP: no SVG (it can carry scripts) and no GIF. */
 export const BRANDING_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'] as const;
 
-/** Value of the file input `accept` attribute. */
 export const BRANDING_IMAGE_ACCEPT = BRANDING_IMAGE_TYPES.join(',');
 
-/** Parameters of the limit messages of an image kind (`siteAppearance.errors.*`, `siteAppearance.images.*Hint`). */
 export function imageLimitParams(kind: BrandingImageKind) {
   const limits = BRANDING_IMAGE_LIMITS[kind];
   return {
@@ -40,10 +33,6 @@ export function imageLimitParams(kind: BrandingImageKind) {
   };
 }
 
-/**
- * Translation key of the client-side check of a picked file (type and size), or null when it can be uploaded. The
- * pixel size is checked by the server only.
- */
 export function checkBrandingImageFile(kind: BrandingImageKind, file: File): string | null {
   if (file.size === 0) return 'siteAppearance.errors.imageEmpty';
   if (!(BRANDING_IMAGE_TYPES as readonly string[]).includes(file.type)) return 'siteAppearance.errors.imageType';
@@ -51,7 +40,6 @@ export function checkBrandingImageFile(kind: BrandingImageKind, file: File): str
   return null;
 }
 
-/** Translation keys of the branding error codes of the backend (`OrgBrandingRules`). */
 const BRANDING_CODE_KEYS: Record<string, string> = {
   org_branding_color_invalid: 'siteAppearance.errors.colorInvalid',
   org_branding_theme_invalid: 'siteAppearance.errors.themeInvalid',

@@ -16,7 +16,6 @@ import { GuestRegisterLayerContent } from '../guest-register-layer';
 vi.mock('@/api/guest-register.api', () => ({ guestRegisterApi: { getInfo: vi.fn(), download: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
 vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() }) }));
-// The name of the property the layer is about; `undefined` while the read of the property has not answered (or has failed).
 const property = vi.hoisted(() => ({ name: 'Casa Sciaffusa' as string | undefined }));
 vi.mock('@/queries/use-properties', () => ({
   PROPERTIES_KEY: 'properties',
@@ -31,16 +30,13 @@ vi.mock('@/hooks/use-workspace', () => ({
 
 const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const NOW = '2026-11-21T10:00:00Z';
-/** The last 30 days ending today in Zurich. */
 const DEFAULT_PERIOD = { from: '2026-10-23', to: '2026-11-21' };
-/** What the file of the server looks like: a byte order mark, `;`, CRLF, a quoted cell, and the signature column empty. */
 const CSV = [
   'Arrivo;Partenza;Cognome;Nome;Data di nascita;Firma',
   '19.11.2026;22.11.2026;Rossi;Mario;04.01.1984;',
   '19.11.2026;22.11.2026;"Verdi; Bianchi";Anna;12.05.1990;',
   '',
 ].join('\r\n');
-/** The file of a period with nobody in it: the header alone. */
 const HEADER_ONLY = 'Arrivo;Partenza;Cognome;Nome;Data di nascita;Firma\r\n';
 
 function infoOf(overrides: Partial<GuestRegisterInfo> = {}): GuestRegisterInfo {
@@ -98,7 +94,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       expect(dateField('to').value).toBe(DEFAULT_PERIOD.to);
       expect(guestRegisterApi.getInfo).toHaveBeenCalledWith(PROPERTY_ID, DEFAULT_PERIOD);
       expect(screen.getByTestId('guest-register-retention')).toHaveTextContent('Da conservare almeno 5 anni, secondo le fonti del tuo cantone.');
-      // The register is the host's own responsibility and not legal advice; nothing is sent to anybody.
       expect(screen.getByTestId('guest-register-responsibility')).toHaveTextContent(/una tua responsabilità.*non dà consulenza legale.*comune o la polizia/);
     });
 
@@ -170,7 +165,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       await screen.findByTestId('guest-register-count');
       vi.mocked(guestRegisterApi.getInfo).mockResolvedValue(infoOf({ rowCount: 3 }));
 
-      // What `use-notifications-realtime.ts` does for a check-in completed: the count is under the root the event reads again.
       await act(async () => {
         await client.invalidateQueries({ queryKey: [GUEST_REGISTER_KEY] });
       });
@@ -251,7 +245,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
 
       await waitFor(() => expect(window.print).toHaveBeenCalledTimes(1));
       expect(guestRegisterApi.download).toHaveBeenCalledWith(PROPERTY_ID, DEFAULT_PERIOD, 'it');
-      // The sheet was in the page when the printer was asked: the columns of the file (the last one the signature), one line for each guest, and the signature cells empty.
       expect(seen).toEqual({
         sheet: true,
         header: ['Arrivo', 'Partenza', 'Cognome', 'Nome', 'Data di nascita', 'Firma'],
@@ -272,7 +265,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       await waitFor(() => expect(button).toBeEnabled());
       fireEvent.click(button);
       await waitFor(() => expect(document.querySelector('.guest-register-sheet')).not.toBeNull());
-      // What the mutation kept is nothing: the table lives in the page for the printer and not a moment longer.
       expect(client.getMutationCache().getAll().every((mutation) => mutation.state.data === undefined)).toBe(true);
 
       act(() => {
@@ -296,7 +288,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       expect(document.querySelector('.guest-register-sheet')).toBeNull();
     });
 
-    // A request is not cancelled when the layer is closed: the file that arrives afterwards finds no sheet to draw, and the browser must not print the page behind it.
     it('GuestRegisterLayer_TheLayerClosedWhileTheFileIsOnItsWay_PrintsNothingWhenTheFileArrives', async () => {
       const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
       let deliver: (file: { blob: Blob; contentDisposition: string | null }) => void = () => undefined;
@@ -308,7 +299,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       await waitFor(() => expect(guestRegisterApi.download).toHaveBeenCalledTimes(1));
       const mutation = client.getMutationCache().getAll()[0];
 
-      // The host closes the layer while the file is on its way; the file arrives afterwards and the request runs to its end.
       unmount();
       deliver({ blob: new Blob([`\uFEFF${CSV}`], { type: 'text/csv' }), contentDisposition: null });
       await waitFor(() => expect(mutation?.state.status).toBe('success'));
@@ -317,7 +307,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       expect(document.querySelector('.guest-register-sheet')).toBeNull();
     });
 
-    // The sheet carries the name of the property in its header: while the property has not answered (or its read failed) there is no name to print, and the print waits.
     it('GuestRegisterLayer_ThePropertyHasNoNameYet_PrintWaitsForItAndTheDownloadDoesNot', async () => {
       property.name = undefined;
       renderLayer();
@@ -327,7 +316,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       expect(screen.getByTestId('guest-register-download')).toBeEnabled();
     });
 
-    // The count of a moment ago can be out of date: when the file comes there is nobody in the register, and a sheet with no guest to sign is never printed.
     it('GuestRegisterLayer_AFileWithNobodyInItWhileTheCountSaidThereWere_PrintsNothingSaysSoAndReadsTheCountAgain', async () => {
       const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
       vi.mocked(guestRegisterApi.download).mockResolvedValue({ blob: new Blob([HEADER_ONLY], { type: 'text/csv' }), contentDisposition: null });
@@ -390,7 +378,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
     ])('GuestRegisterLayer_A%sOfTheServer_%s_IsToldAsSuchAndNeverAsTheCountOfAMomentAgo', async (status, code, key) => {
       const { client } = renderLayer();
       await screen.findByTestId('guest-register-count');
-      // The count is in the cache: the next read is refused, and the refusal comes first (the cache keeps the old answer of a read that fails).
       vi.mocked(guestRegisterApi.getInfo).mockRejectedValue(apiError(status, code));
       await act(async () => {
         await client.refetchQueries({ queryKey: [GUEST_REGISTER_KEY, PROPERTY_ID] });
@@ -410,7 +397,6 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
 
       expect(await screen.findByTestId('guest-register-stale')).toBeInTheDocument();
       expect(screen.getByTestId('guest-register-count')).toHaveTextContent('2 ospiti');
-      // What the person typed (the period) goes nowhere.
       expect(dateField('from').value).toBe(DEFAULT_PERIOD.from);
     });
 

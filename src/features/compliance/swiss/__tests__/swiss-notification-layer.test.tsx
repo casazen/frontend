@@ -19,7 +19,6 @@ vi.mock('@/api/swissCompliance.api', () => ({
   swissComplianceApi: { getSwissDay: vi.fn(), declareSwissDay: vi.fn(), undeclareSwissDay: vi.fn() },
 }));
 vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getGuestSummary: vi.fn() } }));
-// The host form of the guests is not what is asked here: the layer opens it for a stay and gets it back when it closes.
 vi.mock('@/features/alloggiati/components/stay-guests-edit-dialog', () => ({
   StayGuestsEditDialog: ({ bookingId, onOpenChange }: { bookingId: string; onOpenChange: (open: boolean) => void }) => (
     <div data-testid="stay-guests-edit-dialog">
@@ -106,7 +105,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
 
       expect(await screen.findByTestId('swiss-layer')).toBeInTheDocument();
       expect(screen.getByTestId('swiss-day-title')).toHaveTextContent('Arrivi di giovedì 19 novembre');
-      // The deadline in words, from `dueAt` (02:00 of the next night, in the time of Switzerland).
       expect(screen.getByTestId('swiss-day-state')).toHaveTextContent(/Da notificare entro venerdì 20 novembre.*02:00/);
       expect(isOpen('guests')).toBe(true);
       expect(stepOf('guests')).toHaveAttribute('data-state', 'done');
@@ -115,7 +113,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
         expect.stringContaining('Apri il portale'),
         expect.stringContaining('Ho notificato'),
       ]);
-      // What the canton asks, in the words of the regime, with how sure the source is (never in red) and the sentence that sends the host to check.
       const canton = screen.getByTestId('swiss-canton');
       expect(canton).toHaveTextContent('Cosa chiede il cantone SH');
       expect(canton).toHaveTextContent(i18n.t('guestRegistration.channel.PortalForm'));
@@ -134,7 +131,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
       expect(swissComplianceApi.getSwissDay).toHaveBeenCalledWith(SWISS_PROPERTY_ID, undefined);
     });
 
-    // The sources of Fribourg, Thurgau, Zurich (and the daily regimes with no time) give no deadline: a time is never made up.
     it('SwissLayer_ACantonWithNoDeadline_SaysTheDeadlineIsNotKnownAndNeverShowsATime', async () => {
       vi.mocked(swissComplianceApi.getSwissDay).mockResolvedValue(swissDay({ dueAt: null, deadlineKind: 'None', deadlineNote: null, pendingDays: [{ day: SWISS_DAY, stayCount: 1, dueAt: null }] }));
       renderLayer();
@@ -219,7 +215,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
 
       const blocks = await screen.findAllByTestId('swiss-guest');
       expect(blocks).toHaveLength(2);
-      // The first guest has the 15 fields of the day, each with a button named after the field and the guest; the second has no plate, so no button for it.
       expect(within(blocks[0]).getAllByTestId(/^swiss-copy-(?!all)/)).toHaveLength(15);
       expect(within(blocks[1]).getAllByTestId(/^swiss-copy-(?!all)/)).toHaveLength(14);
       expect(within(blocks[1]).queryByTestId('swiss-copy-plate')).not.toBeInTheDocument();
@@ -228,7 +223,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
       await waitFor(() => expect(writeText).toHaveBeenCalledWith('YA1234567'));
       fireEvent.click(within(blocks[1]).getByRole('button', { name: 'Copia Data di nascita: Anna Verdi' }));
       await waitFor(() => expect(writeText).toHaveBeenLastCalledWith('04.01.1984'));
-      // The words and the dates are the ones a person pastes: the document as a word, the day as the Swiss write it.
       expect(within(blocks[0]).getByTestId('swiss-field-documentType-value')).toHaveTextContent('Passaporto');
       expect(within(blocks[0]).getByTestId('swiss-field-birthDate-value')).toHaveTextContent('04.01.1984');
     });
@@ -270,13 +264,11 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
       await screen.findByTestId('swiss-layer');
       expect(stepOf('guests')).toHaveAttribute('data-state', 'attention');
       expect(screen.getByTestId('swiss-issues')).toHaveTextContent('Anna Verdi: data di nascita, tipo di documento');
-      // The guest is listed with what the check-in has: nothing is made up for the two fields that are missing.
       expect(screen.queryByTestId('swiss-copy-birthDate')).not.toBeInTheDocument();
       expect(screen.queryByTestId('swiss-copy-documentType')).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('swiss-complete-guest'));
       expect(await screen.findByTestId('stay-guests-edit-dialog')).toHaveTextContent(SWISS_OTHER_BOOKING_ID);
-      // The layer is still there under the form, and it reads the day again when the form closes.
       expect(screen.getByTestId('swiss-layer')).toBeInTheDocument();
       const reads = vi.mocked(swissComplianceApi.getSwissDay).mock.calls.length;
       fireEvent.click(screen.getByText('chiudi-ospiti'));
@@ -293,7 +285,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
 
       const issues = await screen.findByTestId('swiss-issues');
       expect(issues).toHaveTextContent('Mario Rossi: nazionalità');
-      // No form to complete the guest, and no link to the booking: a line says whom to ask, and the only link of the layer is the one to the portal.
       expect(screen.queryByTestId('swiss-complete-guest')).not.toBeInTheDocument();
       expect(screen.getByTestId('swiss-issues-body')).toHaveTextContent("Chiedi a chi può modificare la prenotazione, o all'ospite di completare il check-in");
       expect(Array.from(screen.getByTestId('swiss-layer').querySelectorAll('a')).map((link) => link.getAttribute('data-testid'))).toEqual(['swiss-portal-link']);
@@ -321,10 +312,8 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'));
       expect(link).toHaveTextContent('gast.sh.ch');
-      // CasaZen never logs into the portal and says so.
       expect(screen.getByTestId('swiss-portal')).toHaveTextContent(/non accede al portale e non conosce le tue credenziali/);
 
-      // The browser opens the tab (the click is not followed here); the layer is on the next step when the person comes back.
       link.addEventListener('click', (event) => event.preventDefault());
       fireEvent.click(link);
       await waitFor(() => expect(isOpen('declare')).toBe(true));
@@ -359,7 +348,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
       const invalidate = vi.spyOn(client, 'invalidateQueries');
       await screen.findByTestId('swiss-layer');
       openStep('declare');
-      // The day the server picked is the day on screen from the first action on.
       vi.mocked(swissComplianceApi.getSwissDay).mockResolvedValue(declaredSwissDay());
 
       const button = screen.getByTestId('swiss-declare-button');
@@ -367,7 +355,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
       fireEvent.click(button);
 
       await waitFor(() => expect(swissComplianceApi.declareSwissDay).toHaveBeenCalledWith(SWISS_PROPERTY_ID, { arrivalDay: SWISS_DAY }));
-      // The cockpit (its item, and the red number of the menu, which reads the same summary) and the days of the property are read again.
       await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: [COMPLIANCE_KEY] }));
       expect(invalidate).toHaveBeenCalledWith({ queryKey: [SWISS_NOTIFICATION_KEY, SWISS_PROPERTY_ID] });
       await waitFor(() => expect(screen.getByTestId('swiss-day-state')).toHaveTextContent(/Già notificato il 19 novembre.*15:20 da Luca Bianchi\./));
@@ -376,7 +363,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
     });
 
     it('SwissLayer_TheDayDeclaredWhileTheLayerHadNoDayInItsAddress_StaysOnScreenClosedAndDoesNotMoveOnToTheNextDay', async () => {
-      // A read without a date always answers the oldest day still to notify: declaring it must not move the layer on to the next one.
       vi.mocked(swissComplianceApi.getSwissDay).mockImplementation(async (_property, date) => {
         if (date === SWISS_DAY) return declaredSwissDay();
         return swissDay({ pendingDays: [{ day: SWISS_DAY, stayCount: 1, dueAt: '2026-11-20T01:00:00Z' }, { day: SWISS_OTHER_DAY, stayCount: 1, dueAt: '2026-11-19T01:00:00Z' }] });
@@ -397,7 +383,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
       renderLayer();
 
       expect(await screen.findByTestId('swiss-day-state')).toHaveTextContent(/Già notificato il 19 novembre.*15:20 da Luca Bianchi\./);
-      // A closed day opens on its declaration, and every step is done.
       expect(isOpen('declare')).toBe(true);
       for (const step of ['guests', 'portal', 'declare']) expect(stepOf(step)).toHaveAttribute('data-state', 'done');
       vi.mocked(swissComplianceApi.getSwissDay).mockResolvedValue(swissDay());
@@ -456,7 +441,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
     ])('SwissLayer_A%sOfTheServer_IsToldAsSuchAndNeverAsTheDayOfAMomentAgo', async (status, key) => {
       const { client } = renderLayer();
       await screen.findByTestId('swiss-layer');
-      // The day is in the cache: the next read is refused, and the refusal comes first (the cache keeps the old answer of a read that fails).
       vi.mocked(swissComplianceApi.getSwissDay).mockRejectedValue(apiError(status, status === 422 ? 'swiss_notification_not_applicable' : undefined));
       await act(async () => {
         await client.refetchQueries({ queryKey: [SWISS_NOTIFICATION_KEY, SWISS_PROPERTY_ID] });
@@ -475,7 +459,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
         await client.refetchQueries({ queryKey: [SWISS_NOTIFICATION_KEY, SWISS_PROPERTY_ID] });
       });
 
-      // What the person is in the middle of (the step that is open) goes nowhere, and the day is the last one read.
       expect(await screen.findByTestId('swiss-layer-stale')).toBeInTheDocument();
       expect(screen.getByTestId('swiss-layer')).toBeInTheDocument();
       expect(isOpen('portal')).toBe(true);
@@ -515,7 +498,6 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
     });
   });
 
-  // Privacy: the day holds the guests with their documents and addresses.
   it('SwissLayer_Closed_LeavesNoGuestInTheCacheOfTheQueries', async () => {
     const { client, unmount } = renderLayer();
     await screen.findByTestId('swiss-guest');

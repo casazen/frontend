@@ -9,16 +9,11 @@ import { useReportReview } from '@/queries/use-reviews';
 import { REVIEW_REPORT_NOTE_MAX_LENGTH, REVIEW_REPORT_REASONS, type HostReview, type ReviewReportReason } from '@/types';
 
 interface ReportReviewDialogProps {
-  /** The review to report; nothing is drawn without one. */
   review: HostReview | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * The report of a review to CasaZen (DB-12b): a reason from the list and a note for the staff. It says plainly that the review stays
- * public until CasaZen decides, and that the host cannot hide or delete it. One report per review.
- */
 export function ReportReviewDialog({ review, open, onOpenChange }: ReportReviewDialogProps) {
   const { t } = useTranslation();
   const report = useReportReview();

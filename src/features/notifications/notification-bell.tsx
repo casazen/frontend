@@ -22,7 +22,6 @@ import { badgeText, notificationKind, notificationRoute } from './notification-m
 import type { NotificationsChange } from './realtime-client';
 import { useNotificationsRealtime } from './use-notifications-realtime';
 
-/** How long the pop-up of a new notification stays: long enough to read it and to use «Apri». */
 const NEW_NOTIFICATION_TOAST_MS = 8_000;
 
 function relativeTime(createdAt: string, locale: string): string {
@@ -73,16 +72,8 @@ function NotificationRow({ notification, onOpen }: RowProps) {
   );
 }
 
-/**
- * The notifications bell of the header (UI-12): the number of unread notifications on a badge and, in a popover, the list with the
- * most recent first. A click on a row marks it as read and opens the place it is about (the booking on its messages, the service
- * request); «Segna tutte come lette» marks all. The number is kept up to date by the real-time channel; a polite live region
- * announces when it grows, so a screen reader hears that something new arrived without the focus moving.
- */
 export function NotificationBell() {
   const { isAuthenticated, kind, user, getAccessToken } = useAuth();
-  // Only a signed-in user of the real app has a bell: a guest, a public page, the demo and a signed-out session have none (no
-  // box, no request, no channel).
   const userId = user && 'sub' in user && typeof user.sub === 'string' ? user.sub : null;
   if (!isAuthenticated || kind !== 'auth0' || isDemoMode || userId === null) return null;
   return <LiveNotificationBell userId={userId} getAccessToken={getAccessToken} />;
@@ -92,12 +83,9 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const shell = useAppShell();
-  // What the person may do, when the workspace is there: a click that leads to a page that needs a permission falls back to one they can open (the tax paid online opens the wizard of the booking).
   const hasPermission = useContext(WorkspaceContext)?.hasPermission;
   const [open, setOpen] = useState(false);
 
-  // A new notification is told on screen as it arrives, with the way to open what it is about: a host with the app open must not
-  // find out from the badge alone. The same event (type and entity) is one pop-up however many times it is sent.
   const announceNew = (change: NotificationsChange) => {
     if (change.type === null || open) return;
     const route = notificationRoute({ type: change.type, entityId: change.entityId }, shell?.contextKey ?? null, hasPermission);
@@ -115,7 +103,6 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
 
-  // The announcement: only when the number grows after the first reading, never on load.
   const [seen, setSeen] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState('');
   if (count.isSuccess && unread !== seen) {

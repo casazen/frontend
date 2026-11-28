@@ -3,10 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const CODE_CLASS = 'rounded bg-muted px-1';
 
-/**
- * Auth0 SPA requires a secure origin (https or localhost).
- * Shown when the host console is opened via http://LAN-IP.
- */
 export function InsecureOriginPage() {
   const { t } = useTranslation();
   const httpsUrl = `https://${window.location.host}${window.location.pathname}${window.location.search}`;

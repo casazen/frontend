@@ -2,7 +2,6 @@ import type { NotificationChannel, NotificationEventType, NotificationPreference
 
 const PUSH_AND_COUNTER: NotificationChannel[] = ['MobilePush', 'CounterOnly'];
 
-/** What the API gives a user who never chose (PO-10): every kind of event with its default, marked as such, and browser push that cannot deliver yet. */
 export function defaultPreferences(): NotificationPreferences {
   return {
     quietHours: { start: '22:00:00', end: '08:00:00', legalAlertsOverride: true },
@@ -25,7 +24,6 @@ export function defaultPreferences(): NotificationPreferences {
   };
 }
 
-/** The same settings with the channels of one kind of event as the user chose them (so no longer the default). */
 export function withChosen(
   preferences: NotificationPreferences,
   eventType: NotificationEventType,

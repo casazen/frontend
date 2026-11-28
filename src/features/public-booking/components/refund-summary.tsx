@@ -3,10 +3,6 @@ import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
 import type { GuestCancellationPreview } from '@/types';
 import { cancellationMoney, chargesNothing } from '../cancellation-preview';
 
-/**
- * The one highlighted block of the cancellation (DB-08b): what the guest gets back if they cancel today, in a sentence, and where the figure
- * comes from. Every amount and percent is the backend's (`GuestCancellationPreview`); the browser formats them and adds nothing up.
- */
 export function RefundSummary({ preview }: { preview: GuestCancellationPreview }) {
   const { t, i18n } = useTranslation();
   const money = (amount: number) => cancellationMoney(amount, preview.currency, t);
@@ -22,7 +18,6 @@ export function RefundSummary({ preview }: { preview: GuestCancellationPreview }
       : t('guestCancellation.summary.noRefund');
 
   return (
-    // A ring and a tint, not a border: a global rule overrides the colors of `border-*` on the booking site.
     <div className="space-y-2 rounded-lg bg-primary/5 p-4 ring-1 ring-inset ring-primary/30" data-testid="guest-cancellation-summary">
       <p className="text-sm text-muted-foreground">{t('guestCancellation.summary.ifToday', { date: today })}</p>
       <p className="break-words text-xl font-semibold" data-testid="guest-cancellation-headline">

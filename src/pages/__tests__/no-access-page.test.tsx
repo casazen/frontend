@@ -36,8 +36,6 @@ function renderPage(contexts: ContextBootstrapDto[], isReady = true) {
   );
 }
 
-// A 403 on a read opens this page (`setApiForbiddenHandler`). It told everyone «your account has no workspace, sign in again», also a
-// person with four areas who had only been refused one page (the staff console of an account without the Auth0 Admin role).
 describe('NoAccessPage', () => {
   beforeEach(() => {
     vi.mocked(useAuth).mockReturnValue({ forceReauth } as unknown as ReturnType<typeof useAuth>);

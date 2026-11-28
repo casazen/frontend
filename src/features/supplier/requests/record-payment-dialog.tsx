@@ -4,23 +4,16 @@ import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Field } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
 
-/** Longest reason the API accepts (`RecordOfflinePaymentRequest.Reason`, SP-15a). */
 const OFFLINE_REASON_MAX_LENGTH = 500;
 
 const T = 'supplier.requests.payment.record';
 
-/**
- * «Ho incassato fuori da CasaZen» (SP-15a): the supplier records that the job was paid in another way. It cannot be undone, so the
- * dialog says what follows: no commission, the customer is told, no way back. A job that should have been paid in CasaZen needs the
- * reason (it is the trace of the exception); for one that is paid outside anyway the reason is optional.
- */
 export function RecordPaymentDialog({
   online,
   isPending,
   onCancel,
   onConfirm,
 }: {
-  /** The job is paid inside CasaZen: the reason is required. */
   online: boolean;
   isPending: boolean;
   onCancel: () => void;

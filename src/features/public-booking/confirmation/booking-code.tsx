@@ -7,7 +7,6 @@ type CopyState = 'idle' | 'copied' | 'selected';
 
 const RESET_AFTER_MS = 2200;
 
-/** Selects the text of an element, for a device where the clipboard is not at hand: the guest then copies it themselves. */
 function selectText(element: HTMLElement | null): void {
   const selection = window.getSelection();
   if (!element || !selection) return;

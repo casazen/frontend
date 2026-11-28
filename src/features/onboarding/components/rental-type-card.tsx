@@ -29,7 +29,6 @@ const CARD_META: Record<RentalType, CardMetaEntry> = {
   },
 };
 
-/** What the host does after this choice, in order. Keys of `onboarding.paths.*`. */
 const PATH_STEPS: Record<RentalType, readonly string[]> = {
   ShortTerm: ['onboarding.paths.short.property', 'onboarding.paths.short.payments', 'onboarding.paths.short.share'],
   LongTerm: ['onboarding.paths.long.property', 'onboarding.paths.long.ape', 'onboarding.paths.long.lease'],
@@ -49,7 +48,6 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
   const Icon = meta.icon;
   const isSelected = selectedType === rentalType;
 
-  // Five rows, the same in the three cards (`AlignedCard`): a title on two lines, or a longer list, moves the three cards alike.
   return (
     <AlignedCard
       rows={5}

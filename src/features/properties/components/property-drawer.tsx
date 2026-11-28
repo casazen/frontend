@@ -28,10 +28,6 @@ import {
   propertyServiceRequestPath,
 } from '../properties-paths';
 
-/**
- * The property of the drawer, read from the list of the properties of Affitti brevi: it is the same query as the page of the
- * list, so there is no second request, and a property paused or reactivated from the drawer changes in both.
- */
 function usePropertyOfTheList(id: string) {
   const query = useProperties(SHORT_PROPERTIES_OVERVIEW);
   return {
@@ -115,7 +111,6 @@ export function PropertyDrawerContent({ id }: DetailContentProps) {
   const { property, isLoading, isError, error, refetch } = usePropertyOfTheList(id);
   const pause = usePauseProperty();
   const activate = useActivateProperty();
-  // Read without `useWorkspace`, which refuses to run outside its provider: a drawer drawn on its own offers no action.
   const workspace = useContext(WorkspaceContext);
   const canWrite = workspace?.hasPermission('short-rent', 'property.write') ?? false;
   const canReadBookings = workspace?.hasPermission('short-rent', 'booking.read') ?? false;
@@ -137,7 +132,6 @@ export function PropertyDrawerContent({ id }: DetailContentProps) {
 
   const status = propertyStatus(property);
 
-  // The one thing to do now, by state: complete an activation, put the property back on, or go and see its bookings.
   const mainAction =
     (status === 'Pending' || status === 'Suspended') && canWrite ? (
       <Button asChild>
@@ -197,8 +191,6 @@ export function PropertyDrawerContent({ id }: DetailContentProps) {
   );
 }
 
-// Registered when this module is loaded, which the list of the properties does (it imports this file): the drawer opens from
-// the list and from a shared address (`?detail=property:<id>`) on that page. `pageHref` is the "Apri la scheda completa" of its foot.
 registerDetail(PROPERTY_DRAWER_KIND, {
   title: PropertyDrawerTitle,
   Content: PropertyDrawerContent,

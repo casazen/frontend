@@ -166,7 +166,6 @@ describe('SupplierDashboardPage (SP-08a)', () => {
     expect(acceptance).toHaveTextContent('+10 punti sul periodo prima');
     expect(screen.getByTestId('supplier-kpi-response')).toHaveTextContent('45 minuti');
     expect(screen.getByTestId('supplier-kpi-response')).toHaveTextContent('15 minuti più veloce del periodo prima');
-    // No payments through CasaZen: the third number is the jobs completed, never "Incassi".
     expect(screen.getByTestId('supplier-kpi-third')).toHaveTextContent('Lavori completati');
     expect(screen.getByTestId('supplier-kpi-third')).toHaveTextContent('+2 sul periodo prima');
     expect(api.fetchSupplierOverview).toHaveBeenCalledWith('current-month');
@@ -198,7 +197,6 @@ describe('SupplierDashboardPage (SP-08a)', () => {
     const block = within(await screen.findByTestId('supplier-today'));
     expect(await block.findByText('Dì ai clienti quando lavori')).toBeInTheDocument();
     expect(block.getByRole('link', { name: 'Imposta la tua disponibilità' })).toHaveAttribute('href', '/app/supplier/availability');
-    // The next step is the first one not done, with how far the checklist is.
     expect(await screen.findByTestId('supplier-next-step')).toHaveTextContent('0 di 5');
   });
 

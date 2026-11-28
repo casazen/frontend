@@ -30,7 +30,6 @@ export function useAttachOrgBankLink() {
   });
 }
 
-/** Starts the debit and reads the due again. It never writes `Paid` into the cache. */
 export function useStartOrgBankLinkPayment(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({

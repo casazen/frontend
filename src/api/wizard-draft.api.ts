@@ -3,10 +3,8 @@ import axios from '@/lib/axios';
 import { UnexpectedApiResponseError, getHttpStatus, getProblemCode } from '@/lib/api-errors';
 import type { SaveWizardDraftResult, ServerWizardDraft, WizardType } from '@/types/wizard';
 
-/** The first part of the key of every query about the drafts of the wizards: whoever changes a draft invalidates by it (ADR-024-R8). */
 export const WIZARD_DRAFTS_KEY = ['wizard-drafts'] as const;
 
-/** `code` of the 409 of a save that is behind the server (another device or tab saved first); nothing was written. */
 const DRAFT_CONFLICT_CODE = 'draft_conflict';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -17,17 +15,14 @@ function isInstant(value: unknown): value is string {
   return typeof value === 'string' && Number.isFinite(Date.parse(value));
 }
 
-/** Where the draft of a wizard lives; relative to the API base URL, which already ends in `/api`. */
 function draftUrl(type: WizardType): string {
   return `/wizards/${encodeURIComponent(type)}/draft`;
 }
 
-/** `entityId` is the query of a read and of a delete (a member of the body of a save); none is the draft of a new entity. */
 function entityParams(entityId: string | null | undefined): { entityId: string } | undefined {
   return entityId ? { entityId } : undefined;
 }
 
-/** A draft of the server from its JSON, or `null` when the body is not one. */
 function draftOf(value: unknown, type: WizardType): ServerWizardDraft | null {
   if (!isRecord(value) || typeof value.version !== 'number' || !isRecord(value.data) || !isInstant(value.lastSavedAt)) return null;
   return {
@@ -39,7 +34,6 @@ function draftOf(value: unknown, type: WizardType): ServerWizardDraft | null {
   };
 }
 
-/** The 409 `draft_conflict` as a result: the problem carries `serverDraft` and `serverVersion`. `null` for any other error. */
 function conflictOf(error: unknown, type: WizardType): SaveWizardDraftResult | null {
   if (!isAxiosError(error) || error.response?.status !== 409) return null;
   const body: unknown = error.response.data;
@@ -58,7 +52,6 @@ function conflictOf(error: unknown, type: WizardType): SaveWizardDraftResult | n
  * `data` member, and in a draft that member is what the person typed, not the draft.
  */
 export const wizardDraftApi = {
-  /** The draft, or `null` when there is none (404: none saved, it expired, or the caller has no organization). */
   get: async (type: WizardType, entityId?: string | null): Promise<ServerWizardDraft | null> => {
     const url = draftUrl(type);
     let body: unknown;
@@ -73,10 +66,6 @@ export const wizardDraftApi = {
     return draft;
   },
 
-  /**
-   * Saves the draft (the first save creates it). `clientVersion` is the `version` the client last saw, 0 when it has none. A 409
-   * `draft_conflict` is not an error: it comes back as the `conflict` result; any other error is thrown.
-   */
   save: async (
     type: WizardType,
     save: { entityId?: string | null; clientVersion: number; data: Record<string, unknown> },

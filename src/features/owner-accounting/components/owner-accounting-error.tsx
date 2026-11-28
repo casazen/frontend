@@ -22,15 +22,10 @@ export function FinanceAdminRequired() {
 
 interface OwnerAccountingErrorProps {
   error: unknown;
-  /** What failed to load, in words ("Non riusciamo a leggere la chiusura del mese"). */
   title: string;
   onRetry: () => void;
 }
 
-/**
- * A page of the owner accounting that could not load, with the way to try again. A 403 has no branch of its own: a read refused with no code is taken by the global handler of
- * the app (`lib/axios.ts`, the «nessun accesso» page) before the page can answer, so the page never sees it. The pages open only behind the role, which holds the whole reach.
- */
 export function OwnerAccountingError({ error, title, onRetry }: OwnerAccountingErrorProps) {
   return <ErrorState title={title} error={error} onRetry={onRetry} testId="owner-accounting-error" />;
 }

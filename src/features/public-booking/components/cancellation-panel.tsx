@@ -12,18 +12,14 @@ import { cancellationMoney, chargesNothing } from '../cancellation-preview';
 import { CancellationOutcome } from './cancellation-outcome';
 import { RefundSummary } from './refund-summary';
 
-/** What the guest confirmed: the refund they were shown and the key of this confirmation. */
 interface CancellationRequest {
   expectedRefundAmount: number;
   idempotencyKey: string;
 }
 
 interface CancellationPanelProps {
-  /** What cancelling does now (`cancellable` is true). */
   preview: GuestCancellationPreview;
-  /** The answer of the cancellation the guest has just made on this page, if they have. */
   result: GuestCancelResult | null;
-  /** Cancels for the refund the guest was shown. Resolves when the booking is cancelled; rejects with the error of the API. */
   onCancel: (request: CancellationRequest) => Promise<unknown>;
 }
 
@@ -69,11 +65,9 @@ export function CancellationPanel({ preview, result, onCancel }: CancellationPan
       focusOutcome.current = true;
     } catch (error) {
       if (refundChangedPreview(error)) {
-        // Nothing was cancelled and the new preview is already on screen: the guest decides again, with a new key.
         attemptKey.current = null;
         setChangedFrom(expectedRefundAmount);
       } else {
-        // An answer ends this attempt; an answer that never came (no network, a 5xx) is retried with the same key.
         if (!isTransientRequestError(error)) attemptKey.current = null;
         setProblem(problemText(error));
       }
@@ -82,8 +76,6 @@ export function CancellationPanel({ preview, result, onCancel }: CancellationPan
     }
   };
 
-  // The button that opened the dialog is gone once the booking is cancelled: when the dialog has closed and the outcome is there, the
-  // focus goes to the outcome and not to the top of the page. Whichever of the two comes last (the answer or the closing) finds the other.
   const hasOutcome = outcome !== null;
   useEffect(() => {
     if (!hasOutcome || open || !focusOutcome.current) return;
@@ -176,11 +168,6 @@ export function CancellationPanel({ preview, result, onCancel }: CancellationPan
   );
 }
 
-/**
- * The guest cannot cancel from where they are (DB-08b): a booking already cancelled shows what became of its refund; a stay that has
- * started sends them to the host (the guest area; the link of the host also works during the stay); a payment that is settling asks
- * them to wait; anything else says it plainly. Nothing to say renders nothing.
- */
 export function CancellationClosed({ preview, hostEmail }: { preview: GuestCancellationPreview; hostEmail?: string | null }) {
   const { t } = useTranslation();
 

@@ -31,7 +31,6 @@ export function useRunAutopilot() {
   return useMutation({
     mutationFn: (command: AutopilotRunCommand) => complianceAutopilotApi.run(command),
     onSettled: () => {
-      // The summary only: the plan is read again by the host's «Nuovo controllo», not behind his back while he reads the result.
       void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY, 'summary'] });
       void queryClient.invalidateQueries({ queryKey: ['bookings'] });
       void queryClient.invalidateQueries({ queryKey: ['alloggiati'] });

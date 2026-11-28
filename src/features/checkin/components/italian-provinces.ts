@@ -1,4 +1,3 @@
-/** Italian province codes, including the ones abolished in 2016 that still appear on older documents. */
 const PROVINCES = [
   'AG', 'AL', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AT', 'AV', 'BA', 'BG', 'BI', 'BL', 'BN', 'BO', 'BR', 'BS', 'BT',
   'BZ', 'CA', 'CB', 'CE', 'CH', 'CI', 'CL', 'CN', 'CO', 'CR', 'CS', 'CT', 'CZ', 'EN', 'FC', 'FE', 'FG', 'FI',
@@ -11,7 +10,6 @@ const PROVINCES = [
 
 const PROVINCE_SET = new Set<string>(PROVINCES);
 
-/** True for a real Italian province code (RM). A region code such as ER is not a province. */
 export function isItalianProvince(value: string): boolean {
   return PROVINCE_SET.has(value.trim().toUpperCase());
 }

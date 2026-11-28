@@ -8,8 +8,6 @@ import type { CedolareAdvisory, LeaseDetail, LeaseStage } from '@/types';
 import { buildDetail, httpError } from '../../__tests__/lease-test-utils';
 import { LeaseGuide } from '../lease-guide';
 
-// LR-GUIDE-1: the guide shows at most three pieces of advice and the tools that fit the contract; a tool says in its row what its window
-// says. The real client and queries run; the server is the mock of the HTTP client.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
 const get = vi.mocked(axios.get);
@@ -27,10 +25,8 @@ const RULES = {
   transitoryBandFromInhabitants: 10_000,
 };
 
-/** A far start keeps the lease in preparation on whatever day the suite runs. */
 const FAR = { startDate: '2099-01-01T00:00:00Z', endDate: '2102-12-31T00:00:00Z', registrationDeadline: null } as const;
 
-/** The comparison of the regimes with the income of the landlord known: the ordinary regime would cost 192 + 64 + 2.209,60 = 2.465,60 a year. */
 const ADVISORY: CedolareAdvisory = {
   leaseRegime: 'CedolareSecca',
   contractType: 'Libero',
@@ -64,7 +60,6 @@ function mockServer(advisory?: CedolareAdvisory, documents?: readonly object[]) 
   });
 }
 
-/** A document uploaded to the lease: its kind and whether the reading recognized an attestation inside it (a scan can be hard to read). */
 const document = (kind: 'Contract' | 'Attestation' | 'Registration', containsAttestation?: boolean) => ({
   id: `doc-${kind}`,
   leaseId: 'lease-1',
@@ -99,12 +94,10 @@ describe('LeaseGuide', () => {
 
     renderGuide(buildDetail({ ...FAR, taxRegime: 'CedolareSecca' }));
 
-    // The advice that quote the figures of the rules wait for them: the list is full once the rules are there.
     const toggle = await screen.findByTestId('lease-advice-toggle');
     const list = screen.getByTestId('lease-advice-list');
     expect(within(list).getAllByTestId('lease-advice')).toHaveLength(3);
     expect(toggle).toHaveTextContent('Mostra tutti i consigli (4)');
-    // The figure comes from the rules of the server, not from the text: «Dopo la firma hai 30 giorni per registrare».
     expect(within(list).getByText('Dopo la firma hai 30 giorni per registrare')).toBeInTheDocument();
 
     fireEvent.click(toggle);
@@ -130,7 +123,6 @@ describe('LeaseGuide', () => {
     expect(screen.getByTestId('guide-tool-rent-summary')).toHaveTextContent(i18n.t('leaseGuide.tools.rent.noData'));
   });
 
-  // CF-DONE: the guided service delivers the contract and its attestation in ONE file; the person is never asked for the attestation again.
   describe('the attestation of a lease of the guided service', () => {
     const service = () => buildDetail({ ...FAR, contractType: 'Concordato', fiscalRegime: 'CanoneConcordato', origin: 'Imported', isConcordatoFacileSource: true });
     const adviceIds = () => screen.queryAllByTestId('lease-advice').map((item) => item.getAttribute('data-advice'));
@@ -196,7 +188,6 @@ describe('LeaseGuide', () => {
     const row = await screen.findByTestId('guide-tool-regime-summary');
     await vi.waitFor(() => expect(row.textContent?.replace(/\s+/g, ' ')).toContain(sentence));
 
-    // The first advice asks the same question and opens the same window, with the same sentence on top.
     const advice = within(screen.getByTestId('lease-advice-list')).getAllByTestId('lease-advice')[0];
     expect(advice).toHaveAttribute('data-advice', 'regimeCheckCedolare');
     fireEvent.click(within(advice).getByTestId('lease-advice-action'));

@@ -9,8 +9,6 @@ import type { CfSimulatorCreatedPractice, CfSimulatorLinkResponse } from '@/type
 import { GuidedFormPage } from '../guided-form-page';
 import { savePractice } from '../lib/guided-form-link';
 
-// CF-SIM: the module of the service that prepares the contract, simulated for the test environments. It checks the signed link, takes the
-// practice in, and leads back into CasaZen; where the simulator is off the API answers 404 and the page says it is not available.
 vi.mock('@/api/cf-simulator.api', () => ({
   CfSimulatorApi: { checkLink: vi.fn(), createPractice: vi.fn(), setStatus: vi.fn(), downloadDocument: vi.fn() },
 }));
@@ -77,7 +75,6 @@ describe('GuidedFormPage (CF-SIM)', () => {
     expect(screen.getByTestId('guided-form-comune')).toHaveTextContent('Monza');
     expect(screen.getByTestId('guided-form-provincia')).toHaveTextContent('MB');
     expect(checkLink).toHaveBeenCalledWith(expect.objectContaining({ partner: 'casazen', leaseId: LEASE_ID, signature: 'abc123' }));
-    // The signed parameters leave the address as soon as they are read; the municipality is not secret.
     await waitFor(() => expect(screen.getByTestId('search')).not.toHaveTextContent('signature'));
     expect(screen.getByTestId('search')).not.toHaveTextContent(LEASE_ID);
     expect(screen.getByTestId('search')).toHaveTextContent('comune=Monza');

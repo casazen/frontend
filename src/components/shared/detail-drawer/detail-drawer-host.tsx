@@ -17,7 +17,6 @@ import { getDetail, registerHost, type DetailDef } from './detail-registry';
 import { useDetailDrawer } from './use-detail-drawer';
 import './detail-drawer.css';
 
-/** The attribute of `<body>` while a drawer is open: `detail-drawer.css` lets the toasts be pressed under it. */
 const OPEN_ATTRIBUTE = 'data-detail-drawer-open';
 
 /**
@@ -36,12 +35,6 @@ interface PanelProps {
   close: () => void;
 }
 
-/**
- * One element, two shapes. Under `md` (48rem, where the shell stops being a phone) it is a sheet from the bottom edge, as tall
- * as its content up to most of the screen, with the handle that can be pulled down; from `md` on it is a panel at the right,
- * the full height. The shape is decided by CSS only, so turning a phone around (or resizing a window) does not mount the
- * content again: what is typed in it, and where it is scrolled, stays.
- */
 function DetailPanel({ shown, def, close }: PanelProps) {
   const { t } = useTranslation();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -59,8 +52,6 @@ function DetailPanel({ shown, def, close }: PanelProps) {
 
   const title = typeof def.title === 'string' ? t(def.title) : createElement(def.title, { id: shown.id });
 
-  // A title that comes with the data draws nothing until the data has arrived, and a dialog with no name tells a screen reader
-  // nothing. While the title is empty the generic name is there, for assistive technology only; it goes when the title comes.
   useEffect(() => {
     if (!titleSlot) return;
     const sync = () => setUntitled((titleSlot.textContent ?? '').trim() === '');
@@ -70,8 +61,6 @@ function DetailPanel({ shown, def, close }: PanelProps) {
     return () => observer.disconnect();
   }, [titleSlot]);
 
-  // Another drawer in the place of this one (`open` while one is open, or Back to an earlier one): the control that had the focus
-  // is gone with its content, and Radix would leave the focus on the frame. The new content has its own container, at the top.
   useEffect(() => {
     bodyRef.current?.focus({ preventScroll: true });
   }, [thing]);
@@ -83,7 +72,6 @@ function DetailPanel({ shown, def, close }: PanelProps) {
         data-detail-sheet=""
         data-testid="detail-drawer"
         data-detail-kind={shown.kind}
-        // The name is the title (Radix points `aria-labelledby` at it); there is no description to read out.
         aria-describedby={undefined}
         // The container of the content takes the focus, not the first control: a drawer that opens on "Accetta" must not have
         // it focused, and the arrow keys scroll what has the focus. Before that, whatever had the focus (the link that was
@@ -93,7 +81,6 @@ function DetailPanel({ shown, def, close }: PanelProps) {
           event.preventDefault();
           bodyRef.current?.focus({ preventScroll: true });
         }}
-        // The button that opened the drawer gets the focus back (Radix does it only for a trigger).
         onCloseAutoFocus={(event) => {
           const opener = takeOpener();
           if (!opener) return;
@@ -103,9 +90,7 @@ function DetailPanel({ shown, def, close }: PanelProps) {
         onInteractOutside={ignoreToasts}
         className={cn(
           'fixed z-50 flex flex-col bg-background text-foreground shadow-lg outline-none',
-          // A sheet from the bottom edge, clear of the home indicator.
           'max-md:inset-x-0 max-md:bottom-0 max-md:max-h-[92dvh] max-md:rounded-t-2xl max-md:border-t max-md:pb-[env(safe-area-inset-bottom)]',
-          // A panel at the right. Its motion is the utilities' (a sheet from the bottom moves with `styles/sheet-bottom.css`).
           'md:inset-y-0 md:right-0 md:w-full md:border-l',
           def.width === 'wide' ? 'md:max-w-2xl' : 'md:max-w-xl',
           'md:data-[state=open]:animate-in md:data-[state=open]:slide-in-from-right md:data-[state=open]:duration-300',
@@ -113,7 +98,6 @@ function DetailPanel({ shown, def, close }: PanelProps) {
         )}
       >
         <SheetHandle className="md:hidden" onClose={() => closeRef.current?.click()} />
-        {/* `pr-16`: room for the close button, which is 44 px wide and sits over the right corner. */}
         <div className="shrink-0 px-4 pb-3 pr-16 md:pb-4 md:pl-6 md:pr-16 md:pt-6">
           <ErrorBoundary
             key={retryKey}
@@ -127,7 +111,6 @@ function DetailPanel({ shown, def, close }: PanelProps) {
             </DialogTitle>
           </ErrorBoundary>
         </div>
-        {/* Keyed by what is shown: another drawer starts at the top, not where the last one was scrolled to. */}
         <div
           key={thing}
           ref={bodyRef}
@@ -135,13 +118,11 @@ function DetailPanel({ shown, def, close }: PanelProps) {
           data-testid="detail-drawer-body"
           className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain break-words px-4 pb-6 outline-none md:px-6"
         >
-          {/* A content that fails to draw must not take the page with it: the drawer says so and offers to try again. */}
           <ErrorBoundary
             key={retryKey}
             fallbackRender={(error) => (
               <ErrorState
                 title={t('detailDrawer.errorTitle')}
-                // A `lazy` content whose chunk did not load stays failed in place (React keeps it): the page is loaded again.
                 onRetry={() => (isChunkLoadError(error) ? window.location.reload() : setAttempt((count) => count + 1))}
                 testId="detail-drawer-error"
               />
@@ -171,13 +152,6 @@ function DetailPanel({ shown, def, close }: PanelProps) {
   );
 }
 
-/**
- * The one detail drawer of the app (UI-15), mounted once in the shell (`AppShellLayout`): it shows, for the kind and the id in
- * the address (`?detail=booking:3f2a`), what was registered with `registerDetail`. It is a modal dialog: the focus stays
- * inside, Esc and a press outside close it, and the focus goes back to the button that opened it.
- *
- * It draws nothing, and needs nothing but the router, while no drawer is open: a shell without a query client still renders.
- */
 export function DetailDrawerHost() {
   const { current, close } = useDetailDrawer();
   const open = current !== null;
@@ -194,7 +168,6 @@ export function DetailDrawerHost() {
     return () => document.body.removeAttribute(OPEN_ATTRIBUTE);
   }, [open]);
 
-  // The last drawer stays in place while the panel slides out: by then the address no longer says what it was.
   const [last, setLast] = useState<DetailRef | null>(current);
   if (current && (last?.kind !== current.kind || last.id !== current.id)) setLast(current);
 
@@ -208,7 +181,6 @@ export function DetailDrawerHost() {
         if (!next) close();
       }}
     >
-      {/* Swapping one drawer for another keeps the panel and mounts the content again (its boundaries are keyed by what is shown). */}
       {shown && def ? <DetailPanel shown={shown} def={def} close={close} /> : null}
     </Dialog>
   );

@@ -6,7 +6,6 @@ import { chosenSupplierOf, groupDueAt, groupStageOf, KNOWN_ROLES, memberStateOf,
 
 const TIME: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
 
-/** The states that say something went well get the quiet green; the ones that ended without the job stay as plain text. */
 const GOOD_STATES: ReadonlySet<MemberState> = new Set(['tookTheJob', 'accepted']);
 
 /**

@@ -52,10 +52,6 @@ export function useApproveStatement() {
   });
 }
 
-/**
- * Publishes an Approved statement: it becomes immutable (a correction goes in the next month's statement) and can go into a wire file. The server only changes
- * its status, it sends nothing to the owner, so the confirmation says no more than that. Same rules as the approval.
- */
 export function usePublishStatement() {
   const queryClient = useQueryClient();
 
@@ -80,11 +76,9 @@ export function usePublishStatement() {
 
 interface StatementFile {
   id: string;
-  /** The name the file is saved under when the server does not give one (`Content-Disposition` unreadable or empty). */
   fallbackName: string;
 }
 
-/** Downloads a statement as PDF: saved under the name the server gave it, the bytes not kept (the mutation returns nothing and is dropped when nothing watches it). */
 export function useDownloadStatementPdf() {
   return useMutation({
     mutationFn: ({ id, fallbackName }: StatementFile) => saveDownload(statementsApi.downloadPdf(id), fallbackName),
@@ -95,7 +89,6 @@ export function useDownloadStatementPdf() {
   });
 }
 
-/** Downloads a statement as CSV. */
 export function useDownloadStatementCsv() {
   return useMutation({
     mutationFn: ({ id, fallbackName }: StatementFile) => saveDownload(statementsApi.downloadCsv(id), fallbackName),

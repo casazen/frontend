@@ -63,7 +63,6 @@ describe('ContactOptionsPanel (NF-63: a booking that has no conversation yet)', 
     const form = await screen.findByTestId('contact-email-form');
     expect(form).toHaveTextContent("il suo indirizzo non lo vedi e non lo conserviamo");
     expect(screen.getByTestId('contact-email-send')).toHaveTextContent('Scrivi per e-mail');
-    // «emailAvailable» and «phoneAvailable» say that they exist: neither the address nor the number is anywhere.
     expect(document.body.textContent).not.toMatch(/@|\+39/);
   });
 
@@ -137,7 +136,6 @@ describe('ContactOptionsPanel (NF-63: a booking that has no conversation yet)', 
   });
 
   it('ContactOptionsPanel_FailedToAsk_IsAnErrorWithARetry', async () => {
-    // A refusal is not retried by itself (a 5xx would be, once, after a second).
     vi.mocked(messageHubApi.getContactOptions).mockRejectedValue(httpError(403));
     renderPanel();
 

@@ -14,27 +14,17 @@ export type CleaningVatAnswer = 'Applied' | 'NotApplied' | 'Unknown';
  * organization remembers for the company (`companyAppliesVat`) and the instant of the answer (`answeredAt`) are in the answer of the API and nothing here needs them.
  */
 export interface CleaningVatQuestion {
-  /** The cleaning request: the id the «Da fare» `StateCleaningVat` carries. */
   serviceRequestId: string;
-  /** The name of the cleaning company. */
   supplierName: string | null;
   /** The country of the cleaning (its property), whose VAT the question is about: `CH` or `IT`. */
   country: string;
-  /** The day of the cleaning (`yyyy-MM-dd`), whose rate «Sì» uses. */
   cleaningDate: string;
-  /** The rate of the button «Sì» (8.1 in Switzerland, 22 in Italy); `null` when the table has none for that day: «Sì» is refused. */
   standardRatePercent: number | null;
-  /** The answer given for this cleaning; `null` while nobody answered. */
   answer: CleaningVatAnswer | null;
-  /** The rate the answer «Sì» used. */
   answerRatePercent: number | null;
-  /** What the invoice of the agency uses: the answer of this cleaning, else the company's remembered one; `null` when nothing is stated. */
   statedAnswer: CleaningVatAnswer | null;
-  /** The rate of `statedAnswer` when it is «Sì». */
   statedRatePercent: number | null;
-  /** Whether `statedAnswer` is the company's remembered answer and not the one of this cleaning. */
   statedByCompany: boolean;
-  /** Whether the caller may tick «Ricorda per questa ditta»: only a caller of the whole organization (the answer decides the cleanings of every property). */
   canRemember: boolean;
 }
 

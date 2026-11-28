@@ -20,10 +20,8 @@ import { FRAME_QUERY, PARENT, frameInsideAPage, renderWidgets, spyOnTheBrowserMe
  * page that frames it reads what is posted), the widget asks the server for nothing (so it cannot tell whether a code exists) and keeps nothing in the browser.
  */
 vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn() } }));
-// The guest area the widget leads to (its own tests cover it): here only the page that reads `?code=`.
 vi.mock('@/api/guest-session.api', () => ({ guestSessionApi: { openSession: vi.fn(), getBooking: vi.fn() } }));
 vi.mock('@/api/guest-cancellation.api', () => ({ guestCancellationApi: { getPreview: vi.fn(() => new Promise(() => undefined)), cancel: vi.fn() } }));
-// Any call of the API client fails the test: the widget makes none.
 const client = vi.hoisted(() => {
   const refuse = () => vi.fn(() => Promise.reject(new Error('the guest-access widget asked the API for something')));
   return { get: refuse(), post: refuse(), put: refuse(), patch: refuse(), delete: refuse(), getPaginated: refuse() };
@@ -81,7 +79,6 @@ describe('what the widget shows (AC1)', () => {
     expect(screen.getByText(/Lo trovi nell.email di conferma della prenotazione\./)).toBeInTheDocument();
     expect(screen.getAllByRole('button')).toHaveLength(1);
     expect(screen.getByRole('button', { name: 'Continua' })).toHaveAttribute('type', 'submit');
-    // The label is tied to the field, the helper line describes it, and there is no other field to fill in: no e-mail, no phone.
     expect(input).toHaveAttribute('id');
     expect(input).toHaveAccessibleDescription(/email di conferma/);
     expect(container.querySelectorAll('input:not([type="hidden"])')).toHaveLength(1);
@@ -148,16 +145,13 @@ describe('the code (AC2)', () => {
       fireEvent.change(screen.getByLabelText('Codice prenotazione'), { target: { value } });
       fireEvent.change(screen.getByLabelText('Email usata per prenotare'), { target: { value: 'giulia@example.com' } });
       fireEvent.click(screen.getByRole('button', { name: 'Trova la prenotazione' }));
-      // A form that rejects says so at once, one that accepts calls `onSubmit` after its resolver has run: wait for one or the other.
       await waitFor(() => expect(onSubmit.mock.calls.length > 0 || screen.queryByText(/Il codice prenotazione|Inserisci il codice/) !== null).toBe(true));
       accepted.set(value, onSubmit.mock.calls.length > 0);
       unmount();
     }
-    // The control of the proof: both outcomes are in the table.
     expect([...accepted.values()]).toContain(true);
     expect([...accepted.values()]).toContain(false);
 
-    // What the widget accepts: a message that asks the page to leave the frame.
     open();
     await page.attach();
     for (const value of inputs) {
@@ -171,7 +165,6 @@ describe('the code (AC2)', () => {
 
 describe('where the code goes (AC3, AC4)', () => {
   it('embedGuestAccess_sendsOnlyTheCode', async () => {
-    // Whatever the address of the frame carries, the guest's e-mail, phone, a token: none of it is in what the widget sends.
     open('email=mario%40rossi.it&phone=%2B393331234567&token=gs1.secret&surname=Rossi');
     await page.attach();
     await type(' k7m4q 9xp2h ');
@@ -184,11 +177,9 @@ describe('where the code goes (AC3, AC4)', () => {
     const url = new URL(go.url);
     expect(url.origin).toBe(window.location.origin);
     expect([...url.searchParams.keys()]).toEqual(['code', 'lang']);
-    // The code as the guest area writes it, and the language: nothing else in the address, and no other message but the navigation (no event, no credential).
     const said = JSON.stringify(page.posts());
     for (const secret of ['mario', 'Rossi', '393331234567', 'gs1.secret', 'surname', 'phone', 'email', 'token']) expect(said).not.toContain(secret);
     expect(page.sent('event')).toHaveLength(0);
-    // To the origin of the page, never to every window.
     expect(page.posts().filter(([message]) => message.type === 'navigate').every(([, target]) => target === PARENT)).toBe(true);
   });
 
@@ -219,12 +210,10 @@ describe('where the code goes (AC3, AC4)', () => {
     await type(CODE.toLowerCase());
     const form = screen.getByRole('form', { name: 'Gestisci la tua prenotazione' }) as HTMLFormElement;
 
-    // The web does it: a GET of the same origin, in the top window, with the code (as the guest area writes it) and the language as its only two fields.
     expect(form).toHaveAttribute('method', 'get');
     expect(form).toHaveAttribute('target', '_top');
     expect(form).toHaveAttribute('action', `${window.location.origin}/book/villa-rossi/my-bookings`);
     expect(Object.fromEntries(new FormData(form) as unknown as Iterable<[string, string]>)).toEqual({ code: CODE, lang: 'it' });
-    // A click that nobody reads (no loader) is not taken over: the form is not stopped, and nothing is posted.
     const stopped = !fireEvent.submit(form);
     expect(stopped).toBe(false);
     expect(navigations()).toHaveLength(0);
@@ -249,7 +238,6 @@ describe('where the code goes (AC3, AC4)', () => {
     const url = new URL(navigations()[0].url);
     cleanup();
 
-    // The page the guest lands on, as the router of the site reads it: `?code=` fills the code field, and nothing is asked of the server before the second proof.
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
         <MemoryRouter initialEntries={[`${url.pathname}${url.search}`]}>
@@ -275,7 +263,6 @@ describe('where the code goes (AC3, AC4)', () => {
     const url = new URL(navigations()[0].url);
     cleanup();
 
-    // The router of an agency's domain reads `/my-bookings` as the guest area of its org (`toAppPath`): the page is the one of the site, with the code in its field.
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
         <MemoryRouter initialEntries={[`${toAppPath(url.pathname, 'villa-rossi')}${url.search}`]}>
@@ -298,7 +285,6 @@ describe('no request, nothing kept (AC5)', () => {
     open();
     await page.attach();
 
-    // Everything a guest does with it: a wrong code, a right one, and again.
     await type('ABC');
     submit();
     await screen.findByRole('alert');
@@ -314,7 +300,6 @@ describe('no request, nothing kept (AC5)', () => {
   });
 
   it('embedGuestAccess_noStorageOrCookies', async () => {
-    // What the site keeps for the guest area (the session of the booking, the language): the frame neither reads it nor writes anything.
     sessionStorage.setItem('casazen.guestSession.villa-rossi', JSON.stringify({ accessToken: 'gs1.secret', bookingCode: CODE }));
     localStorage.setItem('casazen.locale', 'en');
     open('', { afterRouter: () => (spies = spyOnTheBrowserMemory()) });
@@ -336,7 +321,6 @@ describe('the frame is as tall as the form (AC6)', () => {
   const resizes = () => page.sent('resize') as EmbedMessage<'resize'>[];
 
   it('embedGuestAccess_TheFrameFollowsTheFormWhenAnErrorAppears', async () => {
-    // The wrapper of the frame is the element whose height the page is told: it follows what is in it, the error included. A stand-in for the layout of the browser.
     const frames: FrameRequestCallback[] = [];
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => frames.push(callback));
     vi.stubGlobal('cancelAnimationFrame', () => undefined);
@@ -353,7 +337,6 @@ describe('the frame is as tall as the form (AC6)', () => {
       },
     );
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
-      // Without the error the form is as tall as its field, its line and its button; with it, one line taller.
       return { height: this.getAttribute('data-testid') === 'embed-shell' ? (screen.queryByRole('alert') ? 168 : 140) : 0 } as DOMRect;
     });
     const flush = () => {
@@ -378,7 +361,6 @@ describe('the frame is as tall as the form (AC6)', () => {
     resized();
 
     expect(resizes().map((message) => message.height)).toEqual([140, 168]);
-    // The widget gives no height of its own: nothing here makes the frame taller or shorter than the form (no height, no `vh`, no scrollbar of its own).
     const root = screen.getByTestId('embed-widget-guest-access');
     expect(root.className).toBe('');
     expect(root.getAttribute('style')).toBeNull();

@@ -8,7 +8,6 @@ interface DrawerProps {
   onClose: () => void;
   mayCorrect: boolean;
   mayClose: boolean;
-  /** The drafts of the list that were closed as «non più dovuta» (see `replacementClosed` of the rows). */
   closedIds: ReadonlySet<string>;
   onCorrect: (item: SelfBillingListItem) => void;
   onCloseNotDue: (item: SelfBillingListItem) => void;

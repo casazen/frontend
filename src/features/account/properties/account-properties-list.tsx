@@ -12,29 +12,20 @@ import { formatPropertyLocation } from '@/features/properties/property-location'
 import type { LongRentPropertyStatus, PropertyStatus } from '@/lib/status-dictionary';
 import { areaKeyOf, missingText, type AccountPropertyRights, type AccountPropertyRow, type AccountPropertyState } from './account-properties-model';
 import { ModeTag, PeopleButton, ScheduledChange, StateCell, Unknown } from './account-property-cells';
-// The drawer registers its kind when its module is loaded: the list is what opens it.
 import { ACCOUNT_PROPERTY_DRAWER_KIND } from './account-property-drawer';
 
 export interface AccountPropertiesListOptions {
   rights: AccountPropertyRights;
-  /** The members were read: only then is anybody named as in charge, filtered by, or offered. */
   membersKnown: boolean;
-  /** The number of people who reach each property was read. */
   peopleKnown: boolean;
-  /** Puts somebody in charge of one property (the dialog). */
   onAssignOne: (row: AccountPropertyRow) => void;
-  /** Puts somebody in charge of the selected properties. It resolves when it is done, never when the person gives up. */
   onAssignMany: (rows: AccountPropertyRow[]) => Promise<void>;
-  /** Takes the persons in charge back to what they were before `onAssignMany`. */
   onRestore: (rows: AccountPropertyRow[]) => Promise<void>;
   onDelete: (row: AccountPropertyRow) => void;
-  /** The drawer of a property, which says who can open it. */
   onWho: (row: AccountPropertyRow) => void;
-  /** Add a property: the dialog that asks in which section. `undefined` for who may add none. */
   onAdd: (() => void) | undefined;
 }
 
-/** The states in the order the owner has to look at them: what is blocked first, what is let last. */
 const STATE_RANK: Record<AccountPropertyState['kind'], Record<string, number>> = {
   property: { Suspended: 0, Pending: 1, Paused: 2, Active: 3 } satisfies Record<PropertyStatus, number>,
   longRentProperty: { Free: 4, Rented: 5 } satisfies Record<LongRentPropertyStatus, number>,
@@ -44,7 +35,6 @@ const rankOf = (state: AccountPropertyState | null) => (state ? (STATE_RANK[stat
 
 const stateKey = (state: AccountPropertyState) => `${state.kind}:${state.status}`;
 
-/** The value of the filter «Responsabile» that stands for the properties nobody is in charge of. */
 const NOBODY_FILTER = '-';
 
 /**
@@ -164,7 +154,6 @@ export function useAccountPropertiesList({
                 type: 'select' as const,
                 label: t('accountProperties.list.filters.responsible'),
                 allLabel: t('accountProperties.list.filters.allResponsibles'),
-                // The person is the account id (a name can hold a comma, which the address uses to separate values); `-` is nobody.
                 options: (rows: readonly AccountPropertyRow[]) => [
                   ...[...new Map(rows.flatMap((row) => (row.responsible ? [[row.responsible.userId, row.responsible.name] as const] : []))).entries()]
                     .sort(([, a], [, b]) => a.localeCompare(b, language))
@@ -211,7 +200,6 @@ export function useAccountPropertiesList({
           membersKnown && canWrite(row)
             ? { id: 'assign', label: t('accountProperties.list.actions.assign'), icon: UserCheck, onSelect: () => onAssignOne(row), testId: 'account-property-assign' }
             : null,
-          // The endpoint is the one of the short-term section (`PropertyWrite`), for a property of either mode.
           shortWrite && canWrite(row) ? 'separator' : null,
           shortWrite && canWrite(row)
             ? { id: 'delete', label: t('accountProperties.list.actions.delete'), icon: Trash2, danger: true, onSelect: () => onDelete(row), testId: 'account-property-delete' }
@@ -255,7 +243,6 @@ export function useAccountPropertiesList({
             </div>
           ) : undefined,
       }),
-      // The name of the property opens its drawer; its page is the first entry of "⋯" and the button of the drawer.
       detail: { drawerKind: ACCOUNT_PROPERTY_DRAWER_KIND },
       rowHref: (row) => (canRead(row) ? propertyDetailPath(areaKeyOf(row.mode), row.property.id) : undefined),
       cardsUntil: 'xl',

@@ -6,13 +6,11 @@ import { buildCreatedProperty } from './fixtures/properties.fixtures';
 import { mockServiceCategoriesApi } from './helpers/service-categories-mock';
 import type { Page } from '@playwright/test';
 
-// Ids as the API gives them (GUIDs): the guided request takes the ids of its address only when they are one.
 const PROPERTY_ID = 'a1b2c3d4-0000-4000-8000-0000000000a1';
 const SUPPLIER_ORG_ID = 'a1b2c3d4-0000-4000-8000-0000000000b2';
 const SERVICE_ID = 'a1b2c3d4-0000-4000-8000-0000000000c3';
 const STAY_ID = 'a1b2c3d4-0000-4000-8000-0000000000d4';
 
-/** A future stay of the property: a request is for the house, and the host may link a stay to it (SR-D3). */
 const sampleStay = {
   id: STAY_ID,
   propertyId: PROPERTY_ID,
@@ -24,7 +22,6 @@ const sampleStay = {
   guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', phone: '', country: 'IT' },
 };
 
-// The property is used when scheduling a job from Interventions.
 const sampleProperty = buildCreatedProperty({
   id: PROPERTY_ID,
   name: 'Casa Marketplace',
@@ -53,10 +50,6 @@ const sampleSuppliers = {
   pageSize: 1,
 };
 
-/**
- * Mocks what the marketplace and the guided request read; `posted` collects the bodies of the requests the page creates and `assisted` the ones the
- * AI help is asked.
- */
 async function mockMarketplaceApis(page: Page) {
   const posted: Record<string, unknown>[] = [];
   const assisted: Record<string, unknown>[] = [];
@@ -65,7 +58,6 @@ async function mockMarketplaceApis(page: Page) {
   await mockEntitlement(page);
   await mockServiceCategoriesApi(page);
 
-  // The five groups of Scopri come from the catalog: the channel manager is not connected, and one partner (made up) is listed.
   await page.route('**/api/marketplace/catalog**', (route) =>
     route.fulfill({
       status: 200,
@@ -103,7 +95,6 @@ async function mockMarketplaceApis(page: Page) {
       }),
     }),
   );
-  // The calendars and the card payments of CasaZen, shown among the groups, read the calendars and the Stripe account: nothing linked, nothing connected.
   await page.route('**/api/properties/calendar-overview', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ syncEveryMinutes: 15, staleAfterMinutes: 45, properties: [] }) }),
   );
@@ -121,7 +112,6 @@ async function mockMarketplaceApis(page: Page) {
       return;
     }
     const url = new URL(route.request().url());
-    // The page of one supplier (MKT): the same entry, every service.
     if (url.pathname === `/api/suppliers/${SUPPLIER_ORG_ID}` && url.searchParams.get('accountScope') === 'true') {
       await route.fulfill({
         status: 200,
@@ -145,8 +135,6 @@ async function mockMarketplaceApis(page: Page) {
     });
   });
 
-  // The services of the supplier and their free slots (SR-08a), which the guided request reads: one service of 150 minutes, and a slot on
-  // every day that is asked for.
   await page.route(`**/api/suppliers/${SUPPLIER_ORG_ID}/services**`, async (route) => {
     const url = new URL(route.request().url());
     if (url.pathname.endsWith('/slots')) {
@@ -295,19 +283,16 @@ test.describe('Marketplace suppliers (#340)', () => {
     const { posted } = await mockMarketplaceApis(page);
     await page.goto(demoUrl('/app/short-rent/marketplace', 'short-stay'));
 
-    // Scopri: «Fornitori CasaZen» is a tile for each category (MKT: the categories are the first group of Scopri, then the partners).
     await expect(page.getByTestId('marketplace-category-cleaning')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('marketplace-partners-section')).toBeVisible();
     await expect(page.getByTestId('marketplace-property-select')).toHaveCount(0);
     await expect(page.getByTestId('marketplace-request-intervention')).toHaveCount(0);
 
-    // A category → the suppliers that offer it.
     await page.getByTestId('marketplace-category-cleaning').click();
     await expect(page).toHaveURL(/\/marketplace\/categories\/cleaning/);
     await expect(page.getByTestId('marketplace-supplier-grid')).toBeVisible();
     await expect(page.getByTestId(`marketplace-supplier-${SUPPLIER_ORG_ID}`)).toBeVisible();
 
-    // The search: Enter on Scopri leads to the page of the search, which asks the suppliers with the words.
     await page.getByTestId('marketplace-section-discover').click();
     const searched = page.waitForRequest(
       (request) => new URL(request.url()).pathname === '/api/suppliers' && new URL(request.url()).searchParams.get('q') === 'pulizie' && new URL(request.url()).searchParams.get('accountScope') === 'true',
@@ -318,7 +303,6 @@ test.describe('Marketplace suppliers (#340)', () => {
     await searched;
     await expect(page.getByTestId('marketplace-supplier-grid')).toBeVisible();
 
-    // The supplier opens in the drawer (UI-15), which is named by the supplier.
     await page.getByTestId(`marketplace-supplier-${SUPPLIER_ORG_ID}`).click();
     await expect(page.getByTestId('marketplace-supplier-detail')).toBeVisible();
     await expect(page.getByRole('dialog').getByText('Pulizie Express Srl')).toBeVisible();
@@ -332,12 +316,9 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(supplierPage.getByTestId(`marketplace-service-${SERVICE_ID}`)).toBeVisible();
     await expect(supplierPage.getByTestId(`marketplace-request-service-${SERVICE_ID}`)).toHaveCount(0);
 
-    // Intervention requests still work from their own workflow.
     await page.goto(demoUrl(`/app/short-rent/interventions/request?propertyId=${PROPERTY_ID}&type=cleaning&supplierOrgId=${SUPPLIER_ORG_ID}`, 'short-stay'));
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 15_000 });
-    // The supplier has one service for the job: it is the one chosen.
     await expect(page.getByTestId(`request-service-${SERVICE_ID}`)).toBeChecked();
-    // The request is for the house. A stay is only a link, and with it the work is on the day the guests leave.
     await page.getByTestId('request-stay').selectOption(STAY_ID);
     await expect(page.getByTestId('request-day')).toHaveValue('2099-10-05');
     await page.locator('[data-testid^="request-slot-"]').first().click();
@@ -354,9 +335,7 @@ test.describe('Marketplace suppliers (#340)', () => {
     expect(body.propertyId).toBe(PROPERTY_ID);
     expect(body.supplierOrgId).toBe(SUPPLIER_ORG_ID);
     expect(body.category).toBe('cleaning');
-    // The request is for the house; the stay is a link the host chose in the wizard.
     expect(body.bookingId).toBe(STAY_ID);
-    // A service of the catalog goes with its slot and never with a length: the server takes it from the service.
     expect(body.serviceListingId).toBe(SERVICE_ID);
     expect(body.durationMinutes).toBeUndefined();
     expect(body.scheduledStartUtc).toEqual(expect.any(String));
@@ -385,7 +364,6 @@ test.describe('Marketplace suppliers (#340)', () => {
     const [body] = posted;
     expect(body.propertyId).toBe(PROPERTY_ID);
     expect(body.supplierOrgId).toBe(SUPPLIER_ORG_ID);
-    // No stay and no service of the catalog: the length is the one the host chose.
     expect(body.bookingId).toBeUndefined();
     expect(body.serviceListingId).toBeUndefined();
     expect(body.durationMinutes).toBe(120);
@@ -398,7 +376,6 @@ test.describe('Marketplace suppliers (#340)', () => {
     await page.goto(demoUrl(`/app/short-rent/interventions/request?propertyId=${PROPERTY_ID}`, 'short-stay'));
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel', { timeout: 15_000 });
 
-    // Quiet under the two choices; the box opens only when the host wants it.
     await expect(page.getByTestId('request-assist')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('request-assist-text')).toHaveCount(0);
     await page.getByTestId('request-assist-open').click();
@@ -411,7 +388,6 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByTestId('request-assist-category')).toHaveText('Pulizie');
     await expect(page.getByTestId('request-assist-who')).toContainText('Un fornitore disponibile');
     await expect(page.getByTestId('ai-content-notice')).toBeVisible();
-    // The host has decided nothing yet.
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');
 
     await page.getByTestId('request-assist-use').click();
@@ -420,11 +396,9 @@ test.describe('Marketplace suppliers (#340)', () => {
     await page.getByTestId(`request-supplier-${SUPPLIER_ORG_ID}`).check({ force: true });
     await page.getByTestId('request-next').click();
 
-    // The urgency and the sentence for the supplier are the answers of the details: the host can still change them.
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details');
     await expect(page.getByTestId('request-urgency-High')).toBeChecked();
     await expect(page.getByTestId('request-notes')).toHaveValue('Pulizia profonda della casa, serve per sabato mattina.');
-    // Nothing was sent to CasaZen: the request leaves only with the last button.
     expect(posted).toHaveLength(0);
   });
 });

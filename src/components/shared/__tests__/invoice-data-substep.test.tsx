@@ -31,7 +31,6 @@ function renderSubstep() {
   const onCancel = vi.fn();
   const onSubmit = vi.fn((event: { preventDefault: () => void }) => event.preventDefault());
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  // The sub-step sits inside the form of a wizard: it must never submit it.
   const view = render(
     <QueryClientProvider client={client}>
       <form onSubmit={onSubmit} data-testid="outer-form">
@@ -113,7 +112,6 @@ describe('InvoiceDataSubstep - what the host sees', () => {
         .getAllByRole('textbox')
         .filter((box) => !more.contains(box))
         .map((box) => box.id);
-    // A person: two boxes (and the choice of the kind).
     expect(inView()).toEqual(['invoice-data-name', 'invoice-data-fiscalCode']);
     // Under «Altre opzioni»: the address, the country, the VAT number of a person, the code of the recipient and the PEC.
     for (const name of ['addressStreet', 'addressCivic', 'postalCode', 'city', 'province', 'countryCode', 'vatNumber', 'sdiRecipientCode', 'pec']) {
@@ -184,7 +182,6 @@ describe('InvoiceDataSubstep - Done and Cancel', () => {
     await waitFor(() => expect(field('fiscalCode')).toHaveFocus());
     expect(saveInvoiceData).not.toHaveBeenCalled();
     expect(onDone).not.toHaveBeenCalled();
-    // What was typed stays.
     expect(field('name').value).toBe('Mario Rossi');
   });
 
@@ -206,7 +203,6 @@ describe('InvoiceDataSubstep - Done and Cancel', () => {
     expect(screen.getByText("L'indirizzo PEC non è valido: controlla la chiocciola e il dominio.")).toBeInTheDocument();
     expect(screen.getByText(/In Italia il CAP ha 5 cifre/)).toBeInTheDocument();
     expect(screen.getByText('La provincia si scrive con 2 lettere, per esempio RM.')).toBeInTheDocument();
-    // The rare fields that are wrong open their options, so the error is not hidden.
     expect((screen.getByTestId('invoice-data-more') as HTMLDetailsElement).open).toBe(true);
     expect(saveInvoiceData).not.toHaveBeenCalled();
   });
@@ -224,8 +220,6 @@ describe('InvoiceDataSubstep - Done and Cancel', () => {
     expect(field('fiscalCode')).not.toHaveAttribute('aria-invalid');
   });
 
-  // The server asks no address: `InvoiceDataFormats.Validate` checks only what is written and answers 422 for nothing but a recipient that is not
-  // identified. That is why the address is under «Altre opzioni»: a save without one is made as it is, with no problem on any field.
   it('done_NoAddressAtAll_IsSavedAsItIsBecauseTheServerAsksNone', async () => {
     const { onDone } = renderSubstep();
     await ready();
@@ -392,7 +386,6 @@ describe('InvoiceDataSubstep - Done and Cancel', () => {
     type('name', 'Mario Rossi');
     type('fiscalCode', FISCAL_CODE);
 
-    // `fireEvent` answers false when the default action of the key was cancelled: no implicit submit of the wizard.
     expect(fireEvent.keyDown(field('name'), { key: 'Enter' })).toBe(false);
 
     await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
@@ -410,7 +403,6 @@ describe('InvoiceDataSubstep - Done and Cancel', () => {
     expect(await screen.findByText('Scrivi il codice fiscale: serve per intestare la fattura.')).toBeInTheDocument();
     expect(onDone).not.toHaveBeenCalled();
     expect(onSubmit).not.toHaveBeenCalled();
-    // Any other key is left alone.
     expect(fireEvent.keyDown(field('name'), { key: 'a' })).toBe(true);
   });
 

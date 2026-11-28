@@ -259,7 +259,6 @@ describe('Tabs (UI-07)', () => {
       });
 
       const requests = tab(/Richieste/);
-      // The number is for the eyes; the ears get what it counts, once.
       expect(requests).toHaveAccessibleName(/^Richieste.*da approvare$/);
       expect(requests).toHaveTextContent('3');
       expect(within(requests).getByText('3')).toHaveAttribute('aria-hidden', 'true');
@@ -314,6 +313,39 @@ describe('Tabs (UI-07)', () => {
 
       expect(tab('Dettagli').querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
       expect(tab('Dettagli')).toHaveAccessibleName('Dettagli');
+    });
+  });
+
+  describe('the state of a step', () => {
+    const STEPS: TabItem[] = [
+      { value: 'details', label: 'Dettagli', state: { tone: 'success', label: 'completo' } },
+      { value: 'guest', label: 'Ospite', state: { tone: 'warning', label: 'da completare' } },
+      { value: 'payment', label: 'Pagamento' },
+    ];
+
+    it('Tabs_State_IsAnIconAtTheEndOfTheTabAndIsSaidInWordsToAScreenReader', () => {
+      renderTabs('/bookings/7', { items: STEPS });
+
+      expect(tab(/Dettagli/)).toHaveAccessibleName(/^Dettagli.*completo$/);
+      expect(tab(/Ospite/)).toHaveAccessibleName(/^Ospite.*da completare$/);
+      expect(within(tab(/Dettagli/)).getByText(', completo')).toHaveClass('sr-only');
+      expect(tab(/Dettagli/).querySelector('[data-tone="success"] svg')).toHaveAttribute('aria-hidden', 'true');
+      expect(tab(/Ospite/).querySelector('[data-tone="warning"] svg')).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('Tabs_NoState_LeavesTheTabAsItWas', () => {
+      renderTabs('/bookings/7', { items: STEPS });
+
+      expect(tab('Pagamento')).toHaveTextContent(/^Pagamento$/);
+      expect(tab('Pagamento').querySelector('[data-tone]')).toBeNull();
+    });
+
+    it('Tabs_Phone_TheStateGoesInTheTextOfTheOption', () => {
+      stubViewportWidth(390);
+      renderTabs('/bookings/7', { items: STEPS });
+
+      expect(within(screen.getByRole('combobox')).getByRole('option', { name: 'Ospite · da completare' })).toBeInTheDocument();
+      expect(within(screen.getByRole('combobox')).getByRole('option', { name: 'Pagamento' })).toBeInTheDocument();
     });
   });
 

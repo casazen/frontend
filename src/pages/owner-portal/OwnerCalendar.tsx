@@ -44,7 +44,6 @@ export function OwnerCalendar() {
   const cancel = useCancelOwnerStay();
   const busy = request.isPending || cancel.isPending;
 
-  // The last answer of each read, never an earlier one a refusal left in the cache (a property of an access that was withdrawn stays out).
   const propertiesNow = currentData(properties);
   const staysNow = currentData(stays);
   const choices = useMemo<PropertyChoice[]>(() => {
@@ -54,7 +53,6 @@ export function OwnerCalendar() {
     return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
   }, [propertiesNow, staysNow]);
 
-  // The address wins; without one, the first property. An id that is not one of the owner's is not drawn: it is «not found», never somebody else's calendar.
   const selected = routeProperty ?? choices[0]?.id;
   const known = selected ? choices.find((choice) => choice.id === selected) : undefined;
   const choicesReady = properties.isSuccess && stays.isSuccess;
@@ -67,7 +65,6 @@ export function OwnerCalendar() {
 
   if (properties.isLoading || stays.isLoading) return <PortalLoading label={t('ownerPortal.calendar.loading')} />;
 
-  // The list of the properties could not be read: say so, whatever an earlier read left in memory (a refusal is a refusal, and the calendar of nobody is not «no properties»).
   if (properties.isError) {
     return (
       <PortalReadProblem

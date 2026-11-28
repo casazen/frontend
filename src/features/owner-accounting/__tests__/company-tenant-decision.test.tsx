@@ -16,11 +16,6 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: v
 
 vi.setConfig({ testTimeout: 30_000 });
 
-/**
- * The stay of a company tenant in the property of a private owner (E18/F01/US03/T01, NF-117, ⚖ I7): CasaZen never changes the regime of a stay by itself, a person decides, and the decision is recorded with its
- * regime and its reason. The dialog starts with no regime chosen, asks the reason, tells the two readings of the rule in plain words and shows nothing of the tenant.
- */
-
 const FIRST = 'aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
 const SECOND = 'bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb';
 
@@ -91,7 +86,6 @@ describe('the list of the stays of a company tenant', () => {
     expect(rows[0]).toHaveTextContent('BK-1001');
     expect(rows[0]).toHaveTextContent('Casa Lago');
     expect(rows[1]).toHaveTextContent(i18n.t('ownerAccounting.tenantDecision.regime.ShortLet.title'));
-    // The id of the account that decided is an internal one, never shown.
     expect(screen.getByTestId('tenant-cases').textContent).not.toContain('auth0|someone');
   });
 
@@ -123,7 +117,6 @@ describe('the decision is the person\'s: a regime nobody chose for them and a re
     const readings = within(dialog).getByTestId('tenant-decision-readings');
     expect(readings).toHaveTextContent('24/E');
     expect(readings).toHaveTextContent('12395/2024');
-    // No rate is written in it (the rate is the configuration's), and nothing is chosen for the person.
     expect(readings.textContent).not.toMatch(/%/);
     expect(within(dialog).getByTestId('tenant-decision-regime-ShortLet')).not.toBeChecked();
     expect(within(dialog).getByTestId('tenant-decision-regime-NotShortLet')).not.toBeChecked();
@@ -137,7 +130,6 @@ describe('the decision is the person\'s: a regime nobody chose for them and a re
     const dialog = await screen.findByRole('dialog');
     const confirm = within(dialog).getByTestId('tenant-decision-confirm');
 
-    // A reason alone, or a regime alone, or a reason of spaces: nothing is sent.
     fireEvent.change(within(dialog).getByTestId('tenant-decision-reason'), { target: { value: '   ' } });
     fireEvent.click(within(dialog).getByTestId('tenant-decision-regime-NotShortLet'));
     expect(confirm).toBeDisabled();
@@ -147,7 +139,6 @@ describe('the decision is the person\'s: a regime nobody chose for them and a re
 
     await waitFor(() => expect(api.decide).toHaveBeenCalledTimes(1));
     expect(api.decide).toHaveBeenCalledWith({ bookingId: FIRST, regime: 'NotShortLet', reason: 'Sentito il commercialista il 12/11' });
-    // Decided: the dialog is gone and the address is the page's again.
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(screen.getByTestId('address')).toHaveTextContent('');
     expect(screen.getByTestId('address').textContent).not.toContain('decision');
@@ -157,7 +148,6 @@ describe('the decision is the person\'s: a regime nobody chose for them and a re
     renderSection(`/app/account/withholding?decision=${SECOND}`);
 
     const dialog = await screen.findByRole('dialog');
-    // A stay already decided shows the decision in force: a new one replaces it and the first stays in the history.
     expect(await within(dialog).findByTestId('tenant-decision-current')).toHaveTextContent(i18n.t('ownerAccounting.tenantDecision.regime.ShortLet.title'));
     expect(within(dialog).getByTestId('tenant-decision-case')).toHaveTextContent('BK-0900');
   });
@@ -173,7 +163,6 @@ describe('the decision is the person\'s: a regime nobody chose for them and a re
 
   it('CompanyTenant_AStayOlderThanTheListThatStillWaits_IsLookedForAmongTheWaitingOnes_BeforeItIsToldGone', async () => {
     const OLD = 'dddddddd-4444-4444-8444-dddddddddddd';
-    // The list of every stay keeps the 200 with the latest check-out: the old stay is not in it, but the server still has it among the ones that wait for a decision.
     api.listCompanyTenantCases.mockImplementation(async (state?: string) => (state === 'Pending' ? [kase({ bookingId: OLD, bookingCode: 'BK-0001', checkOut: '2025-01-05' })] : [kase()]));
     renderSection(`/app/account/withholding?decision=${OLD}`);
 
@@ -191,7 +180,6 @@ describe('the decision is the person\'s: a regime nobody chose for them and a re
     expect(await screen.findByTestId('tenant-decision-gone')).toBeInTheDocument();
     cleanup();
 
-    // The read of the waiting ones failed: nothing is known about the stay, and «it needs no decision» is not said.
     api.listCompanyTenantCases.mockImplementation(async (state?: string) => {
       if (state === 'Pending') throw problem(500, 'internal_error');
       return [kase()];

@@ -16,7 +16,6 @@ interface Blocked {
   block: PropertyDeleteBlock;
 }
 
-/** Where a refusal leads: to the stays that hold the property, or to the lease that does; nothing when the person may open neither. */
 function useWayOut({ row, block }: Blocked): { label: string; to: string } | null {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
@@ -28,7 +27,6 @@ function useWayOut({ row, block }: Blocked): { label: string; to: string } | nul
   return hasPermission('long-rent', 'property.read') ? { label: t('accountProperties.blocked.leases.actionProperty'), to: longRentPropertyPath(row.property.id) } : null;
 }
 
-/** The two refusals of the backend, in words, with the way to what has to be settled first: never a dead end. */
 function BlockedDialog({ blocked, onClose }: { blocked: Blocked | null; onClose: () => void }) {
   return (
     <Dialog open={blocked !== null} onOpenChange={(open) => !open && onClose()}>
@@ -67,7 +65,6 @@ function BlockedBody({ blocked, onClose }: { blocked: Blocked; onClose: () => vo
 }
 
 interface DeletePropertyDialogProps {
-  /** The property to delete; `null` while the dialog is closed. */
   row: AccountPropertyRow | null;
   onClose: () => void;
 }
@@ -87,7 +84,6 @@ export function DeletePropertyDialog({ row, onClose }: DeletePropertyDialogProps
     try {
       await remove.mutateAsync(row.property.id);
     } catch (error) {
-      // Any other failure has been told by the toast of the mutation; the two refusals are told here, with the way out.
       const block = propertyDeleteBlock(error);
       if (block) setBlocked({ row, block });
     }

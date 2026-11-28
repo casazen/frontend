@@ -15,13 +15,9 @@ import { mandateTemplateOf } from '../billing-wizard-model';
 import { BILLING_ERROR_KEYS, mandateTemplateProblems, type BillingWizardValues } from '../billing-wizard-schema';
 
 interface MandateStepProps {
-  /** The currency of the issuer, for the flat fees; `null` while the country is not chosen (the fees are then asked with no symbol and the step says so). */
   currency: string | null;
-  /** How many owners with an ownership not ended have no mandate in force: the count of the missing item `owners_without_mandate`, 0 when it is not missing. */
   ownersWithoutMandate: number;
-  /** The standard mandate for every owner that has none (`POST api/owner-mandates/apply-template`). */
   apply: UseMutationResult<OwnerMandateTemplateResult, unknown, OwnerMandateTemplate>;
-  /** Another request of the wizard is on its way (the save of a step, the way out): the action of the step waits for it, as «Continua» waits for the action. */
   busy: boolean;
 }
 
@@ -68,8 +64,6 @@ export function MandateStep({ currency, ownersWithoutMandate, apply, busy }: Man
   const confirm = async () => {
     if (busy) return;
     setConfirming(false);
-    // The fields stay open while the confirmation is up, so what is applied is what the form says NOW, checked again: a percent emptied after the confirmation was asked for is
-    // no mandate (never one of 0%, given to every owner that has none), and the field says what is wrong instead.
     const values = getValues();
     const template = mandateTemplateOf(values);
     if (!template) {

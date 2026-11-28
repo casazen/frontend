@@ -125,7 +125,6 @@ function reasonText(status: ImuNotificationStatus, t: TranslateFn): string {
     : t('leases.canoneConcordato.imuStatusError');
 }
 
-/** The export answers a blob: an error body is read back as JSON so its `code` is translated like any other. */
 async function blobProblemMessage(error: unknown, t: TranslateFn): Promise<string | undefined> {
   const response = (error as { response?: { data?: unknown } } | null)?.response;
   if (response?.data instanceof Blob) {

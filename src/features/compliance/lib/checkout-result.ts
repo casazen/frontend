@@ -55,7 +55,6 @@ export function checkoutResultLines(result: CheckoutWizardCompleteResult, channe
       : { element: 'alloggiati', tone: alloggiatiFailed ? 'problem' : 'attention', text: t('compliance.checkout.done.alloggiatiToSend') },
   );
 
-  // A cleaning the host asked for and that has no request is not a cleaning that was skipped: it is said as not sent.
   if (result.serviceRequestId) {
     lines.push({ element: 'cleaning', tone: 'done', text: t('compliance.checkout.done.cleaningRequested') });
   } else if (wizard.cleaning.choice === 'Request') {
@@ -86,7 +85,6 @@ export function checkoutResultLines(result: CheckoutWizardCompleteResult, channe
   return lines;
 }
 
-/** The one step the result suggests. */
 export type CheckoutNextStep = 'sendAlloggiati' | 'markReady' | 'nothing';
 
 /** The words of each next step, written out so that a missing translation is found by a test. */
@@ -96,10 +94,6 @@ export const NEXT_STEP_KEYS: Readonly<Record<CheckoutNextStep, string>> = {
   nothing: 'compliance.checkout.done.next.nothing',
 };
 
-/**
- * The most urgent thing first: the communication to the police (it has a deadline), then the property that is not declared ready. The channel manager is never
- * the next step: the result has no state of it to act on.
- */
 export function checkoutNextStepOf(input: { alloggiatiSent: boolean; propertyReady: boolean }): CheckoutNextStep {
   if (!input.alloggiatiSent) return 'sendAlloggiati';
   if (!input.propertyReady) return 'markReady';

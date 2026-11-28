@@ -13,7 +13,6 @@ export interface SiteHeadInput {
   page: SitePage;
   title: string;
   description: string;
-  /** `https://host` of `VITE_PUBLIC_SITE_URL`, or null when it is not configured. */
   origin: string | null;
   legal: SiteLegal;
 }
@@ -24,12 +23,10 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => ESCAPES[char]);
 }
 
-/** JSON for a `<script>` element: `<` is escaped, so no value can close the element. */
 function jsonForScript(value: unknown): string {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
 
-/** The logo of CasaZen (`public/icon-512.png`, the app icon) on the public origin: the image of link previews and the logo of the Organization. */
 const LOGO_PATH = '/icon-512.png';
 
 export function buildOrganizationJsonLd(origin: string | null, legal: SiteLegal): Record<string, unknown> {
@@ -84,7 +81,6 @@ export function buildSiteHead({ page, title, description, origin, legal }: SiteH
       `<link rel="alternate" hreflang="it" href="${url}" />`,
       `<link rel="alternate" hreflang="x-default" href="${url}" />`,
       `<meta property="og:url" content="${url}" />`,
-      // The preview of a shared link carries the logo (an absolute address, so only with a public origin).
       `<meta property="og:image" content="${escapeHtml(`${origin}${LOGO_PATH}`)}" />`,
       `<meta name="twitter:image" content="${escapeHtml(`${origin}${LOGO_PATH}`)}" />`,
     );

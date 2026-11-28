@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAiSettings } from '@/queries/use-admin-seo';
 
-/** Status of the platform provider, with the way into the AI configuration section. */
 export function SeoAiSettingsCard() {
   const { t } = useTranslation();
   const settings = useAiSettings();

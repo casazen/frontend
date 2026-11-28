@@ -1,18 +1,15 @@
 import { todayInRome } from '@/lib/stay-dates';
 import type { SupplierEarning, SupplierEarningsTab } from '@/types/supplier-earnings';
 
-/** The period of the list, in the address as `?f_period=`: this month, the month before, this year (Europe/Rome). */
 export type EarningsPeriod = 'mese' | 'mese-scorso' | 'anno';
 
 export const EARNINGS_PERIODS: readonly EarningsPeriod[] = ['mese', 'mese-scorso', 'anno'];
 
-/** The tabs of the list are the tabs of the server, by the same ids; "Da verificare" is a tab of the server the page does not offer. */
 export const EARNINGS_TABS: readonly SupplierEarningsTab[] = ['tutti', 'da-incassare', 'pagati', 'in-ritardo'];
 
 const pad = (value: number) => String(value).padStart(2, '0');
 const lastDayOf = (year: number, month: number) => new Date(Date.UTC(year, month, 0)).getUTCDate();
 
-/** The Europe/Rome days (`YYYY-MM-DD`, both included) a period stands for, counted from `today` (a day of Europe/Rome). */
 export function periodRange(period: EarningsPeriod, today: string = todayInRome()): { from: string; to: string } {
   const [year, month] = today.split('-').map(Number);
   if (period === 'anno') return { from: `${year}-01-01`, to: `${year}-12-31` };
@@ -24,7 +21,6 @@ export function isEarningsPeriod(value: string | undefined): value is EarningsPe
   return value !== undefined && (EARNINGS_PERIODS as readonly string[]).includes(value);
 }
 
-/** The end of the free period of the commission while it lasts (the instant the server sends); nothing when there is none or it is over. */
 export function freePeriodEnd(freeUntil: string | null | undefined, now: number = Date.now()): string | null {
   return freeUntil && Date.parse(freeUntil) > now ? freeUntil : null;
 }

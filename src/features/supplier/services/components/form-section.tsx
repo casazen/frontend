@@ -3,7 +3,6 @@ import { ChevronDown } from 'lucide-react';
 
 interface FormSectionProps {
   title: string;
-  /** What the section holds right now, in a line ("da 45 € a intervento"): the person need not open it to know. */
   summary?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;

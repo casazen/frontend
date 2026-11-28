@@ -15,7 +15,6 @@ import { useConfirmCheckIn } from '@/queries/use-checkin-wizard';
 import type { CheckInConfirmation } from '@/types/checkin-wizard.types';
 import { failedGuestPositions, octorateResultKind } from '../lib/checkin-wizard-model';
 
-/** Why Octorate did not take a guest, in plain words; a code this version does not know still reads as a sentence. */
 const OCTORATE_ERROR_KEYS: Readonly<Record<string, string>> = {
   octorate_auth: 'checkin.wizard.done.octorateError.octorate_auth',
   octorate_rate_limited: 'checkin.wizard.done.octorateError.octorate_rate_limited',
@@ -25,7 +24,6 @@ const OCTORATE_ERROR_KEYS: Readonly<Record<string, string>> = {
   octorate_guest_rejected: 'checkin.wizard.done.octorateError.octorate_guest_rejected',
 };
 
-/** Why the tourist tax was not saved, in plain words. */
 const TAX_REASON_KEYS: Readonly<Record<string, string>> = {
   tax_not_calculable: 'checkin.wizard.done.taxReason.tax_not_calculable',
   booking_not_active: 'checkin.wizard.done.taxReason.booking_not_active',
@@ -87,7 +85,6 @@ export function CheckInWizardDone({ bookingId, guestName, returnPath, result }: 
         reason: tax.reason && TAX_REASON_KEYS[tax.reason] ? t(TAX_REASON_KEYS[tax.reason]) : t('checkin.wizard.done.taxReason.unknown'),
       });
 
-  // With CasaZen as sender the stay still reads «Manual» (this button hands nothing over), but the direct send is a process of CasaZen's own: the line says what really happens.
   const policeKey = alloggiati.step === 'Manual' && alloggiati.sender === 'CasaZen' ? 'CasaZen' : alloggiati.step;
 
   const whatNext: WizardDoneProps['whatNext'] = [

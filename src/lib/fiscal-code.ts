@@ -14,18 +14,15 @@ export type FiscalCodeKind = 'person' | 'numeric';
 const OMOCODIA_LETTERS = 'LMNPQRSTUV';
 const MONTH_LETTERS = 'ABCDEHLMPRST';
 const DIGIT_POSITIONS = new Set([6, 7, 9, 10, 12, 13, 14]);
-// Values of A..Z (and of the digits 0..9, as the letter of the same index) in odd positions.
 const ODD_VALUES = [1, 0, 5, 7, 9, 13, 15, 17, 19, 21, 2, 4, 18, 20, 11, 3, 6, 8, 12, 14, 16, 10, 22, 25, 24, 23];
 
 const isDigit = (c: string) => c >= '0' && c <= '9';
 const isLetter = (c: string) => c >= 'A' && c <= 'Z';
 
-/** Upper case, without whitespace. */
 export function normalizeFiscalCode(code: string | null | undefined): string {
   return (code ?? '').replace(/\s+/g, '').toUpperCase();
 }
 
-/** Check character of the first 15 characters of a 16-character code. */
 export function fiscalCodeCheckCharacter(first15: string): string {
   let sum = 0;
   for (let i = 0; i < first15.length; i++) {
@@ -40,7 +37,6 @@ function digitValue(c: string): number {
   return isDigit(c) ? c.charCodeAt(0) - 48 : OMOCODIA_LETTERS.indexOf(c);
 }
 
-/** 16-character code of a natural person, already normalized. */
 export function isValidPersonFiscalCode(code: string): boolean {
   if (code.length !== 16) return false;
   for (let i = 0; i < 16; i++) {
@@ -54,7 +50,6 @@ export function isValidPersonFiscalCode(code: string): boolean {
   return code[15] === fiscalCodeCheckCharacter(code.slice(0, 15));
 }
 
-/** 11-digit code, already normalized. */
 export function isValidNumericFiscalCode(code: string): boolean {
   if (!/^[0-9]{11}$/.test(code)) return false;
   let sum = 0;
@@ -69,7 +64,6 @@ export function isValidNumericFiscalCode(code: string): boolean {
   return code.charCodeAt(10) - 48 === (10 - (sum % 10)) % 10;
 }
 
-/** Kind of the code once normalized, or null when it is not a valid fiscal code. */
 export function classifyFiscalCode(code: string | null | undefined): FiscalCodeKind | null {
   const normalized = normalizeFiscalCode(code);
   if (isValidPersonFiscalCode(normalized)) return 'person';

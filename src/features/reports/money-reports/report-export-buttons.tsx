@@ -7,15 +7,10 @@ import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 
 interface ReportExportButtonsProps {
-  /** What the file is asked for (the days and the property): a failure belongs to it and is not shown for another. */
   requestKey: string;
-  /** The server is not asked for this file now (the days are wrong, the person may not read the report): both buttons are off. */
   disabled: boolean;
-  /** The file from the authenticated API, as a Blob. Nothing keeps it: it is saved and let go of. */
   fetchFile: (format: ReportFileFormat) => Promise<Blob>;
-  /** The name the file is saved under: the report and its days, never a property, a guest or an owner. */
   fileName: (format: ReportFileFormat) => string;
-  /** Prefix of the test ids (`<prefix>-csv`, `-xlsx`, `-failure`). */
   testId: string;
 }
 
@@ -29,7 +24,6 @@ export function ReportExportButtons({ requestKey, disabled, fetchFile, fileName,
   const { t } = useTranslation();
   const [pending, setPending] = useState<ReportFileFormat | null>(null);
   const [failure, setFailure] = useState<{ requestKey: string; message: string } | null>(null);
-  // The state is read on the next render: a double click in the same tick must not start two requests.
   const inFlight = useRef(false);
 
   const download = async (format: ReportFileFormat) => {

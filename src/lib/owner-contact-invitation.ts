@@ -11,42 +11,33 @@ import { getHttpStatus, getProblemCode, isTransientRequestError } from '@/lib/ap
  */
 export const OWNER_CONTACT_INVITATION_PATH = '/portale-proprietari/contatto';
 
-/** Name of the value of the token in the `appState` of the Auth0 login. */
 export const OWNER_CONTACT_APP_STATE_KEY = 'ownerContactInvitation';
 
-/** What the backend accepts as a token: 40 to 64 letters, digits, `-` and `_` (case matters: it is base64url, not hex). */
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{40,64}$/;
 
-/** The token as the backend reads it (trimmed), or `null` for anything that is not one: the link does not work. */
 export function normalizeOwnerContactToken(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   const token = value.trim();
   return TOKEN_PATTERN.test(token) ? token : null;
 }
 
-/** The token kept between the page that read it and the acceptance: in memory, in no storage. */
 let pendingToken: string | null = null;
 
-/** Keeps the token of an invitation until it is used (the value of the `appState` after the Auth0 redirect, or the one the page just read). */
 export function stashOwnerContactToken(value: unknown): void {
   const token = normalizeOwnerContactToken(value);
   if (token) pendingToken = token;
 }
 
-/** The token waiting for the acceptance, without taking it: a page that mounts twice (a development render) finds it both times. */
 export function peekOwnerContactToken(): string | null {
   return pendingToken;
 }
 
-/** Forgets the token: the invitation was accepted, or the server said that the link no longer works. */
 export function clearOwnerContactToken(): void {
   pendingToken = null;
 }
 
-/** Why a link cannot be used: the acceptance answers which. */
 export type OwnerContactUnusable = 'invalid' | 'expired' | 'used' | 'revoked';
 
-/** What the acceptance can fail with, by what the person has to do about it. */
 export type OwnerContactFailure =
   | { kind: 'unusable'; reason: OwnerContactUnusable }
   | { kind: 'emailMismatch' | 'emailNotVerified' | 'notFound' | 'retry' | 'other' };
@@ -58,10 +49,6 @@ const UNUSABLE_CODES: Record<string, OwnerContactUnusable> = {
   owner_contact_invitation_revoked: 'revoked',
 };
 
-/**
- * The failure of the acceptance in words the page has: a link that does not work (410, with the reason), an account whose e-mail is not the invited one or is not verified
- * (403), a page that does not exist while the owner portal is off (404: «not found»), a request worth sending again (no answer, 5xx, the limit of the requests) and anything else.
- */
 export function ownerContactFailureOf(error: unknown): OwnerContactFailure {
   const status = getHttpStatus(error);
   const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;

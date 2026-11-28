@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sanitizeHtml } from '../sanitize-html';
 
-// A8-08 / A9-29. Same payloads as the backend SeoHtmlSanitizerTests: keep them aligned.
 const XSS_PAYLOADS = [
   '<img src=x onerror=alert(1)>',
   '<img src="x"/onerror="alert(1)">',
@@ -48,7 +47,6 @@ function expectNoExecutableMarkup(html: string) {
   }
 }
 
-/** Renders like dangerouslySetInnerHTML and checks the live DOM, not just the string. */
 function renderInto(html: string): HTMLElement {
   const host = document.createElement('article');
   host.innerHTML = html;
@@ -131,7 +129,6 @@ describe('sanitizeHtml (allowlist, mirror of backend SeoHtmlSanitizer)', () => {
     expect(sanitizeHtml(html)).toBe('');
   });
 
-  // The «Fonti ufficiali» of a published guide ended with a bullet and nothing after it. Same cases as the backend tests.
   it('sanitizeHtml_ListItemWithNoTextOrAnEmptyLink_DropsTheItemAndKeepsTheOthers', () => {
     expect(
       sanitizeHtml(

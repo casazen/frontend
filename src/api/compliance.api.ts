@@ -34,7 +34,6 @@ export async function completeComplianceActivation(
   return data;
 }
 
-/** `code` of the 409 of `POST .../activation/complete` when blocking steps are left (CO-07). */
 export const ACTIVATION_BLOCKED_CODE = 'property_activation_blocked';
 
 const COMPLIANCE_STATUSES: readonly PropertyComplianceStatus[] = ['Pending', 'Active', 'Suspended'];
@@ -46,10 +45,6 @@ function toBlocker(value: unknown): ActivationBlocker | null {
   return { step, code, message: typeof message === 'string' ? message : '' };
 }
 
-/**
- * Body of the 409 `property_activation_blocked` (blockers with their step and stable code), or `undefined` for any
- * other error: those are shown with `getProblemMessage`.
- */
 export function getActivationBlockedProblem(error: unknown): ActivationBlockedProblem | undefined {
   if (!isAxiosError(error) || error.response?.status !== 409) return undefined;
   const data: unknown = error.response.data;
@@ -100,12 +95,10 @@ export async function startCheckoutWizard(
   return data;
 }
 
-/** The wizard of a stay without any change: after the check-out, what was declared (CO-17). */
 export async function fetchCheckoutWizard(bookingId: string): Promise<CheckoutWizardState> {
   return ApiClient.get<CheckoutWizardState>(`/bookings/${bookingId}/checkout-wizard`);
 }
 
-/** Saves the step the host is on and the answers given so far; nothing is created until the completion (CO-17). */
 export async function saveCheckoutProgress(
   bookingId: string,
   payload: CheckoutWizardProgressCommand,
@@ -125,7 +118,6 @@ export async function completeCheckoutWizard(
   return data;
 }
 
-/** The host declares ready the property of a stay already checked out (turnover of the cockpit, CO-17). */
 export async function confirmPropertyReady(bookingId: string, notes: string | null): Promise<CheckoutWizardState> {
   const { data } = await axios.post<CheckoutWizardState>(`/bookings/${bookingId}/checkout-wizard/property-ready`, {
     notes,

@@ -7,9 +7,7 @@ import { closedLineOf } from './swiss-day-text';
 
 interface SwissPortalStepProps {
   day: SwissNotificationDay;
-  /** Any request of the layer is on its way: the one way out of the layer does not open while a step is in progress. */
   busy: boolean;
-  /** The person pressed the link to the portal (or said there is none to open): the layer goes on to the declaration, which is where they land when they come back. */
   onOpened: () => void;
 }
 
@@ -64,19 +62,13 @@ interface SwissDeclareStepProps {
   day: SwissNotificationDay;
   /** The person may declare the communication of the property (`alloggiati.submit`, what the endpoint asks). */
   canSubmit: boolean;
-  /** The day has not started in Switzerland: it cannot be declared. */
   future: boolean;
   busy: boolean;
   onDeclare: () => void;
   onUndeclare: () => void;
-  /** Back to the step of the portal, for who has not notified yet. */
   onBackToPortal: () => void;
 }
 
-/**
- * Step 3 «Ho notificato»: the host says the guests were notified, and the day leaves the days to notify (the cockpit and the counter of the menu read again, and the others of the team
- * are told). A day declared already says who did it and when, and can be reopened by whoever may declare.
- */
 export function SwissDeclareStep({ day, canSubmit, future, busy, onDeclare, onUndeclare, onBackToPortal }: SwissDeclareStepProps) {
   const { t, i18n } = useTranslation();
 

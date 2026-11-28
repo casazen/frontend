@@ -13,7 +13,6 @@ import { useComplianceDrawerAvailable } from '../compliance-drawer/use-complianc
 import { COVERAGE_GROUPS, formatPeriod, proofKindOfRow, rowMatchesKind, rowsOf, summarizeCoverage, type SummaryTone } from '../lib/archive-model';
 import type { ProofUploadPrefill } from './proof-upload-dialog';
 
-/** Rows of a group shown at first: a year of stays can hold hundreds, and the page is for what needs the host, not for a wall of rows. */
 const FIRST_ROWS = 25;
 
 const TONES: Record<SummaryTone, { Icon: LucideIcon; box: string }> = {
@@ -30,7 +29,6 @@ const ICON_TONES: Record<SummaryTone, string> = {
   neutral: 'text-muted-foreground',
 };
 
-/** The reasons of the report that have words of their own (`complianceArchive.reason.<code>`): a code this version does not know says nothing, never the raw code. */
 const KNOWN_REASONS: ReadonlySet<string> = new Set([
   'alloggiati_failed',
   'alloggiati_incomplete',
@@ -52,11 +50,9 @@ const KNOWN_REASONS: ReadonlySet<string> = new Set([
 
 interface ComplianceCoverageReportProps {
   report: CoverageReport;
-  /** The kind of proof the page is filtered to: the rows are narrowed to what that kind is about (the report has no such filter). */
   kind?: ComplianceProofKind;
   /** Whether the person may upload a proof of that kind (`alloggiati.submit`, and `payment.write` for a tax proof). */
   canUpload: (kind: ComplianceProofKind) => boolean;
-  /** Starts the upload of the proof of a row, with what the row says already filled in. */
   onUpload: (prefill: ProofUploadPrefill) => void;
 }
 
@@ -110,7 +106,6 @@ interface CoverageGroupProps {
   language: string;
 }
 
-/** The rows of one state under its title. The states that need the host are open; the proven and the not applicable ones are behind their count. */
 function CoverageGroup({ state, rows, canUpload, onUpload, language }: CoverageGroupProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState(FIRST_ROWS);
@@ -150,7 +145,6 @@ function rowKey(row: CoverageRow): string {
   return [row.kind, row.propertyId, row.bookingId ?? '', row.period ?? row.day ?? ''].join(':');
 }
 
-/** What an obligation is, in words: the communication of a stay (its code and arrival), or of a month. */
 function rowTitle(t: TFunction, row: CoverageRow, language: string): string {
   if (row.kind === 'Alloggiati') {
     return t('complianceArchive.coverage.row.Alloggiati', {
@@ -174,8 +168,6 @@ function CoverageRowItem({ row, canUpload, onUpload, language }: CoverageRowItem
   const proofKind = proofKindOfRow(row.kind);
   const mayUpload = canUpload(proofKind);
   const external = row.evidenceClass !== 'OfficialProof' && row.evidenceClass !== 'Missing' && row.evidenceClass !== 'NotApplicable';
-  // «Verifica nel tuo Cassetto Compliance» (the compliance drawer): the server says which outcome the channel manager holds (`handoffTopic`) and the client never
-  // works it out from the kind of the row; the property is the row's, the stay or the month are the ones the topic asks for. Offered where the connector is on.
   const drawer = useComplianceDrawerAvailable()
     ? drawerTargetOf({ id: row.propertyId, propertyId: row.propertyId, bookingId: row.bookingId, period: row.period, handoffTopic: row.handoffTopic })
     : undefined;

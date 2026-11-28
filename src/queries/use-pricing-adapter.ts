@@ -77,7 +77,6 @@ export function useDisablePricingAdapter(propertyId: string) {
   });
 }
 
-/** Recomputes the suggestions now, with the same logic as the nightly job. */
 export function useRecalculateSuggestions(propertyId: string) {
   const queryClient = useQueryClient();
 

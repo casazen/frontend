@@ -61,7 +61,6 @@ function sync(changes: Partial<BookingOctorateSync> = {}): BookingOctorateSync {
   return { state: 'Synced', lastOperation: 'Create', lastSyncedAt: '2026-09-20T08:00:00Z', errorCode: null, canRetry: false, ...changes };
 }
 
-/** What the page passes to the result: whether the booking is on the channel manager, from the mirror it already read (the result reads nothing itself). */
 function renderDone(completion: CheckoutWizardCompleteResult, options: { connector?: boolean; mirror?: BookingOctorateSync | null; permissions?: string[] } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const flags = { ...DEFAULT_FEATURE_FLAGS, octorateConnector: options.connector ?? false };
@@ -177,8 +176,6 @@ describe('CheckoutDone', () => {
   });
 
   it('CheckoutDone_Text_NeverSaysTheCheckOutIsCompletedLikeTheToastDoes', () => {
-    // The toast of the completion says it already ("Check-out completato…"), and the journey of the CI looks for that one text:
-    // the screen must not repeat it, or the page would have two of them.
     const { container } = renderDone(result({ propertyReady: false }, { alloggiati: { status: 'Errore', sent: false, deadlineAt: '2026-09-22T22:00:00Z', isOverdue: false, dataComplete: true } }));
 
     expect(container.textContent).not.toMatch(/check-out completato/i);
@@ -244,7 +241,6 @@ describe('CheckoutDone: the channel manager', () => {
       'Imposta di soggiorno dichiarata: Riscossa in struttura.',
       "L'immobile è segnato come pronto per il prossimo ospite.",
     ]);
-    // Neither the check mark of a done point nor the colour of a problem: the outcome is not known here.
     expect(tones()[1]).toBe('attention');
   });
 
@@ -267,7 +263,6 @@ describe('CheckoutDone: the channel manager', () => {
     'CheckoutDone_MirrorOfTheBookingIs%s_TheResultShowsNoStateOfTheChannelManager',
     async (state) => {
       renderDone(result(), { connector: true, mirror: sync({ state, errorCode: 'octorate_unavailable', canRetry: true }) });
-      // Nothing is read or polled meanwhile: the result has no request of its own for the channel manager.
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const text = document.body.textContent ?? '';
@@ -278,7 +273,6 @@ describe('CheckoutDone: the channel manager', () => {
       expect(screen.queryByTestId(/^checkout-done-channel-manager/)).not.toBeInTheDocument();
       expect(bookingsApi.getById).not.toHaveBeenCalled();
       expect(bookingsApi.retryOctorateSync).not.toHaveBeenCalled();
-      // The only thing said about the channel manager is the neutral line, and only for a booking that is on it (`Synced`).
       expect(points().filter((point) => /channel manager/i.test(point ?? ''))).toEqual(state === 'Synced' ? [NEUTRAL_LINE] : []);
     },
   );

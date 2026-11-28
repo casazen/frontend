@@ -10,7 +10,6 @@ import { useBookingRequest } from '@/queries/use-public-supplier-booking';
 import '@/styles/supplier-site-booking.css';
 import '@/styles/supplier-site-inquiry.css';
 
-/** A conversation that is on screen is read again every 30 seconds, and less often while nothing happens (60 s, then 2 minutes). */
 const POLL_MS = 30_000;
 const POLL_MAX_MS = 120_000;
 
@@ -20,8 +19,6 @@ function RequestArea() {
   const request = useBookingRequest(model.slug);
   const view = request.session?.view ?? null;
 
-  // The conversation of a request on measure (SP-12c) is read again by itself while the person has the page in front of it: a request that
-  // is still open, or a conversation that can still be written in. A tab in the background asks nothing (see `useViewPolling`).
   useViewPolling({
     enabled: view !== null && view.kind === 'Custom' && (view.status === 'Richiesto' || view.thread?.canWrite === true),
     baseMs: POLL_MS,
@@ -43,12 +40,6 @@ function RequestArea() {
   return <RequestGate initialCode={search.get('code') ?? ''} pending={request.pending} failure={request.failure} onFind={(code, email) => void request.find(code, email)} />;
 }
 
-/**
- * "La mia richiesta", `/fornitori/:slug/richiesta?code=XXXXX-XXXXX` (SP-12b): the page the links of the e-mails open. It asks for the
- * e-mail the booking was made with (the link carries only the code), finds the booking and shows where it is and what may be done. For a
- * request on measure (SP-12c) it is also the conversation with the supplier, its offer and, when nobody answered, other professionals. It
- * exists with the booking flag on, and stays open while the supplier has paused the site.
- */
 export function SupplierRequestPage() {
   return (
     <ShowcaseBookingGate>

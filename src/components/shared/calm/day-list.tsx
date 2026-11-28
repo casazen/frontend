@@ -13,26 +13,14 @@ type DayListItemOpen =
   | { onOpen: () => void; href?: undefined; state?: undefined };
 
 export type DayListItem = DayListItemOpen & {
-  /** Stable, for React: the id of the thing the row is about. */
   id: string;
-  /**
-   * The calendar day of the row: `YYYY-MM-DD`, or an instant with its `Z` or offset (the day it falls on in Europe/Rome; see
-   * `calendarDayOf`). It is the machine value of the date (`<time datetime>`) and, when `date` is not given, the text of the
-   * date too ("12 ott"), in the language of the app. A `TodayList` needs it to group the rows.
-   */
   day?: string;
-  /** The first column as the person reads it: a time ("09:30") or a short text. Default: the `day`, short ("12 ott"). */
   date?: string;
-  /** The machine value of `date` when it has a time ("2026-10-16T09:30"). Default: the `day`. */
   dateTime?: string;
   title: string;
-  /** One line under the title: who, where, how much ("Elisa Neri · Via Roma 12"). */
   subtitle?: string;
-  /** A short note at the end of the row: "tra 5 giorni", "in ritardo". */
   meta?: string;
-  /** Colors the note and puts the icon of the tone before it. Without it the note is plain. */
   tone?: CalmTone;
-  /** The direct action of the row, one button ("Conferma", "Apri"). */
   action?: CalmAction;
 };
 
@@ -41,9 +29,6 @@ export interface DayListProps extends Omit<React.HTMLAttributes<HTMLUListElement
 }
 
 const DATE = 'min-w-0 break-words pt-0.5 text-sm font-semibold tabular-nums text-foreground/70';
-// The title and the line under it are one control: a link or a button as wide as the column and at least 44 px high. It is not
-// stretched over the rest of the row: on a phone the redesign makes every link and button `position: relative` and gives the
-// buttons a hit area of their own (`tokens.css`), and a stretched `::after` would be anchored to the link itself.
 const OPEN =
   'group/open flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
@@ -105,14 +90,6 @@ function DayRow({ item }: { item: DayListItem }) {
   );
 }
 
-/**
- * Rows with a date, a title, a line under it and, if it helps, a note and a direct action: today's list, the deadlines, the
- * recent activity. The title and the line under it open the thing (`href` for a page, `onOpen` for a drawer); the action is a
- * separate button for what is done without opening it. Without either the row is only to read.
- * It renders nothing when it has no rows: what to say then (a sentence, an empty state) is the page's to decide.
- *
- * The caller puts the rows in the order to read them.
- */
 export function DayList({ items, className, ...props }: DayListProps) {
   if (items.length === 0) return null;
   return (
@@ -125,15 +102,12 @@ export function DayList({ items, className, ...props }: DayListProps) {
 }
 
 export type TodayListItem = DayListItem & {
-  /** The calendar day of the row (`YYYY-MM-DD`): where it goes among today, tomorrow and later. */
   day: string;
 };
 
 export interface TodayListProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   items: readonly TodayListItem[];
-  /** The names of the three groups, already translated. They are the caller's: each area says it in its own words. */
   labels: { today: string; tomorrow: string; later: string };
-  /** The day taken as today (`YYYY-MM-DD`). Default: today in Europe/Rome. */
   today?: string;
 }
 

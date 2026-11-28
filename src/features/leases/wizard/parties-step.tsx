@@ -45,10 +45,8 @@ function Countries() {
   );
 }
 
-/** What the contract can give for a person (NL-DOCS): the names the server gives to what it read. */
 const READ_FIELDS = ['firstName', 'lastName', 'fiscalCode', 'citizenship', 'residence'] as const;
 
-/** The landlords or the tenants: one or more (up to ten), each a person or a company with the data a contract needs. */
 function PartyGroup({ list }: { list: PartyList }) {
   const { t } = useTranslation();
   const { control, register, formState } = useFormContext<WizardValues>();

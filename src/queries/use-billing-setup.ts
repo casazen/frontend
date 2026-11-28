@@ -37,7 +37,6 @@ import { invalidateOnboarding } from './use-onboarding-plan';
 
 /** The billing setup of the organization. A save changes it, and the part «Fatturazione» of the onboarding guide counts its sections. */
 export const BILLING_SETUP_KEY = ['billing-setup'] as const;
-/** Not under {@link BILLING_SETUP_KEY}: a save that refreshes the setup must not ask who may change it again. */
 const BILLING_ACCESS_KEY = ['billing-setup-access'] as const;
 const HOLDERS_KEY = ['billing-setup-account-holders'] as const;
 const COMMISSION_RULES_KEY = ['billing-setup-commission-rules'] as const;
@@ -59,11 +58,6 @@ export function useBillingSetup() {
   });
 }
 
-/**
- * Whether the person may change the setup, for a person whose role may (`property.write`): `false` when their reach is only some of the properties. It reads and writes
- * nothing (`canChangeBillingSetup`), is asked again whenever a page opens and is not kept. A failed answer is not an answer: the wizard then lets the person write and the
- * server decides at the first save.
- */
 export function useBillingAccess(enabled: boolean) {
   return useQuery({
     queryKey: BILLING_ACCESS_KEY,
@@ -77,7 +71,6 @@ export function useBillingAccess(enabled: boolean) {
   });
 }
 
-/** The setup with one section replaced by the one a save answered: the answer is on screen before the whole setup is read again. */
 function withSection(current: BillingSetup | undefined, saved: BillingSetupSection): BillingSetup | undefined {
   if (!current) return current;
   const sections = current.sections.map((section) => (section.section === saved.section ? saved : section));
@@ -213,7 +206,6 @@ export function useSavePortalAccountSettings() {
   });
 }
 
-/** The listings where the holder of a portal account differs from the default of the organization. Asked only while the flag `ownerInvoicing` is on. */
 export function useChannelAccountHolders(enabled: boolean) {
   return useQuery({
     queryKey: HOLDERS_KEY,
@@ -225,16 +217,11 @@ export function useChannelAccountHolders(enabled: boolean) {
   });
 }
 
-/** The holders to write, and whether the person confirmed the waiver of the recharge that the write may start (`acknowledgeRechargeWaiver`, only ever `true`). */
 interface SaveChannelAccountHoldersRequest {
   changes: readonly ChannelAccountHolderChange[];
   acknowledgeRechargeWaiver?: true;
 }
 
-/**
- * Writes the holders of many listings at once (`PUT api/billing-setup/channel-account-holders`). Without `acknowledgeRechargeWaiver` the request is the plain write; a write that starts the
- * waiver of the recharge is then refused (422 `recharge_waiver_not_acknowledged`), and it is sent again with the acknowledgement only after the person confirmed.
- */
 export function useSaveChannelAccountHolders() {
   const queryClient = useQueryClient();
   const afterSave = useAfterSave();
@@ -255,7 +242,6 @@ export function useSaveChannelAccountHolders() {
   });
 }
 
-/** The commission rules of the portals and what applies today to each. Asked only for an agency whose role may read the statements. */
 export function useChannelCommissionRules(enabled: boolean) {
   return useQuery({
     queryKey: COMMISSION_RULES_KEY,
@@ -267,7 +253,6 @@ export function useChannelCommissionRules(enabled: boolean) {
   });
 }
 
-/** Replaces the commission rules of the portals with the whole list. */
 export function useSaveChannelCommissionRules() {
   const queryClient = useQueryClient();
   const afterSave = useAfterSave();
@@ -288,7 +273,6 @@ export function useSaveChannelCommissionRules() {
   });
 }
 
-/** «Applica ai proprietari senza mandato»: the standard mandate for every owner that has none. */
 export function useApplyMandateTemplate() {
   const afterSave = useAfterSave();
 
@@ -305,7 +289,6 @@ export function useApplyMandateTemplate() {
   });
 }
 
-/** The tax rule in force for the issuer, for the summary of the wizard. Read again at every visit: a save of the regime changes it. */
 export function useBillingPreview() {
   return useQuery({
     queryKey: PREVIEW_KEY,
@@ -316,7 +299,6 @@ export function useBillingPreview() {
   });
 }
 
-/** The tourist tax rates of the comuni (`GET api/tourist-tax-rates`, read by every signed-in account), for the Italian step of the tourist tax. */
 export function useMunicipalTouristTaxRates(enabled: boolean) {
   return useQuery({
     queryKey: MUNICIPAL_RATES_KEY,

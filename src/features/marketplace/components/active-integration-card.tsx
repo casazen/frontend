@@ -18,21 +18,14 @@ import { MarketplaceStatusBadge } from './marketplace-status-badge';
 
 const CARD = 'flex h-full min-w-0 flex-col gap-3 rounded-lg border bg-card p-4';
 
-/** What the menu of a card can open. */
 type CardAction = 'settings' | 'deactivate' | 'change';
 
 interface ActiveIntegrationCardProps {
   row: ActiveRow;
-  /** Where «Correggi» leads for this row; `null` when the person may not start the wizard of its kind (no `ota.write`, the connector is off) or none exists. */
   fixTo: string | null;
-  /**
-   * Whether the person may change or turn off this activation: `ota.write` and, for what goes through the channel manager, the connector on (as the backend asks). Without it the
-   * card has no menu: nothing is offered that the server would refuse.
-   */
   mayManage: boolean;
 }
 
-/** The mark of a row: the initials of its name (the active list carries no logo). */
 function Initials({ name }: { name: string }) {
   return (
     <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-semibold text-primary-text">
@@ -41,12 +34,6 @@ function Initials({ name }: { name: string }) {
   );
 }
 
-/**
- * What the menu of a card offers, by what the card is (MKT-05): the settings of a channel or a tool, the deactivation of a channel, a tool or a partner, the change request of a
- * function of the license (a function that is on, or to fix, and has no request open). It needs the id of the activation, which only the health row (or a list that sends it) has:
- * without it nothing is offered. A connection the health says is no longer on the channel manager has no settings to change (the server would refuse it): «Correggi» makes it again,
- * and it can still be turned off.
- */
 function actionsOf(row: ActiveRow, mayManage: boolean): CardAction[] {
   if (!mayManage || !row.activationId) return [];
   switch (row.kind) {
@@ -72,7 +59,6 @@ export function ActiveIntegrationCard({ row, fixTo, mayManage }: ActiveIntegrati
   const { t, i18n } = useTranslation();
   const openDetails = useOpenEntryDetails();
   const [open, setOpen] = useState<CardAction | null>(null);
-  // The three calls of the card: one of them on its way shuts every button of the card, the buttons that open the others included.
   const settings = useUpdateActivationSettings();
   const deactivate = useDeactivateActivation();
   const change = useRequestFunctionChange();
@@ -85,7 +71,6 @@ export function ActiveIntegrationCard({ row, fixTo, mayManage }: ActiveIntegrati
   const lastSync = formatInstant(row.lastSyncedAt, language);
   const error = row.health?.error ?? null;
   const changeRequested = formatInstantDay(row.health?.changeRequestedAt, language);
-  // A partner is declared by the host and never read from the channel manager: «never checked» would be said of something nobody checks.
   const syncs = row.kind !== 'Partner';
   const actions = actionsOf(row, mayManage);
   const activationId = row.activationId;
@@ -180,7 +165,6 @@ export function ActiveIntegrationCard({ row, fixTo, mayManage }: ActiveIntegrati
                 </DropdownMenuItem>
               ) : null}
               {actions.includes('change') ? (
-                // One request is open at a time: while the license has not answered it, the card says when it was asked and there is nothing to ask again.
                 <DropdownMenuItem className="pointer-coarse:min-h-11" disabled={!!row.health?.changeRequestedAt} onSelect={() => setOpen('change')} data-testid={`${testId}-change-request`}>
                   {t('marketplace.change.menu.change')}
                 </DropdownMenuItem>
@@ -199,7 +183,6 @@ export function ActiveIntegrationCard({ row, fixTo, mayManage }: ActiveIntegrati
         ) : null}
       </div>
 
-      {/* The dialogs are mounted only while they are open (what was typed or ticked is forgotten with them) and are not inside a form. */}
       {open === 'settings' && activationId && (row.kind === 'Channel' || row.kind === 'Tool') ? (
         <IntegrationSettingsDialog
           target={{ activationId, kind: row.kind, code: row.code, name: row.name, property: row.property }}
@@ -227,10 +210,6 @@ const BUILT_IN_STATUS_VARIANT: Record<Exclude<IntegrationStatus, 'loading' | 'un
   inactive: 'outline',
 };
 
-/**
- * One of the integrations CasaZen has of its own (the calendars of the portals, the card payments): its name, what it is for, how it stands, and the page where it is managed.
- * Nothing about it comes from the channel manager, so there is no health and no change to make here.
- */
 export function BuiltInIntegrationCard({ integration }: { integration: Integration }) {
   const { t } = useTranslation();
   const { id, icon: Icon, href, status, count } = integration;

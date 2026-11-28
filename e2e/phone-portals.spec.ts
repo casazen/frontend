@@ -197,7 +197,6 @@ test.describe('Phone portals: tenant and landlord', () => {
       await pay.click();
 
       await expect(page.getByRole('heading', { name: 'Pagamenti', exact: true })).toBeVisible();
-      // One due is open: the totals would only repeat it, so the report is not shown (it is, from two open dues: unit test).
       await expect(page.getByTestId('tenant-payment-report')).toHaveCount(0);
       await expect(page.getByTestId('tenant-advance-note')).toContainText('acconto condominiale');
       await expect(page.getByTestId('tenant-settlement-note')).toContainText('credito');
@@ -322,7 +321,6 @@ test.describe('Phone portals: tenant and landlord', () => {
       await expect(page.getByTestId('long-rent-payments-contracts')).toHaveCount(0);
       await expect(page.getByTestId('condominium-management')).toBeVisible();
 
-      // Canoni are no longer linked from Conto SEPA. The reminder still lives on the rent register.
       await page.goto(demoUrl('/app/long-rent/rents', 'long-term'));
       await expect(page.getByTestId('rents-page')).toBeVisible();
       await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);

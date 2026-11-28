@@ -7,11 +7,8 @@ import { useOptionalWizard } from "./wizard-context";
 
 export interface WizardSummaryItem {
   id: string;
-  /** What the answer is ("Fiscal regime"). */
   label: string;
-  /** The answer, as it should read. Empty (`null`, `""`) shows "Not provided". */
   value: React.ReactNode;
-  /** The step where the answer is given: the row gets a "Edit" link that goes back to it. */
   stepId?: string;
 }
 
@@ -20,11 +17,6 @@ export interface WizardSummaryProps {
   className?: string;
 }
 
-/**
- * The answers so far, before the last button: a list of what was asked and what was answered, each with a link "Edit" that
- * returns to its step (the answers are kept). Inside a `WizardShell` the links are real links to `?step=`; outside one
- * the summary is read-only.
- */
 export function WizardSummary({ items, className }: WizardSummaryProps) {
   const { t } = useTranslation();
   const wizard = useOptionalWizard();

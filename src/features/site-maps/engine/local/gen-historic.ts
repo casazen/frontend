@@ -1,7 +1,3 @@
-/**
- * Historic centre generator (DB-19a): an oval of blocks inside a ring road, a castle with its moat, squares, parks outside the
- * ring and modern blocks around it.
- */
 import { compactness, distToLine, ellipsePoly, pip, polyCentroid, sampleCurve, type Poly, type Pt } from '../geometry';
 import { PI, clamp, rngOf } from '../numeric';
 import type { LocalGen } from './gen-coast';
@@ -57,7 +53,6 @@ export function genHistoric(seed: string): LocalGen<HistoricData> {
   const drop = new Set<Poly>();
   for (let i = 0; i < 5 && free.length; i++) drop.add(free[Math.floor(rand() * free.length)]);
   const blocks: Block[] = keep.filter((b) => !drop.has(b)).map((b) => ({ p: b, t: rand() < 0.2 ? 2 : rand() < 0.5 ? 1 : 0 }));
-  // parks outside the ring road
   const thP = thC + 1.5 + J(0.5);
   let pc = toW(1.42 * rx * Math.cos(thP), 1.55 * ry * Math.sin(thP));
   pc = [clamp(pc[0], 12, 88), clamp(pc[1], 18, 82)];
@@ -67,7 +62,6 @@ export function genHistoric(seed: string): LocalGen<HistoricData> {
   const parkB = blobPts(rand, clamp(pcB[0], 8, 30), clamp(pcB[1], 54, 68), 5.4, 4, 8, 0.2, J(0.5));
   const parkSA = sampleCurve(parkA, true, 0.8);
   const parkSB = sampleCurve(parkB, true, 0.8);
-  // modern blocks outside the ring, aligned with it
   const outBsp = bspField(rand, FRAME, { target: 19, jitter: 0.14, ang: rot + J(0.3), k: 1.15, minCompact: 0.45, density: (g) => 1 + 1.9 * clamp((norm(g) - 1.15) / 1.3, 0, 1) });
   const outBlocks: Block[] = [];
   for (const b of outBsp.blocks) {

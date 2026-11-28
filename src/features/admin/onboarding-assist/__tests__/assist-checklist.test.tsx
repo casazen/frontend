@@ -128,13 +128,11 @@ describe('AssistChecklist, what support needs for each property of a «Fallo per
       block({ propertyId: OTHER_PROPERTY, propertyName: 'Villa Lago' }),
     ]);
 
-    // The server opens a credential for the org and the property OF THE REQUEST: the org-level block is the one it is about, the properties listed under it are to read.
     const org = screen.getByTestId('assist-checklist-block-org');
     expect(within(org).getByTestId('assist-reveal-open-OctoratePanel')).toBeInTheDocument();
     expect(screen.getAllByTestId('assist-reveal-open-OctoratePanel')).toHaveLength(1);
     expect(openButton('Police')).not.toBeInTheDocument();
     expect(openButton('RegionalIstat')).not.toBeInTheDocument();
-    // A property listed under the organization is there to read: who sends is told, and nothing of it can be opened.
     expect(within(screen.getByTestId(`assist-checklist-block-${PROPERTY}`)).getByTestId('assist-checklist-sender-value')).toBeInTheDocument();
     expect(within(screen.getByTestId(`assist-checklist-block-${PROPERTY}`)).queryByRole('button', { name: /apri credenziali/i })).not.toBeInTheDocument();
   });
@@ -153,7 +151,6 @@ describe('AssistChecklist, what support needs for each property of a «Fallo per
     const police = screen.getByTestId('assist-checklist-police');
     expect(within(police).getByTestId('assist-checklist-missing')).toHaveTextContent(i18n.t('onboardingPlan.assist.checklist.presence.missing'));
     expect(openButton('Police')).not.toBeInTheDocument();
-    // The user of the panel can be stored when it is missing, never opened.
     expect(openButton('OctoratePanel')).not.toBeInTheDocument();
     expect(screen.getByTestId('assist-vault-open')).toHaveTextContent(i18n.t('onboardingPlan.assist.vault.open'));
   });
@@ -162,7 +159,6 @@ describe('AssistChecklist, what support needs for each property of a «Fallo per
     const { container } = renderChecklist(request(), [block()]);
 
     expect(within(screen.getByTestId('assist-checklist-police')).getByTestId('assist-checklist-present')).toHaveTextContent('11 novembre 2026');
-    // No field, no value: what is shown are words and dates.
     expect(container.querySelectorAll('input, textarea')).toHaveLength(0);
     expect(container.textContent ?? '').not.toMatch(/password:|segreto|token/i);
     expect(container.textContent ?? '').not.toMatch(/octorate/i);
@@ -176,7 +172,6 @@ describe('AssistChecklist, what support needs for each property of a «Fallo per
     const dialog = screen.getByTestId('assist-reveal-dialog');
     expect(dialog).toHaveTextContent(i18n.t('onboardingPlan.assist.reveal.kinds.Police'));
     expect(within(dialog).getByTestId('assist-reveal-reason')).toBeInTheDocument();
-    // Nothing is opened before the reason is given.
     expect(within(dialog).queryByTestId('assist-reveal-values')).not.toBeInTheDocument();
   });
 
@@ -187,7 +182,6 @@ describe('AssistChecklist, what support needs for each property of a «Fallo per
     expect(step).toHaveAttribute('data-state', 'assistRequested');
     expect(within(step).getByTestId('assist-checklist-step-state')).toHaveTextContent(i18n.t('onboardingPlan.assist.checklist.steps.state.assistRequested'));
     expect(within(step).getByTestId('assist-checklist-step-check')).toHaveTextContent(i18n.t('onboardingPlan.assist.checklist.steps.lastCheck.unverifiable'));
-    // The guide is the one the host reads: the numbered instructions of the kind.
     expect(within(step).getByTestId('assist-checklist-guide')).toBeInTheDocument();
     expect(screen.getByTestId('assist-checklist-sender-value')).toHaveTextContent(i18n.t('onboardingPlan.assist.checklist.sender.ChannelManager'));
   });

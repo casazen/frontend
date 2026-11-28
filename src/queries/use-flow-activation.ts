@@ -4,20 +4,11 @@ import type { FlowActivationOutcome, OnboardingFlowKey, OnboardingPrerequisiteKe
 import { ONBOARDING_FLOWS_KEY } from './use-onboarding-flows';
 import { invalidateOnboarding } from './use-onboarding-plan';
 
-/**
- * What a flow that was switched on or off touches (E10/F03/US02/T03, NF-106): the status with its counts, the plan and the path (the part «Riepilogo e
- * attivazione» and what hangs from it), the lists of the properties of every flow and the «Da fare» list, where the server keeps what is not ready.
- */
 function invalidateAfterActivation(queryClient: QueryClient): void {
   invalidateOnboarding(queryClient);
   void queryClient.invalidateQueries({ queryKey: ONBOARDING_FLOWS_KEY });
 }
 
-/**
- * The final test (`POST /onboarding/test-run`): a recently imported booking of the property passes through every flow and nothing is written or sent,
- * so nothing is read again after it. Without a booking the server takes the most recent one of the property that came from the channel manager. 404
- * `test_booking_not_found` while there is none yet, `onboarding_property_not_found`. Organization administrator only. The answer is not kept (`gcTime: 0`).
- */
 export function useRunTest() {
   return useMutation({
     mutationFn: ({ propertyId, bookingId }: { propertyId: string; bookingId?: string }) => onboardingApi.runTest(propertyId, bookingId),
@@ -25,7 +16,6 @@ export function useRunTest() {
   });
 }
 
-/** How many properties each flow can be switched on for right now, and how many are not ready (`GET /onboarding/bulk/progress`, the counts of the dialog). */
 export function useActivationReadiness(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [...ONBOARDING_FLOWS_KEY, 'readiness'],
@@ -37,28 +27,23 @@ export function useActivationReadiness(options?: { enabled?: boolean }) {
   });
 }
 
-/** The page size of the lists the activation reads (the most the server gives) and the most properties one call may name. */
 const LIST_PAGE_SIZE = 100;
 const MAX_PER_CALL = 500;
 
-/** A property a flow was not switched on for, with the prerequisite it still lacks. */
 interface NotActivated {
   propertyId: string;
   name: string;
   unmet: OnboardingPrerequisiteKey[];
 }
 
-/** What the activation did for one flow: how many properties it switched on, the ones it did not and, if it stopped half way, what stopped it. */
 export interface FlowActivationSummary {
   flow: OnboardingFlowKey;
   activated: number;
   alreadyActive: number;
   notActivated: NotActivated[];
-  /** What stopped the flow (the network, the server): `null` when it went through. What it switched on before that stays on, and is counted above. */
   failure: unknown;
 }
 
-/** The properties whose flow has every prerequisite and waits only for the activation (`flow_not_activated`), by name, whatever the number of pages. */
 async function readyProperties(flow: OnboardingFlowKey): Promise<Array<{ propertyId: string; name: string }>> {
   const ready: Array<{ propertyId: string; name: string }> = [];
   for (let page = 1; ; page += 1) {
@@ -68,13 +53,6 @@ async function readyProperties(flow: OnboardingFlowKey): Promise<Array<{ propert
   }
 }
 
-/**
- * Switches on the flows the host ticked, for the properties that are ready (E10/F03/US02/T03, NF-104 part 11): for each flow it reads the properties that
- * wait only for the activation and names them to the server in calls of at most 500; the server checks the prerequisites of each one again, so a
- * property that is not ready (any more) stays as it is and comes back in `notActivated` with what it lacks. A flow with nothing ready is not called.
- * A flow that fails does not stop the others and does not hide what was switched on: its summary carries what stopped it (`failure`) with the properties
- * done before. What is not ready is kept in «Da fare» by the server. Organization administrator only.
- */
 export function useActivateReady() {
   const queryClient = useQueryClient();
 

@@ -41,7 +41,6 @@ const workspace = vi.hoisted(() => ({
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
@@ -66,7 +65,6 @@ function renderWizard() {
   );
 }
 
-/** «Salva ed esci» on the step on screen, once the button is enabled; the person is then led out of the wizard. */
 async function saveAndExit() {
   await waitFor(() => expect(screen.getByTestId('billing-save-exit')).toBeEnabled(), WAIT);
   fireEvent.click(screen.getByTestId('billing-save-exit'));
@@ -111,7 +109,6 @@ describe('«Salva ed esci» says what it kept (E11/F02/US01/T01)', () => {
     await waitFor(() => expect(screen.getByTestId('billing-legal-name')).toBeEnabled(), WAIT);
 
     write('billing-legal-name', 'Casa Lugano 2 SA');
-    // A Swiss postal code has four digits: this one is not kept.
     write('billing-postal-code', '69');
     await saveAndExit();
 

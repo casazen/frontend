@@ -19,7 +19,6 @@ import type {
  * a filter value, a column that the list does not have) is ignored, so a stale link or a typed address never breaks the page.
  */
 
-/** The parameters the list owns; any other parameter of the address (`propertyId`, `tab`) is left alone. */
 export const LIST_PARAM = {
   q: 'q',
   chip: 'chip',
@@ -34,17 +33,13 @@ const MAX_SEARCH_LENGTH = 200;
 const MAX_PAGE = 100_000;
 
 export interface ListState {
-  /** As typed: the spaces at the end are the person's (they type "mario " before "mario rossi"); trim it where it is used. */
   q: string;
   /** Always the id of a chip when the list has any, the default one if the address names none; `''` otherwise. */
   chip: string;
-  /** Only the filters that are on and valid: the value as the address writes it (`IT`, `airbnb,direct`, `2026-10-01..2026-10-31`). */
   filters: Readonly<Record<string, string>>;
   sort: ListSort | null;
-  /** The columns the person chose, in the order of the list; `null` when they are the default ones. */
   columns: readonly string[] | null;
   layout: ListLayout;
-  /** From 1; for what a server pages. */
   page: number;
 }
 
@@ -55,12 +50,10 @@ export function defaultChipId<Row>(def: ListDefinition<Row>, layout: ListLayout)
   return (layout === 'board' ? def.board?.defaultChip : undefined) ?? def.defaultChip ?? chips[0].id;
 }
 
-/** The columns that are there when the person has chosen none. */
 export function defaultColumnIds<Row>(def: ListDefinition<Row>): string[] {
   return def.columns.filter((column) => column.default || column.always).map((column) => column.id);
 }
 
-/** `lastStay:desc` as a sort, or `null` when it names no sortable column. A direction is `asc` when missing. */
 export function parseSortValue<Row>(def: ListDefinition<Row>, value: string | null | undefined): ListSort | null {
   if (!value) return null;
   const [id, rawDirection, ...rest] = value.split(':');
@@ -76,7 +69,6 @@ export function formatSortValue(sort: ListSort): string {
 
 const DATE_RANGE = /^(\d{4}-\d{2}-\d{2})?\.\.(\d{4}-\d{2}-\d{2})?$/;
 
-/** `2026-10-01..2026-10-31`, `..2026-10-31`, `2026-10-01..`: the two ends of a range of dates, each one optional. */
 export function parseDateRange(value: string): { from?: string; to?: string } {
   const match = DATE_RANGE.exec(value);
   if (!match) return {};
@@ -88,7 +80,6 @@ export function formatDateRange(range: { from?: string; to?: string }): string {
   return `${range.from ?? ''}..${range.to ?? ''}`;
 }
 
-/** `airbnb,direct` as `['airbnb', 'direct']`. */
 export function parseMultiValue(value: string): string[] {
   return value
     .split(',')
@@ -104,13 +95,11 @@ function normalizeDateRange(value: string): string | null {
   return formatDateRange({ from, to });
 }
 
-/** The value of a filter as the address writes it, or `null` if it is not a valid one (it is then ignored). */
 export function normalizeFilterValue<Row>(filter: ListFilter<Row>, raw: string): string | null {
   const value = raw.trim();
   if (!value) return null;
   if (filter.type === 'date') return normalizeDateRange(value);
 
-  // Options drawn from the rows are not known here: only a fixed list can tell a stale value from a good one.
   const options = typeof filter.options === 'function' ? null : filter.options;
   if (filter.type === 'select') {
     return !options || options.some((option) => option.value === value) ? value : null;
@@ -124,11 +113,6 @@ function sameColumns(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((id, index) => id === b[index]);
 }
 
-/**
- * The columns a person chose, as the state keeps them: in the order of the list (whatever order they were ticked in), with the
- * ones that cannot be hidden, and `null` when they are the default ones. Names the list does not have are dropped; with none
- * left, the default columns.
- */
 export function normalizeColumnIds<Row>(def: ListDefinition<Row>, ids: readonly string[] | null): readonly string[] | null {
   if (!ids) return null;
   const wanted = new Set(ids);
@@ -137,7 +121,6 @@ export function normalizeColumnIds<Row>(def: ListDefinition<Row>, ids: readonly 
   return sameColumns(chosen, defaultColumnIds(def)) ? null : chosen;
 }
 
-/** The state an address stands for. Never throws: what is not valid is dropped. */
 export function readListState<Row>(def: ListDefinition<Row>, params: URLSearchParams): ListState {
   const layout: ListLayout = def.board && params.get(LIST_PARAM.layout) === 'board' ? 'board' : 'list';
 
@@ -172,7 +155,6 @@ export function readListState<Row>(def: ListDefinition<Row>, params: URLSearchPa
   };
 }
 
-/** The parameters of a state, without what is the default, in an order that does not change (a stable, readable address). */
 export function listStateToParams<Row>(def: ListDefinition<Row>, state: ListState): URLSearchParams {
   const params = new URLSearchParams();
   if (state.q) params.set(LIST_PARAM.q, state.q);
@@ -193,12 +175,10 @@ export function listStateToParams<Row>(def: ListDefinition<Row>, state: ListStat
   return params;
 }
 
-/** The names of the parameters this list owns in an address. */
 function ownParamNames<Row>(def: ListDefinition<Row>): string[] {
   return [...Object.values(LIST_PARAM), ...(def.filters ?? []).map((filter) => `${FILTER_PREFIX}${filter.id}`)];
 }
 
-/** `current` with the parameters of the list replaced by those of `state`; the others are kept as they were. */
 export function applyListState<Row>(def: ListDefinition<Row>, current: URLSearchParams, state: ListState): URLSearchParams {
   const next = new URLSearchParams(current);
   for (const name of ownParamNames(def)) next.delete(name);
@@ -206,7 +186,6 @@ export function applyListState<Row>(def: ListDefinition<Row>, current: URLSearch
   return next;
 }
 
-/** The state a view stands for (a view that comes with the list, or one the person saved as a query string). */
 export function presetToState<Row>(def: ListDefinition<Row>, preset: ListPresetState): ListState {
   const params = new URLSearchParams();
   if (preset.q) params.set(LIST_PARAM.q, preset.q);
@@ -218,12 +197,10 @@ export function presetToState<Row>(def: ListDefinition<Row>, preset: ListPresetS
   return readListState(def, params);
 }
 
-/** What a saved view keeps of a state: everything but the page. */
 export function viewQuery<Row>(def: ListDefinition<Row>, state: ListState): string {
   return listStateToParams(def, { ...state, page: 1 }).toString();
 }
 
-/** The same view (the page does not count). */
 export function isSameView<Row>(def: ListDefinition<Row>, a: ListState, b: ListState): boolean {
   return viewQuery(def, a) === viewQuery(def, b);
 }
@@ -232,21 +209,15 @@ export function activeFilterCount(state: ListState): number {
   return Object.keys(state.filters).length;
 }
 
-/** The quick filter that stands for "everything": the one the list names (`allChip`), else the first. */
 export function allChipId<Row>(def: ListDefinition<Row>): string {
   return def.allChip ?? (def.chips ?? [])[0]?.id ?? '';
 }
 
-/**
- * The list is narrowed down: a search, a filter, or a quick filter other than the one for "everything" (the first, or the
- * `allChip` of the list). With nothing in the list, this is what tells "there is nothing yet" from "nothing passes".
- */
 export function isRefined<Row>(def: ListDefinition<Row>, state: ListState): boolean {
   const chips = def.chips ?? [];
   return state.q.trim() !== '' || activeFilterCount(state) > 0 || (chips.length > 0 && state.chip !== allChipId(def));
 }
 
-/** The state "Azzera i filtri" leads to: no search, no filter, the quick filter for everything; the order, columns and layout stay. */
 export function clearedState<Row>(def: ListDefinition<Row>, state: ListState): ListState {
   return { ...state, q: '', filters: {}, chip: allChipId(def), page: 1 };
 }

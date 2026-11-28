@@ -106,7 +106,6 @@ describe('FeaturedProperties (SE-04, #300 AC2, A8-10)', () => {
     expect(within(cards[0]).getByTestId('featured-property-photo')).toHaveAttribute('src', 'https://cdn.example.test/villa.jpg');
     expect(cards[0]).toHaveTextContent('2 camere');
     expect(cards[0]).toHaveTextContent('4 ospiti');
-    // A legacy property without a slug links by its id; no photo: no image, a placeholder.
     expect(within(cards[1]).getByTestId('featured-property-link')).toHaveAttribute('href', '/book/altro-host/property/prop-2');
     expect(within(cards[1]).queryByTestId('featured-property-photo')).not.toBeInTheDocument();
     expect(cards[1]).toHaveTextContent('Monolocale');

@@ -4,7 +4,6 @@ import type { OwnerInvoice } from '@/types';
 import { vatSummaryOf } from './owner-invoice-model';
 import { useInvoiceMoney } from './use-invoice-money';
 
-/** The types of line an owner invoice has (backend `FiscalLineType`): another one, of a later server, is shown by its code. */
 const KNOWN_LINE_TYPES = ['Commission', 'Recharge', 'AdvancedExpense'] as const;
 
 interface InvoiceTotalsProps {

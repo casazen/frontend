@@ -6,22 +6,15 @@ import { cn } from '@/lib/utils';
 
 export interface PhotoListItem {
   url: string;
-  /** What the photo shows, for a screen reader; the page that owns the list writes it. */
   alt: string;
 }
 
-/** Every text of the list, already translated: the list belongs to no area, so it has no words of its own. */
 export interface PhotoListLabels {
   add: string;
-  /** What the add button says while the files go up. */
   adding: string;
-  /** "2 of 6 photos". */
   counter: string;
-  /** What is shown when there is no photo yet. */
   empty: string;
-  /** The tag on the first photo: it is the one that represents the thing. */
   cover: string;
-  /** A photo that cannot be shown (a broken link, a file that is not an image). */
   unavailable: string;
   moveEarlier: (position: number) => string;
   moveLater: (position: number) => string;
@@ -30,27 +23,19 @@ export interface PhotoListLabels {
 
 export interface PhotoListProps {
   items: readonly PhotoListItem[];
-  /** The most photos the list takes. */
   max: number;
   labels: PhotoListLabels;
-  /** The photos to keep, in their new order. Called for a move and, without `onRemove`, for a removal. */
   onChange: (urls: string[]) => void;
-  /** A removal that asks something first (a confirmation): the list does not remove, the owner does. */
   onRemove?: (url: string) => void;
-  /** Files the person picked: the owner uploads them. Without it there is no "add" button. */
   onAdd?: (files: File[]) => void;
-  /** What the picker offers (`image/jpeg,image/png,image/webp`). */
   accept?: string;
   /** Something is going on (a save): the buttons ignore clicks, but stay where they are so that the focus is not lost. */
   busy?: boolean;
-  /** The files are going up: the add button says so. */
   uploading?: boolean;
-  /** What the owner wants to say about the last action that failed (a refused upload), announced at once. */
   error?: string | null;
   testId?: string;
 }
 
-/** What the owner of a list can ask of it. */
 export interface PhotoListHandle {
   /**
    * A photo was removed (the owner asked first, so only the owner knows when it is done): the focus goes to the photo that took
@@ -79,7 +64,6 @@ export const PhotoList = forwardRef<PhotoListHandle, PhotoListProps>(function Ph
   const buttons = useRef(new Map<string, HTMLButtonElement>());
   const refocus = useRef<{ url: string; direction: Direction } | null>(null);
   const full = items.length >= max;
-  // The order in which the photos are on screen: what changes when a move is saved (the list itself is a new array at each render).
   const order = items.map((item) => item.url).join('\n');
 
   useImperativeHandle(
@@ -93,9 +77,6 @@ export const PhotoList = forwardRef<PhotoListHandle, PhotoListProps>(function Ph
     [items],
   );
 
-  // Once the new order is on screen, the focus goes back to the photo that was moved (the keys of the tiles are the URLs): a tile
-  // that changes place in the page loses the focus of the browser. The owner saves first and answers later, so this waits for the
-  // order to change, not for the next render.
   useEffect(() => {
     const target = refocus.current;
     if (!target) return;
@@ -118,7 +99,6 @@ export const PhotoList = forwardRef<PhotoListHandle, PhotoListProps>(function Ph
 
   const remove = (url: string) => {
     if (busy) return;
-    // Another action: a move that was refused earlier must not take the focus when this one changes the order.
     refocus.current = null;
     if (onRemove) onRemove(url);
     else onChange(items.filter((item) => item.url !== url).map((item) => item.url));
@@ -126,7 +106,6 @@ export const PhotoList = forwardRef<PhotoListHandle, PhotoListProps>(function Ph
 
   const pick = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
-    // The same file can be picked again after a refusal.
     event.target.value = '';
     refocus.current = null;
     if (files.length > 0) onAdd?.(files);
@@ -140,7 +119,6 @@ export const PhotoList = forwardRef<PhotoListHandle, PhotoListProps>(function Ph
   return (
     <div className="min-w-0 space-y-3" data-testid={testId}>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        {/* A status: the count changes when a photo goes up or is removed, and a screen reader says so. */}
         <p role="status" className="text-sm text-foreground/70" data-testid={`${testId}-counter`}>
           {labels.counter}
         </p>
@@ -224,7 +202,6 @@ interface PhotoTileProps {
 function PhotoTile({ item, position, isFirst, isLast, labels, busy, registerButton, onMove, onRemove }: PhotoTileProps) {
   const [failed, setFailed] = useState(false);
   const displayable = isDisplayableMediaUrl(item.url) && !failed;
-  // `aria-disabled` and not `disabled`: a disabled button drops the focus of the person who has just pressed it.
   const button = 'size-11 shrink-0 px-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
 
   return (

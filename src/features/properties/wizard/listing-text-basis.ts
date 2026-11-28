@@ -3,10 +3,6 @@ import { joinList } from '@/lib/listing-texts';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-/**
- * What a text of the AI was written from, in words, for the line under it: «6 foto, il comune di Como (CO), 3 annunci simili della zona e i
- * dati dell'immobile». Only what there was: no photos read, no comune or no similar listing leave their part out.
- */
 export function describeBasis(basis: ListingTextBasis, t: Translate): string {
   const parts: string[] = [];
   if (basis.photos > 0) parts.push(t('propertyWizard.photos.listing.basis.photos', { count: basis.photos }));

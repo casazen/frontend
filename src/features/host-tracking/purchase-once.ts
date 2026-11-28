@@ -15,10 +15,8 @@ import { hasConsent } from '@/lib/cookie-consent';
 
 export const PURCHASES_STORAGE_KEY = 'cz-ga4-purchases';
 
-/** How many bookings are remembered: the most recent ones. The list never grows over it. */
 export const MAX_REMEMBERED_PURCHASES = 50;
 
-/** The ids already pushed; a list that is not one (an older format, a hand-edited value) is read as empty and is replaced by the next write. */
 function readSent(): string[] {
   try {
     const raw = window.localStorage.getItem(PURCHASES_STORAGE_KEY);
@@ -38,7 +36,6 @@ function writeSent(ids: string[]): boolean {
   }
 }
 
-/** The visitor does not allow statistics (or no longer does): the list of the bookings pushed is forgotten, in the browser. A browser that cannot reach its storage kept nothing. */
 export function forgetSentPurchases(): void {
   try {
     window.localStorage.removeItem(PURCHASES_STORAGE_KEY);
@@ -47,10 +44,6 @@ export function forgetSentPurchases(): void {
   }
 }
 
-/**
- * Runs `push` only if the booking `bookingId` was never pushed from this browser, and only after the visitor allowed statistics. The id is remembered BEFORE
- * the push: a crash between the two loses one purchase and never counts one twice. Returns whether `push` ran.
- */
 export function purchaseOnce(bookingId: string, push: () => void): boolean {
   if (!bookingId || !hasConsent('statistics')) return false;
 

@@ -72,11 +72,9 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 
 interface PartStateBadgeProps {
   state: OnboardingPartState;
-  /** When the «Da fare» of a deferral is due (UTC): the badge of a deferred part says it. */
   remindAt: string | null;
 }
 
-/** The state of a part: an icon, a word and a tint. A deferred part says until when. */
 export function PartStateBadge({ state, remindAt }: PartStateBadgeProps) {
   const { t, i18n } = useTranslation();
   const { tone, Icon } = STATE_VIEW[state];
@@ -96,25 +94,14 @@ export function PartStateBadge({ state, remindAt }: PartStateBadgeProps) {
 
 interface OnboardingPartRowProps {
   part: OnboardingPart;
-  /** Every known part of the plan: a part that is blocked names the ones it waits for. */
   parts: readonly OnboardingPart[];
-  /** The one highlighted block of the page: the first part that is open. */
   highlighted: boolean;
-  /** An organization administrator may put a part off; anyone else sees the plan and no deferral (the server answers 403 to them). */
   canDefer: boolean;
   canLaunch: boolean;
-  /** The sentence of the page that says why a deferral is not for this person, to tie the disabled button to. */
   adminNoteId?: string;
   onDefer: (part: OnboardingPart) => void;
 }
 
-/**
- * One part of the plan «Inizia con CasaZen» (NF-104, ONB-01): its title and what it is for, the state (icon, color and words), how far it is
- * («2 di 5»), the reason in plain words and the two actions, «Fai ora» (or «Riprendi») that opens the wizard that owns the part and «Lo faccio
- * dopo». A part that is done has nothing to do, one that is not available says why and has no button, one that is blocked, or put off while
- * it still waits for another part, names the part it waits for and has no way in. «Lo faccio dopo» is disabled, with its reason, for a part
- * another part needs and for who is not an organization administrator.
- */
 export function OnboardingPartRow({ part, parts, highlighted, canLaunch, canDefer, adminNoteId, onDefer }: OnboardingPartRowProps) {
   const { t, i18n } = useTranslation();
   const state = normalizePartState(part.state);
@@ -122,8 +109,6 @@ export function OnboardingPartRow({ part, parts, highlighted, canLaunch, canDefe
   const PartIcon = PART_ICONS[ONBOARDING_PART_ICONS[part.code]];
   const showProgress = part.total > 0;
 
-  // The reason in plain words; one this version has no text for falls back to a neutral line, never to the code. A part put off that still
-  // waits for another part is told as such: the server gives «rimandato» precedence over «in attesa», so its state alone would hide it.
   const waitingFor = state === 'blocked' || state === 'deferred' ? partsWaitedFor(part, parts).map((waited) => t(partTitleKey(waited.code))) : [];
   let reason: string | null = null;
   if (state === 'blocked') {
@@ -135,15 +120,12 @@ export function OnboardingPartRow({ part, parts, highlighted, canLaunch, canDefe
     reason = keyOfReason && i18n.exists(keyOfReason) ? t(keyOfReason) : t('onboardingPlan.reasons.unknown');
   }
 
-  // A part that waits for another one has no way in, put off or not: «Riprendi» would lead to a part that cannot be done yet.
   const canOpen = state === 'open' || (state === 'deferred' && waitingFor.length === 0);
   const resuming = state === 'deferred' || (part.done > 0 && part.done < part.total);
   const actionLabel = t(!canLaunch ? 'onboardingPlan.workspace.details' : resuming ? 'onboardingPlan.actions.resume'
     : highlighted && part.code === 'octorateConnection' ? 'onboardingPlan.workspace.connect'
     : 'onboardingPlan.actions.doNow');
-  // «Lo faccio dopo» has a place on a part that is open or blocked; one already put off, done or not available has nothing to postpone.
   const canPutOff = state === 'open' || state === 'blocked';
-  // The plan says `false` for a part another part needs; only that says it, so an answer without the field leaves the choice to the server.
   const notDeferrable = part.deferrable === false;
   const deferDisabled = notDeferrable || !canDefer;
   const deferNoteId = `onboarding-part-${part.code}-defer-note`;

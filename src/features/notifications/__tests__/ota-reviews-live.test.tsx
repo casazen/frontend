@@ -6,7 +6,6 @@ import { MESSAGE_HUB_QUERY } from '@/queries/use-message-hub';
 import { OTA_REVIEWS_QUERY } from '@/queries/use-ota-reviews';
 import { applyNotificationsChange, refreshAfterGap } from '../use-notifications-realtime';
 
-/** The keys a change makes stale, as the cache is asked to read them again. */
 function invalidatedBy(change: (queryClient: QueryClient) => void): unknown[][] {
   const queryClient = new QueryClient();
   const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
@@ -14,8 +13,6 @@ function invalidatedBy(change: (queryClient: QueryClient) => void): unknown[][] 
   return invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
 }
 
-// E05/F06/US02 (NF-69): the reviews of the guests show what happens without a reload. Every event the host is told about has its place in the list of what the push makes stale
-// (`use-notifications-realtime.ts`): a review that appeared, and a reply or a host's review that did not reach the channel.
 describe('the reviews, live', () => {
   it.each(['ota-review-received', 'ota-review-action-failed'])(
     'applyNotificationsChange_%s_ReadsAgainTheReviewsOfTheBookingTheOpenReviewAndTheListOfTheHub',
@@ -24,7 +21,6 @@ describe('the reviews, live', () => {
 
       expect(keys).toContainEqual([OTA_REVIEWS_QUERY]);
       expect(keys).toContainEqual([MESSAGE_HUB_QUERY, 'review-thread']);
-      // The reviews are listed in the hub under their own filter, so the list is read again too.
       expect(keys).toContainEqual([MESSAGE_HUB_QUERY, 'threads']);
     },
   );
@@ -51,7 +47,6 @@ describe('the reviews, live', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => createElement(QueryClientProvider, { client: queryClient }, children);
     const readBooking = vi.fn().mockResolvedValue({ items: [] });
     const readReview = vi.fn().mockResolvedValue({ reply: { state: 'None' } });
-    // What the open page of booking b-1 (`useBookingReviews`) and the open page of a review (`useReviewThread`) keep mounted.
     renderHook(
       () => [
         useQuery({ queryKey: [OTA_REVIEWS_QUERY, 'booking', 'b-1'], queryFn: readBooking }),

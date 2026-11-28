@@ -14,24 +14,19 @@
  * contract and nothing else, or null. It is strict on purpose; the receiver still checks WHO sent it (the window and the origin).
  */
 
-/** The `source` of every message: the page and the frame ignore a message that does not say it. */
 export const EMBED_SOURCE = 'casazen';
 
-/** The version of this protocol: a change that is not compatible is `v2`, with its own path (`/embed/v2/`). */
 export const EMBED_PROTOCOL_VERSION = 1;
 
-/** The events a widget reports to the page, with the names of GA4. */
 export const EMBED_EVENT_NAMES = ['search', 'view_item_list', 'view_item', 'begin_checkout'] as const;
 export type EmbedEventName = (typeof EMBED_EVENT_NAMES)[number];
 
-/** What the page may ask of the look of the frame; each member is checked by the frame before it is used. */
 export interface EmbedTheme {
   primary?: string;
   radius?: string;
   font?: string;
 }
 
-/** The members of each type of message, apart from `source`, `v` and `type`. */
 export interface EmbedFields {
   ready: { widget: string };
   resize: { height: number };
@@ -44,22 +39,18 @@ export interface EmbedFields {
 
 export type EmbedMessageType = keyof EmbedFields;
 
-/** A message of the protocol: of the type asked, or of any type. */
 export type EmbedMessage<T extends EmbedMessageType = EmbedMessageType> = {
   [K in T]: { source: typeof EMBED_SOURCE; v: typeof EMBED_PROTOCOL_VERSION; type: K } & EmbedFields[K];
 }[T];
 
-/** The highest height a frame can be asked for (a page of 50 000 px is a mistake, never a layout). */
 const MAX_HEIGHT = 50000;
 const MAX_URL_LENGTH = 2048;
 const MAX_PARAMS_BYTES = 4096;
 const MAX_PATH_LENGTH = 1000;
 const MAX_THEME_VALUE_LENGTH = 64;
 const MAX_LANG_LENGTH = 16;
-/** How deep the `params` of an event may nest: they are a flat list of values and, at most, the items of a purchase. */
 const MAX_PARAMS_DEPTH = 6;
 
-/** The name of a widget (`booking`, `guest-access`) or of an error (`not_found`): short, lower case, no spaces. */
 const TOKEN = /^[a-z][a-z0-9_-]{0,31}$/;
 
 /** `message` as the protocol writes it. Used by the builder and by the parser, so that what one makes the other reads back. */
@@ -67,14 +58,12 @@ export function buildEmbedMessage<T extends EmbedMessageType>(type: T, fields: E
   return { source: EMBED_SOURCE, v: EMBED_PROTOCOL_VERSION, type, ...fields } as EmbedMessage<T>;
 }
 
-/** An object made of keys and values, not an array, a date, a map or an instance of a class (the prototype of another window's object counts as plain). */
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false;
   const prototype: unknown = Object.getPrototypeOf(value);
   return prototype === null || Object.getPrototypeOf(prototype) === null;
 }
 
-/** Whether `value` is what JSON can say: text, finite numbers, booleans, null, lists and plain objects, nested no deeper than `depth`. A member that is `undefined` is simply not there. */
 function isJsonValue(value: unknown, depth: number): boolean {
   if (value === null || typeof value === 'string' || typeof value === 'boolean') return true;
   if (typeof value === 'number') return Number.isFinite(value);
@@ -84,7 +73,6 @@ function isJsonValue(value: unknown, depth: number): boolean {
   return false;
 }
 
-/** The size of `text` in bytes of UTF-8, the way the limit of the contract counts it. */
 function utf8Length(text: string): number {
   let bytes = 0;
   for (const character of text) {
@@ -94,22 +82,16 @@ function utf8Length(text: string): number {
   return bytes;
 }
 
-/** The `params` of an event as plain JSON of at most 4 KB (a clean copy: no prototype, no `undefined`), or null. */
 function readParams(value: unknown): Record<string, unknown> | null {
   if (!isPlainObject(value) || !isJsonValue(value, MAX_PARAMS_DEPTH)) return null;
   const json = JSON.stringify(value);
   return utf8Length(json) <= MAX_PARAMS_BYTES ? (JSON.parse(json) as Record<string, unknown>) : null;
 }
 
-/**
- * Whether `params` would be taken as the `params` of an `event` message: plain JSON of at most 4 KB, exactly what `parseEmbedMessage` asks. For whoever
- * builds them (the GA4 builders of the app): a message the parser refuses is never posted, and the page would hear nothing of the event.
- */
 export function fitsEmbedEventParams(params: unknown): boolean {
   return readParams(params) !== null;
 }
 
-/** An absolute http(s) address of at most 2048 characters, with no credentials in it; anything else is null. */
 function readUrl(value: unknown): string | null {
   if (typeof value !== 'string' || value.length === 0 || value.length > MAX_URL_LENGTH) return null;
   try {
@@ -126,17 +108,11 @@ function readTheme(value: unknown): EmbedTheme | null {
   const theme: EmbedTheme = {};
   for (const key of ['primary', 'radius', 'font'] as const) {
     const member = value[key];
-    // A member that is not a short text is not one of the contract: dropped, the others stay.
     if (typeof member === 'string' && member.length <= MAX_THEME_VALUE_LENGTH) theme[key] = member;
   }
   return theme;
 }
 
-/**
- * The message `data` carries, as the protocol writes it, or null when it is not a message of version 1: a `source` or `v` that is not exact, an
- * unknown type, or a member that breaks the rules of its type. Members that are not in the contract are dropped. A number that is too high
- * is brought down to the limit (`resize`); one that cannot be a height at all (not finite, negative) is no message.
- */
 export function parseEmbedMessage(data: unknown): EmbedMessage | null {
   if (!isPlainObject(data) || data.source !== EMBED_SOURCE || data.v !== EMBED_PROTOCOL_VERSION) return null;
 

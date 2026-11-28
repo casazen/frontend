@@ -11,7 +11,6 @@ import { mockPropertiesApi } from './properties-api-mock';
 export const FLOW_LEASE_ID = 'lease-e2e-flow-0001';
 export const FLOW_PROPERTY = buildCreatedProperty({ id: 'prop-lease-e2e-01', name: 'Appartamento Seveso', city: 'Seveso' });
 
-/** What the mocked API received, so a spec asserts the request the UI really sent (not only what it shows). */
 export interface LeaseFlowCalls {
   contractDownloads: number;
   receiptDownloads: number;
@@ -65,10 +64,6 @@ function buildInstallments(monthlyRent: number): RentInstallment[] {
   return rows;
 }
 
-/**
- * A draft lease as the guided draft leaves it (LR-06a): two landlords and two tenants, a libero at 1.200 €, already saved on the
- * server. The wizard that fills it in is its own spec; the flow below starts from the sheet of the lease.
- */
 function flowDraftLease(): LeaseDetail {
   const party = (index: number, role: 'Landlord' | 'Tenant', firstName: string, lastName: string, masked: string) => ({
     id: `party-${index}`,
@@ -109,12 +104,6 @@ function flowDraftLease(): LeaseDetail {
   };
 }
 
-/**
- * Stateful in-memory API of the lease flow with the providers as production has them (e-signature and RLI filing off):
- * a draft lease -> contract to sign -> signed upload -> manual RLI -> rent schedule. Every step changes the state the next GET
- * returns, so a UI that shows success without calling the API fails the spec. The mock answers what the real API
- * answers (the 422 for a rent schedule of an unsigned lease, the signers and the checklist), not a canned success.
- */
 export async function mockLeaseFlowApi(page: Page): Promise<LeaseFlowCalls> {
   const calls: LeaseFlowCalls = {
     contractDownloads: 0,
@@ -138,7 +127,6 @@ export async function mockLeaseFlowApi(page: Page): Promise<LeaseFlowCalls> {
         documentType: 'Ape',
         uploadedAt: '2026-08-01T10:00:00Z',
         downloadUrl: '/documents/doc-ape',
-        // LT-10: the code and the class the contract states; the form waits for them before the draft.
         apeCode: '1610800012345/17',
         apeEnergyClass: 'C',
       },

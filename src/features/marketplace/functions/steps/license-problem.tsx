@@ -7,9 +7,7 @@ import { CHANNELS_PAGE_PATH } from '../../lib/marketplace-paths';
 import { licensedProblemOf } from '../licensed-request-model';
 
 interface LicenseProblemProps {
-  /** What stopped the read of the license of the property. */
   error: unknown;
-  /** Reads it again. */
   onRetry: () => void;
 }
 

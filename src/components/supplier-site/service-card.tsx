@@ -10,11 +10,8 @@ import { SiteMedia } from './site-media';
 
 interface ServiceCardProps {
   service: PublicSupplierService;
-  /** The first slot is said only while the bookings are open. */
   showSlot: boolean;
-  /** The page of the service: the whole card leads to it (the title is the link, stretched over the card). */
   href: string;
-  /** The level of the title: 3 under the heading of a block of the home, 2 on the list of services. */
   level?: 2 | 3;
 }
 

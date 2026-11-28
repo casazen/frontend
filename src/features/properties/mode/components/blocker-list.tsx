@@ -14,7 +14,6 @@ const KIND_ICON: Record<PropertyModeBlockerKind, LucideIcon> = {
   DraftLease: FilePen,
 };
 
-/** Stays and leases come with their status; a block imported from a portal has none. */
 function BlockerStatus({ blocker }: { blocker: PropertyModeBlocker }) {
   if (!blocker.status) return null;
   if (blocker.kind === 'Stay') return <StatusBadge kind="booking" status={blocker.status as StatusOf<'booking'>} />;
@@ -27,17 +26,10 @@ function BlockerStatus({ blocker }: { blocker: PropertyModeBlocker }) {
 interface BlockerListProps {
   blockers: readonly PropertyModeBlocker[];
   propertyId: string;
-  /** Rows shown before "and N more": a busy property can have dozens of stays after a near date. */
   limit?: number;
-  /** Where the whole list is (the bookings of the property, the leases): offered next to "and N more". */
   seeAll?: { to: string; label: string };
 }
 
-/**
- * What stands in the way of the day chosen: the stays, the dates taken on a portal, the leases, the drafts. Ids, dates and a
- * status only (the API sends no name), each with the place where it is dealt with: the booking, the calendars of the
- * property, the contract. The list is short on purpose; the rest is counted, with the way to all of it.
- */
 export function BlockerList({ blockers, propertyId, limit = 5, seeAll }: BlockerListProps) {
   const { t } = useTranslation();
   const range = useRangeLabel();

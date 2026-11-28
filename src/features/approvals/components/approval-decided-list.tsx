@@ -7,15 +7,9 @@ import { messageThreadPath } from '@/lib/message-hub-routes';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
 interface ApprovalDecidedListProps {
-  /** The items decided on this page, as the API answered them (an approved one with what the approval did, a rejected one with its reason), the latest first. */
   items: ApprovalQueueItem[];
 }
 
-/**
- * What has just been decided on this page. The queue lists only what waits, so a decided item leaves it at once: it stays here, quiet, for as long as
- * the page is open, with what the approval did (message sent, campaign scheduled, no action linked) or the reason it was rejected for (AC-NF68-1,
- * AC-NF68-3). Leaving the page empties it: the decision, its author and its reason stay on the item.
- */
 export function ApprovalDecidedList({ items }: ApprovalDecidedListProps) {
   const { t } = useTranslation();
   if (items.length === 0) return null;

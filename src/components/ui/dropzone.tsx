@@ -4,33 +4,18 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export interface DropzoneProps {
-  /** MIME types the picker offers (`image/jpeg`). What is dropped is not filtered here: the caller knows the rules and says which file fails. */
   accept: readonly string[];
-  /** Told the files that were chosen or dropped, in the order given. The zone checks nothing about them. */
   onFiles: (files: File[]) => void;
-  /** What the zone invites to do ("Trascina qui le foto"). */
   title: React.ReactNode;
-  /** The button that opens the file picker: the way in for the keyboard, the phone and everyone who does not drag. */
   buttonLabel: string;
-  /** The rules in one line ("JPG, PNG o WebP, fino a 10 MB"). */
   hint?: React.ReactNode;
-  /** More than one file at a time. Default true. */
   multiple?: boolean;
   disabled?: boolean;
   className?: string;
   'data-testid'?: string;
-  /**
-   * The `data-testid` of the file input, for a screen whose input already has a name its tests and its e2e read (`proof-upload-file`) and that moves to this zone. Default: the one of the
-   * zone with `-input` after it.
-   */
   inputTestId?: string;
 }
 
-/**
- * A place to drop files, with a button for those who do not drag (SR-07b). The button is the real control: it opens the file picker
- * and works with the keyboard and on a phone; the dashed area only adds the drop. It checks nothing and uploads nothing — it hands
- * the files over, in order, and the caller decides what is valid, one file at a time.
- */
 export function Dropzone({
   accept,
   onFiles,
@@ -53,7 +38,6 @@ export function Dropzone({
     if (files.length > 0) onFiles(multiple ? files : files.slice(0, 1));
   };
 
-  // Only files are welcome: dragging a photo of the gallery over the zone (to reorder it) must not light it up.
   const carriesFiles = (event: React.DragEvent) => Array.from(event.dataTransfer.types).includes('Files');
 
   return (
@@ -80,7 +64,6 @@ export function Dropzone({
         event.dataTransfer.dropEffect = 'copy';
       }}
       onDragLeave={(event) => {
-        // Moving over a child of the zone fires a leave on the zone itself: only going out of it counts.
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false);
       }}
       onDrop={(event) => {
@@ -106,7 +89,6 @@ export function Dropzone({
         data-testid={inputTestId ?? `${testId}-input`}
         onChange={(event) => {
           hand(event.target.files);
-          // The same file can be chosen again after a failure.
           event.target.value = '';
         }}
       />

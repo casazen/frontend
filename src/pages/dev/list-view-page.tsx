@@ -55,7 +55,6 @@ const SCENARIOS: Scenario[] = ['data', 'loading', 'refreshing', 'error', 'empty'
 
 const range = (booking: Booking) => `${booking.from} → ${booking.to}`;
 
-/** The unified list on made-up stays, to look at it and to let Playwright and axe walk through every part of it. */
 export default function ListViewPage() {
   const [bookings, setBookings] = useState<Booking[]>(INITIAL);
   const [params, setParams] = useSearchParams();
@@ -245,7 +244,6 @@ export default function ListViewPage() {
           },
         },
         rowTone: (booking) => (booking.status === 'Pending' ? 'urgent' : booking.status === 'CheckedOut' || booking.status === 'Cancelled' ? 'done' : undefined),
-        // With a sidebar the room is less than the screen: the table is for 1280 px and more, as in the real pages.
         cardsUntil: 'xl',
         csv: { fileName: 'prenotazioni' },
         empty: { title: 'Qui arrivano tutte le tue prenotazioni', description: 'Dal tuo sito, da Airbnb e Booking.com, o inserite a mano.', action: { label: 'Crea prenotazione', onClick: () => toast.info('Crea prenotazione') } },

@@ -1,4 +1,3 @@
-/** Rules of the photo upload, as `GET /properties/{id}/images` answers them (PC-04). */
 export interface PhotoUploadRules {
   maxPhotos: number;
   maxFilesPerRequest: number;
@@ -8,7 +7,6 @@ export interface PhotoUploadRules {
 
 export type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
-/** Same rules as the API when the gallery has not answered yet (they come from `GET /properties/{id}/images`). */
 export const FALLBACK_PHOTO_RULES: PhotoUploadRules = {
   maxPhotos: 20,
   maxFilesPerRequest: 10,
@@ -40,11 +38,6 @@ export function validatePhotoFile(file: File, rules: PhotoUploadRules, t: Transl
   return null;
 }
 
-/**
- * First problem of a selection of files, in the user's language, or null when it can be uploaded. The API checks the
- * same rules (and the content of each file); checking here too only spares a round trip and names the file. A
- * selection is uploaded whole or not at all, like the API does.
- */
 export function validatePhotoSelection(
   files: File[],
   current: number,

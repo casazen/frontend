@@ -1,16 +1,12 @@
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import type { FiscalDocumentSdiState, SelfBillingDetail, SelfBillingGeneration, SelfBillingListItem } from '@/types';
 
-/** The TD17 the SDI rejected, the one the correction discards. */
 export const REJECTED_ID = 'a0000000-0000-4000-8000-000000000001';
 
-/** The draft that replaces it and holds its number. */
 export const REPLACEMENT_ID = 'b0000000-0000-4000-8000-000000000002';
 
-/** The number of the rejected TD17: the replacement holds the same one. */
 export const NUMBER = 'AF-2026/1';
 
-/** A TD17 of the list: a draft of October 2026 of the agency, with nothing of the correction on it. */
 export const item = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem => ({
   id: 'd0000000-0000-4000-8000-000000000001',
   holderKind: 'Agency',
@@ -44,18 +40,14 @@ export const item = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingL
 export const rejected = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem =>
   item({ id: REJECTED_ID, status: 'Issued', number: NUMBER, issueDate: '2026-11-10', sdiStatus: 'rejected', canCorrect: true, ...overrides });
 
-/** The original a correction discarded: history, with its number and its rejection, and the draft that replaces it. */
 export const original = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem =>
   rejected({ status: 'Discarded', canCorrect: false, replacedByDocumentId: REPLACEMENT_ID, ...overrides });
 
-/** The draft that replaces the rejected TD17: it holds its number and names it. */
 export const replacement = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem =>
   item({ id: REPLACEMENT_ID, number: NUMBER, replacesDocumentId: REJECTED_ID, ...overrides });
 
-/** The replacement draft the month no longer supports: the server says it is kept (`keptReason`), so «Chiudi come non più dovuta» is offered for it. */
 export const kept = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem => replacement({ keptReason: 'ledger_gives_no_td17', ...overrides });
 
-/** The replacement draft after the closing: `Discarded`, its number kept and reserved, nothing to issue (`sdiStatus` not applicable), and how it was closed. */
 export const closed = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem =>
   replacement({
     status: 'Discarded',
@@ -106,7 +98,6 @@ export const generation = (overrides: Partial<SelfBillingGeneration> = {}): Self
   ...overrides,
 });
 
-/** A call the server answers with `status` and, when it has one, the `code` of its RFC 7807 body. */
 export function failure(status: number, code?: string): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   const data = code ? { code } : {};

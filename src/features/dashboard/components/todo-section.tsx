@@ -4,7 +4,6 @@ import { PlainSection } from '@/components/shared/calm';
 import type { HomeRow } from '../lib/home-model';
 import { HomeRowItem } from './home-row';
 
-/** How many things to do the Home shows before "Vedi tutte". */
 const VISIBLE = 4;
 
 interface TodoSectionProps {
@@ -15,10 +14,6 @@ interface TodoSectionProps {
   onToggleAll: () => void;
 }
 
-/**
- * "Da fare": a section without a box, in the order the server gives (most pressing first), each row with how pressing it is,
- * said in words, and the button that does it. Four rows, then "Vedi tutte".
- */
 export function TodoSection({ rows, incomplete, loading, showAll, onToggleAll }: TodoSectionProps) {
   const { t } = useTranslation();
   const shown = showAll ? rows : rows.slice(0, VISIBLE);
@@ -38,7 +33,6 @@ export function TodoSection({ rows, incomplete, loading, showAll, onToggleAll }:
           {t(loading ? 'shared.loading.srOnly' : 'dashboardPrioritiesPartial')}
         </p>
       ) : (
-        // Nothing to do is good news, said in one quiet line: not a second highlight beside the day.
         <p className="flex items-center gap-2 py-2 text-sm text-foreground/75" data-testid="home-todo-empty">
           <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-success" />
           <span className="min-w-0">{t('dashboardNoPending')}</span>

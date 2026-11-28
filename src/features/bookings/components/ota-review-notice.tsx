@@ -14,11 +14,6 @@ interface OtaReviewNoticeProps {
   canWrite: boolean;
 }
 
-/**
- * OTA stay created from an iCal block and "da verificare" (CO-21): a sync found its reservation gone from the channel's
- * calendar, or with other dates. CasaZen changed nothing: the host checks the channel, then marks the stay verified or,
- * for new dates, applies them to the stay. A notice (`Alert`), not the highlighted block of the page: that is "Cosa succede ora".
- */
 export function OtaReviewNotice({ booking, canWrite }: OtaReviewNoticeProps) {
   const { t, i18n } = useTranslation();
   const resolve = useResolveOtaReview();

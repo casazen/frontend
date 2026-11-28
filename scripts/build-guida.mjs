@@ -14,22 +14,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// GUIDA_SRC e GUIDA_OUT servono solo per le prove (anteprima di una cartella di contenuti diversa).
 const SRC_DIR = process.env.GUIDA_SRC ? path.resolve(process.env.GUIDA_SRC) : path.join(ROOT, 'guida', 'contenuti');
 const META_FILE = path.join(ROOT, 'guida', 'meta.json');
 const ASSETS_DIR = path.join(ROOT, 'public', 'guida');
 const OUT_DIR = process.env.GUIDA_OUT ? path.resolve(process.env.GUIDA_OUT) : ASSETS_DIR;
 const MANIFEST_FILE = path.join(ROOT, 'src', 'config', 'route-manifest.ts');
 
-/** `noindex` finché il manuale non viene pubblicato di proposito (decisione del prodotto). */
 const ROBOTS = 'noindex, follow';
 const BASE_URL_PATH = '/guida/';
 
-/* ------------------------------------------------------------------------------------------------------------------
- * Tassonomia
- * ---------------------------------------------------------------------------------------------------------------- */
-
-/** Sezioni del manuale, nell'ordine in cui appaiono nell'indice. */
 export const SECTIONS = [
   { name: 'Per iniziare', icon: 'compass', accent: 'ink', blurb: 'Accesso, aree di lavoro, cruscotto e primi passi.' },
   { name: 'Affitti brevi', icon: 'sun', accent: 'terra', blurb: 'Immobili, prenotazioni, ospiti e messaggi.' },
@@ -59,7 +52,6 @@ const AVAILABILITY = {
   'in arrivo': { label: 'In arrivo', cls: 'soon' },
 };
 
-/** Titoli di sezione riconosciuti (confronto senza accenti, in minuscolo). */
 const SECTION_KEYS = [
   ['in breve', 'breve'],
   ['funzionalita', 'funzionalita'],
@@ -73,7 +65,6 @@ const SECTION_KEYS = [
   ['note per la revisione', 'note'],
 ];
 
-/** Parole che non devono comparire nel testo pubblicato (regole del prodotto): errore. */
 const FORBIDDEN = [
   [/concordato\s*facile/i, 'nome del fornitore del contratto guidato (mai nominarlo)'],
   [/quokka|kross|helix/i, 'nome di cliente pilota o strumento interno'],
@@ -81,15 +72,10 @@ const FORBIDDEN = [
   [/\bPR\s*#?\d{3,4}\b|#\d{3,4}\b/, 'numero di pull request o issue'],
   [/\bsrc\/|\.tsx?\b|\.cs\b|\/api\/[a-z]/i, 'percorso di file o endpoint'],
 ];
-/** Termini da rivedere ma non bloccanti. */
 const WARN_TERMS = [
   [/\bpartner\b/i, '«partner»: va bene solo se è un termine della UI e non si riferisce al contratto guidato'],
   [/\bCF\b/, '«CF»: va bene solo come codice fiscale, mai come nome del fornitore del contratto guidato'],
 ];
-
-/* ------------------------------------------------------------------------------------------------------------------
- * Utilità
- * ---------------------------------------------------------------------------------------------------------------- */
 
 const esc = (s) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -128,10 +114,6 @@ function parseFrontMatter(text, file) {
   }
   return { meta, body: m[2] };
 }
-
-/* ------------------------------------------------------------------------------------------------------------------
- * Markdown (sottoinsieme) -> blocchi
- * ---------------------------------------------------------------------------------------------------------------- */
 
 const LIST_ITEM = /^(\s*)(\d+[.)]|[-*•])\s+(.*)$/;
 
@@ -261,10 +243,6 @@ export function parseBlocks(md) {
   return blocks;
 }
 
-/* ------------------------------------------------------------------------------------------------------------------
- * Struttura di una pagina
- * ---------------------------------------------------------------------------------------------------------------- */
-
 function keyOfTitle(title) {
   const f = fold(title).replace(/\(.*\)/, '').trim();
   for (const [prefix, key] of SECTION_KEYS) if (f.startsWith(prefix)) return key;
@@ -305,7 +283,6 @@ function buildStructure(blocks) {
   return { pre, sections };
 }
 
-/** Elementi di un elenco di glossario: «**Termine**: definizione». */
 function glossaryItems(section) {
   const out = [];
   for (const b of section.blocks) {
@@ -318,7 +295,6 @@ function glossaryItems(section) {
   return out;
 }
 
-/** Righe della tabella «Funzionalità». */
 function featureRows(section, page) {
   const tbl = section.blocks.find((b) => b.type === 'table');
   if (!tbl) return [];
@@ -343,10 +319,6 @@ function featureRows(section, page) {
     };
   });
 }
-
-/* ------------------------------------------------------------------------------------------------------------------
- * Testo semplice (per ricerca e chatbot)
- * ---------------------------------------------------------------------------------------------------------------- */
 
 function stripInline(text, titleOf) {
   return text
@@ -377,10 +349,6 @@ function blocksToText(blocks, titleOf, indent = '') {
   return out.join('\n');
 }
 
-/* ------------------------------------------------------------------------------------------------------------------
- * Icone
- * ---------------------------------------------------------------------------------------------------------------- */
-
 const ICONS = {
   compass: '<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/>',
@@ -409,10 +377,6 @@ const ICONS = {
 };
 const icon = (name, cls = 'gd-i') =>
   `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
-
-/* ------------------------------------------------------------------------------------------------------------------
- * Caricamento dei contenuti
- * ---------------------------------------------------------------------------------------------------------------- */
 
 function loadPages(errors) {
   if (!fs.existsSync(SRC_DIR)) throw new Error(`Cartella dei contenuti assente: ${SRC_DIR}`);
@@ -457,10 +421,6 @@ function loadPages(errors) {
   });
   return pages;
 }
-
-/* ------------------------------------------------------------------------------------------------------------------
- * Rendering HTML
- * ---------------------------------------------------------------------------------------------------------------- */
 
 function makeContext(pages, errors, warnings) {
   const byId = new Map(pages.map((p) => [p.id, p]));
@@ -578,13 +538,11 @@ function startLink(pages, label) {
   return pages.some((p) => p.id === START_ID) ? `<a href="${START_ID}.html">${label}</a>` : label;
 }
 
-/** Legenda dei tre stati di disponibilità, con il rimando a come si accende una funzione «su attivazione». */
 function availabilityLegend(ctx) {
   const how = ctx.link('per-iniziare', 'cosa-significa-su-attivazione', 'come si attiva');
   return `<p class="gd-legend"><span class="gd-legend__i">${badge('disponibile')} lo usi subito, se hai il ruolo e i permessi giusti</span><span class="gd-legend__i">${badge('su attivazione')} non è accesa di partenza (${how})</span><span class="gd-legend__i">${badge('in arrivo')} non c'è ancora</span></p>`;
 }
 
-/** «Chi è chi»: le persone dei filtri spiegate in una riga, per chi non conosce i nomi dell'app. */
 function personasLegend(pages) {
   const items = Object.entries(PERSONAS)
     .filter(([k]) => pages.some((p) => p.meta.chi.includes(k)))
@@ -676,10 +634,6 @@ function renderSection(sec, page, ctx) {
       return `<section class="gd-sec"${id}>${heading(sec.title)}${renderBlocks(sec.blocks, ctx)}${sec.subs.map((s) => `<h3 class="gd-h3" id="${s.slug}">${inline(s.title, ctx)}</h3>${renderBlocks(s.blocks, ctx)}`).join('\n')}</section>`;
   }
 }
-
-/* ------------------------------------------------------------------------------------------------------------------
- * Struttura comune delle pagine
- * ---------------------------------------------------------------------------------------------------------------- */
 
 function renderNav(pages, current) {
   const aggregates = [
@@ -812,11 +766,6 @@ function prevNext(page, pages) {
   return `<nav class="gd-pnav" aria-label="Pagine vicine">${card(prev, 'prev')}${card(next, 'next')}</nav>`;
 }
 
-/* ------------------------------------------------------------------------------------------------------------------
- * Pagine aggregate
- * ---------------------------------------------------------------------------------------------------------------- */
-
-/** «Per chi: ospite, inquilino.» dentro un compito: sostituisce le persone della pagina nei filtri («Chi sei»). */
 function taskChi(blocks, fallback) {
   for (const b of blocks) {
     if (b.type !== 'p') continue;
@@ -841,7 +790,6 @@ function collect(pages, ctx) {
     const base = { pagina: page.id, titolo_pagina: page.meta.titolo, sezione: page.meta.sezione, chi: page.meta.chi, dove: page.meta.dove || '' };
     const ctxText = (extra) =>
       `${page.meta.titolo} (${page.meta.sezione}${page.meta.dove ? `; si trova in: ${page.meta.dove}` : ''}${page.meta.chi.length ? `; per: ${page.meta.chi.map((c) => PERSONAS[c].label).join(', ')}` : ''})${extra ? ` — ${extra}` : ''}`;
-    // Riassunto della pagina
     chunks.push({
       id: page.id,
       tipo: 'pagina',
@@ -996,7 +944,6 @@ ${data.faqs.length ? `${personasLegend(pages)}${sectionTabs(data.faqs, 'faqs')}$
 
 function renderGlossaryPage(pages, ctx, data, meta) {
   const terms = [...data.terms].sort((a, b) => fold(a.termine).localeCompare(fold(b.termine), 'it'));
-  // Un termine può avere più significati nelle varie pagine («Bozza», «Richiesta»…): si mostrano tutte le definizioni diverse, ciascuna con la sua pagina.
   const byTerm = new Map();
   for (const t of terms) {
     const k = fold(t.termine);
@@ -1092,10 +1039,6 @@ function renderHome(pages, data, meta) {
   return layout({ title: 'Guida CasaZen', description: "Il manuale d'uso di CasaZen: come fare, passo passo, e l'elenco di tutte le funzionalità.", current: 'index.html', pages, main, bodyClass: 'gd-home', meta });
 }
 
-/* ------------------------------------------------------------------------------------------------------------------
- * Controlli di qualità
- * ---------------------------------------------------------------------------------------------------------------- */
-
 function lintContent(pages, errors, warnings) {
   for (const p of pages) {
     const published = p.struct.sections.filter((s) => s.key !== 'note');
@@ -1142,10 +1085,6 @@ function coverageReport(pages) {
   return { total: routes.length, covered: routes.length - missing.length, missing };
 }
 
-/* ------------------------------------------------------------------------------------------------------------------
- * Orchestrazione
- * ---------------------------------------------------------------------------------------------------------------- */
-
 export function buildGuida() {
   const errors = [];
   const warnings = [];
@@ -1169,7 +1108,6 @@ export function buildGuida() {
   files.set('glossario.html', renderGlossaryPage(pages, ctx, data, meta));
   files.set('cerca.html', renderSearchPage(pages, meta));
 
-  // Controllo finale dei rimandi interni delle pagine generate (home, elenchi e legende comprese).
   {
     const idsOf = new Map();
     for (const [name, content] of files) if (name.endsWith('.html')) idsOf.set(name, new Set([...content.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])));
@@ -1191,7 +1129,6 @@ export function buildGuida() {
     }
   }
 
-  // Indice di ricerca (letto da assets/guida.js)
   const idx = [];
   for (const p of pages) {
     ctx.where = p.file;
@@ -1214,11 +1151,9 @@ export function buildGuida() {
   }
   files.set('guida-indice.js', `window.GUIDA_INDICE=${JSON.stringify({ versione: 2, aggiornato: meta.aggiornato, pagine: pagineKw, rotte, voci: idx })};\n`);
 
-  // Base di conoscenza per il chatbot: un blocco autosufficiente per compito, domanda, flusso, regola…
   const chunks = data.chunks.map((c) => ({ ...c, url: `${BASE_URL_PATH}${c.url}` }));
   files.set('guida-chunks.json', `${JSON.stringify({ versione: 1, aggiornato: meta.aggiornato, lingua: 'it', base: BASE_URL_PATH, note: 'Ogni chunk è autosufficiente. «testo» è in italiano semplice. Usa «url» per citare la fonte.', chunks }, null, 1)}\n`);
 
-  // Testo completo e indice per LLM
   const full = [`# Guida CasaZen (aggiornata il ${meta.aggiornatoLungo})`, ''];
   for (const p of pages) {
     full.push(`## ${p.meta.titolo}`, '', `Sezione: ${p.meta.sezione}${p.meta.dove ? ` · Si trova in: ${p.meta.dove}` : ''}${p.meta.chi.length ? ` · Per: ${p.meta.chi.map((c) => PERSONAS[c].label).join(', ')}` : ''}`, '');
@@ -1269,7 +1204,6 @@ export function buildGuida() {
   return { files, errors, warnings, notes, riepilogo, coverage: coverageReport(pages), stats: { pagine: pages.length, compiti: data.howtos.length, funzioni: data.features.length, faq: data.faqs.length, flussi: data.flows.length, termini: data.terms.length, chunks: chunks.length } };
 }
 
-/** Confronta i file generati con quelli su disco. */
 export function diffGenerated(files) {
   const stale = [];
   for (const [name, content] of files) {

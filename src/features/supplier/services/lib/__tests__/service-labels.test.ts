@@ -101,7 +101,6 @@ describe('the texts of the catalog', () => {
   });
 
   it('TheChoicesOfTheForm_AreInRangeOfTheApi', () => {
-    // 5 to 1,440 minutes; 0 to 720 hours of notice.
     for (const minutes of DURATION_CHOICES) {
       expect(minutes).toBeGreaterThanOrEqual(5);
       expect(minutes).toBeLessThanOrEqual(1440);

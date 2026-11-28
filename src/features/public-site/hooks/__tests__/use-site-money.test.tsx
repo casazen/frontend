@@ -3,10 +3,6 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import { useSiteMoney } from '../use-site-money';
 
-/**
- * The amounts of the booking site that are not in cents (the confirmation, the receipt of the home, the hearts, the bookings of the guest) are written by this
- * hook (CHF-MONEY): the currency is the one of the object the amount belongs to, never a euro that nobody said.
- */
 describe('useSiteMoney', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
@@ -35,7 +31,6 @@ describe('useSiteMoney', () => {
 
     expect(result.current(519.5, currency)).toBe('519,50 (valuta non disponibile)');
 
-    // The function follows the language of the guest: the phrase is said in English when the site is.
     await act(async () => {
       await i18n.changeLanguage('en');
     });

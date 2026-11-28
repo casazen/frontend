@@ -15,15 +15,15 @@ import { EMPTY_QUESTURA_CREDENTIALS, validateQuesturaCredentials, type QuesturaC
 
 interface QuesturaCredentialsCardProps {
   propertyId: string;
-  /** The caller may set, replace or remove them (owner of the property or org admin; the API checks again). */
   canEdit: boolean;
+  embedded?: boolean;
 }
 
 /**
  * Alloggiati Web (Questura) credentials of a property (CO-14): write-only. The host enters username, password and WSKey
  * to set or replace them; afterwards only "configured on <date>" is shown, never a value (the API never returns them).
  */
-export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredentialsCardProps) {
+export function QuesturaCredentialsCard({ propertyId, canEdit, embedded = false }: QuesturaCredentialsCardProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const status = useQuesturaCredentialsStatus(propertyId);
@@ -51,7 +51,6 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
     if (invalid) return;
     const data = profile === 'preserve' ? values : { ...values, apartmentId: profile === 'single' ? 0 : apartment };
     save.mutate(data, {
-      // Write-only: the values leave the page as soon as the API has them.
       onSuccess: () => {
         setValues(EMPTY_QUESTURA_CREDENTIALS);
         setProfile('preserve');
@@ -67,14 +66,16 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
   };
 
   return (
-    <section aria-labelledby={titleId} className="min-w-0 space-y-3" data-testid="questura-credentials-card">
-      <div className="space-y-1">
-        <h2 id={titleId} className="flex min-w-0 items-center gap-2 break-words text-lg font-semibold">
-          <KeyRound aria-hidden="true" className="size-5 shrink-0" />
-          {t('questuraCredentials.title')}
-        </h2>
-        <p className="text-sm text-foreground/70">{t('questuraCredentials.description')}</p>
-      </div>
+    <section aria-labelledby={embedded ? undefined : titleId} className="min-w-0 space-y-3" data-testid="questura-credentials-card">
+      {embedded ? null : (
+        <div className="space-y-1">
+          <h2 id={titleId} className="flex min-w-0 items-center gap-2 break-words text-lg font-semibold">
+            <KeyRound aria-hidden="true" className="size-5 shrink-0" />
+            {t('questuraCredentials.title')}
+          </h2>
+          <p className="text-sm text-foreground/70">{t('questuraCredentials.description')}</p>
+        </div>
+      )}
       <div className="space-y-4">
         {status.isLoading ? (
           <p className="flex items-center gap-2 text-sm text-muted-foreground" data-testid="questura-credentials-loading">
@@ -101,7 +102,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
           </div>
         )}
 
-        <p className="text-xs text-muted-foreground">{t('questuraCredentials.writeOnlyHint')}</p>
+        {embedded ? null : <p className="text-xs text-muted-foreground">{t('questuraCredentials.writeOnlyHint')}</p>}
 
         {canEdit && status.isSuccess && (
           <form className="@container min-w-0 space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">

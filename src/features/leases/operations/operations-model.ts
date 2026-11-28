@@ -2,7 +2,6 @@ import { addDays, isStayDate } from '@/lib/stay-dates';
 import type { LeaseLetterKind, LeaseLetterState, LeaseOperations } from '@/types';
 import type { LeaseOperationId } from './operation-ids';
 
-/** What the server says of a letter kind; `undefined` for a kind this version of the server does not send. */
 export function letterState(operations: LeaseOperations, kind: LeaseLetterKind): LeaseLetterState | undefined {
   return operations.letters.find((letter) => letter.kind === kind);
 }
@@ -27,10 +26,6 @@ export function availableOperations(operations: LeaseOperations): Readonly<Recor
   };
 }
 
-/**
- * A percentage as the person types it («3,2» or «3.2»): a number above zero, or `null` when it is not one. Whether it is enough (the most a
- * share can be, two decimals at most) is for the server to say.
- */
 export function parsePercent(text: string): number | null {
   const normalized = text.trim().replace(',', '.');
   if (!/^\d+(\.\d+)?$/.test(normalized)) return null;
@@ -38,15 +33,10 @@ export function parsePercent(text: string): number | null {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
-/** A percentage the server worked out, as a person reads it in the language of the interface: «2,4», «75». */
 export function formatPercent(value: number, language: string): string {
   return new Intl.NumberFormat(language, { maximumFractionDigits: 4 }).format(value);
 }
 
-/**
- * A sum of euros as the person types it («25,5» or «25.50»): a number with at most two decimals, not below zero, or `null` when it is not one.
- * Whether it is enough (above zero, a bound) is for the server to say.
- */
 export function parseAmount(text: string): number | null {
   const normalized = text.trim().replace(',', '.');
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
@@ -54,13 +44,8 @@ export function parseAmount(text: string): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
-/** The most calendar years a deposit is asked a rate for: a guard against absurd dates, the server bounds them too. */
 const MAX_YEARS_HELD = 40;
 
-/**
- * The calendar years with at least one day in `[from, to)`: the days a deposit was held, the day it is returned not counted (the rule of the
- * server). Empty when the two days do not make a period. A date is arithmetic here, not a figure of law.
- */
 export function yearsHeld(from: string, to: string): number[] {
   if (!isStayDate(from) || !isStayDate(to) || to <= from) return [];
   const first = Number(from.slice(0, 4));

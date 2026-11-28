@@ -15,11 +15,6 @@ import { RequestStateBadge } from './request-parts';
 import { requestStateText } from './request-state';
 import type { RequestActions } from './use-request-actions';
 
-/**
- * The quick filters of the list, by id in the address (`?chip=programmate`), are the tabs of the server in the order of the design: what waits
- * for the supplier, what waits for the customer, the jobs, what is left to collect, the archive, and "Tutte" last. "Tutte" is the one for
- * everything (`allChip`), whatever place it has: the list is narrowed down on any other tab, and "Azzera i filtri" goes back to it.
- */
 export const CHIP_ALL = 'tutte';
 const CHIP_TO_ANSWER: SupplierInboxTab = 'da-rispondere';
 const MAX_SEARCH_LENGTH = 60;
@@ -41,11 +36,6 @@ export function startChipOf(counts: SupplierInboxCounts | undefined): SupplierIn
   return tabs.find(([, count]) => count > 0)?.[0] ?? CHIP_TO_ANSWER;
 }
 
-/**
- * What the server is asked for a state of the list: a chip is a tab of the server (`tab=programmate`, with its own order) and
- * "Tutte" is every status. The search needs two letters to be asked (the server refuses one) and at most sixty are sent; the service, the
- * comune and where the request comes from are filters of the server too (SP-08b).
- */
 export function inboxParamsOf(state: ListState, pageSize: number, clientId?: string): SupplierInboxParams {
   const query = state.q.trim();
   const period = state.filters.period ? parseDateRange(state.filters.period) : {};
@@ -61,7 +51,6 @@ export function inboxParamsOf(state: ListState, pageSize: number, clientId?: str
     ...(when ? { when } : {}),
     ...(period.from ? { from: period.from } : {}),
     ...(period.to ? { to: period.to } : {}),
-    // Only the requests of one customer (the link "Le sue richieste" of the page of the customers).
     ...(clientId ? { clientId } : {}),
     page: state.page,
     pageSize,
@@ -69,9 +58,7 @@ export function inboxParamsOf(state: ListState, pageSize: number, clientId?: str
 }
 
 export interface RequestsListOptions {
-  /** The tab the list opens on when the address names none (`startChipOf`). */
   startChip: SupplierInboxTab;
-  /** The services of the supplier and the comuni it works in: the choices of two filters. They arrive after the list is first drawn. */
   services: readonly ListOption[];
   comuni: readonly ListOption[];
 }
@@ -97,13 +84,8 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
 
   return useMemo(() => {
     const locale = i18n.language;
-    // The button of a row is the quick answer: accept a new request, complete a taken one, remind the payer of a finished one. The quote
-    // (SP-04b) is one tap further, in "⋯" of the row and as the first button of the request itself, where the words of the customer and the
-    // time are in front of the supplier.
     const primaryAction = (request: SupplierServiceRequest): ListRowAction | null => {
       const phase = phaseOf(request);
-      // A request on measure of the showcase (SP-10b) is never taken as it is (it has no time and no price): it is answered, in the
-      // conversation and with an offer, on its own page. Once the offer is sent there is nothing to do but wait.
       if (isInquiry(request)) {
         return phase === 'toAnswer'
           ? { id: 'answer', label: t('supplier.inquiry.action.answer'), icon: MessageSquare, href: requestPath(request.id), testId: `answer-${request.id}` }
@@ -125,8 +107,6 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
       if (phase === 'scheduled' || phase === 'inProgress') {
         return { id: 'complete', label: t('supplier.requests.action.completeShort'), icon: CheckCircle2, onSelect: () => complete(request.id), disabled: suspended || busy, testId: `complete-${request.id}` };
       }
-      // A finished job: the reminder, only where the server says it would accept it (and with online payments on). The e-mail goes out only
-      // when this is pressed, never by itself.
       if (phase === 'completed' && onlinePayments && request.payment?.canRequest) {
         return { id: 'remind-payment', label: t('supplier.requests.action.remindPayment'), icon: BellRing, onSelect: () => remindPayment(request.id), disabled: suspended || busy, testId: `remind-payment-${request.id}` };
       }
@@ -148,7 +128,6 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
           always: true,
           rowHeader: true,
           priority: 1,
-          // `cell.open` is called here and not in a component: the list looks, as the cell is built, whether the cell drew the link.
           render: (request, cell) => (
             <>
               {cell.open(requestTitle(request, t))}
@@ -191,13 +170,11 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
           align: 'end',
           priority: 4,
           render: (request) => <PriceCell request={request} />,
-          // The figure the cell shows, as a number a spreadsheet can add up; empty where it is "da concordare".
           csv: (request) => {
             const cents = phaseOf(request) === 'quotePending' && request.quote ? request.quote.totalCents : request.price?.amountCents;
             return cents === null || cents === undefined ? '' : cents / 100;
           },
         },
-        // For the person to add: where the request comes from. The code of the booking is not in the answer of the server, so there is no such column.
         {
           id: 'source',
           label: t('supplier.requests.list.columns.source'),
@@ -264,14 +241,12 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
         const phase = phaseOf(request);
         const entries: ListMenuEntry[] = [{ id: 'open-page', label: t('supplier.requests.action.openPage'), icon: ExternalLink, href: requestPath(request.id), testId: `open-${request.id}` }];
 
-        // After the take the supplier has the address and the contact (decision D9): the map and the call are one tap away.
         const map = phase === 'scheduled' || phase === 'inProgress' ? mapHref(request) : null;
         if (map) entries.push({ id: 'map', label: t('supplier.requests.action.map'), icon: MapPin, href: map, external: true, testId: `map-${request.id}` });
         const phone = request.contactDisclosed && (phase === 'scheduled' || phase === 'inProgress' || phase === 'completed') ? request.hostContact?.phone?.trim() : undefined;
         if (phone) entries.push({ id: 'call', label: t('supplier.requests.action.call'), icon: Phone, href: telHref(phone), testId: `call-${request.id}` });
 
         if (phase === 'toAnswer') {
-          // A request on measure is answered with an offer, on its page: a quote from here would be refused by the server.
           if (!isInquiry(request)) {
             entries.push(
               { id: 'quote', label: t('supplier.requests.action.quote'), icon: FileText, onSelect: () => askQuote(request), disabled: suspended || busy, testId: `quote-${request.id}` },
@@ -280,18 +255,15 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
           }
           entries.push({ id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` });
         }
-        // A backup answers the request as it is: it can refuse, it cannot quote (the host did not choose it).
         if (isBackup(request)) {
           entries.push({ id: 'reject', label: t('supplier.requests.action.reject'), icon: XCircle, danger: true, onSelect: () => askReject(request.id), disabled: suspended || busy, testId: `reject-${request.id}` });
         }
-        // The offer on a request on measure is changed or taken back on its page, with the conversation in front of the supplier.
         if (phase === 'quotePending' && !isInquiry(request)) {
           entries.push(
             { id: 'edit-quote', label: t('supplier.requests.action.editQuote'), icon: Pencil, onSelect: () => askQuote(request), disabled: suspended || busy, testId: `edit-quote-${request.id}` },
             { id: 'withdraw-quote', label: t('supplier.requests.action.withdrawQuote'), icon: Undo2, onSelect: () => askWithdrawQuote(request.id), disabled: suspended || busy, testId: `withdraw-quote-${request.id}` },
           );
         }
-        // A finished job paid outside CasaZen is recorded; the server says whether it would accept it (also with online payments off).
         if (phase === 'completed' && request.payment?.canRecordOffline) {
           entries.push({
             id: 'record-payment',
@@ -304,7 +276,6 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
         }
         return entries;
       },
-      // A card is pulled to the left for its one action and to the right for the request; both are also on the card (the button, the menu).
       swipe: (request) => {
         const left = toSwipe(primaryAction(request), 'success');
         const right: ListSwipeAction = { id: 'open-page', label: t('supplier.requests.action.details'), icon: ExternalLink, tone: 'neutral', href: requestPath(request.id) };
@@ -318,7 +289,6 @@ export function useSupplierRequestsList(actions: RequestActions, options: Reques
         return phase === 'paid' || phase === 'rejected' || phase === 'cancelled' ? 'done' : undefined;
       },
       csv: { fileName: 'richieste' },
-      // With the sidebar open (from `lg`) five columns and an action do not fit under 1280 px: cards until then.
       cardsUntil: 'xl',
       empty: {
         icon: Inbox,

@@ -31,7 +31,6 @@ describe('getContextHomeRoute (UI-00)', () => {
   });
 
   it('getContextHomeRoute_NoPermissionAtAll_ReturnsThePageThatAsksForNone', () => {
-    // The profile is not in the menu of the area any more (the menu of the user leads to it), and it is still the page that opens.
     expect(getContextHomeRoute('long-rent', grants('long-rent', []), NO_FLAGS)).toBe('/app/long-rent/profile');
   });
 
@@ -42,12 +41,10 @@ describe('getContextHomeRoute (UI-00)', () => {
 
   it('getFirstOpenablePage_NothingInTheMenu_ReturnsTheProfileOfTheAreaOrNothing', () => {
     expect(getFirstOpenablePage('long-rent', grants('long-rent', []), NO_FLAGS)).toBe('/app/long-rent/profile');
-    // Every page of the admin area, the profile included, asks for a permission.
     expect(getFirstOpenablePage('admin', grants('admin', []), NO_FLAGS)).toBeUndefined();
   });
 
   it('getContextHomeRoute_NothingTheUserCanOpen_ReturnsTheDefaultPageSoItsOwnGuardAnswers', () => {
-    // Every page of the admin area asks for a permission.
     expect(getContextHomeRoute('admin', grants('admin', []), NO_FLAGS)).toBe('/app/admin');
   });
 

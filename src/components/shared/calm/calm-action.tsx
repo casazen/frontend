@@ -4,9 +4,7 @@ import { cn } from '@/lib/utils';
 import { TOUCH_TARGET } from './calm-styles';
 
 interface CalmActionShared {
-  /** What the action does, already translated ("Registra il contratto"). */
   label: string;
-  /** When several actions say the same ("Apri") this tells them apart; it must start with the label ("Apri: contratto Rossi"). */
   ariaLabel?: string;
   testId?: string;
   /**
@@ -23,8 +21,8 @@ interface CalmActionShared {
  */
 export type CalmAction = CalmActionShared &
   (
-    | { href: string; /** Handed to the page that opens (`useLocation().state`), as a router link does. */ state?: unknown; onClick?: undefined; disabled?: undefined }
-    | { onClick: () => void; /** Not available now: not in the Tab order, not clickable. Only for an action that runs something. */ disabled?: boolean; href?: undefined; state?: undefined }
+    | { href: string; state?: unknown; onClick?: undefined; disabled?: undefined }
+    | { onClick: () => void; disabled?: boolean; href?: undefined; state?: undefined }
   );
 
 export interface CalmActionButtonProps {
@@ -35,7 +33,6 @@ export interface CalmActionButtonProps {
   iconRight?: React.ReactNode;
 }
 
-/** The action as a button (it runs something) or a link that looks like one (it goes somewhere). */
 export function CalmActionButton({ action, variant, size, className, iconRight }: CalmActionButtonProps) {
   const classes = cn(TOUCH_TARGET, className);
 

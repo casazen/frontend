@@ -5,7 +5,6 @@ import type { OrgRoleInfo } from '@/types/org-team.types';
 import { buildAccessPreview } from './access-preview-model';
 import { areaName, capabilityLabel } from './team-labels';
 
-/** One line of the preview: what it is (with an icon, never the color alone) and the things it holds. */
 function PreviewGroup({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
   return (
     <div className="min-w-0 space-y-1">
@@ -18,11 +17,6 @@ function PreviewGroup({ icon: Icon, label, children }: { icon: LucideIcon; label
   );
 }
 
-/**
- * «Cosa vede questo utente»: for a role and the areas of a person, where it can enter and what it can do there, in words and from
- * the matrix the backend gives (nothing here is a list of permissions). Three small groups: the areas, what the person can manage,
- * what it can only look at, what it cannot do. A deactivated person enters nowhere.
- */
 export function AccessPreview({ role, areas, availableAreas, deactivated = false }: { role: OrgRoleInfo; areas: readonly string[]; availableAreas?: readonly string[]; deactivated?: boolean }) {
   const { t } = useTranslation();
 

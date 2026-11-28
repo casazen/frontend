@@ -21,7 +21,6 @@ function setup() {
   return { client, wrapper };
 }
 
-/** The failure of a call as the client throws it: its request holds the access token of the caller. */
 function failureWithToken(status: number): AxiosError {
   const headers = new AxiosHeaders({ Authorization: `Bearer ${TOKEN}` });
   const config = { headers, url: '/fiscal/documents/x/pdf' } as InternalAxiosRequestConfig;
@@ -68,12 +67,10 @@ describe('useDownloadFiscalDocument (privacy rule: the file is a document of a p
       await result.current.mutateAsync({ document: document(), format: 'xml' });
     });
 
-    // Nothing is handed back: the bytes went to the disk inside the function of the mutation, never into the cache.
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toBeUndefined();
     expect(client.getMutationCache().getAll().every((mutation) => mutation.state.data === undefined)).toBe(true);
 
-    // And the mutation itself is dropped as soon as nothing watches it (`gcTime: 0`).
     unmount();
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
@@ -135,7 +132,6 @@ describe('useFiscalDocuments (the list is read again, and is not kept)', () => {
     expect(api.listDocuments).toHaveBeenCalledWith({ kind: 'Invoice' }, 1, 20);
 
     first.unmount();
-    // The names of the recipients do not stay in the browser: nothing watches the list, nothing keeps it.
     await waitFor(() => expect(client.getQueryCache().findAll({ queryKey: ['fiscal', 'documents', 'list'] })).toHaveLength(0));
 
     renderHook(() => useFiscalDocuments({ kind: 'Invoice' }, 1, 20), { wrapper });
@@ -185,18 +181,15 @@ describe('useFiscalDocuments (the list is read again, and is not kept)', () => {
         await vi.advanceTimersByTimeAsync(SDI_WATCH_MS + SDI_POLL_MS);
       });
       const reads = vi.mocked(api.listDocuments).mock.calls.length;
-      // It asked by itself while the window was open, once a minute and no more than the window holds...
       expect(reads).toBeGreaterThan(10);
       expect(reads).toBeLessThanOrEqual(SDI_WATCH_MS / SDI_POLL_MS + 2);
       expect(waiting.result.current.watchOver).toBe(true);
 
-      // ...and it asks no more once the window is over, however long the tab stays open.
       await act(async () => {
         await vi.advanceTimersByTimeAsync(SDI_POLL_MS * 10);
       });
       expect(api.listDocuments).toHaveBeenCalledTimes(reads);
 
-      // «Controlla di nuovo» reads at once, opens the window again, and the page follows the document by itself again.
       await act(async () => {
         waiting.result.current.checkAgain();
       });

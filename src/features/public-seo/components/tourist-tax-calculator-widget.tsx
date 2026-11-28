@@ -21,7 +21,6 @@ import { ChildrenAgesFields } from '@/features/tourist-tax/components/children-a
 interface TouristTaxCalculatorWidgetProps {
   comuneSlug: string;
   comuneName: string;
-  /** Rates of the comune in force today (public page); empty when CasaZen has none. */
   rates: PublicTouristTaxRateSummary[];
 }
 
@@ -49,11 +48,6 @@ export function TouristTaxRateUnavailableNotice({ comuneName }: { comuneName: st
   );
 }
 
-/**
- * Public tourist tax calculator (A8-12, A8-23): the amount comes from the backend engine used by the checkout.
- * Asks the ages of the minors, the accommodation category or the night price only when the rates of the comune
- * need them.
- */
 export function TouristTaxCalculatorWidget({ comuneSlug, comuneName, rates }: TouristTaxCalculatorWidgetProps) {
   const { t } = useTranslation();
   const [today] = useState(() => todayInRome());

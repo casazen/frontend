@@ -11,16 +11,10 @@ import { ReviewCard } from './review-card';
 
 interface ReviewsSectionProps {
   orgSlug: string;
-  /** Id of the property (the reviews are read by it). */
   propertyId: string;
-  /** From the property: the page draws this section only when there is one, so there are never empty stars or a «0 recensioni». */
   summary: RatingSummary;
 }
 
-/**
- * The reviews on the page of a property (DB-12b): the average and the number at the top, then the reviews, newest first, ten at a
- * time with "Carica altre". «Verificate» is explained once, in a "?" next to the number, not on every card.
- */
 export function ReviewsSection({ orgSlug, propertyId, summary }: ReviewsSectionProps) {
   const { t, i18n } = useTranslation();
   const reviews = usePublicReviews(orgSlug, propertyId);
@@ -36,7 +30,6 @@ export function ReviewsSection({ orgSlug, propertyId, summary }: ReviewsSectionP
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <RatingStars value={summary.average} className="size-5" />
           <p className="text-sm">
-            {/* A screen reader gets one sentence ("4,8 su 5, 27 recensioni verificate"), the eyes the number and the count. */}
             <span aria-hidden="true">
               <strong className="text-base">{average}</strong>
               <span className="text-[var(--cz-public-muted)]">

@@ -10,16 +10,9 @@ import { OwnerLoginNotEnabledPage } from '../owner-login-not-enabled-page';
 
 vi.mock('@/lib/axios', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/axios')>()), default: { post: vi.fn(), get: vi.fn() } }));
 
-/**
- * NF-141: the own domain of an agency has its owner portal on but is not yet registered with the sign-in service. Every address of the portal is this one page: it says the access is
- * not active yet, it asks nothing of the server and it keeps the secret of an invitation link out of the address bar.
- */
-/** What the backend issues for an owner invitation: 64 lowercase hex characters. */
 const OWNER_TOKEN = 'a7'.repeat(32);
-/** What it issues for the invitation of a contact of an owner: 43 URL-safe characters. */
 const CONTACT_TOKEN = 'Qx7_aB-9kLmN0pRsTuVwXyZ1234567890AbCdEfGhIj';
 
-/** The page the browser is on, before anything is watching it. */
 function openAt(url: string) {
   window.history.replaceState(null, '', url);
 }
@@ -89,7 +82,6 @@ describe('OwnerLoginNotEnabledPage (NF-141)', () => {
 
     const { router } = renderPage();
 
-    // The query is out of the address bar and out of the router, in place of the entry of the history that held it (no new entry).
     await waitFor(() => expect(window.location.search).toBe(''));
     expect(window.location.pathname).toBe(path);
     expect(window.location.href).not.toContain(secret);
@@ -99,7 +91,6 @@ describe('OwnerLoginNotEnabledPage (NF-141)', () => {
     expect(written.every((url) => !url.includes(secret))).toBe(true);
     expect(pushState).not.toHaveBeenCalled();
     expect(window.history.length).toBe(entries);
-    // It is not kept in memory for the page of the link, not in the storage of the browser, not in the page, and not sent anywhere.
     expect(peekOwnerInvitationToken()).toBeNull();
     expect(peekOwnerContactToken()).toBeNull();
     expect(Object.keys(localStorage)).toHaveLength(0);
@@ -115,7 +106,6 @@ describe('OwnerLoginNotEnabledPage (NF-141)', () => {
 
     renderPage();
 
-    // The router numbers its first entry (a state with no address); nothing is written to the address bar.
     expect(replaceState.mock.calls.filter(([, , url]) => url !== undefined)).toEqual([]);
     expect(window.location.pathname).toBe('/portale-proprietari');
   });

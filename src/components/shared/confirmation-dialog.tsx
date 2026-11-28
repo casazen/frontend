@@ -20,36 +20,18 @@ interface ConfirmationDialogProps {
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  /** The look of the confirm button. `destructive` is the filled red; a confirmation that must not be the main button of the dialog takes `danger-outline`. */
   variant?: ButtonProps["variant"];
-  /** The look of the cancel button (`outline` by default). A dialog that asks to keep what is there makes «keep it» the main button with `default`. */
   cancelVariant?: ButtonProps["variant"];
   onConfirm: () => void | Promise<void>;
   isLoading?: boolean;
-  /**
-   * For what cannot be undone: the word the user has to type before the confirm button works ("ELIMINA"). Capital letters
-   * and the spaces around it do not matter. Without it the dialog asks as it always did.
-   */
   requireText?: string;
-  /** What will happen if the user confirms, one short sentence each, listed above the buttons. */
   consequences?: readonly string[];
-  /** What the confirmation needs to know (a date): fields between the description and the consequences, inside the form. */
   children?: ReactNode;
-  /**
-   * Classes of the box of the dialog. A confirmation that carries fields (a reason to choose, a note to write) can be taller than a short window, and a dialog in the middle of the screen does not scroll by itself:
-   * `sm:max-h-[90dvh] sm:overflow-y-auto` makes it scroll inside, as the other dialogs with a form do (under `sm` it is already a sheet that scrolls).
-   */
   contentClassName?: string;
-  /** Keeps the confirm button off, whatever was typed, while what `children` asks for is not valid (nor does Enter confirm). */
   confirmDisabled?: boolean;
-  /**
-   * Where the focus goes when the dialog has closed. By default it goes back to what had it before; when the confirmation
-   * removes that (a photo of a list), call `event.preventDefault()` and give the focus to something that is still there.
-   */
   onCloseAutoFocus?: (event: Event) => void;
 }
 
-/** What the user typed and what is asked of them are the same word, whatever the capital letters or the spaces around it. */
 function sameWord(typed: string, asked: string): boolean {
   return typed.trim().toLocaleLowerCase() === asked.trim().toLocaleLowerCase();
 }
@@ -90,8 +72,6 @@ function ConfirmationForm({
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    // The dialog is drawn outside the page's form but sits inside it for React, which hands an event to the parents of a portal:
-    // without this, confirming here would submit the form around the dialog (a wizard that publishes, a page that saves).
     event.stopPropagation();
     if (mayConfirm && !isLoading) onSubmit();
   };
@@ -181,7 +161,6 @@ export function ConfirmationDialog({
     try {
       await onConfirm();
     } catch {
-      // The action failed. The dialog stays open so the caller can show why.
       return;
     }
     onOpenChange(false);

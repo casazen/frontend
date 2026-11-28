@@ -17,7 +17,6 @@ const ADMIN = { [ROLES_CLAIM]: ['Admin'] };
 const OWNER = { [ROLES_CLAIM]: ['PropertyOwner'] };
 const ORG_WITHOUT_CONSENTS = { orgId: 'org-1', onboardingCompletedAt: '2026-09-01T10:00:00Z', consentsAccepted: false };
 
-/** Draws the notice for the session as it is now; says whether it showed, and takes it away again. */
 function isShown(): boolean {
   const view = render(
     <MemoryRouter>
@@ -48,16 +47,13 @@ describe('LegalConsentsNotice (LR-WIZ-1)', () => {
     expect(screen.getByRole('link', { name: i18n.t('leaseWizardGuide.adminNotice.action') })).toHaveAttribute('href', '/onboarding');
     view.unmount();
 
-    // Not an administrator: an owner is sent to the consents by the guard, there is nothing to add.
     session.auth = OWNER;
     expect(isShown()).toBe(false);
 
-    // An administrator with no organization of their own: no workspace as an owner is lost.
     session.auth = ADMIN;
     session.profile = { ...ORG_WITHOUT_CONSENTS, orgId: null };
     expect(isShown()).toBe(false);
 
-    // The documents are accepted, or the backend does not say (an older one): nothing to ask.
     for (const consentsAccepted of [true, null, undefined]) {
       session.profile = { ...ORG_WITHOUT_CONSENTS, consentsAccepted };
       expect(isShown()).toBe(false);

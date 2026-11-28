@@ -148,9 +148,7 @@ describe('ownerPortalApi: the files (a blob from the authenticated API, a multip
 
     expect(result).toBe(blob);
     expect(axios.get).toHaveBeenNthCalledWith(1, '/owner-portal/documents/d%2F1/file?versionId=v%202', { responseType: 'blob' });
-    // Without a version the server hands out the one in force: no query at all.
     expect(axios.get).toHaveBeenNthCalledWith(2, '/owner-portal/documents/d1/file', { responseType: 'blob' });
-    // Never an anonymous call.
     expect(vi.mocked(axios.get).mock.calls[0][1]).not.toHaveProperty('public');
   });
 

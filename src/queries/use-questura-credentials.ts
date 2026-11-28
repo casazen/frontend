@@ -20,8 +20,6 @@ export function useQuesturaCredentialsStatus(propertyId: string) {
 export function useSetQuesturaCredentials(propertyId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    // The body is the username, the password and the key of the portal: the mutation is dropped as soon as nothing observes it (`gcTime: 0`, not five minutes in the cache
-    // of the mutations) and a refusal is kept without the request that was sent (`withoutRequest`: the status and the body of the answer stay, which is what the toast says).
     gcTime: 0,
     mutationFn: async (data: SetQuesturaCredentialsRequest) => {
       try {

@@ -31,10 +31,8 @@ interface ManualRegistrationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/** Where the receipt comes from: one already among the documents of the lease, or a file sent now. */
 type ReceiptSource = 'uploaded' | 'file';
 
-/** The codes of what the receipt says that is not what the contract says; any other code says the general sentence. */
 const RECEIPT_WARNINGS: ReadonlySet<string> = new Set([
   'receipt_comune_differs',
   'receipt_end_differs',
@@ -66,7 +64,6 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
   const { t } = useTranslation();
   const declare = useDeclareManualRegistration();
   const today = todayInRome();
-  // What the person typed; `null` while they have not touched the field (the value is then the one read from the receipt, if any).
   const [typedCode, setTypedCode] = useState<string | null>(null);
   const [typedDate, setTypedDate] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<File | null>(null);
@@ -84,10 +81,8 @@ export function ManualRegistrationDialog({ leaseId, open, onOpenChange }: Manual
   });
   const uploaded = (documents.data ?? []).filter((document) => document.kind === 'Registration');
   const source: ReceiptSource = uploaded.length === 0 ? 'file' : (chosenSource ?? 'uploaded');
-  // One receipt: it is the one. Several: the person chooses.
   const documentId = uploaded.some((document) => document.id === chosenDocument) ? chosenDocument : uploaded.length === 1 ? uploaded[0].id : '';
 
-  // What the receipt says, once the one in use is known: its code and day are proposed, never declared.
   const reading = useReceiptReading(leaseId, open && source === 'uploaded' ? documentId : '');
   const receiptState = reading.data?.state;
   const read = receiptState === 'Read' ? reading.data?.receipt : null;

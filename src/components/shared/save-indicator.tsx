@@ -7,11 +7,9 @@ import type { WizardSaveStatus } from "@/types/wizard";
 const TIME_ONLY: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" };
 
 interface SaveIndicatorProps {
-  /** Where the saving stands. */
   status: WizardSaveStatus;
   /** When the server saved the draft last, ms since the epoch: the «saved at» is the time of the server, in Europe/Rome. */
   savedAt: number | null;
-  /** Sends again what could not be saved. */
   onRetry: () => void;
   "data-testid"?: string;
   className?: string;

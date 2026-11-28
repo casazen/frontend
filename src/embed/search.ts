@@ -23,5 +23,4 @@ const mount: WidgetMount = (element, options) => {
   element.appendChild(createSearchForm(options, `czs-${bars}`));
 };
 
-// Without the loader there is nobody to ask for the bar: the file does nothing.
 (window as Window & { CasaZenEmbed?: { register?: (name: string, fn: WidgetMount) => void } }).CasaZenEmbed?.register?.('search', mount);

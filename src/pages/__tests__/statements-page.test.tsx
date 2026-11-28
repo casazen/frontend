@@ -73,7 +73,6 @@ describe('the statements page asks the role before it reads anything (agency.sta
     expect(screen.getByTestId('agency-admin-required')).toBeInTheDocument();
     expect(api.getAll).not.toHaveBeenCalled();
     expect(screen.queryByTestId('statements-list')).not.toBeInTheDocument();
-    // The plan is read from an endpoint of the billing administrator: for anyone else it is not even asked.
     expect(planHook).not.toHaveBeenCalled();
   });
 
@@ -117,7 +116,6 @@ describe('every amount is in the currency of its statement, as the server wrote 
     const detail = await openDetail(CHF);
 
     expect(within(detail).getByTestId('statement-revenue').textContent).toMatch(/^1000,50\s*CHF$/);
-    // The server's figures as they are: the page adds no minus in front of a commission or an expense and computes no total.
     expect(within(detail).getByTestId('statement-commission').textContent).toMatch(/^150,25\s*CHF$/);
     expect(within(detail).getByTestId('statement-expenses').textContent).toMatch(/^20,00\s*CHF$/);
     expect(within(detail).getByTestId('statement-withholding').textContent).toMatch(/^0,00\s*CHF$/);
@@ -131,7 +129,6 @@ describe('the steps of a statement cannot be undone, so they ask to be confirmed
     renderPage();
     const detail = await openDetail(CHF);
 
-    // The server refuses a file for a draft: the buttons are off and the page says why.
     expect(within(detail).getByTestId('statement-download-pdf')).toBeDisabled();
     expect(within(detail).getByTestId('statement-download-csv')).toBeDisabled();
     expect(within(detail).getByTestId('statement-download-draft')).toHaveTextContent('dopo l\'approvazione');
@@ -167,13 +164,11 @@ describe('the steps of a statement cannot be undone, so they ask to be confirmed
 
     expect(api.approve).toHaveBeenCalledTimes(1);
     expect(api.approve).toHaveBeenCalledWith(CHF.id);
-    // While the request is on its way every button of the statement waits, and it is still a draft on screen.
     expect(screen.getByTestId('statement-approve')).toBeDisabled();
     expect(screen.getByTestId('statement-status')).toHaveTextContent('Bozza');
 
     request.resolve(undefined);
 
-    // The server's list decides what the statement is now: approved, with its files and the next step.
     await waitFor(() => expect(screen.getByTestId('statement-status')).toHaveTextContent('Approvato'));
     expect(screen.getByTestId('statement-publish')).toBeEnabled();
     expect(screen.getByTestId('statement-download-pdf')).toBeEnabled();
@@ -208,7 +203,6 @@ describe('the steps of a statement cannot be undone, so they ask to be confirmed
     const dialog = await screen.findByRole('dialog');
 
     expect(dialog).toHaveTextContent('Pubblicare il rendiconto?');
-    // What the server does: the status changes and the statement can go into a wire file. It sends nothing to the owner, and the dialog does not say it does.
     expect(dialog).toHaveTextContent('risulta pubblicato e può entrare in un file di bonifici');
     expect(dialog).toHaveTextContent('Da qui non parte nessun invio al proprietario');
     expect(dialog.textContent).not.toMatch(/viene inviato/);
@@ -234,7 +228,6 @@ describe('the files of a statement come through the authenticated API under the 
     await waitFor(() => expect(saved).toHaveBeenCalledTimes(1));
     expect(api.downloadPdf).toHaveBeenCalledWith(CHF.id);
     expect(saved.mock.calls[0][1]).toBe('rendiconto-2026-10-abc.pdf');
-    // Nothing is kept: the mutation returns no bytes and is dropped.
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 

@@ -1,12 +1,17 @@
 /* eslint-disable i18next/no-literal-string -- A page for developers and for the Playwright runs, not a screen of the product: it is not in the production build (see routes/dev-routes.tsx), so its words are not translated. */
 import { useState } from 'react';
-import { Wrench } from 'lucide-react';
+import { Banknote, BrushCleaning, CheckCircle2, Clock, MapPin, ShieldCheck, Wrench } from 'lucide-react';
 import {
   ActivityList,
   CALM_TONES,
   ChecklistCompact,
   DayList,
   FocusBlock,
+  Figure,
+  Figures,
+  IconFact,
+  IconFacts,
+  InfoCard,
   NextStepCard,
   PlainSection,
   StatStrip,
@@ -20,6 +25,7 @@ import {
   type TodayListItem,
   type WeekStripDay,
 } from '@/components/shared/calm';
+import { StatusPill } from '@/components/shared/status/status-pill';
 import { addDays, startOfWeek, todayInRome } from '@/lib/stay-dates';
 
 const TONE_NAME: Record<CalmTone, string> = {
@@ -32,10 +38,8 @@ const TONE_NAME: Record<CalmTone, string> = {
 
 const TODAY_LABELS = { today: 'Oggi', tomorrow: 'Domani', later: 'Più avanti' };
 
-/** A name with no space in it, as a property or a file has: it must wrap, not push the page sideways. */
 const LONG_NAME = 'Casa_Vacanze_Trullo_dei_Sogni_Alberobello_Via_Roma_12_interno_3';
 
-/** The calm blocks of UI-16 on one page, in every variant, to look at them and to let Playwright and axe walk through them. */
 export default function CalmBlocksPage() {
   const today = todayInRome();
   const [lastAction, setLastAction] = useState('nessuna');
@@ -47,7 +51,6 @@ export default function CalmBlocksPage() {
 
   const writeToSupplier: CalmAction = { label: 'Scrivi al fornitore o scegline un altro per questo intervento', onClick: done('scrivi al fornitore') };
 
-  // The date of a row is worked out from its day ("12 ott"); a time of the day is the row's own words.
   const deadlines: DayListItem[] = [
     { id: 'registration', day: addDays(today, 12), title: 'Registrazione del contratto Rossi', subtitle: 'Elisa Rossi · Via Roma 12, Bari', meta: 'tra 12 giorni', href: '/dev/calm-blocks?aperto=rossi' },
     { id: 'late-rent', day: addDays(today, -11), title: 'Canone di ottobre · Bianchi', subtitle: 'Marco Bianchi · Corso Vittorio 3', meta: 'in ritardo di 11 giorni', tone: 'danger', onOpen: done('apri canone Bianchi'), action: { label: 'Invia il sollecito', ariaLabel: 'Invia il sollecito: canone Bianchi', onClick: done('sollecito Bianchi') } },
@@ -155,6 +158,39 @@ export default function CalmBlocksPage() {
         <PlainSection title={LONG_NAME} count={12} actionLabel="Vedi la scheda completa dell’immobile" href="/dev/calm-blocks?sezione=immobile" data-testid="plain-long">
           <p className="text-sm text-foreground/80">Il titolo non ha spazi e a 360 px va a capo senza far scorrere la pagina.</p>
         </PlainSection>
+      </section>
+
+      <section aria-labelledby="dev-cards" className="space-y-6">
+        <h2 id="dev-cards" className="text-lg font-semibold">
+          InfoCard
+        </h2>
+        <div className="@container">
+          <div className="grid gap-4 @2xl:grid-cols-2">
+            <InfoCard icon={Banknote} title="Prezzi" action={{ label: 'Gestisci i suggerimenti', href: '/dev/calm-blocks?sezione=prezzi' }} data-testid="info-card-figures">
+              <Figures className="grid-cols-2">
+                <Figure icon={BrushCleaning} label="Pulizia">
+                  70,00 CHF
+                </Figure>
+                <Figure icon={ShieldCheck} label="Deposito cauzionale">
+                  0,00 CHF
+                </Figure>
+              </Figures>
+            </InfoCard>
+            <InfoCard icon={MapPin} title="Con uno stato e dei fatti" status={<StatusPill tone="success" icon={CheckCircle2}>Attivo</StatusPill>} data-testid="info-card-facts">
+              <IconFacts>
+                <IconFact icon={MapPin} label="Indirizzo">
+                  Via Roma 12, 22100 Como
+                </IconFact>
+                <IconFact icon={Clock} label="Fuso orario">
+                  Europe/Rome
+                </IconFact>
+              </IconFacts>
+            </InfoCard>
+            <InfoCard icon={ShieldCheck} title={`${LONG_NAME}_scheda`} status={<StatusPill icon={CheckCircle2}>Non previsto fuori dall’Italia per questa struttura</StatusPill>} action={{ label: 'Apri la scheda completa dell’immobile', href: '/dev/calm-blocks?sezione=scheda' }} data-testid="info-card-long">
+              <p className="text-sm text-foreground/80">Il titolo non ha spazi e a 360 px va a capo senza far scorrere la pagina.</p>
+            </InfoCard>
+          </div>
+        </div>
       </section>
 
       <section aria-labelledby="dev-days" className="space-y-6">

@@ -41,10 +41,8 @@ export function OnboardingGuard() {
     !!profile &&
     rolesResolved &&
     !needsOnboarding(user, profile, roles);
-  // SE-03: a signup attribution is sent (or forgotten) only once the user is past the onboarding.
   useSignupAttributionSync(passes);
 
-  // The decision depends on the absence of roles (e.g. "not an admin"): wait until they are known.
   if (authLoading || (isAuthenticated && ((profileLoading && !profile) || !rolesResolved))) {
     return <LoadingScreen message={t('shared.loading.defaultMessage')} />;
   }
@@ -63,7 +61,6 @@ export function OnboardingGuard() {
   }
 
   if (isAuthenticated && (profile?.commercialSetupRequired === true || needsOnboarding(user, profile, roles))) {
-    // `from` stays in the history of the browser: the code and the state of the callback of the channel manager do not go along.
     const from = `${location.pathname}${searchWithoutOctorateCallback(location.pathname, location.search)}`;
     return <Navigate to="/onboarding" replace state={{ from }} />;
   }

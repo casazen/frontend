@@ -14,29 +14,19 @@ import { NEW_SERVICE_PATH, bookingPreviewPath, draftPath, duplicatePath, service
 const T = 'supplier.services';
 
 export interface ServicesListOptions {
-  /** The supplier has the most services it can have: a copy would be one more. */
   atLimit: boolean;
-  /** A publication, a pause or a deletion is on its way: the buttons that start one wait. */
   busy: boolean;
   onPublish: (service: SupplierService) => unknown;
   onPause: (service: SupplierService) => unknown;
   onDelete: (service: SupplierService) => void;
 }
 
-/** What a draft still needs before it can be on offer, in words ("Da completare: Durata, Prezzo."). Nothing for a service that is not a draft. */
 function missingText(service: SupplierService, t: TFunction): string | null {
   if (service.status !== 'Draft') return null;
   const names = service.missingForPublication.map((field) => t(`${T}.fields.${field === 'priceFromCents' ? 'price' : field === 'durationMinutes' ? 'duration' : field}`));
   return names.length > 0 ? t(`${T}.list.missing`, { fields: names.join(', ') }) : null;
 }
 
-/**
- * The list of the services of the supplier (SP-SERV, the unified list of UI-14): a row for each service with its state, price and
- * duration, the one thing to do about it by state (go on with a draft, put a paused one back on offer) and the rest in "⋯": edit,
- * see how customers see it, duplicate, pause or publish, delete. All the services are in the page (30 at most, one request), so the
- * list filters them itself. A row opens the page of the service. There is no search, no order to choose and no column to add: thirty
- * rows are read, not searched, so the only bar over them is the quick filters by state.
- */
 export function useServicesList({ atLimit, busy, onPublish, onPause, onDelete }: ServicesListOptions) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
@@ -44,7 +34,6 @@ export function useServicesList({ atLimit, busy, onPublish, onPause, onDelete }:
   return useMemo(() => {
     const priceOf = (service: SupplierService) => formatPrice(service, t, language);
 
-    /** The one action of a row, by state. A published service has none: its name is the way in. */
     const primaryAction = (service: SupplierService): ListRowAction | null => {
       if (service.status === 'Draft') {
         return { id: 'continue', label: t(`${T}.actions.continue`), icon: Pencil, href: draftPath(service.id), variant: 'secondary', testId: 'service-continue' };
@@ -128,7 +117,6 @@ export function useServicesList({ atLimit, busy, onPublish, onPause, onDelete }:
         const missing = missingText(service, t);
         return {
           lead: <ServiceThumb service={service} className="size-14" />,
-          // The name is the way into the service: a line of text is 21 px, a finger needs 44.
           title: <span className="inline-flex min-h-11 items-center">{service.name}</span>,
           sub: getServiceCategoryLabel(service.category, t),
           status: <StatusBadge kind="serviceListing" status={service.status} />,
@@ -140,7 +128,6 @@ export function useServicesList({ atLimit, busy, onPublish, onPause, onDelete }:
         };
       },
       rowHref: (service) => servicePath(service.id),
-      // With the sidebar open (from `lg`) four columns and an action do not fit under 1280 px: cards until then.
       cardsUntil: 'xl',
       csv: false,
       empty: {

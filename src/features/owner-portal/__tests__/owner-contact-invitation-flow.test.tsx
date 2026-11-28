@@ -28,7 +28,6 @@ beforeAll(async () => {
   ({ OwnerContactPage } = await import('../owner-contact-page'));
 }, 240_000);
 
-/** What the backend issues: 32 random bytes as URL-safe base64, 43 characters (case matters). */
 const TOKEN = 'Qx7_aB-9kLmN0pRsTuVwXyZ1234567890AbCdEfGhIj';
 const login = vi.fn();
 const refreshAccessToken = vi.fn();
@@ -121,10 +120,8 @@ describe('OwnerContactPage: the link of the e-mail and the round trip through th
     expect(Object.keys(localStorage)).toHaveLength(0);
     expect(Object.keys(sessionStorage)).toHaveLength(0);
     for (const spy of logged) expect(JSON.stringify(spy.mock.calls)).not.toContain(TOKEN);
-    // Nothing is sent before the person has signed in.
     expect(axios.post).not.toHaveBeenCalled();
 
-    // The sign-in carries the secret in the `appState` only, and comes back to the page without it.
     fireEvent.click(screen.getByTestId('owner-contact-login'));
     expect(login).toHaveBeenLastCalledWith({ returnTo: OWNER_CONTACT_INVITATION_PATH, appState: { [OWNER_CONTACT_APP_STATE_KEY]: TOKEN }, authorizationParams: undefined });
     expect(JSON.stringify(vi.mocked(login).mock.calls[0][0].returnTo)).not.toContain(TOKEN);
@@ -140,7 +137,6 @@ describe('OwnerContactPage: the link of the e-mail and the round trip through th
     expect(vi.mocked(axios.post).mock.calls[0][0]).not.toContain(TOKEN);
     expect(vi.mocked(axios.post).mock.calls[0][1]).toEqual({ token: TOKEN });
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);
-    // The secret is forgotten once the claims are published.
     expect(peekOwnerContactToken()).toBeNull();
   });
 
@@ -176,7 +172,6 @@ describe('OwnerContactPage: the link of the e-mail and the round trip through th
     openAt(`${OWNER_CONTACT_INVITATION_PATH}?token=${TOKEN}`);
     expect(await screen.findByText('Questo invito è già stato usato')).toBeInTheDocument();
     expect(screen.queryByTestId('owner-contact-retry')).toBeNull();
-    // A link that does not work is final: the secret is forgotten.
     expect(peekOwnerContactToken()).toBeNull();
   });
 

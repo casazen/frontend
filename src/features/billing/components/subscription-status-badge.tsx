@@ -22,7 +22,6 @@ const STATUS_LABEL_KEY: Record<BillingSubscriptionStatus, string> = {
   none: 'billing.status.none',
 };
 
-/** Subscription state badge (spec-saas-billing AC13). */
 export function SubscriptionStatusBadge({ status }: { status: BillingSubscriptionStatus }) {
   const { t } = useTranslation();
   return (

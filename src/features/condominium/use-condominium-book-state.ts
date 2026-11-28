@@ -5,7 +5,6 @@ import { CONDO_BASE, CONDO_KEY, type CondoBook, type CondoPeriod } from "@/api/c
 import { useStatementUpload, type StatementProposal } from "./ledger-document-api";
 import type { LedgerView } from "./ledger-workspace";
 
-/** The state of one book: the view on show, the period chosen or being created, and the statement uploaded and confirmed. */
 export function useCondominiumBookState(book: CondoBook, initialView: LedgerView) {
   const qc = useQueryClient();
   const [view, setView] = useState<LedgerView>(initialView);

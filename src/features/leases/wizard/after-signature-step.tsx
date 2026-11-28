@@ -34,7 +34,6 @@ const QUESTURA_STATUS_KEY = {
   overdue: 'leases.questura.statusOverdue',
 } as const;
 
-/** «Entro il 12 novembre 2026 · mancano 18 giorni»: the deadline is the server's, and so is the count of the days left. */
 function registrationWhen(lease: LeaseDetail, checklist: RliChecklist | undefined, t: TFunction, language: string): string {
   const date = formatStayDate(parseStayDate(lease.registrationDeadline), language);
   if (!date) return t('leaseWizard.after.registration.whenUnknown');
@@ -45,7 +44,6 @@ function registrationWhen(lease: LeaseDetail, checklist: RliChecklist | undefine
   return t('leaseWizard.after.registration.whenLeft', { date, count: days });
 }
 
-/** What the registration costs, from the tax advice of the lease and told as an estimate; nothing when the advice is not there. */
 function registrationCosts(advisory: CedolareAdvisory | undefined, t: TFunction): string | null {
   if (advisory?.taxRegime === 'CedolareSecca') return t('leaseWizard.after.registration.costs.cedolare');
   if (advisory?.taxRegime === 'Ordinario') {
@@ -102,7 +100,6 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
   const exportRli = useExportRli();
   const registration = getRliRegistrationState(lease.status, lease.registration);
   const toRegister = registration === 'toRegister' || registration === 'failed';
-  // The answer «già registrato» of the import opens the declaration at once, once the contract is in.
   const [declareOpen, setDeclareOpen] = useState(declareFirst && toRegister);
   const [panel, setPanel] = useState<Panel>(null);
 
@@ -110,8 +107,6 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
   const schedule = ledger.data?.schedule ?? null;
   const nextRent = ledger.data?.installments.find((rent) => rent.status === 'Scheduled' || rent.status === 'Failed' || rent.status === 'Processing');
   const started = parseStayDate(lease.startDate) <= todayInRome();
-  // A contract the guided service prepared is registered by the service (CF-END): no summary to register with, no cost of ours, one
-  // sentence, and the declaration with the receipt it sends.
   const viaService = lease.isConcordatoFacileSource === true;
   const costs = viaService ? null : registrationCosts(advisory.data, t);
 
@@ -195,7 +190,6 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
         <DelegaCaptureDialog {...flow.dialogProps} tosVersion={checklist.data.tosVersion} attestationText={checklist.data.attestationText} />
       )}
 
-      {/* The attestation is what the benefits of a canone concordato are claimed with: asked here, never a stop (CF-END). */}
       {isConcordatoLease(lease) ? <AttestationSection leaseId={lease.id} viaService={lease.isConcordatoFacileSource === true} /> : null}
 
       <PlainSection title={t('leaseWizard.after.rows.title')}>
@@ -233,7 +227,6 @@ export function AfterSignatureStep({ lease, declareFirst }: { lease: LeaseDetail
         </ul>
       </PlainSection>
 
-      {/* Always mounted, not inside the blocks above: a window that lives in a branch is lost when the branch changes. */}
       <ManualRegistrationDialog leaseId={lease.id} open={declareOpen} onOpenChange={setDeclareOpen} />
 
       <Dialog open={panel === 'questura'} onOpenChange={(open) => !open && setPanel(null)}>

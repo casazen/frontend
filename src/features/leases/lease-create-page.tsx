@@ -14,7 +14,6 @@ import { StartWayChoice } from './components/start-way-choice';
 import { TYPE_OF_KIND, contractKindOf, kindTitle, startWayOf, type ContractKind, type StartWay } from './lib/contract-kind';
 import { NewLeaseStep } from './wizard/new-lease-step';
 
-/** Back to the question before this one: it is a link to the address without the answer to this one, so "back" of the browser agrees. */
 function StartBackLink({ to, label }: { to: URLSearchParams; label: string }) {
   const query = to.toString();
   return (
@@ -44,18 +43,12 @@ export function LeaseCreatePage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { flags } = useFeatureFlags();
-  // "New lease" from a property page preselects it.
   const defaultPropertyId = searchParams.get('propertyId') ?? undefined;
   const kind = contractKindOf(searchParams.get('tipo'));
   const requested = kind ? startWayOf(kind, searchParams.get('come'), searchParams.get('origine')) : null;
-  // Starting from zero with the partner is open only while its service is on: the address alone does not open it (it asks again).
   const way = requested === 'zero' && !flags.concordatoFacile ? null : requested;
-  // The term the transitory kind names is the server's; the page does not wait for it.
   const rules = useLongRentRules();
 
-  // Going from one question to the next (or back) moves the focus to the title: the card that was clicked is gone from under it, and a
-  // screen reader reads where it is now. Not on the first screen of the page. The heading is the one of the shared header of the page,
-  // which is not changed for this: it is found in the box around it and made reachable by script (not by the Tab key).
   const headerRef = useRef<HTMLDivElement>(null);
   const screen = kind === null ? 'kind' : way === null ? 'way' : 'start';
   const shownScreen = useRef(screen);
@@ -75,7 +68,6 @@ export function LeaseCreatePage() {
     </div>
   );
 
-  /** The address with these answers (and the old `origine` dropped); whatever else it carries, the property of a property page, stays. */
   const addressWith = (answers: { tipo?: ContractKind; come?: StartWay }) => {
     const params = new URLSearchParams(searchParams);
     params.delete('tipo');

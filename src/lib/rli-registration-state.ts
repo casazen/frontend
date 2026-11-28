@@ -28,12 +28,10 @@ export function getRliRegistrationState(
   return 'notSigned';
 }
 
-/** While a provider works on the registration the lease is polled, so the page shows the outcome when it arrives. */
 export function isRliRegistrationInProgress(leaseStatus?: LeaseStatus): boolean {
   return !!leaseStatus && IN_PROGRESS_LEASE_STATUSES.includes(leaseStatus);
 }
 
-/** Anchor of the registration panel on the lease page: the checklist links there when the registration failed. */
 export const RLI_REGISTRATION_PANEL_ID = 'rli-registration';
 
 /**
@@ -43,6 +41,5 @@ export const RLI_REGISTRATION_PANEL_ID = 'rli-registration';
 export const RLI_OFFICIAL_INFO_URL =
   'https://www.agenziaentrate.gov.it/portale/schede/fabbricatiterreni/registrazione-di-un-nuovo-contratto/schedainfo-regime-ordinario';
 
-/** Limits of the manual registration, the same as the API (`RliRegistrationLimits`). */
 export const RLI_MAX_RECEIPT_BYTES = 10 * 1024 * 1024;
 export const RLI_MAX_REGISTRATION_CODE_LENGTH = 100;

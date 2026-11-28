@@ -34,7 +34,6 @@ function renderWith(org: Partial<PublicOrgDto>) {
   return screen.getByTestId('public-site-shell');
 }
 
-// BK-12 (A3-17): the org's color must win over the theme tokens declared on the same element.
 describe('PublicSiteShell branding', () => {
   afterEach(() => {
     cleanup();
@@ -46,7 +45,6 @@ describe('PublicSiteShell branding', () => {
 
     expect(root).toHaveAttribute('data-theme', 'citta');
     expect(root.style.getPropertyValue('--cz-public-primary')).toBe('#1a6b8f');
-    // The three colors derived from it travel with it (DB-01).
     expect(root.style.getPropertyValue('--cz-public-hover')).toMatch(/^#[0-9a-f]{6}$/);
     expect(root.style.getPropertyValue('--cz-public-ink')).toMatch(/^#[0-9a-f]{6}$/);
     expect(root.style.getPropertyValue('--cz-public-soft')).toMatch(/^#[0-9a-f]{6}$/);

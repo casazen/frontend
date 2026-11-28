@@ -1,17 +1,14 @@
 import { ApiClient } from './client';
 import type { DataCompleteness } from '@/types';
 
-/** How the percentage coefficients of an agreement combine (backend `CoefficientCombination`). */
 export const COEFFICIENT_COMBINATIONS = ['Additive', 'Multiplicative'] as const;
 export type CoefficientCombination = (typeof COEFFICIENT_COMBINATIONS)[number];
 
-/** Kind of the IMU rate stored for a comune (backend `ImuRateKind`). */
 export const IMU_RATE_KINDS = ['Official', 'Derived'] as const;
 export type ImuRateKind = (typeof IMU_RATE_KINDS)[number];
 
 export const DATA_COMPLETENESS_VALUES = ['Complete', 'Partial', 'Missing'] as const;
 
-/** Row of `GET /admin/canone-concordato/agreements` (LT-13). */
 export interface AdminAgreementSummary {
   id: string;
   comune: string;
@@ -28,7 +25,6 @@ export interface AdminAgreementSummary {
   updatedAt: string | null;
 }
 
-/** Rules of the rent calculation stored on the agreement (every threshold and percentage is data, A7-22). */
 export interface AgreementRules {
   requiredTypeACount: number;
   subFascia2MinTypeBCount: number;
@@ -78,7 +74,6 @@ export interface AdminSignatory {
   contact: string;
 }
 
-/** `GET /admin/canone-concordato/agreements/:id`. */
 export interface AdminAgreementDetail extends AdminAgreementSummary, AgreementRules {
   signedDate: string;
   effectiveDate: string;
@@ -87,7 +82,6 @@ export interface AdminAgreementDetail extends AdminAgreementSummary, AgreementRu
   signatories: AdminSignatory[];
 }
 
-/** `PUT /admin/canone-concordato/agreements/:id`: status, source, expiry and rules. Never the verification date. */
 export interface UpdateAgreementInput extends AgreementRules {
   dataCompleteness: DataCompleteness;
   sourceUrl: string | null;
@@ -96,7 +90,6 @@ export interface UpdateAgreementInput extends AgreementRules {
   remainsInForceUntilReplaced: boolean;
 }
 
-/** Comune office receiving the IMU communication, with its rate (LT-13). */
 export interface AdminImuChannel {
   id: string;
   comune: string;
@@ -124,7 +117,6 @@ export type UpdateImuChannelInput = Omit<
   'id' | 'comune' | 'region' | 'lastVerifiedAt' | 'verificationSource' | 'updatedAt'
 >;
 
-/** `POST .../verify`: the date of the check (`YYYY-MM-DD`, not in the future) and what it was checked against. */
 export interface MarkVerifiedInput {
   verifiedAt: string;
   source: string;

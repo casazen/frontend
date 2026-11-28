@@ -9,10 +9,6 @@ import type { RouteManifestEntry } from './route-manifest';
  */
 export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
   {
-    // «Inizia con CasaZen» (E10/F03/US01/T02, NF-104): the plan of the eleven parts. In no menu: it is the first wizard of a new host (the welcome
-    // layer of the first access, `FirstRunWizard`, opens it), and afterwards the «Guida» of the header and the path on the home lead to it. It asks
-    // `property.read`, what the plan the server answers asks (`SharedPropertyRead`): the deferral and the exit are the organization administrator's,
-    // and the page says so to anyone else. `navKey` names it in the trail of its pages.
     path: '/app/short-rent/onboarding',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
@@ -22,8 +18,6 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-plan-page')).OnboardingPlanPage }),
   },
   {
-    // One part of the plan (E10/F03/US02/T02, NF-104): what it does, what the host needs, where it stands, its properties and the one button that opens the
-    // wizard that owns it. In no menu: the plan, the next-step card and the «Da fare» of a part lead here. An unknown `:partKey` leads to the plan.
     path: '/app/short-rent/onboarding/parts/:partKey',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
@@ -31,9 +25,6 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-part-page')).OnboardingPartPage }),
   },
   {
-    // «Riepilogo e attivazione», the last part of the plan (E10/F03/US02/T03, NF-104 part 11, NF-106): the traffic light of each flow on each property, the
-    // final read-only test and the activation. In no menu. The table is read by whoever reads the properties (`property.read`); the test and the activation
-    // are the organization administrator's, and the page tells anyone else so. `?flow=` opens the table on a flow (the target of the «Da fare» of a flow).
     path: '/app/short-rent/onboarding/summary',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
@@ -64,7 +55,6 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-panel-step-page')).OnboardingPanelStepPage }),
   },
   {
-    // Where the «Da fare» of a guided step leads (`?step=<id>`: the item knows the step, not its kind): it finds the step and opens its page.
     path: '/app/short-rent/onboarding/panel',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -87,10 +77,6 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/onboarding/integration-settings-page')).IntegrationSettingsPage }),
   },
   {
-    // The bulk configuration (E10/F03/US03/T02, NF-105, ONB-02): an agency with many properties applies one choice to all of them or to a selection, fills the
-    // data that changes per property from a file, follows how many are ready and activates a pilot group first. In no menu: the plan leads here when the agency
-    // has more than 10 properties. The organization administrator's page (`orgBillingAdmin`: the server asks `OrgBillingAdmin`): anyone else who opens the
-    // address reads who manages it and no request is sent.
     path: '/app/short-rent/onboarding/bulk',
     context: 'short-rent',
     requiredPermissions: [],
@@ -99,9 +85,6 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/onboarding/onboarding-bulk-page')).OnboardingBulkPage }),
   },
   {
-    // The staff queue of the «Fallo per me» requests (E10/F03/US03/T03, NF-107, NF-15, UX-15): where CasaZen support takes a request, closes it or cancels it with a
-    // short note. The first entry of the group «Supporto» of the staff area, asking what the other queue pages of the staff ask (`admin.users.read`); the backend
-    // still decides: the endpoints answer only to a platform administrator, and every update is logged in the log of the organization of the request.
     path: '/app/admin/onboarding-assist',
     context: 'admin',
     requiredPermissions: ['admin.users.read'],

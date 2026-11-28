@@ -22,15 +22,12 @@ import { usePropertiesList } from './properties-list';
 import { propertyStepLabel, readPropertyStep } from './wizard/property-setup-progress';
 import { propertyWizardPath, PROPERTY_CREATE_PATH } from './properties-paths';
 
-/** From this many properties on, the limit of a plan is "no limit" (the API sends a very large number, or a negative one). */
 const UNLIMITED_PROPERTIES = 1_000_000;
 
-/** The plan counts every property of the org, short and long: "Piano Pro: 3 di 50 immobili". Nothing until the plan is known. */
 function PlanUsageNote() {
   const { t } = useTranslation();
   const { data: entitlement } = useEntitlement();
   const planPath = usePlanPagePath();
-  // The answer is trusted as far as it has the two numbers: a note with holes in it is no note, and it never takes the page down.
   const max = entitlement?.limits?.maxProperties;
   const used = entitlement?.usage?.properties;
   if (
@@ -84,7 +81,6 @@ export function PropertiesPage() {
   const inProgress = !isError && properties?.find(property => property.id === progress?.propertyId);
   const canWrite = hasPermission('short-rent', 'property.write');
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
-  // Who cleans, for many properties at once (E24/F01/US02/T01): behind the flag of the routines, which is what makes the cleaning at check-out run, and for who may write the properties.
   const routinesOn = useFeatureFlags().flags.routines;
   const [cleanersOpen, setCleanersOpen] = useState(false);
   const canSetCleaners = canWrite && routinesOn;
@@ -96,8 +92,6 @@ export function PropertiesPage() {
     [connectorOn, summaries.data],
   );
 
-  // Pausing and activating are dedicated actions (A2-05): never the generic PUT, so they can never fail on an unrelated required
-  // field, and never set `isActive` (soft delete's own flag, PC-05). The mutations tell the person themselves how they went.
   const onPause = useCallback((property: Property) => pause(property.id), [pause]);
   const onActivate = useCallback((property: Property) => activate(property.id), [activate]);
 
@@ -109,11 +103,9 @@ export function PropertiesPage() {
     onActivate,
     onDelete: setPropertyToDelete,
     channelSummaries,
-    // Not «Non pubblicato» for a summary that is still loading or could not be read: the column says nothing is known.
     channelsKnown: summaries.isSuccess,
   });
 
-  // The backend decides whether it can go (409 with upcoming bookings / active leases): the mutation's own toast says why.
   const confirmDelete = async () => {
     if (!propertyToDelete) return;
     try {
@@ -136,7 +128,6 @@ export function PropertiesPage() {
         }
       />
 
-      {/* The notice follows the title: the page says what it is first, then what is due (it used to sit above the title). */}
       {cinCompliance?.summary ? <CinDeadlineBanner summary={cinCompliance.summary} /> : null}
 
       {canWrite && progress && inProgress ? (

@@ -17,12 +17,6 @@ vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: [{ id
 
 vi.setConfig({ testTimeout: 30_000 });
 
-/**
- * The money of a payout to an owner (E18/F01/US01/T01, E18/F02/US01/T01, NF-117, ADR-018): what is paid is the balance the statement owes and the facts the withholding is decided on (the stays, whether the agency
- * collected, whether it is a short let, whether the portal already withheld) are the ledger's. The dialog shows them as evidence and asks the person for nothing about them: no amount, no «the agency collected», no
- * «it is a short let», no base. A person who could type them could pay an owner a gross that the ledger does not owe or take a withholding off a stay that has it.
- */
-
 const ctx = (overrides: Partial<ActionContext> = {}): ActionContext => ({
   period: { year: 2025, month: 1 },
   ownerId: OWNER_ID,
@@ -54,7 +48,6 @@ describe('the payout dialog and the facts of the withholding (money)', () => {
     const dialog = await screen.findByTestId('payout-form');
     const facts = await within(dialog).findByTestId('payout-facts');
 
-    // The facts are shown as read evidence: the stay, what the owner's gross of it is without the tourist tax, who collected, and that it is in the base.
     const stay = within(facts).getByTestId('payout-fact-stay');
     expect(stay).toHaveAttribute('data-in-base', 'true');
     expect(stay).toHaveTextContent('Casa Mare');
@@ -63,14 +56,12 @@ describe('the payout dialog and the facts of the withholding (money)', () => {
     expect(stay).toHaveTextContent(i18n.t('ownerAccounting.facts.collection.casazenPayment'));
     expect(api.getPayoutPreview).toHaveBeenCalledWith(VERSION_ID, todayInRome());
 
-    // The only things the person writes are the day and the reference of the wire: no amount, no answer about the collection or the short let, no base, no component.
     const controls = [...dialog.querySelectorAll('input, select, textarea')].map((control) => control.getAttribute('data-testid'));
     expect(controls.sort()).toEqual(['payout-paid-on', 'payout-reference']);
     for (const typed of ['payout-gross', 'payout-agency-collected', 'payout-qualifying', 'payout-component-rent', 'payout-use-left']) expect(screen.queryByTestId(typed)).toBeNull();
   });
 
   it('PayoutDialog_NoTypedFacts_TheCommandCarriesNoAmountAndNoFact_AndTheAmountsShownAreTheServers', async () => {
-    // The server decides the withholding when it confirms: a figure the page could not have worked out, to see that the page writes the server's and none of its own.
     api.confirmPayout.mockResolvedValue(payout({ grossAmount: 800, withholdingAmount: 169.5, netAmount: 630.5 }));
     renderDialog();
     const dialog = await screen.findByTestId('payout-form');
@@ -117,13 +108,11 @@ describe('the payout dialog and the facts of the withholding (money)', () => {
     expect(within(dialog).getByTestId('payout-withholding-euro').textContent).toMatch(/168,00\s*€/);
     expect(within(dialog).getByTestId('payout-withholding-kept').textContent).toMatch(/160,40\s*CHF/);
     expect(within(dialog).getByTestId('payout-fact-gross').textContent).toMatch(/760,00\s*CHF/);
-    // The rate of the day is told, not hidden: the withholding decided in euro is kept at it.
     expect(within(dialog).getByTestId('payout-facts-fx').textContent).toMatch(/1 EUR = 0,955 CHF/);
     expect(within(dialog).getByTestId('payout-balance').textContent).not.toMatch(/€/);
   });
 
   it('PayoutDialog_WhatTheServerWouldRefuse_IsToldBeforeAnythingIsPressed_AndNothingIsSent', async () => {
-    // An owner paid in francs with no rate of the day: the server cannot keep a withholding decided in euro, and the dialog says which fact is missing.
     api.getPayoutPreview.mockResolvedValue(
       payoutPreview({ decision: null, reasonCode: null, grossBase: null, ratePercent: null, rounding: null, withholdingInEuro: null, taxCode: null, withholdingAmount: null, netAmount: null, blockingCode: 'tax_applicability_unresolved', blockingField: 'fxRate' }),
     );
@@ -132,14 +121,12 @@ describe('the payout dialog and the facts of the withholding (money)', () => {
     const blocked = await screen.findByTestId('payout-unresolved');
     expect(blocked).toHaveTextContent(i18n.t('ownerAccounting.fields.fxRate'));
     expect(screen.getByTestId('payout-confirm')).toBeDisabled();
-    // A withholding that the server did not decide is not drawn as one.
     expect(screen.queryByTestId('payout-withholding-euro')).toBeNull();
     fireEvent.submit(screen.getByTestId('payout-form'));
     expect(api.confirmPayout).not.toHaveBeenCalled();
   });
 
   it('PayoutDialog_WhenTheServerCouldNotReadTheFacts_NeverSaysThereIsNoStayToEvaluate', async () => {
-    // A stay the server cannot judge (its booking is gone, no rate of the day) makes it answer an empty list of stays with the code that refuses: that is not «no stay», and the field it names has words.
     api.getPayoutPreview.mockResolvedValue(
       payoutPreview({
         facts: payoutFacts({ stays: [], stayIds: [], components: {}, decidedEntryIds: null, agencyCollected: null, qualifyingShortLet: null }),
@@ -167,7 +154,6 @@ describe('the payout dialog and the facts of the withholding (money)', () => {
   });
 
   it('PayoutDialog_WithNothingBlockingAndNoStay_SaysThereIsNoStayToEvaluate', async () => {
-    // The facts were read and there is none: this is the one case in which the empty list is told as it is.
     api.getPayoutPreview.mockResolvedValue(payoutPreview({ facts: payoutFacts({ stays: [], stayIds: [], components: {} }) }));
     renderDialog();
 

@@ -42,10 +42,8 @@ import { StepWhen } from './step-when';
 import { StepWhere, type ZoneState } from './step-where';
 import { useBookingDraft } from './use-booking-draft';
 
-/** The steps of the form, in order; the payment step is not among them until it exists. */
 const FORM_STEPS: readonly BookingStep[] = BOOKING_STEPS.filter((step) => step !== 'payment');
 
-/** The estimate waits for the person to stop pressing before it is asked: one request per decision. */
 const ESTIMATE_DEBOUNCE_MS = 400;
 
 /**
@@ -67,7 +65,6 @@ function stepOfSearch(search: URLSearchParams): BookingStep | null {
 
 type Notice = BookingFailure | { kind: 'unavailable' } | { kind: 'paymentFailed' } | { kind: 'preview' };
 
-/** A problem the server (or the page) found while sending, said at the step where it can be fixed. */
 function NoticeBox({ notice }: { notice: Notice }) {
   const { t } = useTranslation();
   let text: string;
@@ -107,22 +104,18 @@ export function BookingWizard() {
   const slug = model.slug;
   const services = model.services ?? [];
 
-  // What the cards and the finder of the site already told: read once, over what the device remembered.
   const [seed] = useState(() => parseBookingParams(search));
   const { draft, update, discard } = useBookingDraft(slug, draftFromParams(seed));
   const [consent, setConsent] = useState(false);
   const [trap, setTrap] = useState('');
   const [triedStep, setTriedStep] = useState<BookingStep | null>(null);
-  // Back from the bank after a payment that did not go through: said at the first step, where the booking starts again.
   const returned = clientStatusFromRedirect(search.get('redirect_status'));
   const [notice, setNotice] = useState<{ step: BookingStep; value: Notice } | null>(() =>
     returned === 'failed' ? { step: 'service', value: { kind: 'paymentFailed' } } : null,
   );
   const [serverProblems, setServerProblems] = useState<DetailsProblems>({});
   const [sent, setSent] = useState<{ hold: PublicBookingHold; email: string } | null>(null);
-  // The card was blocked in this page (Stripe says so; the server makes the request when the e-mail is checked too).
   const [cardBlocked, setCardBlocked] = useState(false);
-  // The block of the card, while it still has to be confirmed in this page.
   const cardBlock = sent?.hold.payment;
   const cardToAsk =
     sent && cardBlock && !cardBlock.authorized && !cardBlocked && cardBlock.clientSecret && cardBlock.publishableKey
@@ -135,7 +128,6 @@ export function BookingWizard() {
   const shownStep = useRef<BookingStep | null>(null);
   const createHold = useCreateBookingHold(slug);
 
-  // The service, in full (its supplements), and the comune the address of the page named.
   const chosen = services.find((service) => service.slug === draft.service && isBookable(service)) ?? null;
   const serviceSlug = chosen?.slug ?? null;
   const detailQuery = useSupplierService(slug, serviceSlug ?? '', serviceSlug !== null);
@@ -151,7 +143,6 @@ export function BookingWizard() {
   const selection = detail ? selectionOf(draft, detail, comune?.istatCode ?? null) : null;
   const urgent = isUrgent(draft, detail);
 
-  // The estimate of what is chosen: the zone is judged by it too.
   const quoteKey = detail && selection ? JSON.stringify({ ...toQuoteBody(detail, selection), ...(urgent ? { urgent: true } : {}) }) : '';
   const waitedKey = useDebouncedValue(quoteKey, ESTIMATE_DEBOUNCE_MS);
   const quoteBody = useMemo(() => (waitedKey ? (JSON.parse(waitedKey) as PublicQuoteRequestBody) : null), [waitedKey]);
@@ -167,7 +158,6 @@ export function BookingWizard() {
     else zone = 'checking';
   }
 
-  // The free times; the time chosen counts only while it is still among them.
   const slotsQuery = useBookingSlots(slug, serviceSlug, urgent, serviceSlug !== null);
   const days = useMemo(() => slotsQuery.data?.days ?? [], [slotsQuery.data]);
   const chosenSlotFree = draft.startUtc !== null && days.some((day) => day.slots.some((slot) => slot.startUtc === draft.startUtc));
@@ -187,30 +177,25 @@ export function BookingWizard() {
   const askedIndex = FORM_STEPS.indexOf(asked);
   const step: BookingStep = askedIndex <= reachable ? asked : FORM_STEPS[reachable];
   const stepIndex = FORM_STEPS.indexOf(step);
-  // The step asked for needs what is still arriving (the service in full, the comune of the link, the free times): wait, do not flash another step.
   const resolving =
     askedIndex > reachable &&
     ((serviceSlug !== null && detailQuery.isLoading) ||
       (draft.comune === undefined && seed.comune !== undefined && seededComune.isLoading) ||
       (draft.startUtc !== null && slotsQuery.isLoading));
 
-  // Said to the person: the problems of the step it tried to leave, and what a refusal of the server meant.
   const tried = triedStep === step;
   const stepNotice = notice && notice.step === step ? notice.value : null;
   const shownDetailsProblems: DetailsProblems = step === 'details' ? { ...serverProblems, ...(tried ? detailsProblems : {}) } : {};
 
-  // The heading of the step takes the focus when the step changes (not when the page opens).
   useEffect(() => {
     if (shownStep.current !== null && shownStep.current !== step) headingRef.current?.focus();
     shownStep.current = step;
   }, [step]);
 
-  // The step of the card, when it shows, takes the focus on its heading too.
   useEffect(() => {
     if (askingCard) headingRef.current?.focus();
   }, [askingCard]);
 
-  // After a failed try on the last step, the first field at fault takes the focus.
   useEffect(() => {
     if (step === 'details' && triedStep === 'details') formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }, [step, triedStep]);
@@ -250,7 +235,6 @@ export function BookingWizard() {
       const hold = await createHold.mutateAsync({ ...body, clientRequestId: thisAttempt.id });
       const block = hold.payment;
       if (block && !block.authorized && (!block.clientSecret || !block.publishableKey)) {
-        // The card cannot be asked for this block: a new attempt, not the same hold again.
         attempt.current = null;
         saySomething({ kind: 'payment' }, 'details');
         return;
@@ -294,7 +278,6 @@ export function BookingWizard() {
     goTo(FORM_STEPS[stepIndex + 1]);
   };
 
-  // Back from the bank with the card blocked: the e-mail is what is left (the request is born when it is checked too).
   if (!sent && (returned === 'succeeded' || returned === 'processing')) {
     return (
       <div className="vz-container vb" data-testid="supplier-booking-sent">
@@ -326,7 +309,6 @@ export function BookingWizard() {
   }
   const backTo = chosen ? supplierSitePaths.service(slug, chosen.slug) : supplierSitePaths.services(slug);
   const lastStep = step === 'details';
-  // The payment step exists only for a site that takes the money inside CasaZen.
   const stepsShown: BookingStep[] = showcase.acceptsOnlinePayments === true ? [...BOOKING_STEPS] : [...FORM_STEPS];
   const submitDisabled =
     createHold.isPending || resolving || (step === 'service' && detailQuery.isLoading) || (step === 'where' && zone === 'checking') || (lastStep && !online);

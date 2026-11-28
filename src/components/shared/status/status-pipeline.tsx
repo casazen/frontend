@@ -15,7 +15,6 @@ export interface StatusPipelineProps<K extends StatusKind> {
 
 type Position = "done" | "current" | "todo";
 
-/** The steps behind the current one are done, the ones ahead are still to do. */
 function positionOf(index: number, current: number): Position {
   if (index < current) return "done";
   return index === current ? "current" : "todo";

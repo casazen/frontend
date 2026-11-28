@@ -10,10 +10,6 @@ const KNOWN: ReadonlySet<string> = new Set([
   'Rejected',
 ]);
 
-/**
- * The status a tenant may read. Host and supplier states collapse to the same short list, so a commercial state
- * (`Pagato` of a supplier invoice) never reaches the screen under its own name.
- */
 export function tenantMaintenanceStatus(status: string | null | undefined): TenantMaintenanceStatus {
   if (status && KNOWN.has(status)) return status as TenantMaintenanceStatus;
   switch (status) {

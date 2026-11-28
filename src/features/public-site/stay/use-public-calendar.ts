@@ -6,32 +6,18 @@ import { getProblemMessage, isTransientRequestError } from '@/lib/api-errors';
 import { addDays, parseStayDate, todayInRome } from '@/lib/stay-dates';
 import type { CalendarDay } from './stay-calendar-model';
 
-/** What a calendar of the stay pickers is given to draw: the days, or why there are none yet. */
 export interface StayCalendarData {
   status: 'loading' | 'error' | 'ready';
-  /** The nights of the loaded range; empty until `status` is `ready`. */
   days: readonly CalendarDay[];
-  /** Today in Europe/Rome. */
   today: string;
-  /** End of the loaded range (excluded). */
   end: string;
-  /** The currency of the prices of the nights, as the server says it; `null` while there is none (nothing is loaded, or the load failed): no price is drawn then. Never a default. */
   currency: string | null;
-  /** Why the days could not be loaded (a translated problem message), when `status` is `error`. */
   errorMessage?: string;
   onRetry: () => void;
 }
 
-/** The range asked when nothing else is: a year from today (the endpoint takes 13 months at most). */
 const DEFAULT_MONTHS_AHEAD = 12;
 
-/**
- * The public calendar of a property of a site (DB-03b): the price of every night, the nights that are taken and the rules of the host
- * on each day (minimum and maximum stay, closed arrival and departure, advance), as the stay pickers draw them. `property` is the
- * slug or the id of the property. Read again when it is older than half a minute;
- * a failed read is tried again twice when it looks like the network and not like a wrong request. While the property or the site is
- * not known yet the status is `loading`.
- */
 export function usePublicPropertyCalendar(
   orgSlug: string | undefined,
   property: string | undefined,
@@ -68,7 +54,6 @@ export function usePublicPropertyCalendar(
     }
     return {
       status: 'ready',
-      // The rules of the host on each day (NF-36): an older backend does not send them and the day then has none.
       days: data.days.map((day) => ({
         date: parseStayDate(day.date),
         available: day.available,

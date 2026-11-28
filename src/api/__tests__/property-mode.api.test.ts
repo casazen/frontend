@@ -36,7 +36,6 @@ describe('propertyModeApi (PM-02 endpoints)', () => {
     await propertyModeApi.preview(PROPERTY_ID, 'Long');
     await propertyModeApi.preview(PROPERTY_ID, 'Long', '');
 
-    // No `date` at all (not an empty one): the server answers for the first day it can.
     for (const [, params] of vi.mocked(ApiClient.get).mock.calls) {
       expect(params).toEqual({ to: 'long', date: undefined });
     }

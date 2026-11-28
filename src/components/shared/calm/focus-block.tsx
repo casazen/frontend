@@ -5,32 +5,18 @@ import { CalmActionButton, type CalmAction } from './calm-action';
 import { TONE_STYLES, type CalmTone } from './calm-tone';
 
 export interface FocusBlockProps extends Omit<React.HTMLAttributes<HTMLElement>, 'title' | 'children'> {
-  /** How it feels: the accent of the area (`neutral`, default), or good, bad or urgent news. The icon follows the tone. */
   tone?: CalmTone;
-  /** A few words above the title: "Adesso", "Da sistemare". */
   kicker?: string;
-  /** The one thing to do, as a short sentence. It is the name of the block for a screen reader. */
   title: string;
-  /** Why, or what it is about, in a sentence or two. */
   body?: React.ReactNode;
-  /** Whose turn it is: "Tocca a te", "Tocca a Elisa", "Se ne occupa CasaZen". */
   who?: string;
-  /** How long it takes or when it is due: "5 minuti", "Entro venerdì 18". */
   when?: string;
-  /** The action that does it. Always there: a block that says what to do and gives no way to do it is a dead end. */
   primary: CalmAction;
-  /** The other way out, if there is one ("Più tardi", "Vedi il contratto"). */
   secondary?: CalmAction;
-  /** What comes after, written as the person reads it ("Poi: la firma del conduttore"). */
   then?: string;
-  /** Replaces the icon of the tone. It is decorative: the title and the words carry the meaning. */
   icon?: LucideIcon;
 }
 
-/**
- * A named section for a current task, its owner and its actions. The tone is conveyed by the icon and the wording. It is the
- * one focal point of a page, so it is also the one block that arrives with a short rise (`cz-enter`, `styles/motion.css`).
- */
 export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, primary, secondary, then, icon, className, ...props }: FocusBlockProps) {
   const titleId = React.useId();
   const style = TONE_STYLES[tone];

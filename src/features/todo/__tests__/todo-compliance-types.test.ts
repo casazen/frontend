@@ -4,10 +4,8 @@ import type { TodoActivity } from '@/api/internal-activities.api';
 import i18n from '@/i18n/config';
 import { describeTodo } from '../lib/todo-model';
 
-// E03/F02/US01/T03 (NF-52): the types the traffic light of the cockpit raises have their own words, in both languages, not the generic ones.
 const TYPES = ['IdentityVerification', 'MunicipalityTaxRateMissing', 'TouristTaxDeadline'] as const;
 
-// No reason: what the type says is what is read (the reasons are tested below).
 const activity = (activityType: string, overrides: Partial<TodoActivity> = {}): TodoActivity => ({
   id: 'a-1',
   activityType,
@@ -45,13 +43,11 @@ const contextOf = (lng: 'it' | 'en', propertyNames: ReadonlyMap<string, string> 
   propertyNames,
 });
 
-// The feeder of the compliance sends the code of the reason (`ComplianceReasonCodes`): the words are the cockpit's own, not the generic ones of the type.
 describe('describeTodo and the reasons of the traffic light', () => {
   it.each(['it', 'en'] as const)('describeTodo_ReasonCodeOfTheCompliance_SaysItInTheWordsOfTheCockpit_%s', async (lng) => {
     await i18n.changeLanguage(lng);
     const fixed = i18n.getFixedT(lng);
 
-    // The police send is a «ReconnectChannelManager» for the feeder: its type says the connection was lost, which is not what the item says.
     const text = describeTodo(activity('ReconnectChannelManager', { action: 'ActivateOctorateSend', reason: 'connection_inactive' }), contextOf(lng));
 
     expect(text.why).toBe(fixed('compliance.reason.connection_inactive'));
@@ -75,7 +71,6 @@ describe('describeTodo and the reasons of the traffic light', () => {
   });
 });
 
-// An item about a month carries it in its kind of entity (`PropertyPeriod:yyyy-MM`): two months of the same property must not be two rows that look the same.
 describe('describeTodo and the month of a property', () => {
   const names = new Map([['p-1', 'Casa Mare']]);
   const ofMonth = (entityType: string) => activity('TouristTaxDeadline', { action: 'DeclareTouristTax', entityType, entityId: 'p-1' });
@@ -107,7 +102,6 @@ describe('describeTodo and the month of a property', () => {
   });
 });
 
-// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`) that this version of the app knows has its own words in both languages, not «Attività da completare».
 const BACKEND_TYPES = [
   'CheckInPending',
   'CheckOutPending',
@@ -135,14 +129,11 @@ const BACKEND_TYPES = [
   'OwnerStayToReview',
   'OwnerStaySyncFailed',
   'OwnerDocumentExpiring',
-  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02): the agency tells the owner by hand.
   'OwnerStatementNoticeFailed',
   'RoutineTask',
-  // The automatic cleaning at check-out (E24/F01/US01/T02): the dates of the stay changed after the supplier took the cleaning.
   'CleaningDateChanged',
   'CheckInLinkToSend',
   'CompanyTenantDecision',
-  // A message of a routine that could not go out to a guest (E05/F07/US01/T03, NF-71).
   'ScheduledMessageIssue',
   // The self-billed invoices (TD17) of the agency (FIX/FE-TD17-TODO): one the SDI rejected, and the drafts of a month to check and issue.
   'SelfBillingRejected',
@@ -166,7 +157,6 @@ describe('describeTodo for every type of the backend', () => {
       expect(text.title, type).not.toMatch(/^activity.todo/);
       titles.add(text.title);
     }
-    // No two types share a title: the host tells them apart in the list.
     expect(titles.size).toBe(BACKEND_TYPES.length);
     await i18n.changeLanguage('it');
   });
@@ -245,7 +235,6 @@ describe('describeTodo and the cleaning recharge with no VAT stated', () => {
   });
 });
 
-// The To do that a routine makes carries the words the host wrote in the routine (E01/F04/US02/T01): they are its reason as they are, even one word, and never a key of the texts.
 describe('describeTodo and the To do of a routine', () => {
   it.each(['Pulizia', 'Controlla la casa dopo la partenza', 'a.b', 'constructor', 'connection_inactive', 'activity.todo.type.unknown.why'])(
     'describeTodo_RoutineTaskWithTheWordsOfTheHost_SaysThemAsTheyAre_%s',

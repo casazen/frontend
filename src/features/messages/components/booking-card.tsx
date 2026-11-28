@@ -20,7 +20,6 @@ const STATUS_VARIANT: Record<BookingStatus, BadgeProps['variant']> = {
 
 const STAY_DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/** The five figures in simple words, in the order the host reads them; a figure the card does not have is left out, never shown as zero. */
 const AMOUNTS: ReadonlyArray<{ field: keyof MessageBookingAmounts; labelKey: string }> = [
   { field: 'total', labelKey: 'messages.bookingCard.total' },
   { field: 'commission', labelKey: 'messages.bookingCard.commission' },
@@ -31,9 +30,7 @@ const AMOUNTS: ReadonlyArray<{ field: keyof MessageBookingAmounts; labelKey: str
 
 interface BookingCardProps {
   card: MessageBookingCard;
-  /** The address of the page of the guest; `null` hides the link (the page is not there for this user). */
   profilePath: string | null;
-  /** The address of the booking; `null` hides the link. */
   bookingPath: string | null;
 }
 

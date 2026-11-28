@@ -6,7 +6,6 @@ import { SiteApp } from '../site-app';
 import { SITE_PAGES } from '../site-pages';
 import { BulletList, CardGrid, FeatureCard, Steps } from '../components/site-blocks';
 
-/** The rows of a card: `sm:row-span-3` and `md:row-span-3` are the cards that are subgrids of their grid. */
 const ROW_SPAN = /(?:sm|md):row-span-(\d)/;
 
 function dom(html: string): HTMLElement {
@@ -51,7 +50,6 @@ describe('cards that line up (the subgrid cards of the public site)', () => {
     const root = dom(renderToString(<FeatureCard icon={Info} title="Titolo" text="Testo" />));
     const classes = root.firstElementChild!.getAttribute('class')!.split(' ');
 
-    // `flex flex-col` below `sm`, the subgrid from there: with one column there is nothing to line up with.
     expect(classes).toContain('flex');
     expect(classes).toContain('sm:grid');
     expect(classes).toContain('sm:grid-rows-subgrid');
@@ -90,7 +88,6 @@ describe('cards that line up (the subgrid cards of the public site)', () => {
       ),
     );
 
-    // A subgrid takes its rows from its parent: nothing may stand between the card and the grid.
     expect(Array.from(root.firstElementChild!.children).every((card) => rowsOf(card) === 3)).toBe(true);
   });
 
@@ -103,7 +100,6 @@ describe('cards that line up (the subgrid cards of the public site)', () => {
     const grid = root.firstElementChild!;
 
     expect(grid.getAttribute('class')!.split(' ')).toEqual(expect.arrayContaining(classes));
-    // Three cards are not two and one alone, five are not three and two: only the grid of a list of any length has such a line.
     if (count !== undefined) expect(grid.getAttribute('class')).not.toContain('sm:grid-cols-2');
   });
 
@@ -115,7 +111,6 @@ describe('cards that line up (the subgrid cards of the public site)', () => {
     const cards = Array.from(root.querySelectorAll('[class*="row-span-"]'));
     expect(cards.length).toBeGreaterThan(0);
 
-    // The cards of a grid take the same number of rows, else the ones with fewer end higher; and each child is a row.
     const grids = new Set(cards.map((card) => card.parentElement!));
     for (const grid of grids) {
       const spans = Array.from(grid.children).map(rowsOf);

@@ -145,10 +145,6 @@ function SuppliersTab() {
   );
 }
 
-/**
- * Platform admin's view of the suppliers (SU-12, A4-29): the list with status, suspension and reactivation (reason
- * required, audit trail), filtered and paginated by the server. The invites (suppliers and hosts) have their own section.
- */
 export function AdminSuppliersPage() {
   const { flags } = useFeatureFlags();
   const { t } = useTranslation();

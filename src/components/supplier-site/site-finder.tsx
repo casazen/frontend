@@ -9,15 +9,8 @@ import { addDays, todayInRome } from '@/lib/stay-dates';
 import type { Comune } from '@/types/comune.types';
 import { FinderComuneField } from './finder-comune-field';
 
-/** How far ahead a day can be asked for: the supplier's horizon is shorter, the booking tells the exact last day. */
 const FINDER_HORIZON_DAYS = 60;
 
-/**
- * The one action of the cover (SP-09-FE): "Che servizio ti serve? Dove? Quando?" and "Prenota ora". It only gathers what the
- * customer knows (the service, the comune, the day) and takes them to the booking with those choices in the address
- * (`lib/supplier-site/booking-params.ts`); the booking checks the zone, the slots and the price. A service on quote has no booking: it goes
- * to the request on measure. Shown only while the bookings are open.
- */
 export function SiteFinder({ model, services }: { model: SiteModel; services: PublicSupplierService[] }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -70,7 +63,6 @@ export function SiteFinder({ model, services }: { model: SiteModel; services: Pu
   );
 }
 
-/** Under the finder: for who does not know what to ask for, the request on measure (with its chat). */
 export function InquiryLink({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   return (

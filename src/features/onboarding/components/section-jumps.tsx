@@ -3,7 +3,6 @@ interface SectionJumpsProps {
   sections: { id: string; label: string }[];
 }
 
-/** Local navigation retains form edits while moving between long sections. */
 export function SectionJumps({ label, sections }: SectionJumpsProps) {
   return (
     <nav aria-label={label} className="flex min-w-0 flex-wrap gap-2 rounded-2xl border bg-card p-2">

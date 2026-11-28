@@ -7,36 +7,23 @@ import type { ListCardContent } from '@/components/shared/list-view/list-types';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { orgRoleLabel } from '../account/account-roles';
 import type { PersonRow } from './people-rows';
-// The drawer registers its kind when its module is loaded: the list is what opens it.
 import { PERSON_DRAWER_KIND } from './person-drawer';
 import { PersonAvatar } from './person-avatar';
 import { areaName, ORG_ROLES } from './team-labels';
 
-/** The areas of a person's work, as the options of the filter: the ones a role is given (the Amministrazione comes with the role). */
 const RENTAL_AREAS = ['short-rent', 'long-rent'] as const;
 
-/** The states in the order the team has to look at them: who is in first, then who was invited, then who is out. */
 const STATUS_RANK: Record<string, number> = { Active: 0, Pending: 1, Expired: 2, Deactivated: 3 };
 
-/** «Affitti brevi, Affitti lunghi»: the areas the person works in, by name. */
 function areasText(row: PersonRow, t: TFunction): string {
   return row.areas.length > 0 ? row.areas.map((area) => areaName(area, t)).join(', ') : t('team.list.noAreas');
 }
 
-/** «Tutti gli immobili» or «Solo alcuni immobili»; nothing for a person who is out. */
 function propertiesText(row: PersonRow, t: TFunction): string | null {
   if (row.status === 'Deactivated') return null;
   return row.propertyScope === 'Selected' ? t('team.list.someProperties') : t('team.list.allProperties');
 }
 
-/**
- * The list of the people of the org, in the words of the person: the unified list (UI-14) with one row for each member and each
- * invitation that waits, one state each (in, invited, out) and the role. The name opens the drawer of the person, which says what
- * that person can see. All the rows are in the page (`GET /orgs/me/members` and `/invitations`), so the list searches, filters and
- * sorts them itself.
- *
- * The design also has the last access of each person. The backend does not keep it, so it is not here and not made up.
- */
 export function usePeopleList() {
   const { t } = useTranslation();
 
@@ -133,7 +120,6 @@ export function usePeopleList() {
             { icon: Building2, text: [areasText(row, t), propertiesText(row, t)].filter(Boolean).join(' · '), label: t('team.list.columns.access') },
           ],
         }),
-        // The name opens the drawer of the person: what it can see. There is no page of its own.
         detail: { drawerKind: PERSON_DRAWER_KIND },
         rowTone: (row) => (row.status === 'Deactivated' || row.status === 'Expired' ? 'done' : undefined),
         cardsUntil: 'lg',

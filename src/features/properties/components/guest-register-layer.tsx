@@ -29,7 +29,6 @@ export function GuestRegisterLayerTitle({ id }: DetailTitleProps) {
   return <>{name ? t('guestRegister.layer.titleFor', { property: name }) : t('guestRegister.layer.title')}</>;
 }
 
-/** What the server says is wrong with the read: the page (not found, not in Switzerland, no permission) or the period (the end before the start, too long). Any other failure has no words of its own: `null`. */
 type Refusal = { page: string } | { period: GuestRegisterPeriodProblem };
 
 function refusalOf(error: unknown): Refusal | null {
@@ -41,7 +40,6 @@ function refusalOf(error: unknown): Refusal | null {
   return null;
 }
 
-/** What the count of the period says: how many guests, how long the regime asks the host to keep the register, or that nobody arrived. */
 function RegisterPreview({ info }: { info: GuestRegisterInfo }) {
   const { t } = useTranslation();
   const years = info.retentionYears;
@@ -64,7 +62,6 @@ function RegisterPreview({ info }: { info: GuestRegisterInfo }) {
   );
 }
 
-/** The sheet being printed: the table as the file holds it, for the property and the period it was made for. */
 interface PrintedSheet {
   table: GuestRegisterTable;
   period: GuestRegisterPeriod;
@@ -78,15 +75,12 @@ interface GuestRegisterLayerProps {
 function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
   const { t } = useTranslation();
   const property = useProperty(propertyId);
-  // The last 30 days, ending today: the register is for the arrivals in progress too.
   const [period, setPeriod] = useState<GuestRegisterPeriod>(() => defaultRegisterPeriod());
   const problem = periodProblemOf(period);
   const info = useGuestRegisterInfo(propertyId, problem === null ? period : null);
   const download = useDownloadGuestRegister(propertyId);
 
-  // The sheet to print holds the guests: it is in the page while the browser prints and not a moment longer.
   const [sheet, setSheet] = useState<PrintedSheet | null>(null);
-  // A request is not cancelled when the layer is closed: if the file arrives after that there is no sheet to draw, and the browser must not print the page behind it.
   const isOpen = useRef(true);
   useEffect(() => {
     isOpen.current = true;
@@ -96,31 +90,24 @@ function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
   }, []);
   const print = usePrintGuestRegister(propertyId, (table, printed) => {
     if (!isOpen.current) return;
-    // The count was not up to date and nobody arrived in the period after all: there is nothing to sign, so nothing is printed. The layer says so and reads the count again.
     if (table.rows.length === 0) {
       toast.warning(t('guestRegister.preview.empty'));
       void info.refetch();
       return;
     }
-    // The sheet has to be in the page when the browser draws it: it is drawn now, then printed, and taken away when the printing is over (or the layer is closed).
     flushSync(() => setSheet({ table, period: printed }));
     window.addEventListener('afterprint', () => setSheet(null), { once: true });
     window.print();
   });
-  // Every button of the layer waits while any request of it is on its way.
   const busy = download.isPending || print.isPending;
 
-  // A refusal comes first: a read that failed still holds the answer before it, and a 404 or a 403 must not show the count of a moment ago.
   const refusal = info.isError ? refusalOf(info.error) : null;
   if (refusal && 'page' in refusal) return <LayerNotice textKey={refusal.page} testId="guest-register-problem" />;
 
-  // A day that is still being typed is not a mistake: nothing is said (the buttons wait) until the period is a period that is wrong (the end before the start, a year and a day).
   const periodProblem = problem === 'missing' ? null : (problem ?? (refusal && 'period' in refusal ? refusal.period : null));
   const data = info.data;
-  // There is something to keep or to print only when somebody arrived in the period (an empty period has the header alone: the line says so, and there is nothing to sign).
   const hasGuests = problem === null && data !== undefined && data.rowCount > 0;
   const loading = problem === null && data === undefined && !info.isError;
-  // The printed sheet carries the name of the property in its header: «Stampa» waits for it (the register of nobody in particular is not a record to keep).
   const propertyName = property.data?.name?.trim() ?? '';
 
   return (
@@ -156,7 +143,6 @@ function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
         </div>
       ) : null}
 
-      {/* A read that failed for a reason that says nothing about the register (the line, a 5xx) while the count is on screen: the count stays, with a way to read it again. */}
       {info.isError && !refusal && data ? (
         <Alert
           variant="warning"

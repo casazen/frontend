@@ -10,12 +10,10 @@
  */
 const PREFIX = 'lease-read-seen:';
 
-/** What the reading of a draft is called in the storage: the lease and the contract document that was read. */
 export function seenStoreKey(leaseId: string, contractDocumentId: string | null | undefined): string {
   return `${PREFIX}${leaseId}:${contractDocumentId ?? ''}`;
 }
 
-/** The ids of the values already changed (see `readSeenId`). */
 export function seenReads(storeKey: string): ReadonlySet<string> {
   try {
     const raw = sessionStorage.getItem(storeKey);
@@ -26,7 +24,6 @@ export function seenReads(storeKey: string): ReadonlySet<string> {
   }
 }
 
-/** The person changed the value named `id`: from now on its mark is not shown. */
 export function markReadSeen(storeKey: string, id: string): void {
   try {
     const seen = new Set(seenReads(storeKey));
@@ -38,7 +35,6 @@ export function markReadSeen(storeKey: string, id: string): void {
   }
 }
 
-/** The name of a value of the reading: the person it is about (none for a value of the contract) and the names the server gave to it. */
 export function readSeenId(partyId: string | undefined, fields: readonly string[]): string {
   return `${partyId ?? ''}|${fields.join(',')}`;
 }

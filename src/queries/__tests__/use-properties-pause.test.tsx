@@ -19,7 +19,6 @@ type ToastData = { action: { label: string; onClick: () => void }; duration: num
 let queryClient: QueryClient;
 const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 
-/** The toast that tells the property was paused: its message and what it was given. */
 function pausedToast() {
   const call = vi.mocked(toast.success).mock.calls.find(([message]) => message === 'Immobile messo in pausa');
   return call ? { data: call[1] as unknown as ToastData } : undefined;
@@ -47,7 +46,6 @@ describe('usePauseProperty: the toast that can be undone (UI-07, toastUndo)', ()
     const shown = pausedToast();
     expect(shown?.data.action.label).toBe('Annulla');
     expect(shown?.data.duration).toBe(6000);
-    // Nothing has been reverted yet.
     expect(propertiesApi.activate).not.toHaveBeenCalled();
   });
 
@@ -61,7 +59,6 @@ describe('usePauseProperty: the toast that can be undone (UI-07, toastUndo)', ()
 
     await waitFor(() => expect(propertiesApi.activate).toHaveBeenCalledWith('prop-1'));
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Immobile riattivato'));
-    // The row, the detail page and the badges read the new state without a manual reload.
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['properties'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['properties', 'prop-1'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['properties', 'prop-1', 'detail'] });

@@ -20,11 +20,8 @@ interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
-/** 422 of the lookup and of the submission: the link is not ours, is expired or is for another booking (all the same answer). */
 const LINK_INVALID_CODE = 'review_link_invalid';
-/** 409: the stay can no longer be reviewed (cancelled, or the days to write it are over). */
 const NOT_AVAILABLE_CODE = 'review_not_available';
-/** 409 of the submission: the stay was already reviewed (the other tab, or the same click twice). */
 const ALREADY_SUBMITTED_CODE = 'review_already_submitted';
 
 function errorCodeOf(error: unknown): string | undefined {
@@ -93,7 +90,6 @@ export function ReviewLinkPage() {
   const day = (value: string) => formatStayDate(value.slice(0, 10), i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
   const stay = `${info.propertyName} · ${day(info.checkInDate)} → ${day(info.checkOutDate)}`;
 
-  // The review the guest just sent, or the one it sent before: read-only, never a second form.
   const written: PublicReview | null = submit.data ?? info.review ?? null;
   if (written) {
     return (

@@ -71,8 +71,6 @@ export function TenantContractPage() {
       })
     : null;
 
-  // The head of every page (UX round 2026-11): the contract, then the house, its address and the term in one line of facts; under it
-  // the one thing to do, the next payment.
   return (
     <div className="space-y-6" data-testid="tenant-contract">
       <PageHeader title={area.contract.label} description={[area.property.name, area.property.address, term].filter(Boolean).join(' · ')} />

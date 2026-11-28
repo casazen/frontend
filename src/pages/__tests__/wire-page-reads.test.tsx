@@ -10,9 +10,6 @@ import { WireTransferPage } from '../WireTransferPage';
 import { wireBatch, wirePayout } from './agency-money-fixtures';
 import { wireTransport, type WireReply, type WireRequest } from './wire-transport';
 
-// These tests use the real client of the app, with its interceptors and its handlers of the 403, and the real wire API: only the transport is replaced. What they prove is what
-// the wire page does with a refusal (a person limited to some properties), with the 403 of an account, with a failed read and with a «not found» when nothing of the reads is
-// mocked, as in the browser, and what the reads that sit between the server and the screen (`readOrNull`, the cut of the payouts and of the batches) leave of the money rules.
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: [{ contextKey: 'account', roleKey: 'org_owner' }] }) }));
 vi.mock('@/hooks/use-agency-plan', () => ({ useAgencyPlan: () => ({ isAgency: true, isLoading: false, failed: false, retry: vi.fn() }) }));
 vi.mock('@/components/layout/page-header', () => ({ PageHeader: ({ title }: { title: string }) => createElement('h1', null, title) }));
@@ -41,7 +38,6 @@ const FILES = '/wire-transfers/batches';
 const CREATE = '/wire-transfers/batch';
 const FILE_PAYOUTS = `/wire-transfers/batch/${FILE.id}/payouts`;
 
-/** The answers of a server that is in order: both payable lists, the list of the files and the payouts of the file. Each test changes what it needs. */
 function serverInOrder({ path, currency }: WireRequest): WireReply {
   if (path === PAYABLE) return { status: 200, data: currency === 'CHF' ? [CHF_A] : [EUR_B] };
   if (path === FILES) return { status: 200, data: [FILE] };
@@ -56,7 +52,6 @@ function renderPage() {
   return client;
 }
 
-/** Opens the payouts of the file, once its card is on the page. */
 async function openPayoutsOfTheFile() {
   const card = await screen.findByTestId(`wire-batch-${FILE.id}`);
   fireEvent.click(within(card).getByTestId('wire-batch-payouts-toggle'));
@@ -98,7 +93,6 @@ describe('the wire page and a 403 (permission rule: a refusal is told in the pag
     expect(screen.queryByTestId('wire-group-CHF')).toBeNull();
     expect(screen.queryByTestId('wire-load-error')).toBeNull();
     expect(screen.queryByTestId('agency-access-refused')).toBeNull();
-    // The list of the files is another read with its own answer: the page stays where it is.
     expect(await screen.findByTestId(`wire-batch-${FILE.id}`)).toBeInTheDocument();
   });
 
@@ -136,7 +130,6 @@ describe('the wire page and a 403 (permission rule: a refusal is told in the pag
     renderPage();
 
     expect(await screen.findByTestId('wire-payouts-refused')).toHaveTextContent('Questi pagamenti non sono disponibili per il tuo accesso');
-    // Not the handler of the deactivated account, not the one of the onboarding, not the no-access page; and not a failure of the read, nor the words of the account.
     expect(onAccountInactive).not.toHaveBeenCalled();
     expect(onOnboardingRequired).not.toHaveBeenCalled();
     expect(onForbidden).not.toHaveBeenCalled();
@@ -147,7 +140,6 @@ describe('the wire page and a 403 (permission rule: a refusal is told in the pag
     expect(screen.queryByText(/Completa l'attivazione dell'account/)).toBeNull();
     expect(screen.queryByTestId('wire-create')).toBeNull();
 
-    // The payouts of a file are another read with the same rule: the refusal in the card, with no handler either.
     const panel = await openPayoutsOfTheFile();
     expect(await within(panel).findByTestId('wire-batch-payouts-refused')).toHaveTextContent('Questi pagamenti non sono disponibili per il tuo accesso');
     expect(within(panel).queryByTestId('wire-batch-payouts-error')).toBeNull();
@@ -157,7 +149,6 @@ describe('the wire page and a 403 (permission rule: a refusal is told in the pag
   });
 
   it('theClientOfTheApp_A403OnAnyOtherRead_SendsTheAppToNoAccess', async () => {
-    // The control of the tests above: the handler is wired and the transport rejects as the real one does, so its silence there is the doing of the wire reads.
     reply = () => ({ status: 403, data: '' });
 
     await expect(axiosInstance.get('/payments')).rejects.toBeDefined();
@@ -175,7 +166,6 @@ describe('the wire page and the 403 of the account (permission rule: a deactivat
 
     renderPage();
 
-    // Both lists of payouts and the list of the files: each one is a failure with a way to read again, told with the words of the account, and the app is sent where it has to go.
     const failure = await screen.findByTestId('wire-load-error');
     expect(failure).toHaveTextContent(words);
     expect(await screen.findByText('Impossibile caricare i file per la banca')).toBeInTheDocument();
@@ -207,7 +197,6 @@ describe('the wire page and the 403 of the account (permission rule: a deactivat
     { code: 'account_inactive', handler: onAccountInactive, other: onOnboardingRequired },
     { code: 'onboarding_required', handler: onOnboardingRequired, other: onAccountInactive },
   ])('theClientOfTheApp_A403OfTheAccountOnARejectedRead_RunsItsHandler ($code)', async ({ code, handler, other }) => {
-    // The control of the tests above: the handlers are wired and the transport rejects as the real one does, so the handler that ran there is the doing of the wire reads.
     reply = () => ({ status: 403, data: { code } });
 
     await expect(axiosInstance.get('/payments')).rejects.toBeDefined();
@@ -240,8 +229,6 @@ describe('the wire page and a failed read (a failure is told with a retry, never
   });
 
   it('WirePage_PayableReadThatIsNotAList_IsAFailure_NeverAnEmptyList', async () => {
-    // A page of the app served in place of the API (a rewrite that went wrong) answers 200 with HTML, and an answer with no body at all (axios gives `''`, never `undefined`)
-    // is not a list either.
     reply = (request) => (request.path === PAYABLE ? { status: 200, data: request.currency === 'CHF' ? '<!doctype html><html></html>' : '' } : serverInOrder(request));
 
     renderPage();
@@ -260,7 +247,6 @@ describe('the wire page and a failed read (a failure is told with a retry, never
 
     renderPage();
 
-    // The page does not crash and does not say «no files»: it says the list could not be read, with a way to read it again, and the payouts (another read) stay where they are.
     expect(await screen.findByText('Impossibile caricare i file per la banca')).toBeInTheDocument();
     expect(screen.queryByText('Non hai ancora creato nessun file per la banca.')).toBeNull();
     expect(screen.queryByTestId(`wire-batch-${FILE.id}`)).toBeNull();
@@ -316,11 +302,9 @@ describe('what the wire page asks the server (one payable list per currency, and
     await screen.findByTestId(`wire-batch-${FILE.id}`);
 
     expect([...requests].sort()).toEqual([`GET ${FILES}`, `GET ${PAYABLE}?currency=CHF`, `GET ${PAYABLE}?currency=EUR`].sort());
-    // The franc payouts are in the franc group and the euro ones in the euro group: two lists that never mix.
     expect(within(screen.getByTestId('wire-group-CHF')).queryByTestId(`wire-payout-${EUR_B.payoutId}`)).toBeNull();
     expect(within(screen.getByTestId('wire-group-EUR')).queryByTestId(`wire-payout-${CHF_A.payoutId}`)).toBeNull();
 
-    // The payouts of the file are asked for once, when the person opens them, by the id of the file and nothing else.
     await openPayoutsOfTheFile();
     await waitFor(() => expect(requests.filter((request) => request === `GET ${FILE_PAYOUTS}`)).toHaveLength(1));
     expect(requests.some((request) => request.includes(CHF_A.ownerId) || request.includes(CHF_A.ownerName))).toBe(false);
@@ -329,7 +313,6 @@ describe('what the wire page asks the server (one payable list per currency, and
 
 describe('the money rules through the real client (the reads between the server and the screen keep them: what is in a file is not offered again, each currency has its own list, an IBAN is a yes or a no)', () => {
   it('WirePage_PayoutPutInAFile_LeavesTheListOfTheServer_AndAFreshPageDoesNotOfferItAgain', async () => {
-    // A server that remembers what it did: the file takes its payouts out of the payable lists and goes into the list of the files.
     const made = wireBatch({ id: 'c2c2c2c2-0000-4000-8000-000000000002', status: 'Generated', transferCount: 1, totalAmount: 1234.5 });
     let payable: Record<'CHF' | 'EUR', WirePayout[]> = { CHF: [CHF_A], EUR: [EUR_B] };
     let files: WireBatch[] = [FILE];
@@ -355,12 +338,10 @@ describe('the money rules through the real client (the reads between the server 
     fireEvent.click(screen.getByTestId('wire-create'));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Crea i file per la banca' }));
 
-    // The file is what the server answered, and the payout leaves the page: both lists were read again and the answer no longer has it.
     expect(await screen.findByTestId('wire-created-CHF')).toHaveTextContent('File in CHF creato: 1 bonifico.');
     await waitFor(() => expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).toBeNull());
     expect(requests.filter((line) => line === `POST ${CREATE}`)).toHaveLength(1);
 
-    // A fresh page, nothing in memory: what it offers is what the server lists now, and the payout in the file is not on it.
     cleanup();
     requests = [];
     renderPage();
@@ -373,7 +354,6 @@ describe('the money rules through the real client (the reads between the server 
   });
 
   it('WirePage_OneAnswerThatMixesTheCurrencies_EachGroupShowsOnlyItsOwn_EachAmountInItsOwnCurrency', async () => {
-    // One answer, given to both lists, that holds a franc payout and a euro one: the franc group takes the franc payout only, the euro group the euro one only.
     reply = (request) => (request.path === PAYABLE ? { status: 200, data: [CHF_A, EUR_B] } : serverInOrder(request));
 
     renderPage();
@@ -390,7 +370,6 @@ describe('the money rules through the real client (the reads between the server 
   });
 
   it('WirePage_OneAnswerWithoutOwnerHasIban_BlocksThePayout_NeverOffersIt_AndNothingCanBeCreated', async () => {
-    // A server that does not know the member: the payout is shown with the reason, and «yes» is only what the server said as a yes.
     const withoutTheMember: Partial<WirePayout> = { ...CHF_A };
     delete withoutTheMember.ownerHasIban;
     reply = (request) => (request.path === PAYABLE ? { status: 200, data: request.currency === 'CHF' ? [withoutTheMember] : [] } : serverInOrder(request));
@@ -400,7 +379,6 @@ describe('the money rules through the real client (the reads between the server 
     const row = await screen.findByTestId(`wire-payout-${CHF_A.payoutId}`);
     expect(row.querySelector('input[type="checkbox"]')).toBeDisabled();
     expect(within(row).getByTestId('wire-payout-iban-badge')).toHaveTextContent('IBAN mancante');
-    // Nothing a file can pay is on the page: no «choose all», and the button that asks for the files waits.
     expect(screen.queryByTestId('wire-select-group-CHF')).toBeNull();
     expect(screen.getByTestId('wire-create')).toBeDisabled();
   });

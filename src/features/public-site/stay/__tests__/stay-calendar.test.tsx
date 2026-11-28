@@ -8,10 +8,6 @@ import { StayCalendar } from '../stay-calendar';
 import type { CalendarDay, StayRange } from '../stay-calendar-model';
 import type { StayCalendarData } from '../use-public-calendar';
 
-/**
- * The calendar of the stay (DB-20), clicked as a guest does: the arrival, then the departure. What it hands to `onChange` is
- * what the checkout will be asked to book, so a taken night inside a stay, or too few nights, must never get through.
- */
 const TODAY = '2026-11-02';
 
 function data(overrides: Record<string, Partial<CalendarDay>> = {}): StayCalendarData {
@@ -171,7 +167,6 @@ describe('StayCalendar', () => {
 
   it('StayCalendar_ArrivalCloserThanTheMinimumAdvance_IsRefusedWithItsOwnSentence', () => {
     const onChange = vi.fn();
-    // Today is the 2nd: the 3rd is one day ahead and its rule asks for three.
     render(<Harness calendar={data({ '2026-11-03': { minAdvanceDays: 3 } })} onChange={onChange} />);
 
     fireEvent.click(day('2026-11-03'));
@@ -181,7 +176,6 @@ describe('StayCalendar', () => {
   });
 
   it('StayCalendar_TwoClicksBeforeTheParentHasRendered_BuildOnTheFirst', () => {
-    // The parent writes the address and the router renders it later: the second click must not start a new stay.
     const onChange = vi.fn();
     render(<StayCalendar value={{ checkIn: '', checkOut: '' }} data={data()} onChange={onChange} />);
 

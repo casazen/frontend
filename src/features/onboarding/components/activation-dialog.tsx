@@ -20,17 +20,10 @@ interface ActivationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/** The flows the host can switch on now by default: the ones with at least one property that is ready. */
 function defaultFlows(progress: readonly BulkFlowProgress[] | undefined): OnboardingFlowKey[] {
   return (progress ?? []).filter((flow) => flow.ready > 0).map((flow) => flow.flow);
 }
 
-/**
- * The activation (E10/F03/US02/T03, NF-104 part 11, UX-05): the summary BEFORE the action, then the result. The host ticks the flows (by default the ones
- * with properties that can be switched on) and the dialog says, for each, for how many properties it will be switched on and how many are not ready and stay
- * in «Da fare»; «Conferma» does it, «Modifica» closes the dialog and goes back to the table. The result lists, for each flow, how many were switched on and
- * which properties were not and what they lack, and ends with one suggested next step. The server checks the prerequisites of each property again at the moment.
- */
 export function ActivationDialog({ open, onOpenChange }: ActivationDialogProps) {
   const { t } = useTranslation();
   const readiness = useActivationReadiness({ enabled: open });
@@ -98,7 +91,6 @@ export function ActivationDialog({ open, onOpenChange }: ActivationDialogProps) 
               })}
             </fieldset>
 
-            {/* The summary before the action (UX-05): what will happen, and what stays for later. */}
             <div className="space-y-1 rounded-md bg-muted p-3 text-sm" aria-live="polite" data-testid="activation-summary">
               <p className="font-medium">{t('onboardingPlan.summary.activation.willActivate', { count: willActivate })}</p>
               <p>{t('onboardingPlan.summary.activation.stayInTodo', { count: notReady })}</p>
@@ -140,12 +132,10 @@ export function ActivationDialog({ open, onOpenChange }: ActivationDialogProps) 
   );
 }
 
-/** What a property still lacks, in plain words and once each: a prerequisite this version does not know reads as a neutral phrase, never as its key. */
 function unmetText(unmet: readonly string[], t: TFunction): string {
   return Array.from(new Set(unmet.map((key) => t(prerequisiteKey(key))))).join(', ');
 }
 
-/** The result, flow by flow: how many were switched on, the properties that were not with what they lack, and the one next step. */
 function ActivationResult({ result }: { result: readonly FlowActivationSummary[] }) {
   const { t } = useTranslation();
   const left = result.reduce((sum, flow) => sum + flow.notActivated.length, 0);

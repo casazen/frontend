@@ -11,12 +11,10 @@ interface PriceLinesProps {
   quote: DirectBookingQuote;
   /** The tax was worked out for the oldest age of a minor because the ages are not asked yet: it is called an estimate, and says so. */
   estimatedTax: boolean;
-  /** The quote shown is the one of the previous stay while the new one comes: dimmed, and never offered for booking. */
   stale?: boolean;
   idPrefix?: string;
 }
 
-/** The tax a quote could not work out, as a note under the lines: the words are the ones the checkout always used. */
 function MissingTaxNote({ quote }: { quote: DirectBookingQuote }) {
   const { t } = useTranslation();
   const status = quote.touristTax.status;
@@ -32,7 +30,6 @@ function MissingTaxNote({ quote }: { quote: DirectBookingQuote }) {
   );
 }
 
-/** The `lines` of a quote as the server sends them, or those of its older numbers when the backend does not send lines yet. */
 function linesOf(quote: DirectBookingQuote): QuoteLine[] {
   if (quote.lines && quote.lines.length > 0) return quote.lines;
   const cents = (amount: number) => Math.round(amount * 100);
@@ -47,17 +44,11 @@ function linesOf(quote: DirectBookingQuote): QuoteLine[] {
   return lines;
 }
 
-/**
- * The price of a stay in lines (DB-04b), the lines of the quote of the server, in order, ending with the total: the nights (the
- * ordinary ones and, when the home asks more for them, the weekend ones), the cleaning, the tourist tax with its explanation and the
- * total. Nothing is added up here: the total is the one the server sends, and so the one the checkout charges.
- */
 export function PriceLines({ quote, estimatedTax, stale = false, idPrefix, extras = [] }: PriceLinesProps) {
   const { t, i18n } = useTranslation();
   const uid = useId();
   const [taxOpen, setTaxOpen] = useState(false);
   const locale = siteLocale(i18n.language);
-  // The currency of the quote, as the server says it: a quote that says none is written with no symbol and the phrase that says so.
   const money = (cents: number) => formatPrice(cents, quote.currency, locale, t);
   const noteId = `${idPrefix ?? uid}-tax-note`;
 

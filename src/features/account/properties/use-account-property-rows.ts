@@ -14,10 +14,6 @@ import {
   type AccountPropertyRights,
 } from './account-properties-model';
 
-/**
- * What the person may do in each area, as plain booleans. Read without `useWorkspace`, which refuses to run outside its provider:
- * a drawer drawn on its own offers no action.
- */
 export function useAccountPropertyRights(): AccountPropertyRights {
   const workspace = useContext(WorkspaceContext);
 
@@ -63,13 +59,10 @@ export function useMemberAccess(members: readonly OrgMember[] | undefined, enabl
  * `fresh`: read again when the screen opens (the page; the drawer reads what the page has just read).
  */
 export function useAccountPropertyRows({ fresh = false }: { fresh?: boolean } = {}) {
-  // Read without `useWorkspace`, which refuses to run outside its provider: a drawer drawn on its own sees no leases.
   const workspace = useContext(WorkspaceContext);
   const canReadLeases = workspace?.hasPermission('long-rent', 'lease.read') ?? false;
 
-  // `view=overview` (SR-07a) adds to each short-term row what it still lacks, worked out by the server: the list never works it out again.
   const properties = useProperties({ view: 'overview' }, { fresh });
-  // An answer that is not a list (the page of the app where an API answer should be) is a failed load, never an empty list.
   const loaded = Array.isArray(properties.data) ? properties.data : undefined;
   const hasLongTerm = loaded?.some((property) => modeOf(property) === 'Long') ?? false;
 
@@ -78,7 +71,6 @@ export function useAccountPropertyRows({ fresh = false }: { fresh?: boolean } = 
   const members = useOrgMembers(true, { fresh });
   const memberItems = members.data?.items;
   const loadedMembers = Array.isArray(memberItems) ? memberItems : undefined;
-  // The count of people is the same whoever is asked: the first active member answers for the whole org.
   const probe = loadedMembers?.find((member) => member.status === 'Active');
   const access = useOrgMemberProperties(probe?.id ?? '', probe !== undefined, { fresh });
   const accessItems = access.data?.properties;
@@ -100,9 +92,7 @@ export function useAccountPropertyRows({ fresh = false }: { fresh?: boolean } = 
     isError: !loaded && (properties.isError || properties.data !== undefined),
     error: properties.error,
     refetch: () => void properties.refetch(),
-    /** The secondary reads are still on their way: a column that is not there yet is not "unavailable". */
     othersLoading: members.isLoading || access.isLoading || leases.isLoading,
-    /** Asks again for the members, the access and the leases (the properties have their own `refetch`). */
     retryOthers: () => {
       void members.refetch();
       void access.refetch();

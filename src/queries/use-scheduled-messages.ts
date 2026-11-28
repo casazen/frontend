@@ -7,23 +7,14 @@ import { withoutRequest } from '@/features/marketplace/activation/use-sequential
 import i18n from '@/i18n/config';
 import { INTERNAL_ACTIVITIES_KEY, retryTransientErrors } from '@/lib/query-client';
 
-/** Root of the queries of the scheduled messages: the list of a booking is `[SCHEDULED_MESSAGES_KEY, bookingId]`, and the realtime channel reads it again when a message is held back. */
 export const SCHEDULED_MESSAGES_KEY = 'scheduled-messages';
 
-/** The key every write on ONE message carries (edit, skip, send now): `useScheduledMessageIdsBeingWritten` asks the mutation cache which of them are on their way. */
 const WRITE_KEY = [SCHEDULED_MESSAGES_KEY, 'write'] as const;
 
-/** How long the list of a booking is fresh: a message changes by what the host does, by the sweep that sends it and by the plan that moves it, so a page that is opened reads it again. */
 export const SCHEDULED_MESSAGES_STALE_MS = 30_000;
 
-/** How often an open page reads the list again while a message is about to change by itself (its time is near or past, or it waits for the sweep) and the page is visible. */
 export const SCHEDULED_MESSAGES_POLL_MS = 60_000;
 
-/**
- * How often an open page reads the list again while a message can still change but is not about to (its time is more than two hours away): slow enough to cost little (each read asks the server for the way
- * to the guest of every open message), quick enough that a message that goes out on its own stops saying «Programmato» without a reload. Each read is also the moment the page asks again how soon the next
- * change is, so the page moves to the quick pace by itself when the two hours begin.
- */
 export const SCHEDULED_MESSAGES_SLOW_POLL_MS = 300_000;
 
 /**
@@ -53,27 +44,20 @@ export function useScheduledMessages(bookingId: string, enabled: boolean) {
   });
 }
 
-/** What every write on a message is called with: the message, and the booking whose list is read again when it is over. */
 interface WriteVariables {
   bookingId: string;
   id: string;
 }
 
 interface EditVariables extends WriteVariables {
-  /** The new text of the message, or `null` to go back to the template of the routine. */
   text: string | null;
 }
 
-/** The message a write was called with. */
 function messageIdOf(variables: unknown): string | undefined {
   const id = typeof variables === 'object' && variables !== null ? (variables as { id?: unknown }).id : undefined;
   return typeof id === 'string' ? id : undefined;
 }
 
-/**
- * The messages that have a write on their way, however many writes are in flight at once. A mutation hook follows only its LAST call, so a card that reads `isPending` of its hooks frees
- * its buttons as soon as a second write starts on another card: it asks the mutation cache instead, which knows them all (the buttons of a card wait for ANY write of that card).
- */
 export function useScheduledMessageIdsBeingWritten(): ReadonlySet<string> {
   const ids = useMutationState({
     filters: { mutationKey: [...WRITE_KEY], status: 'pending' },
@@ -117,7 +101,6 @@ export function useEditScheduledMessage() {
   });
 }
 
-/** «Salta» (`POST /api/scheduled-messages/{id}/skip`): the message will not be sent. It is said done only when the server answers that the message is skipped. */
 export function useSkipScheduledMessage() {
   const queryClient = useQueryClient();
 
@@ -139,10 +122,6 @@ export function useSkipScheduledMessage() {
   });
 }
 
-/**
- * «Invia ora» (`POST /api/scheduled-messages/{id}/send-now`). An answer of the server is not a message that went out: a message the channel did not take comes back as `Failed`, one the guest cannot be
- * written to as `Skipped`, one whose booking or routine went as `Cancelled`. The toast says what the message became, and only `Sent` is said as sent (a message that did not go out is never shown as sent).
- */
 export function useSendScheduledMessageNow() {
   const queryClient = useQueryClient();
 

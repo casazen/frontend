@@ -52,7 +52,6 @@ describe('ChecklistCompact (UI-16)', () => {
     expect(bar).toHaveAttribute('aria-valuemin', '0');
     expect(bar).toHaveAttribute('aria-valuemax', '100');
     expect(bar).toHaveAttribute('aria-valuenow', '40');
-    // What a screen reader says is the count in the words of the caller, not "40".
     expect(bar).toHaveAttribute('aria-valuetext', '2 di 5');
     expect(bar.firstElementChild).toHaveStyle({ width: '40%' });
     unmount();

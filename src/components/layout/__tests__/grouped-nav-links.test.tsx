@@ -57,7 +57,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     it('GroupedNavLinks_ShortRent_ShowsTheNamedGroupsWithTheirEntries', () => {
       renderNav('/app/short-rent');
 
-      // The heading is the name of the group (aria-labelledby): the screen reader does not hear it twice.
       expect(screen.getByRole('group', { name: 'Ogni giorno' })).toHaveAttribute('aria-labelledby');
       expect(screen.getByRole('group', { name: 'Ogni giorno' })).not.toHaveAttribute('aria-label');
       const everyday = screen.getByRole('group', { name: 'Ogni giorno' });
@@ -66,7 +65,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(within(offer).getAllByRole('link').map((item) => item.textContent)).toEqual(['Immobili', 'Sito di prenotazione', 'Marketplace']);
       const management = screen.getByRole('group', { name: 'Gestione' });
       expect(within(management).getAllByRole('link').map((item) => item.textContent)).toEqual(['Incassi']);
-      // The names of the groups are on the screen too.
       expect(screen.getByText('Ogni giorno')).toBeVisible();
       expect(screen.getByText('La tua offerta')).toBeVisible();
       expect(screen.getByText('Gestione')).toBeVisible();
@@ -83,7 +81,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it('GroupedNavLinks_SingleGroup_HasNoGroupHeading', () => {
-      // The Amministrazione of an org that is no agency has one group: a heading would only repeat the area. The group still has a name.
       renderNav('/app/account', { contextKey: 'account' });
 
       expect(screen.getByRole('group', { name: 'Il tuo account' })).toBeInTheDocument();
@@ -140,7 +137,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
 
       const current = link('Immobili');
       expect(current).toHaveClass('bg-primary/10');
-      // The bar next to the current entry (decorative); the other entries have none.
       expect(current.querySelector('span[aria-hidden="true"].bg-primary')).not.toBeNull();
       expect(link('Calendario').querySelector('span.bg-primary')).toBeNull();
     });
@@ -207,7 +203,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       const compliance = link(/Adempimenti/);
       expect(within(compliance).getByTestId('nav-count')).toHaveClass('bg-destructive');
       expect(compliance).toHaveAccessibleName('Adempimenti, 2 adempimenti con rischio di sanzione');
-      // The counter of the bookings is the accent of the area: the colors tell the two apart.
       expect(link(/Prenotazioni/).querySelector('[data-testid="nav-count"]')).toBeNull();
     });
 
@@ -232,7 +227,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
   });
 
   describe('"Altro"', () => {
-    /** A menu whose "Altro" holds an entry with a counter (no area has one today: the toggle still carries it for when one does). */
     function renderCountedMore(counts: NavCounts) {
       const todo = getNavMatchEntries('short-rent', allowAll, {}).find((entry) => entry.path === '/app/short-rent/activities')!;
       const nav = { sections: [], more: [{ ...todo, navParent: undefined, navPlacement: 'secondary' as const }], footer: [] };
@@ -244,8 +238,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     }
 
     it('GroupedNavLinks_ShortRent_HasNoAltroForWhoMayOpenEverySection', () => {
-      // The queues are tabs of the Cruscotto, the settings are pinned at the foot of the sidebar (`FooterNavLinks`), «Inizia con CasaZen» is the
-      // welcome of the first access and the guide.
       renderNav('/app/short-rent');
 
       expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
@@ -270,7 +262,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
       const more = screen.getByTestId('nav-more');
       expect(within(more).getAllByRole('link').map((item) => item.textContent)).toEqual(['Report fiscale', 'Spese condominiali']);
-      // The button controls the list it opens.
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-controls', within(more).getByRole('list').id);
     });
 
@@ -293,7 +284,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       renderNav('/app/short-rent/alloggiati');
 
       expect(link('Adempimenti')).toHaveAttribute('aria-current', 'page');
-      // The page is in no menu, only the entry it hangs from is.
       expect(screen.queryByRole('link', { name: 'Alloggiati' })).not.toBeInTheDocument();
     });
 
@@ -328,11 +318,9 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
 
-      // A page outside "Altro": back to the default, closed.
       fireEvent.click(link('Immobili'));
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
 
-      // A page inside it: open again.
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
       fireEvent.click(link('Report fiscale'));
       expect(screen.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
@@ -342,12 +330,10 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     it('GroupedNavLinks_CounterInsideAClosedMore_SitsOnTheToggleToo', () => {
       renderCountedMore({ activities: 3 });
 
-      // The entry with the counter is behind "Altro": the toggle carries it, in red, and says it aloud.
       const toggle = screen.getByRole('button', { name: /^Altro/ });
       expect(within(toggle).getByTestId('nav-count')).toHaveClass('bg-destructive');
       expect(toggle).toHaveAccessibleName('Altro, 3 attività urgenti');
 
-      // Once the menu is open the entry shows its own counter and the toggle gives it up.
       fireEvent.click(toggle);
       expect(within(screen.getByRole('button', { name: 'Altro' })).queryByTestId('nav-count')).not.toBeInTheDocument();
       expect(within(link(/^Da fare/)).getByTestId('nav-count')).toHaveTextContent('3');
@@ -360,23 +346,18 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it('GroupedNavLinks_NoEntryForTheUser_HasNoMoreMenu', () => {
-      // A user who may open nothing of "Altro" (no permission at all, not even the org billing administrator one).
       renderNav('/app/supplier/dashboard', { contextKey: 'supplier', hasPermission: (_ctx, permission) => !permission });
 
-      // Profile and the iCal guide ask no permission: "Altro" is there. For a context where nothing is left, it is not.
       expect(screen.getByRole('button', { name: 'Altro' })).toBeInTheDocument();
       cleanup();
       renderNav('/app/admin', { contextKey: 'admin', hasPermission: () => false });
       expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
       cleanup();
-      // Profilo left the menus of the rental areas: with nothing else to open there is no "Altro" there either.
       renderNav('/app/short-rent', { hasPermission: (_ctx, permission) => !permission });
       expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
     });
 
     it('GroupedNavLinks_ARoleWithoutTheOwnerOfAPage_StillFindsItsPagesInMore', () => {
-      // Who cannot read the payments finds the documents, the fiscal regime and the Stripe account in "Altro", each as an entry of its own:
-      // "Altro" is there only for the pages whose section is closed to the user.
       renderNav('/app/short-rent', { hasPermission: (_ctx, permission) => permission !== 'payment.read' });
       fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
 
@@ -421,7 +402,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       const dashboard = link('Cruscotto');
       expect(within(dashboard).getByText('Cruscotto')).toHaveClass('sr-only');
       expect(dashboard).toHaveClass('justify-center');
-      // No group names, but the groups stay separate for screen readers.
       expect(screen.queryByText('Ogni giorno')).not.toBeInTheDocument();
       expect(screen.getByRole('group', { name: 'Ogni giorno' })).toBeInTheDocument();
     });
@@ -446,7 +426,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it('GroupedNavLinks_Collapsed_NoLongerRelyOnTheTitleAttribute', () => {
-      // The `title` of UI-04a showed on hover only and then twice, next to the tooltip: the tooltip is the one.
       renderNav('/app/long-rent', { contextKey: 'long-rent', collapsed: true });
 
       expect(link('Panoramica')).not.toHaveAttribute('title');
@@ -495,15 +474,12 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.getByRole('group', { name: 'Gestione' })).toBeInTheDocument();
       expect(screen.getByRole('group', { name: 'Impostazioni e inviti' })).toBeInTheDocument();
       expect(screen.getByText('Impostazioni e inviti')).toBeVisible();
-      // No "Altro" in short-rent for who may open every section.
       expect(screen.queryByRole('group', { name: 'Altro' })).not.toBeInTheDocument();
-      // Entries of the bar are left out; the others are all there.
       expect(screen.queryByRole('link', { name: 'Cruscotto' })).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Prenotazioni' })).not.toBeInTheDocument();
       for (const name of ['Sito di prenotazione', 'Marketplace', 'Incassi', 'Impostazioni']) {
         expect(link(name)).toBeVisible();
       }
-      // The pages of a section are its tabs, and Profilo is in the account block of the sheet: none is a tile.
       for (const name of ['Ospiti', 'Profilo', 'Stripe Connect', 'Da fare', 'Coda di approvazione']) {
         expect(screen.queryByRole('link', { name }), name).not.toBeInTheDocument();
       }
@@ -546,7 +522,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it('GroupedNavLinks_Sheet_ShowsTheCountOnTheCornerOfTheTileAndSaysItAloud', () => {
-      // Prenotazioni is in the bar for short-rent: list everything, as a flat menu would, to have a tile with a count.
       const nav = getContextNav('short-rent', allowAll, {});
       render(
         <MemoryRouter initialEntries={['/app/short-rent']}>
@@ -573,8 +548,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     });
 
     it('GroupedNavLinks_SheetOfASingleGroup_HasNoHeadingButTheGroupHasAName', () => {
-      // A role that reads the leases and not the properties, and is not the organization administrator: the bar holds all its main entries and
-      // nothing is at the foot, so the sheet has only "Altro".
       renderNav('/app/long-rent/leases', {
         variant: 'sheet',
         contextKey: 'long-rent',

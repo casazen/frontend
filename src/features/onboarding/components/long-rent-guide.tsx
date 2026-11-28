@@ -26,7 +26,6 @@ export function LongRentGuide() {
 
   const steps = [
     { key: 'property', done: properties.data.length > 0, to: hasPermission('long-rent', 'property.write') ? PROPERTY_PATH : null },
-    // A lease needs a property: the second step waits for the first.
     { key: 'lease', done: leases.data.length > 0, to: properties.data.length > 0 && hasPermission('long-rent', 'lease.create') ? LEASE_PATH : null },
   ] as const;
   if (steps.every((step) => step.done)) return null;

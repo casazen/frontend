@@ -4,7 +4,6 @@ import { taxProfileChanges } from '../tax-profile-changes';
 
 describe('fiscal-format (CO-19)', () => {
   it('currentFiscalYear_LateEveningOf31DecemberUtc_IsTheRomeYear', () => {
-    // 23:30 UTC of 31/12/2026 is already 1/1/2027 in Rome.
     expect(currentFiscalYear(new Date('2026-12-31T23:30:00Z'))).toBe(2027);
   });
 

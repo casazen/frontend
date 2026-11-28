@@ -7,9 +7,7 @@ import { HalfFilledItems, ReadinessItems } from './readiness-items';
 
 interface PublishPanelProps {
   content: ShowcaseContent;
-  /** The draft as it is on screen: the half-filled rows are looked for in it. */
   doc: ShowcaseDocument;
-  /** Sends what waits, then publishes. */
   onPublish: () => void;
   busy: boolean;
 }

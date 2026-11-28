@@ -55,7 +55,6 @@ function renderPage() {
   return render(createElement(MemoryRouter, null, createElement(QueryClientProvider, { client }, createElement(FiscalDocumentsPage))));
 }
 
-/** The rows of the table (the same documents are also in the list of cards, for a phone). */
 async function tableRows() {
   const table = await screen.findByRole('table');
   return within(table).getAllByTestId('fiscal-document-row');
@@ -117,7 +116,6 @@ describe('FiscalDocumentsPage: the list', () => {
     expect(within(row).getByTestId('fiscal-document-payment')).toHaveTextContent('Da incassare');
   });
 
-  // Money rule: each total is in the currency of its own document; nothing is added up and no currency is assumed.
   it('FiscalDocumentsPage_DocumentsInTwoCurrencies_KeepEachItsOwnAndTheListAddsNoTotal', async () => {
     vi.mocked(api.listDocuments).mockResolvedValue(page([document(), document({ id: 'd-2', number: 'A/13', currency: 'CHF', total: 55 })]));
     renderPage();
@@ -145,7 +143,6 @@ describe('FiscalDocumentsPage: the list', () => {
     expect(within(rejected).getByTestId('fiscal-document-payment')).toHaveAttribute('data-tone', 'warning');
     expect(within(delivered).getByTestId('fiscal-document-state')).toHaveTextContent('Consegnata');
     expect(within(delivered).getByTestId('fiscal-document-payment')).toHaveTextContent('Pagata');
-    // A draft is a draft, not an issued document: no number, no day, no collection line, nothing to download.
     expect(within(draft).getByTestId('fiscal-document-state')).toHaveTextContent('Bozza');
     expect(within(draft).getByTestId('fiscal-document-name')).toHaveTextContent('senza numero');
     expect(within(draft).getByTestId('fiscal-document-date')).toHaveTextContent('Senza data');
@@ -165,11 +162,9 @@ describe('FiscalDocumentsPage: the list', () => {
     expect(within(row).getByTestId('fiscal-document-source')).toHaveTextContent('Dal tuo channel manager');
     expect(within(row).getByTestId('fiscal-document-pdf')).toBeInTheDocument();
     expect(within(row).queryByTestId('fiscal-document-xml')).not.toBeInTheDocument();
-    // The channel manager is named only as «il tuo channel manager».
     expect(globalThis.document.body.textContent).not.toMatch(/octorate/i);
   });
 
-  // Flag rule: the endpoint of the PDF of the channel manager answers 404 while a flag is off, so no button and no request, and no error.
   it.each([
     ['both flags off', {}],
     ['the connector off', { octorateDocumentImport: true }],
@@ -202,7 +197,6 @@ describe('FiscalDocumentsPage: the list', () => {
     expect(within(row).queryByTestId('fiscal-document-booking')).not.toBeInTheDocument();
   });
 
-  // Privacy rule: whatever the API also sends of the recipient never reaches the page (the API layer keeps the name and nothing fiscal).
   it('FiscalDocumentsPage_TheRecipient_IsShownByNameAndNoFiscalDataIsOnTheScreen', async () => {
     renderPage();
 
@@ -244,7 +238,6 @@ describe('FiscalDocumentsPage: the list', () => {
 });
 
 describe('FiscalDocumentsPage: the answer of the SDI is not waited for forever', () => {
-  // Cost rule: the page asks by itself for a while and stops; it says so in neutral words (never as a failure) and «Controlla di nuovo» asks again. The first read comes before the clock moves.
   it('FiscalDocumentsPage_ADocumentStillWaitingForTheSdiAfterTheWindow_SaysItNoLongerAsksByItselfAndOffersToCheckAgain', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
@@ -313,8 +306,6 @@ describe('FiscalDocumentsPage: the empty list', () => {
     expect(screen.getByRole('link', { name: i18n.t('fiscalDocuments.list.empty.action') })).toHaveAttribute('href', BILLING_SETUP_PATH);
   });
 
-  // Flag rule: the page is open while either flag of the documents is on, but the wizard only while the issuance is: with it off the address of the wizard leads to the home of
-  // the area, so the empty list has no button to it (the person who imports the documents of the channel manager has nothing to set up here).
   it('FiscalDocumentsPage_NoDocumentsWithTheIssuanceOffAndTheImportOn_HasNoButtonToTheWizardThatIsNotThere', async () => {
     env.flags = { octorateConnector: true, octorateDocumentImport: true, fiscalDocumentIssuance: false };
     vi.mocked(api.getDocumentsContext).mockResolvedValue({ ...CONTEXT, mode: null });
@@ -349,7 +340,6 @@ describe('FiscalDocumentsPage: the empty list', () => {
     expect(screen.queryByTestId('fiscal-documents-sdi-note')).not.toBeInTheDocument();
   });
 
-  // A read that failed says nothing: not that the channel is there, not that it is not, and not who issues.
   it('FiscalDocumentsPage_ASettingThatCouldNotBeRead_ClaimsNothingAboutTheSdiNorAboutWhoIssues', async () => {
     vi.mocked(api.getDocumentsContext).mockRejectedValue(failure(500, undefined));
     renderPage();
@@ -499,7 +489,6 @@ describe('FiscalDocumentsPage: the downloads', () => {
     expect(i18n.t('apiErrors.codes.fatturapaSchemaUnavailable')).toMatch(/non ancora disponibile.*operatore/i);
     await i18n.changeLanguage('en');
     expect(i18n.t('apiErrors.codes.fatturapaSchemaUnavailable')).toMatch(/not available yet.*operator/i);
-    // The row stays as it is: the person may ask again.
     expect(within(row).getByTestId('fiscal-document-xml')).toBeEnabled();
   });
 
@@ -516,7 +505,6 @@ describe('FiscalDocumentsPage: the downloads', () => {
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledWith(expect.any(Blob), 'documento-2026-77.pdf'));
   });
 
-  // The server sends `octorate_pdf_unavailable` also when the channel manager could not be read just now (not only when it holds no PDF): nothing is taken away from the row.
   it('FiscalDocumentsPage_AnImportedPdfTheChannelManagerCouldNotGive_KeepsItsButtonSaysWhyAndMayBeAskedAgain', async () => {
     vi.mocked(api.listDocuments).mockResolvedValue(page([importedDocument()]));
     vi.mocked(api.downloadPdf).mockRejectedValueOnce(failure(404, { code: api.FISCAL_DOCUMENT_ERROR.octoratePdfUnavailable }));
@@ -532,7 +520,6 @@ describe('FiscalDocumentsPage: the downloads', () => {
     expect(within(row).queryByTestId('fiscal-document-pdf-unavailable')).not.toBeInTheDocument();
     expect(within(row).queryByTestId('fiscal-document-gone')).not.toBeInTheDocument();
 
-    // The person may ask again, and the second answer is the file.
     fireEvent.click(within(row).getByTestId('fiscal-document-pdf'));
     await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(1));
     expect(api.downloadPdf).toHaveBeenCalledTimes(2);

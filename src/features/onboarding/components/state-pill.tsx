@@ -6,14 +6,12 @@ import { cn } from '@/lib/utils';
 interface StatePillProps {
   tone: StatusTone;
   icon: LucideIcon;
-  /** The state in words: the tint and the icon alone would tell it by color (UX-09). */
   label: string;
   className?: string;
   'data-testid'?: string;
   'data-state'?: string;
 }
 
-/** A state told three ways at once: a tint, an icon and its words (UX-09). The same pill is the badge of the connection, of a bulk outcome and of an assist request. */
 export function StatePill({ tone, icon: Icon, label, className, ...rest }: StatePillProps) {
   return (
     <span

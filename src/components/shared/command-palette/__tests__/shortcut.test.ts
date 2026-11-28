@@ -5,7 +5,6 @@ function key(init: KeyboardEventInit): KeyboardEvent {
   return new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init });
 }
 
-/** Dispatches the key on `target` the way a browser does, and gives the event back with its target set. */
 function press(target: Element, init: KeyboardEventInit, handler?: (event: KeyboardEvent) => void): KeyboardEvent {
   const event = key(init);
   if (handler) target.addEventListener('keydown', handler as EventListener, { once: true });
@@ -53,7 +52,6 @@ describe('the shortcut of the palette (UI-06)', () => {
       document.body.innerHTML = '<main><input id="field" type="text"><textarea id="area"></textarea></main>';
 
       expect(shortcutIsTaken(press(document.querySelector('main')!, CTRL_K))).toBe(false);
-      // A text field does not use Ctrl+K: the palette opens from it.
       expect(shortcutIsTaken(press(document.getElementById('field')!, CTRL_K))).toBe(false);
       expect(shortcutIsTaken(press(document.getElementById('area')!, CTRL_K))).toBe(false);
     });
@@ -85,10 +83,8 @@ describe('the shortcut of the palette (UI-06)', () => {
       onPlatform('MacIntel');
       document.body.innerHTML = '<input id="field" type="text"><textarea id="area"></textarea><input id="box" type="checkbox"><button id="button">b</button>';
 
-      // Control+K deletes to the end of the line there: the palette stays out of it...
       expect(shortcutIsTaken(press(document.getElementById('field')!, CTRL_K))).toBe(true);
       expect(shortcutIsTaken(press(document.getElementById('area')!, CTRL_K))).toBe(true);
-      // ...but Command+K opens it, and Control+K does outside a text field.
       expect(shortcutIsTaken(press(document.getElementById('field')!, { key: 'k', metaKey: true }))).toBe(false);
       expect(shortcutIsTaken(press(document.getElementById('box')!, CTRL_K))).toBe(false);
       expect(shortcutIsTaken(press(document.getElementById('button')!, CTRL_K))).toBe(false);

@@ -17,7 +17,6 @@ interface SurfaceSwitchProps {
   id: string;
   label: string;
   help: string;
-  /** One more line when the choice is made and it is not on yet, or where the links go: said in words, never left to a switch that looks on. */
   note?: string;
   checked: boolean;
   disabled: boolean;
@@ -69,9 +68,7 @@ export function DomainSurfacesPanel({ orgId, config }: DomainSurfacesPanelProps)
 
   const { effective } = surfaces;
   const busy = save.isPending || retry.isPending;
-  // The switches show the server's answer, and while a save is on its way the choice just made, so a switch does not jump back and forth. A save that fails shows the answer again.
   const shown: SetDomainSurfacesRequest = save.isPending && save.variables ? save.variables : surfaces;
-  // The server wants all three every time: the one that moved over the ones it holds.
   const change = (patch: Partial<SetDomainSurfacesRequest>) =>
     save.mutate({
       guestAreaOnOwnDomain: surfaces.guestAreaOnOwnDomain,
@@ -80,7 +77,6 @@ export function DomainSurfacesPanel({ orgId, config }: DomainSurfacesPanelProps)
       ...patch,
     });
 
-  // The links of the owners move only once their sign-in is active: the portal is on the domain for them when the page is served and the sign-in is ready.
   const ownerPortalOn = effective.ownerPortal && effective.ownerLoginReady;
   const linksAddress = effective.linksOnOwnDomain ? config.publicUrls.customDomainUrl : null;
   let linksNote: string | undefined;

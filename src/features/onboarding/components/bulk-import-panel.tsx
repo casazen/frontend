@@ -25,20 +25,16 @@ import { StatePill } from './state-pill';
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
-/** What the page holds of the file after a call: the check (of THAT file), the import (the file is let go of), or a call that failed after it may have written. */
 type Stage = { kind: 'checked'; file: File; result: ImportResult } | { kind: 'imported'; result: ImportResult } | { kind: 'uncertain' };
 
-/** A count the server sent as a number; anything else is 0. */
 function count(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 }
 
-/** The size of the file in megabytes, to one decimal, for the line under its name. */
 function megabytes(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1);
 }
 
-/** How a row stands: right or to correct in a check, and in an import whether it changed something. A row with an error is never shown as right. */
 function rowView(row: ImportRowResult, imported: boolean): { tone: StatusTone; Icon: LucideIcon; key: string } {
   const right = row.status === 'ok' && (!Array.isArray(row.errors) || row.errors.length === 0);
   if (!right) return { tone: 'danger', Icon: Ban, key: imported ? 'notImported' : 'toFix' };
@@ -46,10 +42,6 @@ function rowView(row: ImportRowResult, imported: boolean): { tone: StatusTone; I
   return row.applied ? { tone: 'success', Icon: CheckCircle2, key: 'imported' } : { tone: 'neutral', Icon: Equal, key: 'nothingChanged' };
 }
 
-/**
- * ONE row for each row of the file, a page of 50 at a time: its number, what it names the property by, how it stands and, for an error, the column and the
- * reason in plain words. The lock code never comes back from the server and is never in the page: a row says only whether it had one.
- */
 function RowsTable({ rows, imported }: { rows: readonly ImportRowResult[]; imported: boolean }) {
   const { t } = useTranslation();
   const [page, setPage] = useState(1);
@@ -137,7 +129,6 @@ export function BulkImportPanel() {
   const [stage, setStage] = useState<Stage | null>(null);
   const [confirming, setConfirming] = useState(false);
 
-  // A check counts only for the file it was made on.
   const checked = stage?.kind === 'checked' && stage.file === file ? stage.result : null;
   const imported = stage?.kind === 'imported' ? stage.result : null;
   const shownResult = checked ?? imported;
@@ -169,12 +160,10 @@ export function BulkImportPanel() {
   }
 
   async function importNow() {
-    // The file is sent once: a second press while it is on its way (or before the page has drawn that it is) does nothing.
     if (inFlight.current || !file || !checked || valid === 0) return;
     inFlight.current = true;
     try {
       const result = await run.mutateAsync({ file, dryRun: false });
-      // An answer that says nothing was written is not an import: it is told as not done.
       setStage(result.dryRun ? { kind: 'uncertain' } : { kind: 'imported', result });
       // Imported: the page lets go of the file (it may hold lock codes), so that it cannot be sent again from here.
       if (!result.dryRun) setFile(null);
@@ -287,8 +276,6 @@ export function BulkImportPanel() {
       <ConfirmationDialog
         open={confirming}
         onOpenChange={(open) => {
-          // A press on «Annulla», on the outside or a focus that leaves the dialog while the file is on its way does not drop it (the ref, not the state: the
-          // handler may be the one of the render before the call started): the dialog closes when the answer is in.
           if (!inFlight.current) setConfirming(open);
         }}
         title={t('onboardingPlan.bulk.import.confirmTitle', { count: valid })}

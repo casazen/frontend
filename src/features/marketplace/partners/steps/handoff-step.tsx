@@ -3,7 +3,6 @@ import { ExternalLink, Loader2, ShieldCheck } from 'lucide-react';
 import { type PartnerContext } from '../partner-wizard-model';
 import { BriefProblem } from './prepare-step';
 
-/** What is going to happen, in the order it happens. */
 const HANDOFF_STEPS = [
   { id: 'go', text: 'marketplace.partnerFlow.handoff.steps.go' },
   { id: 'activate', text: 'marketplace.partnerFlow.handoff.steps.activate' },
@@ -14,11 +13,6 @@ interface HandoffStepProps {
   context: PartnerContext;
 }
 
-/**
- * Step «Il sito del partner» (E09/F02/US04/T04, UX-02 point 3, S18): what is going to happen, in simple words: the person goes to the partner's site in this tab, does the
- * activation there and comes back. The button that goes there is the main button of the wizard (the page gives it its label and its action: it saves the draft, replaces
- * this history entry with the address of the next step and opens the partner's address as it is). CasaZen sends nothing to the partner, and the step says so.
- */
 export function HandoffStep({ context }: HandoffStepProps) {
   const { t } = useTranslation();
   const { brief } = context;

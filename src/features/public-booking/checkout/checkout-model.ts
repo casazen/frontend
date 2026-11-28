@@ -3,44 +3,30 @@ import { hasInternationalPrefix } from '@/features/public-booking/checkout/detai
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
 import type { CreateDirectBookingPayload, DirectBookingAttributionPayload, PaymentOption } from '@/types';
 
-/**
- * The checkout in three steps (DB-05), without a screen: what the guest chose, the steps and the body of the booking that is sent.
- * Pure: no React, no network.
- */
-
-/** «Prenotazione immediata» (pay now or later, confirmed at once) or «Su richiesta» (the host accepts or refuses, paid on arrival). */
 export type CheckoutMode = 'instant' | 'request';
 
-/** Of an instant booking: pay now, or save the card now and be charged on the day the quote gives (`deferredChargeDate`). */
 export type PayChoice = 'now' | 'deadline';
 
 export type CheckoutStep = 1 | 2 | 3;
 
-/** What step 2 asks; none of it goes in the address. */
 export interface DetailsValues {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   country: string;
-  /** `HH:mm`, `late` (after the check-in window) or empty (not said). Only a note for the host. */
   arrival: string;
-  /** The optional «E-mail» box for offers (NF-90): never ticked for the guest. */
   offersEmail: boolean;
-  /** The optional «WhatsApp» box for offers (NF-90): never ticked for the guest, and it needs a phone number. */
   offersWhatsApp: boolean;
 }
 
-/** Everything the guest has chosen and typed across the three steps, kept while they move between them. */
 export interface CheckoutDraft {
   extras?: CheckoutExtraSelection[];
   mode: CheckoutMode;
   pay: PayChoice;
   requests: string;
-  /** One slot per child, null until chosen. */
   childrenAges: (number | null)[];
   details: DetailsValues;
-  /** Terms and privacy: asked in the last step, never preselected. */
   consent: boolean;
 }
 
@@ -72,23 +58,18 @@ export const EMPTY_DRAFT: CheckoutDraft = {
   consent: false,
 };
 
-/** The longest note for the host that the API takes (`CreateDirectBookingRequest.SpecialRequests`). */
 export const SPECIAL_REQUESTS_MAX = 1000;
 
-/** The payment option of the API for what the guest chose. */
 export function paymentOptionOf(mode: CheckoutMode, pay: PayChoice): PaymentOption {
   if (mode === 'request') return 'OnSite';
   return pay === 'deadline' ? 'OnCancellationDeadline' : 'Immediate';
 }
 
-/** The step the address asks for (`?step=2`); anything else is the first. */
 export function parseStep(value: string | null | undefined): CheckoutStep {
   return value === '2' ? 2 : value === '3' ? 3 : 1;
 }
 
-/** The hours of the check-in window as arrival options (`HH:00`), from the first hour to the last one that is whole. */
 export function arrivalSlots(from: string, to: string): string[] {
-  // An empty bound is no window: Number('') is 0, which would list the hours from midnight.
   if (!from || !to) return [];
   const start = Number(from.slice(0, 2));
   const end = Number(to.slice(0, 2));
@@ -100,12 +81,10 @@ const POPULAR_DOMAINS = [
   'gmail.com', 'googlemail.com', 'hotmail.com', 'hotmail.it', 'outlook.com', 'outlook.it', 'live.com', 'live.it', 'yahoo.com', 'yahoo.it',
   'icloud.com', 'me.com', 'libero.it', 'virgilio.it', 'tiscali.it', 'alice.it', 'tin.it', 'fastwebnet.it', 'pec.it', 'proton.me',
   'protonmail.com', 'gmx.com', 'gmx.de', 'gmx.net', 'gmx.ch', 'web.de', 't-online.de', 'orange.fr', 'free.fr', 'bluewin.ch', 'sunrise.ch',
-  // Real providers that sit one letter from a popular one: never "corrected".
   'ymail.com', 'aol.com', 'msn.com', 'mail.com', 'zoho.com', 'email.it', 'inwind.it', 'iol.it', 'poste.it', 'legalmail.it', 'hotmail.fr',
   'yahoo.fr', 'yahoo.de', 'yahoo.co.uk', 'hotmail.co.uk', 'live.co.uk', 'btinternet.com', 'sky.com',
 ] as const;
 
-/** The edit distance between two short words: an insertion, a deletion, a change or two letters swapped («gmial») count one. */
 function editDistance(a: string, b: string): number {
   const table = Array.from({ length: a.length + 1 }, (_, i) => Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)));
   for (let i = 1; i <= a.length; i += 1) {
@@ -118,10 +97,6 @@ function editDistance(a: string, b: string): number {
   return table[a.length][b.length];
 }
 
-/**
- * The address the guest probably meant when the domain of the one they typed is a typo of a popular provider («gmial.com», «hotmial.it»),
- * else null. It only suggests: the guest taps it or keeps theirs, and an address that looks right is never touched.
- */
 export function suggestEmail(email: string): string | null {
   const at = email.lastIndexOf('@');
   if (at <= 0 || at === email.length - 1) return null;
@@ -138,11 +113,6 @@ export function suggestEmail(email: string): string | null {
   return best ? `${local}@${best.domain}` : null;
 }
 
-/**
- * What the host reads first in the requests of a booking whose guests travel with a pet. The booking has no field for the pet yet,
- * and the host has to know before the guests arrive, so the switch of the stay is written here, in the language of the host's
- * notes (the guest's own words follow it).
- */
 export const PETS_NOTE = 'Viaggia con animali domestici.';
 
 interface BookingPayloadInput {
@@ -151,16 +121,11 @@ interface BookingPayloadInput {
   checkOut: string;
   adults: number;
   children: number;
-  /** A pet comes (the switch of the guests): the host is told in the requests. */
   pets?: boolean;
-  /** The ages when every child has one and the tax asks for them; else nothing. */
   childrenAges?: number[];
   draft: CheckoutDraft;
-  /** The version of the offers consent the site carries: the two boxes exist, and their answers are sent, only when there is one. */
   marketingConsentVersion?: string | null;
-  /** The version of the soft opt-in notice the site carries: the notice is shown, and its version sent back, only when there is one. */
   softOptInNoticeVersion?: string | null;
-  /** Where the guest came from (`bookingAttributionOf`): the `utm_*` of the address and the host of the site they came from; left out when there is none. */
   attribution?: DirectBookingAttributionPayload;
 }
 
@@ -210,7 +175,6 @@ export function buildBookingPayload({
     ...(marketingConsentVersion
       ? {
           marketingConsentEmail: details.offersEmail,
-          // WhatsApp only on a number that says its country: the server puts its own calling code in front of any other.
           marketingConsentWhatsApp: details.offersWhatsApp && phone !== '' && hasInternationalPrefix(phone),
         }
       : {}),

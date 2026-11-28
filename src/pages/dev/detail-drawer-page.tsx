@@ -36,7 +36,6 @@ const BOOKINGS: DevBooking[] = [
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** The events of a made-up booking, with a little of every tone. */
 function eventsOf(booking: DevBooking): TimelineEvent[] {
   const hours = (count: number) => new Date(Date.now() - count * 3_600_000).toISOString();
   return [
@@ -59,7 +58,6 @@ function useDevBooking(id: string) {
   });
 }
 
-/** A title that comes with the data: the generic name stays until the guest is known. */
 function DevBookingTitle({ id }: DetailTitleProps) {
   const { data } = useDevBooking(id);
   return <>{data ? data.guest : `Prenotazione ${id}`}</>;
@@ -116,7 +114,6 @@ function DevNoteContent({ id }: DetailContentProps) {
   );
 }
 
-// Two made-up kinds. A real feature registers its own at the top of its module; this page is the only place that uses these.
 registerDetail('dev-booking', { title: DevBookingTitle, Content: DevBookingContent, pageHref: (id) => `/dev/detail-drawer?page=${id}` });
 registerDetail('dev-note', { title: 'detailDrawer.fallbackTitle', Content: DevNoteContent, width: 'wide' });
 
@@ -153,7 +150,6 @@ function DevButtons() {
 
 const hoursAgo = (count: number) => new Date(Date.now() - count * 3_600_000).toISOString();
 
-/** The global detail drawer (UI-15), the Timeline and the tabs between pages, on made-up data. */
 export default function DetailDrawerPage() {
   const [params] = useSearchParams();
   const useLocalSlot = params.get('slot') === 'local';
@@ -190,7 +186,6 @@ export default function DetailDrawerPage() {
         ],
         search: { label: 'Cerca prenotazioni', placeholder: 'Cerca ospite o immobile', text: (booking) => `${booking.guest} ${booking.property}` },
         chips: [{ id: 'all', label: 'Tutte', test: () => true }],
-        // The same list opens the global drawer, or (with ?slot=local) its own panel, which is as it always was.
         detail: useLocalSlot
           ? {
               title: (booking) => booking.guest,

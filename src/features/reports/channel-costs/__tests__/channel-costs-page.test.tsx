@@ -21,7 +21,6 @@ vi.mock('@/hooks/use-workspace', () => ({
 }));
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
-// The list of the properties, as the hook answers it: with `enabled: false` nothing is asked and there is nothing to choose from.
 const useProperties = vi.hoisted(() => vi.fn());
 vi.mock('@/queries/use-properties', () => ({ useProperties }));
 const PROPERTIES = [
@@ -57,7 +56,6 @@ function row(overrides: Partial<ChannelCostRow>): ChannelCostRow {
   };
 }
 
-/** The server orders the rows by cost rate, the highest first: Booking.com (15%), Airbnb (12%), then the ones without a rate. */
 const BOOKING = row({
   source: 'BookingCom',
   stayCount: 5,
@@ -158,7 +156,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     granted.clear();
     granted.add('short-rent:payment.read');
     granted.add('short-rent:property.read');
-    // 24 September 2026 is "today" in Rome in these tests: the page opens on the three whole months before this one (June to August).
     freezeClock(NOON_UTC);
     await i18n.changeLanguage('it');
   });
@@ -168,8 +165,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     vi.useRealTimers();
   });
 
-  // Money: one line for each channel, written from the cost rate and the commission of the server, the most expensive first as the server
-  // orders them and marked with a word and an icon; a cost nobody reported is "not available", never a cost of zero.
   it('Summary_OneLineForEachChannel_IsWrittenFromTheServerFiguresInTheServerOrder', async () => {
     serve(() => ok(REPORT));
     renderPage();
@@ -183,15 +178,12 @@ describe('ChannelCostsPage (NF-98)', () => {
     ]);
     expect(reads()[0]![1]).toMatchObject({ params: { from: '2026-06-01', to: '2026-08-31' } });
 
-    // The row the server flags is marked by a word (and an icon), once.
     const marks = screen.getAllByTestId('channel-costs-most-expensive');
     expect(marks).toHaveLength(1);
     expect(marks[0]).toHaveTextContent('Il più costoso');
     expect(screen.getAllByTestId('channel-costs-summary-row')[0]).toContainElement(marks[0]!);
   });
 
-  // Money: the server adds every property in the currency of the property, with no conversion, and sends no currency with these figures. A
-  // euro sign would be false for a house in francs, so the lines, the rows and the total are numbers alone and the page says why above them.
   it('Page_FiguresOfTheCosts_HaveNoCurrencySymbolAndTheNoteIsAboveThem', async () => {
     serve(() => ok(REPORT));
     renderPage();
@@ -233,7 +225,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     renderPage();
 
     const rows = await screen.findAllByTestId('channel-costs-row');
-    // The channels first, then the card fees of the direct stays on a line of their own, then the stays with no cost.
     expect(rows.map((candidate) => within(candidate).getAllByRole('rowheader')[0]!.textContent)).toEqual(['Booking.com', 'Airbnb', 'Sito diretto', 'Manuale']);
 
     const booking = rows[0]!;
@@ -245,7 +236,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(within(booking).getByTestId('channel-costs-mode')).toHaveTextContent('Il canale ti fattura la commissione a parte: la paghi tu dopo.');
     expect(within(rows[1]!).getByTestId('channel-costs-mode')).toHaveTextContent('Trattenuta dal pagamento');
     expect(within(rows[1]!).getByTestId('channel-costs-mode')).toHaveTextContent('Il canale ti paga già al netto della commissione.');
-    // A mode that is not a claim: "unknown" has its own words.
     expect(screen.queryByText('Non nota')).toBeNull();
   });
 
@@ -259,7 +249,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(mode).toHaveTextContent('Non sappiamo come il canale incassa la commissione.');
   });
 
-  // Money: the card fees of the direct stays are a line of their own; with no fee stored they are "not available", never zero.
   it('Table_CardFeesOfTheDirectStays_AreTheirOwnLineAndNotAvailableNeverZero', async () => {
     serve(() => ok(REPORT));
     renderPage();
@@ -270,15 +259,11 @@ describe('ChannelCostsPage (NF-98)', () => {
     const direct = within(group).getByTestId('channel-costs-row');
     expect(within(direct).getByTestId('channel-costs-unavailable')).toHaveTextContent('Non disponibile');
     expect(within(direct).getByTestId('channel-costs-unavailable')).toHaveTextContent('Non ancora registrate per questi pagamenti.');
-    // No zero amount and no zero rate anywhere in the line (the gross, 800,00, has zeros of its own).
     expect(direct).not.toHaveTextContent(/(?<![\d.,])0,00/);
     expect(direct).not.toHaveTextContent(/(?<![\d.,])0%/);
-    // The channels' commissions are in another group: the card fees are not mixed with them.
     expect(within(screen.getByTestId('channel-costs-group-channels')).queryByText('Sito diretto')).toBeNull();
   });
 
-  // Money: a stay nobody charges the host for (entered by hand, local) is "no cost" in words, in the commission and in the rate: the server
-  // says it with zeros, and a "0,00" or a "0%" would read as a figure that was reported; "not available" would say the cost is unknown.
   it('Table_NoCostRow_SaysNoCostInWordsNeverZeroNorNotAvailable', async () => {
     serve(() => ok(REPORT));
     renderPage();
@@ -289,7 +274,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     const manual = within(group).getByTestId('channel-costs-row');
     expect(within(manual).getByTestId('channel-costs-no-cost')).toHaveTextContent('Nessun costo');
     expect(within(manual).getByTestId('channel-costs-rate')).toHaveTextContent('Nessun costo');
-    // No zero amount, no zero rate and no "not available" in the line (the gross and the net, 300,00, have zeros of their own).
     expect(manual).not.toHaveTextContent(/(?<![\d.,])0,00/);
     expect(manual).not.toHaveTextContent(/(?<![\d.,])0%/);
     expect(manual).not.toHaveTextContent('Non disponibile');
@@ -297,7 +281,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(manual).toHaveTextContent('300,00');
   });
 
-  // A figure of the server is never dropped: a stay with no cost that comes with a cost that is not zero is shown as it is.
   it('Table_NoCostRowWithACostThatIsNotZero_ShowsTheFigureAsTheServerSaysIt', async () => {
     const odd = row({ source: 'Manual', kind: 'NoCost', stayCount: 1, commission: 12, commissionCents: 1200, net: 288, netCents: 28800, costRate: 0.04, commissionMode: null });
     serve(() => ok({ ...REPORT, rows: [odd] }));
@@ -373,7 +356,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(screen.getByTestId('channel-costs-page').textContent).not.toMatch(/stripe|octorate|concordato/i);
   });
 
-  // Permission: without payment.read the page asks the server for nothing at all, and says so.
   it('Page_WithoutPaymentRead_AsksTheServerForNothing', async () => {
     granted.clear();
     serve(() => ok(REPORT));
@@ -385,9 +367,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(screen.queryByTestId('channel-costs-export-csv')).toBeNull();
   });
 
-  // Permission: the list of the properties is another permission (property.read). Without it the list is not asked for (the server would
-  // answer 403 and the shared client would send the app to the page of the missing access): there is no property to choose and the report
-  // covers the whole scope of the person.
   it('Page_WithoutPropertyRead_DoesNotAskForTheListOfPropertiesAndTheReportCoversTheWholeScope', async () => {
     granted.delete('short-rent:property.read');
     serve(() => ok(REPORT));
@@ -409,7 +388,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     expect(screen.queryByTestId('channel-costs-summary')).toBeNull();
   });
 
-  // Trust: a 404 is "not found", also when the cache still holds the old figures of the same read.
   it('Page_404AfterFigures_IsNotFoundAndTheOldFiguresGoAway', async () => {
     let answer: unknown = ok(REPORT);
     serve(() => answer);
@@ -460,8 +438,6 @@ describe('ChannelCostsPage (NF-98)', () => {
     await waitFor(() => expect(reads().at(-1)![1]).toMatchObject({ params: { propertyId: 'p-1' } }));
   });
 
-  // Data / money: the file comes from the authenticated API, under a name made of the report and its days (no property, no guest), with
-  // both buttons off while it is on its way; too many rows is told in words and nothing is saved.
   it.each([
     { format: 'csv', name: 'casazen-costi-dei-canali-competenza-20260601-20260831.csv', type: 'text/csv' },
     { format: 'xlsx', name: 'casazen-costi-dei-canali-competenza-20260601-20260831.xlsx', type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
@@ -491,7 +467,6 @@ describe('ChannelCostsPage (NF-98)', () => {
 
     fireEvent.click(screen.getByTestId('channel-costs-export-xlsx'));
 
-    // The cap is said in words: too many rows, the most a sheet can have, and what to do about it.
     const failureText = await screen.findByTestId('channel-costs-export-failure');
     expect(failureText).toHaveTextContent('Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe.');
     expect(failureText).toHaveTextContent('Scegli un periodo più breve e riprova.');

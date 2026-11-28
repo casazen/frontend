@@ -1,6 +1,3 @@
-// Adapted from Origin UI Accordion, retrieved through the 21st MCP registry.
-// https://21st.dev/@originui/components/accordion
-
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import * as React from "react";
 

@@ -14,17 +14,11 @@ interface WayOption extends Omit<ChoiceListOption, 'value'> {
   value: StartWay;
 }
 
-/**
- * The two answers of the second question and the button that goes on (LR-WIZ-1). Nothing is chosen at first. The button says where it
- * leads once an answer is chosen («Continua: carica i documenti») and is pressable before: it puts the focus on the list and a line says
- * to choose.
- */
 function WayForm({ legend, options, busy, onChoose }: { legend: string; options: WayOption[]; busy?: boolean; onChoose: (way: StartWay) => void }) {
   const { t } = useTranslation();
   const form = useRef<HTMLFormElement>(null);
   const [way, setWay] = useState<StartWay | null>(null);
   const [asked, setAsked] = useState(false);
-  // An answer that is not open any more (the rules or the flags arrived after it) does not count.
   const answer = options.find((option) => option.value === way && !option.disabled)?.value ?? null;
 
   return (
@@ -116,7 +110,6 @@ function PreparableWays({ kind, onChoose }: { kind: Exclude<ContractKind, 'conco
       </div>
     );
   }
-  // Closed while the rules load (nothing is promised before the server answers), but without the sentence that says it cannot be done.
   const preparable = rules.data?.availableTypes.includes(TYPE_OF_KIND[kind]) ?? false;
 
   return (
@@ -143,7 +136,6 @@ function PreparableWays({ kind, onChoose }: { kind: Exclude<ContractKind, 'conco
   );
 }
 
-/** The second question of a new contract, after its type: how it is made. The answers depend on the type. */
 export function StartWayChoice({ kind, onChoose }: { kind: ContractKind; onChoose: (way: StartWay) => void }) {
   return kind === 'concordato' ? <ConcordatoWays onChoose={onChoose} /> : <PreparableWays kind={kind} onChoose={onChoose} />;
 }

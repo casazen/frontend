@@ -8,15 +8,9 @@ import type { MoneyReportFilters as Filters } from './use-money-report-filters';
 
 interface MoneyReportFiltersProps {
   filters: Filters;
-  /** Prefix of the test ids (`<prefix>-period`, `-from`, `-to`, `-range`, `-property`, `-problem`). */
   testId: string;
 }
 
-/**
- * The filters of a money report: the period (the presets of the reports and the days to type, both days required) and, when the person
- * has more than one property, one property or all of them. A period the server would refuse is told here, before the call, and the
- * report is not asked for.
- */
 export function MoneyReportFilters({ filters, testId }: MoneyReportFiltersProps) {
   const { t, i18n } = useTranslation();
   const { preset, custom, days, problem, propertyId, properties } = filters;
@@ -80,7 +74,6 @@ export function MoneyReportFilters({ filters, testId }: MoneyReportFiltersProps)
       </div>
 
       {problem ? (
-        // The server is not asked for days it would refuse: the page says why, and shows nothing of an earlier choice.
         <p role="alert" className="text-sm text-destructive" data-testid={`${testId}-problem`}>
           {t(`reports.error.${problem}`)}
         </p>

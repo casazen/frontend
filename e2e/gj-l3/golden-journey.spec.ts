@@ -35,7 +35,6 @@ const SUPPLIER_PHONE_VIEWPORT = { width: 375, height: 812 };
 const NIGHTS = 2;
 const NIGHTLY_RATE = PROPERTY.nightlyRate;
 
-/** A named step that also prints its start (CI logs show where a long journey is). */
 const step = <T>(title: string, body: () => Promise<T>): Promise<T> => {
   console.log(`[gj-l3] ${new Date().toISOString()} ${title}`);
   return test.step(title, body);
@@ -57,7 +56,6 @@ async function newActors(browser: Browser, errors5xx: string[]): Promise<{ actor
     page.on('response', (res) => {
       if (res.url().includes('/api/') && res.status() >= 500) errors5xx.push(`${name}: ${res.status()} ${res.url()}`);
     });
-    // The cookie banner is not under test: the guest consents to essentials only.
     await page.addInitScript(() => localStorage.setItem('casazen.locale', 'it'));
   }
   return { actors: { admin, host, supplier, guest }, contexts };
@@ -202,7 +200,6 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       await supplierChoice.click();
       await host.getByTestId('request-next').click();
       await expect(host.getByTestId('request-stay')).toHaveValue(ids.bookingId);
-      // The date appears after selecting the service.
       await host.locator('label').filter({ has: host.getByTestId('request-service-custom') }).click();
       await expect(host.getByTestId('request-day')).toHaveValue(checkOut);
       await host.getByTestId('request-start-time').fill('10:00');
@@ -226,7 +223,6 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       await expect(host.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/short-rent/interventions/${ids.serviceRequestId}`);
       await host.getByTestId('wizard-done-secondary').click();
       await expect(host).toHaveURL(new RegExp(stayPath + '$'));
-      // The stay card refetches on mount after the wizard; wait for the new request like marketplace-l3.
       await expect(host.getByTestId(`service-request-${ids.serviceRequestId}`)).toContainText(
         'In attesa che il fornitore accetti o rifiuti.',
         { timeout: 30_000 },
@@ -236,16 +232,14 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
     await step('F1: supplier (phone) takes the request in charge from the inbox', async () => {
       await supplier.goto('/app/supplier/inbox');
       await expect(supplier.getByTestId('supplier-inbox-page')).toBeVisible({ timeout: 20_000 });
-      // The list is a table and, on a phone, cards: both are in the page, so the button is the one that can be seen.
       await supplier.getByTestId(`take-${ids.serviceRequestId}`).locator('visible=true').click();
-      // Taken, the request leaves "Da rispondere" and is in "Programmate", where it is completed.
       await supplier.getByTestId('list-chip-programmate').click();
       await expect(supplier.getByTestId(`complete-${ids.serviceRequestId}`).locator('visible=true')).toBeVisible({ timeout: 15_000 });
       expect((await supplierApi.get<ServiceRequest>(`/service-requests/${ids.serviceRequestId}`)).status).toBe('PresoInCarico');
     });
 
     await step('F2: supplier completes; the host console shows Completato within 30 s', async () => {
-      await host.goto(`/app/short-rent/bookings/${ids.bookingId}`); // the host's session was already open on this stay
+      await host.goto(`/app/short-rent/bookings/${ids.bookingId}`);
       await supplier.getByTestId(`complete-${ids.serviceRequestId}`).locator('visible=true').click();
       await expect(supplier.getByTestId(`complete-${ids.serviceRequestId}`)).toHaveCount(0, { timeout: 15_000 });
       await expect(async () => {
@@ -271,7 +265,6 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
     await step('Host completes the check-out wizard; the compliance cockpit has nothing pending for the stay', async () => {
       await host.goto(`/app/short-rent/bookings/${ids.bookingId}/checkout`);
       await expect(host.getByTestId('checkout-wizard-page')).toBeVisible({ timeout: 20_000 });
-      // CO-17: the 5 steps. The supplier request of the stay already covers the cleaning, so it is skipped.
       await host.getByTestId('checkout-confirm-departure').click();
       await host.getByTestId('checkout-step-next').click();
       await expect(host.getByTestId('checkout-step-panel-alloggiati')).toBeVisible({ timeout: 15_000 });
@@ -299,7 +292,6 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
 
     expect(errors5xx, 'no API 5xx during the whole journey').toEqual([]);
 
-    // Seed for the app suite of FN-04 (Maestro) and for debugging: written as a CI artifact, never committed.
     mkdirSync('e2e/.auth', { recursive: true });
     writeFileSync(
       'e2e/.auth/gj-seed.json',

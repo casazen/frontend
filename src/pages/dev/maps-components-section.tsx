@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { LocalMap, RegionMap, getRegionForPoints, useMapLink, type LocalPoi, type MapPinData } from '@/features/site-maps';
 
-/** Houses of the review: positions with two decimals, prices written by the page. */
 const HOUSES: MapPinData[] = [
   { id: 'bellagio', name: 'Villa a Bellagio', lat: 45.99, lon: 9.26, label: '320 €', href: '/dev/maps?s=components&casa=bellagio', card: { zone: 'Bellagio', rating: 4.9, priceLabel: '320 € a notte' } },
   { id: 'como', name: 'Attico a Como', lat: 45.81, lon: 9.08, label: '180 €', href: '/dev/maps?s=components&casa=como', card: { zone: 'Como', rating: 4.7, priceLabel: '180 € a notte' } },
@@ -12,11 +11,9 @@ const HOUSES: MapPinData[] = [
   { id: 'locarno', name: 'Casa a Locarno', lat: 46.17, lon: 8.8, label: '195 CHF', href: '/dev/maps?s=components&casa=locarno', card: { zone: 'Locarno', priceLabel: '195 CHF a notte' } },
   { id: 'zurigo', name: 'Loft a Zurigo', lat: 47.37, lon: 8.54, label: '260 CHF', href: '/dev/maps?s=components&casa=zurigo', card: { zone: 'Zurigo', rating: 4.6, priceLabel: '260 CHF a notte' } },
   { id: 'ginevra', name: 'Casa a Ginevra', lat: 46.2, lon: 6.15, label: '280 CHF', href: '/dev/maps?s=components&casa=ginevra', card: { zone: 'Ginevra', rating: 5, priceLabel: '280 CHF a notte' } },
-  // two houses in the same village: the pins must not hide each other
   { id: 'vicolo-1', name: 'Casa del Vicolo', lat: 45.98, lon: 9.25, label: '110 €', href: '/dev/maps?s=components&casa=vicolo-1', card: { zone: 'Bellagio', priceLabel: '110 € a notte' } },
   { id: 'vicolo-2', name: 'Casa della Torre', lat: 45.98, lon: 9.26, label: '135 €', href: '/dev/maps?s=components&casa=vicolo-2', card: { zone: 'Bellagio', rating: 4.6, priceLabel: '135 € a notte' } },
 ];
-/** The frame and the data for these houses: Lombardia and Svizzera together. A page passes it as `view` to `RegionMap`. */
 const CHOICE = getRegionForPoints(HOUSES, { aspect: 4 / 3 });
 const ABROAD: MapPinData[] = [{ id: 'abroad', name: 'Una casa fuori dall’Italia', lat: 48.85, lon: 2.35, label: '99 €' }];
 
@@ -55,7 +52,6 @@ function HouseList({ link, selected, onPick }: { link: ReturnType<typeof useMapL
   );
 }
 
-/** The components of DB-19b on made-up data: the list and the map lit together, a phone-sized map, the empty case, the map of a zone. */
 export function ComponentsSection() {
   const link = useMapLink();
   const zoneLink = useMapLink();

@@ -51,7 +51,6 @@ export function WireBatchCard({ batch }: WireBatchCardProps) {
   const status = batch.status;
   const known = isKnownStatus(status);
 
-  /** One request of the card at a time. Whatever the answer, what the server says is told in words and the list is read again by the mutation itself. */
   const run = async (request: () => Promise<unknown>, fallback: string) => {
     if (busy || sending.current) return;
     sending.current = true;
@@ -83,7 +82,6 @@ export function WireBatchCard({ batch }: WireBatchCardProps) {
       }
     }, t('wire.batch.confirmDownloadedError'));
 
-  /** Marked as paid by the administrator's word, after the confirmation. */
   const onMarkPaid = () =>
     run(async () => {
       try {
@@ -94,7 +92,6 @@ export function WireBatchCard({ batch }: WireBatchCardProps) {
     }, t('wire.batch.confirmPaidError'));
 
   const dismissConfirmation = (open: boolean) => {
-    // The request is on its way: the dialog stays until the server has answered, so nobody confirms the same payment twice.
     if (!open && !busy) setConfirming(false);
   };
 

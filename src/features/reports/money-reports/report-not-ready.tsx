@@ -6,12 +6,9 @@ import { SkeletonLine } from '@/components/ui/skeleton';
 import type { ReportView } from './money-model';
 
 interface ReportNotReadyProps {
-  /** What the read stands for, anything but data. */
   view: Exclude<ReportView<unknown>, { kind: 'ready' }>;
-  /** What failed to load, already translated ("Impossibile caricare gli incassi."). */
   errorTitle: string;
   onRetry: () => void;
-  /** Offered with a 404 when a property is chosen: back to the whole scope. */
   onShowAllProperties?: () => void;
   testId: string;
 }

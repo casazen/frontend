@@ -68,7 +68,6 @@ export function SupplierInboxPage() {
   const baseList = useSupplierRequestsList(actions, { startChip: startChip ?? CHIP_TO_ANSWER, services: serviceOptions, comuni: comuneOptions });
   const bulk = useBulkAccept();
   const { state } = useListState(baseList);
-  // Taking many at once is for the tab of the requests to answer, and not for a suspended supplier: no other tab has checkboxes.
   const list = useMemo(
     () => (state.chip === CHIP_TO_ANSWER && !actions.suspended ? { ...baseList, bulk: [bulk.action] } : baseList),
     [baseList, state.chip, actions.suspended, bulk.action],
@@ -80,8 +79,6 @@ export function SupplierInboxPage() {
   const params = inboxParamsOf(state, PAGE_SIZE, clientId);
   const inbox = useSupplierInbox(params, { enabled: !waitingForStart });
 
-  // The search by name (SP-D23): only when the server found nothing for the text, the names are looked for among the requests of the tab as
-  // they were loaded (the same page without the text: usually already in the cache).
   const text = state.q.trim();
   const serverFoundNothing = text.length >= 2 && inbox.isSuccess && !inbox.isPlaceholderData && inbox.data.total === 0;
   const loaded = useSupplierInbox({ ...params, q: undefined }, { enabled: !waitingForStart && serverFoundNothing });
@@ -90,11 +87,9 @@ export function SupplierInboxPage() {
 
   const c = counts.data;
   const toAnswer = c?.toAnswer ?? 0;
-  // The server puts the request to answer first on top of its tab: the first row is the most urgent.
   const urgent = useSupplierInbox({ tab: CHIP_TO_ANSWER, page: 1, pageSize: 1 }, { enabled: toAnswer > 0 });
   const mostUrgent = toAnswer > 0 ? urgent.data?.items[0] : undefined;
 
-  // A supplier who has no request at all gets what the requests are for, and not an empty table with filters.
   const nothingYet = c !== undefined && [c.toAnswer, c.awaitingCustomer, c.scheduled, c.toCollect, c.archive].every((n) => n === 0);
   const { icon: emptyIcon, ...empty } = list.empty;
   const primary = mostUrgent

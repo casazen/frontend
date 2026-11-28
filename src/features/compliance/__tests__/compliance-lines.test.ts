@@ -53,7 +53,6 @@ describe('stayLinesOf (the lights of one stay, NF-52 AC-NF52-9)', () => {
     const lines = stayLinesOf(
       summaryOf({
         identityPending: section(stay('VerifyIdentity', 'b2', 'Red')),
-        // The guest data, the departure and the turnover have their own steps.
         guestCheckInsIncomplete: section(stay('CompleteGuestCheckIn', 'b1', 'Red')),
         checkoutsDue: section(stay('CheckOut', 'b1', 'Red')),
         turnoversPending: section(stay('ConfirmPropertyReady', 'b1', 'Red')),
@@ -135,7 +134,6 @@ describe('propertyLinesOf (the lights of one property)', () => {
       'RenewPoliceCredentials:green',
       'UploadIstatProof:green',
     ]);
-    // Two months of the same action are two lines.
     expect(new Set(lines.map((line) => line.id)).size).toBe(lines.length);
   });
 
@@ -168,7 +166,6 @@ describe('viewOfLines (what a card lists)', () => {
 
     expect(view.shown.map((l) => l.id)).toEqual(['a', 'b', 'c']);
     expect(view.hidden).toBe(2);
-    // What is in order is noise next to something to do.
     expect(view.inOrder).toEqual([]);
   });
 
@@ -182,7 +179,6 @@ describe('viewOfLines (what a card lists)', () => {
   it('viewOfLines_OnlyTheLineOfTheBlock_HasNothingMoreToSay', () => {
     const view = viewOfLines([line('a', 'red'), line('g', 'green')], { skip: 'a' });
 
-    // The green one is not listed next to a red one, even when the red one is the block.
     expect(hasLinesToShow(view)).toBe(false);
   });
 

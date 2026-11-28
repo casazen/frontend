@@ -11,7 +11,6 @@ import { syncPollInterval, syncWaitEndsAt } from './octorate-sync';
 export function useSyncWatch() {
   const [openedAt] = useState(() => Date.now());
   const [askedAt, setAskedAt] = useState<number | null>(null);
-  // The time the wait was last found over: it moves only when the timer below fires, never during a render.
   const [overAt, setOverAt] = useState(openedAt);
   const endsAt = syncWaitEndsAt({ openedAt, askedAt });
 

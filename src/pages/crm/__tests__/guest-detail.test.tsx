@@ -182,7 +182,6 @@ describe('GuestDetail: one CRM profile read by its id (E07/F01/US04/T02)', () =>
     expect(first.getByText('Check-out effettuato')).toBeInTheDocument();
     expect(first.getByText(/480,00/)).toBeInTheDocument();
 
-    // A portal with no value of its own is named as the channel manager named it.
     const second = within(table.getByText('Trullo Verde').closest('tr')!);
     expect(second.getByText('Hotels.com')).toBeInTheDocument();
     expect(second.getByText('Annullata')).toBeInTheDocument();
@@ -219,8 +218,6 @@ describe('GuestDetail: one CRM profile read by its id (E07/F01/US04/T02)', () =>
   });
 
   it('GuestDetail_TheProfileWentAfterThePageHadReadIt_IsNotFoundAndNeverTheOldPage', async () => {
-    // The profile was merged into another (or the caller lost its reach) after the page read it: the query keeps its last data when the
-    // next read fails, and that old page, with its tags and its confirmation request, must not stay on the screen.
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     client.setQueryData(crmGuestKey(PROFILE), detail());
     vi.mocked(CrmApi.getGuest).mockRejectedValue(problem(404, 'crm_profile_not_found'));

@@ -44,14 +44,11 @@ export function PaymentLedgerPeriod() {
   const enabled = canRead && problem === null;
   const ledger = usePeriodLedger({ from: period.from, to: period.to }, page, LEDGER_PAGE_SIZE, { enabled });
 
-  // Who may not read payments gets nothing: not a table, not an empty period, not an error.
   if (!canRead) return null;
 
-  // The days of an earlier choice are not shown for one the server was not asked about: the read is `idle` and the table is not drawn.
   const read = ledgerReadOf({ enabled, isError: ledger.isError, status: getHttpStatus(ledger.error), hasData: ledger.data !== undefined });
   const data = read === 'ok' ? ledger.data : undefined;
 
-  // A page past the end (the lines of the period went down while the page was open) goes to the last one that has any.
   if (data && page > 1 && data.items.length === 0 && data.totalCount > 0 && !ledger.isPlaceholderData) {
     setPage(Math.ceil(data.totalCount / LEDGER_PAGE_SIZE));
   }
@@ -105,7 +102,6 @@ export function PaymentLedgerPeriod() {
           label={t('paymentLedger.period.tableLabel')}
           showBooking
           documentHref={documentLinkOf(hasPermission, flags)}
-          // Whatever the failure, a period that could not be read is never drawn as an empty one.
           isLoading={read === 'loading'}
           isError={read === 'failed' || read === 'notFound'}
           error={ledger.error}

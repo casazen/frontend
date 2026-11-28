@@ -13,8 +13,6 @@ import { CLOSE_NOTE_MAX } from '../self-billing-model';
 import { SelfBillingPage } from '../self-billing-page';
 import { REPLACEMENT_ID, closed, detail, kept, original } from './self-billing-fixtures';
 
-// These tests use the real client of the app, with its interceptors and its handler of the 403, and the real API of the self-billed invoices: only the transport is replaced. What they prove is what the page does with the
-// answers of «Chiudi come non più dovuta» (200, 422, 404, 403, a call that fails, an answer that is not the one of the endpoint) and with the new members of the lists, as in the browser.
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({
     contexts: [{ contextKey: 'account', roleKey: 'org_admin' }],
@@ -38,7 +36,6 @@ interface Request {
 }
 let reply: (request: Request) => Reply;
 let requests: Request[];
-/** Whether the server has closed the kept draft: from then on its list and its detail hold the closed draft. */
 let closedNow: boolean;
 const onForbidden = vi.fn();
 const realAdapter = axiosInstance.defaults.adapter;
@@ -59,7 +56,6 @@ const CLOSE = `${LIST}/${REPLACEMENT_ID}/close-not-due`;
 const REASON = 'portal_credit_note';
 const NOTE = 'Nota di credito del portale n. 55 del 12 novembre';
 
-/** The answers of a server that is in order: the list and the detail (before and after the closing), and the closing itself. */
 function serverInOrder({ method, path }: Request): Reply {
   if (method === 'GET' && path === LIST) return { status: 200, data: closedNow ? [original(), closed()] : [original(), kept()] };
   if (method === 'GET' && path === `${LIST}/${REPLACEMENT_ID}`) return { status: 200, data: detail(closedNow ? closed() : kept()) };
@@ -70,7 +66,6 @@ function serverInOrder({ method, path }: Request): Reply {
   return { status: 404, data: { code: 'not_found' } };
 }
 
-/** The same server, with `answer` as the answer of the closing (it changes nothing at the server). */
 const answering = (answer: Reply) => (request: Request) => (request.method === 'POST' && request.path === CLOSE ? answer : serverInOrder(request));
 
 const calls = (method: string, path: string) => requests.filter((request) => request.method === method && request.path === path);
@@ -81,7 +76,6 @@ function renderPage() {
   return client;
 }
 
-/** Presses «Chiudi come non più dovuta» on the kept draft and gives the dialog back, with its confirm button (off until a reason is chosen). */
 async function openClosing() {
   const rows = await screen.findAllByTestId('self-billing-row');
   const row = rows.find((candidate) => candidate.getAttribute('data-id') === REPLACEMENT_ID) as HTMLElement;
@@ -90,7 +84,6 @@ async function openClosing() {
   return { dialog, confirm: within(dialog).getByRole('button', { name: i18n.t('selfBilling.close.confirm') }) };
 }
 
-/** Chooses the reason, writes the note and presses the confirmation, once it is on. */
 async function closeWith(dialog: HTMLElement, confirm: HTMLElement, note: string = NOTE) {
   fireEvent.click(within(dialog).getByTestId(`self-billing-close-reason-${REASON}`));
   if (note !== '') fireEvent.change(within(dialog).getByTestId('self-billing-close-note'), { target: { value: note } });
@@ -124,11 +117,9 @@ describe('the closing of a kept replacement through the real client (data rule: 
     expect(calls('POST', CLOSE)).toHaveLength(0);
     await closeWith(dialog, confirm);
 
-    // One call, to the address of the kept draft, with the reason and the note and nothing else (the user and the day are the server's).
     await waitFor(() => expect(calls('POST', CLOSE)).toHaveLength(1));
     expect(JSON.parse(calls('POST', CLOSE)[0].body as string)).toEqual({ reason: REASON, note: NOTE });
     await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
-    // The list was read again: the draft is the closed one, with its facts, no action and no «da emettere».
     await waitFor(() => expect(screen.queryByTestId('self-billing-row-close')).toBeNull());
     const row = screen.getAllByTestId('self-billing-row').find((candidate) => candidate.getAttribute('data-id') === REPLACEMENT_ID) as HTMLElement;
     const block = within(row).getByTestId('self-billing-row-closed');
@@ -159,11 +150,9 @@ describe('the closing of a kept replacement through the real client (data rule: 
     const problem = await within(dialog).findByTestId('self-billing-close-problem');
     expect(problem).toHaveAttribute('data-problem', kind);
     expect(problem).toHaveTextContent(i18n.t(`selfBilling.close.problem.${kind}`, { max: CLOSE_NOTE_MAX }));
-    // Nothing says it was closed, the app is not sent to the page of no access, and the call went out once.
     expect(toast.success).not.toHaveBeenCalled();
     expect(onForbidden).not.toHaveBeenCalled();
     expect(calls('POST', CLOSE)).toHaveLength(1);
-    // What the server refused is not offered again; a reason or a note the server found missing or too long can be put right in place. The dialog can always be left.
     const putRight = kind === 'reasonRequired' || kind === 'noteTooLong';
     await waitFor(() => {
       const button = within(dialog).getByRole('button', { name: i18n.t('selfBilling.close.confirm') });
@@ -171,7 +160,6 @@ describe('the closing of a kept replacement through the real client (data rule: 
       else expect(button).toBeDisabled();
     });
     expect(within(dialog).getByRole('button', { name: i18n.t('shared.cancel') })).toBeEnabled();
-    // The list is read again (a refusal of a state that changed is not left stale), and it is still the list with the kept draft, not an empty page.
     await waitFor(() => expect(calls('GET', LIST).length).toBeGreaterThanOrEqual(2));
     expect(screen.getAllByTestId('self-billing-row')).toHaveLength(2);
     expect(screen.queryByTestId('self-billing-empty')).toBeNull();
@@ -191,7 +179,6 @@ describe('the closing of a kept replacement through the real client (data rule: 
     expect(problem).toHaveTextContent(i18n.t('selfBilling.close.problem.failed'));
     expect(toast.success).not.toHaveBeenCalled();
     expect(screen.queryByTestId('self-billing-row-closed')).toBeNull();
-    // A call that failed can be asked again, and the button says so; the same call again is safe (the server answers the closed draft).
     const retry = within(dialog).getByRole('button', { name: i18n.t('shared.errorState.retry') });
     await waitFor(() => expect(retry).toBeEnabled());
     failing = false;
@@ -207,7 +194,6 @@ describe('the closing of a kept replacement through the real client (data rule: 
     ['204 with no content', { status: 204, data: '' }],
     ['200 with a TD17 that is not closed', { status: 200, data: detail(kept()) }],
   ] as const)('SelfBillingClose_Answer%s_IsNotTheAnswerOfTheServerThatClosedIt_ToldAsACallThatFailedWithRiprova_NeverAsDone', async (_name, answer) => {
-    // Only a 200 with the closed draft proves the server acted: any other answer is not the endpoint's, the draft is not shown as closed, and it can be asked again.
     reply = answering(answer);
     renderPage();
 
@@ -222,7 +208,6 @@ describe('the closing of a kept replacement through the real client (data rule: 
     const retry = within(dialog).getByRole('button', { name: i18n.t('shared.errorState.retry') });
     await waitFor(() => expect(retry).toBeEnabled());
     expect(calls('POST', CLOSE)).toHaveLength(1);
-    // The list is read again and still holds the kept draft, with its action.
     await waitFor(() => expect(calls('GET', LIST).length).toBeGreaterThanOrEqual(2));
     expect(screen.getByTestId('self-billing-row-close')).toBeInTheDocument();
   });
@@ -231,7 +216,6 @@ describe('the closing of a kept replacement through the real client (data rule: 
     const PRIVATE_NOTE = 'Il titolare Mario Bianchi ha restituito la commissione il 3 novembre';
     reply = answering({ status: 422, data: { code: 'self_billing_not_closable' } });
     const client = renderPage();
-    // What the cache of the mutations holds the moment the call fails: the failure the screen reads.
     const failures: unknown[] = [];
     const unsubscribe = client.getMutationCache().subscribe((event) => {
       if (event.type === 'updated' && event.action.type === 'error') failures.push(event.mutation.state.error);
@@ -242,12 +226,10 @@ describe('the closing of a kept replacement through the real client (data rule: 
 
     await within(dialog).findByTestId('self-billing-close-problem');
     unsubscribe();
-    // The note went out in the body of the call, and only there.
     expect(JSON.parse(calls('POST', CLOSE)[0].body as string).note).toBe(PRIVATE_NOTE);
     for (const request of requests) expect(request.path).not.toContain(PRIVATE_NOTE);
     expect(window.location.href).not.toContain(encodeURIComponent(PRIVATE_NOTE));
     expect(JSON.stringify(window.localStorage) + JSON.stringify(window.sessionStorage)).not.toContain(PRIVATE_NOTE);
-    // The failure is reduced to what the screen turns into words: the status and the code of the answer, with no request (the body of which carries the note).
     expect(failures).toHaveLength(1);
     const error = failures[0];
     expect(isAxiosError(error)).toBe(true);
@@ -259,7 +241,6 @@ describe('the closing of a kept replacement through the real client (data rule: 
     // The dialog is still there, with the problem told and the form as the person left it, so that a retry needs nothing typed again.
     expect(within(dialog).getByTestId('self-billing-close-problem')).toBeInTheDocument();
     expect(within(dialog).getByTestId('self-billing-close-note')).toHaveValue(PRIVATE_NOTE);
-    // And once the dialog is gone nothing of the call is kept either.
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.cancel') }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(client.getMutationCache().getAll()).toHaveLength(0);

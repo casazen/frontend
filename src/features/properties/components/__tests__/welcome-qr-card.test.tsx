@@ -10,14 +10,9 @@ import { WelcomeQrCard } from '../welcome-qr-card';
 vi.mock('@/api/welcome.api', () => ({
   welcomeApi: { getLink: vi.fn(), createLink: vi.fn(), rotateLink: vi.fn(), getPage: vi.fn(), submitConsent: vi.fn() },
 }));
-// The image of the code is drawn on a canvas, which jsdom does not have: the card only has to show what it is given.
 vi.mock('qrcode', () => ({ default: { toDataURL: vi.fn(() => Promise.resolve('data:image/png;base64,QRCODE')) } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-/**
- * The QR the host prints for a house (CRM-03). Replacing it makes the printed one useless at once, so it never happens without the host
- * being told so first; and the sign carries the same line in both languages, whatever the language of the host's screen.
- */
 const PROPERTY_ID = '6f1c2b8e-3a4d-4e5f-8a9b-0c1d2e3f4a5b';
 const OLD_URL = 'https://casazen.example/benvenuto/token-vecchio';
 const NEW_URL = 'https://casazen.example/benvenuto/token-nuovo';
@@ -67,7 +62,6 @@ describe('WelcomeQrCard (CRM-03)', () => {
     getLink.mockResolvedValue(active(OLD_URL));
     const sheet = { document: document.implementation.createHTMLDocument(''), print: vi.fn() };
     vi.spyOn(window, 'open').mockReturnValue(sheet as unknown as Window);
-    // The host reads the app in English: the sign is for the guests, so it has both languages all the same.
     await i18n.changeLanguage('en');
     renderCard();
 
@@ -94,7 +88,6 @@ describe('WelcomeQrCard (CRM-03)', () => {
     expect(dialog).toHaveTextContent('smetterà di funzionare subito');
     expect(rotateLink).not.toHaveBeenCalled();
 
-    // Backing out leaves the printed code as it is.
     fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(rotateLink).not.toHaveBeenCalled();

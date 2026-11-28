@@ -15,15 +15,10 @@ import { describeServiceError } from './lib/service-errors';
 const T = 'supplier.services.actions';
 
 export interface ServiceActions {
-  /** Puts a draft or a paused service on offer. Resolves with the service, or `null` when the API refused (the person was told). */
   publishService: (service: SupplierService) => Promise<SupplierService | null>;
-  /** Takes a published service off offer without losing it. */
   pauseService: (service: SupplierService) => Promise<SupplierService | null>;
-  /** Opens the confirmation of the deletion. */
   askDelete: (service: SupplierService) => void;
-  /** Render it once on the page: it is the confirmation that `askDelete` opens. */
   deleteDialog: ReactElement;
-  /** A publication, a pause or a deletion is going on. */
   busy: boolean;
 }
 
@@ -44,7 +39,6 @@ export function useServiceActions(options: { onDeleted?: (service: SupplierServi
   const { mutateAsync: publishAsync } = publish;
   const { mutateAsync: pauseAsync } = pause;
 
-  /** Tells the person what the API refused. A service that is not there any more (deleted elsewhere) stops being shown. */
   const fail = useCallback(
     (error: unknown, service: SupplierService) => {
       const found = describeServiceError(error, t);

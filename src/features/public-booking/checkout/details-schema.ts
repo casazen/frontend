@@ -1,11 +1,9 @@
 import { z } from 'zod';
 import { isIsoCountryCode } from '@/lib/countries';
 
-/** Same limits as the API (`CreateDirectBookingRequest`). */
 const NAME_MAX_LENGTH = 100;
 const EMAIL_MAX_LENGTH = 255;
 const PHONE_MAX_LENGTH = 20;
-/** Digits of an international number: at most 15 (ITU-T E.164). */
 const PHONE_MIN_DIGITS = 6;
 const PHONE_MAX_DIGITS = 15;
 const PHONE_CHARACTERS = /^\+?[\d\s().-]+$/;
@@ -16,11 +14,6 @@ export function isValidPhone(value: string): boolean {
   return digits >= PHONE_MIN_DIGITS && digits <= PHONE_MAX_DIGITS;
 }
 
-/**
- * True when a number says its country: it starts with `+` or `00`, which is what the server (`CrmNormalizer.NormalizePhone`) takes for an
- * international number. It puts its own default calling code in front of any other, so a WhatsApp consent on «333 1234567» typed by a guest
- * from abroad would be recorded for somebody else's number.
- */
 export function hasInternationalPrefix(value: string): boolean {
   return /^[\s(]*\+/.test(value) || value.replace(/\D/g, '').startsWith('00');
 }
@@ -58,7 +51,6 @@ export const detailsSchema = z
     if (phone === '') {
       context.addIssue({ code: 'custom', path: ['offersWhatsApp'], message: 'publicBooking.validation.whatsAppNeedsPhone' });
     } else if (isValidPhone(phone) && !hasInternationalPrefix(phone)) {
-      // A number that is not a number at all is told on the phone field; here only the one that is valid but does not say its country.
       context.addIssue({ code: 'custom', path: ['offersWhatsApp'], message: 'publicBooking.validation.whatsAppNeedsPrefix' });
     }
   });

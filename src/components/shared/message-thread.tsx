@@ -6,42 +6,26 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 
-/**
- * From this many characters the composer shows how many are left; for a box with a shorter limit (the 1,000 characters of the messages of a
- * request on measure, SP-08e), from nine tenths of it.
- */
 const COUNTER_FROM = 1800;
 const counterFrom = (maxLength: number) => Math.min(COUNTER_FROM, Math.floor(maxLength * 0.9));
 
 const SHORT_DATE_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
 
-/** A message of a conversation as a reader sees it: who wrote it, what, when, and whether it is on its way. */
 export interface ThreadItem {
   id: string;
-  /** Written by the reader: the bubble goes on the right. */
   mine: boolean;
-  /** The name the reader sees ("Tu", the name of the host or of the guest). */
   author: string;
-  /** Plain text, shown as text (line breaks kept, never markup or links). */
   text: string;
-  /** UTC instant; `null` for a message that has not reached the server yet. */
   at: string | null;
   status?: 'sending' | 'failed';
 }
 
 interface MessageThreadProps<T extends ThreadItem = ThreadItem> {
   items: T[];
-  /** Accessible name of the log. */
   label: string;
   emptyText: string;
-  /** Sends a message that failed again (the same one, with the same key). */
   onRetry?: (id: string) => void;
-  /**
-   * Draws an item itself, where the bubble has more than text (the state of delivery of a message of a channel, its file, its translation: the
-   * hub of the messages). The log around it, and what it does with the scroll, stay the same.
-   */
   renderItem?: (item: T) => ReactNode;
-  /** Classes added to the log, for a page that gives it more room than the 20 rem of a drawer (`max-h-[60vh]`). */
   className?: string;
 }
 
@@ -118,11 +102,9 @@ export function MessageThread<T extends ThreadItem = ThreadItem>({ items, label,
 }
 
 interface MessageComposerProps {
-  /** Accessible name of the text area. */
   label: string;
   placeholder: string;
   maxLength: number;
-  /** Why a message cannot be sent now (offline…): the send button is off and the text typed stays. */
   disabledReason?: string | null;
   onSend: (text: string) => void;
 }

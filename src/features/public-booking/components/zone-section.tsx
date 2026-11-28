@@ -9,7 +9,6 @@ import type { LocalPoi } from '@/features/site-maps/components/types-local';
 import { PUBLIC_POI_TYPES, type PublicAreaKind, type PublicPropertyDetailDto } from '@/types';
 import '@/features/public-booking/property-page.css';
 
-// The drawing and its data come with the section, not with the page: the map loads after the page does.
 const LocalMap = lazy(() => import('@/features/site-maps/components/local-map').then((m) => ({ default: m.LocalMap })));
 
 const POI_ICONS: Record<string, LucideIcon> = {
@@ -24,7 +23,6 @@ const POI_ICONS: Record<string, LucideIcon> = {
 
 const AREA_KINDS: Record<PublicAreaKind, LocalKind> = { Country: 'country', Coast: 'coast', Historic: 'historic' };
 
-/** The direction of the beach nearest to the house: on a coast map the sea is drawn on that side. */
 function seaBearing(points: readonly LocalPoi[]): number | undefined {
   const beaches = points.filter((poi) => poi.type === 'beach');
   if (beaches.length === 0) return undefined;

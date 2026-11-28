@@ -3,7 +3,6 @@ import type { TourArea } from './scenario';
 
 type TourEvent = 'demo_enter' | 'demo_first_task' | 'invitation_mail_open' | 'referral_mail_open';
 
-/** No host/guest identifiers or typed text. A mail client opening is only a click. */
 export function trackTour(event: TourEvent, area: TourArea): void {
   if (typeof window === 'undefined' || !analyticsConfig.plausibleDomain || !window.plausible) return;
   // Deduplicate the first result per area and tab, including reopening the booking or refreshing the detail.

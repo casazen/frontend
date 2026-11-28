@@ -13,22 +13,12 @@ interface Props {
   document: PropertyDocumentDto;
   /** Open on the two fields (right after an upload, or where a contract waits for them) instead of on the summary. */
   initiallyEditing?: boolean;
-  /** After a save or a cancel: the place that opened the fields closes them (the upload dialog). */
   onDone?: () => void;
-  /** Label of the cancel button (default "Annulla"; "Più tardi" right after an upload). */
   cancelLabel?: string;
-  /** No cancel button: a contract cannot be created without these data, so there is nothing to go back to. */
   required?: boolean;
-  /** Code or class missing: the server reads them from the file by itself (the latest APE of a property page, the one a contract states). */
   autoRead?: boolean;
 }
 
-/**
- * Code and energy class printed on an APE document (LT-10): the lease contract states them. The server reads them from the file
- * itself (and, for a code the file does not show legibly, from the public register of the region): this is where they are seen,
- * read again (by themselves for the latest APE, `autoRead`; "Leggi dall'APE" on request) or, when no reading found them, written by
- * hand. The API checks only their shape (no pattern on the code, whose format is not documented).
- */
 export function ApeIdentificationForm({
   propertyId,
   document,
@@ -46,7 +36,6 @@ export function ApeIdentificationForm({
   const [editing, setEditing] = useState(initiallyEditing);
   const readByItself = useApeAutoRead(propertyId, document, autoRead && !editing);
   const reading = read.isPending || readByItself.isFetching;
-  // Read here (on request or by itself) and nothing found, or found nothing in an earlier visit: what is left is to type them.
   const readHere = read.isSuccess || readByItself.isSuccess;
   const foundNothing = !hasIdentification && (readHere || apeReadFoundNothing(document.id));
   const [code, setCode] = useState(document.apeCode ?? '');
@@ -54,7 +43,6 @@ export function ApeIdentificationForm({
 
   const handleSubmit = async (event: SyntheticEvent) => {
     event.preventDefault();
-    // The fields can sit inside another form (the lease form): this one is sent alone.
     event.stopPropagation();
     try {
       await update.mutateAsync({ propertyId, docId: document.id, data: { code: code.trim(), energyClass: energyClass.trim() } });
@@ -82,7 +70,6 @@ export function ApeIdentificationForm({
             {foundNothing ? t('property.documents.apeNotReadable') : t('property.documents.apeIdentificationMissing')}
           </span>
         )}
-        {/* Reading again on request: not after a reading of this visit that found nothing (the same file gives the same answer). */}
         {hasIdentification || reading || readHere ? null : (
           <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={() => read.mutate({ propertyId, docId: document.id })}>
             {t('property.documents.apeReadFromDocument')}
@@ -95,11 +82,8 @@ export function ApeIdentificationForm({
     );
   }
 
-  // From `useId`, not from the document: the same APE can have its fields twice on one screen (the lease form and the upload
-  // window over it), and a label must point at the field next to it.
   const codeId = `${fieldsId}-code`;
   const classId = `${fieldsId}-class`;
-  // A `div` and not a `form` when it sits inside the lease form (a form cannot hold a form): Enter and the button send it.
   return (
     <div
       role="group"

@@ -72,7 +72,6 @@ describe("WizardSummary", () => {
     const cin = screen.getByRole("link", { name: "Modifica Codice CIN" });
     expect(cin).toHaveAttribute("href", "/?step=cin");
     expect(cin).toHaveTextContent("Modifica");
-    // The visible word is part of the accessible name, and the name says which answer it edits.
     expect(within(screen.getByText("Nome", { selector: "dt" }).closest("div") as HTMLElement).getByRole("link")).toHaveAccessibleName(
       "Modifica Nome",
     );

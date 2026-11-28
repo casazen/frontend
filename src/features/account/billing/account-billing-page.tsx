@@ -38,8 +38,6 @@ function AccountBillingBody() {
     enabled: !!signup,
   });
   const { subscriptionQuery, checkoutReturn, timedOut } = useAccountSubscription();
-  // Stripe returns to a plan or billing page of the backend's list, and this page is on it (AM-08a-FU1): it names itself, so the portal
-  // (and the checkout of the plans) bring the person back here with the message of the outcome, also from the account area alone.
   const portalMutation = useOpenBillingPortal(toBillingReturnPath(pathname));
   const compareRef = useRef<HTMLDetailsElement>(null);
 
@@ -58,7 +56,6 @@ function AccountBillingBody() {
     ? subscription.enabledAddons ?? commercialProfile?.commercialEnabledAddons ?? []
     : [];
 
-  /** The button of the plan block: the plans open under it and come into view. */
   const openPlans = () => {
     const section = compareRef.current;
     if (!section) return;
@@ -96,7 +93,6 @@ function AccountBillingBody() {
           onRefresh={() => void subscriptionQuery.refetch()}
         />
 
-        {/* The plan and how it is paid on the left, the things that open on request on the right (under each other on a narrow screen). */}
         <div className={PAGE_MAIN_ASIDE}>
           <div className="min-w-0 space-y-8">
             <PlanFocus

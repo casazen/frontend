@@ -16,17 +16,14 @@ export function exactMoney(amount: number, currency: string, locale: string): st
   try {
     return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 8 }).format(amount);
   } catch {
-    // A code the runtime does not know: the figure and the code as they came, never a blank.
     return `${amount} ${currency}`;
   }
 }
 
-/** The reference of a wire file as the statements print it (`WB-` and the first eight digits of its id): the one a person finds on both papers. */
 export function batchReference(batchId: string): string {
   return `WB-${batchId.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
 }
 
-/** The stable `code` of a failed call, when the server sent one. */
 export function problemCodeOf(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
 }

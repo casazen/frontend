@@ -78,7 +78,6 @@ describe('the SDI panel of a document follows the flag and the permissions (E17/
 
     const panel = await screen.findByTestId('fiscal-document-sdi');
     expect(await within(panel).findByTestId('fiscal-document-sdi-state')).toHaveAttribute('data-state', 'rejected');
-    // The reason is told in words even to who cannot act, and nothing can be sent, declared or corrected.
     expect(within(panel).getByTestId('fiscal-document-sdi-reason')).toHaveTextContent('Il codice fiscale del destinatario non è valido.');
     for (const id of ['fiscal-document-sdi-submit', 'fiscal-document-sdi-declare', 'fiscal-document-sdi-correct']) expect(within(panel).queryByTestId(id)).toBeNull();
     expect(api.submitDocumentSdi).not.toHaveBeenCalled();
@@ -107,18 +106,15 @@ describe('the SDI panel of a document follows the flag and the permissions (E17/
 
   it('SdiPanel_AnOwnerInvoice_GoesThroughTheEndpointsOfTheOwnerInvoicesAndOnlyForTheAdministrators', async () => {
     const ownerInvoice = document({ purpose: 'OwnerInvoice', bookingId: null });
-    // A property manager (holds payment.write, no agency permission) never reads or sends it: nothing is drawn and nothing is asked.
     const refused = renderPanel(ownerInvoice, { flags: { ...sdiOn, ownerInvoicing: true } });
     expect(refused.container).toBeEmptyDOMElement();
     expect(read).not.toHaveBeenCalled();
     cleanup();
 
-    // The administrator of the organization, with the flag of the owner invoices on, reads it through the owner endpoints.
     env.contexts = [{ contextKey: 'account', roleKey: 'org_admin' }];
     renderPanel(ownerInvoice, { flags: { ...sdiOn, ownerInvoicing: true }, canWrite: false });
     await screen.findByTestId('fiscal-document-sdi');
     await waitFor(() => expect(read).toHaveBeenCalledWith(ownerInvoice.id, 'owner'));
-    // ... and without the flag of the owner invoices it is not there for them either.
     cleanup();
     read.mockClear();
     const off = renderPanel(ownerInvoice, { flags: { ...sdiOn, ownerInvoicing: false } });

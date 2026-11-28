@@ -16,29 +16,19 @@ interface StepWhenProps {
   serviceSlug: string;
   comuneIstat: string | null;
   slots: { isLoading: boolean; isError: boolean; days: PublicSlotDay[]; onRetry: () => void };
-  /** The slot chosen (`startUtc`), if it is still among the free ones. */
   chosen: string | null;
   onChoose: (startUtc: string) => void;
-  /** The day the finder of the home was asked, if any. */
   preferredDay: string | null;
   urgent: { offered: boolean; on: boolean; surchargeCents: number; onToggle: (on: boolean) => void };
-  /** The person went on without a time, or the one it had went to somebody else. */
   problem: 'required' | 'taken' | null;
 }
 
-/** The slot of a day grouped by the part of the day it is in. */
 function groupByPart(slots: PublicSlot[]): Array<[DayPart, PublicSlot[]]> {
   return PARTS.map((part): [DayPart, PublicSlot[]] => [part, slots.filter((slot) => dayPartOf(slot) === part)]).filter(([, list]) => list.length > 0);
 }
 
-/**
- * Step 3, "Quando": four weeks of days, seven at a time, with how many free times each has; then the free times of the day picked, by
- * morning, afternoon and evening. The times are exactly those the server planned (the clock of Rome); a time shown is not a promise, the
- * booking checks it again and the page says so when it went. Urgent: only today and tomorrow, with the surcharge said before.
- */
 export function StepWhen({ supplierSlug, serviceSlug, comuneIstat, slots, chosen, onChoose, preferredDay, urgent, problem }: StepWhenProps) {
   const { t, i18n } = useTranslation();
-  // The day and the week the person picked count for the kind of times they were picked in (normal or urgent): changing it starts over.
   const [pick, setPick] = useState<{ urgent: boolean; day: string | null; week: number | null }>({ urgent: urgent.on, day: null, week: null });
   const current = pick.urgent === urgent.on ? pick : { urgent: urgent.on, day: null, week: null };
   const { day: pickedDay, week: pagedWeek } = current;

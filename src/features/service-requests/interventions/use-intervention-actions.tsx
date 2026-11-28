@@ -16,20 +16,13 @@ import { MarkPaidDialog } from '../components/mark-paid-dialog';
 import { CancelInterventionDialog } from './cancel-intervention-dialog';
 import { PayInterventionDialog } from './pay-intervention-dialog';
 
-/**
- * What the host can do about a request from a list, a drawer or a page: each step writes to the server only when it is called. The steps
- * keep their identity from one render to the next (a list definition that depends on them is not built again for nothing).
- */
 export interface InterventionSteps {
   remind: (request: ServiceRequest) => void;
   acceptProposal: (request: ServiceRequest) => void;
   rejectProposal: (request: ServiceRequest) => void;
   confirmAmount: (request: ServiceRequest) => void;
-  /** Asks first (the flag cannot be undone, and CasaZen does not pay the supplier). */
   markPaid: (request: ServiceRequest) => void;
-  /** Asks the server for the payment session and opens the window of the card. */
   pay: (request: ServiceRequest) => void;
-  /** Asks first, and asks why: the supplier reads the reason. */
   cancel: (request: ServiceRequest) => void;
 }
 
@@ -37,19 +30,12 @@ export interface InterventionActions {
   steps: InterventionSteps;
   /** A step is running: the buttons wait, so that a second tap cannot send it twice. */
   busy: boolean;
-  /** A card payment was sent to Stripe and the backend has not said it is paid yet: the page reads the request again until it does. */
   paymentSent: boolean;
-  /** The windows the steps open (cancel, mark paid, pay): put them anywhere inside the page. */
   dialogs: ReactNode;
 }
 
 type Dialog = { kind: 'cancel' | 'markPaid'; request: ServiceRequest };
 
-/**
- * The steps of the host on an intervention (SR-08), their windows and their state, in one place for the list, the drawer and the page.
- * The server decides which step the request offers (`hostAction`, `availableActions`); this only runs it. Nothing goes out by itself: a
- * reminder, an answer to a time, a payment are sent when the host presses the button.
- */
 export function useInterventionActions(): InterventionActions {
   const { t } = useTranslation();
   const remindMutation = useRemindIntervention();

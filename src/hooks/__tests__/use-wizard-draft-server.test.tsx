@@ -61,7 +61,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  // The flows are unmounted before the real timers come back: the interval of a flow was made with the fake ones.
   cleanup();
   vi.useRealTimers();
   vi.restoreAllMocks();
@@ -286,7 +285,6 @@ describe("useWizardDraft with a draft on the server: two devices", () => {
     expect(taken).toMatchObject({ step: "photos", values: { name: "Theirs" } });
     expect(result.current.conflict).toBeNull();
     expect(result.current.status).toBe("saved");
-    // A reload does not bring back what was given up.
     expect(readWizardDraft("flow", SCOPE)).toMatchObject({ step: "photos", values: { name: "Theirs" } });
 
     act(() => {

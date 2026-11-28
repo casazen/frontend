@@ -9,7 +9,6 @@ import { PropertyForm } from '../property-form';
 
 vi.mock('@/queries/use-properties', () => ({ useCancellationPolicies: vi.fn() }));
 
-// The amenities of the form come from the catalog (`useAmenityCatalog`): a small one here, the catalog is not under test.
 vi.mock('@/queries/use-amenity-catalog', () => ({
   useAmenityCatalog: () => ({
     data: {
@@ -32,7 +31,6 @@ vi.mock('@/queries/use-comuni', () => ({
   useComune: () => ({ data: undefined, isError: false }),
 }));
 
-// The Swiss place picker of a house in Switzerland reads the official directory (E29/F01/US02/T01): its own suites test it, here it answers nothing.
 vi.mock('@/queries/swissPlaces', () => ({
   useSwissLocalitySearch: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
   useSwissMunicipality: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
@@ -90,14 +88,12 @@ const PROPERTY: Property = {
   updatedAt: '2026-09-01T10:00:00Z',
 };
 
-/** Every field the short-stay form shows, as sent to the API: photos are not a form field (A2-04). */
 const ROUND_TRIP = {
   name: 'Monolocale sul porto',
   description: 'Monolocale luminoso con vista sul porto',
   address: 'Via del Porto 3',
   unit: null,
   city: 'Genova',
-  // No comune chosen from the official list yet (SU-04): sent as null, which keeps it empty.
   comuneIstatCode: null,
   postalCode: '16128',
   country: 'IT',
@@ -142,7 +138,6 @@ function renderForm(props: Partial<Parameters<typeof PropertyForm>[0]> = {}) {
   return onSubmit;
 }
 
-/** The two fee labels carry the currency of the house (CHF-MONEY): `Pulizie (€)` for the euro, which is the house of PROPERTY. */
 function field(key: string): HTMLElement {
   return screen.getByLabelText(i18n.t(key, { currency: '€' }));
 }
@@ -155,7 +150,6 @@ function submit() {
   fireEvent.click(screen.getByRole('button', { name: i18n.t('property.form.update') }));
 }
 
-// Whole-form interactions: generous timeout for loaded CI machines, as the other form suites.
 describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
@@ -246,8 +240,6 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  // A2-05: "active/paused" is not a field of the generic edit form any more — it's the dedicated pause/activate
-  // action (own endpoint), which never overwrites Name/Address/City and never sends its state through here.
   it('PropertyForm_HasNoStandaloneActiveCheckbox', () => {
     renderForm();
 
@@ -264,7 +256,6 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
   });
 
   it('PropertyForm_HouseInSwitzerland_AsksTheFeesInFrancsNotInEuros', () => {
-    // CHF-MONEY: the fees of a house in Switzerland are in francs, and the form says so where it asks for them.
     renderForm({ property: { ...PROPERTY, country: 'CH', currency: 'CHF' } });
 
     expect(screen.getByLabelText(i18n.t('property.form.cleaningFee', { currency: 'CHF' }))).toHaveValue(60);
@@ -273,7 +264,6 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     expect(screen.queryByText(i18n.t('property.form.amountsInEuro'))).not.toBeInTheDocument();
     expect(screen.queryByTestId('property-comune-field')).not.toBeInTheDocument();
     expect(screen.queryByTestId('property-cin-input')).not.toBeInTheDocument();
-    // The place of a Swiss house is picked from the Swiss directory, in the place of the Italian comune.
     expect(screen.getByTestId('property-swiss-place-field')).toBeInTheDocument();
   });
 

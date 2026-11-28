@@ -20,7 +20,6 @@ interface TodayCardProps {
   propertyId: string;
 }
 
-/** The dashboard lists only the first few records per group, before the local property filter. */
 function omitted({ arrivals, departures, services }: DashboardToday, kind: TodayKind | 'all') {
   const lists = kind === 'all' ? [arrivals, departures, services] : [kind === 'arrivals' ? arrivals : kind === 'departures' ? departures : services];
   return lists.some(list => list.count > list.items.length);
@@ -51,8 +50,6 @@ export function TodayCard({ rows, today, propertyId }: TodayCardProps) {
 
   return (
     <section aria-labelledby="home-today-title" data-testid="home-today" className="min-w-0 rounded-xl border border-border bg-card">
-      {/* No tint and no date in view: the head of the page already says the day («giovedì 26 novembre · 1 arrivo»), and a tinted
-          head made this card a second highlight beside the one of the page (UX round 2026-11). The date stays for a screen reader. */}
       <header className="space-y-4 rounded-t-xl border-b border-border px-4 py-4 sm:px-5">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h2 id="home-today-title" className="flex items-center gap-2 text-xl font-bold tracking-tight"><CalendarDays aria-hidden="true" className="size-6 text-primary-text" />{t('dashboard.today.title')}</h2>

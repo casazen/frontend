@@ -5,7 +5,6 @@ import { mockCurrentUserWithOrg } from './helpers/org-api-mock';
 import { buildCreatedProperty, NEW_PROPERTY_ID } from './fixtures/properties.fixtures';
 import { pinE2eLocale } from './helpers/locale';
 
-// Real wizard UI; only the external provider's answer is mocked. Artifacts make desktop/phone review reproducible in CI.
 for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
   test(`AI price estimate preserves CHF and manual choices at ${viewport.width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize(viewport);

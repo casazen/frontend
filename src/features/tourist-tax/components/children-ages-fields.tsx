@@ -6,19 +6,12 @@ const selectClassName =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 interface ChildrenAgesFieldsProps {
-  /** One slot per child; null until the age is chosen. */
   ages: (number | null)[];
   onChange: (ages: (number | null)[]) => void;
-  /** Prefix of the input ids, unique in the page. */
   idPrefix: string;
-  /** Marks the empty selects as invalid (e.g. after a submit attempt). */
   showMissing?: boolean;
 }
 
-/**
- * Age of each minor at check-in (0-17), asked only when the tourist tax of the comune exempts or reduces minors by
- * age (BK-03, A8-23).
- */
 export function ChildrenAgesFields({ ages, onChange, idPrefix, showMissing = false }: ChildrenAgesFieldsProps) {
   const { t } = useTranslation();
   if (ages.length === 0) return null;

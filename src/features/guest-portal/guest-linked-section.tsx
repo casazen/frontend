@@ -5,7 +5,6 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { linkedStayPaths, type LinkedStayAction } from './linked-stay-paths';
 import './guest-portal.css';
 
-/** Each canonical action still uses only its original server-side grant. */
 export function GuestLinkedSection({ action, legacy = false, children }: {
   action: LinkedStayAction; legacy?: boolean; children: ReactNode;
 }) {
@@ -16,7 +15,6 @@ export function GuestLinkedSection({ action, legacy = false, children }: {
   if (isLoading) return <p role="status">{t('embed.loading')}</p>;
   if (!flags.guestPortal) return <>{children}</>;
   if (legacy) {
-    // Preserve the original query and Stripe return parameters until the destination consumes them.
     if (Object.values(params).some(value => !value || value === '.' || value === '..' || /[/\\]/.test(value))) return <>{children}</>;
     const pathname = generatePath<string>(linkedStayPaths[action], params);
     return <Navigate replace to={{ pathname, search: location.search, hash: location.hash }} />;

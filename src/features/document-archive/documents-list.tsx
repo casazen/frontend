@@ -12,15 +12,11 @@ import { documentChips, documentFilters } from './document-filters';
 import { archiveTypeMeta } from './document-type';
 
 interface DocumentsListOptions {
-  /** The types the server says the caller may read: the chips of the list, and no other. */
   types: readonly ArchiveTypeCount[];
-  /** The properties of the caller, for the filter. */
   properties: ReadonlyArray<{ id: string; name: string }>;
   /** The rows (by `archiveDocumentKey`) whose file the server could not find: they say so instead of offering a download. */
   withoutFile: ReadonlySet<string>;
-  /** A download is under way: no other can start until it ends, so every button waits. */
   downloading: boolean;
-  /** The person asked to download this document. */
   onDownload: (document: ArchiveDocument) => void;
 }
 
@@ -48,7 +44,6 @@ export function useDocumentsList({ types, properties, withoutFile, downloading, 
     const sizeText = (document: ArchiveDocument): string =>
       hasNoFile(document) ? t('documentArchive.noFile') : document.sizeBytes === null ? '—' : formatFileSize(document.sizeBytes, language);
 
-    /** The kind of a document, with an icon: the word says it, the icon only helps the eye. */
     const typeLine = (document: ArchiveDocument): ReactNode => {
       const Icon = archiveTypeMeta(document.type).icon;
       return (
@@ -59,7 +54,6 @@ export function useDocumentsList({ types, properties, withoutFile, downloading, 
       );
     };
 
-    /** The booking of a document, as a link to it; a document of no booking has a dash. */
     const bookingCell = (document: ArchiveDocument): ReactNode =>
       document.bookingId ? (
         <Link to={`${BOOKINGS_PATH}/${document.bookingId}`} className={BOOKING_LINK}>
@@ -129,7 +123,6 @@ export function useDocumentsList({ types, properties, withoutFile, downloading, 
         ],
       }),
       rowTone: (document) => (hasNoFile(document) ? 'done' : undefined),
-      // With the sidebar open (from `lg`) five columns and the button do not fit under 1280 px: cards until then.
       cardsUntil: 'xl',
       csv: false,
 

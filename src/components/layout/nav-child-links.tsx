@@ -9,7 +9,6 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getNavLabel } from '@/lib/nav-labels';
 
 interface NavChildLinksProps {
-  /** `path` of the page that shows the links: the entry of the route manifest the pages hang from (`navParent`). */
   parentPath: string;
 }
 

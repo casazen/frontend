@@ -18,15 +18,9 @@ import { GUEST_MESSAGE_MAX_LENGTH, type Booking } from '@/types';
 
 interface BookingMessagesSectionProps {
   booking: Booking;
-  /** Fill the booking detail tab on desktop. The drawer keeps its compact history. */
   expanded?: boolean;
 }
 
-/**
- * The way to the page of the messages narrowed to this booking (NF-61, NF-63): its conversations on the channels and on the site, or, when
- * it has none, how the guest can be written to (the conversation of the channel, an e-mail through CasaZen, or why there is no way). For
- * a booking that came from a channel the tab alone cannot say it.
- */
 function MessagesLink({ bookingId }: { bookingId: string }) {
   const { t } = useTranslation();
   return (
@@ -50,7 +44,6 @@ export function BookingMessagesSection({ booking, expanded = false }: BookingMes
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const canWrite = hasPermission('short-rent', 'booking.write');
-  // The page of the messages asks `booking.read`: the link is for who may open it, never a link that ends on the page of no access.
   const canOpenMessages = hasPermission('short-rent', 'booking.read');
   const { flags } = useFeatureFlags();
   const askAllowed = canWrite && flags.messageAssistant && hasPermission('short-rent', 'approval.decide');
@@ -64,7 +57,6 @@ export function BookingMessagesSection({ booking, expanded = false }: BookingMes
   const unread = thread.data?.unreadCount ?? 0;
   const newest = thread.data?.messages.at(-1)?.id ?? null;
   const marked = useRef<string | null>(null);
-  // A thread in a tab the user is not looking at is not read: it is marked once the tab is in front again.
   const visible = usePageVisible();
   useEffect(() => {
     if (!canWrite || !visible || unread === 0 || newest === null || marked.current === newest) return;

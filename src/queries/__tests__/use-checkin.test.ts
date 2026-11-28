@@ -90,7 +90,6 @@ describe('useSubmitGuestCheckIn onError (FIS-01)', () => {
   });
 
   it.each([401, 403])('onError_AnonymousGuestRefusedWith%i_GetsTheGenericMessageAndNeverASessionThatExpired', async (status) => {
-    // The submit of the page is an anonymous call (`public`): the guest has no session, so no refusal of it is one that expired or a missing permission.
     await submitAndFail(httpError(status, undefined, { public: true }));
 
     expect(toast.error).toHaveBeenCalledTimes(1);

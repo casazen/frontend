@@ -11,7 +11,6 @@ import {
 import { useBillingSubscription, useRefreshPlanAfterPayment } from '@/queries/use-billing';
 import type { BillingSubscription } from '@/types';
 
-/** The return of a checkout is settled once Stripe reports a paid plan or a payment problem. */
 export function isCheckoutSettled(subscription: BillingSubscription | undefined): boolean {
   return !!subscription && (isPaidStatus(subscription.status) || needsPaymentAction(subscription.status));
 }

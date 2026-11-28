@@ -38,7 +38,6 @@ export function AdminCinPage() {
 
   return (
     <div className="space-y-6">
-      {/* The tax rates and the LTR reference data are the tabs of this section, drawn by the header. */}
       <PageHeader title={t('admin.cin.title')} description={t('admin.cin.description')} />
 
       <Card>

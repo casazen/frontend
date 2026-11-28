@@ -22,7 +22,6 @@ const AUTH_PARAMS = {
 
 type LoginOptions = {
   authorizationParams?: Record<string, string>;
-  /** Path of this app to open after the login (e.g. back to an invite page); default: the app root. */
   returnTo?: string;
   /**
    * Extra values carried through the redirect in the SDK `appState` (kept in this browser, never sent to Auth0) and
@@ -39,10 +38,6 @@ export type AuthBridgeValue = {
   kind: 'auth0' | 'anonymous' | 'demo';
   isLoading: boolean;
   isAuthenticated: boolean;
-  /**
-   * What the sign-in service reported when it could not complete the return from the login (`?error=…&state=…`): the person is not signed in and the app has to say so (E40/F02/US01/T02).
-   * Absent when there is nothing to report, and always where the service is not loaded.
-   */
   error?: Error;
   user: ReturnType<typeof useAuth0>['user'] | ReturnType<typeof getDemoUser> | undefined;
   login: (options?: LoginOptions) => void | Promise<void>;
@@ -66,7 +61,6 @@ export function useAuthBridge(): AuthBridgeValue {
 }
 
 function DemoAuthBridge({ children }: { children: ReactNode }) {
-  // Re-read the persona when the E2E `?demoProfile=` URL changes.
   const href = typeof window !== 'undefined' ? window.location.href : '';
   const demoUser = useMemo(() => getDemoUser(href), [href]);
 
@@ -74,7 +68,6 @@ function DemoAuthBridge({ children }: { children: ReactNode }) {
   const refreshAccessToken = useCallback(async () => 'demo-token', []);
 
   useEffect(() => {
-    // Demo tokens never expire: no re-login handler.
     setApiAuthHandlers({ getAccessToken, refreshAccessToken });
     return () => setApiAuthHandlers(null);
   }, [getAccessToken, refreshAccessToken]);
@@ -85,7 +78,6 @@ function DemoAuthBridge({ children }: { children: ReactNode }) {
       isLoading: false,
       isAuthenticated: true,
       user: demoUser,
-      // Demo mode: the demo user is always signed in, login and logout have nothing to do.
       login: () => {},
       logout: () => {},
       logoutToLogin: () => window.location.replace('/login'),
@@ -168,14 +160,12 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
     setApiAuthHandlers({
       getAccessToken,
       refreshAccessToken,
-      // 401 after a token refresh (or Auth0 `login_required`): Auth0 redirect, loop-guarded by the client.
       onSessionExpired: () => login({ returnTo: currentReturnTo(window.location) }),
     });
     return () => setApiAuthHandlers(null);
   }, [getAccessToken, refreshAccessToken, login]);
 
   const logout = useCallback(() => {
-    // What was typed in a guided flow (a draft in this tab) does not outlive the session.
     clearAllWizardDrafts();
     auth0Logout({
       logoutParams: { returnTo: window.location.origin },
@@ -231,7 +221,6 @@ export function AuthAppProviders({
   onRedirectCallback,
 }: {
   children: ReactNode;
-  /** Called by the SDK after the Auth0 redirect, with the `appState` passed to `login` (e.g. `returnTo`). */
   onRedirectCallback?: (appState?: AppState) => void;
 }) {
   if (isDemoMode) {
@@ -241,8 +230,6 @@ export function AuthAppProviders({
   return (
     <Auth0Provider
       {...authConfig}
-      // The SDK takes any address with a `code` and a `state` for the end of its own login and would fail on these. The page the
-      // channel manager sends the host back to carries a code and a state of its own: they are not Auth0's, the SDK leaves them alone.
       skipRedirectCallback={isOctorateCallbackPath(window.location.pathname)}
       onRedirectCallback={onRedirectCallback}
     >

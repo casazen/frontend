@@ -13,13 +13,11 @@ import { daysLate, EARNINGS_PERIODS } from './earnings-model';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-/** What an amount that does not exist says: a dash, never a 0 (the server leaves it empty where there is none). */
 const NO_VALUE = '—';
 const money = (cents: number | null | undefined, locale: string) => (cents === null || cents === undefined ? NO_VALUE : formatMoney(cents, locale));
 
 const jobTitle = (earning: SupplierEarning, t: Translate) => earning.serviceName?.trim() || getServiceCategoryLabel(earning.category, t);
 
-/** The customer and the day, under the name of the job: "Casa Rossi · 12 ott 2026". A removed customer is not named. */
 function jobSubline(earning: SupplierEarning, locale: string, t: Translate): string {
   const client = earning.clientAnonymized ? t('supplier.earnings.clientRemoved') : (earning.clientLabel?.trim() ?? '');
   const instant = earning.paidAt ?? earning.completedAt;
@@ -27,7 +25,6 @@ function jobSubline(earning: SupplierEarning, locale: string, t: Translate): str
   return [client, day].filter(Boolean).join(' · ');
 }
 
-/** The commission as the server made it: minus the amount and the percentage; "Nessuna" where none is charged (a job paid outside CasaZen). */
 function commissionCell(earning: SupplierEarning, locale: string, t: Translate) {
   const cents = earning.commissionCents;
   if (cents === null || cents === undefined) return NO_VALUE;
@@ -55,11 +52,6 @@ function stateBadge(earning: SupplierEarning, t: Translate) {
   return <StatusBadge kind="earning" status={earning.state as StatusOf<'earning'>} label={label} />;
 }
 
-/**
- * The list of the earnings of the supplier (UI-14, `server` mode): the server picks the jobs of a tab, of a period and of a customer and
- * pages them. Five columns: the job, gross, commission, net and the state of the payment; every amount is the server's, in cents, and
- * what does not exist yet is a dash. A row opens the request. The file for the accountant is the button of the page (the server makes it).
- */
 export function useSupplierEarningsList() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -135,7 +127,6 @@ export function useSupplierEarningsList() {
         rowHref: (earning) => requestPath(earning.requestId),
         rowTone: (earning) => (earning.state === 'late' ? 'urgent' : undefined),
         csv: false,
-        // Five columns and the amounts do not fit under 1280 px with the sidebar open: cards until then.
         cardsUntil: 'xl',
         empty: {
           icon: Coins,

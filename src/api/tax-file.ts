@@ -5,10 +5,8 @@ import { acceptsRefusal } from './accept-refusal';
 import type { DownloadedFile } from './file.api';
 import { ReportAccessDeniedError } from './report-files';
 
-/** A file answer that says it is a web page or a JSON body is not the file that was asked for (the `index.html` of a wrong rewrite). */
 const NOT_A_FILE = /^(text\/html|application\/(json|problem\+json))/i;
 
-/** The value of a header of an answer, whatever the case of its name, or `null` (a browser lets a page read only the headers that the API exposes). */
 function headerOf(headers: unknown, name: string): string | null {
   if (typeof headers !== 'object' || headers === null) return null;
   const wanted = name.toLowerCase();

@@ -35,7 +35,6 @@ interface PanelStepContextProps {
   channelName?: string | null;
 }
 
-/** Where the step is: the property and the channel, on screen for as long as the person is on the panel (they come back to the same wizard step). */
 function PanelStepContext({ propertyId, channelName }: PanelStepContextProps) {
   const { t } = useTranslation();
   const property = useProperty(propertyId ?? '');
@@ -62,24 +61,14 @@ function PanelStepContext({ propertyId, channelName }: PanelStepContextProps) {
 
 interface OctoratePanelStepProps {
   kind: PanelStepKind;
-  /** The property the step is about; none for the whole org. */
   propertyId?: string | null;
-  /** The channel of a channel access (required for that kind). */
   channelCode?: string | null;
   /** The channel as the person knows it, when the caller has the name (the code is shown otherwise). */
   channelName?: string | null;
-  /** The point of a wizard the step comes back to: named, never carried (the server stores a reference, not the draft). */
   resume?: Pick<StartPanelStepRequest, 'resumeWizardType' | 'resumeDraftEntityId' | 'resumeStepCode'>;
-  /** The person is back from a panel that sent them to CasaZen (`redirectCallback`): the step they were on is followed to its end by itself. */
   cameFromPanel?: boolean;
-  /** CasaZen support does the step by default: «Fallo per me» is the main action and the panel the alternative (PO-19). */
   assistFirst?: boolean;
-  /**
-   * The step is done (seen by CasaZen, or confirmed): the next step of CasaZen, which the step itself may name (`resume`, the point of a wizard the server
-   * stored when the wizard started it). It runs once, by itself, for a step that was open in this visit.
-   */
   onRecovered?: (step: PanelStep | undefined) => void;
-  /** «Salva ed esci»: the step stays as it is (its «Da fare» is already there). */
   onSaveAndExit: () => void;
 }
 
@@ -133,7 +122,6 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
         channelCode: channelCode ?? undefined,
         ...resume,
       });
-      // A step that is done, or that support is handling, is answered as it is: there is nothing to open.
       return { handoffMode: started.handoffMode, panelUrl: started.panelUrl, alreadyComplete: !isPanelStepOpen(started) };
     },
     onTrigger: () => {
@@ -145,7 +133,6 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
 
   const phase = handoffPhase(step, { launched, blocked, ended });
 
-  // The step ends on its own only if this visit saw it open: a person who opens the page of a step already done reads it and decides.
   const sawOpen = useRef(cameFromPanel);
   useEffect(() => {
     if (open || handoff.starting) sawOpen.current = true;
@@ -153,23 +140,17 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
 
   const advanced = useRef(false);
   useEffect(() => {
-    // The step is not done (any more): a request support closed was reopened («Non funziona»), and its next closing is told and followed again.
     if (phase !== 'recovered') {
       advanced.current = false;
       return;
     }
-    // How the step was closed decides what is said (`outcomeUnknown`): nothing happens until it is known.
     if (advanced.current || !sawOpen.current || outcomeUnknown) return;
     advanced.current = true;
-    // The window CasaZen opened has done its job, however the step was closed.
     closeWindow();
     if (declaredBySupport) {
-      // Support said it is done and CasaZen could not check: the pop-up says that and never «verificato», and the person is not taken on by itself: the page tells whose word it is,
-      // with «Non funziona» under it, and «Continua» goes on when the person has read it.
       toast.success(t('onboardingPlan.panel.state.recoveredDeclared.toast'));
       return;
     }
-    // CasaZen saw the connection: the person is taken on, with nothing to press.
     toast.success(t('onboardingPlan.panel.state.recovered.toast'));
     onRecovered?.(step);
   }, [phase, outcomeUnknown, declaredBySupport, closeWindow, onRecovered, step, t]);

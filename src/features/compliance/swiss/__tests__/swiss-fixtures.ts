@@ -1,13 +1,11 @@
 import type { SwissNotificationDay, SwissNotificationGuest } from '@/types/swissCompliance.types';
 
-/** The property and the day the tests of the assisted notification are about. */
 export const SWISS_PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 export const SWISS_BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 export const SWISS_OTHER_BOOKING_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 export const SWISS_DAY = '2026-11-19';
 export const SWISS_OTHER_DAY = '2026-11-18';
 
-/** A guest as `GET …/swiss/notification-day` sends it, with everything the check-in records. */
 export function swissGuest(overrides: Partial<SwissNotificationGuest> = {}): SwissNotificationGuest {
   return {
     bookingId: SWISS_BOOKING_ID,
@@ -32,7 +30,6 @@ export function swissGuest(overrides: Partial<SwissNotificationGuest> = {}): Swi
   };
 }
 
-/** A day of a canton with a portal and a deadline (Schaffhausen: every day by 02:00), one guest with nothing missing, not declared. */
 export function swissDay(overrides: Partial<SwissNotificationDay> = {}): SwissNotificationDay {
   return {
     propertyId: SWISS_PROPERTY_ID,
@@ -57,6 +54,5 @@ export function swissDay(overrides: Partial<SwissNotificationDay> = {}): SwissNo
   };
 }
 
-/** The day after somebody declared it notified. */
 export const declaredSwissDay = (overrides: Partial<SwissNotificationDay> = {}) =>
   swissDay({ declaredAt: '2026-11-19T14:20:00Z', declaredBy: 'Luca Bianchi', alreadyDeclared: true, pendingDays: [], ...overrides });

@@ -12,7 +12,6 @@ import type {
 } from '@/types/campaign.types';
 
 export const campaignsApi = {
-  // Segments
   getSegments: () => ApiClient.get<Segment[]>('/campaigns/segments'),
 
   createSegment: (data: CreateSegmentDto) => ApiClient.post<Segment>('/campaigns/segments', data),
@@ -25,7 +24,6 @@ export const campaignsApi = {
 
   suggestSegment: (brief: string) => ApiClient.post<CreateSegmentDto>('/campaigns/studio/suggest-segment', { brief }),
 
-  // Campaigns
   getCampaigns: () => ApiClient.get<Campaign[]>('/campaigns'),
 
   getCampaignById: (id: string) => ApiClient.get<Campaign>(`/campaigns/${id}`),

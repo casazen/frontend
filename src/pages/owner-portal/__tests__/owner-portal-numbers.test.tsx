@@ -39,9 +39,7 @@ const PROPERTY = {
   ],
 };
 
-/** Any sign of a currency and any of the figures above. */
 const FIGURES = /€|\$|£|\bEUR\b|\bCHF\b|123[.,]?456|987[.,]65|543[.,]21/;
-/** The same, and the word that names an amount of money. */
 const MONEY = new RegExp(`${FIGURES.source}|\\bricavi\\b|\\brevenue\\b`, 'i');
 
 function renderPortal(path: string) {
@@ -78,7 +76,6 @@ describe('the properties of the owner say no amount of money (the answer has no 
     renderPortal('/portale-proprietari');
     const list = await screen.findByTestId('owner-properties');
 
-    // The card says how many bookings the property has, never how much they came to.
     expect(list.textContent).toContain('Casa Mare');
     expect(list.textContent).toContain('7');
     expect(list.textContent ?? '').not.toMatch(MONEY);
@@ -89,7 +86,6 @@ describe('the properties of the owner say no amount of money (the answer has no 
     renderPortal('/portale-proprietari/immobili/p1');
     const bookings = await screen.findByTestId('owner-recent-bookings');
 
-    // The rows keep what is true of a booking (channel and state); no row carries an amount.
     expect(bookings.textContent).toContain('Direct');
     expect(bookings.textContent).toContain('Airbnb');
     expect(bookings.textContent ?? '').not.toMatch(MONEY);
@@ -102,23 +98,18 @@ describe('a figure that is missing is never a zero in its place (the Home servic
     renderPortal('/portale-proprietari');
     const properties = await screen.findByTestId('owner-properties');
 
-    // The notice of the numbers is gone (UX round 3): the page shows what there is and does not explain what it does not show.
     expect(screen.queryByTestId('owner-numbers-unavailable')).toBeNull();
     expect(screen.getByRole('main').textContent ?? '').not.toMatch(/non sono ancora (disponibili|mostrati)/);
-    // Nor the line under the title that repeats the menu, nor the count of the recent bookings (only the total stays), nor an icon on each card.
     expect(screen.queryByText(/calendario, contabilità, documenti e messaggi/)).toBeNull();
     expect(properties.textContent).not.toContain('Prenotazioni recenti');
     expect(properties.querySelector('svg.size-9')).toBeNull();
-    // The heading of the list stays for the screen readers and the outline of the page, and is not drawn.
     expect(screen.getByRole('heading', { level: 2, name: 'I tuoi immobili' })).toHaveClass('sr-only');
-    // No tile, no trend, no period to pick: nothing that could read 0% or €0 for an owner whose numbers are not there.
     expect(screen.queryByTestId('owner-overview')).toBeNull();
     expect(screen.queryByTestId('owner-tiles')).toBeNull();
     expect(screen.queryByTestId('owner-trend')).toBeNull();
     expect(screen.queryByTestId('owner-period')).toBeNull();
     expect(api.getOverview).not.toHaveBeenCalled();
     expect(api.getTrend).not.toHaveBeenCalled();
-    // The occupancy of the property is the placeholder 0 of the service: it is not drawn, not as a percentage and not as a word.
     expect(screen.getByRole('main').textContent ?? '').not.toMatch(/%|\b61[.,]5\b|\bRevPAR\b|\bADR\b/);
     expect(screen.getByTestId('owner-properties').textContent ?? '').not.toMatch(/occupazione/i);
   });
@@ -128,7 +119,6 @@ describe('a figure that is missing is never a zero in its place (the Home servic
     renderPortal('/portale-proprietari');
 
     expect(await screen.findByText('Non ci sono immobili disponibili')).toBeInTheDocument();
-    // The empty state of the app: what to expect, in a line under the title, not a bare sentence in a box.
     expect(screen.getByText(/Quando l’agenzia ti collega un immobile/)).toBeInTheDocument();
     expect(screen.queryByTestId('owner-numbers-unavailable')).toBeNull();
   });
@@ -140,15 +130,12 @@ describe('a figure that is missing is never a zero in its place (the Home servic
     const text = screen.getByRole('main').textContent ?? '';
     expect(text).not.toMatch(/%|\b61[.,]5\b/);
     expect(text).not.toMatch(/occupazione/i);
-    // What the page does say: how many bookings the property has.
     expect(text).toContain('Prenotazioni totali');
   });
 });
 
 describe('the days of a booking are the days the answer writes, none of them moved by the time zone', () => {
   it('OwnerPortal_PropertyPage_DrawsTheDatesOfTheBookings_FirstOfJanuaryLastOfDecemberAndTheDayTheClockChanged', async () => {
-    // The answer writes a booking day as an instant: the stored UTC midnight of the day (2026-12-28T00:00:00Z), or the same without the zone. A page that read it as an
-    // instant of the browser would move the first of January to the 31st of December in America, and one that only takes a plain day draws nothing.
     const booking = (bookingId: string, checkInDate: string, checkOutDate: string) => ({ bookingId, checkInDate, checkOutDate, channel: 'Direct', totalAmount: 1, status: 'Confirmed' });
     api.getProperties.mockResolvedValue([
       {

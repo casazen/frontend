@@ -31,14 +31,9 @@ afterEach(async () => {
   await settleDrawer();
 });
 
-/**
- * The links of the card of the regime that open the guest register and the assisted notification (E31/F02/US02): in a page with the drawer of the shell they open the layer in place,
- * over the page the person is on, whose address keeps its other parameters; the host is never sent to another page.
- */
 describe('GuestRegistrationLayers, the way from the card to the two layers (E31/F02/US02)', () => {
   it('GuestRegistrationLayers_PageWithTheDrawer_TheLinksOpenTheLayersInPlaceAndTheAddressKeepsTheOtherParameters', async () => {
     await i18n.changeLanguage('it');
-    // The shell mounts the drawer once and registers the kinds: here a host and the kinds stand for it.
     const unregister = [
       registerDetail(GUEST_REGISTER_LAYER_KIND, { title: 'guestRegister.layer.title', Content: () => <p>register</p> }),
       registerDetail(SWISS_LAYER_KIND, { title: 'swissNotification.layer.title', Content: () => <p>notification</p> }),
@@ -58,11 +53,9 @@ describe('GuestRegistrationLayers, the way from the card to the two layers (E31/
 
     fireEvent.click(screen.getByTestId('guest-register-link'));
 
-    // The page is the one the person was on: only the layer was added to its address.
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(`/app/short-rent/properties/p1?section=documents&detail=guest-register:${PROPERTY_ID}`));
     expect(await screen.findByRole('dialog', { name: 'Registro ospiti' })).toBeInTheDocument();
 
-    // One drawer at a time: the notification takes the place of the register.
     fireEvent.click(screen.getByTestId('swiss-notification-link'));
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(`/app/short-rent/properties/p1?section=documents&detail=swiss-notification:${PROPERTY_ID}`));
     expect(await screen.findByRole('dialog', { name: 'Notifica degli ospiti' })).toBeInTheDocument();

@@ -27,11 +27,9 @@ vi.mock('@/api/marketplace.api', async (importOriginal) => ({
   refreshLicensedFunctions: vi.fn(),
 }));
 
-// A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
 vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
-/** The user and the organization the draft of the wizard belongs to (the test mocks `useCurrentUser` with the same ones). */
 const SCOPE = { userId: 'user-1', orgId: 'org-1' };
 const PATH = '/app/short-rent/marketplace/request/chat';
 const RETURN_TO = '/app/short-rent/somewhere-else';
@@ -116,7 +114,6 @@ async function onStep(step: string) {
 
 const primaryButton = () => screen.queryByTestId('licensed-next') ?? screen.getByTestId('licensed-finish');
 
-/** The host has these properties; the license of each is what `licenses` says (a refusal is an error the read throws). */
 function givenTheHost(options: { properties?: Property[]; license?: MarketplaceFunctionList | AxiosError; card?: MarketplaceEntryDetail } = {}) {
   const { properties = [ROSA], license = licenseOf(entry()), card: detail = card() } = options;
   vi.mocked(propertiesApi.getAll).mockResolvedValue(properties);
@@ -144,7 +141,6 @@ describe('the first step: the function', () => {
     renderWizard(`${PATH}?propertyId=prop-1`);
 
     expect(await screen.findByTestId('licensed-what-it-does', {}, WAIT)).toHaveTextContent('Riunisce');
-    // No cost sent: «not specified», never a price made up.
     expect(screen.getByTestId('licensed-cost')).toHaveTextContent(i18n.t('marketplace.licensed.function.costUnknown'));
     await onStep('function');
   });
@@ -203,7 +199,6 @@ describe('the property and the request', () => {
 
     fireEvent.click(await screen.findByTestId('licensed-property-prop-2', {}, WAIT));
 
-    // Told as soon as it is chosen, never as a raw error, and the one way out is the page where the connect wizard starts.
     expect(await screen.findByTestId('licensed-not-linked', {}, WAIT)).toHaveTextContent(i18n.t('marketplace.licensed.problem.notLinked'));
     expect(screen.getByTestId('licensed-channels-link')).toHaveAttribute('href', CHANNELS_PAGE_PATH);
     fireEvent.click(primaryButton());
@@ -214,7 +209,6 @@ describe('the property and the request', () => {
 
   it('Wizard_DraftOfTheTabForAnotherPropertyThanTheOneOfTheAddress_IsDroppedSoTheRequestGoesToThePropertyThePersonCameFor', async () => {
     givenTheHost({ properties: [ROSA, AZZURRA] });
-    // The draft that an earlier visit left in this tab names another property.
     writeWizardDraft(licensedWizardId('chat'), SCOPE, { step: 'ask', values: { propertyId: 'prop-2' } });
     vi.mocked(requestLicensedFunction).mockResolvedValue(entry({ status: 'Requested', isDeclared: true }));
     renderWizard(`${PATH}?propertyId=prop-1&step=ask`);
@@ -250,7 +244,6 @@ describe('the property and the request', () => {
     expect(text).toHaveValue(GUIDANCE);
     fireEvent.click(screen.getByTestId('licensed-copy'));
     await waitFor(() => expect(navigator.clipboard.writeText).toHaveBeenCalledWith(GUIDANCE), WAIT);
-    // The channel manager has no name in the texts of the wizard.
     expect(screen.getByTestId('licensed-ask-step')).not.toHaveTextContent(/octorate/i);
   });
 
@@ -266,7 +259,6 @@ describe('the property and the request', () => {
     expect(requestLicensedFunction).toHaveBeenCalledTimes(1);
     expect(requestLicensedFunction).toHaveBeenCalledWith('chat', 'prop-1', 'it');
     expect(screen.getByTestId('licensed-requested')).toHaveTextContent(i18n.t('marketplace.licensed.requested.title.requested'));
-    // What CasaZen does by itself, and when.
     expect(screen.getByText(i18n.t('marketplace.licensed.requested.whatNext.daily'))).toBeInTheDocument();
   });
 
@@ -285,7 +277,6 @@ describe('the property and the request', () => {
 
   it('AskStep_ServerSaysTheFunctionIsOnAlready_IsToldInSimpleWordsAndTheListIsReadAgainSoTheWayBackIsThere', async () => {
     givenTheHost();
-    // The license showed the module off when the step was read; the server then says (409) that it is on.
     vi.mocked(getLicensedFunctions)
       .mockResolvedValueOnce(licenseOf(entry()))
       .mockResolvedValueOnce(licenseOf(entry()))
@@ -308,7 +299,6 @@ describe('the result', () => {
     vi.mocked(refreshLicensedFunctions).mockResolvedValue(licenseOf(entry({ status: 'Active', requestGuidance: null })));
     renderWizard(`${PATH}?step=fatto&propertyId=prop-1`);
 
-    // Opened again (a reload): it says what the server says now.
     await waitFor(() => expect(screen.getByTestId('licensed-requested-badge')).toHaveAttribute('data-phase', 'requested'), WAIT);
     fireEvent.click(screen.getByTestId('licensed-check-now'));
 
@@ -344,14 +334,12 @@ describe('the result', () => {
     givenTheHost();
     renderWizard(`${PATH}?step=fatto`);
 
-    // No property: no license can be read, so the screen does not say «no request recorded» of a request that may well have been recorded.
     const result = await screen.findByTestId('licensed-requested', {}, WAIT);
     expect(result).toHaveTextContent(i18n.t('marketplace.licensed.requested.title.over'));
     expect(result).not.toHaveTextContent(i18n.t('marketplace.licensed.requested.title.none'));
     expect(screen.queryByTestId('licensed-requested-badge')).not.toBeInTheDocument();
     expect(screen.queryByTestId('licensed-check-now')).not.toBeInTheDocument();
     expect(getLicensedFunctions).not.toHaveBeenCalled();
-    // The way to the state of the function is still there.
     expect(screen.getByTestId('licensed-see-active')).toBeInTheDocument();
   });
 

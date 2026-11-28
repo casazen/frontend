@@ -8,19 +8,15 @@ import { ListingAiDialog } from './listing-ai-dialog';
 import type { PropertyWizardValues } from '../property-wizard-model';
 import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX } from '../suggest-listing-text';
 
-/** Fewer photos than this and the AI sees too little of the house: the card says so. */
 const FEW_PHOTOS = 3;
 
 interface ListingTextCardProps {
   form: UseFormReturn<PropertyWizardValues>;
   propertyId: string;
-  /** The photos of the gallery as the host sees them, cover first: the AI looks at the first six. */
   photos: readonly string[];
-  /** The headline and the description may be left empty (where no channel manager is connected): the fields say so. */
   optional?: boolean;
 }
 
-/** Italian listing fields, with a multilingual AI preview that never changes the form until the host applies it. */
 export function ListingTextCard({ form, propertyId, photos, optional = false }: ListingTextCardProps) {
   const { t } = useTranslation();
   const { register, watch, formState } = form;

@@ -22,7 +22,6 @@ describe('guestRegisterApi (the guest register of a property in Switzerland, E31
     const [url, config] = vi.mocked(axios.get).mock.calls[0]!;
     expect(url).toBe(`/properties/${PROPERTY_ID}/swiss/guest-register/info`);
     expect(config).toMatchObject({ params: PERIOD });
-    // The guests are read by whoever may read them: never an anonymous call.
     expect(config).not.toHaveProperty('public');
   });
 
@@ -35,7 +34,6 @@ describe('guestRegisterApi (the guest register of a property in Switzerland, E31
     expect(file).toEqual({ blob, contentDisposition: 'attachment; filename="registro-ospiti-ch-2026-10-23-2026-11-21.csv"' });
     const [url, config] = vi.mocked(axios.get).mock.calls[0]!;
     expect(url).toBe(`/properties/${PROPERTY_ID}/swiss/guest-register`);
-    // Bytes, never JSON; the file is written in the language of the request.
     expect(config).toMatchObject({ params: { ...PERIOD, format: 'csv' }, responseType: 'blob', headers: { 'Accept-Language': 'en' } });
   });
 

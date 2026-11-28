@@ -16,7 +16,6 @@ interface PublicBookingContext {
   org: PublicOrgDto;
 }
 
-/** The answers that say the link does not work (a token that is missing, wrong, expired or already spent; a booking that is not there). */
 const LINK_REFUSED_STATUSES: readonly number[] = [400, 404, 422];
 
 /**
@@ -57,7 +56,6 @@ export function GuestCancelLinkPage() {
 
   if (!bookingId || !token) return <LinkProblem message={t('guestCancellation.link.invalid')} action={myBookings} testId="guest-cancel-link-invalid" />;
 
-  // What is on screen stays when a later read fails (a network blip on returning to the tab): a refused cancellation says why on its own.
   const data = preview.data;
   if (!data && !preview.isError) {
     return (

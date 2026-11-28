@@ -34,7 +34,6 @@ export function useNavCounts(entries: readonly RouteManifestEntry[]): NavCounts 
   const unreadMessages = useMessageHubUnread(wantsMessages);
 
   const counts: NavCounts = {};
-  // The shape is checked: a server or a proxy that answers something else than the API (an HTML page) is not a number.
   if (wantsBookingRequests && Array.isArray(bookingRequests.data)) {
     counts.bookingRequests = bookingRequests.data.length;
   }

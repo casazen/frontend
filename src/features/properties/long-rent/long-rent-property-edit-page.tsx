@@ -9,7 +9,6 @@ import { isDuplicateAddressError } from '../property-errors';
 import { LoadErrorCard } from './load-error-card';
 import { longRentPropertyPath } from './paths';
 
-/** Edit a long-term property without its short-stay fields (A7-06). */
 export function LongRentPropertyEditPage() {
   const { t } = useTranslation();
   const { id = '' } = useParams<{ id: string }>();
@@ -22,8 +21,6 @@ export function LongRentPropertyEditPage() {
       await updateProperty.mutateAsync({ id, data });
       navigate(longRentPropertyPath(id));
     } catch (error) {
-      // The mutation's toast shows the server's reason; the form stays filled in. A duplicate address goes back to the
-      // form, which shows it under the unit field (PC-06).
       if (isDuplicateAddressError(error)) throw error;
     }
   };
@@ -43,7 +40,6 @@ export function LongRentPropertyEditPage() {
     );
   }
 
-  // A short-rent property is edited in the short-rent section only.
   if (property.rentalMode === 'Short') return <Navigate to={`/app/short-rent/properties/${property.id}/edit`} replace />;
 
   return (

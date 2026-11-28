@@ -58,7 +58,6 @@ function httpError(status: number, data: Record<string, unknown>): AxiosError {
   return new AxiosError('failed', String(status), undefined, undefined, { status, data, statusText: '', headers: {}, config: {} as never });
 }
 
-/** Whether a key of a locale file is a text. */
 function textOf(locale: unknown, key: string): string | undefined {
   const value = key.split('.').reduce<unknown>((node, part) => (node !== null && typeof node === 'object' ? (node as Record<string, unknown>)[part] : undefined), locale);
   return typeof value === 'string' ? value : undefined;
@@ -76,9 +75,7 @@ describe('approval model (NF-68)', () => {
     expect(approvalTypeLabel('Campaign', t())).toBe('Campagna');
     expect(approvalTypeLabel('Routine', t())).toBe('Routine');
     expect(approvalTypeLabel('AiText', t())).toBe('Testo AI');
-    // The draft of the public reply to a review (E05/F06) has a name of its own.
     expect(approvalTypeLabel('ReviewReply', t())).toBe('Risposta a una recensione');
-    // A type a later version of the server adds is not shown as an identifier.
     expect(approvalTypeLabel('SomethingNew', t())).toBe('Altro');
   });
 
@@ -217,17 +214,13 @@ describe('approval model (NF-68)', () => {
       const reply = (result: ApprovalOriginActionResult | null) => approvalOutcome({ itemType: 'ReviewReply', originActionResult: result, originActionStatus: 'Executed' });
 
       expect(reply('Sent')).toEqual({ key: 'approval.action.executed.review', tone: 'success' });
-      // The outcome is not known: it is checked on the channel and never told as published.
       expect(reply('ManualVerify')).toEqual({ key: 'approval.action.executed.reviewVerify', tone: 'warning' });
-      // The same reply approved a second time: nothing was sent again.
       expect(reply(null)).toEqual({ key: 'approval.action.executed.already', tone: 'success' });
-      // A message to a guest keeps its words.
       expect(approvalOutcome({ itemType: 'MessageDraft', originActionResult: 'Sent', originActionStatus: 'Executed' })).toEqual({ key: 'approval.action.executed.message', tone: 'success' });
     });
 
     it('approvalOutcome_NoResult_IsNoActionLinkedOrAlreadyApproved', () => {
       expect(outcome(null, 'NotRequired')).toEqual({ key: 'approval.action.executed.none', tone: 'success' });
-      // The same item approved a second time: nothing was sent again, and the page says so.
       expect(outcome(null, 'Executed')).toEqual({ key: 'approval.action.executed.already', tone: 'success' });
     });
   });

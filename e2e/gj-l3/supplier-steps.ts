@@ -3,10 +3,6 @@ import { expect } from '@playwright/test';
 import type { StackEnv } from './stack';
 import { pickComune } from './host-steps';
 
-/**
- * The invited supplier opens the email link, signs in with the invited account, registers the business and
- * completes the two-step activation wizard (as on a phone). Leaves the page on the supplier dashboard.
- */
 export async function registerAndActivateSupplier(
   page: Page,
   stack: StackEnv,

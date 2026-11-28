@@ -4,12 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { StatStrip, StatTile } from '@/components/shared/calm';
 import { overviewFormat, type MetricDeltas, type MetricFigures } from './overview-model';
 
-/** A row of the performance report (or of the owner's overview): its figures and the differences the server worked out. */
 export interface TilesRow extends MetricDeltas {
   figures: MetricFigures;
 }
 
-/** The names of the four numbers: the Reports page and the owner portal each have their own words. */
 export interface TileNames {
   occupancy: string;
   revenue: string;
@@ -20,18 +18,12 @@ export interface TileNames {
 interface PerformanceTilesProps {
   row: TilesRow;
   currency: string;
-  /** The report was asked next to the year before: a tile without a difference says there is no comparison. */
   compared: boolean;
   names: TileNames;
-  /** The name of the group for a screen reader. */
   label: string;
   testId?: string;
 }
 
-/**
- * The four numbers of a period, each against the same days one year earlier: occupancy, revenue, ADR and RevPAR. Every number and
- * every difference is the server's, written in the language of the app; a number the server does not have is "n.d.", never 0.
- */
 export function PerformanceTiles({ row, currency, compared, names, label, testId = 'reports-tiles' }: PerformanceTilesProps) {
   const { t, i18n } = useTranslation();
   const format = useMemo(() => overviewFormat(i18n.language, currency), [i18n.language, currency]);

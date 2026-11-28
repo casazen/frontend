@@ -19,10 +19,6 @@ import {
 } from './components/supplier-sections';
 import { MARKETPLACE_PATH } from './lib/marketplace-paths';
 
-/**
- * The page of a supplier (MKT): the same things the drawer says, with every published service and the way to
- * its showcase when it has one. It can be shared (`/marketplace/suppliers/<orgId>`): the supplier is read across the account’s service areas. No commission is shown (D3).
- */
 export function MarketplaceSupplierPage() {
   const { t } = useTranslation();
   const { orgId = '' } = useParams();

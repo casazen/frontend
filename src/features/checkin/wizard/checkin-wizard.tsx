@@ -53,11 +53,6 @@ import { GuestsStep } from './steps/guests-step';
 import { SendStep } from './steps/send-step';
 import { TaxStep } from './steps/tax-step';
 
-/**
- * Puts the problems the server found in the data of the guests on the fields of the form of the wizard (the form is where this is rendered).
- * A refused save opens the step the field is on, and the shell clears the errors of the form each time the step changes, in the same pass as
- * this effect: so the problems are put on the fields once that pass is over, and again at every change of step.
- */
 function ApplyFieldProblems({ problems }: { problems: readonly GuestFieldProblem[] }) {
   const { setError } = useFormContext<CheckInWizardValues>();
   const stepId = useOptionalWizard()?.stepId;
@@ -80,7 +75,6 @@ interface SaveAndExitProps {
   problem: string | null;
 }
 
-/** "Save and exit" (NF-06): saves what the current step owns with the same call as "Continue", then leaves to the booking. On every step. */
 function SaveAndExit({ onSaveAndExit, busy, problem }: SaveAndExitProps) {
   const { t } = useTranslation();
   const { getValues } = useFormContext<CheckInWizardValues>();
@@ -106,7 +100,6 @@ function SaveAndExit({ onSaveAndExit, busy, problem }: SaveAndExitProps) {
   );
 }
 
-/** The question mark of a step: what the step is for, in two sentences (UI-07). */
 function StepHelp({ step }: { step: CheckInWizardStepId }) {
   const { t } = useTranslation();
   return (
@@ -121,7 +114,6 @@ interface NoShowActionProps {
   returnPath: string;
 }
 
-/** "The guest did not arrive" (NF-45): asks for a confirmation, marks the stay as a no-show and leaves to the booking. */
 function NoShowAction({ bookingId, returnPath }: NoShowActionProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -188,7 +180,6 @@ interface CheckInWizardFormProps {
   state: CheckInWizardState;
 }
 
-/** The five steps of an open wizard, on the state the server gave when it opened. */
 function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -198,10 +189,8 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
   const confirm = useConfirmCheckIn(bookingId);
   const source = useHostCodeSource(bookingId);
 
-  // What the steps show is the latest state (each save answers with the new one); the form starts from the one the wizard opened with.
   const latest = wizard.data ?? state;
   const statisticalFields = useMemo(() => statisticalFieldsOf(state), [state]);
-  // A property in Switzerland (NF-132) asks the home of each guest, the document of every adult and the plate of the car: the rules of every step below.
   const swiss = useMemo(() => swissRulesOfState(state), [state]);
   const [initialValues] = useState(() => wizardValuesFromState(state));
   // What the server holds, as the text of the request that saved it: a step saves only when the host changed something since.
@@ -214,11 +203,6 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
   const warnings = latest.issues.length - blocking;
   const isUnchanged = (values: CheckInWizardValues) => guestsSignature(values, statisticalFields, swiss) === savedSignature;
 
-  /**
-   * Saves the guests when the host changed something (the same call for "Continue" and "Save and exit"). The guests step defers the save
-   * while a document is still to type: the server saves no head without it, and the next step asks for it. A refused save puts its field
-   * errors on the fields and opens the step they are on.
-   */
   const saveGuests = async (stepId: 'guests' | 'documents', values: CheckInWizardValues): Promise<void> => {
     if (isUnchanged(values)) return;
     if (stepId === 'guests' && !documentsReadyToSave(values, swiss)) return;
@@ -330,13 +314,10 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
   ];
 
   const onFinish = async (values: CheckInWizardValues): Promise<CheckInConfirmation> => {
-    // What the host typed and has not saved yet (a step reached from the list of steps, not with "Continue") is saved before it is confirmed:
-    // the server confirms what it holds, and the summary the host read is the form.
     await saveGuests('documents', values);
     try {
       return await confirm.mutateAsync();
     } catch (error) {
-      // 422 `checkin_not_ready`: the data changed under the host's hands. The checks show what is missing now.
       const code = isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
       if (code === CHECKIN_NOT_READY_CODE) {
         void wizard.refetch();
@@ -359,7 +340,6 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
       finishLabel={t('checkin.wizard.confirmAndSend')}
       finishFailedMessage={t('checkin.wizard.confirmFailed')}
       onFinish={onFinish}
-      // The server is the draft: each step saves what it owns before moving on, and no personal data sit in the browser.
       draft={false}
       renderDone={({ result, values }) => {
         if (!result) {
@@ -389,12 +369,6 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
   );
 }
 
-/**
- * The host wizard "Guest check-in" of a booking (E03/F01/US04/T02, NF-40, NF-45, NF-46): guests, documents, checks, tax and send, on the
- * `WizardShell`, ending on "What happens now". The route is `/app/short-rent/bookings/:id/check-in`. The server is the draft: each step saves
- * what it owns before moving on and the browser keeps nothing. While the wizard is open the only ways out are "Save and exit" and the
- * no-show action; a stay for which no check-in is expected (a pending or cancelled booking, a no-show) says so and leads back.
- */
 export function CheckInWizardPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
@@ -406,7 +380,6 @@ export function CheckInWizardPage() {
 
   if (stateQuery.isLoading) return <LoadingScreen message={t('checkin.wizard.loading')} />;
 
-  // A failed first read stops the page; a failed read again of a state already on screen does not (the form would be lost).
   if (!state) {
     const notFound = getHttpStatus(stateQuery.error) === 404;
     return (

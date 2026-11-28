@@ -57,7 +57,6 @@ function page(items: AdminAssistRequest[], overrides: Partial<PagedAssistRequest
   return { items, totalCount: items.length, page: 1, pageSize: 25, ...overrides };
 }
 
-/** What the server answers for each status of the queue. */
 const queue = vi.hoisted(() => ({ byStatus: {} as Record<string, unknown> }));
 
 function answerQueue(byStatus: Partial<Record<AssistRequestStatus | 'all', PagedAssistRequests>>) {
@@ -114,7 +113,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     expect(onboardingApi.listAssistQueue).toHaveBeenCalledWith({ status: 'Requested', page: 1, pageSize: 25 });
     expect(onboardingApi.listAssistQueue).toHaveBeenCalledWith({ status: 'InProgress', page: 1, pageSize: 25 });
     expect(onboardingApi.listAssistQueue).toHaveBeenCalledTimes(2);
-    // The context in words, with the property and the comune; the step; the status in words.
     const row = within(requested).getByTestId(`assist-row-${R1}`);
     expect(within(row).getByTestId('assist-row-title')).toHaveTextContent(
       i18n.t('onboardingPlan.assist.row.propertyComune', { context: i18n.t('onboardingPlan.assist.contexts.panelPolice'), property: 'Casa del Mare', comune: 'Rimini' }),
@@ -122,10 +120,8 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     expect(within(row).getByTestId('assist-row-part')).toHaveTextContent(i18n.t('onboardingPlan.parts.compliance.title'));
     expect(within(row).getByTestId('assist-row-status')).toHaveTextContent(i18n.t('onboardingPlan.assist.status.requested'));
     expect(within(row).getByTestId('assist-row-when')).toHaveTextContent('2026');
-    // The two lines the staff must know.
     expect(screen.getByTestId('assist-notes')).toHaveTextContent(i18n.t('onboardingPlan.assist.hostSees'));
     expect(screen.getByTestId('assist-notes')).toHaveTextContent(i18n.t('onboardingPlan.assist.askTheUser'));
-    // The one in progress shows who has it (short id) and its note.
     const taken = within(inProgress).getByTestId(`assist-row-${R2}`);
     expect(within(taken).getByTestId('assist-row-id-assigned')).toHaveTextContent(STAFF.slice(0, 8));
     expect(within(taken).getByTestId('assist-row-id-assigned')).not.toHaveTextContent(STAFF);
@@ -155,7 +151,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
 
     expect(await screen.findByTestId('assist-requested-error')).toHaveTextContent(i18n.t('onboardingPlan.assist.loadError'));
     expect(screen.queryByTestId('assist-empty')).not.toBeInTheDocument();
-    // A retry reads it again.
     answerQueue({ Requested: page([request(R1, 'Requested')]) });
     fireEvent.click(within(screen.getByTestId('assist-requested-error')).getByRole('button', { name: i18n.t('shared.errorState.retry') }));
     expect(await screen.findByTestId('assist-requested-rows')).toBeInTheDocument();
@@ -188,13 +183,10 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     expect(pastTheEnd).not.toHaveTextContent(i18n.t('onboardingPlan.assist.emptySection'));
     expect(screen.queryByTestId('assist-requested-empty')).not.toBeInTheDocument();
     expect(screen.queryByTestId('assist-empty')).not.toBeInTheDocument();
-    // A list with no request at all says so, as it always did.
     expect(screen.getByTestId('assist-in-progress-empty')).toHaveTextContent(i18n.t('onboardingPlan.assist.emptySection'));
     expect(screen.queryByTestId('assist-in-progress-past-end')).not.toBeInTheDocument();
-    // Nothing asks again by itself: the first page of each list and the second of the one to take, no more.
     expect(onboardingApi.listAssistQueue).toHaveBeenCalledTimes(3);
 
-    // The way back is one press, to the last page of what is left.
     fireEvent.click(within(pastTheEnd).getByRole('button', { name: i18n.t('onboardingPlan.assist.lastPage') }));
 
     expect(await screen.findByTestId('assist-requested-rows')).toBeInTheDocument();
@@ -229,7 +221,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
   });
 
   it('AssistRequestRow_ADoneRequest_SaysHowItWasClosedAndOneWithNoOutcomeRecordedDoesNotGuess', async () => {
-    // «Fatto» records verified (CasaZen read the connection on the panel) or declared (it could not): staff reads which, never a silent success (E20/F03/US01/T02).
     answerQueue({
       Done: page([
         request(R1, 'Done', { outcome: 'verified', completedAt: '2026-11-12T09:00:00Z' }),
@@ -256,7 +247,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
 
     const row = await screen.findByTestId(`assist-row-${R1}`);
     expect(within(row).getByTestId('assist-row-host-note')).toHaveTextContent('Il portale dice ancora che manca il collegamento.');
-    // The button of the checklist is on every row, and does not say a word about credentials: the credentials are in the dialog it opens.
     expect(within(row).getByTestId('assist-row-open')).toHaveTextContent(i18n.t('onboardingPlan.assist.row.open'));
     expect(row.textContent ?? '').not.toMatch(/password|token|secret|credenzial/i);
   });
@@ -288,7 +278,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
       expect(await within(dialog).findByTestId('assist-checklist')).toBeInTheDocument();
       expect(onboardingAssistApi.getRequestDetail).toHaveBeenCalledWith(R1);
       expect(within(dialog).getByTestId('assist-checklist-police')).toHaveTextContent(i18n.t('onboardingPlan.assist.checklist.presence.presentSince', { date: '11 novembre 2026' }));
-      // «Apri credenziali» asks for the reason first: the server is not asked for a value until it is given.
       fireEvent.click(within(dialog).getByTestId('assist-reveal-open-Police'));
       expect(await screen.findByTestId('assist-reveal-dialog')).toHaveTextContent(i18n.t('onboardingPlan.assist.reveal.kinds.Police'));
       expect(onboardingAssistApi.revealSecret).not.toHaveBeenCalled();
@@ -303,7 +292,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
       const error = await screen.findByTestId('assist-detail-error');
       expect(error).toHaveTextContent(i18n.t('onboardingPlan.assist.detail.loadError'));
       expect(screen.queryByTestId('assist-checklist')).not.toBeInTheDocument();
-      // A retry reads it again.
       vi.mocked(onboardingAssistApi.getRequestDetail).mockResolvedValue(detailOf());
       fireEvent.click(within(error).getByRole('button', { name: i18n.t('shared.errorState.retry') }));
       expect(await screen.findByTestId('assist-checklist')).toBeInTheDocument();
@@ -354,7 +342,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
 
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(R1));
     expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.assist.copied'));
-    // No draft, no credential, no person who asked: the row has no such thing to show.
     expect(row.textContent).not.toMatch(/password|token|secret|credenzial/i);
     expect(within(row).queryByTestId('assist-row-id-draft')).not.toBeInTheDocument();
   });
@@ -376,7 +363,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     await waitFor(() => expect(onboardingApi.updateAssistRequest).toHaveBeenCalledWith(R1, { status: 'inProgress', note: 'Chiamo il titolare oggi.' }));
     await waitFor(() => expect(screen.queryByTestId('assist-dialog-take')).not.toBeInTheDocument());
     expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.assist.updated'));
-    // The queue is read again: the list reflects the change.
     await waitFor(() => expect(vi.mocked(onboardingApi.listAssistQueue).mock.calls.length).toBeGreaterThan(2));
   });
 
@@ -384,7 +370,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     vi.mocked(onboardingApi.updateAssistRequest).mockResolvedValue(request(R2, 'Done'));
     renderPage();
     const taken = await screen.findByTestId(`assist-row-${R2}`);
-    // A request in progress is not taken again; it can be done or cancelled.
     expect(within(taken).queryByTestId('assist-row-take')).not.toBeInTheDocument();
     expect(within(taken).getByTestId('assist-row-cancel')).toBeInTheDocument();
 
@@ -405,7 +390,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
 
     expect(await within(dialog).findByTestId('assist-note-error')).toHaveTextContent('La nota non può contenere un indirizzo email.');
     expect(within(dialog).getByTestId('assist-note')).toHaveAttribute('aria-invalid', 'true');
-    // The dialog stays open with the note, to fix it; nothing is toasted as a success.
     expect(within(dialog).getByTestId('assist-note')).toHaveValue('scrivimi a mario@example.com');
     expect(toast.success).not.toHaveBeenCalled();
     expect(within(dialog).getByTestId('assist-dialog-confirm')).toBeEnabled();
@@ -428,7 +412,6 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     fireEvent.click(confirm);
 
     await waitFor(() => expect(onboardingApi.updateAssistRequest).toHaveBeenCalledTimes(1));
-    // The dialog cannot be closed or pressed again while it is on its way, and the actions behind it are off.
     expect(within(dialog).getByTestId('assist-dialog-cancel')).toBeDisabled();
     expect(screen.getByTestId(`assist-row-${R2}`).querySelector('[data-testid="assist-row-done"]')).toBeDisabled();
     finish(request(R1, 'InProgress'));

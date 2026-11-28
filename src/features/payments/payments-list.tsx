@@ -26,9 +26,7 @@ import {
 } from './lib/payment-list';
 
 interface PaymentsListOptions {
-  /** Who may enter a booking is offered to start one when there is no payment yet. */
   canCreateBooking: boolean;
-  /** Who may write payments can record the money received on a row that waits for the host (SR-06b). */
   canRecordPayment?: boolean;
 }
 
@@ -61,7 +59,6 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
     const guest = (payment: PaymentListItem) => payment.guestName || t('compliance.checkout.guestFallback');
     const what = (payment: PaymentListItem) =>
       [payment.bookingCode ? t('payment.list.forBooking', { code: payment.bookingCode }) : '', payment.propertyName].filter(Boolean).join(' · ');
-    // A method the app does not know yet (the backend is newer) is shown as it came, not as a key.
     const methodName = (method: string) => (i18n.exists(`payment.method.${method}`) ? t(`payment.method.${method}`) : method);
     const method = (payment: PaymentListItem) => methodName(payment.method);
     const state = (payment: PaymentListItem) => statusLabel('payment', payment.status, 'host', t, i18n);
@@ -78,7 +75,6 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
 
     const amountCell = (payment: PaymentListItem) => (
       <div className="min-w-0">
-        {/* What has not arrived yet is quieter: the badge says why, so the amount does not have to. */}
         <span className={cn('whitespace-nowrap font-medium tabular-nums', isWaiting(payment) && 'text-foreground/70')}>{money(payment.amount, payment)}</span>
         {payment.refundedAmount > 0 ? <span className="block whitespace-nowrap text-sm tabular-nums text-foreground/70">{given(payment)}</span> : null}
       </div>
@@ -149,8 +145,6 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
         placeholder: t('payment.list.searchPlaceholder'),
         text: (payment) => [guest(payment), payment.bookingCode, payment.propertyName, method(payment), state(payment), payment.description].filter(Boolean).join(' '),
       },
-      // A payment in part given back is in two of them: it came in, and a part went back. The list opens on «In arrivo», which is not the
-      // one for everything: «Tutti» is (`allChip`), and what «Azzera i filtri» leads to.
       chips: [
         { id: 'incoming', label: t('payment.list.chips.incoming'), hint: t('payment.list.chips.incomingHint'), test: (payment) => isIncoming(payment, today) },
         { id: 'all', label: t('payment.list.chips.all') },
@@ -180,7 +174,6 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
         },
         { id: 'date', type: 'date', label: t('payment.list.filters.date'), test: (payment, range) => dayInRange(settledDay(payment), range) },
       ],
-      // A view keeps dates as they are: "this month" is worked out when the list is defined.
       views: [
         { id: 'thisMonth', label: t('payment.list.views.thisMonth'), state: { chip: 'all', filters: { date: monthRange(today) } } },
         { id: 'lastMonth', label: t('payment.list.views.lastMonth'), state: { chip: 'all', filters: { date: previousMonthRange(today) } } },
@@ -189,14 +182,12 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
       menu: (payment) => {
         const entries: ListMenuEntry[] = [{ id: 'details', label: t('payment.list.actions.details'), icon: Eye, href: paymentPath(payment) }];
         if (payment.bookingId) entries.push({ id: 'booking', label: t('payment.list.actions.booking'), icon: CalendarDays, href: `${BOOKINGS_PATH}/${payment.bookingId}` });
-        // The money of a row that waits for the host came in outside CasaZen: recording it closes the row (SR-06b).
         if (canRecordPayment && payment.bookingId && isWaitingForTheHost(payment)) {
           entries.push({ id: 'record', label: t('payment.list.actions.record'), icon: Banknote, href: `${PAYMENTS_PATH}/create?bookingId=${payment.bookingId}` });
         }
         return entries;
       },
 
-      // The amount and the state go together, top right: the card stays low.
       card: (payment) => ({
         title: guest(payment),
         sub: what(payment),
@@ -215,7 +206,6 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
 
       rowHref: paymentPath,
       rowTone: (payment) => (payment.status === 'Refunded' || payment.status === 'Canceled' ? 'done' : undefined),
-      // With the sidebar open (from `lg`) five columns and the menu do not fit under 1280 px: cards until then.
       cardsUntil: 'xl',
       csv: { fileName: 'pagamenti' },
 
@@ -228,7 +218,6 @@ export function usePaymentsList({ canCreateBooking, canRecordPayment = false }: 
       noResults: {
         title: t('payment.list.noResultsTitle'),
         description: t('payment.list.noResultsDescription'),
-        // The view the page opens on may well be empty: it says so, and leads to the whole list.
         byChip: {
           incoming: {
             title: t('payment.list.noIncomingTitle'),

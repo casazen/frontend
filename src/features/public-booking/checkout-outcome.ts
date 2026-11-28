@@ -7,7 +7,6 @@ import type { CheckoutOutcomeState } from '@/types';
  */
 export type ClientPaymentStatus = 'succeeded' | 'processing' | 'failed';
 
-/** What the outcome page shows. */
 export type OutcomeView =
   | 'confirmed'
   | 'processing'
@@ -20,7 +19,6 @@ export type OutcomeView =
   | 'datesUnavailable'
   | 'cancelled';
 
-/** `redirect_status` of a Stripe `return_url` (`succeeded`, `processing`, `failed`, …) as a client status. */
 export function clientStatusFromRedirect(value: string | null | undefined): ClientPaymentStatus | null {
   switch (value) {
     case 'succeeded':
@@ -36,7 +34,6 @@ export function clientStatusFromRedirect(value: string | null | undefined): Clie
   }
 }
 
-/** Status of a PaymentIntent / SetupIntent returned by Stripe.js as a client status. */
 export function clientStatusFromIntent(status: string | null | undefined): ClientPaymentStatus | null {
   switch (status) {
     case 'succeeded':
@@ -92,18 +89,15 @@ export function isIntermediateView(view: OutcomeView, client: ClientPaymentStatu
   return view === 'expired' && (client === 'succeeded' || client === 'processing');
 }
 
-/** Polls per round: about 7 minutes with the backoff below. Then the page offers "Aggiorna lo stato". */
 export const MAX_POLL_ATTEMPTS = 20;
 
 const FIRST_POLL_DELAY_MS = 2_000;
 const MAX_POLL_DELAY_MS = 30_000;
 
-/** Delay before poll number `attempt` (0-based): 2 s, 3 s, 4.5 s… up to 30 s. */
 export function nextPollDelay(attempt: number): number {
   return Math.min(MAX_POLL_DELAY_MS, Math.round(FIRST_POLL_DELAY_MS * 1.5 ** Math.max(0, attempt)));
 }
 
-/** Final views: nothing will change without the guest (the pending checkout can be forgotten). */
 export function isFinalView(view: OutcomeView): boolean {
   return view === 'confirmed' || view === 'expired' || view === 'declined' || view === 'datesUnavailable' || view === 'cancelled';
 }

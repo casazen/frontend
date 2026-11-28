@@ -19,7 +19,6 @@ const SCAN_EXTENSIONS: Record<string, string> = {
   'image/png': '.png',
 };
 
-/** Download of the identity document scan uploaded by the guest (private storage, authenticated and audited). */
 function DocumentScanDownload({ guestId }: { guestId: string }) {
   const { t } = useTranslation();
   const download = useMutation({
@@ -44,11 +43,6 @@ interface GuestDocumentsTabProps {
   guest: Guest;
 }
 
-/**
- * The tab Documenti: the identity document of the guest as the API gives it. The number is masked (CO-14) and the full one is
- * asked, audited, only when the host presses "Mostra"; the scan is downloaded through the authenticated endpoint. Nothing here
- * is shown that the page did not show before.
- */
 export function GuestDocumentsTab({ guest }: GuestDocumentsTabProps) {
   const { t } = useTranslation();
 

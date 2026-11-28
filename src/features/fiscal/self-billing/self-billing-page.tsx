@@ -71,7 +71,6 @@ function SelfBillingBody() {
 
   let content;
   if (getHttpStatus(list.error) === 404) {
-    // A 404 is the module being off at the server, whatever the cache still holds: said, never an empty list.
     content = (
       <p className="break-words text-sm text-foreground/70" data-testid="self-billing-unavailable">
         {t('selfBilling.page.unavailable')}
@@ -162,14 +161,12 @@ function SelfBillingBody() {
           key={correcting.id}
           item={correcting}
           onClose={() => setCorrecting(null)}
-          // The replacement draft is shown at once (in the drawer, which is where it is reviewed and issued); a correction whose answer could not be read leaves the page as it is: the list says the rest.
           onCorrected={(replacement) => {
             if (replacement !== null) setOpenId(replacement.invoice.id);
           }}
         />
       ) : null}
 
-      {/* Nothing is opened after the closing: the list and the detail are read again and show the closed draft where it is (history, no action). */}
       {closing !== null ? <CloseNotDueDialog key={closing.id} item={closing} onClose={() => setClosing(null)} /> : null}
     </div>
   );

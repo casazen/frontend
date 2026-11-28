@@ -85,9 +85,7 @@ function FlowCell({ status, flow, onActivate }: FlowCellProps) {
 }
 
 interface FlowStatusTableProps {
-  /** A flow to start on (the target of the «Da fare» of a flow): the table opens on that flow's properties that are still to complete. */
   initialFlow?: OnboardingFlowKey | null;
-  /** Opens the activation dialog: given only to the organization administrator, who activates. Without it a property that waits only for the activation has no button. */
   onActivate?: () => void;
 }
 
@@ -106,7 +104,6 @@ export function FlowStatusTable({ initialFlow = null, onActivate }: FlowStatusTa
   const term = useDebouncedValue(search.trim(), 300);
   const summaries = useFlowSummaries();
 
-  // One flow (and, if asked, one of its states): that flow's own list. All the flows: the same page of each, side by side.
   const single = flow !== 'all';
   const params = { page, pageSize: PAGE_SIZE, search: term || undefined };
   const matrix = useFlowMatrix(params, { enabled: !single });
@@ -186,7 +183,6 @@ export function FlowStatusTable({ initialFlow = null, onActivate }: FlowStatusTa
     <section className="min-w-0 space-y-4" aria-label={t('onboardingPlan.summary.table.title')} data-testid="flow-status-table">
       <h2 className="text-lg font-semibold">{t('onboardingPlan.summary.table.title')}</h2>
 
-      {/* The counts of each flow: a button each, which narrows the table to that flow. */}
       <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label={t('onboardingPlan.summary.strip.label')} data-testid="flow-strip">
         {ONBOARDING_FLOW_KEYS.map((key) => {
           const counts = summaries.data?.find((candidate) => candidate.flow === key);

@@ -28,9 +28,7 @@ export function CfImportPanel({ leaseId, reading, syncState }: { leaseId: string
   const titleId = useId();
   const { flags } = useFeatureFlags();
   const [opening, setOpening] = useState(false);
-  // While the contract is being read the button waits (CF-FLOW, NL-DOCS-FU8): the wizard would open before there is anything to check.
   const stillReading = reading.state === 'Reading';
-  // The contract goes on by itself when the practice confirms the signature: the button is then only the way to do it by hand.
   const waitsForThePractice = syncState === 'WaitingForSignature';
   let description = t('cfDocuments.import.description');
   if (waitsForThePractice) description = t('cfDocuments.import.waitingForSignature');
@@ -51,7 +49,6 @@ export function CfImportPanel({ leaseId, reading, syncState }: { leaseId: string
       <p className="text-sm" data-testid="cf-import-description">
         {description}
       </p>
-      {/* Waiting for the practice there is nothing to check yet: the invitation to check and complete is for when the data are asked. */}
       <ReadingBanner reading={reading} flow={emptyFlow('Imported')} held={waitsForThePractice} />
       <Button
         type="button"

@@ -79,7 +79,6 @@ describe('how the guest pays decides money: no default, always an explicit choic
   });
 
   it('paymentStepSchema_AWayThatIsNotOneOfTheThree_IsRefused', () => {
-    // `none` is a value of the API the client never sends: leaving the question unanswered is not a way of paying.
     expect(paymentStepSchemaFor(null).safeParse({ paymentArrangement: 'none' }).success).toBe(false);
   });
 
@@ -89,7 +88,6 @@ describe('how the guest pays decides money: no default, always an explicit choic
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.message).toBe(PAYMENT_LINK_BLOCK_KEYS[block]);
     expect(result.error?.issues[0]?.path).toEqual(['paymentArrangement']);
-    // The reason is a text of both languages, not a key shown as it is.
     expect(i18n.exists(PAYMENT_LINK_BLOCK_KEYS[block], { lng: 'it' })).toBe(true);
     expect(i18n.exists(PAYMENT_LINK_BLOCK_KEYS[block], { lng: 'en' })).toBe(true);
   });
@@ -102,7 +100,6 @@ describe('how the guest pays decides money: no default, always an explicit choic
     [{ canWritePayments: false, accountReady: true, agreed: null }, 'permission'],
     [{ canWritePayments: true, accountReady: false, agreed: null }, 'account'],
     [{ canWritePayments: true, accountReady: true, agreed: 0 }, 'nothingToPay'],
-    // Not known yet (loading, or unreadable): offered, and the API checks before it writes anything.
     [{ canWritePayments: true, accountReady: null, agreed: null }, null],
     [{ canWritePayments: true, accountReady: true, agreed: null }, null],
     [{ canWritePayments: true, accountReady: true, agreed: 450 }, null],
@@ -125,7 +122,6 @@ describe('the booking as the API takes it', () => {
   });
 
   it('toManualBookingDto_PortalReservationCompleted_SendsNoWayOfPaying', () => {
-    // The portal collects: a payment link is refused for a block (422) and the other ways are not recorded.
     const dto = toManualBookingDto(
       values({
         paymentArrangement: 'paymentLink',
@@ -177,7 +173,6 @@ describe('the channel manager, as the availability says it', () => {
   });
 
   it('channelManagerOf_PortalReservation_IsNotMirrored', () => {
-    // A reservation of a portal completed by the host is a booking of that portal: it is not pushed to the channel manager.
     const checked = checkedStayOf(values(), availability({ channelManagerChecked: true }));
     const linked = values({
       linkedBlock: { blockId: 'block-1', channel: 'Airbnb', propertyId: 'property-1', checkInDate: '2027-10-01', checkOutDate: '2027-10-05' },

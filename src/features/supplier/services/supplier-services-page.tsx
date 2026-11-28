@@ -50,13 +50,6 @@ function EmptyCatalog() {
   );
 }
 
-/**
- * Servizi e prezzi (SP-06, restyled in SP-SERV): the catalog of the supplier in the unified list (UI-14), filtered by state with
- * the quick filters. Each service has the one thing to do about it by state (go on with a draft, put a paused one back on offer)
- * and the rest in "⋯": edit, see how customers see it, duplicate, pause or publish, delete with a confirmation. 30 services at
- * most, so it is one request and no paging. The way to add one is the action of the header, which is the guided creation; while the catalog is
- * empty the empty state has that button and the header has none.
- */
 export function SupplierServicesPage() {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierServices();
@@ -86,7 +79,6 @@ export function SupplierServicesPage() {
     />
   );
 
-  // A failed read that leaves the services of an earlier one on screen does not take them away.
   if (isError && !data) {
     return (
       <div className="min-w-0 space-y-6" data-testid="supplier-services-page">

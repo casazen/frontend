@@ -13,7 +13,6 @@ interface ContextRouteGuardProps {
   contextKey: AppContextKey;
   requiredPermissions?: string[];
   permissionMode?: 'any';
-  /** Route behind a backend feature flag (or a list of them, met while any is on): redirects to the context home while the flag is off. */
   featureFlag?: FeatureFlagRule;
   /**
    * The same page in other contexts (plan and billing, PL-16): a user without `contextKey` who works in one of them is
@@ -45,7 +44,6 @@ export function ContextRouteGuard({
   const current = contexts.find((ctx) => ctx.contextKey === contextKey);
 
   if (!isReady || (featureFlag && flagsLoading)) {
-    // Inside the content region of the shell: the spinner fills it, not the viewport.
     return <LoadingScreen message={t('shared.auth.loadingWorkspace')} className="h-auto flex-1" />;
   }
 
@@ -58,7 +56,6 @@ export function ContextRouteGuard({
     return <Navigate to={alternate ? `${alternate}${search}` : contexts[0].defaultRoute} replace />;
   }
 
-  // A page behind a flag that is off does not exist yet, for anyone: back to the home of the area.
   const featureEnabled = isFeatureRuleEnabled(flags, featureFlag);
   if (!featureEnabled) {
     return <Navigate to={getDefaultRoute(current.contextKey)} replace />;
@@ -72,8 +69,6 @@ export function ContextRouteGuard({
       const home = getContextHomeRoute(current.contextKey, hasPermission, flags);
       if (home !== pathname) return <Navigate to={`${home}${search}${hash}`} replace />;
     }
-    // The reserved page stays on screen and in the history: on the callback page of the channel manager the code and the state, which this
-    // role can never use, do not stay in the address with it.
     const kept = searchWithoutOctorateCallback(pathname, search);
     if (kept !== search) return <Navigate to={{ pathname, search: kept, hash }} replace />;
     return <ReservedPage contextKey={current.contextKey} homePath={getDefaultRoute(current.contextKey)} />;

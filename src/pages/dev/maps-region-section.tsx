@@ -63,7 +63,6 @@ function Toggle({ checked, onChange, children }: { checked: boolean; onChange: (
   );
 }
 
-/** The regional maps with pins over them: presets, zoom and pan, the three levels of detail, the snapping of the pins to land. */
 export function RegionSection() {
   const [view, setView] = useState<View>(() => PRESETS[0].view(ASPECT));
   const [width, setWidth] = useState(1000);
@@ -72,7 +71,6 @@ export function RegionSection() {
   const [pins, setPins] = useState(true);
   const [snap, setSnap] = useState(true);
   const [error, setError] = useState('');
-  // the data of a region are loaded the first time a view needs them
   const [loaded, setLoaded] = useState(0);
   useEffect(() => {
     let alive = true;

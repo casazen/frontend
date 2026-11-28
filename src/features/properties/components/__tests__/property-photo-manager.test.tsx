@@ -28,7 +28,6 @@ const rules = {
 
 const gallery = (...photoUrls: string[]): PropertyPhotosDto => ({ photoUrls, ...rules });
 
-/** Failed API call as the axios client rejects it: ProblemDetails body with the stable `code` (FD-05). */
 function problem(status: number, code?: string): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', undefined, undefined, {
     status,
@@ -109,7 +108,7 @@ describe('PropertyPhotoManager (PC-04, A2-26)', () => {
       renderManager(false);
 
       const empty = await screen.findByTestId('property-photos-empty');
-      expect(within(empty).getByText('Per questa proprietà non sono state caricate foto.')).toBeInTheDocument();
+      expect(within(empty).getByText('Nessuna foto')).toBeInTheDocument();
       expect(within(empty).queryByRole('button')).not.toBeInTheDocument();
     });
 
@@ -123,14 +122,29 @@ describe('PropertyPhotoManager (PC-04, A2-26)', () => {
       expect(within(items[0]).getByTestId('property-photo-cover-badge')).toHaveTextContent('Copertina');
       expect(screen.getAllByTestId('property-photo-cover-badge')).toHaveLength(1);
       expect(screen.getByTestId('property-photo-counter')).toHaveTextContent('3 di 20 foto');
-      expect(screen.getByText('Fino a 20 foto in formato JPEG, PNG o WebP, massimo 10 MB ciascuna.')).toBeInTheDocument();
+      expect(screen.queryByText(/Fino a 20 foto in formato JPEG/)).not.toBeInTheDocument();
+    });
+
+    it('hint_HoldsTheRulesAndLinksToTheManual', async () => {
+      renderManager();
+
+      await tiles();
+      fireEvent.click(screen.getByRole('button', { name: "Cos'è: Foto della proprietà" }));
+
+      const bubble = screen.getByRole('dialog');
+      expect(bubble).toHaveTextContent('La prima foto è la copertina');
+      expect(bubble).toHaveTextContent('Fino a 20 foto in formato JPEG, PNG o WebP, massimo 10 MB ciascuna.');
+      expect(within(bubble).getByRole('link', { name: i18n.t('manual.open') })).toHaveAttribute(
+        'href',
+        '/guida/immobili.html#leggere-la-scheda-di-un-immobile',
+      );
     });
 
     it('readOnly_ShowsThePhotosWithoutAnyAction', async () => {
       renderManager(false);
 
       await tiles();
-      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Carica|copertina|Sposta|Elimina/ })).not.toBeInTheDocument();
     });
 
     it('legacyRelativeUrl_IsAPlaceholderThatCanBeDeletedAndNeverTheCover', async () => {
@@ -144,7 +158,6 @@ describe('PropertyPhotoManager (PC-04, A2-26)', () => {
       expect(within(legacy).queryByTestId('property-photo-cover-badge')).not.toBeInTheDocument();
       expect(within(legacy).queryByRole('button', { name: 'Imposta come copertina' })).not.toBeInTheDocument();
       expect(within(legacy).getByRole('button', { name: 'Elimina la foto 1' })).toBeEnabled();
-      // What the public pages show first: the first photo that can be displayed.
       expect(within(current).getByTestId('property-photo-cover-badge')).toBeInTheDocument();
     });
 
@@ -249,7 +262,6 @@ describe('PropertyPhotoManager (PC-04, A2-26)', () => {
       const message = 'Uno dei file non è una foto valida: sono ammesse solo immagini JPEG, PNG o WebP.';
       expect(await screen.findByTestId('property-photo-action-error')).toHaveTextContent(message);
       expect(toast.error).toHaveBeenCalledWith(message);
-      // The gallery stays on screen: an error never turns it into an empty list.
       expect(screen.getAllByTestId('property-photo')).toHaveLength(3);
     });
   });

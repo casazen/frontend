@@ -57,7 +57,6 @@ describe('the state of the list of CRM profiles lives in the address (E07/F01/US
     expect(next.get('q')).toBe('rossi');
     expect(next.get('email')).toBe('unreachable');
     expect(next.get('page')).toBe('2');
-    // The first page is the default: it is not written.
     expect(applyProfileFilters(next, { page: 1 }).has('page')).toBe(false);
   });
 
@@ -95,7 +94,6 @@ describe('the state of the list of CRM profiles lives in the address (E07/F01/US
   it.each(['mario.rossi@example.it', '+39 333 1234567'])('applyProfileFilters_ASearchBy_%s_IsNeverWrittenToTheAddress', (text) => {
     const next = applyProfileFilters(new URLSearchParams('channel=Airbnb&sort=spend&page=3'), { search: text });
 
-    // The rest of the state stays in the address and the list goes back to the first page; the personal data are not in it.
     expect(next.toString()).toBe('channel=Airbnb&sort=spend');
     expect(next.toString()).not.toContain('rossi');
     expect(next.toString()).not.toContain('1234567');

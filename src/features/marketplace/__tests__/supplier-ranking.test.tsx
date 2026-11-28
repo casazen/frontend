@@ -44,7 +44,6 @@ describe('the ranking of the suppliers (SP-REL): what the host sees', () => {
     renderCard(supplier({ recommended: true, verified: true }));
 
     expect(screen.getByTestId('supplier-recommended-badge')).toHaveTextContent('Consigliato');
-    // The badge is a word: no number, no points, no star count anywhere on the card.
     expect(screen.getByTestId('marketplace-supplier-org-1').textContent).not.toMatch(/\d+\s*(punti|pt|\/\s*100)/i);
     expect(screen.getByTestId('marketplace-verified-badge')).toBeInTheDocument();
   });
@@ -66,12 +65,10 @@ describe('the ranking of the suppliers (SP-REL): what the host sees', () => {
     expect(start.sort).toBe('recommended');
     expect(start.active).toBe(0);
 
-    // The plain address is the plain list: asking for the ranking is not a filter; another order is one.
     expect(filtersAt('/marketplace?sort=recommended').active).toBe(0);
     const byPrice = filtersAt('/marketplace?sort=price');
     expect(byPrice.sort).toBe('price');
     expect(byPrice.active).toBe(1);
-    // An order this version does not know is the start.
     expect(filtersAt('/marketplace?sort=rating').sort).toBe('recommended');
   });
 });

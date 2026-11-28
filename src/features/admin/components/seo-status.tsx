@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge';
 import type { SeoPageAdmin } from '@/types/seo.types';
 import { contentStatusKey, isPublishableContent } from './seo-review-helpers';
 
-/** Publication state of a page: what the public sees, and whether a newer text waits for a review. */
 export function SeoPublicationBadge({ page }: { page: Pick<SeoPageAdmin, 'id' | 'isPublished' | 'hasPendingRevision'> }) {
   const { t } = useTranslation();
   if (!page.isPublished) {
@@ -24,7 +23,6 @@ export function SeoPublicationBadge({ page }: { page: Pick<SeoPageAdmin, 'id' | 
   );
 }
 
-/** State of the latest revision of a page, with the explicit "content not generated" reason. */
 export function SeoLatestRevisionStatus({ page }: { page: SeoPageAdmin }) {
   const { t } = useTranslation();
   const latest = page.latestRevision;

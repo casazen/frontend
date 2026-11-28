@@ -23,7 +23,6 @@ const session = vi.hoisted(() => ({
 vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => session.user }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => session.workspace }));
 
-// Made-up values: none of them is a code, a state or a credential of anyone.
 const SITE = 'https://www.quokka360.test';
 const RETURN = 'https://www.quokka360.test/wp-admin/options-general.php?page=casazen';
 const STATE = 'test-state-0123456789';
@@ -102,7 +101,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       expect(outcome()).toBe('consent');
       const title = screen.getByRole('heading', { level: 1 });
       expect(title).toHaveTextContent('Collegare il sito www.quokka360.test a Quokka360?');
-      // The site and the agency stand out in the question.
       expect(Array.from(title.querySelectorAll('strong')).map((part) => part.textContent)).toEqual(['www.quokka360.test', 'Quokka360']);
       expect(connect()).toHaveTextContent('Collega');
       expect(connect()).toBeEnabled();
@@ -122,7 +120,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       ]);
       expect(screen.getByTestId('connect-allowed')).toHaveTextContent('dominio');
       expect(screen.getByTestId('connect-not-allowed')).toHaveTextContent('prenotazioni, ospiti o pagamenti');
-      // True for everyone who may connect: «Incorpora nel tuo sito» exists only in the area of short rent, so the plugin's own «Scollega» is named first.
       expect(screen.getByTestId('connect-wordpress-page')).toHaveTextContent('dal plugin o da «Incorpora nel tuo sito»');
     });
 
@@ -165,9 +162,7 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
       expect(assign).toHaveBeenCalledWith(REDIRECT);
       expect(SiteConnectionsApi.authorize).toHaveBeenCalledTimes(1);
-      // The body of the contract and nothing more: no host of the page, no id, no token.
       expect(SiteConnectionsApi.authorize).toHaveBeenCalledWith('org-1', { siteUrl: SITE, returnUrl: RETURN, state: STATE, codeChallenge: CHALLENGE, codeChallengeMethod: 'S256' });
-      // It says it is taking the person back to WordPress, not that the site is connected: the connection is completed there.
       expect(outcome()).toBe('leaving');
       expect(screen.getByRole('status')).toHaveTextContent(i18n.t('siteConnect.wordpress.leaving.description'));
       expect(screen.queryByTestId('connect-confirm')).not.toBeInTheDocument();
@@ -201,7 +196,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
 
       expect(await screen.findByTestId('connect-error')).toHaveTextContent(i18n.t('siteConnect.wordpress.failed'));
       expect(assign).not.toHaveBeenCalled();
-      // Nothing is claimed as done: the buttons are back for another try.
       expect(outcome()).toBe('consent');
       await waitFor(() => expect(connect()).toBeEnabled());
     });
@@ -216,7 +210,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       renderPage();
       const button = await screen.findByTestId('connect-confirm');
 
-      // Two clicks in the very same moment, before the page has had the time to draw the button off.
       act(() => {
         button.click();
         button.click();
@@ -277,7 +270,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
     });
 
     it('connect_ThePageNeverBuildsAnAddressFromItsOwnQuery', async () => {
-      // The plugin may write anything in `return`: the address the window goes to is the one of the server, and a server that answered another one is not followed.
       vi.mocked(SiteConnectionsApi.authorize).mockResolvedValue({ ...ANSWER, redirectUrl: 'https://evil.example/' });
       renderPage();
       await screen.findByTestId('connect-wordpress-page');
@@ -302,7 +294,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Annullato');
       expect(SiteConnectionsApi.authorize).not.toHaveBeenCalled();
       expect(assign).not.toHaveBeenCalled();
-      // Nothing to press any more: no button, no link to an address nobody checked.
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
       expect(screen.queryByRole('link')).not.toBeInTheDocument();
     });
@@ -345,7 +336,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       expect(screen.getByTestId('connect-wordpress-page')).toHaveTextContent('Solo un amministratore dell\'agenzia può collegare un sito');
       expect(screen.queryByTestId('connect-confirm')).not.toBeInTheDocument();
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
-      // The site that asked is not even named to someone who cannot answer.
       expect(screen.getByTestId('connect-wordpress-page')).not.toHaveTextContent('quokka360');
       expect(SiteConnectionsApi.authorize).not.toHaveBeenCalled();
     });
@@ -354,7 +344,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       ['the owner of long rent', { contextKey: 'long-rent', displayName: 'Affitti lunghi', roleKey: 'long_term_landlord', permissions: [], defaultRoute: '/app/long-rent' }],
       ['an administrator of the account', { contextKey: 'account', displayName: 'Amministrazione', roleKey: 'org_admin', permissions: [], defaultRoute: '/app/account' }],
     ])('administrator_%s_MayConnect', async (_label, context) => {
-      // The same people the server lets in (`RequireOrgBillingAdmin`): not only the owner of short rent.
       session.workspace = { contexts: [context], isReady: true, getDefaultRoute: () => context.defaultRoute };
       renderPage();
 
@@ -391,7 +380,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       expect(outcome()).toBe('invalid');
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Richiesta non valida');
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
-      // What the plugin wrote is not shown back: it is not a site that can be trusted.
       expect(screen.getByTestId('connect-wordpress-page')).not.toHaveTextContent('evil.example');
       expect(SiteConnectionsApi.authorize).not.toHaveBeenCalled();
     });
@@ -481,7 +469,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       fireEvent.click(connect());
       await screen.findByTestId('connect-error');
 
-      // What the cache holds of the failed call is its status, its code and its message: not the request, not the headers of the HTTP client.
       const held = client.getMutationCache().getAll().map((mutation) => mutation.state.error);
       expect(held).toHaveLength(1);
       expect(held[0]).toBeInstanceOf(SiteConnectionError);
@@ -489,7 +476,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
       for (const secret of ['test-access-token', STATE, CHALLENGE, 'Authorization']) expect(text).not.toContain(secret);
       expect(held[0]).toMatchObject({ status: 500 });
 
-      // And the call itself does not outlive the page.
       unmount();
       await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
     });
@@ -529,7 +515,6 @@ describe('ConnectWordPressPage (PLG-FE-CONSOLE, NF-201)', () => {
 describe('the texts of the page', () => {
   const sources = import.meta.glob<string>(['/src/features/connect/*.ts', '/src/features/connect/*.tsx'], { query: '?raw', import: 'default', eager: true });
 
-  /** Every text of a block with the path of its key, and the keys of each of its objects in the order the file has them. */
   function scan(node: unknown, path: string, texts: [string, string][] = [], orders: [string, string[]][] = []) {
     if (typeof node === 'string') texts.push([path, node]);
     else if (node !== null && typeof node === 'object') {
@@ -577,13 +562,11 @@ describe('the texts of the page', () => {
   });
 
   it('texts_TheCodeOfThePage_NeverUsesADefaultValue', () => {
-    // The scan really reaches the code of the page: its parameters, its call and its page.
     expect(Object.keys(sources).length).toBeGreaterThanOrEqual(3);
     expect(Object.values(sources).some((source) => /\bdefaultValue\b/.test(source))).toBe(false);
   });
 
   it('texts_TheCodeOfThePage_NeverUsesTheStorageOfTheBrowserNorLogsAnything', () => {
-    // The request of the plugin and the answer of the server (the one-time code) are held in the page and nowhere else.
     expect(Object.values(sources).some((source) => /localStorage|sessionStorage|document\.cookie|console\./.test(source))).toBe(false);
   });
 });

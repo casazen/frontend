@@ -49,13 +49,11 @@ function ActiveTab() {
   const connectorOn = useFeatureFlags().flags.octorateConnector;
   const builtIns = useIntegrations();
   const active = useMarketplaceActive(undefined);
-  // The health is read only while the connector is on and for who may read it: with it off (or without the right) nothing is asked, nothing is said and no error is shown.
   const canReadHealth = connectorOn && hasPermission('short-rent', 'ota.read');
   const health = useMarketplaceHealth(undefined, canReadHealth);
 
   const healthItems = canReadHealth && !health.isError && health.data?.outcome === 'items' ? health.data.items : null;
   const activeData = active.isError ? undefined : active.data;
-  // With the connector off what goes through the channel manager does not exist (for the server too: it answers 404 to it): the tab shows the partners and what CasaZen has of its own, as before.
   const rows = useMemo(
     () => (activeData ? buildActiveRows(activeData.integrations.filter((integration) => connectorOn || !goesThroughConnector(integration.kind)), healthItems) : []),
     [activeData, connectorOn, healthItems],
@@ -63,7 +61,6 @@ function ActiveTab() {
   const providers = activeData?.providers ?? [];
   const builtInActive = builtIns.filter((integration) => integration.status === 'active');
   const builtInReading = builtIns.some((integration) => integration.status === 'loading');
-  // The ones whose state could not be read: nothing is known of them, so nothing is said of them but that, and the tab is never the empty one.
   const builtInsUnread = builtIns.filter((integration) => integration.status === 'unknown');
 
   const mayFix = (kind: string) => mayManageKind(kind, hasPermission, connectorOn);
@@ -78,7 +75,6 @@ function ActiveTab() {
     );
   }
 
-  // Nothing is on, and every read said so: an empty tab is told only when nothing failed to be read (the list of the server, the calendars and the card payments).
   if (!active.isPending && !active.isError && rows.length === 0 && providers.length === 0 && builtInActive.length === 0 && !builtInReading && builtInsUnread.length === 0) {
     return (
       <EmptyState

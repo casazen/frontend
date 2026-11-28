@@ -10,7 +10,6 @@ import { INVOICE_DATA_SOURCES, INVOICE_RECIPIENT_KINDS } from '@/types';
 
 type Tree = { [key: string]: string | string[] | Tree };
 
-/** The text at `key` (`a.b.c`) of a locale file, or undefined when there is none or when the key is not a leaf. */
 function textAt(tree: Tree, key: string): string | undefined {
   let node: string | string[] | Tree | undefined = tree;
   for (const part of key.split('.')) {
@@ -20,10 +19,6 @@ function textAt(tree: Tree, key: string): string | undefined {
   return typeof node === 'string' ? node : undefined;
 }
 
-/**
- * The texts of the invoice data (FIS-01, NF-81) that the screens read with a key built from a name: the scanner of the i18n test sees only keys
- * written out, so a text that is missing from a language (and would show as its key) is found here.
- */
 describe('texts of the invoice data of the host', () => {
   const host = INVOICE_FIELDS_COPY.host;
   const keys = [
@@ -49,11 +44,6 @@ describe('texts of the invoice data of the host', () => {
   });
 });
 
-/**
- * The guest page has five languages (NF-40): Italian and English in the app, German, French and Spanish in the subset files that hold only the
- * `checkin` namespace. The fields of the invoice step read their texts by a built key, so a language that lacks one is found here and not by a
- * guest who reads a key on the page (or English where the page is in German).
- */
 describe('texts of the invoice data of the guest page, in the five languages of the page', () => {
   const guest = INVOICE_FIELDS_COPY.guest;
   const keys = [
@@ -80,7 +70,6 @@ describe('texts of the invoice data of the guest page, in the five languages of 
     ['fr', guestFr],
     ['es', guestEs],
   ] as const)('guestInvoice_%s_IsInTheLanguageAndNotACopyOfTheEnglishTexts', (_language, locale) => {
-    // Words that are the same in the language and in English («PEC» in every language, «Province» in French).
     const sameWord = new Set(['PEC', 'Province']);
     const copied = keys.filter((key) => {
       const text = textAt(locale as Tree, key);

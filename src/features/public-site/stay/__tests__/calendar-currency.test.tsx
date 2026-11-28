@@ -17,7 +17,6 @@ const TODAY = '2026-11-02';
 
 function data(currency: string | null | undefined, overrides: Partial<StayCalendarData> = {}): StayCalendarData {
   const days = Array.from({ length: 120 }, (_, offset) => ({ date: addDays(TODAY, offset), available: true, priceCents: 15000, minNights: 1 }));
-  // `currency` is a text in the answer of the server: what these tests give it is what a malformed answer would carry.
   return { status: 'ready', days, today: TODAY, end: addDays(TODAY, 120), currency: currency as string | null, onRetry: () => undefined, ...overrides };
 }
 
@@ -53,10 +52,8 @@ describe('StayCalendar currency', () => {
   ] as const)('StayCalendar_Currency%s_WritesTheNumberAloneInTheCellAndTheNameOfTheDayAndTheTotalSayTheCurrencyIsNotAvailable', (_name, currency) => {
     render(<Harness calendar={data(currency)} />);
 
-    // A cell has no room for the phrase: the number alone, with no symbol (a long phrase would run over the days next to it)...
     expect(price('2026-11-10')).toBe('150');
     expect(document.querySelector('[data-testid="stay-calendar"] .stay-cal__p')?.textContent).not.toContain('valuta');
-    // ...and the phrase is where there is room for it: the name of the day (what a screen reader says) and the total of the stay.
     expect(day('2026-11-10').getAttribute('aria-label')).toContain('150 (valuta non disponibile) a notte');
 
     fireEvent.click(day('2026-11-10'));
@@ -88,7 +85,6 @@ describe('StayCalendar currency', () => {
   });
 
   it('StayCalendar_NightsThatCouldNotBeRead_DrawWithNoCurrencyAndNoPrice', () => {
-    // While the nights load, and when they cannot be read, the calendar has no currency (null, never a euro) and draws no price.
     const { unmount } = render(<Harness calendar={data(null, { status: 'loading', days: [], end: TODAY })} />);
     expect(screen.getByTestId('stay-calendar')).toBeInTheDocument();
     expect(document.querySelectorAll('.stay-cal__p')).toHaveLength(0);

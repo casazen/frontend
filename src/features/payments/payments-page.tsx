@@ -17,13 +17,8 @@ import { PAYMENTS_PATH, monthRange, summarizeMonth, type PaymentsMonth } from '.
 
 const NO_PAYMENTS: readonly PaymentListItem[] = [];
 
-/** The two ways to see the payments: one by one (the list), or as the ledger of a period (FIS-05). */
 type PaymentsView = 'payments' | 'ledger';
 
-/**
- * The numbers of the month, quiet and in one row: what came in (net of what went back), what is still to come and what went
- * back. Each one leads to the payments it is made of.
- */
 function PaymentsSummary({ month, today }: { month: PaymentsMonth; today: string }) {
   const { t, i18n } = useTranslation();
   const monthName = formatStayDate(startOfMonth(today), i18n.language, { month: 'long' });

@@ -9,25 +9,19 @@ import { httpsUrlOrNull, initialsOf, marketplaceAction, marketplaceEntryValue, m
 import { MARKETPLACE_ENTRY_PARAM } from '../lib/marketplace-paths';
 import { MarketplaceStatusBadge } from './marketplace-status-badge';
 
-/** What makes the card of one of CasaZen's own integrations (calendars, card payments) different: it is not in the catalog. */
 export interface BuiltInIntegration {
-  /** The page where it is set up and managed. */
   href: string;
   icon: LucideIcon;
-  /** How it stands when it is on ("2 calendari collegati"). */
   detail: string | null;
-  /** False while its state is being read or could not be read: the card has no badge then, never a «Non attivo» that nobody checked. */
   showStatus: boolean;
 }
 
 interface MarketplaceEntryCardProps {
   entry: MarketplaceCatalogEntry;
-  /** Only for CasaZen's own integrations: they lead to their own page and have no detail card. */
   builtIn?: BuiltInIntegration;
   testId?: string;
 }
 
-/** The logo of the integration; the initials of its name when it has none or the picture does not load; an icon for CasaZen's own. */
 function EntryLogo({ name, logoUrl, icon: Icon }: { name: string; logoUrl: string | null; icon?: LucideIcon }) {
   const { t } = useTranslation();
   const [failed, setFailed] = useState(false);
@@ -62,7 +56,6 @@ export function MarketplaceEntryCard({ entry, builtIn, testId = `marketplace-ent
     ? { kind: entry.status === 'Active' ? 'manage' : 'activate', to: builtIn.href }
     : marketplaceAction(entry, undefined, marketplaceReturnTarget(location));
 
-  // The server says why a wizard cannot start; a reason this page has no text for is said in general words.
   const reasonKey = `marketplace.detail.reason.${entry.reason}`;
   const reason = !action && !builtIn && entry.reason ? t(i18n.exists(reasonKey) ? reasonKey : 'marketplace.detail.reason.unknown') : null;
 
@@ -72,7 +65,6 @@ export function MarketplaceEntryCard({ entry, builtIn, testId = `marketplace-ent
     : t('marketplace.card.costUnknown');
 
   const openDetails = (event: MouseEvent<HTMLButtonElement>) => {
-    // The drawer gives the focus back to this button when it closes (Safari does not focus a button that is clicked, so it is said here).
     rememberOpener(event.currentTarget);
     setSearchParams(
       (previous) => {
@@ -80,7 +72,6 @@ export function MarketplaceEntryCard({ entry, builtIn, testId = `marketplace-ent
         next.set(MARKETPLACE_ENTRY_PARAM, marketplaceEntryValue(entry));
         return next;
       },
-      // The card is part of the page, not a step of the way: it takes the place of the entry of the history, and Back leaves the page.
       { replace: true, preventScrollReset: true },
     );
   };

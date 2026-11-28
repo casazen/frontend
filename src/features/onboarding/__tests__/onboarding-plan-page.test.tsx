@@ -27,7 +27,6 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
-// The header is the shell's: the page hands it its title, its line and the two buttons that are always on screen.
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) =>
     createElement('div', null, createElement('h1', null, title), description ? createElement('p', { 'data-testid': 'page-description' }, description) : null, action),
@@ -87,7 +86,6 @@ async function rows(): Promise<HTMLElement[]> {
 const manualSender = { sender: 'Manual' as const, lastChangedAt: null, delegationAccepted: false, delegationTextVersion: 'v1', propertyOverrides: 0, autoSendGuestsToOctorate: false };
 const row = (code: OnboardingPartKey) => screen.getByTestId(`onboarding-part-${code}`);
 
-/** The parts a host with all its properties in Italy sees: every part but the one that is for properties in Switzerland. */
 const LISTED_PARTS = ONBOARDING_PART_KEYS.filter((code) => code !== 'guestRegistration');
 
 describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
@@ -193,7 +191,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
 
       const list = await rows();
 
-      // The notification of the guests in Switzerland does not apply to a host with no active property there: it is not in the list (see the tests of that part below).
       const visibleOrder = ['properties', ...LISTED_PARTS.filter((code) => code !== 'properties')] as const;
       expect(list.map((item) => item.dataset.testid)).toEqual(visibleOrder.map((code) => `onboarding-part-${code}`));
       expect(list.map((item) => within(item).getByRole('heading', { level: 3 }).textContent)).toEqual(
@@ -213,7 +210,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       expect(within(properties).getByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('onboardingPlan.reasons.mapping_unconfirmed'));
 
       expect(within(row('octorateConnection')).getByTestId('onboarding-part-state')).toHaveTextContent(i18n.t('onboardingPlan.states.done'));
-      // A part that is done has nothing left to say: no reason, no button.
       expect(within(row('octorateConnection')).queryByTestId('onboarding-part-reason')).not.toBeInTheDocument();
       expect(within(row('octorateConnection')).queryByRole('link')).not.toBeInTheDocument();
       expect(within(row('octorateConnection')).queryByRole('button')).not.toBeInTheDocument();
@@ -226,12 +222,9 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
 
       const invoicing = row('fiscalDocuments');
       expect(within(invoicing).getByRole('heading', { level: 3 })).toHaveTextContent('Fatturazione');
-      // The sections that have nothing missing, over the sections that apply, as the backend counts them.
       expect(within(invoicing).getByTestId('onboarding-part-progress')).toHaveTextContent(i18n.t('onboardingPlan.progress', { done: 3, total: 6 }));
-      // The reason is the key of the first missing item of the billing setup, in plain words: never the key.
       expect(within(invoicing).getByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('billingWizard.items.swiss_uid_missing'));
       expect(within(invoicing).getByTestId('onboarding-part-reason')).not.toHaveTextContent('swiss_uid_missing');
-      // The code of the retired «my accountant issues» is not known any more: its text is gone.
       expect(i18n.exists('onboardingPlan.reasons.accountant_handles')).toBe(false);
     });
 
@@ -314,9 +307,7 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       renderPage();
       await rows();
 
-      // Started («1 di 3»): resume.
       expect(within(row('properties')).getByRole('link')).toHaveTextContent(i18n.t('onboardingPlan.actions.resume'));
-      // Put off: resume, says until when (on the clock of Rome), and has nothing left to put off.
       const identification = row('identification');
       expect(within(identification).getByRole('link')).toHaveTextContent(i18n.t('onboardingPlan.actions.resume'));
       expect(within(identification).getByTestId('onboarding-part-state')).toHaveTextContent(i18n.t('onboardingPlan.states.deferredUntil', { date: '13 novembre' }));
@@ -324,7 +315,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
     });
 
     it('OnboardingPlan_PartPutOffThatStillWaitsForAnotherPart_NamesItAndOffersNoWayIn', async () => {
-      // The server gives «rimandato» precedence over «in attesa»: the listings were put off before the channels, which they need, were done.
       vi.mocked(onboardingApi.getPlan).mockResolvedValue(
         plan({ listings: { state: 'deferred', reason: 'channel_content_to_fix', remindAt: '2026-11-13T08:00:00Z', done: 0, total: 2 } }),
       );
@@ -337,7 +327,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       expect(within(listings).getByTestId('onboarding-part-reason')).toHaveTextContent(
         i18n.t('onboardingPlan.reasons.required_part_not_done', { parts: i18n.t(partTitleKey('channels')) }),
       );
-      // Not «Riprendi»: it would lead to a part that cannot be done yet, as for a part that is blocked.
       expect(within(listings).queryByRole('link')).not.toBeInTheDocument();
       expect(within(listings).queryByRole('button')).not.toBeInTheDocument();
     });
@@ -375,7 +364,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       renderPage();
       await rows();
 
-      // Activation waits for the two parts it requires that are not done: the connection is done, so only the properties.
       const activation = row('activation');
       expect(within(activation).getByTestId('onboarding-part-state')).toHaveTextContent(i18n.t('onboardingPlan.states.blocked'));
       expect(within(activation).getByTestId('onboarding-part-reason')).toHaveTextContent(
@@ -397,7 +385,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
     const later = () => within(row('identification')).getByRole('button', { name: new RegExp(`^${i18n.t('onboardingPlan.actions.later')}`) });
 
     it('Defer_Choices_AreThisEveningTomorrowAndInAWeekOnTheClockOfRome', async () => {
-      // 11:00 in Rome (CET, UTC+1).
       freezeClock('2026-11-12T10:00:00Z');
       renderPage();
       await rows();
@@ -421,7 +408,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       fireEvent.click(within(dialog).getByRole('radio', { name: i18n.t('onboardingPlan.defer.options.nextWeek') }));
       fireEvent.click(within(dialog).getByTestId('onboarding-defer-confirm'));
 
-      // In a week at 09:00 in Rome is 08:00 UTC in November.
       await waitFor(() => expect(onboardingApi.deferPart).toHaveBeenCalledWith('identification', '2026-11-19T08:00:00.000Z'));
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.defer.toast')));
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -440,7 +426,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
     });
 
     it('Defer_AfterEightInTheEvening_DoesNotOfferThisEveningBecauseTheServerRefusesAReminderInThePast', async () => {
-      // 20:30 in Rome.
       freezeClock('2026-11-12T19:30:00Z');
       renderPage();
       await rows();
@@ -477,7 +462,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       expect(note).toHaveTextContent(i18n.t('onboardingPlan.defer.adminOnly'));
       expect(later()).toBeDisabled();
       expect(later()).toHaveAccessibleDescription(i18n.t('onboardingPlan.defer.adminOnly'));
-      // The plan is still read: the way into each part stays.
       expect(within(row('identification')).getByRole('link')).toHaveAttribute('href', partPath('identification'));
       expect(onboardingApi.deferPart).not.toHaveBeenCalled();
     });
@@ -555,7 +539,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       await rows();
 
       expect(screen.queryByTestId('onboarding-plan-help')).not.toBeInTheDocument();
-      // «Salva ed esci» is there all the same.
       expect(exitButton()).toBeInTheDocument();
     });
 
@@ -613,7 +596,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
   });
 
   describe('the offer of the bulk configuration (E10/F03/US03/T02)', () => {
-    /** The status of an org with `properties` properties: every flow counts every property, each in one state. */
     function statusOf(properties: number) {
       return { flows: ['Listings', 'Bookings', 'CheckInCompliance', 'Messages', 'Documents', 'Reports'].map((flow) => ({ flow, active: 0, toComplete: properties, notAvailable: 0, total: properties })) } as never;
     }
@@ -656,7 +638,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
     });
   });
 
-  // E29/F02/US01/T02, E29/F02/US02/T01: the twelfth part is for an organization with an ACTIVE property in Switzerland; for any other the plan does not list it.
   describe('the notification of the guests in Switzerland', () => {
     it('OnboardingPlan_HostWithAnActiveSwissPropertyThatLacksSomething_ListsThePartBeforeTheSummaryWithWhatItLacks', async () => {
       vi.mocked(onboardingApi.getPlan).mockResolvedValue(
@@ -666,7 +647,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
 
       const list = await rows();
 
-      // The twelve parts (properties first in the workspace plan), the Swiss one just before the summary.
       const visibleOrder = ['properties', ...ONBOARDING_PART_KEYS.filter((code) => code !== 'properties')] as const;
       expect(list.map((item) => item.dataset.testid)).toEqual(visibleOrder.map((code) => `onboarding-part-${code}`));
       const swiss = row('guestRegistration');
@@ -674,7 +654,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       expect(within(swiss).getByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('onboardingPlan.reasons.ticino_structure_id_missing'));
       expect(within(swiss).getByTestId('onboarding-part-progress')).toHaveTextContent(i18n.t('onboardingPlan.progress', { done: 1, total: 2 }));
       expect(within(swiss).getByTestId('onboarding-part-guestRegistration-open')).toHaveAttribute('href', partPath('guestRegistration'));
-      // Nothing requires it, so the host may put it off.
       expect(within(swiss).getByTestId('onboarding-part-guestRegistration-later')).toBeEnabled();
     });
 
@@ -682,7 +661,6 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       renderPage();
       await rows();
 
-      // The plan of such a host says «not available» (`no_swiss_property`): a row that only says there is nothing to do would be noise for a host whose properties are all in Italy.
       expect(screen.queryByTestId('onboarding-part-guestRegistration')).not.toBeInTheDocument();
       expect(document.body.textContent).not.toContain(i18n.t('onboardingPlan.parts.guestRegistration.title'));
       expect(document.body.textContent).not.toContain(i18n.t('onboardingPlan.reasons.no_swiss_property'));

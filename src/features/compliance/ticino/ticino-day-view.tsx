@@ -32,14 +32,11 @@ interface TicinoDayViewProps {
    * is read again says it anew.
    */
   asOf: number;
-  /** The first action on a day that was asked without a date pins it to the day the server picked: declaring it must leave it on screen, closed, not move on to the next one. */
   onPin: () => void;
-  /** Another day of the property still to notify. */
   onPickDay: (day: string) => void;
   close: () => void;
 }
 
-/** The line under the title of the day: what it is, how it stands, and by when it is due. */
 function DayHeader({ day, asOf, busy, onPickDay }: { day: TicinoNotificationDay; asOf: number; busy: boolean; onPickDay: (day: string) => void }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -85,12 +82,6 @@ function DayHeader({ day, asOf, busy, onPickDay }: { day: TicinoNotificationDay;
   );
 }
 
-/**
- * The guided notification of the guests of an arrival day of a Ticino property to the cantonal police (E30/F02/US03/T02, casazen/backend#979), as the layer of the cockpit
- * shows it: who is notified, the file, the portal, the declaration that it was uploaded and the proof. CasaZen transmits nothing (decision D1): the host uploads the file on
- * the portal and says so here. Every state comes from the day the server sends (nothing of the progress is kept here), so the layer can be left and come back to. The buttons of
- * the layer wait while any request of it is on its way, and a file of a day that is closed asks the person first (the portal may create duplicates).
- */
 export function TicinoDayView({ day, asOf, onPin, onPickDay, close }: TicinoDayViewProps) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -106,13 +97,10 @@ export function TicinoDayView({ day, asOf, onPin, onPickDay, close }: TicinoDayV
   const declare = useDeclareTicinoDay(propertyId);
   const undeclare = useUndeclareTicinoDay(propertyId);
   const record = useRecordTicinoDocument(propertyId);
-  // Every button of the layer waits while any request of it is on its way.
   const busy = download.isPending || groupSheet.isPending || declare.isPending || undeclare.isPending || record.isPending;
 
-  // The step the person opened (`none`: they closed the open one); until then the one the day is at, so the layer opens where it was left.
   const [chosen, setChosen] = useState<TicinoStepId | 'none' | null>(null);
   const open: TicinoStepId | null = chosen === null ? firstStepOf(day) : chosen === 'none' ? null : chosen;
-  // The format of a file waiting for the person's yes (the day is closed: the portal may create duplicates), and the stay whose guests are being completed.
   const [pendingFormat, setPendingFormat] = useState<TicinoFileFormat | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -121,9 +109,7 @@ export function TicinoDayView({ day, asOf, onPin, onPickDay, close }: TicinoDayV
     download.mutate(
       { reportDate: day.day, format, confirmRegenerate: confirmed },
       {
-        // The file is down: the next thing is the portal.
         onSuccess: () => setChosen('portal'),
-        // The day was closed meanwhile (a co-host declared it): the person is asked, as if the layer had known.
         onError: (error) => {
           if (isAlreadyDeclaredConflict(error)) setPendingFormat(format);
         },
@@ -142,7 +128,6 @@ export function TicinoDayView({ day, asOf, onPin, onPickDay, close }: TicinoDayV
       await record.mutateAsync({ type, reportDate: day.day, reference, file });
       return true;
     } catch {
-      // The failure is told by the toast of the mutation; the file stays chosen.
       return false;
     }
   };
@@ -230,7 +215,6 @@ export function TicinoDayView({ day, asOf, onPin, onPickDay, close }: TicinoDayV
         </Button>
       </div>
 
-      {/* Next to the steps, not inside any form: the confirmation and the editor of the guests are dialogs of their own, and their events go up the tree of the page. */}
       <ConfirmationDialog
         open={pendingFormat !== null}
         onOpenChange={(next) => {
@@ -251,7 +235,6 @@ export function TicinoDayView({ day, asOf, onPin, onPickDay, close }: TicinoDayV
           bookingId={editing}
           onClose={() => {
             setEditing(null);
-            // The guests were corrected (or not): the file of the day says who is in it now.
             void queryClient.invalidateQueries({ queryKey: [TICINO_POLICE_KEY, propertyId] });
           }}
         />

@@ -52,7 +52,6 @@ function problem(status: number): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: {}, statusText: '', headers: {}, config });
 }
 
-/** What the server answers to «Verifica nel tuo Cassetto Compliance» (the compliance drawer of E03/F05/US02 asks it): where to go, what to look at there. */
 const handoff = (topic: ComplianceHandoff['topic']): ComplianceHandoff => ({
   handoffId: 'hf_5b0e2c9a41d94c63a8d1',
   startedAt: '2026-11-13T10:00:00Z',
@@ -90,7 +89,6 @@ beforeEach(async () => {
 
 afterEach(cleanup);
 
-// E03/F03/US02/T01 (NF-52, AC-NF52-11, CHK-12 point 7).
 describe('ConnectionHealthPanel', () => {
   it('ConnectionHealthPanel_ActiveChannelManager_ShowsSenderStateAndLastRunInThePropertyTimeZone', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health());
@@ -113,7 +111,6 @@ describe('ConnectionHealthPanel', () => {
     expect(await screen.findByTestId('connection-health-Alloggiati-last-run')).toHaveTextContent('08:05');
   });
 
-  // AC 2: an unreadable connection shows «cannot verify» with instructions, never a green state.
   it('ConnectionHealthPanel_UnknownConnection_SaysCasaZenCannotVerifyWithInstructionsAndNeverGreen', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(
       health({ alloggiati: line({ state: 'Unknown', connectionValid: null, autorun: null, lastAutomaticRunAt: null, reason: 'octorate_police_not_exposed' }), istat: line({ state: 'Unknown', lastAutomaticRunAt: null }) }),
@@ -123,10 +120,8 @@ describe('ConnectionHealthPanel', () => {
     await screen.findByTestId('connection-health-Alloggiati');
     expect(state('Alloggiati')).toHaveTextContent('Non verificabile');
     expect(state('Alloggiati')).not.toHaveTextContent('Attivo');
-    expect(screen.getByTestId('connection-health-Alloggiati-detail')).toHaveTextContent('CasaZen non riesce a verificare questa connessione');
     expect(screen.getByTestId('connection-health-Alloggiati-instructions')).toHaveTextContent("Controlla nel pannello del tuo channel manager");
     expect(screen.getByTestId('connection-health-Alloggiati')).toHaveTextContent('Il channel manager non ci lascia leggere questo stato.');
-    // Nothing is told as a run it did not read.
     expect(screen.queryByTestId('connection-health-Alloggiati-last-run')).not.toBeInTheDocument();
   });
 
@@ -150,55 +145,72 @@ describe('ConnectionHealthPanel', () => {
 
     await screen.findByTestId('connection-health-Alloggiati');
     expect(state('Alloggiati')).toHaveTextContent('Non attivo');
-    expect(screen.getByTestId('connection-health-Alloggiati-detail')).toHaveTextContent("l'invio non è attivo");
     expect(screen.getByTestId('connection-health-Alloggiati')).toHaveTextContent("L'invio automatico giornaliero è spento nel channel manager.");
     expect(screen.getByTestId('connection-health-Alloggiati-instructions')).toHaveTextContent("Accendi l'invio automatico");
   });
 
-  it('ConnectionHealthPanel_ManualSender_SaysTheHostSendsAndAsksNothing', async () => {
+  it('ConnectionHealthPanel_ManualSender_SaysTheHostSendsInOneWordAndAsksNothing', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(
       health({ alloggiati: line({ sender: 'Manual', state: 'Manual', lastAutomaticRunAt: null }), istat: line({ sender: 'Manual', state: 'Manual', lastAutomaticRunAt: null }) }),
     );
     renderPanel(true);
 
     await screen.findByTestId('connection-health-Alloggiati');
-    expect(screen.getByTestId('connection-health-Alloggiati-sender')).toHaveTextContent('Invio manuale');
     expect(state('Alloggiati')).toHaveTextContent('Manuale');
+    expect(screen.queryByTestId('connection-health-Alloggiati-sender')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('connection-health-Alloggiati-detail')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('connection-health-shared-detail')).not.toBeInTheDocument();
     expect(screen.queryByTestId('connection-health-Alloggiati-actions')).not.toBeInTheDocument();
     expect(screen.queryByTestId('connection-health-Alloggiati-verify')).not.toBeInTheDocument();
   });
 
-  it('ConnectionHealthPanel_PropertyOutsideItaly_IsManualWhateverTheLinesSay', async () => {
+  it('ConnectionHealthPanel_PropertyOutsideItaly_IsOneLineAndNoRowsWhateverTheLinesSay', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ applies: false }));
     renderPanel(false);
 
-    await screen.findByTestId('connection-health-Alloggiati');
-    expect(state('Alloggiati')).toHaveTextContent('Manuale');
-    expect(screen.getByTestId('connection-health-Alloggiati-detail')).toHaveTextContent("Fuori dall'Italia");
+    expect(await screen.findByTestId('connection-health-outside')).toHaveTextContent("Non previsto fuori dall'Italia");
+    expect(screen.queryByTestId('connection-health-Alloggiati')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('connection-health-Istat')).not.toBeInTheDocument();
     expect(screen.queryByTestId('connection-health-credentials')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('connection-health-refresh')).not.toBeInTheDocument();
   });
 
-  // The API never says the receipts can be downloaded in this release: neither does the panel.
   it.each([
-    ['no credentials in CasaZen', { credentialsInCasaZen: false, credentialsUsable: false }, 'CasaZen non ha le credenziali', false],
-    ['credentials saved but not verified', { credentialsInCasaZen: true, credentialsUsable: false }, 'salvate in CasaZen ma non verificate', false],
-    ['credentials verified', { credentialsInCasaZen: true, credentialsUsable: true }, 'CasaZen può scaricare le ricevute', true],
-  ])('ConnectionHealthPanel_%s_TellsTheReceiptsOnlyAsTheApiSays', async (_what, change, words, canDownload) => {
+    ['no credentials in CasaZen', { credentialsInCasaZen: false, credentialsUsable: false }, true],
+    ['credentials saved but not verified', { credentialsInCasaZen: true, credentialsUsable: false }, true],
+    ['credentials verified', { credentialsInCasaZen: true, credentialsUsable: true }, false],
+  ])('ConnectionHealthPanel_%s_OffersTheArchiveOnlyWhereTheReceiptsDoNotComeByThemselves', async (_what, change, offered) => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health(change));
     renderPanel(false);
 
-    const credentials = await screen.findByTestId('connection-health-credentials');
-    expect(credentials).toHaveTextContent(words);
-    expect(credentials.textContent?.includes('può scaricare')).toBe(canDownload);
-    // When the receipts do not come by themselves the way to add them is one click away.
-    expect(screen.queryByTestId('connection-health-archive-link') !== null).toBe(!canDownload);
-    if (!canDownload) {
+    await screen.findByTestId('connection-health-Alloggiati');
+    expect(screen.queryByTestId('connection-health-archive-link') !== null).toBe(offered);
+    if (offered) {
       expect(screen.getByTestId('connection-health-archive-link')).toHaveAttribute('href', `/app/short-rent/alloggiati/reports?property=${PROPERTY_ID}&tab=proofs`);
     }
+    expect(screen.getByTestId('connection-health-panel').textContent ?? '').not.toMatch(/credenziali/i);
   });
 
-  // AC 4: the «activate or reconnect» button is rendered only when the wizard exists in the ROUTE_MANIFEST and the person may open it. The wizard of the sender
-  // (E03/F01/US02/T02) is in the manifest and asks `property.write`: who may only read the property gets the instructions and no button that would be refused.
+  it('ConnectionHealthPanel_Hint_IsTheOnlyExplanationAndLeadsToTheSectionOfTheManual', () => {
+    vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health());
+    renderPanel(false);
+
+    fireEvent.click(screen.getByRole('button', { name: "Cos'è: Invio a Polizia e ISTAT" }));
+
+    expect(screen.getByText("Chi invia i dati degli ospiti a Polizia e ISTAT e se l'invio funziona.")).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Apri nel manuale' })).toHaveAttribute('href', '/guida/alloggiati-istat.html#chi-invia-i-dati-degli-ospiti');
+  });
+
+  it('ConnectionHealthPanel_PropertyOutsideItaly_TheHintSaysWhyNothingIsSentFromHere', async () => {
+    vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ applies: false }));
+    renderPanel(false);
+    await screen.findByTestId('connection-health-outside');
+
+    fireEvent.click(screen.getByRole('button', { name: "Cos'è: Invio a Polizia e ISTAT" }));
+
+    expect(screen.getByText("Fuori dall'Italia i dati degli ospiti non si inviano a Polizia e ISTAT da qui.")).toBeInTheDocument();
+  });
+
   it('ConnectionHealthPanel_PersonWhoMayNotOpenTheSenderWizard_ShowsTheInstructionsAndNoActivateButton', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ alloggiati: line({ state: 'Inactive' }) }));
     renderPanel(false);
@@ -216,7 +228,6 @@ describe('ConnectionHealthPanel', () => {
 
     await screen.findByTestId(`connection-health-${topic}`);
     expect(screen.getByTestId(`connection-health-${topic}-activate`)).toHaveAttribute('href', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
-    // The button replaces the instructions: one way on, not both.
     expect(screen.queryByTestId(`connection-health-${topic}-instructions`)).not.toBeInTheDocument();
   });
 
@@ -226,12 +237,9 @@ describe('ConnectionHealthPanel', () => {
 
     await screen.findByTestId('connection-health-Istat');
     expect(screen.getByTestId('connection-health-Istat-verify')).toHaveTextContent('Verifica nel tuo Cassetto Compliance');
-    // Active needs no verification.
     expect(screen.queryByTestId('connection-health-Alloggiati-verify')).not.toBeInTheDocument();
   });
 
-  // The button is the one of the compliance drawer: it asks the server for that property and that communication (the topic of the line) and the route of the page of
-  // the property the host comes from, then opens the dialog. The verification is the channel manager's to tell, never a result of CasaZen's.
   it.each(['Alloggiati', 'Istat'] as const)('ConnectionHealthPanel_VerifyPressedOnThe%sLine_AsksTheHandoffOfThatPropertyAndComesBackToThePropertyPage', async (topic) => {
     const unknown = line({ state: 'Unknown', lastAutomaticRunAt: null });
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ alloggiati: unknown, istat: unknown }));
@@ -255,22 +263,14 @@ describe('ConnectionHealthPanel', () => {
     expect(screen.getByTestId('connection-health-Istat-instructions')).toBeInTheDocument();
   });
 
-  // UX-12: the channel manager is «il tuo channel manager»; the supplier is named only in the closed disclosure.
-  it('ConnectionHealthPanel_UnknownChannelManager_NamesTheSupplierOnlyInTheClosedDisclosure', async () => {
+  it('ConnectionHealthPanel_UnknownChannelManager_NeverNamesTheSupplier', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValue(health({ alloggiati: line({ state: 'Unknown', reason: 'octorate_unavailable' }), istat: line({ state: 'Inactive', reason: 'octorate_police_account_invalid' }) }));
     renderPanel(false);
 
     const panel = await screen.findByTestId('connection-health-panel');
     await screen.findByTestId('connection-health-Istat');
-    const details = panel.querySelectorAll('details');
-    expect(details.length).toBeGreaterThan(0);
-    for (const disclosure of details) {
-      expect(disclosure).not.toHaveAttribute('open');
-      expect(disclosure).toHaveTextContent('Dati consultati su Octorate');
-    }
-    const outside = panel.cloneNode(true) as HTMLElement;
-    outside.querySelectorAll('details').forEach((disclosure) => disclosure.remove());
-    expect(outside.textContent).not.toMatch(/octorate/i);
+    expect(panel.querySelectorAll('details')).toHaveLength(0);
+    expect(panel.textContent).not.toMatch(/octorate/i);
   });
 
   it('ConnectionHealthPanel_WithoutPropertyRead_ShowsNothingAndAsksNothing', () => {
@@ -303,7 +303,6 @@ describe('ConnectionHealthPanel', () => {
     await screen.findByTestId('connection-health-Alloggiati');
   });
 
-  // A 404 is «not found» even with the older answer still in the cache (the query keeps the last data on an error).
   it('ConnectionHealthPanel_404AfterAnAnswer_IsNotFoundNeverTheOlderState', async () => {
     vi.mocked(complianceHealthApi.getConnectionHealth).mockResolvedValueOnce(health());
     renderPanel(false);

@@ -24,18 +24,14 @@ interface SwissDayViewProps {
    * says it anew.
    */
   asOf: number;
-  /** The first action on a day that was asked without a date pins it to the day the server picked: declaring it must leave it on screen, closed, not move on to the next one. */
   onPin: () => void;
-  /** Another day of the property still to notify. */
   onPickDay: (day: string) => void;
   close: () => void;
 }
 
-/** The certainty is a word and an icon, never red (decision D5): an uncertain rule is told, not alarmed. */
 const CERTAINTY_TONES: Record<ReturnType<typeof certaintyOf>, StatusTone> = { Verified: 'success', Partial: 'info', Unverified: 'neutral' };
 const CERTAINTY_ICONS: Record<StatusTone, LucideIcon> = { success: CheckCircle2, info: Info, neutral: CircleHelp, warning: Info, danger: Info };
 
-/** The line under the title of the day: what it is, how it stands, and by when it is due. */
 function DayHeader({ day, asOf, busy, onPickDay }: { day: SwissNotificationDay; asOf: number; busy: boolean; onPickDay: (day: string) => void }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -73,10 +69,6 @@ function DayHeader({ day, asOf, busy, onPickDay }: { day: SwissNotificationDay; 
   );
 }
 
-/**
- * What the canton asks, in the words of the regime: how the notification is made, the deadline and how sure the source is, always with the sentence that sends the host to check with the
- * municipality or the police (CasaZen gives no legal advice). An uncertain source is told as such and never in red.
- */
 function CantonBlock({ day }: { day: SwissNotificationDay }) {
   const { t } = useTranslation();
   const certainty = certaintyOf(day);
@@ -123,13 +115,10 @@ export function SwissDayView({ day, asOf, onPin, onPickDay, close }: SwissDayVie
 
   const declare = useDeclareSwissDay(propertyId);
   const undeclare = useUndeclareSwissDay(propertyId);
-  // Every button of the layer waits while any request of it is on its way.
   const busy = declare.isPending || undeclare.isPending;
 
-  // The step the person opened (`none`: they closed the open one); until then the one the day is at, so the layer opens where it was left.
   const [chosen, setChosen] = useState<SwissStepId | 'none' | null>(null);
   const open: SwissStepId | null = chosen === null ? firstStepOf(day) : chosen === 'none' ? null : chosen;
-  // The stay whose guests are being completed.
   const [editing, setEditing] = useState<string | null>(null);
 
   const toggle = (step: SwissStepId) => setChosen(open === step ? 'none' : step);
@@ -190,13 +179,11 @@ export function SwissDayView({ day, asOf, onPin, onPickDay, close }: SwissDayVie
         </Button>
       </div>
 
-      {/* Next to the steps, not inside any form: the editor of the guests is a dialog of its own, and its events go up the tree of the page. */}
       {editing ? (
         <TicinoGuestsEditor
           bookingId={editing}
           onClose={() => {
             setEditing(null);
-            // The guests were corrected (or not): the data of the day say who is complete now.
             void queryClient.invalidateQueries({ queryKey: [SWISS_NOTIFICATION_KEY, propertyId] });
           }}
         />

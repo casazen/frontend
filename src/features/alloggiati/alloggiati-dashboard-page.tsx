@@ -19,7 +19,6 @@ import { formatRecordDate, isAlloggiatiSent } from './alloggiati-status.utils';
 
 const bookingPath = (row: AlloggiatiSummaryDto) => `/app/short-rent/bookings/${row.bookingId}?tab=alloggiati`;
 
-/** What comes first: a communication that failed, then one to send, then the ones that wait for the arrival day, and last the sent ones. */
 function rank(row: AlloggiatiSummaryDto): number {
   if (row.status === 'Errore' || row.status === 'Rifiutato') return 0;
   if (row.status === 'DaInviareManualmente') return 1;
@@ -31,12 +30,10 @@ function deadlineTime(row: AlloggiatiSummaryDto): number {
   return Number.isNaN(time) ? Number.POSITIVE_INFINITY : time;
 }
 
-/** Most pressing first: by kind, then what is past its deadline, then the nearest deadline. */
 function byUrgency(a: AlloggiatiSummaryDto, b: AlloggiatiSummaryDto): number {
   return rank(a) - rank(b) || Number(b.isOverdue) - Number(a.isOverdue) || deadlineTime(a) - deadlineTime(b);
 }
 
-/** Until when, from the deadline the backend works out (24 hours from arrival, 6 if the stay is short): it is never worked out here. */
 function deadlineNote(row: AlloggiatiSummaryDto, context: { t: TFunction; locale: string }): RowNote {
   const note = urgencyOf(row.deadlineAt, context);
   return row.isShortStay ? { ...note, text: `${note.text} (${context.t('alloggiati.shortStayTerm')})` } : note;

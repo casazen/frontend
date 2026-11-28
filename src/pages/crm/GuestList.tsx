@@ -29,7 +29,6 @@ const NEW_GROUP_PATH = `${CRM_PATH}/segments?new=1`;
 const IMPORT_PATH = `${CRM_PATH}/segments?import=1`;
 const GUESTS_HELP_PATH = '/app/short-rent/help#guide-guests';
 
-/** Tags a row shows before "+3": the rest are in the profile. */
 const TAGS_SHOWN = 3;
 
 type NextStepKind = 'group' | 'campaign';
@@ -48,7 +47,6 @@ function emailStateOfProfile(profile: CrmProfileListItem) {
   });
 }
 
-/** The name of a profile: the guest's; a lead without a name is known by its masked address. */
 function ProfileName({ profile }: { profile: CrmProfileListItem }) {
   const { t } = useTranslation();
   const name = profile.displayName || profile.emailMasked || t('crm.list.noName');
@@ -62,10 +60,6 @@ function ProfileName({ profile }: { profile: CrmProfileListItem }) {
   );
 }
 
-/**
- * A mark on a profile that a person has to look at: a merge proposal waits for a decision. The page of the duplicates is for who may
- * write the guests (`guest.write`): to who may only read them the mark says the same without sending them to a page they cannot open.
- */
 function MergeMark() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
@@ -180,7 +174,6 @@ function LastStayCell({ profile }: { profile: CrmProfileListItem }) {
   );
 }
 
-/** The e-mail of a profile: its state and, under it, the address masked. */
 function EmailCell({ profile }: { profile: CrmProfileListItem }) {
   return (
     <div className="min-w-0 space-y-1">

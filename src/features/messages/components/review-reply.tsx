@@ -18,11 +18,9 @@ import { ReviewDraftPanel } from './review-draft-panel';
 
 interface ReviewReplySectionProps {
   review: ReviewThread;
-  /** The host may write the bookings (`booking.write`): the reply and the draft need it. */
   canWrite: boolean;
   /** What the host has typed. The page keeps it, so that a reading of the review that fails and takes the review away from the screen does not take the words with it. */
   text: string;
-  /** The words the host typed; `null` forgets them (the reply is sent: what the review holds now is the page's to show). */
   onText: (text: string | null) => void;
 }
 
@@ -37,7 +35,6 @@ export function ReviewReplySection({ review, canWrite, text, onText }: ReviewRep
   const titleId = useId();
   const online = useOnlineStatus();
   const send = useReplyToReview(review.threadKey);
-  // Any request of the page waits for the others: a public reply goes out once, by one thing at a time (the draft panel and the host's own review share it).
   const busy = useIsMutating() > 0;
   const [confirming, setConfirming] = useState<string | null>(null);
 
@@ -61,7 +58,6 @@ export function ReviewReplySection({ review, canWrite, text, onText }: ReviewRep
         ) : null}
       </div>
 
-      {/* What the host wrote and the channel has (or may have). A reply that was refused is not shown as published: it is the box below that holds its words. */}
       {reply.state !== 'Error' && reply.text?.trim() ? (
         <div>
           <p className="whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-sm" data-testid="review-reply-text-shown">

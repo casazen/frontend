@@ -4,15 +4,8 @@ import { getInvoiceData, saveInvoiceData } from '@/api/invoice-data.api';
 import i18n from '@/i18n/config';
 import type { SaveInvoiceDataRequest } from '@/types';
 
-/** Root of the query keys of the invoice data: one entry for each booking. */
 export const INVOICE_DATA_KEY = 'invoice-data';
 
-/**
- * Who the invoice of a booking is made out to (FIS-01). The guest writes it at the check-in and the import of the channel manager fills it while the
- * host has the booking open, and the client does not read an unobserved query again by default (`refetchOnMount: false`), so it is read again
- * whenever the section or the sub-step opens. Fiscal data of a guest is not kept in the browser once the booking is left (`gcTime: 0`).
- * `enabled: false` for who may not read payments (`payment.read`): the API refuses them.
- */
 export function useInvoiceData(bookingId: string, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: [INVOICE_DATA_KEY, bookingId],

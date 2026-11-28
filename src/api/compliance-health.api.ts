@@ -1,7 +1,6 @@
 import { ApiClient } from './client';
 import type { ComplianceConnectionHealth } from '@/types';
 
-/** Connection health of the police and ISTAT send (CHK-12 point 7, E03/F02/US01/T02). */
 export const complianceHealthApi = {
   /**
    * `GET /properties/{propertyId}/compliance/connection-health`: who sends the Alloggiati Web and ISTAT communications of the property and what

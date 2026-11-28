@@ -10,7 +10,6 @@ export interface BookingSummaryData {
   comuneName: string | null;
   startUtc: string | null;
   urgent: boolean;
-  /** The estimate the server made for what is chosen; the lines and the total are its, never added up here. */
   estimate: { data: PublicQuoteResponse | undefined; isFetching: boolean; isError: boolean };
   acceptsOnlinePayments: boolean;
   respondWithinMinutes: number | null;

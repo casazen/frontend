@@ -32,13 +32,6 @@ import { TOURIST_TAX_PERIOD_SOURCE, formatCents, receiptFileName } from './touri
 
 const SHORT_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/**
- * The tourist tax per comune and period (NF-100, REP-05): what the stays owe, what the host paid and the receipts, and where the
- * host records a payment with its receipt. Every figure is read from `GET /api/tourist-tax/summary`; the page works out nothing.
- * The days are the presets of the reports and the days to type, with the rule of the tourist tax report (a year at most). Recording
- * and deleting a payment are offered to who holds `payment.write` (the accountant reads, and cannot change what was paid); the server
- * decides again. A caller who reaches only some of the properties sees what is owed on them and no payment at all.
- */
 export function TouristTaxSummaryPage() {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
@@ -47,10 +40,7 @@ export function TouristTaxSummaryPage() {
 
   const [preset, setPreset] = useState<PeriodPresetId>('thisYear');
   const [custom, setCustom] = useState<ReportPeriod>(() => presetPeriod('thisYear', today));
-  // The comune the person chose, with the days of the summary its row belongs to: while another period loads the previous summary stays
-  // on screen with its buttons, and a payment started from its row starts from those days, not from the ones just picked.
   const [recording, setRecording] = useState<{ row: TouristTaxComuneSummary; period: ReportPeriod } | null>(null);
-  // The payment to delete stays set while the dialog closes, so its sentence does not empty during the animation.
   const [deleting, setDeleting] = useState<{ remittance: TouristTaxRemittance; open: boolean } | null>(null);
 
   const period = preset === 'custom' ? custom : presetPeriod(preset, today);
@@ -61,7 +51,6 @@ export function TouristTaxSummaryPage() {
   const deleteRemittance = useDeleteTouristTaxRemittance();
 
   const choosePreset = (next: PeriodPresetId) => {
-    // The days to type start from the ones the person was looking at.
     if (next === 'custom') setCustom(period);
     setPreset(next);
   };
@@ -144,7 +133,6 @@ export function TouristTaxSummaryPage() {
         </div>
 
         {problem ? (
-          // The server is not asked for days it would refuse: the page says why, and shows nothing of an earlier choice.
           <p role="alert" className="text-sm text-destructive" data-testid="tourist-tax-problem">
             {t(`reports.error.${problem}`, { year: FIRST_FISCAL_YEAR })}
           </p>
@@ -161,7 +149,6 @@ export function TouristTaxSummaryPage() {
             ) : null}
 
             {data.comuni.length === 0 ? (
-              // A caller who cannot see the payments is told about the stays only: "no payment recorded" would be false or would give one away.
               <p className="text-sm text-foreground/70" data-testid="tourist-tax-empty">
                 {data.paymentsHidden ? t('reports.touristTax.emptyHidden') : t('reports.touristTax.empty')}
               </p>

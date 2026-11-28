@@ -21,7 +21,6 @@ function getOtaConnectionStatus(integration: OtaIntegration): 'connected' | 'war
   return 'connected';
 }
 
-/** OTA partner channels: only with the `otaPartnerApi` flag on (D10). */
 export function OtaStatusCard() {
   const { t } = useTranslation();
   const { data: otaIntegrations } = useOtaIntegrations();

@@ -8,7 +8,6 @@ import { useDocumentSdi, useDocumentsBusy, useFiscalDocument, useRefreshFiscalDo
 import { IssueDocumentDialog } from './document-dialogs';
 import { documentKindWords, formatDocumentAmount } from './document-model';
 
-/** The steps of the correction, in order: what will happen, the data of who receives the invoice, the issue, and the result. */
 type Phase = 'explain' | 'data' | 'issue' | 'done';
 
 const PHASES: readonly Phase[] = ['explain', 'data', 'issue', 'done'];
@@ -17,9 +16,7 @@ interface DocumentCorrectionStepProps {
   /** The document the step is about: the invoice the SDI rejected (the correction starts from it), or the draft that a correction already made of it (the correction goes on from there). */
   documentId: string;
   mode: 'rejected' | 'replacement';
-  /** The person goes back to the document without leaving the page: what was done stays on the server (a draft that replaces a rejected invoice is found again in the list). */
   onClose: () => void;
-  /** Opens another document in the same detail: the corrected invoice the step issued. */
   onOpenDocument: (id: string) => void;
 }
 
@@ -46,7 +43,6 @@ export function DocumentCorrectionStep({ documentId, mode, onClose, onOpenDocume
 
   const draft = replacement.data;
   const bookingId = draft?.bookingId ?? rejected.data?.bookingId ?? null;
-  // The number the corrected invoice keeps: the one of the draft when the server gives it one, else the one of the rejected invoice (it keeps it for the history).
   const keptNumber = draft?.number ?? rejected.data?.number ?? null;
   const step = PHASES.indexOf(phase) + 1;
 
@@ -55,7 +51,6 @@ export function DocumentCorrectionStep({ documentId, mode, onClose, onOpenDocume
     try {
       const change = await start.mutateAsync({ documentId });
       if (change === null) {
-        // The correction was made and its answer could not be read: the draft is in the list of the documents.
         setProblem(t('fiscalDocuments.correction.startUnreadable'));
         return;
       }
@@ -66,7 +61,6 @@ export function DocumentCorrectionStep({ documentId, mode, onClose, onOpenDocume
     }
   };
 
-  // The data of the invoice were checked: the draft is made again from them, then it is issued. A refusal (what is still missing) is told here and the step stays where it is.
   const afterData = async () => {
     setCheckingData(false);
     if (replacementId === null) return;

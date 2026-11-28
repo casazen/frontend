@@ -37,7 +37,6 @@ import {
 import { ChannelStep, CleaningBrief, PartnersStep, PropertyStep, ProposalsStep, ServiceStep, type ChangeChannel } from './request-pick-steps';
 import { DetailsStep, ReviewStep } from './request-steps';
 
-/** Entry points share a draft only when they refer to the same original job. Moving between steps keeps the same form. */
 function entryKey(search: URLSearchParams) {
   const entry = new URLSearchParams();
   for (const field of ['propertyId', 'bookingId', 'type', 'date', 'supplierOrgId', 'serviceId', 'n']) {
@@ -48,7 +47,6 @@ function entryKey(search: URLSearchParams) {
   return context ? `${REQUEST_WIZARD_ID}?${context}` : REQUEST_WIZARD_ID;
 }
 
-/** Availability is checked afresh after a reload. Open the first missing answer before showing the review. */
 function ResumeRequest({ review, children }: { review?: boolean; children: ReactNode }) {
   const [, setSearch] = useSearchParams();
   const { getValues } = useFormContext<RequestValues>();
@@ -73,14 +71,11 @@ function RequestWizard() {
   const categories = useServiceCategories();
   const properties = useProperties({ mode: 'short' }, { fresh: true });
   const create = useCreateIntervention();
-  // The sentence of the last refusal that sent the host back to a step: the wizard shows it where the host lands.
   const [refusal, setRefusal] = useState<string | null>(null);
   const [checkAfterFailure, setCheckAfterFailure] = useState<string | null>(null);
   const schemas = useMemo(() => requestStepSchemas(), []);
   const channel = channelOf(search);
 
-  // The channel lives in the address, so a reload and the back button keep it. One change of the address for the channel and the step it
-  // goes on from (the wizard's own `goTo` would read the address as it was before and cancel it).
   const changeChannel = useCallback<ChangeChannel>(
     (next, stepId) =>
       setSearch(
@@ -169,8 +164,6 @@ function RequestWizard() {
   };
   const service: WizardStep<RequestValues> = { ...describe('service'), schema: schemas.service, render: () => <ServiceStep channel={channel} /> };
 
-  // With a CasaZen supplier the request goes on to its details and the summary; with an external partner the wizard stops at the
-  // partners: the work is organised on their site, there is nothing to send.
   const steps: WizardStep<RequestValues>[] =
     channel === 'external'
       ? [property, who, service, { ...describe('partners'), render: ({ goTo }) => <PartnersStep goTo={goTo} /> }]
@@ -207,7 +200,6 @@ function RequestWizard() {
           const problem = requestProblemOf(error);
           if (!problem) {
             if (isAxiosError(error) && (!error.response || error.response.status >= 500)) {
-              // The supplier may already have the request when the creation response is lost.
               const message = t('requestWizard.housekeeping.unknown');
               setRefusal(message);
               setCheckAfterFailure(values.bookingId ? `${INTERVENTIONS_PATH}?bookingId=${encodeURIComponent(values.bookingId)}` : INTERVENTIONS_PATH);
@@ -215,7 +207,6 @@ function RequestWizard() {
             }
             throw error;
           }
-          // A refusal that changes what the host chose: the answers stay, the host is taken to the step they are on, with the slots read again.
           if (problem.kind === 'slotTaken' || problem.kind === 'commitmentConflict') {
             void queryClient.invalidateQueries({ queryKey: HOST_SUPPLIER_SLOTS_KEY });
           }

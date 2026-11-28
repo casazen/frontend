@@ -19,7 +19,6 @@ describe('orderAlerts', () => {
     const queue = [alert('n1'), alert('l1', 'Low'), alert('h1', 'High'), alert('n2'), alert('h2', 'High')];
 
     expect(ids(orderAlerts(queue))).toEqual(['h1', 'h2', 'n1', 'n2', 'l1']);
-    // The list it was given is left as it was.
     expect(ids(queue)).toEqual(['n1', 'l1', 'h1', 'n2', 'h2']);
   });
 
@@ -98,7 +97,7 @@ describe('texts of the popup alerts', () => {
 });
 
 describe('remindAtFor', () => {
-  const summer = new Date('2026-07-15T10:00:00.000Z'); // 12:00 in Rome
+  const summer = new Date('2026-07-15T10:00:00.000Z');
 
   it('remindAtFor_RelativeChoices_AddTheirDelayToNow', () => {
     expect(remindAtFor('15min', summer)?.toISOString()).toBe('2026-07-15T10:15:00.000Z');
@@ -109,9 +108,7 @@ describe('remindAtFor', () => {
   it.each([
     ['in summer time (UTC+2)', '2026-07-15T10:00:00.000Z', '2026-07-16T07:00:00.000Z'],
     ['in winter time (UTC+1)', '2026-01-15T10:00:00.000Z', '2026-01-16T08:00:00.000Z'],
-    // 23:30 UTC on the 15th is 00:30 on the 16th in Rome: tomorrow is the 17th, not the 16th.
     ['late in the evening in UTC, already the next day in Rome', '2026-01-15T23:30:00.000Z', '2026-01-17T08:00:00.000Z'],
-    // Summer time starts on Sunday 29 March 2026 and ends on Sunday 25 October 2026.
     ['the day before summer time starts', '2026-03-28T10:00:00.000Z', '2026-03-29T07:00:00.000Z'],
     ['the day before summer time ends', '2026-10-24T10:00:00.000Z', '2026-10-25T08:00:00.000Z'],
   ])('remindAtFor_Tomorrow_%s_IsNineOnTheClockOfRome', (_when, now, expected) => {
@@ -142,7 +139,6 @@ describe('remindOptions', () => {
   });
 
   it('remindOptions_DeadlineExactlyAtAChoice_KeepsThatChoiceOn', () => {
-    // The server accepts a moment up to the deadline included (ADR-025-R10: RemindAt <= Deadline).
     expect(state(new Date('2026-07-15T11:00:00.000Z'))).toEqual([
       ['15min', false],
       ['1hour', false],

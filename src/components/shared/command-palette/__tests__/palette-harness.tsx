@@ -12,26 +12,17 @@ import { HarnessPage } from './harness-page';
 import { makeContext } from './test-context';
 
 export interface ShellOptions {
-  /** The areas of the user. Default: short rent. */
   areas?: AppContextKey[];
   activeArea?: AppContextKey;
   hasPermission?: PermissionPredicate;
   flags?: Partial<FeatureFlags>;
-  /** What the pages loaded: the palette reads it. */
   queryClient?: QueryClient;
-  /** Who is signed in: without one nothing is remembered. */
   userId?: string | null;
   path?: string;
   remoteSource?: RemoteCommandSource;
-  /** More things in the page. */
   page?: React.ReactNode;
 }
 
-/**
- * The shell as the palette sees it: a router, the workspace of the user, the flags, the cache of the queries, and the
- * provider with the search of the header and a page. `makeContext` answers the questions of the workspace, so the palette is
- * asked what the sources of the tests were asked.
- */
 export function renderShell(options: ShellOptions = {}) {
   const areas = options.areas ?? ['short-rent'];
   const activeArea = options.activeArea ?? areas[0];
@@ -75,7 +66,6 @@ export function renderShell(options: ShellOptions = {}) {
   return {
     ...view,
     client,
-    /** The search of the header (by test id: it is hidden from the role queries while the palette is open). */
     trigger: () => screen.getByTestId('command-palette-trigger'),
     location: () => screen.getByTestId('location').textContent,
   };

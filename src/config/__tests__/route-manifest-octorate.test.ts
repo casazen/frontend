@@ -22,7 +22,6 @@ describe('route manifest: the connect wizard of the channel manager (E02/F01/US0
   it('RouteManifest_ConnectWizard_NeedsThePermissionThatWritesTheConnection', () => {
     expect(entry?.requiredPermissions).toEqual(['ota.write']);
 
-    // Who may only read the integrations cannot connect the org's channel manager: the backend refuses it too.
     const readOnly = (_context: string, permission: string) => permission !== 'ota.write';
     expect(entry && hasEntryPermission(entry, readOnly)).toBe(false);
     expect(entry && hasEntryPermission(entry, () => true)).toBe(true);
@@ -44,7 +43,6 @@ describe('route manifest: the connect wizard of the channel manager (E02/F01/US0
     expect(entry && isEntryFeatureEnabled(entry, undefined)).toBe(false);
   });
 
-  // The first import of the page pulls in the whole wizard (its steps, the import of the existing listings, the guided panel): slow on a loaded machine, hence the room.
   it('RouteManifest_ConnectWizard_LoadsAPageThatIsAComponent', { timeout: 30_000 }, async () => {
     const page = await entry?.component();
 
@@ -60,7 +58,6 @@ describe('feature flag octorateConnector (mirror of the backend Features:Octorat
 
   it('FeatureFlags_OctorateConnector_IsReadAsTheCamelCaseKeyOfThePublicFeatures', () => {
     expect(parseFeatureFlags({ octorateConnector: true }).octorateConnector).toBe(true);
-    // Anything but `true` is off.
     expect(parseFeatureFlags({ octorateConnector: 'true' }).octorateConnector).toBe(false);
     expect(parseFeatureFlags({}).octorateConnector).toBe(false);
   });

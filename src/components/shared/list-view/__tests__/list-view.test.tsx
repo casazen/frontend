@@ -27,7 +27,6 @@ describe('ListView, what it shows', () => {
     renderList();
 
     expect(namesInTable()).toEqual(['Anna Bianchi', 'Mario Rossi', '=HYPERLINK("http://evil.example","clicca")']);
-    // The same three rows, as cards.
     expect(within(stayCards()).getAllByTestId(/^list-row-/)).toHaveLength(3);
     expect(screen.getByTestId('list-count')).toHaveTextContent('3 stays of 6');
   });
@@ -56,7 +55,6 @@ describe('ListView, what it shows', () => {
     renderList();
     const card = within(stayCards()).getByTestId('list-row-s1');
 
-    // Mario Rossi: the title; then the dates (priority 3) as the line under it; the state (card status) apart; then the rest.
     expect(card).toHaveTextContent(/Mario Rossi.*2026-10-12 → 2026-10-15/s);
     expect(within(card).getByText('Pending')).toBeInTheDocument();
     expect(card).toHaveTextContent(/Total:\s*€ 450/);
@@ -92,13 +90,11 @@ describe('ListView, the search', () => {
     renderList({ initial: '/app/short-rent/bookings?chip=all' });
 
     fireEvent.change(search(), { target: { value: 'ZOE muller' } });
-    // Not yet: the person may still be typing.
     expect(addressNow()).toBe('?chip=all');
     await waitFor(() => expect(addressNow()).toBe('?q=ZOE+muller&chip=all'), { timeout: 3000 });
 
     expect(namesInTable()).toEqual(['Zoë Müller']);
     expect(screen.getByTestId('list-count')).toHaveTextContent('1 stay of 6');
-    // What is typed stays in the box, as it was typed.
     expect(search()).toHaveValue('ZOE muller');
   });
 
@@ -155,7 +151,6 @@ describe('ListView, the quick filters', () => {
   it('counts what the search and the filters leave, not the quick filter', () => {
     renderList({ initial: '/app/short-rent/bookings?f_channel=airbnb' });
 
-    // Mario's request is direct: with the filter on Airbnb nothing is waiting any more.
     expect(screen.getByRole('button', { name: 'To confirm' })).not.toHaveTextContent('1');
   });
 
@@ -205,7 +200,6 @@ describe('ListView, the filters', () => {
     expect(panel.getByLabelText('Property')).toBeInTheDocument();
     expect(panel.getByRole('checkbox', { name: 'Airbnb' })).toBeInTheDocument();
     expect(panel.getByLabelText('From')).toBeInTheDocument();
-    // The quick filter "Upcoming" has three rows.
     expect(panel.getByRole('button', { name: 'Show 3 results' })).toBeInTheDocument();
 
     fireEvent.change(panel.getByLabelText('Property'), { target: { value: 'trullo' } });
@@ -247,7 +241,6 @@ describe('ListView, the filters', () => {
     expect(addressNow()).toBe('?q=anna&chip=all&f_channel=airbnb');
 
     fireEvent.click(screen.getByTestId('list-clear'));
-    // "Clear" leaves the quick filter for everything, not the one the list starts from.
     expect(addressNow()).toBe('?chip=all');
     expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
   });
@@ -406,7 +399,6 @@ describe('ListView, when there is nothing to show', () => {
     expect(screen.getByText('Try removing a filter.')).toBeInTheDocument();
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
 
-    // The button of the empty state (the bar has one too, for the tags).
     fireEvent.click(within(screen.getByText('No stay with these filters').parentElement!).getByRole('button', { name: 'Clear the filters' }));
 
     expect(addressNow()).toBe('?chip=all');
@@ -472,7 +464,6 @@ describe('ListView, the rows come from a server', () => {
   it('shows the rows as they are given and does not filter them again', () => {
     renderList({ rows: page, props: { mode: 'server', totalCount: 45, pageSize: 20 } });
 
-    // The quick filter is "Upcoming" and would keep both anyway: with a search that matches neither, a client would show none.
     expect(namesInTable()).toEqual(['Mario Rossi', 'Anna Bianchi']);
     expect(screen.getByTestId('list-count')).toHaveTextContent('45 stays');
   });

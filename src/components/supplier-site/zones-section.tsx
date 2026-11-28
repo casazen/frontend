@@ -75,7 +75,6 @@ function ZoneCheck({ model, service }: { model: SiteModel; service: PublicSuppli
   );
 }
 
-/** Where the supplier works: the comuni it wrote in its profile, and, while the bookings are open, the check of a comune. */
 export function ZonesSection({ model }: { model: SiteModel }) {
   const { t } = useTranslation();
   const first = model.services?.[0];

@@ -32,7 +32,6 @@ export function CollectionsReportPage() {
         {canRead ? (
           <CollectionsReportContent />
         ) : (
-          // The route keeps who may not read payments out; a page reached some other way asks the server for nothing and says so.
           <>
             <PageHeader title={t('reports.collections.title')} description={t('reports.collections.description')} crumbs="auto" />
             <Alert variant="info" data-testid="collections-no-access">
@@ -49,14 +48,12 @@ function CollectionsReportContent() {
   const { t } = useTranslation();
   const filters = useMoneyReportFilters('thisMonth');
   const { days, propertyId, problem } = filters;
-  // The server is not asked for days it would refuse: the page says why, and shows nothing of an earlier choice.
   const asked = problem === null;
 
   const collectionsQuery = useCollectionsReport(days, propertyId, asked);
   const balancesQuery = useBalancesToCollect(propertyId, true);
   const collections = reportView(collectionsQuery);
   const balances = reportView(balancesQuery);
-  // The same refusal said twice (both reads are not for the person, or both name a property that is not theirs) is said once.
   const saidAbove = asked && collections.kind === balances.kind && (balances.kind === 'forbidden' || balances.kind === 'notFound');
 
   return (

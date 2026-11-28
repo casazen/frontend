@@ -31,7 +31,6 @@ const GROUPS: ReadonlyArray<{ group: CrmGroupKind; labelKey: string }> = [
   { group: 'Group', labelKey: 'crm.detail.group.group' },
 ];
 
-/** The page while the profile loads: the shape of the page, no spinner in the middle of nothing. */
 function ProfileSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="crm-profile-loading">
@@ -48,7 +47,6 @@ function ProfileSkeleton({ label }: { label: string }) {
   );
 }
 
-/** A list of "name · stays · spend" lines: the channels a guest booked on, the properties they stayed at. */
 function BreakdownList({ label, rows }: { label: string; rows: Array<{ key: string; name: string; detail: string }> }) {
   return (
     <ul role="list" aria-label={label} className="divide-y text-sm">
@@ -62,7 +60,6 @@ function BreakdownList({ label, rows }: { label: string; rows: Array<{ key: stri
   );
 }
 
-/** The part of the profile that is about how the guest books and travels: group, channels, properties, reviews. */
 function ProfileFigures({ profile }: { profile: CrmProfileDetail }) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;

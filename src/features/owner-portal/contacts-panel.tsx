@@ -22,7 +22,6 @@ const STATUS_TONE: Record<OwnerContactStatus, PillTone> = {
   revoked: 'neutral',
 };
 
-/** The five permissions, each with its words: they are independent of one another and each one is a box of its own. */
 function PermissionBoxes({
   idPrefix,
   value,
@@ -152,7 +151,6 @@ export function InviteContactForm() {
 
 interface ContactCardProps {
   contact: OwnerContact;
-  /** One write at a time in the whole list: every button waits while one works. */
   busy: boolean;
   save: ReturnType<typeof useSetOwnerContactPermissions>;
   revoke: ReturnType<typeof useRevokeOwnerContact>;
@@ -236,7 +234,6 @@ function ContactCard({ contact, busy, save, revoke }: ContactCardProps) {
               <li key={permission}>{t(`ownerPortal.contacts.permissions.${permission}.label`)}</li>
             ))}
           </ul>
-          {/* A lapsed invitation has no access, but for the server it is still «invited» and counts in the most contacts until it is withdrawn: the owner can clear it. */}
           {revocable ? (
             <div className="mt-3 flex flex-wrap gap-2">
               <Button type="button" variant="danger-outline" className={TOUCH} disabled={busy} onClick={() => setConfirming(true)} data-testid="owner-contact-revoke">
@@ -271,7 +268,6 @@ function ContactCard({ contact, busy, save, revoke }: ContactCardProps) {
   );
 }
 
-/** The contacts of the owner. Every write of the list waits for the one that is working. */
 export function ContactList({ contacts }: { contacts: readonly OwnerContact[] }) {
   const { t } = useTranslation();
   const save = useSetOwnerContactPermissions();

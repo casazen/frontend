@@ -21,12 +21,10 @@ import { GuestStaysTab } from './components/guest-stays-tab';
 
 const GUESTS_PATH = '/app/short-rent/guests';
 
-/** Values of `?tab=` on the guest's page; an unknown one opens the first. */
 const PANELS = ['details', 'stays', 'documents', 'privacy'] as const;
 type GuestPanel = (typeof PANELS)[number];
 const panelOf = (value: string | null): GuestPanel => PANELS.find((panel) => panel === value) ?? 'details';
 
-/** The page while the guest loads: the shape of the page, no spinner in the middle of nothing. */
 function GuestDetailSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-busy="true" className="min-w-0 space-y-6" data-testid="guest-detail-loading">
@@ -47,10 +45,6 @@ function GuestDetailSkeleton({ label }: { label: string }) {
   );
 }
 
-/**
- * Whether the guest's document is on file, from what the guest record already says (a document number or a scan). It says
- * nothing about it being checked: there is no such state in the data, and none is made up.
- */
 function GuestDocumentStatus({ onFile }: { onFile: boolean }) {
   const { t } = useTranslation();
   const Icon = onFile ? IdCard : CircleDashed;
@@ -72,7 +66,6 @@ function GuestDocumentStatus({ onFile }: { onFile: boolean }) {
 
 const hasDocumentOnFile = (guest: Guest) => Boolean(guest.documentNumberMasked) || guest.hasDocumentScan;
 
-/** Each section owns its content; a direct link to a document never waits for the booking history. */
 export function GuestDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
@@ -91,7 +84,6 @@ export function GuestDetailPage() {
     enabled: !!id,
   });
 
-  // The bookings of the guest change on other screens (arrival, cancellation): read them again when the page is opened.
   const staysQuery = useQuery({
     queryKey: ['bookings', { guestId: id }],
     queryFn: () => bookingsApi.getByGuestId(id!),
@@ -103,7 +95,6 @@ export function GuestDetailPage() {
     return <GuestDetailSkeleton label={t('guests.detailPage.loading')} />;
   }
 
-  // An API error is never shown as "not found" (only a 404 is).
   if (isError && getHttpStatus(error) !== 404) {
     return (
       <AppShell>
@@ -133,10 +124,8 @@ export function GuestDetailPage() {
 
   const stays = asBookingPage(staysQuery.data).items;
   const fullName = `${guest.firstName} ${guest.lastName}`.trim() || t('guests.detailPage.fallbackTitle');
-  // The line under the name: how to reach the guest (both are on the Dati dell'ospite tab too).
   const contacts = [guest.email, guest.phoneNumber].filter(Boolean).join(' · ');
 
-  // The test ids are how the end-to-end tests and the tests reach the tabs.
   const tabs: TabItem<GuestPanel>[] = [
     { value: 'details', label: t('guests.detailPage.tabs.details'), testId: 'guest-tab-details' },
     { value: 'stays', label: t('guests.detailPage.tabs.stays'), testId: 'guest-tab-stays' },
@@ -147,7 +136,6 @@ export function GuestDetailPage() {
   return (
     <AppShell>
       <div className="min-w-0 space-y-6">
-        {/* The trail (Affitti brevi › Ospiti › this guest) and, on a phone, the link back to the list as the user left it (UI-05). */}
         <PageHeader
           crumbs="auto"
           title={fullName}
@@ -155,7 +143,6 @@ export function GuestDetailPage() {
           action={<GuestDocumentStatus onFile={hasDocumentOnFile(guest)} />}
         />
 
-        {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs label={t('guests.detailPage.tabsLabel')} items={tabs} defaultValue="details" value={activeTab} selectTestId="guest-tabs-select">
           {activeTab === 'details' && <GuestDataTab guest={guest} />}
 

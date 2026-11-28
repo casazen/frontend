@@ -113,7 +113,6 @@ describe('wizardValuesFromState', () => {
       tourismType: 'holiday',
       taxExemptionCode: 'resident',
       dateOfBirth: '1992-03-08',
-      // The API masks the number: the host types it again, the mask is a hint.
       documentNumber: '',
       documentNumberOnFile: '*****5AB',
     });
@@ -135,7 +134,6 @@ describe('wizardValuesFromState', () => {
   });
 
   it('guestValuesFromWizard_NoExemptionVisible_IsEmpty', () => {
-    // A caller without `guest.read` gets null: nothing to echo.
     expect(guestValuesFromWizard(guest(0, { taxExemptionCode: null })).taxExemptionCode).toBe('');
   });
 });
@@ -231,10 +229,8 @@ describe('the rules of the steps', () => {
 });
 
 describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
-  /** What the API names for a property in canton Ticino. */
   const TICINO = ['DocumentType', 'DocumentNumber', 'ResidenceStreet', 'ResidencePostalCode', 'ResidenceCityName', 'ResidenceCountryName'];
 
-  /** A stay of Ticino: the head and an adult family member, the plate on file. */
   function swissState(overrides: Partial<CheckInWizardState> = {}): CheckInWizardState {
     return state({
       requiredGuestFields: TICINO,
@@ -281,7 +277,6 @@ describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
 
   it('wizardValuesFromState_PlateNotAsked_HasNoPlateInTheFormAtAll', () => {
     expect(wizardValuesFromState(state())).not.toHaveProperty('vehiclePlate');
-    // A plate on file is not asked again where the regime does not ask one.
     expect(wizardValuesFromState(state({ booking: { ...state().booking, vehiclePlate: 'TI123456' } }))).not.toHaveProperty('vehiclePlate');
   });
 
@@ -296,7 +291,6 @@ describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
   });
 
   it('toGuestsPayload_HostEntryHoldingAHomeWhileTheRegimeNamesNone_StillSendsItBack', () => {
-    // A save never erases what the guest has on file, whatever the list of fields says (a regime that changed, a state read without them).
     const values = wizardValuesFromState(swissState({ requiredGuestFields: [], askVehiclePlate: false }));
 
     const [head, member] = toGuestsPayload(values, []);
@@ -320,7 +314,6 @@ describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
     values.guests[1].documentNumber = 'ca 12345 ab';
 
     expect(toGuestsPayload(values, [], rules)[1]).toMatchObject({ documentType: 'IdentityCard', documentNumber: 'CA12345AB' });
-    // The same list of an Italian stay: a member has no document in the record.
     expect(toGuestsPayload(values, [])[1]).toMatchObject({ documentType: null, documentNumber: null });
   });
 
@@ -346,7 +339,6 @@ describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
     values.vehiclePlate = 'ZH9999';
 
     expect(guestsSignature(values, [], rules)).not.toBe(before);
-    // Spaces and case are not a change: the API stores the plate normalized.
     values.vehiclePlate = 'ti 123 456';
     expect(guestsSignature(values, [], rules)).toBe(before);
   });
@@ -364,7 +356,6 @@ describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
     values.guests[0].documentNumber = 'CA12345AB';
 
     expect(documentsReadyToSave(values, rules)).toBe(false);
-    // Italy has no document of a member: the same values are ready there.
     expect(documentsReadyToSave(values)).toBe(true);
 
     values.guests[1].documentType = 'IdentityCard';
@@ -588,7 +579,6 @@ describe('the first day of a rate the host declares', () => {
 
   it('rateEffectiveFrom_RateAlreadyDeclared_KeepsItsDaySoEarlierNightsStayCovered', () => {
     expect(rateEffectiveFrom('2026-09-01', '2026-10-10', '2026-11-06')).toBe('2026-09-01');
-    // The day comes back from the API as a date; a time after it changes nothing.
     expect(rateEffectiveFrom('2026-09-01T00:00:00', '2026-12-01', '2026-11-06')).toBe('2026-09-01');
   });
 

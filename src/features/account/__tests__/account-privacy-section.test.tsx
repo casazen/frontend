@@ -25,7 +25,6 @@ const textOf = (blob: Blob) =>
     reader.readAsText(blob);
   });
 
-// The export holds the personal data of the team: it is saved exactly as the server sends it and its name says nothing about who is in it.
 describe('AccountPrivacySection (AM-08b-c)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();

@@ -4,12 +4,10 @@ import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AMENITY_GROUPS, listAmenities, type DescribedAmenity } from '@/lib/public-amenities';
 
-/** More than this many amenities and the list is cut to the first `SHOWN`, with a button for the rest. */
 const COLLAPSE_FROM = 10;
 const SHOWN = 8;
 
 interface AmenityGridProps {
-  /** The `PropertyAmenity` names the backend sends (or any text the host wrote: it is shown readable either way). */
   amenities: string[];
 }
 

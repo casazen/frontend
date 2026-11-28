@@ -71,7 +71,6 @@ describe('LongRentServiceRequests (SU-07, D2)', () => {
 
     expect(await screen.findByTestId('service-request-sr-lease')).toHaveTextContent('Idraulica Rossi');
     expect(api.fetchLongRentServiceRequests).toHaveBeenCalledWith({ propertyId: 'prop-1', pageSize: 50 });
-    // A property-level request: no stay link.
     expect(screen.queryByTestId('service-request-stay-sr-lease')).not.toBeInTheDocument();
   });
 
@@ -79,7 +78,6 @@ describe('LongRentServiceRequests (SU-07, D2)', () => {
     renderSection();
 
     fireEvent.click(await screen.findByTestId('mark-paid-sr-lease'));
-    // SU-09: "Segna pagato" is irreversible, so it asks for confirmation first.
     expect(api.markLongRentServiceRequestPaid).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByTestId('mark-paid-confirm'));
 

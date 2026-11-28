@@ -14,13 +14,10 @@
 
 import { SITE_ASSET_DIR, SITE_SITEMAP_PATH } from '../site/site-pages';
 
-/** Path of the sitemap on the web app domain (served by the Vercel function `api/sitemap.ts`). */
 export const SITEMAP_PATH = '/sitemap.xml';
 
-/** Sitemap index of the org booking sites (BK-15): one sitemap per org with a published property. */
 export const BOOKING_SITEMAP_PATH = '/sitemap-book.xml';
 
-/** Sitemap of the supplier showcases (`/fornitori/{slug}`): one entry per active supplier. */
 export const SUPPLIER_SITEMAP_PATH = '/sitemap-supplier.xml';
 
 /**
@@ -32,51 +29,34 @@ export const DISALLOWED_PATHS = [
   '/app/',
   '/checkin/',
   '/s/',
-  // The page where an invited person accepts (AM-04c): its address carries the secret of the invitation until the page takes it out.
   '/invite/',
-  // The welcome page behind the QR code a host prints for a house (CRM-03): its address carries the secret of the link, in the path.
   '/benvenuto/',
   '/login',
   '/book/*/my-bookings',
-  // The results of a booking site for a stay (DB-07c): every search is its own address, none is worth a place in the index.
   '/book/*/search',
   '/book/*/booking/',
-  // The page of the link that lets a guest cancel (DB-08a): its address carries the secret of the link until the page takes it out.
   '/book/*/bookings/',
   '/book/*/requests/',
   '/book/*/property/*/checkout',
-  // The private pages of the booking from a supplier's site (SP-12b): the booking in progress, the page of the verification link (its
-  // address carries the secret of the link until the page takes it out) and the customer's own request (a code). The site itself stays indexed.
   '/fornitori/*/prenota',
   '/fornitori/*/conferma',
   '/fornitori/*/richiesta',
-  // The request on measure (SP-12c): the form is as private as the booking's, and not worth a place in the index.
   '/fornitori/*/preventivo',
-  // The payment page of a service (SP-15c-d): its address carries the secret of the payment link.
   '/service/pay/',
-  // The page of the document a guest got by e-mail (E12/F02/US02): its address carries the secret of the link until the page takes it out.
   '/documents/view/',
-  // The same pages on an org's own host (BK-16), where they are written without the `/book/{slug}` prefix. These paths do
-  // not exist on the web app's own host, so one `robots.txt` serves both.
   '/my-bookings',
   '/booking/',
   '/requests/',
   '/property/*/checkout',
-  // The files of the public site (SEO-VETRINA): served at their public paths (`/`, `/funzionalita`, ...) by the Routing
-  // Middleware, never linked under this folder, which would only duplicate them.
   `/${SITE_ASSET_DIR}/`,
 ] as const;
 
 export interface RobotsTxtInput {
-  /** Value of `VERCEL_ENV` on Vercel (`production`, `preview`, `development`), undefined elsewhere. */
   vercelEnv: string | undefined;
-  /** Value of `VITE_PUBLIC_SITE_URL` seen by Vite (process environment or `.env` files). */
   publicSiteUrl: string | undefined;
-  /** Whether the public site is served (`isPublicSiteEnabled` of `src/site/site-gate.ts`): only then its sitemap is declared. */
   publicSiteEnabled: boolean;
 }
 
-/** Origin of the public site (`https://host[:port]`), or an error message when the value cannot be one. */
 export function parsePublicSiteUrl(value: string | undefined): { origin: string } | { error: string } {
   const trimmed = value?.trim();
   if (!trimmed) {
@@ -102,7 +82,6 @@ export function parsePublicSiteUrl(value: string | undefined): { origin: string 
   return { origin: url.origin };
 }
 
-/** Content of `robots.txt` for a build; throws on a production build without a valid public URL. */
 export function buildRobotsTxt({ vercelEnv, publicSiteUrl, publicSiteEnabled }: RobotsTxtInput): string {
   if (vercelEnv !== 'production') {
     return ['# Not a production deployment: nothing here may be indexed.', 'User-agent: *', 'Disallow: /', ''].join(

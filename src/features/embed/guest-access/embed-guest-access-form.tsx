@@ -8,7 +8,6 @@ import { buildEmbedGuestAreaAddress, buildEmbedGuestAreaUrl } from '@/features/e
 import { useEmbedBridge } from '@/features/embed/use-embed-bridge';
 import { formatBookingCode } from '@/lib/booking-code';
 
-/** What is wrong with the code the guest typed: nothing at all, or something that is no code. The same two the form of the guest area tells apart. */
 type CodeProblem = 'required' | 'invalid' | null;
 
 /**
@@ -49,7 +48,6 @@ export function EmbedGuestAccessForm() {
       return;
     }
     setProblem(null);
-    // Without the loader of the page nobody would read a message: the form goes on by itself, as the web does.
     if (!bridge.attached) return;
     event.preventDefault();
     bridge.send.navigate(buildEmbedGuestAreaUrl({ ...where, code, lang: embed.lang }), 'top');
@@ -68,7 +66,6 @@ export function EmbedGuestAccessForm() {
     >
       <div className="space-y-1.5">
         <Label htmlFor={`${id}-code`}>{t('publicBooking.guestBookings.codeLabel')}</Label>
-        {/* No `name`: what the form sends when it goes on by itself is the two hidden fields below, the code as the guest area writes it. */}
         <Input
           ref={input}
           id={`${id}-code`}

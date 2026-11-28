@@ -10,7 +10,6 @@ import { swissSetup } from './billing-fixtures';
 
 const TODAY = '2026-11-14';
 
-/** Booking.com has a rule in force (15,5%), Airbnb only the default of the configuration, Vrbo nothing. */
 const SET: ChannelCommissionRuleSet = {
   rules: [{ id: 'r-booking', channel: 'BookingCom', percent: 15.5, base: 'GrossExclTouristTax', validFrom: '2026-01-01', validTo: null, createdAt: '2026-01-01T00:00:00Z' }],
   channels: [
@@ -42,7 +41,6 @@ afterEach(() => {
 });
 
 describe('the percent of a portal whose rule is in force (E11/F02/US01/T01, ⚖ R2)', () => {
-  // Money rule: the server goes on applying the rule in force whatever the box says. An emptied box must not read as «no rule».
   it('CommissionPercents_ThePercentOfARuleInForceIsEmptied_SaysTheRuleStaysAndWhatItIs', () => {
     render(<Harness />);
     expect(box('BookingCom')).toHaveValue('15.5');
@@ -52,7 +50,6 @@ describe('the percent of a portal whose rule is in force (E11/F02/US01/T01, ⚖ 
 
     expect(box('BookingCom')).toHaveValue('');
     expect(screen.getByText(keeps())).toBeInTheDocument();
-    // Writing a new percent is how it is changed: nothing is said about keeping the old one then.
     fireEvent.change(box('BookingCom'), { target: { value: '16' } });
     expect(screen.queryByText(keeps())).not.toBeInTheDocument();
   });

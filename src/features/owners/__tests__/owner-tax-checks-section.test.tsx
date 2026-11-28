@@ -16,11 +16,6 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: v
 
 vi.setConfig({ testTimeout: 30_000 });
 
-/**
- * The limit of apartments of a private owner (E18/F01/US03/T01, NF-117, ⚖ I8): the apartments the owner lets short outside the agency count with the ones the agency manages, past the limit the owner is presumed a
- * business and its stays lose the withholding of the short lets. The number is declared by a person and is never a 0 by omission: an empty field is refused, not saved as «none».
- */
-
 const check = (overrides: Partial<OwnerUnitsCheck> = {}): OwnerUnitsCheck => ({ ownerId: OWNER, applies: true, managedUnits: 2, externalUnits: 0, totalUnits: 2, maxUnits: 2, presumedBusiness: false, ...overrides });
 
 function renderSection(canManage = true, taxReportingExports = true) {
@@ -52,7 +47,11 @@ describe('the apartments an owner lets outside the agency', () => {
   it('OwnerUnits_WithinTheLimit_SaysSo_AndPastItTheOwnerIsPresumedABusiness', async () => {
     renderSection();
     expect(await screen.findByTestId('owner-units-status')).toHaveAttribute('data-presumed', 'false');
-    expect(screen.getByTestId('owner-units-count')).toHaveTextContent("2 gestiti dall'agenzia, 0 dichiarati fuori");
+    expect(screen.getByTestId('owner-units-managed')).toHaveTextContent('2');
+    expect(screen.getByTestId('owner-units-external')).toHaveTextContent('0');
+    expect(screen.getByTestId('owner-units-total')).toHaveTextContent('2');
+    expect(screen.getByTestId('owner-units-count')).toHaveTextContent(i18n.t('ownerProfile.units.limit', { max: 2 }));
+    expect(screen.getByText(i18n.t('ownerProfile.units.chip.within'))).toBeInTheDocument();
     cleanup();
 
     api.getUnitsCheck.mockResolvedValue(check({ externalUnits: 1, totalUnits: 3, presumedBusiness: true }));
@@ -60,6 +59,8 @@ describe('the apartments an owner lets outside the agency', () => {
     const status = await screen.findByTestId('owner-units-status');
     expect(status).toHaveAttribute('data-presumed', 'true');
     expect(status).toHaveTextContent('presunto un imprenditore');
+    expect(screen.getByTestId('owner-units-external')).toHaveTextContent('1');
+    expect(screen.getByText(i18n.t('ownerProfile.units.chip.past'))).toBeInTheDocument();
   });
 
   it('OwnerUnits_ANumberIsRequired_AnEmptyFieldOrAWrongOneIsRefusedAndNeverSavedAsNone', async () => {
@@ -84,7 +85,6 @@ describe('the apartments an owner lets outside the agency', () => {
     fireEvent.click(screen.getByTestId('owner-units-save'));
 
     await waitFor(() => expect(api.declareExternalUnits).toHaveBeenCalledWith(OWNER, 1));
-    // The screen does not work the limit out: it shows the check the server answered.
     await waitFor(() => expect(screen.getByTestId('owner-units-status')).toHaveAttribute('data-presumed', 'true'));
     expect(screen.getByTestId('owner-units-input')).toHaveValue('1');
   });
@@ -118,7 +118,6 @@ describe('the apartments an owner lets outside the agency', () => {
     api.getUnitsCheck.mockResolvedValue(null);
     renderSection();
     expect(await screen.findByTestId('owner-units-not-for-you')).toBeInTheDocument();
-    // A read that is refused is not «within the limit».
     expect(screen.queryByTestId('owner-units-status')).toBeNull();
   });
 });

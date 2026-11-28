@@ -19,7 +19,6 @@ describe('the days of the calendar (AC1)', () => {
   });
 
   it('addDays_IsNotMovedByTheChangeOfSummerTime', () => {
-    // The clocks go forward on 2026-03-29 and back on 2026-10-25 in Italy: a day is still a day.
     expect(addDays('2026-03-28', 2)).toBe('2026-03-30');
     expect(addDays('2026-10-24', 2)).toBe('2026-10-26');
   });
@@ -56,7 +55,6 @@ describe('the days of the calendar (AC1)', () => {
   });
 
   it('monthGrid_StartsOnMondayWithBlanksBeforeTheFirst', () => {
-    // 1 December 2026 is a Tuesday and 31 December a Thursday.
     const weeks = monthGrid('2026-12-01');
 
     expect(weeks.every((week) => week.length === 7)).toBe(true);
@@ -66,7 +64,6 @@ describe('the days of the calendar (AC1)', () => {
   });
 
   it('monthGrid_AMonthThatStartsOnMondayAndFillsItsWeeksHasNoBlank', () => {
-    // 1 February 2027 is a Monday and the month has 28 days.
     const weeks = monthGrid('2027-02-01');
 
     expect(weeks).toHaveLength(4);
@@ -94,7 +91,6 @@ describe('what a click does to the stay (AC1, AC2)', () => {
     ['the day of the arrival', '2026-12-05'],
     ['a week before the arrival', '2026-11-28'],
   ])('pickDay_%s_IsANewArrivalNeverADeparture', (_label, day) => {
-    // A departure needs one night at least: a day on or before the arrival cannot be one.
     const result = pickDay({ checkIn: '2026-12-05', checkOut: '' }, day, '2026-11-01');
 
     expect(result.step).toBe('arrival');
@@ -118,7 +114,6 @@ describe('what a click does to the stay (AC1, AC2)', () => {
 });
 
 describe('where the keys take the focus (AC4)', () => {
-  // 10 December 2026 is a Thursday.
   it.each([
     ['ArrowLeft', '2026-12-09'],
     ['ArrowRight', '2026-12-11'],
@@ -160,7 +155,6 @@ describe('the names come from Intl in the language of the bar (AC4)', () => {
   });
 
   it('dayFormat_WritesTheDayGivenWhateverTheTimeZone', () => {
-    // 1 January at midnight UTC is still 31 December on the west of Greenwich, and the format is made in UTC for that.
     expect(dayFormat('en', { day: 'numeric', month: 'long', year: 'numeric' })('2027-01-01')).toBe('1 January 2027');
   });
 });
@@ -174,14 +168,12 @@ describe('the day of the visitor, written from the local parts of the clock (AC1
     withBrowserTimeZone('Pacific/Kiritimati');
 
     it('todayLocal_IsTheLocalDayNotTheUtcDay', () => {
-      // 10:00 UTC of 1 December is 00:00 of 2 December in Kiritimati (UTC+14): the local day is the 2nd, the UTC day the 1st.
       freezeClock('2026-12-01T10:00:00Z');
 
       expect(todayLocal()).toBe('2026-12-02');
     });
 
     it('todayLocal_OfALocalMidnight_IsThatDay', () => {
-      // A local midnight is 14 hours earlier in UTC: the day before. `toISOString()` would say 2026-12-04.
       const midnight = new Date(2026, 11, 5);
 
       expect(midnight.toISOString().startsWith('2026-12-04')).toBe(true);
@@ -199,7 +191,6 @@ describe('the day of the visitor, written from the local parts of the clock (AC1
     withBrowserTimeZone('Pacific/Pago_Pago');
 
     it('todayLocal_IsTheLocalDayNotTheUtcDay', () => {
-      // 05:00 UTC of 2 December is 18:00 of 1 December in Samoa (UTC-11).
       freezeClock('2026-12-02T05:00:00Z');
 
       expect(todayLocal()).toBe('2026-12-01');
@@ -372,7 +363,6 @@ describe('the dialog', () => {
     expect(document.activeElement).toBe(cell('2026-12-08'));
     press(document.activeElement as Element, 'ArrowUp');
     expect(document.activeElement).toBe(cell('2026-12-01'));
-    // Never before today.
     press(document.activeElement as Element, 'ArrowLeft');
     expect(document.activeElement).toBe(cell('2026-12-01'));
   });
@@ -456,7 +446,6 @@ describe('the dialog', () => {
     expect(document.querySelector('.czs-month-title')?.textContent).toBe('gennaio 2027');
     expect(previous.getAttribute('aria-disabled')).toBe('false');
     expect(calls.said).toEqual(['gennaio 2027']);
-    // The day that has the tab stop goes with the month.
     expect(document.querySelectorAll('td[tabindex="0"]')).toHaveLength(1);
     expect(document.querySelector('td[tabindex="0"]')?.getAttribute('data-day')).toBe('2027-01-01');
 

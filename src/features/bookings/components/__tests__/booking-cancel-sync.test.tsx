@@ -78,7 +78,6 @@ describe('BookingCancelSync (the channel manager line of a cancellation, NF-76)'
     const onCheckAgain = vi.fn();
     renderSync(booking(sync({ state: 'Pending' })), { waitOver: true, onCheckAgain });
 
-    // Neither "being cancelled" nor a failure nor a success: what the dialog knows is that nothing has come back.
     expect(screen.getByTestId('booking-cancel-sync-waiting')).toHaveTextContent('non ha ancora risposto');
     expect(screen.getByTestId('booking-cancel-sync-waiting')).toHaveTextContent("l'annullamento non è ancora confermato lì");
     expect(screen.queryByTestId('booking-cancel-sync-pending')).not.toBeInTheDocument();
@@ -111,7 +110,6 @@ describe('BookingCancelSync (the channel manager line of a cancellation, NF-76)'
 
     expect(screen.getByTestId('booking-cancel-sync-unconfirmed')).toHaveTextContent("non ha ancora confermato l'annullamento");
     expect(screen.queryByTestId('booking-cancel-sync-synced')).not.toBeInTheDocument();
-    // The failure of an older operation is not the failure of this one: no reason, no button.
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 

@@ -10,7 +10,6 @@ import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import type { SeasonalSuggestionsResponse } from '@/types';
 import { ruleLabel } from '../seasonal-rules';
 
-/** The nights the list shows before "Mostra tutte": the next week. The chart always shows them all. */
 const FIRST_NIGHTS = 7;
 
 const AXIS_PRICE = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
@@ -21,11 +20,6 @@ interface PricingSuggestionsSectionProps {
   onApply?: (items: { date: string; price?: number | null }[]) => void;
 }
 
-/**
- * The suggested price of the coming nights (D4): proposals until the host confirms them. A line for the whole stretch, then
- * the nights one by one with the rule that gave each price; the host can apply the suggested price of a night as it is or
- * type another one. Confirmed (optionally edited) prices are used in quotes. No box around any of it.
- */
 export function PricingSuggestionsSection({ data, applying, onApply }: PricingSuggestionsSectionProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
@@ -59,7 +53,6 @@ export function PricingSuggestionsSection({ data, applying, onApply }: PricingSu
         )}
 
         <div className="space-y-2">
-          {/* A table on a computer; on a phone each night is a block of its own (the header stays for screen readers). */}
           <table className="w-full text-sm max-md:block" data-testid="suggestions-table">
             <thead className="bg-muted max-md:sr-only">
               <tr className="text-left text-foreground/70">

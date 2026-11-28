@@ -4,12 +4,10 @@ import { INTERNAL_ACTIVITIES_KEY, queryClient } from '../query-client';
 const TODO_LIST_KEY = [INTERNAL_ACTIVITIES_KEY, 'todo'];
 const TODO_COUNT_KEY = [INTERNAL_ACTIVITIES_KEY, 'todo-count'];
 
-/** Runs a write of the app through the mutation cache of the shared client, as `useMutation` does. */
 function runMutation(mutationFn: () => Promise<unknown>) {
   return queryClient.getMutationCache().build(queryClient, { mutationFn }).execute(undefined);
 }
 
-// ADR-026-R7: a "To do" closes by itself when the write that meets its condition is made, so the list is read again after any write.
 describe('the shared query client and the To do list (ADR-026-R7)', () => {
   afterEach(() => {
     queryClient.clear();

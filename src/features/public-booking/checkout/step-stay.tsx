@@ -18,16 +18,10 @@ import '@/features/public-booking/checkout/checkout.css';
 interface StepStayProps {
   draft: CheckoutDraft;
   onDraft: (patch: Partial<CheckoutDraft>) => void;
-  /** One slot per child, as many as the stay has. */
   ages: (number | null)[];
   onNext: () => void;
 }
 
-/**
- * Step 1, «Il soggiorno» (DB-05): the dates and the guests of the stay (the same pickers as the property page, the stay in the
- * address), the age of each child when the tourist tax depends on it, how the guest wants to book, and a note for the host. One
- * decision here, one button: «Continua». What is wrong with the stay is said with its way out (`StayProblem`).
- */
 export function StepStay({ draft, onDraft, ages, onNext }: StepStayProps) {
   const { t, i18n } = useTranslation();
   const model = useBooking();
@@ -40,7 +34,6 @@ export function StepStay({ draft, onDraft, ages, onNext }: StepStayProps) {
   const agesMissing = askAges && ages.some((age) => age === null);
   const value = { checkIn: stay.checkIn, checkOut: stay.checkOut, adults: stay.adults, children: stay.children, pets: stay.pets };
 
-  // Why the button waits, in words: the guest is never left with a button that does nothing and no reason.
   let waiting: string | null = null;
   if (!online) waiting = t('publicCheckout.offline');
   else if (quote.status === 'none') waiting = t('publicCheckout.stay.chooseDates');

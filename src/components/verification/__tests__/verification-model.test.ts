@@ -17,7 +17,6 @@ import {
 describe('queueReasonOf (E03/F04/US03/T02)', () => {
   it('queueReasonOf_NoAutomaticOutcome_IsTheGuestWhoAskedForAPersonOrRefusedTheConsent', () => {
     expect(queueReasonOf({ biometricOutcome: null, reasons: [] })).toBe('operator_requested');
-    // An older API sends no `reasons` at all.
     expect(queueReasonOf({ biometricOutcome: 'Escalate' })).toBe('operator_requested');
   });
 
@@ -72,8 +71,6 @@ describe('the words of the checks and of the results', () => {
     ['it', /^L'ultimo controllo automatico/, /può anche aver chiesto lui una persona\.$/],
     ['en', /^The last automatic check/, /may also have asked for a person\.$/],
   ])('theWordsOfWhatTheLastCheckFound_%s_SayWhoFoundItAndThatTheGuestMayAlsoHaveAskedForAPerson', (language, found, maybeAsked) => {
-    // The queue reads the last automatic outcome, not why the verification was handed to a person: a guest who failed an attempt and then asked
-    // looks the same as one the flow handed over, so these two words never state the cause as if it were known.
     for (const reason of ['no_match', 'not_passed'] as const) {
       const words = i18n.t(`verification.why.${reason}`, { lng: language });
       expect(words, `${language} ${reason}`).toMatch(found);

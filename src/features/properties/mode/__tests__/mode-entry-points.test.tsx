@@ -28,7 +28,6 @@ vi.mock('@/api/service-requests.api', () => ({
   markServiceRequestPaid: vi.fn(),
   markLongRentServiceRequestPaid: vi.fn(),
 }));
-// What the server adds to the page of a long-term property (LR-07a): nothing here, the page works without it.
 vi.mock('@/api/long-rent-properties.api', () => ({ longRentPropertiesApi: { getAll: vi.fn().mockResolvedValue([]) } }));
 vi.mock('@/queries/use-cin', () => ({ useUpdatePropertyCin: () => ({ mutateAsync: vi.fn(), isPending: false }) }));
 vi.mock('../../components/ical-settings', () => ({ IcalSettings: () => <div /> }));
@@ -39,7 +38,6 @@ vi.mock('@/features/service-requests/components/long-rent-service-requests', () 
 const WAIT = { timeout: 5000 };
 
 interface Setup {
-  /** The areas where the person may write properties. */
   writes?: Array<'short-rent' | 'long-rent'>;
 }
 
@@ -76,7 +74,6 @@ describe('useModeChangeMenuItems (PM-03)', () => {
   it('useModeChangeMenuItems_NoPermission_GivesNoEntry', () => {
     const entries = [
       { setup: { writes: [] }, area: 'short-rent' as const },
-      // The permission of the other area does not open this one.
       { setup: { writes: ['long-rent' as const] }, area: 'short-rent' as const },
     ];
     for (const { setup, area } of entries) {
@@ -251,13 +248,11 @@ describe('ScheduledChangeNotice (PM-03)', () => {
     fireEvent.click(screen.getByTestId('property-mode-notice-cancel'));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByTestId('confirmation-consequences')).toHaveTextContent("L'immobile resta in Affitti brevi.");
-    // Nothing is withdrawn by opening the question.
     expect(propertyModeApi.cancel).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('propertyMode.cancel.action') }));
 
     await waitFor(() => expect(propertyModeApi.cancel).toHaveBeenCalledWith(PROPERTY_ID, 'c1'), WAIT);
     expect(toast.success).toHaveBeenCalledWith(i18n.t('propertyMode.cancel.done'));
-    // The state is read again and the row is gone.
     await waitFor(() => expect(screen.queryByTestId('property-mode-notice')).not.toBeInTheDocument(), WAIT);
   });
 
@@ -286,7 +281,6 @@ describe('ScheduledChangeNotice (PM-03)', () => {
     let current: PropertyModeChange | null = change();
     vi.mocked(propertyModeApi.getState).mockImplementation(async () => state({ scheduledChange: current }));
     vi.mocked(propertyModeApi.cancel).mockImplementation(async () => {
-      // Someone else did it first: the change is not waiting any more.
       current = null;
       throw axiosError(409, { code: 'property_mode_change_not_scheduled' });
     });

@@ -17,19 +17,13 @@ import type { OwnerPortalExternalDocument, OwnerPortalInvoice, OwnerPortalStatem
 
 const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
-/** The downloads of the page: one at a time, whichever card asks (the buttons of every card wait for the one that works). */
 type Downloads = ReturnType<typeof useOwnerDownload>;
 
-/**
- * The agency every item of a list comes from, when it is one: the section then says it once, under its title, and the cards do not repeat it.
- * With more than one agency (or none named) there is no such name and each card keeps its own.
- */
 function commonAgency(items: ReadonlyArray<{ agencyName: string }>): string | null {
   const names = new Set(items.map((item) => item.agencyName.trim()).filter(Boolean));
   return names.size === 1 ? [...names][0] : null;
 }
 
-/** The title of a section and, under it, the agency its cards share (see `commonAgency`). */
 function SectionHeading({ id, title, agency }: { id: string; title: string; agency: string | null }) {
   return (
     <div>
@@ -41,10 +35,6 @@ function SectionHeading({ id, title, agency }: { id: string; title: string; agen
   );
 }
 
-/** A statement with its net and its totals in its own currency, the way to open its lines, its PDF and the way to ask the agency about it. */
-// `latest`: only the newest statement has the filled «Apri»; the others open with an outline button, so the list has one primary action (UX round 2026-11).
-// `showAgency`: the card names its agency only when the section does not (several agencies). The «Pubblicato» pill is gone: every card is published, so it said nothing;
-// only the version that a newer one replaced says so (UX round 3).
 function StatementCard({ statement, downloads, latest = false, showAgency }: { statement: OwnerPortalStatement; downloads: Downloads; latest?: boolean; showAgency: boolean }) {
   const { t, i18n } = useTranslation();
   const { download, busyKey } = downloads;
@@ -115,7 +105,6 @@ function StatementCard({ statement, downloads, latest = false, showAgency }: { s
   );
 }
 
-/** An invoice of the property manager to the owner: its number, its day, its total in its own currency, and its PDF. */
 function PmInvoiceCard({ invoice, statements, downloads, showAgency }: { invoice: OwnerPortalInvoice; statements: readonly OwnerPortalStatement[]; downloads: Downloads; showAgency: boolean }) {
   const { t, i18n } = useTranslation();
   const { download, busyKey } = downloads;
@@ -185,7 +174,6 @@ function PmInvoiceCard({ invoice, statements, downloads, showAgency }: { invoice
   );
 }
 
-/** The link of an invoice the agency issued in a system of its own, kept for the owners that have one (a statement made before the invoices were issued in CasaZen). */
 function LinkedInvoiceCard({ invoice, statements }: { invoice: OwnerPortalExternalDocument; statements: readonly OwnerPortalStatement[] }) {
   const { t, i18n } = useTranslation();
   const url = safeExternalUrl(invoice.documentUrl);
@@ -222,7 +210,6 @@ function LinkedInvoiceCard({ invoice, statements }: { invoice: OwnerPortalExtern
   );
 }
 
-/** The links of invoices issued elsewhere: a section only for the owner that has some (or whose read failed), nothing for the others. */
 function LinkedInvoicesSection({ statements }: { statements: readonly OwnerPortalStatement[] }) {
   const { t } = useTranslation();
   const linked = useOwnerExternalDocuments();
@@ -261,7 +248,6 @@ export function OwnerStatements() {
   const statements = useOwnerStatements();
   const invoices = useOwnerInvoices();
   const downloads = useOwnerDownload();
-  // Drawn only while the last answer is good: after a refusal nothing of the answer before it stays under the notice (the statements, the invoices).
   const statementList = sortedStatements(currentData(statements) ?? []);
   const invoiceList = sortedInvoices(currentData(invoices) ?? []);
   const statementAgency = commonAgency(statementList);
@@ -313,7 +299,6 @@ export function OwnerStatements() {
 
       <OwnerWithholdingSection />
 
-      {/* The accounting documents the agency shares are in the Documents page, with the others: a way there, not the same list twice. */}
       <Button asChild variant="link" className={`${TOUCH} -ml-4 w-fit`}>
         <Link to={ownerPortalPaths.documents} data-testid="owner-accounting-documents-link">
           {t('ownerPortal.shell.nav.documents')}

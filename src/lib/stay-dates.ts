@@ -34,7 +34,6 @@ function pad(value: number, length = 2): string {
   return String(value).padStart(length, '0');
 }
 
-/** `YYYY-MM-DD` of a calendar date given as year, month (1-12) and day. */
 function formatDateParts(year: number, month: number, day: number): string {
   return `${pad(year, 4)}-${pad(month)}-${pad(day)}`;
 }
@@ -48,20 +47,14 @@ function toUtcDate(value: string): Date | null {
   return sameDay ? date : null;
 }
 
-/** True for an existing calendar date written as `YYYY-MM-DD`. */
 export function isStayDate(value: string): boolean {
   return toUtcDate(value) !== null;
 }
 
-/** Calendar date (`YYYY-MM-DD`) of `now` in Europe/Rome. */
 export function todayInRome(now: Date = new Date()): string {
   return calendarDate(ROME_DATE_FORMAT, now);
 }
 
-/**
- * Calendar date (`YYYY-MM-DD`) of `now` in Europe/Zurich. A transfer date is this day, never the UTC day from
- * `toISOString()`.
- */
 export function todayInZurich(now: Date = new Date()): string {
   return calendarDate(ZURICH_DATE_FORMAT, now);
 }
@@ -76,38 +69,27 @@ export function toStayDate(date: Date): string {
   return formatDateParts(date.getFullYear(), date.getMonth() + 1, date.getDate());
 }
 
-/**
- * Calendar date of a `Date` read in UTC: for a date-only value held as UTC midnight (e.g. `new Date('2026-09-25')`).
- * An empty string for an invalid date. For "today" use {@link todayInRome}.
- */
 export function utcStayDate(date: Date): string {
   if (Number.isNaN(date.getTime())) return '';
   return formatDateParts(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
 }
 
-/** `date` moved by `days` calendar days, or an empty string when `date` is not a stay date. */
 export function addDays(date: string, days: number): string {
   const utc = toUtcDate(date);
   if (!utc) return '';
   return utcStayDate(new Date(utc.getTime() + days * MS_PER_DAY));
 }
 
-/** First day of the month of `date`, or an empty string when `date` is not a stay date. */
 export function startOfMonth(date: string): string {
   const utc = toUtcDate(date);
   return utc ? formatDateParts(utc.getUTCFullYear(), utc.getUTCMonth() + 1, 1) : '';
 }
 
-/** Last day of the month of `date`, or an empty string when `date` is not a stay date. */
 export function endOfMonth(date: string): string {
   const utc = toUtcDate(date);
   return utc ? utcStayDate(new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth() + 1, 0))) : '';
 }
 
-/**
- * First day of the week of `date` (`weekStartsOn`: 0 = Sunday, 1 = Monday), or an empty string when `date` is not a
- * stay date.
- */
 export function startOfWeek(date: string, weekStartsOn: number = 1): string {
   const utc = toUtcDate(date);
   if (!utc) return '';
@@ -127,16 +109,11 @@ export function parseStayDate(value: string | null | undefined): string {
   return match && isStayDate(match[1]) ? match[1] : '';
 }
 
-/**
- * Local midnight of a stay date: the `Date` a calendar widget or a date picker shows on that day, whatever the time
- * zone of the browser (inverse of {@link toStayDate}). null when `date` is not a stay date.
- */
 export function stayDateToLocalDate(date: string): Date | null {
   const utc = toUtcDate(date);
   return utc ? new Date(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate()) : null;
 }
 
-/** Nights between two stay dates; 0 when a date is missing, invalid or not in order. */
 export function nightsBetween(checkIn: string, checkOut: string): number {
   const start = toUtcDate(checkIn);
   const end = toUtcDate(checkOut);
@@ -145,10 +122,6 @@ export function nightsBetween(checkIn: string, checkOut: string): number {
   return nights > 0 ? nights : 0;
 }
 
-/**
- * A UTC instant (ISO string, e.g. a deadline) shown as date and time in Europe/Rome, the time zone of every deadline
- * of the stays; an empty string when invalid.
- */
 export function formatRomeDateTime(
   instant: string,
   locale: string,
@@ -175,10 +148,6 @@ function romeWallParts(instant: Date): { year: number; month: number; day: numbe
   return { year: part('year'), month: part('month'), day: part('day'), hour: part('hour'), minute: part('minute') };
 }
 
-/**
- * UTC instant (ISO) of a Europe/Rome wall clock `HH:mm` on a stay date. Empty when the date or the time is not valid,
- * or when that wall time does not exist (the hour skipped when summer time starts).
- */
 export function romeWallTimeToUtc(date: string, time: string): string {
   if (!isStayDate(date) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return '';
   const [year, month, day] = date.split('-').map(Number);
@@ -198,11 +167,6 @@ export function romeWallTimeToUtc(date: string, time: string): string {
   return new Date(utc).toISOString();
 }
 
-/**
- * Europe/Rome wall clock of a UTC instant: the calendar date and the hour and minute on that clock.
- * Null when the instant is missing or not a date. An hour reported as 24 (midnight written on the day that is ending)
- * is the next day's 00:00.
- */
 export function romeWallClock(instant: string | Date): { date: string; hour: number; minute: number } | null {
   const date = typeof instant === 'string' ? new Date(instant) : instant;
   if (Number.isNaN(date.getTime())) return null;
@@ -219,17 +183,12 @@ export function romeWallClock(instant: string | Date): { date: string; hour: num
   };
 }
 
-/** Europe/Rome calendar date (`YYYY-MM-DD`) of a UTC instant (ISO string), or an empty string when invalid. */
 export function romeDateOf(instant: string | null | undefined): string {
   if (!instant) return '';
   const date = new Date(instant);
   return Number.isNaN(date.getTime()) ? '' : todayInRome(date);
 }
 
-/**
- * The formatters of the stay dates, made once for each language and each set of options: building one costs about a tenth of a millisecond, and the calendars write a date for
- * every cell of every row (a Timeline of fifty properties for thirty days is fifteen hundred).
- */
 const STAY_DATE_FORMATS = new Map<string, Intl.DateTimeFormat>();
 
 function stayDateFormat(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
@@ -242,7 +201,6 @@ function stayDateFormat(locale: string, options: Intl.DateTimeFormatOptions): In
   return format;
 }
 
-/** Stay date formatted for display (no time zone shift), or an empty string when invalid. */
 export function formatStayDate(
   date: string,
   locale: string,

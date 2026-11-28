@@ -16,7 +16,6 @@ function kindsOf(request: Shape): SupportVaultCredentialKind[] {
   return (['OctoratePanel', 'Police', 'RegionalIstat'] as const).filter((kind) => credentialKindFits(request, kind));
 }
 
-// The server decides again (the controlled opening answers 422 `support_vault_kind_not_for_request`): the screen offers only what a request needs.
 describe('credentialKindFits, which credential a request may open', () => {
   it('credentialKindFits_ARequestAboutThePolice_NeedsThePanelAndThePoliceCredentialsAndNotTheIstatOnes', () => {
     expect(kindsOf(police)).toEqual(['OctoratePanel', 'Police']);
@@ -64,7 +63,6 @@ describe('revealVisibleMs, how long the values of an opening are shown', () => {
   });
 
   it('revealVisibleMs_ASpanOfTheServerOnItsOwnClock_DoesNotDependOnTheClockOfTheBrowser', () => {
-    // Both instants are the server's: the span is what counts, wherever the clock of the browser is.
     expect(revealVisibleMs({ openedAt: '2031-01-01T00:00:00Z', visibleUntil: '2031-01-01T00:00:30Z' })).toBe(30_000);
   });
 

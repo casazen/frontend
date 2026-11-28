@@ -12,10 +12,6 @@ const LINES = [
   ['residual', 'residual'],
 ] as const;
 
-/**
- * The seven figures of one rent-ledger row. A part the API did not send is an em dash; the total is the current
- * amount, so the row still works before components exist.
- */
 export function RentComposition({ row, currency }: { row: RentMoneySource; currency: string }) {
   const { t } = useTranslation();
   const parts = rentBreakdown(row);

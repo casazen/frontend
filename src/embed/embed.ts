@@ -18,31 +18,25 @@ import { frameQuery, isFrameState, isOn, readFrameState, readHeight, readLang, r
 
 type EmbedWindow = Window & { CasaZenEmbed?: unknown; dataLayer?: unknown[] };
 
-/** The elements the loader mounts by itself. */
 const SELECTOR = '[data-casazen-widget]';
 
 function start(win: EmbedWindow): void {
-  // The script that is running: where the loader comes from (the default `base`, the folder of `search.js`) and the nonce a strict page gave it.
   const script = document.currentScript as HTMLScriptElement | null;
   const scriptUrl = script?.src ?? '';
   const scriptOrigin = readOrigin(scriptUrl);
   const mounted = new WeakSet<Element>();
-  /** The preview switch of each widget the page draws itself (the search bar): a later `mount(element, { preview: true })` turns it on. */
   const previews = new WeakMap<Element, { on: boolean }>();
   const registry = new Map<string, WidgetMount>();
-  /** The search bars that wait for `search.js` to register itself. */
   const waiting: { widget: Widget; run: () => void }[] = [];
   let widgets: Widget[] = [];
   let search: 'idle' | 'loading' | 'failed' = 'idle';
 
-  /** An event of a widget: a DOM event on its container and, when the page asked for it, a push of the `dataLayer` with the name and the shape of GA4. */
   const emit = (widget: Widget, name: string, params: Record<string, unknown>): void => {
     if (!(EMBED_EVENT_NAMES as readonly string[]).includes(name)) return;
     widget.el.dispatchEvent(new CustomEvent('casazen:event', { bubbles: true, detail: { name, params, widget: widget.widget } }));
     if (!widget.dataLayer) return;
     const layer = (win.dataLayer = win.dataLayer || []);
     if (name === 'search') {
-      // The name goes last: a `params` that carries an `event` of its own can never rename the event.
       layer.push({ ...params, event: name });
     } else {
       layer.push({ ecommerce: null });
@@ -55,7 +49,6 @@ function start(win: EmbedWindow): void {
     waiting.splice(0).forEach((item) => item.widget.fail());
   };
 
-  /** Loads `search.js` from the folder this script came from, once; a file that fails or never registers shows the link in every bar that waits. */
   const loadSearch = (base: string): void => {
     if (search !== 'idle') return;
     search = 'loading';
@@ -73,8 +66,6 @@ function start(win: EmbedWindow): void {
   const mount = (element: Element, options: EmbedOptions = {}): void => {
     if (!element || element.nodeType !== 1) return;
     if (mounted.has(element)) {
-      // A bar the loader drew by itself (its element carries the attribute) is a preview all the same when its caller asks for it afterwards: the bar reads the
-      // switch when its form is sent. Only `true` turns it on, nothing turns it off, and a frame has no preview: for the rest, mounting twice does nothing.
       if (options.preview === true) {
         const mode = previews.get(element);
         if (mode) mode.on = true;
@@ -117,7 +108,6 @@ function start(win: EmbedWindow): void {
     }
     if (!created.ok) return;
 
-    // A widget the page draws itself (the search bar): its function is called with the options, once `search.js` has registered it.
     const mode = { on: options.preview === true };
     previews.set(host, mode);
     const run = (): void => {
@@ -131,12 +121,10 @@ function start(win: EmbedWindow): void {
           base: plan.base,
           org,
           emit: (name, params) => emit(created, name, params),
-          // Read when the bar needs it (at the submit), not when it is drawn: see `previews`.
           get preview() {
             return mode.on;
           },
         });
-        // Drawn: the wait is over, and the link that took the place of the container when the file was late goes away.
         created.show();
       } catch {
         created.fail();
@@ -158,12 +146,10 @@ function start(win: EmbedWindow): void {
   const register = (name: string, fn: WidgetMount): void => {
     if (typeof fn !== 'function') return;
     registry.set(String(name), fn);
-    // The search bars that wait for `search.js` start now; the elements of any other name that were on the page before its function came are mounted now.
     if (name === 'search') waiting.splice(0).forEach((item) => item.run());
     else scan();
   };
 
-  /** The only door a message of a frame goes through: the window it comes from, the origin it says, and the protocol. */
   const onMessage = (event: MessageEvent): void => {
     const widget = widgets.find((item) => item.frame !== null && event.source !== null && item.frame.contentWindow === event.source);
     if (!widget?.frame || event.origin !== widget.origin) return;
@@ -181,7 +167,6 @@ function start(win: EmbedWindow): void {
         widget.frame.style.height = `${message.height}px`;
         break;
       case 'navigate':
-        // The whole page goes only where the widget lives; a new tab may go anywhere the protocol let through (http or https), and never reaches the page.
         if (message.target === 'blank') window.open(message.url, '_blank', 'noopener');
         else if (readOrigin(message.url) === widget.origin) location.assign(message.url);
         break;

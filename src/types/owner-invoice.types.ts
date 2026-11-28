@@ -7,13 +7,11 @@
  * that is complete, which is why the state members are plain strings here.
  */
 
-/** How an issued invoice is paid: `offset` (the statement covers it), `to_pay` (the owner owes `amountDue`) or `credited` (credit notes credited the whole invoice). */
 interface OwnerInvoiceSettlement {
   state: string;
   amountDue: number;
 }
 
-/** One invoice of the list (`GET api/owner-invoices`): drafts and issued ones, never the discarded ones nor the credit notes. A draft has no number and no payment. */
 export interface OwnerInvoiceListItem {
   id: string;
   ownerId: string;
@@ -23,7 +21,6 @@ export interface OwnerInvoiceListItem {
   statementVersionId: string | null;
   number: string | null;
   issueDate: string | null;
-  /** `Draft` or `Issued`. */
   status: string;
   kind: string;
   taxableBase: number;
@@ -48,10 +45,6 @@ export interface OwnerInvoiceLine {
   vatAmount: number | null;
 }
 
-/**
- * An invoice with its lines, as `POST api/owner-invoices/drafts` and `…/{id}/issue` answer it. The recipient is named: its fiscal data are on the document and its PDF, never carried
- * here. `series` is the one of the owner invoices; a draft has no `number` (it is given at the issue, in sequence).
- */
 export interface OwnerInvoice {
   id: string;
   ownerId: string | null;
@@ -75,7 +68,6 @@ export interface OwnerInvoice {
   lines: OwnerInvoiceLine[];
 }
 
-/** What narrows the list: a period (`yyyy-MM`) and an owner. Nothing is no limit. */
 export interface OwnerInvoiceCriteria {
   period?: string;
   ownerId?: string;

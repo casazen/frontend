@@ -11,9 +11,6 @@ import { freezeClock, NOON_UTC } from '@/test/clock';
 import { TouristTaxYearEndPage } from '../tourist-tax-year-end-page';
 import { summaryOf, yearEndJsonOf } from './tourist-tax-year-end-fixtures';
 
-// These tests use the real client of the app, with its interceptors and its handler of the 403, and the real API and hooks of the page: only the transport is replaced. What they prove is what the page of the
-// tourist tax at year end does with a refusal (a caller who does not reach what the server keeps for the whole organization), with a failed read, with a «not found» and with a server that has no JSON of the year-end
-// results yet, when nothing of the reads is mocked, as in the browser.
 const saved = vi.hoisted(() => vi.fn());
 
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => false }) }));
@@ -53,15 +50,12 @@ const DECLARATION = '/tourist-tax/year-end/2026/declaration';
 const ACCOUNT = '/tourist-tax/year-end/2026/agent-account';
 const TICINO = '/tourist-tax/year-end/2026/ticino';
 
-/** What the server sends a file as: the bytes, as a Blob (the page asks for one), and its problem as a JSON Blob. */
 const fileOf = (): Reply => ({ status: 200, data: new Blob(['a;b'], { type: 'text/csv' }) });
 const problem = (status: number, body: object): Reply => ({ status, data: new Blob([JSON.stringify(body)], { type: 'application/problem+json' }) });
 
-/** A year-end address is asked as a file (CSV or Excel) or as the data for a screen (`format=json`): the same address, so a test that changes one must say which. */
 const isJson = (request: Request) => request.params?.format === 'json';
 const isFile = (request: Request) => !isJson(request);
 
-/** The answers of a server that is in order: the summary of the year that was asked for, the JSON of a year-end result and a file for each export. Each test changes what it needs. */
 function serverInOrder(request: Request): Reply {
   const { path, params } = request;
   if (path === SUMMARY) return { status: 200, data: summaryOf(Number(params?.from?.slice(0, 4))) };
@@ -106,7 +100,6 @@ describe('the year-end page and a 403 (permission rule: a refusal is told in the
     expect(screen.queryByTestId('year-end-figures')).toBeNull();
     expect(screen.queryByTestId('year-end-empty')).toBeNull();
     expect(screen.queryByTestId('year-end-error')).toBeNull();
-    // The files are other calls with their own answer: the page stays where it is.
     expect(screen.getByTestId('year-end-declaration-csv')).toBeEnabled();
   });
 
@@ -121,14 +114,12 @@ describe('the year-end page and a 403 (permission rule: a refusal is told in the
     expect(failure).toHaveTextContent(i18n.t('reports.touristTax.yearEnd.files.noAccess'));
     expect(onForbidden).not.toHaveBeenCalled();
     expect(saved).not.toHaveBeenCalled();
-    // The other files are not told to fail, and the buttons are there again.
     expect(screen.queryByTestId('year-end-agent-account-failure')).toBeNull();
     expect(screen.queryByTestId('year-end-ticino-failure')).toBeNull();
     await waitFor(() => expect(screen.getByTestId('year-end-declaration-csv')).toBeEnabled());
   });
 
   it('theClientOfTheApp_A403OnAnyOtherRead_SendsTheAppToNoAccess', async () => {
-    // The control of the tests above: the handler is wired and the transport rejects as the real one does, so its silence there is the doing of the reads of the page.
     reply = () => ({ status: 403, data: '' });
 
     await expect(axiosInstance.get('/payments')).rejects.toBeDefined();
@@ -158,7 +149,6 @@ describe('the year-end page and a failed read (a failure is told with a retry or
   });
 
   it('YearEndPage_SummaryThatIsNotASummary_IsAFailure_NeverAnEmptyYear', async () => {
-    // A page of the app served in place of the API (a rewrite that went wrong) answers 200 with HTML.
     reply = (request) => (request.path === SUMMARY ? { status: 200, data: '<!doctype html><html></html>' } : serverInOrder(request));
 
     renderPage();
@@ -172,7 +162,6 @@ describe('the year-end page and a failed read (a failure is told with a retry or
     const client = renderPage();
     await screen.findByTestId('year-end-figures');
 
-    // The read is made again (a payment was recorded elsewhere) and the server no longer finds it: the cache still holds the year, and the query keeps it on an error, but it is not shown.
     reply = (request) => (request.path === SUMMARY ? { status: 404, data: '' } : serverInOrder(request));
     await act(async () => {
       await client.invalidateQueries({ queryKey: ['tourist-tax-summary'] });
@@ -230,7 +219,6 @@ describe('the figures of the year on screen (a refusal, a failed read, a «not f
     expect(screen.queryByTestId('year-end-declaration-table')).toBeNull();
     expect(screen.queryByTestId('year-end-declaration-empty')).toBeNull();
     expect(screen.queryByTestId('year-end-declaration-data-error')).toBeNull();
-    // The account, the count of Ticino, the summary and the files are other calls with their own answer.
     expect(await screen.findByTestId('year-end-account-table')).toBeInTheDocument();
     expect(await screen.findByTestId('year-end-ticino-table')).toBeInTheDocument();
     expect(screen.getByTestId('year-end-figures')).toBeInTheDocument();
@@ -248,7 +236,6 @@ describe('the figures of the year on screen (a refusal, a failed read, a «not f
     expect(screen.queryByTestId('year-end-ticino-empty')).toBeNull();
     expect(screen.queryByTestId('year-end-ticino-table')).toBeNull();
     expect(onForbidden).not.toHaveBeenCalled();
-    // The failure belongs to the count of Ticino: the declaration is on screen, and it is not told to have failed.
     expect(await screen.findByTestId('year-end-declaration-table')).toBeInTheDocument();
     expect(screen.queryByTestId('year-end-declaration-data-error')).toBeNull();
 
@@ -260,7 +247,6 @@ describe('the figures of the year on screen (a refusal, a failed read, a «not f
   });
 
   it('YearEndDetails_AnAnswerThatIsNotTheResult_IsAFailure_NeverAnEmptySection', async () => {
-    // A page of the app served in place of the API (a rewrite that went wrong) answers 200 with HTML.
     reply = (request) => (request.path === ACCOUNT && isJson(request) ? { status: 200, data: '<!doctype html><html></html>' } : serverInOrder(request));
 
     renderPage();
@@ -274,8 +260,6 @@ describe('the figures of the year on screen (a refusal, a failed read, a «not f
     const client = renderPage();
     await screen.findByTestId('year-end-declaration-table');
 
-    // The read is made again (a payment was recorded elsewhere: the year-end reads are under the key of the summaries) and the server no longer finds it: the cache still holds the declaration, and the query keeps it on an
-    // error, but it is not shown.
     reply = (request) => (request.path === DECLARATION && isJson(request) ? { status: 404, data: '' } : serverInOrder(request));
     await act(async () => {
       await client.invalidateQueries({ queryKey: ['tourist-tax-summary'] });
@@ -286,7 +270,6 @@ describe('the figures of the year on screen (a refusal, a failed read, a «not f
   });
 
   it('YearEndDetails_ServerWithNoJsonYet400ReportInvalidFormat_ShowsTheFilesAndOneLine_NoErrorAndNoSection', async () => {
-    // The backend that adds `?format=json` is not deployed in this environment: the year-end addresses refuse the format by name.
     reply = (request) => (request.path.startsWith('/tourist-tax/year-end/') && isJson(request) ? { status: 400, data: { code: 'report_invalid_format' } } : serverInOrder(request));
 
     renderPage();
@@ -296,7 +279,6 @@ describe('the figures of the year on screen (a refusal, a failed read, a «not f
     expect(screen.queryByRole('alert')).toBeNull();
     for (const section of ['year-end-declaration-data', 'year-end-account-data', 'year-end-ticino-data']) expect(screen.queryByTestId(section)).toBeNull();
     expect(onForbidden).not.toHaveBeenCalled();
-    // The figures of the summary and the three files are there, and a file is made as before.
     expect(await screen.findByTestId('year-end-figures')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId('year-end-declaration-csv')).toBeEnabled());
     fireEvent.click(screen.getByTestId('year-end-declaration-csv'));
@@ -305,7 +287,6 @@ describe('the figures of the year on screen (a refusal, a failed read, a «not f
 });
 
 describe('what the year-end page asks the server (the year, the format, the cut: nothing else in an address)', () => {
-  /** The reads of the page when it opens: the days of the whole year, and the JSON of the three results (the account by month, the cut it opens on). */
   const READS_AT_OPENING = [
     `GET ${SUMMARY}?from=2026-01-01&to=2026-12-31`,
     `GET ${ACCOUNT}?by=month&format=json`,
@@ -320,7 +301,6 @@ describe('what the year-end page asks the server (the year, the format, the cut:
     await screen.findByTestId('year-end-account-table');
     await screen.findByTestId('year-end-declaration-table');
 
-    // The format is always named (the server refuses a request that names none), and the order they leave in is not what is under test.
     expect([...requests].sort()).toEqual(READS_AT_OPENING);
 
     await waitFor(() => expect(screen.getByTestId('year-end-ticino-csv')).toBeEnabled());

@@ -25,7 +25,6 @@ describe('openOnboardingAfterGate (PL-02)', () => {
 
     expect(openOnboardingAfterGate(router, queryClient)).toBe(true);
 
-    // The `from` stays in the history of the browser: the single-use secrets of the callback do not go along.
     expect(router.navigate).toHaveBeenCalledWith(ONBOARDING_PATH, {
       replace: true,
       state: { from: '/app/short-rent/integrations/octorate' },
