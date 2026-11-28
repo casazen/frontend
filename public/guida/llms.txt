@@ -1,6 +1,6 @@
 # Guida CasaZen
 
-> Manuale d'uso di CasaZen in italiano: guide passo passo, elenco delle funzionalità, flussi completi e domande frequenti. Aggiornato il 27 novembre 2026.
+> Manuale d'uso di CasaZen in italiano: guide passo passo, elenco delle funzionalità, flussi completi e domande frequenti. Aggiornato il 28 novembre 2026.
 
 ## Per iniziare
 
