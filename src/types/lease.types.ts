@@ -60,8 +60,6 @@ export const LEASE_EVENT_TYPES = [
   'DepositReturnRecorded',
 ] as const;
 
-export type LeaseEventType = (typeof LEASE_EVENT_TYPES)[number];
-
 /**
  * Legacy combined value (contract type + tax regime) still returned by the API; the lease form sends `contractType` and
  * `taxRegime` (LT-10, A7-13).

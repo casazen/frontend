@@ -48,7 +48,6 @@ vi.mock('@/api/octorate.api', () => ({
     confirmChannelAccess: vi.fn(),
     runExistingInventoryBatch: vi.fn(),
     continueExistingInventoryBatch: vi.fn(),
-    getInventoryIntents: vi.fn(),
     setInventoryIntents: vi.fn(),
   },
 }));

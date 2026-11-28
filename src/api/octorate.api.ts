@@ -143,9 +143,6 @@ export const octorateApi = {
       ...(options.retryUnknown && options.retryUnknown.length > 0 ? { retryUnknown: options.retryUnknown } : {}),
     }),
 
-  /** The scenario declared for each property or group of the org the caller reaches. */
-  getInventoryIntents: () => ApiClient.get<InventoryIntent[]>('/octorate/inventory-intents'),
-
   /**
    * Declares the scenario of each property (or named group with no property yet) of a mixed portfolio. `newInventory` is refused while an import or a
    * mapping exists for the property (409 `inventory_intent_change_refused`); 422 `inventory_scenario_invalid`, `inventory_group_required`,
