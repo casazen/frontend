@@ -1,4 +1,4 @@
-# Guida CasaZen (aggiornata il 27 novembre 2026)
+# Guida CasaZen (aggiornata il 28 novembre 2026)
 
 ## Per iniziare con CasaZen
 
@@ -2142,7 +2142,8 @@ Funzionalità: Stato del check-in online; Cosa fa: Link inviato, In compilazione
 Funzionalità: Check-in guidato; Cosa fa: Compili tu i dati degli ospiti, i documenti e la tassa di soggiorno; Dove si trova: Prenotazione › «Apri il check-in guidato»; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Fare il check-in guidato al posto dell'ospite
 Funzionalità: L'ospite non è arrivato; Cosa fa: Segna il no-show; Dove si trova: Check-in guidato; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Segnare che l'ospite non è arrivato
 Funzionalità: Pagamento della tassa di soggiorno nel check-in; Cosa fa: L'ospite paga online la tassa del comune; Dove si trova: Check-in dell'ospite; Chi può usarla: ospite; Disponibilità: Su attivazione; Come si usa: Vedi Imposta di soggiorno, archivio documenti e check-out
-Funzionalità: Verifica dell'identità con selfie; Cosa fa: L'ospite fotografa documento e volto; il codice d'accesso arriva dopo; Dove si trova: Check-in dell'ospite; Chi può usarla: ospite; Disponibilità: Su attivazione; Come si usa: Come funziona
+Funzionalità: Verifica dell'identità; Cosa fa: L'ospite fotografa il documento e segue i movimenti del viso sullo schermo; il codice d'accesso arriva dopo; Dove si trova: Check-in dell'ospite; Chi può usarla: ospite; Disponibilità: Su attivazione; Come si usa: Come funziona
+Funzionalità: Segmenti della verifica; Cosa fa: Decide per struttura, tipo di documento e browser se la verifica resta in osservazione, passa in automatico o si sospende; Dove si trova: Impostazioni › AI; Chi può usarla: amministratore; Disponibilità: Su attivazione; Come si usa: Attivare la verifica automatica dell'identità
 Funzionalità: Codice della serratura; Cosa fa: Mostra o manda all'ospite il codice che hai scritto tu nell'immobile, solo dopo la verifica dell'identità; Dove si trova: Portale ospite · e-mail · routine; Chi può usarla: ospite; Disponibilità: Su attivazione; Come si usa: Come funziona
 Funzionalità: Check-in all'ingresso con QR; Cosa fa: L'ospite apre la pagina del QR della porta e cerca il suo soggiorno; Dove si trova: QR dell'immobile; Chi può usarla: ospite; Disponibilità: Su attivazione; Come si usa: Come funziona
 Funzionalità: Esporta, anonimizza, cancella dati; Cosa fa: Diritti dell'ospite sui suoi dati, esercitati da te per lui; Dove si trova: Scheda ospite › «Privacy»; Chi può usarla: amministratore (o chi può gestire gli ospiti); Disponibilità: Disponibile; Come si usa: Esportare, anonimizzare o cancellare i dati di un ospite
@@ -2163,7 +2164,7 @@ Cosa compila l'ospite. I passaggi sono (alcuni compaiono solo se attivi; i passi
 2. Ospiti: tutti quelli che soggiornano, minori compresi (la legge chiede i dati di ognuno). Per ogni persona: tipo (ospite singolo, capofamiglia, capogruppo, familiare, membro del gruppo), nome, cognome, sesso, data di nascita, luogo di nascita (comune e provincia, oppure stato estero), cittadinanza. Residenza e altri dati facoltativi, o richiesti dalla tua regione, compaiono quando servono.
 3. Documento d'identità: tipo, numero, luogo di rilascio e scadenza. Serve solo all'ospite singolo, al capofamiglia o al capogruppo, non ai familiari.
 4. Imposta di soggiorno (su attivazione): se la tassa è dovuta e puoi incassarla online, l'ospite può pagarla con la carta. Altrimenti gli viene detto che la paga a te in struttura, che è già compresa nel pagamento o che la incassa il portale.
-5. Verifica dell'identità (su attivazione): foto del documento (fronte e retro) e selfie. Solo la persona che lascia il documento fa il selfie. Il documento non viene archiviato. Se la verifica non riesce, l'ospite può rifare i tentativi che restano oppure chiedere la verifica di una persona: tu vieni avvisato e decidi tu.
+5. Verifica dell'identità (su attivazione): l'ospite sceglie tra «Verifica automatica» e «Verifica con una persona». Con la verifica automatica dà il consenso al controllo del volto, fotografa il documento (fronte e retro) e segue i movimenti del viso indicati a schermo. Con la verifica con una persona non c'è nessun confronto automatico del viso. Il documento non viene archiviato. Se la verifica automatica non riesce, l'ospite può rifare i tentativi che restano oppure passare alla verifica con una persona: tu vieni avvisato e decidi tu.
 6. Informativa e consensi: l'ospite legge l'informativa privacy; il consenso al marketing (email, WhatsApp) è facoltativo e non blocca il check-in.
 7. Fattura (facoltativo): l'ospite può dirti se gli serve la fattura e a chi intestarla (persona o azienda, codice fiscale o partita IVA, PEC, codice destinatario). Se ora non ha i dati, li chiederai tu.
 Alla fine l'ospite vede «Check-in completato!». Se riapre il link dopo l'invio, i dati non vengono più mostrati, per proteggere la sua privacy: per correggerli ti contatta.
@@ -2274,6 +2275,15 @@ Il consenso al marketing lo può dare solo l'ospite, dal check-in online. Tu puo
 4. Premi «Revoca consenso».
 Lo «Storico di informativa e consensi» mostra tutto quello che è successo, con la fonte (ospite, tu, regola di conservazione).
 
+#### Attivare la verifica automatica dell'identità
+
+Ti serve: un account con il ruolo amministratore e un piano che include l'identificazione degli ospiti.
+1. Vai in Impostazioni › AI e accendi «Confronto del volto con il documento». Se resta spento, a verificare è sempre una persona.
+2. Nella sezione «Segmenti della verifica» premi «Aggiungi un segmento». Scegli la Struttura (o «Tutte le strutture»), il Tipo di documento e il Browser dell'ospite, poi premi «Aggiungi il segmento». Un segmento nuovo parte sempre in Osservazione.
+3. Controlla lo stato del segmento. «Qualificato» vuol dire che gli amministratori di CasaZen hanno qualificato quella combinazione. La qualificazione non si fa da questa pagina.
+4. Quando il segmento è qualificato, scegli la modalità «Automatica» e conferma con «Attiva l'approvazione automatica». Da quel momento, se tutte le condizioni sono soddisfatte, il sistema approva da solo l'identità degli ospiti di quel segmento.
+5. Per tornare indietro scegli «Osservazione» (il sistema calcola la decisione, ma decide sempre una persona) oppure premi «Sospendi il segmento»: scrivi il motivo, al massimo 200 caratteri.
+
 ### Flussi completi
 
 #### Flusso: dal link al check-in completato
@@ -2286,6 +2296,14 @@ Lo «Storico di informativa e consensi» mostra tutto quello che è successo, co
 6. Registri l'arrivo (o lo fa CasaZen a fine giornata).
 7. Alla partenza si chiudono tassa di soggiorno e documenti (Imposta di soggiorno, archivio documenti e check-out).
 
+#### Flusso: verifica automatica dell'identità
+
+1. L'ospite sceglie «Verifica automatica» e dà il consenso al controllo del volto. Se non lo dà, o sceglie «Passa alla verifica con una persona», a verificare è una persona.
+2. L'ospite fotografa il fronte e il retro del documento. Il retro è quello con le righe di lettere e numeri in basso.
+3. L'ospite preme «Inizia» e segue a schermo le indicazioni: gira la testa a sinistra e a destra, alza e abbassa lo sguardo. Dura pochi secondi.
+4. CasaZen approva da solo se il segmento è in modalità «Automatica» e tutti i controlli riescono. Se qualcosa non va, l'ospite può riprovare: la pagina dice quanti tentativi restano.
+5. Tu trovi in Cruscotto › Verifiche i casi che passano a una persona e decidi come descritto sopra.
+
 ### Regole e limiti
 
 - Il link del check-in vale 7 giorni dall'invio e va mandato quando il check-in è aperto (3 giorni prima dell'arrivo, salvo la tua scelta in «Flusso»). Un nuovo link annulla il precedente. Il link del portale ospite dura di più: fino alla fine del 30° giorno dopo la partenza.
@@ -2295,10 +2313,16 @@ Lo «Storico di informativa e consensi» mostra tutto quello che è successo, co
 - Esportare, anonimizzare e cancellare richiedono il permesso di gestire gli ospiti; non sono possibili con prenotazioni in corso o future.
 - La comunicazione alla Questura la fai tu (o il tuo channel manager). «Conferma e invia» non la invia, e «Segna come inviato manualmente» non invia nulla: registra solo che l'hai fatta.
 - Il codice della serratura parte solo dopo la verifica dell'identità riuscita: senza verifica non parte nessun codice.
+- La verifica automatica approva solo se il segmento è in modalità «Automatica» e qualificato; negli altri casi decide una persona.
+- Se l'approvazione automatica è disattivata per tutta la piattaforma, nessun segmento approva da solo.
 - Chi ha accesso solo ad alcuni immobili vede solo gli ospiti e le prenotazioni di quelli.
 - Titolare e amministratori hanno già tutti questi permessi: le frasi «serve il permesso…» riguardano i collaboratori.
 
 ### Domande frequenti
+
+#### Perché un ospite è finito in Verifiche anche se sembra tutto in regola?
+
+Il segmento della verifica è in Osservazione o Sospeso, oppure non è ancora qualificato: in tutti questi casi decide sempre una persona. Lo stato dei segmenti è in Impostazioni › AI, nella sezione «Segmenti della verifica».
 
 #### Un ospite non ha fatto il check-in online: cosa faccio?
 
