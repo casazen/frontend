@@ -5,7 +5,6 @@ import type {
   ConditionDefinition,
   CreateDraftDto,
   CreateSegmentDto,
-  FieldDefinition,
   ScheduleCampaignDto,
   Segment,
   SegmentPreviewResult,
@@ -25,9 +24,6 @@ export const campaignsApi = {
     ApiClient.post<SegmentPreviewResult>('/campaigns/segments/preview', { condition, propertyId }),
 
   suggestSegment: (brief: string) => ApiClient.post<CreateSegmentDto>('/campaigns/studio/suggest-segment', { brief }),
-
-  // Field catalog
-  getFields: () => ApiClient.get<FieldDefinition[]>('/campaigns/fields'),
 
   // Campaigns
   getCampaigns: () => ApiClient.get<Campaign[]>('/campaigns'),

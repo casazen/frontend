@@ -14,7 +14,6 @@ import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 const UNSUPPORTED_STATUSES = [404, 405];
 const SEGMENTS_KEY = 'segments';
 const CAMPAIGNS_KEY = 'campaigns';
-const FIELDS_KEY = 'campaign-fields';
 
 export function useSegments(enabled = true) {
   return useQuery({
@@ -67,13 +66,6 @@ export function usePreviewCondition(condition: ConditionDefinition | null, prope
 
 export function useSuggestSegment() {
   return useMutation({ mutationFn: (brief: string) => campaignsApi.suggestSegment(brief) });
-}
-
-export function useFields() {
-  return useQuery({
-    queryKey: [FIELDS_KEY],
-    queryFn: () => campaignsApi.getFields(),
-  });
 }
 
 export function useCampaigns(enabled = true) {
