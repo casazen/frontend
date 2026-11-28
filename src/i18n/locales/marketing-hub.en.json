@@ -2,7 +2,8 @@
   "layer": {
     "back": "Back",
     "cancel": "Cancel",
-    "continue": "Continue"
+    "continue": "Continue",
+    "close": "Close"
   },
   "count": {
     "guests_one": "{{count}} guest",
@@ -20,7 +21,19 @@
     "cityRequired": "To search for events we need the city of the house: add it on the property page.",
     "periodInvalid": "The period you chose is not valid: pick a shorter one.",
     "segmentSave": "We could not save the group. Please try again.",
-    "campaignSave": "We could not save the campaign. Please try again."
+    "campaignSave": "We could not save the campaign. Please try again.",
+    "voiceInvalid": "Check the link of your website: it must start with https://. Or paste a text of your own.",
+    "settingsInvalid": "Some values are not valid: check that the links of the houses start with https:// and that the newsletter has a house and a group.",
+    "settingsSave": "We could not save the settings. Please try again.",
+    "fileTooLarge": "The file is too large: the maximum is 2 MB.",
+    "fileUnsupported": "This type of file does not work: use a CSV or an Excel file (.xlsx).",
+    "importEmpty": "There are no guests in the file: the first row must have the column titles and one guest per row below.",
+    "importMapping": "You need at least one column with e-mails or phone numbers, and each column can be used only once.",
+    "importDetails": "Choose the permission of the guests and write where the contacts come from.",
+    "importProperty": "You cannot import guests for this house.",
+    "importBusy": "Another import was running. Please try again in a moment.",
+    "importReadFailed": "I cannot read this file. Check that it is a CSV or an Excel file with the titles in the first row.",
+    "importFailed": "We could not import the file. Please try again."
   },
   "stage": {
     "upcoming": "With a stay coming up",
@@ -339,8 +352,12 @@
       "afterTitle": "What happens now",
       "after": {
         "approve": "The campaign goes to the “To approve” queue: you check it and approve it (or whoever has the permission).",
-        "limit": "Each guest receives at most 2 marketing e-mails a month and can unsubscribe with one click."
-      }
+        "limit_one": "Each guest receives at most {{count}} marketing e-mail a month and can unsubscribe with one click.",
+        "limit_other": "Each guest receives at most {{count}} marketing e-mails a month and can unsubscribe with one click."
+      },
+      "pausedTitle": "Marketing e-mails are paused",
+      "paused": "In the settings you chose not to send any: this campaign will not go out until you turn them back on.",
+      "pausedAction": "Change the settings"
     },
     "done": {
       "sentTitle": "Campaign sent for approval",
@@ -430,7 +447,6 @@
     "description": "A group is a list of guests who have something in common, for example those who came back more than once. You pick it when you write a campaign.",
     "create": "Create a group",
     "import": "Import guests from a file",
-    "importIntro": "Upload a file with your past guests: you will then find them in the groups and in the guest list.",
     "rulesLabel": "Rules of the group",
     "everyone": "Every guest we can contact.",
     "write": "Write a campaign",
@@ -445,6 +461,357 @@
       },
       "create": "Create your first group",
       "ready": "Ready-made groups"
+    }
+  },
+  "importWizard": {
+    "title": "Import your guests",
+    "steps": {
+      "file": "File",
+      "columns": "Columns",
+      "permission": "Permission",
+      "origin": "Source"
+    },
+    "file": {
+      "title": "Upload the list of your guests",
+      "purpose": "An Excel or CSV file works: the first row has the column titles and below there is one guest per row. The file is read and not kept.",
+      "drop": "Drop the file here",
+      "button": "Choose the file",
+      "hint": "CSV or Excel (.xlsx), up to 2 MB",
+      "reading": "Reading the file…",
+      "ready_one": "I read 1 row of guests",
+      "ready_other": "I read {{count}} rows of guests",
+      "change": "Choose another file",
+      "problems": {
+        "type": "This file does not work: use a CSV or an Excel file (.xlsx).",
+        "size": "The file is too large: the maximum is 2 MB. Remove the columns you do not need and try again."
+      },
+      "example": {
+        "title": "A file like this is perfect",
+        "columns": {
+          "name": "Name",
+          "email": "Email",
+          "lastStay": "Last stay"
+        },
+        "rows": {
+          "1": {
+            "name": "Maria Bianchi",
+            "email": "maria@example.com",
+            "lastStay": "2025-08-12"
+          },
+          "2": {
+            "name": "Hans Weber",
+            "email": "hans@example.com",
+            "lastStay": "2026-02-03"
+          }
+        }
+      }
+    },
+    "columns": {
+      "title": "Check that we understood the file",
+      "purpose": "For each piece of information choose the column of your file. The ones we recognized are already matched.",
+      "sampleTitle": "This is how we will read the first guests",
+      "sampleEmpty": "Choose the column with e-mails or phone numbers to see the preview.",
+      "fieldsTitle": "Match the columns",
+      "needContact": "You need at least one column with e-mails or phone numbers, otherwise we cannot reach the guests.",
+      "none": "Do not import this",
+      "unnamed": "Column {{number}}",
+      "used": "already used",
+      "example": "Example: {{value}}",
+      "found": "Recognized",
+      "phoneNote": "Phone numbers are used only for messages about the stay, not for promotions.",
+      "fields": {
+        "name": {
+          "label": "Full name",
+          "hint": "To greet the guest by name."
+        },
+        "email": {
+          "label": "Email",
+          "hint": "To write to them. This or the phone is required."
+        },
+        "phone": {
+          "label": "Phone",
+          "hint": "This or the e-mail is required."
+        },
+        "language": {
+          "label": "Language",
+          "hint": "To write to them in their language."
+        },
+        "country": {
+          "label": "Country",
+          "hint": "To find them in the groups."
+        },
+        "lastStay": {
+          "label": "Last stay",
+          "hint": "A date, for example 2025-12-31."
+        },
+        "firstStay": {
+          "label": "First stay",
+          "hint": "A date, for example 2023-12-31."
+        },
+        "tags": {
+          "label": "Labels",
+          "hint": "Several labels separated by commas."
+        }
+      }
+    },
+    "permission": {
+      "title": "What permission did these guests give?",
+      "purpose": "It tells us whether you can also send them promotions. We record it on every contact, together with the source you give next.",
+      "legend": "Permission of the guests",
+      "consent": {
+        "title": "They agreed to receive your e-mails",
+        "description": "You collected their consent: a form on your website, a newsletter sign-up, a signed form."
+      },
+      "softOptIn": {
+        "title": "They already stayed with you",
+        "description": "You can e-mail people who have already been your guests, only about similar offers and with an unsubscribe link in every message. You must have given the privacy notice when they booked, and the file must have the date of the last stay."
+      },
+      "serviceOnly": {
+        "title": "Only messages about the stay",
+        "description": "They stay in your list but receive no promotions."
+      },
+      "prudent": "If in doubt, choose the last one: it is the safest.",
+      "needDateTitle": "This choice needs the date of the last stay",
+      "needDatePick": "Which column has the date of the last stay?",
+      "needDateNone": "If your file does not have one, choose another option or add the column and upload the file again."
+    },
+    "origin": {
+      "title": "Last two things",
+      "purpose": "Where they stayed and where these contacts come from.",
+      "property": "Which house did they stay in?",
+      "propertyHint": "If the file has guests of several houses, import it once for each house.",
+      "noProperties": "To import guests you need at least one house.",
+      "noPropertiesAction": "Add a house",
+      "source": "Where do these contacts come from?",
+      "sourceHint": "It stays on record as proof. Add the year or the name of the file so you can find it again.",
+      "sourcePlaceholder": "For example: website form, 2025",
+      "ideas": {
+        "consent": {
+          "site": "Website sign-up form",
+          "inPerson": "Consent collected in person",
+          "newsletter": "Newsletter subscribers"
+        },
+        "softOptIn": {
+          "bookings": "My booking archive",
+          "direct": "Direct bookings"
+        },
+        "serviceOnly": {
+          "archive": "Booking archive",
+          "ota": "Export from the booking portal"
+        }
+      },
+      "summaryTitle": "What you are importing",
+      "summaryFile_one": "{{file}} · 1 row",
+      "summaryFile_other": "{{file}} · {{count}} rows",
+      "summaryColumns": "Data read: {{list}}",
+      "summaryPermission": "Permission: {{permission}}",
+      "noteRelay": "The anonymous addresses of Booking.com and Airbnb and the phone numbers are used only for messages about the stay.",
+      "submit": "Import the guests"
+    },
+    "done": {
+      "title": "Import finished",
+      "text": "The guests are in your list: you will find them in the guest list and you can put them in a group to write to them.",
+      "noneText": "No new guests: they were all already in your list, or the rows could not be read.",
+      "imported_one": "guest added",
+      "imported_other": "guests added",
+      "skipped_one": "already there",
+      "skipped_other": "already there",
+      "errors_one": "row not read",
+      "errors_other": "rows not read",
+      "errorsTitle": "Rows we could not read",
+      "row": "Row {{row}}: {{reason}}",
+      "more": "…and {{count}} more",
+      "guests": "See the guests",
+      "group": "Create a group of guests"
+    },
+    "reasons": {
+      "contact": "e-mail or phone missing or not valid",
+      "dates": "stay dates not valid",
+      "profile": "data too long or labels not valid",
+      "other": "data not valid"
+    }
+  },
+  "settingsWizard": {
+    "title": "Your marketing",
+    "steps": {
+      "voice": "Style",
+      "houses": "Houses",
+      "rules": "Rules",
+      "newsletter": "Newsletter",
+      "review": "Summary"
+    },
+    "gate": {
+      "loading": "Preparing your settings",
+      "errorTitle": "I cannot read the settings",
+      "retry": "Try again"
+    },
+    "locked": {
+      "title": "Another account manages the settings",
+      "text": "Marketing is managed by whoever has access to all the houses. Ask that person to change these choices."
+    },
+    "voice": {
+      "title": "How should the AI write in your name?",
+      "purpose": "It is the style used for e-mails, posts and newsletters. Pick a ready-made one, or let the AI learn it from a text of yours or from your website.",
+      "presetsLabel": "Pick a style",
+      "styles": {
+        "warm": {
+          "title": "Warm and friendly",
+          "description": "First-name terms, short welcoming sentences.",
+          "text": "Warm and friendly tone. I use informal address, short welcoming sentences and mention a few details about the area. I sign with the name of the property. I avoid sounding too commercial."
+        },
+        "elegant": {
+          "title": "Elegant and refined",
+          "description": "Formal address, carefully chosen words.",
+          "text": "Elegant and refined tone. I use formal address, well-built sentences and a polished vocabulary, without overdoing it. I highlight details and the quality of the stay. I avoid exclamation marks and abbreviations."
+        },
+        "direct": {
+          "title": "Direct and practical",
+          "description": "Straight to the point: dates, prices, what to do.",
+          "text": "Direct and practical tone. I get straight to the point with short, clear sentences: dates, prices and what to do. I use informal address. No roundabout phrases and no emphasis."
+        },
+        "playful": {
+          "title": "Cheerful and witty",
+          "description": "Lively, with a light joke now and then.",
+          "text": "Cheerful and witty tone. I use informal address and a lively language with the odd light joke, always respectful. Now and then an emoji, never more than one per message."
+        }
+      },
+      "ai": {
+        "title": "Let the AI learn it",
+        "text": "Paste a text of yours or the link of your website: the AI works out the style.",
+        "examples": "A text of yours",
+        "examplesPlaceholder": "For example: an old e-mail or a message you sent to your guests",
+        "website": "Or the link of your website",
+        "websitePlaceholder": "https://www.yourhouse.com",
+        "websiteInvalid": "The link must start with https://",
+        "submit": "Suggest a style",
+        "working": "The AI is reading…",
+        "notice": "The AI suggested this style: check it and change it as you like."
+      },
+      "label": "Your style, in your own words",
+      "hint": "You can add the languages, the signature and the words to use or to avoid.",
+      "emptyHint": "You can also skip it: without a style the texts will be more generic.",
+      "undo": "Go back to the previous text"
+    },
+    "houses": {
+      "title": "What should we know about your houses?",
+      "purpose": "Optional. The website and a few notes help the AI write true things and add the right links.",
+      "none": "You do not have any houses yet: you can add these details once you do.",
+      "hasSite": "Website linked",
+      "hasNotes": "With notes",
+      "empty": "No details",
+      "site": "Website of the house",
+      "sitePlaceholder": "https://www.example.com/my-house",
+      "siteInvalid": "Use an address that starts with https://",
+      "notes": "To remember in the messages",
+      "notesPlaceholder": "For example: check-in from 3 pm, there is a sauna, pets allowed"
+    },
+    "rules": {
+      "title": "How much do you want to write to your guests?",
+      "purpose": "Three rules: how many e-mails at most, when a guest is loyal and when to win them back.",
+      "limit": {
+        "title": "How many marketing e-mails a month, at most, for each guest?",
+        "options": {
+          "0": {
+            "title": "None",
+            "description": "Pause marketing: campaigns will not go out."
+          },
+          "1": {
+            "title": "One a month",
+            "description": "The safest choice."
+          },
+          "2": {
+            "title": "Up to two a month",
+            "description": "The standard value."
+          }
+        },
+        "paused": "With “None” campaigns will not go out until you change this choice.",
+        "summary": {
+          "0": "Marketing e-mails paused",
+          "1": "At most 1 e-mail a month per guest",
+          "2": "At most 2 e-mails a month per guest"
+        }
+      },
+      "loyal": {
+        "title": "After how many stays is a guest “loyal”?",
+        "option_one": "{{count}} stay",
+        "option_other": "{{count}} stays",
+        "hint": "It counts for the “Loyal guests” group."
+      },
+      "lost": {
+        "title": "After how many months without a stay should you win them back?",
+        "option_one": "{{count}} month",
+        "option_other": "{{count}} months",
+        "hint": "It counts for the “To win back” group."
+      }
+    },
+    "newsletter": {
+      "title": "Do you want a regular newsletter?",
+      "purpose": "The AI prepares each issue and sends it to you for approval: nothing goes out without your go-ahead.",
+      "off": {
+        "title": "No, not for now",
+        "description": "You only write the campaigns you decide."
+      },
+      "on": {
+        "title": "Yes, prepare it for me",
+        "description": "At regular intervals you find a draft ready to approve."
+      },
+      "property": "Which house is it about?",
+      "group": "Which group of guests?",
+      "noGroups": "The newsletter needs a group of guests: create one, a few clicks are enough.",
+      "createGroup": "Create a group",
+      "cadence": "How often?",
+      "cadenceOptions": {
+        "week": "Every week",
+        "twoWeeks": "Every 2 weeks",
+        "month": "Every month",
+        "twoMonths": "Every 2 months",
+        "threeMonths": "Every 3 months"
+      },
+      "cadenceCustom_one": "Every day",
+      "cadenceCustom_other": "Every {{count}} days",
+      "instructions": "What should every issue contain?",
+      "instructionsHint": "Pick a few ideas below or write your own: the AI will follow them.",
+      "topicsLabel": "Ideas to add",
+      "topics": {
+        "news": {
+          "label": "News about the house",
+          "text": "Tell what is new about the house."
+        },
+        "events": {
+          "label": "Events nearby",
+          "text": "Point out the events taking place in the area."
+        },
+        "season": {
+          "label": "Tips for the season",
+          "text": "Give tips that suit the season."
+        },
+        "offer": {
+          "label": "Offer for returning guests",
+          "text": "Offer something reserved for people who have already been guests."
+        }
+      },
+      "incomplete": "To turn it on, choose the house and the group of guests."
+    },
+    "review": {
+      "title": "Check and save",
+      "purpose": "This is how your marketing will be. You can change everything whenever you like.",
+      "change": "Change",
+      "voiceEmpty": "No style: the texts will be more generic",
+      "housesValue_one": "{{count}} house with a website or notes",
+      "housesValue_other": "{{count}} houses with a website or notes",
+      "housesNone": "No details added",
+      "loyalLine_one": "Loyal after {{count}} stay",
+      "loyalLine_other": "Loyal after {{count}} stays",
+      "lostLine_one": "To win back after {{count}} month",
+      "lostLine_other": "To win back after {{count}} months",
+      "newsletterOff": "Not active",
+      "newsletterTo": "House: {{house}} · Group: {{group}}"
+    },
+    "save": "Save the settings",
+    "done": {
+      "title": "Settings saved",
+      "text": "I use them right away for the texts, the groups and the newsletter. You can change them whenever you like.",
+      "write": "Write a campaign"
     }
   }
 }

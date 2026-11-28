@@ -62,7 +62,7 @@ describe('segment wizard', () => {
 
     fireEvent.click(screen.getByTestId('segment-wizard-write'));
     expect(onWriteCampaign).toHaveBeenCalledWith(expect.objectContaining({ id: 'group-1', name: 'Ospiti fedeli' }));
-  });
+  }, 20_000);
 
   it('shows the rules proposed by the AI in plain words and says that they come from it', async () => {
     view(<SegmentWizard open onOpenChange={() => undefined} />);

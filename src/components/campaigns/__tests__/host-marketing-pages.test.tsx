@@ -118,18 +118,22 @@ it('lists the groups with their rules in plain words and starts a campaign from 
   expect(await screen.findByText('What do you want to achieve?')).toBeVisible();
 });
 
-it('previews imported contacts, requires their source and legal basis, then shows the import totals', async () => {
+it('imports a file step by step, asking for the permission and the source, then shows the totals', async () => {
   view(<SegmentsPage />);
   fireEvent.click(await screen.findByRole('button', { name: 'Import guests from a file' }));
-  fireEvent.change(await screen.findByLabelText('CSV or Excel file (.xlsx)'), {
+  fireEvent.change(await screen.findByTestId('import-dropzone-input'), {
     target: { files: [new File(['email\nguest@example.org'], 'guest.csv')] },
   });
+  expect(await screen.findByText('I read 1 row of guests')).toBeVisible();
+  await waitFor(() => expect(screen.getByTestId('import-wizard-next')).toBeEnabled());
+  fireEvent.click(screen.getByTestId('import-wizard-next'));
   expect(await screen.findByText('guest@example.org')).toBeVisible();
-  fireEvent.change(screen.getByLabelText('Property', { exact: true }), { target: { value: 'house' } });
-  fireEvent.change(screen.getByLabelText('Legal basis of the contacts'), { target: { value: 'consent' } });
-  fireEvent.change(screen.getByLabelText('Source and evidence reference'), { target: { value: 'check-in v3' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Import guests' }));
-  expect(await screen.findByText('Imported 1 · Skipped 0')).toBeVisible();
+  fireEvent.click(screen.getByTestId('import-wizard-next'));
+  fireEvent.click(await screen.findByTestId('import-basis-consent'));
+  fireEvent.click(screen.getByTestId('import-wizard-next'));
+  fireEvent.change(await screen.findByTestId('import-source'), { target: { value: 'check-in v3' } });
+  fireEvent.click(screen.getByTestId('import-wizard-next'));
+  expect(await screen.findByTestId('import-result-imported')).toHaveTextContent('1');
 });
 
 it('says what to do next on every campaign and lets a draft go to approval from its card', async () => {
@@ -197,12 +201,16 @@ it('opens an idea of the AI in the wizard, ready to review and send', async () =
   );
 });
 
-it('saves the edited voice before moving to the audience settings step', async () => {
+it('saves the edited style at the end of the guided settings', async () => {
   view(<CampaignsPage />);
   fireEvent.click(await screen.findByRole('button', { name: 'Marketing settings' }));
-  const voice = await screen.findByLabelText('Organization voice');
-  fireEvent.change(voice, { target: { value: 'Calm and direct' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Save and continue' }));
-  expect(await screen.findByLabelText('Monthly emails per guest (maximum 2)')).toHaveValue(2);
+  fireEvent.change(await screen.findByTestId('voice-text'), { target: { value: 'Calm and direct' } });
+  for (let step = 0; step < 4; step += 1) {
+    const next = screen.getByTestId('settings-wizard-next');
+    await waitFor(() => expect(next).toBeEnabled());
+    fireEvent.click(next);
+  }
+  fireEvent.click(await screen.findByTestId('settings-wizard-next'));
+  expect(await screen.findByTestId('settings-done')).toBeVisible();
   expect(ApiClient.put).toHaveBeenCalledWith('/campaigns/studio/settings', { ...preferences, voice: 'Calm and direct' });
 });

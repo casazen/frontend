@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Send, Settings2, Share2 } from 'lucide-react';
 import type { GeneratedContent } from '@/api/marketing-studio.api';
 import { CampaignAssets } from '@/components/campaigns/CampaignAssets';
 import { CampaignEditor } from '@/components/campaigns/CampaignEditor';
-import { MarketingSettingsForm } from '@/components/campaigns/MarketingSettingsForm';
 import { PageHeader } from '@/components/layout/page-header';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import { CampaignWizard } from '@/features/marketing/campaign-wizard';
 import { CampaignArt } from '@/features/marketing/illustrations';
 import { IdeasStrip } from '@/features/marketing/ideas-strip';
 import { PickCard } from '@/features/marketing/pick-card';
+import { SettingsWizard } from '@/features/marketing/settings-wizard';
 import { useCampaigns } from '@/queries/campaigns';
 
 interface WizardRequest {
@@ -157,30 +157,14 @@ export function CampaignsPage() {
         initialIdea={wizard?.idea}
       />
 
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{t('marketingStudio.settings')}</DialogTitle>
-            <DialogDescription>{t('marketingStudio.setupIntro')}</DialogDescription>
-          </DialogHeader>
-          {settingsOpen ? (
-            <>
-              <MarketingSettingsForm />
-              <details className="rounded-xl border bg-card p-4">
-                <summary className="cursor-pointer font-semibold">{t('marketingStudio.visibility')}</summary>
-                <ol className="mt-3 list-decimal space-y-2 pl-5">
-                  {['googlePartner', 'googleInventory', 'siteVisibility'].map((key) => (
-                    <li key={key}>{t('marketingStudio.' + key)}</li>
-                  ))}
-                </ol>
-                <Link className="mt-3 block text-primary underline" to="/app/short-rent/vetrina">
-                  {t('marketingStudio.storefront')}
-                </Link>
-              </details>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <SettingsWizard
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        onWriteCampaign={() => {
+          setSettingsOpen(false);
+          setWizard({});
+        }}
+      />
 
       <Dialog open={contentOpen} onOpenChange={setContentOpen}>
         <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-3xl">

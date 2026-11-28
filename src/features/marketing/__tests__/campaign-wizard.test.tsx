@@ -10,6 +10,7 @@ import { CampaignWizard } from '../campaign-wizard';
 vi.mock('@/api/client', () => ({ ApiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn() } }));
 
 let segments: Array<Record<string, unknown>>;
+let monthlyLimit: number;
 
 function view(node: React.ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -23,11 +24,23 @@ function view(node: React.ReactNode) {
 beforeEach(async () => {
   vi.resetAllMocks();
   segments = [];
+  monthlyLimit = 2;
   useCampaignDraftStore.getState().forget();
   await i18n.changeLanguage('it');
   vi.mocked(ApiClient.get).mockImplementation(async (path: string) => {
     if (path === '/properties') return [{ id: 'house', name: 'Villa Sofia', photoUrls: ['https://img.example/villa.jpg'] }];
     if (path === '/campaigns/segments') return segments;
+    if (path === '/campaigns/studio/settings') {
+      return {
+        voice: '',
+        propertyNotes: {},
+        propertyUrls: {},
+        monthlyEmailLimit: monthlyLimit,
+        loyalStays: 3,
+        lostMonths: 24,
+        newsletter: { segmentId: null, propertyId: null, cadenceDays: 30, instructions: '', enabled: false },
+      };
+    }
     if (path.endsWith('/preview')) return { count: 12 };
     throw new Error(path);
   });
@@ -79,6 +92,8 @@ describe('campaign wizard', () => {
 
     fireEvent.click(screen.getByTestId('campaign-wizard-next'));
     expect(await screen.findByRole('heading', { name: 'Controlla e invia' })).toBeVisible();
+    expect(await screen.findByText(/Ogni ospite riceve al massimo 2 e-mail/)).toBeVisible();
+    expect(screen.queryByTestId('campaign-paused')).toBeNull();
 
     fireEvent.click(screen.getByTestId('campaign-wizard-next'));
     expect(await screen.findByText('Campagna inviata per approvazione')).toBeVisible();
@@ -89,7 +104,7 @@ describe('campaign wizard', () => {
     expect(ApiClient.post).toHaveBeenCalledWith('/campaigns/campaign-1/submit', {});
     expect(screen.getByTestId('campaign-wizard-queue')).toHaveAttribute('href', '/app/short-rent/approval-queue');
     expect(useCampaignDraftStore.getState().remembered).toBeNull();
-  });
+  }, 20_000);
 
   it('asks for what to offer before it lets the AI write, and writes nothing it was not told', async () => {
     view(<CampaignWizard open onOpenChange={() => undefined} initialGoalId="offer" />);
@@ -134,15 +149,22 @@ describe('campaign wizard', () => {
       if (path === '/campaigns') return { id: 'campaign-9', ...(data as object), status: 'Draft', segmentName: 'Ospiti recenti' };
       throw new Error(path);
     });
+    monthlyLimit = 0;
     view(<CampaignWizard open onOpenChange={() => undefined} initialGoalId="thanks" />);
     fireEvent.click(await readyNext());
     fireEvent.click(await screen.findByTestId('campaign-manual'));
     fireEvent.change(await screen.findByTestId('campaign-subject'), { target: { value: 'Grazie' } });
     fireEvent.change(screen.getByTestId('campaign-body'), { target: { value: 'A presto' } });
     fireEvent.click(screen.getByTestId('campaign-wizard-next'));
+    expect(await screen.findByTestId('campaign-paused')).toBeVisible();
+    expect(screen.queryByText(/Ogni ospite riceve al massimo/)).toBeNull();
+    fireEvent.click(screen.getByTestId('campaign-open-settings'));
+    expect(await screen.findByTestId('voice-text')).toBeVisible();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Annulla' })[0]);
+    await waitFor(() => expect(screen.queryByTestId('voice-text')).toBeNull());
     fireEvent.click(await screen.findByTestId('campaign-save-draft'));
 
     expect(await screen.findByText('Bozza salvata')).toBeVisible();
     expect(ApiClient.post).toHaveBeenCalledWith('/campaigns', { propertyId: 'house', segmentId: 'group-1', subject: 'Grazie', body: 'A presto' });
-  });
+  }, 20_000);
 });

@@ -6,10 +6,10 @@ ordine: 23
 riassunto: Le routine fanno da sole cose ripetitive (messaggi, pulizie, promemoria, richieste di recensione) e le puoi provare in simulazione prima di attivarle. «Ospiti e marketing» raccoglie le schede degli ospiti, i gruppi di ospiti e le campagne e-mail, con procedure guidate e l'aiuto dell'AI. Entrambi i moduli sono spenti di partenza e si attivano su richiesta.
 chi: [gestore, amministratore]
 dove: Affitti brevi › Routine AI · Affitti brevi › Ospiti e marketing
-parole_chiave: [routine, automazioni, AI Agents, simulazione, modalità test, registro, CRM, ospiti e marketing, schede ospiti, profili ospiti, tag, schede doppie, duplicati, gruppi di ospiti, gruppo, pubblici, segmento, campagne, campagna e-mail, procedura guidata, idee dell'AI, anteprima, newsletter, marketing, consenso marketing, disiscrizione, codice di accesso, pulizia al check-out, promemoria documenti]
+parole_chiave: [routine, automazioni, AI Agents, simulazione, modalità test, registro, CRM, ospiti e marketing, schede ospiti, profili ospiti, tag, schede doppie, duplicati, gruppi di ospiti, gruppo, pubblici, segmento, campagne, campagna e-mail, procedura guidata, idee dell'AI, anteprima, newsletter, marketing, impostazioni marketing, stile dei testi, voce, importare ospiti, file CSV, file Excel, consenso marketing, disiscrizione, codice di accesso, pulizia al check-out, promemoria documenti]
 copre: [/app/short-rent/automations, /app/short-rent/crm/guests, /app/short-rent/crm/guests/:id, /app/short-rent/crm/segments, /app/short-rent/crm/campaigns, /app/short-rent/crm/merge]
 stato: su-attivazione
-fonte_codice: [frontend/src/pages/RoutinesPage.tsx, frontend/src/components/routines/RoutineEditor.tsx, frontend/src/components/routines/RoutineLibrary.tsx, frontend/src/pages/crm/GuestList.tsx, frontend/src/pages/crm/GuestDetail.tsx, frontend/src/pages/SegmentsPage.tsx, frontend/src/pages/CampaignsPage.tsx, frontend/src/features/marketing/segment-wizard.tsx, frontend/src/features/marketing/campaign-wizard.tsx, frontend/src/features/marketing/campaign-card.tsx, frontend/src/features/marketing/ideas-strip.tsx, frontend/src/features/crm/merge/merge-page.tsx, backend/Casazen.Web/Controllers/RoutinesController.cs, backend/Casazen.Web/Controllers/CrmController.cs, backend/Casazen.Web/Controllers/CampaignsController.cs, backend/Casazen.Infrastructure/Services/CampaignService.cs, backend/Casazen.Infrastructure/Services/RoutineBookingActions.cs, backend/Casazen.Infrastructure/Services/AccessCodeService.cs, backend/Casazen.Core/Services/RoutineActionCatalog.cs, backend/Casazen.Core/Services/CommercialSignup.cs]
+fonte_codice: [frontend/src/pages/RoutinesPage.tsx, frontend/src/components/routines/RoutineEditor.tsx, frontend/src/components/routines/RoutineLibrary.tsx, frontend/src/pages/crm/GuestList.tsx, frontend/src/pages/crm/GuestDetail.tsx, frontend/src/pages/SegmentsPage.tsx, frontend/src/pages/CampaignsPage.tsx, frontend/src/features/marketing/segment-wizard.tsx, frontend/src/features/marketing/campaign-wizard.tsx, frontend/src/features/marketing/import-wizard.tsx, frontend/src/features/marketing/settings-wizard.tsx, frontend/src/features/marketing/campaign-card.tsx, frontend/src/features/marketing/ideas-strip.tsx, frontend/src/features/crm/merge/merge-page.tsx, backend/Casazen.Web/Controllers/RoutinesController.cs, backend/Casazen.Web/Controllers/CrmController.cs, backend/Casazen.Web/Controllers/CampaignsController.cs, backend/Casazen.Infrastructure/Services/CampaignService.cs, backend/Casazen.Infrastructure/Services/MarketingGuestImport.cs, backend/Casazen.Infrastructure/Services/MarketingStudio.cs, backend/Casazen.Infrastructure/Services/RoutineBookingActions.cs, backend/Casazen.Infrastructure/Services/AccessCodeService.cs, backend/Casazen.Core/Services/RoutineActionCatalog.cs, backend/Casazen.Core/Services/CommercialSignup.cs]
 ---
 
 ## In breve
@@ -30,7 +30,9 @@ fonte_codice: [frontend/src/pages/RoutinesPage.tsx, frontend/src/components/rout
 | Tag | Parole tue per ritrovare gli ospiti | Scheda ospite | gestore, amministratore | Su attivazione | Aggiungere tag a un ospite |
 | Schede doppie | Propone di unire le schede della stessa persona | Ospiti e marketing › «Schede doppie» | gestore, amministratore | Su attivazione | Unire due schede doppie |
 | Gruppi di ospiti | Elenchi di ospiti con qualcosa in comune, con le regole in parole semplici e il numero di ospiti, da scegliere o da descrivere all'AI | Ospiti e marketing › «Gruppi» | gestore, amministratore | Su attivazione | Creare un gruppo di ospiti |
+| Importazione di ospiti | Porta nella tua lista gli ospiti di un file Excel o CSV, in quattro passi, riconoscendo da sola le colonne | Ospiti e marketing › «Gruppi» › «Importa ospiti da un file» | gestore, amministratore | Su attivazione | Importare ospiti da un file |
 | Campagne e-mail | Procedura guidata per scrivere ai tuoi ospiti, con idee dell'AI, approvazione, programmazione e risultati | Ospiti e marketing › «Campagne» | gestore, amministratore | Su attivazione | Scrivere e mandare una campagna |
+| Impostazioni del marketing | Stile dei testi (anche proposto dall'AI), dettagli delle case, quante e-mail al mese, chi è fedele, newsletter periodica | Ospiti e marketing › «Campagne» › «Impostazioni marketing» | gestore, amministratore | Su attivazione | Impostare lo stile e le regole del marketing |
 
 ## Come funziona
 
@@ -92,7 +94,7 @@ Quando una campagna parte:
 - si rivalutano i destinatari al momento dell'invio;
 - si saltano gli ospiti che hanno annullato l'iscrizione o non sono raggiungibili;
 - ogni email ha il link per annullare l'iscrizione;
-- c'è un limite mensile di email per ogni ospite (2 al mese, se non lo cambia l'organizzazione);
+- c'è un limite mensile di email per ogni ospite (2 al mese, se non lo cambia l'organizzazione dalle «Impostazioni marketing»; con «Nessuna» non parte nulla);
 - se il modulo viene spento prima dell'invio, la campagna programmata torna «Approvata» e non parte.
 
 ## Come fare
@@ -182,7 +184,18 @@ Non puoi rimandare la richiesta dopo pochi minuti, né oltre il numero massimo d
 4. Passo «Conferma»: dai un nome al gruppo e premi «Crea il gruppo».
 5. Alla fine puoi premere «Scrivi una campagna per questo gruppo» e continuare senza uscire.
 
-Per aggiungere ospiti passati da un file, nella stessa pagina apri il menu «⋯» e scegli «Importa ospiti da un file».
+Per portare dentro gli ospiti passati da un file vedi «Importare ospiti da un file».
+
+### Importare ospiti da un file
+**Ti serve:** «Ospiti e marketing» attivo, il permesso per il marketing, almeno una casa e un file CSV o Excel (.xlsx) fino a 2 MB, con i titoli delle colonne nella prima riga e un ospite per riga, ognuno con almeno un'e-mail o un telefono.
+1. Apri **Ospiti e marketing › Gruppi** e premi «Importa ospiti da un file».
+2. Passo «File»: trascina il file nel riquadro o premi «Scegli il file». Il file viene letto e non viene conservato. Se non è un CSV o un Excel, o supera i 2 MB, te lo dice subito.
+3. Passo «Colonne»: sotto «Così leggeremo i primi ospiti» vedi come verranno letti i primi ospiti. Le colonne che CasaZen ha riconosciuto sono già abbinate («Riconosciuta»); se serve, cambiale con il menu accanto a ogni dato. Serve almeno una colonna con le e-mail o con i telefoni, e una colonna si può usare per un dato solo. Le date vanno scritte come 31/12/2025 oppure 2025-12-31.
+4. Passo «Permesso»: scegli «Hanno acconsentito a ricevere le tue e-mail», «Hanno già soggiornato da te» (serve la data dell'ultimo soggiorno: se non l'hai abbinata, scegli lì la colonna) oppure «Solo messaggi legati al soggiorno». Nel dubbio l'ultima è la scelta più prudente. Resta registrato su ogni contatto.
+5. Passo «Provenienza»: scegli la casa in cui hanno soggiornato (se il file comprende più case, importalo una volta per casa) e scrivi da dove arrivano i contatti, per esempio «Modulo di iscrizione del sito, 2025»: resta registrato come prova.
+6. Premi «Importa gli ospiti». Alla fine vedi quanti ospiti sono stati aggiunti, quanti c'erano già e le righe che non si sono potute leggere, ognuna con il motivo; da lì puoi creare subito un gruppo.
+
+Gli ospiti che hai già (stessa e-mail o stesso telefono) non vengono duplicati. I numeri di telefono e gli indirizzi anonimi di Booking.com e Airbnb servono solo per i messaggi legati al soggiorno, non per le promozioni.
 
 ### Scrivere e mandare una campagna
 **Ti serve:** il permesso per il marketing; il modulo «CRM e Marketing» nella tua offerta; almeno una casa; ospiti con il consenso al marketing e un'e-mail utilizzabile.
@@ -198,6 +211,17 @@ Per aggiungere ospiti passati da un file, nella stessa pagina apri il menu «⋯
 Se chiudi la finestra a metà, alla prossima apertura trovi «Hai una campagna a metà»: «Riprendi» o «Ricomincia» (finché non ricarichi la pagina).
 
 **Una campagna inviata non si ritira.** Le email partono solo agli ospiti che hanno dato il consenso e non hanno annullato l'iscrizione.
+
+### Impostare lo stile e le regole del marketing
+**Ti serve:** «Ospiti e marketing» attivo, il permesso per il marketing e l'accesso a tutte le case: chi vede solo alcune case trova un avviso e non può cambiare le impostazioni.
+1. Apri **Ospiti e marketing › Campagne** e premi «Impostazioni marketing».
+2. Passo «Stile»: scegli uno stile pronto (caldo e familiare, elegante e curato, diretto e pratico, allegro e spiritoso) oppure incolla un tuo testo o il link del tuo sito (deve iniziare con https://) e premi «Proponi uno stile»: lo propone l'AI e tu lo correggi nel riquadro «Il tuo stile, con parole tue». Con «Torna al testo di prima» recuperi quello che c'era.
+3. Passo «Case»: facoltativo. Per ogni casa puoi indicare il sito (https://) e le note da ricordare nei messaggi.
+4. Passo «Regole»: scegli quante e-mail di marketing al mese, al massimo, riceve ogni ospite («Nessuna», «Una al mese» o «Fino a due al mese»), dopo quanti soggiorni un ospite è «fedele» e dopo quanti mesi senza soggiorni va «riconquistato».
+5. Passo «Newsletter»: scegli se vuoi che l'AI prepari una newsletter a intervalli regolari. Se sì, scegli la casa, il gruppo di ospiti (o creane uno), ogni quanto e cosa deve contenere. Ogni numero arriva in «Da approvare»: non parte niente senza il tuo via libera.
+6. Passo «Riepilogo»: ricontrolla e premi «Salva le impostazioni». Con «Cambia» torni al passo che vuoi.
+
+Con «Nessuna» le campagne non partono finché non cambi la scelta. Lo stile conta per i testi che scrive l'AI; le regole sui soggiorni e sui mesi decidono chi finisce nei gruppi «Ospiti fedeli» e «Da riconquistare».
 
 ## Flussi completi
 
@@ -242,7 +266,7 @@ Sì: attivala in simulazione («Test»), oppure usa «Prova su una prenotazione�
 I messaggi non ancora partiti non partono più: nell'elenco della prenotazione il motivo è «La routine è stata spenta o non contiene più questo messaggio».
 
 ### Perché un ospite non può ricevere la mia campagna?
-Può non avere dato il consenso, non aver confermato l'indirizzo, aver annullato l'iscrizione, avere un indirizzo di un portale (solo servizio), oppure aver già ricevuto il numero massimo di email del mese.
+Può non avere dato il consenso, non aver confermato l'indirizzo, aver annullato l'iscrizione, avere un indirizzo di un portale (solo servizio), oppure aver già ricevuto il numero massimo di email del mese. Se nessuna campagna parte, controlla anche che nelle «Impostazioni marketing» non sia scelto «Nessuna» come numero di e-mail al mese.
 
 ### Il CRM manda messaggi su WhatsApp?
 No: per ora le campagne partono solo per email. Non ci sono nemmeno SMS o telefonate.

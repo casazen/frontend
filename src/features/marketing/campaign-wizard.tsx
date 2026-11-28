@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CalendarSearch, CheckCircle2, ExternalLink, Home, Pencil, Plus, Send, Sparkles } from 'lucide-react';
+import { CalendarSearch, CheckCircle2, ExternalLink, Pencil, Plus, Send, Sparkles } from 'lucide-react';
 import { campaignsApi } from '@/api/campaigns.api';
 import { assetQueryKey, dismissAsset, marketingStudioApi, saveAssetDraft, type GeneratedContent, type LocalEvent } from '@/api/marketing-studio.api';
 import { Alert } from '@/components/ui/alert';
@@ -16,9 +16,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { addDays, todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import { useSegments } from '@/queries/campaigns';
+import { useMarketingSettings } from '@/queries/marketing-settings';
 import { useProperties } from '@/queries/use-properties';
 import type { ConditionDefinition, Segment } from '@/types/campaign.types';
-import type { Property } from '@/types';
 import { ConditionCount, SegmentCount } from './audience-count';
 import { CAMPAIGN_GOALS, TONE_STEERS, goalById, type CampaignGoal, type GoalId, type ToneSteer } from './campaign-goals';
 import { EMPTY_CAMPAIGN_DRAFT, useCampaignDraftStore, type CampaignDraft } from './campaign-draft-store';
@@ -27,18 +27,15 @@ import { eventDateText } from './event-date';
 import { LayerWizard } from './layer-wizard';
 import { marketingErrorText } from './marketing-error';
 import { PickCard } from './pick-card';
+import { PropertyChoice } from './property-choice';
+import { propertyOption, type PropertyOption } from './property-options';
 import { recipeText } from './recipe-text';
 import { recipeById } from './segment-recipes';
 import { describeRule, rulesOf } from './segment-rules';
 import { SegmentWizard } from './segment-wizard';
+import { SettingsWizard } from './settings-wizard';
 
 type StepId = 'goal' | 'audience' | 'event' | 'message' | 'confirm';
-
-interface PropertyOption {
-  id: string;
-  name: string;
-  photoUrl?: string;
-}
 
 interface Finished {
   campaignId: string;
@@ -55,11 +52,6 @@ export interface CampaignWizardProps {
 
 const RELEVANT_KEYS: ReadonlyArray<keyof CampaignDraft> = ['goalId', 'propertyId', 'segmentId', 'recipeId', 'event'];
 const EVENT_PERIODS = [30, 60, 90] as const;
-
-function coverOf(property: Property): string | undefined {
-  const absolute = (property.photoUrls ?? []).find((url) => /^https?:\/\//i.test(url));
-  return property.coverPhotoUrl ?? absolute;
-}
 
 const sameCondition = (a: ConditionDefinition, b: ConditionDefinition) => JSON.stringify(a.groups) === JSON.stringify(b.groups);
 
@@ -104,13 +96,11 @@ function CampaignWizardBody({ onOpenChange, initialSegmentId, initialGoalId, ini
   const [stepId, setStepId] = useState<StepId>(initialIdea ? 'message' : startGoal ? 'audience' : 'goal');
   const [resumeOffer, setResumeOffer] = useState(Boolean(remembered) && !initialSegmentId && !startGoal && !initialIdea);
   const [groupWizardOpen, setGroupWizardOpen] = useState(false);
+  const [settingsWizardOpen, setSettingsWizardOpen] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [finished, setFinished] = useState<Finished | null>(null);
 
-  const propertyOptions: PropertyOption[] = useMemo(
-    () => (properties.data ?? []).map((property) => ({ id: property.id, name: property.name, photoUrl: coverOf(property) })),
-    [properties.data],
-  );
+  const propertyOptions: PropertyOption[] = useMemo(() => (properties.data ?? []).map(propertyOption), [properties.data]);
   const goal = goalById(draft.goalId);
   const propertyId = draft.propertyId || (propertyOptions.length === 1 ? propertyOptions[0].id : '');
   const property = propertyOptions.find((option) => option.id === propertyId);
@@ -389,7 +379,14 @@ function CampaignWizardBody({ onOpenChange, initialSegmentId, initialGoalId, ini
         ) : null}
 
         {stepId === 'confirm' && goal ? (
-          <ConfirmStep draft={draft} goal={goal} property={property} segment={segment} error={finish.isError ? marketingErrorText(finish.error, t, t('marketingHub.errors.campaignSave')) : null} />
+          <ConfirmStep
+            draft={draft}
+            goal={goal}
+            property={property}
+            segment={segment}
+            error={finish.isError ? marketingErrorText(finish.error, t, t('marketingHub.errors.campaignSave')) : null}
+            onOpenSettings={() => setSettingsWizardOpen(true)}
+          />
         ) : null}
       </LayerWizard>
       <SegmentWizard
@@ -397,6 +394,7 @@ function CampaignWizardBody({ onOpenChange, initialSegmentId, initialGoalId, ini
         onOpenChange={setGroupWizardOpen}
         onCreated={(created: Segment) => update({ segmentId: created.id, recipeId: null })}
       />
+      <SettingsWizard open={settingsWizardOpen} onOpenChange={setSettingsWizardOpen} />
     </>
   );
 }
@@ -446,28 +444,14 @@ function AudienceStep({ draft, goal, propertyId, properties, loadingProperties, 
           {loadingProperties ? (
             <Skeleton className="h-24 w-full rounded-xl" />
           ) : (
-            <ChoiceGroup legend={t('marketingHub.campaignWizard.audience.property')} minCardWidth={13}>
-              {properties.map((item) => (
-                <ChoiceCard
-                  key={item.id}
-                  name="campaign-property"
-                  value={item.id}
-                  checked={propertyId === item.id}
-                  onChange={() => onUpdate({ propertyId: item.id })}
-                  title={item.name}
-                  media={
-                    item.photoUrl ? (
-                      <img src={item.photoUrl} alt="" loading="lazy" className="h-24 w-full object-cover" />
-                    ) : (
-                      <span className="grid h-24 w-full place-items-center bg-muted text-foreground/50">
-                        <Home className="size-8" />
-                      </span>
-                    )
-                  }
-                  data-testid={`campaign-property-${item.id}`}
-                />
-              ))}
-            </ChoiceGroup>
+            <PropertyChoice
+              legend={t('marketingHub.campaignWizard.audience.property')}
+              name="campaign-property"
+              options={properties}
+              value={propertyId}
+              onChange={(id) => onUpdate({ propertyId: id })}
+              testIdPrefix="campaign-property"
+            />
           )}
         </section>
       ) : null}
@@ -746,10 +730,13 @@ interface ConfirmStepProps {
   property: PropertyOption | undefined;
   segment: Segment | undefined;
   error: string | null;
+  onOpenSettings: () => void;
 }
 
-function ConfirmStep({ draft, goal, property, segment, error }: ConfirmStepProps) {
+function ConfirmStep({ draft, goal, property, segment, error, onOpenSettings }: ConfirmStepProps) {
   const { t } = useTranslation();
+  const settings = useMarketingSettings();
+  const limit = settings.data?.monthlyEmailLimit ?? 2;
   const rows: Array<{ label: string; value: React.ReactNode }> = [
     { label: t('marketingHub.campaignWizard.confirm.goal'), value: t(`marketingHub.goals.${goal.id}.title`) },
     { label: t('marketingHub.campaignWizard.confirm.property'), value: property?.name ?? '—' },
@@ -778,9 +765,23 @@ function ConfirmStep({ draft, goal, property, segment, error }: ConfirmStepProps
       <Alert variant="info" title={t('marketingHub.campaignWizard.confirm.afterTitle')}>
         <ul className="list-disc space-y-1 pl-5">
           <li>{t('marketingHub.campaignWizard.confirm.after.approve')}</li>
-          <li>{t('marketingHub.campaignWizard.confirm.after.limit')}</li>
+          {limit > 0 ? <li>{t('marketingHub.campaignWizard.confirm.after.limit', { count: limit })}</li> : null}
         </ul>
       </Alert>
+      {limit === 0 ? (
+        <Alert
+          variant="warning"
+          title={t('marketingHub.campaignWizard.confirm.pausedTitle')}
+          data-testid="campaign-paused"
+          action={
+            <Button type="button" size="sm" variant="outline" onClick={onOpenSettings} data-testid="campaign-open-settings">
+              {t('marketingHub.campaignWizard.confirm.pausedAction')}
+            </Button>
+          }
+        >
+          {t('marketingHub.campaignWizard.confirm.paused')}
+        </Alert>
+      ) : null}
       {error ? <Alert variant="danger">{error}</Alert> : null}
     </div>
   );

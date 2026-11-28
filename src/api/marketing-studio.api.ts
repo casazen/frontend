@@ -88,6 +88,8 @@ export const marketingStudioApi = {
   assets: () => ApiClient.get<GeneratedContent[]>(studio + '/assets'),
   settings: () => ApiClient.get<MarketingSettings>(studio + '/settings'),
   saveSettings: (value: MarketingSettings) => ApiClient.put<void>(studio + '/settings', value),
+  suggestVoice: (examples: string, website?: string) =>
+    ApiClient.post<{ voice: string }>(studio + '/suggest-voice', { examples, website }, { timeout: 120000 }),
   events: (propertyId: string, from: string, to: string) =>
     ApiClient.post<LocalEvent[]>(studio + '/events', { propertyId, from, to }, { timeout: 120000 }),
   generate: (brief: ContentBrief) => ApiClient.post<GeneratedContent>(studio + '/generate', brief, { timeout: 120000 }),

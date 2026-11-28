@@ -2,16 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Upload, UsersRound } from 'lucide-react';
-import { GuestImport } from '@/components/campaigns/GuestImport';
 import { PageHeader } from '@/components/layout/page-header';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConditionCount } from '@/features/marketing/audience-count';
 import { CampaignWizard } from '@/features/marketing/campaign-wizard';
 import { GroupCard } from '@/features/marketing/group-card';
 import { GroupsArt } from '@/features/marketing/illustrations';
+import { ImportWizard } from '@/features/marketing/import-wizard';
 import { PickCard } from '@/features/marketing/pick-card';
 import { recipeText } from '@/features/marketing/recipe-text';
 import { SEGMENT_RECIPES, propertyRecipes, type SegmentRecipe } from '@/features/marketing/segment-recipes';
@@ -166,15 +165,14 @@ export function SegmentsPage() {
         initialSegmentId={campaignFor ?? undefined}
       />
 
-      <Dialog open={importOpen} onOpenChange={setImportOpen}>
-        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{t('marketingStudio.importTitle')}</DialogTitle>
-            <DialogDescription>{t('marketingHub.groups.importIntro')}</DialogDescription>
-          </DialogHeader>
-          {importOpen ? <GuestImport /> : null}
-        </DialogContent>
-      </Dialog>
+      <ImportWizard
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onCreateGroup={() => {
+          setImportOpen(false);
+          setWizard({});
+        }}
+      />
     </div>
   );
 }
